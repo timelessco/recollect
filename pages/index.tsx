@@ -1,9 +1,82 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import type { NextPage } from "next";
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+// import { useSession, signIn, signOut } from "next-auth/react";
+import Button from "../components/common/button";
+import Avatar from "../components/common/avatar";
+import Input from "../components/common/input";
+import { useEffect, useState } from "react";
+import { supabase } from "../utils/supabaseClient";
 
 const Home: NextPage = () => {
+  // const { data: session } = useSession();
+
+  const [session, setSession] = useState(false);
+  const [list, setList] = useState([]);
+
+  async function fetchMyAPI() {
+    const { data, error } = await supabase.from("todos").select();
+    console.log("fetch data", data, error);
+    setList(data);
+  }
+
+  useEffect(() => {
+    const currentSession = supabase.auth.session();
+    setSession(currentSession);
+  });
+
+  useEffect(() => {
+    fetchMyAPI();
+  }, [session]);
+
+  const [text, setText] = useState("");
+
+  async function signInWithGoogle() {
+    const { user, session, error } = await supabase.auth.signIn({
+      provider: "google",
+    });
+    fetchMyAPI()
+  }
+
+  async function signOutWithGoogle() {
+    const { error } = await supabase.auth.signOut();
+
+    setSession(false)
+  }
+
+  async function deleteItem(item) {
+   
+
+    try {
+      const { data, error } = await supabase
+      .from("todos")
+      .delete()
+      .match({ id: item?.id });
+
+      setList(list.filter(listItem => listItem?.id !== item?.id))
+
+    } catch (e) {
+      console.log('delete error', e)
+    }
+  } 
+
+  async function addItem(item) {
+
+    const userData = session?.user
+    try {
+      const { data, error } = await supabase
+      .from("todos")
+      .insert([{ task: item, user_id: userData?.id, is_complete: false  }]);
+
+      setList([...list, ...data])
+
+      console.log('add success' , data)
+    } catch (e) {
+      console.log('add error' , e)
+    }
+
+  } 
+
   return (
     <div className={styles.container}>
       <Head>
@@ -13,43 +86,52 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <h1 className="text-3xl">Welcome</h1>
+        <div>
+          {session ? (
+            <>
+              Signed in as {session?.user?.email} <br />
+              {/* <Avatar src={session?.user?.image} alt="user-img" /> */}
+              {/* <Button onClick={() => signOut()}>Sign out</Button> */}
+              <Button onClick={() => signOutWithGoogle()}>Sign out</Button>
+            </>
+          ) : (
+            <>
+              Not signed in <br />
+              <Button onClick={() => signInWithGoogle()}>Sign in</Button>
+            </>
+          )}
+        </div>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
-        </p>
+        <div>
+          {session ? (
+            <div>
+              <Input
+                placeholder="add list"
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value);
+                }}
+                onKeyUp={(e) => {
+                  if (e.keyCode === 13) {
+                    // console.log("value", e.target.value);
+                    addItem( e.target.value)
+                  }
+                }}
+              />
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+              <div>
+                {list.map((item) => (
+                  <div className="flex" key={item?.id}>
+                    <span>{item?.task}</span>
+                    <div className="ml-2 cursor-pointer" onClick={() => deleteItem(item)}>X</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p>Log in to see this</p>
+          )}
         </div>
       </main>
 
@@ -59,14 +141,11 @@ const Home: NextPage = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
+          Powered by <span className={styles.logo}></span>
         </a>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
