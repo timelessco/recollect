@@ -1,0 +1,1 @@
+export const MAIN_TABLE_NAME = 'todos';

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { InputHTMLAttributes } from "react";
 
-interface InputProps extends HTMLInputElement {
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   onKeyUp:(e: React.KeyboardEvent<HTMLInputElement>) => void
 }

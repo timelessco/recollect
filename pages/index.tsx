@@ -1,72 +1,49 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
-// import { useSession, signIn, signOut } from "next-auth/react";
 import Button from "../components/common/button";
-import Avatar from "../components/common/avatar";
 import Input from "../components/common/input";
-import { useEffect, useState } from "react";
-import { supabase } from "../utils/supabaseClient";
+import { KeyboardEvent, useEffect, useState } from "react";
+import { addData, deleteData, fetchData, getCurrentUserSession, signInWithOauth, signOut } from "../utils/supabaseCrudHelpers";
+import { SingleListData } from "../types/apiTypes";
+import { Session, UserIdentity } from "@supabase/supabase-js";
+
 
 const Home: NextPage = () => {
-  // const { data: session } = useSession();
 
-  const [session, setSession] = useState(false);
-  const [list, setList] = useState([]);
-
-  async function fetchMyAPI() {
-    const { data, error } = await supabase.from("todos").select();
-    console.log("fetch data", data, error);
-    setList(data);
-  }
-
-  useEffect(() => {
-    const currentSession = supabase.auth.session();
-    setSession(currentSession);
-  });
-
-  useEffect(() => {
-    fetchMyAPI();
-  }, [session]);
-
+  const [session, setSession] = useState<Session>();
+  const [list, setList] = useState<SingleListData[]>([]);
   const [text, setText] = useState("");
 
-  async function signInWithGoogle() {
-    const { user, session, error } = await supabase.auth.signIn({
-      provider: "google",
-    });
-    fetchMyAPI()
+  async function fetchListDataAndAddToState() {
+    const { data, error } = await fetchData()
+    setList(data)
   }
 
-  async function signOutWithGoogle() {
-    const { error } = await supabase.auth.signOut();
+  useEffect(() => {
+    const currentSession = getCurrentUserSession();
+    setSession(currentSession);
+  }, []);
 
-    setSession(false)
-  }
+  useEffect(() => {
+    fetchListDataAndAddToState();
+  }, [session]);
 
-  async function deleteItem(item) {
-   
-
+  const deleteItem = async (item: SingleListData) => {
     try {
-      const { data, error } = await supabase
-      .from("todos")
-      .delete()
-      .match({ id: item?.id });
+      await deleteData(item)
 
-      setList(list.filter(listItem => listItem?.id !== item?.id))
+      setList(list?.filter(listItem => listItem?.id !== item?.id))
 
     } catch (e) {
       console.log('delete error', e)
     }
-  } 
+  }
 
-  async function addItem(item) {
-
-    const userData = session?.user
+  const addItem = async (item: string) => {
+    const userData = session?.user as unknown as UserIdentity
     try {
-      const { data, error } = await supabase
-      .from("todos")
-      .insert([{ task: item, user_id: userData?.id, is_complete: false  }]);
+      const { data } = await addData(userData, item)
 
       setList([...list, ...data])
 
@@ -74,8 +51,8 @@ const Home: NextPage = () => {
     } catch (e) {
       console.log('add error' , e)
     }
+  }
 
-  } 
 
   return (
     <div className={styles.container}>
@@ -93,12 +70,22 @@ const Home: NextPage = () => {
               Signed in as {session?.user?.email} <br />
               {/* <Avatar src={session?.user?.image} alt="user-img" /> */}
               {/* <Button onClick={() => signOut()}>Sign out</Button> */}
-              <Button onClick={() => signOutWithGoogle()}>Sign out</Button>
+              <Button
+                onClick={() => {
+                  signOut();
+                  setSession(undefined);
+                }}
+              >
+                Sign out
+              </Button>
             </>
           ) : (
             <>
               Not signed in <br />
-              <Button onClick={() => signInWithGoogle()}>Sign in</Button>
+              <Button onClick={() => {
+                signInWithOauth()
+                fetchListDataAndAddToState()
+              }}>Sign in</Button>
             </>
           )}
         </div>
@@ -112,19 +99,24 @@ const Home: NextPage = () => {
                 onChange={(e) => {
                   setText(e.target.value);
                 }}
-                onKeyUp={(e) => {
+                onKeyUp={(e: KeyboardEvent<HTMLInputElement>) => {
+                  console.log(text, "text", typeof e.target)
                   if (e.keyCode === 13) {
-                    // console.log("value", e.target.value);
-                    addItem( e.target.value)
+                    addItem(text);
                   }
                 }}
               />
 
               <div>
-                {list.map((item) => (
+                {list?.map((item) => (
                   <div className="flex" key={item?.id}>
                     <span>{item?.task}</span>
-                    <div className="ml-2 cursor-pointer" onClick={() => deleteItem(item)}>X</div>
+                    <div
+                      className="ml-2 cursor-pointer"
+                      onClick={() => deleteItem(item)}
+                    >
+                      X
+                    </div>
                   </div>
                 ))}
               </div>
@@ -134,16 +126,6 @@ const Home: NextPage = () => {
           )}
         </div>
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by <span className={styles.logo}></span>
-        </a>
-      </footer>
     </div>
   );
 };
