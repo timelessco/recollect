@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 type ChildrenTypes = JSX.Element | JSX.Element[] | string | string[];
 

@@ -1,8 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
-import Image from "next/image";
+import React from 'react';
+import Image from 'next/image';
 
-interface AvatarProps extends HTMLImageElement {}
+type AvatarProps = HTMLImageElement;
 
 const Avatar = (props: AvatarProps) => {
   const { alt, src } = props;
