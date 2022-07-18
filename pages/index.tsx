@@ -104,11 +104,12 @@ const Home: NextPage = () => {
   //     </main>
   //   </div>
   // );
-
   return (
     <>
       <Header
         userImg={session?.user?.user_metadata?.avatar_url}
+        userName={session?.user?.user_metadata?.name}
+        userEmail={session?.user?.user_metadata?.email}
         onSignOutClick={() => {
           signOut();
           setSession(undefined);

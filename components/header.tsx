@@ -1,22 +1,10 @@
 import { Fragment } from 'react';
 import { Menu, Popover, Transition } from '@headlessui/react';
 import { SearchIcon } from '@heroicons/react/solid';
-import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline';
+import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import Image from 'next/image';
 import Button from './atoms/button';
 
-const user = {
-  name: 'Chelsea Hagon',
-  email: 'chelsea.hagon@example.com',
-  imageUrl:
-    'https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-};
-const navigation = [
-  { name: 'Dashboard', href: '#', current: true },
-  { name: 'Calendar', href: '#', current: false },
-  { name: 'Teams', href: '#', current: false },
-  { name: 'Directory', href: '#', current: false },
-];
 const userNavigation = [
   // { name: 'Your Profile', href: '#' },
   // { name: 'Settings', href: '#' },
@@ -29,12 +17,14 @@ function classNames(...classes: Array<string>) {
 
 interface HeaderProps {
   userImg: string;
+  userName: string;
+  userEmail: string;
   onSignOutClick: () => void;
   onSigninClick: () => void;
 }
 
 export default function Header(props: HeaderProps) {
-  const { userImg, onSignOutClick, onSigninClick } = props;
+  const { userImg, userEmail, userName, onSignOutClick, onSigninClick } = props;
   return (
     <>
       {/* When the mobile menu is open, add `overflow-hidden` to the `body` element to prevent double scrollbars */}
@@ -161,7 +151,7 @@ export default function Header(props: HeaderProps) {
             </div>
 
             <Popover.Panel as="nav" className="lg:hidden" aria-label="Global">
-              <div className="max-w-3xl mx-auto px-2 pt-2 pb-3 space-y-1 sm:px-4">
+              {/* <div className="max-w-3xl mx-auto px-2 pt-2 pb-3 space-y-1 sm:px-4">
                 {navigation.map((item) => (
                   <a
                     key={item.name}
@@ -177,42 +167,63 @@ export default function Header(props: HeaderProps) {
                     {item.name}
                   </a>
                 ))}
-              </div>
+              </div> */}
               <div className="border-t border-gray-200 pt-4 pb-3">
-                <div className="max-w-3xl mx-auto px-4 flex items-center sm:px-6">
-                  <div className="flex-shrink-0">
-                    {/* <img
-                      className="h-10 w-10 rounded-full"
-                      src={user.imageUrl}
-                      alt=""
-                    /> */}
-                  </div>
-                  <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">
-                      {user.name}
+                {userImg && (
+                  <div className="max-w-3xl mx-auto px-4 flex items-center sm:px-6">
+                    <div className="flex-shrink-0">
+                      {userImg && (
+                        <Image
+                          width={40}
+                          height={40}
+                          className="h-8 w-8 rounded-full h"
+                          src={userImg}
+                          alt=""
+                        />
+                      )}
                     </div>
-                    <div className="text-sm font-medium text-gray-500">
-                      {user.email}
+                    <div className="ml-3">
+                      <div className="text-base font-medium text-gray-800">
+                        {userName}
+                      </div>
+                      <div className="text-sm font-medium text-gray-500">
+                        {userEmail}
+                      </div>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="ml-auto flex-shrink-0 bg-white rounded-full p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <span className="sr-only">View notifications</span>
-                    <BellIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-                </div>
-                <div className="mt-3 max-w-3xl mx-auto px-2 space-y-1 sm:px-4">
-                  {userNavigation.map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      className="block rounded-md py-2 px-3 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                    {/* <button
+                      type="button"
+                      className="ml-auto flex-shrink-0 bg-white rounded-full p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                      {item.name}
-                    </a>
-                  ))}
+                      <span className="sr-only">View notifications</span>
+                      <BellIcon className="h-6 w-6" aria-hidden="true" />
+                    </button> */}
+                  </div>
+                )}
+                <div
+                  className={`${
+                    userImg ? 'mt-3' : ''
+                  } max-w-3xl mx-auto px-2 space-y-1 sm:px-4`}
+                >
+                  {userImg ? (
+                    <>
+                      {userNavigation.map((item) => (
+                        <div
+                          key={item.name}
+                          className="block rounded-md py-2 px-3 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                          onClick={onSignOutClick}
+                        >
+                          {item.name}
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <div
+                      className="block rounded-md py-2 px-3 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                      onClick={onSigninClick}
+                    >
+                      Signin
+                    </div>
+                  )}
                 </div>
               </div>
             </Popover.Panel>
