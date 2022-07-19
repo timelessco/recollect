@@ -79,7 +79,6 @@ const Dashboard = () => {
           fetchListDataAndAddToState();
         }}
       />
-      <button onClick={() => fetchUserSession()}>get session</button>
       <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0 pt-9 pb-14">
           <Input
