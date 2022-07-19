@@ -1,14 +1,24 @@
-import { PostgrestError } from "@supabase/supabase-js";
+import { PostgrestError } from '@supabase/supabase-js';
 
 export interface SingleListData {
-  id: number,
-  inserted_at: string,
-  is_completed: boolean,
-  task: string,
-  user_id: string
+  id: number;
+  inserted_at: string;
+  title: string;
+  ogImage: string;
+  description: string;
+  url: string;
+  user_id: string;
 }
 
 export interface FetchDataResponse {
   data: SingleListData[];
   error: PostgrestError | null;
+}
+
+export interface UrlData {
+  title: string;
+  url: string;
+  description: string;
+  ogImage: string;
+  user_id: string;
 }

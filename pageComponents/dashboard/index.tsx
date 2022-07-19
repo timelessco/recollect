@@ -1,8 +1,9 @@
 import { Session, UserIdentity } from '@supabase/supabase-js';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Input from '../../components/atoms/input';
 import Header from '../../components/header';
-import { SingleListData } from '../../types/apiTypes';
+import { SingleListData, UrlData } from '../../types/apiTypes';
 import {
   addData,
   deleteData,
@@ -41,17 +42,30 @@ const Dashboard = () => {
     fetchListDataAndAddToState();
   }, [session]);
 
+  // TODO : clean this
   const addItem = async (item: string) => {
     const userData = session?.user as unknown as UserIdentity;
-    try {
-      const { data } = await addData(userData, item);
+    axios
+      .post('https://link-preview-livid-ten.vercel.app/api/getUrlData', {
+        url: item,
+      })
+      .then(async (apiRes) => {
+        try {
+          const urlData = {
+            title: apiRes?.data?.title,
+            description: apiRes?.data?.description,
+            url: apiRes?.data?.url,
+            ogImage: apiRes?.data?.OgImage,
+          } as UrlData;
 
-      setList([...list, ...data]);
+          const { data } = await addData(userData, urlData);
 
-      console.log('add success', data);
-    } catch (e) {
-      console.log('add error', e);
-    }
+          setList([...list, ...data]);
+        } catch (e) {
+          console.log('err', e);
+        }
+      })
+      .catch((err) => console.log('err', err));
   };
 
   const deleteItem = async (item: SingleListData) => {
@@ -84,10 +98,9 @@ const Dashboard = () => {
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Enter text"
+            placeholder="Enter Url"
             className="drop-shadow-lg"
             onKeyUp={(e) => {
-              console.log(text, 'text', typeof e.target);
               if (e.keyCode === 13) {
                 addItem(text);
                 setText('');

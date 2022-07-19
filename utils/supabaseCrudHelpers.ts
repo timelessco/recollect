@@ -1,10 +1,5 @@
-import {
-  AuthSession,
-  Provider,
-  Session,
-  UserIdentity,
-} from '@supabase/supabase-js';
-import { FetchDataResponse, SingleListData } from '../types/apiTypes';
+import { Provider, Session, UserIdentity } from '@supabase/supabase-js';
+import { FetchDataResponse, SingleListData, UrlData } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import { MAIN_TABLE_NAME } from './constants';
 
@@ -13,10 +8,16 @@ export const fetchData = async (tableName = MAIN_TABLE_NAME) => {
   return { data, error } as unknown as FetchDataResponse;
 };
 
-export const addData = async (userData: UserIdentity, item: string) => {
-  const { data, error } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .insert([{ task: item, user_id: userData?.id, is_complete: false }]);
+export const addData = async (userData: UserIdentity, urlData: UrlData) => {
+  const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
+    {
+      title: urlData?.title,
+      url: urlData?.url,
+      description: urlData?.description,
+      ogImage: urlData?.ogImage,
+      user_id: userData?.id,
+    },
+  ]);
 
   return { data, error } as unknown as FetchDataResponse;
 };
