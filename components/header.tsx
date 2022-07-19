@@ -123,10 +123,10 @@ export default function Header(props: HeaderProps) {
                             <Menu.Item key={item.name}>
                               {({ active }) => (
                                 <div
-                                  className={classNames(
+                                  className={` cursor-pointer ${classNames(
                                     active ? 'bg-gray-100' : '',
                                     'block py-2 px-4 text-sm text-gray-700'
-                                  )}
+                                  )}`}
                                   onClick={onSignOutClick}
                                 >
                                   {item.name}
