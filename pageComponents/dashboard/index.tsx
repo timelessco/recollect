@@ -17,6 +17,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
 import { URL_PATTERN } from '../../utils/constants';
 import { UrlInput } from '../../types/componentTypes';
+import SignedOutSection from './signedOutSection';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -118,24 +119,31 @@ const Dashboard = () => {
         }}
       />
       <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0 pt-9 pb-14">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              {...register('urlText', {
-                required: true,
-                pattern: URL_PATTERN,
-              })}
-              placeholder="Enter Url"
-              className="drop-shadow-lg"
-              isError={!isEmpty(errors)}
-              errorText={urlInputErrorText()}
-            />
-          </form>
-        </div>
-        <CardSection
-          listData={list}
-          onDeleteClick={(item) => deleteItem(item)}
-        />
+        {session ? (
+          <>
+            {' '}
+            <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0 pt-9 pb-14">
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Input
+                  {...register('urlText', {
+                    required: true,
+                    pattern: URL_PATTERN,
+                  })}
+                  placeholder="Enter Url"
+                  className="drop-shadow-lg"
+                  isError={!isEmpty(errors)}
+                  errorText={urlInputErrorText()}
+                />
+              </form>
+            </div>
+            <CardSection
+              listData={list}
+              onDeleteClick={(item) => deleteItem(item)}
+            />{' '}
+          </>
+        ) : (
+          <SignedOutSection />
+        )}
       </div>
     </>
   );
