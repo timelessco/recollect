@@ -106,6 +106,7 @@ const Dashboard = () => {
                 setText('');
               }
             }}
+            isError={false}
           />
         </div>
         <CardSection
