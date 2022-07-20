@@ -13,12 +13,26 @@ import {
   signOut,
 } from '../../utils/supabaseCrudHelpers';
 import CardSection from './cardSection';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import isEmpty from 'lodash/isEmpty';
+import { URL_PATTERN } from '../../utils/constants';
+import { UrlInput } from '../../types/componentTypes';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [list, setList] = useState<SingleListData[]>([]);
-  const [text, setText] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<UrlInput>();
+  const onSubmit: SubmitHandler<UrlInput> = (data) => {
+    addItem(data.urlText);
+    reset({ urlText: '' });
+  };
 
   async function fetchListDataAndAddToState() {
     const { data } = await fetchData();
@@ -78,6 +92,16 @@ const Dashboard = () => {
     }
   };
 
+  const urlInputErrorText = () => {
+    if (errors?.urlText?.type === 'pattern') {
+      return 'Please enter valid email';
+    } else if (errors?.urlText?.type === 'required') {
+      return 'Please enter url';
+    } else {
+      return '';
+    }
+  };
+
   return (
     <>
       <Header
@@ -95,19 +119,18 @@ const Dashboard = () => {
       />
       <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0 pt-9 pb-14">
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Enter Url"
-            className="drop-shadow-lg"
-            onKeyUp={(e) => {
-              if (e.keyCode === 13) {
-                addItem(text);
-                setText('');
-              }
-            }}
-            isError={false}
-          />
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Input
+              {...register('urlText', {
+                required: true,
+                pattern: URL_PATTERN,
+              })}
+              placeholder="Enter Url"
+              className="drop-shadow-lg"
+              isError={!isEmpty(errors)}
+              errorText={urlInputErrorText()}
+            />
+          </form>
         </div>
         <CardSection
           listData={list}

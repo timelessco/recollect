@@ -1,16 +1,18 @@
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
 import React, { InputHTMLAttributes } from 'react';
 import classNames from 'classnames';
+import omit from 'lodash/omit';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onKeyUp: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  // onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  // onKeyUp: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   placeholder: string;
   className: string;
   isError: boolean;
+  errorText: string;
 }
 
-const Input = (props: InputProps) => {
+const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const {
     placeholder,
     value,
@@ -18,6 +20,7 @@ const Input = (props: InputProps) => {
     onKeyUp,
     className = '',
     isError,
+    errorText = '',
   } = props;
 
   const inputClass = classNames(className, {
@@ -31,14 +34,14 @@ const Input = (props: InputProps) => {
     <div>
       <div className="mt-1 relative rounded-md shadow-sm">
         <input
+          ref={ref}
           type="text"
-          className={inputClass}
-          placeholder={placeholder}
           value={value}
+          {...omit(props, ['isError', 'errorText'])}
+          placeholder={placeholder}
+          className={inputClass}
           onChange={onChange}
           onKeyUp={onKeyUp}
-          aria-invalid="true"
-          aria-describedby="email-error"
         />
         {isError && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -51,11 +54,13 @@ const Input = (props: InputProps) => {
       </div>
       {isError && (
         <p className="mt-2 text-sm text-red-600" id="email-error">
-          Your password must be less than 4 characters.
+          {errorText}
         </p>
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 export default Input;
