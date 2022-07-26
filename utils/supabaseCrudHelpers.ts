@@ -16,6 +16,7 @@ export const addData = async (userData: UserIdentity, urlData: UrlData) => {
       description: urlData?.description,
       ogImage: urlData?.ogImage,
       user_id: userData?.id,
+      screenshot: urlData?.screenshot,
     },
   ]);
 

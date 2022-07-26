@@ -8,6 +8,7 @@ export interface SingleListData {
   description: string;
   url: string;
   user_id: string;
+  screenshot: string;
 }
 
 export interface FetchDataResponse {
@@ -21,4 +22,5 @@ export interface UrlData {
   description: string;
   ogImage: string;
   user_id: string;
+  screenshot: string;
 }

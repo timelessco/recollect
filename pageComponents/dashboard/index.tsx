@@ -57,30 +57,34 @@ const Dashboard = () => {
     fetchListDataAndAddToState();
   }, [session]);
 
-  // TODO : clean this
   const addItem = async (item: string) => {
-    const userData = session?.user as unknown as UserIdentity;
-    axios
-      .post('https://link-preview-livid-ten.vercel.app/api/getUrlData', {
+    try {
+      const apiRes = await axios.post('http://localhost:3000/api/screenshot', {
+        access_token: session?.access_token,
         url: item,
-      })
-      .then(async (apiRes) => {
-        try {
-          const urlData = {
-            title: apiRes?.data?.title,
-            description: apiRes?.data?.description,
-            url: apiRes?.data?.url,
-            ogImage: apiRes?.data?.OgImage,
-          } as UrlData;
+      });
+      const userData = session?.user as unknown as UserIdentity;
 
-          const { data } = await addData(userData, urlData);
+      const scrapperData = apiRes.data.data.scrapperData;
+      const screenshotUrl = apiRes.data.data.screenShot;
 
-          setList([...list, ...data]);
-        } catch (e) {
-          console.log('err', e);
-        }
-      })
-      .catch((err) => console.log('err', err));
+      const urlData = {
+        title: scrapperData?.title,
+        description: scrapperData?.description,
+        url: scrapperData?.url,
+        ogImage: scrapperData?.OgImage,
+        screenshot: screenshotUrl,
+      } as UrlData;
+
+      console.log('urlDSata', urlData);
+
+      const { data } = await addData(userData, urlData);
+      setList([...list, ...data]);
+    } catch (err) {
+      console.error('err ,', err);
+    } finally {
+      console.log('finally');
+    }
   };
 
   const deleteItem = async (item: SingleListData) => {

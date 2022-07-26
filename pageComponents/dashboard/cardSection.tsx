@@ -27,7 +27,7 @@ const CardSection = ({ listData = [], onDeleteClick }: CardSectionProps) => {
                 <div className="flex-shrink-0">
                   <img
                     className="h-48 w-full object-cover"
-                    src={post.ogImage}
+                    src={post.ogImage || post.screenshot}
                     alt=""
                   />
                 </div>
