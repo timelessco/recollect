@@ -59,10 +59,13 @@ const Dashboard = () => {
 
   const addItem = async (item: string) => {
     try {
-      const apiRes = await axios.post('http://localhost:3000/api/screenshot', {
-        access_token: session?.access_token,
-        url: item,
-      });
+      const apiRes = await axios.post(
+        'https://bookmark-tags-git-dev-timelessco.vercel.app/api/screenshot',
+        {
+          access_token: session?.access_token,
+          url: item,
+        }
+      );
       const userData = session?.user as unknown as UserIdentity;
 
       const scrapperData = apiRes.data.data.scrapperData;

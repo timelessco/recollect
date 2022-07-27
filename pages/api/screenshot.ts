@@ -4,17 +4,15 @@ import { decode } from 'base64-arraybuffer';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabaseClient';
 
-type SuccessResponse = {
+interface SuccessResponse {
   key: 'success';
   data: FinalResponse;
-};
+}
 
-type ErrorResponse = {
+interface ErrorResponse {
   key: 'error';
   err: string;
-};
-
-type Response = SuccessResponse | ErrorResponse;
+}
 
 type scrapperDataTypes = {
   OgImage: string;
@@ -63,7 +61,7 @@ const upload = async (base64data: string) => {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Response>
+  res: NextApiResponse<SuccessResponse | ErrorResponse>
 ) {
   const {} = supabase.auth.setAuth(req.body.access_token);
   // eslint-disable-next-line prefer-const
