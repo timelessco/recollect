@@ -8,7 +8,7 @@ export const fetchData = async (tableName = MAIN_TABLE_NAME) => {
   return { data, error } as unknown as FetchDataResponse;
 };
 
-export const addData = async (userData: UserIdentity, urlData: UrlData) => {
+export const addData = async (userData: UserIdentity, urlData?: UrlData) => {
   const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
     {
       title: urlData?.title,
@@ -40,11 +40,13 @@ export const getCurrentUserSession = async () => {
 };
 
 export const signInWithOauth = async (provider: Provider = 'google') => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user, session, error } = await supabase.auth.signIn({
     provider,
   });
 };
 
 export const signOut = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { error } = await supabase.auth.signOut();
 };

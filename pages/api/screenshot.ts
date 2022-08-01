@@ -43,14 +43,16 @@ interface FinalResponse {
 
 /// just store the test in storage and check
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const upload = async (base64data: string) => {
   const imgName = `img${Math.random()}.jpg`;
 
-  const {} = await supabase.storage
+  const { error } = await supabase.storage
     .from('bookmarks')
     .upload(`public/${imgName}`, decode(base64data), {
       contentType: 'image/jpg',
     });
+  console.log('error ', error);
 
   const { publicURL } = await supabase.storage
     .from('bookmarks')
@@ -78,21 +80,22 @@ export default async function handler(
 
     finalData.scrapperData = apiRes.data;
 
+    // TODO : uncomment after screenshot api is fixed
     // screen shot api call
-    const screenShotRes = await axios.get(
-      `https://s.vercel.app/api?url=${req.body.url}`,
-      {
-        responseType: 'arraybuffer',
-      }
-    );
+    // const screenShotRes = await axios.get(
+    //   `https://s.vercel.app/api?url=${req.body.url}`,
+    //   {
+    //     responseType: 'arraybuffer',
+    //   }
+    // );
 
-    const base64data = Buffer.from(screenShotRes.data, 'binary').toString(
-      'base64'
-    );
+    // const base64data = Buffer.from(screenShotRes.data, 'binary').toString(
+    //   'base64'
+    // );
 
-    const publicURL = await upload(base64data);
+    // const publicURL = await upload(base64data);
 
-    finalData.screenShot = publicURL as string;
+    // finalData.screenShot = publicURL as string;
 
     // meta api
     const metaApiRes = await axios.get(

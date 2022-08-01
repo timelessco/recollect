@@ -18,11 +18,16 @@ import isEmpty from 'lodash/isEmpty';
 import { URL_PATTERN } from '../../utils/constants';
 import { UrlInput } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
+import Modal from '../../components/modal';
+import AddModalContent from './addModalContent';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [list, setList] = useState<SingleListData[]>([]);
+  const [showAddBookmarkModal, setShowAddBookmarkModal] =
+    useState<boolean>(false);
+  const [addedUrlData, setAddedUrlData] = useState<UrlData>();
 
   const {
     register,
@@ -59,14 +64,10 @@ const Dashboard = () => {
 
   const addItem = async (item: string) => {
     try {
-      const apiRes = await axios.post(
-        'https://bookmark-tags-git-dev-timelessco.vercel.app/api/screenshot',
-        {
-          access_token: session?.access_token,
-          url: item,
-        }
-      );
-      const userData = session?.user as unknown as UserIdentity;
+      const apiRes = await axios.post('http://localhost:3000/api/screenshot', {
+        access_token: session?.access_token,
+        url: item,
+      });
 
       const scrapperData = apiRes.data.data.scrapperData;
       const screenshotUrl = apiRes.data.data.screenShot;
@@ -79,10 +80,8 @@ const Dashboard = () => {
         screenshot: screenshotUrl,
       } as UrlData;
 
-      console.log('urlDSata', urlData);
-
-      const { data } = await addData(userData, urlData);
-      setList([...list, ...data]);
+      setAddedUrlData(urlData);
+      setShowAddBookmarkModal(true);
     } catch (err) {
       console.error('err ,', err);
     } finally {
@@ -102,7 +101,7 @@ const Dashboard = () => {
 
   const urlInputErrorText = () => {
     if (errors?.urlText?.type === 'pattern') {
-      return 'Please enter valid email';
+      return 'Please enter valid url';
     } else if (errors?.urlText?.type === 'required') {
       return 'Please enter url';
     } else {
@@ -152,6 +151,21 @@ const Dashboard = () => {
           <SignedOutSection />
         )}
       </div>
+      <Modal
+        open={showAddBookmarkModal}
+        setOpen={() => setShowAddBookmarkModal(false)}
+      >
+        <AddModalContent
+          urlData={addedUrlData}
+          addBookmark={async () => {
+            const userData = session?.user as unknown as UserIdentity;
+
+            const { data } = await addData(userData, addedUrlData);
+            setList([...list, ...data]);
+            setShowAddBookmarkModal(false);
+          }}
+        />
+      </Modal>
     </>
   );
 };
