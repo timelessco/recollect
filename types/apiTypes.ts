@@ -24,3 +24,15 @@ export interface UrlData {
   user_id: string;
   screenshot: string;
 }
+
+export interface UserTagsData {
+  created_at: string;
+  id: number;
+  name: string;
+  user_id: string;
+}
+
+export interface FetchUserTagsDataResponse {
+  data: UserTagsData[];
+  error: PostgrestError | null;
+}

@@ -1,4 +1,5 @@
 export const MAIN_TABLE_NAME = 'todos';
+export const TAG_TABLE_NAME = 'tags';
 
 // regx
 

@@ -2,45 +2,40 @@ import React from 'react';
 // import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { ActionMeta, OnChangeValue } from 'react-select';
+import { TagInputOption } from '../types/componentTypes';
 
-interface ColourOption {
-  readonly value: string;
-  readonly label: string;
-  readonly color?: string;
-  readonly isFixed?: boolean;
-  readonly isDisabled?: boolean;
+interface TagInputProps {
+  options: Array<TagInputOption> | undefined;
+  createTag: (value: OnChangeValue<TagInputOption, true>) => void;
 }
 
-const options = [
-  { value: 'chocolate', label: 'Chocolate' },
-  { value: 'strawberry', label: 'Strawberry' },
-  { value: 'vanilla', label: 'Vanilla' },
-];
+const TagInput = (props: TagInputProps) => {
+  const { options, createTag } = props;
 
-const handleChange = (
-  newValue: OnChangeValue<ColourOption, true>,
-  actionMeta: ActionMeta<ColourOption>
-) => {
-  console.group('Value Changed');
-  console.log(newValue);
-  console.log(`action: ${actionMeta.action}`);
-  console.groupEnd();
+  const handleChange = (
+    newValue: OnChangeValue<TagInputOption, true>,
+    actionMeta: ActionMeta<TagInputOption>
+  ) => {
+    if (actionMeta.action === 'create-option') {
+      createTag(newValue);
+    }
+  };
+
+  return (
+    <CreatableSelect
+      options={options}
+      // defaultValue={[options[1]]}
+      isMulti
+      menuPortalTarget={document.body}
+      onChange={handleChange}
+      styles={{
+        menuPortal: (provided) => ({
+          ...provided,
+          zIndex: 9999,
+        }),
+      }}
+    />
+  );
 };
-
-const TagInput = () => (
-  <CreatableSelect
-    options={options}
-    // defaultValue={[options[1]]}
-    isMulti
-    menuPortalTarget={document.body}
-    onChange={handleChange}
-    styles={{
-      menuPortal: (provided) => ({
-        ...provided,
-        zIndex: 9999,
-      }),
-    }}
-  />
-);
 
 export default TagInput;

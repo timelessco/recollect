@@ -3,11 +3,13 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Input from '../../components/atoms/input';
 import Header from '../../components/header';
-import { SingleListData, UrlData } from '../../types/apiTypes';
+import { SingleListData, UrlData, UserTagsData } from '../../types/apiTypes';
 import {
   addData,
+  addUserTags,
   deleteData,
   fetchData,
+  fetchUserTags,
   getCurrentUserSession,
   signInWithOauth,
   signOut,
@@ -28,6 +30,7 @@ const Dashboard = () => {
   const [showAddBookmarkModal, setShowAddBookmarkModal] =
     useState<boolean>(false);
   const [addedUrlData, setAddedUrlData] = useState<UrlData>();
+  const [userTags, setUserTags] = useState<UserTagsData[]>([]);
 
   const {
     register,
@@ -43,6 +46,8 @@ const Dashboard = () => {
   async function fetchListDataAndAddToState() {
     const { data } = await fetchData();
     setList(data);
+    const { data: tagData } = await fetchUserTags();
+    setUserTags(tagData);
   }
 
   const fetchUserSession = async () => {
@@ -157,12 +162,21 @@ const Dashboard = () => {
       >
         <AddModalContent
           urlData={addedUrlData}
+          userTags={userTags}
           addBookmark={async () => {
             const userData = session?.user as unknown as UserIdentity;
 
             const { data } = await addData(userData, addedUrlData);
             setList([...list, ...data]);
             setShowAddBookmarkModal(false);
+          }}
+          createTag={async (tagData) => {
+            const userData = session?.user as unknown as UserIdentity;
+            const { data } = await addUserTags(userData, {
+              name: tagData[0]?.label,
+            });
+
+            setUserTags([...userTags, ...data]);
           }}
         />
       </Modal>

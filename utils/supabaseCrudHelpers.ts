@@ -1,8 +1,14 @@
 import { Provider, Session, UserIdentity } from '@supabase/supabase-js';
-import { FetchDataResponse, SingleListData, UrlData } from '../types/apiTypes';
+import {
+  FetchDataResponse,
+  SingleListData,
+  UrlData,
+  FetchUserTagsDataResponse,
+} from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
-import { MAIN_TABLE_NAME } from './constants';
+import { MAIN_TABLE_NAME, TAG_TABLE_NAME } from './constants';
 
+// bookmark
 export const fetchData = async (tableName = MAIN_TABLE_NAME) => {
   const { data, error } = await supabase.from(tableName).select();
   return { data, error } as unknown as FetchDataResponse;
@@ -30,6 +36,27 @@ export const deleteData = async (item: SingleListData) => {
     .match({ id: item?.id });
 
   return { data, error };
+};
+
+// user tags
+
+export const fetchUserTags = async (tableName = TAG_TABLE_NAME) => {
+  const { data, error } = await supabase.from(tableName).select();
+  return { data, error } as unknown as FetchUserTagsDataResponse;
+};
+
+export const addUserTags = async (
+  userData: UserIdentity,
+  tagsData?: { name: string }
+) => {
+  const { data, error } = await supabase.from(TAG_TABLE_NAME).insert([
+    {
+      name: tagsData?.name,
+      user_id: userData?.id,
+    },
+  ]);
+
+  return { data, error } as unknown as FetchUserTagsDataResponse;
 };
 
 // auth

@@ -1,16 +1,20 @@
 /* eslint-disable @next/next/no-img-element */
+import { OnChangeValue } from 'react-select';
 import Button from '../../components/atoms/button';
 import LabelledComponent from '../../components/labelledComponent';
 import TagInput from '../../components/tagInput';
-import { UrlData } from '../../types/apiTypes';
+import { UrlData, UserTagsData } from '../../types/apiTypes';
+import { TagInputOption } from '../../types/componentTypes';
 
 interface AddModalContentProps {
   addBookmark: () => void;
   urlData?: UrlData;
+  userTags?: Array<UserTagsData>;
+  createTag: (value: OnChangeValue<TagInputOption, true>) => void;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
-  const { urlData, addBookmark } = props;
+  const { urlData, addBookmark, userTags, createTag } = props;
   return (
     <div id="modal-content">
       <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
@@ -35,7 +39,15 @@ export default function AddModalContent(props: AddModalContentProps) {
       </div>
       <div className="pt-4">
         <LabelledComponent label="Tags">
-          <TagInput />
+          <TagInput
+            options={userTags?.map((item) => {
+              return {
+                value: item?.id,
+                label: item?.name,
+              };
+            })}
+            createTag={createTag}
+          />
         </LabelledComponent>
       </div>
       <div className="mt-4">
