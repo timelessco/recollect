@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
-
-type ChildrenTypes = JSX.Element | JSX.Element[] | string | string[];
+import { ChildrenTypes } from '../../types/componentTypes';
 
 interface ButtonProps {
   children: ChildrenTypes;

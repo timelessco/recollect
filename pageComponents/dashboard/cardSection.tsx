@@ -52,9 +52,13 @@ const CardSection = ({ listData = [], onDeleteClick }: CardSectionProps) => {
                       </p>
                     </a>
                   </div>
-                  <div>
-                    <TrashIcon
+                  <div className="flex">
+                    {/* <PencilAltIcon
                       className="h-5 w-5 text-gray-400 cursor-pointer"
+                      onClick={() => onEditClick(post)}
+                    /> */}
+                    <TrashIcon
+                      className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
                       aria-hidden="true"
                       onClick={() => onDeleteClick(post)}
                     />

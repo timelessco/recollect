@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Button from '../../components/atoms/button';
+import LabelledComponent from '../../components/labelledComponent';
+import TagInput from '../../components/tagInput';
 import { UrlData } from '../../types/apiTypes';
 
 interface AddModalContentProps {
@@ -10,7 +12,7 @@ interface AddModalContentProps {
 export default function AddModalContent(props: AddModalContentProps) {
   const { urlData, addBookmark } = props;
   return (
-    <div>
+    <div id="modal-content">
       <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
         <div className="flex-shrink-0">
           <img
@@ -30,6 +32,11 @@ export default function AddModalContent(props: AddModalContentProps) {
             </p>
           </a>
         </div>
+      </div>
+      <div className="pt-4">
+        <LabelledComponent label="Tags">
+          <TagInput />
+        </LabelledComponent>
       </div>
       <div className="mt-4">
         <Button className="w-full" onClick={addBookmark}>
