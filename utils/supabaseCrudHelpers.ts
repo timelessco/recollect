@@ -1,4 +1,5 @@
 import { Provider, Session, UserIdentity } from '@supabase/supabase-js';
+import axios from 'axios';
 import {
   FetchDataResponse,
   SingleListData,
@@ -6,12 +7,51 @@ import {
   FetchUserTagsDataResponse,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
-import { MAIN_TABLE_NAME, TAG_TABLE_NAME } from './constants';
+import {
+  BOOKMARK_SCRAPPER_API,
+  MAIN_TABLE_NAME,
+  NEXT_API_URL,
+  TAG_TABLE_NAME,
+  GET_BOOKMARKS_DATA_API,
+} from './constants';
 
 // bookmark
 export const fetchData = async (tableName = MAIN_TABLE_NAME) => {
   const { data, error } = await supabase.from(tableName).select();
   return { data, error } as unknown as FetchDataResponse;
+};
+
+// gets bookmarks data
+export const fetchBookmakrsData = async () => {
+  const session = await getCurrentUserSession();
+
+  try {
+    const bookmarksData = await axios.get(
+      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}`
+    );
+    return {
+      data: bookmarksData?.data?.data,
+      error: null,
+    } as unknown as FetchDataResponse;
+  } catch (e) {
+    return { data: undefined, error: e } as unknown as FetchDataResponse;
+  }
+};
+
+// gets scrapped data with screenshot uploaded in supabse bucket
+export const getBookmarkScrappedData = async (item: string) => {
+  const session = await getCurrentUserSession();
+
+  try {
+    const apiRes = await axios.post(`${NEXT_API_URL}${BOOKMARK_SCRAPPER_API}`, {
+      access_token: session?.access_token,
+      url: item,
+    });
+
+    return apiRes;
+  } catch (e) {
+    return e;
+  }
 };
 
 export const addData = async (userData: UserIdentity, urlData?: UrlData) => {

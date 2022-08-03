@@ -1,5 +1,5 @@
 import { Session, UserIdentity } from '@supabase/supabase-js';
-import axios from 'axios';
+import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import Input from '../../components/atoms/input';
 import Header from '../../components/header';
@@ -8,8 +8,9 @@ import {
   addData,
   addUserTags,
   deleteData,
-  fetchData,
+  fetchBookmakrsData,
   fetchUserTags,
+  getBookmarkScrappedData,
   getCurrentUserSession,
   signInWithOauth,
   signOut,
@@ -44,7 +45,7 @@ const Dashboard = () => {
   };
 
   async function fetchListDataAndAddToState() {
-    const { data } = await fetchData();
+    const { data } = await fetchBookmakrsData();
     setList(data);
     const { data: tagData } = await fetchUserTags();
     setUserTags(tagData);
@@ -69,10 +70,10 @@ const Dashboard = () => {
 
   const addItem = async (item: string) => {
     try {
-      const apiRes = await axios.post('http://localhost:3000/api/screenshot', {
-        access_token: session?.access_token,
-        url: item,
-      });
+      const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse<
+        any,
+        UrlData
+      >;
 
       const scrapperData = apiRes.data.data.scrapperData;
       const screenshotUrl = apiRes.data.data.screenShot;
