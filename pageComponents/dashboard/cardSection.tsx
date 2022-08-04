@@ -1,14 +1,19 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { SingleListData } from '../../types/apiTypes';
-import { TrashIcon } from '@heroicons/react/solid';
+import { PencilAltIcon, TrashIcon } from '@heroicons/react/solid';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
   onDeleteClick: (post: SingleListData) => void;
+  onEditClick: (item: SingleListData) => void;
 }
 
-const CardSection = ({ listData = [], onDeleteClick }: CardSectionProps) => {
+const CardSection = ({
+  listData = [],
+  onDeleteClick,
+  onEditClick = () => null,
+}: CardSectionProps) => {
   return (
     <div className="relative pb-20 px-4 sm:px-6 lg:pb-28 lg:px-8">
       <div className="absolute inset-0">
@@ -55,10 +60,10 @@ const CardSection = ({ listData = [], onDeleteClick }: CardSectionProps) => {
                     </a>
                   </div>
                   <div className="flex">
-                    {/* <PencilAltIcon
+                    <PencilAltIcon
                       className="h-5 w-5 text-gray-400 cursor-pointer"
                       onClick={() => onEditClick(post)}
-                    /> */}
+                    />
                     <TrashIcon
                       className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
                       aria-hidden="true"

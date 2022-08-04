@@ -40,7 +40,10 @@ export default async function handler(
         if (bookmarkTagsItem?.bookmark_id === item?.id) {
           addedTags = [
             ...addedTags,
-            getTagAsPerId(bookmarkTagsItem?.tag_id, tagsData),
+            {
+              ...getTagAsPerId(bookmarkTagsItem?.tag_id, tagsData),
+              bookmark_tag_id: bookmarkTagsItem?.id,
+            },
           ];
         }
       });

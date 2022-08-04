@@ -3,7 +3,11 @@ import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import Input from '../../components/atoms/input';
 import Header from '../../components/header';
-import { SingleListData, UrlData, UserTagsData } from '../../types/apiTypes';
+import {
+  BookmarksTagData,
+  SingleListData,
+  UserTagsData,
+} from '../../types/apiTypes';
 import {
   addData,
   addTagToBookmark,
@@ -13,6 +17,7 @@ import {
   fetchUserTags,
   getBookmarkScrappedData,
   getCurrentUserSession,
+  removeTagFromBookmark,
   signInWithOauth,
   signOut,
 } from '../../utils/supabaseCrudHelpers';
@@ -26,6 +31,7 @@ import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
 import isNull from 'lodash/isNull';
 import { getTagAsPerId } from '../../utils/helpers';
+import { find } from 'lodash';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -33,9 +39,10 @@ const Dashboard = () => {
   const [list, setList] = useState<SingleListData[]>([]);
   const [showAddBookmarkModal, setShowAddBookmarkModal] =
     useState<boolean>(false);
-  const [addedUrlData, setAddedUrlData] = useState<UrlData>();
+  const [addedUrlData, setAddedUrlData] = useState<SingleListData>();
   const [userTags, setUserTags] = useState<UserTagsData[]>([]);
   const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
 
   const {
     register,
@@ -60,6 +67,12 @@ const Dashboard = () => {
     setSession(currentSession);
   };
 
+  useEffect(() => {
+    if (!showAddBookmarkModal) {
+      setIsEdit(false);
+    }
+  }, [showAddBookmarkModal]);
+
   // TODO: this is bad pattern fix this
   useEffect(() => {
     fetchUserSession();
@@ -72,6 +85,7 @@ const Dashboard = () => {
     fetchListDataAndAddToState();
   }, [session]);
 
+  // gets scrapped data
   const addItem = async (item: string) => {
     try {
       const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
@@ -85,7 +99,7 @@ const Dashboard = () => {
         url: scrapperData?.url,
         ogImage: scrapperData?.OgImage,
         screenshot: screenshotUrl,
-      } as UrlData;
+      } as SingleListData;
 
       setAddedUrlData(urlData);
       setShowAddBookmarkModal(true);
@@ -153,6 +167,11 @@ const Dashboard = () => {
             <CardSection
               listData={list}
               onDeleteClick={(item) => deleteItem(item)}
+              onEditClick={(item) => {
+                setAddedUrlData(item);
+                setIsEdit(true);
+                setShowAddBookmarkModal(true);
+              }}
             />{' '}
           </>
         ) : (
@@ -164,38 +183,42 @@ const Dashboard = () => {
         setOpen={() => setShowAddBookmarkModal(false)}
       >
         <AddModalContent
+          mainButtonText={isEdit ? 'Update Bookmark' : 'Add Bookmark'}
           urlData={addedUrlData}
           userTags={userTags}
+          addedTags={addedUrlData?.addedTags || []}
           addBookmark={async () => {
-            const userData = session?.user as unknown as UserIdentity;
+            if (!isEdit) {
+              const userData = session?.user as unknown as UserIdentity;
 
-            const { data } = await addData(userData, addedUrlData);
+              const { data } = await addData(userData, addedUrlData);
 
-            const bookmarkTagsData = selectedTag?.map((item) => {
-              return {
-                bookmark_id: data[0]?.id,
-                tag_id: parseInt(`${item?.value}`),
-                user_id: userData?.id,
-              };
-            });
-
-            const { data: bookmarkTagData } = await addTagToBookmark(
-              bookmarkTagsData
-            );
-
-            const bookmarkDataWithTags = {
-              ...data[0],
-              addedTags: bookmarkTagData.map((item) => {
+              const bookmarkTagsData = selectedTag?.map((item) => {
                 return {
-                  name: getTagAsPerId(item?.tag_id, userTags)?.name,
-                  created_at: item?.created_at,
-                  id: item?.tag_id,
-                  user_id: item?.user_id,
+                  bookmark_id: data[0]?.id,
+                  tag_id: parseInt(`${item?.value}`),
+                  user_id: userData?.id,
                 };
-              }),
-            } as SingleListData;
+              }) as unknown as Array<BookmarksTagData>;
 
-            setList([...list, bookmarkDataWithTags]);
+              const { data: bookmarkTagData } = await addTagToBookmark(
+                bookmarkTagsData
+              );
+
+              const bookmarkDataWithTags = {
+                ...data[0],
+                addedTags: bookmarkTagData.map((item) => {
+                  return {
+                    name: getTagAsPerId(item?.tag_id, userTags)?.name,
+                    created_at: item?.created_at,
+                    id: item?.tag_id,
+                    user_id: item?.user_id,
+                  };
+                }),
+              } as SingleListData;
+
+              setList([...list, bookmarkDataWithTags]);
+            }
             setShowAddBookmarkModal(false);
           }}
           createTag={async (tagData) => {
@@ -205,6 +228,32 @@ const Dashboard = () => {
             });
 
             setUserTags([...userTags, ...data]);
+          }}
+          removeExistingTag={async (tag) => {
+            const delValue = tag.value;
+            const delData = find(
+              addedUrlData?.addedTags,
+              (item) => item?.id === delValue
+            ) as unknown as BookmarksTagData;
+
+            const delTagApiRes = await removeTagFromBookmark(delData);
+
+            if (isNull(delTagApiRes.error)) {
+              const delApiData = delTagApiRes?.data[0];
+              const updatedBookmaksList = list.map((item) => {
+                if (item?.id === delApiData?.bookmark_id) {
+                  return {
+                    ...item,
+                    addedTags: item?.addedTags.filter(
+                      (tags) => tags.id !== delApiData?.tag_id
+                    ),
+                  };
+                } else {
+                  return item;
+                }
+              });
+              setList(updatedBookmaksList);
+            }
           }}
           addExistingTag={(tag) => setSelectedTag([...tag])}
         />

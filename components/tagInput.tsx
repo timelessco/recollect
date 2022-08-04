@@ -8,10 +8,18 @@ interface TagInputProps {
   options: Array<TagInputOption> | undefined;
   createTag: (value: OnChangeValue<TagInputOption, true>) => void;
   addExistingTag: (value: OnChangeValue<TagInputOption, true>) => void;
+  defaultValue: Array<TagInputOption> | undefined;
+  removeExistingTag: (value: TagInputOption) => void;
 }
 
 const TagInput = (props: TagInputProps) => {
-  const { options, createTag, addExistingTag } = props;
+  const {
+    options,
+    createTag,
+    addExistingTag,
+    defaultValue,
+    removeExistingTag,
+  } = props;
 
   const handleChange = (
     newValue: OnChangeValue<TagInputOption, true>,
@@ -24,12 +32,16 @@ const TagInput = (props: TagInputProps) => {
     if (actionMeta.action === 'select-option') {
       addExistingTag(newValue);
     }
+
+    if (actionMeta.action === 'remove-value') {
+      removeExistingTag(actionMeta.removedValue);
+    }
   };
 
   return (
     <CreatableSelect
       options={options}
-      // defaultValue={[options[1]]}
+      defaultValue={defaultValue}
       isMulti
       menuPortalTarget={document.body}
       onChange={handleChange}

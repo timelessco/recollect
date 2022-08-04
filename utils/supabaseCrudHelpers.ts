@@ -119,6 +119,15 @@ export const addTagToBookmark = async (
   return { data, error } as unknown as FetchBookmarksTagDataResponse;
 };
 
+export const removeTagFromBookmark = async (selectedData: BookmarksTagData) => {
+  const { data, error } = await supabase
+    .from(BOOKMARK_TAGS_TABLE_NAME)
+    .delete()
+    .match({ id: selectedData?.bookmark_tag_id });
+
+  return { data, error } as unknown as FetchBookmarksTagDataResponse;
+};
+
 // auth
 
 export const getCurrentUserSession = async () => {

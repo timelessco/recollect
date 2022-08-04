@@ -12,10 +12,22 @@ interface AddModalContentProps {
   userTags?: Array<UserTagsData>;
   createTag: (value: OnChangeValue<TagInputOption, true>) => void;
   addExistingTag: (value: OnChangeValue<TagInputOption, true>) => void;
+  removeExistingTag: (value: TagInputOption) => void;
+  addedTags: Array<UserTagsData>;
+  mainButtonText: string;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
-  const { urlData, addBookmark, userTags, createTag, addExistingTag } = props;
+  const {
+    urlData,
+    addBookmark,
+    userTags,
+    createTag,
+    addExistingTag,
+    removeExistingTag,
+    addedTags,
+    mainButtonText,
+  } = props;
   return (
     <div id="modal-content">
       <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
@@ -47,14 +59,21 @@ export default function AddModalContent(props: AddModalContentProps) {
                 label: item?.name,
               };
             })}
+            defaultValue={addedTags?.map((item) => {
+              return {
+                value: item?.id,
+                label: item?.name,
+              };
+            })}
             createTag={createTag}
             addExistingTag={addExistingTag}
+            removeExistingTag={removeExistingTag}
           />
         </LabelledComponent>
       </div>
       <div className="mt-4">
         <Button className="w-full" onClick={addBookmark}>
-          <span>Add Bookmark</span>
+          <span>{mainButtonText}</span>
         </Button>
       </div>
     </div>

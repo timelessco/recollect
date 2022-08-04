@@ -31,6 +31,7 @@ export interface UserTagsData {
   id: number;
   name: string;
   user_id: string;
+  bookmark_tag_id?: number;
 }
 
 export interface FetchUserTagsDataResponse {
@@ -44,6 +45,7 @@ export interface BookmarksTagData {
   bookmark_id: number;
   tag_id: number;
   user_id: string;
+  bookmark_tag_id: number;
 }
 
 export interface FetchBookmarksTagDataResponse {
