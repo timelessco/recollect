@@ -9,6 +9,7 @@ export interface SingleListData {
   url: string;
   user_id: string;
   screenshot: string;
+  addedTags: Array<UserTagsData>;
 }
 
 export interface FetchDataResponse {
@@ -34,5 +35,18 @@ export interface UserTagsData {
 
 export interface FetchUserTagsDataResponse {
   data: UserTagsData[];
+  error: PostgrestError | null;
+}
+
+export interface BookmarksTagData {
+  id?: number;
+  created_at?: string;
+  bookmark_id: number;
+  tag_id: number;
+  user_id: string;
+}
+
+export interface FetchBookmarksTagDataResponse {
+  data: BookmarksTagData[];
   error: PostgrestError | null;
 }

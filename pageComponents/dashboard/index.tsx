@@ -6,6 +6,7 @@ import Header from '../../components/header';
 import { SingleListData, UrlData, UserTagsData } from '../../types/apiTypes';
 import {
   addData,
+  addTagToBookmark,
   addUserTags,
   deleteData,
   fetchBookmakrsData,
@@ -19,10 +20,12 @@ import CardSection from './cardSection';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
 import { URL_PATTERN } from '../../utils/constants';
-import { UrlInput } from '../../types/componentTypes';
+import { TagInputOption, UrlInput } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
+import isNull from 'lodash/isNull';
+import { getTagAsPerId } from '../../utils/helpers';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -32,6 +35,7 @@ const Dashboard = () => {
     useState<boolean>(false);
   const [addedUrlData, setAddedUrlData] = useState<UrlData>();
   const [userTags, setUserTags] = useState<UserTagsData[]>([]);
+  const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
 
   const {
     register,
@@ -70,10 +74,7 @@ const Dashboard = () => {
 
   const addItem = async (item: string) => {
     try {
-      const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse<
-        any,
-        UrlData
-      >;
+      const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
 
       const scrapperData = apiRes.data.data.scrapperData;
       const screenshotUrl = apiRes.data.data.screenShot;
@@ -97,9 +98,10 @@ const Dashboard = () => {
 
   const deleteItem = async (item: SingleListData) => {
     try {
-      await deleteData(item);
-
-      setList(list?.filter((listItem) => listItem?.id !== item?.id));
+      const delRes = (await deleteData(item)) as AxiosResponse;
+      if (isNull(delRes.data.error)) {
+        setList(list?.filter((listItem) => listItem?.id !== item?.id));
+      }
     } catch (e) {
       console.log('delete error', e);
     }
@@ -168,7 +170,32 @@ const Dashboard = () => {
             const userData = session?.user as unknown as UserIdentity;
 
             const { data } = await addData(userData, addedUrlData);
-            setList([...list, ...data]);
+
+            const bookmarkTagsData = selectedTag?.map((item) => {
+              return {
+                bookmark_id: data[0]?.id,
+                tag_id: parseInt(`${item?.value}`),
+                user_id: userData?.id,
+              };
+            });
+
+            const { data: bookmarkTagData } = await addTagToBookmark(
+              bookmarkTagsData
+            );
+
+            const bookmarkDataWithTags = {
+              ...data[0],
+              addedTags: bookmarkTagData.map((item) => {
+                return {
+                  name: getTagAsPerId(item?.tag_id, userTags)?.name,
+                  created_at: item?.created_at,
+                  id: item?.tag_id,
+                  user_id: item?.user_id,
+                };
+              }),
+            } as SingleListData;
+
+            setList([...list, bookmarkDataWithTags]);
             setShowAddBookmarkModal(false);
           }}
           createTag={async (tagData) => {
@@ -179,6 +206,7 @@ const Dashboard = () => {
 
             setUserTags([...userTags, ...data]);
           }}
+          addExistingTag={(tag) => setSelectedTag([...tag])}
         />
       </Modal>
     </>

@@ -5,6 +5,8 @@ import {
   SingleListData,
   UrlData,
   FetchUserTagsDataResponse,
+  FetchBookmarksTagDataResponse,
+  BookmarksTagData,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -13,6 +15,8 @@ import {
   NEXT_API_URL,
   TAG_TABLE_NAME,
   GET_BOOKMARKS_DATA_API,
+  BOOKMARK_TAGS_TABLE_NAME,
+  DELETE_BOOKMARK_DATA_API,
 } from './constants';
 
 // bookmark
@@ -70,12 +74,18 @@ export const addData = async (userData: UserIdentity, urlData?: UrlData) => {
 };
 
 export const deleteData = async (item: SingleListData) => {
-  const { data, error } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .delete()
-    .match({ id: item?.id });
+  const session = await getCurrentUserSession();
 
-  return { data, error };
+  try {
+    const res = await axios.post(`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`, {
+      access_token: session?.access_token,
+      data: item,
+    });
+
+    return res;
+  } catch (e) {
+    return e;
+  }
 };
 
 // user tags
@@ -97,6 +107,16 @@ export const addUserTags = async (
   ]);
 
   return { data, error } as unknown as FetchUserTagsDataResponse;
+};
+
+export const addTagToBookmark = async (
+  selectedData: Array<BookmarksTagData>
+) => {
+  const { data, error } = await supabase
+    .from(BOOKMARK_TAGS_TABLE_NAME)
+    .insert(selectedData);
+
+  return { data, error } as unknown as FetchBookmarksTagDataResponse;
 };
 
 // auth

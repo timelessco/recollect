@@ -33,11 +33,13 @@ const CardSection = ({ listData = [], onDeleteClick }: CardSectionProps) => {
                 </div>
                 <div className="flex-1 bg-white p-6 flex justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-indigo-600">
-                      <a href="#" className="hover:underline">
-                        Category
-                      </a>
-                    </p>
+                    <div className="text-sm font-medium text-indigo-600">
+                      <span className="flex space-x-1">
+                        {post?.addedTags?.map((tag) => {
+                          return <div key={tag?.id}>#{tag?.name}</div>;
+                        })}
+                      </span>
+                    </div>
                     <a
                       href={post.url}
                       target="_blank"

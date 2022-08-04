@@ -15,5 +15,5 @@ export const NEXT_API_URL = `${
 }/api`;
 
 export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
-
 export const GET_BOOKMARKS_DATA_API = '/getBookmarksData';
+export const DELETE_BOOKMARK_DATA_API = '/deleteBookmark';

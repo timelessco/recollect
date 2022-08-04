@@ -1,17 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabaseClient';
-import find from 'lodash/find';
 import { UserTagsData, SingleListData } from '../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   MAIN_TABLE_NAME,
   TAG_TABLE_NAME,
 } from '../../utils/constants';
+import { getTagAsPerId } from '../../utils/helpers';
+import isNull from 'lodash/isNull';
+import { PostgrestError } from '@supabase/supabase-js';
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
 type Data = {
-  data?: Array<SingleListData>;
+  data: Array<SingleListData> | null;
+  error: PostgrestError | null;
 };
 
 export default async function handler(
@@ -25,30 +28,31 @@ export default async function handler(
   const { data: bookmarkTags } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .select();
-  const { data: tagsData } = await supabase.from(TAG_TABLE_NAME).select();
+  const { data: tagsData, error } = await supabase
+    .from(TAG_TABLE_NAME)
+    .select();
 
-  const getTagAsPerId = (tagIg: number) => {
-    return find(tagsData, (item) => {
-      if (item?.id === tagIg) {
-        return item;
-      }
-    });
-  };
+  if (!isNull(tagsData)) {
+    const finalData = data?.map((item) => {
+      let addedTags = [] as Array<UserTagsData>;
 
-  const finalData = data?.map((item) => {
-    let addedTags = [] as Array<UserTagsData>;
+      bookmarkTags?.forEach((bookmarkTagsItem) => {
+        if (bookmarkTagsItem?.bookmark_id === item?.id) {
+          addedTags = [
+            ...addedTags,
+            getTagAsPerId(bookmarkTagsItem?.tag_id, tagsData),
+          ];
+        }
+      });
 
-    bookmarkTags?.forEach((bookmarkTagsItem) => {
-      if (bookmarkTagsItem?.bookmark_id === item?.id) {
-        addedTags = [...addedTags, getTagAsPerId(bookmarkTagsItem?.tag_id)];
-      }
-    });
+      return {
+        ...item,
+        addedTags,
+      };
+    }) as Array<SingleListData>;
 
-    return {
-      ...item,
-      addedTags,
-    };
-  });
-
-  res.status(200).json({ data: finalData });
+    res.status(200).json({ data: finalData, error });
+  } else {
+    res.status(500).json({ data, error });
+  }
 }

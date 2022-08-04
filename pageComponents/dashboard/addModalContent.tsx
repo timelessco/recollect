@@ -11,10 +11,11 @@ interface AddModalContentProps {
   urlData?: UrlData;
   userTags?: Array<UserTagsData>;
   createTag: (value: OnChangeValue<TagInputOption, true>) => void;
+  addExistingTag: (value: OnChangeValue<TagInputOption, true>) => void;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
-  const { urlData, addBookmark, userTags, createTag } = props;
+  const { urlData, addBookmark, userTags, createTag, addExistingTag } = props;
   return (
     <div id="modal-content">
       <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
@@ -47,6 +48,7 @@ export default function AddModalContent(props: AddModalContentProps) {
               };
             })}
             createTag={createTag}
+            addExistingTag={addExistingTag}
           />
         </LabelledComponent>
       </div>
