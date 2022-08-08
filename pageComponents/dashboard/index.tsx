@@ -70,6 +70,8 @@ const Dashboard = () => {
   useEffect(() => {
     if (!showAddBookmarkModal) {
       setIsEdit(false);
+      setAddedUrlData(undefined);
+      setSelectedTag([]);
     }
   }, [showAddBookmarkModal]);
 
@@ -87,6 +89,8 @@ const Dashboard = () => {
 
   // gets scrapped data
   const addItem = async (item: string) => {
+    setShowAddBookmarkModal(true);
+
     try {
       const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
 
@@ -102,7 +106,6 @@ const Dashboard = () => {
       } as SingleListData;
 
       setAddedUrlData(urlData);
-      setShowAddBookmarkModal(true);
     } catch (err) {
       console.error('err ,', err);
     } finally {
@@ -306,7 +309,7 @@ const Dashboard = () => {
             }
           }}
           addExistingTag={async (tag) => {
-            setSelectedTag([...tag]);
+            setSelectedTag([...selectedTag, tag[tag?.length - 1]]);
 
             if (isEdit) {
               const userData = session?.user as unknown as UserIdentity;
