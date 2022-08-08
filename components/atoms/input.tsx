@@ -10,6 +10,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   className: string;
   isError: boolean;
   errorText: string;
+  isDisabled?: boolean;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
@@ -21,6 +22,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     className = '',
     isError,
     errorText = '',
+    isDisabled = false,
   } = props;
 
   const inputClass = classNames(className, {
@@ -28,6 +30,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
       isError,
     'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md':
       !isError,
+    'disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none':
+      isDisabled,
   });
 
   return (
@@ -42,6 +46,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           className={inputClass}
           onChange={onChange}
           onKeyUp={onKeyUp}
+          disabled={isDisabled}
         />
         {isError && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

@@ -43,6 +43,7 @@ const Dashboard = () => {
   const [userTags, setUserTags] = useState<UserTagsData[]>([]);
   const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
   const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [url, setUrl] = useState<string>('');
 
   const {
     register,
@@ -51,6 +52,7 @@ const Dashboard = () => {
     reset,
   } = useForm<UrlInput>();
   const onSubmit: SubmitHandler<UrlInput> = (data) => {
+    setUrl(data.urlText);
     addItem(data.urlText);
     reset({ urlText: '' });
   };
@@ -72,6 +74,7 @@ const Dashboard = () => {
       setIsEdit(false);
       setAddedUrlData(undefined);
       setSelectedTag([]);
+      setUrl('');
     }
   }, [showAddBookmarkModal]);
 
@@ -186,6 +189,7 @@ const Dashboard = () => {
         setOpen={() => setShowAddBookmarkModal(false)}
       >
         <AddModalContent
+          urlString={url}
           mainButtonText={isEdit ? 'Update Bookmark' : 'Add Bookmark'}
           urlData={addedUrlData}
           userTags={userTags}
