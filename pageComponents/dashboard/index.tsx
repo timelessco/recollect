@@ -188,9 +188,9 @@ const Dashboard = () => {
           userTags={userTags}
           addedTags={addedUrlData?.addedTags || []}
           addBookmark={async () => {
-            if (!isEdit) {
-              const userData = session?.user as unknown as UserIdentity;
+            const userData = session?.user as unknown as UserIdentity;
 
+            if (!isEdit) {
               const { data } = await addData(userData, addedUrlData);
 
               const bookmarkTagsData = selectedTag?.map((item) => {
@@ -213,49 +213,132 @@ const Dashboard = () => {
                     created_at: item?.created_at,
                     id: item?.tag_id,
                     user_id: item?.user_id,
+                    bookmark_tag_id: item?.id,
                   };
                 }),
               } as SingleListData;
 
-              setList([...list, bookmarkDataWithTags]);
+              setList([bookmarkDataWithTags, ...list]);
+            } else {
             }
             setShowAddBookmarkModal(false);
           }}
           createTag={async (tagData) => {
             const userData = session?.user as unknown as UserIdentity;
             const { data } = await addUserTags(userData, {
-              name: tagData[0]?.label,
+              name: tagData[tagData?.length - 1]?.label,
             });
 
             setUserTags([...userTags, ...data]);
-          }}
-          removeExistingTag={async (tag) => {
-            const delValue = tag.value;
-            const delData = find(
-              addedUrlData?.addedTags,
-              (item) => item?.id === delValue
-            ) as unknown as BookmarksTagData;
+            setSelectedTag([
+              ...selectedTag,
+              ...data.map((item) => {
+                return {
+                  value: item?.id,
+                  label: item?.name,
+                };
+              }),
+            ]);
 
-            const delTagApiRes = await removeTagFromBookmark(delData);
+            if (isEdit) {
+              // TODO: this is duplicate
+              const bookmarkTagsData = {
+                bookmark_id: addedUrlData?.id,
+                tag_id: data[0]?.id,
+                user_id: userData?.id,
+              } as unknown as BookmarksTagData;
 
-            if (isNull(delTagApiRes.error)) {
-              const delApiData = delTagApiRes?.data[0];
-              const updatedBookmaksList = list.map((item) => {
-                if (item?.id === delApiData?.bookmark_id) {
+              const { data: bookmarkTagData } = await addTagToBookmark(
+                bookmarkTagsData
+              );
+              const updatedData = list.map((item) => {
+                if (item?.id === addedUrlData?.id) {
                   return {
                     ...item,
-                    addedTags: item?.addedTags.filter(
-                      (tags) => tags.id !== delApiData?.tag_id
-                    ),
+                    addedTags: [
+                      ...item?.addedTags,
+                      {
+                        ...data[0],
+                        bookmark_tag_id: bookmarkTagData[0]?.id,
+                      },
+                    ],
                   };
                 } else {
                   return item;
                 }
-              });
-              setList(updatedBookmaksList);
+              }) as Array<SingleListData>;
+
+              setList(updatedData);
             }
           }}
-          addExistingTag={(tag) => setSelectedTag([...tag])}
+          removeExistingTag={async (tag) => {
+            setSelectedTag(
+              selectedTag.filter((item) => item?.value !== tag?.value)
+            );
+            if (isEdit) {
+              const delValue = tag.value;
+              const currentBookark = list.filter(
+                (item) => item?.id === addedUrlData?.id
+              );
+              const delData = find(
+                currentBookark[0]?.addedTags,
+                (item) => item?.id === delValue || item?.name === delValue
+              ) as unknown as BookmarksTagData;
+
+              const delTagApiRes = await removeTagFromBookmark(delData);
+
+              if (isNull(delTagApiRes.error)) {
+                const delApiData = delTagApiRes?.data[0];
+                const updatedBookmaksList = list.map((item) => {
+                  if (item?.id === delApiData?.bookmark_id) {
+                    return {
+                      ...item,
+                      addedTags: item?.addedTags.filter(
+                        (tags) => tags.id !== delApiData?.tag_id
+                      ),
+                    };
+                  } else {
+                    return item;
+                  }
+                });
+                setList(updatedBookmaksList);
+              }
+            }
+          }}
+          addExistingTag={async (tag) => {
+            setSelectedTag([...tag]);
+
+            if (isEdit) {
+              const userData = session?.user as unknown as UserIdentity;
+              const bookmarkTagsData = {
+                bookmark_id: addedUrlData?.id,
+                tag_id: parseInt(`${tag[tag.length - 1]?.value}`),
+                user_id: userData?.id,
+              } as unknown as BookmarksTagData;
+
+              const { data: bookmarkTagData } = await addTagToBookmark(
+                bookmarkTagsData
+              );
+              const updatedData = list.map((item) => {
+                if (item?.id === addedUrlData?.id) {
+                  return {
+                    ...item,
+                    addedTags: [
+                      ...item?.addedTags,
+                      {
+                        ...getTagAsPerId(bookmarkTagsData?.tag_id, userTags),
+                        bookmark_tag_id: bookmarkTagData[0]?.id,
+                      },
+                    ],
+                  };
+                } else {
+                  return item;
+                }
+              }) as Array<SingleListData>;
+
+              setList(updatedData);
+            }
+          }}
         />
       </Modal>
     </>

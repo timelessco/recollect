@@ -110,7 +110,7 @@ export const addUserTags = async (
 };
 
 export const addTagToBookmark = async (
-  selectedData: Array<BookmarksTagData>
+  selectedData: Array<BookmarksTagData> | BookmarksTagData
 ) => {
   const { data, error } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
