@@ -5,7 +5,7 @@ export const BOOKMARK_TAGS_TABLE_NAME = 'bookmark_tags';
 // regx
 
 export const URL_PATTERN =
-  /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
+  /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
 
 // api
 export const NEXT_API_URL = `${
