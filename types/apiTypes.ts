@@ -52,3 +52,17 @@ export interface FetchBookmarksTagDataResponse {
   data: BookmarksTagData[];
   error: PostgrestError | null;
 }
+
+// user catagories
+
+export interface CategoriesData {
+  created_at: string;
+  id: number;
+  category_name: string;
+  user_id: string;
+}
+
+export interface FetchCategoriesDataResponse {
+  data: CategoriesData[];
+  error: PostgrestError | null;
+}

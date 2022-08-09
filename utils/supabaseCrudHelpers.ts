@@ -7,6 +7,7 @@ import {
   FetchUserTagsDataResponse,
   FetchBookmarksTagDataResponse,
   BookmarksTagData,
+  FetchCategoriesDataResponse,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -17,10 +18,11 @@ import {
   GET_BOOKMARKS_DATA_API,
   BOOKMARK_TAGS_TABLE_NAME,
   DELETE_BOOKMARK_DATA_API,
+  CATEGORIES_TABLE_NAME,
 } from './constants';
 
 // bookmark
-export const fetchData = async (tableName = MAIN_TABLE_NAME) => {
+export const fetchData = async (tableName = CATEGORIES_TABLE_NAME) => {
   const { data, error } = await supabase.from(tableName).select();
   return { data, error } as unknown as FetchDataResponse;
 };
@@ -126,6 +128,25 @@ export const removeTagFromBookmark = async (selectedData: BookmarksTagData) => {
     .match({ id: selectedData?.bookmark_tag_id });
 
   return { data, error } as unknown as FetchBookmarksTagDataResponse;
+};
+
+// user catagories
+
+export const addUserCategory = async ({
+  user_id,
+  name,
+}: {
+  user_id: string;
+  name: string;
+}) => {
+  const { data, error } = await supabase.from(CATEGORIES_TABLE_NAME).insert([
+    {
+      category_name: name,
+      user_id: user_id,
+    },
+  ]);
+
+  return { data, error } as unknown as FetchCategoriesDataResponse;
 };
 
 // auth

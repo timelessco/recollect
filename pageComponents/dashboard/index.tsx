@@ -1,4 +1,5 @@
 import { Session, UserIdentity } from '@supabase/supabase-js';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import Input from '../../components/atoms/input';
@@ -10,9 +11,11 @@ import {
 import {
   addData,
   addTagToBookmark,
+  addUserCategory,
   addUserTags,
   deleteData,
   fetchBookmakrsData,
+  fetchData,
   fetchUserTags,
   getBookmarkScrappedData,
   getCurrentUserSession,
@@ -23,7 +26,7 @@ import {
 import CardSection from './cardSection';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
-import { URL_PATTERN } from '../../utils/constants';
+import { CATEGORIES_TABLE_NAME, URL_PATTERN } from '../../utils/constants';
 import { TagInputOption, UrlInput } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
@@ -346,6 +349,26 @@ const Dashboard = () => {
     );
   };
 
+  // react-query
+
+  // Access the client
+  const queryClient = useQueryClient();
+
+  // Queries
+  const { data: catagoryData, isLoading } = useQuery(['categories'], () =>
+    fetchData(CATEGORIES_TABLE_NAME)
+  );
+
+  // Mutations
+  const categoryMutation = useMutation(addUserCategory, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries(['categories']);
+    },
+  });
+
+  // console.log('rrrrr', data, isLoading);
+
   return (
     <>
       <DashboardLayout
@@ -363,7 +386,14 @@ const Dashboard = () => {
         }}
         onAddCategoryClick={toggleAddCategoryModal}
       />
-      <AddCategoryModal />
+      <AddCategoryModal
+        onAddNewCategory={(newCategoryName) => {
+          categoryMutation.mutate({
+            user_id: session?.user?.id as string,
+            name: newCategoryName,
+          });
+        }}
+      />
     </>
   );
 };

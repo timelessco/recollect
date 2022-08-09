@@ -11,6 +11,9 @@ import { SearchIcon, PlusCircleIcon } from '@heroicons/react/solid';
 import { ChildrenTypes } from '../../types/componentTypes';
 import Button from '../../components/atoms/button';
 import Image from 'next/image';
+import { useQueryClient } from '@tanstack/react-query';
+import { CategoriesData } from '../../types/apiTypes';
+import { PostgrestError } from '@supabase/supabase-js';
 
 interface SideBarNavidationTypes {
   name: string;
@@ -19,16 +22,6 @@ interface SideBarNavidationTypes {
   current: boolean;
   children: Array<{ name: string; href: string }>;
 }
-
-const navigation = [
-  { name: 'All Bookmarks', icon: HomeIcon, current: true, href: '#' },
-  {
-    name: 'Categories',
-    icon: FolderIcon,
-    current: false,
-    children: [],
-  },
-] as unknown as Array<SideBarNavidationTypes>;
 
 const userNavigation = [{ name: 'Sign out', href: '#' }];
 
@@ -54,10 +47,32 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     // userName,
     onSignOutClick,
     onSigninClick,
-    onAddCategoryClick
+    onAddCategoryClick,
   } = props;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  const categoryData = queryClient.getQueryData(['categories']) as {
+    data: CategoriesData[];
+    error: PostgrestError;
+  };
+
+  const navigation = [
+    { name: 'All Bookmarks', icon: HomeIcon, current: true, href: '#' },
+    {
+      name: 'Categories',
+      icon: FolderIcon,
+      current: false,
+      children: categoryData?.data?.map((item) => {
+        return {
+          name: item?.category_name,
+          href: '#',
+        };
+      }),
+    },
+  ] as unknown as Array<SideBarNavidationTypes>;
 
   return (
     <>

@@ -12,6 +12,8 @@
     "@headlessui/react": "^1.6.6",
     "@heroicons/react": "^1.0.6",
     "@supabase/supabase-js": "^1.35.4",
+    "@tanstack/react-query": "^4.0.10",
+    "@tanstack/react-query-devtools": "^4.0.10",
     "axios": "^0.27.2",
     "base64-arraybuffer": "^1.0.2",
     "chrome-aws-lambda": "^10.1.0",
