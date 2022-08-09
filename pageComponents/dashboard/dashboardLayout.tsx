@@ -43,6 +43,7 @@ interface DashboardLayoutProps {
   onSignOutClick: () => void;
   onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
+  onAddCategoryClick: () => void;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -53,6 +54,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     // userName,
     onSignOutClick,
     onSigninClick,
+    onAddCategoryClick
   } = props;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -307,7 +309,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                             ))}
                             <button
                               className=" relative group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50"
-                              onClick={() => console.log('cc')}
+                              onClick={onAddCategoryClick}
                             >
                               <PlusCircleIcon className=" absolute left-3 top-1.5 mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                               <span>Add Category</span>

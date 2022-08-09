@@ -32,6 +32,8 @@ import isNull from 'lodash/isNull';
 import { getTagAsPerId } from '../../utils/helpers';
 import { find } from 'lodash';
 import DashboardLayout from './dashboardLayout';
+import { useModalStore } from '../../store/componentStore';
+import AddCategoryModal from './addCategoryModal';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -44,6 +46,10 @@ const Dashboard = () => {
   const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>('');
+
+  const toggleAddCategoryModal = useModalStore(
+    (state) => state.toggleAddCategoryModal
+  );
 
   const {
     register,
@@ -341,20 +347,24 @@ const Dashboard = () => {
   };
 
   return (
-    <DashboardLayout
-      renderMainContent={renderAllBookmarkCards}
-      userImg={session?.user?.user_metadata?.avatar_url}
-      userName={session?.user?.user_metadata?.name}
-      userEmail={session?.user?.user_metadata?.email}
-      onSignOutClick={() => {
-        signOut();
-        setSession(undefined);
-      }}
-      onSigninClick={() => {
-        signInWithOauth();
-        fetchListDataAndAddToState();
-      }}
-    />
+    <>
+      <DashboardLayout
+        renderMainContent={renderAllBookmarkCards}
+        userImg={session?.user?.user_metadata?.avatar_url}
+        userName={session?.user?.user_metadata?.name}
+        userEmail={session?.user?.user_metadata?.email}
+        onSignOutClick={() => {
+          signOut();
+          setSession(undefined);
+        }}
+        onSigninClick={() => {
+          signInWithOauth();
+          fetchListDataAndAddToState();
+        }}
+        onAddCategoryClick={toggleAddCategoryModal}
+      />
+      <AddCategoryModal />
+    </>
   );
 };
 
