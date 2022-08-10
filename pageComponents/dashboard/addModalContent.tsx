@@ -3,10 +3,21 @@ import { OnChangeValue } from 'react-select';
 import Button from '../../components/atoms/button';
 import Input from '../../components/atoms/input';
 import LabelledComponent from '../../components/labelledComponent';
+import SearchSelect from '../../components/searchSelect';
 import TagInput from '../../components/tagInput';
-import { UrlData, UserTagsData } from '../../types/apiTypes';
-import { TagInputOption } from '../../types/componentTypes';
+import {
+  CategoriesData,
+  SingleListData,
+  UrlData,
+  UserTagsData,
+} from '../../types/apiTypes';
+import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
+import { useQueryClient } from '@tanstack/react-query';
+import { PostgrestError } from '@supabase/supabase-js';
+import find from 'lodash/find';
+import filter from 'lodash/filter';
 
+// Modal for adding a bookmark
 interface AddModalContentProps {
   addBookmark: () => void;
   urlData?: UrlData;
@@ -17,6 +28,7 @@ interface AddModalContentProps {
   addedTags: Array<UserTagsData>;
   mainButtonText: string;
   urlString: string;
+  onCategoryChange: (value: SearchSelectOption | null) => void;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
@@ -30,7 +42,25 @@ export default function AddModalContent(props: AddModalContentProps) {
     addedTags,
     mainButtonText,
     urlString,
+    onCategoryChange,
   } = props;
+
+  const queryClient = useQueryClient();
+
+  const latestBookmarkData = queryClient.getQueryData(['bookmarks']) as {
+    data: SingleListData[];
+    error: PostgrestError;
+  };
+
+  const latestCurrentBookmarkData = find(
+    latestBookmarkData?.data,
+    (item) => item?.id === urlData?.id
+  ) as unknown as SingleListData;
+
+  const categoryData = queryClient.getQueryData(['categories']) as {
+    data: CategoriesData[];
+    error: PostgrestError;
+  };
 
   const renderBookmarkDataCard = () => {
     if (urlData) {
@@ -108,6 +138,26 @@ export default function AddModalContent(props: AddModalContentProps) {
             createTag={createTag}
             addExistingTag={addExistingTag}
             removeExistingTag={removeExistingTag}
+          />
+        </LabelledComponent>
+        <LabelledComponent label="Add Category">
+          <SearchSelect
+            options={categoryData?.data?.map((item) => {
+              return {
+                label: item?.category_name,
+                value: item?.id,
+              };
+            })}
+            onChange={onCategoryChange}
+            defaultValue={filter(
+              categoryData?.data,
+              (item) => item?.id === latestCurrentBookmarkData?.category_id
+            )?.map((item) => {
+              return {
+                label: item?.category_name,
+                value: item?.id,
+              };
+            })}
           />
         </LabelledComponent>
       </div>

@@ -91,7 +91,6 @@ export const deleteData = async (item: SingleListData) => {
 };
 
 // user tags
-
 export const fetchUserTags = async (tableName = TAG_TABLE_NAME) => {
   const { data, error } = await supabase.from(tableName).select();
   return { data, error } as unknown as FetchUserTagsDataResponse;
@@ -160,6 +159,21 @@ export const deleteUserCategory = async ({
     .match({ id: category_id });
 
   return { data, error } as unknown as FetchCategoriesDataResponse;
+};
+
+export const addCategoryToBookmark = async ({
+  category_id,
+  bookmark_id,
+}: {
+  category_id: number;
+  bookmark_id: number;
+}) => {
+  const { data, error } = await supabase
+    .from(MAIN_TABLE_NAME)
+    .update({ category_id: category_id })
+    .match({ id: bookmark_id });
+
+  return { data, error } as unknown as FetchDataResponse;
 };
 
 // auth

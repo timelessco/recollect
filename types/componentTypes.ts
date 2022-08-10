@@ -11,3 +11,8 @@ export interface TagInputOption {
   isFixed?: boolean;
   isDisabled?: boolean;
 }
+
+export interface SearchSelectOption {
+  value: number | string;
+  label: string;
+}

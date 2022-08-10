@@ -9,6 +9,7 @@ import {
   UserTagsData,
 } from '../../types/apiTypes';
 import {
+  addCategoryToBookmark,
   addData,
   addTagToBookmark,
   addUserCategory,
@@ -27,8 +28,16 @@ import {
 import CardSection from './cardSection';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
-import { CATEGORIES_TABLE_NAME, URL_PATTERN } from '../../utils/constants';
-import { TagInputOption, UrlInput } from '../../types/componentTypes';
+import {
+  CATEGORIES_TABLE_NAME,
+  MAIN_TABLE_NAME,
+  URL_PATTERN,
+} from '../../utils/constants';
+import {
+  SearchSelectOption,
+  TagInputOption,
+  UrlInput,
+} from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
@@ -50,6 +59,8 @@ const Dashboard = () => {
   const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>('');
+  const [selectedCategoryDuringAdd, setSelectedCategoryDuringAdd] =
+    useState<SearchSelectOption | null>();
 
   const toggleAddCategoryModal = useModalStore(
     (state) => state.toggleAddCategoryModal
@@ -210,6 +221,11 @@ const Dashboard = () => {
                   bookmarkTagsData
                 );
 
+                addCategoryToBookmarkMutation.mutate({
+                  category_id: selectedCategoryDuringAdd?.value as number,
+                  bookmark_id: data[0]?.id as number,
+                });
+
                 const bookmarkDataWithTags = {
                   ...data[0],
                   addedTags: bookmarkTagData.map((item) => {
@@ -344,6 +360,16 @@ const Dashboard = () => {
                 setList(updatedData);
               }
             }}
+            onCategoryChange={(value) => {
+              if (isEdit) {
+                addCategoryToBookmarkMutation.mutate({
+                  category_id: value?.value as number,
+                  bookmark_id: addedUrlData?.id as number,
+                });
+              } else {
+                setSelectedCategoryDuringAdd(value);
+              }
+            }}
           />
         </Modal>
       </>
@@ -357,6 +383,7 @@ const Dashboard = () => {
 
   // Queries
   const {} = useQuery(['categories'], () => fetchData(CATEGORIES_TABLE_NAME));
+  const {} = useQuery(['bookmarks'], () => fetchData(MAIN_TABLE_NAME));
 
   // Mutations
   const addCategoryMutation = useMutation(addUserCategory, {
@@ -370,6 +397,14 @@ const Dashboard = () => {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries(['categories']);
+    },
+  });
+
+  const addCategoryToBookmarkMutation = useMutation(addCategoryToBookmark, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries(['categories']);
+      queryClient.invalidateQueries(['bookmarks']);
     },
   });
 

@@ -10,6 +10,7 @@ export interface SingleListData {
   user_id: string;
   screenshot: string;
   addedTags: Array<UserTagsData>;
+  category_id: number;
 }
 
 export interface FetchDataResponse {
@@ -24,6 +25,7 @@ export interface UrlData {
   ogImage: string;
   user_id: string;
   screenshot: string;
+  id?: number;
 }
 
 export interface UserTagsData {
