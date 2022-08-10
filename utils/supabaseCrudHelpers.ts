@@ -149,6 +149,19 @@ export const addUserCategory = async ({
   return { data, error } as unknown as FetchCategoriesDataResponse;
 };
 
+export const deleteUserCategory = async ({
+  category_id,
+}: {
+  category_id: string;
+}) => {
+  const { data, error } = await supabase
+    .from(CATEGORIES_TABLE_NAME)
+    .delete()
+    .match({ id: category_id });
+
+  return { data, error } as unknown as FetchCategoriesDataResponse;
+};
+
 // auth
 
 export const getCurrentUserSession = async () => {

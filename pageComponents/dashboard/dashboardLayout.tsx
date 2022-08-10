@@ -7,7 +7,7 @@ import {
   MenuAlt2Icon,
   XIcon,
 } from '@heroicons/react/outline';
-import { SearchIcon, PlusCircleIcon } from '@heroicons/react/solid';
+import { SearchIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/solid';
 import { ChildrenTypes } from '../../types/componentTypes';
 import Button from '../../components/atoms/button';
 import Image from 'next/image';
@@ -20,7 +20,7 @@ interface SideBarNavidationTypes {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: React.ComponentClass<any>;
   current: boolean;
-  children: Array<{ name: string; href: string }>;
+  children: Array<{ name: string; href: string; id: string }>;
 }
 
 const userNavigation = [{ name: 'Sign out', href: '#' }];
@@ -37,6 +37,7 @@ interface DashboardLayoutProps {
   onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
   onAddCategoryClick: () => void;
+  onDeleteCategoryClick: (id: string) => void;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -48,6 +49,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     onSignOutClick,
     onSigninClick,
     onAddCategoryClick,
+    onDeleteCategoryClick,
   } = props;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -69,6 +71,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
         return {
           name: item?.category_name,
           href: '#',
+          id: item?.id,
         };
       }),
     },
@@ -317,9 +320,16 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                 key={subItem.name}
                                 as="a"
                                 href={subItem.href}
-                                className="group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50"
+                                className=" justify-between group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50"
                               >
                                 {subItem.name}
+                                {/* <DropDown /> */}
+                                <TrashIcon
+                                  onClick={() =>
+                                    onDeleteCategoryClick(subItem.id)
+                                  }
+                                  className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500"
+                                />
                               </Disclosure.Button>
                             ))}
                             <button

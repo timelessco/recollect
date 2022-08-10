@@ -14,6 +14,7 @@ import {
   addUserCategory,
   addUserTags,
   deleteData,
+  deleteUserCategory,
   fetchBookmakrsData,
   fetchData,
   fetchUserTags,
@@ -355,19 +356,22 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
 
   // Queries
-  const { data: catagoryData, isLoading } = useQuery(['categories'], () =>
-    fetchData(CATEGORIES_TABLE_NAME)
-  );
+  const {} = useQuery(['categories'], () => fetchData(CATEGORIES_TABLE_NAME));
 
   // Mutations
-  const categoryMutation = useMutation(addUserCategory, {
+  const addCategoryMutation = useMutation(addUserCategory, {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries(['categories']);
     },
   });
 
-  // console.log('rrrrr', data, isLoading);
+  const deleteCategoryMutation = useMutation(deleteUserCategory, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries(['categories']);
+    },
+  });
 
   return (
     <>
@@ -385,10 +389,15 @@ const Dashboard = () => {
           fetchListDataAndAddToState();
         }}
         onAddCategoryClick={toggleAddCategoryModal}
+        onDeleteCategoryClick={(id) => {
+          deleteCategoryMutation.mutate({
+            category_id: id,
+          });
+        }}
       />
       <AddCategoryModal
         onAddNewCategory={(newCategoryName) => {
-          categoryMutation.mutate({
+          addCategoryMutation.mutate({
             user_id: session?.user?.id as string,
             name: newCategoryName,
           });
