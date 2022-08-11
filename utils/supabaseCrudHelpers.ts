@@ -28,12 +28,12 @@ export const fetchData = async (tableName = CATEGORIES_TABLE_NAME) => {
 };
 
 // gets bookmarks data
-export const fetchBookmakrsData = async () => {
+export const fetchBookmakrsData = async (category_id: string | null) => {
   const session = await getCurrentUserSession();
 
   try {
     const bookmarksData = await axios.get(
-      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}`
+      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${category_id}`
     );
     return {
       data: bookmarksData?.data?.data,

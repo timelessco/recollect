@@ -47,6 +47,7 @@ import { find } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import { useModalStore } from '../../store/componentStore';
 import AddCategoryModal from './addCategoryModal';
+import { useRouter } from 'next/router';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -61,6 +62,8 @@ const Dashboard = () => {
   const [url, setUrl] = useState<string>('');
   const [selectedCategoryDuringAdd, setSelectedCategoryDuringAdd] =
     useState<SearchSelectOption | null>();
+
+  const router = useRouter();
 
   const toggleAddCategoryModal = useModalStore(
     (state) => state.toggleAddCategoryModal
@@ -78,8 +81,10 @@ const Dashboard = () => {
     reset({ urlText: '' });
   };
 
+  const category_id = router?.asPath?.split('/')[1] || null;
+
   async function fetchListDataAndAddToState() {
-    const { data } = await fetchBookmakrsData();
+    const { data } = await fetchBookmakrsData(category_id);
     setList(data);
     const { data: tagData } = await fetchUserTags();
     setUserTags(tagData);
@@ -96,6 +101,7 @@ const Dashboard = () => {
       setAddedUrlData(undefined);
       setSelectedTag([]);
       setUrl('');
+      setSelectedCategoryDuringAdd(undefined);
     }
   }, [showAddBookmarkModal]);
 
@@ -109,7 +115,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchListDataAndAddToState();
-  }, [session]);
+  }, [session, category_id]);
 
   // gets scrapped data
   const addItem = async (item: string) => {

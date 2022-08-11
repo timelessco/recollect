@@ -21,10 +21,27 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  const category_id = req.query.category_id;
+
   const accessToken = req.query.access_token as string;
   const {} = supabase.auth.setAuth(accessToken);
 
-  const { data } = await supabase.from(MAIN_TABLE_NAME).select();
+  let data;
+
+  if (category_id === 'null') {
+    const { data: bookmarkData } = await supabase
+      .from(MAIN_TABLE_NAME)
+      .select();
+    data = bookmarkData;
+  } else {
+    const { data: bookmarkData } = await supabase
+      .from(MAIN_TABLE_NAME)
+      .select()
+      .eq('category_id', category_id);
+
+    data = bookmarkData;
+  }
+
   const { data: bookmarkTags } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .select();

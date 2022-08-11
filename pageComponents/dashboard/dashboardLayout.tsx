@@ -14,13 +14,15 @@ import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
 import { CategoriesData } from '../../types/apiTypes';
 import { PostgrestError } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 interface SideBarNavidationTypes {
   name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: React.ComponentClass<any>;
   current: boolean;
-  children: Array<{ name: string; href: string; id: string }>;
+  children: Array<{ name: string; href: string; id: string; current: boolean }>;
 }
 
 const userNavigation = [{ name: 'Sign out', href: '#' }];
@@ -53,7 +55,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
   } = props;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const categoryData = queryClient.getQueryData(['categories']) as {
@@ -61,8 +63,15 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     error: PostgrestError;
   };
 
+  const currentPath = router.asPath.split('/')[1];
+
   const navigation = [
-    { name: 'All Bookmarks', icon: HomeIcon, current: true, href: '#' },
+    {
+      name: 'All Bookmarks',
+      icon: HomeIcon,
+      current: !currentPath,
+      href: '/',
+    },
     {
       name: 'Categories',
       icon: FolderIcon,
@@ -70,8 +79,9 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
       children: categoryData?.data?.map((item) => {
         return {
           name: item?.category_name,
-          href: '#',
+          href: `/${item?.id}`,
           id: item?.id,
+          current: currentPath === item?.id.toString(),
         };
       }),
     },
@@ -212,7 +222,9 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                       key={subItem.name}
                                       as="a"
                                       href={subItem.href}
-                                      className="group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50"
+                                      className={`${
+                                        item?.current ? 'bg-gray-800' : ''
+                                      } group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50`}
                                     >
                                       {subItem.name}
                                     </Disclosure.Button>
@@ -260,29 +272,35 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                 {navigation.map((item) =>
                   !item.children ? (
                     <div key={item.name}>
-                      <a
-                        href="#"
-                        className={classNames(
-                          item.current
-                            ? 'bg-gray-100 text-gray-900'
-                            : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                          'group w-full flex items-center pl-2 py-2 text-sm font-medium rounded-md'
-                        )}
-                      >
-                        <item.icon
+                      <Link href="/" passHref={true}>
+                        <a
                           className={classNames(
                             item.current
-                              ? 'text-gray-500'
-                              : 'text-gray-400 group-hover:text-gray-500',
-                            'mr-3 flex-shrink-0 h-6 w-6'
+                              ? 'bg-gray-100 text-gray-900'
+                              : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                            'group w-full flex items-center pl-2 py-2 text-sm font-medium rounded-md'
                           )}
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </a>
+                        >
+                          <item.icon
+                            className={classNames(
+                              item.current
+                                ? 'text-gray-500'
+                                : 'text-gray-400 group-hover:text-gray-500',
+                              'mr-3 flex-shrink-0 h-6 w-6'
+                            )}
+                            aria-hidden="true"
+                          />
+                          {item.name}
+                        </a>
+                      </Link>
                     </div>
                   ) : (
-                    <Disclosure as="div" key={item.name} className="space-y-1">
+                    <Disclosure
+                      as="div"
+                      key={item.name}
+                      className="space-y-1"
+                      defaultOpen={true}
+                    >
                       {({ open }) => (
                         <>
                           <Disclosure.Button
@@ -316,21 +334,30 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                           </Disclosure.Button>
                           <Disclosure.Panel className="space-y-1">
                             {item.children.map((subItem) => (
-                              <Disclosure.Button
-                                key={subItem.name}
-                                as="a"
+                              <Link
                                 href={subItem.href}
-                                className=" justify-between group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50"
+                                passHref={true}
+                                key={subItem.name}
                               >
-                                {subItem.name}
-                                {/* <DropDown /> */}
-                                <TrashIcon
-                                  onClick={() =>
-                                    onDeleteCategoryClick(subItem.id)
-                                  }
-                                  className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500"
-                                />
-                              </Disclosure.Button>
+                                <Disclosure.Button
+                                  key={subItem.name}
+                                  as="a"
+                                  className={`${
+                                    subItem?.current
+                                      ? 'bg-gray-100 text-gray-900'
+                                      : ''
+                                  } justify-between group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50`}
+                                >
+                                  {subItem.name}
+                                  {/* <DropDown /> */}
+                                  <TrashIcon
+                                    onClick={() =>
+                                      onDeleteCategoryClick(subItem.id)
+                                    }
+                                    className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500"
+                                  />
+                                </Disclosure.Button>
+                              </Link>
                             ))}
                             <button
                               className=" relative group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50"
