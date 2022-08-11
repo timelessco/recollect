@@ -1,3 +1,4 @@
+// table names
 export const MAIN_TABLE_NAME = 'todos';
 export const TAG_TABLE_NAME = 'tags';
 export const BOOKMARK_TAGS_TABLE_NAME = 'bookmark_tags';
@@ -18,3 +19,7 @@ export const NEXT_API_URL = `${
 export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
 export const GET_BOOKMARKS_DATA_API = '/getBookmarksData';
 export const DELETE_BOOKMARK_DATA_API = '/deleteBookmark';
+
+// urls
+
+export const UNCATEGORIZED_URL = 'uncategorized';

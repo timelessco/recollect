@@ -142,12 +142,18 @@ export default function AddModalContent(props: AddModalContentProps) {
         </LabelledComponent>
         <LabelledComponent label="Add Category">
           <SearchSelect
-            options={categoryData?.data?.map((item) => {
-              return {
-                label: item?.category_name,
-                value: item?.id,
-              };
-            })}
+            options={[
+              {
+                label: 'Uncategorized',
+                value: 0,
+              },
+              ...categoryData?.data?.map((item) => {
+                return {
+                  label: item?.category_name,
+                  value: item?.id,
+                };
+              }),
+            ]}
             onChange={onCategoryChange}
             defaultValue={filter(
               categoryData?.data,
@@ -162,7 +168,7 @@ export default function AddModalContent(props: AddModalContentProps) {
         </LabelledComponent>
       </div>
       <div className="mt-4">
-        <Button className="w-full" onClick={addBookmark}>
+        <Button className="w-full" onClick={addBookmark} isDisabled={!urlData}>
           <span>{mainButtonText}</span>
         </Button>
       </div>

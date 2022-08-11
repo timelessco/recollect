@@ -6,22 +6,25 @@ import {
   HomeIcon,
   MenuAlt2Icon,
   XIcon,
+  InboxIcon,
 } from '@heroicons/react/outline';
 import { SearchIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/solid';
 import { ChildrenTypes } from '../../types/componentTypes';
 import Button from '../../components/atoms/button';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
-import { CategoriesData } from '../../types/apiTypes';
+import { CategoriesData, SingleListData } from '../../types/apiTypes';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { UNCATEGORIZED_URL } from '../../utils/constants';
 
 interface SideBarNavidationTypes {
   name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: React.ComponentClass<any>;
   current: boolean;
+  href: string;
   children: Array<{ name: string; href: string; id: string; current: boolean }>;
 }
 
@@ -40,6 +43,7 @@ interface DashboardLayoutProps {
   renderMainContent: () => ChildrenTypes;
   onAddCategoryClick: () => void;
   onDeleteCategoryClick: (id: string) => void;
+  bookmarksData?: Array<SingleListData>;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -52,7 +56,14 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     onSigninClick,
     onAddCategoryClick,
     onDeleteCategoryClick,
+    // bookmarksData, // make this from react-query
   } = props;
+
+  // const categoryCount = (id: number) => {
+  //   const count = bookmarksData?.filter((item) => item?.category_id === id);
+
+  //   return count?.length;
+  // };
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
@@ -73,9 +84,16 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
       href: '/',
     },
     {
+      name: 'Uncategorized',
+      icon: InboxIcon,
+      current: currentPath === UNCATEGORIZED_URL,
+      href: `/${UNCATEGORIZED_URL}`,
+    },
+    {
       name: 'Categories',
       icon: FolderIcon,
       current: false,
+      href: '/',
       children: categoryData?.data?.map((item) => {
         return {
           name: item?.category_name,
@@ -272,7 +290,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                 {navigation.map((item) =>
                   !item.children ? (
                     <div key={item.name}>
-                      <Link href="/" passHref={true}>
+                      <Link href={item?.href} passHref={true}>
                         <a
                           className={classNames(
                             item.current
@@ -354,7 +372,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                     onClick={() =>
                                       onDeleteCategoryClick(subItem.id)
                                     }
-                                    className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500"
+                                    className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 hidden group-hover:block"
                                   />
                                 </Disclosure.Button>
                               </Link>

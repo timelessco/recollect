@@ -31,6 +31,7 @@ import isEmpty from 'lodash/isEmpty';
 import {
   CATEGORIES_TABLE_NAME,
   MAIN_TABLE_NAME,
+  UNCATEGORIZED_URL,
   URL_PATTERN,
 } from '../../utils/constants';
 import {
@@ -84,7 +85,9 @@ const Dashboard = () => {
   const category_id = router?.asPath?.split('/')[1] || null;
 
   async function fetchListDataAndAddToState() {
-    const { data } = await fetchBookmakrsData(category_id);
+    const { data } = await fetchBookmakrsData(
+      category_id !== UNCATEGORIZED_URL ? category_id : 'null'
+    );
     setList(data);
     const { data: tagData } = await fetchUserTags();
     setUserTags(tagData);
@@ -366,12 +369,21 @@ const Dashboard = () => {
                 setList(updatedData);
               }
             }}
-            onCategoryChange={(value) => {
+            onCategoryChange={async (value) => {
               if (isEdit) {
                 addCategoryToBookmarkMutation.mutate({
-                  category_id: value?.value as number,
+                  category_id: value?.value
+                    ? (value?.value as number)
+                    : (null as null),
                   bookmark_id: addedUrlData?.id as number,
                 });
+
+                // TODO make this dependant on react-query
+                if (category_id) {
+                  setList(
+                    list?.filter((item) => item?.id !== addedUrlData?.id)
+                  );
+                }
               } else {
                 setSelectedCategoryDuringAdd(value);
               }
@@ -417,6 +429,7 @@ const Dashboard = () => {
   return (
     <>
       <DashboardLayout
+        bookmarksData={list} // make this dependant on react-query
         renderMainContent={renderAllBookmarkCards}
         userImg={session?.user?.user_metadata?.avatar_url}
         userName={session?.user?.user_metadata?.name}
