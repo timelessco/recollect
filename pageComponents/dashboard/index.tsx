@@ -88,7 +88,7 @@ const Dashboard = () => {
     const { data } = await fetchBookmakrsData(
       category_id !== UNCATEGORIZED_URL ? category_id : 'null'
     );
-    setList(data);
+    data ? setList(data) : setList([]);
     const { data: tagData } = await fetchUserTags();
     setUserTags(tagData);
   }
