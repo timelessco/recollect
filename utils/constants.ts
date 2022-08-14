@@ -23,3 +23,9 @@ export const DELETE_BOOKMARK_DATA_API = '/deleteBookmark';
 // urls
 
 export const UNCATEGORIZED_URL = 'uncategorized';
+
+// react-query keys
+
+export const BOOKMARKS_KEY = 'bookmarks';
+export const CATEGORIES_KEY = 'categories';
+export const USER_TAGS_KEY = 'userTags';

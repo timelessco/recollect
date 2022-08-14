@@ -60,7 +60,13 @@ export const getBookmarkScrappedData = async (item: string) => {
   }
 };
 
-export const addData = async (userData: UserIdentity, urlData?: UrlData) => {
+export const addData = async ({
+  userData,
+  urlData,
+}: {
+  userData: UserIdentity;
+  urlData?: UrlData;
+}) => {
   const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
     {
       title: urlData?.title,
@@ -96,10 +102,13 @@ export const fetchUserTags = async (tableName = TAG_TABLE_NAME) => {
   return { data, error } as unknown as FetchUserTagsDataResponse;
 };
 
-export const addUserTags = async (
-  userData: UserIdentity,
-  tagsData?: { name: string }
-) => {
+export const addUserTags = async ({
+  userData,
+  tagsData,
+}: {
+  userData: UserIdentity;
+  tagsData: { name: string };
+}) => {
   const { data, error } = await supabase.from(TAG_TABLE_NAME).insert([
     {
       name: tagsData?.name,
@@ -110,9 +119,11 @@ export const addUserTags = async (
   return { data, error } as unknown as FetchUserTagsDataResponse;
 };
 
-export const addTagToBookmark = async (
-  selectedData: Array<BookmarksTagData> | BookmarksTagData
-) => {
+export const addTagToBookmark = async ({
+  selectedData,
+}: {
+  selectedData: Array<BookmarksTagData> | BookmarksTagData;
+}) => {
   const { data, error } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .insert(selectedData);
@@ -120,7 +131,11 @@ export const addTagToBookmark = async (
   return { data, error } as unknown as FetchBookmarksTagDataResponse;
 };
 
-export const removeTagFromBookmark = async (selectedData: BookmarksTagData) => {
+export const removeTagFromBookmark = async ({
+  selectedData,
+}: {
+  selectedData: BookmarksTagData;
+}) => {
   const { data, error } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .delete()

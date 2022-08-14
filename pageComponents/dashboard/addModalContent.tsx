@@ -29,6 +29,7 @@ interface AddModalContentProps {
   mainButtonText: string;
   urlString: string;
   onCategoryChange: (value: SearchSelectOption | null) => void;
+  categoryId: string | number | null;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
@@ -43,11 +44,12 @@ export default function AddModalContent(props: AddModalContentProps) {
     mainButtonText,
     urlString,
     onCategoryChange,
+    categoryId,
   } = props;
 
   const queryClient = useQueryClient();
 
-  const latestBookmarkData = queryClient.getQueryData(['bookmarks']) as {
+  const latestBookmarkData = queryClient.getQueryData(['bookmarks', categoryId]) as {
     data: SingleListData[];
     error: PostgrestError;
   };
