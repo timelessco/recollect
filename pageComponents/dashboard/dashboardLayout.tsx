@@ -17,7 +17,12 @@ import { CategoriesData, SingleListData } from '../../types/apiTypes';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { UNCATEGORIZED_URL } from '../../utils/constants';
+import {
+  BOOKMARKS_KEY,
+  CATEGORIES_KEY,
+  UNCATEGORIZED_URL,
+} from '../../utils/constants';
+import { getCountInCategory } from '../../utils/helpers';
 
 interface SideBarNavidationTypes {
   name: string;
@@ -26,6 +31,7 @@ interface SideBarNavidationTypes {
   current: boolean;
   href: string;
   children: Array<{ name: string; href: string; id: string; current: boolean }>;
+  count?: number;
 }
 
 const userNavigation = [{ name: 'Sign out', href: '#' }];
@@ -69,12 +75,17 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const categoryData = queryClient.getQueryData(['categories']) as {
+  const currentPath = router.asPath.split('/')[1] || null;
+
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY]) as {
     data: CategoriesData[];
     error: PostgrestError;
   };
 
-  const currentPath = router.asPath.split('/')[1];
+  const bookmarksData = queryClient.getQueryData([BOOKMARKS_KEY, null]) as {
+    data: SingleListData[];
+    error: PostgrestError;
+  };
 
   const navigation = [
     {
@@ -88,6 +99,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
       icon: InboxIcon,
       current: currentPath === UNCATEGORIZED_URL,
       href: `/${UNCATEGORIZED_URL}`,
+      count: getCountInCategory(null, bookmarksData?.data),
     },
     {
       name: 'Categories',
@@ -308,7 +320,19 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                             )}
                             aria-hidden="true"
                           />
-                          {item.name}
+                          <div className="flex">
+                            {item.name}
+                            {item?.count !== undefined ? (
+                              <span
+                                className={classNames(
+                                  'bg-gray-200 group-hover:bg-gray-200',
+                                  'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
+                                )}
+                              >
+                                {item?.count}
+                              </span>
+                            ) : null}
+                          </div>
                         </a>
                       </Link>
                     </div>
@@ -366,8 +390,22 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                       : ''
                                   } justify-between group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50`}
                                 >
-                                  {subItem.name}
-                                  {/* <DropDown /> */}
+                                  <div className="flex">
+                                    {subItem.name}
+                                    <span
+                                      className={classNames(
+                                        item.current
+                                          ? 'bg-white'
+                                          : 'bg-gray-200 group-hover:bg-gray-200',
+                                        'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
+                                      )}
+                                    >
+                                      {getCountInCategory(
+                                        subItem?.id,
+                                        bookmarksData?.data
+                                      )}
+                                    </span>
+                                  </div>
                                   <TrashIcon
                                     onClick={() =>
                                       onDeleteCategoryClick(subItem.id)

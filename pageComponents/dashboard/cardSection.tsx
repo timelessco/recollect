@@ -6,17 +6,20 @@ import orderBy from 'lodash/orderBy';
 import { useRouter } from 'next/router';
 import { UNCATEGORIZED_URL } from '../../utils/constants';
 import { isEmpty } from 'lodash';
+import BookmarkCardSkeleton from '../../components/loadersSkeleton/bookmarkCardSkeleton';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
   onDeleteClick: (post: SingleListData) => void;
   onEditClick: (item: SingleListData) => void;
+  isLoading: boolean;
 }
 
 const CardSection = ({
   listData = [],
   onDeleteClick,
   onEditClick = () => null,
+  isLoading = false,
 }: CardSectionProps) => {
   const router = useRouter();
   const category_id = router?.asPath?.split('/')[1] || null;
@@ -34,60 +37,69 @@ const CardSection = ({
       </div>
       <div className="relative max-w-7xl mx-auto">
         <div className="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
-          {!isEmpty(bookmarksList) ? (
+          {isLoading ? (
             <>
-              {orderBy(bookmarksList, ['id'], ['desc']).map((post) => (
-                <div
-                  key={post.id}
-                  className="flex flex-col rounded-lg shadow-lg overflow-hidden"
-                >
-                  <div className="flex-shrink-0">
-                    <img
-                      className="h-48 w-full object-cover"
-                      src={post.ogImage || post.screenshot}
-                      alt=""
-                    />
-                  </div>
-                  <div className="flex-1 bg-white p-6 flex justify-between">
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-indigo-600">
-                        <span className="flex space-x-1">
-                          {post?.addedTags?.map((tag) => {
-                            return <div key={tag?.id}>#{tag?.name}</div>;
-                          })}
-                        </span>
-                      </div>
-                      <a
-                        href={post.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block mt-2"
-                      >
-                        <p className="text-xl font-semibold text-gray-900">
-                          {post.title}
-                        </p>
-                        <p className="mt-3 text-base text-gray-500">
-                          {post.description}
-                        </p>
-                      </a>
-                    </div>
-                    <div className="flex">
-                      <PencilAltIcon
-                        className="h-5 w-5 text-gray-400 cursor-pointer"
-                        onClick={() => onEditClick(post)}
-                      />
-                      <TrashIcon
-                        className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
-                        aria-hidden="true"
-                        onClick={() => onDeleteClick(post)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <BookmarkCardSkeleton />
+              <BookmarkCardSkeleton />
             </>
           ) : (
-            <div className="text-xl font-bold">No Bookmarks</div>
+            <>
+              {!isEmpty(bookmarksList) ? (
+                <>
+                  {orderBy(bookmarksList, ['id'], ['desc']).map((post) => (
+                    <div
+                      key={post.id}
+                      className="flex flex-col rounded-lg shadow-lg overflow-hidden"
+                    >
+                      <div className="flex-shrink-0">
+                        <img
+                          className="h-48 w-full object-cover"
+                          src={post.ogImage || post.screenshot}
+                          alt=""
+                        />
+                      </div>
+                      <div className="flex-1 bg-white p-6 flex justify-between">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-indigo-600">
+                            <span className="flex space-x-1">
+                              {post?.addedTags?.map((tag) => {
+                                return <div key={tag?.id}>#{tag?.name}</div>;
+                              })}
+                            </span>
+                          </div>
+                          <a
+                            href={post.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block mt-2"
+                          >
+                            <p className="text-xl font-semibold text-gray-900">
+                              {post.title}
+                            </p>
+                            <p className="mt-3 text-base text-gray-500">
+                              {post.description}
+                            </p>
+                          </a>
+                        </div>
+                        <div className="flex">
+                          <PencilAltIcon
+                            className="h-5 w-5 text-gray-400 cursor-pointer"
+                            onClick={() => onEditClick(post)}
+                          />
+                          <TrashIcon
+                            className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
+                            aria-hidden="true"
+                            onClick={() => onDeleteClick(post)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <div className="text-xl font-bold">No Bookmarks</div>
+              )}
+            </>
           )}
         </div>
       </div>

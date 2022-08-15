@@ -51,7 +51,6 @@ import { errorToast } from '../../utils/toastMessages';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
-  const [list, setList] = useState<SingleListData[]>([]); // remove this
   const [showAddBookmarkModal, setShowAddBookmarkModal] = // move to zudstand
     useState<boolean>(false);
   const [addedUrlData, setAddedUrlData] = useState<SingleListData>();
@@ -110,6 +109,7 @@ const Dashboard = () => {
 
   // Queries
   const {} = useQuery([CATEGORIES_KEY], () => fetchData(CATEGORIES_TABLE_NAME));
+  const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
   const { data: bookmarksData, isLoading: isBookmarksLoading } = useQuery(
     [BOOKMARKS_KEY, category_id],
     () =>
@@ -245,21 +245,18 @@ const Dashboard = () => {
                   />
                 </form>
               </div>
-              {!isBookmarksLoading && bookmarksData?.data ? (
-                <CardSection
-                  listData={bookmarksData?.data}
-                  onDeleteClick={(item) => {
-                    deleteBookmarkMutation.mutate(item);
-                  }}
-                  onEditClick={(item) => {
-                    setAddedUrlData(item);
-                    setIsEdit(true);
-                    setShowAddBookmarkModal(true);
-                  }}
-                />
-              ) : (
-                <div>Loading...</div>
-              )}
+              <CardSection
+                isLoading={isBookmarksLoading && !bookmarksData}
+                listData={bookmarksData?.data || []}
+                onDeleteClick={(item) => {
+                  deleteBookmarkMutation.mutate(item);
+                }}
+                onEditClick={(item) => {
+                  setAddedUrlData(item);
+                  setIsEdit(true);
+                  setShowAddBookmarkModal(true);
+                }}
+              />
             </>
           ) : (
             <SignedOutSection />
@@ -389,13 +386,6 @@ const Dashboard = () => {
                     : (null as null),
                   bookmark_id: addedUrlData?.id as number,
                 });
-
-                // TODO make this dependant on react-query
-                if (category_id) {
-                  setList(
-                    list?.filter((item) => item?.id !== addedUrlData?.id)
-                  );
-                }
               } else {
                 setSelectedCategoryDuringAdd(value);
               }
