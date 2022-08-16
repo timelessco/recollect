@@ -300,7 +300,7 @@ const Dashboard = () => {
                     });
 
                   addCategoryToBookmarkMutation.mutate({
-                    category_id: selectedCategoryDuringAdd?.value as number,
+                    category_id: selectedCategoryDuringAdd?.value || category_id as number | null,
                     bookmark_id: data?.data[0]?.id as number,
                   });
                 } catch (error) {

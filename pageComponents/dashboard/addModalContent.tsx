@@ -159,7 +159,7 @@ export default function AddModalContent(props: AddModalContentProps) {
             onChange={onCategoryChange}
             defaultValue={filter(
               categoryData?.data,
-              (item) => item?.id === latestCurrentBookmarkData?.category_id
+              (item) => item?.id === (latestCurrentBookmarkData?.category_id || categoryId)
             )?.map((item) => {
               return {
                 label: item?.category_name,

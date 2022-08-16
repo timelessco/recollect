@@ -182,7 +182,7 @@ export const addCategoryToBookmark = async ({
   category_id,
   bookmark_id,
 }: {
-  category_id: number | null;
+  category_id: number | null | string;
   bookmark_id: number;
 }) => {
   const { data, error } = await supabase
