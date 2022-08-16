@@ -109,9 +109,9 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
       children: categoryData?.data?.map((item) => {
         return {
           name: item?.category_name,
-          href: `/${item?.id}`,
+          href: `/${item?.category_slug}`,
           id: item?.id,
-          current: currentPath === item?.id.toString(),
+          current: currentPath === item?.category_slug,
         };
       }),
     },

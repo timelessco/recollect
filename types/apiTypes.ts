@@ -13,8 +13,8 @@ export interface SingleListData {
   category_id: number;
 }
 
-export interface FetchDataResponse {
-  data: SingleListData[];
+export interface FetchDataResponse<T = SingleListData[]> {
+  data: T; 
   error: PostgrestError | null;
 }
 
@@ -62,6 +62,7 @@ export interface CategoriesData {
   id: number;
   category_name: string;
   user_id: string;
+  category_slug: string;
 }
 
 export interface FetchCategoriesDataResponse {

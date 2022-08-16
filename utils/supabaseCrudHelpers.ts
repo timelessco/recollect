@@ -20,15 +20,16 @@ import {
   DELETE_BOOKMARK_DATA_API,
   CATEGORIES_TABLE_NAME,
 } from './constants';
+import slugify from 'slugify';
 
 // bookmark
-export const fetchData = async (tableName = CATEGORIES_TABLE_NAME) => {
+export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
   const { data, error } = await supabase.from(tableName).select();
-  return { data, error } as unknown as FetchDataResponse;
+  return { data, error } as unknown as FetchDataResponse<T>;
 };
 
 // gets bookmarks data
-export const fetchBookmakrsData = async (category_id: string | null) => {
+export const fetchBookmakrsData = async (category_id: string | null | number) => {
   const session = await getCurrentUserSession();
 
   try {
@@ -157,6 +158,7 @@ export const addUserCategory = async ({
     {
       category_name: name,
       user_id: user_id,
+      category_slug: slugify(name)
     },
   ]);
 

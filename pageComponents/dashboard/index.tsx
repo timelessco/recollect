@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import Input from '../../components/atoms/input';
-import { BookmarksTagData, SingleListData } from '../../types/apiTypes';
+import { BookmarksTagData, CategoriesData, SingleListData } from '../../types/apiTypes';
 import {
   addCategoryToBookmark,
   addData,
@@ -40,7 +40,7 @@ import {
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
-import { find } from 'lodash';
+import { find, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import { useModalStore } from '../../store/componentStore';
 import AddCategoryModal from './addCategoryModal';
@@ -48,6 +48,8 @@ import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { errorToast } from '../../utils/toastMessages';
+import { mutationApiCall } from '../../utils/apiHelpers';
+import { getCategoryIdFromSlug } from '../../utils/helpers';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -78,7 +80,6 @@ const Dashboard = () => {
     reset({ urlText: '' });
   };
 
-  const category_id = router?.asPath?.split('/')[1] || null;
   const fetchUserSession = async () => {
     const currentSession = await getCurrentUserSession();
     setSession(currentSession);
@@ -108,14 +109,15 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
 
   // Queries
-  const {} = useQuery([CATEGORIES_KEY], () => fetchData(CATEGORIES_TABLE_NAME));
+  const { data: allCategories } = useQuery([CATEGORIES_KEY], () => fetchData<CategoriesData[]>(CATEGORIES_TABLE_NAME));
   const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
+  
+  const category_slug = router?.asPath?.split('/')[1] || null;
+  const category_id =
+    getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
   const { data: bookmarksData, isLoading: isBookmarksLoading } = useQuery(
     [BOOKMARKS_KEY, category_id],
-    () =>
-      fetchBookmakrsData(
-        category_id !== UNCATEGORIZED_URL ? category_id : 'null'
-      )
+    () => fetchBookmakrsData(category_id)
   );
 
   const { data: userTags } = useQuery([USER_TAGS_KEY], () => fetchUserTags());
@@ -410,21 +412,24 @@ const Dashboard = () => {
         }}
         onSigninClick={() => {
           signInWithOauth();
-          // fetchListDataAndAddToState();
         }}
         onAddCategoryClick={toggleAddCategoryModal}
         onDeleteCategoryClick={(id) => {
-          deleteCategoryMutation.mutate({
-            category_id: id,
-          });
+          mutationApiCall(
+            deleteCategoryMutation.mutateAsync({
+              category_id: id,
+            })
+          )
         }}
       />
       <AddCategoryModal
         onAddNewCategory={(newCategoryName) => {
-          addCategoryMutation.mutate({
-            user_id: session?.user?.id as string,
-            name: newCategoryName,
-          });
+          mutationApiCall(
+            addCategoryMutation.mutateAsync({
+              user_id: session?.user?.id as string,
+              name: newCategoryName,
+            })
+          )
         }}
       />
       <ToastContainer />
