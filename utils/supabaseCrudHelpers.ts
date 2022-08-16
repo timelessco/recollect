@@ -29,7 +29,9 @@ export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
 };
 
 // gets bookmarks data
-export const fetchBookmakrsData = async (category_id: string | null | number) => {
+export const fetchBookmakrsData = async (
+  category_id: string | null | number
+) => {
   const session = await getCurrentUserSession();
 
   try {
@@ -158,7 +160,7 @@ export const addUserCategory = async ({
     {
       category_name: name,
       user_id: user_id,
-      category_slug: slugify(name)
+      category_slug: slugify(name),
     },
   ]);
 

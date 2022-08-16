@@ -12,7 +12,16 @@ function MyApp({ Component, pageProps: { ...pageProps } }: AppProps) {
   // Create a client
   // const queryClient = new QueryClient();
 
-  const [queryClient] = React.useState(() => new QueryClient());
+  const [queryClient] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
