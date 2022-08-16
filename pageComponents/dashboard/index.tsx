@@ -2,8 +2,11 @@ import { Session, UserIdentity } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
-import Input from '../../components/atoms/input';
-import { BookmarksTagData, CategoriesData, SingleListData } from '../../types/apiTypes';
+import {
+  BookmarksTagData,
+  CategoriesData,
+  SingleListData,
+} from '../../types/apiTypes';
 import {
   addCategoryToBookmark,
   addData,
@@ -22,25 +25,17 @@ import {
   signOut,
 } from '../../utils/supabaseCrudHelpers';
 import CardSection from './cardSection';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import isEmpty from 'lodash/isEmpty';
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   CATEGORIES_TABLE_NAME,
-  UNCATEGORIZED_URL,
-  URL_PATTERN,
   USER_TAGS_KEY,
 } from '../../utils/constants';
-import {
-  SearchSelectOption,
-  TagInputOption,
-  UrlInput,
-} from '../../types/componentTypes';
+import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
-import { find, isNull } from 'lodash';
+import { find } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import { useModalStore } from '../../store/componentStore';
 import AddCategoryModal from './addCategoryModal';
@@ -67,18 +62,6 @@ const Dashboard = () => {
   const toggleAddCategoryModal = useModalStore(
     (state) => state.toggleAddCategoryModal
   );
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<UrlInput>();
-  const onSubmit: SubmitHandler<UrlInput> = (data) => {
-    setUrl(data.urlText);
-    addItem(data.urlText);
-    reset({ urlText: '' });
-  };
 
   const fetchUserSession = async () => {
     const currentSession = await getCurrentUserSession();
@@ -109,9 +92,11 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
 
   // Queries
-  const { data: allCategories } = useQuery([CATEGORIES_KEY], () => fetchData<CategoriesData[]>(CATEGORIES_TABLE_NAME));
+  const { data: allCategories } = useQuery([CATEGORIES_KEY], () =>
+    fetchData<CategoriesData[]>(CATEGORIES_TABLE_NAME)
+  );
   const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
-  
+
   const category_slug = router?.asPath?.split('/')[1] || null;
   const category_id =
     getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
@@ -208,16 +193,6 @@ const Dashboard = () => {
     }
   };
 
-  const urlInputErrorText = () => {
-    if (errors?.urlText?.type === 'pattern') {
-      return 'Please enter valid url';
-    } else if (errors?.urlText?.type === 'required') {
-      return 'Please enter url';
-    } else {
-      return '';
-    }
-  };
-
   // any new tags created need not come in tag dropdown , this filter implements this
   let filteredUserTags = userTags?.data ? [...userTags?.data] : [];
 
@@ -233,20 +208,7 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           {session ? (
             <>
-              <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0">
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <Input
-                    {...register('urlText', {
-                      required: true,
-                      pattern: URL_PATTERN,
-                    })}
-                    placeholder="Enter Url"
-                    className="drop-shadow-lg"
-                    isError={!isEmpty(errors)}
-                    errorText={urlInputErrorText()}
-                  />
-                </form>
-              </div>
+              <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
               <CardSection
                 isLoading={isBookmarksLoading && !bookmarksData}
                 listData={bookmarksData?.data || []}
@@ -300,7 +262,9 @@ const Dashboard = () => {
                     });
 
                   addCategoryToBookmarkMutation.mutate({
-                    category_id: selectedCategoryDuringAdd?.value || category_id as number | null,
+                    category_id:
+                      selectedCategoryDuringAdd?.value ||
+                      (category_id as number | null),
                     bookmark_id: data?.data[0]?.id as number,
                   });
                 } catch (error) {
@@ -419,7 +383,11 @@ const Dashboard = () => {
             deleteCategoryMutation.mutateAsync({
               category_id: id,
             })
-          )
+          );
+        }}
+        onAddBookmark={(url) => {
+          setUrl(url);
+          addItem(url);
         }}
       />
       <AddCategoryModal
@@ -429,7 +397,7 @@ const Dashboard = () => {
               user_id: session?.user?.id as string,
               name: newCategoryName,
             })
-          )
+          );
         }}
       />
       <ToastContainer />

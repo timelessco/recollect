@@ -1,5 +1,11 @@
 import find from 'lodash/find';
-import { SingleListData, UserTagsData, CategoriesData } from '../types/apiTypes';
+import { DeepRequired, FieldErrorsImpl } from 'react-hook-form';
+import {
+  SingleListData,
+  UserTagsData,
+  CategoriesData,
+} from '../types/apiTypes';
+import { UrlInput } from '../types/componentTypes';
 
 export const getTagAsPerId = (tagIg: number, tagsData: Array<UserTagsData>) => {
   return find(tagsData, (item) => {
@@ -23,5 +29,15 @@ export const getCategoryIdFromSlug = (
 ) => {
   if (allCategories) {
     return find(allCategories, (item) => item?.category_slug === slug)?.id;
+  }
+};
+
+export const urlInputErrorText = (errors: FieldErrorsImpl<DeepRequired<UrlInput>>) => {
+  if (errors?.urlText?.type === 'pattern') {
+    return 'Please enter valid URL';
+  } else if (errors?.urlText?.type === 'required') {
+    return 'Please enter URL';
+  } else {
+    return '';
   }
 };

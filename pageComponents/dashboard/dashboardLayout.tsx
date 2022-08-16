@@ -7,9 +7,11 @@ import {
   MenuAlt2Icon,
   XIcon,
   InboxIcon,
+  PlusCircleIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/outline';
-import { SearchIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/solid';
-import { ChildrenTypes } from '../../types/componentTypes';
+import { TrashIcon } from '@heroicons/react/solid';
+import { ChildrenTypes, UrlInput } from '../../types/componentTypes';
 import Button from '../../components/atoms/button';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,8 +23,11 @@ import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   UNCATEGORIZED_URL,
+  URL_PATTERN,
 } from '../../utils/constants';
-import { getCountInCategory } from '../../utils/helpers';
+import { getCountInCategory, urlInputErrorText } from '../../utils/helpers';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { isEmpty } from 'lodash';
 
 interface SideBarNavidationTypes {
   name: string;
@@ -50,6 +55,7 @@ interface DashboardLayoutProps {
   onAddCategoryClick: () => void;
   onDeleteCategoryClick: (id: string) => void;
   bookmarksData?: Array<SingleListData>;
+  onAddBookmark: (url: string) => void;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -62,14 +68,19 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     onSigninClick,
     onAddCategoryClick,
     onDeleteCategoryClick,
-    // bookmarksData, // make this from react-query
+    onAddBookmark,
   } = props;
 
-  // const categoryCount = (id: number) => {
-  //   const count = bookmarksData?.filter((item) => item?.category_id === id);
-
-  //   return count?.length;
-  // };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<UrlInput>();
+  const onSubmit: SubmitHandler<UrlInput> = (data) => {
+    onAddBookmark(data.urlText);
+    reset({ urlText: '' });
+  };
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
@@ -444,21 +455,42 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
             </button>
             <div className="flex-1 px-4 flex justify-between">
               <div className="flex-1 flex">
-                <form className="w-full flex md:ml-0" action="#" method="GET">
+                <form
+                  className="w-full flex md:ml-0"
+                  onSubmit={handleSubmit(onSubmit)}
+                >
                   <label htmlFor="search-field" className="sr-only">
                     Search
                   </label>
                   <div className="relative w-full text-gray-400 focus-within:text-gray-600">
                     <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                      <SearchIcon className="h-5 w-5" aria-hidden="true" />
+                      {!isEmpty(errors) ? (
+                        <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                      ) : (
+                        <PlusCircleIcon
+                          className="h-5 w-5"
+                          aria-hidden="true"
+                        />
+                      )}
                     </div>
                     <input
-                      id="search-field"
-                      className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent sm:text-sm"
-                      placeholder="Search"
-                      type="search"
-                      name="search"
+                      {...register('urlText', {
+                        required: true,
+                        pattern: URL_PATTERN,
+                      })}
+                      type="text"
+                      placeholder="Add URL"
+                      className={`${
+                        isEmpty(errors)
+                          ? 'text-gray-900 placeholder-gray-500 focus:placeholder-gray-400'
+                          : 'text-red-600 placeholder-red-300 focus:placeholder-red-400'
+                      } block w-full h-full pl-8 pr-3 py-2 border-transparent  focus:outline-none focus:ring-0 focus:border-transparent sm:text-sm`}
                     />
+                    {!isEmpty(errors) && (
+                      <div className="mt-2 text-sm text-red-600">
+                        {urlInputErrorText(errors)}
+                      </div>
+                    )}
                   </div>
                 </form>
               </div>
