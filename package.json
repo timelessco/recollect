@@ -30,6 +30,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.33.1",
     "react-select": "^5.4.0",
+    "react-spinners": "^0.13.4",
     "react-toastify": "^9.0.8",
     "slugify": "^1.6.5",
     "zustand": "^4.0.0"

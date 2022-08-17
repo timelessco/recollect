@@ -37,7 +37,7 @@ import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
 import { find } from 'lodash';
 import DashboardLayout from './dashboardLayout';
-import { useModalStore } from '../../store/componentStore';
+import { useLoadersStore, useModalStore } from '../../store/componentStore';
 import AddCategoryModal from './addCategoryModal';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
@@ -58,6 +58,14 @@ const Dashboard = () => {
     useState<SearchSelectOption | null>();
 
   const router = useRouter();
+
+  const toggleIsAddBookmarkModalButtonLoading = useLoadersStore(
+    (state) => state.toggleIsAddBookmarkModalButtonLoading
+  );
+
+  const toggleIsDeleteBookmarkLoading = useLoadersStore(
+    (state) => state.toggleIsDeleteBookmarkLoading
+  );
 
   const toggleAddCategoryModal = useModalStore(
     (state) => state.toggleAddCategoryModal
@@ -212,8 +220,12 @@ const Dashboard = () => {
               <CardSection
                 isLoading={isBookmarksLoading && !bookmarksData}
                 listData={bookmarksData?.data || []}
-                onDeleteClick={(item) => {
-                  deleteBookmarkMutation.mutate(item);
+                onDeleteClick={async (item) => {
+                  toggleIsDeleteBookmarkLoading();
+                  await mutationApiCall(
+                    deleteBookmarkMutation.mutateAsync(item)
+                  );
+                  toggleIsDeleteBookmarkLoading();
                 }}
                 onEditClick={(item) => {
                   setAddedUrlData(item);
@@ -240,8 +252,9 @@ const Dashboard = () => {
             addedTags={addedUrlData?.addedTags || []}
             addBookmark={async () => {
               const userData = session?.user as unknown as UserIdentity;
-
               if (!isEdit) {
+                toggleIsAddBookmarkModalButtonLoading();
+
                 try {
                   const data = await addBookmarkMutation.mutateAsync({
                     userData,
@@ -272,6 +285,7 @@ const Dashboard = () => {
                   errorToast(err);
                 }
               }
+              toggleIsAddBookmarkModalButtonLoading();
               setShowAddBookmarkModal(false);
             }}
             createTag={async (tagData) => {

@@ -16,6 +16,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
 import find from 'lodash/find';
 import filter from 'lodash/filter';
+import Spinner from '../../components/spinner';
+import { useLoadersStore } from '../../store/componentStore';
+import { BOOKMARKS_KEY } from '../../utils/constants';
 
 // Modal for adding a bookmark
 interface AddModalContentProps {
@@ -47,9 +50,16 @@ export default function AddModalContent(props: AddModalContentProps) {
     categoryId,
   } = props;
 
+  const isAddBookmarkModalButtonLoading = useLoadersStore(
+    (state) => state.isAddBookmarkModalButtonLoading
+  );
+
   const queryClient = useQueryClient();
 
-  const latestBookmarkData = queryClient.getQueryData(['bookmarks', categoryId]) as {
+  const latestBookmarkData = queryClient.getQueryData([
+    BOOKMARKS_KEY,
+    categoryId,
+  ]) as {
     data: SingleListData[];
     error: PostgrestError;
   };
@@ -159,7 +169,9 @@ export default function AddModalContent(props: AddModalContentProps) {
             onChange={onCategoryChange}
             defaultValue={filter(
               categoryData?.data,
-              (item) => item?.id === (latestCurrentBookmarkData?.category_id || categoryId)
+              (item) =>
+                item?.id ===
+                (latestCurrentBookmarkData?.category_id || categoryId)
             )?.map((item) => {
               return {
                 label: item?.category_name,
@@ -171,7 +183,11 @@ export default function AddModalContent(props: AddModalContentProps) {
       </div>
       <div className="mt-4">
         <Button className="w-full" onClick={addBookmark} isDisabled={!urlData}>
-          <span>{mainButtonText}</span>
+          {!isAddBookmarkModalButtonLoading ? (
+            <span>{mainButtonText}</span>
+          ) : (
+            <Spinner />
+          )}
         </Button>
       </div>
     </div>

@@ -7,6 +7,8 @@ import { useRouter } from 'next/router';
 import { UNCATEGORIZED_URL } from '../../utils/constants';
 import { isEmpty } from 'lodash';
 import BookmarkCardSkeleton from '../../components/loadersSkeleton/bookmarkCardSkeleton';
+import Spinner from '../../components/spinner';
+import { useLoadersStore } from '../../store/componentStore';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -23,6 +25,10 @@ const CardSection = ({
 }: CardSectionProps) => {
   const router = useRouter();
   const category_id = router?.asPath?.split('/')[1] || null;
+
+  const isDeleteBookmarkLoading = useLoadersStore(
+    (state) => state.isDeleteBookmarkLoading
+  );
 
   // TODO: make this dependant on react-query
   const bookmarksList =
@@ -86,11 +92,17 @@ const CardSection = ({
                             className="h-5 w-5 text-gray-400 cursor-pointer"
                             onClick={() => onEditClick(post)}
                           />
-                          <TrashIcon
-                            className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
-                            aria-hidden="true"
-                            onClick={() => onDeleteClick(post)}
-                          />
+                          {!isDeleteBookmarkLoading ? (
+                            <TrashIcon
+                              className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
+                              aria-hidden="true"
+                              onClick={() => onDeleteClick(post)}
+                            />
+                          ) : (
+                            <div>
+                              <Spinner size={15} />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
