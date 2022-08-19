@@ -14,7 +14,7 @@ export interface SingleListData {
 }
 
 export interface FetchDataResponse<T = SingleListData[]> {
-  data: T; 
+  data: T;
   error: PostgrestError | null;
 }
 

@@ -3,6 +3,7 @@ export const MAIN_TABLE_NAME = 'todos';
 export const TAG_TABLE_NAME = 'tags';
 export const BOOKMARK_TAGS_TABLE_NAME = 'bookmark_tags';
 export const CATEGORIES_TABLE_NAME = 'categories';
+export const BOOKMAKRS_STORAGE_NAME = 'bookmarks';
 
 // regx
 
