@@ -63,6 +63,7 @@ export interface CategoriesData {
   category_name: string;
   user_id: string;
   category_slug: string;
+  is_public: boolean;
 }
 
 export interface FetchCategoriesDataResponse {

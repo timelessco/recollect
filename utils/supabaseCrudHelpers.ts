@@ -195,6 +195,21 @@ export const addCategoryToBookmark = async ({
   return { data, error } as unknown as FetchDataResponse;
 };
 
+export const updateCategory = async ({
+  category_id,
+  updateData,
+}: {
+  category_id: number | null | string;
+  updateData: { is_public: boolean };
+}) => {
+  const { data, error } = await supabase
+    .from(CATEGORIES_TABLE_NAME)
+    .update(updateData)
+    .match({ id: category_id });
+
+  return { data, error } as unknown as FetchCategoriesDataResponse;
+};
+
 // auth
 
 export const getCurrentUserSession = async () => {

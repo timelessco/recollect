@@ -23,6 +23,7 @@ import {
   removeTagFromBookmark,
   signInWithOauth,
   signOut,
+  updateCategory,
 } from '../../utils/supabaseCrudHelpers';
 import CardSection from './cardSection';
 import {
@@ -37,7 +38,11 @@ import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
 import { find } from 'lodash';
 import DashboardLayout from './dashboardLayout';
-import { useLoadersStore, useModalStore } from '../../store/componentStore';
+import {
+  useLoadersStore,
+  useMiscellaneousStore,
+  useModalStore,
+} from '../../store/componentStore';
 import AddCategoryModal from './addCategoryModal';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
@@ -45,6 +50,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { errorToast } from '../../utils/toastMessages';
 import { mutationApiCall } from '../../utils/apiHelpers';
 import { getCategoryIdFromSlug } from '../../utils/helpers';
+import ShareCategoryModal from './shareCategoryModal';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -69,6 +75,14 @@ const Dashboard = () => {
 
   const toggleAddCategoryModal = useModalStore(
     (state) => state.toggleAddCategoryModal
+  );
+
+  const toggleShareCategoryModal = useModalStore(
+    (state) => state.toggleShareCategoryModal
+  );
+
+  const setShareCategoryId = useMiscellaneousStore(
+    (state) => state.setShareCategoryId
   );
 
   const fetchUserSession = async () => {
@@ -172,6 +186,13 @@ const Dashboard = () => {
       // Invalidate and refetch
       queryClient.invalidateQueries([CATEGORIES_KEY]);
       queryClient.invalidateQueries([BOOKMARKS_KEY]);
+    },
+  });
+
+  const updateCategoryMutation = useMutation(updateCategory, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries([CATEGORIES_KEY]);
     },
   });
 
@@ -403,6 +424,10 @@ const Dashboard = () => {
           setUrl(url);
           addItem(url);
         }}
+        onShareClick={(id) => {
+          toggleShareCategoryModal();
+          setShareCategoryId(parseInt(id));
+        }}
       />
       <AddCategoryModal
         onAddNewCategory={(newCategoryName) => {
@@ -410,6 +435,17 @@ const Dashboard = () => {
             addCategoryMutation.mutateAsync({
               user_id: session?.user?.id as string,
               name: newCategoryName,
+            })
+          );
+        }}
+      />
+      <ShareCategoryModal
+        userId={session?.user?.id || ''}
+        onPublicSwitch={(isPublic, categoryId) => {
+          mutationApiCall(
+            updateCategoryMutation.mutateAsync({
+              category_id: categoryId,
+              updateData: { is_public: isPublic },
             })
           );
         }}

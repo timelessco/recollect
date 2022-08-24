@@ -35,13 +35,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   });
 
   return (
-    <div>
+    <div className="w-full">
       <div className="mt-1 relative rounded-md shadow-sm">
         <input
           ref={ref}
           type="text"
           value={value}
-          {...omit(props, ['isError', 'errorText'])}
+          {...omit(props, ['isError', 'errorText', 'isDisabled'])}
           placeholder={placeholder}
           className={inputClass}
           onChange={onChange}

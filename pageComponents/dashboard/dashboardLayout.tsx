@@ -10,7 +10,7 @@ import {
   PlusCircleIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/outline';
-import { TrashIcon } from '@heroicons/react/solid';
+import { TrashIcon, ShareIcon, GlobeIcon } from '@heroicons/react/solid';
 import { ChildrenTypes, UrlInput } from '../../types/componentTypes';
 import Button from '../../components/atoms/button';
 import Image from 'next/image';
@@ -35,7 +35,13 @@ interface SideBarNavidationTypes {
   icon: React.ComponentClass<any>;
   current: boolean;
   href: string;
-  children: Array<{ name: string; href: string; id: string; current: boolean }>;
+  children: Array<{
+    name: string;
+    href: string;
+    id: string;
+    current: boolean;
+    isPublic: boolean;
+  }>;
   count?: number;
 }
 
@@ -56,6 +62,7 @@ interface DashboardLayoutProps {
   onDeleteCategoryClick: (id: string) => void;
   bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
+  onShareClick: (id: string) => void;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -69,6 +76,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     onAddCategoryClick,
     onDeleteCategoryClick,
     onAddBookmark,
+    onShareClick,
   } = props;
 
   const {
@@ -123,6 +131,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
           href: `/${item?.category_slug}`,
           id: item?.id,
           current: currentPath === item?.category_slug,
+          isPublic: item?.is_public,
         };
       }),
     },
@@ -401,7 +410,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                       : ''
                                   } justify-between group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-50`}
                                 >
-                                  <div className="flex">
+                                  <div className="flex items-center">
                                     {subItem.name}
                                     <span
                                       className={classNames(
@@ -416,13 +425,25 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                         bookmarksData?.data
                                       )}
                                     </span>
+                                    {subItem?.isPublic && (
+                                      <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
+                                    )}
                                   </div>
-                                  <TrashIcon
-                                    onClick={() =>
-                                      onDeleteCategoryClick(subItem.id)
-                                    }
-                                    className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 hidden group-hover:block"
-                                  />
+                                  <div className="flex space-x-1">
+                                    <ShareIcon
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        onShareClick(subItem.id);
+                                      }}
+                                      className="flex-shrink-0 h-4 w-4 text-gray-400 hover:text-gray-500 hidden group-hover:block"
+                                    />
+                                    <TrashIcon
+                                      onClick={() =>
+                                        onDeleteCategoryClick(subItem.id)
+                                      }
+                                      className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 hidden group-hover:block"
+                                    />
+                                  </div>
                                 </Disclosure.Button>
                               </Link>
                             ))}
