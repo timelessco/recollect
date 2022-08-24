@@ -125,15 +125,17 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
       icon: FolderIcon,
       current: false,
       href: '/',
-      children: categoryData?.data?.map((item) => {
-        return {
-          name: item?.category_name,
-          href: `/${item?.category_slug}`,
-          id: item?.id,
-          current: currentPath === item?.category_slug,
-          isPublic: item?.is_public,
-        };
-      }),
+      children: userImg
+        ? categoryData?.data?.map((item) => {
+            return {
+              name: item?.category_name,
+              href: `/${item?.category_slug}`,
+              id: item?.id,
+              current: currentPath === item?.category_slug,
+              isPublic: item?.is_public,
+            };
+          })
+        : [],
     },
   ] as unknown as Array<SideBarNavidationTypes>;
 
@@ -412,19 +414,21 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                 >
                                   <div className="flex items-center">
                                     {subItem.name}
-                                    <span
-                                      className={classNames(
-                                        item.current
-                                          ? 'bg-white'
-                                          : 'bg-gray-200 group-hover:bg-gray-200',
-                                        'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
-                                      )}
-                                    >
-                                      {getCountInCategory(
-                                        subItem?.id,
-                                        bookmarksData?.data
-                                      )}
-                                    </span>
+                                    {bookmarksData?.data && (
+                                      <span
+                                        className={classNames(
+                                          item.current
+                                            ? 'bg-white'
+                                            : 'bg-gray-200 group-hover:bg-gray-200',
+                                          'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
+                                        )}
+                                      >
+                                        {getCountInCategory(
+                                          subItem?.id,
+                                          bookmarksData?.data
+                                        )}
+                                      </span>
+                                    )}
                                     {subItem?.isPublic && (
                                       <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
                                     )}
