@@ -63,6 +63,7 @@ interface DashboardLayoutProps {
   bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
   onShareClick: (id: string) => void;
+  userId: string;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -77,6 +78,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     onDeleteCategoryClick,
     onAddBookmark,
     onShareClick,
+    userId,
   } = props;
 
   const {
@@ -96,7 +98,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
 
   const currentPath = router.asPath.split('/')[1] || null;
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY]) as {
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
     error: PostgrestError;
   };

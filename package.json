@@ -21,6 +21,7 @@
     "filereader": "^0.10.3",
     "heroicons": "^1.0.6",
     "i": "^0.3.7",
+    "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
     "next": "12.2.0",
     "next-auth": "^4.7.0",

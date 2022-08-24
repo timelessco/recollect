@@ -2,11 +2,7 @@ import { Session, UserIdentity } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
-import {
-  BookmarksTagData,
-  CategoriesData,
-  SingleListData,
-} from '../../types/apiTypes';
+import { BookmarksTagData, SingleListData } from '../../types/apiTypes';
 import {
   addCategoryToBookmark,
   addData,
@@ -16,7 +12,7 @@ import {
   deleteData,
   deleteUserCategory,
   fetchBookmakrsData,
-  fetchData,
+  fetchCategoriesData,
   fetchUserTags,
   getBookmarkScrappedData,
   getCurrentUserSession,
@@ -29,7 +25,6 @@ import CardSection from './cardSection';
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
-  CATEGORIES_TABLE_NAME,
   USER_TAGS_KEY,
 } from '../../utils/constants';
 import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
@@ -114,9 +109,11 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
 
   // Queries
-  const { data: allCategories } = useQuery([CATEGORIES_KEY], () =>
-    fetchData<CategoriesData[]>(CATEGORIES_TABLE_NAME)
+  const { data: allCategories } = useQuery(
+    [CATEGORIES_KEY, session?.user?.id],
+    () => fetchCategoriesData(session?.user?.id || '')
   );
+
   const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
 
   const category_slug = router?.asPath?.split('/')[1] || null;
@@ -170,21 +167,21 @@ const Dashboard = () => {
   const addCategoryMutation = useMutation(addUserCategory, {
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries([CATEGORIES_KEY]);
+      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
     },
   });
 
   const deleteCategoryMutation = useMutation(deleteUserCategory, {
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries([CATEGORIES_KEY]);
+      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
     },
   });
 
   const addCategoryToBookmarkMutation = useMutation(addCategoryToBookmark, {
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries([CATEGORIES_KEY]);
+      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
       queryClient.invalidateQueries([BOOKMARKS_KEY]);
     },
   });
@@ -192,7 +189,7 @@ const Dashboard = () => {
   const updateCategoryMutation = useMutation(updateCategory, {
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries([CATEGORIES_KEY]);
+      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
     },
   });
 
@@ -264,6 +261,7 @@ const Dashboard = () => {
           setOpen={() => setShowAddBookmarkModal(false)}
         >
           <AddModalContent
+            userId={session?.user?.id || ''}
             categoryId={category_id}
             urlString={url}
             mainButtonText={isEdit ? 'Update Bookmark' : 'Add Bookmark'}
@@ -400,6 +398,7 @@ const Dashboard = () => {
   return (
     <>
       <DashboardLayout
+        userId={session?.user?.id || ''}
         bookmarksData={bookmarksData?.data} // make this dependant on react-query
         renderMainContent={renderAllBookmarkCards}
         userImg={session?.user?.user_metadata?.avatar_url}

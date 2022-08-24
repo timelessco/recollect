@@ -18,7 +18,7 @@ import find from 'lodash/find';
 import filter from 'lodash/filter';
 import Spinner from '../../components/spinner';
 import { useLoadersStore } from '../../store/componentStore';
-import { BOOKMARKS_KEY } from '../../utils/constants';
+import { BOOKMARKS_KEY, CATEGORIES_KEY } from '../../utils/constants';
 
 // Modal for adding a bookmark
 interface AddModalContentProps {
@@ -33,6 +33,7 @@ interface AddModalContentProps {
   urlString: string;
   onCategoryChange: (value: SearchSelectOption | null) => void;
   categoryId: string | number | null;
+  userId: string;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
@@ -48,6 +49,7 @@ export default function AddModalContent(props: AddModalContentProps) {
     urlString,
     onCategoryChange,
     categoryId,
+    userId,
   } = props;
 
   const isAddBookmarkModalButtonLoading = useLoadersStore(
@@ -69,7 +71,7 @@ export default function AddModalContent(props: AddModalContentProps) {
     (item) => item?.id === urlData?.id
   ) as unknown as SingleListData;
 
-  const categoryData = queryClient.getQueryData(['categories']) as {
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
     error: PostgrestError;
   };

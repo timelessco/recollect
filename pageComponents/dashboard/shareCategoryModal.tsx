@@ -26,7 +26,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
   const [isPublic, setIsPublic] = useState(false);
   const queryClient = useQueryClient();
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY]) as {
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
     error: PostgrestError;
   };

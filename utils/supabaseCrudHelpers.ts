@@ -149,6 +149,14 @@ export const removeTagFromBookmark = async ({
 
 // user catagories
 
+export const fetchCategoriesData = async (userId: string) => {
+  const { data, error } = await supabase
+    .from(CATEGORIES_TABLE_NAME)
+    .select()
+    .eq('user_id', userId);
+  return { data, error } as unknown as FetchCategoriesDataResponse;
+};
+
 export const addUserCategory = async ({
   user_id,
   name,
