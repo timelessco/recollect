@@ -9,7 +9,7 @@ import {
 import { getTagAsPerId } from '../../utils/helpers';
 import isNull from 'lodash/isNull';
 import { PostgrestError } from '@supabase/supabase-js';
-import jwt_decode from 'jwt-decode';
+// import jwt_decode from 'jwt-decode';
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
@@ -27,26 +27,26 @@ export default async function handler(
   const accessToken = req.query.access_token as string;
   const {} = supabase.auth.setAuth(accessToken);
 
-  const decode = jwt_decode(accessToken) as unknown;
+  // const decode = jwt_decode(accessToken) as unknown;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
-  const userId = decode?.sub;
+  // const userId = decode?.sub;
 
   let data;
 
   if (category_id === 'null') {
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
-      .select()
-      .eq('user_id', userId);
+      .select();
+    // .eq('user_id', userId); // TODO: check and remove
     data = bookmarkData;
   } else {
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
       .select()
-      .eq('category_id', category_id)
-      .eq('user_id', userId);
+      .eq('category_id', category_id);
+    // .eq('user_id', userId);  // TODO: check and remove
 
     data = bookmarkData;
   }

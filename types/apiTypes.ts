@@ -70,3 +70,12 @@ export interface FetchCategoriesDataResponse {
   data: CategoriesData[];
   error: PostgrestError | null;
 }
+
+// shared categories
+export interface FetchSharedCategoriesData {
+  id: number;
+  created_at: string;
+  category_id: number;
+  email: string;
+  edit_access: boolean;
+}

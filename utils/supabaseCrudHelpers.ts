@@ -8,6 +8,7 @@ import {
   FetchBookmarksTagDataResponse,
   BookmarksTagData,
   FetchCategoriesDataResponse,
+  FetchSharedCategoriesData,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -19,6 +20,8 @@ import {
   BOOKMARK_TAGS_TABLE_NAME,
   DELETE_BOOKMARK_DATA_API,
   CATEGORIES_TABLE_NAME,
+  SEND_COLLABORATION_EMAIL_API,
+  SHARED_CATEGORIES_TABLE_NAME,
 } from './constants';
 import slugify from 'slugify';
 
@@ -149,11 +152,9 @@ export const removeTagFromBookmark = async ({
 
 // user catagories
 
-export const fetchCategoriesData = async (userId: string) => {
-  const { data, error } = await supabase
-    .from(CATEGORIES_TABLE_NAME)
-    .select()
-    .eq('user_id', userId);
+export const fetchCategoriesData = async () => {
+  const { data, error } = await supabase.from(CATEGORIES_TABLE_NAME).select();
+  // .eq('user_id', userId); // TODO: remove , we are not adding this filter as policy is updated
   return { data, error } as unknown as FetchCategoriesDataResponse;
 };
 
@@ -216,6 +217,53 @@ export const updateCategory = async ({
     .match({ id: category_id });
 
   return { data, error } as unknown as FetchCategoriesDataResponse;
+};
+
+// share
+export const sendCollaborationEmailInvite = async ({
+  emailList,
+  category_id,
+  user_role,
+  hostUrl,
+}: {
+  emailList: Array<string>;
+  category_id: number;
+  user_role: string;
+  hostUrl: string;
+}) => {
+  const res = await axios.post(
+    `${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`,
+    {
+      emailList,
+      category_id,
+      user_role,
+      hostUrl,
+    }
+  );
+
+  return res;
+};
+
+export const fetchSharedCategoriesData = async () => {
+  const { data, error } = await supabase
+    .from(SHARED_CATEGORIES_TABLE_NAME)
+    .select();
+  // .eq('email', email);
+  return {
+    data,
+    error,
+  } as unknown as FetchDataResponse<FetchSharedCategoriesData>;
+};
+
+export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
+  const { data, error } = await supabase
+    .from(SHARED_CATEGORIES_TABLE_NAME)
+    .delete()
+    .match({ id: id });
+  return {
+    data,
+    error,
+  } as unknown as FetchDataResponse<FetchSharedCategoriesData>;
 };
 
 // auth

@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from '@heroicons/react/solid';
+import { ExternalLinkIcon, TrashIcon } from '@heroicons/react/solid';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { find } from 'lodash';
@@ -7,27 +7,50 @@ import Input from '../../components/atoms/input';
 import LabelledComponent from '../../components/labelledComponent';
 import Modal from '../../components/modal';
 import Switch from '../../components/switch';
+import Tabs from '../../components/tabs';
 import {
   useMiscellaneousStore,
   useModalStore,
 } from '../../store/componentStore';
-import { CategoriesData } from '../../types/apiTypes';
-import { CATEGORIES_KEY } from '../../utils/constants';
+import {
+  CategoriesData,
+  FetchSharedCategoriesData,
+} from '../../types/apiTypes';
+import {
+  CATEGORIES_KEY,
+  SHARED_CATEGORIES_TABLE_NAME,
+} from '../../utils/constants';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import isEmpty from 'lodash/isEmpty';
+import { sendCollaborationEmailInvite } from '../../utils/supabaseCrudHelpers';
 
 interface ShareCategoryModalProps {
   userId: string;
   onPublicSwitch: (value: boolean, category_id: number | null | string) => void;
+  onDeleteUserClick: (id: number) => void;
+}
+
+interface EmailInput {
+  email: string;
 }
 
 const ShareCategoryModal = (props: ShareCategoryModalProps) => {
-  const { userId, onPublicSwitch } = props;
+  const { userId, onPublicSwitch, onDeleteUserClick } = props;
 
   const [publicUrl, setPublicUrl] = useState('');
   const [isPublic, setIsPublic] = useState(false);
+  const [currentTab, setCurrentTab] = useState<string | number>('public');
   const queryClient = useQueryClient();
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
+    error: PostgrestError;
+  };
+
+  const sharedCategoriesData = queryClient.getQueryData([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]) as {
+    data: FetchSharedCategoriesData[];
     error: PostgrestError;
   };
 
@@ -39,6 +62,30 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     categoryData?.data,
     (item) => item?.id === shareCategoryId
   );
+
+  const categoryCollaborationUsersData = sharedCategoriesData?.data?.filter(
+    (item) => item?.category_id === shareCategoryId
+  );
+
+  console.log('ss', categoryCollaborationUsersData);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<EmailInput>();
+
+  const onSubmit: SubmitHandler<EmailInput> = (data) => {
+    const emailList = data?.email?.split(',');
+    sendCollaborationEmailInvite({
+      emailList,
+      user_role: 'read',
+      category_id: shareCategoryId as number,
+      hostUrl: window?.location?.origin,
+    });
+    reset({ email: '' });
+  };
 
   useEffect(() => {
     setIsPublic(currentCategory?.is_public || false);
@@ -59,11 +106,10 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     (state) => state.toggleShareCategoryModal
   );
 
-  return (
-    <Modal open={showShareCategoryModal} setOpen={toggleShareCategoryModal}>
-      <div>
-        <p className="text-lg font-medium">Share</p>
-        <div className="flex space-x-4 items-center my-5">
+  const renderPublicShare = () => {
+    return (
+      <>
+        <div className="flex space-x-4 items-center">
           <p>Public</p>
           <Switch
             enabled={isPublic}
@@ -95,6 +141,66 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
             </div>
           </LabelledComponent>
         )}
+      </>
+    );
+  };
+
+  const renderCollabShare = () => {
+    return (
+      <>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Input
+            {...register('email', {
+              required: true,
+              // pattern: URL_PATTERN,
+            })}
+            placeholder="Enter emails seperated by commas"
+            className=""
+            isError={!isEmpty(errors)}
+            errorText=""
+          />
+        </form>
+        <div className="mt-6">
+          {categoryCollaborationUsersData?.map((item) => {
+            return (
+              <div
+                key={item?.id}
+                className=" py-2 px-1 rounded-lg  hover:bg-gray-100 flex justify-between items-center"
+              >
+                <p className="text-sm text-gray-900 truncate">{item?.email}</p>
+                <TrashIcon
+                  onClick={() => onDeleteUserClick(item?.id)}
+                  className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 cursor-pointer"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <Modal open={showShareCategoryModal} setOpen={toggleShareCategoryModal}>
+      <div>
+        <Tabs
+          tabs={[
+            {
+              name: 'Public Share',
+              current: currentTab === 'public',
+              value: 'public',
+            },
+            {
+              name: 'Collaboration',
+              current: currentTab === 'collaboration',
+              value: 'collaboration',
+            },
+          ]}
+          onTabClick={(value) => setCurrentTab(value)}
+        />
+        <div className="my-5">
+          {currentTab === 'public' ? renderPublicShare() : renderCollabShare()}
+        </div>
       </div>
     </Modal>
   );

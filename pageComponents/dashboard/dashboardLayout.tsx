@@ -10,24 +10,35 @@ import {
   PlusCircleIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/outline';
-import { TrashIcon, ShareIcon, GlobeIcon } from '@heroicons/react/solid';
+import {
+  TrashIcon,
+  ShareIcon,
+  GlobeIcon,
+  UsersIcon,
+} from '@heroicons/react/solid';
 import { ChildrenTypes, UrlInput } from '../../types/componentTypes';
 import Button from '../../components/atoms/button';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
-import { CategoriesData, SingleListData } from '../../types/apiTypes';
+import {
+  CategoriesData,
+  FetchSharedCategoriesData,
+  SingleListData,
+} from '../../types/apiTypes';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
+  SHARED_CATEGORIES_TABLE_NAME,
   UNCATEGORIZED_URL,
   URL_PATTERN,
 } from '../../utils/constants';
 import { getCountInCategory, urlInputErrorText } from '../../utils/helpers';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { isEmpty } from 'lodash';
+import find from 'lodash/find';
+import isEmpty from 'lodash/isEmpty';
 
 interface SideBarNavidationTypes {
   name: string;
@@ -41,6 +52,7 @@ interface SideBarNavidationTypes {
     id: string;
     current: boolean;
     isPublic: boolean;
+    isCollab: boolean;
   }>;
   count?: number;
 }
@@ -108,6 +120,13 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     error: PostgrestError;
   };
 
+  const sharedCategoriesData = queryClient.getQueryData([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]) as {
+    data: FetchSharedCategoriesData[];
+    error: PostgrestError;
+  };
+
   const navigation = [
     {
       name: 'All Bookmarks',
@@ -135,6 +154,12 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
               id: item?.id,
               current: currentPath === item?.category_slug,
               isPublic: item?.is_public,
+              isCollab: !isEmpty(
+                find(
+                  sharedCategoriesData?.data,
+                  (cat) => cat?.category_id === item?.id
+                )
+              ),
             };
           })
         : [],
@@ -433,6 +458,9 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                     )}
                                     {subItem?.isPublic && (
                                       <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
+                                    )}
+                                    {subItem?.isCollab && (
+                                      <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
                                     )}
                                   </div>
                                   <div className="flex space-x-1">

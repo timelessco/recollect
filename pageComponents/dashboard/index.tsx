@@ -10,9 +10,11 @@ import {
   addUserCategory,
   addUserTags,
   deleteData,
+  deleteSharedCategoriesUser,
   deleteUserCategory,
   fetchBookmakrsData,
   fetchCategoriesData,
+  fetchSharedCategoriesData,
   fetchUserTags,
   getBookmarkScrappedData,
   getCurrentUserSession,
@@ -25,6 +27,7 @@ import CardSection from './cardSection';
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
+  SHARED_CATEGORIES_TABLE_NAME,
   USER_TAGS_KEY,
 } from '../../utils/constants';
 import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
@@ -111,7 +114,7 @@ const Dashboard = () => {
   // Queries
   const { data: allCategories } = useQuery(
     [CATEGORIES_KEY, session?.user?.id],
-    () => fetchCategoriesData(session?.user?.id || '')
+    () => fetchCategoriesData()
   );
 
   const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
@@ -125,6 +128,10 @@ const Dashboard = () => {
   );
 
   const { data: userTags } = useQuery([USER_TAGS_KEY], () => fetchUserTags());
+
+  const {} = useQuery([SHARED_CATEGORIES_TABLE_NAME], () =>
+    fetchSharedCategoriesData()
+  );
 
   // Mutations
   const addBookmarkMutation = useMutation(addData, {
@@ -192,6 +199,17 @@ const Dashboard = () => {
       queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
     },
   });
+
+  // share category mutation
+  const deleteSharedCategoriesUserMutation = useMutation(
+    deleteSharedCategoriesUser,
+    {
+      onSuccess: () => {
+        // Invalidate and refetch
+        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+      },
+    }
+  );
 
   // gets scrapped data
   const addItem = async (item: string) => {
@@ -295,8 +313,9 @@ const Dashboard = () => {
 
                   addCategoryToBookmarkMutation.mutate({
                     category_id:
-                      selectedCategoryDuringAdd?.value ||
-                      (category_id as number | null),
+                      selectedCategoryDuringAdd?.value === undefined
+                        ? (category_id as number | null)
+                        : selectedCategoryDuringAdd?.value,
                     bookmark_id: data?.data[0]?.id as number,
                   });
                 } catch (error) {
@@ -445,6 +464,13 @@ const Dashboard = () => {
             updateCategoryMutation.mutateAsync({
               category_id: categoryId,
               updateData: { is_public: isPublic },
+            })
+          );
+        }}
+        onDeleteUserClick={(id) => {
+          mutationApiCall(
+            deleteSharedCategoriesUserMutation.mutateAsync({
+              id: id,
             })
           );
         }}

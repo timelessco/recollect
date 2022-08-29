@@ -24,7 +24,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { data } = await supabase
     .from(MAIN_TABLE_NAME)
     .select()
-    .eq('user_id', context?.query?.category_id)
+    .eq('user_id', context?.query?.category_id) // user id not needed as only cat owners can add data
     .eq('category_id', context?.query?.id);
 
   if (isEmpty(data)) {
