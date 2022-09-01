@@ -346,7 +346,8 @@ const Dashboard = () => {
                       find(
                         currentCategory?.collabData,
                         (item) => item?.userEmail === session?.user?.email
-                      )?.edit_access === true
+                      )?.edit_access === true ||
+                      currentCategory?.user_id === session?.user?.id
                     ) {
                       addCategoryToBookmarkMutation.mutate({
                         category_id:
