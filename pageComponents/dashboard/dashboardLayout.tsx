@@ -441,21 +441,22 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                 >
                                   <div className="flex items-center">
                                     {subItem.name}
-                                    {bookmarksData?.data && (
-                                      <span
-                                        className={classNames(
-                                          item.current
-                                            ? 'bg-white'
-                                            : 'bg-gray-200 group-hover:bg-gray-200',
-                                          'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
-                                        )}
-                                      >
-                                        {getCountInCategory(
-                                          subItem?.id,
-                                          bookmarksData?.data
-                                        )}
-                                      </span>
-                                    )}
+                                    {bookmarksData?.data &&
+                                      !subItem?.isCollab && (
+                                        <span
+                                          className={classNames(
+                                            item.current
+                                              ? 'bg-white'
+                                              : 'bg-gray-200 group-hover:bg-gray-200',
+                                            'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
+                                          )}
+                                        >
+                                          {getCountInCategory(
+                                            subItem?.id,
+                                            bookmarksData?.data
+                                          )}
+                                        </span>
+                                      )}
                                     {subItem?.isPublic && (
                                       <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
                                     )}

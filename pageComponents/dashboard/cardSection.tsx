@@ -9,12 +9,14 @@ import { isEmpty } from 'lodash';
 import BookmarkCardSkeleton from '../../components/loadersSkeleton/bookmarkCardSkeleton';
 import Spinner from '../../components/spinner';
 import { useLoadersStore } from '../../store/componentStore';
+import Avatar from 'react-avatar';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
   onDeleteClick: (post: SingleListData) => void;
   onEditClick: (item: SingleListData) => void;
   isLoading: boolean;
+  userId: string;
 }
 
 const CardSection = ({
@@ -22,6 +24,7 @@ const CardSection = ({
   onDeleteClick,
   onEditClick = () => null,
   isLoading = false,
+  userId,
 }: CardSectionProps) => {
   const router = useRouter();
   const category_id = router?.asPath?.split('/')[1] || null;
@@ -88,20 +91,31 @@ const CardSection = ({
                           </a>
                         </div>
                         <div className="flex">
-                          <PencilAltIcon
-                            className="h-5 w-5 text-gray-400 cursor-pointer"
-                            onClick={() => onEditClick(post)}
+                          <Avatar
+                            name={post?.user_id}
+                            size="20"
+                            round={true}
+                            className="mr-1"
                           />
-                          {!isDeleteBookmarkLoading ? (
-                            <TrashIcon
-                              className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
-                              aria-hidden="true"
-                              onClick={() => onDeleteClick(post)}
-                            />
-                          ) : (
-                            <div>
-                              <Spinner size={15} />
-                            </div>
+                          {/* only show edit and del if logged in user is the owner of bookmarks */}
+                          {post?.user_id === userId && (
+                            <>
+                              <PencilAltIcon
+                                className="h-5 w-5 text-gray-400 cursor-pointer"
+                                onClick={() => onEditClick(post)}
+                              />
+                              {!isDeleteBookmarkLoading ? (
+                                <TrashIcon
+                                  className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
+                                  aria-hidden="true"
+                                  onClick={() => onDeleteClick(post)}
+                                />
+                              ) : (
+                                <div>
+                                  <Spinner size={15} />
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

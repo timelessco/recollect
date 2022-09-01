@@ -114,7 +114,8 @@ const Dashboard = () => {
   // Queries
   const { data: allCategories } = useQuery(
     [CATEGORIES_KEY, session?.user?.id],
-    () => fetchCategoriesData()
+    () =>
+      fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
   const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
@@ -254,6 +255,7 @@ const Dashboard = () => {
             <>
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
               <CardSection
+                userId={session?.user?.id || ''}
                 isLoading={isBookmarksLoading && !bookmarksData}
                 listData={bookmarksData?.data || []}
                 onDeleteClick={async (item) => {
@@ -311,13 +313,54 @@ const Dashboard = () => {
                       selectedData: bookmarkTagsData,
                     });
 
-                  addCategoryToBookmarkMutation.mutate({
-                    category_id:
-                      selectedCategoryDuringAdd?.value === undefined
-                        ? (category_id as number | null)
-                        : selectedCategoryDuringAdd?.value,
-                    bookmark_id: data?.data[0]?.id as number,
-                  });
+                  // only if the user has write access to this category, then this mutation should happen
+                  // if (selectedCategoryDuringAdd?. === userData?.id) {
+                  //   addCategoryToBookmarkMutation.mutate({
+                  //     category_id:
+                  //       selectedCategoryDuringAdd?.value === undefined
+                  //         ? (category_id as number | null)
+                  //         : selectedCategoryDuringAdd?.value,
+                  //     bookmark_id: data?.data[0]?.id as number,
+                  //   });
+                  // } else {
+                  //   errorToast(
+                  //     'You dont have access to add to this category, this bookmark will be added without a category'
+                  //   );
+                  // }
+                  if (category_id === null) {
+                    addCategoryToBookmarkMutation.mutate({
+                      category_id:
+                        selectedCategoryDuringAdd?.value === undefined
+                          ? (category_id as number | null)
+                          : selectedCategoryDuringAdd?.value,
+                      bookmark_id: data?.data[0]?.id as number,
+                    });
+                  } else {
+                    const currentCategory = find(
+                      allCategories?.data,
+                      (item) => item?.id === category_id
+                    );
+
+                    // only if the user has write access to this category, then this mutation should happen
+                    if (
+                      find(
+                        currentCategory?.collabData,
+                        (item) => item?.userEmail === session?.user?.email
+                      )?.edit_access === true
+                    ) {
+                      addCategoryToBookmarkMutation.mutate({
+                        category_id:
+                          selectedCategoryDuringAdd?.value === undefined
+                            ? (category_id as number | null)
+                            : selectedCategoryDuringAdd?.value,
+                        bookmark_id: data?.data[0]?.id as number,
+                      });
+                    } else {
+                      errorToast(
+                        'You dont have access to add to this category, this bookmark will be added without a category'
+                      );
+                    }
+                  }
                 } catch (error) {
                   const err = error as unknown as string;
                   errorToast(err);

@@ -64,6 +64,7 @@ export interface CategoriesData {
   user_id: string;
   category_slug: string;
   is_public: boolean;
+  collabData: CollabDataInCategory[] | [];
 }
 
 export interface FetchCategoriesDataResponse {
@@ -77,5 +78,10 @@ export interface FetchSharedCategoriesData {
   created_at: string;
   category_id: number;
   email: string;
+  edit_access: boolean;
+}
+
+export interface CollabDataInCategory {
+  userEmail: string;
   edit_access: boolean;
 }

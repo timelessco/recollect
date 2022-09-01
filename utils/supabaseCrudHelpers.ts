@@ -9,6 +9,7 @@ import {
   BookmarksTagData,
   FetchCategoriesDataResponse,
   FetchSharedCategoriesData,
+  CollabDataInCategory,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -24,6 +25,7 @@ import {
   SHARED_CATEGORIES_TABLE_NAME,
 } from './constants';
 import slugify from 'slugify';
+import isEmpty from 'lodash/isEmpty';
 
 // bookmark
 export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
@@ -152,10 +154,57 @@ export const removeTagFromBookmark = async ({
 
 // user catagories
 
-export const fetchCategoriesData = async () => {
-  const { data, error } = await supabase.from(CATEGORIES_TABLE_NAME).select();
-  // .eq('user_id', userId); // TODO: remove , we are not adding this filter as policy is updated
-  return { data, error } as unknown as FetchCategoriesDataResponse;
+export const fetchCategoriesData = async (
+  userId: string,
+  userEmail: string
+) => {
+  if (!isEmpty(userId)) {
+    // filter onces where is_public true and userId is not same as uuid
+    const { data, error } = await supabase.from(CATEGORIES_TABLE_NAME).select();
+    // .not('is_public', 'eq', true)
+    // .not('user_id', 'neq', userId);
+    // .or(`is_public.eq.true,and(user_id.eq.${userId})`);
+    // .eq('is_public', false);
+    // .eq('user_id', userId); // TODO: remove , we are not adding this filter as policy is updated
+
+    // TODO : figure out how to do this in supabase
+    const finalData = data?.filter((item) => {
+      if (!(item?.is_public === true && item?.user_id !== userId)) {
+        return item;
+      }
+    });
+
+    // get shared-cat data
+
+    const { data: sharedCategoryData, error: sharedCategoryError } =
+      await supabase.from(SHARED_CATEGORIES_TABLE_NAME).select();
+    // .eq('email', userEmail);
+
+    const finalDataWithCollab = finalData?.map((item) => {
+      let collabData = [] as CollabDataInCategory[];
+      sharedCategoryData?.forEach((catItem) => {
+        if (catItem?.category_id === item?.id) {
+          collabData = [
+            ...collabData,
+            {
+              userEmail: catItem?.email,
+              edit_access: catItem?.edit_access,
+            },
+          ];
+        }
+      });
+
+      return {
+        ...item,
+        collabData,
+      };
+    });
+
+    return {
+      data: finalDataWithCollab,
+      error,
+    } as unknown as FetchCategoriesDataResponse;
+  }
 };
 
 export const addUserCategory = async ({
@@ -223,12 +272,12 @@ export const updateCategory = async ({
 export const sendCollaborationEmailInvite = async ({
   emailList,
   category_id,
-  user_role,
+  edit_access,
   hostUrl,
 }: {
   emailList: Array<string>;
   category_id: number;
-  user_role: string;
+  edit_access: boolean;
   hostUrl: string;
 }) => {
   const res = await axios.post(
@@ -236,7 +285,7 @@ export const sendCollaborationEmailInvite = async ({
     {
       emailList,
       category_id,
-      user_role,
+      edit_access,
       hostUrl,
     }
   );
@@ -248,7 +297,7 @@ export const fetchSharedCategoriesData = async () => {
   const { data, error } = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
     .select();
-  // .eq('email', email);
+  // .eq('email', email); // TODO: check and remove
   return {
     data,
     error,

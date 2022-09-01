@@ -23,6 +23,7 @@ import {
 import { SubmitHandler, useForm } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
 import { sendCollaborationEmailInvite } from '../../utils/supabaseCrudHelpers';
+import Select from '../../components/atoms/select';
 
 interface ShareCategoryModalProps {
   userId: string;
@@ -40,6 +41,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
   const [publicUrl, setPublicUrl] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [currentTab, setCurrentTab] = useState<string | number>('public');
+  const [editAccess, setEditAccess] = useState(false);
   const queryClient = useQueryClient();
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
@@ -67,8 +69,6 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     (item) => item?.category_id === shareCategoryId
   );
 
-  console.log('ss', categoryCollaborationUsersData);
-
   const {
     register,
     handleSubmit,
@@ -80,7 +80,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     const emailList = data?.email?.split(',');
     sendCollaborationEmailInvite({
       emailList,
-      user_role: 'read',
+      edit_access: editAccess,
       category_id: shareCategoryId as number,
       hostUrl: window?.location?.origin,
     });
@@ -168,6 +168,21 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
                 className=" py-2 px-1 rounded-lg  hover:bg-gray-100 flex justify-between items-center"
               >
                 <p className="text-sm text-gray-900 truncate">{item?.email}</p>
+                <Select
+                  options={[
+                    { name: 'Read', value: 0 },
+                    { name: 'Edit', value: 1 },
+                  ]}
+                  defaultValue={
+                    find(
+                      currentCategory?.collabData,
+                      (collabItem) => collabItem?.userEmail === item?.email
+                    )?.edit_access
+                      ? 1
+                      : 0
+                  }
+                  onChange={(e) => setEditAccess(e.target.value ? true : false)}
+                />
                 <TrashIcon
                   onClick={() => onDeleteUserClick(item?.id)}
                   className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 cursor-pointer"
