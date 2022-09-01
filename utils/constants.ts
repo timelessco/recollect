@@ -16,7 +16,7 @@ export const URL_PATTERN =
 export const NEXT_API_URL = `${
   process.env.NODE_ENV === 'development'
     ? 'http://localhost:3000'
-    : 'https://bookmark-tags-git-dev-timelessco.vercel.app'
+    : 'https://bookmark-tags-3hu3e2dwr-timelessco.vercel.app' // : 'https://bookmark-tags-git-dev-timelessco.vercel.app'
 }/api`;
 
 export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
