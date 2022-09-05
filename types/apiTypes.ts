@@ -84,4 +84,5 @@ export interface FetchSharedCategoriesData {
 export interface CollabDataInCategory {
   userEmail: string;
   edit_access: boolean;
+  share_id: number;
 }

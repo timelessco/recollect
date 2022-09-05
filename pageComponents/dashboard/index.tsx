@@ -22,6 +22,7 @@ import {
   signInWithOauth,
   signOut,
   updateCategory,
+  updateSharedCategoriesUserAccess,
 } from '../../utils/supabaseCrudHelpers';
 import CardSection from './cardSection';
 import {
@@ -212,6 +213,16 @@ const Dashboard = () => {
     }
   );
 
+  const updateSharedCategoriesUserAccessMutation = useMutation(
+    updateSharedCategoriesUserAccess,
+    {
+      onSuccess: () => {
+        // Invalidate and refetch
+        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+      },
+    }
+  );
+
   // gets scrapped data
   const addItem = async (item: string) => {
     setShowAddBookmarkModal(true);
@@ -313,20 +324,7 @@ const Dashboard = () => {
                       selectedData: bookmarkTagsData,
                     });
 
-                  // only if the user has write access to this category, then this mutation should happen
-                  // if (selectedCategoryDuringAdd?. === userData?.id) {
-                  //   addCategoryToBookmarkMutation.mutate({
-                  //     category_id:
-                  //       selectedCategoryDuringAdd?.value === undefined
-                  //         ? (category_id as number | null)
-                  //         : selectedCategoryDuringAdd?.value,
-                  //     bookmark_id: data?.data[0]?.id as number,
-                  //   });
-                  // } else {
-                  //   errorToast(
-                  //     'You dont have access to add to this category, this bookmark will be added without a category'
-                  //   );
-                  // }
+                  // if no catId is there in URL
                   if (category_id === null) {
                     addCategoryToBookmarkMutation.mutate({
                       category_id:
@@ -341,7 +339,7 @@ const Dashboard = () => {
                       (item) => item?.id === category_id
                     );
 
-                    // only if the user has write access to this category, then this mutation should happen
+                    // only if the user has write access or is owner to this category, then this mutation should happen
                     if (
                       find(
                         currentCategory?.collabData,
@@ -518,6 +516,14 @@ const Dashboard = () => {
             })
           );
         }}
+        updateSharedCategoriesUserAccess={(id, value) =>
+          mutationApiCall(
+            updateSharedCategoriesUserAccessMutation.mutateAsync({
+              id: id,
+              updateData: { edit_access: parseInt(value) ? true : false },
+            })
+          )
+        }
       />
       <ToastContainer />
     </>

@@ -155,8 +155,8 @@ export const removeTagFromBookmark = async ({
 // user catagories
 
 export const fetchCategoriesData = async (
-  userId: string,
-  userEmail: string
+  userId: string
+  // userEmail: string
 ) => {
   if (!isEmpty(userId)) {
     // filter onces where is_public true and userId is not same as uuid
@@ -167,7 +167,7 @@ export const fetchCategoriesData = async (
     // .eq('is_public', false);
     // .eq('user_id', userId); // TODO: remove , we are not adding this filter as policy is updated
 
-    // TODO : figure out how to do this in supabase
+    // TODO : figure out how to do this in supabase , and change this to next api
     const finalData = data?.filter((item) => {
       if (!(item?.is_public === true && item?.user_id !== userId)) {
         return item;
@@ -176,8 +176,9 @@ export const fetchCategoriesData = async (
 
     // get shared-cat data
 
-    const { data: sharedCategoryData, error: sharedCategoryError } =
-      await supabase.from(SHARED_CATEGORIES_TABLE_NAME).select();
+    const { data: sharedCategoryData } = await supabase
+      .from(SHARED_CATEGORIES_TABLE_NAME)
+      .select();
     // .eq('email', userEmail);
 
     const finalDataWithCollab = finalData?.map((item) => {
@@ -189,6 +190,7 @@ export const fetchCategoriesData = async (
             {
               userEmail: catItem?.email,
               edit_access: catItem?.edit_access,
+              share_id: catItem?.id,
             },
           ];
         }
@@ -315,6 +317,22 @@ export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
   } as unknown as FetchDataResponse<FetchSharedCategoriesData>;
 };
 
+export const updateSharedCategoriesUserAccess = async ({
+  id,
+  updateData,
+}: {
+  id: number;
+  updateData: { edit_access: boolean };
+}) => {
+  const { data, error } = await supabase
+    .from(SHARED_CATEGORIES_TABLE_NAME)
+    .update(updateData)
+    .match({ id: id });
+  return {
+    data,
+    error,
+  } as unknown as FetchDataResponse<FetchSharedCategoriesData>;
+};
 // auth
 
 export const getCurrentUserSession = async () => {

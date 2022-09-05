@@ -29,6 +29,7 @@ interface ShareCategoryModalProps {
   userId: string;
   onPublicSwitch: (value: boolean, category_id: number | null | string) => void;
   onDeleteUserClick: (id: number) => void;
+  updateSharedCategoriesUserAccess: (id: number, value: string) => void;
 }
 
 interface EmailInput {
@@ -36,12 +37,16 @@ interface EmailInput {
 }
 
 const ShareCategoryModal = (props: ShareCategoryModalProps) => {
-  const { userId, onPublicSwitch, onDeleteUserClick } = props;
+  const {
+    userId,
+    onPublicSwitch,
+    onDeleteUserClick,
+    updateSharedCategoriesUserAccess,
+  } = props;
 
   const [publicUrl, setPublicUrl] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [currentTab, setCurrentTab] = useState<string | number>('public');
-  const [editAccess, setEditAccess] = useState(false);
   const queryClient = useQueryClient();
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
@@ -80,7 +85,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     const emailList = data?.email?.split(',');
     sendCollaborationEmailInvite({
       emailList,
-      edit_access: editAccess,
+      edit_access: false,
       category_id: shareCategoryId as number,
       hostUrl: window?.location?.origin,
     });
@@ -181,7 +186,9 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
                       ? 1
                       : 0
                   }
-                  onChange={(e) => setEditAccess(e.target.value ? true : false)}
+                  onChange={(e) =>
+                    updateSharedCategoriesUserAccess(item?.id, e.target.value)
+                  }
                 />
                 <TrashIcon
                   onClick={() => onDeleteUserClick(item?.id)}
