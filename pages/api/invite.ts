@@ -3,9 +3,13 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { SHARED_CATEGORIES_TABLE_NAME } from '../../utils/constants';
 import { supabase } from '../../utils/supabaseClient';
 import jwt_decode from 'jwt-decode';
+import isEmpty from 'lodash/isEmpty';
+import isNull from 'lodash/isNull';
+import { PostgrestError } from '@supabase/supabase-js';
 
 type Data = {
-  name: string;
+  success: string | null;
+  error: string | null | PostgrestError;
 };
 
 interface InviteTokenData {
@@ -18,7 +22,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  if (req?.query?.token) {
+  if (!req?.query?.token) {
     const tokenData = jwt_decode(
       req?.query?.token as string
     ) as InviteTokenData;
@@ -29,12 +33,31 @@ export default async function handler(
       edit_access: tokenData?.edit_access,
     };
 
-    const {} = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
-      category_id: insertData?.category_id,
-      email: insertData?.email,
-      edit_access: false,
-    });
-  }
+    // check if user with category Id is already there in DB
+    const { data, error } = await supabase
+      .from(SHARED_CATEGORIES_TABLE_NAME)
+      .select('*')
+      .eq('category_id', insertData?.category_id)
+      .eq('email', insertData?.email);
 
-  res.status(200).json({ name: 'John Doe' });
+    if (isEmpty(data) && isNull(error)) {
+      const {} = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
+        category_id: insertData?.category_id,
+        email: insertData?.email,
+        edit_access: false,
+      });
+
+      res.status(200).json({
+        success: 'User has been added as a colaborator to the category',
+        error: null,
+      });
+    } else {
+      res.status(500).json({
+        success: null,
+        error: isNull(error)
+          ? 'The user is alredy a colaborator of this category'
+          : error,
+      });
+    }
+  }
 }
