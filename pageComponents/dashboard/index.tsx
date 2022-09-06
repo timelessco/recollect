@@ -35,7 +35,7 @@ import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
-import { find } from 'lodash';
+import { find, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
   useLoadersStore,
@@ -209,6 +209,7 @@ const Dashboard = () => {
       onSuccess: () => {
         // Invalidate and refetch
         queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+        queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
       },
     }
   );
@@ -266,6 +267,17 @@ const Dashboard = () => {
             <>
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
               <CardSection
+                showAvatar={
+                  // only show for a collab category
+                  category_id &&
+                  !isNull(category_id) &&
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  find(allCategories?.data, (item) => item?.id === category_id)
+                    ?.collabData?.length > 1
+                    ? true
+                    : false
+                }
                 userId={session?.user?.id || ''}
                 isLoading={isBookmarksLoading && !bookmarksData}
                 listData={bookmarksData?.data || []}
@@ -324,42 +336,31 @@ const Dashboard = () => {
                       selectedData: bookmarkTagsData,
                     });
 
-                  // if no catId is there in URL
-                  if (category_id === null) {
-                    addCategoryToBookmarkMutation.mutate({
-                      category_id:
-                        selectedCategoryDuringAdd?.value === undefined
-                          ? (category_id as number | null)
-                          : selectedCategoryDuringAdd?.value,
-                      bookmark_id: data?.data[0]?.id as number,
-                    });
-                  } else {
-                    const currentCategory = find(
-                      allCategories?.data,
-                      (item) => item?.id === category_id
-                    );
+                  const selectedCategoryId =
+                    selectedCategoryDuringAdd?.value === undefined
+                      ? (category_id as number | null)
+                      : selectedCategoryDuringAdd?.value;
 
-                    // only if the user has write access or is owner to this category, then this mutation should happen
-                    if (
-                      find(
-                        currentCategory?.collabData,
-                        (item) => item?.userEmail === session?.user?.email
-                      )?.edit_access === true ||
-                      currentCategory?.user_id === session?.user?.id
-                    ) {
-                      addCategoryToBookmarkMutation.mutate({
-                        category_id:
-                          selectedCategoryDuringAdd?.value === undefined
-                            ? (category_id as number | null)
-                            : selectedCategoryDuringAdd?.value,
-                        bookmark_id: data?.data[0]?.id as number,
-                      });
-                    } else {
-                      errorToast(
-                        'You dont have access to add to this category, this bookmark will be added without a category'
-                      );
-                    }
-                  }
+                  const currentCategory = find(
+                    allCategories?.data,
+                    (item) => item?.id === selectedCategoryId
+                  );
+                  // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+                  const updateAccessCondition =
+                    !selectedCategoryId ||
+                    find(
+                      currentCategory?.collabData,
+                      (item) => item?.userEmail === session?.user?.email
+                    )?.edit_access === true ||
+                    currentCategory?.user_id?.id === session?.user?.id;
+
+                  await mutationApiCall(
+                    addCategoryToBookmarkMutation.mutateAsync({
+                      category_id: selectedCategoryId,
+                      bookmark_id: data?.data[0]?.id as number,
+                      update_access: updateAccessCondition,
+                    })
+                  );
                 } catch (error) {
                   const err = error as unknown as string;
                   errorToast(err);
@@ -440,12 +441,29 @@ const Dashboard = () => {
             }}
             onCategoryChange={async (value) => {
               if (isEdit) {
-                addCategoryToBookmarkMutation.mutate({
-                  category_id: value?.value
-                    ? (value?.value as number)
-                    : (null as null),
-                  bookmark_id: addedUrlData?.id as number,
-                });
+                const currentCategory =
+                  find(
+                    allCategories?.data,
+                    (item) => item?.id === value?.value
+                  ) ||
+                  find(allCategories?.data, (item) => item?.id === category_id);
+                // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+
+                const updateAccessCondition =
+                  find(
+                    currentCategory?.collabData,
+                    (item) => item?.userEmail === session?.user?.email
+                  )?.edit_access === true ||
+                  currentCategory?.user_id?.id === session?.user?.id;
+                await mutationApiCall(
+                  addCategoryToBookmarkMutation.mutateAsync({
+                    category_id: value?.value
+                      ? (value?.value as number)
+                      : (null as null),
+                    bookmark_id: addedUrlData?.id as number,
+                    update_access: updateAccessCondition,
+                  })
+                );
               } else {
                 setSelectedCategoryDuringAdd(value);
               }

@@ -23,6 +23,7 @@ export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
 export const GET_BOOKMARKS_DATA_API = '/getBookmarksData';
 export const DELETE_BOOKMARK_DATA_API = '/deleteBookmark';
 export const SEND_COLLABORATION_EMAIL_API = '/sendCollaborationEmail';
+export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
 
 // urls
 

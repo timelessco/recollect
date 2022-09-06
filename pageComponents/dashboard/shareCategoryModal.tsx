@@ -1,7 +1,8 @@
 import { ExternalLinkIcon, TrashIcon } from '@heroicons/react/solid';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
-import { find } from 'lodash';
+import find from 'lodash/find';
+import isNull from 'lodash/isNull';
 import { useEffect, useState } from 'react';
 import Input from '../../components/atoms/input';
 import LabelledComponent from '../../components/labelledComponent';
@@ -12,14 +13,8 @@ import {
   useMiscellaneousStore,
   useModalStore,
 } from '../../store/componentStore';
-import {
-  CategoriesData,
-  FetchSharedCategoriesData,
-} from '../../types/apiTypes';
-import {
-  CATEGORIES_KEY,
-  SHARED_CATEGORIES_TABLE_NAME,
-} from '../../utils/constants';
+import { CategoriesData } from '../../types/apiTypes';
+import { CATEGORIES_KEY } from '../../utils/constants';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
 import { sendCollaborationEmailInvite } from '../../utils/supabaseCrudHelpers';
@@ -54,13 +49,6 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     error: PostgrestError;
   };
 
-  const sharedCategoriesData = queryClient.getQueryData([
-    SHARED_CATEGORIES_TABLE_NAME,
-  ]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
-
   const shareCategoryId = useMiscellaneousStore(
     (state) => state.shareCategoryId
   );
@@ -68,10 +56,6 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
   const currentCategory = find(
     categoryData?.data,
     (item) => item?.id === shareCategoryId
-  );
-
-  const categoryCollaborationUsersData = sharedCategoriesData?.data?.filter(
-    (item) => item?.category_id === shareCategoryId
   );
 
   const {
@@ -111,12 +95,15 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     (state) => state.toggleShareCategoryModal
   );
 
+  const isUserOwnerOfCategory = userId === currentCategory?.user_id?.id;
+
   const renderPublicShare = () => {
     return (
       <>
-        <div className="flex space-x-4 items-center">
+        <div className="flex space-x-4 items-center mb-3">
           <p>Public</p>
           <Switch
+            disabled={!isUserOwnerOfCategory}
             enabled={isPublic}
             setEnabled={() => {
               setIsPublic(!isPublic);
@@ -146,6 +133,11 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
             </div>
           </LabelledComponent>
         )}
+        {!isUserOwnerOfCategory && (
+          <p className="text-sm mt-3">
+            *Only category owner can update public access
+          </p>
+        )}
       </>
     );
   };
@@ -166,34 +158,46 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
           />
         </form>
         <div className="mt-6">
-          {categoryCollaborationUsersData?.map((item) => {
+          {currentCategory?.collabData?.map((item) => {
             return (
               <div
-                key={item?.id}
+                key={item?.share_id}
                 className=" py-2 px-1 rounded-lg  hover:bg-gray-100 flex justify-between items-center"
               >
-                <p className="text-sm text-gray-900 truncate">{item?.email}</p>
-                <Select
-                  options={[
-                    { name: 'Read', value: 0 },
-                    { name: 'Edit', value: 1 },
-                  ]}
-                  defaultValue={
-                    find(
-                      currentCategory?.collabData,
-                      (collabItem) => collabItem?.userEmail === item?.email
-                    )?.edit_access
-                      ? 1
-                      : 0
-                  }
-                  onChange={(e) =>
-                    updateSharedCategoriesUserAccess(item?.id, e.target.value)
-                  }
-                />
-                <TrashIcon
-                  onClick={() => onDeleteUserClick(item?.id)}
-                  className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 cursor-pointer"
-                />
+                <p className="text-sm text-gray-900 truncate">
+                  {item?.userEmail}
+                </p>
+                {/* for owner just show owner text */}
+                {!isNull(item?.share_id) ? (
+                  <>
+                    {' '}
+                    <Select
+                      options={[
+                        { name: 'Read', value: 0 },
+                        { name: 'Edit', value: 1 },
+                      ]}
+                      defaultValue={item?.edit_access ? 1 : 0}
+                      onChange={(e) =>
+                        !isNull(item?.share_id) &&
+                        updateSharedCategoriesUserAccess(
+                          item?.share_id,
+                          e.target.value
+                        )
+                      }
+                    />
+                    <TrashIcon
+                      onClick={() =>
+                        !isNull(item?.share_id) &&
+                        onDeleteUserClick(item?.share_id)
+                      }
+                      className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 cursor-pointer"
+                    />{' '}
+                  </>
+                ) : (
+                  <p className="text-sm font-bold text-gray-900 truncate">
+                    Owner
+                  </p>
+                )}
               </div>
             );
           })}

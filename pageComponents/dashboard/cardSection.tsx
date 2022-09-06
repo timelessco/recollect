@@ -17,6 +17,7 @@ interface CardSectionProps {
   onEditClick: (item: SingleListData) => void;
   isLoading: boolean;
   userId: string;
+  showAvatar: boolean;
 }
 
 const CardSection = ({
@@ -25,6 +26,7 @@ const CardSection = ({
   onEditClick = () => null,
   isLoading = false,
   userId,
+  showAvatar = false,
 }: CardSectionProps) => {
   const router = useRouter();
   const category_id = router?.asPath?.split('/')[1] || null;
@@ -91,12 +93,14 @@ const CardSection = ({
                           </a>
                         </div>
                         <div className="flex">
-                          <Avatar
-                            name={post?.user_id}
-                            size="20"
-                            round={true}
-                            className="mr-1"
-                          />
+                          {showAvatar && (
+                            <Avatar
+                              name={post?.user_id}
+                              size="20"
+                              round={true}
+                              className="mr-1"
+                            />
+                          )}
                           {/* only show edit and del if logged in user is the owner of bookmarks */}
                           {post?.user_id === userId && (
                             <>

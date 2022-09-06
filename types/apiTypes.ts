@@ -61,7 +61,7 @@ export interface CategoriesData {
   created_at: string;
   id: number;
   category_name: string;
-  user_id: string;
+  user_id: { id: string; email: string };
   category_slug: string;
   is_public: boolean;
   collabData: CollabDataInCategory[] | [];
@@ -84,5 +84,6 @@ export interface FetchSharedCategoriesData {
 export interface CollabDataInCategory {
   userEmail: string;
   edit_access: boolean;
-  share_id: number;
+  share_id: number | null; // it will be null for owner
+  isOwner: boolean;
 }
