@@ -8,10 +8,8 @@ export interface ModalStoreState {
 export interface LoadersStoreState {
   isAddBookmarkModalButtonLoading: boolean;
   isDeleteBookmarkLoading: boolean;
-  addBookmarkMinDataLoading: boolean;
   toggleIsAddBookmarkModalButtonLoading: () => void;
   toggleIsDeleteBookmarkLoading: () => void;
-  toggleAddBookmarkMinDataLoading: () => void;
 }
 
 export interface MiscellaneousStoreState {

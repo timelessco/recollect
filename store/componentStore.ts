@@ -21,7 +21,6 @@ export const useModalStore = create<ModalStoreState>((set) => ({
 export const useLoadersStore = create<LoadersStoreState>((set) => ({
   isAddBookmarkModalButtonLoading: false,
   isDeleteBookmarkLoading: false,
-  addBookmarkMinDataLoading: false,
   toggleIsAddBookmarkModalButtonLoading: () =>
     set((state) => ({
       isAddBookmarkModalButtonLoading: !state.isAddBookmarkModalButtonLoading,
@@ -29,10 +28,6 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
   toggleIsDeleteBookmarkLoading: () =>
     set((state) => ({
       isDeleteBookmarkLoading: !state.isDeleteBookmarkLoading,
-    })),
-  toggleAddBookmarkMinDataLoading: () =>
-    set((state) => ({
-      addBookmarkMinDataLoading: !state.addBookmarkMinDataLoading,
     })),
 }));
 

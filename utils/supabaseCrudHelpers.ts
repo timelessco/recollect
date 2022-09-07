@@ -26,6 +26,7 @@ import {
   ADD_CATEGORY_TO_BOOKMARK_API,
   SYNC_PROFILES_TABLE_API,
   ADD_BOOKMARK_MIN_DATA,
+  ADD_URL_SCREENSHOT_API,
 } from './constants';
 import slugify from 'slugify';
 import isEmpty from 'lodash/isEmpty';
@@ -80,6 +81,31 @@ export const addBookmarkMinData = async ({ url }: { url: string }) => {
       access_token: session?.access_token,
       url,
     });
+
+    return apiRes;
+  } catch (e) {
+    return e;
+  }
+};
+
+export const addBookmarkScreenshot = async ({
+  url,
+  id,
+}: {
+  url: string;
+  id: number;
+}) => {
+  const session = await getCurrentUserSession();
+
+  try {
+    const apiRes = await axios.post(
+      `${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
+      {
+        access_token: session?.access_token,
+        url,
+        id,
+      }
+    );
 
     return apiRes;
   } catch (e) {

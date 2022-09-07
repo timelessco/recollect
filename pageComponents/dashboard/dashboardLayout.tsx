@@ -40,7 +40,6 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import Spinner from '../../components/spinner';
-import { useLoadersStore } from '../../store/componentStore';
 
 interface SideBarNavidationTypes {
   name: string;
@@ -78,6 +77,7 @@ interface DashboardLayoutProps {
   onAddBookmark: (url: string) => void;
   onShareClick: (id: string) => void;
   userId: string;
+  isAddInputLoading: boolean;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -93,6 +93,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     onAddBookmark,
     onShareClick,
     userId,
+    isAddInputLoading = false,
   } = props;
 
   const {
@@ -111,10 +112,6 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
   const queryClient = useQueryClient();
 
   const currentPath = router.asPath.split('/')[1] || null;
-
-  const addBookmarkMinDataLoading = useLoadersStore(
-    (state) => state.addBookmarkMinDataLoading
-  );
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -526,7 +523,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                   </label>
                   <div className="relative w-full text-gray-400 focus-within:text-gray-600">
                     <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                      {addBookmarkMinDataLoading ? (
+                      {isAddInputLoading ? (
                         <Spinner />
                       ) : (
                         <>

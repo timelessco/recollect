@@ -21,6 +21,9 @@ interface CardSectionProps {
   isLoading: boolean;
   userId: string;
   showAvatar: boolean;
+  isOgImgLoading: boolean;
+  addScreenshotBookmarkId: number | undefined;
+  deleteBookmarkId: number | undefined;
 }
 
 const CardSection = ({
@@ -30,6 +33,9 @@ const CardSection = ({
   isLoading = false,
   userId,
   showAvatar = false,
+  isOgImgLoading = false,
+  addScreenshotBookmarkId,
+  deleteBookmarkId,
 }: CardSectionProps) => {
   const router = useRouter();
   const category_id = router?.asPath?.split('/')[1] || null;
@@ -89,11 +95,18 @@ const CardSection = ({
                       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
                     >
                       <div className="flex-shrink-0">
-                        <img
-                          className="h-48 w-full object-cover"
-                          src={post.ogImage || post.screenshot}
-                          alt=""
-                        />
+                        {isOgImgLoading &&
+                        addScreenshotBookmarkId === post?.id ? (
+                          <div className="h-48 w-full bg-slate-100 flex justify-center items-center">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <img
+                            className="h-48 w-full object-cover"
+                            src={post.ogImage || post.screenshot}
+                            alt=""
+                          />
+                        )}
                       </div>
                       <div className="flex-1 bg-white p-6 flex justify-between">
                         <div className="flex-1">
@@ -133,16 +146,17 @@ const CardSection = ({
                                 className="h-5 w-5 text-gray-400 cursor-pointer"
                                 onClick={() => onEditClick(post)}
                               />
-                              {!isDeleteBookmarkLoading ? (
+                              {isDeleteBookmarkLoading &&
+                              deleteBookmarkId === post?.id ? (
+                                <div>
+                                  <Spinner size={15} />
+                                </div>
+                              ) : (
                                 <TrashIcon
                                   className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
                                   aria-hidden="true"
                                   onClick={() => onDeleteClick(post)}
                                 />
-                              ) : (
-                                <div>
-                                  <Spinner size={15} />
-                                </div>
                               )}
                             </>
                           )}

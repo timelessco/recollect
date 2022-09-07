@@ -1,10 +1,11 @@
 import { Session, UserIdentity } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AxiosResponse } from 'axios';
+// import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import { BookmarksTagData, SingleListData } from '../../types/apiTypes';
 import {
   addBookmarkMinData,
+  addBookmarkScreenshot,
   addCategoryToBookmark,
   addData,
   addTagToBookmark,
@@ -17,7 +18,7 @@ import {
   fetchCategoriesData,
   fetchSharedCategoriesData,
   fetchUserTags,
-  getBookmarkScrappedData,
+  // getBookmarkScrappedData,
   getCurrentUserSession,
   removeTagFromBookmark,
   signInWithOauth,
@@ -37,7 +38,7 @@ import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
-import { find, isNull } from 'lodash';
+import { find, isEmpty, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
   useLoadersStore,
@@ -63,6 +64,11 @@ const Dashboard = () => {
   const [url, setUrl] = useState<string>('');
   const [selectedCategoryDuringAdd, setSelectedCategoryDuringAdd] =
     useState<SearchSelectOption | null>();
+  const [addScreenshotBookmarkId, setAddScreenshotBookmarkId] =
+    useState(undefined);
+  const [deleteBookmarkId, setDeleteBookmarkId] = useState<number | undefined>(
+    undefined
+  );
 
   const router = useRouter();
 
@@ -72,10 +78,6 @@ const Dashboard = () => {
 
   const toggleIsDeleteBookmarkLoading = useLoadersStore(
     (state) => state.toggleIsDeleteBookmarkLoading
-  );
-
-  const toggleAddBookmarkMinDataLoading = useLoadersStore(
-    (state) => state.toggleAddBookmarkMinDataLoading
   );
 
   const toggleAddCategoryModal = useModalStore(
@@ -153,16 +155,33 @@ const Dashboard = () => {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      setDeleteBookmarkId(undefined);
+    },
+  });
+
+  const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      setAddScreenshotBookmarkId(undefined);
     },
   });
 
   const addBookmarkMinDataMutation = useMutation(addBookmarkMinData, {
-    onSuccess: () => {
+    onSuccess: (res: unknown) => {
       // Invalidate and refetch
       queryClient.invalidateQueries([BOOKMARKS_KEY]);
-      toggleAddBookmarkMinDataLoading();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      const data = res?.data?.data[0];
+      const ogImg = data?.ogImage;
+      if (!ogImg || isEmpty(ogImg)) {
+        addBookmarkScreenshotMutation.mutate({ url: data?.url, id: data?.id });
+        setAddScreenshotBookmarkId(data?.id);
+      }
     },
   });
+
   // tag mutation
   const addUserTagsMutation = useMutation(addUserTags, {
     onSuccess: () => {
@@ -238,31 +257,31 @@ const Dashboard = () => {
     }
   );
 
-  // gets scrapped data
-  const addItem = async (item: string) => {
-    setShowAddBookmarkModal(true);
+  // // gets scrapped data
+  // const addItem = async (item: string) => {
+  //   setShowAddBookmarkModal(true);
 
-    try {
-      const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
+  //   try {
+  //     const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
 
-      const scrapperData = apiRes.data.data.scrapperData;
-      const screenshotUrl = apiRes.data.data.screenShot;
+  //     const scrapperData = apiRes.data.data.scrapperData;
+  //     const screenshotUrl = apiRes.data.data.screenShot;
 
-      const urlData = {
-        title: scrapperData?.title,
-        description: scrapperData?.description,
-        url: scrapperData?.url,
-        ogImage: scrapperData?.OgImage,
-        screenshot: screenshotUrl,
-      } as SingleListData;
+  //     const urlData = {
+  //       title: scrapperData?.title,
+  //       description: scrapperData?.description,
+  //       url: scrapperData?.url,
+  //       ogImage: scrapperData?.OgImage,
+  //       screenshot: screenshotUrl,
+  //     } as SingleListData;
 
-      setAddedUrlData(urlData);
-    } catch (err) {
-      console.error('err ,', err);
-    } finally {
-      console.log('finally');
-    }
-  };
+  //     setAddedUrlData(urlData);
+  //   } catch (err) {
+  //     console.error('err ,', err);
+  //   } finally {
+  //     console.log('finally');
+  //   }
+  // };
 
   // any new tags created need not come in tag dropdown , this filter implements this
   let filteredUserTags = userTags?.data ? [...userTags?.data] : [];
@@ -281,6 +300,9 @@ const Dashboard = () => {
             <>
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
               <CardSection
+                isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
+                addScreenshotBookmarkId={addScreenshotBookmarkId}
+                deleteBookmarkId={deleteBookmarkId}
                 showAvatar={
                   // only show for a collab category
                   category_id &&
@@ -297,6 +319,7 @@ const Dashboard = () => {
                 listData={bookmarksData?.data || []}
                 onDeleteClick={async (item) => {
                   toggleIsDeleteBookmarkLoading();
+                  setDeleteBookmarkId(item?.id);
                   await mutationApiCall(
                     deleteBookmarkMutation.mutateAsync(item)
                   );
@@ -491,6 +514,7 @@ const Dashboard = () => {
   return (
     <>
       <DashboardLayout
+        isAddInputLoading={addBookmarkMinDataMutation?.isLoading}
         userId={session?.user?.id || ''}
         bookmarksData={bookmarksData?.data} // make this dependant on react-query
         renderMainContent={renderAllBookmarkCards}
@@ -516,7 +540,6 @@ const Dashboard = () => {
           setUrl(url);
           // addItem(url);
           // await addBookmarkMinData({ url });
-          toggleAddBookmarkMinDataLoading();
           mutationApiCall(addBookmarkMinDataMutation.mutateAsync({ url: url }));
         }}
         onShareClick={(id) => {
