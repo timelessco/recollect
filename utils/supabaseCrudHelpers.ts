@@ -24,6 +24,7 @@ import {
   SEND_COLLABORATION_EMAIL_API,
   SHARED_CATEGORIES_TABLE_NAME,
   ADD_CATEGORY_TO_BOOKMARK_API,
+  SYNC_PROFILES_TABLE_API,
 } from './constants';
 import slugify from 'slugify';
 import isEmpty from 'lodash/isEmpty';
@@ -389,4 +390,14 @@ export const signInWithOauth = async (provider: Provider = 'google') => {
 export const signOut = async () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { error } = await supabase.auth.signOut();
+};
+
+export const updateProfilesTable = async () => {
+  try {
+    const res = await axios.get(`${NEXT_API_URL}${SYNC_PROFILES_TABLE_API}`);
+
+    return { data: res, error: undefined };
+  } catch (e) {
+    return { data: undefined, error: e };
+  }
 };
