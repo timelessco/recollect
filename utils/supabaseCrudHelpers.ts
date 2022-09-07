@@ -25,6 +25,7 @@ import {
   SHARED_CATEGORIES_TABLE_NAME,
   ADD_CATEGORY_TO_BOOKMARK_API,
   SYNC_PROFILES_TABLE_API,
+  ADD_BOOKMARK_MIN_DATA,
 } from './constants';
 import slugify from 'slugify';
 import isEmpty from 'lodash/isEmpty';
@@ -63,6 +64,21 @@ export const getBookmarkScrappedData = async (item: string) => {
     const apiRes = await axios.post(`${NEXT_API_URL}${BOOKMARK_SCRAPPER_API}`, {
       access_token: session?.access_token,
       url: item,
+    });
+
+    return apiRes;
+  } catch (e) {
+    return e;
+  }
+};
+
+export const addBookmarkMinData = async ({ url }: { url: string }) => {
+  const session = await getCurrentUserSession();
+
+  try {
+    const apiRes = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
+      access_token: session?.access_token,
+      url,
     });
 
     return apiRes;

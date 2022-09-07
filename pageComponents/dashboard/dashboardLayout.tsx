@@ -39,6 +39,8 @@ import { getCountInCategory, urlInputErrorText } from '../../utils/helpers';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
+import Spinner from '../../components/spinner';
+import { useLoadersStore } from '../../store/componentStore';
 
 interface SideBarNavidationTypes {
   name: string;
@@ -109,6 +111,10 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
   const queryClient = useQueryClient();
 
   const currentPath = router.asPath.split('/')[1] || null;
+
+  const addBookmarkMinDataLoading = useLoadersStore(
+    (state) => state.addBookmarkMinDataLoading
+  );
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -520,13 +526,19 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                   </label>
                   <div className="relative w-full text-gray-400 focus-within:text-gray-600">
                     <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                      {!isEmpty(errors) ? (
-                        <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                      {addBookmarkMinDataLoading ? (
+                        <Spinner />
                       ) : (
-                        <PlusCircleIcon
-                          className="h-5 w-5"
-                          aria-hidden="true"
-                        />
+                        <>
+                          {!isEmpty(errors) ? (
+                            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                          ) : (
+                            <PlusCircleIcon
+                              className="h-5 w-5"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </>
                       )}
                     </div>
                     <input

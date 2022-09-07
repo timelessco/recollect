@@ -4,6 +4,7 @@ import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import { BookmarksTagData, SingleListData } from '../../types/apiTypes';
 import {
+  addBookmarkMinData,
   addCategoryToBookmark,
   addData,
   addTagToBookmark,
@@ -71,6 +72,10 @@ const Dashboard = () => {
 
   const toggleIsDeleteBookmarkLoading = useLoadersStore(
     (state) => state.toggleIsDeleteBookmarkLoading
+  );
+
+  const toggleAddBookmarkMinDataLoading = useLoadersStore(
+    (state) => state.toggleAddBookmarkMinDataLoading
   );
 
   const toggleAddCategoryModal = useModalStore(
@@ -151,6 +156,13 @@ const Dashboard = () => {
     },
   });
 
+  const addBookmarkMinDataMutation = useMutation(addBookmarkMinData, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      toggleAddBookmarkMinDataLoading();
+    },
+  });
   // tag mutation
   const addUserTagsMutation = useMutation(addUserTags, {
     onSuccess: () => {
@@ -500,9 +512,12 @@ const Dashboard = () => {
             })
           );
         }}
-        onAddBookmark={(url) => {
+        onAddBookmark={async (url) => {
           setUrl(url);
-          addItem(url);
+          // addItem(url);
+          // await addBookmarkMinData({ url });
+          toggleAddBookmarkMinDataLoading();
+          mutationApiCall(addBookmarkMinDataMutation.mutateAsync({ url: url }));
         }}
         onShareClick={(id) => {
           toggleShareCategoryModal();

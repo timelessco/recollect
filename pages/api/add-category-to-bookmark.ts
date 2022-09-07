@@ -11,6 +11,8 @@ type Data = {
   message: string | null;
 };
 
+// this api adds catagory to a bookmark
+// it upadates cateogry based on the user's access role for the category
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>

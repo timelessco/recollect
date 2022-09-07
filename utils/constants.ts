@@ -18,6 +18,8 @@ export const NEXT_API_URL = `${
     ? 'http://localhost:3000'
     : 'https://bookmark-tags-git-collab-dev-timelessco.vercel.app' // :'https://bookmark-tags-git-dev-timelessco.vercel.app'
 }/api`;
+export const TIMELESS_SCRAPPER_API =
+  'https://link-preview-livid-ten.vercel.app/api/getUrlData';
 
 export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
 export const GET_BOOKMARKS_DATA_API = '/getBookmarksData';
@@ -25,6 +27,7 @@ export const DELETE_BOOKMARK_DATA_API = '/deleteBookmark';
 export const SEND_COLLABORATION_EMAIL_API = '/sendCollaborationEmail';
 export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
 export const SYNC_PROFILES_TABLE_API = '/sync-profiles-table';
+export const ADD_BOOKMARK_MIN_DATA = '/add-bookmark-min-data';
 
 // urls
 
