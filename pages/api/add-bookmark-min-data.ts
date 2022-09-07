@@ -34,6 +34,8 @@ export default async function handler(
       url: url,
       title: scrapperRes?.data?.title,
       user_id: userId,
+      description: scrapperRes?.data?.description,
+      ogImage: scrapperRes?.data?.OgImage,
     },
   ]);
 
