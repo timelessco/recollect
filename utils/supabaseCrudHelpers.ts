@@ -73,13 +73,20 @@ export const getBookmarkScrappedData = async (item: string) => {
   }
 };
 
-export const addBookmarkMinData = async ({ url }: { url: string }) => {
+export const addBookmarkMinData = async ({
+  url,
+  category_id,
+}: {
+  url: string;
+  category_id: number | null;
+}) => {
   const session = await getCurrentUserSession();
 
   try {
     const apiRes = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
       access_token: session?.access_token,
       url,
+      category_id,
     });
 
     return apiRes;

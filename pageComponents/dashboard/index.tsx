@@ -540,7 +540,12 @@ const Dashboard = () => {
           setUrl(url);
           // addItem(url);
           // await addBookmarkMinData({ url });
-          mutationApiCall(addBookmarkMinDataMutation.mutateAsync({ url: url }));
+          mutationApiCall(
+            addBookmarkMinDataMutation.mutateAsync({
+              url: url,
+              category_id: category_id,
+            })
+          );
         }}
         onShareClick={(id) => {
           toggleShareCategoryModal();

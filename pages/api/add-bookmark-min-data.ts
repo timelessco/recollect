@@ -20,6 +20,7 @@ export default async function handler(
   const accessToken = req.body.access_token as string;
   const {} = supabase.auth.setAuth(accessToken);
   const url = req.body.url;
+  const category_id = req.body.category_id;
   const tokenDecode = jwtDecode(accessToken);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
@@ -36,6 +37,7 @@ export default async function handler(
       user_id: userId,
       description: scrapperRes?.data?.description,
       ogImage: scrapperRes?.data?.OgImage,
+      category_id: category_id,
     },
   ]);
 
