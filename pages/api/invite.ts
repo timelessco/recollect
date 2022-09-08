@@ -22,7 +22,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  if (!req?.query?.token) {
+  if (req?.query?.token) {
     const tokenData = jwt_decode(
       req?.query?.token as string
     ) as InviteTokenData;

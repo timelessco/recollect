@@ -547,10 +547,22 @@ const Dashboard = () => {
           setUrl(url);
           // addItem(url);
           // await addBookmarkMinData({ url });
+          const currentCategory = find(
+            allCategories?.data,
+            (item) => item?.id === category_id
+          );
+          // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+          const updateAccessCondition =
+            find(
+              currentCategory?.collabData,
+              (item) => item?.userEmail === session?.user?.email
+            )?.edit_access === true ||
+            currentCategory?.user_id?.id === session?.user?.id;
           mutationApiCall(
             addBookmarkMinDataMutation.mutateAsync({
               url: url,
               category_id: category_id,
+              update_access: updateAccessCondition,
             })
           );
         }}

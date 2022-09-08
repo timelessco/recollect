@@ -76,9 +76,11 @@ export const getBookmarkScrappedData = async (item: string) => {
 export const addBookmarkMinData = async ({
   url,
   category_id,
+  update_access,
 }: {
   url: string;
   category_id: number | null;
+  update_access: boolean;
 }) => {
   const session = await getCurrentUserSession();
 
@@ -87,6 +89,7 @@ export const addBookmarkMinData = async ({
       access_token: session?.access_token,
       url,
       category_id,
+      update_access,
     });
 
     return apiRes;

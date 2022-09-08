@@ -11,6 +11,7 @@ import { supabase } from '../../utils/supabaseClient';
 type Data = {
   data: SingleListData[] | null;
   error: PostgrestError | null;
+  message: string | null;
 };
 
 export default async function handler(
@@ -21,6 +22,7 @@ export default async function handler(
   const {} = supabase.auth.setAuth(accessToken);
   const url = req.body.url;
   const category_id = req.body.category_id;
+  const update_access = req.body.update_access;
   const tokenDecode = jwtDecode(accessToken);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
@@ -30,20 +32,48 @@ export default async function handler(
     url,
   });
 
-  const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
-    {
-      url: url,
-      title: scrapperRes?.data?.title,
-      user_id: userId,
-      description: scrapperRes?.data?.description,
-      ogImage: scrapperRes?.data?.OgImage,
-      category_id: category_id,
-    },
-  ]);
-
-  if (!isNull(error)) {
-    res.status(500).json({ data: null, error: error });
+  if (
+    update_access === true &&
+    !isNull(category_id) &&
+    category_id !== 'null'
+  ) {
+    const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
+      {
+        url: url,
+        title: scrapperRes?.data?.title,
+        user_id: userId,
+        description: scrapperRes?.data?.description,
+        ogImage: scrapperRes?.data?.OgImage,
+        category_id: category_id,
+      },
+    ]);
+    if (!isNull(error)) {
+      res.status(500).json({ data: null, error: error, message: null });
+    } else {
+      res.status(200).json({ data: data, error: null, message: null });
+    }
   } else {
-    res.status(200).json({ data: data, error: null });
+    const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
+      {
+        url: url,
+        title: scrapperRes?.data?.title,
+        user_id: userId,
+        description: scrapperRes?.data?.description,
+        ogImage: scrapperRes?.data?.OgImage,
+        category_id: null,
+      },
+    ]);
+
+    if (!isNull(error)) {
+      res.status(500).json({ data: null, error: error, message: null });
+    } else {
+      res.status(200).json({
+        data: data,
+        error: null,
+        message: !isNull(category_id)
+          ? 'You dont have access to add to this category, this bookmark will be added without a category'
+          : null,
+      });
+    }
   }
 }
