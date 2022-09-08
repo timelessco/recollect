@@ -297,7 +297,7 @@ export const addUserCategory = async ({
     {
       category_name: name,
       user_id: user_id,
-      category_slug: slugify(name),
+      category_slug: slugify(name, { lower: true }),
     },
   ]);
 
