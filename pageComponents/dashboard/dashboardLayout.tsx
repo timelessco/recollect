@@ -118,7 +118,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     error: PostgrestError;
   };
 
-  const bookmarksData = queryClient.getQueryData([BOOKMARKS_KEY, null]) as {
+  const bookmarksData = queryClient.getQueryData([BOOKMARKS_KEY, userId]) as {
     data: SingleListData[];
     error: PostgrestError;
   };

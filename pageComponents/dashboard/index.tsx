@@ -128,7 +128,10 @@ const Dashboard = () => {
       fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
-  const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
+  const { data: allBookmarksData } = useQuery(
+    [BOOKMARKS_KEY, session?.user?.id],
+    () => fetchBookmakrsData('null')
+  );
 
   const category_slug = router?.asPath?.split('/')[1] || null;
   const category_id =
@@ -316,7 +319,11 @@ const Dashboard = () => {
                 }
                 userId={session?.user?.id || ''}
                 isLoading={isBookmarksLoading && !bookmarksData}
-                listData={bookmarksData?.data || []}
+                listData={
+                  !isNull(category_id)
+                    ? bookmarksData?.data || []
+                    : allBookmarksData?.data || []
+                }
                 onDeleteClick={async (item) => {
                   toggleIsDeleteBookmarkLoading();
                   setDeleteBookmarkId(item?.id);
