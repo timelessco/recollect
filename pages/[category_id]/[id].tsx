@@ -21,17 +21,22 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  // const { data } = await supabase
+  //   .from(MAIN_TABLE_NAME)
+  //   .select(
+  //     `
+  //     *,
+  //     category_id (
+  //       category_slug
+  //     )
+  //   `
+  //   )
+  //   // .eq('user_id', context?.query?.category_id) // user id not needed as only cat owners can add data
+  //   .eq('category_id.category_slug', context?.query?.id);
+
   const { data } = await supabase
     .from(MAIN_TABLE_NAME)
-    .select(
-      `
-      *,
-      category_id (
-        category_slug
-      )
-    `
-    )
-    // .eq('user_id', context?.query?.category_id) // user id not needed as only cat owners can add data
+    .select('*, category_id!inner(*)')
     .eq('category_id.category_slug', context?.query?.id);
 
   if (isEmpty(data)) {
