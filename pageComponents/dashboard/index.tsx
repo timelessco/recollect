@@ -128,10 +128,10 @@ const Dashboard = () => {
       fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
-  const { data: allBookmarksData } = useQuery(
-    [BOOKMARKS_KEY, session?.user?.id],
-    () => fetchBookmakrsData('null')
-  );
+  const { data: allBookmarksData, isLoading: isAllBookmarksDataLoading } =
+    useQuery([BOOKMARKS_KEY, session?.user?.id], () =>
+      fetchBookmakrsData('null')
+    );
 
   const category_slug = router?.asPath?.split('/')[1] || null;
   const category_id =
@@ -318,7 +318,10 @@ const Dashboard = () => {
                     : false
                 }
                 userId={session?.user?.id || ''}
-                isLoading={isBookmarksLoading && !bookmarksData}
+                isLoading={
+                  (isBookmarksLoading && !bookmarksData) ||
+                  isAllBookmarksDataLoading
+                }
                 listData={
                   !isNull(category_id)
                     ? bookmarksData?.data || []
@@ -562,12 +565,17 @@ const Dashboard = () => {
           signInWithOauth();
         }}
         onAddCategoryClick={toggleAddCategoryModal}
-        onDeleteCategoryClick={(id) => {
-          mutationApiCall(
+        onDeleteCategoryClick={async (id, current) => {
+          const res = await mutationApiCall(
             deleteCategoryMutation.mutateAsync({
               category_id: id,
             })
           );
+
+          // only push to home if user is deleting the category when user is currently in that category
+          if (isNull(res?.error) && current) {
+            router.push('/');
+          }
         }}
         onAddBookmark={async (url) => {
           setUrl(url);
@@ -598,13 +606,18 @@ const Dashboard = () => {
         }}
       />
       <AddCategoryModal
-        onAddNewCategory={(newCategoryName) => {
-          mutationApiCall(
+        onAddNewCategory={async (newCategoryName) => {
+          const res = await mutationApiCall(
             addCategoryMutation.mutateAsync({
               user_id: session?.user?.id as string,
               name: newCategoryName,
             })
           );
+
+          if (isNull(res?.error)) {
+            const newCategorySlug = res?.data[0]?.category_slug;
+            router.push(`/${newCategorySlug}`);
+          }
         }}
       />
       <ShareCategoryModal

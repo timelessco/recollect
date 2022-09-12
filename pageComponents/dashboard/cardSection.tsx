@@ -13,6 +13,8 @@ import { useLoadersStore } from '../../store/componentStore';
 import Avatar from 'react-avatar';
 import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
+import Badge from '../../components/badge';
+import isNull from 'lodash/isNull';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -73,6 +75,15 @@ const CardSection = ({
     }
   };
 
+  const singleBookmarkCategoryName = (category_id: number) => {
+    const name = find(
+      categoryData?.data,
+      (item) => item?.id === category_id
+    )?.category_name;
+
+    return name as string;
+  };
+
   return (
     <div className="relative pb-20 lg:pb-28">
       <div className="absolute inset-0">
@@ -130,6 +141,15 @@ const CardSection = ({
                               {post.description}
                             </p>
                           </a>
+                          {!isNull(post?.category_id) && isNull(category_id) && (
+                            <div className="mt-2">
+                              <Badge
+                                label={singleBookmarkCategoryName(
+                                  post?.category_id
+                                )}
+                              />
+                            </div>
+                          )}
                         </div>
                         <div className="flex">
                           {showAvatar && (

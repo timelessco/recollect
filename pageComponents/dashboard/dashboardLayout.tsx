@@ -72,7 +72,7 @@ interface DashboardLayoutProps {
   onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
   onAddCategoryClick: () => void;
-  onDeleteCategoryClick: (id: string) => void;
+  onDeleteCategoryClick: (id: string, current: boolean) => void;
   bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
   onShareClick: (id: string) => void;
@@ -476,9 +476,13 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                       className="flex-shrink-0 h-4 w-4 text-gray-400 hover:text-gray-500 hidden group-hover:block"
                                     />
                                     <TrashIcon
-                                      onClick={() =>
-                                        onDeleteCategoryClick(subItem.id)
-                                      }
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        onDeleteCategoryClick(
+                                          subItem.id,
+                                          subItem?.current
+                                        );
+                                      }}
                                       className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 hidden group-hover:block"
                                     />
                                   </div>
