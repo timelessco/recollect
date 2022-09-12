@@ -16,6 +16,7 @@ export default function handler(
   const hostUrl = req?.body?.hostUrl;
   const category_id = req?.body?.category_id;
   const edit_access = req?.body?.edit_access;
+  const userId = req?.body?.userId;
 
   // console.log('emails', emailList);
 
@@ -46,7 +47,12 @@ export default function handler(
   //   }
   // });
   const token = jwt.sign(
-    { email: emailList[0], category_id: category_id, edit_access: edit_access },
+    {
+      email: emailList[0],
+      category_id: category_id,
+      edit_access: edit_access,
+      userId: userId,
+    },
     'shhhhh'
   );
   const url = `${hostUrl}/api/invite?token=${token}`;

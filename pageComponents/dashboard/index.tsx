@@ -49,7 +49,7 @@ import AddCategoryModal from './addCategoryModal';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { errorToast } from '../../utils/toastMessages';
+import { errorToast, successToast } from '../../utils/toastMessages';
 import { mutationApiCall } from '../../utils/apiHelpers';
 import { getCategoryIdFromSlug } from '../../utils/helpers';
 import ShareCategoryModal from './shareCategoryModal';
@@ -518,6 +518,26 @@ const Dashboard = () => {
                 setSelectedCategoryDuringAdd(value);
               }
             }}
+            onCreateCategory={async (value) => {
+              if (value?.label) {
+                const res = await mutationApiCall(
+                  addCategoryMutation.mutateAsync({
+                    user_id: session?.user?.id as string,
+                    name: value?.label,
+                  })
+                );
+                // add the bookmark to the category after its created
+                mutationApiCall(
+                  addCategoryToBookmarkMutation.mutateAsync({
+                    category_id: res?.data[0]?.id,
+                    bookmark_id: addedUrlData?.id as number,
+                    update_access: true, // in this case user is creating the category , so they will have access
+                  })
+                );
+              } else {
+                errorToast('Category name is missing');
+              }
+            }}
           />
         </Modal>
       </>
@@ -604,14 +624,18 @@ const Dashboard = () => {
             })
           );
         }}
-        updateSharedCategoriesUserAccess={(id, value) =>
-          mutationApiCall(
+        updateSharedCategoriesUserAccess={async (id, value) => {
+          const res = await mutationApiCall(
             updateSharedCategoriesUserAccessMutation.mutateAsync({
               id: id,
               updateData: { edit_access: parseInt(value) ? true : false },
             })
-          )
-        }
+          );
+
+          if (isNull(res?.error)) {
+            successToast('User role changed');
+          }
+        }}
       />
       <ToastContainer />
     </>

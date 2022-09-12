@@ -16,6 +16,7 @@ interface InviteTokenData {
   email: string;
   category_id: number;
   edit_access: boolean;
+  userId: string;
 }
 
 export default async function handler(
@@ -31,6 +32,7 @@ export default async function handler(
       email: tokenData?.email,
       category_id: tokenData?.category_id,
       edit_access: tokenData?.edit_access,
+      userId: tokenData?.userId,
     };
 
     // check if user with category Id is already there in DB
@@ -41,16 +43,26 @@ export default async function handler(
       .eq('email', insertData?.email);
 
     if (isEmpty(data) && isNull(error)) {
-      const {} = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
-        category_id: insertData?.category_id,
-        email: insertData?.email,
-        edit_access: false,
-      });
+      const { error } = await supabase
+        .from(SHARED_CATEGORIES_TABLE_NAME)
+        .insert({
+          category_id: insertData?.category_id,
+          email: insertData?.email,
+          edit_access: false,
+          user_id: insertData?.userId,
+        });
 
-      res.status(200).json({
-        success: 'User has been added as a colaborator to the category',
-        error: null,
-      });
+      if (isNull(error)) {
+        res.status(200).json({
+          success: 'User has been added as a colaborator to the category',
+          error: null,
+        });
+      } else {
+        res.status(500).json({
+          success: null,
+          error: error?.message,
+        });
+      }
     } else {
       res.status(500).json({
         success: null,

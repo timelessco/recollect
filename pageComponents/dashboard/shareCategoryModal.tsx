@@ -77,6 +77,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
         edit_access: false,
         category_id: shareCategoryId as number,
         hostUrl: window?.location?.origin,
+        userId: userId,
       });
       reset({ email: '' });
       successToast('Invite sent');

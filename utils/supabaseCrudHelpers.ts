@@ -368,11 +368,13 @@ export const sendCollaborationEmailInvite = async ({
   category_id,
   edit_access,
   hostUrl,
+  userId,
 }: {
   emailList: Array<string>;
   category_id: number;
   edit_access: boolean;
   hostUrl: string;
+  userId: string;
 }) => {
   const res = await axios.post(
     `${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`,
@@ -381,6 +383,7 @@ export const sendCollaborationEmailInvite = async ({
       category_id,
       edit_access,
       hostUrl,
+      userId,
     }
   );
 
