@@ -34,6 +34,8 @@ interface AddModalContentProps {
   onCategoryChange: (value: SearchSelectOption | null) => void;
   categoryId: string | number | null;
   userId: string;
+  isCategoryChangeLoading: boolean;
+  showMainButton: boolean;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
@@ -50,6 +52,8 @@ export default function AddModalContent(props: AddModalContentProps) {
     onCategoryChange,
     categoryId,
     userId,
+    isCategoryChangeLoading = false,
+    showMainButton = true,
   } = props;
 
   const isAddBookmarkModalButtonLoading = useLoadersStore(
@@ -156,6 +160,7 @@ export default function AddModalContent(props: AddModalContentProps) {
         </LabelledComponent>
         <LabelledComponent label="Add Category">
           <SearchSelect
+            isLoading={isCategoryChangeLoading}
             options={[
               {
                 label: 'Uncategorized',
@@ -184,13 +189,19 @@ export default function AddModalContent(props: AddModalContentProps) {
         </LabelledComponent>
       </div>
       <div className="mt-4">
-        <Button className="w-full" onClick={addBookmark} isDisabled={!urlData}>
-          {!isAddBookmarkModalButtonLoading ? (
-            <span>{mainButtonText}</span>
-          ) : (
-            <Spinner />
-          )}
-        </Button>
+        {showMainButton && (
+          <Button
+            className="w-full"
+            onClick={addBookmark}
+            isDisabled={!urlData}
+          >
+            {!isAddBookmarkModalButtonLoading ? (
+              <span>{mainButtonText}</span>
+            ) : (
+              <Spinner />
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );

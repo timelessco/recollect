@@ -348,6 +348,8 @@ const Dashboard = () => {
           setOpen={() => setShowAddBookmarkModal(false)}
         >
           <AddModalContent
+            showMainButton={false}
+            isCategoryChangeLoading={addCategoryToBookmarkMutation?.isLoading}
             userId={session?.user?.id || ''}
             categoryId={category_id}
             urlString={url}
@@ -499,13 +501,17 @@ const Dashboard = () => {
                     (item) => item?.userEmail === session?.user?.email
                   )?.edit_access === true ||
                   currentCategory?.user_id?.id === session?.user?.id;
+
                 await mutationApiCall(
                   addCategoryToBookmarkMutation.mutateAsync({
                     category_id: value?.value
                       ? (value?.value as number)
                       : (null as null),
                     bookmark_id: addedUrlData?.id as number,
-                    update_access: updateAccessCondition,
+                    update_access:
+                      isNull(value?.value) || !value?.value
+                        ? true
+                        : updateAccessCondition, // if user is changing to uncategoried then thay always have access
                   })
                 );
               } else {

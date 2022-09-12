@@ -22,6 +22,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
 import { sendCollaborationEmailInvite } from '../../utils/supabaseCrudHelpers';
 import Select from '../../components/atoms/select';
+import { errorToast, successToast } from '../../utils/toastMessages';
 
 interface ShareCategoryModalProps {
   userId: string;
@@ -68,15 +69,20 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     reset,
   } = useForm<EmailInput>();
 
-  const onSubmit: SubmitHandler<EmailInput> = (data) => {
+  const onSubmit: SubmitHandler<EmailInput> = async (data) => {
     const emailList = data?.email?.split(',');
-    sendCollaborationEmailInvite({
-      emailList,
-      edit_access: false,
-      category_id: shareCategoryId as number,
-      hostUrl: window?.location?.origin,
-    });
-    reset({ email: '' });
+    try {
+      await sendCollaborationEmailInvite({
+        emailList,
+        edit_access: false,
+        category_id: shareCategoryId as number,
+        hostUrl: window?.location?.origin,
+      });
+      reset({ email: '' });
+      successToast('Invite sent');
+    } catch (e) {
+      errorToast('Something went wrong');
+    }
   };
 
   useEffect(() => {
