@@ -16,6 +16,11 @@ export const useModalStore = create<ModalStoreState>((set) => ({
     set((state) => ({
       showShareCategoryModal: !state.showShareCategoryModal,
     })),
+  showAddBookmarkShortcutModal: false,
+  toggleShowAddBookmarkShortcutModal: () =>
+    set((state) => ({
+      showAddBookmarkShortcutModal: !state.showAddBookmarkShortcutModal,
+    })),
 }));
 
 export const useLoadersStore = create<LoadersStoreState>((set) => ({

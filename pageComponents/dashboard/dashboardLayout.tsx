@@ -548,7 +548,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                         pattern: URL_PATTERN,
                       })}
                       type="text"
-                      placeholder="Add URL"
+                      placeholder="Add URL or press ⌘ + K"
                       className={`${
                         isEmpty(errors)
                           ? 'text-gray-900 placeholder-gray-500 focus:placeholder-gray-400'

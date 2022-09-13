@@ -53,6 +53,7 @@ import { errorToast, successToast } from '../../utils/toastMessages';
 import { mutationApiCall } from '../../utils/apiHelpers';
 import { getCategoryIdFromSlug } from '../../utils/helpers';
 import ShareCategoryModal from './shareCategoryModal';
+import AddBookarkShortcutModal from './modals/addBookmarkShortcutModal';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -88,6 +89,10 @@ const Dashboard = () => {
     (state) => state.toggleShareCategoryModal
   );
 
+  const toggleShowAddBookmarkShortcutModal = useModalStore(
+    (state) => state.toggleShowAddBookmarkShortcutModal
+  );
+
   const setShareCategoryId = useMiscellaneousStore(
     (state) => state.setShareCategoryId
   );
@@ -96,6 +101,18 @@ const Dashboard = () => {
     const currentSession = await getCurrentUserSession();
     setSession(currentSession);
   };
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && e.metaKey) {
+        toggleShowAddBookmarkShortcutModal();
+      }
+    };
+
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!showAddBookmarkModal) {
@@ -285,6 +302,30 @@ const Dashboard = () => {
   //     console.log('finally');
   //   }
   // };
+
+  const addBookmarkLogic = async (url: string) => {
+    setUrl(url);
+    // addItem(url);
+    // await addBookmarkMinData({ url });
+    const currentCategory = find(
+      allCategories?.data,
+      (item) => item?.id === category_id
+    );
+    // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+    const updateAccessCondition =
+      find(
+        currentCategory?.collabData,
+        (item) => item?.userEmail === session?.user?.email
+      )?.edit_access === true ||
+      currentCategory?.user_id?.id === session?.user?.id;
+    await mutationApiCall(
+      addBookmarkMinDataMutation.mutateAsync({
+        url: url,
+        category_id: category_id,
+        update_access: updateAccessCondition,
+      })
+    );
+  };
 
   // any new tags created need not come in tag dropdown , this filter implements this
   let filteredUserTags = userTags?.data ? [...userTags?.data] : [];
@@ -578,27 +619,7 @@ const Dashboard = () => {
           }
         }}
         onAddBookmark={async (url) => {
-          setUrl(url);
-          // addItem(url);
-          // await addBookmarkMinData({ url });
-          const currentCategory = find(
-            allCategories?.data,
-            (item) => item?.id === category_id
-          );
-          // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
-          const updateAccessCondition =
-            find(
-              currentCategory?.collabData,
-              (item) => item?.userEmail === session?.user?.email
-            )?.edit_access === true ||
-            currentCategory?.user_id?.id === session?.user?.id;
-          mutationApiCall(
-            addBookmarkMinDataMutation.mutateAsync({
-              url: url,
-              category_id: category_id,
-              update_access: updateAccessCondition,
-            })
-          );
+          await addBookmarkLogic(url);
         }}
         onShareClick={(id) => {
           toggleShareCategoryModal();
@@ -648,6 +669,14 @@ const Dashboard = () => {
           if (isNull(res?.error)) {
             successToast('User role changed');
           }
+        }}
+      />
+      <AddBookarkShortcutModal
+        isAddBookmarkLoading={addBookmarkMinDataMutation?.isLoading}
+        onAddBookmark={async (url) => {
+          await addBookmarkLogic(url);
+
+          toggleShowAddBookmarkShortcutModal();
         }}
       />
       <ToastContainer />
