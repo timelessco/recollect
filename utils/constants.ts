@@ -41,6 +41,9 @@ export const CREATE_USER_CATEGORIES_API = '/create-user-category';
 export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
 export const DELETE_USER_CATEGORIES_API = '/delete-user-category';
 export const UPDATE_USER_CATEGORIES_API = '/update-user-category';
+// share api
+export const GET_PUBLIC_CATEGORY_BOOKMARKS_API =
+  '/get-public-category-bookmarks';
 
 // urls
 
