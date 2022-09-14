@@ -14,15 +14,13 @@ import {
   useModalStore,
 } from '../../store/componentStore';
 import { CategoriesData } from '../../types/apiTypes';
-import {
-  CATEGORIES_KEY,
-  GET_NAME_FROM_EMAIL_PATTERN,
-} from '../../utils/constants';
+import { CATEGORIES_KEY } from '../../utils/constants';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
 import { sendCollaborationEmailInvite } from '../../utils/supabaseCrudHelpers';
 import Select from '../../components/atoms/select';
 import { errorToast, successToast } from '../../utils/toastMessages';
+import { getUserNameFromEmail } from '../../utils/helpers';
 
 interface ShareCategoryModalProps {
   userId: string;
@@ -93,15 +91,13 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
   useEffect(() => {
     if (typeof window !== undefined) {
       const categorySlug = currentCategory?.category_slug;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      const userName = currentCategory?.user_id?.email
-        ?.match(GET_NAME_FROM_EMAIL_PATTERN)[1]
-        ?.replace('.', '-');
-
+      const userName = getUserNameFromEmail(
+        currentCategory?.user_id?.email || ''
+      );
       const url = `${window?.location?.origin}/${userName}/${categorySlug}`;
       setPublicUrl(url);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, shareCategoryId]);
 
   const showShareCategoryModal = useModalStore(
