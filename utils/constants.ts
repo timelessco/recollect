@@ -27,7 +27,6 @@ export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
 export const GET_BOOKMARKS_DATA_API = '/get-bookmarks-data';
 export const DELETE_BOOKMARK_DATA_API = '/delete-bookmark';
 export const SEND_COLLABORATION_EMAIL_API = '/sendCollaborationEmail';
-export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
 export const SYNC_PROFILES_TABLE_API = '/sync-profiles-table';
 export const ADD_BOOKMARK_MIN_DATA = '/add-bookmark-min-data';
 export const ADD_URL_SCREENSHOT_API = '/add-url-screenshot';
@@ -36,6 +35,11 @@ export const FETCH_USER_TAGS_API = '/fetch-user-tags';
 export const CREATE_USER_TAGS_API = '/create-user-tags';
 export const ADD_TAG_TO_BOOKMARK_API = '/add-tag-to-bookmark';
 export const REMOVE_TAG_FROM_BOOKMARK_API = '/remove-tag-from-bookmark';
+// category api
+export const FETCH_USER_CATEGORIES_API = '/fetch-user-categories';
+export const CREATE_USER_CATEGORIES_API = '/create-user-category';
+export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
+export const DELETE_USER_CATEGORIES_API = '/delete-user-category';
 
 // urls
 

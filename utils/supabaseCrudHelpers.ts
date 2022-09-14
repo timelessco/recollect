@@ -7,7 +7,6 @@ import {
   BookmarksTagData,
   FetchCategoriesDataResponse,
   FetchSharedCategoriesData,
-  CollabDataInCategory,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -27,10 +26,11 @@ import {
   CREATE_USER_TAGS_API,
   ADD_TAG_TO_BOOKMARK_API,
   REMOVE_TAG_FROM_BOOKMARK_API,
+  FETCH_USER_CATEGORIES_API,
+  CREATE_USER_CATEGORIES_API,
+  DELETE_USER_CATEGORIES_API,
 } from './constants';
-import slugify from 'slugify';
 import isEmpty from 'lodash/isEmpty';
-import { find } from 'lodash';
 
 // bookmark
 export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
@@ -229,78 +229,18 @@ export const fetchCategoriesData = async (
   userEmail: string
 ) => {
   if (!isEmpty(userId)) {
-    // filter onces where is_public true and userId is not same as uuid
-    const { data, error } = await supabase.from(CATEGORIES_TABLE_NAME).select(`
-      *,
-      user_id (*)
-    `);
-    // .not('is_public', 'eq', true)
-    // .not('user_id', 'neq', userId);
-    // .or(`is_public.eq.true,and(user_id.eq.${userId})`);
-    // .eq('is_public', false);
-    // .eq('user_id', userId); // TODO: remove , we are not adding this filter as policy is updated
-
-    // get shared-cat data
-
-    const { data: sharedCategoryData } = await supabase
-      .from(SHARED_CATEGORIES_TABLE_NAME)
-      .select();
-    // .eq('email', userEmail);
-
-    // add colaborators data in each category
-    const finalDataWithCollab = data?.map((item) => {
-      let collabData = [] as CollabDataInCategory[];
-      sharedCategoryData?.forEach((catItem) => {
-        if (catItem?.category_id === item?.id) {
-          collabData = [
-            ...collabData,
-            {
-              userEmail: catItem?.email,
-              edit_access: catItem?.edit_access,
-              share_id: catItem?.id,
-              isOwner: false,
-            },
-          ];
-        }
-      });
-
-      const collabDataWithOwnerData = [
-        ...collabData,
+    try {
+      const res = await axios.post(
+        `${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`,
         {
-          userEmail: item?.user_id?.email,
-          edit_access: true,
-          share_id: null,
-          isOwner: true,
-        },
-      ];
-
-      return {
-        ...item,
-        collabData: collabDataWithOwnerData,
-      };
-    });
-
-    // TODO : figure out how to do this in supabase , and change this to next api
-    const finalPublicFilteredData = finalDataWithCollab?.filter((item) => {
-      const userCollabData = find(
-        item?.collabData,
-        (collabItem) => collabItem?.userEmail === userEmail
-      );
-      // if logged-in user is a collaborator for this category, then return the category
-      if (!isEmpty(userCollabData) && userCollabData?.isOwner === false) {
-        return item;
-      } else {
-        // only return public categories that is created by logged in user
-        if (!(item?.is_public === true && item?.user_id?.id !== userId)) {
-          return item;
+          userEmail: userEmail,
+          user_id: userId,
         }
-      }
-    });
-
-    return {
-      data: finalPublicFilteredData,
-      error,
-    } as unknown as FetchCategoriesDataResponse;
+      );
+      return res?.data;
+    } catch (e) {
+      return e;
+    }
   }
 };
 
@@ -311,15 +251,18 @@ export const addUserCategory = async ({
   user_id: string;
   name: string;
 }) => {
-  const { data, error } = await supabase.from(CATEGORIES_TABLE_NAME).insert([
-    {
-      category_name: name,
-      user_id: user_id,
-      category_slug: slugify(name, { lower: true }),
-    },
-  ]);
-
-  return { data, error } as unknown as FetchCategoriesDataResponse;
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`,
+      {
+        name: name,
+        user_id: user_id,
+      }
+    );
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 
 export const deleteUserCategory = async ({
@@ -327,12 +270,17 @@ export const deleteUserCategory = async ({
 }: {
   category_id: string;
 }) => {
-  const { data, error } = await supabase
-    .from(CATEGORIES_TABLE_NAME)
-    .delete()
-    .match({ id: category_id });
-
-  return { data, error } as unknown as FetchCategoriesDataResponse;
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`,
+      {
+        category_id: category_id,
+      }
+    );
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 
 export const addCategoryToBookmark = async ({
@@ -344,12 +292,10 @@ export const addCategoryToBookmark = async ({
   bookmark_id: number;
   update_access: boolean;
 }) => {
-  const session = await getCurrentUserSession();
   try {
     const res = await axios.post(
       `${NEXT_API_URL}${ADD_CATEGORY_TO_BOOKMARK_API}`,
       {
-        access_token: session?.access_token,
         category_id,
         bookmark_id,
         update_access,

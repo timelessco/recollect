@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../utils/supabaseClient';
 import { SingleListData } from '../../types/apiTypes';
 import { MAIN_TABLE_NAME } from '../../utils/constants';
 import { isNull } from 'lodash';
-import { PostgrestError } from '@supabase/supabase-js';
+import { createClient, PostgrestError } from '@supabase/supabase-js';
 
 type Data = {
   data: Array<SingleListData> | null;
@@ -17,8 +16,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const accessToken = req.body.access_token as string;
-  const {} = supabase.auth.setAuth(accessToken);
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_KEY as string
+  );
 
   const category_id = req.body.category_id;
   const bookmark_id = req.body.bookmark_id;
