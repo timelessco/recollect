@@ -31,6 +31,11 @@ export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
 export const SYNC_PROFILES_TABLE_API = '/sync-profiles-table';
 export const ADD_BOOKMARK_MIN_DATA = '/add-bookmark-min-data';
 export const ADD_URL_SCREENSHOT_API = '/add-url-screenshot';
+// tags api
+export const FETCH_USER_TAGS_API = '/fetch-user-tags';
+export const CREATE_USER_TAGS_API = '/create-user-tags';
+export const ADD_TAG_TO_BOOKMARK_API = '/add-tag-to-bookmark';
+export const REMOVE_TAG_FROM_BOOKMARK_API = '/remove-tag-from-bookmark';
 
 // urls
 

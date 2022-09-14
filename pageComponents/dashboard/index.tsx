@@ -2,12 +2,15 @@ import { Session, UserIdentity } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 // import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
-import { BookmarksTagData, SingleListData } from '../../types/apiTypes';
+import {
+  BookmarksTagData,
+  SingleListData,
+  UserTagsData,
+} from '../../types/apiTypes';
 import {
   addBookmarkMinData,
   addBookmarkScreenshot,
   addCategoryToBookmark,
-  addData,
   addTagToBookmark,
   addUserCategory,
   addUserTags,
@@ -63,6 +66,7 @@ const Dashboard = () => {
   const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [url, setUrl] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCategoryDuringAdd, setSelectedCategoryDuringAdd] =
     useState<SearchSelectOption | null>();
   const [addScreenshotBookmarkId, setAddScreenshotBookmarkId] =
@@ -73,9 +77,9 @@ const Dashboard = () => {
 
   const router = useRouter();
 
-  const toggleIsAddBookmarkModalButtonLoading = useLoadersStore(
-    (state) => state.toggleIsAddBookmarkModalButtonLoading
-  );
+  // const toggleIsAddBookmarkModalButtonLoading = useLoadersStore(
+  //   (state) => state.toggleIsAddBookmarkModalButtonLoading
+  // );
 
   const toggleIsDeleteBookmarkLoading = useLoadersStore(
     (state) => state.toggleIsDeleteBookmarkLoading
@@ -158,19 +162,15 @@ const Dashboard = () => {
     () => fetchBookmakrsData(category_id)
   );
 
-  const { data: userTags } = useQuery([USER_TAGS_KEY], () => fetchUserTags());
+  const { data: userTags } = useQuery([USER_TAGS_KEY, session?.user?.id], () =>
+    fetchUserTags(session?.user?.id || '')
+  );
 
   const {} = useQuery([SHARED_CATEGORIES_TABLE_NAME], () =>
     fetchSharedCategoriesData()
   );
 
   // Mutations
-  const addBookmarkMutation = useMutation(addData, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
-    },
-  });
   const deleteBookmarkMutation = useMutation(deleteData, {
     onSuccess: () => {
       // Invalidate and refetch
@@ -206,7 +206,7 @@ const Dashboard = () => {
   const addUserTagsMutation = useMutation(addUserTags, {
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries([USER_TAGS_KEY]);
+      queryClient.invalidateQueries([USER_TAGS_KEY, session?.user?.id]);
     },
   });
 
@@ -402,70 +402,73 @@ const Dashboard = () => {
             // userTags={userTags?.data}
             userTags={filteredUserTags}
             addedTags={addedUrlData?.addedTags || []}
-            addBookmark={async () => {
-              const userData = session?.user as unknown as UserIdentity;
-              if (!isEdit) {
-                toggleIsAddBookmarkModalButtonLoading();
+            // addBookmark={async () => {
+            //   const userData = session?.user as unknown as UserIdentity;
+            //   if (!isEdit) {
+            //     toggleIsAddBookmarkModalButtonLoading();
 
-                try {
-                  const data = await addBookmarkMutation.mutateAsync({
-                    userData,
-                    urlData: addedUrlData,
-                  });
+            //     try {
+            //       const data = await addBookmarkMutation.mutateAsync({
+            //         userData,
+            //         urlData: addedUrlData,
+            //       });
 
-                  const bookmarkTagsData = selectedTag?.map((item) => {
-                    return {
-                      bookmark_id: data?.data[0]?.id,
-                      tag_id: parseInt(`${item?.value}`),
-                      user_id: userData?.id,
-                    };
-                  }) as unknown as Array<BookmarksTagData>;
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  const bookmarkTagData =
-                    await addTagToBookmarkMutation.mutateAsync({
-                      selectedData: bookmarkTagsData,
-                    });
+            //       const bookmarkTagsData = selectedTag?.map((item) => {
+            //         return {
+            //           bookmark_id: data?.data[0]?.id,
+            //           tag_id: parseInt(`${item?.value}`),
+            //           user_id: userData?.id,
+            //         };
+            //       }) as unknown as Array<BookmarksTagData>;
+            //       // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            //       const bookmarkTagData =
+            //         await addTagToBookmarkMutation.mutateAsync({
+            //           selectedData: bookmarkTagsData,
+            //         });
 
-                  const selectedCategoryId =
-                    selectedCategoryDuringAdd?.value === undefined
-                      ? (category_id as number | null)
-                      : selectedCategoryDuringAdd?.value;
+            //       const selectedCategoryId =
+            //         selectedCategoryDuringAdd?.value === undefined
+            //           ? (category_id as number | null)
+            //           : selectedCategoryDuringAdd?.value;
 
-                  const currentCategory = find(
-                    allCategories?.data,
-                    (item) => item?.id === selectedCategoryId
-                  );
-                  // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
-                  const updateAccessCondition =
-                    !selectedCategoryId ||
-                    find(
-                      currentCategory?.collabData,
-                      (item) => item?.userEmail === session?.user?.email
-                    )?.edit_access === true ||
-                    currentCategory?.user_id?.id === session?.user?.id;
+            //       const currentCategory = find(
+            //         allCategories?.data,
+            //         (item) => item?.id === selectedCategoryId
+            //       );
+            //       // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+            //       const updateAccessCondition =
+            //         !selectedCategoryId ||
+            //         find(
+            //           currentCategory?.collabData,
+            //           (item) => item?.userEmail === session?.user?.email
+            //         )?.edit_access === true ||
+            //         currentCategory?.user_id?.id === session?.user?.id;
 
-                  await mutationApiCall(
-                    addCategoryToBookmarkMutation.mutateAsync({
-                      category_id: selectedCategoryId,
-                      bookmark_id: data?.data[0]?.id as number,
-                      update_access: updateAccessCondition,
-                    })
-                  );
-                } catch (error) {
-                  const err = error as unknown as string;
-                  errorToast(err);
-                }
-              }
-              toggleIsAddBookmarkModalButtonLoading();
-              setShowAddBookmarkModal(false);
-            }}
+            //       await mutationApiCall(
+            //         addCategoryToBookmarkMutation.mutateAsync({
+            //           category_id: selectedCategoryId,
+            //           bookmark_id: data?.data[0]?.id as number,
+            //           update_access: updateAccessCondition,
+            //         })
+            //       );
+            //     } catch (error) {
+            //       const err = error as unknown as string;
+            //       errorToast(err);
+            //     }
+            //   }
+            //   toggleIsAddBookmarkModalButtonLoading();
+            //   setShowAddBookmarkModal(false);
+            // }}
             createTag={async (tagData) => {
               const userData = session?.user as unknown as UserIdentity;
               try {
-                const data = await addUserTagsMutation.mutateAsync({
-                  userData,
-                  tagsData: { name: tagData[tagData?.length - 1]?.label },
-                });
+                const data = (await mutationApiCall(
+                  addUserTagsMutation.mutateAsync({
+                    userData,
+                    tagsData: { name: tagData[tagData?.length - 1]?.label },
+                  })
+                )) as { data: UserTagsData[] };
+
                 setSelectedTag([
                   ...selectedTag,
                   ...data?.data.map((item) => {
@@ -484,9 +487,11 @@ const Dashboard = () => {
                     user_id: userData?.id,
                   } as unknown as BookmarksTagData;
 
-                  addTagToBookmarkMutation.mutate({
-                    selectedData: bookmarkTagsData,
-                  });
+                  mutationApiCall(
+                    addTagToBookmarkMutation.mutateAsync({
+                      selectedData: bookmarkTagsData,
+                    })
+                  );
                 }
               } catch (error) {}
             }}
@@ -504,14 +509,11 @@ const Dashboard = () => {
                   (item) => item?.id === delValue || item?.name === delValue
                 ) as unknown as BookmarksTagData;
 
-                try {
-                  removeTagFromBookmarkMutation.mutate({
+                mutationApiCall(
+                  removeTagFromBookmarkMutation.mutateAsync({
                     selectedData: delData,
-                  });
-                } catch (error) {
-                  const err = error as unknown as string;
-                  errorToast(err);
-                }
+                  })
+                );
               }
             }}
             addExistingTag={async (tag) => {
@@ -524,9 +526,11 @@ const Dashboard = () => {
                   user_id: userData?.id,
                 } as unknown as BookmarksTagData;
 
-                addTagToBookmarkMutation.mutate({
-                  selectedData: bookmarkTagsData,
-                });
+                mutationApiCall(
+                  addTagToBookmarkMutation.mutateAsync({
+                    selectedData: bookmarkTagsData,
+                  })
+                );
               }
             }}
             onCategoryChange={async (value) => {

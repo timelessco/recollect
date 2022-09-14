@@ -22,7 +22,7 @@ import CreatableSearchSelect from '../../components/creatableSearchSelect';
 
 // Modal for adding a bookmark
 interface AddModalContentProps {
-  addBookmark: () => void;
+  // addBookmark: () => void; //TODO: check and remove
   urlData?: UrlData;
   userTags?: Array<UserTagsData>;
   createTag: (value: OnChangeValue<TagInputOption, true>) => void;
@@ -42,7 +42,7 @@ interface AddModalContentProps {
 export default function AddModalContent(props: AddModalContentProps) {
   const {
     urlData,
-    addBookmark,
+    // addBookmark,
     userTags,
     createTag,
     addExistingTag,
@@ -222,7 +222,8 @@ export default function AddModalContent(props: AddModalContentProps) {
         {showMainButton && (
           <Button
             className="w-full"
-            onClick={addBookmark}
+            // onClick={addBookmark}
+            onClick={() => null}
             isDisabled={!urlData}
           >
             {!isAddBookmarkModalButtonLoading ? (

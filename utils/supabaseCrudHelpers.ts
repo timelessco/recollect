@@ -4,8 +4,6 @@ import {
   FetchDataResponse,
   SingleListData,
   UrlData,
-  FetchUserTagsDataResponse,
-  FetchBookmarksTagDataResponse,
   BookmarksTagData,
   FetchCategoriesDataResponse,
   FetchSharedCategoriesData,
@@ -16,9 +14,7 @@ import {
   BOOKMARK_SCRAPPER_API,
   MAIN_TABLE_NAME,
   NEXT_API_URL,
-  TAG_TABLE_NAME,
   GET_BOOKMARKS_DATA_API,
-  BOOKMARK_TAGS_TABLE_NAME,
   DELETE_BOOKMARK_DATA_API,
   CATEGORIES_TABLE_NAME,
   SEND_COLLABORATION_EMAIL_API,
@@ -27,6 +23,10 @@ import {
   SYNC_PROFILES_TABLE_API,
   ADD_BOOKMARK_MIN_DATA,
   ADD_URL_SCREENSHOT_API,
+  FETCH_USER_TAGS_API,
+  CREATE_USER_TAGS_API,
+  ADD_TAG_TO_BOOKMARK_API,
+  REMOVE_TAG_FROM_BOOKMARK_API,
 } from './constants';
 import slugify from 'slugify';
 import isEmpty from 'lodash/isEmpty';
@@ -123,6 +123,7 @@ export const addBookmarkScreenshot = async ({
   }
 };
 
+// TODO: check and remove
 export const addData = async ({
   userData,
   urlData,
@@ -157,9 +158,17 @@ export const deleteData = async (item: SingleListData) => {
 };
 
 // user tags
-export const fetchUserTags = async (tableName = TAG_TABLE_NAME) => {
-  const { data, error } = await supabase.from(tableName).select();
-  return { data, error } as unknown as FetchUserTagsDataResponse;
+export const fetchUserTags = async (user_id: string) => {
+  if (user_id && !isEmpty(user_id)) {
+    try {
+      const res = await axios.get(
+        `${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}`
+      );
+      return res?.data;
+    } catch (e) {
+      return e;
+    }
+  }
 };
 
 export const addUserTags = async ({
@@ -169,14 +178,15 @@ export const addUserTags = async ({
   userData: UserIdentity;
   tagsData: { name: string };
 }) => {
-  const { data, error } = await supabase.from(TAG_TABLE_NAME).insert([
-    {
+  try {
+    const res = await axios.post(`${NEXT_API_URL}${CREATE_USER_TAGS_API}`, {
       name: tagsData?.name,
       user_id: userData?.id,
-    },
-  ]);
-
-  return { data, error } as unknown as FetchUserTagsDataResponse;
+    });
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 
 export const addTagToBookmark = async ({
@@ -184,11 +194,14 @@ export const addTagToBookmark = async ({
 }: {
   selectedData: Array<BookmarksTagData> | BookmarksTagData;
 }) => {
-  const { data, error } = await supabase
-    .from(BOOKMARK_TAGS_TABLE_NAME)
-    .insert(selectedData);
-
-  return { data, error } as unknown as FetchBookmarksTagDataResponse;
+  try {
+    const res = await axios.post(`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`, {
+      data: selectedData,
+    });
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 
 export const removeTagFromBookmark = async ({
@@ -196,12 +209,17 @@ export const removeTagFromBookmark = async ({
 }: {
   selectedData: BookmarksTagData;
 }) => {
-  const { data, error } = await supabase
-    .from(BOOKMARK_TAGS_TABLE_NAME)
-    .delete()
-    .match({ id: selectedData?.bookmark_tag_id });
-
-  return { data, error } as unknown as FetchBookmarksTagDataResponse;
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
+      {
+        bookmark_tag_id: selectedData?.bookmark_tag_id,
+      }
+    );
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 
 // user catagories
