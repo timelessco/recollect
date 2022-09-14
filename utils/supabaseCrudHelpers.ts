@@ -5,7 +5,6 @@ import {
   SingleListData,
   UrlData,
   BookmarksTagData,
-  FetchCategoriesDataResponse,
   FetchSharedCategoriesData,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
@@ -29,6 +28,7 @@ import {
   FETCH_USER_CATEGORIES_API,
   CREATE_USER_CATEGORIES_API,
   DELETE_USER_CATEGORIES_API,
+  UPDATE_USER_CATEGORIES_API,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 
@@ -315,12 +315,19 @@ export const updateCategory = async ({
   category_id: number | null | string;
   updateData: { is_public: boolean };
 }) => {
-  const { data, error } = await supabase
-    .from(CATEGORIES_TABLE_NAME)
-    .update(updateData)
-    .match({ id: category_id });
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${UPDATE_USER_CATEGORIES_API}`,
+      {
+        category_id,
+        updateData,
+      }
+    );
 
-  return { data, error } as unknown as FetchCategoriesDataResponse;
+    return res;
+  } catch (e) {
+    return e;
+  }
 };
 
 // share

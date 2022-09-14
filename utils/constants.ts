@@ -40,6 +40,7 @@ export const FETCH_USER_CATEGORIES_API = '/fetch-user-categories';
 export const CREATE_USER_CATEGORIES_API = '/create-user-category';
 export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
 export const DELETE_USER_CATEGORIES_API = '/delete-user-category';
+export const UPDATE_USER_CATEGORIES_API = '/update-user-category';
 
 // urls
 
