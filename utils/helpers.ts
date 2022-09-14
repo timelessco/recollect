@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash';
 import find from 'lodash/find';
 import { DeepRequired, FieldErrorsImpl } from 'react-hook-form';
 import {
@@ -6,6 +7,7 @@ import {
   CategoriesData,
 } from '../types/apiTypes';
 import { UrlInput } from '../types/componentTypes';
+import { GET_NAME_FROM_EMAIL_PATTERN } from './constants';
 
 export const getTagAsPerId = (tagIg: number, tagsData: Array<UserTagsData>) => {
   return find(tagsData, (item) => {
@@ -32,7 +34,9 @@ export const getCategoryIdFromSlug = (
   }
 };
 
-export const urlInputErrorText = (errors: FieldErrorsImpl<DeepRequired<UrlInput>>) => {
+export const urlInputErrorText = (
+  errors: FieldErrorsImpl<DeepRequired<UrlInput>>
+) => {
   if (errors?.urlText?.type === 'pattern') {
     return 'Please enter valid URL';
   } else if (errors?.urlText?.type === 'required') {
@@ -40,4 +44,18 @@ export const urlInputErrorText = (errors: FieldErrorsImpl<DeepRequired<UrlInput>
   } else {
     return '';
   }
+};
+
+export const getUserNameFromEmail = (email: string) => {
+  if (!isEmpty(email)) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    const userName = email
+      ?.match(GET_NAME_FROM_EMAIL_PATTERN)[1]
+      ?.replace('.', '-');
+
+    return userName;
+  }
+
+  return null;
 };

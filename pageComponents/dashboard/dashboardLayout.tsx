@@ -10,24 +10,36 @@ import {
   PlusCircleIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/outline';
-import { TrashIcon, ShareIcon, GlobeIcon } from '@heroicons/react/solid';
+import {
+  TrashIcon,
+  ShareIcon,
+  GlobeIcon,
+  UsersIcon,
+} from '@heroicons/react/solid';
 import { ChildrenTypes, UrlInput } from '../../types/componentTypes';
 import Button from '../../components/atoms/button';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
-import { CategoriesData, SingleListData } from '../../types/apiTypes';
+import {
+  CategoriesData,
+  FetchSharedCategoriesData,
+  SingleListData,
+} from '../../types/apiTypes';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
+  SHARED_CATEGORIES_TABLE_NAME,
   UNCATEGORIZED_URL,
   URL_PATTERN,
 } from '../../utils/constants';
 import { getCountInCategory, urlInputErrorText } from '../../utils/helpers';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { isEmpty } from 'lodash';
+import find from 'lodash/find';
+import isEmpty from 'lodash/isEmpty';
+import Spinner from '../../components/spinner';
 
 interface SideBarNavidationTypes {
   name: string;
@@ -41,6 +53,7 @@ interface SideBarNavidationTypes {
     id: string;
     current: boolean;
     isPublic: boolean;
+    isCollab: boolean;
   }>;
   count?: number;
 }
@@ -59,11 +72,12 @@ interface DashboardLayoutProps {
   onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
   onAddCategoryClick: () => void;
-  onDeleteCategoryClick: (id: string) => void;
+  onDeleteCategoryClick: (id: string, current: boolean) => void;
   bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
   onShareClick: (id: string) => void;
   userId: string;
+  isAddInputLoading: boolean;
 }
 
 export default function DashboardLayout(props: DashboardLayoutProps) {
@@ -79,6 +93,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     onAddBookmark,
     onShareClick,
     userId,
+    isAddInputLoading = false,
   } = props;
 
   const {
@@ -103,8 +118,15 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
     error: PostgrestError;
   };
 
-  const bookmarksData = queryClient.getQueryData([BOOKMARKS_KEY, null]) as {
+  const bookmarksData = queryClient.getQueryData([BOOKMARKS_KEY, userId]) as {
     data: SingleListData[];
+    error: PostgrestError;
+  };
+
+  const sharedCategoriesData = queryClient.getQueryData([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]) as {
+    data: FetchSharedCategoriesData[];
     error: PostgrestError;
   };
 
@@ -135,6 +157,12 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
               id: item?.id,
               current: currentPath === item?.category_slug,
               isPublic: item?.is_public,
+              isCollab: !isEmpty(
+                find(
+                  sharedCategoriesData?.data,
+                  (cat) => cat?.category_id === item?.id
+                )
+              ),
             };
           })
         : [],
@@ -416,23 +444,27 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                 >
                                   <div className="flex items-center">
                                     {subItem.name}
-                                    {bookmarksData?.data && (
-                                      <span
-                                        className={classNames(
-                                          item.current
-                                            ? 'bg-white'
-                                            : 'bg-gray-200 group-hover:bg-gray-200',
-                                          'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
-                                        )}
-                                      >
-                                        {getCountInCategory(
-                                          subItem?.id,
-                                          bookmarksData?.data
-                                        )}
-                                      </span>
-                                    )}
+                                    {bookmarksData?.data &&
+                                      !subItem?.isCollab && (
+                                        <span
+                                          className={classNames(
+                                            item.current
+                                              ? 'bg-white'
+                                              : 'bg-gray-200 group-hover:bg-gray-200',
+                                            'ml-3 inline-block py-0.5 px-3 text-xs font-medium rounded-full'
+                                          )}
+                                        >
+                                          {getCountInCategory(
+                                            subItem?.id,
+                                            bookmarksData?.data
+                                          )}
+                                        </span>
+                                      )}
                                     {subItem?.isPublic && (
                                       <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
+                                    )}
+                                    {subItem?.isCollab && (
+                                      <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
                                     )}
                                   </div>
                                   <div className="flex space-x-1">
@@ -444,9 +476,13 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                                       className="flex-shrink-0 h-4 w-4 text-gray-400 hover:text-gray-500 hidden group-hover:block"
                                     />
                                     <TrashIcon
-                                      onClick={() =>
-                                        onDeleteCategoryClick(subItem.id)
-                                      }
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        onDeleteCategoryClick(
+                                          subItem.id,
+                                          subItem?.current
+                                        );
+                                      }}
                                       className="flex-shrink-0 h-4 w-4 text-red-400 hover:text-red-500 hidden group-hover:block"
                                     />
                                   </div>
@@ -491,13 +527,19 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                   </label>
                   <div className="relative w-full text-gray-400 focus-within:text-gray-600">
                     <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                      {!isEmpty(errors) ? (
-                        <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                      {isAddInputLoading ? (
+                        <Spinner />
                       ) : (
-                        <PlusCircleIcon
-                          className="h-5 w-5"
-                          aria-hidden="true"
-                        />
+                        <>
+                          {!isEmpty(errors) ? (
+                            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                          ) : (
+                            <PlusCircleIcon
+                              className="h-5 w-5"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </>
                       )}
                     </div>
                     <input
@@ -506,7 +548,7 @@ export default function DashboardLayout(props: DashboardLayoutProps) {
                         pattern: URL_PATTERN,
                       })}
                       type="text"
-                      placeholder="Add URL"
+                      placeholder="Add URL or press ⌘ + K"
                       className={`${
                         isEmpty(errors)
                           ? 'text-gray-900 placeholder-gray-500 focus:placeholder-gray-400'

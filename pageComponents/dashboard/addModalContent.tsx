@@ -3,7 +3,6 @@ import { OnChangeValue } from 'react-select';
 import Button from '../../components/atoms/button';
 import Input from '../../components/atoms/input';
 import LabelledComponent from '../../components/labelledComponent';
-import SearchSelect from '../../components/searchSelect';
 import TagInput from '../../components/tagInput';
 import {
   CategoriesData,
@@ -19,6 +18,7 @@ import filter from 'lodash/filter';
 import Spinner from '../../components/spinner';
 import { useLoadersStore } from '../../store/componentStore';
 import { BOOKMARKS_KEY, CATEGORIES_KEY } from '../../utils/constants';
+import CreatableSearchSelect from '../../components/creatableSearchSelect';
 
 // Modal for adding a bookmark
 interface AddModalContentProps {
@@ -32,8 +32,11 @@ interface AddModalContentProps {
   mainButtonText: string;
   urlString: string;
   onCategoryChange: (value: SearchSelectOption | null) => void;
+  onCreateCategory: (value: SearchSelectOption | null) => void;
   categoryId: string | number | null;
   userId: string;
+  isCategoryChangeLoading: boolean;
+  showMainButton: boolean;
 }
 
 export default function AddModalContent(props: AddModalContentProps) {
@@ -50,6 +53,9 @@ export default function AddModalContent(props: AddModalContentProps) {
     onCategoryChange,
     categoryId,
     userId,
+    isCategoryChangeLoading = false,
+    showMainButton = true,
+    onCreateCategory,
   } = props;
 
   const isAddBookmarkModalButtonLoading = useLoadersStore(
@@ -155,7 +161,8 @@ export default function AddModalContent(props: AddModalContentProps) {
           />
         </LabelledComponent>
         <LabelledComponent label="Add Category">
-          <SearchSelect
+          {/* <SearchSelect
+            isLoading={isCategoryChangeLoading}
             options={[
               {
                 label: 'Uncategorized',
@@ -180,17 +187,51 @@ export default function AddModalContent(props: AddModalContentProps) {
                 value: item?.id,
               };
             })}
+          /> */}
+          <CreatableSearchSelect
+            isLoading={isCategoryChangeLoading}
+            options={[
+              {
+                label: 'Uncategorized',
+                value: 0,
+              },
+              ...categoryData?.data?.map((item) => {
+                return {
+                  label: item?.category_name,
+                  value: item?.id,
+                };
+              }),
+            ]}
+            defaultValue={filter(
+              categoryData?.data,
+              (item) =>
+                item?.id ===
+                (latestCurrentBookmarkData?.category_id || categoryId)
+            )?.map((item) => {
+              return {
+                label: item?.category_name,
+                value: item?.id,
+              };
+            })}
+            onChange={onCategoryChange}
+            createOption={onCreateCategory}
           />
         </LabelledComponent>
       </div>
       <div className="mt-4">
-        <Button className="w-full" onClick={addBookmark} isDisabled={!urlData}>
-          {!isAddBookmarkModalButtonLoading ? (
-            <span>{mainButtonText}</span>
-          ) : (
-            <Spinner />
-          )}
-        </Button>
+        {showMainButton && (
+          <Button
+            className="w-full"
+            onClick={addBookmark}
+            isDisabled={!urlData}
+          >
+            {!isAddBookmarkModalButtonLoading ? (
+              <span>{mainButtonText}</span>
+            ) : (
+              <Spinner />
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );

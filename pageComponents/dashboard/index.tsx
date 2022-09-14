@@ -1,37 +1,44 @@
 import { Session, UserIdentity } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AxiosResponse } from 'axios';
+// import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import { BookmarksTagData, SingleListData } from '../../types/apiTypes';
 import {
+  addBookmarkMinData,
+  addBookmarkScreenshot,
   addCategoryToBookmark,
   addData,
   addTagToBookmark,
   addUserCategory,
   addUserTags,
   deleteData,
+  deleteSharedCategoriesUser,
   deleteUserCategory,
   fetchBookmakrsData,
   fetchCategoriesData,
+  fetchSharedCategoriesData,
   fetchUserTags,
-  getBookmarkScrappedData,
+  // getBookmarkScrappedData,
   getCurrentUserSession,
   removeTagFromBookmark,
   signInWithOauth,
   signOut,
   updateCategory,
+  updateProfilesTable,
+  updateSharedCategoriesUserAccess,
 } from '../../utils/supabaseCrudHelpers';
 import CardSection from './cardSection';
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
+  SHARED_CATEGORIES_TABLE_NAME,
   USER_TAGS_KEY,
 } from '../../utils/constants';
 import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
-import { find } from 'lodash';
+import { find, isEmpty, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
   useLoadersStore,
@@ -42,10 +49,11 @@ import AddCategoryModal from './addCategoryModal';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { errorToast } from '../../utils/toastMessages';
+import { errorToast, successToast } from '../../utils/toastMessages';
 import { mutationApiCall } from '../../utils/apiHelpers';
 import { getCategoryIdFromSlug } from '../../utils/helpers';
 import ShareCategoryModal from './shareCategoryModal';
+import AddBookarkShortcutModal from './modals/addBookmarkShortcutModal';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -57,6 +65,11 @@ const Dashboard = () => {
   const [url, setUrl] = useState<string>('');
   const [selectedCategoryDuringAdd, setSelectedCategoryDuringAdd] =
     useState<SearchSelectOption | null>();
+  const [addScreenshotBookmarkId, setAddScreenshotBookmarkId] =
+    useState(undefined);
+  const [deleteBookmarkId, setDeleteBookmarkId] = useState<number | undefined>(
+    undefined
+  );
 
   const router = useRouter();
 
@@ -76,6 +89,10 @@ const Dashboard = () => {
     (state) => state.toggleShareCategoryModal
   );
 
+  const toggleShowAddBookmarkShortcutModal = useModalStore(
+    (state) => state.toggleShowAddBookmarkShortcutModal
+  );
+
   const setShareCategoryId = useMiscellaneousStore(
     (state) => state.setShareCategoryId
   );
@@ -84,6 +101,18 @@ const Dashboard = () => {
     const currentSession = await getCurrentUserSession();
     setSession(currentSession);
   };
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && e.metaKey) {
+        toggleShowAddBookmarkShortcutModal();
+      }
+    };
+
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!showAddBookmarkModal) {
@@ -98,6 +127,7 @@ const Dashboard = () => {
   // TODO: this is bad pattern fix this
   useEffect(() => {
     fetchUserSession();
+    updateProfilesTable();
     setTimeout(() => {
       fetchUserSession();
     }, 2000);
@@ -111,10 +141,14 @@ const Dashboard = () => {
   // Queries
   const { data: allCategories } = useQuery(
     [CATEGORIES_KEY, session?.user?.id],
-    () => fetchCategoriesData(session?.user?.id || '')
+    () =>
+      fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
-  const {} = useQuery([BOOKMARKS_KEY, null], () => fetchBookmakrsData('null'));
+  const { data: allBookmarksData, isLoading: isAllBookmarksDataLoading } =
+    useQuery([BOOKMARKS_KEY, session?.user?.id], () =>
+      fetchBookmakrsData('null')
+    );
 
   const category_slug = router?.asPath?.split('/')[1] || null;
   const category_id =
@@ -125,6 +159,10 @@ const Dashboard = () => {
   );
 
   const { data: userTags } = useQuery([USER_TAGS_KEY], () => fetchUserTags());
+
+  const {} = useQuery([SHARED_CATEGORIES_TABLE_NAME], () =>
+    fetchSharedCategoriesData()
+  );
 
   // Mutations
   const addBookmarkMutation = useMutation(addData, {
@@ -137,6 +175,30 @@ const Dashboard = () => {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      setDeleteBookmarkId(undefined);
+    },
+  });
+
+  const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      setAddScreenshotBookmarkId(undefined);
+    },
+  });
+
+  const addBookmarkMinDataMutation = useMutation(addBookmarkMinData, {
+    onSuccess: (res: unknown) => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      const data = res?.data?.data[0];
+      const ogImg = data?.ogImage;
+      if (!ogImg || isEmpty(ogImg)) {
+        addBookmarkScreenshotMutation.mutate({ url: data?.url, id: data?.id });
+        setAddScreenshotBookmarkId(data?.id);
+      }
     },
   });
 
@@ -193,30 +255,76 @@ const Dashboard = () => {
     },
   });
 
-  // gets scrapped data
-  const addItem = async (item: string) => {
-    setShowAddBookmarkModal(true);
-
-    try {
-      const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
-
-      const scrapperData = apiRes.data.data.scrapperData;
-      const screenshotUrl = apiRes.data.data.screenShot;
-
-      const urlData = {
-        title: scrapperData?.title,
-        description: scrapperData?.description,
-        url: scrapperData?.url,
-        ogImage: scrapperData?.OgImage,
-        screenshot: screenshotUrl,
-      } as SingleListData;
-
-      setAddedUrlData(urlData);
-    } catch (err) {
-      console.error('err ,', err);
-    } finally {
-      console.log('finally');
+  // share category mutation
+  const deleteSharedCategoriesUserMutation = useMutation(
+    deleteSharedCategoriesUser,
+    {
+      onSuccess: () => {
+        // Invalidate and refetch
+        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+        queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+      },
     }
+  );
+
+  const updateSharedCategoriesUserAccessMutation = useMutation(
+    updateSharedCategoriesUserAccess,
+    {
+      onSuccess: () => {
+        // Invalidate and refetch
+        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+      },
+    }
+  );
+
+  // // gets scrapped data
+  // const addItem = async (item: string) => {
+  //   setShowAddBookmarkModal(true);
+
+  //   try {
+  //     const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
+
+  //     const scrapperData = apiRes.data.data.scrapperData;
+  //     const screenshotUrl = apiRes.data.data.screenShot;
+
+  //     const urlData = {
+  //       title: scrapperData?.title,
+  //       description: scrapperData?.description,
+  //       url: scrapperData?.url,
+  //       ogImage: scrapperData?.OgImage,
+  //       screenshot: screenshotUrl,
+  //     } as SingleListData;
+
+  //     setAddedUrlData(urlData);
+  //   } catch (err) {
+  //     console.error('err ,', err);
+  //   } finally {
+  //     console.log('finally');
+  //   }
+  // };
+
+  const addBookmarkLogic = async (url: string) => {
+    setUrl(url);
+    // addItem(url);
+    // await addBookmarkMinData({ url });
+    const currentCategory = find(
+      allCategories?.data,
+      (item) => item?.id === category_id
+    );
+    // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+    const updateAccessCondition =
+      find(
+        currentCategory?.collabData,
+        (item) => item?.userEmail === session?.user?.email
+      )?.edit_access === true ||
+      currentCategory?.user_id?.id === session?.user?.id;
+    await mutationApiCall(
+      addBookmarkMinDataMutation.mutateAsync({
+        url: url,
+        category_id: category_id,
+        update_access: updateAccessCondition,
+      })
+    );
   };
 
   // any new tags created need not come in tag dropdown , this filter implements this
@@ -236,10 +344,33 @@ const Dashboard = () => {
             <>
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
               <CardSection
-                isLoading={isBookmarksLoading && !bookmarksData}
-                listData={bookmarksData?.data || []}
+                isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
+                addScreenshotBookmarkId={addScreenshotBookmarkId}
+                deleteBookmarkId={deleteBookmarkId}
+                showAvatar={
+                  // only show for a collab category
+                  category_id &&
+                  !isNull(category_id) &&
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  find(allCategories?.data, (item) => item?.id === category_id)
+                    ?.collabData?.length > 1
+                    ? true
+                    : false
+                }
+                userId={session?.user?.id || ''}
+                isLoading={
+                  (isBookmarksLoading && !bookmarksData) ||
+                  isAllBookmarksDataLoading
+                }
+                listData={
+                  !isNull(category_id)
+                    ? bookmarksData?.data || []
+                    : allBookmarksData?.data || []
+                }
                 onDeleteClick={async (item) => {
                   toggleIsDeleteBookmarkLoading();
+                  setDeleteBookmarkId(item?.id);
                   await mutationApiCall(
                     deleteBookmarkMutation.mutateAsync(item)
                   );
@@ -261,6 +392,8 @@ const Dashboard = () => {
           setOpen={() => setShowAddBookmarkModal(false)}
         >
           <AddModalContent
+            showMainButton={false}
+            isCategoryChangeLoading={addCategoryToBookmarkMutation?.isLoading}
             userId={session?.user?.id || ''}
             categoryId={category_id}
             urlString={url}
@@ -293,12 +426,31 @@ const Dashboard = () => {
                       selectedData: bookmarkTagsData,
                     });
 
-                  addCategoryToBookmarkMutation.mutate({
-                    category_id:
-                      selectedCategoryDuringAdd?.value ||
-                      (category_id as number | null),
-                    bookmark_id: data?.data[0]?.id as number,
-                  });
+                  const selectedCategoryId =
+                    selectedCategoryDuringAdd?.value === undefined
+                      ? (category_id as number | null)
+                      : selectedCategoryDuringAdd?.value;
+
+                  const currentCategory = find(
+                    allCategories?.data,
+                    (item) => item?.id === selectedCategoryId
+                  );
+                  // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+                  const updateAccessCondition =
+                    !selectedCategoryId ||
+                    find(
+                      currentCategory?.collabData,
+                      (item) => item?.userEmail === session?.user?.email
+                    )?.edit_access === true ||
+                    currentCategory?.user_id?.id === session?.user?.id;
+
+                  await mutationApiCall(
+                    addCategoryToBookmarkMutation.mutateAsync({
+                      category_id: selectedCategoryId,
+                      bookmark_id: data?.data[0]?.id as number,
+                      update_access: updateAccessCondition,
+                    })
+                  );
                 } catch (error) {
                   const err = error as unknown as string;
                   errorToast(err);
@@ -379,14 +531,55 @@ const Dashboard = () => {
             }}
             onCategoryChange={async (value) => {
               if (isEdit) {
-                addCategoryToBookmarkMutation.mutate({
-                  category_id: value?.value
-                    ? (value?.value as number)
-                    : (null as null),
-                  bookmark_id: addedUrlData?.id as number,
-                });
+                const currentCategory =
+                  find(
+                    allCategories?.data,
+                    (item) => item?.id === value?.value
+                  ) ||
+                  find(allCategories?.data, (item) => item?.id === category_id);
+                // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+
+                const updateAccessCondition =
+                  find(
+                    currentCategory?.collabData,
+                    (item) => item?.userEmail === session?.user?.email
+                  )?.edit_access === true ||
+                  currentCategory?.user_id?.id === session?.user?.id;
+
+                await mutationApiCall(
+                  addCategoryToBookmarkMutation.mutateAsync({
+                    category_id: value?.value
+                      ? (value?.value as number)
+                      : (null as null),
+                    bookmark_id: addedUrlData?.id as number,
+                    update_access:
+                      isNull(value?.value) || !value?.value
+                        ? true
+                        : updateAccessCondition, // if user is changing to uncategoried then thay always have access
+                  })
+                );
               } else {
                 setSelectedCategoryDuringAdd(value);
+              }
+            }}
+            onCreateCategory={async (value) => {
+              if (value?.label) {
+                const res = await mutationApiCall(
+                  addCategoryMutation.mutateAsync({
+                    user_id: session?.user?.id as string,
+                    name: value?.label,
+                  })
+                );
+                // add the bookmark to the category after its created
+                mutationApiCall(
+                  addCategoryToBookmarkMutation.mutateAsync({
+                    category_id: res?.data[0]?.id,
+                    bookmark_id: addedUrlData?.id as number,
+                    update_access: true, // in this case user is creating the category , so they will have access
+                  })
+                );
+              } else {
+                errorToast('Category name is missing');
               }
             }}
           />
@@ -398,6 +591,7 @@ const Dashboard = () => {
   return (
     <>
       <DashboardLayout
+        isAddInputLoading={addBookmarkMinDataMutation?.isLoading}
         userId={session?.user?.id || ''}
         bookmarksData={bookmarksData?.data} // make this dependant on react-query
         renderMainContent={renderAllBookmarkCards}
@@ -412,16 +606,20 @@ const Dashboard = () => {
           signInWithOauth();
         }}
         onAddCategoryClick={toggleAddCategoryModal}
-        onDeleteCategoryClick={(id) => {
-          mutationApiCall(
+        onDeleteCategoryClick={async (id, current) => {
+          const res = await mutationApiCall(
             deleteCategoryMutation.mutateAsync({
               category_id: id,
             })
           );
+
+          // only push to home if user is deleting the category when user is currently in that category
+          if (isNull(res?.error) && current) {
+            router.push('/');
+          }
         }}
-        onAddBookmark={(url) => {
-          setUrl(url);
-          addItem(url);
+        onAddBookmark={async (url) => {
+          await addBookmarkLogic(url);
         }}
         onShareClick={(id) => {
           toggleShareCategoryModal();
@@ -429,13 +627,18 @@ const Dashboard = () => {
         }}
       />
       <AddCategoryModal
-        onAddNewCategory={(newCategoryName) => {
-          mutationApiCall(
+        onAddNewCategory={async (newCategoryName) => {
+          const res = await mutationApiCall(
             addCategoryMutation.mutateAsync({
               user_id: session?.user?.id as string,
               name: newCategoryName,
             })
           );
+
+          if (isNull(res?.error)) {
+            const newCategorySlug = res?.data[0]?.category_slug;
+            router.push(`/${newCategorySlug}`);
+          }
         }}
       />
       <ShareCategoryModal
@@ -447,6 +650,33 @@ const Dashboard = () => {
               updateData: { is_public: isPublic },
             })
           );
+        }}
+        onDeleteUserClick={(id) => {
+          mutationApiCall(
+            deleteSharedCategoriesUserMutation.mutateAsync({
+              id: id,
+            })
+          );
+        }}
+        updateSharedCategoriesUserAccess={async (id, value) => {
+          const res = await mutationApiCall(
+            updateSharedCategoriesUserAccessMutation.mutateAsync({
+              id: id,
+              updateData: { edit_access: parseInt(value) ? true : false },
+            })
+          );
+
+          if (isNull(res?.error)) {
+            successToast('User role changed');
+          }
+        }}
+      />
+      <AddBookarkShortcutModal
+        isAddBookmarkLoading={addBookmarkMinDataMutation?.isLoading}
+        onAddBookmark={async (url) => {
+          await addBookmarkLogic(url);
+
+          toggleShowAddBookmarkShortcutModal();
         }}
       />
       <ToastContainer />

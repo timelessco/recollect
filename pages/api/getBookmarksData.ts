@@ -36,17 +36,19 @@ export default async function handler(
   let data;
 
   if (category_id === 'null') {
+    // get all bookmarks
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
       .select()
-      .eq('user_id', userId);
+      .eq('user_id', userId); // this is for '/' route , we need bookmakrs by user_id // TODO: check and remove
     data = bookmarkData;
   } else {
+    // get bookmarks in a category
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
       .select()
-      .eq('category_id', category_id)
-      .eq('user_id', userId);
+      .eq('category_id', category_id);
+    // .eq('user_id', userId);  // TODO: check and remove
 
     data = bookmarkData;
   }

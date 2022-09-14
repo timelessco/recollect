@@ -6,10 +6,11 @@ interface SearchSelectProps {
   options: Array<SearchSelectOption>;
   onChange: (value: SearchSelectOption | null) => void;
   defaultValue: Array<SearchSelectOption>;
+  isLoading: boolean;
 }
 
 const SearchSelect = (props: SearchSelectProps) => {
-  const { options, onChange, defaultValue } = props;
+  const { options, onChange, defaultValue, isLoading = false } = props;
 
   const handleChange = (
     value: SearchSelectOption | null
@@ -20,6 +21,7 @@ const SearchSelect = (props: SearchSelectProps) => {
 
   return (
     <Select
+      isLoading={isLoading}
       options={options}
       defaultValue={defaultValue}
       menuPortalTarget={document.body}
