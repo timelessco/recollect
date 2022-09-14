@@ -1,39 +1,43 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../utils/supabaseClient';
 import { decode } from 'base64-arraybuffer';
 import axios from 'axios';
 import { MAIN_TABLE_NAME, SCREENSHOT_API } from '../../utils/constants';
 import { isNull } from 'lodash';
 import { SingleListData } from '../../types/apiTypes';
-import { PostgrestError } from '@supabase/supabase-js';
+import { createClient, PostgrestError } from '@supabase/supabase-js';
 
 type Data = {
   data: SingleListData[] | null;
   error: PostgrestError | null;
 };
 
-const upload = async (base64data: string) => {
-  const imgName = `img${Math.random()}.jpg`;
-
-  const {} = await supabase.storage
-    .from('bookmarks')
-    .upload(`public/${imgName}`, decode(base64data), {
-      contentType: 'image/jpg',
-    });
-
-  const { publicURL } = await supabase.storage
-    .from('bookmarks')
-    .getPublicUrl(`public/${imgName}`);
-
-  return publicURL;
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const {} = supabase.auth.setAuth(req.body.access_token);
+  // const {} = supabase.auth.setAuth(req.body.access_token);
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_KEY as string
+  );
+
+  const upload = async (base64data: string) => {
+    const imgName = `img${Math.random()}.jpg`;
+
+    const {} = await supabase.storage
+      .from('bookmarks')
+      .upload(`public/${imgName}`, decode(base64data), {
+        contentType: 'image/jpg',
+      });
+
+    const { publicURL } = await supabase.storage
+      .from('bookmarks')
+      .getPublicUrl(`public/${imgName}`);
+
+    return publicURL;
+  };
 
   // screen shot api call
   const screenShotRes = await axios.get(`${SCREENSHOT_API}${req.body.url}`, {

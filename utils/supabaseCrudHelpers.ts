@@ -145,11 +145,8 @@ export const addData = async ({
 };
 
 export const deleteData = async (item: SingleListData) => {
-  const session = await getCurrentUserSession();
-
   try {
     const res = await axios.post(`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`, {
-      access_token: session?.access_token,
       data: item,
     });
 

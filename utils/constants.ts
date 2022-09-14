@@ -24,8 +24,8 @@ export const TIMELESS_SCRAPPER_API =
 export const SCREENSHOT_API = 'https://s.vercel.app/api?url=';
 
 export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
-export const GET_BOOKMARKS_DATA_API = '/getBookmarksData';
-export const DELETE_BOOKMARK_DATA_API = '/deleteBookmark';
+export const GET_BOOKMARKS_DATA_API = '/get-bookmarks-data';
+export const DELETE_BOOKMARK_DATA_API = '/delete-bookmark';
 export const SEND_COLLABORATION_EMAIL_API = '/sendCollaborationEmail';
 export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
 export const SYNC_PROFILES_TABLE_API = '/sync-profiles-table';

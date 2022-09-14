@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../utils/supabaseClient';
+// import { supabase } from '../../utils/supabaseClient';
 import { UserTagsData, SingleListData } from '../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
@@ -8,7 +8,7 @@ import {
 } from '../../utils/constants';
 import { getTagAsPerId } from '../../utils/helpers';
 import isNull from 'lodash/isNull';
-import { PostgrestError } from '@supabase/supabase-js';
+import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt_decode from 'jwt-decode';
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
@@ -25,7 +25,12 @@ export default async function handler(
   const category_id = req.query.category_id;
 
   const accessToken = req.query.access_token as string;
-  const {} = supabase.auth.setAuth(accessToken);
+  // const {} = supabase.auth.setAuth(accessToken);
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_KEY as string
+  );
 
   const decode = jwt_decode(accessToken) as unknown;
 
