@@ -5,7 +5,6 @@ import {
   SingleListData,
   UrlData,
   BookmarksTagData,
-  FetchSharedCategoriesData,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -16,7 +15,6 @@ import {
   DELETE_BOOKMARK_DATA_API,
   CATEGORIES_TABLE_NAME,
   SEND_COLLABORATION_EMAIL_API,
-  SHARED_CATEGORIES_TABLE_NAME,
   ADD_CATEGORY_TO_BOOKMARK_API,
   SYNC_PROFILES_TABLE_API,
   ADD_BOOKMARK_MIN_DATA,
@@ -29,6 +27,9 @@ import {
   CREATE_USER_CATEGORIES_API,
   DELETE_USER_CATEGORIES_API,
   UPDATE_USER_CATEGORIES_API,
+  FETCH_SHARED_CATEGORIES_DATA_API,
+  UPDATE_SHARED_CATEGORY_USER_ROLE_API,
+  DELETE_SHARED_CATEGORIES_USER_API,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 
@@ -359,25 +360,28 @@ export const sendCollaborationEmailInvite = async ({
 };
 
 export const fetchSharedCategoriesData = async () => {
-  const { data, error } = await supabase
-    .from(SHARED_CATEGORIES_TABLE_NAME)
-    .select();
-  // .eq('email', email); // TODO: check and remove
-  return {
-    data,
-    error,
-  } as unknown as FetchDataResponse<FetchSharedCategoriesData>;
+  try {
+    const res = await axios.get(
+      `${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}`
+    );
+
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 
 export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
-  const { data, error } = await supabase
-    .from(SHARED_CATEGORIES_TABLE_NAME)
-    .delete()
-    .match({ id: id });
-  return {
-    data,
-    error,
-  } as unknown as FetchDataResponse<FetchSharedCategoriesData>;
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`,
+      { id }
+    );
+
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 
 export const updateSharedCategoriesUserAccess = async ({
@@ -387,14 +391,19 @@ export const updateSharedCategoriesUserAccess = async ({
   id: number;
   updateData: { edit_access: boolean };
 }) => {
-  const { data, error } = await supabase
-    .from(SHARED_CATEGORIES_TABLE_NAME)
-    .update(updateData)
-    .match({ id: id });
-  return {
-    data,
-    error,
-  } as unknown as FetchDataResponse<FetchSharedCategoriesData>;
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`,
+      {
+        id,
+        updateData,
+      }
+    );
+
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
 };
 // auth
 

@@ -26,7 +26,7 @@ export const SCREENSHOT_API = 'https://s.vercel.app/api?url=';
 export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
 export const GET_BOOKMARKS_DATA_API = '/get-bookmarks-data';
 export const DELETE_BOOKMARK_DATA_API = '/delete-bookmark';
-export const SEND_COLLABORATION_EMAIL_API = '/sendCollaborationEmail';
+export const SEND_COLLABORATION_EMAIL_API = '/send-collaboration-email';
 export const SYNC_PROFILES_TABLE_API = '/sync-profiles-table';
 export const ADD_BOOKMARK_MIN_DATA = '/add-bookmark-min-data';
 export const ADD_URL_SCREENSHOT_API = '/add-url-screenshot';
@@ -44,9 +44,14 @@ export const UPDATE_USER_CATEGORIES_API = '/update-user-category';
 // share api
 export const GET_PUBLIC_CATEGORY_BOOKMARKS_API =
   '/get-public-category-bookmarks';
+// collab share api
+export const FETCH_SHARED_CATEGORIES_DATA_API = '/fetch-shared-categories-data';
+export const UPDATE_SHARED_CATEGORY_USER_ROLE_API =
+  '/update-shared-category-user-role';
+export const DELETE_SHARED_CATEGORIES_USER_API =
+  '/delete-shared-categories-user';
 
 // urls
-
 export const UNCATEGORIZED_URL = 'uncategorized';
 
 // react-query keys

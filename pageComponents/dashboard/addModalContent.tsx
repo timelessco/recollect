@@ -125,6 +125,31 @@ export default function AddModalContent(props: AddModalContentProps) {
     }
   };
 
+  // if the bookmaks is not created by logged in user , then only show the option in else case
+  const categoryOptions = () => {
+    if (userId === urlData?.user_id) {
+      return [
+        {
+          label: 'Uncategorized',
+          value: 0,
+        },
+        ...categoryData?.data?.map((item) => {
+          return {
+            label: item?.category_name,
+            value: item?.id,
+          };
+        }),
+      ];
+    } else {
+      return [
+        {
+          label: 'Uncategorized',
+          value: 0,
+        },
+      ];
+    }
+  };
+
   return (
     <div id="modal-content">
       <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
@@ -190,18 +215,7 @@ export default function AddModalContent(props: AddModalContentProps) {
           /> */}
           <CreatableSearchSelect
             isLoading={isCategoryChangeLoading}
-            options={[
-              {
-                label: 'Uncategorized',
-                value: 0,
-              },
-              ...categoryData?.data?.map((item) => {
-                return {
-                  label: item?.category_name,
-                  value: item?.id,
-                };
-              }),
-            ]}
+            options={categoryOptions()}
             defaultValue={filter(
               categoryData?.data,
               (item) =>

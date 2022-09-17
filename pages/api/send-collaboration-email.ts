@@ -4,6 +4,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken';
 // import jwt_decode from 'jwt-decode';
 
+/**
+ * Builds invite link for a user to be added as colaborator and sends it via email
+ */
+
 type Data = {
   url: string;
 };

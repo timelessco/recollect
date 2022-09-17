@@ -75,6 +75,15 @@ const CardSection = ({
     }
   };
 
+  const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
+    // show if bookmark is created by loggedin user
+    if (post?.user_id === userId) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   const singleBookmarkCategoryName = (category_id: number) => {
     const name = find(
       categoryData?.data,
@@ -82,6 +91,44 @@ const CardSection = ({
     )?.category_name;
 
     return name as string;
+  };
+
+  // category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
+  const renderEditAndDeleteIcons = (post: SingleListData) => {
+    if (renderEditAndDeleteCondition(post)) {
+      return (
+        <>
+          {isBookmarkCreatedByLoggedinUser(post) ? (
+            <>
+              <PencilAltIcon
+                className="h-5 w-5 text-gray-400 cursor-pointer"
+                onClick={() => onEditClick(post)}
+              />
+              {isDeleteBookmarkLoading && deleteBookmarkId === post?.id ? (
+                <div>
+                  <Spinner size={15} />
+                </div>
+              ) : (
+                <TrashIcon
+                  className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
+                  aria-hidden="true"
+                  onClick={() => onDeleteClick(post)}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <PencilAltIcon
+                className="h-5 w-5 text-gray-400 cursor-pointer"
+                onClick={() => onEditClick(post)}
+              />
+            </>
+          )}
+        </>
+      );
+    } else {
+      return null;
+    }
   };
 
   return (
@@ -160,26 +207,7 @@ const CardSection = ({
                               className="mr-1"
                             />
                           )}
-                          {renderEditAndDeleteCondition(post) && (
-                            <>
-                              <PencilAltIcon
-                                className="h-5 w-5 text-gray-400 cursor-pointer"
-                                onClick={() => onEditClick(post)}
-                              />
-                              {isDeleteBookmarkLoading &&
-                              deleteBookmarkId === post?.id ? (
-                                <div>
-                                  <Spinner size={15} />
-                                </div>
-                              ) : (
-                                <TrashIcon
-                                  className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
-                                  aria-hidden="true"
-                                  onClick={() => onDeleteClick(post)}
-                                />
-                              )}
-                            </>
-                          )}
+                          {renderEditAndDeleteIcons(post)}
                         </div>
                       </div>
                     </div>

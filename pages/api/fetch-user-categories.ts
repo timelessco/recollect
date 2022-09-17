@@ -3,10 +3,7 @@ import { createClient, PostgrestError } from '@supabase/supabase-js';
 import { find, isEmpty } from 'lodash';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import {
-  CollabDataInCategory,
-  FetchCategoriesDataResponse,
-} from '../../types/apiTypes';
+import { CategoriesData, CollabDataInCategory } from '../../types/apiTypes';
 import {
   CATEGORIES_TABLE_NAME,
   SHARED_CATEGORIES_TABLE_NAME,
@@ -17,7 +14,7 @@ import {
  */
 
 type Data = {
-  data: FetchCategoriesDataResponse[] | null;
+  data: CategoriesData[] | null;
   error: PostgrestError | null | { message: string };
 };
 
@@ -47,40 +44,57 @@ export default async function handler(
   const { data: sharedCategoryData } = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
     .select(`*`);
-  // .eq('email', userEmail);
+  // .eq('email', req.body.userEmail); // TODO: this needs to be uncommented
+
+  // fetch categories where user is a colloborator
+  const { data: userCollabCategoryData } = await supabase
+    .from(SHARED_CATEGORIES_TABLE_NAME)
+    .select(`category_id!inner(*, user_id(*))`)
+    .eq('email', req.body.userEmail);
+
+  const flattenedUserCollabCategoryData = userCollabCategoryData?.map(
+    (item) => item?.category_id
+  );
+
+  const userCategoriesDataWithCollabCategoriesData = [
+    ...(data as CategoriesData[]),
+    ...(flattenedUserCollabCategoryData as CategoriesData[]),
+  ];
 
   // add colaborators data in each category
-  const finalDataWithCollab = data?.map((item) => {
-    let collabData = [] as CollabDataInCategory[];
-    sharedCategoryData?.forEach((catItem) => {
-      if (catItem?.category_id === item?.id) {
-        collabData = [
-          ...collabData,
-          {
-            userEmail: catItem?.email,
-            edit_access: catItem?.edit_access,
-            share_id: catItem?.id,
-            isOwner: false,
-          },
-        ];
-      }
-    });
+  const finalDataWithCollab = userCategoriesDataWithCollabCategoriesData?.map(
+    (item) => {
+      let collabData = [] as CollabDataInCategory[];
+      sharedCategoryData?.forEach((catItem) => {
+        if (catItem?.category_id === item?.id) {
+          collabData = [
+            ...collabData,
+            {
+              userEmail: catItem?.email,
+              edit_access: catItem?.edit_access,
+              share_id: catItem?.id,
+              isOwner: false,
+            },
+          ];
+        }
+      });
 
-    const collabDataWithOwnerData = [
-      ...collabData,
-      {
-        userEmail: item?.user_id?.email,
-        edit_access: true,
-        share_id: null,
-        isOwner: true,
-      },
-    ];
+      const collabDataWithOwnerData = [
+        ...collabData,
+        {
+          userEmail: item?.user_id?.email,
+          edit_access: true,
+          share_id: null,
+          isOwner: true,
+        },
+      ];
 
-    return {
-      ...item,
-      collabData: collabDataWithOwnerData,
-    };
-  });
+      return {
+        ...item,
+        collabData: collabDataWithOwnerData,
+      };
+    }
+  );
 
   // TODO : figure out how to do this in supabase , and change this to next api
   const finalPublicFilteredData = finalDataWithCollab?.filter((item) => {
@@ -97,7 +111,7 @@ export default async function handler(
         return item;
       }
     }
-  }) as FetchCategoriesDataResponse[];
+  }) as CategoriesData[];
 
   if (!isNull(error)) {
     res.status(500).json({ data: null, error: error });
