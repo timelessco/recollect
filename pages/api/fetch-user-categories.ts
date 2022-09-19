@@ -113,13 +113,14 @@ export default async function handler(
     }
   }) as CategoriesData[];
 
+  // else if (isEmpty(finalPublicFilteredData)) {
+  //   res.status(500).json({
+  //     data: null,
+  //     error: { message: 'Something went wrong , check RLS' },
+  //   });
+  // }
   if (!isNull(error)) {
     res.status(500).json({ data: null, error: error });
-  } else if (isEmpty(finalPublicFilteredData)) {
-    res.status(500).json({
-      data: null,
-      error: { message: 'Something went wrong , check RLS' },
-    });
   } else {
     res.status(200).json({ data: finalPublicFilteredData, error: null });
   }
