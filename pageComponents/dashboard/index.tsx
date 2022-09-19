@@ -195,7 +195,7 @@ const Dashboard = () => {
       //@ts-ignore
       const data = res?.data?.data[0];
       const ogImg = data?.ogImage;
-      if (!ogImg || isEmpty(ogImg)) {
+      if (!ogImg || isEmpty(ogImg) || !ogImg?.includes('https://')) {
         addBookmarkScreenshotMutation.mutate({ url: data?.url, id: data?.id });
         setAddScreenshotBookmarkId(data?.id);
       }
