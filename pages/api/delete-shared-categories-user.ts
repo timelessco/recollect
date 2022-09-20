@@ -12,6 +12,7 @@ type Data = {
 };
 
 /**
+ *
  * Deletes a collaborator in a category
  */
 
