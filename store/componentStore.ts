@@ -23,6 +23,7 @@ export const useModalStore = create<ModalStoreState>((set) => ({
     })),
 }));
 
+// TODO: remove this and user react-query loader
 export const useLoadersStore = create<LoadersStoreState>((set) => ({
   isAddBookmarkModalButtonLoading: false,
   isDeleteBookmarkLoading: false,

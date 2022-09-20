@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { isEmpty } from 'lodash';
+import { isEmpty, isNull } from 'lodash';
 import { GetServerSideProps, NextPage } from 'next';
 import { SingleListData } from '../../types/apiTypes';
 import {
@@ -28,7 +28,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     `${NEXT_API_URL}${GET_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${context?.query?.id}&user_name=${context?.query?.category_id}`
   );
 
-  if (isEmpty(res?.data?.data)) {
+  if (isEmpty(res?.data?.data) || isNull(res?.data?.data)) {
     return {
       notFound: true,
     };

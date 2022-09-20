@@ -66,10 +66,18 @@ export default async function handler(
           error: null,
         });
       } else {
-        res.status(500).json({
-          success: null,
-          error: error?.message,
-        });
+        if (error?.code === '23503') {
+          // if collab user does not have an existing account
+          res.status(500).json({
+            success: null,
+            error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${error?.message}`,
+          });
+        } else {
+          res.status(500).json({
+            success: null,
+            error: error?.message,
+          });
+        }
       }
     } else {
       res.status(500).json({
