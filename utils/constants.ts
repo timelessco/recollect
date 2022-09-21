@@ -53,6 +53,9 @@ export const DELETE_SHARED_CATEGORIES_USER_API =
 
 // urls
 export const UNCATEGORIZED_URL = 'uncategorized';
+export const SEARCH_URL = 'search';
+export const INBOX_URL = 'inbox';
+export const TRASH_URL = 'trash';
 
 // react-query keys
 
