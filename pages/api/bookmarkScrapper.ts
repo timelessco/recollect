@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import axios from 'axios';
-import { decode } from 'base64-arraybuffer';
+// import { decode } from 'base64-arraybuffer';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabaseClient';
 
@@ -44,22 +44,22 @@ interface FinalResponse {
 /// just store the test in storage and check
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const upload = async (base64data: string) => {
-  const imgName = `img${Math.random()}.jpg`;
+// const upload = async (base64data: string) => {
+//   const imgName = `img${Math.random()}.jpg`;
 
-  const { error } = await supabase.storage
-    .from('bookmarks')
-    .upload(`public/${imgName}`, decode(base64data), {
-      contentType: 'image/jpg',
-    });
-  console.log('error ', error);
+//   const { data, error } = await supabase.storage
+//     .from('bookmarks')
+//     .upload(`public/${imgName}`, decode(base64data), {
+//       contentType: 'image/jpg',
+//     });
+//   console.log('error ', error, data);
 
-  const { publicURL } = await supabase.storage
-    .from('bookmarks')
-    .getPublicUrl(`public/${imgName}`);
+//   const { publicURL } = await supabase.storage
+//     .from('bookmarks')
+//     .getPublicUrl(`public/${imgName}`);
 
-  return publicURL;
-};
+//   return publicURL;
+// };
 
 export default async function handler(
   req: NextApiRequest,

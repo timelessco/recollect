@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../utils/supabaseClient';
+// import { supabase } from '../../utils/supabaseClient';
 import { UserTagsData, SingleListData } from '../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
@@ -8,7 +8,8 @@ import {
 } from '../../utils/constants';
 import { getTagAsPerId } from '../../utils/helpers';
 import isNull from 'lodash/isNull';
-import { PostgrestError } from '@supabase/supabase-js';
+import { createClient, PostgrestError } from '@supabase/supabase-js';
+import jwt_decode from 'jwt-decode';
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
@@ -21,10 +22,42 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const accessToken = req.query.access_token as string;
-  const {} = supabase.auth.setAuth(accessToken);
+  const category_id = req.query.category_id;
 
-  const { data } = await supabase.from(MAIN_TABLE_NAME).select();
+  const accessToken = req.query.access_token as string;
+  // const {} = supabase.auth.setAuth(accessToken);
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_KEY as string
+  );
+
+  const decode = jwt_decode(accessToken) as unknown;
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  const userId = decode?.sub;
+
+  let data;
+
+  if (category_id === 'null') {
+    // get all bookmarks
+    const { data: bookmarkData } = await supabase
+      .from(MAIN_TABLE_NAME)
+      .select()
+      .eq('user_id', userId); // this is for '/' route , we need bookmakrs by user_id // TODO: check and remove
+    data = bookmarkData;
+  } else {
+    // get bookmarks in a category
+    const { data: bookmarkData } = await supabase
+      .from(MAIN_TABLE_NAME)
+      .select()
+      .eq('category_id', category_id);
+    // .eq('user_id', userId);  // TODO: check and remove
+
+    data = bookmarkData;
+  }
+
   const { data: bookmarkTags } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .select();

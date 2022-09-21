@@ -10,10 +10,11 @@ export interface SingleListData {
   user_id: string;
   screenshot: string;
   addedTags: Array<UserTagsData>;
+  category_id: number;
 }
 
-export interface FetchDataResponse {
-  data: SingleListData[];
+export interface FetchDataResponse<T = SingleListData[]> {
+  data: T;
   error: PostgrestError | null;
 }
 
@@ -24,6 +25,7 @@ export interface UrlData {
   ogImage: string;
   user_id: string;
   screenshot: string;
+  id?: number;
 }
 
 export interface UserTagsData {
@@ -51,4 +53,38 @@ export interface BookmarksTagData {
 export interface FetchBookmarksTagDataResponse {
   data: BookmarksTagData[];
   error: PostgrestError | null;
+}
+
+// user catagories
+
+export interface CategoriesData {
+  created_at: string;
+  id: number;
+  category_name: string;
+  user_id: { id: string; email: string };
+  category_slug: string;
+  is_public: boolean;
+  collabData: CollabDataInCategory[] | [];
+}
+
+export interface FetchCategoriesDataResponse {
+  data: CategoriesData[];
+  error: PostgrestError | null;
+}
+
+// shared categories
+export interface FetchSharedCategoriesData {
+  id: number;
+  created_at: string;
+  category_id: number;
+  email: string;
+  edit_access: boolean;
+  user_id: string;
+}
+
+export interface CollabDataInCategory {
+  userEmail: string;
+  edit_access: boolean;
+  share_id: number | null; // it will be null for owner
+  isOwner: boolean;
 }
