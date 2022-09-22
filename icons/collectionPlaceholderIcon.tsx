@@ -1,15 +1,22 @@
 import { Icon } from '../components/atoms/icon';
 
-const CollectionPlaceholderIcon = () => {
+interface IconTypes {
+  width?: string;
+  height?: string;
+}
+
+const CollectionPlaceholderIcon = (props: IconTypes) => {
+  const { width = '20', height = '20' } = props;
+
   return (
     <Icon
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <rect width="20" height="20" rx="10" fill="#F59B32" />
+      <rect width={width} height={height} rx="10" fill="#F59B32" />
       <path
         fillRule="evenodd"
         clipRule="evenodd"
