@@ -375,7 +375,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         {renderSidePaneOptionsMenu()}
         {renderSidePaneCollections()}
       </nav>
-      <div className="w-full">{renderMainPaneNav()}</div>
+      <div className="w-full">
+        {renderMainPaneNav()}
+        <main className="overflow-y-auto py-4">{renderMainContent()}</main>
+      </div>
     </div>
   );
 };

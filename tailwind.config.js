@@ -23,6 +23,9 @@ module.exports = {
           6: 'rgba(236, 236, 236, 0.86)',
         },
       },
+      dropShadow: {
+        'custom-1': '0px 0px 2.5px rgba(0, 0, 0, 0.11)',
+      },
     },
   },
   plugins: [require('@tailwindcss/forms')],
