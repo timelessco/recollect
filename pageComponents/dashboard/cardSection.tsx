@@ -16,6 +16,7 @@ import { PostgrestError } from '@supabase/supabase-js';
 import Badge from '../../components/badge';
 import isNull from 'lodash/isNull';
 import Masonry from 'react-masonry-css';
+import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSkeleton';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -224,34 +225,62 @@ const CardSection = ({
   //   </div>
   // );
 
-  return (
-    <Masonry
-      // breakpointCols={3}fwe
-      breakpointCols={{
-        default: 3,
-        1100: 2,
-        700: 2,
-        500: 1,
-      }}
-      className="my-masonry-grid"
-      columnClassName="my-masonry-grid_column"
-    >
-      {orderBy(bookmarksList, ['id'], ['desc'])?.map((item, index) => {
+  const renderMainCardContent = () => {
+    if (isLoading) {
+      return (
+        <Masonry
+          breakpointCols={{
+            default: 3,
+            1100: 2,
+            700: 2,
+            500: 1,
+          }}
+          className="my-masonry-grid"
+          columnClassName="my-masonry-grid_column"
+        >
+          <MasonryCardSkeleton />
+          <MasonryCardSkeleton />
+          <MasonryCardSkeleton />
+          <MasonryCardSkeleton />
+          <MasonryCardSkeleton />
+        </Masonry>
+      );
+    } else {
+      if (!isEmpty(bookmarksList)) {
         return (
-          <div key={item?.id} className="rounded-lg drop-shadow-custom-1">
-            <figure>
-              <img
-                src={item?.ogImage}
-                alt="bookmark-img"
-                // style={{ height: index % 2 ? 'auto' : '300px' }}
-                className="rounded-lg"
-              />
-            </figure>
-          </div>
+          <Masonry
+            breakpointCols={{
+              default: 3,
+              1100: 2,
+              700: 2,
+              500: 1,
+            }}
+            className="my-masonry-grid"
+            columnClassName="my-masonry-grid_column"
+          >
+            {orderBy(bookmarksList, ['id'], ['desc'])?.map((item, index) => {
+              return (
+                <div key={item?.id} className="rounded-lg drop-shadow-custom-1">
+                  <figure>
+                    <img
+                      src={item?.ogImage}
+                      alt="bookmark-img"
+                      // style={{ height: index % 2 ? 'auto' : '300px' }}
+                      className="rounded-lg"
+                    />
+                  </figure>
+                </div>
+              );
+            })}
+          </Masonry>
         );
-      })}
-    </Masonry>
-  );
+      } else {
+        return 'No Bookmarks';
+      }
+    }
+  };
+
+  return renderMainCardContent();
 };
 
 export default CardSection;

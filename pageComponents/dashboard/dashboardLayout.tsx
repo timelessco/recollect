@@ -6,7 +6,7 @@ import isEmpty from 'lodash/isEmpty';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import Button from '../../components/atoms/button';
 import Input from '../../components/atoms/input';
 import SearchInput from '../../components/searchInput';
@@ -35,6 +35,12 @@ import {
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
 } from '../../utils/constants';
+import { Allotment } from 'allotment';
+import 'allotment/dist/style.css';
+import {
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
+} from '@heroicons/react/solid';
 
 interface DashboardLayoutProps {
   userImg: string;
@@ -67,6 +73,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     userId,
     isAddInputLoading = false,
   } = props;
+
+  const [showSidePane, setShowSidePane] = useState(true);
+
   const userNavigation = [{ name: 'Sign out', href: '#' }];
 
   const router = useRouter();
@@ -97,7 +106,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const renderSidePaneUserDropdown = () => {
     return (
-      <>
+      <div className="flex items-center justify-between">
         {userImg ? (
           <Menu as="div" className="flex-shrink-0 relative">
             <div className="p-1 hover:bg-custom-gray-2 rounded-lg">
@@ -152,7 +161,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         ) : (
           <Button onClick={onSigninClick}>Signin</Button>
         )}
-      </>
+        <Button onClick={() => setShowSidePane(false)}>
+          <figure>
+            <ChevronDoubleLeftIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
+          </figure>
+        </Button>
+      </div>
     );
   };
 
@@ -369,16 +383,32 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     );
   };
   return (
-    <div className="flex h-screen bg-white">
-      <nav className="min-w-[244px] max-w-[244px] p-2 border-r-[0.5px] border-r-custom-gray-4">
-        {renderSidePaneUserDropdown()}
-        {renderSidePaneOptionsMenu()}
-        {renderSidePaneCollections()}
-      </nav>
-      <div className="w-full">
-        {renderMainPaneNav()}
-        <main className="overflow-y-auto py-4">{renderMainContent()}</main>
-      </div>
+    <div style={{ width: '100vw', height: '100vw' }}>
+      {!showSidePane && (
+        <Button
+          className="absolute bg-slate-200 cursor-pointer z-50 top-[64px] left-[12px] shadow-2xl"
+          onClick={() => setShowSidePane(true)}
+        >
+          <figure>
+            <ChevronDoubleRightIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
+          </figure>
+        </Button>
+      )}
+      <Allotment defaultSizes={[244, 1200]} separator={false}>
+        <Allotment.Pane maxSize={600} minSize={244} visible={showSidePane}>
+          <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
+            {renderSidePaneUserDropdown()}
+            {renderSidePaneOptionsMenu()}
+            {renderSidePaneCollections()}
+          </nav>
+        </Allotment.Pane>
+        <Allotment.Pane>
+          <div className="w-full">
+            {renderMainPaneNav()}
+            <main className="overflow-y-auto py-4">{renderMainContent()}</main>
+          </div>
+        </Allotment.Pane>
+      </Allotment>
     </div>
   );
 };
