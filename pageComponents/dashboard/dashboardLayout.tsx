@@ -42,6 +42,7 @@ import {
   ChevronDoubleRightIcon,
   PlusCircleIcon,
 } from '@heroicons/react/solid';
+import Dropdown from '../../components/dropdown';
 
 interface DashboardLayoutProps {
   userImg: string;
@@ -50,13 +51,18 @@ interface DashboardLayoutProps {
   onSignOutClick: () => void;
   onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
-  onDeleteCategoryClick: (id: string, current: boolean) => void;
+  // onDeleteCategoryClick: (id: string, current: boolean) => void;
   bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
-  onShareClick: (id: string) => void;
+  // onShareClick: (id: string) => void;
   userId: string;
   isAddInputLoading: boolean;
   onAddNewCategory: (value: string) => void;
+  onCategoryOptionClick: (
+    value: string | number,
+    current: boolean,
+    id: number
+  ) => void;
 }
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -67,12 +73,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     userName,
     onSignOutClick,
     onSigninClick,
-    onDeleteCategoryClick,
+    // onDeleteCategoryClick,
     onAddBookmark,
-    onShareClick,
+    // onShareClick,
     userId,
     isAddInputLoading = false,
     onAddNewCategory,
+    onCategoryOptionClick,
   } = props;
 
   const [showSidePane, setShowSidePane] = useState(true);
@@ -178,24 +185,28 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       name: 'Search',
       href: `/${SEARCH_URL}`,
       current: false,
+      id: 0,
     },
     {
       icon: () => <HomeIconGray />,
       name: 'All Bookmarks',
       href: `/`,
       current: !currentPath,
+      id: 1,
     },
     {
       icon: () => <InboxIconGray />,
       name: 'Inbox',
       href: `/${INBOX_URL}`,
       current: false,
+      id: 2,
     },
     {
       icon: () => <TrashIconGray />,
       name: 'Trash',
       href: `/${TRASH_URL}`,
       current: false,
+      id: 3,
     },
   ];
 
@@ -205,23 +216,39 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       name: string;
       href: string;
       current: boolean;
+      id: number;
     };
     extendedClassname: string;
+    showDropdown?: boolean;
   }
 
   const SingleListItem = (listProps: listPropsTypes) => {
-    const { item, extendedClassname = '' } = listProps;
+    const { item, extendedClassname = '', showDropdown = false } = listProps;
     return (
       <Link href={item?.href} passHref={true}>
         <a
           className={`${
             item?.current ? 'bg-custom-gray-2' : 'bg-white'
-          } ${extendedClassname} px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer`}
+          } ${extendedClassname} px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
         >
-          <figure>{item?.icon()}</figure>
-          <p className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-3 leading-[14px]">
-            {item?.name}
-          </p>
+          <div className="flex items-center">
+            <figure>{item?.icon()}</figure>
+            <p className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-3 leading-[14px]">
+              {item?.name}
+            </p>
+          </div>
+          {showDropdown && (
+            <Dropdown
+              menuClassName="origin-top-right left-0"
+              options={[
+                { label: 'Share', value: 'share' },
+                { label: 'Delete', value: 'delete' },
+              ]}
+              onOptionClick={(dropdownValue) =>
+                onCategoryOptionClick(dropdownValue, item.current, item.id)
+              }
+            />
+          )}
         </a>
       </Link>
     );
@@ -274,6 +301,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                 extendedClassname="py-[5px]"
                 item={item}
                 key={index}
+                showDropdown={true}
               />
             );
           })}

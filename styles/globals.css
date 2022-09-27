@@ -36,3 +36,8 @@ main {
   background: grey;
   margin-bottom: 16px;
 }
+
+/* for side pane options menu being cut after it passed side pane width */
+.allotment-module_splitView__L-yRc > .allotment-module_splitViewContainer__rQnVa > .allotment-module_splitViewView__MGZ6O {
+  overflow: unset !important;
+}

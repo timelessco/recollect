@@ -604,24 +604,8 @@ const Dashboard = () => {
         onSigninClick={() => {
           signInWithOauth();
         }}
-        onDeleteCategoryClick={async (id, current) => {
-          const res = await mutationApiCall(
-            deleteCategoryMutation.mutateAsync({
-              category_id: id,
-            })
-          );
-
-          // only push to home if user is deleting the category when user is currently in that category
-          if (isNull(res?.error) && current) {
-            router.push('/');
-          }
-        }}
         onAddBookmark={async (url) => {
           await addBookmarkLogic(url);
-        }}
-        onShareClick={(id) => {
-          toggleShareCategoryModal();
-          setShareCategoryId(parseInt(id));
         }}
         onAddNewCategory={async (newCategoryName) => {
           const res = await mutationApiCall(
@@ -634,6 +618,29 @@ const Dashboard = () => {
           if (isNull(res?.error)) {
             const newCategorySlug = res?.data[0]?.category_slug;
             router.push(`/${newCategorySlug}`);
+          }
+        }}
+        onCategoryOptionClick={async (value, current, id) => {
+          switch (value) {
+            case 'delete':
+              const res = await mutationApiCall(
+                deleteCategoryMutation.mutateAsync({
+                  category_id: id,
+                })
+              );
+
+              // only push to home if user is deleting the category when user is currently in that category
+              if (isNull(res?.error) && current) {
+                router.push('/');
+              }
+              break;
+            case 'share':
+              toggleShareCategoryModal();
+              setShareCategoryId(id);
+              // code block
+              break;
+            default:
+            // code block
           }
         }}
       />

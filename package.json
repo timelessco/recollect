@@ -39,6 +39,7 @@
     "react-spinners": "^0.13.4",
     "react-toastify": "^9.0.8",
     "slugify": "^1.6.5",
+    "tailwind-merge": "^1.6.0",
     "zustand": "^4.0.0"
   },
   "devDependencies": {

@@ -269,7 +269,7 @@ export const addUserCategory = async ({
 export const deleteUserCategory = async ({
   category_id,
 }: {
-  category_id: string;
+  category_id: number;
 }) => {
   try {
     const res = await axios.post(
