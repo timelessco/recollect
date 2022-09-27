@@ -1,7 +1,5 @@
 export interface ModalStoreState {
-  showAddCategoryModal: boolean;
   showShareCategoryModal: boolean;
-  toggleAddCategoryModal: () => void;
   toggleShareCategoryModal: () => void;
   showAddBookmarkShortcutModal: boolean;
   toggleShowAddBookmarkShortcutModal: () => void;

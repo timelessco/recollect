@@ -275,7 +275,7 @@ const CardSection = ({
           </Masonry>
         );
       } else {
-        return 'No Bookmarks';
+        return <div>No Bookmarks</div>;
       }
     }
   };

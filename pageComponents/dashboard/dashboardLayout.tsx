@@ -6,7 +6,7 @@ import isEmpty from 'lodash/isEmpty';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Fragment, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import Button from '../../components/atoms/button';
 import Input from '../../components/atoms/input';
 import SearchInput from '../../components/searchInput';
@@ -40,6 +40,7 @@ import 'allotment/dist/style.css';
 import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
+  PlusCircleIcon,
 } from '@heroicons/react/solid';
 
 interface DashboardLayoutProps {
@@ -49,13 +50,13 @@ interface DashboardLayoutProps {
   onSignOutClick: () => void;
   onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
-  onAddCategoryClick: () => void;
   onDeleteCategoryClick: (id: string, current: boolean) => void;
   bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
   onShareClick: (id: string) => void;
   userId: string;
   isAddInputLoading: boolean;
+  onAddNewCategory: (value: string) => void;
 }
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -66,15 +67,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     userName,
     onSignOutClick,
     onSigninClick,
-    onAddCategoryClick,
     onDeleteCategoryClick,
     onAddBookmark,
     onShareClick,
     userId,
     isAddInputLoading = false,
+    onAddNewCategory,
   } = props;
 
   const [showSidePane, setShowSidePane] = useState(true);
+  const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 
   const userNavigation = [{ name: 'Sign out', href: '#' }];
 
@@ -275,6 +277,34 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               />
             );
           })}
+          {showAddCategoryInput && (
+            <div className="px-2 py-[3px]">
+              <input
+                placeholder="Enter name"
+                className="bg-white text-sm font-[450] text-custom-gray-1 "
+                autoFocus
+                onBlur={() => setShowAddCategoryInput(false)}
+                onKeyUp={(e) => {
+                  if (
+                    e.key === 'Enter' &&
+                    !isEmpty((e.target as HTMLInputElement).value)
+                  ) {
+                    onAddNewCategory((e.target as HTMLInputElement).value);
+                    setShowAddCategoryInput(false);
+                  }
+                }}
+              />
+            </div>
+          )}
+          <div
+            className="py-[7px] px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer"
+            onClick={() => setShowAddCategoryInput(true)}
+          >
+            <PlusCircleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+            <p className="truncate flex-1 text-sm font-[450] text-custom-gray-1 leading-[16px]">
+              Add Category
+            </p>
+          </div>
         </div>
       </div>
     );

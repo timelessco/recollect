@@ -48,7 +48,6 @@ import {
   useMiscellaneousStore,
   useModalStore,
 } from '../../store/componentStore';
-import AddCategoryModal from './addCategoryModal';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -83,10 +82,6 @@ const Dashboard = () => {
 
   const toggleIsDeleteBookmarkLoading = useLoadersStore(
     (state) => state.toggleIsDeleteBookmarkLoading
-  );
-
-  const toggleAddCategoryModal = useModalStore(
-    (state) => state.toggleAddCategoryModal
   );
 
   const toggleShareCategoryModal = useModalStore(
@@ -609,7 +604,6 @@ const Dashboard = () => {
         onSigninClick={() => {
           signInWithOauth();
         }}
-        onAddCategoryClick={toggleAddCategoryModal}
         onDeleteCategoryClick={async (id, current) => {
           const res = await mutationApiCall(
             deleteCategoryMutation.mutateAsync({
@@ -629,8 +623,6 @@ const Dashboard = () => {
           toggleShareCategoryModal();
           setShareCategoryId(parseInt(id));
         }}
-      />
-      <AddCategoryModal
         onAddNewCategory={async (newCategoryName) => {
           const res = await mutationApiCall(
             addCategoryMutation.mutateAsync({
