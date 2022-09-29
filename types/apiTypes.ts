@@ -11,6 +11,7 @@ export interface SingleListData {
   screenshot: string;
   addedTags: Array<UserTagsData>;
   category_id: number;
+  trash: boolean;
 }
 
 export interface FetchDataResponse<T = SingleListData[]> {

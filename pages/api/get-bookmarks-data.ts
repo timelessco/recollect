@@ -5,6 +5,7 @@ import {
   BOOKMARK_TAGS_TABLE_NAME,
   MAIN_TABLE_NAME,
   TAG_TABLE_NAME,
+  TRASH_URL,
 } from '../../utils/constants';
 import { getTagAsPerId } from '../../utils/helpers';
 import isNull from 'lodash/isNull';
@@ -45,13 +46,24 @@ export default async function handler(
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
       .select()
+      .eq('trash', false)
       .eq('user_id', userId); // this is for '/' route , we need bookmakrs by user_id // TODO: check and remove
+    data = bookmarkData;
+  } else if (category_id === TRASH_URL) {
+    // get trash bookmarks
+    const { data: bookmarkData } = await supabase
+      .from(MAIN_TABLE_NAME)
+      .select()
+      .eq('trash', true)
+      .eq('user_id', userId); // TODO: check and remove
+
     data = bookmarkData;
   } else {
     // get bookmarks in a category
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
       .select()
+      .eq('trash', false)
       .eq('category_id', category_id);
     // .eq('user_id', userId);  // TODO: check and remove
 

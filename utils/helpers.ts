@@ -7,7 +7,7 @@ import {
   CategoriesData,
 } from '../types/apiTypes';
 import { UrlInput } from '../types/componentTypes';
-import { GET_NAME_FROM_EMAIL_PATTERN } from './constants';
+import { GET_NAME_FROM_EMAIL_PATTERN, TRASH_URL } from './constants';
 
 export const getTagAsPerId = (tagIg: number, tagsData: Array<UserTagsData>) => {
   return find(tagsData, (item) => {
@@ -29,8 +29,12 @@ export const getCategoryIdFromSlug = (
   slug: string | null,
   allCategories: CategoriesData[] | undefined
 ) => {
-  if (allCategories) {
-    return find(allCategories, (item) => item?.category_slug === slug)?.id;
+  if (slug === TRASH_URL) {
+    return slug;
+  } else {
+    if (allCategories) {
+      return find(allCategories, (item) => item?.category_slug === slug)?.id;
+    }
   }
 };
 

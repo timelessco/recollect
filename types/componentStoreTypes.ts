@@ -3,6 +3,10 @@ export interface ModalStoreState {
   toggleShareCategoryModal: () => void;
   showAddBookmarkShortcutModal: boolean;
   toggleShowAddBookmarkShortcutModal: () => void;
+  showDeleteBookmarkWarningModal: boolean;
+  toggleShowDeleteBookmarkWarningModal: () => void;
+  showClearTrashWarningModal: boolean;
+  toggleShowClearTrashWarningModal: () => void;
 }
 
 export interface LoadersStoreState {

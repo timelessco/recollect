@@ -1,10 +1,18 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { CategoriesData, SingleListData } from '../../types/apiTypes';
-import { PencilAltIcon, TrashIcon } from '@heroicons/react/solid';
+import {
+  MinusCircleIcon,
+  PencilAltIcon,
+  TrashIcon,
+} from '@heroicons/react/solid';
 import orderBy from 'lodash/orderBy';
 import { useRouter } from 'next/router';
-import { CATEGORIES_KEY, UNCATEGORIZED_URL } from '../../utils/constants';
+import {
+  CATEGORIES_KEY,
+  TRASH_URL,
+  UNCATEGORIZED_URL,
+} from '../../utils/constants';
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import BookmarkCardSkeleton from '../../components/loadersSkeleton/bookmarkCardSkeleton';
@@ -21,6 +29,7 @@ import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSke
 interface CardSectionProps {
   listData: Array<SingleListData>;
   onDeleteClick: (post: SingleListData) => void;
+  onMoveOutOfTrashClick: (post: SingleListData) => void;
   onEditClick: (item: SingleListData) => void;
   isLoading: boolean;
   userId: string;
@@ -33,6 +42,7 @@ interface CardSectionProps {
 const CardSection = ({
   listData = [],
   onDeleteClick,
+  onMoveOutOfTrashClick,
   onEditClick = () => null,
   isLoading = false,
   userId,
@@ -260,7 +270,10 @@ const CardSection = ({
           >
             {orderBy(bookmarksList, ['id'], ['desc'])?.map((item, index) => {
               return (
-                <div key={item?.id} className="rounded-lg drop-shadow-custom-1">
+                <div
+                  key={item?.id}
+                  className="rounded-lg drop-shadow-custom-1 relative group"
+                >
                   <figure>
                     <img
                       src={item?.ogImage}
@@ -269,6 +282,18 @@ const CardSection = ({
                       className="rounded-lg"
                     />
                   </figure>
+                  <div className="items-center space-x-1 hidden group-hover:flex absolute bottom-[8px] right-[10px]">
+                    <TrashIcon
+                      onClick={() => onDeleteClick(item)}
+                      className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                    />
+                    {category_id === TRASH_URL && (
+                      <MinusCircleIcon
+                        className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                        onClick={() => onMoveOutOfTrashClick(item)}
+                      />
+                    )}
+                  </div>
                 </div>
               );
             })}

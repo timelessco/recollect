@@ -30,6 +30,8 @@ import {
   FETCH_SHARED_CATEGORIES_DATA_API,
   UPDATE_SHARED_CATEGORY_USER_ROLE_API,
   DELETE_SHARED_CATEGORIES_USER_API,
+  MOVE_BOOKMARK_TO_TRASH_API,
+  CLEAR_BOOKMARK_TRASH_API,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 
@@ -80,7 +82,7 @@ export const addBookmarkMinData = async ({
   update_access,
 }: {
   url: string;
-  category_id: number | null;
+  category_id: number | null | string;
   update_access: boolean;
 }) => {
   const session = await getCurrentUserSession();
@@ -146,10 +148,48 @@ export const addData = async ({
   return { data, error } as unknown as FetchDataResponse;
 };
 
-export const deleteData = async (item: SingleListData) => {
+export const deleteData = async (item: SingleListData | { id: number }) => {
   try {
     const res = await axios.post(`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`, {
       data: item,
+    });
+
+    return res;
+  } catch (e) {
+    return e;
+  }
+};
+
+export const moveBookmarkToTrash = async ({
+  data,
+  isTrash,
+}: {
+  data: SingleListData;
+  isTrash: boolean;
+}) => {
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
+      {
+        data: data,
+        isTrash: isTrash,
+      }
+    );
+
+    return res;
+  } catch (e) {
+    return e;
+  }
+};
+
+export const clearBookmarksInTrash = async ({
+  user_id = undefined,
+}: {
+  user_id: string | undefined;
+}) => {
+  try {
+    const res = await axios.post(`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`, {
+      user_id,
     });
 
     return res;

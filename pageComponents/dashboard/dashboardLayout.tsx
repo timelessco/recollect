@@ -34,6 +34,7 @@ import {
   SEARCH_URL,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
+  UNCATEGORIZED_URL,
 } from '../../utils/constants';
 import { Allotment } from 'allotment';
 import 'allotment/dist/style.css';
@@ -63,6 +64,7 @@ interface DashboardLayoutProps {
     current: boolean,
     id: number
   ) => void;
+  onClearTrash: () => void;
 }
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -80,6 +82,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     isAddInputLoading = false,
     onAddNewCategory,
     onCategoryOptionClick,
+    onClearTrash,
   } = props;
 
   const [showSidePane, setShowSidePane] = useState(true);
@@ -197,15 +200,15 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     {
       icon: () => <InboxIconGray />,
       name: 'Inbox',
-      href: `/${INBOX_URL}`,
-      current: false,
+      href: `/${UNCATEGORIZED_URL}`,
+      current: currentPath === UNCATEGORIZED_URL,
       id: 2,
     },
     {
       icon: () => <TrashIconGray />,
       name: 'Trash',
       href: `/${TRASH_URL}`,
-      current: false,
+      current: currentPath === TRASH_URL,
       id: 3,
     },
   ];
@@ -429,6 +432,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               </Transition>
             </Menu>
           </div>
+
+          {currentPath === TRASH_URL && (
+            <Button
+              type="dark"
+              className="mr-[17px] bg-red-700 hover:bg-red-900"
+              onClick={() => onClearTrash()}
+            >
+              <span className="text-white">Clear Trash</span>
+            </Button>
+          )}
 
           <Button type="dark">
             <figure className="w-3 h-3">

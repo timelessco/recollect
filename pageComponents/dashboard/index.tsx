@@ -14,6 +14,7 @@ import {
   addTagToBookmark,
   addUserCategory,
   addUserTags,
+  clearBookmarksInTrash,
   deleteData,
   deleteSharedCategoriesUser,
   deleteUserCategory,
@@ -23,6 +24,7 @@ import {
   fetchUserTags,
   // getBookmarkScrappedData,
   getCurrentUserSession,
+  moveBookmarkToTrash,
   removeTagFromBookmark,
   signInWithOauth,
   signOut,
@@ -35,6 +37,7 @@ import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
+  TRASH_URL,
   USER_TAGS_KEY,
 } from '../../utils/constants';
 import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
@@ -56,6 +59,7 @@ import { mutationApiCall } from '../../utils/apiHelpers';
 import { getCategoryIdFromSlug } from '../../utils/helpers';
 import ShareCategoryModal from './shareCategoryModal';
 import AddBookarkShortcutModal from './modals/addBookmarkShortcutModal';
+import WarningActionModal from './modals/warningActionModal';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -90,6 +94,22 @@ const Dashboard = () => {
 
   const toggleShowAddBookmarkShortcutModal = useModalStore(
     (state) => state.toggleShowAddBookmarkShortcutModal
+  );
+
+  const showDeleteBookmarkWarningModal = useModalStore(
+    (state) => state.showDeleteBookmarkWarningModal
+  );
+
+  const toggleShowDeleteBookmarkWarningModal = useModalStore(
+    (state) => state.toggleShowDeleteBookmarkWarningModal
+  );
+
+  const showClearTrashWarningModal = useModalStore(
+    (state) => state.showClearTrashWarningModal
+  );
+
+  const toggleShowClearTrashWarningModal = useModalStore(
+    (state) => state.toggleShowClearTrashWarningModal
   );
 
   const setShareCategoryId = useMiscellaneousStore(
@@ -171,6 +191,21 @@ const Dashboard = () => {
       // Invalidate and refetch
       queryClient.invalidateQueries([BOOKMARKS_KEY]);
       setDeleteBookmarkId(undefined);
+    },
+  });
+
+  const moveBookmarkToTrashMutation = useMutation(moveBookmarkToTrash, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      setDeleteBookmarkId(undefined);
+    },
+  });
+
+  const clearBookmarksInTrashMutation = useMutation(clearBookmarksInTrash, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries([BOOKMARKS_KEY]);
     },
   });
 
@@ -364,17 +399,35 @@ const Dashboard = () => {
                     : allBookmarksData?.data || []
                 }
                 onDeleteClick={async (item) => {
-                  toggleIsDeleteBookmarkLoading();
+                  // toggleIsDeleteBookmarkLoading();
                   setDeleteBookmarkId(item?.id);
-                  await mutationApiCall(
-                    deleteBookmarkMutation.mutateAsync(item)
-                  );
+                  if (category_id === TRASH_URL) {
+                    // delete bookmark if in trash
+                    toggleShowDeleteBookmarkWarningModal();
+                  } else {
+                    // if not in trash then move bookmark to trash
+                    await mutationApiCall(
+                      moveBookmarkToTrashMutation.mutateAsync({
+                        data: item,
+                        isTrash: true,
+                      })
+                    );
+                  }
+
                   toggleIsDeleteBookmarkLoading();
                 }}
                 onEditClick={(item) => {
                   setAddedUrlData(item);
                   setIsEdit(true);
                   setShowAddBookmarkModal(true);
+                }}
+                onMoveOutOfTrashClick={async (data) => {
+                  await mutationApiCall(
+                    moveBookmarkToTrashMutation.mutateAsync({
+                      data,
+                      isTrash: false,
+                    })
+                  );
                 }}
               />
             </>
@@ -643,6 +696,14 @@ const Dashboard = () => {
             // code block
           }
         }}
+        onClearTrash={async () => {
+          toggleShowClearTrashWarningModal();
+          // await mutationApiCall(
+          //   clearBookmarksInTrashMutation.mutateAsync({
+          //     user_id: session?.user?.id,
+          //   })
+          // );
+        }}
       />
       <ShareCategoryModal
         userId={session?.user?.id || ''}
@@ -680,6 +741,41 @@ const Dashboard = () => {
           await addBookmarkLogic(url);
 
           toggleShowAddBookmarkShortcutModal();
+        }}
+      />
+      <WarningActionModal
+        open={showDeleteBookmarkWarningModal}
+        setOpen={toggleShowDeleteBookmarkWarningModal}
+        isLoading={deleteBookmarkMutation?.isLoading}
+        buttonText="Delete"
+        warningText="Are you sure you want to delete ?"
+        onContinueCick={async () => {
+          const data = find(
+            allBookmarksData?.data,
+            (item) => item?.id === deleteBookmarkId
+          );
+          if (deleteBookmarkId) {
+            await mutationApiCall(
+              deleteBookmarkMutation.mutateAsync({ id: deleteBookmarkId })
+            );
+          }
+          toggleShowDeleteBookmarkWarningModal();
+          setDeleteBookmarkId(undefined);
+        }}
+      />
+      <WarningActionModal
+        open={showClearTrashWarningModal}
+        setOpen={toggleShowClearTrashWarningModal}
+        isLoading={clearBookmarksInTrashMutation?.isLoading}
+        buttonText="Clear trash"
+        warningText="Are you sure you want to delete ?"
+        onContinueCick={async () => {
+          await mutationApiCall(
+            clearBookmarksInTrashMutation.mutateAsync({
+              user_id: session?.user?.id,
+            })
+          );
+          toggleShowClearTrashWarningModal();
         }}
       />
       <ToastContainer />

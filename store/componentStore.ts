@@ -16,6 +16,16 @@ export const useModalStore = create<ModalStoreState>((set) => ({
     set((state) => ({
       showAddBookmarkShortcutModal: !state.showAddBookmarkShortcutModal,
     })),
+  showDeleteBookmarkWarningModal: false,
+  toggleShowDeleteBookmarkWarningModal: () =>
+    set((state) => ({
+      showDeleteBookmarkWarningModal: !state.showDeleteBookmarkWarningModal,
+    })),
+  showClearTrashWarningModal: false,
+  toggleShowClearTrashWarningModal: () =>
+    set((state) => ({
+      showClearTrashWarningModal: !state.showClearTrashWarningModal,
+    })),
 }));
 
 // TODO: remove this and user react-query loader

@@ -30,6 +30,8 @@ export const SEND_COLLABORATION_EMAIL_API = '/send-collaboration-email';
 export const SYNC_PROFILES_TABLE_API = '/sync-profiles-table';
 export const ADD_BOOKMARK_MIN_DATA = '/add-bookmark-min-data';
 export const ADD_URL_SCREENSHOT_API = '/add-url-screenshot';
+export const MOVE_BOOKMARK_TO_TRASH_API = '/bookmark/move-bookmark-to-trash';
+export const CLEAR_BOOKMARK_TRASH_API = '/bookmark/clear-bookmark-trash';
 // tags api
 export const FETCH_USER_TAGS_API = '/fetch-user-tags';
 export const CREATE_USER_TAGS_API = '/create-user-tags';
