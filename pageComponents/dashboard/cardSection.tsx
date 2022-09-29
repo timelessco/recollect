@@ -279,7 +279,7 @@ const CardSection = ({
                       src={item?.ogImage}
                       alt="bookmark-img"
                       // style={{ height: index % 2 ? 'auto' : '300px' }}
-                      className="rounded-lg"
+                      className="rounded-lg w-full"
                     />
                   </figure>
                   <div className="items-center space-x-1 hidden group-hover:flex absolute bottom-[8px] right-[10px]">

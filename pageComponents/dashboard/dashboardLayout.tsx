@@ -6,7 +6,7 @@ import isEmpty from 'lodash/isEmpty';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import Button from '../../components/atoms/button';
 import Input from '../../components/atoms/input';
 import SearchInput from '../../components/searchInput';
@@ -87,6 +87,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const [showSidePane, setShowSidePane] = useState(true);
   const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
+  const [screenWidth, setScreenWidth] = useState(1200);
+
+  useEffect(() => {
+    if (screen) {
+      setScreenWidth(screen.width);
+    }
+  }, []);
 
   const userNavigation = [{ name: 'Sign out', href: '#' }];
 
@@ -465,7 +472,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           </figure>
         </Button>
       )}
-      <Allotment defaultSizes={[244, 1200]} separator={false}>
+      <Allotment defaultSizes={[144, screenWidth]} separator={false}>
         <Allotment.Pane maxSize={600} minSize={244} visible={showSidePane}>
           <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
             {renderSidePaneUserDropdown()}
