@@ -1,7 +1,7 @@
 name: daily-cron-clear-trash
 on:
   schedule:
-    - cron: '*/6 * * * *'
+    - cron: '0 1 * * *'
 jobs:
   cron:
     runs-on: ubuntu-latest
