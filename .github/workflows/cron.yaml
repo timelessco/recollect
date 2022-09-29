@@ -1,4 +1,4 @@
-name: daily-cron
+name: daily-cron-clear-trash
 on:
   schedule:
     - cron: '*/6 * * * *'
@@ -8,5 +8,5 @@ jobs:
     steps:
       - name: Call our API route
         run: |
-          curl --request GET \
-          --url 'https://bookmark-tags-git-dev-timelessco.vercel.app/api/hello' \
+          curl --request POST \
+          --url 'https://bookmark-tags-git-dev-timelessco.vercel.app/api/bookmark/clear-bookmark-trash' \
