@@ -1,7 +1,7 @@
 import { Menu, Transition } from '@headlessui/react';
 import React, { Fragment } from 'react';
 import OptionsIconGray from '../icons/optionsIconGray';
-import { tcm } from '../utils/tailwindmerge';
+import { tcm } from '../utils/tailwindMerge';
 import Button from './atoms/button';
 
 interface DropdownProps {

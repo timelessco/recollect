@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
 import { ChildrenTypes } from '../../types/componentTypes';
-import { tcm } from '../../utils/tailwindmerge';
+import { tcm } from '../../utils/tailwindMerge';
 
 interface ButtonProps {
   children: ChildrenTypes;
