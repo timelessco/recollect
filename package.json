@@ -27,6 +27,7 @@
     "lodash": "^4.17.21",
     "next": "12.2.0",
     "next-auth": "^4.7.0",
+    "nextjs-cors": "^2.1.1",
     "nodemailer": "^6.7.8",
     "npm": "^8.14.0",
     "puppeteer-core": "^15.4.1",

@@ -1363,6 +1363,14 @@
   "resolved" "https://registry.npmjs.org/core-js-pure/-/core-js-pure-3.23.3.tgz"
   "version" "3.23.3"
 
+"cors@^2.8.5":
+  "integrity" "sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g=="
+  "resolved" "https://registry.npmjs.org/cors/-/cors-2.8.5.tgz"
+  "version" "2.8.5"
+  dependencies:
+    "object-assign" "^4"
+    "vary" "^1"
+
 "cosmiconfig@^7.0.0":
   "integrity" "sha512-a1YWNUV2HwGimB7dU2s1wUMurNKjpx60HxBB6xUM8Re+2s1g1IIfJvFR0/iCF+XHdE0GMTKTuLR32UQff4TEyQ=="
   "resolved" "https://registry.npmjs.org/cosmiconfig/-/cosmiconfig-7.0.1.tgz"
@@ -3133,7 +3141,7 @@
   "resolved" "https://registry.npmjs.org/next-tick/-/next-tick-1.1.0.tgz"
   "version" "1.1.0"
 
-"next@12.2.0":
+"next@^8.1.1-canary.54 || ^9.0.0 || ^10.0.0-0 || ^11.0.0 || ^12.0.0", "next@12.2.0":
   "integrity" "sha512-B4j7D3SHYopLYx6/Ark0fenwIar9tEaZZFAaxmKjgcMMexhVJzB3jt7X+6wcdXPPMeUD6r09weUtnDpjox/vIA=="
   "resolved" "https://registry.npmjs.org/next/-/next-12.2.0.tgz"
   "version" "12.2.0"
@@ -3158,6 +3166,13 @@
     "@next/swc-win32-arm64-msvc" "12.2.0"
     "@next/swc-win32-ia32-msvc" "12.2.0"
     "@next/swc-win32-x64-msvc" "12.2.0"
+
+"nextjs-cors@^2.1.1":
+  "integrity" "sha512-HxE4w4Wng5VdTtnn0DWPphuWKwd1Ty+lpyTZ/sQGgaNnd5demYMchKf+W1LtI8YFYxu2HnRb3MrxERRV0QKLKA=="
+  "resolved" "https://registry.npmjs.org/nextjs-cors/-/nextjs-cors-2.1.1.tgz"
+  "version" "2.1.1"
+  dependencies:
+    "cors" "^2.8.5"
 
 "node-fetch@2.6.7":
   "integrity" "sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ=="
@@ -3370,7 +3385,7 @@
   "resolved" "https://registry.npmjs.org/oauth/-/oauth-0.9.15.tgz"
   "version" "0.9.15"
 
-"object-assign@^4.1.1":
+"object-assign@^4", "object-assign@^4.1.1":
   "integrity" "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg=="
   "resolved" "https://registry.npmjs.org/object-assign/-/object-assign-4.1.1.tgz"
   "version" "4.1.1"
@@ -4551,6 +4566,11 @@
   "version" "4.0.0"
   dependencies:
     "builtins" "^5.0.0"
+
+"vary@^1":
+  "integrity" "sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg=="
+  "resolved" "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz"
+  "version" "1.1.2"
 
 "walk-up-path@^1.0.0":
   "version" "1.0.0"
