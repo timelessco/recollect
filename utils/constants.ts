@@ -23,35 +23,39 @@ export const TIMELESS_SCRAPPER_API =
   'https://link-preview-livid-ten.vercel.app/api/getUrlData';
 export const SCREENSHOT_API = 'https://s.vercel.app/api?url=';
 
-export const BOOKMARK_SCRAPPER_API = '/bookmarkScrapper';
-export const GET_BOOKMARKS_DATA_API = '/get-bookmarks-data';
-export const DELETE_BOOKMARK_DATA_API = '/delete-bookmark';
-export const SEND_COLLABORATION_EMAIL_API = '/send-collaboration-email';
-export const SYNC_PROFILES_TABLE_API = '/sync-profiles-table';
-export const ADD_BOOKMARK_MIN_DATA = '/add-bookmark-min-data';
-export const ADD_URL_SCREENSHOT_API = '/add-url-screenshot';
+//auth api
+export const SYNC_PROFILES_TABLE_API = '/auth/sync-profiles-table';
+// bookmark api
+export const BOOKMARK_SCRAPPER_API = '/bookmark/bookmarkScrapper';
+export const GET_BOOKMARKS_DATA_API = '/bookmark/get-bookmarks-data';
+export const DELETE_BOOKMARK_DATA_API = '/bookmark/delete-bookmark';
+export const ADD_BOOKMARK_MIN_DATA = '/bookmark/add-bookmark-min-data';
+export const ADD_URL_SCREENSHOT_API = '/bookmark/add-url-screenshot';
 export const MOVE_BOOKMARK_TO_TRASH_API = '/bookmark/move-bookmark-to-trash';
 export const CLEAR_BOOKMARK_TRASH_API = '/bookmark/clear-bookmark-trash';
 // tags api
-export const FETCH_USER_TAGS_API = '/fetch-user-tags';
-export const CREATE_USER_TAGS_API = '/create-user-tags';
-export const ADD_TAG_TO_BOOKMARK_API = '/add-tag-to-bookmark';
-export const REMOVE_TAG_FROM_BOOKMARK_API = '/remove-tag-from-bookmark';
+export const FETCH_USER_TAGS_API = '/tags/fetch-user-tags';
+export const CREATE_USER_TAGS_API = '/tags/create-user-tags';
+export const ADD_TAG_TO_BOOKMARK_API = '/tags/add-tag-to-bookmark';
+export const REMOVE_TAG_FROM_BOOKMARK_API = '/tags/remove-tag-from-bookmark';
 // category api
-export const FETCH_USER_CATEGORIES_API = '/fetch-user-categories';
-export const CREATE_USER_CATEGORIES_API = '/create-user-category';
-export const ADD_CATEGORY_TO_BOOKMARK_API = '/add-category-to-bookmark';
-export const DELETE_USER_CATEGORIES_API = '/delete-user-category';
-export const UPDATE_USER_CATEGORIES_API = '/update-user-category';
+export const FETCH_USER_CATEGORIES_API = '/category/fetch-user-categories';
+export const CREATE_USER_CATEGORIES_API = '/category/create-user-category';
+export const ADD_CATEGORY_TO_BOOKMARK_API =
+  '/category/add-category-to-bookmark';
+export const DELETE_USER_CATEGORIES_API = '/category/delete-user-category';
+export const UPDATE_USER_CATEGORIES_API = '/category/update-user-category';
 // share api
 export const GET_PUBLIC_CATEGORY_BOOKMARKS_API =
   '/get-public-category-bookmarks';
 // collab share api
-export const FETCH_SHARED_CATEGORIES_DATA_API = '/fetch-shared-categories-data';
+export const FETCH_SHARED_CATEGORIES_DATA_API =
+  '/share/fetch-shared-categories-data';
 export const UPDATE_SHARED_CATEGORY_USER_ROLE_API =
-  '/update-shared-category-user-role';
+  '/share/update-shared-category-user-role';
 export const DELETE_SHARED_CATEGORIES_USER_API =
-  '/delete-shared-categories-user';
+  '/share/delete-shared-categories-user';
+export const SEND_COLLABORATION_EMAIL_API = '/share/send-collaboration-email';
 
 // urls
 export const UNCATEGORIZED_URL = 'uncategorized';

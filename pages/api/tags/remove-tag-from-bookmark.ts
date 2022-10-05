@@ -3,19 +3,24 @@ import { createClient, PostgrestError } from '@supabase/supabase-js';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { UserTagsData } from '../../types/apiTypes';
-import { BOOKMARK_TAGS_TABLE_NAME } from '../../utils/constants';
+import { UserTagsData } from '../../../types/apiTypes';
+import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
+import { BOOKMARK_TAGS_TABLE_NAME } from '../../../utils/constants';
 
 // removes tags for a bookmark
 type Data = {
   data: UserTagsData[] | null;
-  error: PostgrestError | null | { message: string };
+  error: PostgrestError | null | { message: string } | string;
 };
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  if (!isAccessTokenAuthenticated(req.body.access_token)) {
+    res.status(500).json({ data: null, error: 'invalid access token' });
+    return;
+  }
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
     process.env.SUPABASE_SERVICE_KEY as string

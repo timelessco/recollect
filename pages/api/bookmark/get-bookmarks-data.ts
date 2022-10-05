@@ -1,22 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import { supabase } from '../../utils/supabaseClient';
-import { UserTagsData, SingleListData } from '../../types/apiTypes';
+import { UserTagsData, SingleListData } from '../../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   MAIN_TABLE_NAME,
   TAG_TABLE_NAME,
   TRASH_URL,
-} from '../../utils/constants';
-import { getTagAsPerId } from '../../utils/helpers';
+} from '../../../utils/constants';
+import { getTagAsPerId } from '../../../utils/helpers';
 import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt_decode from 'jwt-decode';
+import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
 type Data = {
   data: Array<SingleListData> | null;
-  error: PostgrestError | null;
+  error: PostgrestError | null | string;
 };
 
 export default async function handler(
@@ -32,6 +33,11 @@ export default async function handler(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
     process.env.SUPABASE_SERVICE_KEY as string
   );
+
+  if (!isAccessTokenAuthenticated(req.query.access_token as string)) {
+    res.status(500).json({ data: null, error: 'invalid access token' });
+    return;
+  }
 
   const decode = jwt_decode(accessToken) as unknown;
 

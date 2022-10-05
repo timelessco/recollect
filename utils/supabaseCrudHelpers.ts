@@ -61,6 +61,8 @@ export const fetchBookmakrsData = async (
 };
 
 // gets scrapped data with screenshot uploaded in supabse bucket
+
+// TODO: check and remove
 export const getBookmarkScrappedData = async (item: string) => {
   const session = await getCurrentUserSession();
 
@@ -150,8 +152,10 @@ export const addData = async ({
 
 export const deleteData = async (item: SingleListData | { id: number }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`, {
       data: item,
+      access_token: session?.access_token,
     });
 
     return res;
@@ -168,11 +172,13 @@ export const moveBookmarkToTrash = async ({
   isTrash: boolean;
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
       {
         data: data,
         isTrash: isTrash,
+        access_token: session?.access_token,
       }
     );
 
@@ -188,8 +194,10 @@ export const clearBookmarksInTrash = async ({
   user_id: string | undefined;
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`, {
       user_id,
+      access_token: session?.access_token,
     });
 
     return res;
@@ -202,8 +210,9 @@ export const clearBookmarksInTrash = async ({
 export const fetchUserTags = async (user_id: string) => {
   if (user_id && !isEmpty(user_id)) {
     try {
+      const session = await getCurrentUserSession();
       const res = await axios.get(
-        `${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}`
+        `${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}&access_token=${session?.access_token}`
       );
       return res?.data;
     } catch (e) {
@@ -220,9 +229,11 @@ export const addUserTags = async ({
   tagsData: { name: string };
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${CREATE_USER_TAGS_API}`, {
       name: tagsData?.name,
       user_id: userData?.id,
+      access_token: session?.access_token,
     });
     return res?.data;
   } catch (e) {
@@ -236,8 +247,10 @@ export const addTagToBookmark = async ({
   selectedData: Array<BookmarksTagData> | BookmarksTagData;
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`, {
       data: selectedData,
+      access_token: session?.access_token,
     });
     return res?.data;
   } catch (e) {
@@ -251,10 +264,12 @@ export const removeTagFromBookmark = async ({
   selectedData: BookmarksTagData;
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
       {
         bookmark_tag_id: selectedData?.bookmark_tag_id,
+        access_token: session?.access_token,
       }
     );
     return res?.data;
@@ -271,11 +286,13 @@ export const fetchCategoriesData = async (
 ) => {
   if (!isEmpty(userId)) {
     try {
+      const session = await getCurrentUserSession();
       const res = await axios.post(
         `${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`,
         {
           userEmail: userEmail,
           user_id: userId,
+          access_token: session?.access_token,
         }
       );
       return res?.data;
@@ -293,11 +310,13 @@ export const addUserCategory = async ({
   name: string;
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`,
       {
         name: name,
         user_id: user_id,
+        access_token: session?.access_token,
       }
     );
     return res?.data;
@@ -312,10 +331,12 @@ export const deleteUserCategory = async ({
   category_id: number;
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`,
       {
         category_id: category_id,
+        access_token: session?.access_token,
       }
     );
     return res?.data;
@@ -334,12 +355,14 @@ export const addCategoryToBookmark = async ({
   update_access: boolean;
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${ADD_CATEGORY_TO_BOOKMARK_API}`,
       {
         category_id,
         bookmark_id,
         update_access,
+        access_token: session?.access_token,
       }
     );
 
@@ -357,11 +380,13 @@ export const updateCategory = async ({
   updateData: { is_public: boolean };
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${UPDATE_USER_CATEGORIES_API}`,
       {
         category_id,
         updateData,
+        access_token: session?.access_token,
       }
     );
 
@@ -385,6 +410,7 @@ export const sendCollaborationEmailInvite = async ({
   hostUrl: string;
   userId: string;
 }) => {
+  const session = await getCurrentUserSession();
   const res = await axios.post(
     `${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`,
     {
@@ -393,6 +419,7 @@ export const sendCollaborationEmailInvite = async ({
       edit_access,
       hostUrl,
       userId,
+      access_token: session?.access_token,
     }
   );
 
@@ -401,8 +428,9 @@ export const sendCollaborationEmailInvite = async ({
 
 export const fetchSharedCategoriesData = async () => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.get(
-      `${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}`
+      `${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}?access_token=${session?.access_token}`
     );
 
     return res?.data;
@@ -413,9 +441,10 @@ export const fetchSharedCategoriesData = async () => {
 
 export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`,
-      { id }
+      { id, access_token: session?.access_token }
     );
 
     return res?.data;
@@ -432,11 +461,13 @@ export const updateSharedCategoriesUserAccess = async ({
   updateData: { edit_access: boolean };
 }) => {
   try {
+    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`,
       {
         id,
         updateData,
+        access_token: session?.access_token,
       }
     );
 
@@ -466,7 +497,10 @@ export const signOut = async () => {
 
 export const updateProfilesTable = async () => {
   try {
-    const res = await axios.get(`${NEXT_API_URL}${SYNC_PROFILES_TABLE_API}`);
+    const session = await getCurrentUserSession();
+    const res = await axios.get(
+      `${NEXT_API_URL}${SYNC_PROFILES_TABLE_API}?access_token=${session?.access_token}`
+    );
 
     return { data: res, error: undefined };
   } catch (e) {

@@ -4,12 +4,16 @@ import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 import { isNull } from 'lodash';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../types/apiTypes';
-import { MAIN_TABLE_NAME, TIMELESS_SCRAPPER_API } from '../../utils/constants';
+import { SingleListData } from '../../../types/apiTypes';
+import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
+import {
+  MAIN_TABLE_NAME,
+  TIMELESS_SCRAPPER_API,
+} from '../../../utils/constants';
 
 type Data = {
   data: SingleListData[] | null;
-  error: PostgrestError | null;
+  error: PostgrestError | null | string;
   message: string | null;
 };
 
@@ -25,6 +29,15 @@ export default async function handler(
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   const userId = tokenDecode?.sub;
+
+  if (!isAccessTokenAuthenticated(req.body.access_token)) {
+    res.status(500).json({
+      data: null,
+      error: 'invalid access token',
+      message: 'Token missing',
+    });
+    return;
+  }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,

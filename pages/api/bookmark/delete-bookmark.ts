@@ -1,18 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../types/apiTypes';
+import { SingleListData } from '../../../types/apiTypes';
 import {
   BOOKMAKRS_STORAGE_NAME,
   BOOKMARK_TAGS_TABLE_NAME,
   MAIN_TABLE_NAME,
-} from '../../utils/constants';
+} from '../../../utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
+import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 
 // this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
 
 type Data = {
   data: Array<SingleListData> | null;
-  error: PostgrestError | null;
+  error: PostgrestError | null | string;
 };
 
 export default async function handler(
@@ -25,6 +26,11 @@ export default async function handler(
   );
 
   const bookmarkData = req.body.data;
+
+  if (!isAccessTokenAuthenticated(req.body.access_token)) {
+    res.status(500).json({ data: null, error: 'invalid access token' });
+    return;
+  }
 
   const screenshot = bookmarkData?.screenshot;
   const screenshotImgName =

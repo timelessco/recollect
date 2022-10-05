@@ -1,12 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../types/apiTypes';
-import { MAIN_TABLE_NAME } from '../../utils/constants';
+import { SingleListData } from '../../../types/apiTypes';
+import { MAIN_TABLE_NAME } from '../../../utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
+import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 
 type Data = {
   data: Array<SingleListData> | null;
-  error: PostgrestError | null;
+  error: PostgrestError | null | string;
   message: string | null;
 };
 
@@ -16,6 +17,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  if (!isAccessTokenAuthenticated(req.body.access_token)) {
+    res
+      .status(500)
+      .json({ data: null, error: 'invalid access token', message: null });
+    return;
+  }
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
     process.env.SUPABASE_SERVICE_KEY as string

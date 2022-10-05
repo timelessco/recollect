@@ -274,26 +274,34 @@ const CardSection = ({
                   key={item?.id}
                   className="rounded-lg drop-shadow-custom-1 relative group"
                 >
-                  <figure>
-                    <img
-                      src={item?.ogImage}
-                      alt="bookmark-img"
-                      // style={{ height: index % 2 ? 'auto' : '300px' }}
-                      className="rounded-lg w-full"
-                    />
-                  </figure>
-                  <div className="items-center space-x-1 hidden group-hover:flex absolute bottom-[8px] right-[10px]">
-                    <TrashIcon
-                      onClick={() => onDeleteClick(item)}
-                      className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    />
-                    {category_id === TRASH_URL && (
-                      <MinusCircleIcon
-                        className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                        onClick={() => onMoveOutOfTrashClick(item)}
+                  <a href={item?.url} target="_blank" rel="noreferrer">
+                    <figure>
+                      <img
+                        src={item?.ogImage}
+                        alt="bookmark-img"
+                        // style={{ height: index % 2 ? 'auto' : '300px' }}
+                        className="rounded-lg w-full"
                       />
-                    )}
-                  </div>
+                    </figure>
+                    <div className="items-center space-x-1 hidden group-hover:flex absolute bottom-[8px] right-[10px]">
+                      <TrashIcon
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onDeleteClick(item);
+                        }}
+                        className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                      />
+                      {category_id === TRASH_URL && (
+                        <MinusCircleIcon
+                          className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onMoveOutOfTrashClick(item);
+                          }}
+                        />
+                      )}
+                    </div>
+                  </a>
                 </div>
               );
             })}

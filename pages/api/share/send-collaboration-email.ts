@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
+import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 // import jwt_decode from 'jwt-decode';
 
 /**
@@ -9,13 +10,18 @@ import jwt from 'jsonwebtoken';
  */
 
 type Data = {
-  url: string;
+  url: string | null;
+  error: string | null;
 };
 
 export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  if (!isAccessTokenAuthenticated(req.body.access_token)) {
+    res.status(500).json({ url: null, error: 'invalid access token' });
+    return;
+  }
   const emailList = req.body.emailList;
   const hostUrl = req?.body?.hostUrl;
   const category_id = req?.body?.category_id;
@@ -61,5 +67,5 @@ export default function handler(
   );
   const url = `${hostUrl}/api/invite?token=${token}`;
 
-  res.status(200).json({ url: url });
+  res.status(200).json({ url: url, error: null });
 }

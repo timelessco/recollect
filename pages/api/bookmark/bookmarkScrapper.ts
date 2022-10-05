@@ -2,11 +2,12 @@
 import axios from 'axios';
 // import { decode } from 'base64-arraybuffer';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../utils/supabaseClient';
+import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
+import { supabase } from '../../../utils/supabaseClient';
 
 interface SuccessResponse {
   key: 'success';
-  data: FinalResponse;
+  data: FinalResponse | null;
 }
 
 interface ErrorResponse {
@@ -68,6 +69,11 @@ export default async function handler(
   const {} = supabase.auth.setAuth(req.body.access_token);
   // eslint-disable-next-line prefer-const
   let finalData = {} as FinalResponse;
+
+  if (!isAccessTokenAuthenticated(req.body.access_token)) {
+    res.status(500).json({ key: 'error', err: 'Invalid token' });
+    return;
+  }
 
   try {
     // scrapper api call
