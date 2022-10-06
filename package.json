@@ -19,6 +19,7 @@
     "base64-arraybuffer": "^1.0.2",
     "chrome-aws-lambda": "^10.1.0",
     "classnames": "^2.3.1",
+    "date-fns": "^2.29.3",
     "filereader": "^0.10.3",
     "heroicons": "^1.0.6",
     "i": "^0.3.7",
