@@ -315,7 +315,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               />
             );
           })}
-          {showAddCategoryInput && (
+          {/* {showAddCategoryInput && (
             <div className="px-2 py-[3px]">
               <input
                 placeholder="Enter name"
@@ -332,6 +332,35 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                   }
                 }}
               />
+            </div>
+          )} */}
+          {showAddCategoryInput && (
+            <div
+              className={`px-2 py-[7px] mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
+            >
+              <div className="flex items-center">
+                <figure className=" mr-3">
+                  <CollectionPlaceholderIcon />
+                </figure>
+                {/* <p className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-3 leading-[14px]">
+                  {item?.name}
+                </p> */}
+                <input
+                  placeholder="Enter name"
+                  className="bg-white text-sm font-[450] text-custom-gray-1 "
+                  autoFocus
+                  onBlur={() => setShowAddCategoryInput(false)}
+                  onKeyUp={(e) => {
+                    if (
+                      e.key === 'Enter' &&
+                      !isEmpty((e.target as HTMLInputElement).value)
+                    ) {
+                      onAddNewCategory((e.target as HTMLInputElement).value);
+                      setShowAddCategoryInput(false);
+                    }
+                  }}
+                />
+              </div>
             </div>
           )}
           <div
