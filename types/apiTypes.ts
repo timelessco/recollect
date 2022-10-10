@@ -65,6 +65,7 @@ export interface CategoriesData {
   user_id: { id: string; email: string };
   category_slug: string;
   is_public: boolean;
+  icon: null | string;
   collabData: CollabDataInCategory[] | [];
 }
 

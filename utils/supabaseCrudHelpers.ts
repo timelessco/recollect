@@ -377,7 +377,7 @@ export const updateCategory = async ({
   updateData,
 }: {
   category_id: number | null | string;
-  updateData: { is_public: boolean };
+  updateData: { is_public?: boolean; icon?: null | string };
 }) => {
   try {
     const session = await getCurrentUserSession();

@@ -388,6 +388,11 @@
   "resolved" "https://registry.npmjs.org/@juggle/resize-observer/-/resize-observer-3.4.0.tgz"
   "version" "3.4.0"
 
+"@leeoniya/ufuzzy@^0.7.0":
+  "integrity" "sha512-5DRso63/NzmxUqxKnjBpKSl3tCfDtQf8mbnbgxBVsdZtxlv/aJQbIB/iHOMH0lq2CKlZhoEtaEus9puEMAf74Q=="
+  "resolved" "https://registry.npmjs.org/@leeoniya/ufuzzy/-/ufuzzy-0.7.0.tgz"
+  "version" "0.7.0"
+
 "@next/env@12.2.0":
   "integrity" "sha512-/FCkDpL/8SodJEXvx/DYNlOD5ijTtkozf4PPulYPtkPOJaMPpBSOkzmsta4fnrnbdH6eZjbwbiXFdr6gSQCV4w=="
   "resolved" "https://registry.npmjs.org/@next/env/-/env-12.2.0.tgz"

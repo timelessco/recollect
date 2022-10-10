@@ -44,6 +44,8 @@ import {
   PlusCircleIcon,
 } from '@heroicons/react/solid';
 import Dropdown from '../../components/dropdown';
+import CategoryIconsDropdown from '../../components/categoryIconsDropdown';
+import HomeIcon from '../../icons/categoryIcons/homeIcon';
 
 interface DashboardLayoutProps {
   userImg: string;
@@ -65,6 +67,7 @@ interface DashboardLayoutProps {
     id: number
   ) => void;
   onClearTrash: () => void;
+  onIconSelect: (value: string, id: number) => void;
 }
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -83,6 +86,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     onAddNewCategory,
     onCategoryOptionClick,
     onClearTrash,
+    onIconSelect,
   } = props;
 
   const [showSidePane, setShowSidePane] = useState(true);
@@ -222,18 +226,25 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   interface listPropsTypes {
     item: {
-      icon: () => ChildrenTypes;
+      icon?: () => ChildrenTypes;
       name: string;
       href: string;
       current: boolean;
       id: number;
+      iconValue?: string | null;
     };
     extendedClassname: string;
     showDropdown?: boolean;
+    showIconDropdown?: boolean;
   }
 
   const SingleListItem = (listProps: listPropsTypes) => {
-    const { item, extendedClassname = '', showDropdown = false } = listProps;
+    const {
+      item,
+      extendedClassname = '',
+      showDropdown = false,
+      showIconDropdown = true,
+    } = listProps;
     return (
       <Link href={item?.href} passHref={true}>
         <a
@@ -242,7 +253,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           } ${extendedClassname} px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
         >
           <div className="flex items-center">
-            <figure>{item?.icon()}</figure>
+            {/* <figure>{item?.icon()}</figure> */}
+            {showIconDropdown ? (
+              <span onClick={(e) => e.preventDefault()} className="w-5 h-5">
+                <CategoryIconsDropdown
+                  onIconSelect={(value) => onIconSelect(value, item?.id)}
+                  iconValue={item?.iconValue || null}
+                />
+              </span>
+            ) : (
+              <figure>{item?.icon ? item?.icon() : null}</figure>
+            )}
             <p className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-3 leading-[14px]">
               {item?.name}
             </p>
@@ -272,6 +293,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               extendedClassname="py-[7px]"
               key={index}
               item={item}
+              showIconDropdown={false}
             />
           );
         })}
@@ -293,7 +315,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               (cat) => cat?.category_id === item?.id
             )
           ),
-          icon: () => <CollectionPlaceholderIcon />,
+          // icon: () => <CollectionPlaceholderIcon />,
+          iconValue: item?.icon,
         };
       })
     : [];
@@ -340,7 +363,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             >
               <div className="flex items-center">
                 <figure className=" mr-3">
-                  <CollectionPlaceholderIcon />
+                  <HomeIcon />
                 </figure>
                 {/* <p className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-3 leading-[14px]">
                   {item?.name}

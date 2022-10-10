@@ -704,6 +704,14 @@ const Dashboard = () => {
           //   })
           // );
         }}
+        onIconSelect={async (value, id) => {
+          mutationApiCall(
+            updateCategoryMutation.mutateAsync({
+              category_id: id,
+              updateData: { icon: value },
+            })
+          );
+        }}
       />
       <ShareCategoryModal
         userId={session?.user?.id || ''}

@@ -21,10 +21,15 @@ module.exports = {
           4: 'rgba(0, 0, 0, 0.13)',
           5: '#171717',
           6: 'rgba(236, 236, 236, 0.86)',
+          7: '#E8E8E8',
         },
       },
       dropShadow: {
         'custom-1': '0px 0px 2.5px rgba(0, 0, 0, 0.11)',
+      },
+      boxShadow: {
+        'custom-1':
+          '0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1)',
       },
     },
   },
