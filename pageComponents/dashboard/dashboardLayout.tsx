@@ -49,6 +49,7 @@ import HomeIcon from '../../icons/categoryIcons/homeIcon';
 import AddCategoryIcon from '../../icons/addCategoryIcon';
 import FileIcon from '../../icons/categoryIcons/fileIcon';
 import { options } from '../../utils/commonData';
+import { getCountInCategory } from '../../utils/helpers';
 
 interface DashboardLayoutProps {
   userImg: string;
@@ -203,6 +204,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${SEARCH_URL}`,
       current: currentPath === SEARCH_URL,
       id: 0,
+      count: undefined,
     },
     {
       icon: () => <HomeIconGray />,
@@ -210,6 +212,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/`,
       current: !currentPath,
       id: 1,
+      count: bookmarksData?.data?.length,
     },
     {
       icon: () => <InboxIconGray />,
@@ -217,6 +220,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${UNCATEGORIZED_URL}`,
       current: currentPath === UNCATEGORIZED_URL,
       id: 2,
+      count: getCountInCategory(null, bookmarksData?.data),
     },
     {
       icon: () => <TrashIconGray />,
@@ -224,6 +228,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${TRASH_URL}`,
       current: currentPath === TRASH_URL,
       id: 3,
+      count: undefined,
     },
   ];
 
@@ -235,6 +240,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       current: boolean;
       id: number;
       iconValue?: string | null;
+      count?: number;
     };
     extendedClassname: string;
     showDropdown?: boolean;
@@ -253,10 +259,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         <a
           className={`${
             item?.current ? 'bg-custom-gray-2' : 'bg-white'
-          } ${extendedClassname} px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
+          } ${extendedClassname} group px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
         >
           <div className="flex items-center">
-            {/* <figure>{item?.icon()}</figure> */}
             {showIconDropdown ? (
               <span onClick={(e) => e.preventDefault()} className="w-5 h-5">
                 <CategoryIconsDropdown
@@ -271,18 +276,30 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               {item?.name}
             </p>
           </div>
-          {showDropdown && (
-            <Dropdown
-              menuClassName="origin-top-right left-0"
-              options={[
-                { label: 'Share', value: 'share' },
-                { label: 'Delete', value: 'delete' },
-              ]}
-              onOptionClick={(dropdownValue) =>
-                onCategoryOptionClick(dropdownValue, item.current, item.id)
-              }
-            />
-          )}
+          <div className="flex items-center space-x-3">
+            {showDropdown && (
+              <Dropdown
+                buttonClassExtension="hidden group-hover:block"
+                menuClassName="origin-top-right left-0"
+                options={[
+                  { label: 'Share', value: 'share' },
+                  { label: 'Delete', value: 'delete' },
+                ]}
+                onOptionClick={(dropdownValue) =>
+                  onCategoryOptionClick(dropdownValue, item.current, item.id)
+                }
+              />
+            )}
+            {item?.count !== undefined && (
+              <span
+                className={`text-custom-gray-3 text-[13px] font-normal leading-[15px]${
+                  showDropdown ? 'block group-hover:hidden' : 'block'
+                }`}
+              >
+                {item?.count}
+              </span>
+            )}
+          </div>
         </a>
       </Link>
     );
@@ -318,8 +335,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               (cat) => cat?.category_id === item?.id
             )
           ),
-          // icon: () => <CollectionPlaceholderIcon />,
           iconValue: item?.icon,
+          count: getCountInCategory(item?.id, bookmarksData?.data),
         };
       })
     : [];
@@ -343,7 +360,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           })}
           {showAddCategoryInput && (
             <div
-              className={`px-2 py-[7px] mt-1 flex items-center bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
+              className={`px-2 py-[5px] mt-1 flex items-center bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
             >
               <div className="flex items-center">
                 <figure className="mr-2">
