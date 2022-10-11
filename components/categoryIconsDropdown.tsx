@@ -1,16 +1,10 @@
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useState } from 'react';
 import uFuzzy from '@leeoniya/ufuzzy';
-import HomeIcon from '../icons/categoryIcons/homeIcon';
-import DesignIcon from '../icons/categoryIcons/designIcon';
-import CollectionPlaceholderIcon from '../icons/collectionPlaceholderIcon';
 import SearchIconSmallGray from '../icons/searchIconSmallGray';
 import isNull from 'lodash/isNull';
 import { find } from 'lodash';
-import OpenSrcIcon from '../icons/categoryIcons/openSrcIcon';
-import FileIcon from '../icons/categoryIcons/fileIcon';
-import CardIcon from '../icons/categoryIcons/cardIcon';
-import CodeIcon from '../icons/categoryIcons/codeIcon';
+import { options } from '../utils/commonData';
 
 interface CategoryIconsDropdownTypes {
   onIconSelect: (value: string) => void;
@@ -21,37 +15,6 @@ export default function CategoryIconsDropdown(
   props: CategoryIconsDropdownTypes
 ) {
   const { onIconSelect, iconValue } = props;
-
-  const options = [
-    {
-      label: 'home',
-      icon: () => <HomeIcon />,
-    },
-    {
-      label: 'design',
-      icon: () => <DesignIcon />,
-    },
-    {
-      label: 'inspiration',
-      icon: () => <CollectionPlaceholderIcon />,
-    },
-    {
-      label: 'open-src',
-      icon: () => <OpenSrcIcon />,
-    },
-    {
-      label: 'file',
-      icon: () => <FileIcon />,
-    },
-    {
-      label: 'code',
-      icon: () => <CodeIcon />,
-    },
-    {
-      label: 'card',
-      icon: () => <CardIcon />,
-    },
-  ];
 
   const [finalFilteredOptions, setFinalFilteredOptions] = useState<
     Array<number>
@@ -75,9 +38,8 @@ export default function CategoryIconsDropdown(
       <Menu as="div" className="">
         <div>
           <Menu.Button className="">
-            {/* {options[iconValue || 0]?.icon()} */}
             {isNull(iconValue)
-              ? options[0]?.icon()
+              ? options[4]?.icon()
               : find(options, (item) => item?.label === iconValue)?.icon()}
           </Menu.Button>
         </div>
