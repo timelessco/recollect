@@ -45,4 +45,7 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
 export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
   shareCategoryId: undefined,
   setShareCategoryId: (id: number) => set(() => ({ shareCategoryId: id })),
+  moodboardColumns: [30],
+  setMoodboardColumns: (value: number[]) =>
+    set(() => ({ moodboardColumns: value })),
 }));

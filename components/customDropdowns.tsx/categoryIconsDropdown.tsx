@@ -1,10 +1,10 @@
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useState } from 'react';
 import uFuzzy from '@leeoniya/ufuzzy';
-import SearchIconSmallGray from '../icons/searchIconSmallGray';
+import SearchIconSmallGray from '../../icons/searchIconSmallGray';
 import isNull from 'lodash/isNull';
 import { find } from 'lodash';
-import { options } from '../utils/commonData';
+import { options } from '../../utils/commonData';
 
 interface CategoryIconsDropdownTypes {
   onIconSelect: (value: string) => void;

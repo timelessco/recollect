@@ -19,4 +19,6 @@ export interface LoadersStoreState {
 export interface MiscellaneousStoreState {
   shareCategoryId: number | undefined;
   setShareCategoryId: (id: number) => void;
+  moodboardColumns: number[];
+  setMoodboardColumns: (value: number[]) => void;
 }

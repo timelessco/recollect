@@ -44,12 +44,13 @@ import {
   PlusCircleIcon,
 } from '@heroicons/react/solid';
 import Dropdown from '../../components/dropdown';
-import CategoryIconsDropdown from '../../components/categoryIconsDropdown';
+import CategoryIconsDropdown from '../../components/customDropdowns.tsx/categoryIconsDropdown';
 import HomeIcon from '../../icons/categoryIcons/homeIcon';
 import AddCategoryIcon from '../../icons/addCategoryIcon';
 import FileIcon from '../../icons/categoryIcons/fileIcon';
 import { options } from '../../utils/commonData';
 import { getCountInCategory } from '../../utils/helpers';
+import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
 
 interface DashboardLayoutProps {
   userImg: string;
@@ -439,12 +440,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         />
         <div className="flex items-center">
           <div className="flex items-center mr-[17px] space-x-1">
-            <Button type="light">
+            {/* <Button type="light">
               <figure className="w-3 h-3">
                 <MoodboardIconGray />
               </figure>
               <span className="ml-[7px] text-custom-gray-1">Moodboard</span>
-            </Button>
+            </Button> */}
+            <BookmarksViewDropdown />
             <Button type="light">
               <figure className="w-3 h-3">
                 <SortByDateIconGray />

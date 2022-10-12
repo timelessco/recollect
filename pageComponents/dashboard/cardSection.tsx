@@ -17,7 +17,7 @@ import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import BookmarkCardSkeleton from '../../components/loadersSkeleton/bookmarkCardSkeleton';
 import Spinner from '../../components/spinner';
-import { useLoadersStore } from '../../store/componentStore';
+import { useLoadersStore, useMiscellaneousStore } from '../../store/componentStore';
 import Avatar from 'react-avatar';
 import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
@@ -57,6 +57,10 @@ const CardSection = ({
 
   const isDeleteBookmarkLoading = useLoadersStore(
     (state) => state.isDeleteBookmarkLoading
+  );
+
+  const moodboardColumns = useMiscellaneousStore(
+    (state) => state.moodboardColumns
   );
 
   // TODO: make this dependant on react-query
@@ -260,7 +264,7 @@ const CardSection = ({
         return (
           <Masonry
             breakpointCols={{
-              default: 3,
+              default: moodboardColumns[0] / 10,
               1100: 2,
               700: 2,
               500: 1,
