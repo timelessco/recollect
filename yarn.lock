@@ -313,6 +313,18 @@
     "minimatch" "^3.1.2"
     "strip-json-comments" "^3.1.1"
 
+"@floating-ui/core@^1.0.1":
+  "integrity" "sha512-bO37brCPfteXQfFY0DyNDGB3+IMe4j150KFQcgJ5aBP295p9nBGeHEs/p0czrRbtlHq4Px/yoPXO/+dOCcF4uA=="
+  "resolved" "https://registry.npmjs.org/@floating-ui/core/-/core-1.0.1.tgz"
+  "version" "1.0.1"
+
+"@floating-ui/dom@^1.0.0":
+  "integrity" "sha512-5X9WSvZ8/fjy3gDu8yx9HAA4KG1lazUN2P4/VnaXLxTO9Dz53HI1oYoh1OlhqFNlHgGDiwFX5WhFCc2ljbW3yA=="
+  "resolved" "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.0.2.tgz"
+  "version" "1.0.2"
+  dependencies:
+    "@floating-ui/core" "^1.0.1"
+
 "@gar/promisify@^1.1.3":
   "version" "1.1.3"
 
@@ -387,11 +399,6 @@
   "integrity" "sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA=="
   "resolved" "https://registry.npmjs.org/@juggle/resize-observer/-/resize-observer-3.4.0.tgz"
   "version" "3.4.0"
-
-"@leeoniya/ufuzzy@^0.7.0":
-  "integrity" "sha512-5DRso63/NzmxUqxKnjBpKSl3tCfDtQf8mbnbgxBVsdZtxlv/aJQbIB/iHOMH0lq2CKlZhoEtaEus9puEMAf74Q=="
-  "resolved" "https://registry.npmjs.org/@leeoniya/ufuzzy/-/ufuzzy-0.7.0.tgz"
-  "version" "0.7.0"
 
 "@next/env@12.2.0":
   "integrity" "sha512-/FCkDpL/8SodJEXvx/DYNlOD5ijTtkozf4PPulYPtkPOJaMPpBSOkzmsta4fnrnbdH6eZjbwbiXFdr6gSQCV4w=="
@@ -1093,6 +1100,19 @@
   dependencies:
     "@babel/runtime" "^7.10.2"
     "@babel/runtime-corejs3" "^7.10.2"
+
+"ariakit-utils@0.17.0-next.26":
+  "integrity" "sha512-Su1MA0nWcMKI/lPS++jgkXek6Z+Az4SGOTIjGz2mn7kN6pSRO3Xm4gW/6gLpbu0kmVd+MYNSpmEvFnJUf/udhA=="
+  "resolved" "https://registry.npmjs.org/ariakit-utils/-/ariakit-utils-0.17.0-next.26.tgz"
+  "version" "0.17.0-next.26"
+
+"ariakit@^2.0.0-next.41":
+  "integrity" "sha512-79ACgnIofsC7ULirjz/dqjNCwUW9TmX7ULdCqHHrpJP1H+lw9vtpWv4eeuRAII2lsyfNtXmLnY6qZ1ZV3ucxmA=="
+  "resolved" "https://registry.npmjs.org/ariakit/-/ariakit-2.0.0-next.41.tgz"
+  "version" "2.0.0-next.41"
+  dependencies:
+    "@floating-ui/dom" "^1.0.0"
+    "ariakit-utils" "0.17.0-next.26"
 
 "array-includes@^3.1.4", "array-includes@^3.1.5":
   "integrity" "sha512-iSDYZMMyTPkiFasVqfuAQnWAYcvO/SeBSCGKePoEthjp4LEMTe4uLc7b025o4jAZpHhihh8xPo99TNWUWWkGDQ=="

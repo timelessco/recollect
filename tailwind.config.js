@@ -1,5 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const defaultTheme = require('tailwindcss/defaultTheme');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const plugin = require('tailwindcss/plugin');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -33,5 +35,10 @@ module.exports = {
       },
     },
   },
-  plugins: [require('@tailwindcss/forms')],
+  plugins: [
+    [require('@tailwindcss/forms')],
+    plugin(function ({ addVariant }) {
+      addVariant('data-active-item', `&[data-active-item]`);
+    }),
+  ],
 };
