@@ -419,7 +419,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const renderMainPaneNav = () => {
     return (
-      <div className="py-[9px] px-4 border-b-[0.5px] border-b-custom-gray-4 flex items-center justify-between">
+      <header className="py-[9px] px-4 border-b-[0.5px] border-b-custom-gray-4 flex items-center justify-between">
         <div className="flex items-center space-x-[9px]">
           <figure className="w-5 h-5 flex items-center">{navBarLogo()}</figure>
           <p className="font-semibold text-xl leading-6 text-black">
@@ -511,7 +511,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             <span className="ml-[7px] text-white">Add</span>
           </Button>
         </div>
-      </div>
+      </header>
     );
   };
   return (

@@ -1,84 +1,64 @@
-import React, { useState } from 'react';
-import * as SliderPrimitive from '@radix-ui/react-slider';
+import * as React from 'react';
 
-import { styled } from '@stitches/react';
+import {
+  Slider as AdaptSlider,
+  SliderThumb,
+  SliderTrack,
+  useSliderBaseState,
+  useSliderState,
+  useSliderThumbState,
+  SliderBaseStateProps,
+  SliderThumbStateProps,
+} from '@adaptui/react';
 
-const StyledSlider = styled(SliderPrimitive.Root, {
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'center',
-  userSelect: 'none',
-  touchAction: 'none',
-  width: 200,
+export type SliderBasicProps = SliderBaseStateProps;
 
-  '&[data-orientation="horizontal"]': {
-    height: 20,
-  },
-
-  '&[data-orientation="vertical"]': {
-    flexDirection: 'column',
-    width: 20,
-    height: 100,
-  },
-});
-
-const StyledTrack = styled(SliderPrimitive.Track, {
-  // backgroundColor: blackA.blackA10,
-  backgroundColor: 'black',
-  position: 'relative',
-  flexGrow: 1,
-  borderRadius: '9999px',
-
-  '&[data-orientation="horizontal"]': { height: 3 },
-  '&[data-orientation="vertical"]': { width: 3 },
-});
-
-const StyledRange = styled(SliderPrimitive.Range, {
-  position: 'absolute',
-  backgroundColor: 'red',
-  borderRadius: '9999px',
-  height: '100%',
-});
-
-const StyledThumb = styled(SliderPrimitive.Thumb, {
-  all: 'unset',
-  display: 'block',
-  width: 20,
-  height: 20,
-  backgroundColor: 'white',
-  boxShadow: `0 2px 10px black`,
-  borderRadius: 10,
-  '&:hover': { backgroundColor: 'blue' },
-  '&:focus': { boxShadow: `0 0 0 5px gray` },
-});
-
-interface SliderPropsTypes {
-  value: number[];
-  onValueChange: (value: number[]) => void;
-}
-
-const Slider = (props: SliderPropsTypes) => {
-  // const [value, setValue] = useState([30]);
-  const { value, onValueChange } = props;
+export const Slider = (props: SliderBasicProps) => {
+  const { label } = props;
+  const sliderLabel = `${label ? label : 'Styled'} Slider`;
+  const state = useSliderBaseState(props);
+  const slider = useSliderState({ ...props, 'aria-label': sliderLabel, state });
+  const { getValuePercent, values } = state;
 
   return (
-    <StyledSlider
-      // defaultValue={[20]}
-      max={50}
-      min={10}
-      step={10}
-      aria-label="Volume"
-      onValueChange={onValueChange}
-      value={value}
-      // value={value}
-      // onValueChange={(v) => setValue(v)}
-    >
-      <StyledTrack>
-        <StyledRange />
-      </StyledTrack>
-      <StyledThumb />
-    </StyledSlider>
+    <AdaptSlider className="chakra-slider-group" state={slider}>
+      <div className="slider">
+        <SliderTrack state={slider} className="slider-track-container">
+          <div className="slider-track" />
+          <div
+            className="slider-filled-track"
+            style={{ width: `${getValuePercent(values[0]) * 100}%` }}
+          />
+        </SliderTrack>
+
+        <Thumb
+          index={0}
+          state={state}
+          orientation={props.orientation}
+          isDisabled={props.isDisabled}
+          trackRef={slider.trackRef}
+          aria-label="Thumb"
+        />
+      </div>
+    </AdaptSlider>
   );
 };
 
 export default Slider;
+
+export type SliderThumbProps = SliderThumbStateProps;
+
+export const Thumb = (props: SliderThumbProps) => {
+  const sliderThumb = useSliderThumbState(props);
+  const { index } = props;
+  const { getThumbPercent } = props.state;
+
+  return (
+    <div
+      className="slider-thumb"
+      style={{ left: `calc(${getThumbPercent(index) * 100}%)` }}
+    >
+      <SliderThumb state={sliderThumb} className="slider-thumb-handle" />
+    </div>
+  );
+};

@@ -46,6 +46,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
   shareCategoryId: undefined,
   setShareCategoryId: (id: number) => set(() => ({ shareCategoryId: id })),
   moodboardColumns: [30],
-  setMoodboardColumns: (value: number[]) =>
+  setMoodboardColumns: (value: number[] | number) =>
     set(() => ({ moodboardColumns: value })),
 }));

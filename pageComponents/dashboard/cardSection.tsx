@@ -17,7 +17,10 @@ import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import BookmarkCardSkeleton from '../../components/loadersSkeleton/bookmarkCardSkeleton';
 import Spinner from '../../components/spinner';
-import { useLoadersStore, useMiscellaneousStore } from '../../store/componentStore';
+import {
+  useLoadersStore,
+  useMiscellaneousStore,
+} from '../../store/componentStore';
 import Avatar from 'react-avatar';
 import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
@@ -264,7 +267,10 @@ const CardSection = ({
         return (
           <Masonry
             breakpointCols={{
-              default: moodboardColumns[0] / 10,
+              default:
+                typeof moodboardColumns === 'object'
+                  ? moodboardColumns[0] / 10
+                  : moodboardColumns / 10,
               1100: 2,
               700: 2,
               500: 1,

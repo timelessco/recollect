@@ -36,7 +36,7 @@ module.exports = {
     },
   },
   plugins: [
-    [require('@tailwindcss/forms')],
+    require('@tailwindcss/forms'),
     plugin(function ({ addVariant }) {
       addVariant('data-active-item', `&[data-active-item]`);
     }),

@@ -37,7 +37,7 @@ const BookmarksViewDropdown = () => {
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Menu.Items className="absolute px-3 right-0 z-10 mt-2 w-[167px] origin-top-left rounded-xl bg-white shadow-custom-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
+            <Menu.Items className="absolute px-3 right-0 z-10 mt-2 w-[170px] origin-top-left rounded-xl bg-white shadow-custom-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
               <div className="flex pt-2 pb-3">
                 {/* {finalFilteredOptions.map((item, index) => {
               return (
@@ -76,10 +76,12 @@ const BookmarksViewDropdown = () => {
                   )}
                 </Menu.Item> */}
                 <Slider
+                  label="moodboard-cols-slider"
+                  minValue={10}
+                  maxValue={50}
+                  step={10}
                   value={moodboardColumns}
-                  onValueChange={(value: number[]) =>
-                    setMoodboardColumns(value)
-                  }
+                  onChange={(value) => setMoodboardColumns(value)}
                 />
               </div>
             </Menu.Items>
