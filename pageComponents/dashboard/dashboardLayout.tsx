@@ -121,6 +121,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     error: PostgrestError;
   };
 
+  const bookmarksTrashData = queryClient.getQueryData([
+    BOOKMARKS_KEY,
+    TRASH_URL,
+  ]) as {
+    data: SingleListData[];
+    error: PostgrestError;
+  };
+
   const sharedCategoriesData = queryClient.getQueryData([
     SHARED_CATEGORIES_TABLE_NAME,
   ]) as {
@@ -229,7 +237,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${TRASH_URL}`,
       current: currentPath === TRASH_URL,
       id: 3,
-      count: undefined,
+      count: bookmarksTrashData?.data?.length,
     },
   ];
 

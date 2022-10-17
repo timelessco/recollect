@@ -169,6 +169,10 @@ const Dashboard = () => {
       fetchBookmakrsData('null')
     );
 
+  const {} = useQuery([BOOKMARKS_KEY, TRASH_URL], () =>
+    fetchBookmakrsData(TRASH_URL)
+  );
+
   const category_slug = router?.asPath?.split('/')[1] || null;
   const category_id =
     getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
