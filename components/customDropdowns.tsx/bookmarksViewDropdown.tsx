@@ -1,13 +1,11 @@
 import { Menu, Transition } from '@headlessui/react';
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useMiscellaneousStore } from '../../store/componentStore';
 import Button from '../atoms/button';
 import Slider from '../slider';
 
 const BookmarksViewDropdown = () => {
-  // const [moodboardColumns, setMoodboardColumns] = useState(30);
-
   const moodboardColumns = useMiscellaneousStore(
     (state) => state.moodboardColumns
   );
@@ -79,7 +77,9 @@ const BookmarksViewDropdown = () => {
                 </Menu.Item> */}
                 <Slider
                   value={moodboardColumns}
-                  onValueChange={(value) => setMoodboardColumns(value)}
+                  onValueChange={(value: number[]) =>
+                    setMoodboardColumns(value)
+                  }
                 />
               </div>
             </Menu.Items>

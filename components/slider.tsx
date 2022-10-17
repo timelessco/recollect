@@ -52,7 +52,12 @@ const StyledThumb = styled(SliderPrimitive.Thumb, {
   '&:focus': { boxShadow: `0 0 0 5px gray` },
 });
 
-const Slider = (props) => {
+interface SliderPropsTypes {
+  value: number[];
+  onValueChange: (value: number[]) => void;
+}
+
+const Slider = (props: SliderPropsTypes) => {
   // const [value, setValue] = useState([30]);
   const { value, onValueChange } = props;
 

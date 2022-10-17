@@ -54,3 +54,13 @@ main {
 .allotment-module_splitView__L-yRc > .allotment-module_splitViewContainer__rQnVa > .allotment-module_splitViewView__MGZ6O {
   overflow: unset !important;
 }
+
+/* .splitView.separatorBorder
+  > .splitViewContainer
+  > .splitViewView:not(:first-child)::before {
+    background-color: unset !important;
+  } */
+
+.sash-module_sash__K-9lB::before {
+  background: unset !important;
+}

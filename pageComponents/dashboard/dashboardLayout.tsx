@@ -526,15 +526,25 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           </figure>
         </Button>
       )}
-      <Allotment defaultSizes={[144, screenWidth]} separator={false}>
-        <Allotment.Pane maxSize={600} minSize={244} visible={showSidePane}>
+      <Allotment
+        defaultSizes={[144, screenWidth]}
+        separator={false}
+        onVisibleChange={() => setShowSidePane(false)}
+      >
+        <Allotment.Pane
+          maxSize={600}
+          minSize={244}
+          visible={showSidePane}
+          snap
+          className="transition-all ease-in-out duration-150"
+        >
           <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
             {renderSidePaneUserDropdown()}
             {renderSidePaneOptionsMenu()}
             {renderSidePaneCollections()}
           </nav>
         </Allotment.Pane>
-        <Allotment.Pane>
+        <Allotment.Pane className="transition-all ease-in-out duration-150">
           <div className="w-full">
             {renderMainPaneNav()}
             <main className="overflow-y-auto py-4">{renderMainContent()}</main>
