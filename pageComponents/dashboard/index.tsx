@@ -57,7 +57,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { errorToast, successToast } from '../../utils/toastMessages';
 import { mutationApiCall } from '../../utils/apiHelpers';
 import { getCategoryIdFromSlug } from '../../utils/helpers';
-import ShareCategoryModal from './shareCategoryModal';
+import ShareCategoryModal from './modals/shareCategoryModal';
 import AddBookarkShortcutModal from './modals/addBookmarkShortcutModal';
 import WarningActionModal from './modals/warningActionModal';
 
@@ -647,6 +647,7 @@ const Dashboard = () => {
   return (
     <>
       <DashboardLayout
+        categoryId={category_id}
         isAddInputLoading={addBookmarkMinDataMutation?.isLoading}
         userId={session?.user?.id || ''}
         bookmarksData={bookmarksData?.data} // make this dependant on react-query
@@ -698,6 +699,12 @@ const Dashboard = () => {
               break;
             default:
             // code block
+          }
+        }}
+        onShareClick={() => {
+          if (category_id && !isNull(category_id) && category_id !== 'trash') {
+            toggleShareCategoryModal();
+            setShareCategoryId(category_id);
           }
         }}
         onClearTrash={async () => {

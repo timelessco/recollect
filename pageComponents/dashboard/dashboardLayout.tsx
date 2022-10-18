@@ -8,13 +8,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useEffect, useState } from 'react';
 import Button from '../../components/atoms/button';
-import Input from '../../components/atoms/input';
 import SearchInput from '../../components/searchInput';
-import CollectionPlaceholderIcon from '../../icons/collectionPlaceholderIcon';
 import DownArrowGray from '../../icons/downArrowGray';
 import HomeIconGray from '../../icons/homeIconGray';
 import InboxIconGray from '../../icons/inboxIconGray';
-import MoodboardIconGray from '../../icons/moodboardIconGray';
 import OptionsIconGray from '../../icons/optionsIconGray';
 import PlusIconWhite from '../../icons/plusIconWhite';
 import SearchIconGray from '../../icons/searchIconGray';
@@ -30,7 +27,6 @@ import { ChildrenTypes } from '../../types/componentTypes';
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
-  INBOX_URL,
   SEARCH_URL,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
@@ -41,11 +37,11 @@ import 'allotment/dist/style.css';
 import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
-  PlusCircleIcon,
+  GlobeIcon,
+  UsersIcon,
 } from '@heroicons/react/solid';
 import Dropdown from '../../components/dropdown';
 import CategoryIconsDropdown from '../../components/customDropdowns.tsx/categoryIconsDropdown';
-import HomeIcon from '../../icons/categoryIcons/homeIcon';
 import AddCategoryIcon from '../../icons/addCategoryIcon';
 import FileIcon from '../../icons/categoryIcons/fileIcon';
 import { options } from '../../utils/commonData';
@@ -53,6 +49,7 @@ import { getCountInCategory } from '../../utils/helpers';
 import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
 
 interface DashboardLayoutProps {
+  categoryId: number | 'trash' | null;
   userImg: string;
   userName: string;
   userEmail: string;
@@ -62,7 +59,7 @@ interface DashboardLayoutProps {
   // onDeleteCategoryClick: (id: string, current: boolean) => void;
   bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
-  // onShareClick: (id: string) => void;
+  onShareClick: () => void;
   userId: string;
   isAddInputLoading: boolean;
   onAddNewCategory: (value: string) => void;
@@ -77,6 +74,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
   const {
+    categoryId,
     renderMainContent,
     userImg,
     // userEmail,
@@ -84,10 +82,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     onSignOutClick,
     onSigninClick,
     // onDeleteCategoryClick,
-    onAddBookmark,
-    // onShareClick,
+    onShareClick,
     userId,
-    isAddInputLoading = false,
     onAddNewCategory,
     onCategoryOptionClick,
     onClearTrash,
@@ -250,6 +246,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       id: number;
       iconValue?: string | null;
       count?: number;
+      isPublic?: boolean;
+      isCollab?: boolean;
     };
     extendedClassname: string;
     showDropdown?: boolean;
@@ -286,6 +284,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             </p>
           </div>
           <div className="flex items-center space-x-3">
+            {item?.isPublic && (
+              <figure>
+                <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
+              </figure>
+            )}
+            {item?.isCollab && (
+              <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
+            )}
             {showDropdown && (
               <Dropdown
                 buttonClassExtension="hidden group-hover:block"
@@ -461,12 +467,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               </figure>
               <span className="ml-[7px] text-custom-gray-1">By Date</span>
             </Button>
-            <Button type="light">
-              <figure className="w-3 h-3">
-                <UserIconGray />
-              </figure>
-              <span className="ml-[7px] text-custom-gray-1">Share</span>
-            </Button>
+            {typeof categoryId === 'number' && (
+              <Button type="light" onClick={() => onShareClick()}>
+                <figure className="w-3 h-3">
+                  <UserIconGray />
+                </figure>
+                <span className="ml-[7px] text-custom-gray-1">Share</span>
+              </Button>
+            )}
             <Menu as="div" className="flex-shrink-0 relative">
               <Menu.Button as="div">
                 <Button type="light" className="p-[5px]" style={{ padding: 5 }}>

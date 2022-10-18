@@ -121,7 +121,10 @@ const CardSection = ({
             <>
               <PencilAltIcon
                 className="h-5 w-5 text-gray-400 cursor-pointer"
-                onClick={() => onEditClick(post)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onEditClick(post);
+                }}
               />
               {isDeleteBookmarkLoading && deleteBookmarkId === post?.id ? (
                 <div>
@@ -129,17 +132,23 @@ const CardSection = ({
                 </div>
               ) : (
                 <TrashIcon
-                  className="h-5 w-5 ml-1 text-gray-400 cursor-pointer"
+                  className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
                   aria-hidden="true"
-                  onClick={() => onDeleteClick(post)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onDeleteClick(post);
+                  }}
                 />
               )}
             </>
           ) : (
             <>
               <PencilAltIcon
-                className="h-5 w-5 text-gray-400 cursor-pointer"
-                onClick={() => onEditClick(post)}
+                className="h-5 w-5 text-gray-700 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onEditClick(post);
+                }}
               />
             </>
           )}
@@ -294,13 +303,22 @@ const CardSection = ({
                       />
                     </figure>
                     <div className="items-center space-x-1 hidden group-hover:flex absolute bottom-[8px] right-[10px]">
-                      <TrashIcon
+                      {/* <TrashIcon
                         onClick={(e) => {
                           e.preventDefault();
                           onDeleteClick(item);
                         }}
                         className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                      />
+                      /> */}
+                      {showAvatar && (
+                        <Avatar
+                          name={item?.user_id}
+                          size="20"
+                          round={true}
+                          className="mr-1"
+                        />
+                      )}
+                      {renderEditAndDeleteIcons(item)}
                       {category_id === TRASH_URL && (
                         <MinusCircleIcon
                           className="h-5 w-5 ml-1 text-red-400 cursor-pointer"

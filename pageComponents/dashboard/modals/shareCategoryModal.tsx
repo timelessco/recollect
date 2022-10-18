@@ -4,23 +4,23 @@ import { useQueryClient } from '@tanstack/react-query';
 import find from 'lodash/find';
 import isNull from 'lodash/isNull';
 import { useEffect, useState } from 'react';
-import Input from '../../components/atoms/input';
-import LabelledComponent from '../../components/labelledComponent';
-import Modal from '../../components/modal';
-import Switch from '../../components/switch';
-import Tabs from '../../components/tabs';
+import Input from '../../../components/atoms/input';
+import LabelledComponent from '../../../components/labelledComponent';
+import Modal from '../../../components/modal';
+import Switch from '../../../components/switch';
+import Tabs from '../../../components/tabs';
 import {
   useMiscellaneousStore,
   useModalStore,
-} from '../../store/componentStore';
-import { CategoriesData } from '../../types/apiTypes';
-import { CATEGORIES_KEY } from '../../utils/constants';
+} from '../../../store/componentStore';
+import { CategoriesData } from '../../../types/apiTypes';
+import { CATEGORIES_KEY } from '../../../utils/constants';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
-import { sendCollaborationEmailInvite } from '../../utils/supabaseCrudHelpers';
-import Select from '../../components/atoms/select';
-import { errorToast, successToast } from '../../utils/toastMessages';
-import { getUserNameFromEmail } from '../../utils/helpers';
+import { sendCollaborationEmailInvite } from '../../../utils/supabaseCrudHelpers';
+import Select from '../../../components/atoms/select';
+import { errorToast, successToast } from '../../../utils/toastMessages';
+import { getUserNameFromEmail } from '../../../utils/helpers';
 
 interface ShareCategoryModalProps {
   userId: string;
