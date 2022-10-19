@@ -1,94 +1,105 @@
-import { Menu, Transition } from '@headlessui/react';
-import React, { Fragment } from 'react';
+import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
+import React from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
-import { useMiscellaneousStore } from '../../store/componentStore';
+import { useBookmarkCardViewState } from '../../store/componentStore';
+import { errorToast } from '../../utils/toastMessages';
 import Button from '../atoms/button';
+import Checkbox from '../checkbox';
 import Slider from '../slider';
 
 const BookmarksViewDropdown = () => {
-  const moodboardColumns = useMiscellaneousStore(
+  const moodboardColumns = useBookmarkCardViewState(
     (state) => state.moodboardColumns
   );
 
-  const setMoodboardColumns = useMiscellaneousStore(
+  const setMoodboardColumns = useBookmarkCardViewState(
     (state) => state.setMoodboardColumns
   );
 
+  const cardContentViewArray = useBookmarkCardViewState(
+    (state) => state.cardContentViewArray
+  );
+
+  const setCardContentViewArray = useBookmarkCardViewState(
+    (state) => state.setCardContentViewArray
+  );
+
+  const cardContentOptions = [
+    {
+      label: 'Cover',
+      value: 'cover',
+    },
+    {
+      label: 'Title',
+      value: 'title',
+    },
+    {
+      label: 'Description',
+      value: 'description',
+    },
+    {
+      label: 'Tags',
+      value: 'tags',
+    },
+    {
+      label: 'Info',
+      value: 'info',
+    },
+  ];
+
+  const menu = useMenuState({ gutter: 8 });
   return (
-    <Menu as="div" className="flex-shrink-0 relative">
-      {({ open }) => (
-        <>
-          <div>
-            <Menu.Button as="div">
-              <Button type="light" className={open ? 'bg-custom-gray-2' : ''}>
-                <figure className="w-3 h-3">
-                  <MoodboardIconGray />
-                </figure>
-                <span className="ml-[7px] text-custom-gray-1">Moodboard</span>
-              </Button>
-            </Menu.Button>
-          </div>
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-100"
-            enterFrom="transform opacity-0 scale-95"
-            enterTo="transform opacity-100 scale-100"
-            leave="transition ease-in duration-75"
-            leaveFrom="transform opacity-100 scale-100"
-            leaveTo="transform opacity-0 scale-95"
-          >
-            <Menu.Items className="absolute px-3 right-0 z-10 mt-2 w-[170px] origin-top-left rounded-xl bg-white shadow-custom-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <div className="flex pt-2 pb-3">
-                {/* {finalFilteredOptions.map((item, index) => {
-              return (
-                <div className="px-1 py-1 flex" key={index}>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        title={options[item]?.label}
-                        onClick={() => {
-                          onIconSelect(options[item]?.label);
-                        }}
-                        className={`${
-                          active ? 'bg-gray-100' : ''
-                        } p-1 rounded-md`}
-                      >
-                        {options[item]?.icon()}
-                      </button>
-                    )}
-                  </Menu.Item>
-                </div>
-              );
-            })} */}
-                {/* <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      // title={options[item]?.label}
-                      // onClick={() => {
-                      //   onIconSelect(options[item]?.label);
-                      // }}
-                      className={`${
-                        active ? 'bg-gray-100' : ''
-                      } p-1 rounded-md`}
-                    >
-                      OPTONS
-                    </button>
-                  )}
-                </Menu.Item> */}
-                <Slider
-                  label="moodboard-cols-slider"
-                  minValue={10}
-                  maxValue={50}
-                  step={10}
-                  value={moodboardColumns}
-                  onChange={(value) => setMoodboardColumns(value)}
-                />
-              </div>
-            </Menu.Items>
-          </Transition>
-        </>
-      )}
-    </Menu>
+    <>
+      <MenuButton state={menu} className="button" as="div">
+        <Button type="light">
+          <figure className="w-3 h-3">
+            <MoodboardIconGray />
+          </figure>
+          <span className="ml-[7px] text-custom-gray-1">Moodboard</span>
+        </Button>
+      </MenuButton>
+      <Menu
+        state={menu}
+        className="w-[170px] py-3 px-1 origin-top-left rounded-xl bg-white shadow-custom-1 ring-1 ring-black ring-opacity-5 z-20"
+      >
+        {cardContentOptions?.map((item) => {
+          return (
+            <Checkbox
+              key={item?.value}
+              label={item?.label}
+              value={item?.value}
+              checked={cardContentViewArray?.includes(item?.value)}
+              onChange={(value) => {
+                if (cardContentViewArray?.includes(value as string)) {
+                  if (cardContentViewArray?.length > 1) {
+                    setCardContentViewArray(
+                      cardContentViewArray?.filter((item) => item !== value)
+                    );
+                  } else {
+                    errorToast('Atleast one view option needs to be selcted');
+                  }
+                } else {
+                  setCardContentViewArray([
+                    ...cardContentViewArray,
+                    value as string,
+                  ]);
+                }
+              }}
+            />
+          );
+        })}
+        <div className="p-2">
+          <Slider
+            label="moodboard-cols-slider"
+            minValue={10}
+            maxValue={50}
+            step={10}
+            value={moodboardColumns}
+            onChange={(value) => setMoodboardColumns(value)}
+          />
+        </div>
+      </Menu>
+    </>
   );
 };
 

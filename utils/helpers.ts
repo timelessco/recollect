@@ -63,3 +63,10 @@ export const getUserNameFromEmail = (email: string) => {
 
   return null;
 };
+
+export const getBaseUrl = (href: string) => {
+  const url = new URL(href);
+  const baseUrl = `${url.protocol}//${url.hostname}`;
+
+  return baseUrl;
+};

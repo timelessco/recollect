@@ -19,6 +19,11 @@ export interface LoadersStoreState {
 export interface MiscellaneousStoreState {
   shareCategoryId: number | undefined;
   setShareCategoryId: (id: number) => void;
+}
+
+export interface BookmarkCardViewState {
   moodboardColumns: number[] | number;
   setMoodboardColumns: (value: number[] | number) => void;
+  cardContentViewArray: string[];
+  setCardContentViewArray: (arr: string[]) => void;
 }

@@ -15,11 +15,10 @@ import {
 } from '../../utils/constants';
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
-import BookmarkCardSkeleton from '../../components/loadersSkeleton/bookmarkCardSkeleton';
 import Spinner from '../../components/spinner';
 import {
+  useBookmarkCardViewState,
   useLoadersStore,
-  useMiscellaneousStore,
 } from '../../store/componentStore';
 import Avatar from 'react-avatar';
 import { useQueryClient } from '@tanstack/react-query';
@@ -28,6 +27,8 @@ import Badge from '../../components/badge';
 import isNull from 'lodash/isNull';
 import Masonry from 'react-masonry-css';
 import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSkeleton';
+import { getBaseUrl } from '../../utils/helpers';
+import format from 'date-fns/format';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -50,8 +51,8 @@ const CardSection = ({
   isLoading = false,
   userId,
   showAvatar = false,
-  isOgImgLoading = false,
-  addScreenshotBookmarkId,
+  // isOgImgLoading = false,
+  // addScreenshotBookmarkId,
   deleteBookmarkId,
 }: CardSectionProps) => {
   const router = useRouter();
@@ -62,8 +63,12 @@ const CardSection = ({
     (state) => state.isDeleteBookmarkLoading
   );
 
-  const moodboardColumns = useMiscellaneousStore(
+  const moodboardColumns = useBookmarkCardViewState(
     (state) => state.moodboardColumns
+  );
+
+  const cardContentViewArray = useBookmarkCardViewState(
+    (state) => state.cardContentViewArray
   );
 
   // TODO: make this dependant on react-query
@@ -287,49 +292,99 @@ const CardSection = ({
             className="my-masonry-grid"
             columnClassName="my-masonry-grid_column"
           >
-            {orderBy(bookmarksList, ['id'], ['desc'])?.map((item, index) => {
+            {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
               return (
                 <div
                   key={item?.id}
-                  className="rounded-lg drop-shadow-custom-1 relative group"
+                  className="rounded-lg drop-shadow-custom-1 group relative"
                 >
                   <a href={item?.url} target="_blank" rel="noreferrer">
                     <figure>
-                      <img
-                        src={item?.ogImage}
-                        alt="bookmark-img"
-                        // style={{ height: index % 2 ? 'auto' : '300px' }}
-                        className="rounded-lg w-full"
-                      />
+                      {cardContentViewArray?.includes('cover') && (
+                        <img
+                          src={item?.ogImage}
+                          alt="bookmark-img"
+                          className="rounded-lg w-full"
+                        />
+                      )}
                     </figure>
-                    <div className="items-center space-x-1 hidden group-hover:flex absolute bottom-[8px] right-[10px]">
-                      {/* <TrashIcon
+                    {cardContentViewArray?.length === 1 &&
+                    cardContentViewArray[0] === 'cover' ? null : (
+                      <div className="rounded-lg p-4 space-y-2">
+                        {cardContentViewArray?.includes('title') && (
+                          <p className="text-base font-medium leading-4">
+                            {item?.title}
+                          </p>
+                        )}
+                        {cardContentViewArray?.includes('description') && (
+                          <p className="text-sm leading-4  overflow-hidden break-all">
+                            {item?.description}
+                          </p>
+                        )}
+                        <div className="space-y-2">
+                          {cardContentViewArray?.includes('tags') && (
+                            <div className="flex items-center space-x-1">
+                              {item?.addedTags?.map((tag) => {
+                                return (
+                                  <div
+                                    className="text-xs text-blue-500"
+                                    key={tag?.id}
+                                  >
+                                    #{tag?.name}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {cardContentViewArray?.includes('info') && (
+                            <div className="flex items-center space-x-2">
+                              {!isNull(item?.category_id) &&
+                                isNull(category_id) && (
+                                  <Badge
+                                    label={singleBookmarkCategoryName(
+                                      item?.category_id
+                                    )}
+                                  />
+                                )}
+                              <p
+                                className={`text-xs leading-4 relative ${
+                                  !isNull(item?.category_id) &&
+                                  isNull(category_id)
+                                    ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
+                                    : ''
+                                }`}
+                              >
+                                {getBaseUrl(item?.url)}
+                              </p>
+                              <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                                {format(new Date(item?.inserted_at), 'dd MMM')}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </a>
+                  <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
+                    {showAvatar && (
+                      <Avatar
+                        name={item?.user_id}
+                        size="20"
+                        round={true}
+                        className="mr-1"
+                      />
+                    )}
+                    {renderEditAndDeleteIcons(item)}
+                    {category_id === TRASH_URL && (
+                      <MinusCircleIcon
+                        className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
                         onClick={(e) => {
                           e.preventDefault();
-                          onDeleteClick(item);
+                          onMoveOutOfTrashClick(item);
                         }}
-                        className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                      /> */}
-                      {showAvatar && (
-                        <Avatar
-                          name={item?.user_id}
-                          size="20"
-                          round={true}
-                          className="mr-1"
-                        />
-                      )}
-                      {renderEditAndDeleteIcons(item)}
-                      {category_id === TRASH_URL && (
-                        <MinusCircleIcon
-                          className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            onMoveOutOfTrashClick(item);
-                          }}
-                        />
-                      )}
-                    </div>
-                  </a>
+                      />
+                    )}
+                  </div>
                 </div>
               );
             })}

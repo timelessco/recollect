@@ -3,6 +3,7 @@ import {
   ModalStoreState,
   LoadersStoreState,
   MiscellaneousStoreState,
+  BookmarkCardViewState,
 } from '../types/componentStoreTypes';
 
 export const useModalStore = create<ModalStoreState>((set) => ({
@@ -45,7 +46,15 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
 export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
   shareCategoryId: undefined,
   setShareCategoryId: (id: number) => set(() => ({ shareCategoryId: id })),
-  moodboardColumns: [30],
-  setMoodboardColumns: (value: number[] | number) =>
-    set(() => ({ moodboardColumns: value })),
 }));
+
+export const useBookmarkCardViewState = create<BookmarkCardViewState>(
+  (set) => ({
+    moodboardColumns: [30],
+    setMoodboardColumns: (value: number[] | number) =>
+      set(() => ({ moodboardColumns: value })),
+    cardContentViewArray: ['cover'],
+    setCardContentViewArray: (arr: string[]) =>
+      set(() => ({ cardContentViewArray: arr })),
+  })
+);
