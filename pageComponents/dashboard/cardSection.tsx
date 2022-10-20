@@ -29,6 +29,7 @@ import Masonry from 'react-masonry-css';
 import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSkeleton';
 import { getBaseUrl } from '../../utils/helpers';
 import format from 'date-fns/format';
+import classNames from 'classnames';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -69,6 +70,10 @@ const CardSection = ({
 
   const cardContentViewArray = useBookmarkCardViewState(
     (state) => state.cardContentViewArray
+  );
+
+  const bookmarksView = useBookmarkCardViewState(
+    (state) => state.bookmarksView
   );
 
   // TODO: make this dependant on react-query
@@ -256,140 +261,477 @@ const CardSection = ({
   //   </div>
   // );
 
+  const renderHeadlinesType = () => {
+    return (
+      <div className="space-y-4">
+        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+          return (
+            <div
+              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
+              key={item?.id}
+              className="group relative"
+            >
+              <a
+                href={item?.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center"
+              >
+                {cardContentViewArray?.length === 1 &&
+                cardContentViewArray[0] === 'cover' ? null : (
+                  <div className="p-4 space-y-2">
+                    {cardContentViewArray?.includes('title') && (
+                      <p className="text-base font-medium leading-4">
+                        {item?.title}
+                      </p>
+                    )}
+                    <div className="space-y-2">
+                      {cardContentViewArray?.includes('tags') && (
+                        <div className="flex items-center space-x-1">
+                          {item?.addedTags?.map((tag) => {
+                            return (
+                              <div
+                                className="text-xs text-blue-500"
+                                key={tag?.id}
+                              >
+                                #{tag?.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {cardContentViewArray?.includes('info') && (
+                        <div className="flex items-center space-x-2">
+                          {!isNull(item?.category_id) &&
+                            isNull(category_id) && (
+                              <Badge
+                                label={singleBookmarkCategoryName(
+                                  item?.category_id
+                                )}
+                              />
+                            )}
+                          <p
+                            className={`text-xs leading-4 relative ${
+                              !isNull(item?.category_id) && isNull(category_id)
+                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
+                                : ''
+                            }`}
+                          >
+                            {getBaseUrl(item?.url)}
+                          </p>
+                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                            {format(new Date(item?.inserted_at), 'dd MMM')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </a>
+              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
+                {showAvatar && (
+                  <Avatar
+                    name={item?.user_id}
+                    size="20"
+                    round={true}
+                    className="mr-1"
+                  />
+                )}
+                {renderEditAndDeleteIcons(item)}
+                {category_id === TRASH_URL && (
+                  <MinusCircleIcon
+                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onMoveOutOfTrashClick(item);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderListType = () => {
+    return (
+      <div className="space-y-4">
+        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+          return (
+            <div
+              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
+              key={item?.id}
+              className="group relative"
+            >
+              <a
+                href={item?.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center"
+              >
+                <figure>
+                  {cardContentViewArray?.includes('cover') && (
+                    <img
+                      src={item?.ogImage}
+                      alt="bookmark-img"
+                      // className="rounded-lg w-full"
+                      className=" h-14 w-full object-cover"
+                    />
+                  )}
+                </figure>
+                {cardContentViewArray?.length === 1 &&
+                cardContentViewArray[0] === 'cover' ? null : (
+                  <div className="p-4 space-y-2">
+                    {cardContentViewArray?.includes('title') && (
+                      <p className="text-base font-medium leading-4">
+                        {item?.title}
+                      </p>
+                    )}
+                    {cardContentViewArray?.includes('description') && (
+                      <p className="text-sm leading-4  overflow-hidden break-all">
+                        {item?.description}
+                      </p>
+                    )}
+                    <div className="space-y-2">
+                      {cardContentViewArray?.includes('tags') && (
+                        <div className="flex items-center space-x-1">
+                          {item?.addedTags?.map((tag) => {
+                            return (
+                              <div
+                                className="text-xs text-blue-500"
+                                key={tag?.id}
+                              >
+                                #{tag?.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {cardContentViewArray?.includes('info') && (
+                        <div className="flex items-center space-x-2">
+                          {!isNull(item?.category_id) &&
+                            isNull(category_id) && (
+                              <Badge
+                                label={singleBookmarkCategoryName(
+                                  item?.category_id
+                                )}
+                              />
+                            )}
+                          <p
+                            className={`text-xs leading-4 relative ${
+                              !isNull(item?.category_id) && isNull(category_id)
+                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
+                                : ''
+                            }`}
+                          >
+                            {getBaseUrl(item?.url)}
+                          </p>
+                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                            {format(new Date(item?.inserted_at), 'dd MMM')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </a>
+              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
+                {showAvatar && (
+                  <Avatar
+                    name={item?.user_id}
+                    size="20"
+                    round={true}
+                    className="mr-1"
+                  />
+                )}
+                {renderEditAndDeleteIcons(item)}
+                {category_id === TRASH_URL && (
+                  <MinusCircleIcon
+                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onMoveOutOfTrashClick(item);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const cardGridClassNames = classNames({
+    'grid gap-3': true,
+    'grid-cols-1':
+      typeof moodboardColumns === 'object' && moodboardColumns[0] === 10,
+    'grid-cols-2':
+      typeof moodboardColumns === 'object' && moodboardColumns[0] === 20,
+    'grid-cols-3':
+      typeof moodboardColumns === 'object' && moodboardColumns[0] === 30,
+    'grid-cols-4':
+      typeof moodboardColumns === 'object' && moodboardColumns[0] === 40,
+    'grid-cols-5':
+      typeof moodboardColumns === 'object' && moodboardColumns[0] === 50,
+  });
+
+  const renderCardType = () => {
+    return (
+      <div className={cardGridClassNames}>
+        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+          return (
+            <div
+              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
+              key={item?.id}
+              className="group relative"
+            >
+              <a href={item?.url} target="_blank" rel="noreferrer">
+                <figure>
+                  {cardContentViewArray?.includes('cover') && (
+                    <img
+                      src={item?.ogImage}
+                      alt="bookmark-img"
+                      // className="rounded-lg w-full"
+                      className="h-48 w-full object-cover"
+                    />
+                  )}
+                </figure>
+                {cardContentViewArray?.length === 1 &&
+                cardContentViewArray[0] === 'cover' ? null : (
+                  <div className="p-4 space-y-2">
+                    {cardContentViewArray?.includes('title') && (
+                      <p className="text-base font-medium leading-4">
+                        {item?.title}
+                      </p>
+                    )}
+                    {cardContentViewArray?.includes('description') && (
+                      <p className="text-sm leading-4  overflow-hidden break-all">
+                        {item?.description}
+                      </p>
+                    )}
+                    <div className="space-y-2">
+                      {cardContentViewArray?.includes('tags') && (
+                        <div className="flex items-center space-x-1">
+                          {item?.addedTags?.map((tag) => {
+                            return (
+                              <div
+                                className="text-xs text-blue-500"
+                                key={tag?.id}
+                              >
+                                #{tag?.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {cardContentViewArray?.includes('info') && (
+                        <div className="flex items-center space-x-2 flex-wrap">
+                          {!isNull(item?.category_id) &&
+                            isNull(category_id) && (
+                              <Badge
+                                label={singleBookmarkCategoryName(
+                                  item?.category_id
+                                )}
+                              />
+                            )}
+                          <p
+                            className={`text-xs leading-4 relative ${
+                              !isNull(item?.category_id) && isNull(category_id)
+                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
+                                : ''
+                            }`}
+                          >
+                            {getBaseUrl(item?.url)}
+                          </p>
+                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                            {format(new Date(item?.inserted_at), 'dd MMM')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </a>
+              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
+                {showAvatar && (
+                  <Avatar
+                    name={item?.user_id}
+                    size="20"
+                    round={true}
+                    className="mr-1"
+                  />
+                )}
+                {renderEditAndDeleteIcons(item)}
+                {category_id === TRASH_URL && (
+                  <MinusCircleIcon
+                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onMoveOutOfTrashClick(item);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderMoodboard = () => {
+    return (
+      <Masonry
+        breakpointCols={{
+          default:
+            typeof moodboardColumns === 'object'
+              ? moodboardColumns[0] / 10
+              : moodboardColumns / 10,
+          1100: 2,
+          700: 2,
+          500: 1,
+        }}
+        className="my-masonry-grid"
+        columnClassName="my-masonry-grid_column"
+      >
+        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+          return (
+            <div
+              key={item?.id}
+              className="rounded-lg drop-shadow-custom-1 group relative"
+            >
+              <a href={item?.url} target="_blank" rel="noreferrer">
+                <figure>
+                  {cardContentViewArray?.includes('cover') && (
+                    <img
+                      src={item?.ogImage}
+                      alt="bookmark-img"
+                      className="rounded-lg w-full"
+                    />
+                  )}
+                </figure>
+                {cardContentViewArray?.length === 1 &&
+                cardContentViewArray[0] === 'cover' ? null : (
+                  <div className="rounded-lg p-4 space-y-2">
+                    {cardContentViewArray?.includes('title') && (
+                      <p className="text-base font-medium leading-4">
+                        {item?.title}
+                      </p>
+                    )}
+                    {cardContentViewArray?.includes('description') && (
+                      <p className="text-sm leading-4  overflow-hidden break-all">
+                        {item?.description}
+                      </p>
+                    )}
+                    <div className="space-y-2">
+                      {cardContentViewArray?.includes('tags') && (
+                        <div className="flex items-center space-x-1">
+                          {item?.addedTags?.map((tag) => {
+                            return (
+                              <div
+                                className="text-xs text-blue-500"
+                                key={tag?.id}
+                              >
+                                #{tag?.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {cardContentViewArray?.includes('info') && (
+                        <div className="flex items-center space-x-2 flex-wrap">
+                          {!isNull(item?.category_id) &&
+                            isNull(category_id) && (
+                              <Badge
+                                label={singleBookmarkCategoryName(
+                                  item?.category_id
+                                )}
+                              />
+                            )}
+                          <p
+                            className={`text-xs leading-4 relative ${
+                              !isNull(item?.category_id) && isNull(category_id)
+                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
+                                : ''
+                            }`}
+                          >
+                            {getBaseUrl(item?.url)}
+                          </p>
+                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                            {format(new Date(item?.inserted_at), 'dd MMM')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </a>
+              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
+                {showAvatar && (
+                  <Avatar
+                    name={item?.user_id}
+                    size="20"
+                    round={true}
+                    className="mr-1"
+                  />
+                )}
+                {renderEditAndDeleteIcons(item)}
+                {category_id === TRASH_URL && (
+                  <MinusCircleIcon
+                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onMoveOutOfTrashClick(item);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </Masonry>
+    );
+  };
+
+  const renderBookmarkCardTypes = () => {
+    switch (bookmarksView) {
+      case 'moodboard':
+        return renderMoodboard();
+      case 'card':
+        return renderCardType();
+      case 'headlines':
+        return renderHeadlinesType();
+      case 'list':
+        return renderListType();
+      default:
+        return <div />;
+      // code block
+    }
+  };
+
   const renderMainCardContent = () => {
     if (isLoading) {
       return (
-        <Masonry
-          breakpointCols={{
-            default: 3,
-            1100: 2,
-            700: 2,
-            500: 1,
-          }}
-          className="my-masonry-grid"
-          columnClassName="my-masonry-grid_column"
+        <div
+          className={
+            bookmarksView === 'card' || bookmarksView === 'moodboard'
+              ? cardGridClassNames
+              : 'space-y-4'
+          }
         >
           <MasonryCardSkeleton />
           <MasonryCardSkeleton />
           <MasonryCardSkeleton />
           <MasonryCardSkeleton />
           <MasonryCardSkeleton />
-        </Masonry>
+        </div>
       );
     } else {
       if (!isEmpty(bookmarksList)) {
-        return (
-          <Masonry
-            breakpointCols={{
-              default:
-                typeof moodboardColumns === 'object'
-                  ? moodboardColumns[0] / 10
-                  : moodboardColumns / 10,
-              1100: 2,
-              700: 2,
-              500: 1,
-            }}
-            className="my-masonry-grid"
-            columnClassName="my-masonry-grid_column"
-          >
-            {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
-              return (
-                <div
-                  key={item?.id}
-                  className="rounded-lg drop-shadow-custom-1 group relative"
-                >
-                  <a href={item?.url} target="_blank" rel="noreferrer">
-                    <figure>
-                      {cardContentViewArray?.includes('cover') && (
-                        <img
-                          src={item?.ogImage}
-                          alt="bookmark-img"
-                          className="rounded-lg w-full"
-                        />
-                      )}
-                    </figure>
-                    {cardContentViewArray?.length === 1 &&
-                    cardContentViewArray[0] === 'cover' ? null : (
-                      <div className="rounded-lg p-4 space-y-2">
-                        {cardContentViewArray?.includes('title') && (
-                          <p className="text-base font-medium leading-4">
-                            {item?.title}
-                          </p>
-                        )}
-                        {cardContentViewArray?.includes('description') && (
-                          <p className="text-sm leading-4  overflow-hidden break-all">
-                            {item?.description}
-                          </p>
-                        )}
-                        <div className="space-y-2">
-                          {cardContentViewArray?.includes('tags') && (
-                            <div className="flex items-center space-x-1">
-                              {item?.addedTags?.map((tag) => {
-                                return (
-                                  <div
-                                    className="text-xs text-blue-500"
-                                    key={tag?.id}
-                                  >
-                                    #{tag?.name}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                          {cardContentViewArray?.includes('info') && (
-                            <div className="flex items-center space-x-2">
-                              {!isNull(item?.category_id) &&
-                                isNull(category_id) && (
-                                  <Badge
-                                    label={singleBookmarkCategoryName(
-                                      item?.category_id
-                                    )}
-                                  />
-                                )}
-                              <p
-                                className={`text-xs leading-4 relative ${
-                                  !isNull(item?.category_id) &&
-                                  isNull(category_id)
-                                    ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
-                                    : ''
-                                }`}
-                              >
-                                {getBaseUrl(item?.url)}
-                              </p>
-                              <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                                {format(new Date(item?.inserted_at), 'dd MMM')}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </a>
-                  <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
-                    {showAvatar && (
-                      <Avatar
-                        name={item?.user_id}
-                        size="20"
-                        round={true}
-                        className="mr-1"
-                      />
-                    )}
-                    {renderEditAndDeleteIcons(item)}
-                    {category_id === TRASH_URL && (
-                      <MinusCircleIcon
-                        className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          onMoveOutOfTrashClick(item);
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </Masonry>
-        );
+        return renderBookmarkCardTypes();
       } else {
         return <div>No Bookmarks</div>;
       }

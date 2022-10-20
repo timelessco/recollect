@@ -21,9 +21,12 @@ export interface MiscellaneousStoreState {
   setShareCategoryId: (id: number) => void;
 }
 
+export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';
 export interface BookmarkCardViewState {
   moodboardColumns: number[] | number;
   setMoodboardColumns: (value: number[] | number) => void;
   cardContentViewArray: string[];
   setCardContentViewArray: (arr: string[]) => void;
+  bookmarksView: BookmarksViewTypes;
+  setBookmarksView: (value: BookmarksViewTypes) => void;
 }

@@ -53,8 +53,10 @@ export const useBookmarkCardViewState = create<BookmarkCardViewState>(
     moodboardColumns: [30],
     setMoodboardColumns: (value: number[] | number) =>
       set(() => ({ moodboardColumns: value })),
-    cardContentViewArray: ['cover'],
+    cardContentViewArray: ['cover', 'title', 'info'],
     setCardContentViewArray: (arr: string[]) =>
       set(() => ({ cardContentViewArray: arr })),
+    bookmarksView: 'moodboard',
+    setBookmarksView: (value) => set(() => ({ bookmarksView: value })),
   })
 );
