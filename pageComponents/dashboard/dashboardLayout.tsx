@@ -15,7 +15,6 @@ import InboxIconGray from '../../icons/inboxIconGray';
 import OptionsIconGray from '../../icons/optionsIconGray';
 import PlusIconWhite from '../../icons/plusIconWhite';
 import SearchIconGray from '../../icons/searchIconGray';
-import SortByDateIconGray from '../../icons/sortByDateIconGray';
 import TrashIconGray from '../../icons/trashIconGray';
 import UserIconGray from '../../icons/userIconGray';
 import {
@@ -47,6 +46,7 @@ import FileIcon from '../../icons/categoryIcons/fileIcon';
 import { options } from '../../utils/commonData';
 import { getCountInCategory } from '../../utils/helpers';
 import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
+import BookmarksSortDropdown from '../../components/customDropdowns.tsx/bookmarksSortDropdown';
 
 interface DashboardLayoutProps {
   categoryId: number | 'trash' | null;
@@ -454,19 +454,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         />
         <div className="flex items-center">
           <div className="flex items-center mr-[17px] space-x-1">
-            {/* <Button type="light">
-              <figure className="w-3 h-3">
-                <MoodboardIconGray />
-              </figure>
-              <span className="ml-[7px] text-custom-gray-1">Moodboard</span>
-            </Button> */}
             <BookmarksViewDropdown />
-            <Button type="light">
+            {/* <Button type="light">
               <figure className="w-3 h-3">
                 <SortByDateIconGray />
               </figure>
               <span className="ml-[7px] text-custom-gray-1">By Date</span>
-            </Button>
+            </Button> */}
+            <BookmarksSortDropdown />
             {typeof categoryId === 'number' && (
               <Button type="light" onClick={() => onShareClick()}>
                 <figure className="w-3 h-3">

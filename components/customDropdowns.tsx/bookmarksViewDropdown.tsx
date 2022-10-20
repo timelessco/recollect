@@ -2,6 +2,7 @@ import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
 import React from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
+import { BookmarksViewTypes } from '../../types/componentStoreTypes';
 import { errorToast } from '../../utils/toastMessages';
 import Button from '../atoms/button';
 import Checkbox from '../checkbox';
@@ -92,7 +93,7 @@ const BookmarksViewDropdown = () => {
         <div>
           <RadioGroup
             radioList={bookmarksViewOptions}
-            onChange={(value) => setBookmarksView(value)}
+            onChange={(value) => setBookmarksView(value as BookmarksViewTypes)}
             value={bookmarksView}
           />
         </div>

@@ -22,6 +22,14 @@ export interface MiscellaneousStoreState {
 }
 
 export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';
+export type BookmarksSortByTypes =
+  | 'date-sort-acending'
+  | 'date-sort-decending'
+  | 'alphabetical-sort-acending'
+  | 'alphabetical-sort-decending'
+  | 'url-sort-acending'
+  | 'url-sort-decending';
+
 export interface BookmarkCardViewState {
   moodboardColumns: number[] | number;
   setMoodboardColumns: (value: number[] | number) => void;
@@ -29,4 +37,6 @@ export interface BookmarkCardViewState {
   setCardContentViewArray: (arr: string[]) => void;
   bookmarksView: BookmarksViewTypes;
   setBookmarksView: (value: BookmarksViewTypes) => void;
+  sortBy: BookmarksSortByTypes;
+  setSortBy: (value: BookmarksSortByTypes) => void;
 }

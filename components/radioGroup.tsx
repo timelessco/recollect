@@ -3,12 +3,11 @@ import {
   RadioGroup as AriaRadioGroup,
   useRadioState,
 } from 'ariakit/radio';
-import { BookmarksViewTypes } from '../types/componentStoreTypes';
 
 interface RadioGroupProps {
   radioList: Array<{ label: string; value: string }>;
-  onChange: (value: BookmarksViewTypes) => void;
-  value: BookmarksViewTypes;
+  onChange: (value: string) => void;
+  value: string;
 }
 
 export default function RadioGroup(props: RadioGroupProps) {
@@ -26,9 +25,7 @@ export default function RadioGroup(props: RadioGroupProps) {
               className="mr-1 h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
               value={item?.value}
               onChange={(e) =>
-                onChange(
-                  (e.target as HTMLInputElement).value as BookmarksViewTypes
-                )
+                onChange((e.target as HTMLInputElement).value as string)
               }
               checked={value === item?.value}
             />

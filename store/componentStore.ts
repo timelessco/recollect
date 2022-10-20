@@ -58,5 +58,7 @@ export const useBookmarkCardViewState = create<BookmarkCardViewState>(
       set(() => ({ cardContentViewArray: arr })),
     bookmarksView: 'moodboard',
     setBookmarksView: (value) => set(() => ({ bookmarksView: value })),
+    sortBy: 'date-sort-acending',
+    setSortBy: (value) => set(() => ({ sortBy: value })),
   })
 );

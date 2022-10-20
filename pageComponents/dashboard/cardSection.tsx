@@ -76,6 +76,8 @@ const CardSection = ({
     (state) => state.bookmarksView
   );
 
+  const sortBy = useBookmarkCardViewState((state) => state.sortBy);
+
   // TODO: make this dependant on react-query
   const bookmarksList =
     category_id === UNCATEGORIZED_URL
@@ -185,7 +187,7 @@ const CardSection = ({
   //           <>
   //             {!isEmpty(bookmarksList) ? (
   //               <>
-  //                 {orderBy(bookmarksList, ['id'], ['desc']).map((post) => (
+  //                 {renderSortByCondition().map((post) => (
   //                   <div
   //                     key={post.id}
   //                     className="flex flex-col rounded-lg shadow-lg overflow-hidden"
@@ -261,10 +263,27 @@ const CardSection = ({
   //   </div>
   // );
 
+  const renderSortByCondition = () => {
+    switch (sortBy) {
+      case 'date-sort-acending':
+        return orderBy(bookmarksList, ['id'], ['desc']);
+      case 'date-sort-decending':
+        return orderBy(bookmarksList, ['id'], ['asc']);
+      case 'alphabetical-sort-acending':
+        return orderBy(bookmarksList, ['title'], ['asc']);
+      case 'alphabetical-sort-decending':
+        return orderBy(bookmarksList, ['title'], ['desc']);
+      case 'url-sort-acending':
+        return orderBy(bookmarksList, ['url'], ['asc']);
+      case 'url-sort-decending':
+        return orderBy(bookmarksList, ['url'], ['desc']);
+    }
+  };
+
   const renderHeadlinesType = () => {
     return (
       <div className="space-y-4">
-        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+        {renderSortByCondition()?.map((item) => {
           return (
             <div
               style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
@@ -358,7 +377,7 @@ const CardSection = ({
   const renderListType = () => {
     return (
       <div className="space-y-4">
-        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+        {renderSortByCondition()?.map((item) => {
           return (
             <div
               style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
@@ -481,7 +500,7 @@ const CardSection = ({
   const renderCardType = () => {
     return (
       <div className={cardGridClassNames}>
-        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+        {renderSortByCondition()?.map((item) => {
           return (
             <div
               style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
@@ -597,7 +616,7 @@ const CardSection = ({
         className="my-masonry-grid"
         columnClassName="my-masonry-grid_column"
       >
-        {orderBy(bookmarksList, ['id'], ['desc'])?.map((item) => {
+        {renderSortByCondition()?.map((item) => {
           return (
             <div
               key={item?.id}
