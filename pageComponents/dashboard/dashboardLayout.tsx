@@ -24,6 +24,7 @@ import {
 } from '../../types/apiTypes';
 import { ChildrenTypes } from '../../types/componentTypes';
 import {
+  ALL_BOOKMARKS_URL,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   SEARCH_URL,
@@ -214,8 +215,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     {
       icon: () => <HomeIconGray />,
       name: 'All Bookmarks',
-      href: `/`,
-      current: !currentPath,
+      href: `/${ALL_BOOKMARKS_URL}`,
+      current: currentPath === ALL_BOOKMARKS_URL,
       id: 1,
       count: bookmarksData?.data?.length,
     },

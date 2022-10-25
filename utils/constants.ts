@@ -58,6 +58,7 @@ export const DELETE_SHARED_CATEGORIES_USER_API =
 export const SEND_COLLABORATION_EMAIL_API = '/share/send-collaboration-email';
 
 // urls
+export const ALL_BOOKMARKS_URL = 'all-bookmarks';
 export const UNCATEGORIZED_URL = 'uncategorized';
 export const SEARCH_URL = 'search';
 export const INBOX_URL = 'inbox';
