@@ -769,10 +769,6 @@ const Dashboard = () => {
         buttonText="Delete"
         warningText="Are you sure you want to delete ?"
         onContinueCick={async () => {
-          const data = find(
-            allBookmarksData?.data,
-            (item) => item?.id === deleteBookmarkId
-          );
           if (deleteBookmarkId) {
             await mutationApiCall(
               deleteBookmarkMutation.mutateAsync({ id: deleteBookmarkId })

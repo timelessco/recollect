@@ -9,6 +9,7 @@ import {
 import orderBy from 'lodash/orderBy';
 import { useRouter } from 'next/router';
 import {
+  ALL_BOOKMARKS_URL,
   CATEGORIES_KEY,
   TRASH_URL,
   UNCATEGORIZED_URL,
@@ -98,7 +99,7 @@ const CardSection = ({
       return true;
     } else {
       // show if bookmark is created by loggedin user
-      if (post?.user_id === userId) {
+      if (post?.user_id?.id === userId) {
         return true;
       } else {
         return false;
@@ -108,7 +109,7 @@ const CardSection = ({
 
   const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
     // show if bookmark is created by loggedin user
-    if (post?.user_id === userId) {
+    if (post?.user_id?.id === userId) {
       return true;
     } else {
       return false;
@@ -169,6 +170,18 @@ const CardSection = ({
     } else {
       return null;
     }
+  };
+
+  const renderAvatar = (item: SingleListData) => {
+    return (
+      <Avatar
+        name={item?.user_id?.user_name}
+        src={item?.user_id?.profile_pic}
+        size="20"
+        round={true}
+        className="mr-1"
+      />
+    );
   };
 
   // return (
@@ -348,14 +361,7 @@ const CardSection = ({
                 )}
               </a>
               <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
-                {showAvatar && (
-                  <Avatar
-                    name={item?.user_id}
-                    size="20"
-                    round={true}
-                    className="mr-1"
-                  />
-                )}
+                {showAvatar && renderAvatar(item)}
                 {renderEditAndDeleteIcons(item)}
                 {category_id === TRASH_URL && (
                   <MinusCircleIcon
@@ -457,14 +463,7 @@ const CardSection = ({
                 )}
               </a>
               <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
-                {showAvatar && (
-                  <Avatar
-                    name={item?.user_id}
-                    size="20"
-                    round={true}
-                    className="mr-1"
-                  />
-                )}
+                {showAvatar && renderAvatar(item)}
                 {renderEditAndDeleteIcons(item)}
                 {category_id === TRASH_URL && (
                   <MinusCircleIcon
@@ -575,14 +574,7 @@ const CardSection = ({
                 )}
               </a>
               <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
-                {showAvatar && (
-                  <Avatar
-                    name={item?.user_id}
-                    size="20"
-                    round={true}
-                    className="mr-1"
-                  />
-                )}
+                {showAvatar && renderAvatar(item)}
                 {renderEditAndDeleteIcons(item)}
                 {category_id === TRASH_URL && (
                   <MinusCircleIcon
@@ -663,7 +655,7 @@ const CardSection = ({
                       {cardContentViewArray?.includes('info') && (
                         <div className="flex items-center space-x-2 flex-wrap">
                           {!isNull(item?.category_id) &&
-                            isNull(category_id) && (
+                            category_id === ALL_BOOKMARKS_URL && (
                               <Badge
                                 label={singleBookmarkCategoryName(
                                   item?.category_id
@@ -689,14 +681,7 @@ const CardSection = ({
                 )}
               </a>
               <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
-                {showAvatar && (
-                  <Avatar
-                    name={item?.user_id}
-                    size="20"
-                    round={true}
-                    className="mr-1"
-                  />
-                )}
+                {showAvatar && renderAvatar(item)}
                 {renderEditAndDeleteIcons(item)}
                 {category_id === TRASH_URL && (
                   <MinusCircleIcon

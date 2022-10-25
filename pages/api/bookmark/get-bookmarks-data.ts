@@ -68,7 +68,15 @@ export default async function handler(
     // get bookmarks in a category
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
-      .select()
+      .select(
+        `
+        *,
+        user_id,
+        user_id (
+          *
+        )
+      `
+      )
       .eq('trash', false)
       .eq('category_id', category_id);
     // .eq('user_id', userId);  // TODO: check and remove

@@ -7,7 +7,7 @@ export interface SingleListData {
   ogImage: string;
   description: string;
   url: string;
-  user_id: string;
+  user_id: ProfilesTableTypes;
   screenshot: string;
   addedTags: Array<UserTagsData>;
   category_id: number;
@@ -89,4 +89,13 @@ export interface CollabDataInCategory {
   edit_access: boolean;
   share_id: number | null; // it will be null for owner
   isOwner: boolean;
+}
+
+// profiles table
+
+export interface ProfilesTableTypes {
+  id: string;
+  email: string;
+  user_name: string;
+  profile_pic: string;
 }

@@ -7,7 +7,6 @@ import TagInput from '../../components/tagInput';
 import {
   CategoriesData,
   SingleListData,
-  UrlData,
   UserTagsData,
 } from '../../types/apiTypes';
 import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
@@ -23,7 +22,7 @@ import CreatableSearchSelect from '../../components/creatableSearchSelect';
 // Modal for adding a bookmark
 interface AddModalContentProps {
   // addBookmark: () => void; //TODO: check and remove
-  urlData?: UrlData;
+  urlData?: SingleListData;
   userTags?: Array<UserTagsData>;
   createTag: (value: OnChangeValue<TagInputOption, true>) => void;
   addExistingTag: (value: OnChangeValue<TagInputOption, true>) => void;
@@ -127,7 +126,7 @@ export default function AddModalContent(props: AddModalContentProps) {
 
   // if the bookmaks is not created by logged in user , then only show the option in else case
   const categoryOptions = () => {
-    if (userId === urlData?.user_id) {
+    if (userId === urlData?.user_id?.id) {
       return [
         {
           label: 'Uncategorized',

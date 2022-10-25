@@ -45,6 +45,7 @@ export default async function handler(
             id: authItem?.id,
             email: authItem?.email,
             user_name: getUserNameFromEmail(authItem?.email || ''),
+            profile_pic: authItem?.user_metadata?.picture,
           },
         ]);
       }
