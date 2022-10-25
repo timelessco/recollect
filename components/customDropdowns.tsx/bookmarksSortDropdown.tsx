@@ -1,4 +1,5 @@
 import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
+import find from 'lodash/find';
 import SortByDateIconGray from '../../icons/sortByDateIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
 import { BookmarksSortByTypes } from '../../types/componentStoreTypes';
@@ -46,7 +47,9 @@ const BookmarksSortDropdown = () => {
           <figure className="w-3 h-3">
             <SortByDateIconGray />
           </figure>
-          <span className="ml-[7px] text-custom-gray-1">By Date</span>
+          <span className="ml-[7px] text-custom-gray-1">
+            {find(sortOptions, (item) => item?.value === sortBy)?.label}
+          </span>
         </Button>
       </MenuButton>
       <Menu

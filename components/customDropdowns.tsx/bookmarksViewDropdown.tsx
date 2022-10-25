@@ -1,4 +1,5 @@
 import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
+import find from 'lodash/find';
 import React from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
@@ -83,7 +84,14 @@ const BookmarksViewDropdown = () => {
           <figure className="w-3 h-3">
             <MoodboardIconGray />
           </figure>
-          <span className="ml-[7px] text-custom-gray-1">Moodboard</span>
+          <span className="ml-[7px] text-custom-gray-1">
+            {
+              find(
+                bookmarksViewOptions,
+                (item) => item?.value === bookmarksView
+              )?.label
+            }
+          </span>
         </Button>
       </MenuButton>
       <Menu
