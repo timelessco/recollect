@@ -3,16 +3,23 @@ import {
   RadioGroup as AriaRadioGroup,
   useRadioState,
 } from 'ariakit/radio';
+import React from 'react';
 
 interface RadioGroupProps {
   radioList: Array<{ label: string; value: string }>;
   onChange: (value: string) => void;
   value: string;
+  initialRadioRef?:
+    | ((instance: HTMLInputElement | null) => void)
+    | React.RefObject<HTMLInputElement>
+    | null
+    | undefined;
 }
 
-export default function RadioGroup(props: RadioGroupProps) {
-  const { radioList, onChange, value } = props;
+const RadioGroup = React.forwardRef((props: RadioGroupProps) => {
+  const { radioList, onChange, value, initialRadioRef } = props;
   const radio = useRadioState();
+
   return (
     <AriaRadioGroup state={radio} className="flex flex-col">
       {radioList?.map((item) => {
@@ -28,6 +35,7 @@ export default function RadioGroup(props: RadioGroupProps) {
                 onChange((e.target as HTMLInputElement).value as string)
               }
               checked={value === item?.value}
+              ref={value === item?.value ? initialRadioRef : null}
             />
             {item?.label}
           </label>
@@ -35,4 +43,8 @@ export default function RadioGroup(props: RadioGroupProps) {
       })}
     </AriaRadioGroup>
   );
-}
+});
+
+RadioGroup.displayName = 'RadioGroup';
+
+export default RadioGroup;

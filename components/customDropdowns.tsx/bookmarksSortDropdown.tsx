@@ -1,5 +1,6 @@
 import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
 import find from 'lodash/find';
+import { useRef } from 'react';
 import SortByDateIconGray from '../../icons/sortByDateIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
 import { BookmarksSortByTypes } from '../../types/componentStoreTypes';
@@ -40,6 +41,7 @@ const BookmarksSortDropdown = () => {
     },
   ];
 
+  const radioFocusRef = useRef(null);
   return (
     <>
       <MenuButton state={menu} className="button" as="div">
@@ -53,6 +55,7 @@ const BookmarksSortDropdown = () => {
         </Button>
       </MenuButton>
       <Menu
+        initialFocusRef={radioFocusRef}
         state={menu}
         className="w-[170px] py-3 px-1 origin-top-left rounded-xl bg-white shadow-custom-1 ring-1 ring-black ring-opacity-5 z-20"
       >
@@ -60,6 +63,7 @@ const BookmarksSortDropdown = () => {
           radioList={sortOptions}
           onChange={(value) => setSortBy(value as BookmarksSortByTypes)}
           value={sortBy}
+          initialRadioRef={radioFocusRef}
         />
       </Menu>
     </>

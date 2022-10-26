@@ -1,6 +1,6 @@
 import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
 import find from 'lodash/find';
-import React from 'react';
+import React, { useRef } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
 import { BookmarksViewTypes } from '../../types/componentStoreTypes';
@@ -77,6 +77,7 @@ const BookmarksViewDropdown = () => {
     },
   ];
   const menu = useMenuState({ gutter: 8 });
+  const radio0ref = useRef<HTMLInputElement>(null);
   return (
     <>
       <MenuButton state={menu} className="button" as="div">
@@ -95,11 +96,13 @@ const BookmarksViewDropdown = () => {
         </Button>
       </MenuButton>
       <Menu
+        initialFocusRef={radio0ref}
         state={menu}
         className="w-[170px] py-3 px-1 origin-top-left rounded-xl bg-white shadow-custom-1 ring-1 ring-black ring-opacity-5 z-20"
       >
         <div>
           <RadioGroup
+            initialRadioRef={radio0ref}
             radioList={bookmarksViewOptions}
             onChange={(value) => setBookmarksView(value as BookmarksViewTypes)}
             value={bookmarksView}
