@@ -4,13 +4,13 @@ import { MAIN_TABLE_NAME } from '../../../utils/constants';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
-import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 import differenceInDays from 'date-fns/differenceInDays';
+import jwt from 'jsonwebtoken';
 
 // this api clears trash for a single user and also takes care of CRON job to clear trash every 30 days
 type Data = {
   data: Array<SingleListData> | null;
-  error: PostgrestError | null | string;
+  error: PostgrestError | null | string | jwt.VerifyErrors;
   message?: string;
 };
 
@@ -26,10 +26,18 @@ export default async function handler(
   if (req.body.user_id) {
     // this is called by user then they click clear-trash button in UI , hence user_id is being checked
     // this part needs the access_token check as its called from UI and in a userbased action
-    if (!isAccessTokenAuthenticated(req.body.access_token)) {
-      res.status(500).json({ data: null, error: 'invalid access token' });
-      return;
-    }
+
+    await jwt.verify(
+      req.body.access_token as string,
+      process.env.SUPABASE_JWT_SECRET_KEY as string,
+      function (err) {
+        if (err) {
+          res.status(500).json({ data: null, error: err });
+          return;
+        }
+      }
+    );
+
     const { data, error } = await supabase
       .from(MAIN_TABLE_NAME)
       .delete()

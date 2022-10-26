@@ -2,7 +2,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
-import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 // import jwt_decode from 'jwt-decode';
 
 /**
@@ -11,17 +10,24 @@ import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 
 type Data = {
   url: string | null;
-  error: string | null;
+  error: string | null | jwt.VerifyErrors;
 };
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  if (!isAccessTokenAuthenticated(req.body.access_token)) {
-    res.status(500).json({ url: null, error: 'invalid access token' });
-    return;
-  }
+  await jwt.verify(
+    req.body.access_token as string,
+    process.env.SUPABASE_JWT_SECRET_KEY as string,
+    function (err) {
+      if (err) {
+        res.status(500).json({ url: null, error: err });
+        return;
+      }
+    }
+  );
+
   const emailList = req.body.emailList;
   const hostUrl = req?.body?.hostUrl;
   const category_id = req?.body?.category_id;

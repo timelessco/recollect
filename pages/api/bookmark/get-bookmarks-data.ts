@@ -10,14 +10,12 @@ import {
 import { getTagAsPerId } from '../../../utils/helpers';
 import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
-import jwt_decode from 'jwt-decode';
-import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
-
+import jwt from 'jsonwebtoken';
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
 type Data = {
   data: Array<SingleListData> | null;
-  error: PostgrestError | null | string;
+  error: PostgrestError | null | string | jwt.VerifyErrors;
 };
 
 export default async function handler(
@@ -34,12 +32,22 @@ export default async function handler(
     process.env.SUPABASE_SERVICE_KEY as string
   );
 
-  if (!isAccessTokenAuthenticated(req.query.access_token as string)) {
-    res.status(500).json({ data: null, error: 'invalid access token' });
-    return;
-  }
+  let decode;
 
-  const decode = jwt_decode(accessToken) as unknown;
+  await jwt.verify(
+    accessToken,
+    process.env.SUPABASE_JWT_SECRET_KEY as string,
+    function (err, decoded) {
+      if (err) {
+        res.status(500).json({ data: null, error: err });
+        return;
+      } else {
+        decode = decoded;
+      }
+    }
+  );
+
+  // const decode = jwt_decode(accessToken) as unknown;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore

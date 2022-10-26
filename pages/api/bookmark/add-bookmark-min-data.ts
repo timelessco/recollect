@@ -5,15 +5,15 @@ import jwtDecode from 'jwt-decode';
 import { isNull } from 'lodash';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { SingleListData } from '../../../types/apiTypes';
-import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 import {
   MAIN_TABLE_NAME,
   TIMELESS_SCRAPPER_API,
 } from '../../../utils/constants';
+import jwt from 'jsonwebtoken';
 
 type Data = {
   data: SingleListData[] | null;
-  error: PostgrestError | null | string;
+  error: PostgrestError | null | string | jwt.VerifyErrors;
   message: string | null;
 };
 
@@ -30,14 +30,16 @@ export default async function handler(
   //@ts-ignore
   const userId = tokenDecode?.sub;
 
-  if (!isAccessTokenAuthenticated(req.body.access_token)) {
-    res.status(500).json({
-      data: null,
-      error: 'invalid access token',
-      message: 'Token missing',
-    });
-    return;
-  }
+  await jwt.verify(
+    accessToken as string,
+    process.env.SUPABASE_JWT_SECRET_KEY as string,
+    function (err) {
+      if (err) {
+        res.status(500).json({ data: null, error: err, message: null });
+        return;
+      }
+    }
+  );
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,

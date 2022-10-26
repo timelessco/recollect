@@ -7,13 +7,13 @@ import {
 } from '../../../utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
-import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
+import jwt from 'jsonwebtoken';
 
 // this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
 
 type Data = {
   data: Array<SingleListData> | null;
-  error: PostgrestError | null | string;
+  error: PostgrestError | null | string | jwt.VerifyErrors;
 };
 
 export default async function handler(
@@ -27,10 +27,16 @@ export default async function handler(
 
   const bookmarkData = req.body.data;
 
-  if (!isAccessTokenAuthenticated(req.body.access_token)) {
-    res.status(500).json({ data: null, error: 'invalid access token' });
-    return;
-  }
+  await jwt.verify(
+    req.body.access_token as string,
+    process.env.SUPABASE_JWT_SECRET_KEY as string,
+    function (err) {
+      if (err) {
+        res.status(500).json({ data: null, error: err });
+        return;
+      }
+    }
+  );
 
   const screenshot = bookmarkData?.screenshot;
   const screenshotImgName =

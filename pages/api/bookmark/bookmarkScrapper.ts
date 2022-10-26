@@ -2,8 +2,8 @@
 import axios from 'axios';
 // import { decode } from 'base64-arraybuffer';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { isAccessTokenAuthenticated } from '../../../utils/apiHelpers';
 import { supabase } from '../../../utils/supabaseClient';
+import jwt from 'jsonwebtoken';
 
 interface SuccessResponse {
   key: 'success';
@@ -70,10 +70,16 @@ export default async function handler(
   // eslint-disable-next-line prefer-const
   let finalData = {} as FinalResponse;
 
-  if (!isAccessTokenAuthenticated(req.body.access_token)) {
-    res.status(500).json({ key: 'error', err: 'Invalid token' });
-    return;
-  }
+  await jwt.verify(
+    req.body.access_token as string,
+    process.env.SUPABASE_JWT_SECRET_KEY as string,
+    function (err) {
+      if (err) {
+        res.status(500).json({ key: 'error', err: 'Invalid token' });
+        return;
+      }
+    }
+  );
 
   try {
     // scrapper api call
