@@ -59,7 +59,15 @@ export default async function handler(
     // get all bookmarks
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
-      .select()
+      .select(
+        `
+      *,
+      user_id,
+      user_id (
+        *
+      )
+    `
+      )
       .eq('trash', false)
       .eq('user_id', userId); // this is for '/' route , we need bookmakrs by user_id // TODO: check and remove
     data = bookmarkData;
@@ -67,7 +75,15 @@ export default async function handler(
     // get trash bookmarks
     const { data: bookmarkData } = await supabase
       .from(MAIN_TABLE_NAME)
-      .select()
+      .select(
+        `
+      *,
+      user_id,
+      user_id (
+        *
+      )
+    `
+      )
       .eq('trash', true)
       .eq('user_id', userId); // TODO: check and remove
 

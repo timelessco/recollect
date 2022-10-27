@@ -1,13 +1,13 @@
 interface BadgeProps {
-  label: string;
+  renderBadgeContent: () => JSX.Element;
 }
 
 const Badge = (props: BadgeProps) => {
-  const { label } = props;
+  const { renderBadgeContent } = props;
 
   return (
-    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-      {label}
+    <span className="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-gray-800">
+      {renderBadgeContent()}
     </span>
   );
 };

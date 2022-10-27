@@ -11,6 +11,8 @@ import { useRouter } from 'next/router';
 import {
   ALL_BOOKMARKS_URL,
   CATEGORIES_KEY,
+  INBOX_URL,
+  SEARCH_URL,
   TRASH_URL,
   UNCATEGORIZED_URL,
 } from '../../utils/constants';
@@ -31,6 +33,7 @@ import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSke
 import { getBaseUrl } from '../../utils/helpers';
 import format from 'date-fns/format';
 import classNames from 'classnames';
+import { options } from '../../utils/commonData';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -90,7 +93,16 @@ const CardSection = ({
     error: PostgrestError;
   };
 
+  const nonCategoryPages = [
+    ALL_BOOKMARKS_URL,
+    UNCATEGORIZED_URL,
+    INBOX_URL,
+    SEARCH_URL,
+    TRASH_URL,
+  ];
+
   const isLoggedInUserTheCategoryOwner =
+    nonCategoryPages?.includes(category_id as string) ||
     find(categoryData?.data, (item) => item?.category_slug === category_id)
       ?.user_id?.id === userId;
 
@@ -116,13 +128,10 @@ const CardSection = ({
     }
   };
 
-  const singleBookmarkCategoryName = (category_id: number) => {
-    const name = find(
-      categoryData?.data,
-      (item) => item?.id === category_id
-    )?.category_name;
+  const singleBookmarkCategoryData = (category_id: number) => {
+    const name = find(categoryData?.data, (item) => item?.id === category_id);
 
-    return name as string;
+    return name as CategoriesData;
   };
 
   // category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
@@ -181,6 +190,29 @@ const CardSection = ({
         round={true}
         className="mr-1"
       />
+    );
+  };
+
+  const renderCategoryBadge = (item: SingleListData) => {
+    const categoryData = singleBookmarkCategoryData(item?.category_id);
+    return (
+      <>
+        {!isNull(item?.category_id) && category_id === ALL_BOOKMARKS_URL && (
+          <Badge
+            renderBadgeContent={() => {
+              return (
+                <div className="flex items-center">
+                  {find(
+                    options,
+                    (optionItem) => optionItem?.label === categoryData?.icon
+                  )?.icon()}
+                  <p className="ml-1">{categoryData?.category_name}</p>
+                </div>
+              );
+            }}
+          />
+        )}
+      </>
     );
   };
 
@@ -334,14 +366,7 @@ const CardSection = ({
                       )}
                       {cardContentViewArray?.includes('info') && (
                         <div className="flex items-center space-x-2">
-                          {!isNull(item?.category_id) &&
-                            isNull(category_id) && (
-                              <Badge
-                                label={singleBookmarkCategoryName(
-                                  item?.category_id
-                                )}
-                              />
-                            )}
+                          {renderCategoryBadge(item)}
                           <p
                             className={`text-xs leading-4 relative ${
                               !isNull(item?.category_id) && isNull(category_id)
@@ -436,14 +461,7 @@ const CardSection = ({
                       )}
                       {cardContentViewArray?.includes('info') && (
                         <div className="flex items-center space-x-2">
-                          {!isNull(item?.category_id) &&
-                            isNull(category_id) && (
-                              <Badge
-                                label={singleBookmarkCategoryName(
-                                  item?.category_id
-                                )}
-                              />
-                            )}
+                          {renderCategoryBadge(item)}
                           <p
                             className={`text-xs leading-4 relative ${
                               !isNull(item?.category_id) && isNull(category_id)
@@ -547,14 +565,7 @@ const CardSection = ({
                       )}
                       {cardContentViewArray?.includes('info') && (
                         <div className="flex items-center space-x-2 flex-wrap">
-                          {!isNull(item?.category_id) &&
-                            isNull(category_id) && (
-                              <Badge
-                                label={singleBookmarkCategoryName(
-                                  item?.category_id
-                                )}
-                              />
-                            )}
+                          {renderCategoryBadge(item)}
                           <p
                             className={`text-xs leading-4 relative ${
                               !isNull(item?.category_id) && isNull(category_id)
@@ -654,14 +665,7 @@ const CardSection = ({
                       )}
                       {cardContentViewArray?.includes('info') && (
                         <div className="flex items-center space-x-2 flex-wrap">
-                          {!isNull(item?.category_id) &&
-                            category_id === ALL_BOOKMARKS_URL && (
-                              <Badge
-                                label={singleBookmarkCategoryName(
-                                  item?.category_id
-                                )}
-                              />
-                            )}
+                          {renderCategoryBadge(item)}
                           <p
                             className={`text-xs leading-4 relative ${
                               !isNull(item?.category_id) && isNull(category_id)
