@@ -34,6 +34,7 @@ import {
 } from '../../utils/supabaseCrudHelpers';
 import CardSection from './cardSection';
 import {
+  ALL_BOOKMARKS_URL,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
@@ -79,6 +80,12 @@ const Dashboard = () => {
   );
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (router?.pathname === '/') {
+      router?.push(`/${ALL_BOOKMARKS_URL}`);
+    }
+  }, [router, router?.pathname]);
 
   // const toggleIsAddBookmarkModalButtonLoading = useLoadersStore(
   //   (state) => state.toggleIsAddBookmarkModalButtonLoading
