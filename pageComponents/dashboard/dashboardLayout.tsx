@@ -291,7 +291,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               </figure>
             )}
             {item?.isCollab && (
-              <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-1" />
+              <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
             )}
             {showDropdown && (
               <Dropdown
@@ -304,11 +304,28 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                 onOptionClick={(dropdownValue) =>
                   onCategoryOptionClick(dropdownValue, item.current, item.id)
                 }
+                renderRightItems={() => {
+                  return (
+                    <>
+                      {item?.count !== undefined && (
+                        <span
+                          className={`text-custom-gray-3 text-[13px] font-normal w-3 h-3 leading-[15px]${
+                            showDropdown
+                              ? ' block group-hover:hidden'
+                              : ' block'
+                          }`}
+                        >
+                          {item?.count}
+                        </span>
+                      )}
+                    </>
+                  );
+                }}
               />
             )}
-            {item?.count !== undefined && (
+            {item?.count !== undefined && !showDropdown && (
               <span
-                className={`text-custom-gray-3 text-[13px] font-normal leading-[15px]${
+                className={`text-custom-gray-3 text-[13px] font-normal leading-[15px] ${
                   showDropdown ? 'block group-hover:hidden' : 'block'
                 }`}
               >
@@ -456,12 +473,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         <div className="flex items-center">
           <div className="flex items-center mr-[17px] space-x-1">
             <BookmarksViewDropdown />
-            {/* <Button type="light">
-              <figure className="w-3 h-3">
-                <SortByDateIconGray />
-              </figure>
-              <span className="ml-[7px] text-custom-gray-1">By Date</span>
-            </Button> */}
             <BookmarksSortDropdown />
             {typeof categoryId === 'number' && (
               <Button type="light" onClick={() => onShareClick()}>

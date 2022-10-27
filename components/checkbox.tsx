@@ -14,7 +14,7 @@ export default function Checkbox(props: CheckboxPropsTypes) {
   return (
     <label className="flex items-center p-2">
       <AriaCheckbox
-        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+        className="h-4 w-4 transition-all ease-in-out duration-200 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
         onChange={(e) => onChange(e.target.value)}
         value={value}
         checked={checked}

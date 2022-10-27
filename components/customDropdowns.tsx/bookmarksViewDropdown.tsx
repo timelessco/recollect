@@ -80,7 +80,7 @@ const BookmarksViewDropdown = () => {
   const radio0ref = useRef<HTMLInputElement>(null);
   return (
     <>
-      <MenuButton state={menu} className="button" as="div">
+      <MenuButton state={menu} className="" as="div">
         <Button type="light">
           <figure className="w-3 h-3">
             <MoodboardIconGray />
@@ -138,7 +138,7 @@ const BookmarksViewDropdown = () => {
           })}
         </div>
 
-        {(bookmarksView === 'card' || bookmarksView === 'moodboard') && (
+        {bookmarksView === 'card' || bookmarksView === 'moodboard' ? (
           <div className="p-2">
             <Slider
               label="moodboard-cols-slider"
@@ -149,6 +149,8 @@ const BookmarksViewDropdown = () => {
               onChange={(value) => setMoodboardColumns(value)}
             />
           </div>
+        ) : (
+          <div className="w-[162px] h-[34px]" />
         )}
       </Menu>
     </>
