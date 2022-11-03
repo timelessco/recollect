@@ -4,8 +4,7 @@ export const TAG_TABLE_NAME = 'tags';
 export const BOOKMARK_TAGS_TABLE_NAME = 'bookmark_tags';
 export const CATEGORIES_TABLE_NAME = 'categories';
 export const SHARED_CATEGORIES_TABLE_NAME = 'shared_categories';
-export const USER_PREFERENCES_TABLE_NAME = 'user_preferences';
-
+export const PROFILES = 'profiles';
 export const BOOKMAKRS_STORAGE_NAME = 'bookmarks';
 
 // regx
@@ -58,6 +57,9 @@ export const UPDATE_SHARED_CATEGORY_USER_ROLE_API =
 export const DELETE_SHARED_CATEGORIES_USER_API =
   '/share/delete-shared-categories-user';
 export const SEND_COLLABORATION_EMAIL_API = '/share/send-collaboration-email';
+// profiles api
+export const FETCH_USER_PROFILE_API = '/profiles/fetch-user-profile';
+export const UPDATE_USER_PROFILE_API = '/profiles/update-user-profile';
 
 // urls
 export const ALL_BOOKMARKS_URL = 'all-bookmarks';
@@ -72,3 +74,4 @@ export const BOOKMARKS_KEY = 'bookmarks';
 export const CATEGORIES_KEY = 'categories';
 export const USER_TAGS_KEY = 'userTags';
 export const BOOKMARKS_VIEW = 'bookmarks_view';
+export const USER_PROFILE = 'user_profile';

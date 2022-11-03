@@ -1,6 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { CategoriesData, SingleListData } from '../../types/apiTypes';
+import {
+  CategoriesData,
+  ProfilesTableTypes,
+  SingleListData,
+} from '../../types/apiTypes';
 import {
   MinusCircleIcon,
   PencilAltIcon,
@@ -11,10 +15,9 @@ import { useRouter } from 'next/router';
 import {
   ALL_BOOKMARKS_URL,
   CATEGORIES_KEY,
-  INBOX_URL,
-  SEARCH_URL,
   TRASH_URL,
   UNCATEGORIZED_URL,
+  USER_PROFILE,
 } from '../../utils/constants';
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
@@ -30,7 +33,7 @@ import Badge from '../../components/badge';
 import isNull from 'lodash/isNull';
 import Masonry from 'react-masonry-css';
 import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSkeleton';
-import { getBaseUrl } from '../../utils/helpers';
+import { getBaseUrl, isUserInACategory } from '../../utils/helpers';
 import format from 'date-fns/format';
 import classNames from 'classnames';
 import { options } from '../../utils/commonData';
@@ -93,21 +96,18 @@ const CardSection = ({
     error: PostgrestError;
   };
 
+  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
+    data: ProfilesTableTypes[];
+    error: PostgrestError;
+  };
+
   const currentCategoryData = find(
     categoryData?.data,
     (item) => item?.category_slug === category_id
   );
 
-  const nonCategoryPages = [
-    ALL_BOOKMARKS_URL,
-    UNCATEGORIZED_URL,
-    INBOX_URL,
-    SEARCH_URL,
-    TRASH_URL,
-  ];
-
   const isLoggedInUserTheCategoryOwner =
-    nonCategoryPages?.includes(category_id as string) ||
+    !isUserInACategory(category_id as string) ||
     find(categoryData?.data, (item) => item?.category_slug === category_id)
       ?.user_id?.id === userId;
 
@@ -710,7 +710,11 @@ const CardSection = ({
   };
 
   const renderBookmarkCardTypes = () => {
-    switch (currentCategoryData?.category_views?.bookmarksView) {
+    switch (
+      isUserInACategory(category_id as string)
+        ? currentCategoryData?.category_views?.bookmarksView
+        : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
+    ) {
       case 'moodboard':
         return renderMoodboard();
       case 'card':

@@ -106,8 +106,9 @@ export interface CollabDataInCategory {
 // profiles table
 
 export interface ProfilesTableTypes {
-  id: string;
-  email: string;
-  user_name: string;
-  profile_pic: string;
+  id?: string;
+  email?: string;
+  user_name?: string;
+  profile_pic?: string;
+  bookmarks_view?: BookmarkViewDataTypes;
 }

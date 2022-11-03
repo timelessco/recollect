@@ -6,6 +6,7 @@ import {
   UrlData,
   BookmarksTagData,
   BookmarkViewDataTypes,
+  ProfilesTableTypes,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -34,6 +35,8 @@ import {
   MOVE_BOOKMARK_TO_TRASH_API,
   CLEAR_BOOKMARK_TRASH_API,
   FETCH_BOOKMARKS_VIEW,
+  FETCH_USER_PROFILE_API,
+  UPDATE_USER_PROFILE_API,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 
@@ -499,6 +502,43 @@ export const updateSharedCategoriesUserAccess = async ({
     return e;
   }
 };
+
+// profiles
+export const fetchUserProfiles = async ({ userId }: { userId: string }) => {
+  try {
+    const session = await getCurrentUserSession();
+    if (userId) {
+      const res = await axios.get(
+        `${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}`
+      );
+      return res?.data;
+    }
+  } catch (e) {
+    return e;
+  }
+};
+
+export const updateUserProfile = async ({
+  id,
+  updateData,
+}: {
+  id: string;
+  updateData: ProfilesTableTypes;
+}) => {
+  try {
+    const session = await getCurrentUserSession();
+    const res = await axios.post(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
+      id,
+      updateData,
+      access_token: session?.access_token,
+    });
+
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
+};
+
 // auth
 
 export const getCurrentUserSession = async () => {

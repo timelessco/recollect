@@ -5,10 +5,10 @@ import find from 'lodash/find';
 import React, { useRef } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
-import { CategoriesData } from '../../types/apiTypes';
+import { CategoriesData, ProfilesTableTypes } from '../../types/apiTypes';
 import { BookmarksViewTypes } from '../../types/componentStoreTypes';
 import { CategoryIdUrlTypes } from '../../types/componentTypes';
-import { CATEGORIES_KEY } from '../../utils/constants';
+import { CATEGORIES_KEY, USER_PROFILE } from '../../utils/constants';
 import { errorToast } from '../../utils/toastMessages';
 import Button from '../atoms/button';
 import Checkbox from '../checkbox';
@@ -45,12 +45,13 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
     (state) => state.bookmarksView
   );
 
-  // const setBookmarksView = useBookmarkCardViewState(
-  //   (state) => state.setBookmarksView
-  // );
-
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
+    error: PostgrestError;
+  };
+
+  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
+    data: ProfilesTableTypes[];
     error: PostgrestError;
   };
 
@@ -58,6 +59,11 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
     categoryData?.data,
     (item) => item?.id === categoryId
   );
+
+  const bookmarksViewValue =
+    categoryId !== null
+      ? currentCategory?.category_views?.bookmarksView
+      : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView;
 
   const cardContentOptions = [
     {
@@ -129,7 +135,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
             initialRadioRef={radio0ref}
             radioList={bookmarksViewOptions}
             onChange={(value) => setBookmarksView(value as BookmarksViewTypes)}
-            value={currentCategory?.category_views?.bookmarksView || ''}
+            value={bookmarksViewValue || ''}
           />
         </div>
         <div>

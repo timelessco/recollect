@@ -7,7 +7,14 @@ import {
   CategoriesData,
 } from '../types/apiTypes';
 import { UrlInput } from '../types/componentTypes';
-import { GET_NAME_FROM_EMAIL_PATTERN, TRASH_URL } from './constants';
+import {
+  ALL_BOOKMARKS_URL,
+  GET_NAME_FROM_EMAIL_PATTERN,
+  INBOX_URL,
+  SEARCH_URL,
+  TRASH_URL,
+  UNCATEGORIZED_URL,
+} from './constants';
 
 export const getTagAsPerId = (tagIg: number, tagsData: Array<UserTagsData>) => {
   return find(tagsData, (item) => {
@@ -69,4 +76,16 @@ export const getBaseUrl = (href: string) => {
   const baseUrl = `${url.protocol}//${url.hostname}`;
 
   return baseUrl;
+};
+
+export const isUserInACategory = (url: string) => {
+  const nonCategoryPages = [
+    ALL_BOOKMARKS_URL,
+    UNCATEGORIZED_URL,
+    INBOX_URL,
+    SEARCH_URL,
+    TRASH_URL,
+  ];
+
+  return !nonCategoryPages?.includes(url);
 };

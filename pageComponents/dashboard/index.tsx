@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import {
   BookmarksTagData,
   CategoriesData,
+  ProfilesTableTypes,
   SingleListData,
   UserTagsData,
 } from '../../types/apiTypes';
@@ -23,6 +24,7 @@ import {
   fetchBookmarksViews,
   fetchCategoriesData,
   fetchSharedCategoriesData,
+  fetchUserProfiles,
   fetchUserTags,
   // getBookmarkScrappedData,
   getCurrentUserSession,
@@ -33,6 +35,7 @@ import {
   updateCategory,
   updateProfilesTable,
   updateSharedCategoriesUserAccess,
+  updateUserProfile,
 } from '../../utils/supabaseCrudHelpers';
 import CardSection from './cardSection';
 import {
@@ -42,6 +45,7 @@ import {
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
+  USER_PROFILE,
   USER_TAGS_KEY,
 } from '../../utils/constants';
 import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
@@ -51,7 +55,6 @@ import AddModalContent from './addModalContent';
 import { find, isEmpty, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
-  useBookmarkCardViewState,
   useLoadersStore,
   useMiscellaneousStore,
   useModalStore,
@@ -208,6 +211,11 @@ const Dashboard = () => {
     fetchBookmarksViews({ category_id: category_id })
   );
 
+  const { data: userProfileData } = useQuery(
+    [USER_PROFILE, session?.user?.id],
+    () => fetchUserProfiles({ userId: session?.user?.id as string })
+  );
+
   // Mutations
   const deleteBookmarkMutation = useMutation(deleteData, {
     onSuccess: () => {
@@ -322,7 +330,7 @@ const Dashboard = () => {
       // Optimistically update to the new value
       queryClient.setQueryData(
         [CATEGORIES_KEY, session?.user?.id],
-        (old: { data: CategoriesData[] }) => {
+        (old: { data: CategoriesData[] } | undefined) => {
           return {
             ...old,
             data: old?.data?.map((item) => {
@@ -335,7 +343,7 @@ const Dashboard = () => {
                 return item;
               }
             }),
-          };
+          } as { data: CategoriesData[] };
         }
       );
 
@@ -376,6 +384,52 @@ const Dashboard = () => {
       },
     }
   );
+
+  // profiles table mutation
+  const updateUserProfileOptimisticMutation = useMutation(updateUserProfile, {
+    onMutate: async (data) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries([USER_PROFILE, session?.user?.id]);
+
+      // Snapshot the previous value
+      const previousTodos = queryClient.getQueryData([
+        CATEGORIES_KEY,
+        session?.user?.id,
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(
+        [USER_PROFILE, session?.user?.id],
+        (old: { data: ProfilesTableTypes[] } | undefined) => {
+          return {
+            ...old,
+            data: old?.data?.map((item) => {
+              return {
+                ...item,
+                bookmarks_view: data?.updateData?.bookmarks_view,
+              };
+            }),
+          } as { data: ProfilesTableTypes[] };
+        }
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousTodos };
+    },
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(
+        [USER_PROFILE, session?.user?.id],
+        context?.previousTodos
+      );
+    },
+    // Always refetch after error or success:
+    onSettled: () => {
+      queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
+    },
+  });
+
+  /////
 
   const addBookmarkLogic = async (url: string) => {
     setUrl(url);
@@ -705,17 +759,31 @@ const Dashboard = () => {
             allCategories?.data,
             (item) => item?.id === category_id
           );
-          mutationApiCall(
-            updateCategoryOptimisticMutation.mutateAsync({
-              category_id: category_id,
-              updateData: {
-                category_views: {
-                  ...currentCategory?.category_views,
-                  bookmarksView: value,
+          if (currentCategory) {
+            mutationApiCall(
+              updateCategoryOptimisticMutation.mutateAsync({
+                category_id: category_id,
+                updateData: {
+                  category_views: {
+                    ...currentCategory?.category_views,
+                    bookmarksView: value,
+                  },
                 },
-              },
-            })
-          );
+              })
+            );
+          } else {
+            mutationApiCall(
+              updateUserProfileOptimisticMutation.mutateAsync({
+                id: session?.user?.id as string,
+                updateData: {
+                  bookmarks_view: {
+                    ...userProfileData?.data[0]?.bookmarks_view,
+                    bookmarksView: value,
+                  },
+                },
+              })
+            );
+          }
         }}
       />
       <ShareCategoryModal
