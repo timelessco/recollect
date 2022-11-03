@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import {
   BookmarksTagData,
+  CategoriesData,
   SingleListData,
   UserTagsData,
 } from '../../types/apiTypes';
@@ -19,6 +20,7 @@ import {
   deleteSharedCategoriesUser,
   deleteUserCategory,
   fetchBookmakrsData,
+  fetchBookmarksViews,
   fetchCategoriesData,
   fetchSharedCategoriesData,
   fetchUserTags,
@@ -36,6 +38,7 @@ import CardSection from './cardSection';
 import {
   ALL_BOOKMARKS_URL,
   BOOKMARKS_KEY,
+  BOOKMARKS_VIEW,
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
@@ -48,6 +51,7 @@ import AddModalContent from './addModalContent';
 import { find, isEmpty, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
+  useBookmarkCardViewState,
   useLoadersStore,
   useMiscellaneousStore,
   useModalStore,
@@ -123,6 +127,10 @@ const Dashboard = () => {
     (state) => state.setShareCategoryId
   );
 
+  // const setShareCategoryId = useBookmarkCardViewState(
+  //   (state) => state
+  // );
+
   const fetchUserSession = async () => {
     const currentSession = await getCurrentUserSession();
     setSession(currentSession);
@@ -194,6 +202,10 @@ const Dashboard = () => {
 
   const {} = useQuery([SHARED_CATEGORIES_TABLE_NAME], () =>
     fetchSharedCategoriesData()
+  );
+
+  const {} = useQuery([BOOKMARKS_VIEW, category_id], () =>
+    fetchBookmarksViews({ category_id: category_id })
   );
 
   // Mutations
@@ -296,6 +308,53 @@ const Dashboard = () => {
     },
   });
 
+  const updateCategoryOptimisticMutation = useMutation(updateCategory, {
+    onMutate: async (data) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
+
+      // Snapshot the previous value
+      const previousTodos = queryClient.getQueryData([
+        CATEGORIES_KEY,
+        session?.user?.id,
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(
+        [CATEGORIES_KEY, session?.user?.id],
+        (old: { data: CategoriesData[] }) => {
+          return {
+            ...old,
+            data: old?.data?.map((item) => {
+              if (item?.id === data?.category_id) {
+                return {
+                  ...item,
+                  category_views: data?.updateData?.category_views,
+                };
+              } else {
+                return item;
+              }
+            }),
+          };
+        }
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousTodos };
+    },
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(
+        [CATEGORIES_KEY, session?.user?.id],
+        context?.previousTodos
+      );
+    },
+    // Always refetch after error or success:
+    onSettled: () => {
+      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+    },
+  });
+
   // share category mutation
   const deleteSharedCategoriesUserMutation = useMutation(
     deleteSharedCategoriesUser,
@@ -317,32 +376,6 @@ const Dashboard = () => {
       },
     }
   );
-
-  // // gets scrapped data
-  // const addItem = async (item: string) => {
-  //   setShowAddBookmarkModal(true);
-
-  //   try {
-  //     const apiRes = (await getBookmarkScrappedData(item)) as AxiosResponse;
-
-  //     const scrapperData = apiRes.data.data.scrapperData;
-  //     const screenshotUrl = apiRes.data.data.screenShot;
-
-  //     const urlData = {
-  //       title: scrapperData?.title,
-  //       description: scrapperData?.description,
-  //       url: scrapperData?.url,
-  //       ogImage: scrapperData?.OgImage,
-  //       screenshot: screenshotUrl,
-  //     } as SingleListData;
-
-  //     setAddedUrlData(urlData);
-  //   } catch (err) {
-  //     console.error('err ,', err);
-  //   } finally {
-  //     console.log('finally');
-  //   }
-  // };
 
   const addBookmarkLogic = async (url: string) => {
     setUrl(url);
@@ -458,66 +491,8 @@ const Dashboard = () => {
             urlString={url}
             mainButtonText={isEdit ? 'Update Bookmark' : 'Add Bookmark'}
             urlData={addedUrlData}
-            // userTags={userTags?.data}
             userTags={filteredUserTags}
             addedTags={addedUrlData?.addedTags || []}
-            // addBookmark={async () => {
-            //   const userData = session?.user as unknown as UserIdentity;
-            //   if (!isEdit) {
-            //     toggleIsAddBookmarkModalButtonLoading();
-
-            //     try {
-            //       const data = await addBookmarkMutation.mutateAsync({
-            //         userData,
-            //         urlData: addedUrlData,
-            //       });
-
-            //       const bookmarkTagsData = selectedTag?.map((item) => {
-            //         return {
-            //           bookmark_id: data?.data[0]?.id,
-            //           tag_id: parseInt(`${item?.value}`),
-            //           user_id: userData?.id,
-            //         };
-            //       }) as unknown as Array<BookmarksTagData>;
-            //       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            //       const bookmarkTagData =
-            //         await addTagToBookmarkMutation.mutateAsync({
-            //           selectedData: bookmarkTagsData,
-            //         });
-
-            //       const selectedCategoryId =
-            //         selectedCategoryDuringAdd?.value === undefined
-            //           ? (category_id as number | null)
-            //           : selectedCategoryDuringAdd?.value;
-
-            //       const currentCategory = find(
-            //         allCategories?.data,
-            //         (item) => item?.id === selectedCategoryId
-            //       );
-            //       // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
-            //       const updateAccessCondition =
-            //         !selectedCategoryId ||
-            //         find(
-            //           currentCategory?.collabData,
-            //           (item) => item?.userEmail === session?.user?.email
-            //         )?.edit_access === true ||
-            //         currentCategory?.user_id?.id === session?.user?.id;
-
-            //       await mutationApiCall(
-            //         addCategoryToBookmarkMutation.mutateAsync({
-            //           category_id: selectedCategoryId,
-            //           bookmark_id: data?.data[0]?.id as number,
-            //           update_access: updateAccessCondition,
-            //         })
-            //       );
-            //     } catch (error) {
-            //       const err = error as unknown as string;
-            //       errorToast(err);
-            //     }
-            //   }
-            //   toggleIsAddBookmarkModalButtonLoading();
-            //   setShowAddBookmarkModal(false);
-            // }}
             createTag={async (tagData) => {
               const userData = session?.user as unknown as UserIdentity;
               try {
@@ -716,17 +691,29 @@ const Dashboard = () => {
         }}
         onClearTrash={async () => {
           toggleShowClearTrashWarningModal();
-          // await mutationApiCall(
-          //   clearBookmarksInTrashMutation.mutateAsync({
-          //     user_id: session?.user?.id,
-          //   })
-          // );
         }}
         onIconSelect={async (value, id) => {
           mutationApiCall(
             updateCategoryMutation.mutateAsync({
               category_id: id,
               updateData: { icon: value },
+            })
+          );
+        }}
+        setBookmarksView={async (value) => {
+          const currentCategory = find(
+            allCategories?.data,
+            (item) => item?.id === category_id
+          );
+          mutationApiCall(
+            updateCategoryOptimisticMutation.mutateAsync({
+              category_id: category_id,
+              updateData: {
+                category_views: {
+                  ...currentCategory?.category_views,
+                  bookmarksView: value,
+                },
+              },
             })
           );
         }}

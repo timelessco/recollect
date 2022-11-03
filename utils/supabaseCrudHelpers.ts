@@ -5,6 +5,7 @@ import {
   SingleListData,
   UrlData,
   BookmarksTagData,
+  BookmarkViewDataTypes,
 } from '../types/apiTypes';
 import { supabase } from '../utils/supabaseClient';
 import {
@@ -32,6 +33,7 @@ import {
   DELETE_SHARED_CATEGORIES_USER_API,
   MOVE_BOOKMARK_TO_TRASH_API,
   CLEAR_BOOKMARK_TRASH_API,
+  FETCH_BOOKMARKS_VIEW,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 
@@ -278,6 +280,23 @@ export const removeTagFromBookmark = async ({
   }
 };
 
+export const fetchBookmarksViews = async ({
+  category_id,
+}: {
+  category_id: string | number | null;
+}) => {
+  try {
+    const session = await getCurrentUserSession();
+    const res = await axios.post(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
+      category_id: category_id,
+      access_token: session?.access_token,
+    });
+    return res?.data;
+  } catch (e) {
+    return e;
+  }
+};
+
 // user catagories
 
 export const fetchCategoriesData = async (
@@ -377,7 +396,11 @@ export const updateCategory = async ({
   updateData,
 }: {
   category_id: number | null | string;
-  updateData: { is_public?: boolean; icon?: null | string };
+  updateData: {
+    is_public?: boolean;
+    icon?: null | string;
+    category_views?: BookmarkViewDataTypes;
+  };
 }) => {
   try {
     const session = await getCurrentUserSession();

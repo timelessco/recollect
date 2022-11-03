@@ -93,6 +93,11 @@ const CardSection = ({
     error: PostgrestError;
   };
 
+  const currentCategoryData = find(
+    categoryData?.data,
+    (item) => item?.category_slug === category_id
+  );
+
   const nonCategoryPages = [
     ALL_BOOKMARKS_URL,
     UNCATEGORIZED_URL,
@@ -705,7 +710,7 @@ const CardSection = ({
   };
 
   const renderBookmarkCardTypes = () => {
-    switch (bookmarksView) {
+    switch (currentCategoryData?.category_views?.bookmarksView) {
       case 'moodboard':
         return renderMoodboard();
       case 'card':
@@ -715,7 +720,7 @@ const CardSection = ({
       case 'list':
         return renderListType();
       default:
-        return <div />;
+        return renderMoodboard();
       // code block
     }
   };

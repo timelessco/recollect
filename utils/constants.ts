@@ -4,6 +4,7 @@ export const TAG_TABLE_NAME = 'tags';
 export const BOOKMARK_TAGS_TABLE_NAME = 'bookmark_tags';
 export const CATEGORIES_TABLE_NAME = 'categories';
 export const SHARED_CATEGORIES_TABLE_NAME = 'shared_categories';
+export const USER_PREFERENCES_TABLE_NAME = 'user_preferences';
 
 export const BOOKMAKRS_STORAGE_NAME = 'bookmarks';
 
@@ -33,6 +34,7 @@ export const ADD_BOOKMARK_MIN_DATA = '/bookmark/add-bookmark-min-data';
 export const ADD_URL_SCREENSHOT_API = '/bookmark/add-url-screenshot';
 export const MOVE_BOOKMARK_TO_TRASH_API = '/bookmark/move-bookmark-to-trash';
 export const CLEAR_BOOKMARK_TRASH_API = '/bookmark/clear-bookmark-trash';
+export const FETCH_BOOKMARKS_VIEW = '/bookmark/fetch-bookmarks-view';
 // tags api
 export const FETCH_USER_TAGS_API = '/tags/fetch-user-tags';
 export const CREATE_USER_TAGS_API = '/tags/create-user-tags';
@@ -69,3 +71,4 @@ export const TRASH_URL = 'trash';
 export const BOOKMARKS_KEY = 'bookmarks';
 export const CATEGORIES_KEY = 'categories';
 export const USER_TAGS_KEY = 'userTags';
+export const BOOKMARKS_VIEW = 'bookmarks_view';

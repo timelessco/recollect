@@ -1,16 +1,30 @@
+import { PostgrestError } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
 import find from 'lodash/find';
 import React, { useRef } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
+import { CategoriesData } from '../../types/apiTypes';
 import { BookmarksViewTypes } from '../../types/componentStoreTypes';
+import { CategoryIdUrlTypes } from '../../types/componentTypes';
+import { CATEGORIES_KEY } from '../../utils/constants';
 import { errorToast } from '../../utils/toastMessages';
 import Button from '../atoms/button';
 import Checkbox from '../checkbox';
 import RadioGroup from '../radioGroup';
 import Slider from '../slider';
 
-const BookmarksViewDropdown = () => {
+interface BookmarksViewDropdownProps {
+  setBookmarksView: (value: BookmarksViewTypes) => void;
+  categoryId: CategoryIdUrlTypes;
+  userId: string;
+}
+
+const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
+  const { setBookmarksView, categoryId, userId } = props;
+  const queryClient = useQueryClient();
+
   const moodboardColumns = useBookmarkCardViewState(
     (state) => state.moodboardColumns
   );
@@ -31,8 +45,18 @@ const BookmarksViewDropdown = () => {
     (state) => state.bookmarksView
   );
 
-  const setBookmarksView = useBookmarkCardViewState(
-    (state) => state.setBookmarksView
+  // const setBookmarksView = useBookmarkCardViewState(
+  //   (state) => state.setBookmarksView
+  // );
+
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
+    data: CategoriesData[];
+    error: PostgrestError;
+  };
+
+  const currentCategory = find(
+    categoryData?.data,
+    (item) => item?.id === categoryId
   );
 
   const cardContentOptions = [
@@ -105,7 +129,7 @@ const BookmarksViewDropdown = () => {
             initialRadioRef={radio0ref}
             radioList={bookmarksViewOptions}
             onChange={(value) => setBookmarksView(value as BookmarksViewTypes)}
-            value={bookmarksView}
+            value={currentCategory?.category_views?.bookmarksView || ''}
           />
         </div>
         <div>

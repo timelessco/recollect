@@ -22,7 +22,7 @@ import {
   FetchSharedCategoriesData,
   SingleListData,
 } from '../../types/apiTypes';
-import { ChildrenTypes } from '../../types/componentTypes';
+import { CategoryIdUrlTypes, ChildrenTypes } from '../../types/componentTypes';
 import {
   ALL_BOOKMARKS_URL,
   BOOKMARKS_KEY,
@@ -48,9 +48,10 @@ import { options } from '../../utils/commonData';
 import { getCountInCategory } from '../../utils/helpers';
 import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
 import BookmarksSortDropdown from '../../components/customDropdowns.tsx/bookmarksSortDropdown';
+import { BookmarksViewTypes } from '../../types/componentStoreTypes';
 
 interface DashboardLayoutProps {
-  categoryId: number | 'trash' | null;
+  categoryId: CategoryIdUrlTypes;
   userImg: string;
   userName: string;
   userEmail: string;
@@ -71,6 +72,7 @@ interface DashboardLayoutProps {
   ) => void;
   onClearTrash: () => void;
   onIconSelect: (value: string, id: number) => void;
+  setBookmarksView: (value: BookmarksViewTypes) => void;
 }
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -89,6 +91,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     onCategoryOptionClick,
     onClearTrash,
     onIconSelect,
+    setBookmarksView,
   } = props;
 
   const [showSidePane, setShowSidePane] = useState(true);
@@ -472,7 +475,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         />
         <div className="flex items-center">
           <div className="flex items-center mr-[17px] space-x-1">
-            <BookmarksViewDropdown />
+            <BookmarksViewDropdown
+              setBookmarksView={setBookmarksView}
+              categoryId={categoryId}
+              userId={userId}
+            />
             <BookmarksSortDropdown />
             {typeof categoryId === 'number' && (
               <Button type="light" onClick={() => onShareClick()}>

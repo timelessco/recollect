@@ -1,4 +1,8 @@
 import { PostgrestError } from '@supabase/supabase-js';
+import {
+  BookmarksSortByTypes,
+  BookmarksViewTypes,
+} from './componentStoreTypes';
 
 export interface SingleListData {
   id: number;
@@ -56,6 +60,13 @@ export interface FetchBookmarksTagDataResponse {
   error: PostgrestError | null;
 }
 
+export interface BookmarkViewDataTypes {
+  bookmarksView: BookmarksViewTypes;
+  cardContentViewArray: string[];
+  moodboardColumns: number[];
+  sortBy: BookmarksSortByTypes;
+}
+
 // user catagories
 
 export interface CategoriesData {
@@ -67,6 +78,7 @@ export interface CategoriesData {
   is_public: boolean;
   icon: null | string;
   collabData: CollabDataInCategory[] | [];
+  category_views: BookmarkViewDataTypes;
 }
 
 export interface FetchCategoriesDataResponse {

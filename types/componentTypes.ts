@@ -16,3 +16,5 @@ export interface SearchSelectOption {
   value: number | string;
   label: string;
 }
+
+export type CategoryIdUrlTypes = number | 'trash' | null;
