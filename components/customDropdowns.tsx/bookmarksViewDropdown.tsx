@@ -6,7 +6,10 @@ import React, { useRef } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
 import { CategoriesData, ProfilesTableTypes } from '../../types/apiTypes';
-import { BookmarksViewTypes } from '../../types/componentStoreTypes';
+import {
+  BookmarksViewTypes,
+  BookmarkViewCategories,
+} from '../../types/componentStoreTypes';
 import { CategoryIdUrlTypes } from '../../types/componentTypes';
 import { CATEGORIES_KEY, USER_PROFILE } from '../../utils/constants';
 import { errorToast } from '../../utils/toastMessages';
@@ -16,7 +19,10 @@ import RadioGroup from '../radioGroup';
 import Slider from '../slider';
 
 interface BookmarksViewDropdownProps {
-  setBookmarksView: (value: BookmarksViewTypes) => void;
+  setBookmarksView: (
+    value: BookmarksViewTypes | string[] | number[],
+    type: BookmarkViewCategories
+  ) => void;
   categoryId: CategoryIdUrlTypes;
   userId: string;
 }
@@ -24,22 +30,6 @@ interface BookmarksViewDropdownProps {
 const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   const { setBookmarksView, categoryId, userId } = props;
   const queryClient = useQueryClient();
-
-  const moodboardColumns = useBookmarkCardViewState(
-    (state) => state.moodboardColumns
-  );
-
-  const setMoodboardColumns = useBookmarkCardViewState(
-    (state) => state.setMoodboardColumns
-  );
-
-  const cardContentViewArray = useBookmarkCardViewState(
-    (state) => state.cardContentViewArray
-  );
-
-  const setCardContentViewArray = useBookmarkCardViewState(
-    (state) => state.setCardContentViewArray
-  );
 
   const bookmarksView = useBookmarkCardViewState(
     (state) => state.bookmarksView
@@ -59,6 +49,16 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
     categoryData?.data,
     (item) => item?.id === categoryId
   );
+
+  const bookmarksInfoValue =
+    categoryId !== null
+      ? currentCategory?.category_views?.cardContentViewArray
+      : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray;
+
+  const bookmarksColumns =
+    categoryId !== null
+      ? currentCategory?.category_views?.moodboardColumns
+      : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns;
 
   const bookmarksViewValue =
     categoryId !== null
@@ -134,7 +134,9 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
           <RadioGroup
             initialRadioRef={radio0ref}
             radioList={bookmarksViewOptions}
-            onChange={(value) => setBookmarksView(value as BookmarksViewTypes)}
+            onChange={(value) =>
+              setBookmarksView(value as BookmarksViewTypes, 'view')
+            }
             value={bookmarksViewValue || ''}
           />
         </div>
@@ -146,21 +148,29 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
                 key={item?.value}
                 label={item?.label}
                 value={item?.value}
-                checked={cardContentViewArray?.includes(item?.value)}
+                checked={bookmarksInfoValue?.includes(item?.value) || false}
                 onChange={(value) => {
-                  if (cardContentViewArray?.includes(value as string)) {
-                    if (cardContentViewArray?.length > 1) {
-                      setCardContentViewArray(
-                        cardContentViewArray?.filter((item) => item !== value)
+                  if (bookmarksInfoValue?.includes(value as string)) {
+                    if (bookmarksInfoValue?.length > 1) {
+                      // setCardContentViewArray(
+                      //   bookmarksInfoValue?.filter((item) => item !== value)
+                      // );
+                      setBookmarksView(
+                        bookmarksInfoValue?.filter((item) => item !== value),
+                        'info'
                       );
                     } else {
                       errorToast('Atleast one view option needs to be selcted');
                     }
                   } else {
-                    setCardContentViewArray([
-                      ...cardContentViewArray,
-                      value as string,
-                    ]);
+                    // setCardContentViewArray([
+                    //   ...bookmarksInfoValue,
+                    //   value as string,
+                    // ]);
+                    setBookmarksView(
+                      [...(bookmarksInfoValue as string[]), value as string],
+                      'info'
+                    );
                   }
                 }}
               />
@@ -175,8 +185,11 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
               minValue={10}
               maxValue={50}
               step={10}
-              value={moodboardColumns}
-              onChange={(value) => setMoodboardColumns(value)}
+              value={bookmarksColumns}
+              // onChange={(value) => setMoodboardColumns(value)}
+              onChange={(value) =>
+                setBookmarksView(value as number[], 'colums')
+              }
             />
           </div>
         ) : (

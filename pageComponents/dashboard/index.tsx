@@ -68,6 +68,11 @@ import { getCategoryIdFromSlug } from '../../utils/helpers';
 import ShareCategoryModal from './modals/shareCategoryModal';
 import AddBookarkShortcutModal from './modals/addBookmarkShortcutModal';
 import WarningActionModal from './modals/warningActionModal';
+import {
+  BookmarksSortByTypes,
+  BookmarksViewTypes,
+  BookmarkViewCategories,
+} from '../../types/componentStoreTypes';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -464,6 +469,61 @@ const Dashboard = () => {
     );
   });
 
+  const bookmarksViewApiLogic = (
+    value: string[] | number[] | BookmarksViewTypes | BookmarksSortByTypes,
+    type: BookmarkViewCategories
+  ) => {
+    const currentCategory = find(
+      allCategories?.data,
+      (item) => item?.id === category_id
+    );
+
+    const mutationCall = (updateValue: string) => {
+      if (currentCategory) {
+        mutationApiCall(
+          updateCategoryOptimisticMutation.mutateAsync({
+            category_id: category_id,
+            updateData: {
+              category_views: {
+                ...currentCategory?.category_views,
+                [updateValue]: value,
+              },
+            },
+          })
+        );
+      } else {
+        mutationApiCall(
+          updateUserProfileOptimisticMutation.mutateAsync({
+            id: session?.user?.id as string,
+            updateData: {
+              bookmarks_view: {
+                ...userProfileData?.data[0]?.bookmarks_view,
+                [updateValue]: value,
+              },
+            },
+          })
+        );
+      }
+    };
+
+    switch (type) {
+      case 'view':
+        mutationCall('bookmarksView');
+        break;
+      case 'info':
+        mutationCall('cardContentViewArray');
+        break;
+      case 'colums':
+        mutationCall('moodboardColumns');
+        break;
+      case 'sort':
+        mutationCall('sortBy');
+        break;
+      default:
+        break;
+    }
+  };
+
   const renderAllBookmarkCards = () => {
     return (
       <>
@@ -754,36 +814,8 @@ const Dashboard = () => {
             })
           );
         }}
-        setBookmarksView={async (value) => {
-          const currentCategory = find(
-            allCategories?.data,
-            (item) => item?.id === category_id
-          );
-          if (currentCategory) {
-            mutationApiCall(
-              updateCategoryOptimisticMutation.mutateAsync({
-                category_id: category_id,
-                updateData: {
-                  category_views: {
-                    ...currentCategory?.category_views,
-                    bookmarksView: value,
-                  },
-                },
-              })
-            );
-          } else {
-            mutationApiCall(
-              updateUserProfileOptimisticMutation.mutateAsync({
-                id: session?.user?.id as string,
-                updateData: {
-                  bookmarks_view: {
-                    ...userProfileData?.data[0]?.bookmarks_view,
-                    bookmarksView: value,
-                  },
-                },
-              })
-            );
-          }
+        setBookmarksView={async (value, type) => {
+          bookmarksViewApiLogic(value, type);
         }}
       />
       <ShareCategoryModal

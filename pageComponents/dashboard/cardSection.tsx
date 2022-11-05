@@ -71,19 +71,15 @@ const CardSection = ({
     (state) => state.isDeleteBookmarkLoading
   );
 
-  const moodboardColumns = useBookmarkCardViewState(
-    (state) => state.moodboardColumns
-  );
-
-  const cardContentViewArray = useBookmarkCardViewState(
-    (state) => state.cardContentViewArray
-  );
+  // const moodboardColumns = useBookmarkCardViewState(
+  //   (state) => state.moodboardColumns
+  // );
 
   const bookmarksView = useBookmarkCardViewState(
     (state) => state.bookmarksView
   );
 
-  const sortBy = useBookmarkCardViewState((state) => state.sortBy);
+  // const sortBy = useBookmarkCardViewState((state) => state.sortBy);
 
   // TODO: make this dependant on react-query
   const bookmarksList =
@@ -105,6 +101,18 @@ const CardSection = ({
     categoryData?.data,
     (item) => item?.category_slug === category_id
   );
+
+  const bookmarksInfoValue = isUserInACategory(category_id as string)
+    ? currentCategoryData?.category_views?.cardContentViewArray
+    : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray;
+
+  const bookmarksColumns = isUserInACategory(category_id as string)
+    ? currentCategoryData?.category_views?.moodboardColumns
+    : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns;
+
+  const bookmarksSortValue = isUserInACategory(category_id as string)
+    ? currentCategoryData?.category_views?.sortBy
+    : userProfilesData?.data[0]?.bookmarks_view?.sortBy;
 
   const isLoggedInUserTheCategoryOwner =
     !isUserInACategory(category_id as string) ||
@@ -314,7 +322,7 @@ const CardSection = ({
   // );
 
   const renderSortByCondition = () => {
-    switch (sortBy) {
+    switch (bookmarksSortValue) {
       case 'date-sort-acending':
         return orderBy(bookmarksList, ['id'], ['desc']);
       case 'date-sort-decending':
@@ -346,16 +354,16 @@ const CardSection = ({
                 rel="noreferrer"
                 className="flex items-center"
               >
-                {cardContentViewArray?.length === 1 &&
-                cardContentViewArray[0] === 'cover' ? null : (
+                {bookmarksInfoValue?.length === 1 &&
+                bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="p-4 space-y-2">
-                    {cardContentViewArray?.includes('title') && (
+                    {bookmarksInfoValue?.includes('title') && (
                       <p className="text-base font-medium leading-4">
                         {item?.title}
                       </p>
                     )}
                     <div className="space-y-2">
-                      {cardContentViewArray?.includes('tags') && (
+                      {bookmarksInfoValue?.includes('tags') && (
                         <div className="flex items-center space-x-1">
                           {item?.addedTags?.map((tag) => {
                             return (
@@ -369,7 +377,7 @@ const CardSection = ({
                           })}
                         </div>
                       )}
-                      {cardContentViewArray?.includes('info') && (
+                      {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2">
                           {renderCategoryBadge(item)}
                           <p
@@ -427,7 +435,7 @@ const CardSection = ({
                 className="flex items-center"
               >
                 <figure>
-                  {cardContentViewArray?.includes('cover') && (
+                  {bookmarksInfoValue?.includes('cover') && (
                     <img
                       src={item?.ogImage}
                       alt="bookmark-img"
@@ -436,21 +444,21 @@ const CardSection = ({
                     />
                   )}
                 </figure>
-                {cardContentViewArray?.length === 1 &&
-                cardContentViewArray[0] === 'cover' ? null : (
+                {bookmarksInfoValue?.length === 1 &&
+                bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="p-4 space-y-2">
-                    {cardContentViewArray?.includes('title') && (
+                    {bookmarksInfoValue?.includes('title') && (
                       <p className="text-base font-medium leading-4">
                         {item?.title}
                       </p>
                     )}
-                    {cardContentViewArray?.includes('description') && (
+                    {bookmarksInfoValue?.includes('description') && (
                       <p className="text-sm leading-4  overflow-hidden break-all">
                         {item?.description}
                       </p>
                     )}
                     <div className="space-y-2">
-                      {cardContentViewArray?.includes('tags') && (
+                      {bookmarksInfoValue?.includes('tags') && (
                         <div className="flex items-center space-x-1">
                           {item?.addedTags?.map((tag) => {
                             return (
@@ -464,7 +472,7 @@ const CardSection = ({
                           })}
                         </div>
                       )}
-                      {cardContentViewArray?.includes('info') && (
+                      {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2">
                           {renderCategoryBadge(item)}
                           <p
@@ -508,15 +516,15 @@ const CardSection = ({
   const cardGridClassNames = classNames({
     'grid gap-3': true,
     'grid-cols-1':
-      typeof moodboardColumns === 'object' && moodboardColumns[0] === 10,
+      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 10,
     'grid-cols-2':
-      typeof moodboardColumns === 'object' && moodboardColumns[0] === 20,
+      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 20,
     'grid-cols-3':
-      typeof moodboardColumns === 'object' && moodboardColumns[0] === 30,
+      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 30,
     'grid-cols-4':
-      typeof moodboardColumns === 'object' && moodboardColumns[0] === 40,
+      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 40,
     'grid-cols-5':
-      typeof moodboardColumns === 'object' && moodboardColumns[0] === 50,
+      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 50,
   });
 
   const renderCardType = () => {
@@ -531,7 +539,7 @@ const CardSection = ({
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
                 <figure>
-                  {cardContentViewArray?.includes('cover') && (
+                  {bookmarksInfoValue?.includes('cover') && (
                     <img
                       src={item?.ogImage}
                       alt="bookmark-img"
@@ -540,21 +548,21 @@ const CardSection = ({
                     />
                   )}
                 </figure>
-                {cardContentViewArray?.length === 1 &&
-                cardContentViewArray[0] === 'cover' ? null : (
+                {bookmarksInfoValue?.length === 1 &&
+                bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="p-4 space-y-2">
-                    {cardContentViewArray?.includes('title') && (
+                    {bookmarksInfoValue?.includes('title') && (
                       <p className="text-base font-medium leading-4">
                         {item?.title}
                       </p>
                     )}
-                    {cardContentViewArray?.includes('description') && (
+                    {bookmarksInfoValue?.includes('description') && (
                       <p className="text-sm leading-4  overflow-hidden break-all">
                         {item?.description}
                       </p>
                     )}
                     <div className="space-y-2">
-                      {cardContentViewArray?.includes('tags') && (
+                      {bookmarksInfoValue?.includes('tags') && (
                         <div className="flex items-center space-x-1">
                           {item?.addedTags?.map((tag) => {
                             return (
@@ -568,7 +576,7 @@ const CardSection = ({
                           })}
                         </div>
                       )}
-                      {cardContentViewArray?.includes('info') && (
+                      {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2 flex-wrap">
                           {renderCategoryBadge(item)}
                           <p
@@ -614,9 +622,9 @@ const CardSection = ({
       <Masonry
         breakpointCols={{
           default:
-            typeof moodboardColumns === 'object'
-              ? moodboardColumns[0] / 10
-              : moodboardColumns / 10,
+            typeof bookmarksColumns === 'object'
+              ? bookmarksColumns[0] / 10
+              : (bookmarksColumns as unknown as number) / 10,
           1100: 2,
           700: 2,
           500: 1,
@@ -632,7 +640,7 @@ const CardSection = ({
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
                 <figure>
-                  {cardContentViewArray?.includes('cover') && (
+                  {bookmarksInfoValue?.includes('cover') && (
                     <img
                       src={item?.ogImage}
                       alt="bookmark-img"
@@ -640,21 +648,21 @@ const CardSection = ({
                     />
                   )}
                 </figure>
-                {cardContentViewArray?.length === 1 &&
-                cardContentViewArray[0] === 'cover' ? null : (
+                {bookmarksInfoValue?.length === 1 &&
+                bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="rounded-lg p-4 space-y-2">
-                    {cardContentViewArray?.includes('title') && (
+                    {bookmarksInfoValue?.includes('title') && (
                       <p className="text-base font-medium leading-4">
                         {item?.title}
                       </p>
                     )}
-                    {cardContentViewArray?.includes('description') && (
+                    {bookmarksInfoValue?.includes('description') && (
                       <p className="text-sm leading-4  overflow-hidden break-all">
                         {item?.description}
                       </p>
                     )}
                     <div className="space-y-2">
-                      {cardContentViewArray?.includes('tags') && (
+                      {bookmarksInfoValue?.includes('tags') && (
                         <div className="flex items-center space-x-1">
                           {item?.addedTags?.map((tag) => {
                             return (
@@ -668,7 +676,7 @@ const CardSection = ({
                           })}
                         </div>
                       )}
-                      {cardContentViewArray?.includes('info') && (
+                      {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2 flex-wrap">
                           {renderCategoryBadge(item)}
                           <p

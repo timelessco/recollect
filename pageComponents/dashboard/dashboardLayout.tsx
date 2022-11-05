@@ -48,7 +48,11 @@ import { options } from '../../utils/commonData';
 import { getCountInCategory } from '../../utils/helpers';
 import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
 import BookmarksSortDropdown from '../../components/customDropdowns.tsx/bookmarksSortDropdown';
-import { BookmarksViewTypes } from '../../types/componentStoreTypes';
+import {
+  BookmarksSortByTypes,
+  BookmarksViewTypes,
+  BookmarkViewCategories,
+} from '../../types/componentStoreTypes';
 
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
@@ -72,7 +76,10 @@ interface DashboardLayoutProps {
   ) => void;
   onClearTrash: () => void;
   onIconSelect: (value: string, id: number) => void;
-  setBookmarksView: (value: BookmarksViewTypes) => void;
+  setBookmarksView: (
+    value: BookmarksViewTypes | string[] | number[] | BookmarksSortByTypes,
+    type: BookmarkViewCategories
+  ) => void;
 }
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -480,7 +487,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               categoryId={categoryId}
               userId={userId}
             />
-            <BookmarksSortDropdown />
+            <BookmarksSortDropdown
+              setBookmarksView={setBookmarksView}
+              categoryId={categoryId}
+              userId={userId}
+            />
             {typeof categoryId === 'number' && (
               <Button type="light" onClick={() => onShareClick()}>
                 <figure className="w-3 h-3">

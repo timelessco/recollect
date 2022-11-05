@@ -22,6 +22,7 @@ export interface MiscellaneousStoreState {
 }
 
 export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';
+export type BookmarkViewCategories = 'view' | 'info' | 'colums' | 'sort';
 export type BookmarksSortByTypes =
   | 'date-sort-acending'
   | 'date-sort-decending'
