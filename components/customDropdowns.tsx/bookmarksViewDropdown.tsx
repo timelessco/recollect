@@ -5,13 +5,21 @@ import find from 'lodash/find';
 import React, { useRef } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
 import { useBookmarkCardViewState } from '../../store/componentStore';
-import { CategoriesData, ProfilesTableTypes } from '../../types/apiTypes';
+import {
+  CategoriesData,
+  FetchSharedCategoriesData,
+  ProfilesTableTypes,
+} from '../../types/apiTypes';
 import {
   BookmarksViewTypes,
   BookmarkViewCategories,
 } from '../../types/componentStoreTypes';
 import { CategoryIdUrlTypes } from '../../types/componentTypes';
-import { CATEGORIES_KEY, USER_PROFILE } from '../../utils/constants';
+import {
+  CATEGORIES_KEY,
+  SHARED_CATEGORIES_TABLE_NAME,
+  USER_PROFILE,
+} from '../../utils/constants';
 import { errorToast } from '../../utils/toastMessages';
 import Button from '../atoms/button';
 import Checkbox from '../checkbox';
@@ -45,25 +53,37 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
     error: PostgrestError;
   };
 
+  const sharedCategoriesData = queryClient.getQueryData([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]) as {
+    data: FetchSharedCategoriesData[];
+    error: PostgrestError;
+  };
+
   const currentCategory = find(
     categoryData?.data,
     (item) => item?.id === categoryId
   );
 
-  const bookmarksInfoValue =
-    categoryId !== null
+  const isUserTheCategoryOwner = userId === currentCategory?.user_id?.id;
+
+  const bookmarksInfoValue = isUserTheCategoryOwner
+    ? categoryId !== null
       ? currentCategory?.category_views?.cardContentViewArray
-      : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray;
+      : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
+    : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray;
 
-  const bookmarksColumns =
-    categoryId !== null
+  const bookmarksColumns = isUserTheCategoryOwner
+    ? categoryId !== null
       ? currentCategory?.category_views?.moodboardColumns
-      : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns;
+      : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
+    : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns;
 
-  const bookmarksViewValue =
-    categoryId !== null
+  const bookmarksViewValue = isUserTheCategoryOwner
+    ? categoryId !== null
       ? currentCategory?.category_views?.bookmarksView
-      : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView;
+      : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
+    : sharedCategoriesData?.data[0]?.category_views?.bookmarksView;
 
   const cardContentOptions = [
     {

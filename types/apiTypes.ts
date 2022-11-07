@@ -94,6 +94,7 @@ export interface FetchSharedCategoriesData {
   email: string;
   edit_access: boolean;
   user_id: string;
+  category_views: BookmarkViewDataTypes;
 }
 
 export interface CollabDataInCategory {

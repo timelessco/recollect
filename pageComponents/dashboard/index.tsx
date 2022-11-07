@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import {
   BookmarksTagData,
   CategoriesData,
+  FetchSharedCategoriesData,
   ProfilesTableTypes,
   SingleListData,
   UserTagsData,
@@ -208,8 +209,9 @@ const Dashboard = () => {
     fetchUserTags(session?.user?.id || '')
   );
 
-  const {} = useQuery([SHARED_CATEGORIES_TABLE_NAME], () =>
-    fetchSharedCategoriesData()
+  const { data: sharedCategoriesData } = useQuery(
+    [SHARED_CATEGORIES_TABLE_NAME],
+    () => fetchSharedCategoriesData()
   );
 
   const {} = useQuery([BOOKMARKS_VIEW, category_id], () =>
@@ -390,6 +392,51 @@ const Dashboard = () => {
     }
   );
 
+  const updateSharedCategoriesOptimisticMutation = useMutation(
+    updateSharedCategoriesUserAccess,
+    {
+      onMutate: async (data) => {
+        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+        await queryClient.cancelQueries([USER_PROFILE, session?.user?.id]);
+
+        // Snapshot the previous value
+        const previousTodos = queryClient.getQueryData([
+          SHARED_CATEGORIES_TABLE_NAME,
+        ]);
+
+        // Optimistically update to the new value
+        queryClient.setQueryData(
+          [USER_PROFILE, session?.user?.id],
+          (old: { data: FetchSharedCategoriesData[] } | undefined) => {
+            return {
+              ...old,
+              data: old?.data?.map((item) => {
+                return {
+                  ...item,
+                  category_views: data?.updateData?.category_views,
+                };
+              }),
+            } as { data: FetchSharedCategoriesData[] };
+          }
+        );
+
+        // Return a context object with the snapshotted value
+        return { previousTodos };
+      },
+      // If the mutation fails, use the context returned from onMutate to roll back
+      onError: (err, newTodo, context) => {
+        queryClient.setQueryData(
+          [SHARED_CATEGORIES_TABLE_NAME],
+          context?.previousTodos
+        );
+      },
+      // Always refetch after error or success:
+      onSettled: () => {
+        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+      },
+    }
+  );
+
   // profiles table mutation
   const updateUserProfileOptimisticMutation = useMutation(updateUserProfile, {
     onMutate: async (data) => {
@@ -478,11 +525,13 @@ const Dashboard = () => {
       (item) => item?.id === category_id
     );
 
+    const isUserTheCategoryOwner = session?.user?.id === currentCategory;
+
     const mutationCall = (updateValue: string) => {
-      if (currentCategory) {
+      if (!isUserTheCategoryOwner) {
         mutationApiCall(
-          updateCategoryOptimisticMutation.mutateAsync({
-            category_id: category_id,
+          updateSharedCategoriesOptimisticMutation.mutateAsync({
+            id: sharedCategoriesData?.data[0]?.id,
             updateData: {
               category_views: {
                 ...currentCategory?.category_views,
@@ -492,17 +541,31 @@ const Dashboard = () => {
           })
         );
       } else {
-        mutationApiCall(
-          updateUserProfileOptimisticMutation.mutateAsync({
-            id: session?.user?.id as string,
-            updateData: {
-              bookmarks_view: {
-                ...userProfileData?.data[0]?.bookmarks_view,
-                [updateValue]: value,
+        if (currentCategory) {
+          mutationApiCall(
+            updateCategoryOptimisticMutation.mutateAsync({
+              category_id: category_id,
+              updateData: {
+                category_views: {
+                  ...currentCategory?.category_views,
+                  [updateValue]: value,
+                },
               },
-            },
-          })
-        );
+            })
+          );
+        } else {
+          mutationApiCall(
+            updateUserProfileOptimisticMutation.mutateAsync({
+              id: session?.user?.id as string,
+              updateData: {
+                bookmarks_view: {
+                  ...userProfileData?.data[0]?.bookmarks_view,
+                  [updateValue]: value,
+                },
+              },
+            })
+          );
+        }
       }
     };
 

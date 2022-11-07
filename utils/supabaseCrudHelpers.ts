@@ -484,7 +484,7 @@ export const updateSharedCategoriesUserAccess = async ({
   updateData,
 }: {
   id: number;
-  updateData: { edit_access: boolean };
+  updateData: { edit_access?: boolean; category_views?: BookmarkViewDataTypes };
 }) => {
   try {
     const session = await getCurrentUserSession();
