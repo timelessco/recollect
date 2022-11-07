@@ -525,7 +525,8 @@ const Dashboard = () => {
       (item) => item?.id === category_id
     );
 
-    const isUserTheCategoryOwner = session?.user?.id === currentCategory;
+    const isUserTheCategoryOwner =
+      session?.user?.id === currentCategory?.user_id?.id;
 
     const mutationCall = (updateValue: string) => {
       if (currentCategory) {
