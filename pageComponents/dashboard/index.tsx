@@ -803,6 +803,10 @@ const Dashboard = () => {
     );
   };
 
+  if (isAllBookmarksDataLoading) {
+    return <div />;
+  }
+
   return (
     <>
       <DashboardLayout
