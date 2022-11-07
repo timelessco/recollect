@@ -1,6 +1,7 @@
 import { PostgrestError } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
+import { isEmpty } from 'lodash';
 import find from 'lodash/find';
 import React, { useRef } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
@@ -67,32 +68,38 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
   const isUserTheCategoryOwner = userId === currentCategory?.user_id?.id;
 
-  let bookmarksInfoValue: string[] | undefined;
-  let bookmarksColumns;
-  let bookmarksViewValue: string | undefined;
+  const bookmarksInfoValue =
+    categoryId !== null
+      ? isUserTheCategoryOwner
+        ? currentCategory?.category_views?.cardContentViewArray
+        : !isEmpty(sharedCategoriesData?.data[0])
+        ? sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
+        : []
+      : !isEmpty(userProfilesData?.data[0])
+      ? userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
+      : [];
 
-  if (userProfilesData && sharedCategoriesData) {
-    bookmarksInfoValue =
-      categoryId !== null
-        ? isUserTheCategoryOwner
-          ? currentCategory?.category_views?.cardContentViewArray
-          : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
-        : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray;
+  const bookmarksColumns =
+    categoryId !== null
+      ? isUserTheCategoryOwner
+        ? currentCategory?.category_views?.moodboardColumns
+        : !isEmpty(sharedCategoriesData?.data[0])
+        ? sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
+        : [10]
+      : !isEmpty(userProfilesData?.data[0])
+      ? userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
+      : [10];
 
-    bookmarksColumns =
-      categoryId !== null
-        ? isUserTheCategoryOwner
-          ? currentCategory?.category_views?.moodboardColumns
-          : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
-        : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns;
-
-    bookmarksViewValue =
-      categoryId !== null
-        ? isUserTheCategoryOwner
-          ? currentCategory?.category_views?.bookmarksView
-          : sharedCategoriesData?.data[0]?.category_views?.bookmarksView
-        : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView;
-  }
+  const bookmarksViewValue =
+    categoryId !== null
+      ? isUserTheCategoryOwner
+        ? currentCategory?.category_views?.bookmarksView
+        : !isEmpty(sharedCategoriesData?.data[0])
+        ? sharedCategoriesData?.data[0]?.category_views?.bookmarksView
+        : ''
+      : !isEmpty(userProfilesData?.data[0])
+      ? userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
+      : '';
 
   const cardContentOptions = [
     {

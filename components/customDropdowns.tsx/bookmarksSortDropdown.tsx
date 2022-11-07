@@ -1,6 +1,7 @@
 import { PostgrestError } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
+import { isEmpty } from 'lodash';
 import find from 'lodash/find';
 import { useRef } from 'react';
 import SortByDateIconGray from '../../icons/sortByDateIconGray';
@@ -46,7 +47,9 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
   const bookmarksSortValue =
     categoryId !== null
       ? currentCategory?.category_views?.sortBy
-      : (userProfilesData?.data[0]?.bookmarks_view?.sortBy as string);
+      : !isEmpty(userProfilesData?.data)
+      ? (userProfilesData?.data[0]?.bookmarks_view?.sortBy as string)
+      : '';
 
   const menu = useMenuState({ gutter: 8 });
 

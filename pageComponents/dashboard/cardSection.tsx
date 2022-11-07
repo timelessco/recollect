@@ -117,29 +117,35 @@ const CardSection = ({
 
   const isUserTheCategoryOwner = userId === currentCategoryData?.user_id?.id;
 
-  let bookmarksInfoValue: string[] | undefined;
-  let bookmarksColumns: number[] | number | undefined;
-  let bookmarksSortValue: BookmarksSortByTypes | undefined;
+  const bookmarksInfoValue = isUserInACategory(category_id as string)
+    ? isUserTheCategoryOwner
+      ? currentCategoryData?.category_views?.cardContentViewArray
+      : !isEmpty(sharedCategoriesData?.data)
+      ? sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
+      : []
+    : !isEmpty(userProfilesData?.data)
+    ? userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
+    : [];
 
-  if (userProfilesData && sharedCategoriesData) {
-    bookmarksInfoValue = isUserInACategory(category_id as string)
-      ? isUserTheCategoryOwner
-        ? currentCategoryData?.category_views?.cardContentViewArray
-        : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
-      : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray;
+  const bookmarksColumns = isUserInACategory(category_id as string)
+    ? isUserTheCategoryOwner
+      ? currentCategoryData?.category_views?.moodboardColumns
+      : !isEmpty(sharedCategoriesData?.data)
+      ? sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
+      : [10]
+    : !isEmpty(userProfilesData?.data)
+    ? userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
+    : [10];
 
-    bookmarksColumns = isUserInACategory(category_id as string)
-      ? isUserTheCategoryOwner
-        ? currentCategoryData?.category_views?.moodboardColumns
-        : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
-      : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns;
-
-    bookmarksSortValue = isUserInACategory(category_id as string)
-      ? isUserTheCategoryOwner
-        ? currentCategoryData?.category_views?.sortBy
-        : sharedCategoriesData?.data[0]?.category_views?.sortBy
-      : userProfilesData?.data[0]?.bookmarks_view?.sortBy;
-  }
+  const bookmarksSortValue = isUserInACategory(category_id as string)
+    ? isUserTheCategoryOwner
+      ? currentCategoryData?.category_views?.sortBy
+      : !isEmpty(sharedCategoriesData?.data)
+      ? sharedCategoriesData?.data[0]?.category_views?.sortBy
+      : ''
+    : !isEmpty(userProfilesData?.data)
+    ? userProfilesData?.data[0]?.bookmarks_view?.sortBy
+    : '';
 
   const isLoggedInUserTheCategoryOwner =
     !isUserInACategory(category_id as string) ||
@@ -744,15 +750,15 @@ const CardSection = ({
     );
   };
 
-  let cardTypeCondition: BookmarksViewTypes | undefined;
-
-  if (userProfilesData && sharedCategoriesData) {
-    cardTypeCondition = isUserInACategory(category_id as string)
-      ? isUserTheCategoryOwner
-        ? currentCategoryData?.category_views?.bookmarksView
-        : sharedCategoriesData?.data[0]?.category_views?.bookmarksView
-      : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView;
-  }
+  const cardTypeCondition = isUserInACategory(category_id as string)
+    ? isUserTheCategoryOwner
+      ? currentCategoryData?.category_views?.bookmarksView
+      : !isEmpty(sharedCategoriesData?.data)
+      ? sharedCategoriesData?.data[0]?.category_views?.bookmarksView
+      : ''
+    : !isEmpty(userProfilesData?.data)
+    ? userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
+    : '';
 
   const renderBookmarkCardTypes = () => {
     switch (cardTypeCondition) {
