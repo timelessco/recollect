@@ -122,23 +122,23 @@ const CardSection = ({
   let bookmarksSortValue: BookmarksSortByTypes | undefined;
 
   if (userProfilesData && sharedCategoriesData) {
-    bookmarksInfoValue = isUserTheCategoryOwner
-      ? isUserInACategory(category_id as string)
+    bookmarksInfoValue = isUserInACategory(category_id as string)
+      ? isUserTheCategoryOwner
         ? currentCategoryData?.category_views?.cardContentViewArray
-        : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
-      : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray;
+        : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
+      : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray;
 
-    bookmarksColumns = isUserTheCategoryOwner
-      ? isUserInACategory(category_id as string)
+    bookmarksColumns = isUserInACategory(category_id as string)
+      ? isUserTheCategoryOwner
         ? currentCategoryData?.category_views?.moodboardColumns
-        : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
-      : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns;
+        : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
+      : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns;
 
-    bookmarksSortValue = isUserTheCategoryOwner
-      ? isUserInACategory(category_id as string)
+    bookmarksSortValue = isUserInACategory(category_id as string)
+      ? isUserTheCategoryOwner
         ? currentCategoryData?.category_views?.sortBy
-        : userProfilesData?.data[0]?.bookmarks_view?.sortBy
-      : sharedCategoriesData?.data[0]?.category_views?.sortBy;
+        : sharedCategoriesData?.data[0]?.category_views?.sortBy
+      : userProfilesData?.data[0]?.bookmarks_view?.sortBy;
   }
 
   const isLoggedInUserTheCategoryOwner =
@@ -747,11 +747,11 @@ const CardSection = ({
   let cardTypeCondition: BookmarksViewTypes | undefined;
 
   if (userProfilesData && sharedCategoriesData) {
-    cardTypeCondition = isUserTheCategoryOwner
-      ? isUserInACategory(category_id as string)
+    cardTypeCondition = isUserInACategory(category_id as string)
+      ? isUserTheCategoryOwner
         ? currentCategoryData?.category_views?.bookmarksView
-        : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
-      : sharedCategoriesData?.data[0]?.category_views?.bookmarksView;
+        : sharedCategoriesData?.data[0]?.category_views?.bookmarksView
+      : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView;
   }
 
   const renderBookmarkCardTypes = () => {

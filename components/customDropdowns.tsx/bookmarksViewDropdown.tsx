@@ -72,23 +72,26 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   let bookmarksViewValue;
 
   if (userProfilesData && sharedCategoriesData) {
-    bookmarksInfoValue = isUserTheCategoryOwner
-      ? categoryId !== null
-        ? currentCategory?.category_views?.cardContentViewArray
-        : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
-      : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray;
+    bookmarksInfoValue =
+      categoryId !== null
+        ? isUserTheCategoryOwner
+          ? currentCategory?.category_views?.cardContentViewArray
+          : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
+        : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray;
 
-    bookmarksColumns = isUserTheCategoryOwner
-      ? categoryId !== null
-        ? currentCategory?.category_views?.moodboardColumns
-        : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
-      : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns;
+    bookmarksColumns =
+      categoryId !== null
+        ? isUserTheCategoryOwner
+          ? currentCategory?.category_views?.moodboardColumns
+          : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
+        : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns;
 
-    bookmarksViewValue = isUserTheCategoryOwner
-      ? categoryId !== null
-        ? currentCategory?.category_views?.bookmarksView
-        : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
-      : sharedCategoriesData?.data[0]?.category_views?.bookmarksView;
+    bookmarksViewValue =
+      categoryId !== null
+        ? isUserTheCategoryOwner
+          ? currentCategory?.category_views?.bookmarksView
+          : sharedCategoriesData?.data[0]?.category_views?.bookmarksView
+        : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView;
   }
 
   const cardContentOptions = [

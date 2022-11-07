@@ -528,20 +528,8 @@ const Dashboard = () => {
     const isUserTheCategoryOwner = session?.user?.id === currentCategory;
 
     const mutationCall = (updateValue: string) => {
-      if (!isUserTheCategoryOwner) {
-        mutationApiCall(
-          updateSharedCategoriesOptimisticMutation.mutateAsync({
-            id: sharedCategoriesData?.data[0]?.id,
-            updateData: {
-              category_views: {
-                ...currentCategory?.category_views,
-                [updateValue]: value,
-              },
-            },
-          })
-        );
-      } else {
-        if (currentCategory) {
+      if (currentCategory) {
+        if (isUserTheCategoryOwner) {
           mutationApiCall(
             updateCategoryOptimisticMutation.mutateAsync({
               category_id: category_id,
@@ -555,18 +543,69 @@ const Dashboard = () => {
           );
         } else {
           mutationApiCall(
-            updateUserProfileOptimisticMutation.mutateAsync({
-              id: session?.user?.id as string,
+            updateSharedCategoriesOptimisticMutation.mutateAsync({
+              id: sharedCategoriesData?.data[0]?.id,
               updateData: {
-                bookmarks_view: {
-                  ...userProfileData?.data[0]?.bookmarks_view,
+                category_views: {
+                  ...currentCategory?.category_views,
                   [updateValue]: value,
                 },
               },
             })
           );
         }
+      } else {
+        mutationApiCall(
+          updateUserProfileOptimisticMutation.mutateAsync({
+            id: session?.user?.id as string,
+            updateData: {
+              bookmarks_view: {
+                ...userProfileData?.data[0]?.bookmarks_view,
+                [updateValue]: value,
+              },
+            },
+          })
+        );
       }
+      // if (!isUserTheCategoryOwner) {
+      // mutationApiCall(
+      //   updateSharedCategoriesOptimisticMutation.mutateAsync({
+      //     id: sharedCategoriesData?.data[0]?.id,
+      //     updateData: {
+      //       category_views: {
+      //         ...currentCategory?.category_views,
+      //         [updateValue]: value,
+      //       },
+      //     },
+      //   })
+      // );
+      // } else {
+      // if (currentCategory) {
+      //   mutationApiCall(
+      //     updateCategoryOptimisticMutation.mutateAsync({
+      //       category_id: category_id,
+      //       updateData: {
+      //         category_views: {
+      //           ...currentCategory?.category_views,
+      //           [updateValue]: value,
+      //         },
+      //       },
+      //     })
+      //   );
+      // } else {
+      //   mutationApiCall(
+      //     updateUserProfileOptimisticMutation.mutateAsync({
+      //       id: session?.user?.id as string,
+      //       updateData: {
+      //         bookmarks_view: {
+      //           ...userProfileData?.data[0]?.bookmarks_view,
+      //           [updateValue]: value,
+      //         },
+      //       },
+      //     })
+      //   );
+      // }
+      // }
     };
 
     switch (type) {
@@ -802,10 +841,6 @@ const Dashboard = () => {
       </>
     );
   };
-
-  if (isAllBookmarksDataLoading) {
-    return <div />;
-  }
 
   return (
     <>
