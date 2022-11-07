@@ -42,11 +42,14 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
     categoryData?.data,
     (item) => item?.id === categoryId
   );
+  let bookmarksSortValue: string | undefined;
 
-  const bookmarksSortValue =
-    categoryId !== null
-      ? currentCategory?.category_views?.sortBy
-      : (userProfilesData?.data[0]?.bookmarks_view?.sortBy as string);
+  if (userProfilesData) {
+    bookmarksSortValue =
+      categoryId !== null
+        ? currentCategory?.category_views?.sortBy
+        : (userProfilesData?.data[0]?.bookmarks_view?.sortBy as string);
+  }
 
   const menu = useMenuState({ gutter: 8 });
 
