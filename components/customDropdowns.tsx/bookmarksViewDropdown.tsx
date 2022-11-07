@@ -69,7 +69,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
   let bookmarksInfoValue: string[] | undefined;
   let bookmarksColumns;
-  let bookmarksViewValue;
+  let bookmarksViewValue: string | undefined;
 
   if (userProfilesData && sharedCategoriesData) {
     bookmarksInfoValue =
