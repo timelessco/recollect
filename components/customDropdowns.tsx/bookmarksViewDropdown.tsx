@@ -173,7 +173,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
           {cardContentOptions?.map((item) => {
             return (
               <Checkbox
-                disabled={bookmarksView === 'headlines'}
+                disabled={bookmarksViewValue === 'headlines'}
                 key={item?.value}
                 label={item?.label}
                 value={item?.value}
@@ -207,7 +207,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
           })}
         </div>
 
-        {bookmarksView === 'card' || bookmarksView === 'moodboard' ? (
+        {bookmarksViewValue === 'card' || bookmarksViewValue === 'moodboard' ? (
           <div className="p-2">
             <Slider
               label="moodboard-cols-slider"
