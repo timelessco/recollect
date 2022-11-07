@@ -67,23 +67,29 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
   const isUserTheCategoryOwner = userId === currentCategory?.user_id?.id;
 
-  const bookmarksInfoValue = isUserTheCategoryOwner
-    ? categoryId !== null
-      ? currentCategory?.category_views?.cardContentViewArray
-      : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
-    : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray;
+  let bookmarksInfoValue: string[] | undefined;
+  let bookmarksColumns;
+  let bookmarksViewValue;
 
-  const bookmarksColumns = isUserTheCategoryOwner
-    ? categoryId !== null
-      ? currentCategory?.category_views?.moodboardColumns
-      : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
-    : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns;
+  if (userProfilesData && sharedCategoriesData) {
+    bookmarksInfoValue = isUserTheCategoryOwner
+      ? categoryId !== null
+        ? currentCategory?.category_views?.cardContentViewArray
+        : userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
+      : sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray;
 
-  const bookmarksViewValue = isUserTheCategoryOwner
-    ? categoryId !== null
-      ? currentCategory?.category_views?.bookmarksView
-      : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
-    : sharedCategoriesData?.data[0]?.category_views?.bookmarksView;
+    bookmarksColumns = isUserTheCategoryOwner
+      ? categoryId !== null
+        ? currentCategory?.category_views?.moodboardColumns
+        : userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
+      : sharedCategoriesData?.data[0]?.category_views?.moodboardColumns;
+
+    bookmarksViewValue = isUserTheCategoryOwner
+      ? categoryId !== null
+        ? currentCategory?.category_views?.bookmarksView
+        : userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
+      : sharedCategoriesData?.data[0]?.category_views?.bookmarksView;
+  }
 
   const cardContentOptions = [
     {
