@@ -44,7 +44,9 @@ export default async function handler(
       data,
       error,
     });
+    return;
   } else {
     res.status(500).json({ data, error });
+    return;
   }
 }

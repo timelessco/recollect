@@ -25,7 +25,6 @@ export default async function handler(
   const category_id = req.query.category_id;
 
   const accessToken = req.query.access_token as string;
-  // const {} = supabase.auth.setAuth(accessToken);
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
@@ -138,7 +137,9 @@ export default async function handler(
     }) as Array<SingleListData>;
 
     res.status(200).json({ data: finalData, error });
+    return;
   } else {
     res.status(500).json({ data, error });
+    return;
   }
 }

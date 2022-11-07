@@ -74,4 +74,5 @@ export default async function handler(
   const url = `${hostUrl}/api/invite?token=${token}`;
 
   res.status(200).json({ url: url, error: null });
+  return;
 }

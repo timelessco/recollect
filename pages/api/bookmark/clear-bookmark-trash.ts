@@ -46,8 +46,10 @@ export default async function handler(
 
     if (!isNull(data)) {
       res.status(200).json({ data, error });
+      return;
     } else {
       res.status(500).json({ data, error });
+      return;
     }
   } else {
     // deletes trash for all users , this happens in CRON job
@@ -77,6 +79,7 @@ export default async function handler(
 
         if (!isNull(delError)) {
           res.status(500).json({ data: delData, error: delError });
+          return;
         } else {
           res.status(200).json({
             data: delData,
@@ -93,8 +96,10 @@ export default async function handler(
         error: null,
         message: 'No bookmarks older than 30 days to delete',
       });
+      return;
     } else {
       res.status(500).json({ data, error });
+      return;
     }
   }
 }

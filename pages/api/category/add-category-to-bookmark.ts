@@ -51,7 +51,9 @@ export default async function handler(
         ? null
         : 'You dont have access to add to this category, this bookmark will be added without a category',
     });
+    return;
   } else {
     res.status(500).json({ data, error, message: null });
+    return;
   }
 }

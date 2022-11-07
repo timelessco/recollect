@@ -39,6 +39,7 @@ import {
   UPDATE_USER_PROFILE_API,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
+import { isNull } from 'lodash';
 
 // bookmark
 export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
@@ -51,6 +52,10 @@ export const fetchBookmakrsData = async (
   category_id: string | null | number
 ) => {
   const session = await getCurrentUserSession();
+
+  if (!session?.access_token) {
+    return;
+  }
 
   try {
     const bookmarksData = await axios.get(
@@ -290,6 +295,9 @@ export const fetchBookmarksViews = async ({
 }) => {
   try {
     const session = await getCurrentUserSession();
+    if (!session?.access_token && isNull(category_id)) {
+      return;
+    }
     const res = await axios.post(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
       category_id: category_id,
       access_token: session?.access_token,
@@ -455,6 +463,9 @@ export const sendCollaborationEmailInvite = async ({
 export const fetchSharedCategoriesData = async () => {
   try {
     const session = await getCurrentUserSession();
+    if (!session?.access_token) {
+      return;
+    }
     const res = await axios.get(
       `${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}?access_token=${session?.access_token}`
     );
@@ -561,6 +572,10 @@ export const signOut = async () => {
 export const updateProfilesTable = async () => {
   try {
     const session = await getCurrentUserSession();
+
+    if (!session?.access_token) {
+      return;
+    }
     const res = await axios.get(
       `${NEXT_API_URL}${SYNC_PROFILES_TABLE_API}?access_token=${session?.access_token}`
     );

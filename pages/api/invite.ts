@@ -65,6 +65,7 @@ export default async function handler(
           success: 'User has been added as a colaborator to the category',
           error: null,
         });
+        return;
       } else {
         if (error?.code === '23503') {
           // if collab user does not have an existing account
@@ -72,11 +73,13 @@ export default async function handler(
             success: null,
             error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${error?.message}`,
           });
+          return;
         } else {
           res.status(500).json({
             success: null,
             error: error?.message,
           });
+          return;
         }
       }
     } else {
@@ -86,6 +89,7 @@ export default async function handler(
           ? 'The user is alredy a colaborator of this category'
           : error,
       });
+      return;
     }
   }
 }

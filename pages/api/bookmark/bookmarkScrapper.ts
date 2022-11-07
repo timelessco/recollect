@@ -117,7 +117,9 @@ export default async function handler(
     finalData.metaData = metaApiRes.data;
 
     res.status(200).json({ key: 'success', data: finalData });
+    return;
   } catch (e) {
     res.status(500).json({ key: 'error', err: `error ${e}` });
+    return;
   }
 }

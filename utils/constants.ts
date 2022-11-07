@@ -14,11 +14,12 @@ export const URL_PATTERN =
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/;
 
 // api
-export const NEXT_API_URL = `${
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : 'https://bookmark-tags-git-dev-timelessco.vercel.app' // :'https://bookmark-tags-git-dev-timelessco.vercel.app'
-}/api`;
+export const NEXT_API_URL = 'http://localhost:3000/api';
+// export const NEXT_API_URL = `${
+//   process.env.NODE_ENV === 'development'
+//     ? 'http://localhost:3000'
+//     : 'https://bookmark-tags-git-dev-timelessco.vercel.app' // :'https://bookmark-tags-git-dev-timelessco.vercel.app'
+// }/api`;
 export const TIMELESS_SCRAPPER_API =
   'https://link-preview-livid-ten.vercel.app/api/getUrlData';
 export const SCREENSHOT_API = 'https://s.vercel.app/api?url=';

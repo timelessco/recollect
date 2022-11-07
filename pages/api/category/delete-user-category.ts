@@ -42,11 +42,14 @@ export default async function handler(
 
   if (!isNull(error)) {
     res.status(500).json({ data: null, error: error });
+    return;
   } else if (isEmpty(data)) {
     res
       .status(500)
       .json({ data: null, error: { message: 'Something went wrong' } });
+    return;
   } else {
     res.status(200).json({ data: data, error: null });
+    return;
   }
 }

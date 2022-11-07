@@ -58,7 +58,9 @@ export default async function handler(
 
   if (!isNull(data)) {
     res.status(200).json({ data, error });
+    return;
   } else {
     res.status(500).json({ data, error });
+    return;
   }
 }

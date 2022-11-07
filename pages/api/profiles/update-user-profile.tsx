@@ -45,11 +45,14 @@ export default async function handler(
       data: null,
       error: isEmpty(error) ? { message: 'Something went wrong' } : error,
     });
+    return;
   } else if (isEmpty(data) || isNull(data)) {
     res
       .status(500)
       .json({ data: null, error: { message: 'Something went wrong' } });
+    return;
   } else {
     res.status(200).json({ data: data, error: null });
+    return;
   }
 }

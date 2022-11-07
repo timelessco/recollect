@@ -67,8 +67,10 @@ export default async function handler(
     ]);
     if (!isNull(error)) {
       res.status(500).json({ data: null, error: error, message: null });
+      return;
     } else {
       res.status(200).json({ data: data, error: null, message: null });
+      return;
     }
   } else {
     const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
@@ -84,6 +86,7 @@ export default async function handler(
 
     if (!isNull(error)) {
       res.status(500).json({ data: null, error: error, message: null });
+      return;
     } else {
       res.status(200).json({
         data: data,
@@ -92,6 +95,7 @@ export default async function handler(
           ? 'You dont have access to add to this category, this bookmark will be added without a category'
           : null,
       });
+      return;
     }
   }
 }
