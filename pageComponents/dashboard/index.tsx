@@ -406,7 +406,7 @@ const Dashboard = () => {
 
         // Optimistically update to the new value
         queryClient.setQueryData(
-          [USER_PROFILE, session?.user?.id],
+          [SHARED_CATEGORIES_TABLE_NAME],
           (old: { data: FetchSharedCategoriesData[] } | undefined) => {
             return {
               ...old,
@@ -568,45 +568,6 @@ const Dashboard = () => {
           })
         );
       }
-      // if (!isUserTheCategoryOwner) {
-      // mutationApiCall(
-      //   updateSharedCategoriesOptimisticMutation.mutateAsync({
-      //     id: sharedCategoriesData?.data[0]?.id,
-      //     updateData: {
-      //       category_views: {
-      //         ...currentCategory?.category_views,
-      //         [updateValue]: value,
-      //       },
-      //     },
-      //   })
-      // );
-      // } else {
-      // if (currentCategory) {
-      //   mutationApiCall(
-      //     updateCategoryOptimisticMutation.mutateAsync({
-      //       category_id: category_id,
-      //       updateData: {
-      //         category_views: {
-      //           ...currentCategory?.category_views,
-      //           [updateValue]: value,
-      //         },
-      //       },
-      //     })
-      //   );
-      // } else {
-      //   mutationApiCall(
-      //     updateUserProfileOptimisticMutation.mutateAsync({
-      //       id: session?.user?.id as string,
-      //       updateData: {
-      //         bookmarks_view: {
-      //           ...userProfileData?.data[0]?.bookmarks_view,
-      //           [updateValue]: value,
-      //         },
-      //       },
-      //     })
-      //   );
-      // }
-      // }
     };
 
     switch (type) {
