@@ -39,10 +39,6 @@ import { getBaseUrl, isUserInACategory } from '../../utils/helpers';
 import format from 'date-fns/format';
 import classNames from 'classnames';
 import { options } from '../../utils/commonData';
-import {
-  BookmarksSortByTypes,
-  BookmarksViewTypes,
-} from '../../types/componentStoreTypes';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -53,6 +49,7 @@ interface CardSectionProps {
   userId: string;
   showAvatar: boolean;
   isOgImgLoading: boolean;
+  isBookmarkLoading: boolean;
   addScreenshotBookmarkId: number | undefined;
   deleteBookmarkId: number | undefined;
 }
@@ -65,7 +62,8 @@ const CardSection = ({
   isLoading = false,
   userId,
   showAvatar = false,
-  // isOgImgLoading = false,
+  isOgImgLoading = false,
+  isBookmarkLoading = false,
   // addScreenshotBookmarkId,
   deleteBookmarkId,
 }: CardSectionProps) => {
@@ -145,6 +143,16 @@ const CardSection = ({
       : ''
     : !isEmpty(userProfilesData?.data)
     ? userProfilesData?.data[0]?.bookmarks_view?.sortBy
+    : '';
+
+  const cardTypeCondition = isUserInACategory(category_id as string)
+    ? isUserTheCategoryOwner
+      ? currentCategoryData?.category_views?.bookmarksView
+      : !isEmpty(sharedCategoriesData?.data)
+      ? sharedCategoriesData?.data[0]?.category_views?.bookmarksView
+      : ''
+    : !isEmpty(userProfilesData?.data)
+    ? userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
     : '';
 
   const isLoggedInUserTheCategoryOwner =
@@ -234,8 +242,52 @@ const CardSection = ({
         src={item?.user_id?.profile_pic}
         size="20"
         round={true}
-        className="mr-1"
+        className="mr-1 h-"
       />
+    );
+  };
+
+  const renderOgImage = (img: string, index: number) => {
+    const imgClassName = classNames({
+      'h-14 w-full object-cover': cardTypeCondition === 'list',
+      'h-48 w-full object-cover': cardTypeCondition === 'card',
+      'rounded-lg w-full': cardTypeCondition === 'moodboard',
+    });
+
+    const loaderClassName = classNames({
+      'animate-pulse bg-slate-200 w-full h-14 w-20 object-cover':
+        cardTypeCondition === 'list',
+      'animate-pulse bg-slate-200 w-full h-48 w-full object-cover':
+        cardTypeCondition === 'card',
+      'animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full':
+        cardTypeCondition === 'moodboard',
+    });
+
+    const figureClassName = classNames({
+      ' w-full h-14 w-20 ': cardTypeCondition === 'list',
+      'w-full h-48 ': cardTypeCondition === 'card',
+      ' h-36  w-full':
+        cardTypeCondition === 'moodboard' &&
+        (isOgImgLoading || isBookmarkLoading) &&
+        index === 0,
+    });
+
+    return (
+      <figure className={figureClassName}>
+        {bookmarksInfoValue?.includes('cover') && (
+          <>
+            {(isOgImgLoading || isBookmarkLoading) && index === 0 ? (
+              <div className={loaderClassName} />
+            ) : (
+              <>
+                {img && (
+                  <img src={img} alt="bookmark-img" className={imgClassName} />
+                )}
+              </>
+            )}
+          </>
+        )}
+      </figure>
     );
   };
 
@@ -262,98 +314,6 @@ const CardSection = ({
     );
   };
 
-  // return (
-  //   <div className="relative pb-20 lg:pb-28">
-  //     <div className="absolute inset-0">
-  //       <div className="bg-white h-1/3 sm:h-2/3" />
-  //     </div>
-  //     <div className="relative max-w-7xl mx-auto">
-  //       <div className="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
-  //         {isLoading ? (
-  //           <>
-  //             <BookmarkCardSkeleton />
-  //             <BookmarkCardSkeleton />
-  //           </>
-  //         ) : (
-  //           <>
-  //             {!isEmpty(bookmarksList) ? (
-  //               <>
-  //                 {renderSortByCondition().map((post) => (
-  //                   <div
-  //                     key={post.id}
-  //                     className="flex flex-col rounded-lg shadow-lg overflow-hidden"
-  //                   >
-  //                     <div className="flex-shrink-0">
-  //                       {isOgImgLoading &&
-  //                       addScreenshotBookmarkId === post?.id ? (
-  //                         <div className="h-48 w-full bg-slate-100 flex justify-center items-center">
-  //                           <Spinner />
-  //                         </div>
-  //                       ) : (
-  //                         <img
-  //                           className="h-48 w-full object-cover"
-  //                           src={post.ogImage || post.screenshot}
-  //                           alt=""
-  //                         />
-  //                       )}
-  //                     </div>
-  //                     <div className="flex-1 bg-white p-6 flex justify-between">
-  //                       <div className="flex-1">
-  //                         <div className="text-sm font-medium text-indigo-600">
-  //                           <span className="flex space-x-1">
-  //                             {post?.addedTags?.map((tag) => {
-  //                               return <div key={tag?.id}>#{tag?.name}</div>;
-  //                             })}
-  //                           </span>
-  //                         </div>
-  //                         <a
-  //                           href={post.url}
-  //                           target="_blank"
-  //                           rel="noreferrer"
-  //                           className="block mt-2"
-  //                         >
-  //                           <p className="text-xl font-semibold text-gray-900">
-  //                             {post.title}
-  //                           </p>
-  //                           <p className="mt-3 text-base text-gray-500">
-  //                             {post.description}
-  //                           </p>
-  //                         </a>
-  //                         {!isNull(post?.category_id) && isNull(category_id) && (
-  //                           <div className="mt-2">
-  //                             <Badge
-  //                               label={singleBookmarkCategoryName(
-  //                                 post?.category_id
-  //                               )}
-  //                             />
-  //                           </div>
-  //                         )}
-  //                       </div>
-  //                       <div className="flex">
-  //                         {showAvatar && (
-  //                           <Avatar
-  //                             name={post?.user_id}
-  //                             size="20"
-  //                             round={true}
-  //                             className="mr-1"
-  //                           />
-  //                         )}
-  //                         {renderEditAndDeleteIcons(post)}
-  //                       </div>
-  //                     </div>
-  //                   </div>
-  //                 ))}
-  //               </>
-  //             ) : (
-  //               <div className="text-xl font-bold">No Bookmarks</div>
-  //             )}
-  //           </>
-  //         )}
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
-
   const renderSortByCondition = () => {
     switch (bookmarksSortValue) {
       case 'date-sort-acending':
@@ -374,11 +334,11 @@ const CardSection = ({
   const renderHeadlinesType = () => {
     return (
       <div className="space-y-4">
-        {renderSortByCondition()?.map((item) => {
+        {renderSortByCondition()?.map((item, index) => {
           return (
             <div
               style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id}
+              key={item?.id || index}
               className="group relative"
             >
               <a
@@ -454,11 +414,11 @@ const CardSection = ({
   const renderListType = () => {
     return (
       <div className="space-y-4">
-        {renderSortByCondition()?.map((item) => {
+        {renderSortByCondition()?.map((item, index) => {
           return (
             <div
               style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id}
+              key={item?.id || index}
               className="group relative"
             >
               <a
@@ -467,16 +427,7 @@ const CardSection = ({
                 rel="noreferrer"
                 className="flex items-center"
               >
-                <figure>
-                  {bookmarksInfoValue?.includes('cover') && (
-                    <img
-                      src={item?.ogImage}
-                      alt="bookmark-img"
-                      // className="rounded-lg w-full"
-                      className=" h-14 w-full object-cover"
-                    />
-                  )}
-                </figure>
+                <>{renderOgImage(item?.ogImage, index)}</>
                 {bookmarksInfoValue?.length === 1 &&
                 bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="p-4 space-y-2">
@@ -563,24 +514,15 @@ const CardSection = ({
   const renderCardType = () => {
     return (
       <div className={cardGridClassNames}>
-        {renderSortByCondition()?.map((item) => {
+        {renderSortByCondition()?.map((item, index) => {
           return (
             <div
               style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id}
+              key={item?.id || index}
               className="group relative"
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
-                <figure>
-                  {bookmarksInfoValue?.includes('cover') && (
-                    <img
-                      src={item?.ogImage}
-                      alt="bookmark-img"
-                      // className="rounded-lg w-full"
-                      className="h-48 w-full object-cover"
-                    />
-                  )}
-                </figure>
+                <>{renderOgImage(item?.ogImage, index)}</>
                 {bookmarksInfoValue?.length === 1 &&
                 bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="p-4 space-y-2">
@@ -665,22 +607,14 @@ const CardSection = ({
         className="my-masonry-grid"
         columnClassName="my-masonry-grid_column"
       >
-        {renderSortByCondition()?.map((item) => {
+        {renderSortByCondition()?.map((item, index) => {
           return (
             <div
-              key={item?.id}
+              key={item?.id || index}
               className="rounded-lg drop-shadow-custom-1 group relative"
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
-                <figure>
-                  {bookmarksInfoValue?.includes('cover') && (
-                    <img
-                      src={item?.ogImage}
-                      alt="bookmark-img"
-                      className="rounded-lg w-full"
-                    />
-                  )}
-                </figure>
+                <>{renderOgImage(item?.ogImage, index)}</>
                 {bookmarksInfoValue?.length === 1 &&
                 bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="rounded-lg p-4 space-y-2">
@@ -749,16 +683,6 @@ const CardSection = ({
       </Masonry>
     );
   };
-
-  const cardTypeCondition = isUserInACategory(category_id as string)
-    ? isUserTheCategoryOwner
-      ? currentCategoryData?.category_views?.bookmarksView
-      : !isEmpty(sharedCategoriesData?.data)
-      ? sharedCategoriesData?.data[0]?.category_views?.bookmarksView
-      : ''
-    : !isEmpty(userProfilesData?.data)
-    ? userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
-    : '';
 
   const renderBookmarkCardTypes = () => {
     switch (cardTypeCondition) {

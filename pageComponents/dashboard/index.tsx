@@ -255,10 +255,50 @@ const Dashboard = () => {
     },
   });
 
-  const addBookmarkMinDataMutation = useMutation(addBookmarkMinData, {
-    onSuccess: (res: unknown) => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
+  const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
+    onMutate: async (data) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries([BOOKMARKS_KEY, session?.user?.id]);
+
+      // Snapshot the previous value
+      const previousTodos = queryClient.getQueryData([
+        BOOKMARKS_KEY,
+        session?.user?.id,
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(
+        [BOOKMARKS_KEY, session?.user?.id],
+        (old: { data: SingleListData[] } | undefined) => {
+          if (typeof old === 'object') {
+            return {
+              ...old,
+              data: [
+                ...old.data,
+                {
+                  url: data?.url,
+                  category_id: data?.category_id,
+                  inserted_at: new Date(),
+                },
+              ],
+            } as { data: SingleListData[] };
+          }
+        }
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousTodos };
+    },
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(
+        [BOOKMARKS_KEY, session?.user?.id],
+        context?.previousTodos
+      );
+    },
+    // Always refetch after error or success:
+    onSettled: (res: unknown) => {
+      queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const data = res?.data?.data[0];
@@ -481,12 +521,8 @@ const Dashboard = () => {
     },
   });
 
-  /////
-
   const addBookmarkLogic = async (url: string) => {
     setUrl(url);
-    // addItem(url);
-    // await addBookmarkMinData({ url });
     const currentCategory = find(
       allCategories?.data,
       (item) => item?.id === category_id
@@ -499,7 +535,7 @@ const Dashboard = () => {
       )?.edit_access === true ||
       currentCategory?.user_id?.id === session?.user?.id;
     await mutationApiCall(
-      addBookmarkMinDataMutation.mutateAsync({
+      addBookmarkMinDataOptimisticMutation.mutateAsync({
         url: url,
         category_id: category_id,
         update_access: updateAccessCondition,
@@ -596,6 +632,9 @@ const Dashboard = () => {
             <>
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
               <CardSection
+                isBookmarkLoading={
+                  addBookmarkMinDataOptimisticMutation?.isLoading
+                }
                 isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
                 addScreenshotBookmarkId={addScreenshotBookmarkId}
                 deleteBookmarkId={deleteBookmarkId}
@@ -808,7 +847,7 @@ const Dashboard = () => {
     <>
       <DashboardLayout
         categoryId={category_id}
-        isAddInputLoading={addBookmarkMinDataMutation?.isLoading}
+        isAddInputLoading={false}
         userId={session?.user?.id || ''}
         bookmarksData={bookmarksData?.data} // make this dependant on react-query
         renderMainContent={renderAllBookmarkCards}
@@ -913,9 +952,9 @@ const Dashboard = () => {
         }}
       />
       <AddBookarkShortcutModal
-        isAddBookmarkLoading={addBookmarkMinDataMutation?.isLoading}
-        onAddBookmark={async (url) => {
-          await addBookmarkLogic(url);
+        isAddBookmarkLoading={false}
+        onAddBookmark={(url) => {
+          addBookmarkLogic(url);
 
           toggleShowAddBookmarkShortcutModal();
         }}

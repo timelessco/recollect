@@ -5,7 +5,6 @@ import { isEmpty } from 'lodash';
 import find from 'lodash/find';
 import React, { useRef } from 'react';
 import MoodboardIconGray from '../../icons/moodboardIconGray';
-import { useBookmarkCardViewState } from '../../store/componentStore';
 import {
   CategoriesData,
   FetchSharedCategoriesData,
@@ -39,10 +38,6 @@ interface BookmarksViewDropdownProps {
 const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   const { setBookmarksView, categoryId, userId } = props;
   const queryClient = useQueryClient();
-
-  const bookmarksView = useBookmarkCardViewState(
-    (state) => state.bookmarksView
-  );
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -155,7 +150,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
             {
               find(
                 bookmarksViewOptions,
-                (item) => item?.value === bookmarksView
+                (item) => item?.value === bookmarksViewValue
               )?.label
             }
           </span>
