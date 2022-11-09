@@ -224,21 +224,100 @@ const Dashboard = () => {
   );
 
   // Mutations
-  const deleteBookmarkMutation = useMutation(deleteData, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
-      setDeleteBookmarkId(undefined);
+  const deleteBookmarkOptismicMutation = useMutation(deleteData, {
+    onMutate: async (data) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries([BOOKMARKS_KEY, TRASH_URL]);
+
+      // Snapshot the previous value
+      const previousTodos = queryClient.getQueryData([
+        BOOKMARKS_KEY,
+        TRASH_URL,
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(
+        [BOOKMARKS_KEY, TRASH_URL],
+        (old: { data: SingleListData[] } | undefined) => {
+          if (typeof old === 'object') {
+            return {
+              ...old,
+              data: old.data?.filter((item) => item?.id !== data?.id),
+            } as { data: SingleListData[] };
+          }
+        }
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousTodos };
+    },
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(
+        [BOOKMARKS_KEY, TRASH_URL],
+        context?.previousTodos
+      );
+    },
+    // Always refetch after error or success:
+    onSettled: (res: unknown) => {
+      queryClient.invalidateQueries([BOOKMARKS_KEY, TRASH_URL]);
     },
   });
 
-  const moveBookmarkToTrashMutation = useMutation(moveBookmarkToTrash, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
-      setDeleteBookmarkId(undefined);
-    },
-  });
+  const moveBookmarkToTrashOptimisticMutation = useMutation(
+    moveBookmarkToTrash,
+    {
+      onMutate: async (data) => {
+        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+        await queryClient.cancelQueries([
+          BOOKMARKS_KEY,
+          isNull(category_id) ? session?.user?.id : category_id,
+        ]);
+
+        // Snapshot the previous value
+        const previousTodos = queryClient.getQueryData([
+          BOOKMARKS_KEY,
+          isNull(category_id) ? session?.user?.id : category_id,
+          ,
+        ]);
+
+        // Optimistically update to the new value
+        queryClient.setQueryData(
+          [
+            BOOKMARKS_KEY,
+            isNull(category_id) ? session?.user?.id : category_id,
+          ],
+          (old: { data: SingleListData[] } | undefined) => {
+            if (typeof old === 'object') {
+              return {
+                ...old,
+                data: old.data?.filter((item) => item?.id !== data?.data?.id),
+              } as { data: SingleListData[] };
+            }
+          }
+        );
+
+        // Return a context object with the snapshotted value
+        return { previousTodos };
+      },
+      // If the mutation fails, use the context returned from onMutate to roll back
+      onError: (err, newTodo, context) => {
+        queryClient.setQueryData(
+          [
+            BOOKMARKS_KEY,
+            isNull(category_id) ? session?.user?.id : category_id,
+          ],
+          context?.previousTodos
+        );
+      },
+      // Always refetch after error or success:
+      onSettled: (res: unknown) => {
+        queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
+        queryClient.invalidateQueries([BOOKMARKS_KEY, category_id]);
+        queryClient.invalidateQueries([BOOKMARKS_KEY, TRASH_URL]);
+      },
+    }
+  );
 
   const clearBookmarksInTrashMutation = useMutation(clearBookmarksInTrash, {
     onSuccess: () => {
@@ -258,17 +337,20 @@ const Dashboard = () => {
   const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
     onMutate: async (data) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([BOOKMARKS_KEY, session?.user?.id]);
+      await queryClient.cancelQueries([
+        BOOKMARKS_KEY,
+        isNull(category_id) ? session?.user?.id : category_id,
+      ]);
 
       // Snapshot the previous value
       const previousTodos = queryClient.getQueryData([
         BOOKMARKS_KEY,
-        session?.user?.id,
+        isNull(category_id) ? session?.user?.id : category_id,
       ]);
 
       // Optimistically update to the new value
       queryClient.setQueryData(
-        [BOOKMARKS_KEY, session?.user?.id],
+        [BOOKMARKS_KEY, isNull(category_id) ? session?.user?.id : category_id],
         (old: { data: SingleListData[] } | undefined) => {
           if (typeof old === 'object') {
             return {
@@ -292,13 +374,16 @@ const Dashboard = () => {
     // If the mutation fails, use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
       queryClient.setQueryData(
-        [BOOKMARKS_KEY, session?.user?.id],
+        [BOOKMARKS_KEY, isNull(category_id) ? session?.user?.id : category_id],
         context?.previousTodos
       );
     },
     // Always refetch after error or success:
     onSettled: (res: unknown) => {
-      queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
+      queryClient.invalidateQueries([
+        BOOKMARKS_KEY,
+        isNull(category_id) ? session?.user?.id : category_id,
+      ]);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const data = res?.data?.data[0];
@@ -668,7 +753,7 @@ const Dashboard = () => {
                   } else {
                     // if not in trash then move bookmark to trash
                     await mutationApiCall(
-                      moveBookmarkToTrashMutation.mutateAsync({
+                      moveBookmarkToTrashOptimisticMutation.mutateAsync({
                         data: item,
                         isTrash: true,
                       })
@@ -684,7 +769,7 @@ const Dashboard = () => {
                 }}
                 onMoveOutOfTrashClick={async (data) => {
                   await mutationApiCall(
-                    moveBookmarkToTrashMutation.mutateAsync({
+                    moveBookmarkToTrashOptimisticMutation.mutateAsync({
                       data,
                       isTrash: false,
                     })
@@ -962,16 +1047,20 @@ const Dashboard = () => {
       <WarningActionModal
         open={showDeleteBookmarkWarningModal}
         setOpen={toggleShowDeleteBookmarkWarningModal}
-        isLoading={deleteBookmarkMutation?.isLoading}
+        // isLoading={deleteBookmarkMutation?.isLoading}
+        isLoading={false}
         buttonText="Delete"
         warningText="Are you sure you want to delete ?"
         onContinueCick={async () => {
           if (deleteBookmarkId) {
+            toggleShowDeleteBookmarkWarningModal();
+
             await mutationApiCall(
-              deleteBookmarkMutation.mutateAsync({ id: deleteBookmarkId })
+              deleteBookmarkOptismicMutation.mutateAsync({
+                id: deleteBookmarkId,
+              })
             );
           }
-          toggleShowDeleteBookmarkWarningModal();
           setDeleteBookmarkId(undefined);
         }}
       />
