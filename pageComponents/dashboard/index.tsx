@@ -385,6 +385,7 @@ const Dashboard = () => {
         BOOKMARKS_KEY,
         isNull(category_id) ? session?.user?.id : category_id,
       ]);
+      queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const data = res?.data?.data[0];

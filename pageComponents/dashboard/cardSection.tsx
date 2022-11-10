@@ -24,10 +24,7 @@ import {
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import Spinner from '../../components/spinner';
-import {
-  useBookmarkCardViewState,
-  useLoadersStore,
-} from '../../store/componentStore';
+import { useBookmarkCardViewState } from '../../store/componentStore';
 import Avatar from 'react-avatar';
 import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
@@ -71,9 +68,7 @@ const CardSection = ({
   const category_id = router?.asPath?.split('/')[1] || null;
   const queryClient = useQueryClient();
 
-  const isDeleteBookmarkLoading = useLoadersStore(
-    (state) => state.isDeleteBookmarkLoading
-  );
+  const isDeleteBookmarkLoading = false;
 
   // const moodboardColumns = useBookmarkCardViewState(
   //   (state) => state.moodboardColumns
@@ -269,14 +264,14 @@ const CardSection = ({
       ' h-36  w-full':
         cardTypeCondition === 'moodboard' &&
         (isOgImgLoading || isBookmarkLoading) &&
-        index === 0,
+        img === undefined,
     });
 
     return (
       <figure className={figureClassName}>
         {bookmarksInfoValue?.includes('cover') && (
           <>
-            {(isOgImgLoading || isBookmarkLoading) && index === 0 ? (
+            {(isOgImgLoading || isBookmarkLoading) && img === undefined ? (
               <div className={loaderClassName} />
             ) : (
               <>
