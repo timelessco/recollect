@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React from 'react';
+import Head from 'next/head';
 
 function MyApp({ Component, pageProps: { ...pageProps } }: AppProps) {
   // Create a client
@@ -26,6 +27,13 @@ function MyApp({ Component, pageProps: { ...pageProps } }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
+        <Head>
+          <title>Bookmarks</title>
+          <meta
+            name="viewport"
+            content="initial-scale=1.0, width=device-width"
+          />
+        </Head>
         <Component {...pageProps} />
       </Hydrate>
       <ReactQueryDevtools />

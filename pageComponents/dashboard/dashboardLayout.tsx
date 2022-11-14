@@ -150,7 +150,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const renderSidePaneUserDropdown = () => {
     return (
       <div className="flex items-center justify-between">
-        {userImg ? (
+        {userName ? (
           <Menu as="div" className="flex-shrink-0 relative">
             <div className="p-1 hover:bg-custom-gray-2 rounded-lg">
               <Menu.Button className="w-full flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">

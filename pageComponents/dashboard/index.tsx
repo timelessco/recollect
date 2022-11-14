@@ -44,6 +44,7 @@ import {
   BOOKMARKS_KEY,
   BOOKMARKS_VIEW,
   CATEGORIES_KEY,
+  LOGIN_URL,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
   USER_PROFILE,
@@ -144,6 +145,10 @@ const Dashboard = () => {
   const fetchUserSession = async () => {
     const currentSession = await getCurrentUserSession();
     setSession(currentSession);
+
+    if (!currentSession) {
+      router.push(`/${LOGIN_URL}`);
+    }
   };
 
   useEffect(() => {
@@ -1064,11 +1069,12 @@ const Dashboard = () => {
         bookmarksData={bookmarksData?.data} // make this dependant on react-query
         renderMainContent={renderAllBookmarkCards}
         userImg={session?.user?.user_metadata?.avatar_url}
-        userName={session?.user?.user_metadata?.name}
+        userName={session?.user?.user_metadata?.name || session?.user?.email}
         userEmail={session?.user?.user_metadata?.email}
-        onSignOutClick={() => {
-          signOut();
+        onSignOutClick={async () => {
+          await signOut();
           setSession(undefined);
+          router.push(`/${LOGIN_URL}`);
         }}
         onSigninClick={() => {
           signInWithOauth();

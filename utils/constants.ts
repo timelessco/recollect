@@ -67,6 +67,8 @@ export const UNCATEGORIZED_URL = 'uncategorized';
 export const SEARCH_URL = 'search';
 export const INBOX_URL = 'inbox';
 export const TRASH_URL = 'trash';
+export const LOGIN_URL = 'login';
+export const SIGNUP_URL = 'signup';
 
 // react-query keys
 

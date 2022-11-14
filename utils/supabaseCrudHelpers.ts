@@ -564,6 +564,30 @@ export const signInWithOauth = async (provider: Provider = 'google') => {
   });
 };
 
+export const signInWithEmailPassword = async (
+  email: string,
+  password: string
+) => {
+  const { user, session, error } = await supabase.auth.signIn({
+    email: email,
+    password: password,
+  });
+
+  return { user, session, error };
+};
+
+export const signUpWithEmailPassword = async (
+  email: string,
+  password: string
+) => {
+  const { user, session, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  return { user, session, error };
+};
+
 export const signOut = async () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { error } = await supabase.auth.signOut();
