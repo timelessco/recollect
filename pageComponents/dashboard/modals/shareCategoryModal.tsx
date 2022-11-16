@@ -168,6 +168,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
             className=""
             isError={!isEmpty(errors)}
             errorText=""
+            id="collab-email-input"
           />
         </form>
         <div className="mt-6">
@@ -185,6 +186,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
                   <>
                     {' '}
                     <Select
+                      id="collab-access-select"
                       options={[
                         { name: 'Read', value: 0 },
                         { name: 'Edit', value: 1 },

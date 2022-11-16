@@ -10,6 +10,7 @@ interface ButtonProps {
   isDisabled?: boolean;
   type?: 'dark' | 'light';
   style?: Record<string, unknown>;
+  id?: string;
 }
 
 const Button: React.FC<ButtonProps> = (props) => {
@@ -19,6 +20,7 @@ const Button: React.FC<ButtonProps> = (props) => {
     className,
     isDisabled = false,
     type = 'light',
+    id = '',
     style,
   } = props;
 
@@ -39,6 +41,7 @@ const Button: React.FC<ButtonProps> = (props) => {
       className={buttonClassNames}
       disabled={isDisabled}
       style={style}
+      id={id}
     >
       {children}
     </button>

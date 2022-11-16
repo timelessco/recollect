@@ -111,7 +111,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     }
   }, []);
 
-  const userNavigation = [{ name: 'Sign out', href: '#' }];
+  const userNavigation = [{ name: 'Sign out', href: '#', value: 'sign-out' }];
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -153,7 +153,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         {userName ? (
           <Menu as="div" className="flex-shrink-0 relative">
             <div className="p-1 hover:bg-custom-gray-2 rounded-lg">
-              <Menu.Button className="w-full flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <Menu.Button className="user-menu-btn w-full flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <div className="w-6 h-6">
                   <span className="sr-only">Open user menu</span>
                   {userImg && (
@@ -167,7 +167,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                   )}
                 </div>
 
-                <p className="text-sm font-medium text-custom-gray-1 mx-2 leading-[115%]">
+                <p
+                  className="text-sm font-medium text-custom-gray-1 mx-2 leading-[115%]"
+                  id="user-name"
+                >
                   {userName}
                 </p>
                 <DownArrowGray />
@@ -187,7 +190,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                   <Menu.Item key={item.name}>
                     {({ active }) => (
                       <div
-                        className={` cursor-pointer ${classNames(
+                        className={`${item?.value} cursor-pointer ${classNames(
                           active ? 'bg-gray-100' : '',
                           'block py-2 px-4 text-sm text-gray-700'
                         )}`}
@@ -263,6 +266,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     extendedClassname: string;
     showDropdown?: boolean;
     showIconDropdown?: boolean;
+    listNameId?: string;
   }
 
   const SingleListItem = (listProps: listPropsTypes) => {
@@ -271,6 +275,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       extendedClassname = '',
       showDropdown = false,
       showIconDropdown = true,
+      listNameId = '',
     } = listProps;
     return (
       <Link href={item?.href} passHref={true}>
@@ -290,7 +295,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             ) : (
               <figure>{item?.icon ? item?.icon() : null}</figure>
             )}
-            <p className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-2 leading-[14px]">
+            <p
+              className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-2 leading-[14px]"
+              id={listNameId}
+            >
               {item?.name}
             </p>
           </div>
@@ -364,7 +372,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     );
   };
 
-  const collectionsList = userImg
+  const collectionsList = userName
     ? categoryData?.data?.map((item) => {
         return {
           name: item?.category_name,
@@ -391,16 +399,19 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           Collections
         </p>
         <div className="pt-3">
-          {collectionsList?.map((item, index) => {
-            return (
-              <SingleListItem
-                extendedClassname="py-[5px]"
-                item={item}
-                key={index}
-                showDropdown={true}
-              />
-            );
-          })}
+          <div id="collections-wrapper">
+            {collectionsList?.map((item, index) => {
+              return (
+                <SingleListItem
+                  extendedClassname="py-[5px]"
+                  item={item}
+                  key={index}
+                  showDropdown={true}
+                  listNameId="collection-name"
+                />
+              );
+            })}
+          </div>
           {showAddCategoryInput && (
             <div
               className={`px-2 py-[5px] mt-1 flex items-center bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
@@ -411,6 +422,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                 </figure>
                 <input
                   placeholder="Category Name"
+                  id="add-category-input"
                   className="text-sm font-[450] text-custom-gray-5 leading-4 focus:outline-none bg-black/[0.004] opacity-40"
                   autoFocus
                   onBlur={() => setShowAddCategoryInput(false)}
@@ -430,6 +442,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           <div
             className="py-[5px] px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer"
             onClick={() => setShowAddCategoryInput(true)}
+            id="add-category-button"
           >
             <figure>
               <AddCategoryIcon />
@@ -493,7 +506,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               userId={userId}
             />
             {typeof categoryId === 'number' && (
-              <Button type="light" onClick={() => onShareClick()}>
+              <Button
+                type="light"
+                onClick={() => onShareClick()}
+                id="share-button"
+              >
                 <figure className="w-3 h-3">
                   <UserIconGray />
                 </figure>

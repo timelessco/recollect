@@ -54,6 +54,7 @@ const AddBookarkShortcutModal = (props: AddBookarkShortcutModalProps) => {
               className=""
               isError={!isEmpty(errors)}
               errorText="Enter valid URL"
+              id="add-url-input"
             />
           </form>
         </LabelledComponent>

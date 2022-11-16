@@ -77,3 +77,8 @@ export const CATEGORIES_KEY = 'categories';
 export const USER_TAGS_KEY = 'userTags';
 export const BOOKMARKS_VIEW = 'bookmarks_view';
 export const USER_PROFILE = 'user_profile';
+
+// error msgs
+
+export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
+  'You dont have access to add to this category, this bookmark will be added without a category';

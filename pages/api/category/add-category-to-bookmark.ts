@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { SingleListData } from '../../../types/apiTypes';
-import { MAIN_TABLE_NAME } from '../../../utils/constants';
+import {
+  ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
+  MAIN_TABLE_NAME,
+} from '../../../utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
@@ -47,9 +50,7 @@ export default async function handler(
     res.status(200).json({
       data,
       error,
-      message: update_access
-        ? null
-        : 'You dont have access to add to this category, this bookmark will be added without a category',
+      message: update_access ? null : ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
     });
     return;
   } else {

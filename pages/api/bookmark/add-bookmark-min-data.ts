@@ -6,6 +6,7 @@ import { isNull } from 'lodash';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { SingleListData } from '../../../types/apiTypes';
 import {
+  ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
   MAIN_TABLE_NAME,
   TIMELESS_SCRAPPER_API,
 } from '../../../utils/constants';
@@ -91,9 +92,7 @@ export default async function handler(
       res.status(200).json({
         data: data,
         error: null,
-        message: !isNull(category_id)
-          ? 'You dont have access to add to this category, this bookmark will be added without a category'
-          : null,
+        message: !isNull(category_id) ? ADD_UPDATE_BOOKMARK_ACCESS_ERROR : null,
       });
       return;
     }

@@ -40,6 +40,7 @@ export default function Tabs(props: TabsProps) {
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             {tabs.map((tab) => (
               <div
+                id={`${tab?.name}-tab`}
                 key={tab.name}
                 onClick={() => onTabClick(tab.value)}
                 className={classNames(

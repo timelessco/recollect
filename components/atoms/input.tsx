@@ -11,6 +11,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   isError: boolean;
   errorText: string;
   isDisabled?: boolean;
+  id?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
@@ -23,6 +24,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     isError,
     errorText = '',
     isDisabled = false,
+    id = '',
   } = props;
 
   const inputClass = classNames(className, {
@@ -38,6 +40,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     <div className="w-full">
       <div className="mt-1 relative rounded-md shadow-sm">
         <input
+          id={id}
           ref={ref}
           type="text"
           value={value}
