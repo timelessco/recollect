@@ -414,7 +414,7 @@ const CardSection = ({
             <div
               style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
               key={item?.id || index}
-              className="group relative"
+              className="group relative h-[104px]"
             >
               <a
                 href={item?.url}

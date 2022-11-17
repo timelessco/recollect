@@ -1071,6 +1071,7 @@ const Dashboard = () => {
         userImg={session?.user?.user_metadata?.avatar_url}
         userName={session?.user?.user_metadata?.name || session?.user?.email}
         userEmail={session?.user?.user_metadata?.email}
+        onNavAddClick={() => toggleShowAddBookmarkShortcutModal()}
         onSignOutClick={async () => {
           await signOut();
           setSession(undefined);

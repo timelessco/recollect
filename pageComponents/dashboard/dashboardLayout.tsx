@@ -80,6 +80,7 @@ interface DashboardLayoutProps {
     value: BookmarksViewTypes | string[] | number[] | BookmarksSortByTypes,
     type: BookmarkViewCategories
   ) => void;
+  onNavAddClick: () => void;
 }
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -99,6 +100,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     onClearTrash,
     onIconSelect,
     setBookmarksView,
+    onNavAddClick,
   } = props;
 
   const [showSidePane, setShowSidePane] = useState(true);
@@ -562,7 +564,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             </Button>
           )}
 
-          <Button type="dark">
+          <Button type="dark" onClick={onNavAddClick}>
             <figure className="w-3 h-3">
               <PlusIconWhite />
             </figure>
