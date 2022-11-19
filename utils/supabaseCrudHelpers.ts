@@ -37,6 +37,7 @@ import {
   FETCH_BOOKMARKS_VIEW,
   FETCH_USER_PROFILE_API,
   UPDATE_USER_PROFILE_API,
+  PAGINATION_LIMIT,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 import { isNull } from 'lodash';
@@ -49,7 +50,9 @@ export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
 
 // gets bookmarks data
 export const fetchBookmakrsData = async (
-  category_id: string | null | number
+  // category_id: string | null | number,
+  // from: number
+  { pageParam = 0 }
 ) => {
   const session = await getCurrentUserSession();
 
@@ -59,7 +62,9 @@ export const fetchBookmakrsData = async (
 
   try {
     const bookmarksData = await axios.get(
-      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${category_id}`
+      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${
+        session?.access_token
+      }&category_id=${null}&from=${pageParam}`
     );
     return {
       data: bookmarksData?.data?.data,

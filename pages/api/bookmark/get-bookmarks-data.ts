@@ -4,6 +4,7 @@ import { UserTagsData, SingleListData } from '../../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   MAIN_TABLE_NAME,
+  PAGINATION_LIMIT,
   TAG_TABLE_NAME,
   TRASH_URL,
 } from '../../../utils/constants';
@@ -23,7 +24,7 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const category_id = req.query.category_id;
-
+  const from = parseInt(req.query.from as string);
   const accessToken = req.query.access_token as string;
 
   const supabase = createClient(
@@ -68,7 +69,9 @@ export default async function handler(
     `
       )
       .eq('trash', false)
-      .eq('user_id', userId); // this is for '/' route , we need bookmakrs by user_id // TODO: check and remove
+      .eq('user_id', userId) // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
+      .range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT)
+      .order('id', { ascending: false });
     data = bookmarkData;
   } else if (category_id === TRASH_URL) {
     // get trash bookmarks

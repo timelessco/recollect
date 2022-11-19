@@ -1,5 +1,10 @@
 import { Session, UserIdentity } from '@supabase/supabase-js';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 // import { AxiosResponse } from 'axios';
 import { useEffect, useState } from 'react';
 import {
@@ -54,12 +59,13 @@ import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
-import { find, isEmpty, isNull } from 'lodash';
+import { find, flatten, isEmpty, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
   useLoadersStore,
   useMiscellaneousStore,
   useModalStore,
+  usePaginationState,
 } from '../../store/componentStore';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
@@ -76,6 +82,7 @@ import {
   BookmarkViewCategories,
 } from '../../types/componentStoreTypes';
 import slugify from 'slugify';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -194,10 +201,21 @@ const Dashboard = () => {
       fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
-  const { data: allBookmarksData, isLoading: isAllBookmarksDataLoading } =
-    useQuery([BOOKMARKS_KEY, session?.user?.id], () =>
-      fetchBookmakrsData('null')
-    );
+  const {
+    data: allBookmarksData,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching: isAllBookmarksDataLoading,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
+    queryKey: [BOOKMARKS_KEY, session?.user?.id],
+    queryFn: fetchBookmakrsData,
+    getNextPageParam: (lastPage, pages) => {
+      return pages?.length * 10;
+    },
+  });
 
   const {} = useQuery([BOOKMARKS_KEY, TRASH_URL], () =>
     fetchBookmakrsData(TRASH_URL)
@@ -843,70 +861,97 @@ const Dashboard = () => {
   const renderAllBookmarkCards = () => {
     return (
       <>
-        <div className="px-4">
+        <div className="pl-4">
           {session ? (
             <>
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
-              <CardSection
-                isBookmarkLoading={
-                  addBookmarkMinDataOptimisticMutation?.isLoading
+
+              <InfiniteScroll
+                dataLength={
+                  flatten(
+                    allBookmarksData?.pages?.map((item) =>
+                      item?.data?.map((twoItem) => twoItem)
+                    )
+                  )?.length
                 }
-                isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
-                addScreenshotBookmarkId={addScreenshotBookmarkId}
-                deleteBookmarkId={deleteBookmarkId}
-                showAvatar={
-                  // only show for a collab category
-                  category_id &&
-                  !isNull(category_id) &&
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  find(allCategories?.data, (item) => item?.id === category_id)
-                    ?.collabData?.length > 1
-                    ? true
-                    : false
-                }
-                userId={session?.user?.id || ''}
-                isLoading={
-                  (isBookmarksLoading && !bookmarksData) ||
-                  isAllBookmarksDataLoading
-                }
-                listData={
-                  !isNull(category_id)
-                    ? bookmarksData?.data || []
-                    : allBookmarksData?.data || []
-                }
-                onDeleteClick={async (item) => {
-                  // toggleIsDeleteBookmarkLoading();
-                  setDeleteBookmarkId(item?.id);
-                  if (category_id === TRASH_URL) {
-                    // delete bookmark if in trash
-                    toggleShowDeleteBookmarkWarningModal();
-                  } else {
-                    // if not in trash then move bookmark to trash
+                next={fetchNextPage}
+                hasMore={true}
+                height={'calc(100vh - 48.5px)'}
+                loader={() => null}
+              >
+                <CardSection
+                  paginationFetch={fetchNextPage}
+                  isBookmarkLoading={
+                    addBookmarkMinDataOptimisticMutation?.isLoading
+                  }
+                  isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
+                  addScreenshotBookmarkId={addScreenshotBookmarkId}
+                  deleteBookmarkId={deleteBookmarkId}
+                  showAvatar={
+                    // only show for a collab category
+                    category_id &&
+                    !isNull(category_id) &&
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    find(
+                      allCategories?.data,
+                      (item) => item?.id === category_id
+                    )?.collabData?.length > 1
+                      ? true
+                      : false
+                  }
+                  userId={session?.user?.id || ''}
+                  // isLoading={
+                  //   (isBookmarksLoading && !bookmarksData) ||
+                  //   isAllBookmarksDataLoading
+                  // }
+                  isLoading={false}
+                  // listData={
+                  //   !isNull(category_id)
+                  //     ? bookmarksData?.data || []
+                  //     : allBookmarksData?.data || []
+                  // }
+
+                  listData={
+                    flatten(
+                      allBookmarksData?.pages?.map((item) =>
+                        item?.data?.map((twoItem) => twoItem)
+                      )
+                    ) || []
+                  }
+                  onDeleteClick={async (item) => {
+                    // toggleIsDeleteBookmarkLoading();
+                    setDeleteBookmarkId(item?.id);
+                    if (category_id === TRASH_URL) {
+                      // delete bookmark if in trash
+                      toggleShowDeleteBookmarkWarningModal();
+                    } else {
+                      // if not in trash then move bookmark to trash
+                      await mutationApiCall(
+                        moveBookmarkToTrashOptimisticMutation.mutateAsync({
+                          data: item,
+                          isTrash: true,
+                        })
+                      );
+                    }
+
+                    toggleIsDeleteBookmarkLoading();
+                  }}
+                  onEditClick={(item) => {
+                    setAddedUrlData(item);
+                    setIsEdit(true);
+                    setShowAddBookmarkModal(true);
+                  }}
+                  onMoveOutOfTrashClick={async (data) => {
                     await mutationApiCall(
                       moveBookmarkToTrashOptimisticMutation.mutateAsync({
-                        data: item,
-                        isTrash: true,
+                        data,
+                        isTrash: false,
                       })
                     );
-                  }
-
-                  toggleIsDeleteBookmarkLoading();
-                }}
-                onEditClick={(item) => {
-                  setAddedUrlData(item);
-                  setIsEdit(true);
-                  setShowAddBookmarkModal(true);
-                }}
-                onMoveOutOfTrashClick={async (data) => {
-                  await mutationApiCall(
-                    moveBookmarkToTrashOptimisticMutation.mutateAsync({
-                      data,
-                      isTrash: false,
-                    })
-                  );
-                }}
-              />
+                  }}
+                />
+              </InfiniteScroll>
             </>
           ) : (
             <SignedOutSection />
