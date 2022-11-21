@@ -233,7 +233,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${ALL_BOOKMARKS_URL}`,
       current: currentPath === ALL_BOOKMARKS_URL,
       id: 1,
-      count: bookmarksData?.data?.length,
+      count: bookmarksData?.pages[0]?.count,
     },
     {
       icon: () => <InboxIconGray />,

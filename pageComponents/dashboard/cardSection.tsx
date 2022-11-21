@@ -11,7 +11,6 @@ import {
   PencilAltIcon,
   TrashIcon,
 } from '@heroicons/react/solid';
-import orderBy from 'lodash/orderBy';
 import { useRouter } from 'next/router';
 import {
   ALL_BOOKMARKS_URL,
@@ -130,16 +129,6 @@ const CardSection = ({
     ? userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
     : [10];
 
-  const bookmarksSortValue = isUserInACategory(category_id as string)
-    ? isUserTheCategoryOwner
-      ? currentCategoryData?.category_views?.sortBy
-      : !isEmpty(sharedCategoriesData?.data)
-      ? sharedCategoriesData?.data[0]?.category_views?.sortBy
-      : ''
-    : !isEmpty(userProfilesData?.data)
-    ? userProfilesData?.data[0]?.bookmarks_view?.sortBy
-    : '';
-
   const cardTypeCondition = isUserInACategory(category_id as string)
     ? isUserTheCategoryOwner
       ? currentCategoryData?.category_views?.bookmarksView
@@ -242,7 +231,7 @@ const CardSection = ({
     );
   };
 
-  const renderOgImage = (img: string, index: number) => {
+  const renderOgImage = (img: string) => {
     const imgClassName = classNames({
       'h-14 w-full object-cover': cardTypeCondition === 'list',
       'h-48 w-full object-cover': cardTypeCondition === 'card',
@@ -310,20 +299,7 @@ const CardSection = ({
   };
 
   const renderSortByCondition = () => {
-    switch (bookmarksSortValue) {
-      case 'date-sort-acending':
-        return orderBy(bookmarksList, ['id'], ['desc']);
-      case 'date-sort-decending':
-        return orderBy(bookmarksList, ['id'], ['asc']);
-      case 'alphabetical-sort-acending':
-        return orderBy(bookmarksList, ['title'], ['asc']);
-      case 'alphabetical-sort-decending':
-        return orderBy(bookmarksList, ['title'], ['desc']);
-      case 'url-sort-acending':
-        return orderBy(bookmarksList, ['url'], ['asc']);
-      case 'url-sort-decending':
-        return orderBy(bookmarksList, ['url'], ['desc']);
-    }
+    return bookmarksList;
   };
 
   const renderHeadlinesType = () => {

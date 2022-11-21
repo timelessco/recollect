@@ -69,6 +69,7 @@ export const fetchBookmakrsData = async (
     return {
       data: bookmarksData?.data?.data,
       error: null,
+      count: bookmarksData?.data?.count,
     } as unknown as FetchDataResponse;
   } catch (e) {
     return { data: undefined, error: e } as unknown as FetchDataResponse;

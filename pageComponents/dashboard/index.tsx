@@ -6,7 +6,7 @@ import {
   useInfiniteQuery,
 } from '@tanstack/react-query';
 // import { AxiosResponse } from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   BookmarksTagData,
   CategoriesData,
@@ -65,7 +65,6 @@ import {
   useLoadersStore,
   useMiscellaneousStore,
   useModalStore,
-  usePaginationState,
 } from '../../store/componentStore';
 import { useRouter } from 'next/router';
 import { ToastContainer } from 'react-toastify';
@@ -100,6 +99,8 @@ const Dashboard = () => {
   const [deleteBookmarkId, setDeleteBookmarkId] = useState<number | undefined>(
     undefined
   );
+
+  const infiniteScrollRef = useRef(null);
 
   const router = useRouter();
 
@@ -752,6 +753,7 @@ const Dashboard = () => {
     // Always refetch after error or success:
     onSettled: () => {
       queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
+      queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
     },
   });
 
@@ -826,6 +828,13 @@ const Dashboard = () => {
           );
         }
       } else {
+        // only if user is updating sortby, then scroll to top
+        if (updateValue === 'sortBy') {
+          if (!isNull(infiniteScrollRef?.current)) {
+            infiniteScrollRef?.current?.scrollTo(0, 0);
+          }
+        }
+
         mutationApiCall(
           updateUserProfileOptimisticMutation.mutateAsync({
             id: session?.user?.id as string,
@@ -865,93 +874,99 @@ const Dashboard = () => {
           {session ? (
             <>
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
-
-              <InfiniteScroll
-                dataLength={
-                  flatten(
-                    allBookmarksData?.pages?.map((item) =>
-                      item?.data?.map((twoItem) => twoItem)
-                    )
-                  )?.length
-                }
-                next={fetchNextPage}
-                hasMore={true}
-                height={'calc(100vh - 48.5px)'}
-                loader={() => null}
+              <div
+                id="scrollableDiv"
+                style={{ height: 'calc(100vh - 48.5px)', overflow: 'auto' }}
+                ref={infiniteScrollRef}
               >
-                <CardSection
-                  paginationFetch={fetchNextPage}
-                  isBookmarkLoading={
-                    addBookmarkMinDataOptimisticMutation?.isLoading
-                  }
-                  isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
-                  addScreenshotBookmarkId={addScreenshotBookmarkId}
-                  deleteBookmarkId={deleteBookmarkId}
-                  showAvatar={
-                    // only show for a collab category
-                    category_id &&
-                    !isNull(category_id) &&
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    find(
-                      allCategories?.data,
-                      (item) => item?.id === category_id
-                    )?.collabData?.length > 1
-                      ? true
-                      : false
-                  }
-                  userId={session?.user?.id || ''}
-                  // isLoading={
-                  //   (isBookmarksLoading && !bookmarksData) ||
-                  //   isAllBookmarksDataLoading
-                  // }
-                  isLoading={false}
-                  // listData={
-                  //   !isNull(category_id)
-                  //     ? bookmarksData?.data || []
-                  //     : allBookmarksData?.data || []
-                  // }
-
-                  listData={
+                <InfiniteScroll
+                  dataLength={
                     flatten(
                       allBookmarksData?.pages?.map((item) =>
                         item?.data?.map((twoItem) => twoItem)
                       )
-                    ) || []
+                    )?.length
                   }
-                  onDeleteClick={async (item) => {
-                    // toggleIsDeleteBookmarkLoading();
-                    setDeleteBookmarkId(item?.id);
-                    if (category_id === TRASH_URL) {
-                      // delete bookmark if in trash
-                      toggleShowDeleteBookmarkWarningModal();
-                    } else {
-                      // if not in trash then move bookmark to trash
+                  next={fetchNextPage}
+                  hasMore={true}
+                  // height={'calc(100vh - 48.5px)'}
+                  loader={() => null}
+                  scrollableTarget="scrollableDiv"
+                >
+                  <CardSection
+                    paginationFetch={fetchNextPage}
+                    isBookmarkLoading={
+                      addBookmarkMinDataOptimisticMutation?.isLoading
+                    }
+                    isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
+                    addScreenshotBookmarkId={addScreenshotBookmarkId}
+                    deleteBookmarkId={deleteBookmarkId}
+                    showAvatar={
+                      // only show for a collab category
+                      category_id &&
+                      !isNull(category_id) &&
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                      // @ts-ignore
+                      find(
+                        allCategories?.data,
+                        (item) => item?.id === category_id
+                      )?.collabData?.length > 1
+                        ? true
+                        : false
+                    }
+                    userId={session?.user?.id || ''}
+                    // isLoading={
+                    //   (isBookmarksLoading && !bookmarksData) ||
+                    //   isAllBookmarksDataLoading
+                    // }
+                    isLoading={false}
+                    // listData={
+                    //   !isNull(category_id)
+                    //     ? bookmarksData?.data || []
+                    //     : allBookmarksData?.data || []
+                    // }
+
+                    listData={
+                      flatten(
+                        allBookmarksData?.pages?.map((item) =>
+                          item?.data?.map((twoItem) => twoItem)
+                        )
+                      ) || []
+                    }
+                    onDeleteClick={async (item) => {
+                      // toggleIsDeleteBookmarkLoading();
+                      setDeleteBookmarkId(item?.id);
+                      if (category_id === TRASH_URL) {
+                        // delete bookmark if in trash
+                        toggleShowDeleteBookmarkWarningModal();
+                      } else {
+                        // if not in trash then move bookmark to trash
+                        await mutationApiCall(
+                          moveBookmarkToTrashOptimisticMutation.mutateAsync({
+                            data: item,
+                            isTrash: true,
+                          })
+                        );
+                      }
+
+                      toggleIsDeleteBookmarkLoading();
+                    }}
+                    onEditClick={(item) => {
+                      setAddedUrlData(item);
+                      setIsEdit(true);
+                      setShowAddBookmarkModal(true);
+                    }}
+                    onMoveOutOfTrashClick={async (data) => {
                       await mutationApiCall(
                         moveBookmarkToTrashOptimisticMutation.mutateAsync({
-                          data: item,
-                          isTrash: true,
+                          data,
+                          isTrash: false,
                         })
                       );
-                    }
-
-                    toggleIsDeleteBookmarkLoading();
-                  }}
-                  onEditClick={(item) => {
-                    setAddedUrlData(item);
-                    setIsEdit(true);
-                    setShowAddBookmarkModal(true);
-                  }}
-                  onMoveOutOfTrashClick={async (data) => {
-                    await mutationApiCall(
-                      moveBookmarkToTrashOptimisticMutation.mutateAsync({
-                        data,
-                        isTrash: false,
-                      })
-                    );
-                  }}
-                />
-              </InfiniteScroll>
+                    }}
+                  />
+                </InfiniteScroll>
+              </div>
             </>
           ) : (
             <SignedOutSection />
