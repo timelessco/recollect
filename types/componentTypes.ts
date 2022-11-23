@@ -1,3 +1,9 @@
+import {
+  ALL_BOOKMARKS_URL,
+  TRASH_URL,
+  UNCATEGORIZED_URL,
+} from '../utils/constants';
+
 export interface UrlInput {
   urlText: string;
 }
@@ -17,4 +23,9 @@ export interface SearchSelectOption {
   label: string;
 }
 
-export type CategoryIdUrlTypes = number | 'trash' | null;
+export type CategoryIdUrlTypes =
+  | number
+  | typeof TRASH_URL
+  | null
+  | typeof UNCATEGORIZED_URL
+  | typeof ALL_BOOKMARKS_URL;

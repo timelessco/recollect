@@ -37,7 +37,6 @@ import {
   FETCH_BOOKMARKS_VIEW,
   FETCH_USER_PROFILE_API,
   UPDATE_USER_PROFILE_API,
-  PAGINATION_LIMIT,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 import { isNull } from 'lodash';
@@ -52,6 +51,8 @@ export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
 export const fetchBookmakrsData = async (
   // category_id: string | null | number,
   // from: number
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
   { pageParam = 0, queryKey }
 ) => {
   const session = await getCurrentUserSession();
@@ -100,7 +101,7 @@ export const addBookmarkMinData = async ({
   update_access,
 }: {
   url: string;
-  category_id: number | string;
+  category_id: number | string | null;
   update_access: boolean;
 }) => {
   const session = await getCurrentUserSession();
@@ -386,7 +387,7 @@ export const addCategoryToBookmark = async ({
   bookmark_id,
   update_access = false,
 }: {
-  category_id: number | string;
+  category_id: number | null;
   bookmark_id: number;
   update_access: boolean;
 }) => {

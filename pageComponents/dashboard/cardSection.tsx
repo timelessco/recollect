@@ -17,7 +17,6 @@ import {
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
-  UNCATEGORIZED_URL,
   USER_PROFILE,
 } from '../../utils/constants';
 import find from 'lodash/find';
@@ -397,7 +396,7 @@ const CardSection = ({
                 rel="noreferrer"
                 className="flex items-center"
               >
-                <>{renderOgImage(item?.ogImage, index)}</>
+                <>{renderOgImage(item?.ogImage)}</>
                 {bookmarksInfoValue?.length === 1 &&
                 bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="p-4 space-y-2">
@@ -492,7 +491,7 @@ const CardSection = ({
               className="group relative"
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
-                <>{renderOgImage(item?.ogImage, index)}</>
+                <>{renderOgImage(item?.ogImage)}</>
                 {bookmarksInfoValue?.length === 1 &&
                 bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="p-4 space-y-2">
@@ -584,7 +583,7 @@ const CardSection = ({
               className="rounded-lg drop-shadow-custom-1 group relative"
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
-                <>{renderOgImage(item?.ogImage, index)}</>
+                <>{renderOgImage(item?.ogImage)}</>
                 {bookmarksInfoValue?.length === 1 &&
                 bookmarksInfoValue[0] === 'cover' ? null : (
                   <div className="rounded-lg p-4 space-y-2">

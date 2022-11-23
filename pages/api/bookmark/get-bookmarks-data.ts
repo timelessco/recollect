@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import { supabase } from '../../utils/supabaseClient';
-import { UserTagsData, SingleListData } from '../../../types/apiTypes';
+import {
+  UserTagsData,
+  SingleListData,
+  BookmarksCountTypes,
+} from '../../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   CATEGORIES_TABLE_NAME,
@@ -16,12 +20,13 @@ import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
 import { BookmarksSortByTypes } from '../../../types/componentStoreTypes';
+import { isEmpty } from 'lodash';
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
 type Data = {
   data: Array<SingleListData> | null;
   error: PostgrestError | null | string | jwt.VerifyErrors;
-  count: number | null;
+  count: BookmarksCountTypes | null;
 };
 
 export default async function handler(
@@ -75,15 +80,20 @@ export default async function handler(
       .eq('user_id', userId)
       .eq('id', category_id);
 
-    sortVaue = userCategorySortData[0]?.category_views
-      ?.sortBy as BookmarksSortByTypes;
+    sortVaue =
+      !isEmpty(userCategorySortData) &&
+      !isNull(userCategorySortData) &&
+      (userCategorySortData[0]?.category_views?.sortBy as BookmarksSortByTypes);
   } else {
     const { data: userSortData } = await supabase
       .from(PROFILES)
       .select(`bookmarks_view`)
       .eq('id', userId);
 
-    sortVaue = userSortData[0]?.bookmarks_view?.sortBy as BookmarksSortByTypes;
+    sortVaue =
+      !isNull(userSortData) &&
+      !isEmpty(userSortData) &&
+      (userSortData[0]?.bookmarks_view?.sortBy as BookmarksSortByTypes);
   }
 
   // get all bookmarks
@@ -172,7 +182,7 @@ id
         )?.length,
       };
     }),
-  };
+  } as BookmarksCountTypes;
 
   const { data: bookmarkTags } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)

@@ -8,6 +8,7 @@ import {
 // import { AxiosResponse } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import {
+  BookmarksPaginatedDataTypes,
   BookmarksTagData,
   CategoriesData,
   FetchSharedCategoriesData,
@@ -56,7 +57,11 @@ import {
   USER_PROFILE,
   USER_TAGS_KEY,
 } from '../../utils/constants';
-import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
+import {
+  CategoryIdUrlTypes,
+  SearchSelectOption,
+  TagInputOption,
+} from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
@@ -208,12 +213,7 @@ const Dashboard = () => {
     getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
   const {
     data: allBookmarksData,
-    error,
     fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    status,
     isLoading: isAllBookmarksDataLoading,
   } = useInfiniteQuery({
     queryKey: [BOOKMARKS_KEY, session?.user?.id, category_id],
@@ -222,10 +222,6 @@ const Dashboard = () => {
       return pages?.length * PAGINATION_LIMIT;
     },
   });
-
-  const {} = useQuery([BOOKMARKS_KEY, TRASH_URL], () =>
-    fetchBookmakrsData(TRASH_URL)
-  );
 
   const { data: userTags } = useQuery([USER_TAGS_KEY, session?.user?.id], () =>
     fetchUserTags(session?.user?.id || '')
@@ -263,9 +259,9 @@ const Dashboard = () => {
       ]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(
+      queryClient.setQueryData<BookmarksPaginatedDataTypes>(
         [BOOKMARKS_KEY, session?.user?.id, category_id],
-        (old: { data: SingleListData[] } | undefined) => {
+        (old) => {
           if (typeof old === 'object') {
             return {
               ...old,
@@ -275,7 +271,7 @@ const Dashboard = () => {
                   data: item.data?.filter((item) => item?.id !== data?.id),
                 };
               }),
-            } as { data: SingleListData[] };
+            };
           }
         }
       );
@@ -319,13 +315,13 @@ const Dashboard = () => {
         ]);
 
         // Optimistically update to the new value
-        queryClient.setQueryData(
+        queryClient.setQueryData<BookmarksPaginatedDataTypes>(
           [BOOKMARKS_KEY, session?.user?.id, category_id],
-          (old: { data: SingleListData[] } | undefined) => {
+          (old) => {
             if (typeof old === 'object') {
               return {
                 ...old,
-                pages: old?.pages?.map((item, index) => {
+                pages: old?.pages?.map((item) => {
                   return {
                     ...item,
                     data: item.data?.filter(
@@ -333,7 +329,7 @@ const Dashboard = () => {
                     ),
                   };
                 }),
-              } as { data: SingleListData[] };
+              };
             }
           }
         );
@@ -391,9 +387,11 @@ const Dashboard = () => {
       ]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(
+      queryClient.setQueryData<BookmarksPaginatedDataTypes>(
         [BOOKMARKS_KEY, session?.user?.id, category_id],
-        (old: { data: SingleListData[] } | undefined) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        (old) => {
           if (typeof old === 'object') {
             const latestData = {
               ...old,
@@ -878,6 +876,8 @@ const Dashboard = () => {
         // only if user is updating sortby, then scroll to top
         if (updateValue === 'sortBy') {
           if (!isNull(infiniteScrollRef?.current)) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //@ts-ignore
             infiniteScrollRef?.current?.scrollTo(0, 0);
           }
         }
@@ -918,7 +918,7 @@ const Dashboard = () => {
     allBookmarksData?.pages?.map((item) =>
       item?.data?.map((twoItem) => twoItem)
     )
-  );
+  ) as SingleListData[];
 
   const renderAllBookmarkCards = () => {
     return (
@@ -936,12 +936,10 @@ const Dashboard = () => {
                   dataLength={flattendPaginationBookmarkData?.length}
                   next={fetchNextPage}
                   hasMore={true}
-                  // height={'calc(100vh - 48.5px)'}
-                  loader={() => null}
+                  loader={null}
                   scrollableTarget="scrollableDiv"
                 >
                   <CardSection
-                    paginationFetch={fetchNextPage}
                     isBookmarkLoading={
                       addBookmarkMinDataOptimisticMutation?.isLoading
                     }
@@ -962,18 +960,8 @@ const Dashboard = () => {
                         : false
                     }
                     userId={session?.user?.id || ''}
-                    // isLoading={
-                    //   (isBookmarksLoading && !bookmarksData) ||
-                    //   isAllBookmarksDataLoading
-                    // }
                     isLoading={isAllBookmarksDataLoading}
-                    // listData={
-                    //   !isNull(category_id)
-                    //     ? bookmarksData?.data || []
-                    //     : allBookmarksData?.data || []
-                    // }
-
-                    listData={flattendPaginationBookmarkData || []}
+                    listData={flattendPaginationBookmarkData}
                     onDeleteClick={async (item) => {
                       // toggleIsDeleteBookmarkLoading();
                       setDeleteBookmarkId(item?.id);
@@ -1164,7 +1152,7 @@ const Dashboard = () => {
   return (
     <>
       <DashboardLayout
-        categoryId={category_id}
+        categoryId={category_id as CategoryIdUrlTypes}
         isAddInputLoading={false}
         userId={session?.user?.id || ''}
         renderMainContent={renderAllBookmarkCards}
@@ -1221,7 +1209,7 @@ const Dashboard = () => {
         onShareClick={() => {
           if (category_id && !isNull(category_id) && category_id !== 'trash') {
             toggleShareCategoryModal();
-            setShareCategoryId(category_id);
+            setShareCategoryId(category_id as number);
           }
         }}
         onClearTrash={async () => {

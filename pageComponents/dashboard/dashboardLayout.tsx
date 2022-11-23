@@ -18,9 +18,9 @@ import SearchIconGray from '../../icons/searchIconGray';
 import TrashIconGray from '../../icons/trashIconGray';
 import UserIconGray from '../../icons/userIconGray';
 import {
+  BookmarksPaginatedDataTypes,
   CategoriesData,
   FetchSharedCategoriesData,
-  SingleListData,
 } from '../../types/apiTypes';
 import { CategoryIdUrlTypes, ChildrenTypes } from '../../types/componentTypes';
 import {
@@ -45,7 +45,6 @@ import CategoryIconsDropdown from '../../components/customDropdowns.tsx/category
 import AddCategoryIcon from '../../icons/addCategoryIcon';
 import FileIcon from '../../icons/categoryIcons/fileIcon';
 import { options } from '../../utils/commonData';
-import { getCountInCategory } from '../../utils/helpers';
 import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
 import BookmarksSortDropdown from '../../components/customDropdowns.tsx/bookmarksSortDropdown';
 import {
@@ -128,10 +127,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     BOOKMARKS_KEY,
     userId,
     categoryId,
-  ]) as {
-    data: SingleListData[];
-    error: PostgrestError;
-  };
+  ]) as BookmarksPaginatedDataTypes;
 
   const sharedCategoriesData = queryClient.getQueryData([
     SHARED_CATEGORIES_TABLE_NAME,

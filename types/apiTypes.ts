@@ -18,6 +18,20 @@ export interface SingleListData {
   trash: boolean;
 }
 
+export type BookmarksCountTypes = {
+  allBookmarks: number;
+  trash: number;
+  uncategorized: number;
+  categoryCount: { category_id: number; count: number }[];
+};
+export interface BookmarksPaginatedDataTypes {
+  pages: {
+    data: SingleListData[];
+    error: PostgrestError;
+    count: BookmarksCountTypes;
+  }[];
+}
+
 export interface FetchDataResponse<T = SingleListData[]> {
   data: T;
   error: PostgrestError | null;
