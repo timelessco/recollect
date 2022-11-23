@@ -54,7 +54,8 @@ export default async function handler(
   if (
     update_access === true &&
     !isNull(category_id) &&
-    category_id !== 'null'
+    category_id !== 'null' &&
+    category_id !== 0
   ) {
     const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
       {
@@ -81,7 +82,7 @@ export default async function handler(
         user_id: userId,
         description: scrapperRes?.data?.description,
         ogImage: scrapperRes?.data?.OgImage,
-        category_id: null,
+        category_id: 0,
       },
     ]);
 
@@ -92,7 +93,8 @@ export default async function handler(
       res.status(200).json({
         data: data,
         error: null,
-        message: !isNull(category_id) ? ADD_UPDATE_BOOKMARK_ACCESS_ERROR : null,
+        message:
+          update_access === false ? ADD_UPDATE_BOOKMARK_ACCESS_ERROR : null,
       });
       return;
     }

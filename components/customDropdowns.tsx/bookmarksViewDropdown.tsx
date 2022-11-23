@@ -86,7 +86,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
       : [10];
 
   const bookmarksViewValue =
-    categoryId !== null
+    typeof categoryId === 'number'
       ? isUserTheCategoryOwner
         ? currentCategory?.category_views?.bookmarksView
         : !isEmpty(sharedCategoriesData?.data[0])

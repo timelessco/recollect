@@ -36,7 +36,7 @@ export const getCategoryIdFromSlug = (
   slug: string | null,
   allCategories: CategoriesData[] | undefined
 ) => {
-  if (slug === TRASH_URL) {
+  if (slug === TRASH_URL || slug === UNCATEGORIZED_URL) {
     return slug;
   } else {
     if (allCategories) {

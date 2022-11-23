@@ -50,6 +50,7 @@ import {
   BOOKMARKS_VIEW,
   CATEGORIES_KEY,
   LOGIN_URL,
+  PAGINATION_LIMIT,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
   USER_PROFILE,
@@ -202,32 +203,28 @@ const Dashboard = () => {
       fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
+  const category_slug = router?.asPath?.split('/')[1] || null;
+  const category_id =
+    getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
   const {
     data: allBookmarksData,
     error,
     fetchNextPage,
     hasNextPage,
-    isFetching: isAllBookmarksDataLoading,
+    isFetching,
     isFetchingNextPage,
     status,
+    isLoading: isAllBookmarksDataLoading,
   } = useInfiniteQuery({
-    queryKey: [BOOKMARKS_KEY, session?.user?.id],
+    queryKey: [BOOKMARKS_KEY, session?.user?.id, category_id],
     queryFn: fetchBookmakrsData,
     getNextPageParam: (lastPage, pages) => {
-      return pages?.length * 10;
+      return pages?.length * PAGINATION_LIMIT;
     },
   });
 
   const {} = useQuery([BOOKMARKS_KEY, TRASH_URL], () =>
     fetchBookmakrsData(TRASH_URL)
-  );
-
-  const category_slug = router?.asPath?.split('/')[1] || null;
-  const category_id =
-    getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
-  const { data: bookmarksData, isLoading: isBookmarksLoading } = useQuery(
-    [BOOKMARKS_KEY, category_id],
-    () => fetchBookmakrsData(category_id)
   );
 
   const { data: userTags } = useQuery([USER_TAGS_KEY, session?.user?.id], () =>
@@ -252,22 +249,32 @@ const Dashboard = () => {
   const deleteBookmarkOptismicMutation = useMutation(deleteData, {
     onMutate: async (data) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([BOOKMARKS_KEY, TRASH_URL]);
+      await queryClient.cancelQueries([
+        BOOKMARKS_KEY,
+        session?.user?.id,
+        category_id,
+      ]);
 
       // Snapshot the previous value
       const previousTodos = queryClient.getQueryData([
         BOOKMARKS_KEY,
-        TRASH_URL,
+        session?.user?.id,
+        category_id,
       ]);
 
       // Optimistically update to the new value
       queryClient.setQueryData(
-        [BOOKMARKS_KEY, TRASH_URL],
+        [BOOKMARKS_KEY, session?.user?.id, category_id],
         (old: { data: SingleListData[] } | undefined) => {
           if (typeof old === 'object') {
             return {
               ...old,
-              data: old.data?.filter((item) => item?.id !== data?.id),
+              pages: old?.pages?.map((item, index) => {
+                return {
+                  ...item,
+                  data: item.data?.filter((item) => item?.id !== data?.id),
+                };
+              }),
             } as { data: SingleListData[] };
           }
         }
@@ -279,13 +286,17 @@ const Dashboard = () => {
     // If the mutation fails, use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
       queryClient.setQueryData(
-        [BOOKMARKS_KEY, TRASH_URL],
+        [BOOKMARKS_KEY, session?.user?.id, category_id],
         context?.previousTodos
       );
     },
     // Always refetch after error or success:
     onSettled: () => {
-      queryClient.invalidateQueries([BOOKMARKS_KEY, TRASH_URL]);
+      queryClient.invalidateQueries([
+        BOOKMARKS_KEY,
+        session?.user?.id,
+        category_id,
+      ]);
     },
   });
 
@@ -296,27 +307,32 @@ const Dashboard = () => {
         // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
         await queryClient.cancelQueries([
           BOOKMARKS_KEY,
-          isNull(category_id) ? session?.user?.id : category_id,
+          session?.user?.id,
+          category_id,
         ]);
 
         // Snapshot the previous value
         const previousTodos = queryClient.getQueryData([
           BOOKMARKS_KEY,
-          isNull(category_id) ? session?.user?.id : category_id,
-          ,
+          session?.user?.id,
+          category_id,
         ]);
 
         // Optimistically update to the new value
         queryClient.setQueryData(
-          [
-            BOOKMARKS_KEY,
-            isNull(category_id) ? session?.user?.id : category_id,
-          ],
+          [BOOKMARKS_KEY, session?.user?.id, category_id],
           (old: { data: SingleListData[] } | undefined) => {
             if (typeof old === 'object') {
               return {
                 ...old,
-                data: old.data?.filter((item) => item?.id !== data?.data?.id),
+                pages: old?.pages?.map((item, index) => {
+                  return {
+                    ...item,
+                    data: item.data?.filter(
+                      (item) => item?.id !== data?.data?.id
+                    ),
+                  };
+                }),
               } as { data: SingleListData[] };
             }
           }
@@ -328,18 +344,17 @@ const Dashboard = () => {
       // If the mutation fails, use the context returned from onMutate to roll back
       onError: (err, newTodo, context) => {
         queryClient.setQueryData(
-          [
-            BOOKMARKS_KEY,
-            isNull(category_id) ? session?.user?.id : category_id,
-          ],
+          [BOOKMARKS_KEY, session?.user?.id, category_id],
           context?.previousTodos
         );
       },
       // Always refetch after error or success:
       onSettled: () => {
-        queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
-        queryClient.invalidateQueries([BOOKMARKS_KEY, category_id]);
-        queryClient.invalidateQueries([BOOKMARKS_KEY, TRASH_URL]);
+        queryClient.invalidateQueries([
+          BOOKMARKS_KEY,
+          session?.user?.id,
+          category_id,
+        ]);
       },
     }
   );
@@ -364,31 +379,43 @@ const Dashboard = () => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries([
         BOOKMARKS_KEY,
-        isNull(category_id) ? session?.user?.id : category_id,
+        session?.user?.id,
+        category_id,
       ]);
 
       // Snapshot the previous value
       const previousTodos = queryClient.getQueryData([
         BOOKMARKS_KEY,
-        isNull(category_id) ? session?.user?.id : category_id,
+        session?.user?.id,
+        category_id,
       ]);
 
       // Optimistically update to the new value
       queryClient.setQueryData(
-        [BOOKMARKS_KEY, isNull(category_id) ? session?.user?.id : category_id],
+        [BOOKMARKS_KEY, session?.user?.id, category_id],
         (old: { data: SingleListData[] } | undefined) => {
           if (typeof old === 'object') {
-            return {
+            const latestData = {
               ...old,
-              data: [
-                ...old.data,
-                {
-                  url: data?.url,
-                  category_id: data?.category_id,
-                  inserted_at: new Date(),
-                },
-              ],
-            } as { data: SingleListData[] };
+              pages: old?.pages?.map((item, index) => {
+                if (index === 0) {
+                  return {
+                    ...item,
+                    data: [
+                      {
+                        url: data?.url,
+                        category_id: data?.category_id,
+                        inserted_at: new Date(),
+                      },
+                      ...item?.data,
+                    ],
+                  };
+                } else {
+                  return item;
+                }
+              }),
+            };
+            return latestData;
           }
         }
       );
@@ -399,7 +426,7 @@ const Dashboard = () => {
     // If the mutation fails, use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
       queryClient.setQueryData(
-        [BOOKMARKS_KEY, isNull(category_id) ? session?.user?.id : category_id],
+        [BOOKMARKS_KEY, session?.user?.id, category_id],
         context?.previousTodos
       );
     },
@@ -407,9 +434,10 @@ const Dashboard = () => {
     onSettled: (res: unknown) => {
       queryClient.invalidateQueries([
         BOOKMARKS_KEY,
-        isNull(category_id) ? session?.user?.id : category_id,
+        session?.user?.id,
+        category_id,
       ]);
-      queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
+      // queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const data = res?.data?.data[0];
@@ -534,7 +562,11 @@ const Dashboard = () => {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      queryClient.invalidateQueries([
+        BOOKMARKS_KEY,
+        session?.user?.id,
+        category_id,
+      ]);
     },
   });
 
@@ -585,7 +617,8 @@ const Dashboard = () => {
         queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
         queryClient.invalidateQueries([
           BOOKMARKS_KEY,
-          isNull(category_id) ? session?.user?.id : category_id,
+          session?.user?.id,
+          category_id,
         ]);
       },
     }
@@ -642,6 +675,11 @@ const Dashboard = () => {
     // Always refetch after error or success:
     onSettled: () => {
       queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+      queryClient.invalidateQueries([
+        BOOKMARKS_KEY,
+        session?.user?.id,
+        category_id,
+      ]);
     },
   });
 
@@ -708,6 +746,11 @@ const Dashboard = () => {
       // Always refetch after error or success:
       onSettled: () => {
         queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+        queryClient.invalidateQueries([
+          BOOKMARKS_KEY,
+          session?.user?.id,
+          category_id,
+        ]);
       },
     }
   );
@@ -753,7 +796,11 @@ const Dashboard = () => {
     // Always refetch after error or success:
     onSettled: () => {
       queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
-      queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
+      queryClient.invalidateQueries([
+        BOOKMARKS_KEY,
+        session?.user?.id,
+        category_id,
+      ]);
     },
   });
 
@@ -867,6 +914,12 @@ const Dashboard = () => {
     }
   };
 
+  const flattendPaginationBookmarkData = flatten(
+    allBookmarksData?.pages?.map((item) =>
+      item?.data?.map((twoItem) => twoItem)
+    )
+  );
+
   const renderAllBookmarkCards = () => {
     return (
       <>
@@ -880,13 +933,7 @@ const Dashboard = () => {
                 ref={infiniteScrollRef}
               >
                 <InfiniteScroll
-                  dataLength={
-                    flatten(
-                      allBookmarksData?.pages?.map((item) =>
-                        item?.data?.map((twoItem) => twoItem)
-                      )
-                    )?.length
-                  }
+                  dataLength={flattendPaginationBookmarkData?.length}
                   next={fetchNextPage}
                   hasMore={true}
                   // height={'calc(100vh - 48.5px)'}
@@ -919,20 +966,14 @@ const Dashboard = () => {
                     //   (isBookmarksLoading && !bookmarksData) ||
                     //   isAllBookmarksDataLoading
                     // }
-                    isLoading={false}
+                    isLoading={isAllBookmarksDataLoading}
                     // listData={
                     //   !isNull(category_id)
                     //     ? bookmarksData?.data || []
                     //     : allBookmarksData?.data || []
                     // }
 
-                    listData={
-                      flatten(
-                        allBookmarksData?.pages?.map((item) =>
-                          item?.data?.map((twoItem) => twoItem)
-                        )
-                      ) || []
-                    }
+                    listData={flattendPaginationBookmarkData || []}
                     onDeleteClick={async (item) => {
                       // toggleIsDeleteBookmarkLoading();
                       setDeleteBookmarkId(item?.id);
@@ -1028,7 +1069,7 @@ const Dashboard = () => {
               );
               if (isEdit) {
                 const delValue = tag.value;
-                const currentBookark = bookmarksData?.data?.filter(
+                const currentBookark = flattendPaginationBookmarkData?.filter(
                   (item) => item?.id === addedUrlData?.id
                 ) as unknown as SingleListData[];
                 const delData = find(
@@ -1126,7 +1167,6 @@ const Dashboard = () => {
         categoryId={category_id}
         isAddInputLoading={false}
         userId={session?.user?.id || ''}
-        bookmarksData={bookmarksData?.data} // make this dependant on react-query
         renderMainContent={renderAllBookmarkCards}
         userImg={session?.user?.user_metadata?.avatar_url}
         userName={session?.user?.user_metadata?.name || session?.user?.email}

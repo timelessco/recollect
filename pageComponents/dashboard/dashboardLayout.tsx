@@ -63,7 +63,6 @@ interface DashboardLayoutProps {
   onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
   // onDeleteCategoryClick: (id: string, current: boolean) => void;
-  bookmarksData?: Array<SingleListData>;
   onAddBookmark: (url: string) => void;
   onShareClick: () => void;
   userId: string;
@@ -125,14 +124,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     error: PostgrestError;
   };
 
-  const bookmarksData = queryClient.getQueryData([BOOKMARKS_KEY, userId]) as {
-    data: SingleListData[];
-    error: PostgrestError;
-  };
-
-  const bookmarksTrashData = queryClient.getQueryData([
+  const bookmarksData = queryClient.getQueryData([
     BOOKMARKS_KEY,
-    TRASH_URL,
+    userId,
+    categoryId,
   ]) as {
     data: SingleListData[];
     error: PostgrestError;
@@ -233,7 +228,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${ALL_BOOKMARKS_URL}`,
       current: currentPath === ALL_BOOKMARKS_URL,
       id: 1,
-      count: bookmarksData?.pages[0]?.count,
+      count: bookmarksData?.pages[0]?.count?.allBookmarks,
     },
     {
       icon: () => <InboxIconGray />,
@@ -241,7 +236,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${UNCATEGORIZED_URL}`,
       current: currentPath === UNCATEGORIZED_URL,
       id: 2,
-      count: getCountInCategory(null, bookmarksData?.data),
+      count: bookmarksData?.pages[0]?.count?.uncategorized,
     },
     {
       icon: () => <TrashIconGray />,
@@ -249,7 +244,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${TRASH_URL}`,
       current: currentPath === TRASH_URL,
       id: 3,
-      count: bookmarksTrashData?.data?.length,
+      count: bookmarksData?.pages[0]?.count?.trash,
     },
   ];
 
@@ -389,7 +384,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             )
           ),
           iconValue: item?.icon,
-          count: getCountInCategory(item?.id, bookmarksData?.data),
+          count: find(
+            bookmarksData?.pages[0]?.count?.categoryCount,
+            (catItem) => catItem?.category_id === item?.id
+          )?.count,
         };
       })
     : [];

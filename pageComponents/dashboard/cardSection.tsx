@@ -80,10 +80,7 @@ const CardSection = ({
   // const sortBy = useBookmarkCardViewState((state) => state.sortBy);
 
   // TODO: make this dependant on react-query
-  const bookmarksList =
-    category_id === UNCATEGORIZED_URL
-      ? listData?.filter((item) => item?.category_id === null)
-      : listData;
+  const bookmarksList = listData;
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -279,21 +276,23 @@ const CardSection = ({
     const categoryData = singleBookmarkCategoryData(item?.category_id);
     return (
       <>
-        {!isNull(item?.category_id) && category_id === ALL_BOOKMARKS_URL && (
-          <Badge
-            renderBadgeContent={() => {
-              return (
-                <div className="flex items-center">
-                  {find(
-                    options,
-                    (optionItem) => optionItem?.label === categoryData?.icon
-                  )?.icon()}
-                  <p className="ml-1">{categoryData?.category_name}</p>
-                </div>
-              );
-            }}
-          />
-        )}
+        {!isNull(item?.category_id) &&
+          category_id === ALL_BOOKMARKS_URL &&
+          item?.category_id !== 0 && (
+            <Badge
+              renderBadgeContent={() => {
+                return (
+                  <div className="flex items-center">
+                    {find(
+                      options,
+                      (optionItem) => optionItem?.label === categoryData?.icon
+                    )?.icon()}
+                    <p className="ml-1">{categoryData?.category_name}</p>
+                  </div>
+                );
+              }}
+            />
+          )}
       </>
     );
   };

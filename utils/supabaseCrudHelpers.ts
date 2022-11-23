@@ -52,9 +52,11 @@ export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
 export const fetchBookmakrsData = async (
   // category_id: string | null | number,
   // from: number
-  { pageParam = 0 }
+  { pageParam = 0, queryKey }
 ) => {
   const session = await getCurrentUserSession();
+  const categoryId =
+    !isEmpty(queryKey) && queryKey?.length <= 3 ? queryKey[2] : null;
 
   if (!session?.access_token) {
     return;
@@ -62,9 +64,7 @@ export const fetchBookmakrsData = async (
 
   try {
     const bookmarksData = await axios.get(
-      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${
-        session?.access_token
-      }&category_id=${null}&from=${pageParam}`
+      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${categoryId}&from=${pageParam}`
     );
     return {
       data: bookmarksData?.data?.data,
@@ -100,7 +100,7 @@ export const addBookmarkMinData = async ({
   update_access,
 }: {
   url: string;
-  category_id: number | null | string;
+  category_id: number | string;
   update_access: boolean;
 }) => {
   const session = await getCurrentUserSession();
@@ -109,7 +109,7 @@ export const addBookmarkMinData = async ({
     const apiRes = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
       access_token: session?.access_token,
       url,
-      category_id,
+      category_id: isNull(category_id) ? 0 : category_id,
       update_access,
     });
 
@@ -386,7 +386,7 @@ export const addCategoryToBookmark = async ({
   bookmark_id,
   update_access = false,
 }: {
-  category_id: number | null | string;
+  category_id: number | string;
   bookmark_id: number;
   update_access: boolean;
 }) => {
@@ -395,7 +395,7 @@ export const addCategoryToBookmark = async ({
     const res = await axios.post(
       `${NEXT_API_URL}${ADD_CATEGORY_TO_BOOKMARK_API}`,
       {
-        category_id,
+        category_id: isNull(category_id) || !category_id ? 0 : category_id,
         bookmark_id,
         update_access,
         access_token: session?.access_token,

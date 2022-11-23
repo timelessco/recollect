@@ -22,7 +22,7 @@ export const NEXT_API_URL = `${
 export const TIMELESS_SCRAPPER_API =
   'https://link-preview-livid-ten.vercel.app/api/getUrlData';
 export const SCREENSHOT_API = 'https://s.vercel.app/api?url=';
-export const PAGINATION_LIMIT = 10;
+export const PAGINATION_LIMIT = 25;
 
 //auth api
 export const SYNC_PROFILES_TABLE_API = '/auth/sync-profiles-table';
