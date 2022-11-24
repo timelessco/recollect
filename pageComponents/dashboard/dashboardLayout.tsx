@@ -557,6 +557,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               type="dark"
               className="mr-[17px] bg-red-700 hover:bg-red-900"
               onClick={() => onClearTrash()}
+              id="clear-trash-button"
             >
               <span className="text-white">Clear Trash</span>
             </Button>

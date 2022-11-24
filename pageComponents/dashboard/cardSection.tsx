@@ -163,30 +163,35 @@ const CardSection = ({
         <>
           {isBookmarkCreatedByLoggedinUser(post) ? (
             <>
-              <PencilAltIcon
-                className="h-5 w-5 text-gray-400 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onEditClick(post);
-                }}
-              />
+              <figure>
+                <PencilAltIcon
+                  className="h-5 w-5 text-gray-400 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onEditClick(post);
+                  }}
+                />
+              </figure>
               {isDeleteBookmarkLoading && deleteBookmarkId === post?.id ? (
                 <div>
                   <Spinner size={15} />
                 </div>
               ) : (
-                <TrashIcon
-                  className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                  aria-hidden="true"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onDeleteClick(post);
-                  }}
-                />
+                <figure>
+                  <TrashIcon
+                    id="delete-bookmark-icon"
+                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                    aria-hidden="true"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onDeleteClick(post);
+                    }}
+                  />
+                </figure>
               )}
             </>
           ) : (
-            <>
+            <figure>
               <PencilAltIcon
                 className="h-5 w-5 text-gray-700 cursor-pointer"
                 onClick={(e) => {
@@ -194,7 +199,7 @@ const CardSection = ({
                   onEditClick(post);
                 }}
               />
-            </>
+            </figure>
           )}
         </>
       );
@@ -212,6 +217,21 @@ const CardSection = ({
         round={true}
         className="mr-1 h-"
       />
+    );
+  };
+
+  const renderUrl = (item: SingleListData) => {
+    return (
+      <p
+        className={`text-xs leading-4 relative ${
+          !isNull(item?.category_id) && isNull(category_id)
+            ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
+            : ''
+        }`}
+        id="base-url"
+      >
+        {getBaseUrl(item?.url)}
+      </p>
     );
   };
 
@@ -330,15 +350,7 @@ const CardSection = ({
                       {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2">
                           {renderCategoryBadge(item)}
-                          <p
-                            className={`text-xs leading-4 relative ${
-                              !isNull(item?.category_id) && isNull(category_id)
-                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
-                                : ''
-                            }`}
-                          >
-                            {getBaseUrl(item?.url)}
-                          </p>
+                          {renderUrl(item)}
                           <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
                             {format(new Date(item?.inserted_at), 'dd MMM')}
                           </p>
@@ -416,15 +428,7 @@ const CardSection = ({
                       {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2">
                           {renderCategoryBadge(item)}
-                          <p
-                            className={`text-xs leading-4 relative ${
-                              !isNull(item?.category_id) && isNull(category_id)
-                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
-                                : ''
-                            }`}
-                          >
-                            {getBaseUrl(item?.url)}
-                          </p>
+                          {renderUrl(item)}
                           <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
                             {format(new Date(item?.inserted_at), 'dd MMM')}
                           </p>
@@ -511,15 +515,7 @@ const CardSection = ({
                       {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2 flex-wrap">
                           {renderCategoryBadge(item)}
-                          <p
-                            className={`text-xs leading-4 relative ${
-                              !isNull(item?.category_id) && isNull(category_id)
-                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
-                                : ''
-                            }`}
-                          >
-                            {getBaseUrl(item?.url)}
-                          </p>
+                          {renderUrl(item)}
                           <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
                             {format(new Date(item?.inserted_at), 'dd MMM')}
                           </p>
@@ -568,7 +564,8 @@ const CardSection = ({
           return (
             <div
               key={item?.id || index}
-              className="rounded-lg drop-shadow-custom-1 group relative"
+              className="rounded-lg drop-shadow-custom-1 group relative single-bookmark"
+              id="single-moodboard-card"
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
                 <>{renderOgImage(item?.ogImage)}</>
@@ -603,15 +600,7 @@ const CardSection = ({
                       {bookmarksInfoValue?.includes('info') && (
                         <div className="flex items-center space-x-2 flex-wrap">
                           {renderCategoryBadge(item)}
-                          <p
-                            className={`text-xs leading-4 relative ${
-                              !isNull(item?.category_id) && isNull(category_id)
-                                ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
-                                : ''
-                            }`}
-                          >
-                            {getBaseUrl(item?.url)}
-                          </p>
+                          {renderUrl(item)}
                           <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
                             {format(new Date(item?.inserted_at), 'dd MMM')}
                           </p>
@@ -621,7 +610,11 @@ const CardSection = ({
                   </div>
                 )}
               </a>
-              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
+              <div
+                className={`items-center space-x-1 ${
+                  window?.Cypress ? 'flex' : 'hidden'
+                } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
+              >
                 {showAvatar && renderAvatar(item)}
                 {renderEditAndDeleteIcons(item)}
                 {category_id === TRASH_URL && (
@@ -678,7 +671,7 @@ const CardSection = ({
       if (!isEmpty(bookmarksList)) {
         return renderBookmarkCardTypes();
       } else {
-        return <div>No Bookmarks</div>;
+        return <div id="no-bookmarks-text">No Bookmarks</div>;
       }
     }
   };

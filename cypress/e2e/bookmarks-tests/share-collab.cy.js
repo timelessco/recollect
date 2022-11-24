@@ -1,4 +1,7 @@
-import { ADD_UPDATE_BOOKMARK_ACCESS_ERROR } from '../../../utils/constants';
+import {
+  ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
+  TRASH_URL,
+} from '../../../utils/constants';
 
 describe('share test', () => {
   beforeEach(() => {
@@ -124,5 +127,24 @@ describe('share test', () => {
       'have.text',
       'Writing Your First E2E Test | Cypress Documentation'
     );
+
+    // del the added bookmark and clear trash
+    // click del icon for 1st bookmark in list
+    cy.get(
+      '.my-masonry-grid_column:first-child .single-bookmark:first-child .helper-icons figure:nth-child(2)'
+    ).click();
+
+    // go to trash page
+    cy.get(`[href="/${TRASH_URL}"]`).click();
+
+    // check if del bookmark is there in trash
+
+    // clear the trash
+    cy.get('#clear-trash-button').click();
+    cy.get('#warning-button').click();
+
+    cy.wait(1000);
+
+    cy.get('#no-bookmarks-text').should('have.text', 'No Bookmarks');
   });
 });

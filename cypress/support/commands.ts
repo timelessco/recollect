@@ -37,5 +37,17 @@
 //     }
 //   }
 // }
+Cypress.Commands.add('login', (email, pw) => {
+  cy.get('#email').type(email);
+  cy.get('#password').type(pw);
+  cy.get(':nth-child(4) > .flex').click();
+  cy.wait(5000);
+});
+
+Cypress.Commands.add('addBookmark', (url) => {
+  cy.wait(1000);
+  cy.get('body').type('{cmd}k');
+  cy.get('#add-url-input').type(`${url}{enter}`);
+});
 
 export {};

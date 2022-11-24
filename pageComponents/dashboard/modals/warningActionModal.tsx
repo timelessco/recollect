@@ -31,6 +31,7 @@ const WarningActionModal = (props: WarningActionModalTypes) => {
             className="bg-red-700 text-white hover:bg-red-900 w-full text-center py-3 flex justify-center"
             type="dark"
             onClick={() => onContinueCick()}
+            id="warning-button"
           >
             {buttonText}
           </Button>
