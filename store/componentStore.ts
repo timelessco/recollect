@@ -3,7 +3,6 @@ import {
   ModalStoreState,
   LoadersStoreState,
   MiscellaneousStoreState,
-  BookmarkCardViewState,
 } from '../types/componentStoreTypes';
 
 export const useModalStore = create<ModalStoreState>((set) => ({
@@ -29,17 +28,11 @@ export const useModalStore = create<ModalStoreState>((set) => ({
     })),
 }));
 
-// TODO: remove this and user react-query loader
 export const useLoadersStore = create<LoadersStoreState>((set) => ({
-  isAddBookmarkModalButtonLoading: false,
-  isDeleteBookmarkLoading: false,
-  toggleIsAddBookmarkModalButtonLoading: () =>
+  isSortByLoading: false, // this is not handelled by react-query as this is a combination for 2 queries
+  toggleIsSortByLoading: () =>
     set((state) => ({
-      isAddBookmarkModalButtonLoading: !state.isAddBookmarkModalButtonLoading,
-    })),
-  toggleIsDeleteBookmarkLoading: () =>
-    set((state) => ({
-      isDeleteBookmarkLoading: !state.isDeleteBookmarkLoading,
+      isSortByLoading: !state.isSortByLoading,
     })),
 }));
 
@@ -47,18 +40,3 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
   shareCategoryId: undefined,
   setShareCategoryId: (id: number) => set(() => ({ shareCategoryId: id })),
 }));
-
-export const useBookmarkCardViewState = create<BookmarkCardViewState>(
-  (set) => ({
-    moodboardColumns: [30],
-    setMoodboardColumns: (value: number[] | number) =>
-      set(() => ({ moodboardColumns: value })),
-    cardContentViewArray: ['cover', 'title', 'info'],
-    setCardContentViewArray: (arr: string[]) =>
-      set(() => ({ cardContentViewArray: arr })),
-    bookmarksView: 'moodboard',
-    setBookmarksView: (value) => set(() => ({ bookmarksView: value })),
-    sortBy: 'date-sort-acending',
-    setSortBy: (value) => set(() => ({ sortBy: value })),
-  })
-);

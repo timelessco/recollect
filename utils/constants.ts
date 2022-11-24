@@ -35,6 +35,8 @@ export const ADD_URL_SCREENSHOT_API = '/bookmark/add-url-screenshot';
 export const MOVE_BOOKMARK_TO_TRASH_API = '/bookmark/move-bookmark-to-trash';
 export const CLEAR_BOOKMARK_TRASH_API = '/bookmark/clear-bookmark-trash';
 export const FETCH_BOOKMARKS_VIEW = '/bookmark/fetch-bookmarks-view';
+export const SEARCH_BOOKMARKS = '/bookmark/search-bookmarks';
+
 // tags api
 export const FETCH_USER_TAGS_API = '/tags/fetch-user-tags';
 export const CREATE_USER_TAGS_API = '/tags/create-user-tags';

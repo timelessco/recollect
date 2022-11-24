@@ -52,6 +52,7 @@ import {
   BookmarksViewTypes,
   BookmarkViewCategories,
 } from '../../types/componentStoreTypes';
+// import { searchBookmarks } from '../../utils/supabaseCrudHelpers';
 
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
@@ -488,6 +489,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               (item) => item?.category_slug === currentPath
             )?.category_name || 'All Bookmarks'
           }`}
+          onChange={async (value) => {
+            // const res = await searchBookmarks(value);
+          }}
         />
         <div className="flex items-center">
           <div className="flex items-center mr-[17px] space-x-1">

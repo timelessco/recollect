@@ -37,6 +37,7 @@ import {
   FETCH_BOOKMARKS_VIEW,
   FETCH_USER_PROFILE_API,
   UPDATE_USER_PROFILE_API,
+  SEARCH_BOOKMARKS,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 import { isNull } from 'lodash';
@@ -218,6 +219,18 @@ export const clearBookmarksInTrash = async ({
     });
 
     return res;
+  } catch (e) {
+    return e;
+  }
+};
+
+export const searchBookmarks = async (searchText: string) => {
+  try {
+    const session = await getCurrentUserSession();
+    const res = await axios.get(
+      `${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${session?.access_token}`
+    );
+    return res?.data;
   } catch (e) {
     return e;
   }

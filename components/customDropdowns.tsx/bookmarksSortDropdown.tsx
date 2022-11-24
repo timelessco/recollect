@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import find from 'lodash/find';
 import { useRef } from 'react';
 import SortByDateIconGray from '../../icons/sortByDateIconGray';
+import { useLoadersStore } from '../../store/componentStore';
 import { CategoriesData, ProfilesTableTypes } from '../../types/apiTypes';
 import {
   BookmarksSortByTypes,
@@ -14,6 +15,7 @@ import { CategoryIdUrlTypes } from '../../types/componentTypes';
 import { CATEGORIES_KEY, USER_PROFILE } from '../../utils/constants';
 import Button from '../atoms/button';
 import RadioGroup from '../radioGroup';
+import Spinner from '../spinner';
 
 interface BookmarksSortDropdownTypes {
   setBookmarksView: (
@@ -38,6 +40,8 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
     data: ProfilesTableTypes[];
     error: PostgrestError;
   };
+
+  const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
   const currentCategory = find(
     categoryData?.data,
@@ -87,7 +91,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
       <MenuButton state={menu} className="button" as="div">
         <Button type="light">
           <figure className="w-3 h-3">
-            <SortByDateIconGray />
+            {isSortByLoading ? <Spinner /> : <SortByDateIconGray />}
           </figure>
           <span className="ml-[7px] text-custom-gray-1">
             {

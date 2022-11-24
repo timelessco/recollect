@@ -116,13 +116,10 @@ const Dashboard = () => {
     }
   }, [router, router?.pathname]);
 
-  // const toggleIsAddBookmarkModalButtonLoading = useLoadersStore(
-  //   (state) => state.toggleIsAddBookmarkModalButtonLoading
-  // );
-
-  const toggleIsDeleteBookmarkLoading = useLoadersStore(
-    (state) => state.toggleIsDeleteBookmarkLoading
+  const toggleIsSortByLoading = useLoadersStore(
+    (state) => state.toggleIsSortByLoading
   );
+  const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
   const toggleShareCategoryModal = useModalStore(
     (state) => state.toggleShareCategoryModal
@@ -151,10 +148,6 @@ const Dashboard = () => {
   const setShareCategoryId = useMiscellaneousStore(
     (state) => state.setShareCategoryId
   );
-
-  // const setShareCategoryId = useBookmarkCardViewState(
-  //   (state) => state
-  // );
 
   const fetchUserSession = async () => {
     const currentSession = await getCurrentUserSession();
@@ -220,6 +213,11 @@ const Dashboard = () => {
     queryFn: fetchBookmakrsData,
     getNextPageParam: (lastPage, pages) => {
       return pages?.length * PAGINATION_LIMIT;
+    },
+    onSettled: () => {
+      if (isSortByLoading === true) {
+        toggleIsSortByLoading();
+      }
     },
   });
 
@@ -879,6 +877,7 @@ const Dashboard = () => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             //@ts-ignore
             infiniteScrollRef?.current?.scrollTo(0, 0);
+            toggleIsSortByLoading();
           }
         }
 
@@ -929,14 +928,38 @@ const Dashboard = () => {
               <div className="mx-auto w-full lg:w-1/2 px-4 sm:px-0"></div>
               <div
                 id="scrollableDiv"
-                style={{ height: 'calc(100vh - 48.5px)', overflow: 'auto' }}
+                style={{ height: 'calc(100vh - 46.5px)', overflow: 'auto' }}
                 ref={infiniteScrollRef}
               >
                 <InfiniteScroll
                   dataLength={flattendPaginationBookmarkData?.length}
                   next={fetchNextPage}
-                  hasMore={true}
-                  loader={null}
+                  hasMore={
+                    allBookmarksData?.pages[allBookmarksData?.pages?.length - 1]
+                      ?.data?.length !== 0
+                  }
+                  loader={
+                    <div
+                      style={{
+                        height: 200,
+                        textAlign: 'center',
+                        paddingTop: 100,
+                      }}
+                    >
+                      Loading...
+                    </div>
+                  }
+                  endMessage={
+                    <p
+                      style={{
+                        height: 200,
+                        textAlign: 'center',
+                        paddingTop: 100,
+                      }}
+                    >
+                      Bookmarks !
+                    </p>
+                  }
                   scrollableTarget="scrollableDiv"
                 >
                   <CardSection
@@ -963,7 +986,6 @@ const Dashboard = () => {
                     isLoading={isAllBookmarksDataLoading}
                     listData={flattendPaginationBookmarkData}
                     onDeleteClick={async (item) => {
-                      // toggleIsDeleteBookmarkLoading();
                       setDeleteBookmarkId(item?.id);
                       if (category_id === TRASH_URL) {
                         // delete bookmark if in trash
@@ -977,8 +999,6 @@ const Dashboard = () => {
                           })
                         );
                       }
-
-                      toggleIsDeleteBookmarkLoading();
                     }}
                     onEditClick={(item) => {
                       setAddedUrlData(item);

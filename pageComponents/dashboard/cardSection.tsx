@@ -22,7 +22,6 @@ import {
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import Spinner from '../../components/spinner';
-import { useBookmarkCardViewState } from '../../store/componentStore';
 import Avatar from 'react-avatar';
 import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
@@ -68,17 +67,6 @@ const CardSection = ({
 
   const isDeleteBookmarkLoading = false;
 
-  // const moodboardColumns = useBookmarkCardViewState(
-  //   (state) => state.moodboardColumns
-  // );
-
-  const bookmarksView = useBookmarkCardViewState(
-    (state) => state.bookmarksView
-  );
-
-  // const sortBy = useBookmarkCardViewState((state) => state.sortBy);
-
-  // TODO: make this dependant on react-query
   const bookmarksList = listData;
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
@@ -674,7 +662,7 @@ const CardSection = ({
       return (
         <div
           className={
-            bookmarksView === 'card' || bookmarksView === 'moodboard'
+            cardTypeCondition === 'card' || cardTypeCondition === 'moodboard'
               ? cardGridClassNames
               : 'space-y-4'
           }

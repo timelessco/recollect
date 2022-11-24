@@ -10,10 +10,8 @@ export interface ModalStoreState {
 }
 
 export interface LoadersStoreState {
-  isAddBookmarkModalButtonLoading: boolean;
-  isDeleteBookmarkLoading: boolean;
-  toggleIsAddBookmarkModalButtonLoading: () => void;
-  toggleIsDeleteBookmarkLoading: () => void;
+  isSortByLoading: boolean;
+  toggleIsSortByLoading: () => void;
 }
 
 export interface MiscellaneousStoreState {
@@ -31,13 +29,13 @@ export type BookmarksSortByTypes =
   | 'url-sort-acending'
   | 'url-sort-decending';
 
-export interface BookmarkCardViewState {
-  moodboardColumns: number[] | number;
-  setMoodboardColumns: (value: number[] | number) => void;
-  cardContentViewArray: string[];
-  setCardContentViewArray: (arr: string[]) => void;
-  bookmarksView: BookmarksViewTypes;
-  setBookmarksView: (value: BookmarksViewTypes) => void;
-  sortBy: BookmarksSortByTypes;
-  setSortBy: (value: BookmarksSortByTypes) => void;
-}
+// export interface BookmarkCardViewState {
+//   moodboardColumns: number[] | number;
+//   setMoodboardColumns: (value: number[] | number) => void;
+//   cardContentViewArray: string[];
+//   setCardContentViewArray: (arr: string[]) => void;
+//   bookmarksView: BookmarksViewTypes;
+//   setBookmarksView: (value: BookmarksViewTypes) => void;
+//   sortBy: BookmarksSortByTypes;
+//   setSortBy: (value: BookmarksSortByTypes) => void;
+// }

@@ -14,8 +14,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
 import find from 'lodash/find';
 import filter from 'lodash/filter';
-import Spinner from '../../components/spinner';
-import { useLoadersStore } from '../../store/componentStore';
 import { BOOKMARKS_KEY, CATEGORIES_KEY } from '../../utils/constants';
 import CreatableSearchSelect from '../../components/creatableSearchSelect';
 
@@ -56,10 +54,6 @@ export default function AddModalContent(props: AddModalContentProps) {
     showMainButton = true,
     onCreateCategory,
   } = props;
-
-  const isAddBookmarkModalButtonLoading = useLoadersStore(
-    (state) => state.isAddBookmarkModalButtonLoading
-  );
 
   const queryClient = useQueryClient();
 
@@ -239,11 +233,7 @@ export default function AddModalContent(props: AddModalContentProps) {
             onClick={() => null}
             isDisabled={!urlData}
           >
-            {!isAddBookmarkModalButtonLoading ? (
-              <span>{mainButtonText}</span>
-            ) : (
-              <Spinner />
-            )}
+            <span>{mainButtonText}</span>
           </Button>
         )}
       </div>
