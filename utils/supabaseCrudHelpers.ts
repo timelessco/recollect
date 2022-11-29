@@ -40,7 +40,8 @@ import {
   SEARCH_BOOKMARKS,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
-import { isNull } from 'lodash';
+import { CategoryIdUrlTypes } from '../types/componentTypes';
+import isNull from 'lodash/isNull';
 
 // bookmark
 export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
@@ -224,15 +225,20 @@ export const clearBookmarksInTrash = async ({
   }
 };
 
-export const searchBookmarks = async (searchText: string) => {
-  try {
-    const session = await getCurrentUserSession();
-    const res = await axios.get(
-      `${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${session?.access_token}`
-    );
-    return res?.data;
-  } catch (e) {
-    return e;
+export const searchBookmarks = async (
+  searchText: string,
+  category_id: CategoryIdUrlTypes
+) => {
+  if (!isEmpty(searchText)) {
+    try {
+      const session = await getCurrentUserSession();
+      const res = await axios.get(
+        `${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${session?.access_token}&user_id=${session?.user?.id}&category_id=${category_id}`
+      );
+      return res?.data;
+    } catch (e) {
+      return e;
+    }
   }
 };
 

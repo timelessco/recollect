@@ -17,6 +17,8 @@ export interface LoadersStoreState {
 export interface MiscellaneousStoreState {
   shareCategoryId: number | undefined;
   setShareCategoryId: (id: number) => void;
+  searchText: string;
+  setSearchText: (value: string) => void;
 }
 
 export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';

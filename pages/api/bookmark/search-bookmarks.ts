@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { SingleListData } from '../../../types/apiTypes';
-import { BOOKMAKRS_STORAGE_NAME, CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from '../../../utils/constants';
+import { TRASH_URL, UNCATEGORIZED_URL } from '../../../utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
@@ -32,14 +32,26 @@ export default async function handler(
     process.env.SUPABASE_SERVICE_KEY as string
   );
 
-  const { data, error } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .select()
-    // .textSearch('title', `'Demograp'`);
-    .textSearch('title', `'${req.query.search}'`, {
-      type: "websearch",
-      config: "english",
-    });
+  const category_id = req.query.category_id;
+
+  let query = supabase
+    .rpc('search_bookmarks', {
+      search_text: req.query.search,
+    })
+    .eq('user_id', req.query.user_id);
+
+  if (category_id === TRASH_URL) {
+    query = query.eq('trash', true);
+  } else {
+    if (!isNull(category_id) && category_id !== 'null') {
+      query = query.eq(
+        'category_id',
+        category_id === UNCATEGORIZED_URL ? 0 : category_id
+      );
+    }
+  }
+
+  const { data, error } = await query;
 
   if (!isNull(data)) {
     res.status(200).json({ data, error });

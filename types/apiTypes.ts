@@ -24,12 +24,14 @@ export type BookmarksCountTypes = {
   uncategorized: number;
   categoryCount: { category_id: number; count: number }[];
 };
+
+export type SingleBookmarksPaginatedDataTypes = {
+  data: SingleListData[];
+  error: PostgrestError;
+  count: BookmarksCountTypes;
+};
 export interface BookmarksPaginatedDataTypes {
-  pages: {
-    data: SingleListData[];
-    error: PostgrestError;
-    count: BookmarksCountTypes;
-  }[];
+  pages: SingleBookmarksPaginatedDataTypes[];
 }
 
 export interface FetchDataResponse<T = SingleListData[]> {

@@ -52,6 +52,8 @@ import {
   BookmarksViewTypes,
   BookmarkViewCategories,
 } from '../../types/componentStoreTypes';
+import { useMiscellaneousStore } from '../../store/componentStore';
+import debounce from 'lodash/debounce';
 // import { searchBookmarks } from '../../utils/supabaseCrudHelpers';
 
 interface DashboardLayoutProps {
@@ -118,6 +120,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const queryClient = useQueryClient();
 
   const currentPath = router.asPath.split('/')[1] || null;
+
+  const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -469,6 +473,18 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     }
   };
 
+  const debouncedSearch = React.useRef(
+    debounce(async (value) => {
+      setSearchText(value);
+    }, 500)
+  ).current;
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
   const renderMainPaneNav = () => {
     return (
       <header className="py-[9px] px-4 border-b-[0.5px] border-b-custom-gray-4 flex items-center justify-between">
@@ -489,8 +505,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               (item) => item?.category_slug === currentPath
             )?.category_name || 'All Bookmarks'
           }`}
-          onChange={async (value) => {
-            // const res = await searchBookmarks(value);
+          onChange={(value) => {
+            debouncedSearch(value);
           }}
         />
         <div className="flex items-center">

@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'next/router';
 import {
   ALL_BOOKMARKS_URL,
+  BOOKMARKS_KEY,
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
@@ -33,6 +34,7 @@ import { getBaseUrl, isUserInACategory } from '../../utils/helpers';
 import format from 'date-fns/format';
 import classNames from 'classnames';
 import { options } from '../../utils/commonData';
+import { useMiscellaneousStore } from '../../store/componentStore';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -62,20 +64,38 @@ const CardSection = ({
   deleteBookmarkId,
 }: CardSectionProps) => {
   const router = useRouter();
-  const category_id = router?.asPath?.split('/')[1] || null;
+  const category_id = router?.asPath?.split('/')[1] || null; // cat_id reffers to cat slug here as its got from url
   const queryClient = useQueryClient();
 
   const isDeleteBookmarkLoading = false;
-
-  const bookmarksList = listData;
+  const searchText = useMiscellaneousStore((state) => state.searchText);
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
     error: PostgrestError;
   };
 
+  const categoryIdFromSlug = find(
+    categoryData?.data,
+    (item) => item?.category_slug === category_id
+  )?.id;
+
   const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
     data: ProfilesTableTypes[];
+    error: PostgrestError;
+  };
+
+  const searchBookmarksData = queryClient.getQueryData([
+    BOOKMARKS_KEY,
+    userId,
+    category_id === ALL_BOOKMARKS_URL
+      ? null
+      : typeof categoryIdFromSlug === 'number'
+      ? categoryIdFromSlug
+      : category_id,
+    searchText,
+  ]) as {
+    data: SingleListData[];
     error: PostgrestError;
   };
 
@@ -85,6 +105,10 @@ const CardSection = ({
     data: FetchSharedCategoriesData[];
     error: PostgrestError;
   };
+
+  const bookmarksList = isEmpty(searchText)
+    ? listData
+    : searchBookmarksData?.data;
 
   const currentCategoryData = find(
     categoryData?.data,
@@ -259,7 +283,6 @@ const CardSection = ({
         (isOgImgLoading || isBookmarkLoading) &&
         img === undefined,
     });
-
     return (
       <figure className={figureClassName}>
         {bookmarksInfoValue?.includes('cover') && (
@@ -305,7 +328,14 @@ const CardSection = ({
   };
 
   const renderSortByCondition = () => {
-    return bookmarksList;
+    return bookmarksList?.map((item) => {
+      return {
+        ...item,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore // disabling because don't know why ogimage is in smallcase
+        ogImage: item?.ogImage || item?.ogimage,
+      };
+    });
   };
 
   const renderHeadlinesType = () => {
@@ -612,6 +642,8 @@ const CardSection = ({
               </a>
               <div
                 className={`items-center space-x-1 ${
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  //@ts-ignore // this is cypress env, TS check not needed
                   window?.Cypress ? 'flex' : 'hidden'
                 } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
               >

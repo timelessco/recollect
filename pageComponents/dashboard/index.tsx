@@ -13,6 +13,7 @@ import {
   CategoriesData,
   FetchSharedCategoriesData,
   ProfilesTableTypes,
+  SingleBookmarksPaginatedDataTypes,
   SingleListData,
   UserTagsData,
 } from '../../types/apiTypes';
@@ -37,6 +38,7 @@ import {
   getCurrentUserSession,
   moveBookmarkToTrash,
   removeTagFromBookmark,
+  searchBookmarks,
   signInWithOauth,
   signOut,
   updateCategory,
@@ -54,6 +56,7 @@ import {
   PAGINATION_LIMIT,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
+  UNCATEGORIZED_URL,
   USER_PROFILE,
   USER_TAGS_KEY,
 } from '../../utils/constants';
@@ -149,6 +152,8 @@ const Dashboard = () => {
     (state) => state.setShareCategoryId
   );
 
+  const searchText = useMiscellaneousStore((state) => state.searchText);
+
   const fetchUserSession = async () => {
     const currentSession = await getCurrentUserSession();
     setSession(currentSession);
@@ -221,6 +226,11 @@ const Dashboard = () => {
     },
   });
 
+  const {} = useQuery(
+    [BOOKMARKS_KEY, session?.user?.id, category_id, searchText],
+    () => searchBookmarks(searchText, category_id)
+  );
+
   const { data: userTags } = useQuery([USER_TAGS_KEY, session?.user?.id], () =>
     fetchUserTags(session?.user?.id || '')
   );
@@ -263,7 +273,7 @@ const Dashboard = () => {
           if (typeof old === 'object') {
             return {
               ...old,
-              pages: old?.pages?.map((item, index) => {
+              pages: old?.pages?.map((item) => {
                 return {
                   ...item,
                   data: item.data?.filter((item) => item?.id !== data?.id),
@@ -807,12 +817,16 @@ const Dashboard = () => {
       (item) => item?.id === category_id
     );
     // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+    // if cat_id not number then user is not updated in a category , so access will always be true
     const updateAccessCondition =
-      find(
-        currentCategory?.collabData,
-        (item) => item?.userEmail === session?.user?.email
-      )?.edit_access === true ||
-      currentCategory?.user_id?.id === session?.user?.id;
+      typeof category_id === 'number'
+        ? find(
+            currentCategory?.collabData,
+            (item) => item?.userEmail === session?.user?.email
+          )?.edit_access === true ||
+          currentCategory?.user_id?.id === session?.user?.id
+        : true;
+
     await mutationApiCall(
       addBookmarkMinDataOptimisticMutation.mutateAsync({
         url: url,
@@ -844,6 +858,10 @@ const Dashboard = () => {
       session?.user?.id === currentCategory?.user_id?.id;
 
     const mutationCall = (updateValue: string) => {
+      if (updateValue === 'sortBy') {
+        toggleIsSortByLoading();
+      }
+
       if (currentCategory) {
         if (isUserTheCategoryOwner) {
           mutationApiCall(
@@ -877,7 +895,6 @@ const Dashboard = () => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             //@ts-ignore
             infiniteScrollRef?.current?.scrollTo(0, 0);
-            toggleIsSortByLoading();
           }
         }
 
@@ -919,6 +936,41 @@ const Dashboard = () => {
     )
   ) as SingleListData[];
 
+  // tells if the latest paginated data is the end for total bookmark data based on current category
+  const hasMoreLogic = () => {
+    const firstPaginatedData =
+      allBookmarksData?.pages?.length !== 0
+        ? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
+        : null;
+
+    if (!isNull(firstPaginatedData)) {
+      if (typeof category_id === 'number') {
+        const totalBookmarkCountInCategory = find(
+          firstPaginatedData?.count?.categoryCount,
+          (item) => item?.category_id === category_id
+        );
+        return (
+          totalBookmarkCountInCategory?.count !==
+          flattendPaginationBookmarkData?.length
+        );
+      } else if (category_id === null) {
+        const count = firstPaginatedData?.count?.allBookmarks;
+
+        return count !== flattendPaginationBookmarkData?.length;
+      } else if (category_id === TRASH_URL) {
+        const count = firstPaginatedData?.count?.trash;
+
+        return count !== flattendPaginationBookmarkData?.length;
+      } else if (category_id === UNCATEGORIZED_URL) {
+        const count = firstPaginatedData?.count?.uncategorized;
+
+        return count !== flattendPaginationBookmarkData?.length;
+      }
+    } else {
+      return true;
+    }
+  };
+
   const renderAllBookmarkCards = () => {
     return (
       <>
@@ -934,10 +986,7 @@ const Dashboard = () => {
                 <InfiniteScroll
                   dataLength={flattendPaginationBookmarkData?.length}
                   next={fetchNextPage}
-                  hasMore={
-                    allBookmarksData?.pages[allBookmarksData?.pages?.length - 1]
-                      ?.data?.length !== 0
-                  }
+                  hasMore={hasMoreLogic() || true}
                   loader={
                     <div
                       style={{
