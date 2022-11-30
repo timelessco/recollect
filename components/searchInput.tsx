@@ -14,6 +14,7 @@ const SearchInput = (props: SearchInputTypes) => {
         <SearchIconSmallGray />
       </figure>
       <input
+        id="bookmarks-search-input"
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="ml-[6px] w-full bg-custom-gray-6 text-custom-gray-3 text-sm font-normal leading-4 focus:outline-none"

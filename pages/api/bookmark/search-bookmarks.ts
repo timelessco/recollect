@@ -38,12 +38,12 @@ export default async function handler(
     .rpc('search_bookmarks', {
       search_text: req.query.search,
     })
+    .eq('trash', category_id === TRASH_URL ? true : false)
+
     .eq('user_id', req.query.user_id);
 
-  if (category_id === TRASH_URL) {
-    query = query.eq('trash', true);
-  } else {
-    if (!isNull(category_id) && category_id !== 'null') {
+  if (!isNull(category_id) && category_id !== 'null') {
+    if (category_id !== TRASH_URL) {
       query = query.eq(
         'category_id',
         category_id === UNCATEGORIZED_URL ? 0 : category_id

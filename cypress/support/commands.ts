@@ -50,4 +50,16 @@ Cypress.Commands.add('addBookmark', (url) => {
   cy.get('#add-url-input').type(`${url}{enter}`);
 });
 
+Cypress.Commands.add('checkFistBookmarkUrl', (url) => {
+  cy.get(
+    ':nth-child(1) > :nth-child(1) > a > .p-4 > .space-y-2 > .flex > #base-url'
+  ).should('have.text', url);
+});
+
+Cypress.Commands.add('checkNotFistBookmarkUrl', (url) => {
+  cy.get(
+    ':nth-child(1) > :nth-child(1) > a > .p-4 > .space-y-2 > .flex > #base-url'
+  ).should('not.have.text', url);
+});
+
 export {};

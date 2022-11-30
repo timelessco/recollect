@@ -986,7 +986,7 @@ const Dashboard = () => {
                 <InfiniteScroll
                   dataLength={flattendPaginationBookmarkData?.length}
                   next={fetchNextPage}
-                  hasMore={hasMoreLogic() || true}
+                  hasMore={hasMoreLogic() as boolean}
                   loader={
                     <div
                       style={{
