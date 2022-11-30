@@ -1,5 +1,5 @@
 import { defineConfig } from 'cypress';
-import { TEST_EMAIL, TEST_PASSWORD } from './cypressEnv';
+// import { TEST_EMAIL, TEST_PASSWORD } from './cypressEnv';
 
 export default defineConfig({
   e2e: {
@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   env: {
-    test_email: TEST_EMAIL,
-    test_password: TEST_PASSWORD,
+    test_email: 'test@test.com',
+    test_password: 'qqqqqq',
   },
 });
