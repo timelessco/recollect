@@ -1,9 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { SingleListData } from '../../../types/apiTypes';
-import { TRASH_URL, UNCATEGORIZED_URL } from '../../../utils/constants';
-import { isNull } from 'lodash';
+import {
+  BOOKMARK_TAGS_TABLE_NAME,
+  GET_TEXT_WITH_AT_CHAR,
+  TRASH_URL,
+  UNCATEGORIZED_URL,
+} from '../../../utils/constants';
+import find from 'lodash/find';
+import isEmpty from 'lodash/isEmpty';
+import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
+import jwtDecode from 'jwt-decode';
 
 // searches bookmarks
 
@@ -33,10 +41,25 @@ export default async function handler(
   );
 
   const category_id = req.query.category_id;
+  const search = req.query.search as string;
+
+  const searchText = search?.replace(GET_TEXT_WITH_AT_CHAR, '');
+
+  const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
+
+  const tagName =
+    !isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
+      ? matchedSearchTag[0]?.replace('@', '')
+      : undefined;
+
+  const tokenDecode = jwtDecode(req.query.access_token as string);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  const user_id = tokenDecode?.sub;
 
   let query = supabase
     .rpc('search_bookmarks', {
-      search_text: req.query.search,
+      search_text: searchText,
     })
     .eq('trash', category_id === TRASH_URL ? true : false)
 
@@ -53,11 +76,98 @@ export default async function handler(
 
   const { data, error } = await query;
 
-  if (!isNull(data)) {
-    res.status(200).json({ data, error });
-    return;
+  if (!tagName) {
+    // user has searched for text without tags
+
+    const { data: bookmarksWithTags } = await supabase
+      .from(BOOKMARK_TAGS_TABLE_NAME)
+      .select(
+        `
+        bookmark_id,
+        tag_id (
+          id,
+          name
+        )
+      `
+      )
+      .eq('user_id', user_id);
+
+    const finalData = data?.map((item) => {
+      const matchedBookmarkWithTag = bookmarksWithTags?.filter(
+        (tagItem) => tagItem?.bookmark_id === item?.id
+      );
+
+      if (!isEmpty(matchedBookmarkWithTag)) {
+        return {
+          addedTags: matchedBookmarkWithTag?.map((matchedItem) => {
+            return {
+              id: matchedItem?.tag_id?.id,
+              name: matchedItem?.tag_id?.name,
+            };
+          }),
+          ...item,
+        };
+      } else {
+        return item;
+      }
+    }) as SingleListData[];
+
+    res.status(200).json({ data: finalData, error });
   } else {
-    res.status(500).json({ data, error });
-    return;
+    // user has searched for text with tags
+    const { data: bookmarksWithTags } = await supabase
+      .from(BOOKMARK_TAGS_TABLE_NAME)
+      .select(
+        `
+      bookmark_id (*),
+      tag_id!inner(
+        id,
+        name
+      )
+    `
+      )
+      .eq('user_id', user_id)
+      .eq('tag_id.name', tagName);
+    if (isEmpty(data)) {
+      // user as only searched for tags and no text
+
+      res.status(200).json({
+        data: bookmarksWithTags?.map((item) => {
+          return {
+            addedTags: [item?.tag_id],
+            ...item?.bookmark_id,
+          };
+        }) as SingleListData[],
+        error,
+      });
+    } else {
+      // user searched for tag with text
+      const finalData = data?.filter((item) => {
+        const bookmarkTagId = find(
+          bookmarksWithTags,
+          (tagBookmark) => tagBookmark?.bookmark_id?.id === item?.id
+        );
+
+        if (bookmarkTagId) {
+          return item;
+        }
+      });
+
+      res.status(200).json({
+        data: finalData?.map((item) => {
+          const bookmarkTagId = find(
+            bookmarksWithTags,
+            (tagBookmark) => tagBookmark?.bookmark_id?.id === item?.id
+          );
+          if (bookmarkTagId) {
+            return {
+              addedTags: [bookmarkTagId?.tag_id],
+              ...item,
+            };
+          }
+        }) as SingleListData[],
+        error,
+      });
+    }
   }
 }

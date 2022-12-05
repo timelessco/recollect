@@ -91,6 +91,7 @@ import {
 } from '../../types/componentStoreTypes';
 import slugify from 'slugify';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import useDebounce from '../../hooks/useDebounce';
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session>();
@@ -194,6 +195,7 @@ const Dashboard = () => {
     }, 2000);
   }, []);
 
+  const debouncedSearch = useDebounce(searchText, 500);
   // react-query
 
   // Access the client
@@ -227,8 +229,8 @@ const Dashboard = () => {
   });
 
   const {} = useQuery(
-    [BOOKMARKS_KEY, session?.user?.id, category_id, searchText],
-    () => searchBookmarks(searchText, category_id)
+    [BOOKMARKS_KEY, session?.user?.id, category_id, debouncedSearch],
+    async () => searchBookmarks(searchText, category_id)
   );
 
   const { data: userTags } = useQuery([USER_TAGS_KEY, session?.user?.id], () =>

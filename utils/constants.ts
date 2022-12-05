@@ -12,6 +12,7 @@ export const BOOKMAKRS_STORAGE_NAME = 'bookmarks';
 export const URL_PATTERN =
   /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/;
+export const GET_TEXT_WITH_AT_CHAR = /[a-zA-Z]*@[a-zA-Z]*/g;
 
 // api
 export const NEXT_API_URL = `${

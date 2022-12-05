@@ -499,6 +499,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           </p>
         </div>
         <SearchInput
+          userId={userId}
           placeholder={`Search in ${
             find(
               categoryData?.data,
@@ -506,7 +507,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             )?.category_name || 'All Bookmarks'
           }`}
           onChange={(value) => {
-            debouncedSearch(value);
+            // debouncedSearch(value);
+            setSearchText(value);
           }}
         />
         <div className="flex items-center">

@@ -229,7 +229,7 @@ export const searchBookmarks = async (
   searchText: string,
   category_id: CategoryIdUrlTypes
 ) => {
-  if (!isEmpty(searchText)) {
+  if (!isEmpty(searchText) && searchText !== '#') {
     try {
       const session = await getCurrentUserSession();
       const res = await axios.get(
