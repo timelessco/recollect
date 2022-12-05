@@ -61,6 +61,17 @@ export const fetchBookmakrsData = async (
   const categoryId =
     !isEmpty(queryKey) && queryKey?.length <= 3 ? queryKey[2] : null;
 
+  const userId =
+    !isEmpty(queryKey) && queryKey?.length <= 4 ? queryKey[1] : null;
+
+  if (!userId) {
+    return {
+      data: [],
+      error: null,
+      count: {},
+    } as unknown as FetchDataResponse;
+  }
+
   if (!session?.access_token) {
     return;
   }
