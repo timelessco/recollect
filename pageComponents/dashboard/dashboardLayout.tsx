@@ -53,8 +53,6 @@ import {
   BookmarkViewCategories,
 } from '../../types/componentStoreTypes';
 import { useMiscellaneousStore } from '../../store/componentStore';
-import debounce from 'lodash/debounce';
-// import { searchBookmarks } from '../../utils/supabaseCrudHelpers';
 
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
@@ -132,6 +130,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     BOOKMARKS_KEY,
     userId,
     categoryId,
+    '',
   ]) as BookmarksPaginatedDataTypes;
 
   const sharedCategoriesData = queryClient.getQueryData([
@@ -473,18 +472,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     }
   };
 
-  const debouncedSearch = React.useRef(
-    debounce(async (value) => {
-      setSearchText(value);
-    }, 500)
-  ).current;
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
-
   const renderMainPaneNav = () => {
     return (
       <header className="py-[9px] px-4 border-b-[0.5px] border-b-custom-gray-4 flex items-center justify-between">
@@ -507,7 +494,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             )?.category_name || 'All Bookmarks'
           }`}
           onChange={(value) => {
-            // debouncedSearch(value);
             setSearchText(value);
           }}
         />
