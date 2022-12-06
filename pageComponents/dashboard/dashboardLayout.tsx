@@ -130,7 +130,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     BOOKMARKS_KEY,
     userId,
     categoryId,
-    '',
   ]) as BookmarksPaginatedDataTypes;
 
   const sharedCategoriesData = queryClient.getQueryData([

@@ -216,7 +216,7 @@ const Dashboard = () => {
     fetchNextPage,
     isLoading: isAllBookmarksDataLoading,
   } = useInfiniteQuery({
-    queryKey: [BOOKMARKS_KEY, session?.user?.id, category_id, ''],
+    queryKey: [BOOKMARKS_KEY, session?.user?.id, category_id],
     queryFn: fetchBookmakrsData,
     getNextPageParam: (lastPage, pages) => {
       return pages?.length * PAGINATION_LIMIT;
