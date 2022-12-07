@@ -34,6 +34,7 @@ import {
   fetchSharedCategoriesData,
   fetchUserProfiles,
   fetchUserTags,
+  getBookmarksCount,
   // getBookmarkScrappedData,
   getCurrentUserSession,
   moveBookmarkToTrash,
@@ -49,6 +50,7 @@ import {
 import CardSection from './cardSection';
 import {
   ALL_BOOKMARKS_URL,
+  BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
   BOOKMARKS_VIEW,
   CATEGORIES_KEY,
@@ -208,6 +210,11 @@ const Dashboard = () => {
       fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
+  const {} = useQuery(
+    [BOOKMARKS_COUNT_KEY, session?.user?.id as string],
+    getBookmarksCount
+  );
+
   const category_slug = router?.asPath?.split('/')[1] || null;
   const category_id =
     getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
@@ -303,6 +310,8 @@ const Dashboard = () => {
         session?.user?.id,
         category_id,
       ]);
+
+      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
     },
   });
 
@@ -361,6 +370,7 @@ const Dashboard = () => {
           session?.user?.id,
           category_id,
         ]);
+        queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
       },
     }
   );
@@ -369,6 +379,7 @@ const Dashboard = () => {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries([BOOKMARKS_KEY]);
+      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
     },
   });
 
@@ -445,6 +456,7 @@ const Dashboard = () => {
         session?.user?.id,
         category_id,
       ]);
+      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
       // queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
@@ -575,6 +587,7 @@ const Dashboard = () => {
         session?.user?.id,
         category_id,
       ]);
+      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
     },
   });
 
@@ -628,6 +641,7 @@ const Dashboard = () => {
           session?.user?.id,
           category_id,
         ]);
+        queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
       },
     }
   );

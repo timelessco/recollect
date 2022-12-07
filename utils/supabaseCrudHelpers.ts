@@ -38,6 +38,7 @@ import {
   FETCH_USER_PROFILE_API,
   UPDATE_USER_PROFILE_API,
   SEARCH_BOOKMARKS,
+  GET_BOOKMARKS_COUNT,
 } from './constants';
 import isEmpty from 'lodash/isEmpty';
 import { CategoryIdUrlTypes } from '../types/componentTypes';
@@ -105,6 +106,26 @@ export const getBookmarkScrappedData = async (item: string) => {
     return apiRes;
   } catch (e) {
     return e;
+  }
+};
+
+export const getBookmarksCount = async (queryData: { queryKey: string[] }) => {
+  const session = await getCurrentUserSession();
+  const userId =
+    !isEmpty(queryData?.queryKey) && queryData?.queryKey?.length < 4
+      ? queryData?.queryKey[1]
+      : undefined;
+
+  if (userId) {
+    try {
+      const bookmarksData = await axios.get(
+        `${NEXT_API_URL}${GET_BOOKMARKS_COUNT}?access_token=${session?.access_token}`
+      );
+
+      return bookmarksData?.data;
+    } catch (e) {
+      return e;
+    }
   }
 };
 

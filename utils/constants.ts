@@ -37,6 +37,7 @@ export const MOVE_BOOKMARK_TO_TRASH_API = '/bookmark/move-bookmark-to-trash';
 export const CLEAR_BOOKMARK_TRASH_API = '/bookmark/clear-bookmark-trash';
 export const FETCH_BOOKMARKS_VIEW = '/bookmark/fetch-bookmarks-view';
 export const SEARCH_BOOKMARKS = '/bookmark/search-bookmarks';
+export const GET_BOOKMARKS_COUNT = '/bookmark/get-bookmarks-count';
 
 // tags api
 export const FETCH_USER_TAGS_API = '/tags/fetch-user-tags';
@@ -77,6 +78,7 @@ export const SIGNUP_URL = 'signup';
 // react-query keys
 
 export const BOOKMARKS_KEY = 'bookmarks';
+export const BOOKMARKS_COUNT_KEY = 'bookmarks_count';
 export const CATEGORIES_KEY = 'categories';
 export const USER_TAGS_KEY = 'userTags';
 export const BOOKMARKS_VIEW = 'bookmarks_view';

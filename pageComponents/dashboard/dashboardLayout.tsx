@@ -18,14 +18,14 @@ import SearchIconGray from '../../icons/searchIconGray';
 import TrashIconGray from '../../icons/trashIconGray';
 import UserIconGray from '../../icons/userIconGray';
 import {
-  BookmarksPaginatedDataTypes,
+  BookmarksCountTypes,
   CategoriesData,
   FetchSharedCategoriesData,
 } from '../../types/apiTypes';
 import { CategoryIdUrlTypes, ChildrenTypes } from '../../types/componentTypes';
 import {
   ALL_BOOKMARKS_URL,
-  BOOKMARKS_KEY,
+  BOOKMARKS_COUNT_KEY,
   CATEGORIES_KEY,
   SEARCH_URL,
   SHARED_CATEGORIES_TABLE_NAME,
@@ -126,11 +126,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     error: PostgrestError;
   };
 
-  const bookmarksData = queryClient.getQueryData([
-    BOOKMARKS_KEY,
+  const bookmarksCountData = queryClient.getQueryData([
+    BOOKMARKS_COUNT_KEY,
     userId,
-    categoryId,
-  ]) as BookmarksPaginatedDataTypes;
+  ]) as {
+    data: BookmarksCountTypes;
+    error: PostgrestError;
+  };
 
   const sharedCategoriesData = queryClient.getQueryData([
     SHARED_CATEGORIES_TABLE_NAME,
@@ -227,7 +229,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${ALL_BOOKMARKS_URL}`,
       current: currentPath === ALL_BOOKMARKS_URL,
       id: 1,
-      count: bookmarksData?.pages[0]?.count?.allBookmarks,
+      count: bookmarksCountData?.data?.allBookmarks,
     },
     {
       icon: () => <InboxIconGray />,
@@ -235,7 +237,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${UNCATEGORIZED_URL}`,
       current: currentPath === UNCATEGORIZED_URL,
       id: 2,
-      count: bookmarksData?.pages[0]?.count?.uncategorized,
+      count: bookmarksCountData?.data?.uncategorized,
     },
     {
       icon: () => <TrashIconGray />,
@@ -243,7 +245,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       href: `/${TRASH_URL}`,
       current: currentPath === TRASH_URL,
       id: 3,
-      count: bookmarksData?.pages[0]?.count?.trash,
+      count: bookmarksCountData?.data?.trash,
     },
   ];
 
@@ -384,7 +386,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           ),
           iconValue: item?.icon,
           count: find(
-            bookmarksData?.pages[0]?.count?.categoryCount,
+            bookmarksCountData?.data?.categoryCount,
             (catItem) => catItem?.category_id === item?.id
           )?.count,
         };

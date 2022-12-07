@@ -1,21 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import { supabase } from '../../utils/supabaseClient';
-import {
-  UserTagsData,
-  SingleListData,
-  BookmarksCountTypes,
-} from '../../../types/apiTypes';
+import { SingleListData, BookmarksCountTypes } from '../../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   CATEGORIES_TABLE_NAME,
   MAIN_TABLE_NAME,
   PAGINATION_LIMIT,
   PROFILES,
-  TAG_TABLE_NAME,
   TRASH_URL,
   UNCATEGORIZED_URL,
 } from '../../../utils/constants';
-import { getTagAsPerId } from '../../../utils/helpers';
 import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
@@ -70,7 +64,6 @@ export default async function handler(
     category_id !== UNCATEGORIZED_URL;
 
   let data;
-  let count;
   let sortVaue;
 
   if (categoryCondition) {
@@ -141,82 +134,43 @@ user_id (
     query = query.order('url', { ascending: false });
   }
 
-  const { data: bookmarkData } = await query;
-
-  // bookmarks count logic
-  const { data: bookmarkCountData } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .select(
-      `
-  title,
-  trash,
-  category_id
-`
-    )
-    .eq('user_id', userId); // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
-
-  const { data: userCategoryData } = await supabase
-    .from(CATEGORIES_TABLE_NAME)
-    .select(
-      `
-id
-`
-    )
-    .eq('user_id', userId);
+  const { data: bookmarkData, error } = await query;
 
   // eslint-disable-next-line prefer-const
   data = bookmarkData;
-  // eslint-disable-next-line prefer-const
-  count = {
-    allBookmarks: bookmarkCountData?.filter((item) => item?.trash === false)
-      ?.length,
-    trash: bookmarkCountData?.filter((item) => item?.trash === true)?.length,
-    uncategorized: bookmarkCountData?.filter(
-      (item) => item?.category_id === 0 && item?.trash === false
-    )?.length,
-    categoryCount: userCategoryData?.map((item) => {
-      return {
-        category_id: item?.id,
-        count: bookmarkCountData?.filter(
-          (bookmarkItem) => bookmarkItem?.category_id === item?.id
-        )?.length,
-      };
-    }),
-  } as BookmarksCountTypes;
 
-  const { data: bookmarkTags } = await supabase
+  const { data: bookmarksWithTags } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
-    .select();
-  const { data: tagsData, error } = await supabase
-    .from(TAG_TABLE_NAME)
-    .select();
+    .select(
+      `
+    bookmark_id,
+    tag_id (
+      id,
+      name
+    )`
+    )
+    .eq('user_id', userId);
 
-  if (!isNull(tagsData)) {
-    const finalData = data?.map((item) => {
-      let addedTags = [] as Array<UserTagsData>;
+  const finalData = data?.map((item) => {
+    const matchedBookmarkWithTag = bookmarksWithTags?.filter(
+      (tagItem) => tagItem?.bookmark_id === item?.id
+    );
 
-      bookmarkTags?.forEach((bookmarkTagsItem) => {
-        if (bookmarkTagsItem?.bookmark_id === item?.id) {
-          addedTags = [
-            ...addedTags,
-            {
-              ...getTagAsPerId(bookmarkTagsItem?.tag_id, tagsData),
-              bookmark_tag_id: bookmarkTagsItem?.id,
-            },
-          ];
-        }
-      });
-
+    if (!isEmpty(matchedBookmarkWithTag)) {
       return {
+        addedTags: matchedBookmarkWithTag?.map((matchedItem) => {
+          return {
+            id: matchedItem?.tag_id?.id,
+            name: matchedItem?.tag_id?.name,
+          };
+        }),
         ...item,
-        addedTags,
       };
-    }) as Array<SingleListData>;
+    } else {
+      return item;
+    }
+  }) as SingleListData[];
 
-    res.status(200).json({ data: finalData, error, count: count || null });
-    return;
-  } else {
-    res.status(500).json({ data, error, count: null });
-    return;
-  }
+  res.status(200).json({ data: finalData, error, count: null });
+  return;
 }
