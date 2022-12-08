@@ -235,7 +235,7 @@ const CardSection = ({
   const renderAvatar = (item: SingleListData) => {
     return (
       <Avatar
-        name={item?.user_id?.user_name}
+        name={item?.user_id?.email}
         src={item?.user_id?.profile_pic}
         size="20"
         round={true}

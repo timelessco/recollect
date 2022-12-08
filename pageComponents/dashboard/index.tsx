@@ -43,7 +43,6 @@ import {
   signInWithOauth,
   signOut,
   updateCategory,
-  updateProfilesTable,
   updateSharedCategoriesUserAccess,
   updateUserProfile,
 } from '../../utils/supabaseCrudHelpers';
@@ -191,7 +190,6 @@ const Dashboard = () => {
   // TODO: this is bad pattern fix this
   useEffect(() => {
     fetchUserSession();
-    updateProfilesTable();
     setTimeout(() => {
       fetchUserSession();
     }, 2000);

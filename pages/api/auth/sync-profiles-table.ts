@@ -10,6 +10,8 @@ type Data = {
   error: PostgrestError | null | unknown;
 };
 
+// NOTE: THIS API HAS BEEN MOVED TO SQL TRIGGERS, this is no longer in use
+
 // this api syncs profiles table and with the latest data auth table
 // profiles table is created as auth table data cannot be accessed in front-end as its not a public table
 

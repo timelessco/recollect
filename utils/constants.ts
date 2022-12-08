@@ -26,7 +26,7 @@ export const SCREENSHOT_API = 'https://s.vercel.app/api?url=';
 export const PAGINATION_LIMIT = 25;
 
 //auth api
-export const SYNC_PROFILES_TABLE_API = '/auth/sync-profiles-table';
+// no auth api yet
 // bookmark api
 export const BOOKMARK_SCRAPPER_API = '/bookmark/bookmarkScrapper';
 export const GET_BOOKMARKS_DATA_API = '/bookmark/get-bookmarks-data';

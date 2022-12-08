@@ -18,7 +18,6 @@ import {
   CATEGORIES_TABLE_NAME,
   SEND_COLLABORATION_EMAIL_API,
   ADD_CATEGORY_TO_BOOKMARK_API,
-  SYNC_PROFILES_TABLE_API,
   ADD_BOOKMARK_MIN_DATA,
   ADD_URL_SCREENSHOT_API,
   FETCH_USER_TAGS_API,
@@ -357,7 +356,7 @@ export const fetchBookmarksViews = async ({
       return;
     }
     const res = await axios.post(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
-      category_id: category_id,
+      category_id: isNull(category_id) ? 0 : category_id,
       access_token: session?.access_token,
     });
     return res?.data;
@@ -649,21 +648,4 @@ export const signUpWithEmailPassword = async (
 export const signOut = async () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { error } = await supabase.auth.signOut();
-};
-
-export const updateProfilesTable = async () => {
-  try {
-    const session = await getCurrentUserSession();
-
-    if (!session?.access_token) {
-      return;
-    }
-    const res = await axios.get(
-      `${NEXT_API_URL}${SYNC_PROFILES_TABLE_API}?access_token=${session?.access_token}`
-    );
-
-    return { data: res, error: undefined };
-  } catch (e) {
-    return { data: undefined, error: e };
-  }
 };
