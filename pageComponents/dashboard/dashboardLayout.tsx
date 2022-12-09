@@ -6,7 +6,7 @@ import isEmpty from 'lodash/isEmpty';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import Button from '../../components/atoms/button';
 import SearchInput from '../../components/searchInput';
 import DownArrowGray from '../../icons/downArrowGray';
@@ -267,7 +267,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     listNameId?: string;
   }
 
-  const SingleListItem = (listProps: listPropsTypes) => {
+  const _SingleListItem = (listProps: listPropsTypes) => {
     const {
       item,
       extendedClassname = '',
@@ -370,30 +370,33 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     );
   };
 
-  const collectionsList = userName
-    ? categoryData?.data?.map((item) => {
-        return {
-          name: item?.category_name,
-          href: `/${item?.category_slug}`,
-          id: item?.id,
-          current: currentPath === item?.category_slug,
-          isPublic: item?.is_public,
-          isCollab: !isEmpty(
-            find(
-              sharedCategoriesData?.data,
-              (cat) => cat?.category_id === item?.id
-            )
-          ),
-          iconValue: item?.icon,
-          count: find(
-            bookmarksCountData?.data?.categoryCount,
-            (catItem) => catItem?.category_id === item?.id
-          )?.count,
-        };
-      })
-    : [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const SingleListItem = React.useCallback(_SingleListItem, []);
 
-  const renderSidePaneCollections = () => {
+  const renderSidePaneCollections = useCallback(() => {
+    const collectionsList = userName
+      ? categoryData?.data?.map((item) => {
+          return {
+            name: item?.category_name,
+            href: `/${item?.category_slug}`,
+            id: item?.id,
+            current: currentPath === item?.category_slug,
+            isPublic: item?.is_public,
+            isCollab: !isEmpty(
+              find(
+                sharedCategoriesData?.data,
+                (cat) => cat?.category_id === item?.id
+              )
+            ),
+            iconValue: item?.icon,
+            count: find(
+              bookmarksCountData?.data?.categoryCount,
+              (catItem) => catItem?.category_id === item?.id
+            )?.count,
+          };
+        })
+      : [];
+
     return (
       <div className="pt-[25px]">
         <p className="font-medium text-[13px] leading-[115%] px-1 text-custom-gray-3">
@@ -455,7 +458,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         </div>
       </div>
     );
-  };
+  }, [
+    SingleListItem,
+    bookmarksCountData?.data?.categoryCount,
+    categoryData?.data,
+    currentPath,
+    onAddNewCategory,
+    sharedCategoriesData?.data,
+    showAddCategoryInput,
+    userName,
+  ]);
 
   const navBarLogo = () => {
     const currentCategory = find(
