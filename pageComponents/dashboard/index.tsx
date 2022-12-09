@@ -208,7 +208,7 @@ const Dashboard = () => {
       fetchCategoriesData(session?.user?.id || '', session?.user?.email || '')
   );
 
-  const {} = useQuery(
+  const { data: bookmarksCountData } = useQuery(
     [BOOKMARKS_COUNT_KEY, session?.user?.id as string],
     getBookmarksCount
   );
@@ -951,7 +951,7 @@ const Dashboard = () => {
   ) as SingleListData[];
 
   // tells if the latest paginated data is the end for total bookmark data based on current category
-  const hasMoreLogic = () => {
+  const hasMoreLogic = (): boolean => {
     const firstPaginatedData =
       allBookmarksData?.pages?.length !== 0
         ? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
@@ -960,7 +960,7 @@ const Dashboard = () => {
     if (!isNull(firstPaginatedData)) {
       if (typeof category_id === 'number') {
         const totalBookmarkCountInCategory = find(
-          firstPaginatedData?.count?.categoryCount,
+          bookmarksCountData?.data?.categoryCount,
           (item) => item?.category_id === category_id
         );
         return (
@@ -968,18 +968,18 @@ const Dashboard = () => {
           flattendPaginationBookmarkData?.length
         );
       } else if (category_id === null) {
-        const count = firstPaginatedData?.count?.allBookmarks;
-
+        const count = bookmarksCountData?.data?.allBookmarks;
         return count !== flattendPaginationBookmarkData?.length;
       } else if (category_id === TRASH_URL) {
-        const count = firstPaginatedData?.count?.trash;
+        const count = bookmarksCountData?.data?.trash;
 
         return count !== flattendPaginationBookmarkData?.length;
       } else if (category_id === UNCATEGORIZED_URL) {
-        const count = firstPaginatedData?.count?.uncategorized;
+        const count = bookmarksCountData?.data?.uncategorized;
 
         return count !== flattendPaginationBookmarkData?.length;
       }
+      return true;
     } else {
       return true;
     }
@@ -1000,7 +1000,7 @@ const Dashboard = () => {
                 <InfiniteScroll
                   dataLength={flattendPaginationBookmarkData?.length}
                   next={fetchNextPage}
-                  hasMore={hasMoreLogic() as boolean}
+                  hasMore={hasMoreLogic()}
                   loader={
                     <div
                       style={{
