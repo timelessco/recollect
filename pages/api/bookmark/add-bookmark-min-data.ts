@@ -9,6 +9,7 @@ import {
   ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
   MAIN_TABLE_NAME,
   TIMELESS_SCRAPPER_API,
+  UNCATEGORIZED_URL,
 } from '../../../utils/constants';
 import jwt from 'jsonwebtoken';
 
@@ -55,7 +56,8 @@ export default async function handler(
     update_access === true &&
     !isNull(category_id) &&
     category_id !== 'null' &&
-    category_id !== 0
+    category_id !== 0 &&
+    category_id !== UNCATEGORIZED_URL
   ) {
     const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
       {

@@ -112,6 +112,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     }
   }, []);
 
+  useEffect(() => {
+    setSearchText('');
+  }, [categoryId]);
+
   const userNavigation = [{ name: 'Sign out', href: '#', value: 'sign-out' }];
 
   const router = useRouter();

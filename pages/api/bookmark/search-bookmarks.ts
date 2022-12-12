@@ -49,7 +49,7 @@ export default async function handler(
 
   const tagName =
     !isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-      ? matchedSearchTag[0]?.replace('@', '')
+      ? matchedSearchTag?.map((item) => item?.replace('@', ''))
       : undefined;
 
   const tokenDecode = jwtDecode(req.query.access_token as string);
@@ -114,7 +114,6 @@ export default async function handler(
 
     res.status(200).json({ data: finalData, error });
   } else {
-    // user has searched for text with tags
     const { data: bookmarksWithTags } = await supabase
       .from(BOOKMARK_TAGS_TABLE_NAME)
       .select(
@@ -127,7 +126,8 @@ export default async function handler(
     `
       )
       .eq('user_id', user_id)
-      .eq('tag_id.name', tagName);
+      .in('tag_id.name', tagName);
+
     if (isEmpty(data)) {
       // user as only searched for tags and no text
 
