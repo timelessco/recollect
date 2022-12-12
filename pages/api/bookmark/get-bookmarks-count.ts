@@ -140,7 +140,11 @@ export default async function handler(
         ],
       };
 
-      if (index === userCategoryIds?.length - 1) resolve();
+      if (
+        index === userCategoryIds?.length - 1 &&
+        index === count?.categoryCount?.length - 1
+      )
+        resolve();
     });
   });
 
