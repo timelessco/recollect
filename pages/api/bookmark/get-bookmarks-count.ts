@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import { supabase } from '../../utils/supabaseClient';
-import { BookmarksCountTypes } from '../../../types/apiTypes';
+import { BookmarksCountTypes } from '../../../src/types/apiTypes';
 import {
   CATEGORIES_TABLE_NAME,
   MAIN_TABLE_NAME,
-} from '../../../utils/constants';
+} from '../../../src/utils/constants';
 import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';

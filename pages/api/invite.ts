@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SHARED_CATEGORIES_TABLE_NAME } from '../../utils/constants';
+import { SHARED_CATEGORIES_TABLE_NAME } from '../../src/utils/constants';
 import jwt_decode from 'jwt-decode';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';

@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../../types/apiTypes';
+import { SingleListData } from '../../../src/types/apiTypes';
 import {
   BOOKMAKRS_STORAGE_NAME,
   BOOKMARK_TAGS_TABLE_NAME,
   MAIN_TABLE_NAME,
-} from '../../../utils/constants';
+} from '../../../src/utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';

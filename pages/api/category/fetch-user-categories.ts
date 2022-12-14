@@ -3,11 +3,14 @@ import { createClient, PostgrestError } from '@supabase/supabase-js';
 import { find, isEmpty } from 'lodash';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CategoriesData, CollabDataInCategory } from '../../../types/apiTypes';
+import {
+  CategoriesData,
+  CollabDataInCategory,
+} from '../../../src/types/apiTypes';
 import {
   CATEGORIES_TABLE_NAME,
   SHARED_CATEGORIES_TABLE_NAME,
-} from '../../../utils/constants';
+} from '../../../src/utils/constants';
 import jwt from 'jsonwebtoken';
 
 /**

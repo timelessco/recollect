@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { BookmarkViewDataTypes } from '../../../types/apiTypes';
-import { CATEGORIES_TABLE_NAME } from '../../../utils/constants';
+import { BookmarkViewDataTypes } from '../../../src/types/apiTypes';
+import { CATEGORIES_TABLE_NAME } from '../../../src/utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';

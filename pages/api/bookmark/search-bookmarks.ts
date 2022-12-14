@@ -2,13 +2,13 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import {
   BookmarksWithTagsWithTagForginKeys,
   SingleListData,
-} from '../../../types/apiTypes';
+} from '../../../src/types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   GET_TEXT_WITH_AT_CHAR,
   TRASH_URL,
   UNCATEGORIZED_URL,
-} from '../../../utils/constants';
+} from '../../../src/utils/constants';
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';

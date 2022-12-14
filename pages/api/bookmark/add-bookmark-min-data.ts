@@ -4,13 +4,13 @@ import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 import { isNull } from 'lodash';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../../types/apiTypes';
+import { SingleListData } from '../../../src/types/apiTypes';
 import {
   ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
   MAIN_TABLE_NAME,
   TIMELESS_SCRAPPER_API,
   UNCATEGORIZED_URL,
-} from '../../../utils/constants';
+} from '../../../src/utils/constants';
 import jwt from 'jsonwebtoken';
 
 type Data = {

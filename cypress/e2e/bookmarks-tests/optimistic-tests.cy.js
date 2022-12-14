@@ -1,4 +1,4 @@
-import { TRASH_URL } from '../../../utils/constants';
+import { TRASH_URL } from '../../../src/utils/constants';
 
 describe('optimistic tests', () => {
   beforeEach(() => {

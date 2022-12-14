@@ -3,8 +3,8 @@ import { createClient, PostgrestError } from '@supabase/supabase-js';
 import { isEmpty } from 'lodash';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { UserTagsData } from '../../../types/apiTypes';
-import { TAG_TABLE_NAME } from '../../../utils/constants';
+import { UserTagsData } from '../../../src/types/apiTypes';
+import { TAG_TABLE_NAME } from '../../../src/utils/constants';
 import jwt from 'jsonwebtoken';
 
 // fetches tags for a perticular user

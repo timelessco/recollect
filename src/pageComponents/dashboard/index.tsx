@@ -1,4 +1,4 @@
-import { Session, UserIdentity } from '@supabase/supabase-js';
+import { UserIdentity } from '@supabase/supabase-js';
 import {
   useSession,
   useSupabaseClient,
@@ -40,11 +40,9 @@ import {
   fetchUserProfiles,
   fetchUserTags,
   getBookmarksCount,
-  // getBookmarkScrappedData,
   moveBookmarkToTrash,
   removeTagFromBookmark,
   searchBookmarks,
-  signInWithOauth,
   signOut,
   updateCategory,
   updateSharedCategoriesUserAccess,

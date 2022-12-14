@@ -2,9 +2,12 @@
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../types/apiTypes';
-import { CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from '../../utils/constants';
-import { getUserNameFromEmail } from '../../utils/helpers';
+import { SingleListData } from '../../src/types/apiTypes';
+import {
+  CATEGORIES_TABLE_NAME,
+  MAIN_TABLE_NAME,
+} from '../../src/utils/constants';
+import { getUserNameFromEmail } from '../../src/utils/helpers';
 
 type Data = {
   data: SingleListData[] | null;

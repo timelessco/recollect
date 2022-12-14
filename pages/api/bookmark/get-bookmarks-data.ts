@@ -4,7 +4,7 @@ import {
   SingleListData,
   BookmarksCountTypes,
   BookmarksWithTagsWithTagForginKeys,
-} from '../../../types/apiTypes';
+} from '../../../src/types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   CATEGORIES_TABLE_NAME,
@@ -13,11 +13,11 @@ import {
   PROFILES,
   TRASH_URL,
   UNCATEGORIZED_URL,
-} from '../../../utils/constants';
+} from '../../../src/utils/constants';
 import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
-import { BookmarksSortByTypes } from '../../../types/componentStoreTypes';
+import { BookmarksSortByTypes } from '../../../src/types/componentStoreTypes';
 import { isEmpty } from 'lodash';
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 

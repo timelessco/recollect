@@ -3,8 +3,8 @@ import { createClient, PostgrestError } from '@supabase/supabase-js';
 import { isEmpty } from 'lodash';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CategoriesData } from '../../../types/apiTypes';
-import { PROFILES } from '../../../utils/constants';
+import { CategoriesData } from '../../../src/types/apiTypes';
+import { PROFILES } from '../../../src/utils/constants';
 import jwt from 'jsonwebtoken';
 
 type Data = {

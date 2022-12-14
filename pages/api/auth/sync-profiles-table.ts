@@ -2,7 +2,7 @@
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { find } from 'lodash';
-import { getUserNameFromEmail } from '../../../utils/helpers';
+import { getUserNameFromEmail } from '../../../src/utils/helpers';
 import jwt from 'jsonwebtoken';
 
 type Data = {

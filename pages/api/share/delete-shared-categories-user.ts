@@ -3,8 +3,8 @@ import { createClient, PostgrestError } from '@supabase/supabase-js';
 import { isEmpty } from 'lodash';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { FetchSharedCategoriesData } from '../../../types/apiTypes';
-import { SHARED_CATEGORIES_TABLE_NAME } from '../../../utils/constants';
+import { FetchSharedCategoriesData } from '../../../src/types/apiTypes';
+import { SHARED_CATEGORIES_TABLE_NAME } from '../../../src/utils/constants';
 import jwt from 'jsonwebtoken';
 
 type Data = {

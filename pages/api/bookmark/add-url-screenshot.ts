@@ -2,9 +2,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { decode } from 'base64-arraybuffer';
 import axios from 'axios';
-import { MAIN_TABLE_NAME, SCREENSHOT_API } from '../../../utils/constants';
+import { MAIN_TABLE_NAME, SCREENSHOT_API } from '../../../src/utils/constants';
 import { isNull } from 'lodash';
-import { SingleListData } from '../../../types/apiTypes';
+import { SingleListData } from '../../../src/types/apiTypes';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
 

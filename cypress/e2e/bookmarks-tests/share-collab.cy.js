@@ -1,7 +1,7 @@
 import {
   ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
   TRASH_URL,
-} from '../../../utils/constants';
+} from '../../../src/utils/constants';
 
 describe('share test', () => {
   beforeEach(() => {

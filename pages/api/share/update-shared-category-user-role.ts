@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CategoriesData } from '../../../types/apiTypes';
-import { SHARED_CATEGORIES_TABLE_NAME } from '../../../utils/constants';
+import { CategoriesData } from '../../../src/types/apiTypes';
+import { SHARED_CATEGORIES_TABLE_NAME } from '../../../src/utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
