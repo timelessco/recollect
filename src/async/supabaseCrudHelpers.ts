@@ -34,7 +34,7 @@ import {
   UPDATE_USER_PROFILE_API,
   SEARCH_BOOKMARKS,
   GET_BOOKMARKS_COUNT,
-} from './constants';
+} from '../utils/constants';
 import isEmpty from 'lodash/isEmpty';
 import { CategoryIdUrlTypes } from '../types/componentTypes';
 import isNull from 'lodash/isNull';
@@ -299,7 +299,7 @@ export const removeTagFromBookmark = async ({
     const res = await axios.post(
       `${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
       {
-        bookmark_tag_id: selectedData?.bookmark_tag_id,
+        bookmark_tag_id: selectedData?.id,
         access_token: session?.access_token,
       }
     );

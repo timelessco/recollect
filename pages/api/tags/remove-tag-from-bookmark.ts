@@ -43,6 +43,7 @@ export default async function handler(
     res
       .status(500)
       .json({ data: null, error: { message: 'Something went wrong' } });
+    throw new Error('ERROR');
   }
 
   if (!isNull(error)) {

@@ -8,7 +8,7 @@ import { ALL_BOOKMARKS_URL, SIGNUP_URL } from '../../utils/constants';
 import {
   signInWithEmailPassword,
   signInWithOauth,
-} from '../../utils/supabaseCrudHelpers';
+} from '../../async/supabaseCrudHelpers';
 import { errorToast } from '../../utils/toastMessages';
 
 const LoginPage = () => {

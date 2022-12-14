@@ -1,16 +1,6 @@
 import { UserIdentity } from '@supabase/supabase-js';
-import {
-  useSession,
-  useSupabaseClient,
-  useUser,
-} from '@supabase/auth-helpers-react';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from '@tanstack/react-query';
-// import { AxiosResponse } from 'axios';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
   BookmarksPaginatedDataTypes,
@@ -33,30 +23,20 @@ import {
   deleteData,
   deleteSharedCategoriesUser,
   deleteUserCategory,
-  fetchBookmakrsData,
-  fetchBookmarksViews,
-  fetchCategoriesData,
-  fetchSharedCategoriesData,
-  fetchUserProfiles,
-  fetchUserTags,
-  getBookmarksCount,
   moveBookmarkToTrash,
   removeTagFromBookmark,
-  searchBookmarks,
   signOut,
   updateCategory,
   updateSharedCategoriesUserAccess,
   updateUserProfile,
-} from '../../utils/supabaseCrudHelpers';
+} from '../../async/supabaseCrudHelpers';
 import CardSection from './cardSection';
 import {
   ALL_BOOKMARKS_URL,
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
-  BOOKMARKS_VIEW,
   CATEGORIES_KEY,
   LOGIN_URL,
-  PAGINATION_LIMIT,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
   UNCATEGORIZED_URL,
@@ -83,7 +63,6 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { errorToast, successToast } from '../../utils/toastMessages';
 import { mutationApiCall } from '../../utils/apiHelpers';
-import { getCategoryIdFromSlug } from '../../utils/helpers';
 import ShareCategoryModal from './modals/shareCategoryModal';
 import AddBookarkShortcutModal from './modals/addBookmarkShortcutModal';
 import WarningActionModal from './modals/warningActionModal';
@@ -94,13 +73,20 @@ import {
 } from '../../types/componentStoreTypes';
 import slugify from 'slugify';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import useDebounce from '../../hooks/useDebounce';
+import useFetchCategories from '../../async/queryHooks/category/useFetchCategories';
+import useFetchBookmarksCount from '../../async/queryHooks/bookmarks/useFetchBookmarksCount';
+import useFetchPaginatedBookmarks from '../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks';
+import useSearchBookmarks from '../../async/queryHooks/bookmarks/useSearchBookmarks';
+import useFetchUserTags from '../../async/queryHooks/userTags/useFetchUserTags';
+import useFetchSharedCategories from '../../async/queryHooks/share/useFetchSharedCategories';
+import useFetchBookmarksView from '../../async/queryHooks/bookmarks/useFetchBookmarksView';
+import useFetchUserProfile from '../../async/queryHooks/user/useFetchUserProfile';
+import useGetCurrentCategoryId from '../../hooks/useGetCurrentCategoryId';
 
 const Dashboard = () => {
   const supabase = useSupabaseClient();
   // const [session, setSession] = useState<Session>();
   const session = useSession();
-  const user = useUser();
   const [showAddBookmarkModal, setShowAddBookmarkModal] = // move to zudstand
     useState<boolean>(false);
   const [addedUrlData, setAddedUrlData] = useState<SingleListData>();
@@ -129,7 +115,6 @@ const Dashboard = () => {
   const toggleIsSortByLoading = useLoadersStore(
     (state) => state.toggleIsSortByLoading
   );
-  const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
   const toggleShareCategoryModal = useModalStore(
     (state) => state.toggleShareCategoryModal
@@ -159,17 +144,6 @@ const Dashboard = () => {
     (state) => state.setShareCategoryId
   );
 
-  const searchText = useMiscellaneousStore((state) => state.searchText);
-
-  // const fetchUserSession = async () => {
-  //   const currentSession = await getCurrentUserSession();
-  //   // setSession(currentSession);
-
-  //   if (!currentSession) {
-  //     router.push(`/${LOGIN_URL}`);
-  //   }
-  // };
-
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && e.metaKey) {
@@ -194,72 +168,32 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!session) router.push(`/${LOGIN_URL}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  const debouncedSearch = useDebounce(searchText, 500);
   // react-query
 
   // Access the client
   const queryClient = useQueryClient();
 
-  // Queries
-  const { data: allCategories } = useQuery(
-    [CATEGORIES_KEY, session?.user?.id],
-    () =>
-      fetchCategoriesData(
-        session?.user?.id || '',
-        session?.user?.email || '',
-        session
-      )
-  );
+  const { allCategories } = useFetchCategories();
 
-  const { data: bookmarksCountData } = useQuery(
-    [BOOKMARKS_COUNT_KEY, session?.user?.id as string],
-    (data) => getBookmarksCount(data, session)
-  );
+  const { bookmarksCountData } = useFetchBookmarksCount();
 
-  const category_slug = router?.asPath?.split('/')[1] || null;
-  const category_id =
-    getCategoryIdFromSlug(category_slug, allCategories?.data) || null;
-  const {
-    data: allBookmarksData,
-    fetchNextPage,
-    isLoading: isAllBookmarksDataLoading,
-  } = useInfiniteQuery({
-    queryKey: [BOOKMARKS_KEY, session?.user?.id, category_id],
-    queryFn: (data) => fetchBookmakrsData(data, session),
-    getNextPageParam: (lastPage, pages) => {
-      return pages?.length * PAGINATION_LIMIT;
-    },
-    onSettled: () => {
-      if (isSortByLoading === true) {
-        toggleIsSortByLoading();
-      }
-    },
-  });
+  const { category_id } = useGetCurrentCategoryId();
 
-  const {} = useQuery(
-    [BOOKMARKS_KEY, session?.user?.id, category_id, debouncedSearch],
-    async () => searchBookmarks(searchText, category_id, session)
-  );
+  const { allBookmarksData, fetchNextPage, isAllBookmarksDataLoading } =
+    useFetchPaginatedBookmarks();
 
-  const { data: userTags } = useQuery([USER_TAGS_KEY, session?.user?.id], () =>
-    fetchUserTags(session?.user?.id || '', session)
-  );
+  const {} = useSearchBookmarks();
 
-  const { data: sharedCategoriesData } = useQuery(
-    [SHARED_CATEGORIES_TABLE_NAME],
-    () => fetchSharedCategoriesData(session)
-  );
+  const { userTags } = useFetchUserTags();
 
-  const {} = useQuery([BOOKMARKS_VIEW, category_id], () =>
-    fetchBookmarksViews({ category_id: category_id, session })
-  );
+  const { sharedCategoriesData } = useFetchSharedCategories();
 
-  const { data: userProfileData } = useQuery(
-    [USER_PROFILE, session?.user?.id],
-    () => fetchUserProfiles({ userId: session?.user?.id as string, session })
-  );
+  const {} = useFetchBookmarksView();
+
+  const { userProfileData } = useFetchUserProfile();
 
   // Mutations
   const deleteBookmarkOptismicMutation = useMutation(deleteData, {

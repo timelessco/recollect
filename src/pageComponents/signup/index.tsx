@@ -7,7 +7,7 @@ import { ALL_BOOKMARKS_URL } from '../../utils/constants';
 import {
   signInWithOauth,
   signUpWithEmailPassword,
-} from '../../utils/supabaseCrudHelpers';
+} from '../../async/supabaseCrudHelpers';
 import { errorToast } from '../../utils/toastMessages';
 
 const SignUp = () => {

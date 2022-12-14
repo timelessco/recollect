@@ -6,7 +6,7 @@ import { FetchSharedCategoriesData } from '../../../src/types/apiTypes';
 import { SHARED_CATEGORIES_TABLE_NAME } from '../../../src/utils/constants';
 import jwt from 'jsonwebtoken';
 
-// fetches tags for a perticular user
+// fetches shared categories
 type Data = {
   data: FetchSharedCategoriesData[] | null;
   error: PostgrestError | null | string | jwt.VerifyErrors;

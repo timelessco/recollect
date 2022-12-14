@@ -18,7 +18,7 @@ import { CategoriesData } from '../../../types/apiTypes';
 import { CATEGORIES_KEY } from '../../../utils/constants';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import isEmpty from 'lodash/isEmpty';
-import { sendCollaborationEmailInvite } from '../../../utils/supabaseCrudHelpers';
+import { sendCollaborationEmailInvite } from '../../../async/supabaseCrudHelpers';
 import Select from '../../../components/atoms/select';
 import { errorToast, successToast } from '../../../utils/toastMessages';
 import { getUserNameFromEmail } from '../../../utils/helpers';
