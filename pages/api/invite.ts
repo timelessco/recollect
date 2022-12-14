@@ -58,7 +58,8 @@ export default async function handler(
           email: insertData?.email,
           edit_access: false,
           user_id: insertData?.userId,
-        });
+        })
+        .select();
 
       if (isNull(error)) {
         res.status(200).json({

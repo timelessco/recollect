@@ -37,7 +37,8 @@ export default async function handler(
   const { data, error } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({ trash: req.body.isTrash })
-    .match({ id: bookmarkData?.id });
+    .match({ id: bookmarkData?.id })
+    .select();
 
   if (!isNull(data)) {
     res.status(200).json({ data, error });

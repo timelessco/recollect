@@ -1,4 +1,6 @@
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,6 +14,14 @@ import { errorToast } from '../../utils/toastMessages';
 const LoginPage = () => {
   const router = useRouter();
 
+  const supabase = useSupabaseClient();
+
+  const session = useSession();
+
+  useEffect(() => {
+    if (session) router.push(`/${ALL_BOOKMARKS_URL}`);
+  }, [session]);
+
   const {
     register,
     handleSubmit,
@@ -21,9 +31,10 @@ const LoginPage = () => {
   const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
     data
   ) => {
-    const { error, user, session } = await signInWithEmailPassword(
+    const { error } = await signInWithEmailPassword(
       data?.email,
-      data?.password
+      data?.password,
+      supabase
     );
 
     if (error) {
@@ -131,7 +142,7 @@ const LoginPage = () => {
               <div className="mt-6 ">
                 <div>
                   <div
-                    onClick={() => signInWithOauth()}
+                    onClick={() => signInWithOauth('google', supabase)}
                     className=" cursor-pointer inline-flex w-full justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50"
                   >
                     <span>Log in with Google</span>

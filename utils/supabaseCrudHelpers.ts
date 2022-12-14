@@ -1,21 +1,17 @@
-import { Provider, Session, UserIdentity } from '@supabase/supabase-js';
+import { Provider, SupabaseClient, UserIdentity } from '@supabase/supabase-js';
 import axios from 'axios';
 import {
   FetchDataResponse,
   SingleListData,
-  UrlData,
   BookmarksTagData,
   BookmarkViewDataTypes,
   ProfilesTableTypes,
+  SupabaseSessionType,
 } from '../types/apiTypes';
-import { supabase } from '../utils/supabaseClient';
 import {
-  BOOKMARK_SCRAPPER_API,
-  MAIN_TABLE_NAME,
   NEXT_API_URL,
   GET_BOOKMARKS_DATA_API,
   DELETE_BOOKMARK_DATA_API,
-  CATEGORIES_TABLE_NAME,
   SEND_COLLABORATION_EMAIL_API,
   ADD_CATEGORY_TO_BOOKMARK_API,
   ADD_BOOKMARK_MIN_DATA,
@@ -44,20 +40,15 @@ import { CategoryIdUrlTypes } from '../types/componentTypes';
 import isNull from 'lodash/isNull';
 
 // bookmark
-export const fetchData = async <T>(tableName = CATEGORIES_TABLE_NAME) => {
-  const { data, error } = await supabase.from(tableName).select();
-  return { data, error } as unknown as FetchDataResponse<T>;
-};
-
 // gets bookmarks data
 export const fetchBookmakrsData = async (
   // category_id: string | null | number,
   // from: number
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
-  { pageParam = 0, queryKey }
+  { pageParam = 0, queryKey },
+  session: SupabaseSessionType
 ) => {
-  const session = await getCurrentUserSession();
   const categoryId =
     !isEmpty(queryKey) && queryKey?.length <= 3 ? queryKey[2] : null;
 
@@ -90,26 +81,10 @@ export const fetchBookmakrsData = async (
   }
 };
 
-// gets scrapped data with screenshot uploaded in supabse bucket
-
-// TODO: check and remove
-export const getBookmarkScrappedData = async (item: string) => {
-  const session = await getCurrentUserSession();
-
-  try {
-    const apiRes = await axios.post(`${NEXT_API_URL}${BOOKMARK_SCRAPPER_API}`, {
-      access_token: session?.access_token,
-      url: item,
-    });
-
-    return apiRes;
-  } catch (e) {
-    return e;
-  }
-};
-
-export const getBookmarksCount = async (queryData: { queryKey: string[] }) => {
-  const session = await getCurrentUserSession();
+export const getBookmarksCount = async (
+  queryData: { queryKey: string[] },
+  session: SupabaseSessionType
+) => {
   const userId =
     !isEmpty(queryData?.queryKey) && queryData?.queryKey?.length < 4
       ? queryData?.queryKey[1]
@@ -117,6 +92,7 @@ export const getBookmarksCount = async (queryData: { queryKey: string[] }) => {
 
   if (userId) {
     try {
+      if (!session?.access_token) return;
       const bookmarksData = await axios.get(
         `${NEXT_API_URL}${GET_BOOKMARKS_COUNT}?access_token=${session?.access_token}`
       );
@@ -132,13 +108,13 @@ export const addBookmarkMinData = async ({
   url,
   category_id,
   update_access,
+  session,
 }: {
   url: string;
   category_id: number | string | null;
   update_access: boolean;
+  session: SupabaseSessionType;
 }) => {
-  const session = await getCurrentUserSession();
-
   try {
     const apiRes = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
       access_token: session?.access_token,
@@ -156,12 +132,12 @@ export const addBookmarkMinData = async ({
 export const addBookmarkScreenshot = async ({
   url,
   id,
+  session,
 }: {
   url: string;
   id: number;
+  session: SupabaseSessionType;
 }) => {
-  const session = await getCurrentUserSession();
-
   try {
     const apiRes = await axios.post(
       `${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
@@ -178,34 +154,14 @@ export const addBookmarkScreenshot = async ({
   }
 };
 
-// TODO: check and remove
-export const addData = async ({
-  userData,
-  urlData,
-}: {
-  userData: UserIdentity;
-  urlData?: UrlData;
+export const deleteData = async (item: {
+  id: number;
+  session: SupabaseSessionType;
 }) => {
-  const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
-    {
-      title: urlData?.title,
-      url: urlData?.url,
-      description: urlData?.description,
-      ogImage: urlData?.ogImage,
-      user_id: userData?.id,
-      screenshot: urlData?.screenshot,
-    },
-  ]);
-
-  return { data, error } as unknown as FetchDataResponse;
-};
-
-export const deleteData = async (item: SingleListData | { id: number }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`, {
-      data: item,
-      access_token: session?.access_token,
+      data: { id: item?.id },
+      access_token: item?.session?.access_token,
     });
 
     return res;
@@ -217,12 +173,13 @@ export const deleteData = async (item: SingleListData | { id: number }) => {
 export const moveBookmarkToTrash = async ({
   data,
   isTrash,
+  session,
 }: {
   data: SingleListData;
   isTrash: boolean;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
       {
@@ -240,11 +197,12 @@ export const moveBookmarkToTrash = async ({
 
 export const clearBookmarksInTrash = async ({
   user_id = undefined,
+  session,
 }: {
   user_id: string | undefined;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`, {
       user_id,
       access_token: session?.access_token,
@@ -258,11 +216,11 @@ export const clearBookmarksInTrash = async ({
 
 export const searchBookmarks = async (
   searchText: string,
-  category_id: CategoryIdUrlTypes
+  category_id: CategoryIdUrlTypes,
+  session: SupabaseSessionType
 ) => {
   if (!isEmpty(searchText) && searchText !== '#') {
     try {
-      const session = await getCurrentUserSession();
       const res = await axios.get(
         `${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${session?.access_token}&user_id=${session?.user?.id}&category_id=${category_id}`
       );
@@ -274,10 +232,13 @@ export const searchBookmarks = async (
 };
 
 // user tags
-export const fetchUserTags = async (user_id: string) => {
+export const fetchUserTags = async (
+  user_id: string,
+  session: SupabaseSessionType
+) => {
   if (user_id && !isEmpty(user_id)) {
     try {
-      const session = await getCurrentUserSession();
+      if (!session?.access_token) return;
       const res = await axios.get(
         `${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}&access_token=${session?.access_token}`
       );
@@ -291,12 +252,13 @@ export const fetchUserTags = async (user_id: string) => {
 export const addUserTags = async ({
   userData,
   tagsData,
+  session,
 }: {
   userData: UserIdentity;
   tagsData: { name: string };
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${CREATE_USER_TAGS_API}`, {
       name: tagsData?.name,
       user_id: userData?.id,
@@ -310,11 +272,12 @@ export const addUserTags = async ({
 
 export const addTagToBookmark = async ({
   selectedData,
+  session,
 }: {
   selectedData: Array<BookmarksTagData> | BookmarksTagData;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`, {
       data: selectedData,
       access_token: session?.access_token,
@@ -327,11 +290,12 @@ export const addTagToBookmark = async ({
 
 export const removeTagFromBookmark = async ({
   selectedData,
+  session,
 }: {
   selectedData: BookmarksTagData;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
       {
@@ -347,11 +311,12 @@ export const removeTagFromBookmark = async ({
 
 export const fetchBookmarksViews = async ({
   category_id,
+  session,
 }: {
   category_id: string | number | null;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     if (!session?.access_token && isNull(category_id)) {
       return;
     }
@@ -369,11 +334,12 @@ export const fetchBookmarksViews = async ({
 
 export const fetchCategoriesData = async (
   userId: string,
-  userEmail: string
+  userEmail: string,
+  session: SupabaseSessionType
 ) => {
   if (!isEmpty(userId)) {
     try {
-      const session = await getCurrentUserSession();
+      if (!session?.access_token) return;
       const res = await axios.post(
         `${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`,
         {
@@ -392,12 +358,13 @@ export const fetchCategoriesData = async (
 export const addUserCategory = async ({
   user_id,
   name,
+  session,
 }: {
   user_id: string;
   name: string;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`,
       {
@@ -414,11 +381,12 @@ export const addUserCategory = async ({
 
 export const deleteUserCategory = async ({
   category_id,
+  session,
 }: {
   category_id: number;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`,
       {
@@ -436,13 +404,14 @@ export const addCategoryToBookmark = async ({
   category_id,
   bookmark_id,
   update_access = false,
+  session,
 }: {
   category_id: number | null;
   bookmark_id: number;
   update_access: boolean;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${ADD_CATEGORY_TO_BOOKMARK_API}`,
       {
@@ -462,6 +431,7 @@ export const addCategoryToBookmark = async ({
 export const updateCategory = async ({
   category_id,
   updateData,
+  session,
 }: {
   category_id: number | null | string;
   updateData: {
@@ -469,9 +439,9 @@ export const updateCategory = async ({
     icon?: null | string;
     category_views?: BookmarkViewDataTypes;
   };
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${UPDATE_USER_CATEGORIES_API}`,
       {
@@ -494,14 +464,15 @@ export const sendCollaborationEmailInvite = async ({
   edit_access,
   hostUrl,
   userId,
+  session,
 }: {
   emailList: Array<string>;
   category_id: number;
   edit_access: boolean;
   hostUrl: string;
   userId: string;
+  session: SupabaseSessionType;
 }) => {
-  const session = await getCurrentUserSession();
   const res = await axios.post(
     `${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`,
     {
@@ -517,9 +488,10 @@ export const sendCollaborationEmailInvite = async ({
   return res;
 };
 
-export const fetchSharedCategoriesData = async () => {
+export const fetchSharedCategoriesData = async (
+  session: SupabaseSessionType
+) => {
   try {
-    const session = await getCurrentUserSession();
     if (!session?.access_token) {
       return;
     }
@@ -533,9 +505,14 @@ export const fetchSharedCategoriesData = async () => {
   }
 };
 
-export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
+export const deleteSharedCategoriesUser = async ({
+  id,
+  session,
+}: {
+  id: number;
+  session: SupabaseSessionType;
+}) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`,
       { id, access_token: session?.access_token }
@@ -550,12 +527,13 @@ export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
 export const updateSharedCategoriesUserAccess = async ({
   id,
   updateData,
+  session,
 }: {
   id: number;
   updateData: { edit_access?: boolean; category_views?: BookmarkViewDataTypes };
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(
       `${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`,
       {
@@ -572,10 +550,16 @@ export const updateSharedCategoriesUserAccess = async ({
 };
 
 // profiles
-export const fetchUserProfiles = async ({ userId }: { userId: string }) => {
+export const fetchUserProfiles = async ({
+  userId,
+  session,
+}: {
+  userId: string;
+  session: SupabaseSessionType;
+}) => {
   try {
-    const session = await getCurrentUserSession();
     if (userId) {
+      if (!session?.access_token) return;
       const res = await axios.get(
         `${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}`
       );
@@ -589,12 +573,13 @@ export const fetchUserProfiles = async ({ userId }: { userId: string }) => {
 export const updateUserProfile = async ({
   id,
   updateData,
+  session,
 }: {
   id: string;
   updateData: ProfilesTableTypes;
+  session: SupabaseSessionType;
 }) => {
   try {
-    const session = await getCurrentUserSession();
     const res = await axios.post(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
       id,
       updateData,
@@ -609,43 +594,37 @@ export const updateUserProfile = async ({
 
 // auth
 
-export const getCurrentUserSession = async () => {
-  const currentSession = await supabase.auth.session();
-  return currentSession as Session;
-};
-
-export const signInWithOauth = async (provider: Provider = 'google') => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { user, session, error } = await supabase.auth.signIn({
-    provider,
-  });
+export const signInWithOauth = async (
+  provider: Provider = 'google',
+  supabase: SupabaseClient<any, 'public', any>
+) => {
+  const {} = await supabase.auth.signInWithOAuth({ provider });
 };
 
 export const signInWithEmailPassword = async (
   email: string,
-  password: string
+  password: string,
+  supabase: SupabaseClient<any, 'public', any>
 ) => {
-  const { user, session, error } = await supabase.auth.signIn({
-    email: email,
-    password: password,
-  });
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  return { user, session, error };
+  return { error };
 };
 
 export const signUpWithEmailPassword = async (
   email: string,
-  password: string
+  password: string,
+  supabase: SupabaseClient<any, 'public', any>
 ) => {
-  const { user, session, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password,
   });
 
-  return { user, session, error };
+  return { error };
 };
 
-export const signOut = async () => {
+export const signOut = async (supabase: SupabaseClient<any, 'public', any>) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { error } = await supabase.auth.signOut();
 };

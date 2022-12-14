@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../../types/apiTypes';
+import { BookmarkViewDataTypes } from '../../../types/apiTypes';
 import { CATEGORIES_TABLE_NAME } from '../../../utils/constants';
 import { isNull } from 'lodash';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 // this fetches bookmarks view based on category
 
 type Data = {
-  data: Array<SingleListData> | null;
+  data: { category_views: BookmarkViewDataTypes }[] | null;
   error: PostgrestError | null | string | jwt.VerifyErrors;
 };
 

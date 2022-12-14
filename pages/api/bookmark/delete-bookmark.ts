@@ -33,7 +33,7 @@ export default async function handler(
     function (err) {
       if (err) {
         res.status(500).json({ data: null, error: err });
-        return;
+        throw new Error('ERROR');
       }
     }
   );
@@ -49,12 +49,16 @@ export default async function handler(
   const {} = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .delete()
-    .match({ bookmark_id: bookmarkData?.id });
+    .match({ bookmark_id: bookmarkData?.id })
+    .select();
 
   const { data, error } = await supabase
     .from(MAIN_TABLE_NAME)
     .delete()
-    .match({ id: bookmarkData?.id });
+    .match({ id: bookmarkData?.id })
+    .select();
+
+  console.log('dddd', data, error);
 
   if (!isNull(data)) {
     res.status(200).json({ data, error });

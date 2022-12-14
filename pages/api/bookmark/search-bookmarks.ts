@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../../types/apiTypes';
+import {
+  BookmarksWithTagsWithTagForginKeys,
+  SingleListData,
+} from '../../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   GET_TEXT_WITH_AT_CHAR,
@@ -95,7 +98,7 @@ export default async function handler(
     const finalData = data?.map((item) => {
       const matchedBookmarkWithTag = bookmarksWithTags?.filter(
         (tagItem) => tagItem?.bookmark_id === item?.id
-      );
+      ) as BookmarksWithTagsWithTagForginKeys;
 
       if (!isEmpty(matchedBookmarkWithTag)) {
         return {

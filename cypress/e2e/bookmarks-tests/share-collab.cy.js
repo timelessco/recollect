@@ -17,7 +17,7 @@ describe('share test', () => {
     cy.get(':nth-child(4) > .flex').click();
     cy.wait(5000);
 
-    cy.get('#user-name').should('have.text', 'abhishek@timeless.co');
+    cy.get('#user-name').should('have.text', 'Abhishek MG');
 
     // create category
     cy.get('#add-category-button').click();
@@ -93,7 +93,7 @@ describe('share test', () => {
     cy.get(':nth-child(4) > .flex').click();
     cy.wait(5000);
 
-    cy.get('#user-name').should('have.text', 'abhishek@timeless.co');
+    cy.get('#user-name').should('have.text', 'Abhishek MG');
 
     cy.get('[href="/share-test-cat"] #collection-name').click();
     cy.get('#share-button').click();
@@ -127,6 +127,8 @@ describe('share test', () => {
       'have.text',
       'Writing Your First E2E Test | Cypress Documentation'
     );
+
+    cy.get('body').type('{esc}');
 
     // del the added bookmark and clear trash
     // click del icon for 1st bookmark in list

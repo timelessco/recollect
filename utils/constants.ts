@@ -28,7 +28,6 @@ export const PAGINATION_LIMIT = 25;
 //auth api
 // no auth api yet
 // bookmark api
-export const BOOKMARK_SCRAPPER_API = '/bookmark/bookmarkScrapper';
 export const GET_BOOKMARKS_DATA_API = '/bookmark/get-bookmarks-data';
 export const DELETE_BOOKMARK_DATA_API = '/bookmark/delete-bookmark';
 export const ADD_BOOKMARK_MIN_DATA = '/bookmark/add-bookmark-min-data';

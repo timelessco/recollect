@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import { supabase } from '../../utils/supabaseClient';
-import { SingleListData, BookmarksCountTypes } from '../../../types/apiTypes';
+import {
+  SingleListData,
+  BookmarksCountTypes,
+  BookmarksWithTagsWithTagForginKeys,
+} from '../../../types/apiTypes';
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   CATEGORIES_TABLE_NAME,
@@ -154,7 +158,7 @@ user_id (
   const finalData = data?.map((item) => {
     const matchedBookmarkWithTag = bookmarksWithTags?.filter(
       (tagItem) => tagItem?.bookmark_id === item?.id
-    );
+    ) as BookmarksWithTagsWithTagForginKeys;
 
     if (!isEmpty(matchedBookmarkWithTag)) {
       return {

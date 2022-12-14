@@ -36,7 +36,8 @@ export default async function handler(
   const { data, error } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .delete()
-    .match({ id: req.body?.bookmark_tag_id });
+    .match({ id: req.body?.bookmark_tag_id })
+    .select();
 
   if (isEmpty(data)) {
     res

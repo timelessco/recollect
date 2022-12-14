@@ -33,7 +33,8 @@ export default async function handler(
 
   const { data, error } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
-    .insert(req.body.data);
+    .insert(req.body.data)
+    .select();
 
   if (!isNull(error)) {
     res.status(500).json({ data: null, error: error });

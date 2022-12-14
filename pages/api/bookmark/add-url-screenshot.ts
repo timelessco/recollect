@@ -44,11 +44,11 @@ export default async function handler(
         contentType: 'image/jpg',
       });
 
-    const { publicURL } = await supabase.storage
+    const { data } = await supabase.storage
       .from('bookmarks')
       .getPublicUrl(`public/${imgName}`);
 
-    return publicURL;
+    return data?.publicUrl;
   };
 
   // screen shot api call
@@ -65,7 +65,8 @@ export default async function handler(
   const { data, error } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({ ogImage: publicURL })
-    .match({ id: req.body.id });
+    .match({ id: req.body.id })
+    .select();
 
   if (isNull(error)) {
     res.status(200).json({ data: data, error: null });

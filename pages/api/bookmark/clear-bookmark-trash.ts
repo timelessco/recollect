@@ -42,7 +42,8 @@ export default async function handler(
       .from(MAIN_TABLE_NAME)
       .delete()
       .eq('user_id', req.body.user_id)
-      .match({ trash: true });
+      .match({ trash: true })
+      .select();
 
     if (!isNull(data)) {
       res.status(200).json({ data, error });
@@ -75,7 +76,8 @@ export default async function handler(
         const { data: delData, error: delError } = await supabase
           .from(MAIN_TABLE_NAME)
           .delete()
-          .in('id', toBeDeletedIds);
+          .in('id', toBeDeletedIds)
+          .select();
 
         if (!isNull(delError)) {
           res.status(500).json({ data: delData, error: delError });

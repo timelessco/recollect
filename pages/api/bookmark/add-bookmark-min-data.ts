@@ -59,16 +59,19 @@ export default async function handler(
     category_id !== 0 &&
     category_id !== UNCATEGORIZED_URL
   ) {
-    const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
-      {
-        url: url,
-        title: scrapperRes?.data?.title,
-        user_id: userId,
-        description: scrapperRes?.data?.description,
-        ogImage: scrapperRes?.data?.OgImage,
-        category_id: category_id,
-      },
-    ]);
+    const { data, error } = await supabase
+      .from(MAIN_TABLE_NAME)
+      .insert([
+        {
+          url: url,
+          title: scrapperRes?.data?.title,
+          user_id: userId,
+          description: scrapperRes?.data?.description,
+          ogImage: scrapperRes?.data?.OgImage,
+          category_id: category_id,
+        },
+      ])
+      .select();
     if (!isNull(error)) {
       res.status(500).json({ data: null, error: error, message: null });
       return;
@@ -77,16 +80,19 @@ export default async function handler(
       return;
     }
   } else {
-    const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert([
-      {
-        url: url,
-        title: scrapperRes?.data?.title,
-        user_id: userId,
-        description: scrapperRes?.data?.description,
-        ogImage: scrapperRes?.data?.OgImage,
-        category_id: 0,
-      },
-    ]);
+    const { data, error } = await supabase
+      .from(MAIN_TABLE_NAME)
+      .insert([
+        {
+          url: url,
+          title: scrapperRes?.data?.title,
+          user_id: userId,
+          description: scrapperRes?.data?.description,
+          ogImage: scrapperRes?.data?.OgImage,
+          category_id: 0,
+        },
+      ])
+      .select();
 
     if (!isNull(error)) {
       res.status(500).json({ data: null, error: error, message: null });

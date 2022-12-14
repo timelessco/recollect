@@ -37,7 +37,8 @@ export default async function handler(
   const { data, error } = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
     .update(req.body.updateData)
-    .match({ id: req.body.id });
+    .match({ id: req.body.id })
+    .select();
 
   if (!isNull(data)) {
     res.status(200).json({

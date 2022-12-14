@@ -35,12 +35,15 @@ export default async function handler(
   const userId = req.body.user_id;
   const name = req.body.name;
 
-  const { data, error } = await supabase.from(TAG_TABLE_NAME).insert([
-    {
-      name: name,
-      user_id: userId,
-    },
-  ]);
+  const { data, error } = await supabase
+    .from(TAG_TABLE_NAME)
+    .insert([
+      {
+        name: name,
+        user_id: userId,
+      },
+    ])
+    .select();
 
   if (!isNull(error)) {
     res.status(500).json({ data: null, error: error });

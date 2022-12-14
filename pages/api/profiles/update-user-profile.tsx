@@ -38,7 +38,8 @@ export default async function handler(
   const { data, error } = await supabase
     .from(PROFILES)
     .update(req.body.updateData)
-    .match({ id: req.body.id });
+    .match({ id: req.body.id })
+    .select();
 
   if (!isNull(error)) {
     res.status(500).json({

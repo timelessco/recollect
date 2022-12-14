@@ -44,7 +44,8 @@ export default async function handler(
   const { data, error } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({ category_id: update_access ? category_id : null })
-    .match({ id: bookmark_id });
+    .match({ id: bookmark_id })
+    .select();
 
   if (!isNull(data)) {
     res.status(200).json({

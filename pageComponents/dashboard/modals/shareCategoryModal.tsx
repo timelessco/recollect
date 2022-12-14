@@ -1,4 +1,5 @@
 import { ExternalLinkIcon, TrashIcon } from '@heroicons/react/solid';
+import { useSession } from '@supabase/auth-helpers-react';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import find from 'lodash/find';
@@ -41,6 +42,8 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
     updateSharedCategoriesUserAccess,
   } = props;
 
+  const session = useSession();
+
   const [publicUrl, setPublicUrl] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [currentTab, setCurrentTab] = useState<string | number>('public');
@@ -76,6 +79,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
         category_id: shareCategoryId as number,
         hostUrl: window?.location?.origin,
         userId: userId,
+        session,
       });
       reset({ email: '' });
       successToast('Invite sent');

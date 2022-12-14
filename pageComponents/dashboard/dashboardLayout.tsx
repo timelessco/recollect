@@ -60,7 +60,6 @@ interface DashboardLayoutProps {
   userName: string;
   userEmail: string;
   onSignOutClick: () => void;
-  onSigninClick: () => void;
   renderMainContent: () => ChildrenTypes;
   // onDeleteCategoryClick: (id: string, current: boolean) => void;
   onAddBookmark: (url: string) => void;
@@ -90,7 +89,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     // userEmail,
     userName,
     onSignOutClick,
-    onSigninClick,
     // onDeleteCategoryClick,
     onShareClick,
     userId,
@@ -207,7 +205,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
             </Transition>
           </Menu>
         ) : (
-          <Button onClick={onSigninClick}>Signin</Button>
+          <Button>Signin</Button>
         )}
         <Button onClick={() => setShowSidePane(false)}>
           <figure>

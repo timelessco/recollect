@@ -38,13 +38,16 @@ export default async function handler(
   const user_id = req.body.user_id;
   const name = req.body.name;
 
-  const { data, error } = await supabase.from(CATEGORIES_TABLE_NAME).insert([
-    {
-      category_name: name,
-      user_id: user_id,
-      category_slug: slugify(name, { lower: true }),
-    },
-  ]);
+  const { data, error } = await supabase
+    .from(CATEGORIES_TABLE_NAME)
+    .insert([
+      {
+        category_name: name,
+        user_id: user_id,
+        category_slug: slugify(name, { lower: true }),
+      },
+    ])
+    .select();
 
   if (!isNull(error)) {
     res.status(500).json({ data: null, error: error });

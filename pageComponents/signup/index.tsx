@@ -1,3 +1,4 @@
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { ToastContainer } from 'react-toastify';
@@ -11,6 +12,7 @@ import { errorToast } from '../../utils/toastMessages';
 
 const SignUp = () => {
   const router = useRouter();
+  const supabase = useSupabaseClient();
 
   const {
     register,
@@ -23,7 +25,8 @@ const SignUp = () => {
   ) => {
     const { error } = await signUpWithEmailPassword(
       data?.email,
-      data?.password
+      data?.password,
+      supabase
     );
 
     if (error) {
@@ -120,7 +123,7 @@ const SignUp = () => {
               <div className="mt-6 ">
                 <div>
                   <div
-                    onClick={() => signInWithOauth()}
+                    onClick={() => signInWithOauth('google', supabase)}
                     className=" cursor-pointer inline-flex w-full justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50"
                   >
                     <span>Log in with Google</span>

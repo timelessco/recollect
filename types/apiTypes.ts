@@ -1,9 +1,10 @@
-import { PostgrestError } from '@supabase/supabase-js';
+import { PostgrestError, Session } from '@supabase/supabase-js';
 import {
   BookmarksSortByTypes,
   BookmarksViewTypes,
 } from './componentStoreTypes';
 
+export type SupabaseSessionType = Session | null;
 export interface SingleListData {
   id: number;
   inserted_at: string;
@@ -129,3 +130,8 @@ export interface ProfilesTableTypes {
   profile_pic?: string;
   bookmarks_view?: BookmarkViewDataTypes;
 }
+
+export type BookmarksWithTagsWithTagForginKeys = {
+  bookmark_id: number;
+  tag_id: { id: number; name: string };
+}[];
