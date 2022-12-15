@@ -19,6 +19,8 @@ export interface MiscellaneousStoreState {
   setShareCategoryId: (id: number) => void;
   searchText: string;
   setSearchText: (value: string) => void;
+  addScreenshotBookmarkId: number | undefined;
+  setAddScreenshotBookmarkId: (value: number | undefined) => void;
 }
 
 export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';

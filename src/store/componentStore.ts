@@ -41,4 +41,7 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
   setShareCategoryId: (id: number) => set(() => ({ shareCategoryId: id })),
   searchText: '',
   setSearchText: (value: string) => set(() => ({ searchText: value })),
+  addScreenshotBookmarkId: undefined,
+  setAddScreenshotBookmarkId: (value: number | undefined) =>
+    set(() => ({ addScreenshotBookmarkId: value })),
 }));

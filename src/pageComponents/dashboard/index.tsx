@@ -3,7 +3,6 @@ import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
-  BookmarksPaginatedDataTypes,
   BookmarksTagData,
   CategoriesData,
   FetchSharedCategoriesData,
@@ -13,18 +12,10 @@ import {
   UserTagsData,
 } from '../../types/apiTypes';
 import {
-  addBookmarkMinData,
-  addBookmarkScreenshot,
   addCategoryToBookmark,
-  addTagToBookmark,
   addUserCategory,
-  addUserTags,
-  clearBookmarksInTrash,
-  deleteData,
   deleteSharedCategoriesUser,
   deleteUserCategory,
-  moveBookmarkToTrash,
-  removeTagFromBookmark,
   signOut,
   updateCategory,
   updateSharedCategoriesUserAccess,
@@ -41,7 +32,6 @@ import {
   TRASH_URL,
   UNCATEGORIZED_URL,
   USER_PROFILE,
-  USER_TAGS_KEY,
 } from '../../utils/constants';
 import {
   CategoryIdUrlTypes,
@@ -51,7 +41,7 @@ import {
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './addModalContent';
-import { find, flatten, isEmpty, isNull } from 'lodash';
+import { find, flatten, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
   useLoadersStore,
@@ -82,6 +72,14 @@ import useFetchSharedCategories from '../../async/queryHooks/share/useFetchShare
 import useFetchBookmarksView from '../../async/queryHooks/bookmarks/useFetchBookmarksView';
 import useFetchUserProfile from '../../async/queryHooks/user/useFetchUserProfile';
 import useGetCurrentCategoryId from '../../hooks/useGetCurrentCategoryId';
+import useDeleteBookmarksOptimisticMutation from '../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation';
+import useMoveBookmarkToTrashOptimisticMutation from '../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation';
+import useClearBookmarksInTrashMutation from '../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation';
+import useAddBookmarkScreenshotMutation from '../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation';
+import useAddBookmarkMinDataOptimisticMutation from '../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation';
+import useAddUserTagsMutation from '../../async/mutationHooks/tags/useAddUserTagsMutation';
+import useAddTagToBookmarkMutation from '../../async/mutationHooks/tags/useAddTagToBookmarkMutation';
+import useRemoveTagFromBookmarkMutation from '../../async/mutationHooks/tags/useRemoveTagFromBookmarkMutation';
 
 const Dashboard = () => {
   const supabase = useSupabaseClient();
@@ -96,8 +94,8 @@ const Dashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCategoryDuringAdd, setSelectedCategoryDuringAdd] =
     useState<SearchSelectOption | null>();
-  const [addScreenshotBookmarkId, setAddScreenshotBookmarkId] =
-    useState(undefined);
+  // const [addScreenshotBookmarkId, setAddScreenshotBookmarkId] =
+  //   useState(undefined);
   const [deleteBookmarkId, setDeleteBookmarkId] = useState<number | undefined>(
     undefined
   );
@@ -142,6 +140,10 @@ const Dashboard = () => {
 
   const setShareCategoryId = useMiscellaneousStore(
     (state) => state.setShareCategoryId
+  );
+
+  const addScreenshotBookmarkId = useMiscellaneousStore(
+    (state) => state.addScreenshotBookmarkId
   );
 
   useEffect(() => {
@@ -196,241 +198,25 @@ const Dashboard = () => {
   const { userProfileData } = useFetchUserProfile();
 
   // Mutations
-  const deleteBookmarkOptismicMutation = useMutation(deleteData, {
-    onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
 
-      // Snapshot the previous value
-      const previousTodos = queryClient.getQueryData([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
+  const { deleteBookmarkOptismicMutation } =
+    useDeleteBookmarksOptimisticMutation();
 
-      // Optimistically update to the new value
-      queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-        [BOOKMARKS_KEY, session?.user?.id, category_id],
-        (old) => {
-          if (typeof old === 'object') {
-            return {
-              ...old,
-              pages: old?.pages?.map((item) => {
-                return {
-                  ...item,
-                  data: item.data?.filter((item) => item?.id !== data?.id),
-                };
-              }),
-            };
-          }
-        }
-      );
+  const { moveBookmarkToTrashOptimisticMutation } =
+    useMoveBookmarkToTrashOptimisticMutation();
 
-      // Return a context object with the snapshotted value
-      return { previousTodos };
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(
-        [BOOKMARKS_KEY, session?.user?.id, category_id],
-        context?.previousTodos
-      );
-    },
-    // Always refetch after error or success:
-    onSettled: () => {
-      queryClient.invalidateQueries([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
+  const { clearBookmarksInTrashMutation } = useClearBookmarksInTrashMutation();
 
-      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
-    },
-  });
+  const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 
-  const moveBookmarkToTrashOptimisticMutation = useMutation(
-    moveBookmarkToTrash,
-    {
-      onMutate: async (data) => {
-        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-        await queryClient.cancelQueries([
-          BOOKMARKS_KEY,
-          session?.user?.id,
-          category_id,
-        ]);
+  const { addBookmarkMinDataOptimisticMutation } =
+    useAddBookmarkMinDataOptimisticMutation();
 
-        // Snapshot the previous value
-        const previousTodos = queryClient.getQueryData([
-          BOOKMARKS_KEY,
-          session?.user?.id,
-          category_id,
-        ]);
+  const { addUserTagsMutation } = useAddUserTagsMutation();
 
-        // Optimistically update to the new value
-        queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-          [BOOKMARKS_KEY, session?.user?.id, category_id],
-          (old) => {
-            if (typeof old === 'object') {
-              return {
-                ...old,
-                pages: old?.pages?.map((item) => {
-                  return {
-                    ...item,
-                    data: item.data?.filter(
-                      (item) => item?.id !== data?.data?.id
-                    ),
-                  };
-                }),
-              };
-            }
-          }
-        );
+  const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
 
-        // Return a context object with the snapshotted value
-        return { previousTodos };
-      },
-      // If the mutation fails, use the context returned from onMutate to roll back
-      onError: (err, newTodo, context) => {
-        queryClient.setQueryData(
-          [BOOKMARKS_KEY, session?.user?.id, category_id],
-          context?.previousTodos
-        );
-      },
-      // Always refetch after error or success:
-      onSettled: () => {
-        queryClient.invalidateQueries([
-          BOOKMARKS_KEY,
-          session?.user?.id,
-          category_id,
-        ]);
-        queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
-      },
-    }
-  );
-
-  const clearBookmarksInTrashMutation = useMutation(clearBookmarksInTrash, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
-      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
-    },
-  });
-
-  const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
-      setAddScreenshotBookmarkId(undefined);
-    },
-  });
-
-  const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
-    onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
-
-      // Snapshot the previous value
-      const previousTodos = queryClient.getQueryData([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-        [BOOKMARKS_KEY, session?.user?.id, category_id],
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        (old) => {
-          if (typeof old === 'object') {
-            const latestData = {
-              ...old,
-              pages: old?.pages?.map((item, index) => {
-                if (index === 0) {
-                  return {
-                    ...item,
-                    data: [
-                      {
-                        url: data?.url,
-                        category_id: data?.category_id,
-                        inserted_at: new Date(),
-                      },
-                      ...item?.data,
-                    ],
-                  };
-                } else {
-                  return item;
-                }
-              }),
-            };
-            return latestData;
-          }
-        }
-      );
-
-      // Return a context object with the snapshotted value
-      return { previousTodos };
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(
-        [BOOKMARKS_KEY, session?.user?.id, category_id],
-        context?.previousTodos
-      );
-    },
-    // Always refetch after error or success:
-    onSettled: (res: unknown) => {
-      queryClient.invalidateQueries([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
-      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
-      // queryClient.invalidateQueries([BOOKMARKS_KEY, session?.user?.id]);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      const data = res?.data?.data[0];
-      const ogImg = data?.ogImage;
-      if (!ogImg || isEmpty(ogImg) || !ogImg?.includes('https://')) {
-        addBookmarkScreenshotMutation.mutate({
-          url: data?.url,
-          id: data?.id,
-          session,
-        });
-        setAddScreenshotBookmarkId(data?.id);
-      }
-    },
-  });
-
-  // tag mutation
-  const addUserTagsMutation = useMutation(addUserTags, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([USER_TAGS_KEY, session?.user?.id]);
-    },
-  });
-
-  const addTagToBookmarkMutation = useMutation(addTagToBookmark, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
-    },
-  });
-
-  const removeTagFromBookmarkMutation = useMutation(removeTagFromBookmark, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY]);
-    },
-  });
+  const { removeTagFromBookmarkMutation } = useRemoveTagFromBookmarkMutation();
 
   // category mutation
 
