@@ -36,7 +36,7 @@ export default async function handler(
     function (err, decoded) {
       if (err) {
         res.status(500).json({ data: null, error: err });
-        return;
+        throw new Error('ERROR');
       } else {
         decode = decoded;
       }
@@ -167,6 +167,7 @@ export default async function handler(
         data: null,
         error: bookErr || bookTrashErr || bookUnCatErr || categoryErr,
       });
+      throw new Error('ERROR');
     }
   });
 }

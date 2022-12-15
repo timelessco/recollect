@@ -23,7 +23,7 @@ export default async function handler(
     function (err) {
       if (err) {
         res.status(500).json({ data: null, error: err });
-        return;
+        throw new Error('ERROR');
       }
     }
   );
@@ -36,7 +36,7 @@ export default async function handler(
 
   if (!userId || isEmpty(userId)) {
     res.status(500).json({ data: null, error: 'User id is missing' });
-    return;
+    throw new Error('ERROR');
   }
 
   const { data, error } = await supabase
@@ -46,7 +46,7 @@ export default async function handler(
 
   if (!isNull(error)) {
     res.status(500).json({ data: null, error: error });
-    return;
+    throw new Error('ERROR');
   } else {
     res.status(200).json({ data: data, error: null });
     return;

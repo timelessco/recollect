@@ -25,7 +25,7 @@ export default async function handler(
     function (err) {
       if (err) {
         res.status(500).json({ data: null, error: err });
-        return;
+        throw new Error('ERROR');
       }
     }
   );
@@ -73,6 +73,6 @@ export default async function handler(
     return;
   } else {
     res.status(500).json({ data: null, error: error });
-    return;
+    throw new Error('ERROR');
   }
 }

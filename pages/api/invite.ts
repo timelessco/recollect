@@ -74,13 +74,13 @@ export default async function handler(
             success: null,
             error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${error?.message}`,
           });
-          return;
+          throw new Error('ERROR');
         } else {
           res.status(500).json({
             success: null,
             error: error?.message,
           });
-          return;
+          throw new Error('ERROR');
         }
       }
     } else {
@@ -90,7 +90,7 @@ export default async function handler(
           ? 'The user is alredy a colaborator of this category'
           : error,
       });
-      return;
+      throw new Error('ERROR');
     }
   }
 }

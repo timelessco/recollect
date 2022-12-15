@@ -60,7 +60,7 @@ export default async function handler(
 
     if (!isNull(error) || !isNull(categoryError)) {
       res.status(500).json({ data: null, error: error });
-      return;
+      throw new Error('ERROR');
     } else {
       res.status(200).json({ data: data, error: null });
       return;

@@ -33,7 +33,7 @@ export default async function handler(
       function (err) {
         if (err) {
           res.status(500).json({ data: null, error: err });
-          return;
+          throw new Error('ERROR');
         }
       }
     );
@@ -50,7 +50,7 @@ export default async function handler(
       return;
     } else {
       res.status(500).json({ data, error });
-      return;
+      throw new Error('ERROR');
     }
   } else {
     // deletes trash for all users , this happens in CRON job
@@ -81,7 +81,7 @@ export default async function handler(
 
         if (!isNull(delError)) {
           res.status(500).json({ data: delData, error: delError });
-          return;
+          throw new Error('ERROR');
         } else {
           res.status(200).json({
             data: delData,
@@ -101,7 +101,7 @@ export default async function handler(
       return;
     } else {
       res.status(500).json({ data, error });
-      return;
+      throw new Error('ERROR');
     }
   }
 }

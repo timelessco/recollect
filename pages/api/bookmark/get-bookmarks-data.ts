@@ -48,7 +48,7 @@ export default async function handler(
     function (err, decoded) {
       if (err) {
         res.status(500).json({ data: null, error: err, count: null });
-        return;
+        throw new Error('ERROR');
       } else {
         decode = decoded;
       }
