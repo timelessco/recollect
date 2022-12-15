@@ -197,6 +197,7 @@ const Dashboard = () => {
   const { addBookmarkMinDataOptimisticMutation } =
     useAddBookmarkMinDataOptimisticMutation();
 
+  // tag mutation
   const { addUserTagsMutation } = useAddUserTagsMutation();
 
   const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
@@ -559,17 +560,25 @@ const Dashboard = () => {
               );
               if (isEdit) {
                 const delValue = tag.value;
-                const currentBookark = flattendPaginationBookmarkData?.filter(
+                // const currentBookark = flattendPaginationBookmarkData?.filter(
+                //   (item) => item?.id === addedUrlData?.id
+                // ) as unknown as SingleListData[];
+
+                const currentBookark = find(
+                  flattendPaginationBookmarkData,
                   (item) => item?.id === addedUrlData?.id
-                ) as unknown as SingleListData[];
+                ) as SingleListData;
                 const delData = find(
-                  currentBookark[0]?.addedTags,
+                  currentBookark?.addedTags,
                   (item) => item?.id === delValue || item?.name === delValue
                 ) as unknown as BookmarksTagData;
 
                 mutationApiCall(
                   removeTagFromBookmarkMutation.mutateAsync({
-                    selectedData: delData,
+                    selectedData: {
+                      tag_id: delData?.id as number,
+                      bookmark_id: currentBookark?.id,
+                    },
                     session,
                   })
                 );

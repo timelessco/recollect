@@ -8,6 +8,7 @@ import {
 import isNull from 'lodash/isNull';
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
+import isEmpty from 'lodash/isEmpty';
 
 // get all bookmarks count
 
@@ -116,7 +117,10 @@ export default async function handler(
     .eq('user_id', userId);
 
   const buildCategoryCount = new Promise<void>((resolve) => {
-    userCategoryIds?.forEach(async (item, index) => {
+    if (isNull(userCategoryIds) || isEmpty(userCategoryIds)) {
+      resolve();
+    }
+    userCategoryIds?.forEach(async (item) => {
       const { count: bookmarkCount } = await supabase
         .from(MAIN_TABLE_NAME)
         .select(
@@ -141,10 +145,12 @@ export default async function handler(
       };
 
       if (
-        index === userCategoryIds?.length - 1 &&
-        index === count?.categoryCount?.length - 1
-      )
+        // index === userCategoryIds?.length - 1 &&
+        // index === count?.categoryCount?.length - 1
+        userCategoryIds?.length === count?.categoryCount?.length
+      ) {
         resolve();
+      }
     });
   });
 

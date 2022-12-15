@@ -292,14 +292,15 @@ export const removeTagFromBookmark = async ({
   selectedData,
   session,
 }: {
-  selectedData: BookmarksTagData;
+  selectedData: { tag_id: number; bookmark_id: number };
   session: SupabaseSessionType;
 }) => {
   try {
     const res = await axios.post(
       `${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
       {
-        bookmark_tag_id: selectedData?.id,
+        tag_id: selectedData?.tag_id,
+        bookmark_id: selectedData?.bookmark_id,
         access_token: session?.access_token,
       }
     );
