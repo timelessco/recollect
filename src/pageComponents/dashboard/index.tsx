@@ -1,37 +1,19 @@
 import { UserIdentity } from '@supabase/supabase-js';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
   BookmarksTagData,
-  CategoriesData,
-  FetchSharedCategoriesData,
-  ProfilesTableTypes,
   SingleBookmarksPaginatedDataTypes,
   SingleListData,
   UserTagsData,
 } from '../../types/apiTypes';
-import {
-  addCategoryToBookmark,
-  addUserCategory,
-  deleteSharedCategoriesUser,
-  deleteUserCategory,
-  signOut,
-  updateCategory,
-  updateSharedCategoriesUserAccess,
-  updateUserProfile,
-} from '../../async/supabaseCrudHelpers';
+import { signOut } from '../../async/supabaseCrudHelpers';
 import CardSection from './cardSection';
 import {
   ALL_BOOKMARKS_URL,
-  BOOKMARKS_COUNT_KEY,
-  BOOKMARKS_KEY,
-  CATEGORIES_KEY,
   LOGIN_URL,
-  SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
   UNCATEGORIZED_URL,
-  USER_PROFILE,
 } from '../../utils/constants';
 import {
   CategoryIdUrlTypes,
@@ -80,10 +62,18 @@ import useAddBookmarkMinDataOptimisticMutation from '../../async/mutationHooks/b
 import useAddUserTagsMutation from '../../async/mutationHooks/tags/useAddUserTagsMutation';
 import useAddTagToBookmarkMutation from '../../async/mutationHooks/tags/useAddTagToBookmarkMutation';
 import useRemoveTagFromBookmarkMutation from '../../async/mutationHooks/tags/useRemoveTagFromBookmarkMutation';
+import useAddCategoryOptimisticMutation from '../../async/mutationHooks/category/useAddCategoryOptimisticMutation';
+import useDeleteCategoryOtimisticMutation from '../../async/mutationHooks/category/useDeleteCategoryOtimisticMutation';
+import useAddCategoryToBookmarkMutation from '../../async/mutationHooks/category/useAddCategoryToBookmarkMutation';
+import useAddCategoryToBookmarkOptimisticMutation from '../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation';
+import useUpdateCategoryOptimisticMutation from '../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation';
+import useDeleteSharedCategoriesUserMutation from '../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation';
+import useUpdateSharedCategoriesUserAccessMutation from '../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation';
+import useUpdateSharedCategoriesOptimisticMutation from '../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation';
+import useUpdateUserProfileOptimisticMutation from '../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation';
 
 const Dashboard = () => {
   const supabase = useSupabaseClient();
-  // const [session, setSession] = useState<Session>();
   const session = useSession();
   const [showAddBookmarkModal, setShowAddBookmarkModal] = // move to zudstand
     useState<boolean>(false);
@@ -94,8 +84,6 @@ const Dashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCategoryDuringAdd, setSelectedCategoryDuringAdd] =
     useState<SearchSelectOption | null>();
-  // const [addScreenshotBookmarkId, setAddScreenshotBookmarkId] =
-  //   useState(undefined);
   const [deleteBookmarkId, setDeleteBookmarkId] = useState<number | undefined>(
     undefined
   );
@@ -175,9 +163,6 @@ const Dashboard = () => {
 
   // react-query
 
-  // Access the client
-  const queryClient = useQueryClient();
-
   const { allCategories } = useFetchCategories();
 
   const { bookmarksCountData } = useFetchBookmarksCount();
@@ -219,339 +204,36 @@ const Dashboard = () => {
   const { removeTagFromBookmarkMutation } = useRemoveTagFromBookmarkMutation();
 
   // category mutation
+  const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 
-  const addCategoryOptimisticMutation = useMutation(addUserCategory, {
-    onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
+  const { deleteCategoryOtimisticMutation } =
+    useDeleteCategoryOtimisticMutation();
 
-      // Snapshot the previous value
-      const previousTodos = queryClient.getQueryData([
-        CATEGORIES_KEY,
-        session?.user?.id,
-      ]);
+  const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 
-      // Optimistically update to the new value
-      queryClient.setQueryData(
-        [CATEGORIES_KEY, session?.user?.id],
-        (old: { data: CategoriesData[] } | undefined) => {
-          if (typeof old === 'object') {
-            return {
-              ...old,
-              data: [
-                ...old?.data,
-                {
-                  category_name: data?.name,
-                  user_id: data?.user_id,
-                  icon: 'file',
-                },
-              ],
-            } as { data: CategoriesData[] };
-          }
-        }
-      );
+  const { addCategoryToBookmarkOptimisticMutation } =
+    useAddCategoryToBookmarkOptimisticMutation();
 
-      // Return a context object with the snapshotted value
-      return { previousTodos };
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(
-        [CATEGORIES_KEY, session?.user?.id],
-        context?.previousTodos
-      );
-    },
-    // Always refetch after error or success:
-    onSettled: () => {
-      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-    },
-  });
-
-  const deleteCategoryOtimisticMutation = useMutation(deleteUserCategory, {
-    onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
-
-      // Snapshot the previous value
-      const previousTodos = queryClient.getQueryData([
-        CATEGORIES_KEY,
-        session?.user?.id,
-      ]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(
-        [CATEGORIES_KEY, session?.user?.id],
-        (old: { data: CategoriesData[] } | undefined) => {
-          return {
-            ...old,
-            data: old?.data?.filter((item) => item?.id !== data?.category_id),
-          } as { data: CategoriesData[] };
-        }
-      );
-
-      // Return a context object with the snapshotted value
-      return { previousTodos };
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(
-        [CATEGORIES_KEY, session?.user?.id],
-        context?.previousTodos
-      );
-    },
-    // Always refetch after error or success:
-    onSettled: () => {
-      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-    },
-  });
-
-  const addCategoryToBookmarkMutation = useMutation(addCategoryToBookmark, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-      queryClient.invalidateQueries([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
-      queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
-    },
-  });
-
-  const addCategoryToBookmarkOptimisticMutation = useMutation(
-    addCategoryToBookmark,
-    {
-      onMutate: async (data) => {
-        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-        await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
-        await queryClient.cancelQueries([
-          BOOKMARKS_KEY,
-          isNull(category_id) ? session?.user?.id : category_id,
-        ]);
-
-        const previousTodos = queryClient.getQueryData([
-          BOOKMARKS_KEY,
-          isNull(category_id) ? session?.user?.id : category_id,
-        ]);
-
-        // Optimistically update to the new value
-        queryClient.setQueryData(
-          [
-            BOOKMARKS_KEY,
-            isNull(category_id) ? session?.user?.id : category_id,
-          ],
-          (old: { data: CategoriesData[] } | undefined) => {
-            return {
-              ...old,
-              data: isNull(category_id)
-                ? old?.data
-                : old?.data?.filter((item) => item?.id !== data?.bookmark_id), // do not filter when user is in all-bookmarks page
-            } as { data: CategoriesData[] };
-          }
-        );
-
-        // Return a context object with the snapshotted value
-        return { previousTodos };
-      },
-      // If the mutation fails, use the context returned from onMutate to roll back
-      onError: (err, newTodo, context) => {
-        queryClient.setQueryData(
-          [CATEGORIES_KEY, session?.user?.id],
-          context?.previousTodos
-        );
-      },
-      // Always refetch after error or success:
-      onSettled: () => {
-        queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-        queryClient.invalidateQueries([
-          BOOKMARKS_KEY,
-          session?.user?.id,
-          category_id,
-        ]);
-        queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
-      },
-    }
-  );
-
-  const updateCategoryOptimisticMutation = useMutation(updateCategory, {
-    onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
-
-      // Snapshot the previous value
-      const previousTodos = queryClient.getQueryData([
-        CATEGORIES_KEY,
-        session?.user?.id,
-      ]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(
-        [CATEGORIES_KEY, session?.user?.id],
-        (old: { data: CategoriesData[] } | undefined) => {
-          return {
-            ...old,
-            data: old?.data?.map((item) => {
-              if (item?.id === data?.category_id) {
-                return {
-                  ...item,
-                  category_views: data?.updateData?.category_views,
-                  icon: data?.updateData?.icon
-                    ? data?.updateData?.icon
-                    : item?.icon,
-                  is_public:
-                    data?.updateData?.is_public !== undefined
-                      ? data?.updateData?.is_public
-                      : item?.is_public,
-                };
-              } else {
-                return item;
-              }
-            }),
-          } as { data: CategoriesData[] };
-        }
-      );
-
-      // Return a context object with the snapshotted value
-      return { previousTodos };
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(
-        [CATEGORIES_KEY, session?.user?.id],
-        context?.previousTodos
-      );
-    },
-    // Always refetch after error or success:
-    onSettled: () => {
-      queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-      queryClient.invalidateQueries([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
-    },
-  });
+  const { updateCategoryOptimisticMutation } =
+    useUpdateCategoryOptimisticMutation();
 
   // share category mutation
-  const deleteSharedCategoriesUserMutation = useMutation(
-    deleteSharedCategoriesUser,
-    {
-      onSuccess: () => {
-        // Invalidate and refetch
-        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-        queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-      },
-    }
-  );
 
-  const updateSharedCategoriesUserAccessMutation = useMutation(
-    updateSharedCategoriesUserAccess,
-    {
-      onSuccess: () => {
-        // Invalidate and refetch
-        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-      },
-    }
-  );
+  const { deleteSharedCategoriesUserMutation } =
+    useDeleteSharedCategoriesUserMutation();
 
-  const updateSharedCategoriesOptimisticMutation = useMutation(
-    updateSharedCategoriesUserAccess,
-    {
-      onMutate: async (data) => {
-        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-        await queryClient.cancelQueries([USER_PROFILE, session?.user?.id]);
+  const { updateSharedCategoriesUserAccessMutation } =
+    useUpdateSharedCategoriesUserAccessMutation();
 
-        // Snapshot the previous value
-        const previousTodos = queryClient.getQueryData([
-          SHARED_CATEGORIES_TABLE_NAME,
-        ]);
-
-        // Optimistically update to the new value
-        queryClient.setQueryData(
-          [SHARED_CATEGORIES_TABLE_NAME],
-          (old: { data: FetchSharedCategoriesData[] } | undefined) => {
-            return {
-              ...old,
-              data: old?.data?.map((item) => {
-                return {
-                  ...item,
-                  category_views: data?.updateData?.category_views,
-                };
-              }),
-            } as { data: FetchSharedCategoriesData[] };
-          }
-        );
-
-        // Return a context object with the snapshotted value
-        return { previousTodos };
-      },
-      // If the mutation fails, use the context returned from onMutate to roll back
-      onError: (err, newTodo, context) => {
-        queryClient.setQueryData(
-          [SHARED_CATEGORIES_TABLE_NAME],
-          context?.previousTodos
-        );
-      },
-      // Always refetch after error or success:
-      onSettled: () => {
-        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-        queryClient.invalidateQueries([
-          BOOKMARKS_KEY,
-          session?.user?.id,
-          category_id,
-        ]);
-      },
-    }
-  );
+  const { updateSharedCategoriesOptimisticMutation } =
+    useUpdateSharedCategoriesOptimisticMutation();
 
   // profiles table mutation
-  const updateUserProfileOptimisticMutation = useMutation(updateUserProfile, {
-    onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries([USER_PROFILE, session?.user?.id]);
 
-      // Snapshot the previous value
-      const previousTodos = queryClient.getQueryData([
-        CATEGORIES_KEY,
-        session?.user?.id,
-      ]);
+  const { updateUserProfileOptimisticMutation } =
+    useUpdateUserProfileOptimisticMutation();
 
-      // Optimistically update to the new value
-      queryClient.setQueryData(
-        [USER_PROFILE, session?.user?.id],
-        (old: { data: ProfilesTableTypes[] } | undefined) => {
-          return {
-            ...old,
-            data: old?.data?.map((item) => {
-              return {
-                ...item,
-                bookmarks_view: data?.updateData?.bookmarks_view,
-              };
-            }),
-          } as { data: ProfilesTableTypes[] };
-        }
-      );
-
-      // Return a context object with the snapshotted value
-      return { previousTodos };
-    },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(
-        [USER_PROFILE, session?.user?.id],
-        context?.previousTodos
-      );
-    },
-    // Always refetch after error or success:
-    onSettled: () => {
-      queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
-      queryClient.invalidateQueries([
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        category_id,
-      ]);
-    },
-  });
+  // END OF MUTATIONS ---------
 
   const addBookmarkLogic = async (url: string) => {
     setUrl(url);
