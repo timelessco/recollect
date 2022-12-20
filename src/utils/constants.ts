@@ -87,3 +87,5 @@ export const USER_PROFILE = 'user_profile';
 
 export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
   'You dont have access to add to this category, this bookmark will be added without a category';
+export const DUPLICATE_CATEGORY_NAME_ERROR =
+  'You already have a category with this name , please add anyother name';

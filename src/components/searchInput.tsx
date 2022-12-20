@@ -8,40 +8,22 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const styles = {
   control: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ECECEC',
     fontSize: 14,
-    fontWeight: 'normal',
     width: 220,
+    padding: '3px 10px 3px 28px',
+    borderRadius: 54,
   },
 
   '&multiLine': {
-    control: {
-      // fontFamily: 'monospace',
-      // minHeight: 63,
-    },
-    highlighter: {
-      // padding: 9,
-      // border: '1px solid transparent',
-    },
+    control: {},
+    highlighter: {},
     input: {
-      // padding: 9,
-      // border: '1px solid silver',
+      border: 'unset',
+      borderRadius: 54,
+      padding: 'inherit',
     },
   },
-
-  // '&singleLine': {
-  //   display: 'inline-block',
-  //   width: 180,
-
-  //   highlighter: {
-  //     padding: 1,
-  //     border: '2px inset transparent',
-  //   },
-  //   input: {
-  //     padding: 1,
-  //     border: '2px inset',
-  //   },
-  // },
 
   suggestions: {
     list: {

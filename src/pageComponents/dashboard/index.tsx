@@ -43,7 +43,6 @@ import {
   BookmarksViewTypes,
   BookmarkViewCategories,
 } from '../../types/componentStoreTypes';
-import slugify from 'slugify';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import useFetchCategories from '../../async/queryHooks/category/useFetchCategories';
 import useFetchBookmarksCount from '../../async/queryHooks/bookmarks/useFetchBookmarksCount';
@@ -687,8 +686,8 @@ const Dashboard = () => {
         onAddBookmark={async (url) => {
           await addBookmarkLogic(url);
         }}
-        onAddNewCategory={(newCategoryName) => {
-          mutationApiCall(
+        onAddNewCategory={async (newCategoryName) => {
+          const res = await mutationApiCall(
             addCategoryOptimisticMutation.mutateAsync({
               user_id: session?.user?.id as string,
               name: newCategoryName,
@@ -696,9 +695,7 @@ const Dashboard = () => {
             })
           );
 
-          const slug = slugify(newCategoryName, { lower: true });
-
-          router.push(`/${slug}`);
+          router.push(`/${res?.data[0]?.category_slug}`);
         }}
         onCategoryOptionClick={async (value, current, id) => {
           switch (value) {
