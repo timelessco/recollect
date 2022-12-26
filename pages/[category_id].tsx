@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import Dashboard from '../pageComponents/dashboard';
+import Dashboard from '../src/pageComponents/dashboard';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 
 const Home: NextPage = () => {

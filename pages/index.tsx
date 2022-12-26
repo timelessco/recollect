@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import Dashboard from '../pageComponents/dashboard';
+import Dashboard from '../src/pageComponents/dashboard';
 
 const Home: NextPage = () => {
   return (

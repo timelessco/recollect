@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { isEmpty, isNull } from 'lodash';
 import { GetServerSideProps, NextPage } from 'next';
-import { SingleListData } from '../../types/apiTypes';
+import { SingleListData } from '../../src/types/apiTypes';
 import {
   GET_PUBLIC_CATEGORY_BOOKMARKS_API,
   NEXT_API_URL,
-} from '../../utils/constants';
+} from '../../src/utils/constants';
 
 // this renders a public category page
 

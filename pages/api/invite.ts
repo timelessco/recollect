@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SHARED_CATEGORIES_TABLE_NAME } from '../../utils/constants';
+import { SHARED_CATEGORIES_TABLE_NAME } from '../../src/utils/constants';
 import jwt_decode from 'jwt-decode';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
@@ -58,13 +58,15 @@ export default async function handler(
           email: insertData?.email,
           edit_access: false,
           user_id: insertData?.userId,
-        });
+        })
+        .select();
 
       if (isNull(error)) {
         res.status(200).json({
           success: 'User has been added as a colaborator to the category',
           error: null,
         });
+        return;
       } else {
         if (error?.code === '23503') {
           // if collab user does not have an existing account
@@ -72,11 +74,13 @@ export default async function handler(
             success: null,
             error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${error?.message}`,
           });
+          throw new Error('ERROR');
         } else {
           res.status(500).json({
             success: null,
             error: error?.message,
           });
+          throw new Error('ERROR');
         }
       }
     } else {
@@ -86,6 +90,7 @@ export default async function handler(
           ? 'The user is alredy a colaborator of this category'
           : error,
       });
+      throw new Error('ERROR');
     }
   }
 }

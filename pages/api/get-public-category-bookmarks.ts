@@ -2,8 +2,12 @@
 import { createClient, PostgrestError } from '@supabase/supabase-js';
 import isNull from 'lodash/isNull';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SingleListData } from '../../types/apiTypes';
-import { CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from '../../utils/constants';
+import { SingleListData } from '../../src/types/apiTypes';
+import {
+  CATEGORIES_TABLE_NAME,
+  MAIN_TABLE_NAME,
+} from '../../src/utils/constants';
+import { getUserNameFromEmail } from '../../src/utils/helpers';
 
 type Data = {
   data: SingleListData[] | null;
@@ -29,16 +33,18 @@ export default async function handler(
     .select(
       `
       user_id (
-        user_name
+        email
       )
     `
     )
     .eq('category_slug', req.query.category_slug)) as unknown as {
-    data: Array<{ user_id: { user_name: string } }>;
+    data: Array<{ user_id: { email: string } }>;
     error: PostgrestError;
   };
 
-  if (categoryData[0]?.user_id?.user_name !== req.query.user_name) {
+  const urlUserName = getUserNameFromEmail(categoryData[0]?.user_id?.email);
+
+  if (urlUserName !== req.query.user_name) {
     // this is to check if we change user name in url then this page should show 404
     // status is 200 as DB is not giving any error
     res
@@ -54,8 +60,10 @@ export default async function handler(
 
     if (!isNull(error) || !isNull(categoryError)) {
       res.status(500).json({ data: null, error: error });
+      throw new Error('ERROR');
     } else {
       res.status(200).json({ data: data, error: null });
+      return;
     }
   }
 }
