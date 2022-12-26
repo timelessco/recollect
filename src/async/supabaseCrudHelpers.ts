@@ -38,6 +38,7 @@ import {
 import isEmpty from 'lodash/isEmpty';
 import { CategoryIdUrlTypes } from '../types/componentTypes';
 import isNull from 'lodash/isNull';
+import { isUserInACategory } from '../utils/helpers';
 
 // bookmark
 // gets bookmarks data
@@ -317,6 +318,9 @@ export const fetchBookmarksViews = async ({
   category_id: string | number | null;
   session: SupabaseSessionType;
 }) => {
+  if (!isUserInACategory(category_id as string)) {
+    return;
+  }
   try {
     if (!session?.access_token && isNull(category_id)) {
       return;
