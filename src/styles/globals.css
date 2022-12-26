@@ -29,14 +29,14 @@ main {
 
 .my-masonry-grid_column:nth-child(1) {
   padding-left: 0px;
-  width: 40% !important;
+  width: 35% !important;
 }
 
 .my-masonry-grid_column:nth-child(2) {
-  width: 30% !important;
+  width: 35% !important;
 }
 .my-masonry-grid_column:nth-child(3) {
-  width: 30% !important;
+  width: 35% !important;
 }
 
 

@@ -1,6 +1,9 @@
+&nbsp;
 # :bookmark_tabs: Bookmarks :
 
 Bookmarks is an open source url manager built using **nextjs** and **supabase**.
+
+&nbsp;
 
 ![Dashboard screenshot](/public/dashboard-screenshot.png?raw=true "Dashboard screenshot")
 
