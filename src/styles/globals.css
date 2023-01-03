@@ -186,3 +186,14 @@ main {
 .chakra-slider-group .vertical .slider-thumb-tip {
   margin: 0 0 0 8px;
 }
+
+/* drag and drop */
+
+.single-bookmark[aria-selected=true] {
+  background: blueviolet;
+  color: white;
+}
+
+.drop-target .side-pane-anchor {
+ background-color: #cbd5e1;
+}

@@ -34,6 +34,11 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
     set((state) => ({
       isSortByLoading: !state.isSortByLoading,
     })),
+  sidePaneOptionLoading: null,
+  setSidePaneOptionLoading: (value: string | number | null) =>
+    set(() => ({
+      sidePaneOptionLoading: value,
+    })),
 }));
 
 export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({

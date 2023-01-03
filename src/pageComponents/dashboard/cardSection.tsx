@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-
+import React from 'react';
 import {
   CategoriesData,
   FetchSharedCategoriesData,
@@ -35,6 +35,19 @@ import format from 'date-fns/format';
 import classNames from 'classnames';
 import { options } from '../../utils/commonData';
 import { useMiscellaneousStore } from '../../store/componentStore';
+import { Item, useDraggableCollectionState, useListState } from 'react-stately';
+import {
+  mergeProps,
+  useDraggableCollection,
+  useDraggableItem,
+  useFocusRing,
+  useListBox,
+  useOption,
+} from 'react-aria';
+import { MultipleSelectionStateProps } from '@react-stately/selection';
+import { Node, CollectionBase } from '@react-types/shared';
+
+import { DragPreview } from 'react-aria';
 
 interface CardSectionProps {
   listData: Array<SingleListData>;
@@ -50,6 +63,7 @@ interface CardSectionProps {
   deleteBookmarkId: number | undefined;
 }
 
+//TODO: check and remove all ts-ignores
 const CardSection = ({
   listData = [],
   onDeleteClick,
@@ -278,7 +292,7 @@ const CardSection = ({
     const figureClassName = classNames({
       ' w-full h-14 w-20 ': cardTypeCondition === 'list',
       'w-full h-48 ': cardTypeCondition === 'card',
-      ' h-36  w-full':
+      ' h-36':
         cardTypeCondition === 'moodboard' &&
         (isOgImgLoading || isBookmarkLoading) &&
         img === undefined,
@@ -594,7 +608,7 @@ const CardSection = ({
           return (
             <div
               key={item?.id || index}
-              className="rounded-lg drop-shadow-custom-1 group relative single-bookmark"
+              className="rounded-lg group relative single-bookmark"
               id="single-moodboard-card"
             >
               <a href={item?.url} target="_blank" rel="noreferrer">
@@ -708,7 +722,314 @@ const CardSection = ({
     }
   };
 
-  return renderMainCardContent();
+  // return renderMainCardContent();
+
+  // interface ListBoxPropTypes {
+  //   'aria-label': string;
+  //   selectionMode: string;
+  //   children: ChildrenTypes;
+  // }
+
+  interface ListProps<T>
+    extends CollectionBase<T>,
+      MultipleSelectionStateProps {
+    getItems?: (keys: Set<React.Key>) => { 'text/plain': string }[];
+    /** Filter function to generate a filtered list of nodes. */
+    filter?: (nodes: Iterable<Node<T>>) => Iterable<Node<T>>;
+    /** @private */
+    suppressTextValueWarning?: boolean;
+  }
+
+  function ListBox(props: ListProps<object>) {
+    // Setup listbox as normal. See the useListBox docs for more details.
+    const preview = React.useRef(null);
+    const state = useListState(props);
+    const ref = React.useRef(null);
+    const { listBoxProps } = useListBox(
+      {
+        ...props,
+        // Prevent dragging from changing selection.
+        shouldSelectOnPressUp: true,
+      },
+      state,
+      ref
+    );
+
+    // Setup drag state for the collection.
+    const dragState = useDraggableCollectionState({
+      // Pass through events from props.
+      ...props,
+
+      // Collection and selection manager come from list state.
+      collection: state.collection,
+      selectionManager: state.selectionManager,
+      preview,
+      // Provide data for each dragged item. This function could
+      // also be provided by the user of the component.
+      getItems:
+        props.getItems ||
+        ((keys) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          return [...keys].map((key) => {
+            const item = state.collection.getItem(key);
+
+            return {
+              'text/plain': item.textValue,
+            };
+          });
+        }),
+    });
+
+    useDraggableCollection(props, dragState, ref);
+
+    return (
+      <ul
+        {...listBoxProps}
+        ref={ref}
+        className={`columns-${
+          bookmarksColumns && (bookmarksColumns[0] / 10)?.toString()
+        }`}
+        // className="columns-3"
+      >
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        {[...state.collection].map((item) => (
+          <Option
+            key={item.key}
+            item={item}
+            state={state}
+            dragState={dragState}
+          />
+        ))}
+        <DragPreview ref={preview}>
+          {(items) => (
+            <div
+              // style={{ background: 'green', color: 'white' }}
+              className=" bg-slate-200 px-2 py-1 rounded-lg text-sm leading-4"
+            >
+              {items.length > 1
+                ? `${items.length} bookmarks`
+                : find(
+                    bookmarksList,
+                    (item) => item?.id === parseInt(items[0]['text/plain'])
+                  )?.title}
+            </div>
+          )}
+        </DragPreview>
+      </ul>
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  function Option({ item, state, dragState }) {
+    // Setup listbox option as normal. See useListBox docs for details.
+    const ref = React.useRef(null);
+    const { optionProps, isSelected } = useOption(
+      { key: item.key },
+      state,
+      ref
+    );
+    const { focusProps } = useFocusRing();
+
+    // Register the item as a drag source.
+    const { dragProps } = useDraggableItem(
+      {
+        key: item.key,
+      },
+      dragState
+    );
+    // Merge option props and dnd props, and render the item.
+
+    return (
+      <li
+        {...mergeProps(dragProps, focusProps)}
+        ref={ref}
+        // className={`option ${isFocusVisible ? 'focus-visible' : ''}`}
+        className={`flex rounded-lg drop-shadow-custom-1 group relative single-bookmark mb-6 shadow-md`}
+      >
+        <div
+          className={`absolute top-0 left-0 w-full h-full opacity-50 rounded-lg ${
+            isSelected ? 'bg-slate-600' : ''
+          }`}
+        />
+        <input
+          type="checkbox"
+          {...optionProps}
+          className={`card-checkbox absolute top-[7px] left-[6px] group-hover:block ${
+            isSelected ? 'block' : 'hidden'
+          }`}
+        />
+        {item.rendered}
+      </li>
+    );
+    // return (
+    // <div
+    //   {...mergeProps(optionProps, dragProps, focusProps)}
+    //   ref={ref}
+    //   className="rounded-lg drop-shadow-custom-1 group relative single-bookmark"
+    //   id="single-moodboard-card"
+    // >
+    //   <a href={item?.url} target="_blank" rel="noreferrer">
+    //     <>{renderOgImage(item?.ogImage)}</>
+    //     {bookmarksInfoValue?.length === 1 &&
+    //     bookmarksInfoValue[0] === 'cover' ? null : (
+    //       <div className="rounded-lg p-4 space-y-2">
+    //         {bookmarksInfoValue?.includes('title') && (
+    //           <p className="text-base font-medium leading-4">{item?.title}</p>
+    //         )}
+    //         {bookmarksInfoValue?.includes('description') && (
+    //           <p className="text-sm leading-4  overflow-hidden break-all">
+    //             {item?.description}
+    //           </p>
+    //         )}
+    //         <div className="space-y-2">
+    //           {bookmarksInfoValue?.includes('tags') && (
+    //             <div className="flex items-center space-x-1">
+    //               {item?.addedTags?.map((tag) => {
+    //                 return (
+    //                   <div className="text-xs text-blue-500" key={tag?.id}>
+    //                     #{tag?.name}
+    //                   </div>
+    //                 );
+    //               })}
+    //             </div>
+    //           )}
+    //           {bookmarksInfoValue?.includes('info') && (
+    //             <div className="flex items-center space-x-2 flex-wrap">
+    //               {renderCategoryBadge(item)}
+    //               {renderUrl(item)}
+    //               <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+    //                 {format(new Date(item?.inserted_at), 'dd MMM')}
+    //               </p>
+    //             </div>
+    //           )}
+    //         </div>
+    //       </div>
+    //     )}
+    //   </a>
+    //   <div
+    //     className={`items-center space-x-1 ${
+    //       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //       //@ts-ignore // this is cypress env, TS check not needed
+    //       window?.Cypress ? 'flex' : 'hidden'
+    //     } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
+    //   >
+    //     {showAvatar && renderAvatar(item)}
+    //     {renderEditAndDeleteIcons(item)}
+    //     {category_id === TRASH_URL && (
+    //       <MinusCircleIcon
+    //         className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+    //         onClick={(e) => {
+    //           e.preventDefault();
+    //           onMoveOutOfTrashClick(item);
+    //         }}
+    //       />
+    //     )}
+    //   </div>
+    // </div>
+    // );
+  }
+
+  return (
+    <ListBox aria-label="Categories" selectionMode="multiple">
+      {/* <Masonry
+        breakpointCols={{
+          default:
+            typeof bookmarksColumns === 'object'
+              ? bookmarksColumns[0] / 10
+              : (bookmarksColumns as unknown as number) / 10,
+          1100: 2,
+          700: 2,
+          500: 1,
+        }}
+        className="my-masonry-grid"
+        columnClassName="my-masonry-grid_column"
+      > */}
+      {renderSortByCondition()?.map((item) => {
+        return (
+          <Item key={item?.id} textValue={item?.id?.toString()}>
+            <div
+              // className="rounded-lg drop-shadow-custom-1 group relative single-bookmark"
+              id="single-moodboard-card"
+              className="w-full"
+            >
+              <a
+                // href={item?.url}
+                target="_blank"
+                rel="noreferrer"
+                // className="flex flex-col"
+                className=" inline-block w-full"
+              >
+                <>{renderOgImage(item?.ogImage)}</>
+                {bookmarksInfoValue?.length === 1 &&
+                bookmarksInfoValue[0] === 'cover' ? null : (
+                  <div className="rounded-lg p-4 space-y-2">
+                    {bookmarksInfoValue?.includes('title') && (
+                      <p className="text-base font-medium leading-4">
+                        {item?.title}
+                      </p>
+                    )}
+                    {bookmarksInfoValue?.includes('description') && (
+                      <p className="text-sm leading-4  overflow-hidden break-all">
+                        {item?.description}
+                      </p>
+                    )}
+                    <div className="space-y-2">
+                      {bookmarksInfoValue?.includes('tags') && (
+                        <div className="flex items-center space-x-1">
+                          {item?.addedTags?.map((tag) => {
+                            return (
+                              <div
+                                className="text-xs text-blue-500"
+                                key={tag?.id}
+                              >
+                                #{tag?.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {bookmarksInfoValue?.includes('info') && (
+                        <div className="flex items-center space-x-2 flex-wrap">
+                          {renderCategoryBadge(item)}
+                          {renderUrl(item)}
+                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                            {format(new Date(item?.inserted_at), 'dd MMM')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </a>
+              <div
+                className={`items-center space-x-1 ${
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  //@ts-ignore // this is cypress env, TS check not needed
+                  window?.Cypress ? 'flex' : 'hidden'
+                } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
+              >
+                {showAvatar && renderAvatar(item)}
+                {renderEditAndDeleteIcons(item)}
+                {category_id === TRASH_URL && (
+                  <MinusCircleIcon
+                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onMoveOutOfTrashClick(item);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </Item>
+        );
+      })}
+      {/* </Masonry> */}
+    </ListBox>
+  );
 };
 
 export default CardSection;

@@ -2,6 +2,7 @@ import { useSession } from '@supabase/auth-helpers-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import isNull from 'lodash/isNull';
 import useGetCurrentCategoryId from '../../../hooks/useGetCurrentCategoryId';
+import { useLoadersStore } from '../../../store/componentStore';
 import { CategoriesData } from '../../../types/apiTypes';
 import {
   BOOKMARKS_COUNT_KEY,
@@ -16,10 +17,16 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
   const queryClient = useQueryClient();
   const { category_id } = useGetCurrentCategoryId();
 
+  const setSidePaneOptionLoading = useLoadersStore(
+    (state) => state.setSidePaneOptionLoading
+  );
+
   const addCategoryToBookmarkOptimisticMutation = useMutation(
     addCategoryToBookmark,
     {
       onMutate: async (data) => {
+        setSidePaneOptionLoading(data?.category_id);
+
         // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
         await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
         await queryClient.cancelQueries([
@@ -67,6 +74,8 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
           category_id,
         ]);
         queryClient.invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id]);
+
+        setSidePaneOptionLoading(null);
       },
     }
   );

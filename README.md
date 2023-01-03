@@ -17,6 +17,7 @@ Bookmarks is an open source url manager built using **nextjs** and **supabase**.
 - User can create their own categories and add bookmarks accordingly
 - User can change views of bookmakrs and sort bookmarks
 - Bookmarks search based on tags and categories
+- Bookmarks categories public and private share
 
   
 

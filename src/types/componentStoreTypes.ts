@@ -12,6 +12,8 @@ export interface ModalStoreState {
 export interface LoadersStoreState {
   isSortByLoading: boolean;
   toggleIsSortByLoading: () => void;
+  sidePaneOptionLoading: string | number | null;
+  setSidePaneOptionLoading: (value: string | number | null) => void;
 }
 
 export interface MiscellaneousStoreState {
