@@ -352,156 +352,6 @@ const CardSection = ({
     });
   };
 
-  const renderHeadlinesType = () => {
-    return (
-      <div className="space-y-4">
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id || index}
-              className="group relative"
-            >
-              <a
-                href={item?.url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center"
-              >
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </a>
-              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderListType = () => {
-    return (
-      <div className="space-y-4">
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id || index}
-              className="group relative h-[104px]"
-            >
-              <a
-                href={item?.url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center"
-              >
-                <>{renderOgImage(item?.ogImage)}</>
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    {bookmarksInfoValue?.includes('description') && (
-                      <p className="text-sm leading-4  overflow-hidden break-all">
-                        {item?.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </a>
-              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   const cardGridClassNames = classNames({
     'grid gap-3': true,
     'grid-cols-1':
@@ -516,219 +366,21 @@ const CardSection = ({
       typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 50,
   });
 
-  const renderCardType = () => {
-    return (
-      <div className={cardGridClassNames}>
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id || index}
-              className="group relative"
-            >
-              <a href={item?.url} target="_blank" rel="noreferrer">
-                <>{renderOgImage(item?.ogImage)}</>
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    {bookmarksInfoValue?.includes('description') && (
-                      <p className="text-sm leading-4  overflow-hidden break-all">
-                        {item?.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2 flex-wrap">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </a>
-              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderMoodboard = () => {
-    return (
-      <Masonry
-        breakpointCols={{
-          default:
-            typeof bookmarksColumns === 'object'
-              ? bookmarksColumns[0] / 10
-              : (bookmarksColumns as unknown as number) / 10,
-          1100: 2,
-          700: 2,
-          500: 1,
-        }}
-        className="my-masonry-grid"
-        columnClassName="my-masonry-grid_column"
-      >
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              key={item?.id || index}
-              className="rounded-lg group relative single-bookmark"
-              id="single-moodboard-card"
-            >
-              <a href={item?.url} target="_blank" rel="noreferrer">
-                <>{renderOgImage(item?.ogImage)}</>
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="rounded-lg p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    {bookmarksInfoValue?.includes('description') && (
-                      <p className="text-sm leading-4  overflow-hidden break-all">
-                        {item?.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2 flex-wrap">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </a>
-              <div
-                className={`items-center space-x-1 ${
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  //@ts-ignore // this is cypress env, TS check not needed
-                  window?.Cypress ? 'flex' : 'hidden'
-                } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
-              >
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </Masonry>
-    );
-  };
-
-  const renderBookmarkCardTypes = () => {
+  const renderBookmarkCardTypes = (item: SingleListData) => {
     switch (cardTypeCondition) {
       case 'moodboard':
-        return renderMoodboard();
+        return renderMoodboardAndCardType(item);
       case 'card':
-        return renderCardType();
+        return renderMoodboardAndCardType(item);
       case 'headlines':
-        return renderHeadlinesType();
+        return renderHeadlinesCard(item);
       case 'list':
-        return renderListType();
+        return renderListCard(item);
       default:
-        return renderMoodboard();
+        return renderMoodboardAndCardType(item);
       // code block
     }
   };
-
-  const renderMainCardContent = () => {
-    if (isLoading) {
-      return (
-        <div
-          className={
-            cardTypeCondition === 'card' || cardTypeCondition === 'moodboard'
-              ? cardGridClassNames
-              : 'space-y-4'
-          }
-        >
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-        </div>
-      );
-    } else {
-      if (!isEmpty(bookmarksList)) {
-        return renderBookmarkCardTypes();
-      } else {
-        return <div id="no-bookmarks-text">No Bookmarks</div>;
-      }
-    }
-  };
-
-  // return renderMainCardContent();
-
-  // interface ListBoxPropTypes {
-  //   'aria-label': string;
-  //   selectionMode: string;
-  //   children: ChildrenTypes;
-  // }
 
   interface ListProps<T>
     extends CollectionBase<T>,
@@ -783,15 +435,15 @@ const CardSection = ({
 
     useDraggableCollection(props, dragState, ref);
 
+    const ulClassName = classNames({
+      [`columns-${bookmarksColumns && (bookmarksColumns[0] / 10)?.toString()}`]:
+        cardTypeCondition === 'moodboard',
+      block: cardTypeCondition === 'list' || cardTypeCondition === 'headlines',
+      [cardGridClassNames]: cardTypeCondition === 'card',
+    });
+
     return (
-      <ul
-        {...listBoxProps}
-        ref={ref}
-        className={`columns-${
-          bookmarksColumns && (bookmarksColumns[0] / 10)?.toString()
-        }`}
-        // className="columns-3"
-      >
+      <ul {...listBoxProps} ref={ref} className={ulClassName}>
         {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
         {/* @ts-ignore */}
         {[...state.collection].map((item) => (
@@ -804,10 +456,7 @@ const CardSection = ({
         ))}
         <DragPreview ref={preview}>
           {(items) => (
-            <div
-              // style={{ background: 'green', color: 'white' }}
-              className=" bg-slate-200 px-2 py-1 rounded-lg text-sm leading-4"
-            >
+            <div className=" bg-slate-200 px-2 py-1 rounded-lg text-sm leading-4">
               {items.length > 1
                 ? `${items.length} bookmarks`
                 : find(
@@ -846,7 +495,6 @@ const CardSection = ({
       <li
         {...mergeProps(dragProps, focusProps)}
         ref={ref}
-        // className={`option ${isFocusVisible ? 'focus-visible' : ''}`}
         className={`flex rounded-lg drop-shadow-custom-1 group relative single-bookmark mb-6 shadow-md`}
       >
         <div
@@ -857,177 +505,217 @@ const CardSection = ({
         <input
           type="checkbox"
           {...optionProps}
-          className={`card-checkbox absolute top-[7px] left-[6px] group-hover:block ${
+          className={`card-checkbox absolute top-[7px] left-[6px] group-hover:block z-20 ${
             isSelected ? 'block' : 'hidden'
           }`}
         />
         {item.rendered}
       </li>
     );
-    // return (
-    // <div
-    //   {...mergeProps(optionProps, dragProps, focusProps)}
-    //   ref={ref}
-    //   className="rounded-lg drop-shadow-custom-1 group relative single-bookmark"
-    //   id="single-moodboard-card"
-    // >
-    //   <a href={item?.url} target="_blank" rel="noreferrer">
-    //     <>{renderOgImage(item?.ogImage)}</>
-    //     {bookmarksInfoValue?.length === 1 &&
-    //     bookmarksInfoValue[0] === 'cover' ? null : (
-    //       <div className="rounded-lg p-4 space-y-2">
-    //         {bookmarksInfoValue?.includes('title') && (
-    //           <p className="text-base font-medium leading-4">{item?.title}</p>
-    //         )}
-    //         {bookmarksInfoValue?.includes('description') && (
-    //           <p className="text-sm leading-4  overflow-hidden break-all">
-    //             {item?.description}
-    //           </p>
-    //         )}
-    //         <div className="space-y-2">
-    //           {bookmarksInfoValue?.includes('tags') && (
-    //             <div className="flex items-center space-x-1">
-    //               {item?.addedTags?.map((tag) => {
-    //                 return (
-    //                   <div className="text-xs text-blue-500" key={tag?.id}>
-    //                     #{tag?.name}
-    //                   </div>
-    //                 );
-    //               })}
-    //             </div>
-    //           )}
-    //           {bookmarksInfoValue?.includes('info') && (
-    //             <div className="flex items-center space-x-2 flex-wrap">
-    //               {renderCategoryBadge(item)}
-    //               {renderUrl(item)}
-    //               <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-    //                 {format(new Date(item?.inserted_at), 'dd MMM')}
-    //               </p>
-    //             </div>
-    //           )}
-    //         </div>
-    //       </div>
-    //     )}
-    //   </a>
-    //   <div
-    //     className={`items-center space-x-1 ${
-    //       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //       //@ts-ignore // this is cypress env, TS check not needed
-    //       window?.Cypress ? 'flex' : 'hidden'
-    //     } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
-    //   >
-    //     {showAvatar && renderAvatar(item)}
-    //     {renderEditAndDeleteIcons(item)}
-    //     {category_id === TRASH_URL && (
-    //       <MinusCircleIcon
-    //         className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-    //         onClick={(e) => {
-    //           e.preventDefault();
-    //           onMoveOutOfTrashClick(item);
-    //         }}
-    //       />
-    //     )}
-    //   </div>
-    // </div>
-    // );
   }
 
-  return (
-    <ListBox aria-label="Categories" selectionMode="multiple">
-      {/* <Masonry
-        breakpointCols={{
-          default:
-            typeof bookmarksColumns === 'object'
-              ? bookmarksColumns[0] / 10
-              : (bookmarksColumns as unknown as number) / 10,
-          1100: 2,
-          700: 2,
-          500: 1,
-        }}
-        className="my-masonry-grid"
-        columnClassName="my-masonry-grid_column"
-      > */}
-      {renderSortByCondition()?.map((item) => {
-        return (
-          <Item key={item?.id} textValue={item?.id?.toString()}>
-            <div
-              // className="rounded-lg drop-shadow-custom-1 group relative single-bookmark"
-              id="single-moodboard-card"
-              className="w-full"
-            >
-              <a
-                // href={item?.url}
-                target="_blank"
-                rel="noreferrer"
-                // className="flex flex-col"
-                className=" inline-block w-full"
-              >
-                <>{renderOgImage(item?.ogImage)}</>
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="rounded-lg p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    {bookmarksInfoValue?.includes('description') && (
-                      <p className="text-sm leading-4  overflow-hidden break-all">
-                        {item?.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
+  const renderMoodboardAndCardType = (item: SingleListData) => {
+    return (
+      <div id="single-moodboard-card" className="w-full">
+        <a
+          // href={item?.url}
+          target="_blank"
+          rel="noreferrer"
+          className=" inline-block w-full"
+        >
+          <>{renderOgImage(item?.ogImage)}</>
+          {bookmarksInfoValue?.length === 1 &&
+          bookmarksInfoValue[0] === 'cover' ? null : (
+            <div className="rounded-lg p-4 space-y-2">
+              {bookmarksInfoValue?.includes('title') && (
+                <p className="text-base font-medium leading-4">{item?.title}</p>
+              )}
+              {bookmarksInfoValue?.includes('description') && (
+                <p className="text-sm leading-4  overflow-hidden break-all">
+                  {item?.description}
+                </p>
+              )}
+              <div className="space-y-2">
+                {bookmarksInfoValue?.includes('tags') && (
+                  <div className="flex items-center space-x-1">
+                    {item?.addedTags?.map((tag) => {
+                      return (
+                        <div className="text-xs text-blue-500" key={tag?.id}>
+                          #{tag?.name}
                         </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2 flex-wrap">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
-              </a>
-              <div
-                className={`items-center space-x-1 ${
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  //@ts-ignore // this is cypress env, TS check not needed
-                  window?.Cypress ? 'flex' : 'hidden'
-                } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
-              >
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
+                {bookmarksInfoValue?.includes('info') && (
+                  <div className="flex items-center space-x-2 flex-wrap">
+                    {renderCategoryBadge(item)}
+                    {renderUrl(item)}
+                    <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                      {format(new Date(item?.inserted_at), 'dd MMM')}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
+          )}
+        </a>
+        <div
+          className={`items-center space-x-1 ${
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //@ts-ignore // this is cypress env, TS check not needed
+            window?.Cypress ? 'flex' : 'hidden'
+          } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
+        >
+          {showAvatar && renderAvatar(item)}
+          {renderEditAndDeleteIcons(item)}
+          {category_id === TRASH_URL && (
+            <MinusCircleIcon
+              className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                onMoveOutOfTrashClick(item);
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderListCard = (item: SingleListData) => {
+    return (
+      <div id="single-moodboard-card" className="h-[104px] w-full">
+        <a
+          href={item?.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center"
+        >
+          <>{renderOgImage(item?.ogImage)}</>
+          {bookmarksInfoValue?.length === 1 &&
+          bookmarksInfoValue[0] === 'cover' ? null : (
+            <div className="p-4 space-y-2">
+              {bookmarksInfoValue?.includes('title') && (
+                <p className="text-base font-medium leading-4">{item?.title}</p>
+              )}
+              {bookmarksInfoValue?.includes('description') && (
+                <p className="text-sm leading-4  overflow-hidden break-all">
+                  {item?.description}
+                </p>
+              )}
+              <div className="space-y-2">
+                {bookmarksInfoValue?.includes('tags') && (
+                  <div className="flex items-center space-x-1">
+                    {item?.addedTags?.map((tag) => {
+                      return (
+                        <div className="text-xs text-blue-500" key={tag?.id}>
+                          #{tag?.name}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {bookmarksInfoValue?.includes('info') && (
+                  <div className="flex items-center space-x-2">
+                    {renderCategoryBadge(item)}
+                    {renderUrl(item)}
+                    <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                      {format(new Date(item?.inserted_at), 'dd MMM')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </a>
+        <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
+          {showAvatar && renderAvatar(item)}
+          {renderEditAndDeleteIcons(item)}
+          {category_id === TRASH_URL && (
+            <MinusCircleIcon
+              className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                onMoveOutOfTrashClick(item);
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderHeadlinesCard = (item: SingleListData) => {
+    return (
+      <div
+        style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
+        key={item?.id}
+        className="group w-full"
+      >
+        <a
+          href={item?.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center"
+        >
+          {bookmarksInfoValue?.length === 1 &&
+          bookmarksInfoValue[0] === 'cover' ? null : (
+            <div className="p-4 space-y-2">
+              {bookmarksInfoValue?.includes('title') && (
+                <p className="text-base font-medium leading-4">{item?.title}</p>
+              )}
+              <div className="space-y-2">
+                {bookmarksInfoValue?.includes('tags') && (
+                  <div className="flex items-center space-x-1">
+                    {item?.addedTags?.map((tag) => {
+                      return (
+                        <div className="text-xs text-blue-500" key={tag?.id}>
+                          #{tag?.name}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {bookmarksInfoValue?.includes('info') && (
+                  <div className="flex items-center space-x-2">
+                    {renderCategoryBadge(item)}
+                    {renderUrl(item)}
+                    <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
+                      {format(new Date(item?.inserted_at), 'dd MMM')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </a>
+        <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
+          {showAvatar && renderAvatar(item)}
+          {renderEditAndDeleteIcons(item)}
+          {category_id === TRASH_URL && (
+            <MinusCircleIcon
+              className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                onMoveOutOfTrashClick(item);
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <ListBox aria-label="Categories" selectionMode="multiple">
+      {renderSortByCondition()?.map((item) => {
+        return (
+          <Item key={item?.id} textValue={item?.id?.toString()}>
+            {renderBookmarkCardTypes(item)}
           </Item>
         );
       })}
-      {/* </Masonry> */}
     </ListBox>
   );
 };
