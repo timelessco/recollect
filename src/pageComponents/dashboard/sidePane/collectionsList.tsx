@@ -30,6 +30,7 @@ import find from 'lodash/find';
 import FileIcon from '../../../icons/categoryIcons/fileIcon';
 import AddCategoryIcon from '../../../icons/addCategoryIcon';
 import { useLoadersStore } from '../../../store/componentStore';
+import pick from 'lodash/pick';
 
 interface CollectionsListPropTypes {
   onBookmarksDrop: (e: any) => void;
@@ -137,7 +138,11 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
   function OptionDrop({ item, state, dropState }) {
     // Setup listbox option as normal. See useListBox docs for details.
     const ref = React.useRef(null);
-    const { optionProps } = useOption({ key: item.key }, state, ref);
+    const { optionProps, allowsSelection, isFocused } = useOption(
+      { key: item.key },
+      state,
+      ref
+    );
     const { isFocusVisible, focusProps } = useFocusRing();
 
     // Register the item as a drop target.
@@ -149,10 +154,15 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       ref
     );
 
+    console.log('pp', optionProps, pick(optionProps, ['id', 'data-key']));
     // Merge option props and dnd props, and render the item.
     return (
       <li
-        {...mergeProps(optionProps, dropProps, focusProps)}
+        {...mergeProps(
+          pick(optionProps, ['id', 'data-key']),
+          dropProps,
+          focusProps
+        )}
         ref={ref}
         // Apply a class when the item is the active drop target.
         className={`option-drop ${isFocusVisible ? 'focus-visible' : ''} ${
