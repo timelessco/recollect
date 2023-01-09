@@ -44,6 +44,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
   return (
     <Link href={item?.href} passHref={true}>
       <a
+        draggable={false}
         className={`${
           item?.current ? 'bg-custom-gray-2' : 'bg-white'
         } ${extendedClassname} group px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between side-pane-anchor`}

@@ -129,6 +129,7 @@ export interface ProfilesTableTypes {
   user_name?: string;
   profile_pic?: string;
   bookmarks_view?: BookmarkViewDataTypes;
+  category_order?: number[];
 }
 
 export type BookmarksWithTagsWithTagForginKeys = {

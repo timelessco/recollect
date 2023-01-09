@@ -218,3 +218,21 @@ main {
 .drop-target .side-pane-anchor {
  background-color: #cbd5e1;
 }
+
+.drop-indicator {
+  width: 100%;
+  margin-left: 0;
+  height: 2px;
+  margin-bottom: -2px;
+  outline: none;
+  background: transparent;
+}
+
+.drop-indicator:last-child {
+  margin-bottom: 0;
+  margin-top: -2px;
+}
+
+.drop-indicator.drop-target {
+  background: red;
+}

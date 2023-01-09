@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
-import { Item, useDroppableCollectionState, useListState } from 'react-stately';
+import React, { useEffect, useState } from 'react';
+import {
+  Item,
+  useDroppableCollectionState,
+  useListState,
+  useDraggableCollectionState,
+  useListData,
+} from 'react-stately';
 import {
   mergeProps,
   useFocusRing,
@@ -9,6 +15,9 @@ import {
   ListKeyboardDelegate,
   useDroppableCollection,
   useDroppableItem,
+  useDraggableCollection,
+  useDraggableItem,
+  useDropIndicator,
 } from 'react-aria';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,12 +25,14 @@ import {
   BookmarksCountTypes,
   CategoriesData,
   FetchSharedCategoriesData,
+  ProfilesTableTypes,
 } from '../../../types/apiTypes';
 import { PostgrestError } from '@supabase/supabase-js';
 import {
   BOOKMARKS_COUNT_KEY,
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
+  USER_PROFILE,
 } from '../../../utils/constants';
 import SingleListItemComponent from './singleListItemComponent';
 import { useRouter } from 'next/router';
@@ -31,6 +42,9 @@ import FileIcon from '../../../icons/categoryIcons/fileIcon';
 import AddCategoryIcon from '../../../icons/addCategoryIcon';
 import { useLoadersStore } from '../../../store/componentStore';
 import pick from 'lodash/pick';
+import useUpdateCategoryOrderMutation from '../../../async/mutationHooks/category/useUpdateCategoryOrderMutation';
+import isEqual from 'lodash/isEqual';
+import { updateCategoryOrder } from '../../../async/supabaseCrudHelpers';
 
 interface CollectionsListPropTypes {
   onBookmarksDrop: (e: any) => void;
@@ -58,6 +72,8 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
   const router = useRouter();
   const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 
+  const { updateCategoryOrderMutation } = useUpdateCategoryOrderMutation();
+
   const currentPath = router.asPath.split('/')[1] || null;
 
   const categoryData = queryClient.getQueryData([
@@ -83,6 +99,14 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
     error: PostgrestError;
   };
 
+  const userProfileData = queryClient.getQueryData([
+    USER_PROFILE,
+    session?.user?.id,
+  ]) as {
+    data: ProfilesTableTypes[];
+    error: PostgrestError;
+  };
+
   const sidePaneOptionLoading = useLoadersStore(
     (state) => state.sidePaneOptionLoading
   );
@@ -91,7 +115,11 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
     // Setup listbox as normal. See the useListBox docs for more details.
     const state = useListState(props);
     const ref = React.useRef(null);
-    const { listBoxProps } = useListBox(props, state, ref);
+    const { listBoxProps } = useListBox(
+      { ...props, shouldSelectOnPressUp: true },
+      state,
+      ref
+    );
 
     // Setup react-stately and react-aria hooks for drag and drop.
     const dropState = useDroppableCollectionState({
@@ -116,6 +144,31 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       ref
     );
 
+    // Setup drag state for the collection.
+    const dragState = useDraggableCollectionState({
+      ...props,
+      // Collection and selection manager come from list state.
+      collection: state.collection,
+      selectionManager: state.selectionManager,
+      // Provide data for each dragged item. This function could
+      // also be provided by the user of the component.
+      getItems:
+        props.getItems ||
+        ((keys) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          return [...keys].map((key) => {
+            const item = state.collection.getItem(key);
+
+            return {
+              'text/plain': item.textValue,
+            };
+          });
+        }),
+    });
+
+    useDraggableCollection(props, dragState, ref);
+
     // Merge listbox props and dnd props, and render the items as normal.
     return (
       <ul {...mergeProps(listBoxProps, collectionProps)} ref={ref}>
@@ -127,22 +180,48 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
             item={item}
             state={state}
             dropState={dropState}
+            dragState={dragState}
           />
         ))}
       </ul>
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  function OptionDrop({ item, state, dropState }) {
-    // Setup listbox option as normal. See useListBox docs for details.
+  function DropIndicator(props: any) {
     const ref = React.useRef(null);
-    const { optionProps, allowsSelection, isFocused } = useOption(
-      { key: item.key },
-      state,
+    const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
+      props,
+      props.dropState,
       ref
     );
+    if (isHidden) {
+      return null;
+    }
+
+    return (
+      <li
+        {...dropIndicatorProps}
+        role="option"
+        ref={ref}
+        className={`drop-indicator ${isDropTarget ? 'drop-target' : ''}`}
+      />
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  function OptionDrop({ item, state, dropState, dragState }) {
+    // Register the item as a drag source.
+    const { dragProps } = useDraggableItem(
+      {
+        key: item.key,
+      },
+      dragState
+    );
+
+    // Setup listbox option as normal. See useListBox docs for details.
+    const ref = React.useRef(null);
+    const { optionProps } = useOption({ key: item.key }, state, ref);
     const { isFocusVisible, focusProps } = useFocusRing();
 
     // Register the item as a drop target.
@@ -154,23 +233,36 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       ref
     );
 
-    console.log('pp', optionProps, pick(optionProps, ['id', 'data-key']));
     // Merge option props and dnd props, and render the item.
     return (
-      <li
-        {...mergeProps(
-          pick(optionProps, ['id', 'data-key']),
-          dropProps,
-          focusProps
+      <>
+        <DropIndicator
+          target={{ type: 'item', key: item.key, dropPosition: 'before' }}
+          dropState={dropState}
+        />
+        <li
+          {...mergeProps(
+            pick(optionProps, ['id', 'data-key']),
+            // optionProps,
+            dropProps,
+            focusProps,
+            dragProps
+          )}
+          ref={ref}
+          // Apply a class when the item is the active drop target.
+          className={`option-drop ${isFocusVisible ? 'focus-visible' : ''} ${
+            isDropTarget ? 'drop-target' : ''
+          }`}
+        >
+          {item.rendered}
+        </li>
+        {state.collection.getKeyAfter(item.key) == null && (
+          <DropIndicator
+            target={{ type: 'item', key: item.key, dropPosition: 'after' }}
+            dropState={dropState}
+          />
         )}
-        ref={ref}
-        // Apply a class when the item is the active drop target.
-        className={`option-drop ${isFocusVisible ? 'focus-visible' : ''} ${
-          isDropTarget ? 'drop-target' : ''
-        }`}
-      >
-        {item.rendered}
-      </li>
+      </>
     );
   }
 
@@ -197,6 +289,48 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       })
     : [];
 
+  const sortedList = () => {
+    let arr: any[] = [];
+    const apiCategoryOrder = userProfileData?.data[0]?.category_order;
+
+    apiCategoryOrder?.forEach((item) => {
+      const data = find(collectionsList, (dataItem) => dataItem?.id === item);
+
+      if (data) {
+        arr = [...arr, data];
+      }
+    });
+
+    return arr;
+  };
+
+  const list = useListData({
+    initialItems: isEmpty(sortedList()) ? collectionsList : sortedList(),
+  });
+
+  const updateCategoryApi = async (listIds: number[]) => {
+    await updateCategoryOrder({ order: listIds, session: session });
+  };
+
+  useEffect(() => {
+    const listIds = list?.items?.map((item) => item?.id);
+    const categoryListIds = collectionsList?.map((item) => item?.id);
+
+    if (!isEmpty(listIds) && !isEmpty(categoryListIds)) {
+      if (!isEqual(listIds, categoryListIds)) {
+        updateCategoryApi(listIds);
+      }
+    }
+  }, [list]);
+
+  const onReorder = (e: any) => {
+    if (e.target.dropPosition === 'before') {
+      list.moveBefore(e.target.key, e.keys);
+    } else if (e.target.dropPosition === 'after') {
+      list.moveAfter(e.target.key, e.keys);
+    }
+  };
+
   return (
     <div className="pt-[25px]">
       <p className="font-medium text-[13px] leading-[115%] px-1 text-custom-gray-3">
@@ -206,28 +340,27 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
         <div id="collections-wrapper">
           <ListBoxDrop
             aria-label="Categories-drop"
-            selectionMode="single"
+            selectionMode="multiple"
+            selectionBehavior="replace"
+            items={list.items}
+            onReorder={onReorder}
             onItemDrop={(e: any) => {
               onBookmarksDrop(e);
             }}
           >
-            {collectionsList?.map((item, index) => {
-              return (
-                <Item key={item?.id}>
-                  <SingleListItemComponent
-                    extendedClassname="py-[5px]"
-                    item={item}
-                    key={index}
-                    showDropdown={true}
-                    listNameId="collection-name"
-                    onCategoryOptionClick={onCategoryOptionClick}
-                    onIconSelect={onIconSelect}
-                    showSpinner={item?.id === sidePaneOptionLoading}
-                    // showSpinner={item?.id === 295}
-                  />
-                </Item>
-              );
-            })}
+            {(item: any) => (
+              <Item textValue={item?.name}>
+                <SingleListItemComponent
+                  extendedClassname="py-[5px]"
+                  item={item}
+                  showDropdown={true}
+                  listNameId="collection-name"
+                  onCategoryOptionClick={onCategoryOptionClick}
+                  onIconSelect={onIconSelect}
+                  showSpinner={item?.id === sidePaneOptionLoading}
+                />
+              </Item>
+            )}
           </ListBoxDrop>
         </div>
         {showAddCategoryInput && (

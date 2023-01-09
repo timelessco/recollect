@@ -34,6 +34,7 @@ import {
   UPDATE_USER_PROFILE_API,
   SEARCH_BOOKMARKS,
   GET_BOOKMARKS_COUNT,
+  UPDATE_CATEGORY_ORDER_API,
 } from '../utils/constants';
 import isEmpty from 'lodash/isEmpty';
 import { CategoryIdUrlTypes } from '../types/componentTypes';
@@ -452,6 +453,28 @@ export const updateCategory = async ({
       {
         category_id,
         updateData,
+        access_token: session?.access_token,
+      }
+    );
+
+    return res;
+  } catch (e) {
+    return e;
+  }
+};
+
+export const updateCategoryOrder = async ({
+  order,
+  session,
+}: {
+  order: number[];
+  session: SupabaseSessionType;
+}) => {
+  try {
+    const res = await axios.post(
+      `${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`,
+      {
+        category_order: order,
         access_token: session?.access_token,
       }
     );

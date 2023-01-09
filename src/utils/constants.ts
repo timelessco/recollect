@@ -50,6 +50,7 @@ export const ADD_CATEGORY_TO_BOOKMARK_API =
   '/category/add-category-to-bookmark';
 export const DELETE_USER_CATEGORIES_API = '/category/delete-user-category';
 export const UPDATE_USER_CATEGORIES_API = '/category/update-user-category';
+export const UPDATE_CATEGORY_ORDER_API = '/category/update-category-order';
 // share api
 export const GET_PUBLIC_CATEGORY_BOOKMARKS_API =
   '/get-public-category-bookmarks';
