@@ -1,7 +1,7 @@
 import { useSession } from '@supabase/auth-helpers-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CategoriesData } from '../../../types/apiTypes';
-import { CATEGORIES_KEY } from '../../../utils/constants';
+import { CATEGORIES_KEY, USER_PROFILE } from '../../../utils/constants';
 import { addUserCategory } from '../../supabaseCrudHelpers';
 
 // adds new category optimistically
@@ -53,6 +53,7 @@ export default function useAddCategoryOptimisticMutation() {
     // Always refetch after error or success:
     onSettled: () => {
       queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+      queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
     },
   });
 

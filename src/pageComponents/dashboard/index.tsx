@@ -641,6 +641,7 @@ const Dashboard = () => {
                   addCategoryOptimisticMutation.mutateAsync({
                     user_id: session?.user?.id as string,
                     name: value?.label,
+                    category_order: userProfileData?.data[0]?.category_order,
                     session,
                   })
                 );
@@ -718,6 +719,7 @@ const Dashboard = () => {
             addCategoryOptimisticMutation.mutateAsync({
               user_id: session?.user?.id as string,
               name: newCategoryName,
+              category_order: userProfileData?.data[0]?.category_order,
               session,
             })
           );
@@ -730,6 +732,7 @@ const Dashboard = () => {
               mutationApiCall(
                 deleteCategoryOtimisticMutation.mutateAsync({
                   category_id: id,
+                  category_order: userProfileData?.data[0]?.category_order,
                   session,
                 })
               );

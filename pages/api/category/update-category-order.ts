@@ -48,7 +48,9 @@ export default async function handler(
     (await supabase
       .from(PROFILES)
       .update({
-        category_order: req.body.category_order,
+        category_order: isNull(req.body.category_order)
+          ? []
+          : req.body.category_order,
       })
       .match({ id: userId }).select(`
       id, category_order`)) as Data;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Item,
   useDroppableCollectionState,
@@ -43,8 +43,9 @@ import AddCategoryIcon from '../../../icons/addCategoryIcon';
 import { useLoadersStore } from '../../../store/componentStore';
 import pick from 'lodash/pick';
 import useUpdateCategoryOrderMutation from '../../../async/mutationHooks/category/useUpdateCategoryOrderMutation';
-import isEqual from 'lodash/isEqual';
 import { updateCategoryOrder } from '../../../async/supabaseCrudHelpers';
+import { mutationApiCall } from '../../../utils/apiHelpers';
+import { isNull } from 'lodash';
 
 interface CollectionsListPropTypes {
   onBookmarksDrop: (e: any) => void;
@@ -219,6 +220,8 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       dragState
     );
 
+    console.log('dd', dragProps, dragState);
+
     // Setup listbox option as normal. See useListBox docs for details.
     const ref = React.useRef(null);
     const { optionProps } = useOption({ key: item.key }, state, ref);
@@ -254,6 +257,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
             isDropTarget ? 'drop-target' : ''
           }`}
         >
+          {console.log('ii', item)}
           {item.rendered}
         </li>
         {state.collection.getKeyAfter(item.key) == null && (
@@ -293,41 +297,44 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
     let arr: any[] = [];
     const apiCategoryOrder = userProfileData?.data[0]?.category_order;
 
-    apiCategoryOrder?.forEach((item) => {
-      const data = find(collectionsList, (dataItem) => dataItem?.id === item);
+    if (!isNull(apiCategoryOrder)) {
+      apiCategoryOrder?.forEach((item) => {
+        const data = find(collectionsList, (dataItem) => dataItem?.id === item);
 
-      if (data) {
-        arr = [...arr, data];
-      }
-    });
+        if (data) {
+          arr = [...arr, data];
+        }
+      });
 
-    return arr;
+      return arr;
+    } else {
+      return collectionsList;
+    }
   };
 
   const list = useListData({
-    initialItems: isEmpty(sortedList()) ? collectionsList : sortedList(),
+    initialItems: [],
   });
 
-  const updateCategoryApi = async (listIds: number[]) => {
-    await updateCategoryOrder({ order: listIds, session: session });
-  };
-
-  useEffect(() => {
-    const listIds = list?.items?.map((item) => item?.id);
-    const categoryListIds = collectionsList?.map((item) => item?.id);
-
-    if (!isEmpty(listIds) && !isEmpty(categoryListIds)) {
-      if (!isEqual(listIds, categoryListIds)) {
-        updateCategoryApi(listIds);
-      }
-    }
-  }, [list]);
-
   const onReorder = (e: any) => {
-    if (e.target.dropPosition === 'before') {
-      list.moveBefore(e.target.key, e.keys);
-    } else if (e.target.dropPosition === 'after') {
-      list.moveAfter(e.target.key, e.keys);
+    const apiOrder = userProfileData?.data[0]?.category_order;
+    const listOrder = isNull(apiOrder)
+      ? collectionsList?.map((item) => item?.id)
+      : userProfileData?.data[0]?.category_order;
+
+    const index1 = listOrder?.indexOf(parseInt(e?.target?.key));
+    const index2 = listOrder?.indexOf(parseInt(e?.keys?.values().next().value));
+
+    const myArray = listOrder;
+
+    if (myArray && index1 !== undefined && index2 !== undefined) {
+      const temp = myArray[index1];
+      myArray[index1] = myArray[index2];
+      myArray[index2] = temp;
+
+      mutationApiCall(
+        updateCategoryOrderMutation?.mutateAsync({ order: myArray, session })
+      );
     }
   };
 
@@ -342,14 +349,14 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
             aria-label="Categories-drop"
             selectionMode="multiple"
             selectionBehavior="replace"
-            items={list.items}
+            // items={list.items}
             onReorder={onReorder}
             onItemDrop={(e: any) => {
               onBookmarksDrop(e);
             }}
           >
-            {(item: any) => (
-              <Item textValue={item?.name}>
+            {sortedList()?.map((item) => (
+              <Item textValue={item?.name} key={item?.id}>
                 <SingleListItemComponent
                   extendedClassname="py-[5px]"
                   item={item}
@@ -360,7 +367,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
                   showSpinner={item?.id === sidePaneOptionLoading}
                 />
               </Item>
-            )}
+            ))}
           </ListBoxDrop>
         </div>
         {showAddCategoryInput && (

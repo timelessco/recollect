@@ -7,6 +7,7 @@ import { CategoriesData } from '../../../src/types/apiTypes';
 import {
   CATEGORIES_TABLE_NAME,
   DUPLICATE_CATEGORY_NAME_ERROR,
+  PROFILES,
 } from '../../../src/utils/constants';
 import jwt from 'jsonwebtoken';
 import { isEmpty } from 'lodash';
@@ -68,6 +69,29 @@ export default async function handler(
         },
       ])
       .select();
+
+    if (
+      data &&
+      !isEmpty(data) &&
+      // !isNull(req.body.category_order) &&
+      req.body.category_order !== undefined
+    ) {
+      const order = !isNull(req.body.category_order)
+        ? req.body.category_order
+        : [];
+      const { error: orderError } = await supabase
+        .from(PROFILES)
+        .update({
+          category_order: [...order, data[0]?.id],
+        })
+        .match({ id: user_id }).select(`
+      id, category_order`);
+
+      if (!isNull(orderError)) {
+        res.status(500).json({ data: null, error: orderError });
+        throw new Error('ERROR');
+      }
+    }
 
     if (!isNull(error)) {
       res.status(500).json({ data: null, error: error });

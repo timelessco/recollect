@@ -364,10 +364,12 @@ export const fetchCategoriesData = async (
 export const addUserCategory = async ({
   user_id,
   name,
+  category_order,
   session,
 }: {
   user_id: string;
   name: string;
+  category_order: number[];
   session: SupabaseSessionType;
 }) => {
   try {
@@ -377,6 +379,7 @@ export const addUserCategory = async ({
         name: name,
         user_id: user_id,
         access_token: session?.access_token,
+        category_order,
       }
     );
     return res?.data;
@@ -387,9 +390,11 @@ export const addUserCategory = async ({
 
 export const deleteUserCategory = async ({
   category_id,
+  category_order,
   session,
 }: {
   category_id: number;
+  category_order: number[];
   session: SupabaseSessionType;
 }) => {
   try {
@@ -397,6 +402,7 @@ export const deleteUserCategory = async ({
       `${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`,
       {
         category_id: category_id,
+        category_order,
         access_token: session?.access_token,
       }
     );
