@@ -392,6 +392,10 @@ const CardSection = ({
     suppressTextValueWarning?: boolean;
   }
 
+  const setIsCardDragging = useMiscellaneousStore(
+    (state) => state.setIsCardDragging
+  );
+
   function ListBox(props: ListProps<object>) {
     // Setup listbox as normal. See the useListBox docs for more details.
     const preview = React.useRef(null);
@@ -415,6 +419,12 @@ const CardSection = ({
       // Collection and selection manager come from list state.
       collection: state.collection,
       selectionManager: state.selectionManager,
+      onDragStart() {
+        setIsCardDragging(true);
+      },
+      onDragEnd() {
+        setIsCardDragging(false);
+      },
       preview,
       // Provide data for each dragged item. This function could
       // also be provided by the user of the component.

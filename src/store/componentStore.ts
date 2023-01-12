@@ -49,4 +49,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
   addScreenshotBookmarkId: undefined,
   setAddScreenshotBookmarkId: (value: number | undefined) =>
     set(() => ({ addScreenshotBookmarkId: value })),
+  isCardDragging: false,
+  setIsCardDragging: (value: boolean) => set(() => ({ isCardDragging: value })),
 }));

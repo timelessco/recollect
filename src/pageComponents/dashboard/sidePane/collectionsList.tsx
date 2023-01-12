@@ -40,10 +40,12 @@ import isEmpty from 'lodash/isEmpty';
 import find from 'lodash/find';
 import FileIcon from '../../../icons/categoryIcons/fileIcon';
 import AddCategoryIcon from '../../../icons/addCategoryIcon';
-import { useLoadersStore } from '../../../store/componentStore';
+import {
+  useLoadersStore,
+  useMiscellaneousStore,
+} from '../../../store/componentStore';
 import pick from 'lodash/pick';
 import useUpdateCategoryOrderMutation from '../../../async/mutationHooks/category/useUpdateCategoryOrderMutation';
-import { updateCategoryOrder } from '../../../async/supabaseCrudHelpers';
 import { mutationApiCall } from '../../../utils/apiHelpers';
 import { isNull } from 'lodash';
 
@@ -72,6 +74,8 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
   const session = useSession();
   const router = useRouter();
   const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
+
+  const isCardDragging = useMiscellaneousStore((state) => state.isCardDragging);
 
   const { updateCategoryOrderMutation } = useUpdateCategoryOrderMutation();
 
@@ -220,8 +224,6 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       dragState
     );
 
-    console.log('dd', dragProps, dragState);
-
     // Setup listbox option as normal. See useListBox docs for details.
     const ref = React.useRef(null);
     const { optionProps } = useOption({ key: item.key }, state, ref);
@@ -246,7 +248,6 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
         <li
           {...mergeProps(
             pick(optionProps, ['id', 'data-key']),
-            // optionProps,
             dropProps,
             focusProps,
             dragProps
@@ -254,10 +255,9 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
           ref={ref}
           // Apply a class when the item is the active drop target.
           className={`option-drop ${isFocusVisible ? 'focus-visible' : ''} ${
-            isDropTarget ? 'drop-target' : ''
+            isDropTarget && isCardDragging ? 'drop-target' : ''
           }`}
         >
-          {console.log('ii', item)}
           {item.rendered}
         </li>
         {state.collection.getKeyAfter(item.key) == null && (

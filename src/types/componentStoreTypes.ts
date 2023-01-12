@@ -23,6 +23,8 @@ export interface MiscellaneousStoreState {
   setSearchText: (value: string) => void;
   addScreenshotBookmarkId: number | undefined;
   setAddScreenshotBookmarkId: (value: number | undefined) => void;
+  isCardDragging: boolean;
+  setIsCardDragging: (value: boolean) => void;
 }
 
 export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';
