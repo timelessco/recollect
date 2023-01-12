@@ -677,31 +677,33 @@ const Dashboard = () => {
         userEmail={session?.user?.user_metadata?.email}
         onNavAddClick={() => toggleShowAddBookmarkShortcutModal()}
         onBookmarksDrop={async (e) => {
-          const categoryId = parseInt(e?.target?.key);
-          // const bookmarkId = await e.items[0].getText('text/plain');
+          if (e?.isInternal === false) {
+            const categoryId = parseInt(e?.target?.key);
+            // const bookmarkId = await e.items[0].getText('text/plain');
 
-          const currentCategory =
-            find(allCategories?.data, (item) => item?.id === categoryId) ||
-            find(allCategories?.data, (item) => item?.id === category_id);
-          // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+            const currentCategory =
+              find(allCategories?.data, (item) => item?.id === categoryId) ||
+              find(allCategories?.data, (item) => item?.id === category_id);
+            // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
 
-          const updateAccessCondition =
-            find(
-              currentCategory?.collabData,
-              (item) => item?.userEmail === session?.user?.email
-            )?.edit_access === true ||
-            currentCategory?.user_id?.id === session?.user?.id;
+            const updateAccessCondition =
+              find(
+                currentCategory?.collabData,
+                (item) => item?.userEmail === session?.user?.email
+              )?.edit_access === true ||
+              currentCategory?.user_id?.id === session?.user?.id;
 
-          await e?.items?.forEach(async (item: any) => {
-            const bookmarkId = await item.getText('text/plain');
+            await e?.items?.forEach(async (item: any) => {
+              const bookmarkId = await item.getText('text/plain');
 
-            await addCategoryToBookmarkOptimisticMutation.mutateAsync({
-              category_id: categoryId,
-              bookmark_id: parseInt(bookmarkId),
-              update_access: updateAccessCondition, // if user is changing to uncategoried then thay always have access
-              session,
+              await addCategoryToBookmarkOptimisticMutation.mutateAsync({
+                category_id: categoryId,
+                bookmark_id: parseInt(bookmarkId),
+                update_access: updateAccessCondition, // if user is changing to uncategoried then thay always have access
+                session,
+              });
             });
-          });
+          }
         }}
         onSignOutClick={async () => {
           await signOut(supabase);

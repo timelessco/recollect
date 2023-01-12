@@ -322,15 +322,19 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       ? collectionsList?.map((item) => item?.id)
       : userProfileData?.data[0]?.category_order;
 
-    const index1 = listOrder?.indexOf(parseInt(e?.target?.key));
-    const index2 = listOrder?.indexOf(parseInt(e?.keys?.values().next().value));
+    const index1 = listOrder?.indexOf(parseInt(e?.target?.key)); // to index
+    const index2 = listOrder?.indexOf(parseInt(e?.keys?.values().next().value)); // from index
 
-    const myArray = listOrder;
+    let myArray = listOrder;
 
-    if (myArray && index1 !== undefined && index2 !== undefined) {
-      const temp = myArray[index1];
-      myArray[index1] = myArray[index2];
-      myArray[index2] = temp;
+    if (myArray && index1 !== undefined && index2 !== undefined && listOrder) {
+      const movingItem = listOrder[index2];
+
+      // remove
+      myArray = myArray.filter((item) => item !== movingItem);
+
+      // add
+      myArray.splice(index1, 0, movingItem);
 
       mutationApiCall(
         updateCategoryOrderMutation?.mutateAsync({ order: myArray, session })
