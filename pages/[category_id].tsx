@@ -1,6 +1,7 @@
-import type { NextPage } from 'next';
+import type { GetServerSideProps, NextPage } from 'next';
 import Dashboard from '../src/pageComponents/dashboard';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 const Home: NextPage = () => {
   return (
@@ -10,24 +11,31 @@ const Home: NextPage = () => {
   );
 };
 
-export async function getStaticPaths() {
-  return {
-    paths: [{ params: { category_id: '1' } }],
-    fallback: 'blocking', // can also be true or 'blocking'
-  };
-}
-
-// This function gets called at build time
-export async function getStaticProps() {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const queryClient = new QueryClient();
 
-  // await queryClient.prefetchQuery(['posts', 10], () => fetchPosts(10))
+  // Create authenticated Supabase Client
+  const supabase = createServerSupabaseClient(ctx);
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session)
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
 
   return {
     props: {
       dehydratedState: dehydrate(queryClient),
+      initialSession: session,
+      user: session.user,
     },
   };
-}
+};
 
 export default Home;
