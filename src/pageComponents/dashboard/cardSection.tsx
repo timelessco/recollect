@@ -28,8 +28,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
 import Badge from '../../components/badge';
 import isNull from 'lodash/isNull';
-import Masonry from 'react-masonry-css';
-import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSkeleton';
 import { getBaseUrl, isUserInACategory } from '../../utils/helpers';
 import format from 'date-fns/format';
 import classNames from 'classnames';
@@ -69,7 +67,6 @@ const CardSection = ({
   onDeleteClick,
   onMoveOutOfTrashClick,
   onEditClick = () => null,
-  isLoading = false,
   userId,
   showAvatar = false,
   isOgImgLoading = false,

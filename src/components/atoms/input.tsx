@@ -28,9 +28,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   } = props;
 
   const inputClass = classNames(className, {
-    'block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md':
+    'block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md':
       isError,
-    'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md':
+    'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full border-gray-300 rounded-md':
       !isError,
     'disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none':
       isDisabled,
@@ -61,7 +61,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         )}
       </div>
       {isError && (
-        <p className="mt-2 text-sm text-red-600" id="email-error">
+        <p className="mt-2 text-xs text-red-600" id="email-error">
           {errorText}
         </p>
       )}

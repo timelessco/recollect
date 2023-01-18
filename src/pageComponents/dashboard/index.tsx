@@ -435,7 +435,7 @@ const Dashboard = () => {
                         paddingTop: 100,
                       }}
                     >
-                      Bookmarks !
+                      Life happens, save it.
                     </p>
                   }
                   scrollableTarget="scrollableDiv"

@@ -13,6 +13,8 @@ export const URL_PATTERN =
   /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/;
 export const GET_TEXT_WITH_AT_CHAR = /[a-zA-Z]*@[a-zA-Z]*/g;
+export const EMAIL_CHECK_PATTERN =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
 // api
 export const NEXT_API_URL = `${

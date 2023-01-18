@@ -1,10 +1,14 @@
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ALL_BOOKMARKS_URL, SIGNUP_URL } from '../../utils/constants';
+import {
+  ALL_BOOKMARKS_URL,
+  EMAIL_CHECK_PATTERN,
+  SIGNUP_URL,
+} from '../../utils/constants';
 import {
   signInWithEmailPassword,
   signInWithOauth,
@@ -12,8 +16,18 @@ import {
 import { errorToast } from '../../utils/toastMessages';
 import LaterpadLogo from '../../icons/laterpadLogo';
 import GoogleLoginIcon from '../../icons/googleLoginIcon';
+import Input from '../../components/atoms/input';
+import Spinner from '../../components/spinner';
+import {
+  bottomBarButton,
+  bottomBarText,
+  buttonDarkClassName,
+  buttonLightClassName,
+  grayInputClassName,
+} from '../../utils/commonClassNames';
 
 const LoginPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const supabase = useSupabaseClient();
@@ -22,22 +36,25 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (session) router.push(`/${ALL_BOOKMARKS_URL}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
+    // reset,
   } = useForm<{ email: string; password: string }>();
   const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
     data
   ) => {
+    setIsLoading(true);
     const { error } = await signInWithEmailPassword(
       data?.email,
       data?.password,
       supabase
     );
+    setIsLoading(false);
 
     if (error) {
       errorToast(error?.message);
@@ -45,6 +62,7 @@ const LoginPage = () => {
       router?.push(`/${ALL_BOOKMARKS_URL}`);
     }
   };
+
   return (
     <>
       <div>
@@ -60,41 +78,44 @@ const LoginPage = () => {
               className="flex flex-col justify-center items-center space-y-4"
               onSubmit={handleSubmit(onSubmit)}
             >
-              <input
+              <Input
                 {...register('email', {
-                  required: true,
+                  required: {
+                    value: true,
+                    message: 'Please enter email',
+                  },
+                  pattern: {
+                    value: EMAIL_CHECK_PATTERN,
+                    message: 'Please enter valid email',
+                  },
                 })}
                 placeholder="Email"
                 id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="block w-[300px] bg-custom-gray-8 appearance-none border-none text-sm leading-4 text-custom-gray-3 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0"
+                className={grayInputClassName}
+                isError={errors?.email ? true : false}
+                errorText={errors?.email?.message || ''}
               />
-              <input
+              <Input
                 {...register('password', {
-                  required: true,
+                  required: {
+                    value: true,
+                    message: 'Please enter password',
+                  },
                 })}
                 placeholder="Password"
                 id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="block w-[300px] bg-custom-gray-8 appearance-none border-none text-sm leading-4 text-custom-gray-3 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0"
+                className={grayInputClassName}
+                isError={errors?.password ? true : false}
+                errorText={errors?.password?.message || ''}
               />
 
-              <button
-                type="submit"
-                className="flex w-full justify-center rounded-lg bg-custom-gray-5 text-[13px] font-medium leading-[15px] text-white py-[7.5px] hover:bg-slate-800"
-              >
-                Sign in
+              <button type="submit" className={buttonDarkClassName}>
+                {!isLoading ? 'Sign in' : <Spinner />}
               </button>
 
               <div
                 onClick={() => signInWithOauth('google', supabase)}
-                className="flex cursor-pointer w-full justify-center items-center rounded-lg bg-white text-[13px] font-medium leading-[15px] text-custom-gray-1 py-[7.5px] hover:bg-slate-100 shadow-custom-2"
+                className={buttonLightClassName}
               >
                 <figure className="mr-[6px]">
                   <GoogleLoginIcon />
@@ -106,13 +127,8 @@ const LoginPage = () => {
         </div>
         <div className="fixed bottom-0 py-5 flex items-center justify-center w-full">
           <div className="flex w-[300px] items-center justify-between">
-            <p className="text-custom-gray-1 font-[450] text-sm leading-4">
-              Don’t have an account?
-            </p>
-            <a
-              href={`/${SIGNUP_URL}`}
-              className="font-[450] text-sm leading-4 text-custom-gray-1 py-[7px] px-[10px] bg-custom-gray-8 rounded-lg hover:bg-slate-200"
-            >
+            <p className={bottomBarText}>Don’t have an account?</p>
+            <a href={`/${SIGNUP_URL}`} className={bottomBarButton}>
               Sign up
             </a>
           </div>
