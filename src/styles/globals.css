@@ -1,3 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 @font-face {
   font-family: "Inter V";
   font-weight: 100 900;
@@ -6,10 +11,6 @@
   font-named-instance: "Regular";
   src: url("/fonts/Inter-V.var.woff2") format("woff2");
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 /* adding col class becasue tailind dynamic col class are not working for some reason */
 .columns-1 {

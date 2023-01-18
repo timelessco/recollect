@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import Button from '../../components/atoms/button';
@@ -272,95 +271,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     showIconDropdown?: boolean;
     listNameId?: string;
   }
-
-  // const _SingleListItem = <SingleListItemComponent />;
-
-  // const _SingleListItem = (listProps: listPropsTypes) => {
-  //   const {
-  //     item,
-  //     extendedClassname = '',
-  //     showDropdown = false,
-  //     showIconDropdown = true,
-  //     listNameId = '',
-  //   } = listProps;
-  //   return (
-  //     <Link href={item?.href} passHref={true}>
-  //       <a
-  //         className={`${
-  //           item?.current ? 'bg-custom-gray-2' : 'bg-white'
-  //         } ${extendedClassname} group px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
-  //       >
-  //         <div className="flex items-center">
-  //           {showIconDropdown ? (
-  //             <span onClick={(e) => e.preventDefault()} className="w-5 h-5">
-  //               <CategoryIconsDropdown
-  //                 onIconSelect={(value) => onIconSelect(value, item?.id)}
-  //                 iconValue={item?.iconValue || null}
-  //               />
-  //             </span>
-  //           ) : (
-  //             <figure>{item?.icon ? item?.icon() : null}</figure>
-  //           )}
-  //           <p
-  //             className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-2 leading-[14px]"
-  //             id={listNameId}
-  //           >
-  //             {item?.name}
-  //           </p>
-  //         </div>
-  //         <div className="flex items-center space-x-3">
-  //           {item?.isPublic && (
-  //             <figure>
-  //               <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
-  //             </figure>
-  //           )}
-  //           {item?.isCollab && (
-  //             <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
-  //           )}
-  //           {showDropdown && (
-  //             <Dropdown
-  //               buttonClassExtension="hidden group-hover:block"
-  //               menuClassName="origin-top-right left-0"
-  //               options={[
-  //                 { label: 'Share', value: 'share' },
-  //                 { label: 'Delete', value: 'delete' },
-  //               ]}
-  //               onOptionClick={(dropdownValue) =>
-  //                 onCategoryOptionClick(dropdownValue, item.current, item.id)
-  //               }
-  //               renderRightItems={() => {
-  //                 return (
-  //                   <>
-  //                     {item?.count !== undefined && (
-  //                       <span
-  //                         className={`text-custom-gray-3 text-[13px] font-normal w-3 h-3 leading-[15px]${
-  //                           showDropdown
-  //                             ? ' block group-hover:hidden'
-  //                             : ' block'
-  //                         }`}
-  //                       >
-  //                         {item?.count}
-  //                       </span>
-  //                     )}
-  //                   </>
-  //                 );
-  //               }}
-  //             />
-  //           )}
-  //           {item?.count !== undefined && !showDropdown && (
-  //             <span
-  //               className={`text-custom-gray-3 text-[13px] font-normal leading-[15px] ${
-  //                 showDropdown ? 'block group-hover:hidden' : 'block'
-  //               }`}
-  //             >
-  //               {item?.count}
-  //             </span>
-  //           )}
-  //         </div>
-  //       </a>
-  //     </Link>
-  //   );
-  // };
 
   const renderSidePaneOptionsMenu = () => {
     return (
