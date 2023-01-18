@@ -74,6 +74,7 @@ export const INBOX_URL = 'inbox';
 export const TRASH_URL = 'trash';
 export const LOGIN_URL = 'login';
 export const SIGNUP_URL = 'signup';
+export const SIGNIN_URL = 'login';
 
 // react-query keys
 

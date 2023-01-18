@@ -10,6 +10,8 @@ import {
   signInWithOauth,
 } from '../../async/supabaseCrudHelpers';
 import { errorToast } from '../../utils/toastMessages';
+import LaterpadLogo from '../../icons/laterpadLogo';
+import GoogleLoginIcon from '../../icons/googleLoginIcon';
 
 const LoginPage = () => {
   const router = useRouter();
@@ -45,111 +47,74 @@ const LoginPage = () => {
   };
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-gray-50">
-        <body class="h-full">
-        ```
-      */}
-      <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div>
+        <div className="sm:mx-auto sm:w-full sm:max-w-md flex items-center justify-center h-[calc(100vh-95px)]">
+          <div className="w-[300px]">
+            <div className="font-semibold text-2xl flex items-center w-full justify-center mb-[21px] leading-[28px]">
+              <figure className="mr-[6px]">
+                <LaterpadLogo />
+              </figure>
+              <p>laterpad</p>
+            </div>
             <form
-              className="space-y-6"
-              // action="#"
-              // method="POST"
+              className="flex flex-col justify-center items-center space-y-4"
               onSubmit={handleSubmit(onSubmit)}
             >
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email address
-                </label>
-                <div className="mt-1">
-                  <input
-                    {...register('email', {
-                      required: true,
-                    })}
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
+              <input
+                {...register('email', {
+                  required: true,
+                })}
+                placeholder="Email"
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="block w-[300px] bg-custom-gray-8 appearance-none border-none text-sm leading-4 text-custom-gray-3 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0"
+              />
+              <input
+                {...register('password', {
+                  required: true,
+                })}
+                placeholder="Password"
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="block w-[300px] bg-custom-gray-8 appearance-none border-none text-sm leading-4 text-custom-gray-3 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0"
+              />
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-                <div className="mt-1">
-                  <input
-                    {...register('password', {
-                      required: true,
-                    })}
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
+              <button
+                type="submit"
+                className="flex w-full justify-center rounded-lg bg-custom-gray-5 text-[13px] font-medium leading-[15px] text-white py-[7.5px] hover:bg-slate-800"
+              >
+                Sign in
+              </button>
 
-              <div className="flex items-center justify-between">
-                <div className="text-sm">
-                  <a
-                    href={`/${SIGNUP_URL}`}
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    Sign up
-                  </a>
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Sign in
-                </button>
+              <div
+                onClick={() => signInWithOauth('google', supabase)}
+                className="flex cursor-pointer w-full justify-center items-center rounded-lg bg-white text-[13px] font-medium leading-[15px] text-custom-gray-1 py-[7.5px] hover:bg-slate-100 shadow-custom-2"
+              >
+                <figure className="mr-[6px]">
+                  <GoogleLoginIcon />
+                </figure>
+                <p>Continue with Google</p>
               </div>
             </form>
-
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-2 text-gray-500">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6 ">
-                <div>
-                  <div
-                    onClick={() => signInWithOauth('google', supabase)}
-                    className=" cursor-pointer inline-flex w-full justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50"
-                  >
-                    <span>Log in with Google</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="fixed bottom-0 py-5 flex items-center justify-center w-full">
+          <div className="flex w-[300px] items-center justify-between">
+            <p className="text-custom-gray-1 font-[450] text-sm leading-4">
+              Don’t have an account?
+            </p>
+            <a
+              href={`/${SIGNUP_URL}`}
+              className="font-[450] text-sm leading-4 text-custom-gray-1 py-[7px] px-[10px] bg-custom-gray-8 rounded-lg hover:bg-slate-200"
+            >
+              Sign up
+            </a>
           </div>
         </div>
       </div>

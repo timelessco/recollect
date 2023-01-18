@@ -236,3 +236,26 @@ main {
 .drop-indicator.drop-target {
   background: red;
 }
+
+/* signup-page */
+
+.sign-up-parent {
+  position: relative;
+  /* background-image: url("/group-svg.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: left 0 top 0; */
+}
+
+.sign-up-parent::before{
+  position: absolute;
+  content: "";
+  background-image: url("/Group1.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -10;
+}
