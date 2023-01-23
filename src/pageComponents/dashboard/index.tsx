@@ -22,7 +22,7 @@ import {
 } from '../../types/componentTypes';
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
-import AddModalContent from './addModalContent';
+import AddModalContent from './modals/addModalContent';
 import { find, flatten, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
@@ -150,7 +150,6 @@ const Dashboard = () => {
       setIsEdit(false);
       setAddedUrlData(undefined);
       setSelectedTag([]);
-      setUrl('');
       setSelectedCategoryDuringAdd(undefined);
     }
   }, [showAddBookmarkModal]);
@@ -236,7 +235,6 @@ const Dashboard = () => {
   // END OF MUTATIONS ---------
 
   const addBookmarkLogic = async (url: string) => {
-    setUrl(url);
     const currentCategory = find(
       allCategories?.data,
       (item) => item?.id === category_id
@@ -510,7 +508,6 @@ const Dashboard = () => {
             isCategoryChangeLoading={addCategoryToBookmarkMutation?.isLoading}
             userId={session?.user?.id || ''}
             categoryId={category_id}
-            urlString={url}
             mainButtonText={isEdit ? 'Update Bookmark' : 'Add Bookmark'}
             urlData={addedUrlData}
             userTags={filteredUserTags}

@@ -2,10 +2,9 @@ import { Menu, Transition } from '@headlessui/react';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import find from 'lodash/find';
-import isEmpty from 'lodash/isEmpty';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import Button from '../../components/atoms/button';
 import SearchInput from '../../components/searchInput';
 import DownArrowGray from '../../icons/downArrowGray';
@@ -16,18 +15,13 @@ import PlusIconWhite from '../../icons/plusIconWhite';
 import SearchIconGray from '../../icons/searchIconGray';
 import TrashIconGray from '../../icons/trashIconGray';
 import UserIconGray from '../../icons/userIconGray';
-import {
-  BookmarksCountTypes,
-  CategoriesData,
-  FetchSharedCategoriesData,
-} from '../../types/apiTypes';
+import { BookmarksCountTypes, CategoriesData } from '../../types/apiTypes';
 import { CategoryIdUrlTypes, ChildrenTypes } from '../../types/componentTypes';
 import {
   ALL_BOOKMARKS_URL,
   BOOKMARKS_COUNT_KEY,
   CATEGORIES_KEY,
   SEARCH_URL,
-  SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
   UNCATEGORIZED_URL,
 } from '../../utils/constants';
@@ -36,13 +30,7 @@ import 'allotment/dist/style.css';
 import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
-  GlobeIcon,
-  UsersIcon,
 } from '@heroicons/react/solid';
-import Dropdown from '../../components/dropdown';
-import CategoryIconsDropdown from '../../components/customDropdowns.tsx/categoryIconsDropdown';
-import AddCategoryIcon from '../../icons/addCategoryIcon';
-import FileIcon from '../../icons/categoryIcons/fileIcon';
 import { options } from '../../utils/commonData';
 import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
 import BookmarksSortDropdown from '../../components/customDropdowns.tsx/bookmarksSortDropdown';
@@ -54,6 +42,7 @@ import {
 import { useMiscellaneousStore } from '../../store/componentStore';
 import CollectionsList from './sidePane/collectionsList';
 import SingleListItemComponent from './sidePane/singleListItemComponent';
+import SidePane from './sidePane';
 
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
@@ -104,7 +93,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   } = props;
 
   const [showSidePane, setShowSidePane] = useState(true);
-  const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
   const [screenWidth, setScreenWidth] = useState(1200);
 
   useEffect(() => {
@@ -139,13 +127,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     error: PostgrestError;
   };
 
-  const sharedCategoriesData = queryClient.getQueryData([
-    SHARED_CATEGORIES_TABLE_NAME,
-  ]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
-
   function classNames(...classes: Array<string>) {
     return classes.filter(Boolean).join(' ');
   }
@@ -154,7 +135,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     return (
       <div className="flex items-center justify-between">
         {userName ? (
-          <Menu as="div" className="flex-shrink-0 relative">
+          <Menu as="div" className=" w-4/5 relative">
             <div className="p-1 hover:bg-custom-gray-2 rounded-lg">
               <Menu.Button className="user-menu-btn w-full flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <div className="w-6 h-6">
@@ -171,7 +152,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                 </div>
 
                 <p
-                  className="text-sm font-medium text-custom-gray-1 mx-2 leading-[115%]"
+                  className="text-sm font-medium text-custom-gray-1 mx-2 leading-[115%] truncate overflow-hidden flex-1 text-left"
                   id="user-name"
                 >
                   {userName}
@@ -254,24 +235,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     },
   ];
 
-  interface listPropsTypes {
-    item: {
-      icon?: () => ChildrenTypes;
-      name: string;
-      href: string;
-      current: boolean;
-      id: number;
-      iconValue?: string | null;
-      count?: number;
-      isPublic?: boolean;
-      isCollab?: boolean;
-    };
-    extendedClassname: string;
-    showDropdown?: boolean;
-    showIconDropdown?: boolean;
-    listNameId?: string;
-  }
-
   const renderSidePaneOptionsMenu = () => {
     return (
       <div className="pt-[10px]">
@@ -291,102 +254,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const SingleListItem = React.useCallback(SingleListItemComponent, []);
-
-  const renderSidePaneCollections = useCallback(() => {
-    const collectionsList = userName
-      ? categoryData?.data?.map((item) => {
-          return {
-            name: item?.category_name,
-            href: `/${item?.category_slug}`,
-            id: item?.id,
-            current: currentPath === item?.category_slug,
-            isPublic: item?.is_public,
-            isCollab: !isEmpty(
-              find(
-                sharedCategoriesData?.data,
-                (cat) => cat?.category_id === item?.id
-              )
-            ),
-            iconValue: item?.icon,
-            count: find(
-              bookmarksCountData?.data?.categoryCount,
-              (catItem) => catItem?.category_id === item?.id
-            )?.count,
-          };
-        })
-      : [];
-
-    return (
-      <div className="pt-[25px]">
-        <p className="font-medium text-[13px] leading-[115%] px-1 text-custom-gray-3">
-          Collections
-        </p>
-        <div className="pt-3">
-          <div id="collections-wrapper">
-            {collectionsList?.map((item, index) => {
-              return (
-                <SingleListItem
-                  extendedClassname="py-[5px]"
-                  item={item}
-                  key={index}
-                  showDropdown={true}
-                  listNameId="collection-name"
-                />
-              );
-            })}
-          </div>
-          {showAddCategoryInput && (
-            <div
-              className={`px-2 py-[5px] mt-1 flex items-center bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
-            >
-              <div className="flex items-center">
-                <figure className="mr-2">
-                  <FileIcon />
-                </figure>
-                <input
-                  placeholder="Category Name"
-                  id="add-category-input"
-                  className="text-sm font-[450] text-custom-gray-5 leading-4 focus:outline-none bg-black/[0.004] opacity-40"
-                  autoFocus
-                  onBlur={() => setShowAddCategoryInput(false)}
-                  onKeyUp={(e) => {
-                    if (
-                      e.key === 'Enter' &&
-                      !isEmpty((e.target as HTMLInputElement).value)
-                    ) {
-                      onAddNewCategory((e.target as HTMLInputElement).value);
-                      setShowAddCategoryInput(false);
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          )}
-          <div
-            className="py-[5px] px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer"
-            onClick={() => setShowAddCategoryInput(true)}
-            id="add-category-button"
-          >
-            <figure>
-              <AddCategoryIcon />
-            </figure>
-            <p className="truncate ml-2 flex-1 text-sm font-medium text-custom-gray-3 leading-[16px]">
-              Add Category
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }, [
-    SingleListItem,
-    bookmarksCountData?.data?.categoryCount,
-    categoryData?.data,
-    currentPath,
-    onAddNewCategory,
-    sharedCategoriesData?.data,
-    showAddCategoryInput,
-    userName,
-  ]);
 
   const navBarLogo = () => {
     const currentCategory = find(
@@ -533,17 +400,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           snap
           className="transition-all ease-in-out duration-150"
         >
-          <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
+          {/* <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
             {renderSidePaneUserDropdown()}
             {renderSidePaneOptionsMenu()}
-            {/* {renderSidePaneCollections()} */}
             <CollectionsList
               onBookmarksDrop={onBookmarksDrop}
               onCategoryOptionClick={onCategoryOptionClick}
               onIconSelect={(value, id) => onIconSelect(value, id)}
               onAddNewCategory={onAddNewCategory}
             />
-          </nav>
+          </nav> */}
+          <SidePane />
         </Allotment.Pane>
         <Allotment.Pane className="transition-all ease-in-out duration-150">
           <div className="w-full">

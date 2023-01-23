@@ -1,21 +1,24 @@
 /* eslint-disable @next/next/no-img-element */
 import { OnChangeValue } from 'react-select';
-import Button from '../../components/atoms/button';
-import Input from '../../components/atoms/input';
-import LabelledComponent from '../../components/labelledComponent';
-import TagInput from '../../components/tagInput';
+import Button from '../../../components/atoms/button';
+import Input from '../../../components/atoms/input';
+import LabelledComponent from '../../../components/labelledComponent';
+import TagInput from '../../../components/tagInput';
 import {
   CategoriesData,
   SingleListData,
   UserTagsData,
-} from '../../types/apiTypes';
-import { SearchSelectOption, TagInputOption } from '../../types/componentTypes';
+} from '../../../types/apiTypes';
+import {
+  SearchSelectOption,
+  TagInputOption,
+} from '../../../types/componentTypes';
 import { useQueryClient } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
 import find from 'lodash/find';
 import filter from 'lodash/filter';
-import { BOOKMARKS_KEY, CATEGORIES_KEY } from '../../utils/constants';
-import CreatableSearchSelect from '../../components/creatableSearchSelect';
+import { BOOKMARKS_KEY, CATEGORIES_KEY } from '../../../utils/constants';
+import CreatableSearchSelect from '../../../components/creatableSearchSelect';
 
 // Modal for adding a bookmark
 interface AddModalContentProps {
@@ -27,7 +30,7 @@ interface AddModalContentProps {
   removeExistingTag: (value: TagInputOption) => void;
   addedTags: Array<UserTagsData>;
   mainButtonText: string;
-  urlString: string;
+  // urlString: string;
   onCategoryChange: (value: SearchSelectOption | null) => void;
   onCreateCategory: (value: SearchSelectOption | null) => void;
   categoryId: string | number | null;
@@ -46,7 +49,7 @@ export default function AddModalContent(props: AddModalContentProps) {
     removeExistingTag,
     addedTags,
     mainButtonText,
-    urlString,
+    // urlString,
     onCategoryChange,
     categoryId,
     userId,
@@ -151,7 +154,7 @@ export default function AddModalContent(props: AddModalContentProps) {
       <div className="pt-4">
         <LabelledComponent label="Url">
           <Input
-            value={urlString || urlData?.url}
+            value={urlData?.url}
             isDisabled
             placeholder=""
             isError={false}
