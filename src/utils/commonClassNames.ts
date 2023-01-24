@@ -8,3 +8,10 @@ export const buttonLightClassName =
 export const bottomBarText = 'text-custom-gray-1 font-[450] text-sm leading-4';
 export const bottomBarButton =
   'font-[450] text-sm leading-4 text-custom-gray-1 py-[7px] px-[10px] bg-custom-gray-8 rounded-lg hover:bg-slate-200';
+
+// DROPDOWN COMMON CLASS NAMES
+
+export const dropdownMenuClassName =
+  'bg-white rounded-xl shadow-custom-3 p-[6px] w-48';
+export const dropdownMenuItemClassName =
+  'text-custom-gray-1 font-450 text-13 leading-4 px-2 py-1 hover:bg-custom-gray-9 focus:bg-custom-gray-9 cursor-pointer rounded-lg';

@@ -27,6 +27,7 @@ module.exports = {
           7: '#E8E8E8',
           8: '#f3f3f3',
           9: '#EDEDED',
+          10: '#858585',
         },
       },
       dropShadow: {

@@ -1,9 +1,18 @@
 import { GlobeIcon, UsersIcon } from '@heroicons/react/solid';
 import Link from 'next/link';
 import CategoryIconsDropdown from '../../../components/customDropdowns.tsx/categoryIconsDropdown';
-import Dropdown from '../../../components/dropdown';
+import {
+  AriaDropdown,
+  AriaDropdownMenu,
+} from '../../../components/ariaDropdown';
 import Spinner from '../../../components/spinner';
+import OptionsIconGray from '../../../icons/optionsIconGray';
 import { ChildrenTypes } from '../../../types/componentTypes';
+import { useState } from 'react';
+import {
+  dropdownMenuClassName,
+  dropdownMenuItemClassName,
+} from '../../../utils/commonClassNames';
 
 interface listPropsTypes {
   item: {
@@ -31,6 +40,8 @@ interface listPropsTypes {
 }
 
 const SingleListItemComponent = (listProps: listPropsTypes) => {
+  const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
+
   const {
     item,
     extendedClassname = '',
@@ -47,11 +58,14 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
         draggable={false}
         className={`${
           item?.current ? 'bg-custom-gray-2' : 'bg-white'
-        } ${extendedClassname} group px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between side-pane-anchor`}
+        } ${extendedClassname} group px-2 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between side-pane-anchor`}
       >
-        <div className="flex items-center">
+        <div className="flex items-center w-4/5">
           {showIconDropdown ? (
-            <span onClick={(e) => e.preventDefault()} className="w-5 h-5">
+            <span
+              onClick={(e) => e.preventDefault()}
+              className="w-[18px] h-[18px]"
+            >
               <CategoryIconsDropdown
                 onIconSelect={(value) => {
                   onIconSelect(value, item?.id);
@@ -60,10 +74,12 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
               />
             </span>
           ) : (
-            <figure>{item?.icon ? item?.icon() : null}</figure>
+            <figure className="w-[18px] h-[18px] flex items-center">
+              {item?.icon ? item?.icon() : null}
+            </figure>
           )}
           <p
-            className="truncate flex-1 text-sm font-[450] text-custom-gray-1 ml-2 leading-[14px]"
+            className="truncate overflow-hidden flex-1 text-sm font-[450] text-custom-gray-1 ml-2 leading-4"
             id={listNameId}
           >
             {item?.name}
@@ -80,36 +96,65 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
             <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
           )}
           {showDropdown && (
-            <Dropdown
-              buttonClassExtension="hidden group-hover:block"
-              menuClassName="origin-top-right left-0"
-              options={[
-                { label: 'Share', value: 'share' },
-                { label: 'Delete', value: 'delete' },
-              ]}
-              onOptionClick={(dropdownValue) =>
-                onCategoryOptionClick(dropdownValue, item.current, item.id)
-              }
-              renderRightItems={() => {
-                return (
-                  <>
-                    {item?.count !== undefined && (
-                      <span
-                        className={`text-custom-gray-3 text-[13px] font-normal w-3 h-3 leading-[15px]${
-                          showDropdown ? ' block group-hover:hidden' : ' block'
-                        }`}
-                      >
-                        {item?.count}
-                      </span>
-                    )}
-                  </>
-                );
-              }}
-            />
+            <div onClick={(e) => e.preventDefault()} className="w-4 h-4 flex">
+              <AriaDropdown
+                menuClassName={`${dropdownMenuClassName} z-10`}
+                menuButton={
+                  <div
+                    className={
+                      openedMenuId === item?.id
+                        ? 'flex'
+                        : 'hidden group-hover:flex'
+                    }
+                  >
+                    <OptionsIconGray />
+                  </div>
+                }
+                menuOpenToggle={(value) => {
+                  if (value === true) {
+                    setOpenedMenuId(item?.id);
+                  } else {
+                    setOpenedMenuId(null);
+                  }
+                }}
+              >
+                {[
+                  { label: 'Share', value: 'share' },
+                  { label: 'Delete', value: 'delete' },
+                ]?.map((dropdownItem) => (
+                  <AriaDropdownMenu
+                    key={dropdownItem?.value}
+                    onClick={() =>
+                      onCategoryOptionClick(
+                        dropdownItem?.value,
+                        item.current,
+                        item.id
+                      )
+                    }
+                  >
+                    <div className={dropdownMenuItemClassName}>
+                      {dropdownItem?.label}
+                    </div>
+                  </AriaDropdownMenu>
+                ))}
+              </AriaDropdown>
+              <>
+                {item?.count !== undefined && openedMenuId === null && (
+                  <p
+                    className={`text-custom-gray-10 text-[11px] font-450 w-4 h-4 leading-3 text-right flex items-center justify-end ${
+                      showDropdown ? ' block group-hover:hidden' : ' block'
+                    }`}
+                  >
+                    {item?.count}
+                  </p>
+                )}
+              </>
+            </div>
           )}
+
           {item?.count !== undefined && !showDropdown && (
             <span
-              className={`text-custom-gray-3 text-[13px] font-normal leading-[15px] ${
+              className={`text-custom-gray-10 text-[11px] font-450 leading-3 ${
                 showDropdown ? 'block group-hover:hidden' : 'block'
               }`}
             >

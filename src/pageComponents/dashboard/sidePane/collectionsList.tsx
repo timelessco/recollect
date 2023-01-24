@@ -35,7 +35,6 @@ import {
   USER_PROFILE,
 } from '../../../utils/constants';
 import SingleListItemComponent from './singleListItemComponent';
-import { useRouter } from 'next/router';
 import isEmpty from 'lodash/isEmpty';
 import find from 'lodash/find';
 import FileIcon from '../../../icons/categoryIcons/fileIcon';
@@ -48,6 +47,16 @@ import pick from 'lodash/pick';
 import useUpdateCategoryOrderMutation from '../../../async/mutationHooks/category/useUpdateCategoryOrderMutation';
 import { mutationApiCall } from '../../../utils/apiHelpers';
 import { isNull } from 'lodash';
+import useGetCurrentUrlPath from '../../../hooks/useGetCurrentUrlPath';
+import {
+  AriaDropdown,
+  AriaDropdownMenu,
+} from '../../../components/ariaDropdown';
+import {
+  dropdownMenuClassName,
+  dropdownMenuItemClassName,
+} from '../../../utils/commonClassNames';
+import OptionsIconGray from '../../../icons/optionsIconGray';
 
 interface CollectionsListPropTypes {
   onBookmarksDrop: (e: any) => void;
@@ -72,14 +81,13 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
 
   const queryClient = useQueryClient();
   const session = useSession();
-  const router = useRouter();
   const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 
   const isCardDragging = useMiscellaneousStore((state) => state.isCardDragging);
 
   const { updateCategoryOrderMutation } = useUpdateCategoryOrderMutation();
 
-  const currentPath = router.asPath.split('/')[1] || null;
+  const currentPath = useGetCurrentUrlPath();
 
   const categoryData = queryClient.getQueryData([
     CATEGORIES_KEY,
@@ -343,11 +351,35 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
   };
 
   return (
-    <div className="pt-[25px]">
-      <p className="font-medium text-[13px] leading-[115%] px-1 text-custom-gray-3">
-        Collections
-      </p>
-      <div className="pt-3">
+    <div className="pt-4">
+      <div className="px-1 py-[7.5px] flex items-center justify-between">
+        <p className="font-medium text-[13px] leading-[15px]  text-custom-gray-10 pr">
+          Collections
+        </p>
+        <AriaDropdown
+          menuButton={
+            <div>
+              <OptionsIconGray />
+            </div>
+          }
+          menuClassName={`${dropdownMenuClassName} z-10`}
+          menuButtonClassName="pr-1"
+        >
+          {[{ label: 'Add Category', value: 'add-category' }]?.map((item) => (
+            <AriaDropdownMenu
+              key={item?.value}
+              onClick={() => {
+                if (item?.value === 'add-category') {
+                  setShowAddCategoryInput(true);
+                }
+              }}
+            >
+              <div className={dropdownMenuItemClassName}>{item?.label}</div>
+            </AriaDropdownMenu>
+          ))}
+        </AriaDropdown>
+      </div>
+      <div>
         <div id="collections-wrapper">
           <ListBoxDrop
             aria-label="Categories-drop"
@@ -362,7 +394,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
             {sortedList()?.map((item) => (
               <Item textValue={item?.name} key={item?.id}>
                 <SingleListItemComponent
-                  extendedClassname="py-[5px]"
+                  extendedClassname="py-[6px]"
                   item={item}
                   showDropdown={true}
                   listNameId="collection-name"
@@ -385,7 +417,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
               <input
                 placeholder="Category Name"
                 id="add-category-input"
-                className="text-sm font-[450] text-custom-gray-5 leading-4 focus:outline-none bg-black/[0.004] opacity-40"
+                className="text-sm font-[450] text-custom-gray-1 leading-4 focus:outline-none bg-black/[0.004] opacity-40"
                 autoFocus
                 onBlur={() => setShowAddCategoryInput(false)}
                 onKeyUp={(e) => {
@@ -409,7 +441,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
           <figure>
             <AddCategoryIcon />
           </figure>
-          <p className="truncate ml-2 flex-1 text-sm font-medium text-custom-gray-3 leading-[16px]">
+          <p className="truncate ml-2 flex-1 text-sm font-450 text-custom-gray-3 leading-[16px]">
             Add Category
           </p>
         </div>

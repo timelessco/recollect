@@ -2,12 +2,9 @@ import { Menu, Transition } from '@headlessui/react';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import find from 'lodash/find';
-import Image from 'next/image';
-import { useRouter } from 'next/router';
 import React, { Fragment, useEffect, useState } from 'react';
 import Button from '../../components/atoms/button';
 import SearchInput from '../../components/searchInput';
-import DownArrowGray from '../../icons/downArrowGray';
 import HomeIconGray from '../../icons/homeIconGray';
 import InboxIconGray from '../../icons/inboxIconGray';
 import OptionsIconGray from '../../icons/optionsIconGray';
@@ -27,10 +24,7 @@ import {
 } from '../../utils/constants';
 import { Allotment } from 'allotment';
 import 'allotment/dist/style.css';
-import {
-  ChevronDoubleLeftIcon,
-  ChevronDoubleRightIcon,
-} from '@heroicons/react/solid';
+import { ChevronDoubleRightIcon } from '@heroicons/react/solid';
 import { options } from '../../utils/commonData';
 import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
 import BookmarksSortDropdown from '../../components/customDropdowns.tsx/bookmarksSortDropdown';
@@ -40,9 +34,8 @@ import {
   BookmarkViewCategories,
 } from '../../types/componentStoreTypes';
 import { useMiscellaneousStore } from '../../store/componentStore';
-import CollectionsList from './sidePane/collectionsList';
-import SingleListItemComponent from './sidePane/singleListItemComponent';
 import SidePane from './sidePane';
+import useGetCurrentUrlPath from '../../hooks/useGetCurrentUrlPath';
 
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
@@ -51,7 +44,6 @@ interface DashboardLayoutProps {
   userEmail: string;
   onSignOutClick: () => void;
   renderMainContent: () => ChildrenTypes;
-  // onDeleteCategoryClick: (id: string, current: boolean) => void;
   onAddBookmark: (url: string) => void;
   onShareClick: () => void;
   userId: string;
@@ -76,11 +68,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const {
     categoryId,
     renderMainContent,
-    userImg,
-    // userEmail,
-    userName,
-    onSignOutClick,
-    // onDeleteCategoryClick,
     onShareClick,
     userId,
     onAddNewCategory,
@@ -92,7 +79,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     onBookmarksDrop,
   } = props;
 
-  const [showSidePane, setShowSidePane] = useState(true);
   const [screenWidth, setScreenWidth] = useState(1200);
 
   useEffect(() => {
@@ -105,14 +91,15 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     setSearchText('');
   }, [categoryId]);
 
-  const userNavigation = [{ name: 'Sign out', href: '#', value: 'sign-out' }];
-
-  const router = useRouter();
   const queryClient = useQueryClient();
 
-  const currentPath = router.asPath.split('/')[1] || null;
+  const currentPath = useGetCurrentUrlPath();
 
   const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
+  const showSidePane = useMiscellaneousStore((state) => state.showSidePane);
+  const setShowSidePane = useMiscellaneousStore(
+    (state) => state.setShowSidePane
+  );
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -130,75 +117,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   function classNames(...classes: Array<string>) {
     return classes.filter(Boolean).join(' ');
   }
-
-  const renderSidePaneUserDropdown = () => {
-    return (
-      <div className="flex items-center justify-between">
-        {userName ? (
-          <Menu as="div" className=" w-4/5 relative">
-            <div className="p-1 hover:bg-custom-gray-2 rounded-lg">
-              <Menu.Button className="user-menu-btn w-full flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <div className="w-6 h-6">
-                  <span className="sr-only">Open user menu</span>
-                  {userImg && (
-                    <Image
-                      width={24}
-                      height={24}
-                      className="h-8 w-8 rounded-full"
-                      src={userImg}
-                      alt=""
-                    />
-                  )}
-                </div>
-
-                <p
-                  className="text-sm font-medium text-custom-gray-1 mx-2 leading-[115%] truncate overflow-hidden flex-1 text-left"
-                  id="user-name"
-                >
-                  {userName}
-                </p>
-                <DownArrowGray />
-              </Menu.Button>
-            </div>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="origin-top-right absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
-                {userNavigation.map((item) => (
-                  <Menu.Item key={item.name}>
-                    {({ active }) => (
-                      <div
-                        className={`${item?.value} cursor-pointer ${classNames(
-                          active ? 'bg-gray-100' : '',
-                          'block py-2 px-4 text-sm text-gray-700'
-                        )}`}
-                        onClick={onSignOutClick}
-                      >
-                        {item.name}
-                      </div>
-                    )}
-                  </Menu.Item>
-                ))}
-              </Menu.Items>
-            </Transition>
-          </Menu>
-        ) : (
-          <Button>Signin</Button>
-        )}
-        <Button onClick={() => setShowSidePane(false)}>
-          <figure>
-            <ChevronDoubleLeftIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
-          </figure>
-        </Button>
-      </div>
-    );
-  };
 
   const optionsMenuList = [
     {
@@ -234,26 +152,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       count: bookmarksCountData?.data?.trash,
     },
   ];
-
-  const renderSidePaneOptionsMenu = () => {
-    return (
-      <div className="pt-[10px]">
-        {optionsMenuList?.map((item, index) => {
-          return (
-            <SingleListItem
-              extendedClassname="py-[7px]"
-              key={index}
-              item={item}
-              showIconDropdown={false}
-            />
-          );
-        })}
-      </div>
-    );
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const SingleListItem = React.useCallback(SingleListItemComponent, []);
 
   const navBarLogo = () => {
     const currentCategory = find(
@@ -400,17 +298,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           snap
           className="transition-all ease-in-out duration-150"
         >
-          {/* <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
-            {renderSidePaneUserDropdown()}
-            {renderSidePaneOptionsMenu()}
-            <CollectionsList
-              onBookmarksDrop={onBookmarksDrop}
-              onCategoryOptionClick={onCategoryOptionClick}
-              onIconSelect={(value, id) => onIconSelect(value, id)}
-              onAddNewCategory={onAddNewCategory}
-            />
-          </nav> */}
-          <SidePane />
+          <SidePane
+            onBookmarksDrop={onBookmarksDrop}
+            onCategoryOptionClick={onCategoryOptionClick}
+            onIconSelect={(value, id) => onIconSelect(value, id)}
+            onAddNewCategory={onAddNewCategory}
+          />
         </Allotment.Pane>
         <Allotment.Pane className="transition-all ease-in-out duration-150">
           <div className="w-full">

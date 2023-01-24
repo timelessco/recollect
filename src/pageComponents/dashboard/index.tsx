@@ -23,7 +23,7 @@ import {
 import SignedOutSection from './signedOutSection';
 import Modal from '../../components/modal';
 import AddModalContent from './modals/addModalContent';
-import { find, flatten, isNull } from 'lodash';
+import { find, flatten, isEmpty, isNull } from 'lodash';
 import DashboardLayout from './dashboardLayout';
 import {
   useLoadersStore,
@@ -723,7 +723,9 @@ const Dashboard = () => {
             })
           );
 
-          router.push(`/${res?.data[0]?.category_slug}`);
+          if (!isEmpty(res?.data)) {
+            router.push(`/${res?.data[0]?.category_slug}`);
+          }
         }}
         onCategoryOptionClick={async (value, current, id) => {
           switch (value) {

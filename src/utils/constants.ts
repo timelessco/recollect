@@ -74,6 +74,7 @@ export const UNCATEGORIZED_URL = 'uncategorized';
 export const SEARCH_URL = 'search';
 export const INBOX_URL = 'inbox';
 export const TRASH_URL = 'trash';
+export const SETTINGS_URL = 'settings';
 export const LOGIN_URL = 'login';
 export const SIGNUP_URL = 'signup';
 export const SIGNIN_URL = 'login';

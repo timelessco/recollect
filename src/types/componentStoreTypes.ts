@@ -25,6 +25,8 @@ export interface MiscellaneousStoreState {
   setAddScreenshotBookmarkId: (value: number | undefined) => void;
   isCardDragging: boolean;
   setIsCardDragging: (value: boolean) => void;
+  showSidePane: boolean;
+  setShowSidePane: (value: boolean) => void;
 }
 
 export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';
