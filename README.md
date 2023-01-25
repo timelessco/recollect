@@ -8,7 +8,7 @@ Bookmarks is an open source url manager built using **nextjs** and **supabase**.
 ![Dashboard screenshot](/public/dashboard-screenshot.png?raw=true "Dashboard screenshot")
 
 
-Check out getting started here : [Getting Started](https://github.com/timelessco/bookmark-tags/tree/main/src)
+Check out getting started here : [Getting Started](https://github.com/timelessco/bookmark-tags/blob/dev/docs/getting-started.md)
   
 ## :rocket: Features :
 
