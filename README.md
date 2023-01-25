@@ -7,9 +7,10 @@ Bookmarks is an open source url manager built using **nextjs** and **supabase**.
 
 ![Dashboard screenshot](/public/dashboard-screenshot.png?raw=true "Dashboard screenshot")
 
+
+Check out getting started here : [Getting Started](https://github.com/timelessco/bookmark-tags/tree/main/src)
   
 ## :rocket: Features :
-
 
 - Authenticaton using supabse
 - User can add, delete bookmarks
@@ -18,11 +19,8 @@ Bookmarks is an open source url manager built using **nextjs** and **supabase**.
 - User can change views of bookmakrs and sort bookmarks
 - Bookmarks search based on tags and categories
 - Bookmarks categories public and private share
-
-  
-
-## :hammer: Upcoming features :
-
 - Bookmarks drag and drop
 - Bookmarks multi-select
-- Categories order
+- Categories re-order
+
+
