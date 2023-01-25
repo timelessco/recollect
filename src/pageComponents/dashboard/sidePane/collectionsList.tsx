@@ -216,7 +216,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
         {...dropIndicatorProps}
         role="option"
         ref={ref}
-        className={`drop-indicator ${isDropTarget ? 'drop-target' : ''}`}
+        className={`drop-indicator ${isDropTarget ? 'drop-target' : ''} z-10`}
       />
     );
   }
@@ -394,7 +394,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
             {sortedList()?.map((item) => (
               <Item textValue={item?.name} key={item?.id}>
                 <SingleListItemComponent
-                  extendedClassname="py-[6px]"
+                  extendedClassname="pb-[6px] pt-[4px] mt-[2px]"
                   item={item}
                   showDropdown={true}
                   listNameId="collection-name"

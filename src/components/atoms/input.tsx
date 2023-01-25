@@ -4,8 +4,6 @@ import classNames from 'classnames';
 import omit from 'lodash/omit';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  // onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // onKeyUp: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   placeholder: string;
   className: string;
   isError: boolean;
