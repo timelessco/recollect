@@ -1,4 +1,4 @@
-import { Checkbox as AriaCheckbox } from 'ariakit/checkbox';
+import { Checkbox as AriaCheckbox } from "ariakit/checkbox";
 
 interface CheckboxPropsTypes {
   label: string;
@@ -8,25 +8,29 @@ interface CheckboxPropsTypes {
   disabled?: boolean;
 }
 
-export default function Checkbox(props: CheckboxPropsTypes) {
+const Checkbox = (props: CheckboxPropsTypes) => {
   const { label, value, onChange, checked, disabled = false } = props;
 
   return (
+    // disabling this because as per docs htmlFor is not needed
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control
     <label className="flex items-center p-2">
       <AriaCheckbox
-        className="h-4 w-4 transition-all ease-in-out duration-200 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
-        onChange={(e) => onChange(e.target.value)}
+        className="h-4 w-4 rounded border-gray-300 text-indigo-600 transition-all duration-200 ease-in-out focus:ring-indigo-500 disabled:opacity-50"
+        onChange={e => onChange(e.target.value)}
         value={value}
         checked={checked}
         disabled={disabled}
-      />{' '}
+      />
       <span
-        className={`text-custom-gray-1 text-sm leading-4 ml-1 ${
-          disabled ? 'opacity-50' : ''
+        className={`ml-1 text-sm leading-4 text-custom-gray-1 ${
+          disabled ? "opacity-50" : ""
         }`}
       >
         {label}
       </span>
     </label>
   );
-}
+};
+
+export default Checkbox;

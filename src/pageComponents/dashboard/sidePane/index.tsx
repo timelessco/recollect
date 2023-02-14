@@ -1,17 +1,22 @@
-import SidePaneUserDropdown from './sidePaneUserDropdown';
-import SidePaneOptionsMenu from './sidePaneOptionsMenu';
-import CollectionsList from './collectionsList';
-import SidePaneTypesList from './sidePaneTypesList';
+import dynamic from "next/dynamic";
+
+import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
+import SidePaneTypesList from "./sidePaneTypesList";
+import SidePaneUserDropdown from "./sidePaneUserDropdown";
+
+const CollectionsList = dynamic(() => import("./collectionsList"), {
+  ssr: false,
+});
 
 interface SidePaneTypes {
   onBookmarksDrop: (e: any) => Promise<void>;
   onCategoryOptionClick: (
     value: string | number,
     current: boolean,
-    id: number
-  ) => void;
+    id: number,
+  ) => Promise<void>;
   onIconSelect: (value: string, id: number) => void;
-  onAddNewCategory: (value: string) => void;
+  onAddNewCategory: (value: string) => Promise<void>;
 }
 
 const SidePane = (props: SidePaneTypes) => {
@@ -23,7 +28,7 @@ const SidePane = (props: SidePaneTypes) => {
   } = props;
 
   return (
-    <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
+    <nav className="h-full border-r-[0.5px] border-r-custom-gray-4 p-2">
       <SidePaneUserDropdown />
       <SidePaneOptionsMenu />
       <CollectionsList

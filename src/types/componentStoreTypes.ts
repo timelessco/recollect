@@ -29,15 +29,15 @@ export interface MiscellaneousStoreState {
   setShowSidePane: (value: boolean) => void;
 }
 
-export type BookmarksViewTypes = 'card' | 'moodboard' | 'list' | 'headlines';
-export type BookmarkViewCategories = 'view' | 'info' | 'colums' | 'sort';
+export type BookmarksViewTypes = "card" | "moodboard" | "list" | "headlines";
+export type BookmarkViewCategories = "view" | "info" | "colums" | "sort";
 export type BookmarksSortByTypes =
-  | 'date-sort-acending'
-  | 'date-sort-decending'
-  | 'alphabetical-sort-acending'
-  | 'alphabetical-sort-decending'
-  | 'url-sort-acending'
-  | 'url-sort-decending';
+  | "date-sort-acending"
+  | "date-sort-decending"
+  | "alphabetical-sort-acending"
+  | "alphabetical-sort-decending"
+  | "url-sort-acending"
+  | "url-sort-decending";
 
 // export interface BookmarkCardViewState {
 //   moodboardColumns: number[] | number;

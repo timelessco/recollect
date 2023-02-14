@@ -1,8 +1,14 @@
-import { PostgrestError, Session } from '@supabase/supabase-js';
-import {
+import type {
+  PostgrestError,
+  Session,
+  UserIdentity,
+} from "@supabase/supabase-js";
+import type { NextApiRequest } from "next";
+
+import type {
   BookmarksSortByTypes,
   BookmarksViewTypes,
-} from './componentStoreTypes';
+} from "./componentStoreTypes";
 
 export type SupabaseSessionType = Session | null;
 export interface SingleListData {
@@ -136,3 +142,111 @@ export type BookmarksWithTagsWithTagForginKeys = {
   bookmark_id: number;
   tag_id: { id: number; name: string };
 }[];
+
+// NEXT API types
+export type NextAPIReq<T> = Omit<NextApiRequest, "body"> & {
+  body: T & { access_token: string };
+};
+
+// CRUD types
+
+export interface AddBookmarkMinDataPayloadTypes {
+  url: string;
+  category_id: number | string | null;
+  update_access: boolean;
+  session: SupabaseSessionType;
+}
+
+export interface AddBookmarkScreenshotPayloadTypes {
+  url: string;
+  id: number;
+  session: SupabaseSessionType;
+}
+
+export interface ClearBookmarksInTrashApiPayloadTypes {
+  user_id: string | undefined;
+  session: SupabaseSessionType;
+}
+
+export interface DeleteDataApiPayload {
+  id: number;
+  session: SupabaseSessionType;
+}
+
+export interface MoveBookmarkToTrashApiPayload {
+  data: SingleListData;
+  isTrash: boolean;
+  session: SupabaseSessionType;
+}
+
+export interface AddCategoryToBookmarkApiPayload {
+  category_id: number | null;
+  bookmark_id: number;
+  update_access: boolean;
+  session: SupabaseSessionType;
+}
+
+export interface AddUserCategoryApiPayload {
+  user_id: string;
+  name: string;
+  category_order: number[];
+  session: SupabaseSessionType;
+}
+
+export interface DeleteUserCategoryApiPayload {
+  category_id: number;
+  category_order: number[];
+  session: SupabaseSessionType;
+}
+
+export interface UpdateCategoryOrderApiPayload {
+  order: number[];
+  session: SupabaseSessionType;
+}
+
+export interface UpdateCategoryApiPayload {
+  category_id: number | null | string;
+  updateData: {
+    is_public?: boolean;
+    icon?: null | string;
+    category_views?: BookmarkViewDataTypes;
+  };
+  session: SupabaseSessionType;
+}
+
+export interface UpdateUserProfileApiPayload {
+  id: string;
+  updateData: ProfilesTableTypes;
+  session: SupabaseSessionType;
+}
+
+export interface DeleteSharedCategoriesUserApiPayload {
+  id: number;
+  session: SupabaseSessionType;
+}
+
+export interface SendCollaborationEmailInviteApiPayload {
+  emailList: Array<string>;
+  category_id: number;
+  edit_access: boolean;
+  hostUrl: string;
+  userId: string;
+  session: SupabaseSessionType;
+}
+
+export interface UpdateSharedCategoriesUserAccessApiPayload {
+  id: number;
+  updateData: { edit_access?: boolean; category_views?: BookmarkViewDataTypes };
+  session: SupabaseSessionType;
+}
+
+export interface AddTagToBookmarkApiPayload {
+  selectedData: Array<BookmarksTagData> | BookmarksTagData;
+  session: SupabaseSessionType;
+}
+
+export interface AddUserTagsApiPayload {
+  userData: UserIdentity;
+  tagsData: { name: string };
+  session: SupabaseSessionType;
+}

@@ -1,7 +1,7 @@
-import { ExclamationCircleIcon } from '@heroicons/react/solid';
-import React, { InputHTMLAttributes } from 'react';
-import classNames from 'classnames';
-import omit from 'lodash/omit';
+import { ExclamationCircleIcon } from "@heroicons/react/solid";
+import classNames from "classnames";
+import omit from "lodash/omit";
+import React, { type InputHTMLAttributes } from "react";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   placeholder: string;
@@ -18,31 +18,30 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     value,
     onChange,
     onKeyUp,
-    className = '',
+    className = "",
     isError,
-    errorText = '',
+    errorText = "",
     isDisabled = false,
-    id = '',
+    id = "",
   } = props;
 
   const inputClass = classNames(className, {
-    'block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md':
+    "block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md":
       isError,
-    'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full border-gray-300 rounded-md':
-      !isError,
-    'disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none':
+    "shadow-sm block w-full border-gray-300 rounded-md": !isError,
+    "disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none":
       isDisabled,
   });
 
   return (
     <div className="w-full">
-      <div className="mt-1 relative rounded-md shadow-sm">
+      <div className="relative mt-1 rounded-md shadow-sm">
         <input
           id={id}
           ref={ref}
           type="text"
           value={value}
-          {...omit(props, ['isError', 'errorText', 'isDisabled'])}
+          {...omit(props, ["isError", "errorText", "isDisabled"])}
           placeholder={placeholder}
           className={inputClass}
           onChange={onChange}
@@ -50,7 +49,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           disabled={isDisabled}
         />
         {isError && (
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
             <ExclamationCircleIcon
               className="h-5 w-5 text-red-500"
               aria-hidden="true"
@@ -67,6 +66,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   );
 });
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 export default Input;

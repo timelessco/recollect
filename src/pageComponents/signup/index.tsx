@@ -1,30 +1,32 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useRouter } from 'next/router';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import {
-  ALL_BOOKMARKS_URL,
-  EMAIL_CHECK_PATTERN,
-  SIGNIN_URL,
-} from '../../utils/constants';
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/router";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
+import { useState } from "react";
+
 import {
   signInWithOauth,
   signUpWithEmailPassword,
-} from '../../async/supabaseCrudHelpers';
-import { errorToast } from '../../utils/toastMessages';
-import GoogleLoginIcon from '../../icons/googleLoginIcon';
-import LaterpadLogoBlack from '../../icons/laterpadLogoBlack';
-import Input from '../../components/atoms/input';
+} from "../../async/supabaseCrudHelpers";
+import Input from "../../components/atoms/input";
+import Spinner from "../../components/spinner";
+import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import LaterpadLogoBlack from "../../icons/laterpadLogoBlack";
 import {
   bottomBarButton,
   bottomBarText,
   buttonDarkClassName,
   buttonLightClassName,
   grayInputClassName,
-} from '../../utils/commonClassNames';
-import { useState } from 'react';
-import Spinner from '../../components/spinner';
+} from "../../utils/commonClassNames";
+import {
+  ALL_BOOKMARKS_URL,
+  EMAIL_CHECK_PATTERN,
+  SIGNIN_URL,
+} from "../../utils/constants";
+import { errorToast } from "../../utils/toastMessages";
 
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,84 +38,94 @@ const SignUp = () => {
     register,
     handleSubmit,
     formState: { errors },
-    // reset,
   } = useForm<{ email: string; password: string }>();
-  const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
-    data
-  ) => {
+  const onSubmit: SubmitHandler<{
+    email: string;
+    password: string;
+  }> = async data => {
     setIsLoading(true);
     const { error } = await signUpWithEmailPassword(
       data?.email,
       data?.password,
-      supabase
+      supabase,
     );
     setIsLoading(false);
 
     if (error) {
       errorToast(error?.message);
     } else {
-      router?.push(`/${ALL_BOOKMARKS_URL}`);
+      router?.push(`/${ALL_BOOKMARKS_URL}`)?.catch(() => {});
     }
   };
 
   return (
     <>
-      <div className="flex h-screen sign-up-parent">
-        <div className="w-1/2 flex items-center justify-end pr-[140px]">
+      <div className="sign-up-parent flex h-screen">
+        <div className="flex w-1/2 items-center justify-end pr-[140px]">
           <div className="w-[374px]">
             <figure>
               <LaterpadLogoBlack />
             </figure>
-            <p className="text-black font-semibold text-8xl leading-[110px]">
+            <p className="text-8xl font-semibold leading-[110px] text-black">
               laterpad
             </p>
-            <p className=" text-black font-semibold text-40 leading-[46px] tracking-[-0.005em]">
+            <p className=" text-40 font-semibold leading-[46px] tracking-[-0.005em] text-black">
               Life happens, save it.
             </p>
           </div>
         </div>
-        <div className="w-1/2 flex items-center justify-start pl-[140px]">
+        <div className="flex w-1/2 items-center justify-start pl-[140px]">
           <div className="w-[300px]">
             <form
-              className="flex flex-col justify-center items-center space-y-4"
+              className="flex flex-col items-center justify-center space-y-4"
+              // disabled as handleSubmit is part of react forms
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
               onSubmit={handleSubmit(onSubmit)}
             >
               <Input
-                {...register('email', {
+                {...register("email", {
                   required: {
                     value: true,
-                    message: 'Please enter email',
+                    message: "Please enter email",
                   },
                   pattern: {
                     value: EMAIL_CHECK_PATTERN,
-                    message: 'Please enter valid email',
+                    message: "Please enter valid email",
                   },
                 })}
                 placeholder="Email"
                 id="email"
                 className={grayInputClassName}
-                isError={errors?.email ? true : false}
-                errorText={errors?.email?.message || ''}
+                isError={!!errors?.email}
+                errorText={errors?.email?.message || ""}
               />
               <Input
-                {...register('password', {
+                {...register("password", {
                   required: {
                     value: true,
-                    message: 'Please enter password',
+                    message: "Please enter password",
                   },
                 })}
                 placeholder="Password"
                 id="password"
                 className={grayInputClassName}
-                isError={errors?.password ? true : false}
-                errorText={errors?.password?.message || ''}
+                isError={!!errors?.password}
+                errorText={errors?.password?.message || ""}
               />
               <button type="submit" className={buttonDarkClassName}>
-                {isLoading ? <Spinner /> : 'Sign up'}
+                {isLoading ? <Spinner /> : "Sign up"}
               </button>
 
               <div
-                onClick={() => signInWithOauth('google', supabase)}
+                role="button"
+                tabIndex={0}
+                // onClick={() => void signInWithOauth("google", supabase)}
+                onClick={() => {
+                  (async () => {
+                    await signInWithOauth("google", supabase);
+                  })()?.catch(() => {});
+                }}
+                onKeyDown={() => {}}
                 className={buttonLightClassName}
               >
                 <figure className="mr-[6px]">
@@ -122,7 +134,7 @@ const SignUp = () => {
                 <p>Continue with Google</p>
               </div>
             </form>
-            <div className="fixed bottom-0 py-5 flex items-center justify-center">
+            <div className="fixed bottom-0 flex items-center justify-center py-5">
               <div className="flex w-[300px] items-center justify-between">
                 <p className={bottomBarText}>Already have an account ?</p>
                 <a href={`/${SIGNIN_URL}`} className={bottomBarButton}>

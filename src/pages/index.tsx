@@ -1,12 +1,13 @@
-import type { GetServerSideProps, NextPage } from 'next';
-import Dashboard from '../pageComponents/dashboard';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import type { GetServerSideProps, NextPage } from "next";
+
+import Dashboard from "../pageComponents/dashboard";
 
 const Home: NextPage = () => {
   return <Dashboard />;
 };
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async ctx => {
   // Create authenticated Supabase Client
   const supabase = createServerSupabaseClient(ctx);
   // Check if we have a session
@@ -17,7 +18,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!session)
     return {
       redirect: {
-        destination: '/login',
+        destination: "/login",
         permanent: false,
       },
     };

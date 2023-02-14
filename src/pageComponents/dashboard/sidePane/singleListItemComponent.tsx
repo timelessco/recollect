@@ -1,31 +1,34 @@
-import { GlobeIcon, UsersIcon } from '@heroicons/react/solid';
-import Link from 'next/link';
-import CategoryIconsDropdown from '../../../components/customDropdowns.tsx/categoryIconsDropdown';
+import { GlobeIcon, UsersIcon } from "@heroicons/react/solid";
+import Link from "next/link";
+import { useState } from "react";
+
 import {
   AriaDropdown,
   AriaDropdownMenu,
-} from '../../../components/ariaDropdown';
-import Spinner from '../../../components/spinner';
-import OptionsIconGray from '../../../icons/optionsIconGray';
-import { ChildrenTypes } from '../../../types/componentTypes';
-import { useState } from 'react';
+} from "../../../components/ariaDropdown";
+import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
+import Spinner from "../../../components/spinner";
+import OptionsIconGray from "../../../icons/optionsIconGray";
+import type { ChildrenTypes } from "../../../types/componentTypes";
 import {
   dropdownMenuClassName,
   dropdownMenuItemClassName,
-} from '../../../utils/commonClassNames';
+} from "../../../utils/commonClassNames";
 
-interface listPropsTypes {
-  item: {
-    icon?: () => ChildrenTypes;
-    name: string;
-    href: string;
-    current: boolean;
-    id: number;
-    iconValue?: string | null;
-    count?: number;
-    isPublic?: boolean;
-    isCollab?: boolean;
-  };
+export interface CollectionItemTypes {
+  icon?: ChildrenTypes;
+  name: string;
+  href: string;
+  current: boolean;
+  id: number;
+  iconValue?: string | null;
+  count?: number;
+  isPublic?: boolean;
+  isCollab?: boolean;
+}
+
+export interface listPropsTypes {
+  item: CollectionItemTypes;
   extendedClassname: string;
   showDropdown?: boolean;
   showIconDropdown?: boolean;
@@ -34,7 +37,7 @@ interface listPropsTypes {
   onCategoryOptionClick?: (
     value: string | number,
     current: boolean,
-    id: number
+    id: number,
   ) => void;
   showSpinner?: boolean;
 }
@@ -44,42 +47,44 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
   const {
     item,
-    extendedClassname = '',
+    extendedClassname = "",
     showDropdown = false,
     showIconDropdown = true,
-    listNameId = '',
+    listNameId = "",
     onIconSelect = () => null,
     onCategoryOptionClick = () => null,
     showSpinner = false,
   } = listProps;
   return (
-    <Link href={item?.href} passHref={true}>
+    <Link href={item?.href} passHref legacyBehavior>
       <a
         draggable={false}
         className={`${
-          item?.current ? 'bg-custom-gray-2' : 'bg-white'
-        } ${extendedClassname} group px-2 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer justify-between side-pane-anchor`}
+          item?.current ? "bg-custom-gray-2" : "bg-white"
+        } ${extendedClassname} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-custom-gray-2`}
       >
-        <div className="flex items-center w-4/5">
+        <div className="flex w-4/5 items-center">
           {showIconDropdown ? (
+            // disabling eslint as the onClick is just preventdefault
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
             <span
-              onClick={(e) => e.preventDefault()}
-              className="w-[18px] h-[18px]"
+              onClick={e => e.preventDefault()}
+              className="h-[18px] w-[18px]"
             >
               <CategoryIconsDropdown
-                onIconSelect={(value) => {
+                onIconSelect={value => {
                   onIconSelect(value, item?.id);
                 }}
                 iconValue={item?.iconValue || null}
               />
             </span>
           ) : (
-            <figure className="w-[18px] h-[18px] flex items-center">
-              {item?.icon ? item?.icon() : null}
+            <figure className="flex h-[18px] w-[18px] items-center">
+              {item?.icon ? item?.icon : null}
             </figure>
           )}
           <p
-            className="truncate overflow-hidden flex-1 text-sm font-[450] text-custom-gray-1 ml-2 leading-4"
+            className="ml-2 flex-1 overflow-hidden truncate text-sm font-[450] leading-4 text-custom-gray-1"
             id={listNameId}
           >
             {item?.name}
@@ -89,28 +94,30 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
           {showSpinner && <Spinner />}
           {item?.isPublic && (
             <figure>
-              <GlobeIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
+              <GlobeIcon className="h-4 w-4 shrink-0 text-gray-400" />
             </figure>
           )}
           {item?.isCollab && (
-            <UsersIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
+            <UsersIcon className="h-4 w-4 shrink-0 text-gray-400" />
           )}
           {showDropdown && (
-            <div onClick={(e) => e.preventDefault()} className="w-4 h-4 flex">
+            // disabling eslint as the onClick is just preventdefault
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+            <div onClick={e => e.preventDefault()} className="flex h-4 w-4">
               <AriaDropdown
                 menuClassName={`${dropdownMenuClassName} z-10`}
                 menuButton={
                   <div
                     className={
                       openedMenuId === item?.id
-                        ? 'flex'
-                        : 'hidden group-hover:flex'
+                        ? "flex"
+                        : "hidden group-hover:flex"
                     }
                   >
                     <OptionsIconGray />
                   </div>
                 }
-                menuOpenToggle={(value) => {
+                menuOpenToggle={value => {
                   if (value === true) {
                     setOpenedMenuId(item?.id);
                   } else {
@@ -119,16 +126,16 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
                 }}
               >
                 {[
-                  { label: 'Share', value: 'share' },
-                  { label: 'Delete', value: 'delete' },
-                ]?.map((dropdownItem) => (
+                  { label: "Share", value: "share" },
+                  { label: "Delete", value: "delete" },
+                ]?.map(dropdownItem => (
                   <AriaDropdownMenu
                     key={dropdownItem?.value}
                     onClick={() =>
                       onCategoryOptionClick(
                         dropdownItem?.value,
                         item.current,
-                        item.id
+                        item.id,
                       )
                     }
                   >
@@ -138,24 +145,22 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
                   </AriaDropdownMenu>
                 ))}
               </AriaDropdown>
-              <>
-                {item?.count !== undefined && openedMenuId === null && (
-                  <p
-                    className={`text-custom-gray-10 text-[11px] font-450 w-4 h-4 leading-3 text-right flex items-center justify-end ${
-                      showDropdown ? ' block group-hover:hidden' : ' block'
-                    }`}
-                  >
-                    {item?.count}
-                  </p>
-                )}
-              </>
+              {item?.count !== undefined && openedMenuId === null && (
+                <p
+                  className={`flex h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-custom-gray-10 ${
+                    showDropdown ? " block group-hover:hidden" : " block"
+                  }`}
+                >
+                  {item?.count}
+                </p>
+              )}
             </div>
           )}
 
           {item?.count !== undefined && !showDropdown && (
             <span
-              className={`text-custom-gray-10 text-[11px] font-450 leading-3 ${
-                showDropdown ? 'block group-hover:hidden' : 'block'
+              className={`text-[11px] font-450 leading-3 text-custom-gray-10 ${
+                showDropdown ? "block group-hover:hidden" : "block"
               }`}
             >
               {item?.count}

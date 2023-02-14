@@ -1,30 +1,31 @@
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import {
-  ALL_BOOKMARKS_URL,
-  EMAIL_CHECK_PATTERN,
-  SIGNUP_URL,
-} from '../../utils/constants';
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 import {
   signInWithEmailPassword,
   signInWithOauth,
-} from '../../async/supabaseCrudHelpers';
-import { errorToast } from '../../utils/toastMessages';
-import LaterpadLogo from '../../icons/laterpadLogo';
-import GoogleLoginIcon from '../../icons/googleLoginIcon';
-import Input from '../../components/atoms/input';
-import Spinner from '../../components/spinner';
+} from "../../async/supabaseCrudHelpers";
+import Input from "../../components/atoms/input";
+import Spinner from "../../components/spinner";
+import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import LaterpadLogo from "../../icons/laterpadLogo";
 import {
   bottomBarButton,
   bottomBarText,
   buttonDarkClassName,
   buttonLightClassName,
   grayInputClassName,
-} from '../../utils/commonClassNames';
+} from "../../utils/commonClassNames";
+import {
+  ALL_BOOKMARKS_URL,
+  EMAIL_CHECK_PATTERN,
+  SIGNUP_URL,
+} from "../../utils/constants";
+import { errorToast } from "../../utils/toastMessages";
 
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +36,7 @@ const LoginPage = () => {
   const session = useSession();
 
   useEffect(() => {
-    if (session) router.push(`/${ALL_BOOKMARKS_URL}`);
+    if (session) router.push(`/${ALL_BOOKMARKS_URL}`)?.catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
@@ -45,76 +46,85 @@ const LoginPage = () => {
     formState: { errors },
     // reset,
   } = useForm<{ email: string; password: string }>();
-  const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
-    data
-  ) => {
+  const onSubmit: SubmitHandler<{
+    email: string;
+    password: string;
+  }> = async data => {
     setIsLoading(true);
     const { error } = await signInWithEmailPassword(
       data?.email,
       data?.password,
-      supabase
+      supabase,
     );
     setIsLoading(false);
 
     if (error) {
       errorToast(error?.message);
     } else {
-      router?.push(`/${ALL_BOOKMARKS_URL}`);
+      router?.push(`/${ALL_BOOKMARKS_URL}`)?.catch(() => {});
     }
   };
 
   return (
     <>
       <div>
-        <div className="sm:mx-auto sm:w-full sm:max-w-md flex items-center justify-center h-[calc(100vh-95px)]">
+        <div className="flex h-[calc(100vh-95px)] items-center justify-center sm:mx-auto sm:w-full sm:max-w-md">
           <div className="w-[300px]">
-            <div className="font-semibold text-2xl flex items-center w-full justify-center mb-[21px] leading-[28px]">
+            <div className="mb-[21px] flex w-full items-center justify-center text-2xl font-semibold leading-[28px]">
               <figure className="mr-[6px]">
                 <LaterpadLogo />
               </figure>
               <p>laterpad</p>
             </div>
             <form
-              className="flex flex-col justify-center items-center space-y-4"
+              className="flex flex-col items-center justify-center space-y-4"
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
               onSubmit={handleSubmit(onSubmit)}
             >
               <Input
-                {...register('email', {
+                {...register("email", {
                   required: {
                     value: true,
-                    message: 'Please enter email',
+                    message: "Please enter email",
                   },
                   pattern: {
                     value: EMAIL_CHECK_PATTERN,
-                    message: 'Please enter valid email',
+                    message: "Please enter valid email",
                   },
                 })}
                 placeholder="Email"
                 id="email"
                 className={grayInputClassName}
-                isError={errors?.email ? true : false}
-                errorText={errors?.email?.message || ''}
+                isError={!!errors?.email}
+                errorText={errors?.email?.message || ""}
               />
               <Input
-                {...register('password', {
+                {...register("password", {
                   required: {
                     value: true,
-                    message: 'Please enter password',
+                    message: "Please enter password",
                   },
                 })}
                 placeholder="Password"
                 id="password"
                 className={grayInputClassName}
-                isError={errors?.password ? true : false}
-                errorText={errors?.password?.message || ''}
+                isError={!!errors?.password}
+                errorText={errors?.password?.message || ""}
               />
 
               <button type="submit" className={buttonDarkClassName}>
-                {!isLoading ? 'Sign in' : <Spinner />}
+                {!isLoading ? "Sign in" : <Spinner />}
               </button>
 
               <div
-                onClick={() => signInWithOauth('google', supabase)}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  (async () => {
+                    await signInWithOauth("google", supabase);
+                  })()?.catch(() => {});
+                }}
+                onKeyDown={() => {}}
                 className={buttonLightClassName}
               >
                 <figure className="mr-[6px]">
@@ -125,7 +135,7 @@ const LoginPage = () => {
             </form>
           </div>
         </div>
-        <div className="fixed bottom-0 py-5 flex items-center justify-center w-full">
+        <div className="fixed bottom-0 flex w-full items-center justify-center py-5">
           <div className="flex w-[300px] items-center justify-between">
             <p className={bottomBarText}>Don’t have an account?</p>
             <a href={`/${SIGNUP_URL}`} className={bottomBarButton}>

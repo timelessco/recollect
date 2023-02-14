@@ -1,8 +1,9 @@
-import { MenuItem } from 'ariakit';
-import { ChildrenTypes } from '../../types/componentTypes';
+import { MenuItem } from "ariakit";
+
+import type { ChildrenTypes } from "../../types/componentTypes";
 
 interface AriaDropdownMenuTypes {
-  onClick: () => void;
+  onClick: () => void | Promise<void>;
   children: ChildrenTypes;
 }
 
@@ -11,7 +12,7 @@ const AriaDropdownMenu = (props: AriaDropdownMenuTypes) => {
 
   return (
     <MenuItem
-      className="focus:bg-custom-gray-9 hover:bg-custom-gray-9 rounded-lg focus-visible:outline-none"
+      className="rounded-lg hover:bg-custom-gray-9 focus:bg-custom-gray-9 focus-visible:outline-none"
       onClick={onClick}
     >
       {children}

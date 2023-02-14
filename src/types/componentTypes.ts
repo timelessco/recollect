@@ -1,8 +1,8 @@
-import {
+import type {
   ALL_BOOKMARKS_URL,
   TRASH_URL,
   UNCATEGORIZED_URL,
-} from '../utils/constants';
+} from "../utils/constants";
 
 export interface UrlInput {
   urlText: string;

@@ -1,25 +1,24 @@
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { ChevronDoubleLeftIcon } from "@heroicons/react/solid";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import Image from "next/image";
+
+import { signOut } from "../../../async/supabaseCrudHelpers";
 import {
   AriaDropdown,
   AriaDropdownMenu,
-} from '../../../components/ariaDropdown';
-import Image from 'next/image';
-import DownArrowGray from '../../../icons/downArrowGray';
-import { signOut } from '../../../async/supabaseCrudHelpers';
-import { useMiscellaneousStore } from '../../../store/componentStore';
-import Button from '../../../components/atoms/button';
-import { ChevronDoubleLeftIcon } from '@heroicons/react/solid';
+} from "../../../components/ariaDropdown";
+import Button from "../../../components/atoms/button";
+import DownArrowGray from "../../../icons/downArrowGray";
+import { useMiscellaneousStore } from "../../../store/componentStore";
 import {
   dropdownMenuClassName,
   dropdownMenuItemClassName,
-} from '../../../utils/commonClassNames';
+} from "../../../utils/commonClassNames";
 
 const SidePaneUserDropdown = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
-  const setShowSidePane = useMiscellaneousStore(
-    (state) => state.setShowSidePane
-  );
+  const setShowSidePane = useMiscellaneousStore(state => state.setShowSidePane);
 
   const userData = session?.user?.user_metadata;
 
@@ -27,19 +26,21 @@ const SidePaneUserDropdown = () => {
     <div className="flex justify-between">
       <AriaDropdown
         menuButton={
-          <div className="px-1 py-[3px] flex justify-between items-center hover:bg-custom-gray-9 rounded-lg w-full">
-            <div className="flex items-center space-x-2 w-4/5">
-              {session && (
+          <div className="flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-9">
+            <div className="flex w-4/5 items-center space-x-2">
+              {session && userData?.avatar_url ? (
                 <Image
                   width={24}
                   height={24}
-                  className="h-8 w-8 rounded-full"
-                  src={userData?.avatar_url}
+                  className="h-6 w-6 rounded-full"
+                  src={userData?.avatar_url as string}
                   alt=""
                 />
+              ) : (
+                <div className="h-6 w-6 rounded-full bg-slate-200" />
               )}
-              <p className="text-custom-gray-1 text-left font-medium text-sm leading-4 truncate overflow-hidden flex-1">
-                {userData?.name}
+              <p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-custom-gray-1">
+                {userData?.name || session?.user?.email}
               </p>
             </div>
             <figure className="mr-3">
@@ -50,7 +51,7 @@ const SidePaneUserDropdown = () => {
         menuClassName={dropdownMenuClassName}
         menuButtonClassName="w-[86%]"
       >
-        {[{ label: 'Sign Out', value: 'sign-out' }]?.map((item) => (
+        {[{ label: "Sign Out", value: "sign-out" }]?.map(item => (
           <AriaDropdownMenu key={item?.value} onClick={() => signOut(supabase)}>
             <div className={dropdownMenuItemClassName}>{item?.label}</div>
           </AriaDropdownMenu>
@@ -58,7 +59,7 @@ const SidePaneUserDropdown = () => {
       </AriaDropdown>
       <Button onClick={() => setShowSidePane(false)}>
         <figure>
-          <ChevronDoubleLeftIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
+          <ChevronDoubleLeftIcon className="h-4 w-4 shrink-0 text-gray-400" />
         </figure>
       </Button>
     </div>

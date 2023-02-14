@@ -1,7 +1,8 @@
-import React from 'react';
-import Button from '../../../components/atoms/button';
-import Modal from '../../../components/modal';
-import Spinner from '../../../components/spinner';
+import React from "react";
+
+import Button from "../../../components/atoms/button";
+import Modal from "../../../components/modal";
+import Spinner from "../../../components/spinner";
 
 interface WarningActionModalTypes {
   warningText: string;
@@ -23,12 +24,12 @@ const WarningActionModal = (props: WarningActionModalTypes) => {
   } = props;
 
   return (
-    <Modal open={open} setOpen={setOpen}>
+    <Modal open={open} onClose={setOpen}>
       {!isLoading ? (
         <>
           <p className="pb-7">{warningText}</p>
           <Button
-            className="bg-red-700 text-white hover:bg-red-900 w-full text-center py-3 flex justify-center"
+            className="flex w-full justify-center bg-red-700 py-3 text-center text-white hover:bg-red-900"
             type="dark"
             onClick={() => onContinueCick()}
             id="warning-button"

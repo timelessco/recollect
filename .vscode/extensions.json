@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "stylelint.vscode-stylelint",
+    "mattpocock.ts-error-translator",
+
+    // Optional
+    "vivaxy.vscode-conventional-commits",
+    "aaron-bond.better-comments",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "orta.vscode-jest",
+    "vespa-dev-works.jestrunit",
+    "tlent.jest-snapshot-language-support",
+    "christian-kohler.npm-intellisense",
+    "christian-kohler.path-intellisense"
+  ]
+}

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Icon } from '../components/atoms/icon';
+import React from "react";
 
-const OptionsIconGray = ({ size = '16' }: { size?: string }) => {
+import { Icon } from "../components/atoms/icon";
+
+const OptionsIconGray = () => {
   return (
     <Icon
       width="16"

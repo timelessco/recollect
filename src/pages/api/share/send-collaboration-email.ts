@@ -1,7 +1,14 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next';
+
 // import nodemailer from 'nodemailer';
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import type { NextApiResponse } from "next";
+
+import type {
+  NextAPIReq,
+  SendCollaborationEmailInviteApiPayload,
+} from "../../../types/apiTypes";
+
 // import jwt_decode from 'jwt-decode';
 
 /**
@@ -13,25 +20,25 @@ type Data = {
   error: string | null | jwt.VerifyErrors;
 };
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
+export default function handler(
+  req: NextAPIReq<SendCollaborationEmailInviteApiPayload>,
+  res: NextApiResponse<Data>,
 ) {
-  await jwt.verify(
-    req.body.access_token as string,
-    process.env.SUPABASE_JWT_SECRET_KEY as string,
+  jwt.verify(
+    req.body.access_token,
+    process.env.SUPABASE_JWT_SECRET_KEY,
     function (err) {
       if (err) {
         res.status(500).json({ url: null, error: err });
-        throw new Error('ERROR');
+        throw new Error("ERROR");
       }
-    }
+    },
   );
 
-  const emailList = req.body.emailList;
+  const { emailList } = req.body;
   const hostUrl = req?.body?.hostUrl;
-  const category_id = req?.body?.category_id;
-  const edit_access = req?.body?.edit_access;
+  const categoryId = req?.body?.category_id;
+  const editAccess = req?.body?.edit_access;
   const userId = req?.body?.userId;
 
   // console.log('emails', emailList);
@@ -65,14 +72,13 @@ export default async function handler(
   const token = jwt.sign(
     {
       email: emailList[0],
-      category_id: category_id,
-      edit_access: edit_access,
-      userId: userId,
+      category_id: categoryId,
+      edit_access: editAccess,
+      userId,
     },
-    'shhhhh'
+    "shhhhh",
   );
   const url = `${hostUrl}/api/invite?token=${token}`;
 
-  res.status(200).json({ url: url, error: null });
-  return;
+  res.status(200).json({ url, error: null });
 }

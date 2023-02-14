@@ -1,6 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { SHARED_CATEGORIES_TABLE_NAME } from '../../../utils/constants';
-import { updateSharedCategoriesUserAccess } from '../../supabaseCrudHelpers';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
+import { updateSharedCategoriesUserAccess } from "../../supabaseCrudHelpers";
 
 // updates shared cat user access
 export default function useUpdateSharedCategoriesUserAccessMutation() {
@@ -11,9 +12,11 @@ export default function useUpdateSharedCategoriesUserAccessMutation() {
     {
       onSuccess: () => {
         // Invalidate and refetch
-        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
+        queryClient
+          .invalidateQueries([SHARED_CATEGORIES_TABLE_NAME])
+          ?.catch(() => {});
       },
-    }
+    },
   );
   return { updateSharedCategoriesUserAccessMutation };
 }

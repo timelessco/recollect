@@ -1,14 +1,23 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { createClient, PostgrestError } from '@supabase/supabase-js';
-import { find, isEmpty } from 'lodash';
-import isNull from 'lodash/isNull';
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { CategoriesData, CollabDataInCategory } from '../../../types/apiTypes';
+import {
+  createClient,
+  type PostgrestError,
+  type PostgrestResponse,
+} from "@supabase/supabase-js";
+import jwt from "jsonwebtoken";
+import { find, isEmpty } from "lodash";
+import isNull from "lodash/isNull";
+import type { NextApiResponse } from "next";
+
+import type {
+  CategoriesData,
+  CollabDataInCategory,
+  FetchSharedCategoriesData,
+  NextAPIReq,
+} from "../../../types/apiTypes";
 import {
   CATEGORIES_TABLE_NAME,
   SHARED_CATEGORIES_TABLE_NAME,
-} from '../../../utils/constants';
-import jwt from 'jsonwebtoken';
+} from "../../../utils/constants";
 
 /**
  * Fetches user categories and builds it so that we get all its colaborators data
@@ -20,22 +29,22 @@ type Data = {
 };
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
+  req: NextAPIReq<{ user_id: string; userEmail: string }>,
+  res: NextApiResponse<Data>,
 ) {
-  await jwt.verify(
-    req.body.access_token as string,
-    process.env.SUPABASE_JWT_SECRET_KEY as string,
+  jwt.verify(
+    req.body.access_token,
+    process.env.SUPABASE_JWT_SECRET_KEY,
     function (err) {
       if (err) {
         res.status(500).json({ data: null, error: err });
-        throw new Error('ERROR');
+        throw new Error("ERROR");
       }
-    }
+    },
   );
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.SUPABASE_SERVICE_KEY as string
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY,
   );
 
   const userId = req.body.user_id;
@@ -47,36 +56,40 @@ export default async function handler(
       `
       *,
       user_id (*)
-    `
+    `,
     )
-    .eq('user_id', userId);
+    .eq("user_id", userId);
 
   // get shared-cat data
-  const { data: sharedCategoryData } = await supabase
+  const {
+    data: sharedCategoryData,
+  }: PostgrestResponse<FetchSharedCategoriesData> = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
     .select(`*`);
   // .eq('email', req.body.userEmail); // TODO: this needs to be uncommented
 
   // fetch categories where user is a colloborator
-  const { data: userCollabCategoryData } = await supabase
+  const {
+    data: userCollabCategoryData,
+  }: PostgrestResponse<{ category_id: number }> = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
     .select(`category_id!inner(*, user_id(*))`)
-    .eq('email', req.body.userEmail);
+    .eq("email", req.body.userEmail);
 
   const flattenedUserCollabCategoryData = userCollabCategoryData?.map(
-    (item) => item?.category_id
+    item => item.category_id,
   );
 
   const userCategoriesDataWithCollabCategoriesData = [
     ...(data as CategoriesData[]),
-    ...(flattenedUserCollabCategoryData as CategoriesData[]),
+    ...(flattenedUserCollabCategoryData as unknown as CategoriesData[]),
   ];
 
   // add colaborators data in each category
   const finalDataWithCollab = userCategoriesDataWithCollabCategoriesData?.map(
-    (item) => {
+    item => {
       let collabData = [] as CollabDataInCategory[];
-      sharedCategoryData?.forEach((catItem) => {
+      sharedCategoryData?.forEach(catItem => {
         if (catItem?.category_id === item?.id) {
           collabData = [
             ...collabData,
@@ -104,24 +117,25 @@ export default async function handler(
         ...item,
         collabData: collabDataWithOwnerData,
       };
-    }
+    },
   );
 
   // TODO : figure out how to do this in supabase , and change this to next api
-  const finalPublicFilteredData = finalDataWithCollab?.filter((item) => {
+  const finalPublicFilteredData = finalDataWithCollab?.filter(item => {
     const userCollabData = find(
       item?.collabData,
-      (collabItem) => collabItem?.userEmail === req.body.userEmail
+      collabItem => collabItem?.userEmail === req.body.userEmail,
     );
     // if logged-in user is a collaborator for this category, then return the category
     if (!isEmpty(userCollabData) && userCollabData?.isOwner === false) {
       return item;
-    } else {
-      // only return public categories that is created by logged in user
-      if (!(item?.is_public === true && item?.user_id?.id !== userId)) {
-        return item;
-      }
     }
+    // only return public categories that is created by logged in user
+    if (!(item?.is_public === true && item?.user_id?.id !== userId)) {
+      return item;
+    }
+
+    return null;
   }) as CategoriesData[];
 
   // else if (isEmpty(finalPublicFilteredData)) {
@@ -131,10 +145,9 @@ export default async function handler(
   //   });
   // }
   if (!isNull(error)) {
-    res.status(500).json({ data: null, error: error });
-    throw new Error('ERROR');
+    res.status(500).json({ data: null, error });
+    throw new Error("ERROR");
   } else {
     res.status(200).json({ data: finalPublicFilteredData, error: null });
-    return;
   }
 }

@@ -1,13 +1,6 @@
-import { Icon } from '../components/atoms/icon';
+import { Icon } from "../components/atoms/icon";
 
-interface IconTypes {
-  width?: string;
-  height?: string;
-}
-
-const CollectionPlaceholderIcon = (props: IconTypes) => {
-  const { width = '20', height = '20' } = props;
-
+const CollectionPlaceholderIcon = () => {
   return (
     <Icon
       width="18"

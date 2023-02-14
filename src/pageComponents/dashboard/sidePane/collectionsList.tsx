@@ -1,75 +1,268 @@
-import React, { useState } from 'react';
+import { useSession } from "@supabase/auth-helpers-react";
+import type { PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import { isNull } from "lodash";
+import find from "lodash/find";
+import isEmpty from "lodash/isEmpty";
+import pick from "lodash/pick";
+import React, { useState, type Key, type ReactNode } from "react";
 import {
-  Item,
-  useDroppableCollectionState,
-  useListState,
-  useDraggableCollectionState,
-  useListData,
-} from 'react-stately';
-import {
-  mergeProps,
-  useFocusRing,
-  useListBox,
-  useOption,
   ListDropTargetDelegate,
   ListKeyboardDelegate,
-  useDroppableCollection,
-  useDroppableItem,
+  mergeProps,
   useDraggableCollection,
   useDraggableItem,
   useDropIndicator,
-} from 'react-aria';
-import { useSession } from '@supabase/auth-helpers-react';
-import { useQueryClient } from '@tanstack/react-query';
+  useDroppableCollection,
+  useDroppableItem,
+  useFocusRing,
+  useListBox,
+  useOption,
+  type DraggableItemProps,
+  type DragItem,
+  type DropIndicatorProps,
+  type DroppableCollectionReorderEvent,
+} from "react-aria";
 import {
+  Item,
+  useDraggableCollectionState,
+  useDroppableCollectionState,
+  useListState,
+  type DraggableCollectionState,
+  type DroppableCollectionState,
+  type ListProps,
+  type ListState,
+} from "react-stately";
+
+import useUpdateCategoryOrderMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderMutation";
+import {
+  AriaDropdown,
+  AriaDropdownMenu,
+} from "../../../components/ariaDropdown";
+import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import AddCategoryIcon from "../../../icons/addCategoryIcon";
+import FileIcon from "../../../icons/categoryIcons/fileIcon";
+import OptionsIconGray from "../../../icons/optionsIconGray";
+import {
+  useLoadersStore,
+  useMiscellaneousStore,
+} from "../../../store/componentStore";
+import type {
   BookmarksCountTypes,
   CategoriesData,
   FetchSharedCategoriesData,
   ProfilesTableTypes,
-} from '../../../types/apiTypes';
-import { PostgrestError } from '@supabase/supabase-js';
+} from "../../../types/apiTypes";
+import { mutationApiCall } from "../../../utils/apiHelpers";
+import {
+  dropdownMenuClassName,
+  dropdownMenuItemClassName,
+} from "../../../utils/commonClassNames";
 import {
   BOOKMARKS_COUNT_KEY,
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
   USER_PROFILE,
-} from '../../../utils/constants';
-import SingleListItemComponent from './singleListItemComponent';
-import isEmpty from 'lodash/isEmpty';
-import find from 'lodash/find';
-import FileIcon from '../../../icons/categoryIcons/fileIcon';
-import AddCategoryIcon from '../../../icons/addCategoryIcon';
-import {
-  useLoadersStore,
-  useMiscellaneousStore,
-} from '../../../store/componentStore';
-import pick from 'lodash/pick';
-import useUpdateCategoryOrderMutation from '../../../async/mutationHooks/category/useUpdateCategoryOrderMutation';
-import { mutationApiCall } from '../../../utils/apiHelpers';
-import { isNull } from 'lodash';
-import useGetCurrentUrlPath from '../../../hooks/useGetCurrentUrlPath';
-import {
-  AriaDropdown,
-  AriaDropdownMenu,
-} from '../../../components/ariaDropdown';
-import {
-  dropdownMenuClassName,
-  dropdownMenuItemClassName,
-} from '../../../utils/commonClassNames';
-import OptionsIconGray from '../../../icons/optionsIconGray';
+} from "../../../utils/constants";
+
+import SingleListItemComponent, {
+  type CollectionItemTypes,
+} from "./singleListItemComponent";
 
 interface CollectionsListPropTypes {
-  onBookmarksDrop: (e: any) => void;
+  onBookmarksDrop: (e: any) => Promise<void>;
   onCategoryOptionClick: (
     value: string | number,
     current: boolean,
-    id: number
-  ) => void;
+    id: number,
+  ) => Promise<void>;
   onIconSelect: (value: string, id: number) => void;
-  onAddNewCategory: (value: string) => void;
+  onAddNewCategory: (value: string) => Promise<void>;
+}
+// interface OnReorderPayloadTypes {
+//   target: { key: string };
+//   keys: Set<unknown>;
+// }
+interface ListBoxDropTypes extends ListProps<object> {
+  getItems?: (keys: Set<Key>) => DragItem[];
+  onReorder: (e: DroppableCollectionReorderEvent) => unknown;
+  onItemDrop?: (e: any) => void;
 }
 
-//TODO: fix all ts-ignore and all any types
+const ListBoxDrop = (props: ListBoxDropTypes) => {
+  const { getItems } = props;
+  // Setup listbox as normal. See the useListBox docs for more details.
+  const state = useListState(props);
+  const ref = React.useRef(null);
+  const { listBoxProps } = useListBox(
+    { ...props, shouldSelectOnPressUp: true },
+    state,
+    ref,
+  );
+
+  // Setup react-stately and react-aria hooks for drag and drop.
+  const dropState = useDroppableCollectionState({
+    ...props,
+    // Collection and selection manager come from list state.
+    collection: state.collection,
+    selectionManager: state.selectionManager,
+  });
+
+  const { collectionProps } = useDroppableCollection(
+    {
+      ...props,
+      // Provide drop targets for keyboard and pointer-based drag and drop.
+      keyboardDelegate: new ListKeyboardDelegate(
+        state.collection,
+        state.disabledKeys,
+        ref,
+      ),
+      dropTargetDelegate: new ListDropTargetDelegate(state.collection, ref),
+    },
+    dropState,
+    ref,
+  );
+
+  // Setup drag state for the collection.
+  const dragState = useDraggableCollectionState({
+    ...props,
+    // Collection and selection manager come from list state.
+    collection: state.collection,
+    selectionManager: state.selectionManager,
+    // Provide data for each dragged item. This function could
+    // also be provided by the user of the component.
+    getItems:
+      getItems ||
+      (keys => {
+        return [...keys].map(key => {
+          const item = state.collection.getItem(key);
+
+          return {
+            "text/plain": item.textValue,
+          };
+        });
+      }),
+  });
+
+  useDraggableCollection(props, dragState, ref);
+
+  // Merge listbox props and dnd props, and render the items as normal.
+  return (
+    <ul {...mergeProps(listBoxProps, collectionProps)} ref={ref}>
+      {[...state.collection].map(item => (
+        <OptionDrop
+          key={item.key}
+          item={item}
+          state={state}
+          dropState={dropState}
+          dragState={dragState}
+        />
+      ))}
+    </ul>
+  );
+};
+
+interface DropIndicatorTypes extends DropIndicatorProps {
+  dropState: DroppableCollectionState;
+}
+
+const DropIndicator = (props: DropIndicatorTypes) => {
+  const { dropState } = props;
+  const ref = React.useRef(null);
+  const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
+    props,
+    dropState,
+    ref,
+  );
+  if (isHidden) {
+    return null;
+  }
+
+  return (
+    <li
+      {...dropIndicatorProps}
+      role="option"
+      aria-selected
+      ref={ref}
+      className={`drop-indicator ${isDropTarget ? "drop-target" : ""} z-10`}
+    />
+  );
+};
+
+interface OptionDropItemTypes extends DraggableItemProps {
+  rendered: ReactNode;
+}
+
+const OptionDrop = ({
+  item,
+  state,
+  dropState,
+  dragState,
+}: {
+  item: OptionDropItemTypes;
+  state: ListState<unknown>;
+  dropState: DroppableCollectionState;
+  dragState: DraggableCollectionState;
+}) => {
+  // Register the item as a drag source.
+  const { dragProps } = useDraggableItem(
+    {
+      key: item.key,
+    },
+    dragState,
+  );
+
+  // Setup listbox option as normal. See useListBox docs for details.
+  const ref = React.useRef(null);
+  const { optionProps } = useOption({ key: item.key }, state, ref);
+  const { isFocusVisible, focusProps } = useFocusRing();
+
+  // Register the item as a drop target.
+  const { dropProps, isDropTarget } = useDroppableItem(
+    {
+      target: { type: "item", key: item.key, dropPosition: "on" },
+    },
+    dropState,
+    ref,
+  );
+
+  const isCardDragging = useMiscellaneousStore(
+    storeState => storeState.isCardDragging,
+  );
+
+  // Merge option props and dnd props, and render the item.
+  return (
+    <>
+      <DropIndicator
+        target={{ type: "item", key: item.key, dropPosition: "before" }}
+        dropState={dropState}
+      />
+      <li
+        {...mergeProps(
+          pick(optionProps, ["id", "data-key"]),
+          dropProps,
+          focusProps,
+          dragProps,
+        )}
+        ref={ref}
+        // Apply a class when the item is the active drop target.
+        // eslint-disable-next-line tailwindcss/no-custom-classname
+        className={`option-drop ${isFocusVisible ? "focus-visible" : ""} ${
+          isDropTarget && isCardDragging ? "drop-target" : ""
+        }`}
+      >
+        {item.rendered}
+      </li>
+
+      {state.collection.getKeyAfter(item.key) == null && (
+        <DropIndicator
+          target={{ type: "item", key: item.key, dropPosition: "after" }}
+          dropState={dropState}
+        />
+      )}
+    </>
+  );
+};
 
 const CollectionsList = (listProps: CollectionsListPropTypes) => {
   const {
@@ -82,8 +275,6 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
   const queryClient = useQueryClient();
   const session = useSession();
   const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
-
-  const isCardDragging = useMiscellaneousStore((state) => state.isCardDragging);
 
   const { updateCategoryOrderMutation } = useUpdateCategoryOrderMutation();
 
@@ -121,165 +312,11 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
   };
 
   const sidePaneOptionLoading = useLoadersStore(
-    (state) => state.sidePaneOptionLoading
+    state => state.sidePaneOptionLoading,
   );
 
-  function ListBoxDrop(props: any) {
-    // Setup listbox as normal. See the useListBox docs for more details.
-    const state = useListState(props);
-    const ref = React.useRef(null);
-    const { listBoxProps } = useListBox(
-      { ...props, shouldSelectOnPressUp: true },
-      state,
-      ref
-    );
-
-    // Setup react-stately and react-aria hooks for drag and drop.
-    const dropState = useDroppableCollectionState({
-      ...props,
-      // Collection and selection manager come from list state.
-      collection: state.collection,
-      selectionManager: state.selectionManager,
-    });
-
-    const { collectionProps } = useDroppableCollection(
-      {
-        ...props,
-        // Provide drop targets for keyboard and pointer-based drag and drop.
-        keyboardDelegate: new ListKeyboardDelegate(
-          state.collection,
-          state.disabledKeys,
-          ref
-        ),
-        dropTargetDelegate: new ListDropTargetDelegate(state.collection, ref),
-      },
-      dropState,
-      ref
-    );
-
-    // Setup drag state for the collection.
-    const dragState = useDraggableCollectionState({
-      ...props,
-      // Collection and selection manager come from list state.
-      collection: state.collection,
-      selectionManager: state.selectionManager,
-      // Provide data for each dragged item. This function could
-      // also be provided by the user of the component.
-      getItems:
-        props.getItems ||
-        ((keys) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          return [...keys].map((key) => {
-            const item = state.collection.getItem(key);
-
-            return {
-              'text/plain': item.textValue,
-            };
-          });
-        }),
-    });
-
-    useDraggableCollection(props, dragState, ref);
-
-    // Merge listbox props and dnd props, and render the items as normal.
-    return (
-      <ul {...mergeProps(listBoxProps, collectionProps)} ref={ref}>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        {[...state.collection].map((item) => (
-          <OptionDrop
-            key={item.key}
-            item={item}
-            state={state}
-            dropState={dropState}
-            dragState={dragState}
-          />
-        ))}
-      </ul>
-    );
-  }
-
-  function DropIndicator(props: any) {
-    const ref = React.useRef(null);
-    const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
-      props,
-      props.dropState,
-      ref
-    );
-    if (isHidden) {
-      return null;
-    }
-
-    return (
-      <li
-        {...dropIndicatorProps}
-        role="option"
-        ref={ref}
-        className={`drop-indicator ${isDropTarget ? 'drop-target' : ''} z-10`}
-      />
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  function OptionDrop({ item, state, dropState, dragState }) {
-    // Register the item as a drag source.
-    const { dragProps } = useDraggableItem(
-      {
-        key: item.key,
-      },
-      dragState
-    );
-
-    // Setup listbox option as normal. See useListBox docs for details.
-    const ref = React.useRef(null);
-    const { optionProps } = useOption({ key: item.key }, state, ref);
-    const { isFocusVisible, focusProps } = useFocusRing();
-
-    // Register the item as a drop target.
-    const { dropProps, isDropTarget } = useDroppableItem(
-      {
-        target: { type: 'item', key: item.key, dropPosition: 'on' },
-      },
-      dropState,
-      ref
-    );
-
-    // Merge option props and dnd props, and render the item.
-    return (
-      <>
-        <DropIndicator
-          target={{ type: 'item', key: item.key, dropPosition: 'before' }}
-          dropState={dropState}
-        />
-        <li
-          {...mergeProps(
-            pick(optionProps, ['id', 'data-key']),
-            dropProps,
-            focusProps,
-            dragProps
-          )}
-          ref={ref}
-          // Apply a class when the item is the active drop target.
-          className={`option-drop ${isFocusVisible ? 'focus-visible' : ''} ${
-            isDropTarget && isCardDragging ? 'drop-target' : ''
-          }`}
-        >
-          {item.rendered}
-        </li>
-        {state.collection.getKeyAfter(item.key) == null && (
-          <DropIndicator
-            target={{ type: 'item', key: item.key, dropPosition: 'after' }}
-            dropState={dropState}
-          />
-        )}
-      </>
-    );
-  }
-
   const collectionsList = session
-    ? categoryData?.data?.map((item) => {
+    ? categoryData?.data?.map(item => {
         return {
           name: item?.category_name,
           href: `/${item?.category_slug}`,
@@ -289,49 +326,66 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
           isCollab: !isEmpty(
             find(
               sharedCategoriesData?.data,
-              (cat) => cat?.category_id === item?.id
-            )
+              cat => cat?.category_id === item?.id,
+            ),
           ),
           iconValue: item?.icon,
           count: find(
             bookmarksCountData?.data?.categoryCount,
-            (catItem) => catItem?.category_id === item?.id
+            catItem => catItem?.category_id === item?.id,
           )?.count,
         };
       })
     : [];
 
   const sortedList = () => {
-    let arr: any[] = [];
-    const apiCategoryOrder = userProfileData?.data[0]?.category_order;
+    let arr: CollectionItemTypes[] = [];
+    if (!isEmpty(userProfileData?.data)) {
+      const apiCategoryOrder = userProfileData?.data[0]?.category_order;
 
-    if (!isNull(apiCategoryOrder)) {
-      apiCategoryOrder?.forEach((item) => {
-        const data = find(collectionsList, (dataItem) => dataItem?.id === item);
+      if (!isNull(apiCategoryOrder)) {
+        apiCategoryOrder?.forEach(item => {
+          const data = find(collectionsList, dataItem => dataItem?.id === item);
 
-        if (data) {
-          arr = [...arr, data];
-        }
-      });
+          if (data) {
+            arr = [...arr, data];
+          }
+        });
 
-      return arr;
-    } else {
+        let categoriesNotThereInApiCategoryOrder: CollectionItemTypes[] = [];
+
+        collectionsList?.forEach(item => {
+          const data = find(
+            apiCategoryOrder,
+            dataItem => dataItem === item?.id,
+          );
+
+          if (!data) {
+            categoriesNotThereInApiCategoryOrder = [
+              ...categoriesNotThereInApiCategoryOrder,
+              item,
+            ];
+          }
+        });
+
+        return [...arr, ...categoriesNotThereInApiCategoryOrder];
+      }
       return collectionsList;
     }
+
+    return [];
   };
 
-  const list = useListData({
-    initialItems: [],
-  });
-
-  const onReorder = (e: any) => {
+  const onReorder = (e: DroppableCollectionReorderEvent) => {
     const apiOrder = userProfileData?.data[0]?.category_order;
     const listOrder = isNull(apiOrder)
-      ? collectionsList?.map((item) => item?.id)
+      ? collectionsList?.map(item => item?.id)
       : userProfileData?.data[0]?.category_order;
 
-    const index1 = listOrder?.indexOf(parseInt(e?.target?.key)); // to index
-    const index2 = listOrder?.indexOf(parseInt(e?.keys?.values().next().value)); // from index
+    const index1 = listOrder?.indexOf(parseInt(e?.target?.key as string, 10)); // to index
+    const index2 = listOrder?.indexOf(
+      parseInt(e?.keys?.values().next().value as string, 10),
+    ); // from index
 
     let myArray = listOrder;
 
@@ -339,21 +393,21 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
       const movingItem = listOrder[index2];
 
       // remove
-      myArray = myArray.filter((item) => item !== movingItem);
+      myArray = myArray.filter(item => item !== movingItem);
 
       // add
       myArray.splice(index1, 0, movingItem);
 
       mutationApiCall(
-        updateCategoryOrderMutation?.mutateAsync({ order: myArray, session })
-      );
+        updateCategoryOrderMutation?.mutateAsync({ order: myArray, session }),
+      )?.catch(() => {});
     }
   };
 
   return (
     <div className="pt-4">
-      <div className="px-1 py-[7.5px] flex items-center justify-between">
-        <p className="font-medium text-[13px] leading-[15px]  text-custom-gray-10 pr">
+      <div className="flex items-center justify-between px-1 py-[7.5px]">
+        <p className="text-[13px] font-medium  leading-[15px] text-custom-gray-10">
           Collections
         </p>
         <AriaDropdown
@@ -365,11 +419,11 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
           menuClassName={`${dropdownMenuClassName} z-10`}
           menuButtonClassName="pr-1"
         >
-          {[{ label: 'Add Category', value: 'add-category' }]?.map((item) => (
+          {[{ label: "Add Category", value: "add-category" }]?.map(item => (
             <AriaDropdownMenu
               key={item?.value}
               onClick={() => {
-                if (item?.value === 'add-category') {
+                if (item?.value === "add-category") {
                   setShowAddCategoryInput(true);
                 }
               }}
@@ -388,15 +442,15 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
             // items={list.items}
             onReorder={onReorder}
             onItemDrop={(e: any) => {
-              onBookmarksDrop(e);
+              onBookmarksDrop(e)?.catch(() => {});
             }}
           >
-            {sortedList()?.map((item) => (
+            {sortedList()?.map(item => (
               <Item textValue={item?.name} key={item?.id}>
                 <SingleListItemComponent
                   extendedClassname="pb-[6px] pt-[4px] mt-[2px]"
                   item={item}
-                  showDropdown={true}
+                  showDropdown
                   listNameId="collection-name"
                   onCategoryOptionClick={onCategoryOptionClick}
                   onIconSelect={onIconSelect}
@@ -407,9 +461,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
           </ListBoxDrop>
         </div>
         {showAddCategoryInput && (
-          <div
-            className={`px-2 py-[5px] mt-1 flex items-center bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
-          >
+          <div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
             <div className="flex items-center">
               <figure className="mr-2">
                 <FileIcon />
@@ -417,15 +469,19 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
               <input
                 placeholder="Category Name"
                 id="add-category-input"
-                className="text-sm font-[450] text-custom-gray-1 leading-4 focus:outline-none bg-black/[0.004] opacity-40"
+                className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
+                // disabling it as we do need it here
+                // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus
                 onBlur={() => setShowAddCategoryInput(false)}
-                onKeyUp={(e) => {
+                onKeyUp={e => {
                   if (
-                    e.key === 'Enter' &&
+                    e.key === "Enter" &&
                     !isEmpty((e.target as HTMLInputElement).value)
                   ) {
-                    onAddNewCategory((e.target as HTMLInputElement).value);
+                    onAddNewCategory(
+                      (e.target as HTMLInputElement).value,
+                    )?.catch(() => {});
                     setShowAddCategoryInput(false);
                   }
                 }}
@@ -434,14 +490,17 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
           </div>
         )}
         <div
-          className="py-[5px] px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer"
+          role="button"
+          tabIndex={0}
+          className="mt-1 flex cursor-pointer items-center rounded-lg py-[5px] px-2 hover:bg-custom-gray-2"
           onClick={() => setShowAddCategoryInput(true)}
+          onKeyDown={() => {}}
           id="add-category-button"
         >
           <figure>
             <AddCategoryIcon />
           </figure>
-          <p className="truncate ml-2 flex-1 text-sm font-450 text-custom-gray-3 leading-[16px]">
+          <p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-custom-gray-3">
             Add Category
           </p>
         </div>

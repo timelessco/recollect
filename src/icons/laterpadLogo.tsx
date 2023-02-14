@@ -1,5 +1,3 @@
-import { Icon } from '../components/atoms/icon';
-
 const LaterpadLogo = () => {
   return (
     <svg
@@ -11,7 +9,7 @@ const LaterpadLogo = () => {
     >
       <mask
         id="mask0_5294_43450"
-        style={{ maskType: 'alpha' }}
+        style={{ maskType: "alpha" }}
         maskUnits="userSpaceOnUse"
         x="0"
         y="0"
@@ -33,7 +31,7 @@ const LaterpadLogo = () => {
           />
         </g>
         <g
-          style={{ mixBlendMode: 'screen' }}
+          style={{ mixBlendMode: "screen" }}
           filter="url(#filter1_f_5294_43450)"
         >
           <path
@@ -54,7 +52,7 @@ const LaterpadLogo = () => {
           />
         </g>
         <g
-          style={{ mixBlendMode: 'screen' }}
+          style={{ mixBlendMode: "screen" }}
           filter="url(#filter4_f_5294_43450)"
         >
           <path

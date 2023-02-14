@@ -1,18 +1,19 @@
-import { ComponentPropsWithoutRef } from 'react';
-import clsx from 'clsx';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import clsx from "clsx";
+import type { ComponentPropsWithoutRef } from "react";
 
-export type IconProps = ComponentPropsWithoutRef<'svg'> & {
+export type IconProps = ComponentPropsWithoutRef<"svg"> & {
   label?: string;
 };
 
 export const Icon: React.FC<IconProps> = ({ label, ...props }) => {
   const _viewBox = props.viewBox ?? fallbackIcon.viewBox;
   const _path = (props.children ?? fallbackIcon.path) as string;
-  const className = clsx(
-    // 'w-[1em] h-[1em] inline-block leading-[1em] shrink-0 text-current align-middle',
-    props.className
-  );
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const className = clsx(props.className);
+
+  // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unsafe-assignment
   props = { ...props, viewBox: _viewBox, children: _path, className };
 
   // For accessibility - https://allyjs.io/tutorials/focusing-in-svg.html#making-svg-elements-focusable
@@ -25,7 +26,7 @@ export const Icon: React.FC<IconProps> = ({ label, ...props }) => {
 };
 
 export const fallbackIcon = {
-  viewBox: '0 0 24 24',
+  viewBox: "0 0 24 24",
   path: (
     <g stroke="currentColor" strokeWidth="1.5">
       <path

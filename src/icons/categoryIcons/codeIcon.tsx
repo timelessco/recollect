@@ -1,5 +1,6 @@
-import React from 'react';
-import { Icon } from '../../components/atoms/icon';
+import React from "react";
+
+import { Icon } from "../../components/atoms/icon";
 
 const CodeIcon = () => {
   return (

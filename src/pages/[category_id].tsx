@@ -1,17 +1,14 @@
-import type { GetServerSideProps, NextPage } from 'next';
-import Dashboard from '../pageComponents/dashboard';
-import { dehydrate, QueryClient } from '@tanstack/react-query';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
+import type { GetServerSideProps, NextPage } from "next";
+
+import Dashboard from "../pageComponents/dashboard";
 
 const Home: NextPage = () => {
-  return (
-    <>
-      <Dashboard />
-    </>
-  );
+  return <Dashboard />;
 };
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async ctx => {
   const queryClient = new QueryClient();
 
   // Create authenticated Supabase Client
@@ -24,7 +21,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!session)
     return {
       redirect: {
-        destination: '/login',
+        destination: "/login",
         permanent: false,
       },
     };

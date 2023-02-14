@@ -1,27 +1,37 @@
-/* This example requires Tailwind CSS v2.0+ */
-import { Fragment } from 'react';
-import { ChildrenTypes } from '../types/componentTypes';
-import { Dialog, useDialogState } from 'ariakit/dialog';
+import { Dialog, useDialogState } from "ariakit/dialog";
+
+import type { ChildrenTypes } from "../types/componentTypes";
+
+import Button from "./atoms/button";
 
 interface ModalProps {
   open: boolean;
-  setOpen: () => void;
+  // setOpen: () => void;
   children: ChildrenTypes;
+  onClose: () => void;
 }
 
-export default function Modal(props: ModalProps) {
-  const { open, setOpen, children } = props;
+const Modal = (props: ModalProps) => {
+  const {
+    open,
+    // setOpen,
+    children,
+    onClose,
+  } = props;
 
   const dialog = useDialogState({
-    open: open,
-    setOpen,
+    open,
+    // setOpen,
   });
 
   return (
-    <>
-      <Dialog state={dialog} className="dialog">
-        {children}
-      </Dialog>
-    </>
+    <Dialog state={dialog} className="dialog">
+      {children}
+      <Button onClick={onClose} type="dark">
+        <p className="w-full py-1 text-center text-white">Close</p>
+      </Button>
+    </Dialog>
   );
-}
+};
+
+export default Modal;

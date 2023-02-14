@@ -1,10 +1,11 @@
-import { useSession } from '@supabase/auth-helpers-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from "@supabase/auth-helpers-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import {
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
-} from '../../../utils/constants';
-import { deleteSharedCategoriesUser } from '../../supabaseCrudHelpers';
+} from "../../../utils/constants";
+import { deleteSharedCategoriesUser } from "../../supabaseCrudHelpers";
 
 // dels user in a shared category
 export default function useDeleteSharedCategoriesUserMutation() {
@@ -16,10 +17,14 @@ export default function useDeleteSharedCategoriesUserMutation() {
     {
       onSuccess: () => {
         // Invalidate and refetch
-        queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-        queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+        queryClient
+          .invalidateQueries([SHARED_CATEGORIES_TABLE_NAME])
+          ?.catch(() => {});
+        queryClient
+          .invalidateQueries([CATEGORIES_KEY, session?.user?.id])
+          ?.catch(() => {});
       },
-    }
+    },
   );
   return { deleteSharedCategoriesUserMutation };
 }

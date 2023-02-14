@@ -1,19 +1,25 @@
-import { Menu, Transition } from '@headlessui/react';
-import { PostgrestError } from '@supabase/supabase-js';
-import { useQueryClient } from '@tanstack/react-query';
-import find from 'lodash/find';
-import React, { Fragment, useEffect, useState } from 'react';
-import Button from '../../components/atoms/button';
-import SearchInput from '../../components/searchInput';
-import HomeIconGray from '../../icons/homeIconGray';
-import InboxIconGray from '../../icons/inboxIconGray';
-import OptionsIconGray from '../../icons/optionsIconGray';
-import PlusIconWhite from '../../icons/plusIconWhite';
-import SearchIconGray from '../../icons/searchIconGray';
-import TrashIconGray from '../../icons/trashIconGray';
-import UserIconGray from '../../icons/userIconGray';
-import { BookmarksCountTypes, CategoriesData } from '../../types/apiTypes';
-import { CategoryIdUrlTypes, ChildrenTypes } from '../../types/componentTypes';
+import { Menu, Transition } from "@headlessui/react";
+import { ChevronDoubleRightIcon } from "@heroicons/react/solid";
+import type { PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import { Allotment } from "allotment";
+import find from "lodash/find";
+import React, { Fragment, useEffect, useState } from "react";
+
+import Button from "../../components/atoms/button";
+import SearchInput from "../../components/searchInput";
+import HomeIconGray from "../../icons/homeIconGray";
+import InboxIconGray from "../../icons/inboxIconGray";
+import OptionsIconGray from "../../icons/optionsIconGray";
+import PlusIconWhite from "../../icons/plusIconWhite";
+import SearchIconGray from "../../icons/searchIconGray";
+import TrashIconGray from "../../icons/trashIconGray";
+import UserIconGray from "../../icons/userIconGray";
+import type { BookmarksCountTypes, CategoriesData } from "../../types/apiTypes";
+import type {
+  CategoryIdUrlTypes,
+  ChildrenTypes,
+} from "../../types/componentTypes";
 import {
   ALL_BOOKMARKS_URL,
   BOOKMARKS_COUNT_KEY,
@@ -21,44 +27,38 @@ import {
   SEARCH_URL,
   TRASH_URL,
   UNCATEGORIZED_URL,
-} from '../../utils/constants';
-import { Allotment } from 'allotment';
-import 'allotment/dist/style.css';
-import { ChevronDoubleRightIcon } from '@heroicons/react/solid';
-import { options } from '../../utils/commonData';
-import BookmarksViewDropdown from '../../components/customDropdowns.tsx/bookmarksViewDropdown';
-import BookmarksSortDropdown from '../../components/customDropdowns.tsx/bookmarksSortDropdown';
-import {
+} from "../../utils/constants";
+
+import "allotment/dist/style.css";
+import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
+import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmarksViewDropdown";
+import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
+import { useMiscellaneousStore } from "../../store/componentStore";
+import type {
   BookmarksSortByTypes,
   BookmarksViewTypes,
   BookmarkViewCategories,
-} from '../../types/componentStoreTypes';
-import { useMiscellaneousStore } from '../../store/componentStore';
-import SidePane from './sidePane';
-import useGetCurrentUrlPath from '../../hooks/useGetCurrentUrlPath';
+} from "../../types/componentStoreTypes";
+import { options } from "../../utils/commonData";
+
+import SidePane from "./sidePane";
 
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
-  userImg: string;
-  userName: string;
-  userEmail: string;
-  onSignOutClick: () => void;
   renderMainContent: () => ChildrenTypes;
-  onAddBookmark: (url: string) => void;
   onShareClick: () => void;
   userId: string;
-  isAddInputLoading: boolean;
-  onAddNewCategory: (value: string) => void;
+  onAddNewCategory: (value: string) => Promise<void>;
   onCategoryOptionClick: (
     value: string | number,
     current: boolean,
-    id: number
-  ) => void;
+    id: number,
+  ) => Promise<void>;
   onClearTrash: () => void;
   onIconSelect: (value: string, id: number) => void;
   setBookmarksView: (
     value: BookmarksViewTypes | string[] | number[] | BookmarksSortByTypes,
-    type: BookmarkViewCategories
+    type: BookmarkViewCategories,
   ) => void;
   onNavAddClick: () => void;
   onBookmarksDrop: (e: any) => Promise<void>;
@@ -82,24 +82,25 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const [screenWidth, setScreenWidth] = useState(1200);
 
   useEffect(() => {
+    // disabling as we need this for allotement width
+    // eslint-disable-next-line no-restricted-globals
     if (screen) {
+      // eslint-disable-next-line no-restricted-globals
       setScreenWidth(screen.width);
     }
   }, []);
-
-  useEffect(() => {
-    setSearchText('');
-  }, [categoryId]);
 
   const queryClient = useQueryClient();
 
   const currentPath = useGetCurrentUrlPath();
 
-  const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
-  const showSidePane = useMiscellaneousStore((state) => state.showSidePane);
-  const setShowSidePane = useMiscellaneousStore(
-    (state) => state.setShowSidePane
-  );
+  const setSearchText = useMiscellaneousStore(state => state.setSearchText);
+  const showSidePane = useMiscellaneousStore(state => state.showSidePane);
+  const setShowSidePane = useMiscellaneousStore(state => state.setShowSidePane);
+
+  useEffect(() => {
+    setSearchText("");
+  }, [categoryId, setSearchText]);
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -115,37 +116,37 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   };
 
   function classNames(...classes: Array<string>) {
-    return classes.filter(Boolean).join(' ');
+    return classes.filter(Boolean).join(" ");
   }
 
   const optionsMenuList = [
     {
-      icon: () => <SearchIconGray />,
-      name: 'Search',
+      icon: <SearchIconGray />,
+      name: "Search",
       href: `/${SEARCH_URL}`,
       current: currentPath === SEARCH_URL,
       id: 0,
       count: undefined,
     },
     {
-      icon: () => <HomeIconGray />,
-      name: 'All Bookmarks',
+      icon: <HomeIconGray />,
+      name: "All Bookmarks",
       href: `/${ALL_BOOKMARKS_URL}`,
       current: currentPath === ALL_BOOKMARKS_URL,
       id: 1,
       count: bookmarksCountData?.data?.allBookmarks,
     },
     {
-      icon: () => <InboxIconGray />,
-      name: 'Inbox',
+      icon: <InboxIconGray />,
+      name: "Inbox",
       href: `/${UNCATEGORIZED_URL}`,
       current: currentPath === UNCATEGORIZED_URL,
       id: 2,
       count: bookmarksCountData?.data?.uncategorized,
     },
     {
-      icon: () => <TrashIconGray />,
-      name: 'Trash',
+      icon: <TrashIconGray />,
+      name: "Trash",
       href: `/${TRASH_URL}`,
       current: currentPath === TRASH_URL,
       id: 3,
@@ -156,30 +157,29 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const navBarLogo = () => {
     const currentCategory = find(
       categoryData?.data,
-      (item) => item?.category_slug === currentPath
+      item => item?.category_slug === currentPath,
     );
 
     if (currentCategory) {
       return find(
         options,
-        (item) => item?.label === currentCategory?.icon
+        item => item?.label === currentCategory?.icon,
       )?.icon();
-    } else {
-      return find(optionsMenuList, (item) => item?.current === true)?.icon();
     }
+    return find(optionsMenuList, item => item?.current === true)?.icon;
   };
 
   const renderMainPaneNav = () => {
     return (
-      <header className="py-[9px] px-4 border-b-[0.5px] border-b-custom-gray-4 flex items-center justify-between">
+      <header className="flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px] px-4">
         <div className="flex items-center space-x-[9px]">
-          <figure className="w-5 h-5 flex items-center">{navBarLogo()}</figure>
-          <p className="font-semibold text-xl leading-6 text-black">
+          <figure className="flex h-5 w-5 items-center">{navBarLogo()}</figure>
+          <p className="text-xl font-semibold leading-6 text-black">
             {find(
               categoryData?.data,
-              (item) => item?.category_slug === currentPath
+              item => item?.category_slug === currentPath,
             )?.category_name ||
-              find(optionsMenuList, (item) => item?.current === true)?.name}
+              find(optionsMenuList, item => item?.current === true)?.name}
           </p>
         </div>
         <SearchInput
@@ -187,15 +187,15 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           placeholder={`Search in ${
             find(
               categoryData?.data,
-              (item) => item?.category_slug === currentPath
-            )?.category_name || 'All Bookmarks'
+              item => item?.category_slug === currentPath,
+            )?.category_name || "All Bookmarks"
           }`}
-          onChange={(value) => {
+          onChange={value => {
             setSearchText(value);
           }}
         />
         <div className="flex items-center">
-          <div className="flex items-center mr-[17px] space-x-1">
+          <div className="mr-[17px] flex items-center space-x-1">
             <BookmarksViewDropdown
               setBookmarksView={setBookmarksView}
               categoryId={categoryId}
@@ -206,22 +206,22 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               categoryId={categoryId}
               userId={userId}
             />
-            {typeof categoryId === 'number' && (
+            {typeof categoryId === "number" && (
               <Button
                 type="light"
                 onClick={() => onShareClick()}
                 id="share-button"
               >
-                <figure className="w-3 h-3">
+                <figure className="h-3 w-3">
                   <UserIconGray />
                 </figure>
                 <span className="ml-[7px] text-custom-gray-1">Share</span>
               </Button>
             )}
-            <Menu as="div" className="flex-shrink-0 relative">
+            <Menu as="div" className="relative shrink-0">
               <Menu.Button as="div">
                 <Button type="light" className="p-[5px]" style={{ padding: 5 }}>
-                  <figure className="w-4 h-4">
+                  <figure className="h-4 w-4">
                     <OptionsIconGray />
                   </figure>
                 </Button>
@@ -235,13 +235,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
-                <Menu.Items className="origin-top-left right-0 absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 focus:outline-none">
+                <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
                   <Menu.Item>
                     {({ active }) => (
                       <div
                         className={` cursor-pointer ${classNames(
-                          active ? 'bg-gray-100' : '',
-                          'block py-2 px-4 text-sm text-gray-700'
+                          active ? "bg-gray-100" : "",
+                          "block py-2 px-4 text-sm text-gray-700",
                         )}`}
                       >
                         Option one
@@ -265,7 +265,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           )}
 
           <Button type="dark" onClick={onNavAddClick}>
-            <figure className="w-3 h-3">
+            <figure className="h-3 w-3">
               <PlusIconWhite />
             </figure>
             <span className="ml-[7px] text-white">Add</span>
@@ -275,14 +275,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     );
   };
   return (
-    <div style={{ width: '100vw', height: '100vw' }}>
+    <div style={{ width: "100vw", height: "100vh" }}>
       {!showSidePane && (
         <Button
-          className="absolute bg-slate-200 cursor-pointer z-50 top-[64px] left-[12px] shadow-2xl"
+          className="absolute top-[64px] left-[12px] z-50 cursor-pointer bg-slate-200 shadow-2xl"
           onClick={() => setShowSidePane(true)}
         >
           <figure>
-            <ChevronDoubleRightIcon className="flex-shrink-0 h-4 w-4 text-gray-400" />
+            <ChevronDoubleRightIcon className="h-4 w-4 shrink-0 text-gray-400" />
           </figure>
         </Button>
       )}
@@ -296,16 +296,18 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           minSize={244}
           visible={showSidePane}
           snap
-          className="transition-all ease-in-out duration-150"
+          className="transition-all duration-150 ease-in-out"
         >
-          <SidePane
-            onBookmarksDrop={onBookmarksDrop}
-            onCategoryOptionClick={onCategoryOptionClick}
-            onIconSelect={(value, id) => onIconSelect(value, id)}
-            onAddNewCategory={onAddNewCategory}
-          />
+          {showSidePane && (
+            <SidePane
+              onBookmarksDrop={onBookmarksDrop}
+              onCategoryOptionClick={onCategoryOptionClick}
+              onIconSelect={(value, id) => onIconSelect(value, id)}
+              onAddNewCategory={onAddNewCategory}
+            />
+          )}
         </Allotment.Pane>
-        <Allotment.Pane className="transition-all ease-in-out duration-150">
+        <Allotment.Pane className="transition-all duration-150 ease-in-out">
           <div className="w-full">
             {renderMainPaneNav()}
             <main className="py-4">{renderMainContent()}</main>

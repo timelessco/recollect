@@ -1,37 +1,70 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# dotenv environment variable files
+.env*
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Logs
+*.log*
 
-# testing
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optional tool caches
+.eslintcache
+.stylelintcache
+
+# Dependency directories
+node_modules
+jspm_packages
+
+# Optional npm cache directory
+.npm
+
+# Yarn 2
+.pnp/
+.pnp.*
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.yarn-integrity # Yarn Integrity file
+
+# Typescript
+*.tsbuildinfo
+
+# Testing
 /coverage
 
-# next.js
+# Next JS
 /.next/
 /out/
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# local env files
-.env*.local
-
-# vercel
+# Vercel folder
 .vercel
 
-# typescript
-*.tsbuildinfo
+# Local Netlify
+.netlify
+.idea
 
-cypressEnv.js
+# Sentry
+.sentryclirc
+
+# Storybook Build
+storybook-static
+
+# Turbo Repo
+.turbo
+
+## library folder
+build
+.husky/post-checkout

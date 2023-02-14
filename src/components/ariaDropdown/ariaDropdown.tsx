@@ -1,6 +1,7 @@
-import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
-import { useEffect } from 'react';
-import { ChildrenTypes } from '../../types/componentTypes';
+import { Menu, MenuButton, useMenuState } from "ariakit/menu";
+import { useEffect } from "react";
+
+import type { ChildrenTypes } from "../../types/componentTypes";
 
 interface AriaDropDownPropTypes {
   menuButton: ChildrenTypes;
@@ -28,13 +29,13 @@ const AriaDropDown = (props: AriaDropDownPropTypes) => {
     <>
       <MenuButton
         state={menu}
-        className={`${menuButtonClassName} focus-visible:outline-none`}
+        className={`${menuButtonClassName || ""} focus-visible:outline-none`}
       >
         {menuButton}
       </MenuButton>
       <Menu
         state={menu}
-        className={`${menuClassName} focus-visible:outline-none`}
+        className={`${menuClassName || ""} focus-visible:outline-none`}
       >
         {children}
       </Menu>

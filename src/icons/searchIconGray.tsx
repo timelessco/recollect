@@ -1,4 +1,4 @@
-import { Icon } from '../components/atoms/icon';
+import { Icon } from "../components/atoms/icon";
 
 const SearchIconGray = () => {
   return (

@@ -1,13 +1,14 @@
-import { ActionMeta, OnChangeValue } from 'react-select';
-import CreatableSelect from 'react-select/creatable';
-import { SearchSelectOption } from '../types/componentTypes';
+import type { ActionMeta, OnChangeValue } from "react-select";
+import CreatableSelect from "react-select/creatable";
+
+import type { SearchSelectOption } from "../types/componentTypes";
 
 interface CreatableSearchSelectProps {
   options: SearchSelectOption[];
-  defaultValue: SearchSelectOption[];
-  onChange: (value: SearchSelectOption | null) => void;
+  defaultValue: SearchSelectOption;
+  onChange: (value: SearchSelectOption | null) => void | Promise<void>;
   isLoading: boolean;
-  createOption: (value: SearchSelectOption | null) => void;
+  createOption: (value: SearchSelectOption | null) => void | Promise<void>;
 }
 
 const CreatableSearchSelect = (props: CreatableSearchSelectProps) => {
@@ -15,28 +16,28 @@ const CreatableSearchSelect = (props: CreatableSearchSelectProps) => {
 
   const handleChange = (
     newValue: OnChangeValue<SearchSelectOption, false>,
-    actionMeta: ActionMeta<SearchSelectOption>
+    actionMeta: ActionMeta<SearchSelectOption>,
   ) => {
-    if (actionMeta.action === 'select-option') {
-      onChange(newValue);
+    if (actionMeta.action === "select-option") {
+      onChange(newValue)?.catch(() => {});
     }
 
-    if (actionMeta.action === 'create-option') {
-      createOption(newValue);
+    if (actionMeta.action === "create-option") {
+      createOption(newValue)?.catch(() => {});
     }
   };
 
   return (
     <CreatableSelect
+      key={defaultValue?.value}
       isLoading={isLoading}
       isClearable
       onChange={handleChange}
-      // onInputChange={handleInputChange}
       options={options}
       defaultValue={defaultValue}
       menuPortalTarget={document.body}
       styles={{
-        menuPortal: (provided) => ({
+        menuPortal: provided => ({
           ...provided,
           zIndex: 9999,
         }),

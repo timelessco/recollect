@@ -1,8 +1,8 @@
-import { ChangeEvent } from 'react';
+import type { ChangeEvent } from "react";
 
 interface SelectProps {
   options: Array<{ name: string; value: string | number }>;
-  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+  onChange: (e: ChangeEvent<HTMLSelectElement>) => void | Promise<void>;
   defaultValue: string | number;
   id?: string;
 }
@@ -16,7 +16,7 @@ const Select = (props: SelectProps) => {
       onChange={onChange}
       defaultValue={defaultValue}
     >
-      {options?.map((item) => {
+      {options?.map(item => {
         return (
           <option key={item?.value} value={item?.value}>
             {item?.name}

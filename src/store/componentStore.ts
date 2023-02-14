@@ -1,37 +1,38 @@
-import create from 'zustand';
-import {
-  ModalStoreState,
+import create from "zustand";
+
+import type {
   LoadersStoreState,
   MiscellaneousStoreState,
-} from '../types/componentStoreTypes';
+  ModalStoreState,
+} from "../types/componentStoreTypes";
 
-export const useModalStore = create<ModalStoreState>((set) => ({
+export const useModalStore = create<ModalStoreState>(set => ({
   showShareCategoryModal: false,
   toggleShareCategoryModal: () =>
-    set((state) => ({
+    set(state => ({
       showShareCategoryModal: !state.showShareCategoryModal,
     })),
   showAddBookmarkShortcutModal: false,
   toggleShowAddBookmarkShortcutModal: () =>
-    set((state) => ({
+    set(state => ({
       showAddBookmarkShortcutModal: !state.showAddBookmarkShortcutModal,
     })),
   showDeleteBookmarkWarningModal: false,
   toggleShowDeleteBookmarkWarningModal: () =>
-    set((state) => ({
+    set(state => ({
       showDeleteBookmarkWarningModal: !state.showDeleteBookmarkWarningModal,
     })),
   showClearTrashWarningModal: false,
   toggleShowClearTrashWarningModal: () =>
-    set((state) => ({
+    set(state => ({
       showClearTrashWarningModal: !state.showClearTrashWarningModal,
     })),
 }));
 
-export const useLoadersStore = create<LoadersStoreState>((set) => ({
+export const useLoadersStore = create<LoadersStoreState>(set => ({
   isSortByLoading: false, // this is not handelled by react-query as this is a combination for 2 queries
   toggleIsSortByLoading: () =>
-    set((state) => ({
+    set(state => ({
       isSortByLoading: !state.isSortByLoading,
     })),
   sidePaneOptionLoading: null,
@@ -41,10 +42,10 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
     })),
 }));
 
-export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
+export const useMiscellaneousStore = create<MiscellaneousStoreState>(set => ({
   shareCategoryId: undefined,
   setShareCategoryId: (id: number) => set(() => ({ shareCategoryId: id })),
-  searchText: '',
+  searchText: "",
   setSearchText: (value: string) => set(() => ({ searchText: value })),
   addScreenshotBookmarkId: undefined,
   setAddScreenshotBookmarkId: (value: number | undefined) =>

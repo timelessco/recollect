@@ -1,14 +1,14 @@
-import CollectionsList from './collectionsList';
+import CollectionsList from "./collectionsList";
 
 interface SidePaneCollectionsListTypes {
   onBookmarksDrop: (e: any) => Promise<void>;
   onCategoryOptionClick: (
     value: string | number,
     current: boolean,
-    id: number
-  ) => void;
+    id: number,
+  ) => Promise<void>;
   onIconSelect: (value: string, id: number) => void;
-  onAddNewCategory: (value: string) => void;
+  onAddNewCategory: (value: string) => Promise<void>;
 }
 
 const SidePaneCollectionsList = (props: SidePaneCollectionsListTypes) => {

@@ -1,17 +1,26 @@
-import '../styles/globals.css';
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { SessionContextProvider } from '@supabase/auth-helpers-react';
-import type { AppProps } from 'next/app';
+import "../styles/globals.css";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import {
+  SessionContextProvider,
+  type Session,
+} from "@supabase/auth-helpers-react";
 import {
   Hydrate,
   QueryClient,
   QueryClientProvider,
-} from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import React, { useState } from 'react';
-import Head from 'next/head';
+} from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import type { AppProps } from "next/app";
+import Head from "next/head";
+import React, { useState } from "react";
 
-function MyApp({ Component, pageProps: { ...pageProps } }: AppProps) {
+const MyApp = ({
+  Component,
+  pageProps: { ...pageProps },
+}: AppProps<{
+  initialSession: Session | null | undefined;
+  dehydratedState: unknown;
+}>) => {
   // Create a client
   // const queryClient = new QueryClient();
 
@@ -26,7 +35,7 @@ function MyApp({ Component, pageProps: { ...pageProps } }: AppProps) {
             refetchOnWindowFocus: false,
           },
         },
-      })
+      }),
   );
 
   return (
@@ -50,6 +59,6 @@ function MyApp({ Component, pageProps: { ...pageProps } }: AppProps) {
       </QueryClientProvider>
     </SessionContextProvider>
   );
-}
+};
 
 export default MyApp;

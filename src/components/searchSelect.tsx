@@ -1,6 +1,7 @@
-import React from 'react';
-import Select from 'react-select';
-import { SearchSelectOption } from '../types/componentTypes';
+import React from "react";
+import Select from "react-select";
+
+import type { SearchSelectOption } from "../types/componentTypes";
 
 interface SearchSelectProps {
   options: Array<SearchSelectOption>;
@@ -13,7 +14,7 @@ const SearchSelect = (props: SearchSelectProps) => {
   const { options, onChange, defaultValue, isLoading = false } = props;
 
   const handleChange = (
-    value: SearchSelectOption | null
+    value: SearchSelectOption | null,
     // actionMeta: ActionMeta<SearchSelectOption>
   ) => {
     onChange(value);
@@ -27,7 +28,7 @@ const SearchSelect = (props: SearchSelectProps) => {
       menuPortalTarget={document.body}
       onChange={handleChange}
       styles={{
-        menuPortal: (provided) => ({
+        menuPortal: provided => ({
           ...provided,
           zIndex: 9999,
         }),

@@ -1,8 +1,14 @@
-import isNull from 'lodash/isNull';
-import { errorToast } from './toastMessages';
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import isNull from "lodash/isNull";
+
+import { errorToast } from "./toastMessages";
+
+// NOTE: We are disabling lint in this file as we are not sure for a unified res for api calls
 
 // the apiCall param should have mutateAsync
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const mutationApiCall = async (apiCall: Promise<any>) => {
   const res = await apiCall;
 

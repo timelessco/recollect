@@ -1,55 +1,72 @@
-import { Provider, SupabaseClient, UserIdentity } from '@supabase/supabase-js';
-import axios from 'axios';
-import {
-  FetchDataResponse,
-  SingleListData,
-  BookmarksTagData,
+import type { Provider, SupabaseClient } from "@supabase/supabase-js";
+import type { QueryFunctionContext, QueryKey } from "@tanstack/react-query";
+import axios from "axios";
+import isEmpty from "lodash/isEmpty";
+import isNull from "lodash/isNull";
+
+import type {
+  AddBookmarkMinDataPayloadTypes,
+  AddBookmarkScreenshotPayloadTypes,
+  AddCategoryToBookmarkApiPayload,
+  AddTagToBookmarkApiPayload,
+  AddUserTagsApiPayload,
+  BookmarksCountTypes,
+  BookmarksPaginatedDataTypes,
   BookmarkViewDataTypes,
+  CategoriesData,
+  ClearBookmarksInTrashApiPayloadTypes,
+  DeleteUserCategoryApiPayload,
+  FetchDataResponse,
+  FetchSharedCategoriesData,
+  MoveBookmarkToTrashApiPayload,
   ProfilesTableTypes,
+  SingleListData,
   SupabaseSessionType,
-} from '../types/apiTypes';
+  UpdateCategoryApiPayload,
+  UpdateCategoryOrderApiPayload,
+  UpdateSharedCategoriesUserAccessApiPayload,
+  UpdateUserProfileApiPayload,
+  UserTagsData,
+} from "../types/apiTypes";
+import type { CategoryIdUrlTypes } from "../types/componentTypes";
 import {
-  NEXT_API_URL,
-  GET_BOOKMARKS_DATA_API,
-  DELETE_BOOKMARK_DATA_API,
-  SEND_COLLABORATION_EMAIL_API,
-  ADD_CATEGORY_TO_BOOKMARK_API,
   ADD_BOOKMARK_MIN_DATA,
-  ADD_URL_SCREENSHOT_API,
-  FETCH_USER_TAGS_API,
-  CREATE_USER_TAGS_API,
+  ADD_CATEGORY_TO_BOOKMARK_API,
   ADD_TAG_TO_BOOKMARK_API,
-  REMOVE_TAG_FROM_BOOKMARK_API,
-  FETCH_USER_CATEGORIES_API,
-  CREATE_USER_CATEGORIES_API,
-  DELETE_USER_CATEGORIES_API,
-  UPDATE_USER_CATEGORIES_API,
-  FETCH_SHARED_CATEGORIES_DATA_API,
-  UPDATE_SHARED_CATEGORY_USER_ROLE_API,
-  DELETE_SHARED_CATEGORIES_USER_API,
-  MOVE_BOOKMARK_TO_TRASH_API,
+  ADD_URL_SCREENSHOT_API,
   CLEAR_BOOKMARK_TRASH_API,
+  CREATE_USER_CATEGORIES_API,
+  CREATE_USER_TAGS_API,
+  DELETE_BOOKMARK_DATA_API,
+  DELETE_SHARED_CATEGORIES_USER_API,
+  DELETE_USER_CATEGORIES_API,
   FETCH_BOOKMARKS_VIEW,
+  FETCH_SHARED_CATEGORIES_DATA_API,
+  FETCH_USER_CATEGORIES_API,
   FETCH_USER_PROFILE_API,
-  UPDATE_USER_PROFILE_API,
-  SEARCH_BOOKMARKS,
+  FETCH_USER_TAGS_API,
   GET_BOOKMARKS_COUNT,
+  GET_BOOKMARKS_DATA_API,
+  MOVE_BOOKMARK_TO_TRASH_API,
+  NEXT_API_URL,
+  REMOVE_TAG_FROM_BOOKMARK_API,
+  SEARCH_BOOKMARKS,
+  SEND_COLLABORATION_EMAIL_API,
   UPDATE_CATEGORY_ORDER_API,
-} from '../utils/constants';
-import isEmpty from 'lodash/isEmpty';
-import { CategoryIdUrlTypes } from '../types/componentTypes';
-import isNull from 'lodash/isNull';
-import { isUserInACategory } from '../utils/helpers';
+  UPDATE_SHARED_CATEGORY_USER_ROLE_API,
+  UPDATE_USER_CATEGORIES_API,
+  UPDATE_USER_PROFILE_API,
+} from "../utils/constants";
+import { isUserInACategory } from "../utils/helpers";
 
 // bookmark
 // gets bookmarks data
 export const fetchBookmakrsData = async (
-  // category_id: string | null | number,
-  // from: number
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  { pageParam = 0, queryKey },
-  session: SupabaseSessionType
+  {
+    pageParam = 0,
+    queryKey,
+  }: QueryFunctionContext<(string | number | null | undefined)[], any>,
+  session: SupabaseSessionType,
 ) => {
   const categoryId =
     !isEmpty(queryKey) && queryKey?.length <= 3 ? queryKey[2] : null;
@@ -66,13 +83,24 @@ export const fetchBookmakrsData = async (
   }
 
   if (!session?.access_token) {
-    return;
+    return undefined;
   }
 
   try {
-    const bookmarksData = await axios.get(
-      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${categoryId}&from=${pageParam}`
+    const bookmarksData = await axios.get<{
+      data: {
+        data: SingleListData[];
+      };
+      count: BookmarksCountTypes;
+    }>(
+      `${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${
+        session?.access_token
+      }&category_id=${
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        isNull(categoryId) ? "null" : categoryId
+      }&from=${pageParam as string}`,
     );
+
     return {
       data: bookmarksData?.data?.data,
       error: null,
@@ -84,25 +112,47 @@ export const fetchBookmakrsData = async (
 };
 
 export const getBookmarksCount = async (
-  queryData: { queryKey: string[] },
-  session: SupabaseSessionType
-) => {
+  queryData: QueryFunctionContext<QueryKey, any>,
+  session: SupabaseSessionType,
+): Promise<{
+  data: BookmarksCountTypes | null;
+  error: Error;
+}> => {
   const userId =
     !isEmpty(queryData?.queryKey) && queryData?.queryKey?.length < 4
       ? queryData?.queryKey[1]
       : undefined;
 
+  if (!session?.access_token) {
+    return {
+      data: null,
+      error: { name: "No access Token", message: "No Access token" },
+    };
+  }
+
   if (userId) {
     try {
-      if (!session?.access_token) return;
-      const bookmarksData = await axios.get(
-        `${NEXT_API_URL}${GET_BOOKMARKS_COUNT}?access_token=${session?.access_token}`
+      const bookmarksData = await axios.get<{
+        data: BookmarksCountTypes;
+        error: Error;
+      }>(
+        `${NEXT_API_URL}${GET_BOOKMARKS_COUNT}?access_token=${session?.access_token}`,
       );
 
       return bookmarksData?.data;
     } catch (e) {
-      return e;
+      const error = e as Error;
+      return {
+        data: null,
+        error,
+      };
     }
+  } else {
+    // return undefined;
+    return {
+      data: null,
+      error: { name: "NO user id", message: "NO user id" },
+    };
   }
 };
 
@@ -111,12 +161,7 @@ export const addBookmarkMinData = async ({
   category_id,
   update_access,
   session,
-}: {
-  url: string;
-  category_id: number | string | null;
-  update_access: boolean;
-  session: SupabaseSessionType;
-}) => {
+}: AddBookmarkMinDataPayloadTypes) => {
   try {
     const apiRes = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
       access_token: session?.access_token,
@@ -125,7 +170,7 @@ export const addBookmarkMinData = async ({
       update_access,
     });
 
-    return apiRes;
+    return apiRes as { data: { data: SingleListData[] } };
   } catch (e) {
     return e;
   }
@@ -135,11 +180,7 @@ export const addBookmarkScreenshot = async ({
   url,
   id,
   session,
-}: {
-  url: string;
-  id: number;
-  session: SupabaseSessionType;
-}) => {
+}: AddBookmarkScreenshotPayloadTypes) => {
   try {
     const apiRes = await axios.post(
       `${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
@@ -147,7 +188,7 @@ export const addBookmarkScreenshot = async ({
         access_token: session?.access_token,
         url,
         id,
-      }
+      },
     );
 
     return apiRes;
@@ -176,19 +217,15 @@ export const moveBookmarkToTrash = async ({
   data,
   isTrash,
   session,
-}: {
-  data: SingleListData;
-  isTrash: boolean;
-  session: SupabaseSessionType;
-}) => {
+}: MoveBookmarkToTrashApiPayload) => {
   try {
     const res = await axios.post(
       `${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
       {
-        data: data,
-        isTrash: isTrash,
+        data,
+        isTrash,
         access_token: session?.access_token,
-      }
+      },
     );
 
     return res;
@@ -200,10 +237,7 @@ export const moveBookmarkToTrash = async ({
 export const clearBookmarksInTrash = async ({
   user_id = undefined,
   session,
-}: {
-  user_id: string | undefined;
-  session: SupabaseSessionType;
-}) => {
+}: ClearBookmarksInTrashApiPayloadTypes) => {
   try {
     const res = await axios.post(`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`, {
       user_id,
@@ -219,53 +253,88 @@ export const clearBookmarksInTrash = async ({
 export const searchBookmarks = async (
   searchText: string,
   category_id: CategoryIdUrlTypes,
-  session: SupabaseSessionType
-) => {
-  if (!isEmpty(searchText) && searchText !== '#') {
+  session: SupabaseSessionType,
+): Promise<{
+  data: BookmarksPaginatedDataTypes[] | null;
+  error: Error;
+}> => {
+  if (!isEmpty(searchText) && searchText !== "#" && !isNull(session)) {
+    const accessToken =
+      !isNull(session?.access_token) || session?.access_token
+        ? session?.access_token
+        : "null";
+
+    const categoryId = !isNull(category_id) ? category_id : "null";
+
     try {
-      const res = await axios.get(
-        `${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${session?.access_token}&user_id=${session?.user?.id}&category_id=${category_id}`
+      const res = await axios.get<{
+        data: BookmarksPaginatedDataTypes[];
+        error: Error;
+      }>(
+        `${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${accessToken}&user_id=${session?.user?.id}&category_id=${categoryId}`,
       );
       return res?.data;
     } catch (e) {
-      return e;
+      const error = e as Error;
+      return {
+        data: null,
+        error,
+      };
     }
   }
+
+  return {
+    data: null,
+    error: { name: "error", message: "error" },
+  };
 };
 
 // user tags
 export const fetchUserTags = async (
   user_id: string,
-  session: SupabaseSessionType
-) => {
+  session: SupabaseSessionType,
+): Promise<{ data: UserTagsData[] | null; error: Error }> => {
+  if (!session?.access_token) {
+    return {
+      data: null,
+      error: { message: "no access token", name: "no access token" },
+    };
+  }
+
   if (user_id && !isEmpty(user_id)) {
     try {
-      if (!session?.access_token) return;
-      const res = await axios.get(
-        `${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}&access_token=${session?.access_token}`
+      const res = await axios.get<{ data: UserTagsData[]; error: Error }>(
+        `${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}&access_token=${session?.access_token}`,
       );
       return res?.data;
     } catch (e) {
-      return e;
+      const error = e as Error;
+      return {
+        data: null,
+        error,
+      };
     }
   }
+  return {
+    data: null,
+    error: { message: "no user id", name: "no user id" },
+  };
 };
 
 export const addUserTags = async ({
   userData,
   tagsData,
   session,
-}: {
-  userData: UserIdentity;
-  tagsData: { name: string };
-  session: SupabaseSessionType;
-}) => {
+}: AddUserTagsApiPayload) => {
   try {
-    const res = await axios.post(`${NEXT_API_URL}${CREATE_USER_TAGS_API}`, {
-      name: tagsData?.name,
-      user_id: userData?.id,
-      access_token: session?.access_token,
-    });
+    const res = await axios.post<{ data: UserTagsData }>(
+      `${NEXT_API_URL}${CREATE_USER_TAGS_API}`,
+      {
+        name: tagsData?.name,
+        user_id: userData?.id,
+        access_token: session?.access_token,
+      },
+    );
     return res?.data;
   } catch (e) {
     return e;
@@ -275,12 +344,11 @@ export const addUserTags = async ({
 export const addTagToBookmark = async ({
   selectedData,
   session,
-}: {
-  selectedData: Array<BookmarksTagData> | BookmarksTagData;
-  session: SupabaseSessionType;
-}) => {
+}: AddTagToBookmarkApiPayload) => {
   try {
-    const res = await axios.post(`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`, {
+    const res = await axios.post<{
+      data: SingleListData;
+    }>(`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`, {
       data: selectedData,
       access_token: session?.access_token,
     });
@@ -298,14 +366,14 @@ export const removeTagFromBookmark = async ({
   session: SupabaseSessionType;
 }) => {
   try {
-    const res = await axios.post(
-      `${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
-      {
-        tag_id: selectedData?.tag_id,
-        bookmark_id: selectedData?.bookmark_id,
-        access_token: session?.access_token,
-      }
-    );
+    const res = await axios.post<{
+      data: UserTagsData;
+      error: Error;
+    }>(`${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`, {
+      tag_id: selectedData?.tag_id,
+      bookmark_id: selectedData?.bookmark_id,
+      access_token: session?.access_token,
+    });
     return res?.data;
   } catch (e) {
     return e;
@@ -318,21 +386,40 @@ export const fetchBookmarksViews = async ({
 }: {
   category_id: string | number | null;
   session: SupabaseSessionType;
-}) => {
+}): Promise<{
+  data: BookmarkViewDataTypes | null;
+  error: Error;
+}> => {
   if (!isUserInACategory(category_id as string)) {
-    return;
+    return {
+      data: null,
+      error: { message: "user not in category", name: "user not in category" },
+    };
+  }
+  if (!session?.access_token && isNull(category_id)) {
+    return {
+      data: null,
+      error: {
+        message: "no access token and category id is null",
+        name: "no access token and category id is nul",
+      },
+    };
   }
   try {
-    if (!session?.access_token && isNull(category_id)) {
-      return;
-    }
-    const res = await axios.post(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
+    const res = await axios.post<{
+      data: BookmarkViewDataTypes | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
       category_id: isNull(category_id) ? 0 : category_id,
       access_token: session?.access_token,
     });
     return res?.data;
   } catch (e) {
-    return e;
+    const error = e as Error;
+    return {
+      data: null,
+      error,
+    };
   }
 };
 
@@ -341,23 +428,42 @@ export const fetchBookmarksViews = async ({
 export const fetchCategoriesData = async (
   userId: string,
   userEmail: string,
-  session: SupabaseSessionType
-) => {
+  session: SupabaseSessionType,
+): Promise<{
+  data: CategoriesData[] | null;
+  error: Error;
+}> => {
+  if (!session?.access_token) {
+    return {
+      data: null,
+      error: { name: "no access token", message: "no access token" },
+    };
+  }
+
   if (!isEmpty(userId)) {
     try {
-      if (!session?.access_token) return;
-      const res = await axios.post(
-        `${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`,
-        {
-          userEmail: userEmail,
-          user_id: userId,
-          access_token: session?.access_token,
-        }
-      );
-      return res?.data;
+      const res = await axios.post<{
+        data: CategoriesData[] | null;
+        error: Error;
+      }>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`, {
+        userEmail,
+        user_id: userId,
+        access_token: session?.access_token,
+      });
+
+      return res.data;
     } catch (e) {
-      return e;
+      const error = e as Error;
+      return {
+        data: null,
+        error,
+      };
     }
+  } else {
+    return {
+      data: null,
+      error: { name: "no user id", message: "no user id" },
+    };
   }
 };
 
@@ -373,15 +479,15 @@ export const addUserCategory = async ({
   session: SupabaseSessionType;
 }) => {
   try {
-    const res = await axios.post(
-      `${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`,
-      {
-        name: name,
-        user_id: user_id,
-        access_token: session?.access_token,
-        category_order,
-      }
-    );
+    const res = await axios.post<{
+      data: CategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`, {
+      name,
+      user_id,
+      access_token: session?.access_token,
+      category_order,
+    });
     return res?.data;
   } catch (e) {
     return e;
@@ -392,20 +498,16 @@ export const deleteUserCategory = async ({
   category_id,
   category_order,
   session,
-}: {
-  category_id: number;
-  category_order: number[];
-  session: SupabaseSessionType;
-}) => {
+}: DeleteUserCategoryApiPayload) => {
   try {
-    const res = await axios.post(
-      `${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`,
-      {
-        category_id: category_id,
-        category_order,
-        access_token: session?.access_token,
-      }
-    );
+    const res = await axios.post<{
+      data: CategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`, {
+      category_id,
+      category_order,
+      access_token: session?.access_token,
+    });
     return res?.data;
   } catch (e) {
     return e;
@@ -417,12 +519,7 @@ export const addCategoryToBookmark = async ({
   bookmark_id,
   update_access = false,
   session,
-}: {
-  category_id: number | null;
-  bookmark_id: number;
-  update_access: boolean;
-  session: SupabaseSessionType;
-}) => {
+}: AddCategoryToBookmarkApiPayload) => {
   try {
     const res = await axios.post(
       `${NEXT_API_URL}${ADD_CATEGORY_TO_BOOKMARK_API}`,
@@ -431,7 +528,7 @@ export const addCategoryToBookmark = async ({
         bookmark_id,
         update_access,
         access_token: session?.access_token,
-      }
+      },
     );
 
     return res;
@@ -444,15 +541,7 @@ export const updateCategory = async ({
   category_id,
   updateData,
   session,
-}: {
-  category_id: number | null | string;
-  updateData: {
-    is_public?: boolean;
-    icon?: null | string;
-    category_views?: BookmarkViewDataTypes;
-  };
-  session: SupabaseSessionType;
-}) => {
+}: UpdateCategoryApiPayload) => {
   try {
     const res = await axios.post(
       `${NEXT_API_URL}${UPDATE_USER_CATEGORIES_API}`,
@@ -460,7 +549,7 @@ export const updateCategory = async ({
         category_id,
         updateData,
         access_token: session?.access_token,
-      }
+      },
     );
 
     return res;
@@ -472,17 +561,14 @@ export const updateCategory = async ({
 export const updateCategoryOrder = async ({
   order,
   session,
-}: {
-  order: number[];
-  session: SupabaseSessionType;
-}) => {
+}: UpdateCategoryOrderApiPayload) => {
   try {
     const res = await axios.post(
       `${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`,
       {
         category_order: order,
         access_token: session?.access_token,
-      }
+      },
     );
 
     return res;
@@ -516,26 +602,39 @@ export const sendCollaborationEmailInvite = async ({
       hostUrl,
       userId,
       access_token: session?.access_token,
-    }
+    },
   );
 
   return res;
 };
 
 export const fetchSharedCategoriesData = async (
-  session: SupabaseSessionType
-) => {
+  session: SupabaseSessionType,
+): Promise<{
+  data: FetchSharedCategoriesData[] | null;
+  error: Error;
+}> => {
+  if (!session?.access_token) {
+    return {
+      data: null,
+      error: { message: "no access token", name: "no access token" },
+    };
+  }
   try {
-    if (!session?.access_token) {
-      return;
-    }
-    const res = await axios.get(
-      `${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}?access_token=${session?.access_token}`
+    const res = await axios.get<{
+      data: FetchSharedCategoriesData[] | null;
+      error: Error;
+    }>(
+      `${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}?access_token=${session?.access_token}`,
     );
 
     return res?.data;
   } catch (e) {
-    return e;
+    const catchError = e as Error;
+    return {
+      data: null,
+      error: catchError,
+    };
   }
 };
 
@@ -547,10 +646,13 @@ export const deleteSharedCategoriesUser = async ({
   session: SupabaseSessionType;
 }) => {
   try {
-    const res = await axios.post(
-      `${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`,
-      { id, access_token: session?.access_token }
-    );
+    const res = await axios.post<{
+      data: FetchSharedCategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`, {
+      id,
+      access_token: session?.access_token,
+    });
 
     return res?.data;
   } catch (e) {
@@ -562,20 +664,16 @@ export const updateSharedCategoriesUserAccess = async ({
   id,
   updateData,
   session,
-}: {
-  id: number;
-  updateData: { edit_access?: boolean; category_views?: BookmarkViewDataTypes };
-  session: SupabaseSessionType;
-}) => {
+}: UpdateSharedCategoriesUserAccessApiPayload) => {
   try {
-    const res = await axios.post(
-      `${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`,
-      {
-        id,
-        updateData,
-        access_token: session?.access_token,
-      }
-    );
+    const res = await axios.post<{
+      data: FetchSharedCategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`, {
+      id,
+      updateData,
+      access_token: session?.access_token,
+    });
 
     return res?.data;
   } catch (e) {
@@ -590,17 +688,37 @@ export const fetchUserProfiles = async ({
 }: {
   userId: string;
   session: SupabaseSessionType;
-}) => {
+}): Promise<{
+  data: ProfilesTableTypes[] | null;
+  error: Error;
+}> => {
+  if (!session?.access_token) {
+    return {
+      data: null,
+      error: { name: "No access Token", message: "No Access token" },
+    };
+  }
+
   try {
     if (userId) {
-      if (!session?.access_token) return;
-      const res = await axios.get(
-        `${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}`
+      const res = await axios.get<{
+        data: ProfilesTableTypes[] | null;
+        error: Error;
+      }>(
+        `${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}`,
       );
       return res?.data;
     }
+    return {
+      data: null,
+      error: { name: "No user id", message: "No user id" },
+    };
   } catch (e) {
-    return e;
+    const error = e as Error;
+    return {
+      data: null,
+      error,
+    };
   }
 };
 
@@ -608,13 +726,12 @@ export const updateUserProfile = async ({
   id,
   updateData,
   session,
-}: {
-  id: string;
-  updateData: ProfilesTableTypes;
-  session: SupabaseSessionType;
-}) => {
+}: UpdateUserProfileApiPayload) => {
   try {
-    const res = await axios.post(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
+    const res = await axios.post<{
+      data: ProfilesTableTypes[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
       id,
       updateData,
       access_token: session?.access_token,
@@ -629,16 +746,16 @@ export const updateUserProfile = async ({
 // auth
 
 export const signInWithOauth = async (
-  provider: Provider = 'google',
-  supabase: SupabaseClient<any, 'public', any>
+  provider: Provider,
+  supabase: SupabaseClient<any, "public", any>,
 ) => {
-  const {} = await supabase.auth.signInWithOAuth({ provider });
+  await supabase.auth.signInWithOAuth({ provider });
 };
 
 export const signInWithEmailPassword = async (
   email: string,
   password: string,
-  supabase: SupabaseClient<any, 'public', any>
+  supabase: SupabaseClient<any, "public", any>,
 ) => {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -648,7 +765,7 @@ export const signInWithEmailPassword = async (
 export const signUpWithEmailPassword = async (
   email: string,
   password: string,
-  supabase: SupabaseClient<any, 'public', any>
+  supabase: SupabaseClient<any, "public", any>,
 ) => {
   const { error } = await supabase.auth.signUp({
     email,
@@ -658,7 +775,6 @@ export const signUpWithEmailPassword = async (
   return { error };
 };
 
-export const signOut = async (supabase: SupabaseClient<any, 'public', any>) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { error } = await supabase.auth.signOut();
+export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
+  await supabase.auth.signOut();
 };

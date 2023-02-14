@@ -1,10 +1,11 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { SHARED_CATEGORIES_TABLE_NAME } from '../../utils/constants';
-import jwt_decode from 'jwt-decode';
-import isEmpty from 'lodash/isEmpty';
-import isNull from 'lodash/isNull';
-import { createClient, PostgrestError } from '@supabase/supabase-js';
+import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import jwt_decode from "jwt-decode";
+import isEmpty from "lodash/isEmpty";
+import isNull from "lodash/isNull";
+import type { NextApiRequest, NextApiResponse } from "next";
+
+import { SHARED_CATEGORIES_TABLE_NAME } from "../../utils/constants";
 
 /**
  * Adds user as colaborator in DB
@@ -24,17 +25,15 @@ interface InviteTokenData {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<Data>,
 ) {
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.SUPABASE_SERVICE_KEY as string
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY,
   );
 
   if (req?.query?.token) {
-    const tokenData = jwt_decode(
-      req?.query?.token as string
-    ) as InviteTokenData;
+    const tokenData: InviteTokenData = jwt_decode(req?.query?.token as string);
 
     const insertData = {
       email: tokenData?.email,
@@ -46,12 +45,12 @@ export default async function handler(
     // check if user with category Id is already there in DB
     const { data, error } = await supabase
       .from(SHARED_CATEGORIES_TABLE_NAME)
-      .select('*')
-      .eq('category_id', insertData?.category_id)
-      .eq('email', insertData?.email);
+      .select("*")
+      .eq("category_id", insertData?.category_id)
+      .eq("email", insertData?.email);
 
     if (isEmpty(data) && isNull(error)) {
-      const { error } = await supabase
+      const { error: catError } = await supabase
         .from(SHARED_CATEGORIES_TABLE_NAME)
         .insert({
           category_id: insertData?.category_id,
@@ -61,36 +60,33 @@ export default async function handler(
         })
         .select();
 
-      if (isNull(error)) {
+      if (isNull(catError)) {
         res.status(200).json({
-          success: 'User has been added as a colaborator to the category',
+          success: "User has been added as a colaborator to the category",
           error: null,
         });
-        return;
+      } else if (catError?.code === "23503") {
+        // if collab user does not have an existing account
+        res.status(500).json({
+          success: null,
+          error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${catError?.message}`,
+        });
+        throw new Error("ERROR");
       } else {
-        if (error?.code === '23503') {
-          // if collab user does not have an existing account
-          res.status(500).json({
-            success: null,
-            error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${error?.message}`,
-          });
-          throw new Error('ERROR');
-        } else {
-          res.status(500).json({
-            success: null,
-            error: error?.message,
-          });
-          throw new Error('ERROR');
-        }
+        res.status(500).json({
+          success: null,
+          error: catError?.message,
+        });
+        throw new Error("ERROR");
       }
     } else {
       res.status(500).json({
         success: null,
         error: isNull(error)
-          ? 'The user is alredy a colaborator of this category'
+          ? "The user is alredy a colaborator of this category"
           : error,
       });
-      throw new Error('ERROR');
+      throw new Error("ERROR");
     }
   }
 }

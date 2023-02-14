@@ -1,10 +1,15 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { createClient, PostgrestError } from '@supabase/supabase-js';
-import isNull from 'lodash/isNull';
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { PROFILES } from '../../../utils/constants';
-import jwt from 'jsonwebtoken';
-import jwtDecode from 'jwt-decode';
+import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import jwt from "jsonwebtoken";
+import jwtDecode from "jwt-decode";
+import isNull from "lodash/isNull";
+import type { NextApiResponse } from "next";
+
+import type {
+  NextAPIReq,
+  UpdateCategoryOrderApiPayload,
+} from "../../../types/apiTypes";
+import { PROFILES } from "../../../utils/constants";
 
 type resType = {
   id: string;
@@ -21,27 +26,27 @@ type Data = {
  */
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
+  req: NextAPIReq<{
+    category_order: Pick<UpdateCategoryOrderApiPayload, "order">;
+  }>,
+  res: NextApiResponse<Data>,
 ) {
-  await jwt.verify(
-    req.body.access_token as string,
-    process.env.SUPABASE_JWT_SECRET_KEY as string,
+  jwt.verify(
+    req.body.access_token,
+    process.env.SUPABASE_JWT_SECRET_KEY,
     function (err) {
       if (err) {
         res.status(500).json({ data: null, error: err });
-        throw new Error('ERROR');
+        throw new Error("ERROR");
       }
-    }
+    },
   );
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.SUPABASE_SERVICE_KEY as string
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY,
   );
 
-  const tokenDecode = jwtDecode(req.body.access_token);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  const tokenDecode: { sub: string } = jwtDecode(req.body.access_token);
   const userId = tokenDecode?.sub;
 
   const { data: updateTargetCategoryData, error: updateTargetCategoryError } =
@@ -60,9 +65,8 @@ export default async function handler(
       data: null,
       error: updateTargetCategoryError,
     });
-    throw new Error('ERROR');
+    throw new Error("ERROR");
   } else {
     res.status(200).json({ data: updateTargetCategoryData, error: null });
-    return;
   }
 }
