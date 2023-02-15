@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "include": ["./**/*"],
-  "exclude": ["node_modules", ".next"],
+  "exclude": ["node_modules", ".next", "cypress"],
   "compilerOptions": {
     /* Basic Options */
     // TypeScript is not used for building, allow all modern features

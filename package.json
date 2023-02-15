@@ -69,6 +69,7 @@
     "chrome-aws-lambda": "^10.1.0",
     "classnames": "^2.3.1",
     "clsx": "^1.2.1",
+    "cypress": "^12.5.1",
     "date-fns": "^2.29.3",
     "filereader": "^0.10.3",
     "heroicons": "^1.0.6",

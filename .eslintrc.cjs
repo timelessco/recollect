@@ -14,7 +14,7 @@ const config = {
       presets: ["@babel/preset-env"],
     },
   },
-  ignorePatterns: ["sentry.client.config.ts"],
+  ignorePatterns: ["sentry.client.config.ts", "cypress/*"],
   extends: [
     "eslint:recommended",
     "airbnb-base",
