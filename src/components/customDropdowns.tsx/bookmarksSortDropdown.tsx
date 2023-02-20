@@ -5,7 +5,9 @@ import { isEmpty } from "lodash";
 import find from "lodash/find";
 import { useRef } from "react";
 
-import SortByDateIconGray from "../../icons/sortByDateIconGray";
+import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
+import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
+import DateIcon from "../../icons/sortByIcons/dateIcon";
 import { useLoadersStore } from "../../store/componentStore";
 import type { CategoriesData, ProfilesTableTypes } from "../../types/apiTypes";
 import type {
@@ -66,29 +68,44 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
   const menu = useMenuState({ gutter: 8 });
 
   const sortOptions = [
+    // {
+    //   label: "By date ↑",
+    //   value: "date-sort-acending",
+    // },
+    // {
+    //   label: "By Date",
+    //   value: "date-sort-decending",
+    // },
+    // {
+    //   label: "By Name (A → Z)",
+    //   value: "alphabetical-sort-acending",
+    // },
+    // {
+    //   label: "By name (Z → A)",
+    //   value: "alphabetical-sort-decending",
+    // },
+    // {
+    //   label: "By url (A → Z)",
+    //   value: "url-sort-acending",
+    // },
+    // {
+    //   label: "By url (Z → A)",
+    //   value: "url-sort-decending",
+    // },
     {
-      label: "By date ↑",
+      label: "Recent First",
       value: "date-sort-acending",
+      icon: <DateIcon />,
     },
     {
-      label: "By date ↓",
+      label: "Oldest First",
       value: "date-sort-decending",
+      icon: <ClockRewindIcon />,
     },
     {
-      label: "By Name (A → Z)",
-      value: "alphabetical-sort-acending",
-    },
-    {
-      label: "By name (Z → A)",
+      label: "Alphabetical",
       value: "alphabetical-sort-decending",
-    },
-    {
-      label: "By url (A → Z)",
-      value: "url-sort-acending",
-    },
-    {
-      label: "By url (Z → A)",
-      value: "url-sort-decending",
+      icon: <AlphabeticalIcon />,
     },
   ];
 
@@ -98,10 +115,15 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
       {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
       <MenuButton state={menu} className="button" as="div">
         <Button type="light">
-          <figure className="h-3 w-3">
-            {isSortByLoading ? <Spinner /> : <SortByDateIconGray />}
+          <figure className="h-4 w-4">
+            {isSortByLoading ? (
+              <Spinner />
+            ) : (
+              find(sortOptions, item => item?.value === bookmarksSortValue)
+                ?.icon
+            )}
           </figure>
-          <span className="ml-[7px] text-custom-gray-1">
+          <span className="ml-[6px] text-custom-gray-1">
             {
               find(sortOptions, item => item?.value === bookmarksSortValue)
                 ?.label
@@ -112,8 +134,11 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
       <Menu
         initialFocusRef={radioFocusRef}
         state={menu}
-        className="z-20 w-[170px] origin-top-left rounded-xl bg-white py-3 px-1 shadow-custom-1 ring-1 ring-black/5"
+        className="z-20 w-[195px] origin-top-left rounded-xl bg-white p-[6px] shadow-custom-1 ring-1 ring-black/5"
       >
+        <div className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-custom-gray-10">
+          Sort by
+        </div>
         <RadioGroup
           radioList={sortOptions}
           onChange={value =>

@@ -370,3 +370,23 @@ main {
     margin-bottom: 6rem;
   }
 }
+
+.dropdown-container input[type="radio"] {
+  /* display: none; */
+  position: absolute;
+  opacity: 0;
+}
+
+.dropdown-container input[aria-checked="true"] + input::after {
+  content: "";
+
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+
+  width: 12px;
+  height: 12px;
+
+  background-image: url(/public/tickIcon.svg);
+}

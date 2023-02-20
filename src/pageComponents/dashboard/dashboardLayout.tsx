@@ -1,20 +1,20 @@
-import { Menu, Transition } from "@headlessui/react";
+// import { Menu, Transition } from "@headlessui/react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/solid";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment } from "allotment";
 import find from "lodash/find";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import Button from "../../components/atoms/button";
-import SearchInput from "../../components/searchInput";
+// import SearchInput from "../../components/searchInput";
 import HomeIconGray from "../../icons/homeIconGray";
 import InboxIconGray from "../../icons/inboxIconGray";
-import OptionsIconGray from "../../icons/optionsIconGray";
+// import OptionsIconGray from "../../icons/optionsIconGray";
 import PlusIconWhite from "../../icons/plusIconWhite";
 import SearchIconGray from "../../icons/searchIconGray";
 import TrashIconGray from "../../icons/trashIconGray";
-import UserIconGray from "../../icons/userIconGray";
+// import UserIconGray from "../../icons/userIconGray";
 import type { BookmarksCountTypes, CategoriesData } from "../../types/apiTypes";
 import type {
   CategoryIdUrlTypes,
@@ -46,7 +46,7 @@ import SidePane from "./sidePane";
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
   renderMainContent: () => ChildrenTypes;
-  onShareClick: () => void;
+  // onShareClick: () => void;
   userId: string;
   onAddNewCategory: (value: string) => Promise<void>;
   onCategoryOptionClick: (
@@ -68,7 +68,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const {
     categoryId,
     renderMainContent,
-    onShareClick,
+    // onShareClick,
     userId,
     onAddNewCategory,
     onCategoryOptionClick,
@@ -115,9 +115,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     error: PostgrestError;
   };
 
-  function classNames(...classes: Array<string>) {
-    return classes.filter(Boolean).join(" ");
-  }
+  // function classNames(...classes: Array<string>) {
+  //   return classes.filter(Boolean).join(" ");
+  // }
 
   const optionsMenuList = [
     {
@@ -169,12 +169,120 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     return find(optionsMenuList, item => item?.current === true)?.icon;
   };
 
+  // const renderMainPaneNav = () => {
+  //   return (
+  //     <header className="flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px] px-4">
+  //       <div className="flex items-center space-x-[9px]">
+  //         <figure className="flex h-5 w-5 items-center">{navBarLogo()}</figure>
+  //         <p className="text-xl font-semibold leading-6 text-black">
+  //           {find(
+  //             categoryData?.data,
+  //             item => item?.category_slug === currentPath,
+  //           )?.category_name ||
+  //             find(optionsMenuList, item => item?.current === true)?.name}
+  //         </p>
+  //       </div>
+  //       <SearchInput
+  //         userId={userId}
+  //         placeholder={`Search in ${
+  //           find(
+  //             categoryData?.data,
+  //             item => item?.category_slug === currentPath,
+  //           )?.category_name || "All Bookmarks"
+  //         }`}
+  //         onChange={value => {
+  //           setSearchText(value);
+  //         }}
+  //       />
+  //       <div className="flex items-center">
+  //         <div className="mr-[17px] flex items-center space-x-1">
+  // <BookmarksViewDropdown
+  //   setBookmarksView={setBookmarksView}
+  //   categoryId={categoryId}
+  //   userId={userId}
+  // />
+  //           <BookmarksSortDropdown
+  //             setBookmarksView={setBookmarksView}
+  //             categoryId={categoryId}
+  //             userId={userId}
+  //           />
+  //           {typeof categoryId === "number" && (
+  //             <Button
+  //               type="light"
+  //               onClick={() => onShareClick()}
+  //               id="share-button"
+  //             >
+  //               <figure className="h-3 w-3">
+  //                 <UserIconGray />
+  //               </figure>
+  //               <span className="ml-[7px] text-custom-gray-1">Share</span>
+  //             </Button>
+  //           )}
+  //           <Menu as="div" className="relative shrink-0">
+  //             <Menu.Button as="div">
+  //               <Button type="light" className="p-[5px]" style={{ padding: 5 }}>
+  //                 <figure className="h-4 w-4">
+  //                   <OptionsIconGray />
+  //                 </figure>
+  //               </Button>
+  //             </Menu.Button>
+  //             <Transition
+  //               as={Fragment}
+  //               enter="transition ease-out duration-100"
+  //               enterFrom="transform opacity-0 scale-95"
+  //               enterTo="transform opacity-100 scale-100"
+  //               leave="transition ease-in duration-75"
+  //               leaveFrom="transform opacity-100 scale-100"
+  //               leaveTo="transform opacity-0 scale-95"
+  //             >
+  //               <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
+  //                 <Menu.Item>
+  //                   {({ active }) => (
+  //                     <div
+  //                       className={` cursor-pointer ${classNames(
+  //                         active ? "bg-gray-100" : "",
+  //                         "block py-2 px-4 text-sm text-gray-700",
+  //                       )}`}
+  //                     >
+  //                       Option one
+  //                     </div>
+  //                   )}
+  //                 </Menu.Item>
+  //               </Menu.Items>
+  //             </Transition>
+  //           </Menu>
+  //         </div>
+
+  //         {currentPath === TRASH_URL && (
+  //           <Button
+  //             type="dark"
+  //             className="mr-[17px] bg-red-700 hover:bg-red-900"
+  //             onClick={() => onClearTrash()}
+  //             id="clear-trash-button"
+  //           >
+  //             <span className="text-white">Clear Trash</span>
+  //           </Button>
+  //         )}
+
+  // <Button type="dark" onClick={onNavAddClick}>
+  //   <figure className="h-3 w-3">
+  //     <PlusIconWhite />
+  //   </figure>
+  //   <span className="ml-[7px] text-white">Add</span>
+  // </Button>
+  //       </div>
+  //     </header>
+  //   );
+  // };
+
   const renderMainPaneNav = () => {
     return (
-      <header className="flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px] px-4">
-        <div className="flex items-center space-x-[9px]">
-          <figure className="flex h-5 w-5 items-center">{navBarLogo()}</figure>
-          <p className="text-xl font-semibold leading-6 text-black">
+      <header className="flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px] pl-[15px] pr-3">
+        <div className="flex items-center py-[3.5px] px-2">
+          <figure className="mr-2 flex h-5 w-5 items-center">
+            {navBarLogo()}
+          </figure>
+          <p className="text-xl font-semibold leading-[23px] text-custom-gray-5">
             {find(
               categoryData?.data,
               item => item?.category_slug === currentPath,
@@ -182,98 +290,47 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               find(optionsMenuList, item => item?.current === true)?.name}
           </p>
         </div>
-        <SearchInput
-          userId={userId}
-          placeholder={`Search in ${
-            find(
-              categoryData?.data,
-              item => item?.category_slug === currentPath,
-            )?.category_name || "All Bookmarks"
-          }`}
-          onChange={value => {
-            setSearchText(value);
-          }}
-        />
         <div className="flex items-center">
-          <div className="mr-[17px] flex items-center space-x-1">
+          <div className="mr-3 flex items-center space-x-2">
             <BookmarksViewDropdown
               setBookmarksView={setBookmarksView}
               categoryId={categoryId}
               userId={userId}
             />
+            {currentPath === TRASH_URL && (
+              <Button
+                type="dark"
+                className="bg-red-700 hover:bg-red-900"
+                onClick={() => onClearTrash()}
+                id="clear-trash-button"
+              >
+                <span className="text-white">Clear Trash</span>
+              </Button>
+            )}
             <BookmarksSortDropdown
               setBookmarksView={setBookmarksView}
               categoryId={categoryId}
               userId={userId}
             />
-            {typeof categoryId === "number" && (
-              <Button
-                type="light"
-                onClick={() => onShareClick()}
-                id="share-button"
-              >
-                <figure className="h-3 w-3">
-                  <UserIconGray />
-                </figure>
-                <span className="ml-[7px] text-custom-gray-1">Share</span>
-              </Button>
-            )}
-            <Menu as="div" className="relative shrink-0">
-              <Menu.Button as="div">
-                <Button type="light" className="p-[5px]" style={{ padding: 5 }}>
-                  <figure className="h-4 w-4">
-                    <OptionsIconGray />
-                  </figure>
-                </Button>
-              </Menu.Button>
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <div
-                        className={` cursor-pointer ${classNames(
-                          active ? "bg-gray-100" : "",
-                          "block py-2 px-4 text-sm text-gray-700",
-                        )}`}
-                      >
-                        Option one
-                      </div>
-                    )}
-                  </Menu.Item>
-                </Menu.Items>
-              </Transition>
-            </Menu>
           </div>
 
-          {currentPath === TRASH_URL && (
-            <Button
-              type="dark"
-              className="mr-[17px] bg-red-700 hover:bg-red-900"
-              onClick={() => onClearTrash()}
-              id="clear-trash-button"
-            >
-              <span className="text-white">Clear Trash</span>
-            </Button>
-          )}
-
-          <Button type="dark" onClick={onNavAddClick}>
-            <figure className="h-3 w-3">
+          <Button
+            type="dark"
+            onClick={onNavAddClick}
+            className="hover:bg-black"
+          >
+            <figure className="h-4 w-4">
               <PlusIconWhite />
             </figure>
-            <span className="ml-[7px] text-white">Add</span>
+            <span className="ml-[6px] font-medium leading-[14px] text-white">
+              Create
+            </span>
           </Button>
         </div>
       </header>
     );
   };
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       {!showSidePane && (

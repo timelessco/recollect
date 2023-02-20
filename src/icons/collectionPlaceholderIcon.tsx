@@ -3,13 +3,13 @@ import { Icon } from "../components/atoms/icon";
 const CollectionPlaceholderIcon = () => {
   return (
     <Icon
-      width="18"
-      height="18"
+      width="100%"
+      height="100%"
       viewBox="0 0 18 18"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <rect width="18" height="18" rx="9" fill="#F59B32" />
+      <rect width="100%" height="100%" rx="9" fill="#F59B32" />
       <path
         fillRule="evenodd"
         clipRule="evenodd"

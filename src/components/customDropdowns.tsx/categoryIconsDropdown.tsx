@@ -34,7 +34,11 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
   const renderItem = (value: string) => {
     const data = find(options, item => item?.label === value);
 
-    return <div title={data?.label}>{data?.icon()}</div>;
+    return (
+      <div title={data?.label} className="h-[18px] w-[18px]">
+        {data?.icon()}
+      </div>
+    );
   };
 
   const renderComboBoxItem = (value: string, i: number) => {

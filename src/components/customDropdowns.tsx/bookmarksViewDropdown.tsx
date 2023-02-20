@@ -5,7 +5,10 @@ import { isEmpty } from "lodash";
 import find from "lodash/find";
 import React, { useRef } from "react";
 
-import MoodboardIconGray from "../../icons/moodboardIconGray";
+import CardIcon from "../../icons/viewIcons/cardIcon";
+import HeadlinesIcon from "../../icons/viewIcons/headLinesIcon";
+import ListIcon from "../../icons/viewIcons/listIcon";
+import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
 import type {
   CategoriesData,
   FetchSharedCategoriesData,
@@ -25,8 +28,10 @@ import {
 } from "../../utils/constants";
 import { errorToast } from "../../utils/toastMessages";
 import Button from "../atoms/button";
-import Checkbox from "../checkbox";
+// import Checkbox from "../checkbox";
 import RadioGroup from "../radioGroup";
+// import Slider from "../slider";
+import Switch from "../switch";
 
 // import Slider from "../slider";
 
@@ -128,7 +133,11 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   //     ? userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
   //     : "";
 
-  const cardContentOptions = [
+  interface CardContentOptionsTypes {
+    label: string;
+    value: string;
+  }
+  const cardContentOptions: CardContentOptionsTypes[] = [
     {
       label: "Cover",
       value: "cover",
@@ -155,28 +164,81 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
     {
       label: "Moodboard",
       value: "moodboard",
+      icon: <MoodboardIconGray />,
     },
     {
       label: "List",
       value: "list",
+      icon: <ListIcon />,
     },
     {
       label: "Card",
       value: "card",
+      icon: <CardIcon />,
     },
     {
       label: "Headlines",
       value: "headlines",
+      icon: <HeadlinesIcon />,
     },
   ];
   const menu = useMenuState({ gutter: 8 });
   const radio0ref = useRef<HTMLInputElement>(null);
+
+  const renderDropdownHeader = (text: string) => {
+    return (
+      <div className="py-[6px] px-2 text-xs font-450 leading-[14px] text-custom-gray-10">
+        {text}
+      </div>
+    );
+  };
+
+  const renderViewsSwitch = (item: CardContentOptionsTypes) => {
+    return (
+      <div className="flex items-center justify-between px-2 py-[5.5px]">
+        <p className=" text-13 font-450 leading-[14px] text-custom-gray-1">
+          {item?.label}
+        </p>
+        <Switch
+          size="small"
+          disabled={bookmarksViewValue === "headlines"}
+          enabled={bookmarksInfoValue?.includes(item?.value as never) || false}
+          setEnabled={() => {
+            if (bookmarksInfoValue?.includes(item.value as never)) {
+              if (bookmarksInfoValue?.length > 1) {
+                setBookmarksView(
+                  bookmarksInfoValue?.filter(
+                    viewItem => viewItem !== item.value,
+                  ),
+                  "info",
+                );
+              } else {
+                errorToast("Atleast one view option needs to be selcted");
+              }
+            } else {
+              setBookmarksView(
+                [...(bookmarksInfoValue as string[]), item.value],
+                "info",
+              );
+            }
+          }}
+        />
+      </div>
+    );
+  };
+
   return (
     <>
       <MenuButton state={menu} as="div">
         <Button type="light">
-          <figure className="h-3 w-3">
-            <MoodboardIconGray />
+          <figure className="h-4 w-4">
+            {/* <MoodboardIconGray /> */}
+            {
+              find(
+                bookmarksViewOptions,
+                item => item?.value === bookmarksViewValue,
+              )?.icon
+            }
           </figure>
           <span className="ml-[7px] text-custom-gray-1">
             {
@@ -191,8 +253,9 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
       <Menu
         initialFocusRef={radio0ref}
         state={menu}
-        className="z-20 w-[170px] origin-top-left rounded-xl bg-white py-3 px-1 shadow-custom-1 ring-1 ring-black/5"
+        className="z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5"
       >
+        {renderDropdownHeader("View as")}
         <div>
           <RadioGroup
             initialRadioRef={radio0ref}
@@ -203,38 +266,40 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
             value={bookmarksViewValue as string}
           />
         </div>
+        {renderDropdownHeader("Show in Cards")}
         <div>
           {cardContentOptions?.map(item => {
-            return (
-              <Checkbox
-                disabled={bookmarksViewValue === "headlines"}
-                key={item?.value}
-                label={item?.label}
-                value={item?.value}
-                checked={
-                  bookmarksInfoValue?.includes(item?.value as never) || false
-                }
-                onChange={value => {
-                  if (bookmarksInfoValue?.includes(value as never)) {
-                    if (bookmarksInfoValue?.length > 1) {
-                      setBookmarksView(
-                        bookmarksInfoValue?.filter(
-                          viewItem => viewItem !== value,
-                        ),
-                        "info",
-                      );
-                    } else {
-                      errorToast("Atleast one view option needs to be selcted");
-                    }
-                  } else {
-                    setBookmarksView(
-                      [...(bookmarksInfoValue as string[]), value as string],
-                      "info",
-                    );
-                  }
-                }}
-              />
-            );
+            // return (
+            //   <Checkbox
+            //     disabled={bookmarksViewValue === "headlines"}
+            //     key={item?.value}
+            //     label={item?.label}
+            //     value={item?.value}
+            // checked={
+            //   bookmarksInfoValue?.includes(item?.value as never) || false
+            // }
+            // onChange={value => {
+            //   if (bookmarksInfoValue?.includes(value as never)) {
+            //     if (bookmarksInfoValue?.length > 1) {
+            //       setBookmarksView(
+            //         bookmarksInfoValue?.filter(
+            //           viewItem => viewItem !== value,
+            //         ),
+            //         "info",
+            //       );
+            //     } else {
+            //       errorToast("Atleast one view option needs to be selcted");
+            //     }
+            //   } else {
+            //     setBookmarksView(
+            //       [...(bookmarksInfoValue as string[]), value as string],
+            //       "info",
+            //     );
+            //   }
+            // }}
+            //   />
+            // );
+            return renderViewsSwitch(item);
           })}
         </div>
 

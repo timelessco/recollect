@@ -490,11 +490,13 @@ const CardSection = ({
               renderBadgeContent={() => {
                 return (
                   <div className="flex items-center">
-                    {find(
-                      options,
-                      optionItem =>
-                        optionItem?.label === bookmarkCategoryData?.icon,
-                    )?.icon()}
+                    <figure className="h-[18px] w-[18px]">
+                      {find(
+                        options,
+                        optionItem =>
+                          optionItem?.label === bookmarkCategoryData?.icon,
+                      )?.icon()}
+                    </figure>
                     <p className="ml-1">
                       {bookmarkCategoryData?.category_name}
                     </p>

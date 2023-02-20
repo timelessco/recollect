@@ -760,12 +760,12 @@ const Dashboard = () => {
             // code block
           }
         }}
-        onShareClick={() => {
-          if (CATEGORY_ID && !isNull(CATEGORY_ID) && CATEGORY_ID !== "trash") {
-            toggleShareCategoryModal();
-            setShareCategoryId(CATEGORY_ID as number);
-          }
-        }}
+        // onShareClick={() => {
+        //   if (CATEGORY_ID && !isNull(CATEGORY_ID) && CATEGORY_ID !== "trash") {
+        //     toggleShareCategoryModal();
+        //     setShareCategoryId(CATEGORY_ID as number);
+        //   }
+        // }}
         onClearTrash={() => {
           toggleShowClearTrashWarningModal();
         }}

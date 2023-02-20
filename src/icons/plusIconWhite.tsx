@@ -5,8 +5,8 @@ import { Icon } from "../components/atoms/icon";
 const PlusIconWhite = () => {
   return (
     <Icon
-      width="12"
-      height="12"
+      width="100%"
+      height="100%"
       viewBox="0 0 12 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

@@ -122,6 +122,7 @@ const ShareCategoryModal = (props: ShareCategoryModalProps) => {
         <div className="mb-3 flex items-center space-x-4">
           <p>Public</p>
           <Switch
+            size="large"
             disabled={!isUserOwnerOfCategory}
             enabled={isPublic}
             setEnabled={() => {
