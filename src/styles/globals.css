@@ -359,7 +359,8 @@ main {
 @media (min-width: 640px) {
   .dialog {
     width: 420px;
-    padding: 1.5rem;
+
+    /* padding: 1.5rem; */
   }
 }
 
@@ -389,4 +390,17 @@ main {
   height: 12px;
 
   background-image: url(/public/tickIcon.svg);
+}
+
+.my-select {
+  padding-right: 15px;
+
+  background-image: url(/downArrowGray.svg);
+  background-repeat: no-repeat;
+  background-position: right 0 top 2px;
+  background-size: 12px;
+}
+
+.my-select span {
+  display: none;
 }

@@ -44,9 +44,7 @@ import useAddCategoryToBookmarkMutation from "../../async/mutationHooks/category
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useDeleteCategoryOtimisticMutation from "../../async/mutationHooks/category/useDeleteCategoryOtimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
-import useDeleteSharedCategoriesUserMutation from "../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
-import useUpdateSharedCategoriesUserAccessMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
 import useAddTagToBookmarkMutation from "../../async/mutationHooks/tags/useAddTagToBookmarkMutation";
 import useAddUserTagsMutation from "../../async/mutationHooks/tags/useAddUserTagsMutation";
 import useRemoveTagFromBookmarkMutation from "../../async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
@@ -66,7 +64,7 @@ import type {
   BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { errorToast, successToast } from "../../utils/toastMessages";
+import { errorToast } from "../../utils/toastMessages";
 
 import AddBookarkShortcutModal from "./modals/addBookmarkShortcutModal";
 import ShareCategoryModal from "./modals/shareCategoryModal";
@@ -213,11 +211,11 @@ const Dashboard = () => {
 
   // share category mutation
 
-  const { deleteSharedCategoriesUserMutation } =
-    useDeleteSharedCategoriesUserMutation();
+  // const { deleteSharedCategoriesUserMutation } =
+  //   useDeleteSharedCategoriesUserMutation();
 
-  const { updateSharedCategoriesUserAccessMutation } =
-    useUpdateSharedCategoriesUserAccessMutation();
+  // const { updateSharedCategoriesUserAccessMutation } =
+  //   useUpdateSharedCategoriesUserAccessMutation();
 
   const { updateSharedCategoriesOptimisticMutation } =
     useUpdateSharedCategoriesOptimisticMutation();
@@ -783,37 +781,37 @@ const Dashboard = () => {
         }}
       />
       <ShareCategoryModal
-        userId={session?.user?.id || ""}
-        onPublicSwitch={(isPublic, categoryId) => {
-          mutationApiCall(
-            updateCategoryOptimisticMutation.mutateAsync({
-              category_id: categoryId,
-              updateData: { is_public: isPublic },
-              session,
-            }),
-          )?.catch(() => {});
-        }}
-        onDeleteUserClick={id => {
-          mutationApiCall(
-            deleteSharedCategoriesUserMutation.mutateAsync({
-              id,
-              session,
-            }),
-          )?.catch(() => {});
-        }}
-        updateSharedCategoriesUserAccess={async (id, value) => {
-          const res = (await mutationApiCall(
-            updateSharedCategoriesUserAccessMutation.mutateAsync({
-              id,
-              updateData: { edit_access: !!parseInt(value, 10) },
-              session,
-            }),
-          )) as { error: Error };
+      // userId={session?.user?.id || ""}
+      // onPublicSwitch={(isPublic, categoryId) => {
+      //   mutationApiCall(
+      //     updateCategoryOptimisticMutation.mutateAsync({
+      //       category_id: categoryId,
+      //       updateData: { is_public: isPublic },
+      //       session,
+      //     }),
+      //   )?.catch(() => {});
+      // }}
+      // onDeleteUserClick={id => {
+      //   mutationApiCall(
+      //     deleteSharedCategoriesUserMutation.mutateAsync({
+      //       id,
+      //       session,
+      //     }),
+      //   )?.catch(() => {});
+      // }}
+      // updateSharedCategoriesUserAccess={async (id, value) => {
+      //   const res = (await mutationApiCall(
+      //     updateSharedCategoriesUserAccessMutation.mutateAsync({
+      //       id,
+      //       updateData: { edit_access: !!parseInt(value, 10) },
+      //       session,
+      //     }),
+      //   )) as { error: Error };
 
-          if (isNull(res?.error)) {
-            successToast("User role changed");
-          }
-        }}
+      //   if (isNull(res?.error)) {
+      //     successToast("User role changed");
+      //   }
+      // }}
       />
       <AddBookarkShortcutModal
         isAddBookmarkLoading={false}

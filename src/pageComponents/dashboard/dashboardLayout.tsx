@@ -14,7 +14,6 @@ import InboxIconGray from "../../icons/inboxIconGray";
 import PlusIconWhite from "../../icons/plusIconWhite";
 import SearchIconGray from "../../icons/searchIconGray";
 import TrashIconGray from "../../icons/trashIconGray";
-// import UserIconGray from "../../icons/userIconGray";
 import type { BookmarksCountTypes, CategoriesData } from "../../types/apiTypes";
 import type {
   CategoryIdUrlTypes,
@@ -32,6 +31,7 @@ import {
 import "allotment/dist/style.css";
 import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmarksViewDropdown";
+import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import type {
@@ -46,7 +46,6 @@ import SidePane from "./sidePane";
 interface DashboardLayoutProps {
   categoryId: CategoryIdUrlTypes;
   renderMainContent: () => ChildrenTypes;
-  // onShareClick: () => void;
   userId: string;
   onAddNewCategory: (value: string) => Promise<void>;
   onCategoryOptionClick: (
@@ -68,7 +67,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const {
     categoryId,
     renderMainContent,
-    // onShareClick,
     userId,
     onAddNewCategory,
     onCategoryOptionClick,
@@ -207,16 +205,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   //             userId={userId}
   //           />
   //           {typeof categoryId === "number" && (
-  //             <Button
-  //               type="light"
-  //               onClick={() => onShareClick()}
-  //               id="share-button"
-  //             >
-  //               <figure className="h-3 w-3">
-  //                 <UserIconGray />
-  //               </figure>
-  //               <span className="ml-[7px] text-custom-gray-1">Share</span>
-  //             </Button>
+  // <Button
+  //   type="light"
+  //   onClick={() => onShareClick()}
+  //   id="share-button"
+  // >
+  //   <figure className="h-3 w-3">
+  //     <UserIconGray />
+  //   </figure>
+  //   <span className="ml-[7px] text-custom-gray-1">Share</span>
+  // </Button>
   //           )}
   //           <Menu as="div" className="relative shrink-0">
   //             <Menu.Button as="div">
@@ -312,6 +310,19 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               categoryId={categoryId}
               userId={userId}
             />
+            {typeof categoryId === "number" && (
+              // <Button
+              //   type="light"
+              //   onClick={() => onShareClick()}
+              //   id="share-button"
+              // >
+              //   <figure className="h-4 w-4">
+              //     <ShareIcon />
+              //   </figure>
+              //   <span className="ml-[7px] text-custom-gray-1">Share</span>
+              // </Button>
+              <ShareDropdown />
+            )}
           </div>
 
           <Button

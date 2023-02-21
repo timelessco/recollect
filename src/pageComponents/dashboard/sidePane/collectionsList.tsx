@@ -463,7 +463,7 @@ const CollectionsList = (listProps: CollectionsListPropTypes) => {
         {showAddCategoryInput && (
           <div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
             <div className="flex items-center">
-              <figure className="mr-2">
+              <figure className="mr-2 h-[18px] w-[18px]">
                 <FileIcon />
               </figure>
               <input

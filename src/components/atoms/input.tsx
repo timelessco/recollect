@@ -3,6 +3,8 @@ import classNames from "classnames";
 import omit from "lodash/omit";
 import React, { type InputHTMLAttributes } from "react";
 
+import type { ChildrenTypes } from "../../types/componentTypes";
+
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   placeholder: string;
   className: string;
@@ -10,6 +12,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   errorText: string;
   isDisabled?: boolean;
   id?: string;
+  wrapperClassName?: string;
+  rendedRightSideElement?: ChildrenTypes;
+  errorClassName?: string;
+  errorIconClassName?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
@@ -23,6 +29,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     errorText = "",
     isDisabled = false,
     id = "",
+    wrapperClassName = "relative mt-1 rounded-md shadow-sm",
+    rendedRightSideElement,
+    errorClassName = "",
+    errorIconClassName = "",
   } = props;
 
   const inputClass = classNames(className, {
@@ -33,9 +43,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
       isDisabled,
   });
 
+  const errorClass = classNames(errorClassName, {
+    "mt-2 text-xs text-red-600": true,
+  });
+
+  const errorIconClass = classNames(errorIconClassName, {
+    "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3":
+      true,
+  });
+
   return (
     <div className="w-full">
-      <div className="relative mt-1 rounded-md shadow-sm">
+      <div className={wrapperClassName}>
         <input
           id={id}
           ref={ref}
@@ -49,16 +68,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           disabled={isDisabled}
         />
         {isError && (
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+          <div className={errorIconClass}>
             <ExclamationCircleIcon
               className="h-5 w-5 text-red-500"
               aria-hidden="true"
             />
           </div>
         )}
+        {rendedRightSideElement && rendedRightSideElement}
       </div>
       {isError && (
-        <p className="mt-2 text-xs text-red-600" id="email-error">
+        <p className={errorClass} id="email-error">
           {errorText}
         </p>
       )}
