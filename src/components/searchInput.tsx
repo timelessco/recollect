@@ -3,17 +3,20 @@ import { useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { Mention, MentionsInput } from "react-mentions";
 
+import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
 import { useMiscellaneousStore } from "../store/componentStore";
 import type { UserTagsData } from "../types/apiTypes";
 import { USER_TAGS_KEY } from "../utils/constants";
 
 const styles = {
   control: {
-    backgroundColor: "#ECECEC",
+    backgroundColor: "rgba(0, 0, 0, 0.047)",
     fontSize: 14,
-    width: 220,
+    fontWeight: 400,
+    color: "#707070",
+    width: 300,
     padding: "3px 10px 3px 28px",
-    borderRadius: 54,
+    borderRadius: 8,
   },
 
   "&multiLine": {
@@ -21,8 +24,9 @@ const styles = {
     highlighter: {},
     input: {
       border: "unset",
-      borderRadius: 54,
+      borderRadius: 8,
       padding: "inherit",
+      outline: "unset",
     },
   },
 
@@ -61,26 +65,33 @@ const SearchInput = (props: SearchInputTypes) => {
   };
 
   return (
-    <MentionsInput
-      value={searchText}
-      placeholder={placeholder}
-      onChange={(e: { target: { value: string } }) => onChange(e.target.value)}
-      style={styles}
-    >
-      <Mention
-        markup="@__display__"
-        trigger="#"
-        data={userTagsData?.data?.map(item => {
-          return {
-            id: item?.id,
-            display: item?.name,
-          };
-        })}
-        style={{
-          backgroundColor: "#cee4e5",
-        }}
-      />
-    </MentionsInput>
+    <div className=" relative">
+      <figure className=" absolute top-[7px] left-[9px]">
+        <SearchInputSearchIcon />
+      </figure>
+      <MentionsInput
+        value={searchText}
+        placeholder={placeholder}
+        onChange={(e: { target: { value: string } }) =>
+          onChange(e.target.value)
+        }
+        style={styles}
+      >
+        <Mention
+          markup="@__display__"
+          trigger="#"
+          data={userTagsData?.data?.map(item => {
+            return {
+              id: item?.id,
+              display: item?.name,
+            };
+          })}
+          style={{
+            backgroundColor: "#cee4e5",
+          }}
+        />
+      </MentionsInput>
+    </div>
   );
 };
 

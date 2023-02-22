@@ -32,6 +32,7 @@ import "allotment/dist/style.css";
 import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
+import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import type {
@@ -288,6 +289,18 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               find(optionsMenuList, item => item?.current === true)?.name}
           </p>
         </div>
+        <SearchInput
+          userId={userId}
+          placeholder={`Search in ${
+            find(
+              categoryData?.data,
+              item => item?.category_slug === currentPath,
+            )?.category_name || "All Bookmarks"
+          }`}
+          onChange={value => {
+            setSearchText(value);
+          }}
+        />
         <div className="flex items-center">
           <div className="mr-3 flex items-center space-x-2">
             <BookmarksViewDropdown
