@@ -36,6 +36,7 @@ import {
 
 import Badge from "../../components/badge";
 import Spinner from "../../components/spinner";
+import LinkExternalIcon from "../../icons/linkExternalIcon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import type {
   CategoriesData,
@@ -129,7 +130,7 @@ const ListBox = (props: ListBoxDropTypes) => {
   useDraggableCollection(props, dragState, ref);
 
   const cardGridClassNames = classNames({
-    "grid gap-3": true,
+    "grid gap-6": true,
     "grid-cols-1":
       typeof bookmarksColumns === "object" &&
       !isNull(bookmarksColumns) &&
@@ -145,8 +146,9 @@ const ListBox = (props: ListBoxDropTypes) => {
   });
 
   const ulClassName = classNames({
-    [`columns-${bookmarksColumns && (bookmarksColumns[0] / 10)?.toString()}`]:
-      cardTypeCondition === "moodboard",
+    [`columns-${
+      bookmarksColumns && (bookmarksColumns[0] / 10)?.toString()
+    } gap-6`]: cardTypeCondition === "moodboard",
     block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
     [cardGridClassNames]: cardTypeCondition === "card",
   });
@@ -159,11 +161,12 @@ const ListBox = (props: ListBoxDropTypes) => {
           item={item}
           state={state}
           dragState={dragState}
+          cardTypeCondition={cardTypeCondition}
         />
       ))}
       <DragPreview ref={preview}>
         {items => (
-          <div className=" rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
+          <div className=" gap rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
             {items.length > 1
               ? `${items.length} bookmarks`
               : find(
@@ -185,10 +188,12 @@ const Option = ({
   item,
   state,
   dragState,
+  cardTypeCondition,
 }: {
   item: OptionDropItemTypes;
   state: ListState<unknown>;
   dragState: DraggableCollectionState;
+  cardTypeCondition: unknown;
 }) => {
   // Setup listbox option as normal. See useListBox docs for details.
   const ref = React.useRef(null);
@@ -204,11 +209,24 @@ const Option = ({
   );
   // Merge option props and dnd props, and render the item.
 
+  const liClassName = classNames(
+    "single-bookmark group relative flex cursor-pointer rounded-lg duration-150 ",
+    {
+      "mb-6": cardTypeCondition === "moodboard",
+      "mb-[18px]": cardTypeCondition === "card",
+      "hover:shadow-custom-4":
+        cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+      "hover:bg-custom-gray-8 mb-1":
+        cardTypeCondition === "list" || cardTypeCondition === "headlines",
+    },
+  );
+
   return (
     <li
       {...mergeProps(dragProps, focusProps)}
       ref={ref}
-      className="single-bookmark group relative mb-6 flex rounded-lg shadow-md drop-shadow-custom-1"
+      // className="single-bookmark group relative mb-6 flex cursor-pointer rounded-lg duration-150 hover:shadow-custom-4"
+      className={liClassName}
     >
       <div
         className={`absolute top-0 left-0 h-full w-full rounded-lg opacity-50 ${
@@ -359,14 +377,39 @@ const CardSection = ({
 
   // category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
   const renderEditAndDeleteIcons = (post: SingleListData) => {
+    const iconBgClassName =
+      "rounded-lg bg-custom-white-1 p-[7px] backdrop-blur-sm";
+
     if (renderEditAndDeleteCondition(post)) {
       return (
         <>
+          {categorySlug === TRASH_URL && (
+            <figure className={`${iconBgClassName}`}>
+              <MinusCircleIcon
+                className="h-4 w-4 cursor-pointer text-red-400"
+                onClick={e => {
+                  e.preventDefault();
+                  onMoveOutOfTrashClick(post);
+                }}
+              />
+            </figure>
+          )}
+
+          <div
+            onClick={() => window.open(post?.url, "_blank")}
+            role="button"
+            onKeyDown={() => {}}
+            tabIndex={0}
+          >
+            <figure className={`${iconBgClassName} ml-1`}>
+              <LinkExternalIcon />
+            </figure>
+          </div>
           {isBookmarkCreatedByLoggedinUser(post) ? (
             <>
-              <figure>
+              <figure className={`ml-1 ${iconBgClassName}`}>
                 <PencilAltIcon
-                  className="h-5 w-5 cursor-pointer text-gray-400"
+                  className="h-4 w-4 cursor-pointer text-gray-700"
                   onClick={e => {
                     e.preventDefault();
                     onEditClick(post);
@@ -378,10 +421,10 @@ const CardSection = ({
                   <Spinner size={15} />
                 </div>
               ) : (
-                <figure>
+                <figure className={`ml-1 ${iconBgClassName}`}>
                   <TrashIcon
                     id="delete-bookmark-icon"
-                    className="ml-1 h-5 w-5 cursor-pointer text-red-400"
+                    className="h-4 w-4 cursor-pointer text-red-400"
                     aria-hidden="true"
                     onClick={e => {
                       e.preventDefault();
@@ -394,7 +437,7 @@ const CardSection = ({
           ) : (
             <figure>
               <PencilAltIcon
-                className="h-5 w-5 cursor-pointer text-gray-700"
+                className="h-4 w-4 cursor-pointer text-gray-700"
                 onClick={e => {
                   e.preventDefault();
                   onEditClick(post);
@@ -423,7 +466,7 @@ const CardSection = ({
   const renderUrl = (item: SingleListData) => {
     return (
       <p
-        className={`relative text-xs leading-4 ${
+        className={`relative text-[13px] leading-4  text-custom-gray-10 ${
           !isNull(item?.category_id) && isNull(categorySlug)
             ? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
             : ""
@@ -437,27 +480,31 @@ const CardSection = ({
 
   const renderOgImage = (img: string) => {
     const imgClassName = classNames({
-      "h-14 w-full object-cover": cardTypeCondition === "list",
-      "h-48 w-full object-cover": cardTypeCondition === "card",
-      "rounded-lg w-full": cardTypeCondition === "moodboard",
+      "h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
+      "h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none":
+        cardTypeCondition === "card",
+      "rounded-lg w-full group-hover:rounded-t-lg":
+        cardTypeCondition === "moodboard",
+      "h-4 w-4 rounded object-cover": cardTypeCondition === "headlines",
     });
 
     const loaderClassName = classNames({
       "animate-pulse bg-slate-200 w-full h-14 w-20 object-cover":
         cardTypeCondition === "list",
-      "animate-pulse bg-slate-200 w-full h-48 w-full object-cover":
+      "animate-pulse bg-slate-200 w-full h-[194px] w-full object-cover":
         cardTypeCondition === "card",
       "animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
         cardTypeCondition === "moodboard",
     });
 
     const figureClassName = classNames({
-      " w-full h-14 w-20 ": cardTypeCondition === "list",
-      "w-full h-48 ": cardTypeCondition === "card",
-      " h-36":
+      "h-[48px] w-[80px] ": cardTypeCondition === "list",
+      "w-full h-[194px] ": cardTypeCondition === "card",
+      "h-36":
         cardTypeCondition === "moodboard" &&
         (isOgImgLoading || isBookmarkLoading) &&
         img === undefined,
+      "h-4 w-4": cardTypeCondition === "headlines",
     });
 
     return (
@@ -490,7 +537,7 @@ const CardSection = ({
               renderBadgeContent={() => {
                 return (
                   <div className="flex items-center">
-                    <figure className="h-[18px] w-[18px]">
+                    <figure className="h-[12px] w-[12px]">
                       {find(
                         options,
                         optionItem =>
@@ -538,13 +585,47 @@ const CardSection = ({
   const renderMoodboardAndCardType = (item: SingleListData) => {
     return (
       <div id="single-moodboard-card" className="w-full">
-        <a
-          // href={item?.url}
-          target="_blank"
-          rel="noreferrer"
-          className=" inline-block w-full"
-        >
+        <a target="_blank" rel="noreferrer" className="inline-block w-full">
           {renderOgImage(item?.ogImage)}
+          {bookmarksInfoValue?.length === 1 &&
+          bookmarksInfoValue[0] === "cover" ? null : (
+            <div className="space-y-[6px] rounded-lg px-2 py-3">
+              {bookmarksInfoValue?.includes("title" as never) && (
+                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                  {item?.title}
+                </p>
+              )}
+              {bookmarksInfoValue?.includes("description" as never) &&
+                !isEmpty(item?.description) && (
+                  <p className="overflow-hidden break-all  text-sm leading-4">
+                    {item?.description}
+                  </p>
+                )}
+              <div className="space-y-[6px]">
+                {bookmarksInfoValue?.includes("tags" as never) && (
+                  <div className="flex items-center space-x-1">
+                    {item?.addedTags?.map(tag => {
+                      return (
+                        <div className="text-xs text-blue-500" key={tag?.id}>
+                          #{tag?.name}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {bookmarksInfoValue?.includes("info" as never) && (
+                  <div className="flex flex-wrap items-center space-x-2">
+                    {renderCategoryBadge(item)}
+                    {renderUrl(item)}
+                    <p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+                      {format(new Date(item?.inserted_at), "dd MMM")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* {renderOgImage(item?.ogImage)}
           {bookmarksInfoValue?.length === 1 &&
           bookmarksInfoValue[0] === "cover" ? null : (
             <div className="space-y-2 rounded-lg p-4">
@@ -579,7 +660,7 @@ const CardSection = ({
                 )}
               </div>
             </div>
-          )}
+          )} */}
         </a>
         <div
           // eslint-disable-next-line tailwindcss/no-custom-classname
@@ -591,15 +672,6 @@ const CardSection = ({
         >
           {showAvatar && renderAvatar(item)}
           {renderEditAndDeleteIcons(item)}
-          {categorySlug === TRASH_URL && (
-            <MinusCircleIcon
-              className="ml-1 h-5 w-5 cursor-pointer text-red-400"
-              onClick={e => {
-                e.preventDefault();
-                onMoveOutOfTrashClick(item);
-              }}
-            />
-          )}
         </div>
       </div>
     );
@@ -607,7 +679,7 @@ const CardSection = ({
 
   const renderListCard = (item: SingleListData) => {
     return (
-      <div id="single-moodboard-card" className="h-[104px] w-full">
+      <div id="single-moodboard-card" className="h-[64px] w-full p-2">
         <a
           href={item?.url}
           target="_blank"
@@ -617,18 +689,20 @@ const CardSection = ({
           {renderOgImage(item?.ogImage)}
           {bookmarksInfoValue?.length === 1 &&
           bookmarksInfoValue[0] === "cover" ? null : (
-            <div className="space-y-2 p-4">
+            <div className=" ml-3">
               {bookmarksInfoValue?.includes("title" as never) && (
-                <p className="text-base font-medium leading-4">{item?.title}</p>
+                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                  {item?.title}
+                </p>
               )}
               {bookmarksInfoValue?.includes("description" as never) && (
-                <p className="overflow-hidden break-all  text-sm leading-4">
+                <p className="mt-[6px] overflow-hidden break-all text-13 font-450 leading-4 text-custom-gray-10">
                   {item?.description}
                 </p>
               )}
               <div className="space-y-2">
                 {bookmarksInfoValue?.includes("tags" as never) && (
-                  <div className="flex items-center space-x-1">
+                  <div className="mt-[6px] flex items-center space-x-1">
                     {item?.addedTags?.map(tag => {
                       return (
                         <div className="text-xs text-blue-500" key={tag?.id}>
@@ -639,10 +713,10 @@ const CardSection = ({
                   </div>
                 )}
                 {bookmarksInfoValue?.includes("info" as never) && (
-                  <div className="flex items-center space-x-2">
+                  <div className="mt-[6px] flex items-center space-x-2">
                     {renderCategoryBadge(item)}
                     {renderUrl(item)}
-                    <p className="relative pl-3 text-xs leading-4 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']">
+                    <p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
                       {format(new Date(item?.inserted_at), "dd MMM")}
                     </p>
                   </div>
@@ -651,18 +725,9 @@ const CardSection = ({
             </div>
           )}
         </a>
-        <div className="absolute right-[8px] top-[25px] hidden items-center space-x-1 group-hover:flex">
+        <div className="absolute right-[8px] top-[15px] hidden items-center space-x-1 group-hover:flex">
           {showAvatar && renderAvatar(item)}
           {renderEditAndDeleteIcons(item)}
-          {categorySlug === TRASH_URL && (
-            <MinusCircleIcon
-              className="ml-1 h-5 w-5 cursor-pointer text-red-400"
-              onClick={e => {
-                e.preventDefault();
-                onMoveOutOfTrashClick(item);
-              }}
-            />
-          )}
         </div>
       </div>
     );
@@ -670,24 +735,18 @@ const CardSection = ({
 
   const renderHeadlinesCard = (item: SingleListData) => {
     return (
-      <div
-        style={{ boxShadow: "0px 0px 2.5px rgba(0, 0, 0, 0.11)" }} // added inline as its not working via tailwind
-        key={item?.id}
-        className="group w-full"
-      >
-        <a
-          href={item?.url}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center"
-        >
+      <div key={item?.id} className="group h-[53px] w-full p-2">
+        <a href={item?.url} target="_blank" rel="noreferrer" className="flex">
+          {renderOgImage(item?.ogImage)}
           {bookmarksInfoValue?.length === 1 &&
           bookmarksInfoValue[0] === "cover" ? null : (
-            <div className="space-y-2 p-4">
+            <div className=" ml-[10px]">
               {bookmarksInfoValue?.includes("title" as never) && (
-                <p className="text-base font-medium leading-4">{item?.title}</p>
+                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                  {item?.title}
+                </p>
               )}
-              <div className="space-y-2">
+              <div className="mt-[6px] space-y-2">
                 {bookmarksInfoValue?.includes("tags" as never) && (
                   <div className="flex items-center space-x-1">
                     {item?.addedTags?.map(tag => {
@@ -701,9 +760,9 @@ const CardSection = ({
                 )}
                 {bookmarksInfoValue?.includes("info" as never) && (
                   <div className="flex items-center space-x-2">
-                    {renderCategoryBadge(item)}
+                    {/* {renderCategoryBadge(item)} */}
                     {renderUrl(item)}
-                    <p className="relative pl-3 text-xs leading-4 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']">
+                    <p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
                       {format(new Date(item?.inserted_at), "dd MMM")}
                     </p>
                   </div>
@@ -712,39 +771,37 @@ const CardSection = ({
             </div>
           )}
         </a>
-        <div className="absolute right-[8px] top-[25px] hidden items-center space-x-1 group-hover:flex">
+        <div className="absolute right-[8px] top-[11px] hidden items-center space-x-1 group-hover:flex">
           {showAvatar && renderAvatar(item)}
           {renderEditAndDeleteIcons(item)}
-          {categorySlug === TRASH_URL && (
-            <MinusCircleIcon
-              className="ml-1 h-5 w-5 cursor-pointer text-red-400"
-              onClick={e => {
-                e.preventDefault();
-                onMoveOutOfTrashClick(item);
-              }}
-            />
-          )}
         </div>
       </div>
     );
   };
 
+  const listWrapperClass = classNames({
+    "p-2": cardTypeCondition === "list" || cardTypeCondition === "headlines",
+    "p-6": cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+  });
+
   return (
-    <ListBox
-      aria-label="Categories"
-      selectionMode="multiple"
-      bookmarksColumns={bookmarksColumns as number[]}
-      cardTypeCondition={cardTypeCondition}
-      bookmarksList={bookmarksList}
-    >
-      {renderSortByCondition()?.map(item => {
-        return (
-          <Item key={item?.id} textValue={item?.id?.toString()}>
-            {renderBookmarkCardTypes(item)}
-          </Item>
-        );
-      })}
-    </ListBox>
+    <div className={listWrapperClass}>
+      <ListBox
+        aria-label="Categories"
+        selectionMode="multiple"
+        bookmarksColumns={bookmarksColumns as number[]}
+        cardTypeCondition={cardTypeCondition}
+        bookmarksList={bookmarksList}
+      >
+        {renderSortByCondition()?.map(item => {
+          return (
+            <Item key={item?.id} textValue={item?.id?.toString()}>
+              {renderBookmarkCardTypes(item)}
+            </Item>
+          );
+        })}
+      </ListBox>
+    </div>
   );
 };
 

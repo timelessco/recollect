@@ -31,7 +31,7 @@ const RadioGroup = (props: RadioGroupProps) => {
           // eslint-disable-next-line jsx-a11y/label-has-associated-control
           <label
             key={item?.value}
-            className="flex cursor-pointer items-center justify-between rounded-lg p-2 text-sm leading-4 text-custom-gray-1 hover:bg-custom-gray-9"
+            className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-[5px] text-sm leading-4 text-custom-gray-1 hover:bg-custom-gray-9"
           >
             <div className="flex items-center text-[13px] font-450 text-custom-gray-1">
               <figure className="mr-2 flex h-4 w-4 items-center justify-center">

@@ -195,7 +195,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
   const renderViewsSwitch = (item: CardContentOptionsTypes) => {
     return (
-      <div className="flex items-center justify-between px-2 py-[5.5px]">
+      <div className="flex items-center justify-between px-2 py-[5px]">
         <p className=" text-13 font-450 leading-[14px] text-custom-gray-1">
           {item?.label}
         </p>

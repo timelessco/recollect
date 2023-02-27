@@ -26,6 +26,9 @@ module.exports = {
           11: "rgba(0, 0, 0, 0.047)",
           12: "rgba(0, 0, 0, 0.071)",
         },
+        "custom-white": {
+          1: "rgba(255, 255, 255, 0.9)",
+        },
       },
 
       dropShadow: {
@@ -38,6 +41,9 @@ module.exports = {
           "0px 0px 1px rgba(0, 0, 0, 0.4), 0px 1px 2px rgba(0, 0, 0, 0.15)",
         "custom-3":
           "0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
+        "custom-4":
+          "0px 64px 74px rgba(0, 0, 0, 0.08), 0px 17.9672px 35.1912px rgba(0, 0, 0, 0.0427215), 0px 8.53023px 25.3083px rgba(0, 0, 0, 0.0302528), 0px 4.48693px 17.6765px rgba(0, 0, 0, 0.0221708), 0px 2.0298px 9.41891px rgba(0, 0, 0, 0.0146447)",
+        "custom-5": "inset 0px 0px 1px rgba(0, 0, 0, 0.11)",
       },
       fontSize: {
         40: "40px",

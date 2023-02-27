@@ -391,7 +391,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         <Allotment.Pane className="transition-all duration-150 ease-in-out">
           <div className="w-full">
             {renderMainPaneNav()}
-            <main className="py-4">{renderMainContent()}</main>
+            <main>{renderMainContent()}</main>
           </div>
         </Allotment.Pane>
       </Allotment>

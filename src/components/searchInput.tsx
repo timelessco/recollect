@@ -14,11 +14,11 @@ const styles = {
     fontSize: 14,
     fontWeight: 400,
     color: "#707070",
+
     width: 300,
     padding: "3px 10px 3px 28px",
     borderRadius: 8,
   },
-
   "&multiLine": {
     control: {},
     highlighter: {},
@@ -32,15 +32,25 @@ const styles = {
 
   suggestions: {
     list: {
-      backgroundColor: "white",
-      border: "1px solid rgba(0,0,0,0.15)",
-      fontSize: 14,
+      // backgroundColor: "#FFFFFF",
+      padding: "6px",
+      boxShadow:
+        "0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
+      borderRadius: "12px",
+      // border: "1px solid rgba(0,0,0,0.15)",
+      // fontSize: 14,
     },
     item: {
-      padding: "5px 15px",
-      borderBottom: "1px solid rgba(0,0,0,0.15)",
+      padding: "7px 8px",
+      borderRadius: "8px",
+      fontWeight: "450",
+      fontSize: "13px",
+      lineHeight: "15px",
+      color: "#383838",
+
+      // borderBottom: "1px solid rgba(0,0,0,0.15)",
       "&focused": {
-        backgroundColor: "#cee4e5",
+        backgroundColor: "#EDEDED",
       },
     },
   },
@@ -70,6 +80,8 @@ const SearchInput = (props: SearchInputTypes) => {
         <SearchInputSearchIcon />
       </figure>
       <MentionsInput
+        // eslint-disable-next-line tailwindcss/no-custom-classname
+        className="search-bar"
         value={searchText}
         placeholder={placeholder}
         onChange={(e: { target: { value: string } }) =>
@@ -86,9 +98,10 @@ const SearchInput = (props: SearchInputTypes) => {
               display: item?.name,
             };
           })}
-          style={{
-            backgroundColor: "#cee4e5",
-          }}
+          // style={{
+          //   backgroundColor: "#cee4e5",
+          //   with: "100%",
+          // }}
         />
       </MentionsInput>
     </div>

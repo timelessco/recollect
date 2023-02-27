@@ -404,3 +404,7 @@ main {
 .my-select span {
   display: none;
 }
+
+.search-bar__control textarea::placeholder {
+  color: #707070;
+}
