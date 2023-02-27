@@ -17,7 +17,7 @@ export const GET_TEXT_WITH_AT_CHAR = /[a-zA-Z]*@[a-zA-Z]*/g;
 export const EMAIL_CHECK_PATTERN =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
-// api
+// api constants
 export const NEXT_API_URL = `${
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
