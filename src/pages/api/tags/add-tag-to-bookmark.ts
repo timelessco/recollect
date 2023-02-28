@@ -12,10 +12,14 @@ import type {
 import { BOOKMARK_TAGS_TABLE_NAME } from "../../../utils/constants";
 
 // this api adds tags to a bookmark
-type Data = {
-  data: UserTagsData[] | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
-};
+
+type DataRes = UserTagsData[] | null;
+type ErrorRes = PostgrestError | null | string | jwt.VerifyErrors;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 export default async function handler(
   req: NextAPIReq<{ data: Pick<AddTagToBookmarkApiPayload, "selectedData"> }>,
@@ -36,7 +40,7 @@ export default async function handler(
     process.env.SUPABASE_SERVICE_KEY,
   );
 
-  const { data, error } = await supabase
+  const { data, error }: { data: DataRes; error: ErrorRes } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .insert(req.body.data)
     .select();

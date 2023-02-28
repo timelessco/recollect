@@ -145,7 +145,7 @@ main {
 .chakra-slider-group .slider-track {
   width: 100%;
   height: 4px;
-  background: rgb(226 232 240);
+  background: rgb(0 0 0 / 11.4%);
   border-radius: 0.125rem;
 }
 
@@ -161,7 +161,7 @@ main {
 
   height: 4px;
 
-  background: rgb(49 130 206);
+  background: #171717;
   border-radius: 0.125rem;
 }
 
@@ -204,16 +204,16 @@ main {
   align-items: center;
   justify-content: center;
 
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 
-  background: rgb(255 255 255);
+  background: #fff;
   border-radius: 9999px;
-  box-shadow: rgb(0 0 0 / 50%) 0 1px 3px 0, rgb(0 0 0 / 10%) 0 1px 2px 0;
+  box-shadow: 0 0 1px rgb(0 0 0 / 40%), 0 1px 2px rgb(0 0 0 / 15%);
 }
 
 .chakra-slider-group .slider-thumb-handle:focus-within {
-  box-shadow: 0 0 0 2px #2c83eb;
+  box-shadow: 0 0 0 2px #171717;
 }
 
 .chakra-slider-group .slider-thumb-tip {
@@ -296,7 +296,7 @@ main {
 }
 
 .dark .secondary:hover {
-  background-color: hsl(204deg 20% 100% / 5%);
+  /* background-color: hsl(204deg 20% 100% / 5%); */
 }
 
 [data-backdrop] {
@@ -304,8 +304,9 @@ main {
   align-items: center;
   justify-content: center;
 
-  background-color: hsl(204deg 10% 10% / 10%);
-  backdrop-filter: blur(4px);
+  /* background-color: hsl(204deg 10% 10% / 10%); */
+
+  /* backdrop-filter: blur(4px); */
 }
 
 .dark [data-backdrop] {
@@ -332,13 +333,16 @@ main {
   max-height: calc(100% - 1rem * 2);
   margin-top: 1rem;
   margin-bottom: 1rem;
-  padding: 1rem;
+  padding: 6px;
 
   color: hsl(204deg 10% 10%);
 
   background-color: hsl(204deg 20% 100%);
-  border-radius: 1rem;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%);
+  border-radius: 12px;
+
+  /* box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%); */
+  box-shadow: 0 0 1px rgb(0 0 0 / 19%), 0 1px 2px rgb(0 0 0 / 7%),
+    0 6px 15px -5px rgb(0 0 0 / 11%);
 }
 
 .dialog:focus-visible,
@@ -358,7 +362,7 @@ main {
 
 @media (min-width: 640px) {
   .dialog {
-    width: 420px;
+    width: 460px;
 
     /* padding: 1.5rem; */
   }
@@ -367,8 +371,11 @@ main {
 @media (min-width: 768px) {
   .dialog {
     max-height: calc(100% - 6rem * 2);
-    margin-top: 6rem;
-    margin-bottom: 6rem;
+
+    /* margin: auto 0; */
+
+    margin-top: 10rem;
+    margin-bottom: 10rem;
   }
 }
 

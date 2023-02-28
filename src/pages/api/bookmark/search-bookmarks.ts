@@ -23,10 +23,13 @@ import {
 
 // searches bookmarks
 
-type Data = {
-  data: SingleListData[] | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
-};
+type DataRes = SingleListData[] | null;
+type ErrorRes = PostgrestError | null | string | jwt.VerifyErrors;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -87,7 +90,10 @@ export default async function handler(
     }
   }
 
-  const { data, error }: PostgrestResponse<SingleListData> = await query;
+  const { data, error } = (await query) as unknown as {
+    data: DataRes;
+    error: ErrorRes;
+  };
 
   if (!tagName) {
     // user has searched for text without tags

@@ -9,10 +9,14 @@ import type { NextAPIReq, UserTagsData } from "../../../types/apiTypes";
 import { BOOKMARK_TAGS_TABLE_NAME } from "../../../utils/constants";
 
 // removes tags for a bookmark
-type Data = {
-  data: UserTagsData[] | null;
-  error: PostgrestError | null | { message: string } | string;
-};
+
+type DataRes = UserTagsData[] | null;
+type ErrorRes = PostgrestError | null | { message: string } | string;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 export default async function handler(
   req: NextAPIReq<{ tag_id: number; bookmark_id: number }>,
@@ -34,7 +38,7 @@ export default async function handler(
     process.env.SUPABASE_SERVICE_KEY,
   );
 
-  const { data, error } = await supabase
+  const { data, error }: { data: DataRes; error: ErrorRes } = await supabase
     .from(BOOKMARK_TAGS_TABLE_NAME)
     .delete()
     .match({ tag_id: req.body?.tag_id, bookmark_id: req.body?.bookmark_id })

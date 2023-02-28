@@ -62,7 +62,13 @@ export default async function handler(
     categoryId !== 0 &&
     categoryId !== UNCATEGORIZED_URL
   ) {
-    const { data, error } = await supabase
+    const {
+      data,
+      error,
+    }: {
+      data: SingleListData[] | null;
+      error: PostgrestError | null | string | jwt.VerifyErrors;
+    } = await supabase
       .from(MAIN_TABLE_NAME)
       .insert([
         {
@@ -82,7 +88,13 @@ export default async function handler(
       res.status(200).json({ data, error: null, message: null });
     }
   } else {
-    const { data, error } = await supabase
+    const {
+      data,
+      error,
+    }: {
+      data: SingleListData[] | null;
+      error: PostgrestError | null | string | jwt.VerifyErrors;
+    } = await supabase
       .from(MAIN_TABLE_NAME)
       .insert([
         {

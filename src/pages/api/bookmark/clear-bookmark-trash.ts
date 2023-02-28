@@ -1,8 +1,4 @@
-import {
-  createClient,
-  type PostgrestError,
-  type PostgrestResponse,
-} from "@supabase/supabase-js";
+import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import differenceInDays from "date-fns/differenceInDays";
 import jwt from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
@@ -17,11 +13,14 @@ import type {
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
 
 // this api clears trash for a single user and also takes care of CRON job to clear trash every 30 days
-type Data = {
-  data: Array<SingleListData> | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
+type DataRes = Array<SingleListData> | null;
+type ErrorRes = PostgrestError | null | string | jwt.VerifyErrors;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
   message?: string;
-};
+}
 
 export default async function handler(
   req: NextAPIReq<ClearBookmarksInTrashApiPayloadTypes>,
@@ -47,7 +46,13 @@ export default async function handler(
       },
     );
 
-    const { data, error } = await supabase
+    const {
+      data,
+      error,
+    }: {
+      data: Array<SingleListData> | null;
+      error: PostgrestError | null | string | jwt.VerifyErrors;
+    } = await supabase
       .from(MAIN_TABLE_NAME)
       .delete()
       .eq("user_id", req.body.user_id)
@@ -64,10 +69,10 @@ export default async function handler(
     // deletes trash for all users , this happens in CRON job
     // this step does not need access token as its called from workflow
     // only if bookmark is older than 30 days fron current date - TODO
-    const { data, error }: PostgrestResponse<SingleListData> = await supabase
+    const { data, error } = (await supabase
       .from(MAIN_TABLE_NAME)
       .select("*")
-      .match({ trash: true });
+      .match({ trash: true })) as unknown as { data: DataRes; error: ErrorRes };
 
     if (!isNull(data)) {
       const toBeDeletedIds = data
@@ -82,7 +87,13 @@ export default async function handler(
         });
 
       if (!isEmpty(toBeDeletedIds)) {
-        const { data: delData, error: delError } = await supabase
+        const {
+          data: delData,
+          error: delError,
+        }: {
+          data: Array<SingleListData> | null;
+          error: PostgrestError | null | string | jwt.VerifyErrors;
+        } = await supabase
           .from(MAIN_TABLE_NAME)
           .delete()
           .in("id", toBeDeletedIds)

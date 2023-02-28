@@ -7,10 +7,13 @@ import type { NextApiResponse } from "next";
 import type { NextAPIReq, UserTagsData } from "../../../types/apiTypes";
 import { TAG_TABLE_NAME } from "../../../utils/constants";
 
-type Data = {
-  data: UserTagsData[] | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
-};
+type DataRes = UserTagsData[] | null;
+type ErrorRes = PostgrestError | null | string | jwt.VerifyErrors;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 // creats tags for a specific user
 
@@ -39,7 +42,7 @@ export default async function handler(
   const userId = req.body.user_id;
   const { name } = req.body;
 
-  const { data, error } = await supabase
+  const { data, error }: { data: DataRes; error: ErrorRes } = await supabase
     .from(TAG_TABLE_NAME)
     .insert([
       {

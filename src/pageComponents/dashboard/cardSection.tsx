@@ -155,18 +155,26 @@ const ListBox = (props: ListBoxDropTypes) => {
 
   return (
     <ul {...listBoxProps} ref={ref} className={ulClassName}>
-      {[...state.collection].map(item => (
-        <Option
-          key={item.key}
-          item={item}
-          state={state}
-          dragState={dragState}
-          cardTypeCondition={cardTypeCondition}
-        />
-      ))}
+      {[...state.collection].map(item => {
+        return (
+          <Option
+            key={item.key}
+            item={item}
+            state={state}
+            dragState={dragState}
+            cardTypeCondition={cardTypeCondition}
+            url={
+              find(
+                bookmarksList,
+                listItem => listItem?.id === parseInt(item.key as string, 10),
+              )?.url || ""
+            }
+          />
+        );
+      })}
       <DragPreview ref={preview}>
         {items => (
-          <div className=" gap rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
+          <div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
             {items.length > 1
               ? `${items.length} bookmarks`
               : find(
@@ -189,11 +197,13 @@ const Option = ({
   state,
   dragState,
   cardTypeCondition,
+  url,
 }: {
   item: OptionDropItemTypes;
   state: ListState<unknown>;
   dragState: DraggableCollectionState;
   cardTypeCondition: unknown;
+  url: string;
 }) => {
   // Setup listbox option as normal. See useListBox docs for details.
   const ref = React.useRef(null);
@@ -228,7 +238,12 @@ const Option = ({
       // className="single-bookmark group relative mb-6 flex cursor-pointer rounded-lg duration-150 hover:shadow-custom-4"
       className={liClassName}
     >
-      <div
+      {/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
+      {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+      <a
+        href={url}
+        onClick={e => e.preventDefault()}
+        draggable={false}
         className={`absolute top-0 left-0 h-full w-full rounded-lg opacity-50 ${
           isSelected ? "bg-slate-600" : ""
         }`}
@@ -342,7 +357,9 @@ const CardSection = ({
   };
 
   const bookmarksInfoValue = getViewValue("cardContentViewArray", []);
-  const bookmarksColumns = getViewValue("moodboardColumns", [10]);
+  const bookmarksColumns = [
+    getViewValue("moodboardColumns", [10]),
+  ] as unknown as number[];
   const cardTypeCondition = getViewValue("bookmarksView", "");
 
   const isLoggedInUserTheCategoryOwner =
@@ -584,48 +601,47 @@ const CardSection = ({
 
   const renderMoodboardAndCardType = (item: SingleListData) => {
     return (
-      <div id="single-moodboard-card" className="w-full">
-        <a target="_blank" rel="noreferrer" className="inline-block w-full">
-          {renderOgImage(item?.ogImage)}
-          {bookmarksInfoValue?.length === 1 &&
-          bookmarksInfoValue[0] === "cover" ? null : (
-            <div className="space-y-[6px] rounded-lg px-2 py-3">
-              {bookmarksInfoValue?.includes("title" as never) && (
-                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
-                  {item?.title}
+      <div id="single-moodboard-card" className="inline-block w-full ">
+        {renderOgImage(item?.ogImage)}
+        {bookmarksInfoValue?.length === 1 &&
+        bookmarksInfoValue[0] === "cover" ? null : (
+          <div className="space-y-[6px] rounded-lg px-2 py-3">
+            {bookmarksInfoValue?.includes("title" as never) && (
+              <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                {item?.title}
+              </p>
+            )}
+            {bookmarksInfoValue?.includes("description" as never) &&
+              !isEmpty(item?.description) && (
+                <p className="overflow-hidden break-all  text-sm leading-4">
+                  {item?.description}
                 </p>
               )}
-              {bookmarksInfoValue?.includes("description" as never) &&
-                !isEmpty(item?.description) && (
-                  <p className="overflow-hidden break-all  text-sm leading-4">
-                    {item?.description}
+            <div className="space-y-[6px]">
+              {bookmarksInfoValue?.includes("tags" as never) && (
+                <div className="flex items-center space-x-1">
+                  {item?.addedTags?.map(tag => {
+                    return (
+                      <div className="text-xs text-blue-500" key={tag?.id}>
+                        #{tag?.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {bookmarksInfoValue?.includes("info" as never) && (
+                <div className="flex flex-wrap items-center space-x-2">
+                  {renderCategoryBadge(item)}
+                  {renderUrl(item)}
+                  <p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+                    {format(new Date(item?.inserted_at), "dd MMM")}
                   </p>
-                )}
-              <div className="space-y-[6px]">
-                {bookmarksInfoValue?.includes("tags" as never) && (
-                  <div className="flex items-center space-x-1">
-                    {item?.addedTags?.map(tag => {
-                      return (
-                        <div className="text-xs text-blue-500" key={tag?.id}>
-                          #{tag?.name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {bookmarksInfoValue?.includes("info" as never) && (
-                  <div className="flex flex-wrap items-center space-x-2">
-                    {renderCategoryBadge(item)}
-                    {renderUrl(item)}
-                    <p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-                      {format(new Date(item?.inserted_at), "dd MMM")}
-                    </p>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-          )}
-          {/* {renderOgImage(item?.ogImage)}
+          </div>
+        )}
+        {/* {renderOgImage(item?.ogImage)}
           {bookmarksInfoValue?.length === 1 &&
           bookmarksInfoValue[0] === "cover" ? null : (
             <div className="space-y-2 rounded-lg p-4">
@@ -661,7 +677,6 @@ const CardSection = ({
               </div>
             </div>
           )} */}
-        </a>
         <div
           // eslint-disable-next-line tailwindcss/no-custom-classname
           className={`items-center space-x-1 ${
@@ -679,52 +694,48 @@ const CardSection = ({
 
   const renderListCard = (item: SingleListData) => {
     return (
-      <div id="single-moodboard-card" className="h-[64px] w-full p-2">
-        <a
-          href={item?.url}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center"
-        >
-          {renderOgImage(item?.ogImage)}
-          {bookmarksInfoValue?.length === 1 &&
-          bookmarksInfoValue[0] === "cover" ? null : (
-            <div className=" ml-3">
-              {bookmarksInfoValue?.includes("title" as never) && (
-                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
-                  {item?.title}
-                </p>
+      <div
+        id="single-moodboard-card"
+        className="flex h-[64px] w-full items-center p-2"
+      >
+        {renderOgImage(item?.ogImage)}
+        {bookmarksInfoValue?.length === 1 &&
+        bookmarksInfoValue[0] === "cover" ? null : (
+          <div className=" ml-3">
+            {bookmarksInfoValue?.includes("title" as never) && (
+              <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                {item?.title}
+              </p>
+            )}
+            {bookmarksInfoValue?.includes("description" as never) && (
+              <p className="mt-[6px] overflow-hidden break-all text-13 font-450 leading-4 text-custom-gray-10">
+                {item?.description}
+              </p>
+            )}
+            <div className="space-y-2">
+              {bookmarksInfoValue?.includes("tags" as never) && (
+                <div className="mt-[6px] flex items-center space-x-1">
+                  {item?.addedTags?.map(tag => {
+                    return (
+                      <div className="text-xs text-blue-500" key={tag?.id}>
+                        #{tag?.name}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-              {bookmarksInfoValue?.includes("description" as never) && (
-                <p className="mt-[6px] overflow-hidden break-all text-13 font-450 leading-4 text-custom-gray-10">
-                  {item?.description}
-                </p>
+              {bookmarksInfoValue?.includes("info" as never) && (
+                <div className="mt-[6px] flex items-center space-x-2">
+                  {renderCategoryBadge(item)}
+                  {renderUrl(item)}
+                  <p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+                    {format(new Date(item?.inserted_at), "dd MMM")}
+                  </p>
+                </div>
               )}
-              <div className="space-y-2">
-                {bookmarksInfoValue?.includes("tags" as never) && (
-                  <div className="mt-[6px] flex items-center space-x-1">
-                    {item?.addedTags?.map(tag => {
-                      return (
-                        <div className="text-xs text-blue-500" key={tag?.id}>
-                          #{tag?.name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {bookmarksInfoValue?.includes("info" as never) && (
-                  <div className="mt-[6px] flex items-center space-x-2">
-                    {renderCategoryBadge(item)}
-                    {renderUrl(item)}
-                    <p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-                      {format(new Date(item?.inserted_at), "dd MMM")}
-                    </p>
-                  </div>
-                )}
-              </div>
             </div>
-          )}
-        </a>
+          </div>
+        )}
         <div className="absolute right-[8px] top-[15px] hidden items-center space-x-1 group-hover:flex">
           {showAvatar && renderAvatar(item)}
           {renderEditAndDeleteIcons(item)}
@@ -735,42 +746,40 @@ const CardSection = ({
 
   const renderHeadlinesCard = (item: SingleListData) => {
     return (
-      <div key={item?.id} className="group h-[53px] w-full p-2">
-        <a href={item?.url} target="_blank" rel="noreferrer" className="flex">
-          {renderOgImage(item?.ogImage)}
-          {bookmarksInfoValue?.length === 1 &&
-          bookmarksInfoValue[0] === "cover" ? null : (
-            <div className=" ml-[10px]">
-              {bookmarksInfoValue?.includes("title" as never) && (
-                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
-                  {item?.title}
-                </p>
+      <div key={item?.id} className="group flex h-[53px] w-full p-2">
+        {renderOgImage(item?.ogImage)}
+        {bookmarksInfoValue?.length === 1 &&
+        bookmarksInfoValue[0] === "cover" ? null : (
+          <div className=" ml-[10px]">
+            {bookmarksInfoValue?.includes("title" as never) && (
+              <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                {item?.title}
+              </p>
+            )}
+            <div className="mt-[6px] space-y-2">
+              {bookmarksInfoValue?.includes("tags" as never) && (
+                <div className="flex items-center space-x-1">
+                  {item?.addedTags?.map(tag => {
+                    return (
+                      <div className="text-xs text-blue-500" key={tag?.id}>
+                        #{tag?.name}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-              <div className="mt-[6px] space-y-2">
-                {bookmarksInfoValue?.includes("tags" as never) && (
-                  <div className="flex items-center space-x-1">
-                    {item?.addedTags?.map(tag => {
-                      return (
-                        <div className="text-xs text-blue-500" key={tag?.id}>
-                          #{tag?.name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {bookmarksInfoValue?.includes("info" as never) && (
-                  <div className="flex items-center space-x-2">
-                    {/* {renderCategoryBadge(item)} */}
-                    {renderUrl(item)}
-                    <p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-                      {format(new Date(item?.inserted_at), "dd MMM")}
-                    </p>
-                  </div>
-                )}
-              </div>
+              {bookmarksInfoValue?.includes("info" as never) && (
+                <div className="flex items-center space-x-2">
+                  {/* {renderCategoryBadge(item)} */}
+                  {renderUrl(item)}
+                  <p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+                    {format(new Date(item?.inserted_at), "dd MMM")}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </a>
+          </div>
+        )}
         <div className="absolute right-[8px] top-[11px] hidden items-center space-x-1 group-hover:flex">
           {showAvatar && renderAvatar(item)}
           {renderEditAndDeleteIcons(item)}
@@ -789,7 +798,7 @@ const CardSection = ({
       <ListBox
         aria-label="Categories"
         selectionMode="multiple"
-        bookmarksColumns={bookmarksColumns as number[]}
+        bookmarksColumns={bookmarksColumns}
         cardTypeCondition={cardTypeCondition}
         bookmarksList={bookmarksList}
       >

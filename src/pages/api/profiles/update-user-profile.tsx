@@ -12,10 +12,13 @@ import type {
 } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
 
-type Data = {
-  data: CategoriesData[] | null;
-  error: PostgrestError | null | { message: string } | string;
-};
+type DataRes = CategoriesData[] | null;
+type ErrorRes = PostgrestError | null | { message: string } | string;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 /**
  * Updates profile for a user
@@ -40,7 +43,7 @@ export default async function handler(
     process.env.SUPABASE_SERVICE_KEY,
   );
 
-  const { data, error } = await supabase
+  const { data, error }: { data: DataRes; error: ErrorRes } = await supabase
     .from(PROFILES)
     .update(req.body.updateData)
     .match({ id: req.body.id })

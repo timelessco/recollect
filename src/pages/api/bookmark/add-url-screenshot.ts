@@ -67,7 +67,13 @@ export default async function handler(
 
   const publicURL = await upload(base64data);
 
-  const { data, error } = await supabase
+  const {
+    data,
+    error,
+  }: {
+    data: SingleListData[] | null;
+    error: PostgrestError | null | string | jwt.VerifyErrors;
+  } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({ ogImage: publicURL })
     .match({ id: req.body.id })

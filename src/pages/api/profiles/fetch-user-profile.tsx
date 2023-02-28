@@ -9,10 +9,14 @@ import type { UserTagsData } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
 
 // fetches profiles data for a perticular user
-type Data = {
-  data: UserTagsData[] | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
-};
+
+type DataRes = UserTagsData[] | null;
+type ErrorRes = PostgrestError | null | string | jwt.VerifyErrors;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -40,10 +44,10 @@ export default async function handler(
     throw new Error("ERROR");
   }
 
-  const { data, error } = await supabase
+  const { data, error } = (await supabase
     .from(PROFILES)
     .select(`*`)
-    .eq("id", userId);
+    .eq("id", userId)) as unknown as { data: DataRes; error: ErrorRes };
 
   if (!isNull(error)) {
     res.status(500).json({ data: null, error });

@@ -12,10 +12,13 @@ import { MAIN_TABLE_NAME } from "../../../utils/constants";
 
 // this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
 
-type Data = {
-  data: Array<SingleListData> | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
-};
+type DataRes = Array<SingleListData> | null;
+type ErrorRes = PostgrestError | null | string | jwt.VerifyErrors;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 export default async function handler(
   req: NextAPIReq<MoveBookmarkToTrashApiPayload>,
@@ -39,7 +42,7 @@ export default async function handler(
 
   const bookmarkData = req.body.data;
 
-  const { data, error } = await supabase
+  const { data, error }: { data: DataRes; error: ErrorRes } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({ trash: req.body.isTrash })
     .match({ id: bookmarkData?.id })

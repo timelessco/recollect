@@ -30,10 +30,8 @@ import { errorToast } from "../../utils/toastMessages";
 import Button from "../atoms/button";
 // import Checkbox from "../checkbox";
 import RadioGroup from "../radioGroup";
-// import Slider from "../slider";
+import Slider from "../slider";
 import Switch from "../switch";
-
-// import Slider from "../slider";
 
 interface BookmarksViewDropdownProps {
   setBookmarksView: (
@@ -97,7 +95,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   };
 
   const bookmarksInfoValue = getViewValue("cardContentViewArray", []) as [];
-  // const bookmarksColumns = getViewValue("moodboardColumns", [10]);
+  const bookmarksColumns = getViewValue("moodboardColumns", [10]);
   const bookmarksViewValue = getViewValue("bookmarksView", "");
 
   // const bookmarksInfoValue =
@@ -304,16 +302,24 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
         </div>
 
         {bookmarksViewValue === "card" || bookmarksViewValue === "moodboard" ? (
-          <div className="p-2">
-            {/* <Slider
-              label="moodboard-cols-slider"
-              minValue={10}
-              maxValue={50}
-              step={10}
-              value={bookmarksColumns}
-              // onChange={(value) => setMoodboardColumns(value)}
-              onChange={value => setBookmarksView(value as number[], "colums")}
-            /> */}
+          <div className="flex items-center justify-between py-[4.5px] px-2">
+            <p className="text-13 font-450 leading-[14px] text-custom-gray-1">
+              Cover size
+            </p>
+            <div className="w-[90px]">
+              <Slider
+                label="moodboard-cols-slider"
+                minValue={10}
+                maxValue={50}
+                step={10}
+                value={bookmarksColumns as unknown as number}
+                // value={20}
+                // onChange={(value) => setMoodboardColumns(value)}
+                onChange={value =>
+                  setBookmarksView(value as number[], "colums")
+                }
+              />
+            </div>
           </div>
         ) : (
           <div className="h-[34px] w-[162px]" />

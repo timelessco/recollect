@@ -13,11 +13,14 @@ import {
   MAIN_TABLE_NAME,
 } from "../../../utils/constants";
 
-type Data = {
-  data: Array<SingleListData> | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
+type DataRes = Array<SingleListData> | null;
+type ErrorRes = PostgrestError | null | string | jwt.VerifyErrors;
+
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
   message: string | null;
-};
+}
 
 // this api adds catagory to a bookmark
 // it upadates cateogry based on the user's access role for the category
@@ -46,7 +49,7 @@ export default async function handler(
 
   // only if user is owner , or user has edit access they can update the bookmark category in the table, or else bookmark will be added with category null
 
-  const { data, error } = await supabase
+  const { data, error }: { data: DataRes; error: ErrorRes } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({ category_id: updateAccess ? categoryId : null })
     .match({ id: bookmarkId })

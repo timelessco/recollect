@@ -7,10 +7,12 @@ import type { SingleListData } from "../../types/apiTypes";
 import { CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "../../utils/constants";
 import { getUserNameFromEmail } from "../../utils/helpers";
 
-type Data = {
-  data: SingleListData[] | null;
-  error: PostgrestError | null | string;
-};
+type DataRes = SingleListData[] | null;
+type ErrorRes = PostgrestError | null | string;
+interface Data {
+  data: DataRes;
+  error: ErrorRes;
+}
 
 /**
  * gets all bookmarks in a public category
@@ -49,12 +51,15 @@ export default async function handler(
       .status(200)
       .json({ data: null, error: "username mismatch from url query" });
   } else {
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from(MAIN_TABLE_NAME)
       .select("*, category_id!inner(*), user_id!inner(*)")
       .eq("category_id.category_slug", req.query.category_slug)
       // .eq('user_id.user_name', req.query.user_name) // if this is there then collabs bookmakrs are not coming
-      .eq("category_id.is_public", true);
+      .eq("category_id.is_public", true)) as unknown as {
+      data: DataRes;
+      error: ErrorRes;
+    };
 
     if (!isNull(error) || !isNull(categoryError)) {
       res.status(500).json({ data: null, error });

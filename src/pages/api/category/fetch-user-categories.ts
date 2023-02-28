@@ -69,12 +69,13 @@ export default async function handler(
   // .eq('email', req.body.userEmail); // TODO: this needs to be uncommented
 
   // fetch categories where user is a colloborator
-  const {
-    data: userCollabCategoryData,
-  }: PostgrestResponse<{ category_id: number }> = await supabase
+
+  const { data: userCollabCategoryData } = (await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
     .select(`category_id!inner(*, user_id(*))`)
-    .eq("email", req.body.userEmail);
+    .eq("email", req.body.userEmail)) as unknown as {
+    data: { category_id: number }[];
+  };
 
   const flattenedUserCollabCategoryData = userCollabCategoryData?.map(
     item => item.category_id,
