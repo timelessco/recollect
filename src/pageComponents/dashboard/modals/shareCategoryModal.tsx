@@ -12,7 +12,7 @@ const ShareCategoryModal = () => {
   );
 
   return (
-    <Modal open={showShareCategoryModal} onClose={toggleShareCategoryModal}>
+    <Modal open={showShareCategoryModal} setOpen={toggleShareCategoryModal}>
       <ShareContent />
     </Modal>
   );

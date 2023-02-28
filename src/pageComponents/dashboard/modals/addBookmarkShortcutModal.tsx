@@ -37,7 +37,7 @@ const AddBookarkShortcutModal = (props: AddBookarkShortcutModalProps) => {
   return (
     <Modal
       open={showAddBookmarkShortcutModal}
-      onClose={toggleShowAddBookmarkShortcutModal}
+      setOpen={toggleShowAddBookmarkShortcutModal}
     >
       {isAddBookmarkLoading ? (
         <div className="flex justify-center">

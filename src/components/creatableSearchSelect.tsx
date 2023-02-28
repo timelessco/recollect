@@ -35,7 +35,7 @@ const CreatableSearchSelect = (props: CreatableSearchSelectProps) => {
       onChange={handleChange}
       options={options}
       defaultValue={defaultValue}
-      menuPortalTarget={document.body}
+      menuPortalTarget={document.getElementById("modal-parent")}
       styles={{
         menuPortal: provided => ({
           ...provided,

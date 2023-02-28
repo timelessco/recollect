@@ -509,8 +509,7 @@ const Dashboard = () => {
         </div>
         <Modal
           open={showAddBookmarkModal}
-          // setOpen={() => setShowAddBookmarkModal(false)}
-          onClose={() => setShowAddBookmarkModal(false)}
+          setOpen={() => setShowAddBookmarkModal(false)}
         >
           <AddModalContent
             showMainButton={false}

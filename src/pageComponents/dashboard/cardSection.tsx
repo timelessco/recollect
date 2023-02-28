@@ -145,7 +145,7 @@ const ListBox = (props: ListBoxDropTypes) => {
       typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
   });
 
-  const ulClassName = classNames({
+  const ulClassName = classNames("outline-none focus:outline-none", {
     [`columns-${
       bookmarksColumns && (bookmarksColumns[0] / 10)?.toString()
     } gap-6`]: cardTypeCondition === "moodboard",
@@ -601,47 +601,48 @@ const CardSection = ({
 
   const renderMoodboardAndCardType = (item: SingleListData) => {
     return (
-      <div id="single-moodboard-card" className="inline-block w-full ">
-        {renderOgImage(item?.ogImage)}
-        {bookmarksInfoValue?.length === 1 &&
-        bookmarksInfoValue[0] === "cover" ? null : (
-          <div className="space-y-[6px] rounded-lg px-2 py-3">
-            {bookmarksInfoValue?.includes("title" as never) && (
-              <p className=" text-sm font-medium leading-4 text-custom-gray-5">
-                {item?.title}
-              </p>
-            )}
-            {bookmarksInfoValue?.includes("description" as never) &&
-              !isEmpty(item?.description) && (
-                <p className="overflow-hidden break-all  text-sm leading-4">
-                  {item?.description}
+      <div id="single-moodboard-card" className="w-full">
+        <div className="inline-block w-full">
+          {renderOgImage(item?.ogImage)}
+          {bookmarksInfoValue?.length === 1 &&
+          bookmarksInfoValue[0] === "cover" ? null : (
+            <div className="space-y-[6px] rounded-lg px-2 py-3">
+              {bookmarksInfoValue?.includes("title" as never) && (
+                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                  {item?.title}
                 </p>
               )}
-            <div className="space-y-[6px]">
-              {bookmarksInfoValue?.includes("tags" as never) && (
-                <div className="flex items-center space-x-1">
-                  {item?.addedTags?.map(tag => {
-                    return (
-                      <div className="text-xs text-blue-500" key={tag?.id}>
-                        #{tag?.name}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {bookmarksInfoValue?.includes("info" as never) && (
-                <div className="flex flex-wrap items-center space-x-2">
-                  {renderCategoryBadge(item)}
-                  {renderUrl(item)}
-                  <p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-                    {format(new Date(item?.inserted_at), "dd MMM")}
+              {bookmarksInfoValue?.includes("description" as never) &&
+                !isEmpty(item?.description) && (
+                  <p className="overflow-hidden break-all  text-sm leading-4">
+                    {item?.description}
                   </p>
-                </div>
-              )}
+                )}
+              <div className="space-y-[6px]">
+                {bookmarksInfoValue?.includes("tags" as never) && (
+                  <div className="flex items-center space-x-1">
+                    {item?.addedTags?.map(tag => {
+                      return (
+                        <div className="text-xs text-blue-500" key={tag?.id}>
+                          #{tag?.name}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {bookmarksInfoValue?.includes("info" as never) && (
+                  <div className="flex flex-wrap items-center space-x-2">
+                    {renderCategoryBadge(item)}
+                    {renderUrl(item)}
+                    <p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+                      {format(new Date(item?.inserted_at), "dd MMM")}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-        {/* {renderOgImage(item?.ogImage)}
+          )}
+          {/* {renderOgImage(item?.ogImage)}
           {bookmarksInfoValue?.length === 1 &&
           bookmarksInfoValue[0] === "cover" ? null : (
             <div className="space-y-2 rounded-lg p-4">
@@ -677,16 +678,17 @@ const CardSection = ({
               </div>
             </div>
           )} */}
-        <div
-          // eslint-disable-next-line tailwindcss/no-custom-classname
-          className={`items-center space-x-1 ${
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore // this is cypress env, TS check not needed
-            window?.Cypress ? "flex" : "hidden"
-          } helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
-        >
-          {showAvatar && renderAvatar(item)}
-          {renderEditAndDeleteIcons(item)}
+          <div
+            // eslint-disable-next-line tailwindcss/no-custom-classname
+            className={`items-center space-x-1 ${
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore // this is cypress env, TS check not needed
+              window?.Cypress ? "flex" : "hidden"
+            } helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
+          >
+            {showAvatar && renderAvatar(item)}
+            {renderEditAndDeleteIcons(item)}
+          </div>
         </div>
       </div>
     );
