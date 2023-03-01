@@ -192,6 +192,17 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   };
 
   const renderViewsSwitch = (item: CardContentOptionsTypes) => {
+    const isEnabledLogic = () => {
+      if (bookmarksViewValue === "headlines") {
+        return (
+          item?.value === "cover" ||
+          item?.value === "title" ||
+          item?.value === "info"
+        );
+      }
+      return bookmarksInfoValue?.includes(item?.value as never) || false;
+    };
+
     return (
       <div className="flex items-center justify-between px-2 py-[5px]">
         <p className=" text-13 font-450 leading-[14px] text-custom-gray-1">
@@ -200,7 +211,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
         <Switch
           size="small"
           disabled={bookmarksViewValue === "headlines"}
-          enabled={bookmarksInfoValue?.includes(item?.value as never) || false}
+          enabled={isEnabledLogic()}
           setEnabled={() => {
             if (bookmarksInfoValue?.includes(item.value as never)) {
               if (bookmarksInfoValue?.length > 1) {
@@ -230,7 +241,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
       <MenuButton state={menu} as="div">
         <Button type="light" isActive={menu.open}>
           <figure className="h-4 w-4">
-            {/* <MoodboardIconGray /> */}
             {
               find(
                 bookmarksViewOptions,

@@ -720,12 +720,13 @@ const CardSection = ({
                 {item?.title}
               </p>
             )}
-            {bookmarksInfoValue?.includes("description" as never) && (
-              <p className="mt-[6px] overflow-hidden break-all text-13 font-450 leading-4 text-custom-gray-10">
-                {item?.description}
-              </p>
-            )}
-            <div className="space-y-2">
+            <div className="flex items-center space-y-2 space-x-1">
+              {bookmarksInfoValue?.includes("description" as never) &&
+                !isEmpty(item.description) && (
+                  <p className="mt-[6px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10">
+                    {item?.description}
+                  </p>
+                )}
               {bookmarksInfoValue?.includes("tags" as never) && (
                 <div className="mt-[6px] flex items-center space-x-1">
                   {item?.addedTags?.map(tag => {
@@ -770,7 +771,7 @@ const CardSection = ({
               </p>
             )}
             <div className="mt-[6px] space-y-2">
-              {bookmarksInfoValue?.includes("tags" as never) && (
+              {/* {bookmarksInfoValue?.includes("tags" as never) && (
                 <div className="flex items-center space-x-1">
                   {item?.addedTags?.map(tag => {
                     return (
@@ -780,7 +781,7 @@ const CardSection = ({
                     );
                   })}
                 </div>
-              )}
+              )} */}
               {bookmarksInfoValue?.includes("info" as never) && (
                 <div className="flex items-center space-x-2">
                   {/* {renderCategoryBadge(item)} */}
