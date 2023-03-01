@@ -12,6 +12,7 @@ interface ButtonProps {
   type?: "dark" | "light";
   style?: Record<string, unknown>;
   id?: string;
+  isActive?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = props => {
@@ -23,6 +24,7 @@ const Button: React.FC<ButtonProps> = props => {
     type = "light",
     id = "",
     style,
+    isActive = false,
   } = props;
 
   const buttonClassNames = tcm(
@@ -31,6 +33,7 @@ const Button: React.FC<ButtonProps> = props => {
         true,
       "bg-custom-gray-5 hover:bg-gray-800": type === "dark",
       "bg-white hover:bg-custom-gray-8": type === "light",
+      "bg-custom-gray-8": isActive,
     }),
     className,
   );

@@ -114,7 +114,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
     <>
       {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
       <MenuButton state={menu} className="button" as="div">
-        <Button type="light">
+        <Button type="light" isActive={menu.open}>
           <figure className="h-4 w-4">
             {isSortByLoading ? (
               <Spinner />

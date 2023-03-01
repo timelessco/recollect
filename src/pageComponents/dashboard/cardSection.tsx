@@ -646,7 +646,7 @@ const CardSection = ({
                     {renderCategoryBadge(item)}
                     {renderUrl(item)}
                     <p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-                      {format(new Date(item?.inserted_at), "dd MMM")}
+                      {format(new Date(item?.inserted_at), "MMMM dd")}
                     </p>
                   </div>
                 )}

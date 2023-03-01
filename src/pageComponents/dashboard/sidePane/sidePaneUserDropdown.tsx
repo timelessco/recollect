@@ -26,7 +26,7 @@ const SidePaneUserDropdown = () => {
     <div className="flex justify-between">
       <AriaDropdown
         menuButton={
-          <div className="flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-9">
+          <div className="flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-8">
             <div className="flex w-4/5 items-center space-x-2">
               {session && userData?.avatar_url ? (
                 <Image
@@ -50,6 +50,7 @@ const SidePaneUserDropdown = () => {
         }
         menuClassName={dropdownMenuClassName}
         menuButtonClassName="w-[86%]"
+        menuButtonActiveClassName="bg-custom-gray-8 rounded-lg"
       >
         {[{ label: "Sign Out", value: "sign-out" }]?.map(item => (
           <AriaDropdownMenu key={item?.value} onClick={() => signOut(supabase)}>

@@ -228,7 +228,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   return (
     <>
       <MenuButton state={menu} as="div">
-        <Button type="light">
+        <Button type="light" isActive={menu.open}>
           <figure className="h-4 w-4">
             {/* <MoodboardIconGray /> */}
             {
