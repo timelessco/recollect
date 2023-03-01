@@ -27,6 +27,8 @@ export interface MiscellaneousStoreState {
   setIsCardDragging: (value: boolean) => void;
   showSidePane: boolean;
   setShowSidePane: (value: boolean) => void;
+  currentBookmarkView: BookmarksViewTypes;
+  setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
 }
 
 export type BookmarksViewTypes = "card" | "moodboard" | "list" | "headlines";

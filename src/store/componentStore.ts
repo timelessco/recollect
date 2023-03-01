@@ -1,6 +1,7 @@
 import create from "zustand";
 
 import type {
+  BookmarksViewTypes,
   LoadersStoreState,
   MiscellaneousStoreState,
   ModalStoreState,
@@ -54,4 +55,7 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>(set => ({
   setIsCardDragging: (value: boolean) => set(() => ({ isCardDragging: value })),
   showSidePane: true,
   setShowSidePane: (value: boolean) => set(() => ({ showSidePane: value })),
+  currentBookmarkView: "moodboard",
+  setCurrentBookmarkView: (value: BookmarksViewTypes) =>
+    set(() => ({ currentBookmarkView: value })),
 }));

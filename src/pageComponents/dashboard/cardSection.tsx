@@ -8,11 +8,12 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import format from "date-fns/format";
+import { flatten, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import { useRouter } from "next/router";
-import React, { type Key, type ReactNode } from "react";
+import React, { useEffect, type Key, type ReactNode } from "react";
 import {
   DragPreview,
   mergeProps,
@@ -44,6 +45,7 @@ import type {
   ProfilesTableTypes,
   SingleListData,
 } from "../../types/apiTypes";
+import type { BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { options } from "../../utils/commonData";
 import {
   ALL_BOOKMARKS_URL,
@@ -278,6 +280,9 @@ const CardSection = ({
 
   const isDeleteBookmarkLoading = false;
   const searchText = useMiscellaneousStore(state => state.searchText);
+  const setCurrentBookmarkView = useMiscellaneousStore(
+    state => state.setCurrentBookmarkView,
+  );
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -357,10 +362,16 @@ const CardSection = ({
   };
 
   const bookmarksInfoValue = getViewValue("cardContentViewArray", []);
-  const bookmarksColumns = [
-    getViewValue("moodboardColumns", [10]),
-  ] as unknown as number[];
+  const bookmarksColumns = flatten([
+    getViewValue("moodboardColumns", [10]) as Many<string | undefined>,
+  ]) as unknown as number[];
   const cardTypeCondition = getViewValue("bookmarksView", "");
+
+  useEffect(() => {
+    if (!isEmpty(cardTypeCondition)) {
+      setCurrentBookmarkView(cardTypeCondition as BookmarksViewTypes);
+    }
+  }, [cardTypeCondition, setCurrentBookmarkView]);
 
   const isLoggedInUserTheCategoryOwner =
     !isUserInACategory(categorySlug as string) ||

@@ -3,6 +3,7 @@ import { ChevronDoubleRightIcon } from "@heroicons/react/solid";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment } from "allotment";
+import classNames from "classnames";
 import find from "lodash/find";
 import React, { useEffect, useState } from "react";
 
@@ -96,6 +97,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   const setSearchText = useMiscellaneousStore(state => state.setSearchText);
   const showSidePane = useMiscellaneousStore(state => state.showSidePane);
   const setShowSidePane = useMiscellaneousStore(state => state.setShowSidePane);
+  const currentBookmarkView = useMiscellaneousStore(
+    state => state.currentBookmarkView,
+  );
 
   useEffect(() => {
     setSearchText("");
@@ -275,8 +279,18 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   // };
 
   const renderMainPaneNav = () => {
+    const headerClass = classNames(
+      "flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px]",
+      {
+        "pl-[15px] pr-3":
+          currentBookmarkView === "card" || currentBookmarkView === "moodboard",
+        "px-[7px]":
+          currentBookmarkView === "headlines" || currentBookmarkView === "list",
+      },
+    );
+
     return (
-      <header className="flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px] pl-[15px] pr-3">
+      <header className={headerClass}>
         <div className="flex items-center py-[3.5px] px-2">
           <figure className="mr-2 flex h-5 w-5 items-center">
             {navBarLogo()}
