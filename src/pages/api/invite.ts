@@ -49,16 +49,36 @@ export default async function handler(
       .eq("category_id", insertData?.category_id)
       .eq("email", insertData?.email);
 
+    // if data is empty then the user invite was deleted
     if (isEmpty(data) && isNull(error)) {
+      res.status(500).json({
+        success: null,
+        error: `This user invite has been deleted , error: ${
+          isNull(error) ? "db error null" : error
+        }`,
+      });
+      throw new Error("ERROR");
+    }
+
+    // the data will be present as it will be added with is_accept_pending true when invite is sent
+    if (!isNull(data) && data[0]?.is_accept_pending === true) {
+      // const { error: catError } = await supabase
+      //   .from(SHARED_CATEGORIES_TABLE_NAME)
+      //   .insert({
+      //     category_id: insertData?.category_id,
+      //     email: insertData?.email,
+      //     edit_access: false,
+      //     user_id: insertData?.userId,
+      //   })
+      //   .select();
+
       const { error: catError } = await supabase
         .from(SHARED_CATEGORIES_TABLE_NAME)
-        .insert({
-          category_id: insertData?.category_id,
-          email: insertData?.email,
-          edit_access: false,
-          user_id: insertData?.userId,
+        .update({
+          is_accept_pending: false,
         })
-        .select();
+        .eq("email", insertData?.email)
+        .eq("category_id", insertData?.category_id);
 
       if (isNull(catError)) {
         res.status(200).json({

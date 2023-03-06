@@ -1,3 +1,4 @@
+import { TrashIcon } from "@heroicons/react/solid";
 import { useSession } from "@supabase/auth-helpers-react";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,8 +8,8 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
+import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
-import { sendCollaborationEmailInvite } from "../../../async/supabaseCrudHelpers";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -47,19 +48,33 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
   const { deleteSharedCategoriesUserMutation } =
     useDeleteSharedCategoriesUserMutation();
 
-  return (
-    <div className="flex items-center justify-between py-[5px] px-2">
-      <div className="flex items-center justify-between">
-        <div className=" h-5 w-5 rounded-full bg-slate-200" />
-        <p className=" ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
-          {item.userEmail}
-        </p>
-      </div>
-      <div>
+  const renderRightContent = () => {
+    const rightTextStyles =
+      "text-13 font-medium leading-[15px] text-custom-gray-10";
+    if (item.is_accept_pending) {
+      return (
+        <div className=" flex items-center space-x-1">
+          <p className={rightTextStyles}>pending</p>
+          <figure>
+            <TrashIcon
+              onClick={() => {
+                mutationApiCall(
+                  deleteSharedCategoriesUserMutation.mutateAsync({
+                    id: item.share_id as number,
+                    session,
+                  }),
+                )?.catch(() => {});
+              }}
+              className="h-4 w-4 cursor-pointer text-red-400 hover:text-red-600"
+            />
+          </figure>
+        </div>
+      );
+    }
+    return (
+      <>
         {item.isOwner ? (
-          <p className="text-13 font-medium leading-[15px] text-custom-gray-10">
-            Owner
-          </p>
+          <p className={rightTextStyles}>Owner</p>
         ) : (
           <AriaSelect
             defaultValue={item.edit_access ? "Can Edit" : "Can View"}
@@ -97,7 +112,19 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
             }}
           />
         )}
+      </>
+    );
+  };
+
+  return (
+    <div className="flex items-center justify-between py-[5px] px-2">
+      <div className="flex items-center justify-between">
+        <div className=" h-5 w-5 rounded-full bg-slate-200" />
+        <p className=" ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+          {item.userEmail}
+        </p>
       </div>
+      <div>{renderRightContent()}</div>
     </div>
   );
 };
@@ -116,6 +143,9 @@ const ShareContent = () => {
 
   const { updateCategoryOptimisticMutation } =
     useUpdateCategoryOptimisticMutation();
+
+  const { sendCollaborationEmailInviteMutation } =
+    useSendCollaborationEmailInviteMutation();
 
   useEffect(() => {
     if (typeof window !== undefined) {
@@ -139,14 +169,26 @@ const ShareContent = () => {
   const onSubmit: SubmitHandler<EmailInput> = async data => {
     const emailList = data?.email?.split(",");
     try {
-      await sendCollaborationEmailInvite({
-        emailList,
-        edit_access: false,
-        category_id: categoryId as number,
-        hostUrl: window?.location?.origin,
-        userId: session?.user.id as unknown as string,
-        session,
-      });
+      // await sendCollaborationEmailInvite({
+      // emailList,
+      // edit_access: false,
+      // category_id: categoryId as number,
+      // hostUrl: window?.location?.origin,
+      // userId: session?.user.id as unknown as string,
+      // session,
+      // });
+
+      await mutationApiCall(
+        sendCollaborationEmailInviteMutation.mutateAsync({
+          emailList,
+          edit_access: false,
+          category_id: categoryId as number,
+          hostUrl: window?.location?.origin,
+          userId: session?.user.id as unknown as string,
+          session,
+        }),
+      )?.catch(() => {});
+
       reset({ email: "" });
       successToast("Invite sent");
     } catch (e) {

@@ -13,6 +13,7 @@ const ShareDropdown = () => {
           type="light"
           // onClick={() => onShareClick()}
           id="share-button"
+          isActive={menu.open}
         >
           <figure className="h-4 w-4">
             <ShareIcon />

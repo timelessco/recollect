@@ -118,6 +118,7 @@ export interface FetchSharedCategoriesData {
   edit_access: boolean;
   user_id: string;
   category_views: BookmarkViewDataTypes;
+  is_accept_pending: boolean;
 }
 
 export interface CollabDataInCategory {
@@ -125,6 +126,7 @@ export interface CollabDataInCategory {
   edit_access: boolean;
   share_id: number | null; // it will be null for owner
   isOwner: boolean;
+  is_accept_pending: boolean;
 }
 
 // profiles table

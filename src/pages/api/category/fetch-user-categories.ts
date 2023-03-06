@@ -73,7 +73,8 @@ export default async function handler(
   const { data: userCollabCategoryData } = (await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
     .select(`category_id!inner(*, user_id(*))`)
-    .eq("email", req.body.userEmail)) as unknown as {
+    .eq("email", req.body.userEmail)
+    .eq("is_accept_pending", false)) as unknown as {
     data: { category_id: number }[];
   };
 
@@ -99,6 +100,7 @@ export default async function handler(
               edit_access: catItem?.edit_access,
               share_id: catItem?.id,
               isOwner: false,
+              is_accept_pending: catItem?.is_accept_pending,
             },
           ];
         }
@@ -111,6 +113,7 @@ export default async function handler(
           edit_access: true,
           share_id: null,
           isOwner: true,
+          is_accept_pending: false,
         },
       ];
 
