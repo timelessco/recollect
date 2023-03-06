@@ -63,9 +63,13 @@ export default async function handler(
   // get shared-cat data
   const {
     data: sharedCategoryData,
-  }: PostgrestResponse<FetchSharedCategoriesData> = await supabase
-    .from(SHARED_CATEGORIES_TABLE_NAME)
-    .select(`*`);
+  }: PostgrestResponse<FetchSharedCategoriesData> = await supabase.from(
+    SHARED_CATEGORIES_TABLE_NAME,
+  ).select(`
+      *,
+      user_id (id, profile_pic),
+      email(email, profile_pic)
+    `);
   // .eq('email', req.body.userEmail); // TODO: this needs to be uncommented
 
   // fetch categories where user is a colloborator
@@ -96,11 +100,12 @@ export default async function handler(
           collabData = [
             ...collabData,
             {
-              userEmail: catItem?.email,
+              userEmail: catItem?.email?.email,
               edit_access: catItem?.edit_access,
               share_id: catItem?.id,
               isOwner: false,
               is_accept_pending: catItem?.is_accept_pending,
+              profile_pic: catItem?.email?.profile_pic,
             },
           ];
         }
@@ -114,6 +119,7 @@ export default async function handler(
           share_id: null,
           isOwner: true,
           is_accept_pending: false,
+          profile_pic: item?.user_id?.profile_pic,
         },
       ];
 

@@ -4,6 +4,7 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty, isNull } from "lodash";
 import { useEffect, useState } from "react";
+import Avatar from "react-avatar";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
@@ -119,7 +120,14 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
   return (
     <div className="flex items-center justify-between py-[5px] px-2">
       <div className="flex items-center justify-between">
-        <div className=" h-5 w-5 rounded-full bg-slate-200" />
+        {/* <div className=" h-5 w-5 rounded-full bg-slate-200" /> */}
+        <Avatar
+          name={item?.userEmail}
+          src={item?.profile_pic || undefined}
+          size="20"
+          round
+          className="mr-1"
+        />
         <p className=" ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
           {item.userEmail}
         </p>

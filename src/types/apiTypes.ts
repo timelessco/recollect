@@ -96,7 +96,7 @@ export interface CategoriesData {
   created_at: string;
   id: number;
   category_name: string;
-  user_id: { id: string; email: string };
+  user_id: { id: string; email: string; profile_pic?: string | null };
   category_slug: string;
   is_public: boolean;
   icon: null | string;
@@ -114,7 +114,10 @@ export interface FetchSharedCategoriesData {
   id: number;
   created_at: string;
   category_id: number;
-  email: string;
+  email: {
+    email: string;
+    profile_pic: string | null;
+  };
   edit_access: boolean;
   user_id: string;
   category_views: BookmarkViewDataTypes;
@@ -127,6 +130,7 @@ export interface CollabDataInCategory {
   share_id: number | null; // it will be null for owner
   isOwner: boolean;
   is_accept_pending: boolean;
+  profile_pic: string | null;
 }
 
 // profiles table
