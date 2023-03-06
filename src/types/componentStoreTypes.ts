@@ -18,7 +18,7 @@ export interface LoadersStoreState {
 
 export interface MiscellaneousStoreState {
   shareCategoryId: number | undefined;
-  setShareCategoryId: (id: number) => void;
+  setShareCategoryId: (id: number | undefined) => void;
   searchText: string;
   setSearchText: (value: string) => void;
   addScreenshotBookmarkId: number | undefined;

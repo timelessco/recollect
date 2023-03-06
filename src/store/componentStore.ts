@@ -45,7 +45,8 @@ export const useLoadersStore = create<LoadersStoreState>(set => ({
 
 export const useMiscellaneousStore = create<MiscellaneousStoreState>(set => ({
   shareCategoryId: undefined,
-  setShareCategoryId: (id: number) => set(() => ({ shareCategoryId: id })),
+  setShareCategoryId: (id: number | undefined) =>
+    set(() => ({ shareCategoryId: id })),
   searchText: "",
   setSearchText: (value: string) => set(() => ({ searchText: value })),
   addScreenshotBookmarkId: undefined,

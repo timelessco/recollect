@@ -16,6 +16,7 @@ import Input from "../../../components/atoms/input";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import GlobeIcon from "../../../icons/globeIcon";
 import LinkIcon from "../../../icons/linkIcon";
+import { useMiscellaneousStore } from "../../../store/componentStore";
 import type {
   CategoriesData,
   CollabDataInCategory,
@@ -136,6 +137,8 @@ const ShareContent = () => {
   const session = useSession();
   const { category_id: categoryId } = useGetCurrentCategoryId();
 
+  const shareCategoryId = useMiscellaneousStore(state => state.shareCategoryId);
+
   const { updateCategoryOptimisticMutation } =
     useUpdateCategoryOptimisticMutation();
 
@@ -201,7 +204,7 @@ const ShareContent = () => {
 
   const currentCategory = find(
     categoryData?.data,
-    item => item?.id === categoryId,
+    item => item?.id === (shareCategoryId || categoryId),
   );
 
   return (
