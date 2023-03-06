@@ -25,20 +25,6 @@ import { CATEGORIES_KEY, EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { getUserNameFromEmail } from "../../../utils/helpers";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
-const GiveAccessDropdown = () => {
-  return (
-    <AriaSelect
-      defaultValue="View"
-      options={[
-        { label: "Editor", value: "Editor" },
-        { label: "View", value: "View" },
-      ]}
-      disabled
-      onOptionClick={() => {}}
-    />
-  );
-};
-
 const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
   const session = useSession();
   const { item } = props;
@@ -144,6 +130,7 @@ interface EmailInput {
 const ShareContent = () => {
   const [publicUrl, setPublicUrl] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [inviteUserEditAccess, setInviteUserEditAccess] = useState(false);
 
   const queryClient = useQueryClient();
   const session = useSession();
@@ -189,7 +176,7 @@ const ShareContent = () => {
       await mutationApiCall(
         sendCollaborationEmailInviteMutation.mutateAsync({
           emailList,
-          edit_access: false,
+          edit_access: inviteUserEditAccess,
           category_id: categoryId as number,
           hostUrl: window?.location?.origin,
           userId: session?.user.id as unknown as string,
@@ -230,7 +217,19 @@ const ShareContent = () => {
           className="rounded-none  bg-transparent text-sm leading-4 shadow-none outline-none"
           errorText={errors.email ? "Enter valid email" : ""}
           isError={!isEmpty(errors)}
-          rendedRightSideElement={<GiveAccessDropdown />}
+          rendedRightSideElement={
+            <AriaSelect
+              defaultValue="View"
+              options={[
+                { label: "Editor", value: "Editor" },
+                { label: "View", value: "View" },
+              ]}
+              // disabled
+              onOptionClick={value =>
+                setInviteUserEditAccess(value === "Editor")
+              }
+            />
+          }
           errorClassName="ml-2"
           errorIconClassName="right-[48px]"
         />
