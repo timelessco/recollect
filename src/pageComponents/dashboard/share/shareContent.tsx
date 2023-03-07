@@ -115,7 +115,7 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
           round
           className="mr-1"
         />
-        <p className=" ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+        <p className=" ml-[6px] w-44 truncate text-13 font-450 leading-[15px] text-custom-gray-1">
           {item.userEmail}
         </p>
       </div>
@@ -167,28 +167,30 @@ const ShareContent = () => {
   const onSubmit: SubmitHandler<EmailInput> = async data => {
     const emailList = data?.email?.split(",");
     try {
-      // await sendCollaborationEmailInvite({
-      // emailList,
-      // edit_access: false,
-      // category_id: categoryId as number,
-      // hostUrl: window?.location?.origin,
-      // userId: session?.user.id as unknown as string,
-      // session,
-      // });
+      const email = emailList[0];
 
-      await mutationApiCall(
-        sendCollaborationEmailInviteMutation.mutateAsync({
-          emailList,
-          edit_access: inviteUserEditAccess,
-          category_id: categoryId as number,
-          hostUrl: window?.location?.origin,
-          userId: session?.user.id as unknown as string,
-          session,
-        }),
-      )?.catch(() => {});
+      const isEmailExist = find(
+        currentCategory?.collabData,
+        item => item?.userEmail === email,
+      );
 
-      reset({ email: "" });
-      successToast("Invite sent");
+      if (!isEmailExist) {
+        await mutationApiCall(
+          sendCollaborationEmailInviteMutation.mutateAsync({
+            emailList,
+            edit_access: inviteUserEditAccess,
+            category_id: categoryId as number,
+            hostUrl: window?.location?.origin,
+            userId: session?.user.id as unknown as string,
+            session,
+          }),
+        )?.catch(() => {});
+
+        reset({ email: "" });
+        successToast("Invite sent");
+      } else {
+        errorToast("This email is already a collaborator");
+      }
     } catch (e) {
       errorToast("Something went wrong");
     }
