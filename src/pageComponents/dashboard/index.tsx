@@ -826,7 +826,8 @@ const Dashboard = () => {
       <AddBookarkShortcutModal
         isAddBookmarkLoading={false}
         onAddBookmark={url => {
-          addBookmarkLogic(url)?.catch(() => {});
+          const finalUrl = url?.includes("https://") ? url : `https://${url}`;
+          addBookmarkLogic(finalUrl)?.catch(() => {});
 
           toggleShowAddBookmarkShortcutModal();
         }}
