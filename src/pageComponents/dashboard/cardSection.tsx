@@ -38,7 +38,10 @@ import {
 import Badge from "../../components/badge";
 import Spinner from "../../components/spinner";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
-import { useMiscellaneousStore } from "../../store/componentStore";
+import {
+  useLoadersStore,
+  useMiscellaneousStore,
+} from "../../store/componentStore";
 import type {
   CategoriesData,
   FetchSharedCategoriesData,
@@ -284,6 +287,9 @@ const CardSection = ({
   const setCurrentBookmarkView = useMiscellaneousStore(
     state => state.setCurrentBookmarkView,
   );
+  const toggleIsSearchLoading = useLoadersStore(
+    state => state.toggleIsSearchLoading,
+  );
 
   const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
     data: CategoriesData[];
@@ -324,6 +330,14 @@ const CardSection = ({
     data: SingleListData[];
     error: PostgrestError;
   };
+
+  useEffect(() => {
+    if (searchBookmarksData?.data === undefined) {
+      toggleIsSearchLoading(true);
+    } else {
+      toggleIsSearchLoading(false);
+    }
+  }, [searchBookmarksData, toggleIsSearchLoading]);
 
   const sharedCategoriesData = queryClient.getQueryData([
     SHARED_CATEGORIES_TABLE_NAME,

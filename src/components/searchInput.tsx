@@ -4,9 +4,14 @@ import React from "react";
 import { Mention, MentionsInput } from "react-mentions";
 
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
-import { useMiscellaneousStore } from "../store/componentStore";
+import {
+  useLoadersStore,
+  useMiscellaneousStore,
+} from "../store/componentStore";
 import type { UserTagsData } from "../types/apiTypes";
 import { USER_TAGS_KEY } from "../utils/constants";
+
+import Spinner from "./spinner";
 
 const styles = {
   control: {
@@ -68,11 +73,14 @@ const SearchInput = (props: SearchInputTypes) => {
   const queryClient = useQueryClient();
 
   const searchText = useMiscellaneousStore(state => state.searchText);
+  const isSearchLoading = useLoadersStore(state => state.isSearchLoading);
 
   const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
     data: UserTagsData[];
     error: PostgrestError;
   };
+
+  console.log("iii", isSearchLoading);
 
   return (
     <div className=" relative">
@@ -104,6 +112,11 @@ const SearchInput = (props: SearchInputTypes) => {
           // }}
         />
       </MentionsInput>
+      {isSearchLoading && (
+        <div className=" absolute top-0 right-2">
+          <Spinner />
+        </div>
+      )}
     </div>
   );
 };

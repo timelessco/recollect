@@ -14,6 +14,8 @@ export interface LoadersStoreState {
   toggleIsSortByLoading: () => void;
   sidePaneOptionLoading: string | number | null;
   setSidePaneOptionLoading: (value: string | number | null) => void;
+  isSearchLoading: boolean;
+  toggleIsSearchLoading: (value: boolean) => void;
 }
 
 export interface MiscellaneousStoreState {

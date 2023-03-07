@@ -41,6 +41,11 @@ export const useLoadersStore = create<LoadersStoreState>(set => ({
     set(() => ({
       sidePaneOptionLoading: value,
     })),
+  isSearchLoading: false,
+  toggleIsSearchLoading: (value: boolean) =>
+    set(() => ({
+      isSearchLoading: value,
+    })),
 }));
 
 export const useMiscellaneousStore = create<MiscellaneousStoreState>(set => ({
