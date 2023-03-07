@@ -138,6 +138,8 @@ const ShareContent = () => {
   const { category_id: categoryId } = useGetCurrentCategoryId();
 
   const shareCategoryId = useMiscellaneousStore(state => state.shareCategoryId);
+  // categoryId will only be there for nav bar share and shareCategoryId will be there for side pane share
+  const dynamicCategoryId = shareCategoryId || categoryId;
 
   const { updateCategoryOptimisticMutation } =
     useUpdateCategoryOptimisticMutation();
@@ -155,7 +157,7 @@ const ShareContent = () => {
       setPublicUrl(url);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user.id, categoryId]);
+  }, [session?.user.id, dynamicCategoryId]);
 
   const {
     register,
@@ -179,7 +181,7 @@ const ShareContent = () => {
           sendCollaborationEmailInviteMutation.mutateAsync({
             emailList,
             edit_access: inviteUserEditAccess,
-            category_id: categoryId as number,
+            category_id: dynamicCategoryId as number,
             hostUrl: window?.location?.origin,
             userId: session?.user.id as unknown as string,
             session,
@@ -206,7 +208,7 @@ const ShareContent = () => {
 
   const currentCategory = find(
     categoryData?.data,
-    item => item?.id === (shareCategoryId || categoryId),
+    item => item?.id === dynamicCategoryId,
   );
 
   return (
@@ -270,7 +272,7 @@ const ShareContent = () => {
             onOptionClick={async value => {
               await mutationApiCall(
                 updateCategoryOptimisticMutation.mutateAsync({
-                  category_id: categoryId,
+                  category_id: dynamicCategoryId,
                   updateData: {
                     is_public: value === "View access",
                   },
