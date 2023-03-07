@@ -25,6 +25,7 @@ import type { TagInputOption } from "../../types/componentTypes";
 import {
   ALL_BOOKMARKS_URL,
   LOGIN_URL,
+  SETTINGS_URL,
   TRASH_URL,
   UNCATEGORIZED_URL,
 } from "../../utils/constants";
@@ -90,6 +91,7 @@ const Dashboard = () => {
   const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
+  const categorySlug = router?.asPath?.split("/")[1] || null;
 
   useEffect(() => {
     if (router?.pathname === "/") {
@@ -680,7 +682,13 @@ const Dashboard = () => {
       <DashboardLayout
         categoryId={CATEGORY_ID}
         userId={session?.user?.id || ""}
-        renderMainContent={renderAllBookmarkCards}
+        renderMainContent={() =>
+          categorySlug === SETTINGS_URL ? (
+            <div className="p-6">Settings page </div>
+          ) : (
+            renderAllBookmarkCards()
+          )
+        }
         onNavAddClick={() => toggleShowAddBookmarkShortcutModal()}
         onBookmarksDrop={async e => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

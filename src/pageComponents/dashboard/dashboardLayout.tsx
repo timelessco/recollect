@@ -25,6 +25,7 @@ import {
   BOOKMARKS_COUNT_KEY,
   CATEGORIES_KEY,
   SEARCH_URL,
+  SETTINGS_URL,
   TRASH_URL,
   UNCATEGORIZED_URL,
 } from "../../utils/constants";
@@ -35,6 +36,7 @@ import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmark
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
+import SettingsIcon from "../../icons/settingsIcon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import type {
   BookmarksSortByTypes,
@@ -154,6 +156,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       current: currentPath === TRASH_URL,
       id: 3,
       count: bookmarksCountData?.data?.trash,
+    },
+    {
+      icon: <SettingsIcon />,
+      name: "Settings",
+      href: `/${SETTINGS_URL}`,
+      current: currentPath === SETTINGS_URL,
+      id: 4,
+      count: undefined,
     },
   ];
 
@@ -303,68 +313,60 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
               find(optionsMenuList, item => item?.current === true)?.name}
           </p>
         </div>
-        <SearchInput
-          userId={userId}
-          placeholder={`Search in ${
-            find(
-              categoryData?.data,
-              item => item?.category_slug === currentPath,
-            )?.category_name || "All Bookmarks"
-          }`}
-          onChange={value => {
-            setSearchText(value);
-          }}
-        />
-        <div className="flex items-center">
-          <div className="mr-3 flex items-center space-x-2">
-            <BookmarksViewDropdown
-              setBookmarksView={setBookmarksView}
-              categoryId={categoryId}
+        {currentPath !== SETTINGS_URL && (
+          <>
+            <SearchInput
               userId={userId}
+              placeholder={`Search in ${
+                find(
+                  categoryData?.data,
+                  item => item?.category_slug === currentPath,
+                )?.category_name || "All Bookmarks"
+              }`}
+              onChange={value => {
+                setSearchText(value);
+              }}
             />
-            {currentPath === TRASH_URL && (
+            <div className="flex items-center">
+              <div className="mr-3 flex items-center space-x-2">
+                <BookmarksViewDropdown
+                  setBookmarksView={setBookmarksView}
+                  categoryId={categoryId}
+                  userId={userId}
+                />
+                {currentPath === TRASH_URL && (
+                  <Button
+                    type="dark"
+                    className="bg-red-700 hover:bg-red-900"
+                    onClick={() => onClearTrash()}
+                    id="clear-trash-button"
+                  >
+                    <span className="text-white">Clear Trash</span>
+                  </Button>
+                )}
+                <BookmarksSortDropdown
+                  setBookmarksView={setBookmarksView}
+                  categoryId={categoryId}
+                  userId={userId}
+                />
+                {typeof categoryId === "number" && <ShareDropdown />}
+              </div>
+
               <Button
                 type="dark"
-                className="bg-red-700 hover:bg-red-900"
-                onClick={() => onClearTrash()}
-                id="clear-trash-button"
+                onClick={onNavAddClick}
+                className="hover:bg-black"
               >
-                <span className="text-white">Clear Trash</span>
+                <figure className="h-4 w-4">
+                  <PlusIconWhite />
+                </figure>
+                <span className="ml-[6px] font-medium leading-[14px] text-white">
+                  Create
+                </span>
               </Button>
-            )}
-            <BookmarksSortDropdown
-              setBookmarksView={setBookmarksView}
-              categoryId={categoryId}
-              userId={userId}
-            />
-            {typeof categoryId === "number" && (
-              // <Button
-              //   type="light"
-              //   onClick={() => onShareClick()}
-              //   id="share-button"
-              // >
-              //   <figure className="h-4 w-4">
-              //     <ShareIcon />
-              //   </figure>
-              //   <span className="ml-[7px] text-custom-gray-1">Share</span>
-              // </Button>
-              <ShareDropdown />
-            )}
-          </div>
-
-          <Button
-            type="dark"
-            onClick={onNavAddClick}
-            className="hover:bg-black"
-          >
-            <figure className="h-4 w-4">
-              <PlusIconWhite />
-            </figure>
-            <span className="ml-[6px] font-medium leading-[14px] text-white">
-              Create
-            </span>
-          </Button>
-        </div>
+            </div>
+          </>
+        )}
       </header>
     );
   };

@@ -115,7 +115,7 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
           round
           className="mr-1"
         />
-        <p className=" ml-[6px] w-44 truncate text-13 font-450 leading-[15px] text-custom-gray-1">
+        <p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-custom-gray-1">
           {item.userEmail}
         </p>
       </div>

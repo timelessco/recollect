@@ -51,6 +51,7 @@ import {
   ALL_BOOKMARKS_URL,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
+  SEARCH_URL,
   SHARED_CATEGORIES_TABLE_NAME,
   TRASH_URL,
   USER_PROFILE,
@@ -300,7 +301,7 @@ const CardSection = ({
   };
 
   const searchSlugKey = () => {
-    if (categorySlug === ALL_BOOKMARKS_URL) {
+    if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
       return null;
     }
     if (typeof categoryIdFromSlug === "number") {
