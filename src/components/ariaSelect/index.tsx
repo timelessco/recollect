@@ -6,6 +6,7 @@ import {
   useSelectState,
 } from "ariakit/select";
 
+import type { ChildrenTypes } from "../../types/componentTypes";
 import {
   dropdownMenuClassName,
   dropdownMenuItemClassName,
@@ -16,10 +17,21 @@ interface AriaSelectProps {
   defaultValue: string;
   disabled?: boolean;
   onOptionClick: (value: string) => void;
+  renderCustomSelectItem?: (value: string) => ChildrenTypes;
+  renderCustomSelectButton?: (value: boolean) => ChildrenTypes;
+  menuClassName?: string;
 }
 
 const AriaSelect = (props: AriaSelectProps) => {
-  const { options, defaultValue, disabled = false, onOptionClick } = props;
+  const {
+    options,
+    defaultValue,
+    disabled = false,
+    onOptionClick,
+    renderCustomSelectItem = () => undefined,
+    renderCustomSelectButton = () => undefined,
+    menuClassName,
+  } = props;
   const select = useSelectState({
     defaultValue,
     sameWidth: false,
@@ -29,17 +41,31 @@ const AriaSelect = (props: AriaSelectProps) => {
     <>
       <Select
         state={select}
-        className="my-select flex appearance-none items-center justify-between text-13 font-medium leading-4 text-custom-gray-1 disabled:opacity-50"
+        className="flex appearance-none items-center justify-between rounded-lg text-13 font-medium leading-4"
         disabled={disabled}
-      />
-      <SelectPopover state={select} className={`${dropdownMenuClassName} z-50`}>
+      >
+        {renderCustomSelectButton(select?.open) || defaultValue}
+      </Select>
+      <SelectPopover
+        state={select}
+        className={`${menuClassName || dropdownMenuClassName} z-50`}
+      >
         {options?.map(item => {
+          // return (
+          //   <SelectItem
+          // className={dropdownMenuItemClassName}
+          // value={item.value}
+          // onClick={() => onOptionClick(item.value)}
+          //   />
+          // );
           return (
             <SelectItem
               className={dropdownMenuItemClassName}
               value={item.value}
               onClick={() => onOptionClick(item.value)}
-            />
+            >
+              {renderCustomSelectItem(item?.label) || item.value}
+            </SelectItem>
           );
         })}
       </SelectPopover>

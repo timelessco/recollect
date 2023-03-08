@@ -399,19 +399,6 @@ main {
   background-image: url(/public/tickIcon.svg);
 }
 
-.my-select {
-  padding-right: 15px;
-
-  background-image: url(/downArrowGray.svg);
-  background-repeat: no-repeat;
-  background-position: right 0 top 2px;
-  background-size: 12px;
-}
-
-.my-select span {
-  display: none;
-}
-
 .search-bar__control textarea::placeholder {
   color: #707070;
 }

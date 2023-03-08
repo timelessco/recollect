@@ -1,13 +1,12 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
-import { useRef } from "react";
 
 import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
+import TickIcon from "../../icons/tickIcon";
 import { useLoadersStore } from "../../store/componentStore";
 import type { CategoriesData, ProfilesTableTypes } from "../../types/apiTypes";
 import type {
@@ -16,8 +15,7 @@ import type {
 } from "../../types/componentStoreTypes";
 import type { CategoryIdUrlTypes } from "../../types/componentTypes";
 import { CATEGORIES_KEY, USER_PROFILE } from "../../utils/constants";
-import Button from "../atoms/button";
-import RadioGroup from "../radioGroup";
+import AriaSelect from "../ariaSelect";
 import Spinner from "../spinner";
 
 interface BookmarksSortDropdownTypes {
@@ -65,8 +63,6 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 
   const bookmarksSortValue = getSortValue();
 
-  const menu = useMenuState({ gutter: 8 });
-
   const sortOptions = [
     // {
     //   label: "By date ↑",
@@ -109,46 +105,52 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
     },
   ];
 
-  const radioFocusRef = useRef(null);
+  const currentValue = find(
+    sortOptions,
+    item => item?.value === bookmarksSortValue,
+  );
   return (
-    <>
-      {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
-      <MenuButton state={menu} className="button" as="div">
-        <Button type="light" isActive={menu.open}>
-          <figure className="h-4 w-4">
-            {isSortByLoading ? (
+    <AriaSelect
+      key={bookmarksSortValue}
+      options={sortOptions}
+      defaultValue={currentValue?.label || ""}
+      onOptionClick={value => {
+        setBookmarksView(value as BookmarksSortByTypes, "sort");
+      }}
+      renderCustomSelectItem={value => {
+        return (
+          <div className="flex items-center py-[1px]">
+            <figure className="mr-[6px] h-4 w-4">
+              {find(sortOptions, item => item?.label === value)?.icon}
+            </figure>
+            <div className=" flex w-full items-center justify-between">
+              {find(sortOptions, item => item?.label === value)?.label}
+              {value === currentValue?.label ? (
+                <figure className=" h-3 w-3">
+                  <TickIcon />
+                </figure>
+              ) : null}
+            </div>
+          </div>
+        );
+      }}
+      renderCustomSelectButton={open => (
+        <div
+          className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-8 ${
+            open ? "bg-custom-gray-8" : ""
+          }`}
+        >
+          {isSortByLoading ? (
+            <span className="mr-[6px]">
               <Spinner />
-            ) : (
-              find(sortOptions, item => item?.value === bookmarksSortValue)
-                ?.icon
-            )}
-          </figure>
-          <span className="ml-[6px] text-custom-gray-1">
-            {
-              find(sortOptions, item => item?.value === bookmarksSortValue)
-                ?.label
-            }
-          </span>
-        </Button>
-      </MenuButton>
-      <Menu
-        initialFocusRef={radioFocusRef}
-        state={menu}
-        className="z-20 w-[195px] origin-top-left rounded-xl bg-white p-[6px] shadow-custom-1 ring-1 ring-black/5"
-      >
-        <div className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-custom-gray-10">
-          Sort by
+            </span>
+          ) : (
+            <figure className=" mr-[6px] h-4 w-4">{currentValue?.icon}</figure>
+          )}
+          <p>{currentValue?.label}</p>
         </div>
-        <RadioGroup
-          radioList={sortOptions}
-          onChange={value =>
-            setBookmarksView(value as BookmarksSortByTypes, "sort")
-          }
-          value={bookmarksSortValue || ""}
-          initialRadioRef={radioFocusRef}
-        />
-      </Menu>
-    </>
+      )}
+    />
   );
 };
 

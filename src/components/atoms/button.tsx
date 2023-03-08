@@ -29,7 +29,7 @@ const Button: React.FC<ButtonProps> = props => {
 
   const buttonClassNames = tcm(
     classNames({
-      "flex items-center rounded-lg py-[6px] px-2 text-[13px] font-medium leading-[14px]":
+      "flex items-center rounded-lg py-[5px] px-2 text-[13px] font-medium leading-[14px]":
         true,
       "bg-custom-gray-5 hover:bg-gray-800": type === "dark",
       "bg-white hover:bg-custom-gray-8": type === "light",

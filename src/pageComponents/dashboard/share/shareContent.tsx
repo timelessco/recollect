@@ -14,6 +14,7 @@ import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutation
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
 import LinkIcon from "../../../icons/linkIcon";
 import { useMiscellaneousStore } from "../../../store/componentStore";
@@ -66,6 +67,16 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
         ) : (
           <AriaSelect
             defaultValue={item.edit_access ? "Can Edit" : "Can View"}
+            renderCustomSelectButton={() => (
+              <div className="flex items-center">
+                <p className=" mr-1">
+                  {item.edit_access ? "Can Edit" : "Can View"}
+                </p>
+                <figure>
+                  <DownArrowGray />
+                </figure>
+              </div>
+            )}
             options={[
               { label: "Can Edit", value: "Can Edit" },
               { label: "Can View", value: "Can View" },
@@ -227,6 +238,16 @@ const ShareContent = () => {
           rendedRightSideElement={
             <AriaSelect
               defaultValue="View"
+              renderCustomSelectButton={() => (
+                <div className="flex items-center">
+                  <p className=" mr-1">
+                    {inviteUserEditAccess ? "Editor" : "View"}
+                  </p>
+                  <figure>
+                    <DownArrowGray />
+                  </figure>
+                </div>
+              )}
               options={[
                 { label: "Editor", value: "Editor" },
                 { label: "View", value: "View" },
@@ -265,6 +286,16 @@ const ShareContent = () => {
             defaultValue={
               currentCategory?.is_public ? "View access" : "No access"
             }
+            renderCustomSelectButton={() => (
+              <div className="flex items-center">
+                <p className=" mr-1">
+                  {currentCategory?.is_public ? "View access" : "No access"}
+                </p>
+                <figure>
+                  <DownArrowGray />
+                </figure>
+              </div>
+            )}
             options={[
               { label: "View access", value: "View access" },
               { label: "No access", value: "No access" },
