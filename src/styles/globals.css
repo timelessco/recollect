@@ -415,3 +415,8 @@ main {
 .search-bar__control textarea::placeholder {
   color: #707070;
 }
+
+.aria-select-item[data-active-item] {
+  color: #171717;
+  background-color: #ededed;
+}

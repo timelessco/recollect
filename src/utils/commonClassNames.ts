@@ -12,6 +12,6 @@ export const bottomBarButton =
 // DROPDOWN COMMON CLASS NAMES
 
 export const dropdownMenuClassName =
-  "bg-white rounded-xl shadow-custom-3 p-[6px] w-48";
+  "bg-white rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
 export const dropdownMenuItemClassName =
-  "text-custom-gray-1 font-450 text-13 leading-4 px-2 py-1 hover:bg-custom-gray-9 focus:bg-custom-gray-9 cursor-pointer rounded-lg";
+  "text-custom-gray-1 font-450 text-13 leading-4 px-2 py-1 hover:bg-custom-gray-9 focus:bg-custom-gray-9 cursor-pointer rounded-lg aria-select-item";

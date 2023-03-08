@@ -80,8 +80,6 @@ const SearchInput = (props: SearchInputTypes) => {
     error: PostgrestError;
   };
 
-  console.log("iii", isSearchLoading);
-
   return (
     <div className=" relative">
       <figure className=" absolute top-[7px] left-[9px]">
