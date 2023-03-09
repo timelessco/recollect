@@ -13,7 +13,7 @@ import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import { useRouter } from "next/router";
-import React, { useEffect, type Key, type ReactNode } from "react";
+import React, { useEffect, useState, type Key, type ReactNode } from "react";
 import {
   DragPreview,
   mergeProps,
@@ -37,6 +37,7 @@ import {
 
 import Badge from "../../components/badge";
 import Spinner from "../../components/spinner";
+import ErrorImgPlaceholder from "../../icons/errorImgPlaceholder";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
 import {
   useLoadersStore,
@@ -278,6 +279,8 @@ const CardSection = ({
   isBookmarkLoading = false,
   deleteBookmarkId,
 }: CardSectionProps) => {
+  const [errorImgs, setErrorImgs] = useState([]);
+
   const router = useRouter();
   const categorySlug = router?.asPath?.split("/")[1] || null; // cat_id reffers to cat slug here as its got from url
   const queryClient = useQueryClient();
@@ -521,7 +524,7 @@ const CardSection = ({
     );
   };
 
-  const renderOgImage = (img: string) => {
+  const renderOgImage = (img: string, id: number) => {
     const imgClassName = classNames({
       "h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
       "h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none":
@@ -550,23 +553,31 @@ const CardSection = ({
       "h-4 w-4": cardTypeCondition === "headlines",
     });
 
-    return (
-      <figure className={figureClassName}>
-        {bookmarksInfoValue?.includes("cover" as never) && (
+    const imgLogic = () => {
+      if (bookmarksInfoValue?.includes("cover" as never)) {
+        if (isBookmarkLoading && img === undefined) {
+          return <div className={loaderClassName} />;
+        }
+        if (errorImgs?.includes(id as never)) {
+          return <ErrorImgPlaceholder />;
+        }
+        return (
           <>
-            {(isOgImgLoading || isBookmarkLoading) && img === undefined ? (
-              <div className={loaderClassName} />
-            ) : (
-              <>
-                {img && (
-                  <img src={img} alt="bookmark-img" className={imgClassName} />
-                )}
-              </>
+            {img && (
+              <img
+                src={`${img}`}
+                alt="bookmark-img"
+                className={imgClassName}
+                onError={() => setErrorImgs([id as never, ...errorImgs])}
+              />
             )}
           </>
-        )}
-      </figure>
-    );
+        );
+      }
+      return null;
+    };
+
+    return <figure className={figureClassName}>{imgLogic()}</figure>;
   };
 
   const renderCategoryBadge = (item: SingleListData) => {
@@ -629,7 +640,7 @@ const CardSection = ({
     return (
       <div id="single-moodboard-card" className="w-full">
         <div className="inline-block w-full">
-          {renderOgImage(item?.ogImage)}
+          {renderOgImage(item?.ogImage, item?.id)}
           {bookmarksInfoValue?.length === 1 &&
           bookmarksInfoValue[0] === "cover" ? null : (
             <div className="space-y-[6px] rounded-lg px-2 py-3">
@@ -726,7 +737,7 @@ const CardSection = ({
         id="single-moodboard-card"
         className="flex h-[64px] w-full items-center p-2"
       >
-        {renderOgImage(item?.ogImage)}
+        {renderOgImage(item?.ogImage, item?.id)}
         {bookmarksInfoValue?.length === 1 &&
         bookmarksInfoValue[0] === "cover" ? null : (
           <div className=" ml-3">
@@ -776,7 +787,7 @@ const CardSection = ({
   const renderHeadlinesCard = (item: SingleListData) => {
     return (
       <div key={item?.id} className="group flex h-[53px] w-full p-2">
-        {renderOgImage(item?.ogImage)}
+        {renderOgImage(item?.ogImage, item?.id)}
         {bookmarksInfoValue?.length === 1 &&
         bookmarksInfoValue[0] === "cover" ? null : (
           <div className=" ml-[10px]">
