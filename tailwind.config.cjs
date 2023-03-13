@@ -26,6 +26,7 @@ module.exports = {
           11: "rgba(0, 0, 0, 0.047)",
           12: "rgba(0, 0, 0, 0.071)",
           13: "rgba(0, 0, 0, 0.141)",
+          14: "#2A2B2E", // test color for dark button hover
         },
         "custom-white": {
           1: "rgba(255, 255, 255, 0.9)",

@@ -80,7 +80,7 @@ const SidePaneOptionsMenu = () => {
   ];
 
   return (
-    <div className="pt-[6.5px]">
+    <div className="pt-[10px]">
       {optionsMenuList?.map(item => {
         return (
           <SingleListItem
