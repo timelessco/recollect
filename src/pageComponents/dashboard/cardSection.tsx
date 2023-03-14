@@ -240,7 +240,7 @@ const Option = ({
 
   return (
     <li
-      {...mergeProps(dragProps, focusProps)}
+      {...mergeProps(dragProps, focusProps, optionProps)}
       ref={ref}
       // className="single-bookmark group relative mb-6 flex cursor-pointer rounded-lg duration-150 hover:shadow-custom-4"
       className={liClassName}
@@ -249,7 +249,13 @@ const Option = ({
       {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
       <a
         href={url}
-        onClick={e => e.preventDefault()}
+        onClick={e => {
+          e.preventDefault();
+          console.log("click", e.detail);
+          if (e.detail === 2) {
+            window.open(url, "_blank");
+          }
+        }}
         draggable={false}
         className={`absolute top-0 left-0 h-full w-full rounded-lg opacity-50 ${
           isSelected ? "bg-slate-600" : ""
@@ -258,7 +264,7 @@ const Option = ({
       <input
         type="checkbox"
         checked={isSelected}
-        {...optionProps}
+        // {...optionProps}
         // eslint-disable-next-line tailwindcss/no-custom-classname
         className={`card-checkbox absolute top-[7px] left-[6px] z-20 group-hover:block ${
           isSelected ? "block" : "hidden"

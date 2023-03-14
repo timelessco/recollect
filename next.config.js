@@ -23,7 +23,11 @@ const nextConfig = {
   // Enable the below option only when you are debugging sourceamp
   productionBrowserSourceMaps: process.env.SOURCEMAP === "true",
   images: {
-    domains: ["lh3.googleusercontent.com", "images.unsplash.com"],
+    domains: [
+      "lh3.googleusercontent.com",
+      "images.unsplash.com",
+      "upload.wikimedia.org",
+    ],
   },
 };
 

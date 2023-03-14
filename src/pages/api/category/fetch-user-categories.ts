@@ -68,7 +68,7 @@ export default async function handler(
   ).select(`
       *,
       user_id (id, profile_pic),
-      email(email, profile_pic)
+      email
     `);
   // .eq('email', req.body.userEmail); // TODO: this needs to be uncommented
 
@@ -100,12 +100,12 @@ export default async function handler(
           collabData = [
             ...collabData,
             {
-              userEmail: catItem?.email?.email,
+              userEmail: catItem?.email,
               edit_access: catItem?.edit_access,
               share_id: catItem?.id,
               isOwner: false,
               is_accept_pending: catItem?.is_accept_pending,
-              profile_pic: catItem?.email?.profile_pic,
+              profile_pic: null,
             },
           ];
         }

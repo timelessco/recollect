@@ -1,7 +1,9 @@
 import { ChevronDoubleLeftIcon } from "@heroicons/react/solid";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { isEmpty, isNull } from "lodash";
 import Image from "next/image";
 
+import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import { signOut } from "../../../async/supabaseCrudHelpers";
 import {
   AriaDropdown,
@@ -20,6 +22,10 @@ const SidePaneUserDropdown = () => {
   const supabase = useSupabaseClient();
   const setShowSidePane = useMiscellaneousStore(state => state.setShowSidePane);
 
+  const { userProfilePicData } = useGetUserProfilePic(
+    session?.user?.email || "",
+  );
+
   const userData = session?.user?.user_metadata;
 
   return (
@@ -28,12 +34,16 @@ const SidePaneUserDropdown = () => {
         menuButton={
           <div className="flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-8">
             <div className="flex w-4/5 items-center space-x-2">
-              {session && userData?.avatar_url ? (
+              {!isEmpty(userProfilePicData?.data) ? (
                 <Image
                   width={24}
                   height={24}
-                  className="h-6 w-6 rounded-full"
-                  src={userData?.avatar_url as string}
+                  className="h-6 w-6 rounded-full object-cover"
+                  src={
+                    !isNull(userProfilePicData?.data)
+                      ? userProfilePicData?.data[0]?.profile_pic || ""
+                      : ""
+                  }
                   alt=""
                 />
               ) : (

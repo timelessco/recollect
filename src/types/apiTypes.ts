@@ -114,10 +114,11 @@ export interface FetchSharedCategoriesData {
   id: number;
   created_at: string;
   category_id: number;
-  email: {
-    email: string;
-    profile_pic: string | null;
-  };
+  // email: {
+  //   email: string;
+  //   profile_pic: string | null;
+  // };
+  email: string;
   edit_access: boolean;
   user_id: string;
   category_views: BookmarkViewDataTypes;
@@ -148,6 +149,10 @@ export type BookmarksWithTagsWithTagForginKeys = {
   bookmark_id: number;
   tag_id: { id: number; name: string };
 }[];
+
+export interface UserProfilePicTypes {
+  profile_pic: string | null;
+}
 
 // NEXT API types
 export type NextAPIReq<T> = Omit<NextApiRequest, "body"> & {
@@ -223,6 +228,11 @@ export interface UpdateCategoryApiPayload {
 export interface UpdateUserProfileApiPayload {
   id: string;
   updateData: ProfilesTableTypes;
+  session: SupabaseSessionType;
+}
+
+export interface GetUserProfilePicPayload {
+  email: string;
   session: SupabaseSessionType;
 }
 

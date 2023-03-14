@@ -68,6 +68,7 @@ export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
+export const GET_USER_PROFILE_PIC_API = "/profiles/get-user-profile-pic";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
@@ -88,6 +89,7 @@ export const CATEGORIES_KEY = "categories";
 export const USER_TAGS_KEY = "userTags";
 export const BOOKMARKS_VIEW = "bookmarks_view";
 export const USER_PROFILE = "user_profile";
+export const USER_PROFILE_PIC = "user_profile_pic";
 
 // error msgs
 

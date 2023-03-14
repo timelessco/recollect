@@ -18,6 +18,7 @@ import type {
   DeleteUserCategoryApiPayload,
   FetchDataResponse,
   FetchSharedCategoriesData,
+  GetUserProfilePicPayload,
   MoveBookmarkToTrashApiPayload,
   ProfilesTableTypes,
   SingleListData,
@@ -26,6 +27,7 @@ import type {
   UpdateCategoryOrderApiPayload,
   UpdateSharedCategoriesUserAccessApiPayload,
   UpdateUserProfileApiPayload,
+  UserProfilePicTypes,
   UserTagsData,
 } from "../types/apiTypes";
 import type { CategoryIdUrlTypes } from "../types/componentTypes";
@@ -47,6 +49,7 @@ import {
   FETCH_USER_TAGS_API,
   GET_BOOKMARKS_COUNT,
   GET_BOOKMARKS_DATA_API,
+  GET_USER_PROFILE_PIC_API,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
   REMOVE_TAG_FROM_BOOKMARK_API,
@@ -740,6 +743,29 @@ export const updateUserProfile = async ({
     return res?.data;
   } catch (e) {
     return e;
+  }
+};
+
+export const getUserProfilePic = async ({
+  email,
+  session,
+}: GetUserProfilePicPayload): Promise<{
+  data: UserProfilePicTypes[] | null;
+  error: Error;
+}> => {
+  try {
+    const res = await axios.get<{
+      data: UserProfilePicTypes[] | null;
+      error: Error;
+    }>(
+      `${NEXT_API_URL}${GET_USER_PROFILE_PIC_API}?access_token=${
+        session?.access_token || ""
+      }&email=${email}`,
+    );
+
+    return res?.data;
+  } catch (e) {
+    return { data: null, error: e as Error };
   }
 };
 

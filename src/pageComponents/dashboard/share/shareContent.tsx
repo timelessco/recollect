@@ -11,6 +11,7 @@ import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/ca
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
+import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -115,17 +116,38 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
     );
   };
 
+  const { userProfilePicData } = useGetUserProfilePic(item?.userEmail);
+
   return (
     <div className="flex items-center justify-between py-[5px] px-2">
       <div className="flex items-center justify-between">
-        {/* <div className=" h-5 w-5 rounded-full bg-slate-200" /> */}
-        <Avatar
-          name={item?.userEmail}
-          src={item?.profile_pic || undefined}
-          size="20"
-          round
-          className="mr-1"
-        />
+        {!isNull(userProfilePicData?.data) &&
+        userProfilePicData?.data[0]?.profile_pic ? (
+          // disabling as we dont know the src origin url of the img
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={userProfilePicData?.data[0]?.profile_pic}
+            className="mr-1 h-5 w-5 rounded-full object-cover"
+            alt="profile-pic"
+          />
+        ) : (
+          <Avatar
+            name={
+              !isNull(userProfilePicData?.data)
+                ? userProfilePicData?.data[0]?.profile_pic || ""
+                : ""
+            }
+            src={
+              (!isNull(userProfilePicData?.data) &&
+                userProfilePicData?.data[0]?.profile_pic) ||
+              undefined
+            }
+            size="20"
+            round
+            className="mr-1"
+          />
+        )}
+
         <p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-custom-gray-1">
           {item.userEmail}
         </p>
