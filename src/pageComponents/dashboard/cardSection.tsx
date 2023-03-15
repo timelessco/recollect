@@ -81,11 +81,17 @@ interface ListBoxDropTypes extends ListProps<object> {
   bookmarksColumns: number[];
   cardTypeCondition: unknown;
   bookmarksList: SingleListData[];
+  showBatchActionsBar: (show: boolean) => void;
 }
 
 const ListBox = (props: ListBoxDropTypes) => {
-  const { getItems, bookmarksColumns, cardTypeCondition, bookmarksList } =
-    props;
+  const {
+    getItems,
+    bookmarksColumns,
+    cardTypeCondition,
+    bookmarksList,
+    showBatchActionsBar,
+  } = props;
   const setIsCardDragging = useMiscellaneousStore(
     state => state.setIsCardDragging,
   );
@@ -102,6 +108,20 @@ const ListBox = (props: ListBoxDropTypes) => {
     state,
     ref,
   );
+
+  useEffect(() => {
+    if (state.selectionManager.selectedKeys.size > 0) {
+      showBatchActionsBar(true);
+    } else {
+      showBatchActionsBar(false);
+    }
+  }, [showBatchActionsBar, state.selectionManager.selectedKeys.size]);
+
+  // console.log(
+  //   "state",
+  //   Array.from(state.selectionManager.selectedKeys.keys()),
+  //   state,
+  // );
 
   // Setup drag state for the collection.
   const dragState = useDraggableCollectionState({
@@ -216,7 +236,6 @@ const Option = ({
   const ref = React.useRef(null);
   const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
   const { focusProps } = useFocusRing();
-
   // Register the item as a drag source.
   const { dragProps } = useDraggableItem(
     {
@@ -251,7 +270,6 @@ const Option = ({
         href={url}
         onClick={e => {
           e.preventDefault();
-          console.log("click", e.detail);
           if (e.detail === 2) {
             window.open(url, "_blank");
           }
@@ -274,6 +292,7 @@ const Option = ({
     </li>
   );
 };
+
 const CardSection = ({
   listData = [],
   onDeleteClick,
@@ -286,6 +305,8 @@ const CardSection = ({
   deleteBookmarkId,
 }: CardSectionProps) => {
   const [errorImgs, setErrorImgs] = useState([]);
+  const [showBatchActionsBarState, setShowBatchActionsBarState] =
+    useState(false);
 
   const router = useRouter();
   const categorySlug = router?.asPath?.split("/")[1] || null; // cat_id reffers to cat slug here as its got from url
@@ -847,6 +868,7 @@ const CardSection = ({
         bookmarksColumns={bookmarksColumns}
         cardTypeCondition={cardTypeCondition}
         bookmarksList={bookmarksList}
+        showBatchActionsBar={show => setShowBatchActionsBarState(show)}
       >
         {renderSortByCondition()?.map(item => {
           return (
@@ -856,6 +878,9 @@ const CardSection = ({
           );
         })}
       </ListBox>
+      {showBatchActionsBarState && (
+        <div className=" fixed bottom-2 bg-slate-600 p-4">Batch actions</div>
+      )}
     </div>
   );
 };
