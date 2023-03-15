@@ -31,6 +31,9 @@ module.exports = {
         "custom-white": {
           1: "rgba(255, 255, 255, 0.9)",
         },
+        "custom-gradient": {
+          1: "linear-gradient(180deg, #2E2E2E 0%, #242424 100%)",
+        },
       },
 
       dropShadow: {
@@ -46,6 +49,8 @@ module.exports = {
         "custom-4":
           "0px 64px 74px rgba(0, 0, 0, 0.08), 0px 17.9672px 35.1912px rgba(0, 0, 0, 0.0427215), 0px 8.53023px 25.3083px rgba(0, 0, 0, 0.0302528), 0px 4.48693px 17.6765px rgba(0, 0, 0, 0.0221708), 0px 2.0298px 9.41891px rgba(0, 0, 0, 0.0146447)",
         "custom-5": "inset 0px 0px 1px rgba(0, 0, 0, 0.11)",
+        "custom-6":
+          "0px -3px 60px 11px rgba(0, 0, 0, 0.11), 0px 0px 3px rgba(0, 0, 0, 0.19)",
       },
       fontSize: {
         40: "40px",

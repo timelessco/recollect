@@ -14,16 +14,16 @@ const Checkbox = (props: CheckboxPropsTypes) => {
   return (
     // disabling this because as per docs htmlFor is not needed
     // eslint-disable-next-line jsx-a11y/label-has-associated-control
-    <label className="flex items-center p-2">
+    <label className="flex items-center">
       <AriaCheckbox
-        className="h-4 w-4 rounded border-gray-300 text-indigo-600 transition-all duration-200 ease-in-out focus:ring-indigo-500 disabled:opacity-50"
+        className="h-4 w-4 rounded border-gray-300 text-custom-gray-5  transition-all duration-200 ease-in-out  disabled:opacity-50"
         onChange={e => onChange(e.target.value)}
         value={value}
         checked={checked}
         disabled={disabled}
       />
       <span
-        className={`ml-1 text-sm leading-4 text-custom-gray-1 ${
+        className={` ml-3 text-sm leading-[21px] text-custom-gray-5 ${
           disabled ? "opacity-50" : ""
         }`}
       >

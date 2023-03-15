@@ -36,6 +36,7 @@ import {
 } from "react-stately";
 
 import Badge from "../../components/badge";
+import Checkbox from "../../components/checkbox";
 import Spinner from "../../components/spinner";
 import ErrorImgPlaceholder from "../../icons/errorImgPlaceholder";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
@@ -81,17 +82,11 @@ interface ListBoxDropTypes extends ListProps<object> {
   bookmarksColumns: number[];
   cardTypeCondition: unknown;
   bookmarksList: SingleListData[];
-  showBatchActionsBar: (show: boolean) => void;
 }
 
 const ListBox = (props: ListBoxDropTypes) => {
-  const {
-    getItems,
-    bookmarksColumns,
-    cardTypeCondition,
-    bookmarksList,
-    showBatchActionsBar,
-  } = props;
+  const { getItems, bookmarksColumns, cardTypeCondition, bookmarksList } =
+    props;
   const setIsCardDragging = useMiscellaneousStore(
     state => state.setIsCardDragging,
   );
@@ -108,20 +103,6 @@ const ListBox = (props: ListBoxDropTypes) => {
     state,
     ref,
   );
-
-  useEffect(() => {
-    if (state.selectionManager.selectedKeys.size > 0) {
-      showBatchActionsBar(true);
-    } else {
-      showBatchActionsBar(false);
-    }
-  }, [showBatchActionsBar, state.selectionManager.selectedKeys.size]);
-
-  // console.log(
-  //   "state",
-  //   Array.from(state.selectionManager.selectedKeys.keys()),
-  //   state,
-  // );
 
   // Setup drag state for the collection.
   const dragState = useDraggableCollectionState({
@@ -181,37 +162,54 @@ const ListBox = (props: ListBoxDropTypes) => {
   });
 
   return (
-    <ul {...listBoxProps} ref={ref} className={ulClassName}>
-      {[...state.collection].map(item => {
-        return (
-          <Option
-            key={item.key}
-            item={item}
-            state={state}
-            dragState={dragState}
-            cardTypeCondition={cardTypeCondition}
-            url={
-              find(
-                bookmarksList,
-                listItem => listItem?.id === parseInt(item.key as string, 10),
-              )?.url || ""
-            }
-          />
-        );
-      })}
-      <DragPreview ref={preview}>
-        {items => (
-          <div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
-            {items.length > 1
-              ? `${items.length} bookmarks`
-              : find(
+    <>
+      <ul {...listBoxProps} ref={ref} className={ulClassName}>
+        {[...state.collection].map(item => {
+          return (
+            <Option
+              key={item.key}
+              item={item}
+              state={state}
+              dragState={dragState}
+              cardTypeCondition={cardTypeCondition}
+              url={
+                find(
                   bookmarksList,
-                  item => item?.id === parseInt(items[0]["text/plain"], 10),
-                )?.title}
-          </div>
-        )}
-      </DragPreview>
-    </ul>
+                  listItem => listItem?.id === parseInt(item.key as string, 10),
+                )?.url || ""
+              }
+            />
+          );
+        })}
+        <DragPreview ref={preview}>
+          {items => (
+            <div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
+              {items.length > 1
+                ? `${items.length} bookmarks`
+                : find(
+                    bookmarksList,
+                    item => item?.id === parseInt(items[0]["text/plain"], 10),
+                  )?.title}
+            </div>
+          )}
+        </DragPreview>
+      </ul>
+      {state.selectionManager.selectedKeys.size > 0 && (
+        <div className="fixed  bottom-12 left-[40%] flex w-[596px] rounded-[14px] bg-white py-[9px] px-[11px] shadow-custom-6">
+          <Checkbox
+            value="selected-bookmarks"
+            checked={
+              Array.from(state.selectionManager.selectedKeys.keys())?.length > 0
+            }
+            label={`${
+              Array.from(state.selectionManager.selectedKeys.keys())?.length
+            }
+            bookmarks`}
+            onChange={() => state.selectionManager.clearSelection()}
+          />
+        </div>
+      )}
+    </>
   );
 };
 
@@ -305,8 +303,6 @@ const CardSection = ({
   deleteBookmarkId,
 }: CardSectionProps) => {
   const [errorImgs, setErrorImgs] = useState([]);
-  const [showBatchActionsBarState, setShowBatchActionsBarState] =
-    useState(false);
 
   const router = useRouter();
   const categorySlug = router?.asPath?.split("/")[1] || null; // cat_id reffers to cat slug here as its got from url
@@ -868,7 +864,6 @@ const CardSection = ({
         bookmarksColumns={bookmarksColumns}
         cardTypeCondition={cardTypeCondition}
         bookmarksList={bookmarksList}
-        showBatchActionsBar={show => setShowBatchActionsBarState(show)}
       >
         {renderSortByCondition()?.map(item => {
           return (
@@ -878,9 +873,6 @@ const CardSection = ({
           );
         })}
       </ListBox>
-      {showBatchActionsBarState && (
-        <div className=" fixed bottom-2 bg-slate-600 p-4">Batch actions</div>
-      )}
     </div>
   );
 };
