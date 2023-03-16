@@ -449,6 +449,43 @@ const Dashboard = () => {
                   scrollableTarget="scrollableDiv"
                 >
                   <CardSection
+                    onCategoryChange={(value, cat_id) => {
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                      const categoryId = cat_id;
+
+                      const currentCategory =
+                        find(
+                          allCategories?.data,
+                          item => item?.id === categoryId,
+                        ) ||
+                        find(
+                          allCategories?.data,
+                          item => item?.id === CATEGORY_ID,
+                        );
+                      // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+
+                      const updateAccessCondition =
+                        find(
+                          currentCategory?.collabData,
+                          item => item?.userEmail === session?.user?.email,
+                        )?.edit_access === true ||
+                        currentCategory?.user_id?.id === session?.user?.id;
+
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                      value.forEach(async (item: any) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                        const bookmarkId = item as string;
+
+                        await addCategoryToBookmarkOptimisticMutation.mutateAsync(
+                          {
+                            category_id: categoryId,
+                            bookmark_id: parseInt(bookmarkId, 10),
+                            update_access: updateAccessCondition, // if user is changing to uncategoried then thay always have access
+                            session,
+                          },
+                        );
+                      });
+                    }}
                     isBookmarkLoading={
                       addBookmarkMinDataOptimisticMutation?.isLoading
                     }

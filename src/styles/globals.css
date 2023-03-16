@@ -228,7 +228,16 @@ main {
 
 .single-bookmark[aria-selected="true"] {
   color: white;
-  background: blueviolet;
+  background: #000;
+}
+
+.single-bookmark[aria-selected="true"] .card-title {
+  color: white;
+}
+
+.single-bookmark[aria-selected="true"] .moodboard-card-img {
+  border-bottom-right-radius: unset;
+  border-bottom-left-radius: unset;
 }
 
 .drop-target .side-pane-anchor {

@@ -4,6 +4,7 @@ import {
   PencilAltIcon,
   TrashIcon,
 } from "@heroicons/react/solid";
+import { useSession } from "@supabase/auth-helpers-react";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -35,11 +36,13 @@ import {
   type ListState,
 } from "react-stately";
 
+import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import Badge from "../../components/badge";
 import Checkbox from "../../components/checkbox";
 import Spinner from "../../components/spinner";
 import ErrorImgPlaceholder from "../../icons/errorImgPlaceholder";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
+import MoveIcon from "../../icons/moveIcon";
 import {
   useLoadersStore,
   useMiscellaneousStore,
@@ -51,6 +54,10 @@ import type {
   SingleListData,
 } from "../../types/apiTypes";
 import type { BookmarksViewTypes } from "../../types/componentStoreTypes";
+import {
+  dropdownMenuClassName,
+  dropdownMenuItemClassName,
+} from "../../utils/commonClassNames";
 import { options } from "../../utils/commonData";
 import {
   ALL_BOOKMARKS_URL,
@@ -73,6 +80,7 @@ interface CardSectionProps {
   isOgImgLoading: boolean;
   isBookmarkLoading: boolean;
   deleteBookmarkId: number | undefined;
+  onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 }
 interface ListBoxDropTypes extends ListProps<object> {
   getItems?: (keys: Set<Key>) => DragItem[];
@@ -82,14 +90,31 @@ interface ListBoxDropTypes extends ListProps<object> {
   bookmarksColumns: number[];
   cardTypeCondition: unknown;
   bookmarksList: SingleListData[];
+  onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 }
 
 const ListBox = (props: ListBoxDropTypes) => {
-  const { getItems, bookmarksColumns, cardTypeCondition, bookmarksList } =
-    props;
+  const {
+    getItems,
+    bookmarksColumns,
+    cardTypeCondition,
+    bookmarksList,
+    onCategoryChange,
+  } = props;
   const setIsCardDragging = useMiscellaneousStore(
     state => state.setIsCardDragging,
   );
+  const queryClient = useQueryClient();
+  const session = useSession();
+
+  const categoryData = queryClient.getQueryData([
+    CATEGORIES_KEY,
+    session?.user?.id,
+  ]) as {
+    data: CategoriesData[];
+    error: PostgrestError;
+  };
+
   // Setup listbox as normal. See the useListBox docs for more details.
   const preview = React.useRef(null);
   const state = useListState(props);
@@ -139,24 +164,41 @@ const ListBox = (props: ListBoxDropTypes) => {
 
   const cardGridClassNames = classNames({
     "grid gap-6": true,
-    "grid-cols-1":
+    "grid-cols-5":
       typeof bookmarksColumns === "object" &&
       !isNull(bookmarksColumns) &&
       bookmarksColumns[0] === 10,
-    "grid-cols-2":
+    "grid-cols-4":
       typeof bookmarksColumns === "object" && bookmarksColumns[0] === 20,
     "grid-cols-3":
       typeof bookmarksColumns === "object" && bookmarksColumns[0] === 30,
-    "grid-cols-4":
+    "grid-cols-2":
       typeof bookmarksColumns === "object" && bookmarksColumns[0] === 40,
-    "grid-cols-5":
+    "grid-cols-1":
       typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
   });
 
+  const moodboardColsLogic = () => {
+    switch (bookmarksColumns && bookmarksColumns[0] / 10) {
+      case 1:
+        return "5";
+      case 2:
+        return "4";
+      case 3:
+        return "3";
+      case 4:
+        return "2";
+      case 5:
+        return "1";
+      default:
+        return "1";
+        break;
+    }
+  };
+
   const ulClassName = classNames("outline-none focus:outline-none", {
-    [`columns-${
-      bookmarksColumns && (bookmarksColumns[0] / 10)?.toString()
-    } gap-6`]: cardTypeCondition === "moodboard",
+    [`columns-${moodboardColsLogic()} gap-6`]:
+      cardTypeCondition === "moodboard",
     block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
     [cardGridClassNames]: cardTypeCondition === "card",
   });
@@ -195,7 +237,7 @@ const ListBox = (props: ListBoxDropTypes) => {
         </DragPreview>
       </ul>
       {state.selectionManager.selectedKeys.size > 0 && (
-        <div className="fixed  bottom-12 left-[40%] flex w-[596px] rounded-[14px] bg-white py-[9px] px-[11px] shadow-custom-6">
+        <div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white py-[9px] px-[11px] shadow-custom-6">
           <Checkbox
             value="selected-bookmarks"
             checked={
@@ -207,6 +249,42 @@ const ListBox = (props: ListBoxDropTypes) => {
             bookmarks`}
             onChange={() => state.selectionManager.clearSelection()}
           />
+          <AriaDropdown
+            menuButton={
+              <div className="flex items-center rounded-lg bg-custom-gray-6 py-[5px] px-2 text-13 font-450 leading-4 text-custom-gray-5">
+                <figure className=" mr-[6px]">
+                  <MoveIcon />
+                </figure>
+                <p>Move to</p>
+              </div>
+            }
+            menuClassName={dropdownMenuClassName}
+          >
+            {categoryData?.data
+              ?.map(item => {
+                return {
+                  label: item?.category_name,
+                  value: item?.id,
+                };
+              })
+              ?.map(dropdownItem => (
+                <AriaDropdownMenu
+                  key={dropdownItem?.value}
+                  onClick={() =>
+                    onCategoryChange(
+                      Array.from(
+                        state.selectionManager.selectedKeys.keys(),
+                      ) as number[],
+                      dropdownItem?.value,
+                    )
+                  }
+                >
+                  <div className={dropdownMenuItemClassName}>
+                    {dropdownItem?.label}
+                  </div>
+                </AriaDropdownMenu>
+              ))}
+          </AriaDropdown>
         </div>
       )}
     </>
@@ -244,13 +322,17 @@ const Option = ({
   // Merge option props and dnd props, and render the item.
 
   const liClassName = classNames(
-    "single-bookmark group relative flex cursor-pointer rounded-lg duration-150 ",
+    "single-bookmark group relative flex cursor-pointer rounded-lg duration-150 outline-none",
     {
       "mb-6": cardTypeCondition === "moodboard",
       "mb-[18px]": cardTypeCondition === "card",
       "hover:shadow-custom-4":
         cardTypeCondition === "moodboard" || cardTypeCondition === "card",
       "hover:bg-custom-gray-8 mb-1":
+        (cardTypeCondition === "list" || cardTypeCondition === "headlines") &&
+        !isSelected,
+
+      " mb-1":
         cardTypeCondition === "list" || cardTypeCondition === "headlines",
     },
   );
@@ -273,11 +355,9 @@ const Option = ({
           }
         }}
         draggable={false}
-        className={`absolute top-0 left-0 h-full w-full rounded-lg opacity-50 ${
-          isSelected ? "bg-slate-600" : ""
-        }`}
+        className="absolute top-0 left-0 h-full w-full rounded-lg"
       />
-      <input
+      {/* <input
         type="checkbox"
         checked={isSelected}
         // {...optionProps}
@@ -285,7 +365,7 @@ const Option = ({
         className={`card-checkbox absolute top-[7px] left-[6px] z-20 group-hover:block ${
           isSelected ? "block" : "hidden"
         }`}
-      />
+      /> */}
       {item.rendered}
     </li>
   );
@@ -301,6 +381,7 @@ const CardSection = ({
   isOgImgLoading = false,
   isBookmarkLoading = false,
   deleteBookmarkId,
+  onCategoryChange,
 }: CardSectionProps) => {
   const [errorImgs, setErrorImgs] = useState([]);
 
@@ -550,9 +631,9 @@ const CardSection = ({
   const renderOgImage = (img: string, id: number) => {
     const imgClassName = classNames({
       "h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
-      "h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none":
+      "h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img":
         cardTypeCondition === "card",
-      "rounded-lg w-full group-hover:rounded-t-lg":
+      "rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img":
         cardTypeCondition === "moodboard",
       "h-4 w-4 rounded object-cover": cardTypeCondition === "headlines",
     });
@@ -668,7 +749,7 @@ const CardSection = ({
           bookmarksInfoValue[0] === "cover" ? null : (
             <div className="space-y-[6px] rounded-lg px-2 py-3">
               {bookmarksInfoValue?.includes("title" as never) && (
-                <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+                <p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
                   {item?.title}
                 </p>
               )}
@@ -765,7 +846,7 @@ const CardSection = ({
         bookmarksInfoValue[0] === "cover" ? null : (
           <div className=" ml-3">
             {bookmarksInfoValue?.includes("title" as never) && (
-              <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+              <p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
                 {item?.title}
               </p>
             )}
@@ -815,7 +896,7 @@ const CardSection = ({
         bookmarksInfoValue[0] === "cover" ? null : (
           <div className=" ml-[10px]">
             {bookmarksInfoValue?.includes("title" as never) && (
-              <p className=" text-sm font-medium leading-4 text-custom-gray-5">
+              <p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
                 {item?.title}
               </p>
             )}
@@ -864,6 +945,7 @@ const CardSection = ({
         bookmarksColumns={bookmarksColumns}
         cardTypeCondition={cardTypeCondition}
         bookmarksList={bookmarksList}
+        onCategoryChange={onCategoryChange}
       >
         {renderSortByCondition()?.map(item => {
           return (
