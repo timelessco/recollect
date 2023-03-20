@@ -449,6 +449,23 @@ const Dashboard = () => {
                   scrollableTarget="scrollableDiv"
                 >
                   <CardSection
+                    onBulkBookmarkDelete={bookmarkIds => {
+                      bookmarkIds.forEach((item: any) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                        const bookmarkId = parseInt(item as string, 10);
+                        const delBookmarksData = find(
+                          flattendPaginationBookmarkData,
+                          delItem => delItem?.id === bookmarkId,
+                        ) as SingleListData;
+                        mutationApiCall(
+                          moveBookmarkToTrashOptimisticMutation.mutateAsync({
+                            data: delBookmarksData,
+                            isTrash: true,
+                            session,
+                          }),
+                        ).catch(() => {});
+                      });
+                    }}
                     onCategoryChange={(value, cat_id) => {
                       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                       const categoryId = cat_id;

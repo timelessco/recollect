@@ -81,6 +81,7 @@ interface CardSectionProps {
   isBookmarkLoading: boolean;
   deleteBookmarkId: number | undefined;
   onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
+  onBulkBookmarkDelete: (bookmark_ids: number[]) => void;
 }
 interface ListBoxDropTypes extends ListProps<object> {
   getItems?: (keys: Set<Key>) => DragItem[];
@@ -91,6 +92,7 @@ interface ListBoxDropTypes extends ListProps<object> {
   cardTypeCondition: unknown;
   bookmarksList: SingleListData[];
   onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
+  onBulkBookmarkDelete: (bookmark_ids: number[]) => void;
 }
 
 const ListBox = (props: ListBoxDropTypes) => {
@@ -100,6 +102,7 @@ const ListBox = (props: ListBoxDropTypes) => {
     cardTypeCondition,
     bookmarksList,
     onCategoryChange,
+    onBulkBookmarkDelete,
   } = props;
   const setIsCardDragging = useMiscellaneousStore(
     state => state.setIsCardDragging,
@@ -249,42 +252,60 @@ const ListBox = (props: ListBoxDropTypes) => {
             bookmarks`}
             onChange={() => state.selectionManager.clearSelection()}
           />
-          <AriaDropdown
-            menuButton={
-              <div className="flex items-center rounded-lg bg-custom-gray-6 py-[5px] px-2 text-13 font-450 leading-4 text-custom-gray-5">
-                <figure className=" mr-[6px]">
-                  <MoveIcon />
-                </figure>
-                <p>Move to</p>
-              </div>
-            }
-            menuClassName={dropdownMenuClassName}
-          >
-            {categoryData?.data
-              ?.map(item => {
-                return {
-                  label: item?.category_name,
-                  value: item?.id,
-                };
-              })
-              ?.map(dropdownItem => (
-                <AriaDropdownMenu
-                  key={dropdownItem?.value}
-                  onClick={() =>
-                    onCategoryChange(
-                      Array.from(
-                        state.selectionManager.selectedKeys.keys(),
-                      ) as number[],
-                      dropdownItem?.value,
-                    )
-                  }
-                >
-                  <div className={dropdownMenuItemClassName}>
-                    {dropdownItem?.label}
-                  </div>
-                </AriaDropdownMenu>
-              ))}
-          </AriaDropdown>
+          <div className="flex items-center">
+            <div
+              role="button"
+              onKeyDown={() => {}}
+              tabIndex={0}
+              onClick={() => {
+                onBulkBookmarkDelete(
+                  Array.from(
+                    state.selectionManager.selectedKeys.keys(),
+                  ) as number[],
+                );
+                state.selectionManager.clearSelection();
+              }}
+              className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+            >
+              Delete
+            </div>
+            <AriaDropdown
+              menuButton={
+                <div className="flex items-center rounded-lg bg-custom-gray-6 py-[5px] px-2 text-13 font-450 leading-4 text-custom-gray-5">
+                  <figure className=" mr-[6px]">
+                    <MoveIcon />
+                  </figure>
+                  <p>Move to</p>
+                </div>
+              }
+              menuClassName={dropdownMenuClassName}
+            >
+              {categoryData?.data
+                ?.map(item => {
+                  return {
+                    label: item?.category_name,
+                    value: item?.id,
+                  };
+                })
+                ?.map(dropdownItem => (
+                  <AriaDropdownMenu
+                    key={dropdownItem?.value}
+                    onClick={() =>
+                      onCategoryChange(
+                        Array.from(
+                          state.selectionManager.selectedKeys.keys(),
+                        ) as number[],
+                        dropdownItem?.value,
+                      )
+                    }
+                  >
+                    <div className={dropdownMenuItemClassName}>
+                      {dropdownItem?.label}
+                    </div>
+                  </AriaDropdownMenu>
+                ))}
+            </AriaDropdown>
+          </div>
         </div>
       )}
     </>
@@ -382,6 +403,7 @@ const CardSection = ({
   isBookmarkLoading = false,
   deleteBookmarkId,
   onCategoryChange,
+  onBulkBookmarkDelete,
 }: CardSectionProps) => {
   const [errorImgs, setErrorImgs] = useState([]);
 
@@ -946,6 +968,7 @@ const CardSection = ({
         cardTypeCondition={cardTypeCondition}
         bookmarksList={bookmarksList}
         onCategoryChange={onCategoryChange}
+        onBulkBookmarkDelete={onBulkBookmarkDelete}
       >
         {renderSortByCondition()?.map(item => {
           return (
