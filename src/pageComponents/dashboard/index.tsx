@@ -84,9 +84,9 @@ const Dashboard = () => {
   const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   // const [setSelectedCategoryDuringAdd] = useState<SearchSelectOption | null>();
-  const [deleteBookmarkId, setDeleteBookmarkId] = useState<number | undefined>(
-    undefined,
-  );
+  const [deleteBookmarkId, setDeleteBookmarkId] = useState<
+    number[] | undefined
+  >(undefined);
 
   const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
@@ -449,22 +449,31 @@ const Dashboard = () => {
                   scrollableTarget="scrollableDiv"
                 >
                   <CardSection
-                    onBulkBookmarkDelete={bookmarkIds => {
-                      bookmarkIds.forEach((item: any) => {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-                        const bookmarkId = parseInt(item as string, 10);
-                        const delBookmarksData = find(
-                          flattendPaginationBookmarkData,
-                          delItem => delItem?.id === bookmarkId,
-                        ) as SingleListData;
-                        mutationApiCall(
-                          moveBookmarkToTrashOptimisticMutation.mutateAsync({
-                            data: delBookmarksData,
-                            isTrash: true,
-                            session,
-                          }),
-                        ).catch(() => {});
-                      });
+                    onBulkBookmarkDelete={(
+                      bookmarkIds,
+                      isTrash,
+                      deleteForever,
+                    ) => {
+                      if (!deleteForever) {
+                        bookmarkIds.forEach((item: any) => {
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                          const bookmarkId = parseInt(item as string, 10);
+                          const delBookmarksData = find(
+                            flattendPaginationBookmarkData,
+                            delItem => delItem?.id === bookmarkId,
+                          ) as SingleListData;
+                          mutationApiCall(
+                            moveBookmarkToTrashOptimisticMutation.mutateAsync({
+                              data: delBookmarksData,
+                              isTrash,
+                              session,
+                            }),
+                          ).catch(() => {});
+                        });
+                      } else {
+                        setDeleteBookmarkId(bookmarkIds);
+                        toggleShowDeleteBookmarkWarningModal();
+                      }
                     }}
                     onCategoryChange={(value, cat_id) => {
                       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -525,16 +534,16 @@ const Dashboard = () => {
                     // isLoading={isAllBookmarksDataLoading}
                     listData={flattendPaginationBookmarkData}
                     onDeleteClick={item => {
-                      setDeleteBookmarkId(item?.id);
+                      setDeleteBookmarkId(item?.map(delItem => delItem?.id));
 
                       if (CATEGORY_ID === TRASH_URL) {
                         // delete bookmark if in trash
                         toggleShowDeleteBookmarkWarningModal();
-                      } else {
+                      } else if (!isEmpty(item) && item?.length > 0) {
                         // if not in trash then move bookmark to trash
                         mutationApiCall(
                           moveBookmarkToTrashOptimisticMutation.mutateAsync({
-                            data: item,
+                            data: item[0],
                             isTrash: true,
                             session,
                           }),
@@ -894,15 +903,17 @@ const Dashboard = () => {
         buttonText="Delete"
         warningText="Are you sure you want to delete ?"
         onContinueCick={() => {
-          if (deleteBookmarkId) {
+          if (deleteBookmarkId && !isEmpty(deleteBookmarkId)) {
             toggleShowDeleteBookmarkWarningModal();
 
-            mutationApiCall(
-              deleteBookmarkOptismicMutation.mutateAsync({
-                id: deleteBookmarkId,
-                session,
-              }),
-            )?.catch(() => {});
+            deleteBookmarkId.forEach(delItem => {
+              mutationApiCall(
+                deleteBookmarkOptismicMutation.mutateAsync({
+                  id: delItem,
+                  session,
+                }),
+              )?.catch(() => {});
+            });
           }
           setDeleteBookmarkId(undefined);
         }}

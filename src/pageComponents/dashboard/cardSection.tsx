@@ -70,18 +70,24 @@ import {
 } from "../../utils/constants";
 import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
 
+type onBulkBookmarkDeleteType = (
+  bookmark_ids: number[],
+  isTrash: boolean,
+  deleteForever: boolean,
+) => void;
+
 interface CardSectionProps {
   listData: Array<SingleListData>;
-  onDeleteClick: (post: SingleListData) => void;
+  onDeleteClick: (post: SingleListData[]) => void;
   onMoveOutOfTrashClick: (post: SingleListData) => void;
   onEditClick: (item: SingleListData) => void;
   userId: string;
   showAvatar: boolean;
   isOgImgLoading: boolean;
   isBookmarkLoading: boolean;
-  deleteBookmarkId: number | undefined;
+  deleteBookmarkId: number[] | undefined;
   onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
-  onBulkBookmarkDelete: (bookmark_ids: number[]) => void;
+  onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 }
 interface ListBoxDropTypes extends ListProps<object> {
   getItems?: (keys: Set<Key>) => DragItem[];
@@ -92,7 +98,7 @@ interface ListBoxDropTypes extends ListProps<object> {
   cardTypeCondition: unknown;
   bookmarksList: SingleListData[];
   onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
-  onBulkBookmarkDelete: (bookmark_ids: number[]) => void;
+  onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 }
 
 const ListBox = (props: ListBoxDropTypes) => {
@@ -119,6 +125,7 @@ const ListBox = (props: ListBoxDropTypes) => {
   };
 
   const router = useRouter();
+  const categorySlug = router?.asPath?.split("/")[1] || null; // cat_id reffers to cat slug here as its got from url
 
   // Setup listbox as normal. See the useListBox docs for more details.
   const preview = React.useRef(null);
@@ -213,6 +220,8 @@ const ListBox = (props: ListBoxDropTypes) => {
     [cardGridClassNames]: cardTypeCondition === "card",
   });
 
+  const isTrashPage = categorySlug === TRASH_URL;
+
   return (
     <>
       <ul {...listBoxProps} ref={ref} className={ulClassName}>
@@ -269,13 +278,36 @@ const ListBox = (props: ListBoxDropTypes) => {
                   Array.from(
                     state.selectionManager.selectedKeys.keys(),
                   ) as number[],
+                  true,
+                  !!isTrashPage,
                 );
                 state.selectionManager.clearSelection();
               }}
               className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
             >
-              Delete
+              {isTrashPage ? "Delete Forever" : "Delete"}
             </div>
+
+            {isTrashPage && (
+              <div
+                role="button"
+                onKeyDown={() => {}}
+                tabIndex={0}
+                onClick={() => {
+                  onBulkBookmarkDelete(
+                    Array.from(
+                      state.selectionManager.selectedKeys.keys(),
+                    ) as number[],
+                    false,
+                    false,
+                  );
+                  state.selectionManager.clearSelection();
+                }}
+                className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+              >
+                Recover
+              </div>
+            )}
             <AriaDropdown
               menuButton={
                 <div className="flex items-center rounded-lg bg-custom-gray-6 py-[5px] px-2 text-13 font-450 leading-4 text-custom-gray-5">
@@ -570,6 +602,9 @@ const CardSection = ({
                   e.preventDefault();
                   onMoveOutOfTrashClick(post);
                 }}
+                onPointerDown={e => {
+                  e.stopPropagation();
+                }}
               />
             </figure>
           )}
@@ -593,9 +628,13 @@ const CardSection = ({
                     e.preventDefault();
                     onEditClick(post);
                   }}
+                  onPointerDown={e => {
+                    e.stopPropagation();
+                  }}
                 />
               </figure>
-              {isDeleteBookmarkLoading && deleteBookmarkId === post?.id ? (
+              {isDeleteBookmarkLoading &&
+              deleteBookmarkId?.includes(post?.id) ? (
                 <div>
                   <Spinner size={15} />
                 </div>
@@ -606,8 +645,11 @@ const CardSection = ({
                     className="h-4 w-4 cursor-pointer text-red-400"
                     aria-hidden="true"
                     onClick={e => {
-                      e.preventDefault();
-                      onDeleteClick(post);
+                      e.stopPropagation();
+                      onDeleteClick([post]);
+                    }}
+                    onPointerDown={e => {
+                      e.stopPropagation();
                     }}
                   />
                 </figure>
@@ -620,6 +662,9 @@ const CardSection = ({
                 onClick={e => {
                   e.preventDefault();
                   onEditClick(post);
+                }}
+                onPointerDown={e => {
+                  e.stopPropagation();
                 }}
               />
             </figure>
