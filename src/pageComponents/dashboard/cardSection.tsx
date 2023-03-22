@@ -118,6 +118,8 @@ const ListBox = (props: ListBoxDropTypes) => {
     error: PostgrestError;
   };
 
+  const router = useRouter();
+
   // Setup listbox as normal. See the useListBox docs for more details.
   const preview = React.useRef(null);
   const state = useListState(props);
@@ -131,6 +133,10 @@ const ListBox = (props: ListBoxDropTypes) => {
     state,
     ref,
   );
+
+  useEffect(() => {
+    state.selectionManager.clearSelection();
+  }, [router.asPath, state.selectionManager]);
 
   // Setup drag state for the collection.
   const dragState = useDraggableCollectionState({
