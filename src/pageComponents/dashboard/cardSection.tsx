@@ -136,7 +136,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 
   useEffect(() => {
     state.selectionManager.clearSelection();
-  }, [router.asPath, state.selectionManager]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.asPath]);
 
   // Setup drag state for the collection.
   const dragState = useDraggableCollectionState({
