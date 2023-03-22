@@ -25,23 +25,25 @@ const WarningActionModal = (props: WarningActionModalTypes) => {
 
   return (
     <Modal open={open} setOpen={setOpen}>
-      {!isLoading ? (
-        <>
-          <p className="pb-7">{warningText}</p>
-          <Button
-            className="flex w-full justify-center bg-red-700 py-3 text-center text-white hover:bg-red-900"
-            type="dark"
-            onClick={() => onContinueCick()}
-            id="warning-button"
-          >
-            {buttonText}
-          </Button>
-        </>
-      ) : (
-        <div className="flex justify-center">
-          <Spinner />
-        </div>
-      )}
+      <div className=" p-4">
+        {!isLoading ? (
+          <>
+            <p className="pb-7">{warningText}</p>
+            <Button
+              className="flex w-full justify-center bg-red-700 py-3 text-center text-white hover:bg-red-900"
+              type="dark"
+              onClick={() => onContinueCick()}
+              id="warning-button"
+            >
+              {buttonText}
+            </Button>
+          </>
+        ) : (
+          <div className="flex justify-center">
+            <Spinner />
+          </div>
+        )}
+      </div>
     </Modal>
   );
 };

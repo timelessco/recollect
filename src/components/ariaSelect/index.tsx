@@ -41,7 +41,7 @@ const AriaSelect = (props: AriaSelectProps) => {
     <>
       <Select
         state={select}
-        className="flex appearance-none items-center justify-between rounded-lg text-13 font-medium leading-4"
+        className="flex appearance-none items-center justify-between rounded-lg text-13 font-medium leading-4 outline-none"
         disabled={disabled}
       >
         {renderCustomSelectButton(select?.open) || defaultValue}

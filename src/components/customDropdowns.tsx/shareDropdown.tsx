@@ -8,7 +8,7 @@ const ShareDropdown = () => {
   const menu = useMenuState({ gutter: 8 });
   return (
     <>
-      <MenuButton state={menu} as="div">
+      <MenuButton state={menu} as="div" className="outline-none">
         <Button
           type="light"
           // onClick={() => onShareClick()}
