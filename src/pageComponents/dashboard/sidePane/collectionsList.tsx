@@ -1,453 +1,520 @@
-import React, { useState } from 'react';
+import { useRef, useState, type Key, type ReactNode } from "react";
+import { useSession } from "@supabase/auth-helpers-react";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import { isNull } from "lodash";
+import find from "lodash/find";
+import isEmpty from "lodash/isEmpty";
+import pick from "lodash/pick";
 import {
-  Item,
-  useDroppableCollectionState,
-  useListState,
-  useDraggableCollectionState,
-  useListData,
-} from 'react-stately';
+	ListDropTargetDelegate,
+	ListKeyboardDelegate,
+	mergeProps,
+	useDraggableCollection,
+	useDraggableItem,
+	useDropIndicator,
+	useDroppableCollection,
+	useDroppableItem,
+	useFocusRing,
+	useListBox,
+	useOption,
+	type DraggableItemProps,
+	type DragItem,
+	type DropIndicatorProps,
+	type DroppableCollectionReorderEvent,
+} from "react-aria";
 import {
-  mergeProps,
-  useFocusRing,
-  useListBox,
-  useOption,
-  ListDropTargetDelegate,
-  ListKeyboardDelegate,
-  useDroppableCollection,
-  useDroppableItem,
-  useDraggableCollection,
-  useDraggableItem,
-  useDropIndicator,
-} from 'react-aria';
-import { useSession } from '@supabase/auth-helpers-react';
-import { useQueryClient } from '@tanstack/react-query';
+	Item,
+	useDraggableCollectionState,
+	useDroppableCollectionState,
+	useListState,
+	type DraggableCollectionState,
+	type DroppableCollectionState,
+	type ListProps,
+	type ListState,
+} from "react-stately";
+
+import useUpdateCategoryOrderMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderMutation";
 import {
-  BookmarksCountTypes,
-  CategoriesData,
-  FetchSharedCategoriesData,
-  ProfilesTableTypes,
-} from '../../../types/apiTypes';
-import { PostgrestError } from '@supabase/supabase-js';
+	AriaDropdown,
+	AriaDropdownMenu,
+} from "../../../components/ariaDropdown";
+import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import AddCategoryIcon from "../../../icons/addCategoryIcon";
+import FileIcon from "../../../icons/categoryIcons/fileIcon";
+import OptionsIconGray from "../../../icons/optionsIconGray";
 import {
-  BOOKMARKS_COUNT_KEY,
-  CATEGORIES_KEY,
-  SHARED_CATEGORIES_TABLE_NAME,
-  USER_PROFILE,
-} from '../../../utils/constants';
-import SingleListItemComponent from './singleListItemComponent';
-import isEmpty from 'lodash/isEmpty';
-import find from 'lodash/find';
-import FileIcon from '../../../icons/categoryIcons/fileIcon';
-import AddCategoryIcon from '../../../icons/addCategoryIcon';
+	useLoadersStore,
+	useMiscellaneousStore,
+} from "../../../store/componentStore";
 import {
-  useLoadersStore,
-  useMiscellaneousStore,
-} from '../../../store/componentStore';
-import pick from 'lodash/pick';
-import useUpdateCategoryOrderMutation from '../../../async/mutationHooks/category/useUpdateCategoryOrderMutation';
-import { mutationApiCall } from '../../../utils/apiHelpers';
-import { isNull } from 'lodash';
-import useGetCurrentUrlPath from '../../../hooks/useGetCurrentUrlPath';
+	type BookmarksCountTypes,
+	type CategoriesData,
+	type FetchSharedCategoriesData,
+	type ProfilesTableTypes,
+} from "../../../types/apiTypes";
+import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
-  AriaDropdown,
-  AriaDropdownMenu,
-} from '../../../components/ariaDropdown';
+	dropdownMenuClassName,
+	dropdownMenuItemClassName,
+} from "../../../utils/commonClassNames";
 import {
-  dropdownMenuClassName,
-  dropdownMenuItemClassName,
-} from '../../../utils/commonClassNames';
-import OptionsIconGray from '../../../icons/optionsIconGray';
+	BOOKMARKS_COUNT_KEY,
+	CATEGORIES_KEY,
+	SHARED_CATEGORIES_TABLE_NAME,
+	USER_PROFILE,
+} from "../../../utils/constants";
 
-interface CollectionsListPropTypes {
-  onBookmarksDrop: (e: any) => void;
-  onCategoryOptionClick: (
-    value: string | number,
-    current: boolean,
-    id: number
-  ) => void;
-  onIconSelect: (value: string, id: number) => void;
-  onAddNewCategory: (value: string) => void;
-}
+import SingleListItemComponent, {
+	type CollectionItemTypes,
+} from "./singleListItemComponent";
 
-//TODO: fix all ts-ignore and all any types
+type CollectionsListPropertyTypes = {
+	onAddNewCategory: (value: string) => Promise<void>;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	onBookmarksDrop: (event: any) => Promise<void>;
+	onCategoryOptionClick: (
+		value: number | string,
+		current: boolean,
+		id: number,
+	) => Promise<void>;
+	onIconSelect: (value: string, id: number) => void;
+};
+// interface OnReorderPayloadTypes {
+//   target: { key: string };
+//   keys: Set<unknown>;
+// }
+type ListBoxDropTypes = ListProps<object> & {
+	getItems?: (keys: Set<Key>) => DragItem[];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	onItemDrop?: (event: any) => void;
+	onReorder: (event: DroppableCollectionReorderEvent) => unknown;
+};
 
-const CollectionsList = (listProps: CollectionsListPropTypes) => {
-  const {
-    onBookmarksDrop,
-    onCategoryOptionClick,
-    onIconSelect,
-    onAddNewCategory,
-  } = listProps;
+const ListBoxDrop = (props: ListBoxDropTypes) => {
+	const { getItems } = props;
+	// Setup listbox as normal. See the useListBox docs for more details.
+	const state = useListState(props);
+	const ref = useRef(null);
+	const { listBoxProps } = useListBox(
+		{ ...props, shouldSelectOnPressUp: true },
+		state,
+		ref,
+	);
 
-  const queryClient = useQueryClient();
-  const session = useSession();
-  const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
+	// Setup react-stately and react-aria hooks for drag and drop.
+	const dropState = useDroppableCollectionState({
+		...props,
+		// Collection and selection manager come from list state.
+		collection: state.collection,
+		selectionManager: state.selectionManager,
+	});
 
-  const isCardDragging = useMiscellaneousStore((state) => state.isCardDragging);
+	const { collectionProps } = useDroppableCollection(
+		{
+			...props,
+			// Provide drop targets for keyboard and pointer-based drag and drop.
+			keyboardDelegate: new ListKeyboardDelegate(
+				state.collection,
+				state.disabledKeys,
+				ref,
+			),
+			dropTargetDelegate: new ListDropTargetDelegate(state.collection, ref),
+		},
+		dropState,
+		ref,
+	);
 
-  const { updateCategoryOrderMutation } = useUpdateCategoryOrderMutation();
+	// Setup drag state for the collection.
+	const dragState = useDraggableCollectionState({
+		...props,
+		// Collection and selection manager come from list state.
+		collection: state.collection,
+		selectionManager: state.selectionManager,
+		// Provide data for each dragged item. This function could
+		// also be provided by the user of the component.
+		getItems:
+			getItems ??
+			((keys) =>
+				[...keys].map((key) => {
+					const item = state.collection.getItem(key);
 
-  const currentPath = useGetCurrentUrlPath();
+					return {
+						"text/plain": item.textValue,
+					};
+				})),
+	});
 
-  const categoryData = queryClient.getQueryData([
-    CATEGORIES_KEY,
-    session?.user?.id,
-  ]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+	useDraggableCollection(props, dragState, ref);
 
-  const sharedCategoriesData = queryClient.getQueryData([
-    SHARED_CATEGORIES_TABLE_NAME,
-  ]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
+	// Merge listbox props and dnd props, and render the items as normal.
+	return (
+		<ul {...mergeProps(listBoxProps, collectionProps)} ref={ref}>
+			{[...state.collection].map((item) => (
+				<OptionDrop
+					dragState={dragState}
+					dropState={dropState}
+					item={item}
+					key={item.key}
+					state={state}
+				/>
+			))}
+		</ul>
+	);
+};
 
-  const bookmarksCountData = queryClient.getQueryData([
-    BOOKMARKS_COUNT_KEY,
-    session?.user?.id,
-  ]) as {
-    data: BookmarksCountTypes;
-    error: PostgrestError;
-  };
+type DropIndicatorTypes = DropIndicatorProps & {
+	dropState: DroppableCollectionState;
+};
 
-  const userProfileData = queryClient.getQueryData([
-    USER_PROFILE,
-    session?.user?.id,
-  ]) as {
-    data: ProfilesTableTypes[];
-    error: PostgrestError;
-  };
+const DropIndicator = (props: DropIndicatorTypes) => {
+	const { dropState } = props;
+	const ref = useRef(null);
+	const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
+		props,
+		dropState,
+		ref,
+	);
+	if (isHidden) {
+		return null;
+	}
 
-  const sidePaneOptionLoading = useLoadersStore(
-    (state) => state.sidePaneOptionLoading
-  );
+	return (
+		<li
+			{...dropIndicatorProps}
+			aria-selected
+			className={`drop-indicator ${isDropTarget ? "drop-target" : ""} z-10`}
+			ref={ref}
+			role="option"
+		/>
+	);
+};
 
-  function ListBoxDrop(props: any) {
-    // Setup listbox as normal. See the useListBox docs for more details.
-    const state = useListState(props);
-    const ref = React.useRef(null);
-    const { listBoxProps } = useListBox(
-      { ...props, shouldSelectOnPressUp: true },
-      state,
-      ref
-    );
+type OptionDropItemTypes = DraggableItemProps & {
+	rendered: ReactNode;
+};
 
-    // Setup react-stately and react-aria hooks for drag and drop.
-    const dropState = useDroppableCollectionState({
-      ...props,
-      // Collection and selection manager come from list state.
-      collection: state.collection,
-      selectionManager: state.selectionManager,
-    });
+const OptionDrop = ({
+	item,
+	state,
+	dropState,
+	dragState,
+}: {
+	dragState: DraggableCollectionState;
+	dropState: DroppableCollectionState;
+	item: OptionDropItemTypes;
+	state: ListState<unknown>;
+}) => {
+	// Register the item as a drag source.
+	const { dragProps } = useDraggableItem(
+		{
+			key: item.key,
+		},
+		dragState,
+	);
 
-    const { collectionProps } = useDroppableCollection(
-      {
-        ...props,
-        // Provide drop targets for keyboard and pointer-based drag and drop.
-        keyboardDelegate: new ListKeyboardDelegate(
-          state.collection,
-          state.disabledKeys,
-          ref
-        ),
-        dropTargetDelegate: new ListDropTargetDelegate(state.collection, ref),
-      },
-      dropState,
-      ref
-    );
+	// Setup listbox option as normal. See useListBox docs for details.
+	const ref = useRef(null);
+	const { optionProps } = useOption({ key: item.key }, state, ref);
+	const { isFocusVisible, focusProps } = useFocusRing();
 
-    // Setup drag state for the collection.
-    const dragState = useDraggableCollectionState({
-      ...props,
-      // Collection and selection manager come from list state.
-      collection: state.collection,
-      selectionManager: state.selectionManager,
-      // Provide data for each dragged item. This function could
-      // also be provided by the user of the component.
-      getItems:
-        props.getItems ||
-        ((keys) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          return [...keys].map((key) => {
-            const item = state.collection.getItem(key);
+	// Register the item as a drop target.
+	const { dropProps, isDropTarget } = useDroppableItem(
+		{
+			target: { type: "item", key: item.key, dropPosition: "on" },
+		},
+		dropState,
+		ref,
+	);
 
-            return {
-              'text/plain': item.textValue,
-            };
-          });
-        }),
-    });
+	const isCardDragging = useMiscellaneousStore(
+		(storeState) => storeState.isCardDragging,
+	);
 
-    useDraggableCollection(props, dragState, ref);
+	// Merge option props and dnd props, and render the item.
+	return (
+		<>
+			<DropIndicator
+				dropState={dropState}
+				target={{ type: "item", key: item.key, dropPosition: "before" }}
+			/>
+			<li
+				{...mergeProps(
+					pick(optionProps, ["id", "data-key"]),
+					dropProps,
+					focusProps,
+					dragProps,
+				)}
+				// Apply a class when the item is the active drop target.
+				// eslint-disable-next-line tailwindcss/no-custom-classname
+				className={`option-drop ${isFocusVisible ? "focus-visible" : ""} ${
+					isDropTarget && isCardDragging ? "drop-target" : ""
+				}`}
+				ref={ref}
+			>
+				{item.rendered}
+			</li>
+			{state.collection.getKeyAfter(item.key) === null && (
+				<DropIndicator
+					dropState={dropState}
+					target={{ type: "item", key: item.key, dropPosition: "after" }}
+				/>
+			)}
+		</>
+	);
+};
 
-    // Merge listbox props and dnd props, and render the items as normal.
-    return (
-      <ul {...mergeProps(listBoxProps, collectionProps)} ref={ref}>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        {[...state.collection].map((item) => (
-          <OptionDrop
-            key={item.key}
-            item={item}
-            state={state}
-            dropState={dropState}
-            dragState={dragState}
-          />
-        ))}
-      </ul>
-    );
-  }
+const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
+	const {
+		onBookmarksDrop,
+		onCategoryOptionClick,
+		onIconSelect,
+		onAddNewCategory,
+	} = listProps;
 
-  function DropIndicator(props: any) {
-    const ref = React.useRef(null);
-    const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
-      props,
-      props.dropState,
-      ref
-    );
-    if (isHidden) {
-      return null;
-    }
+	const queryClient = useQueryClient();
+	const session = useSession();
+	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 
-    return (
-      <li
-        {...dropIndicatorProps}
-        role="option"
-        ref={ref}
-        className={`drop-indicator ${isDropTarget ? 'drop-target' : ''} z-10`}
-      />
-    );
-  }
+	const { updateCategoryOrderMutation } = useUpdateCategoryOrderMutation();
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  function OptionDrop({ item, state, dropState, dragState }) {
-    // Register the item as a drag source.
-    const { dragProps } = useDraggableItem(
-      {
-        key: item.key,
-      },
-      dragState
-    );
+	const currentPath = useGetCurrentUrlPath();
 
-    // Setup listbox option as normal. See useListBox docs for details.
-    const ref = React.useRef(null);
-    const { optionProps } = useOption({ key: item.key }, state, ref);
-    const { isFocusVisible, focusProps } = useFocusRing();
+	const categoryData = queryClient.getQueryData([
+		CATEGORIES_KEY,
+		session?.user?.id,
+	]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
 
-    // Register the item as a drop target.
-    const { dropProps, isDropTarget } = useDroppableItem(
-      {
-        target: { type: 'item', key: item.key, dropPosition: 'on' },
-      },
-      dropState,
-      ref
-    );
+	const sharedCategoriesData = queryClient.getQueryData([
+		SHARED_CATEGORIES_TABLE_NAME,
+	]) as {
+		data: FetchSharedCategoriesData[];
+		error: PostgrestError;
+	};
 
-    // Merge option props and dnd props, and render the item.
-    return (
-      <>
-        <DropIndicator
-          target={{ type: 'item', key: item.key, dropPosition: 'before' }}
-          dropState={dropState}
-        />
-        <li
-          {...mergeProps(
-            pick(optionProps, ['id', 'data-key']),
-            dropProps,
-            focusProps,
-            dragProps
-          )}
-          ref={ref}
-          // Apply a class when the item is the active drop target.
-          className={`option-drop ${isFocusVisible ? 'focus-visible' : ''} ${
-            isDropTarget && isCardDragging ? 'drop-target' : ''
-          }`}
-        >
-          {item.rendered}
-        </li>
-        {state.collection.getKeyAfter(item.key) == null && (
-          <DropIndicator
-            target={{ type: 'item', key: item.key, dropPosition: 'after' }}
-            dropState={dropState}
-          />
-        )}
-      </>
-    );
-  }
+	const bookmarksCountData = queryClient.getQueryData([
+		BOOKMARKS_COUNT_KEY,
+		session?.user?.id,
+	]) as {
+		data: BookmarksCountTypes;
+		error: PostgrestError;
+	};
 
-  const collectionsList = session
-    ? categoryData?.data?.map((item) => {
-        return {
-          name: item?.category_name,
-          href: `/${item?.category_slug}`,
-          id: item?.id,
-          current: currentPath === item?.category_slug,
-          isPublic: item?.is_public,
-          isCollab: !isEmpty(
-            find(
-              sharedCategoriesData?.data,
-              (cat) => cat?.category_id === item?.id
-            )
-          ),
-          iconValue: item?.icon,
-          count: find(
-            bookmarksCountData?.data?.categoryCount,
-            (catItem) => catItem?.category_id === item?.id
-          )?.count,
-        };
-      })
-    : [];
+	const userProfileData = queryClient.getQueryData([
+		USER_PROFILE,
+		session?.user?.id,
+	]) as {
+		data: ProfilesTableTypes[];
+		error: PostgrestError;
+	};
 
-  const sortedList = () => {
-    let arr: any[] = [];
-    const apiCategoryOrder = userProfileData?.data[0]?.category_order;
+	const sidePaneOptionLoading = useLoadersStore(
+		(state) => state.sidePaneOptionLoading,
+	);
 
-    if (!isNull(apiCategoryOrder)) {
-      apiCategoryOrder?.forEach((item) => {
-        const data = find(collectionsList, (dataItem) => dataItem?.id === item);
+	const collectionsList = session
+		? categoryData?.data?.map((item) => ({
+				name: item?.category_name,
+				href: `/${item?.category_slug}`,
+				id: item?.id,
+				current: currentPath === item?.category_slug,
+				isPublic: item?.is_public,
+				isCollab: !isEmpty(
+					find(
+						sharedCategoriesData?.data,
+						(cat) => cat?.category_id === item?.id,
+					),
+				),
+				iconValue: item?.icon,
+				count: find(
+					bookmarksCountData?.data?.categoryCount,
+					(catItem) => catItem?.category_id === item?.id,
+				)?.count,
+		  }))
+		: [];
 
-        if (data) {
-          arr = [...arr, data];
-        }
-      });
+	const sortedList = () => {
+		let array: CollectionItemTypes[] = [];
+		if (!isEmpty(userProfileData?.data)) {
+			const apiCategoryOrder = userProfileData?.data[0]?.category_order;
 
-      return arr;
-    } else {
-      return collectionsList;
-    }
-  };
+			if (!isNull(apiCategoryOrder)) {
+				if (apiCategoryOrder)
+					for (const item of apiCategoryOrder) {
+						const data = find(
+							collectionsList,
+							(dataItem) => dataItem?.id === item,
+						);
 
-  const list = useListData({
-    initialItems: [],
-  });
+						if (data) {
+							array = [...array, data];
+						}
+					}
 
-  const onReorder = (e: any) => {
-    const apiOrder = userProfileData?.data[0]?.category_order;
-    const listOrder = isNull(apiOrder)
-      ? collectionsList?.map((item) => item?.id)
-      : userProfileData?.data[0]?.category_order;
+				let categoriesNotThereInApiCategoryOrder: CollectionItemTypes[] = [];
 
-    const index1 = listOrder?.indexOf(parseInt(e?.target?.key)); // to index
-    const index2 = listOrder?.indexOf(parseInt(e?.keys?.values().next().value)); // from index
+				if (collectionsList)
+					for (const item of collectionsList) {
+						const data = find(
+							apiCategoryOrder,
+							(dataItem) => dataItem === item?.id,
+						);
 
-    let myArray = listOrder;
+						if (!data) {
+							categoriesNotThereInApiCategoryOrder = [
+								...categoriesNotThereInApiCategoryOrder,
+								item,
+							];
+						}
+					}
 
-    if (myArray && index1 !== undefined && index2 !== undefined && listOrder) {
-      const movingItem = listOrder[index2];
+				return [...array, ...categoriesNotThereInApiCategoryOrder];
+			}
 
-      // remove
-      myArray = myArray.filter((item) => item !== movingItem);
+			return collectionsList;
+		}
 
-      // add
-      myArray.splice(index1, 0, movingItem);
+		return [];
+	};
 
-      mutationApiCall(
-        updateCategoryOrderMutation?.mutateAsync({ order: myArray, session })
-      );
-    }
-  };
+	const onReorder = (event: DroppableCollectionReorderEvent) => {
+		const apiOrder = userProfileData?.data[0]?.category_order;
+		const listOrder = isNull(apiOrder)
+			? collectionsList?.map((item) => item?.id)
+			: userProfileData?.data[0]?.category_order;
 
-  return (
-    <div className="pt-4">
-      <div className="px-1 py-[7.5px] flex items-center justify-between">
-        <p className="font-medium text-[13px] leading-[15px]  text-custom-gray-10 pr">
-          Collections
-        </p>
-        <AriaDropdown
-          menuButton={
-            <div>
-              <OptionsIconGray />
-            </div>
-          }
-          menuClassName={`${dropdownMenuClassName} z-10`}
-          menuButtonClassName="pr-1"
-        >
-          {[{ label: 'Add Category', value: 'add-category' }]?.map((item) => (
-            <AriaDropdownMenu
-              key={item?.value}
-              onClick={() => {
-                if (item?.value === 'add-category') {
-                  setShowAddCategoryInput(true);
-                }
-              }}
-            >
-              <div className={dropdownMenuItemClassName}>{item?.label}</div>
-            </AriaDropdownMenu>
-          ))}
-        </AriaDropdown>
-      </div>
-      <div>
-        <div id="collections-wrapper">
-          <ListBoxDrop
-            aria-label="Categories-drop"
-            selectionMode="multiple"
-            selectionBehavior="replace"
-            // items={list.items}
-            onReorder={onReorder}
-            onItemDrop={(e: any) => {
-              onBookmarksDrop(e);
-            }}
-          >
-            {sortedList()?.map((item) => (
-              <Item textValue={item?.name} key={item?.id}>
-                <SingleListItemComponent
-                  extendedClassname="pb-[6px] pt-[4px] mt-[2px]"
-                  item={item}
-                  showDropdown={true}
-                  listNameId="collection-name"
-                  onCategoryOptionClick={onCategoryOptionClick}
-                  onIconSelect={onIconSelect}
-                  showSpinner={item?.id === sidePaneOptionLoading}
-                />
-              </Item>
-            ))}
-          </ListBoxDrop>
-        </div>
-        {showAddCategoryInput && (
-          <div
-            className={`px-2 py-[5px] mt-1 flex items-center bg-custom-gray-2 rounded-lg cursor-pointer justify-between`}
-          >
-            <div className="flex items-center">
-              <figure className="mr-2">
-                <FileIcon />
-              </figure>
-              <input
-                placeholder="Category Name"
-                id="add-category-input"
-                className="text-sm font-[450] text-custom-gray-1 leading-4 focus:outline-none bg-black/[0.004] opacity-40"
-                autoFocus
-                onBlur={() => setShowAddCategoryInput(false)}
-                onKeyUp={(e) => {
-                  if (
-                    e.key === 'Enter' &&
-                    !isEmpty((e.target as HTMLInputElement).value)
-                  ) {
-                    onAddNewCategory((e.target as HTMLInputElement).value);
-                    setShowAddCategoryInput(false);
-                  }
-                }}
-              />
-            </div>
-          </div>
-        )}
-        <div
-          className="py-[5px] px-2 mt-1 flex items-center hover:bg-custom-gray-2 rounded-lg cursor-pointer"
-          onClick={() => setShowAddCategoryInput(true)}
-          id="add-category-button"
-        >
-          <figure>
-            <AddCategoryIcon />
-          </figure>
-          <p className="truncate ml-2 flex-1 text-sm font-450 text-custom-gray-3 leading-[16px]">
-            Add Category
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+		// to index
+		const index1 = listOrder?.indexOf(
+			Number.parseInt(event?.target?.key as string, 10),
+		);
+		// from index
+		const index2 = listOrder?.indexOf(
+			Number.parseInt(event?.keys?.values().next().value as string, 10),
+		);
+
+		let myArray = listOrder;
+
+		if (myArray && index1 !== undefined && index2 !== undefined && listOrder) {
+			const movingItem = listOrder[index2];
+
+			// remove
+			myArray = myArray.filter((item) => item !== movingItem);
+
+			// add
+			myArray.splice(index1, 0, movingItem);
+
+			void mutationApiCall(
+				updateCategoryOrderMutation?.mutateAsync({ order: myArray, session }),
+			);
+		}
+	};
+
+	return (
+		<div className="pt-4">
+			<div className="flex items-center justify-between px-1 py-[7.5px]">
+				<p className="text-[13px] font-medium  leading-[15px] text-custom-gray-10">
+					Collections
+				</p>
+				<AriaDropdown
+					menuButton={
+						<div>
+							<OptionsIconGray />
+						</div>
+					}
+					menuButtonClassName="pr-1"
+					menuClassName={`${dropdownMenuClassName} z-10`}
+				>
+					{[{ label: "Add Category", value: "add-category" }]?.map((item) => (
+						<AriaDropdownMenu
+							key={item?.value}
+							onClick={() => {
+								if (item?.value === "add-category") {
+									setShowAddCategoryInput(true);
+								}
+							}}
+						>
+							<div className={dropdownMenuItemClassName}>{item?.label}</div>
+						</AriaDropdownMenu>
+					))}
+				</AriaDropdown>
+			</div>
+			<div>
+				<div id="collections-wrapper">
+					<ListBoxDrop
+						aria-label="Categories-drop"
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						onItemDrop={(event: any) => {
+							void onBookmarksDrop(event);
+						}}
+						onReorder={onReorder}
+						selectionBehavior="replace"
+						selectionMode="multiple"
+					>
+						{sortedList()?.map((item) => (
+							<Item key={item?.id} textValue={item?.name}>
+								<SingleListItemComponent
+									extendedClassname="pb-[6px] pt-[4px] mt-[2px]"
+									item={item}
+									listNameId="collection-name"
+									onCategoryOptionClick={onCategoryOptionClick}
+									onIconSelect={onIconSelect}
+									showDropdown
+									showSpinner={item?.id === sidePaneOptionLoading}
+								/>
+							</Item>
+						))}
+					</ListBoxDrop>
+				</div>
+				{showAddCategoryInput && (
+					<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
+						<div className="flex items-center">
+							<figure className="mr-2 h-[18px] w-[18px]">
+								<FileIcon />
+							</figure>
+							<input
+								autoFocus
+								className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
+								id="add-category-input"
+								// disabling it as we do need it here
+								// eslint-disable-next-line jsx-a11y/no-autofocus
+								onBlur={() => setShowAddCategoryInput(false)}
+								onKeyUp={(event) => {
+									if (
+										event.key === "Enter" &&
+										!isEmpty((event.target as HTMLInputElement).value)
+									) {
+										void onAddNewCategory(
+											(event.target as HTMLInputElement).value,
+										);
+										setShowAddCategoryInput(false);
+									}
+								}}
+								placeholder="Category Name"
+							/>
+						</div>
+					</div>
+				)}
+				<div
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-2"
+					id="add-category-button"
+					onClick={() => setShowAddCategoryInput(true)}
+					onKeyDown={() => {}}
+					role="button"
+					tabIndex={0}
+				>
+					<figure>
+						<AddCategoryIcon />
+					</figure>
+					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-custom-gray-3">
+						Add Category
+					</p>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default CollectionsList;

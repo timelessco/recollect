@@ -1,100 +1,120 @@
-import React from 'react';
-import { MentionsInput, Mention } from 'react-mentions';
-import { useMiscellaneousStore } from '../store/componentStore';
-import { USER_TAGS_KEY } from '../utils/constants';
-import { UserTagsData } from '../types/apiTypes';
-import { PostgrestError } from '@supabase/supabase-js';
-import { useQueryClient } from '@tanstack/react-query';
+import React from "react";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import { Mention, MentionsInput } from "react-mentions";
+
+import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
+import {
+	useLoadersStore,
+	useMiscellaneousStore,
+} from "../store/componentStore";
+import { type UserTagsData } from "../types/apiTypes";
+import { USER_TAGS_KEY } from "../utils/constants";
+
+import Spinner from "./spinner";
 
 const styles = {
-  control: {
-    backgroundColor: '#ECECEC',
-    fontSize: 14,
-    width: 220,
-    padding: '3px 10px 3px 28px',
-    borderRadius: 54,
-  },
+	control: {
+		backgroundColor: "rgba(0, 0, 0, 0.047)",
+		fontSize: 14,
+		fontWeight: 400,
+		color: "#707070",
 
-  '&multiLine': {
-    control: {},
-    highlighter: {},
-    input: {
-      border: 'unset',
-      borderRadius: 54,
-      padding: 'inherit',
-    },
-  },
+		width: 300,
+		padding: "3px 10px 3px 28px",
+		borderRadius: 8,
+	},
+	"&multiLine": {
+		control: {},
+		highlighter: {},
+		input: {
+			border: "unset",
+			borderRadius: 8,
+			padding: "inherit",
+			outline: "unset",
+		},
+	},
 
-  suggestions: {
-    list: {
-      backgroundColor: 'white',
-      border: '1px solid rgba(0,0,0,0.15)',
-      fontSize: 14,
-    },
-    item: {
-      padding: '5px 15px',
-      borderBottom: '1px solid rgba(0,0,0,0.15)',
-      '&focused': {
-        backgroundColor: '#cee4e5',
-      },
-    },
-  },
+	suggestions: {
+		list: {
+			// backgroundColor: "#FFFFFF",
+			padding: "6px",
+			boxShadow:
+				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
+			borderRadius: "12px",
+			// border: "1px solid rgba(0,0,0,0.15)",
+			// fontSize: 14,
+		},
+		item: {
+			padding: "7px 8px",
+			borderRadius: "8px",
+			fontWeight: "450",
+			fontSize: "13px",
+			lineHeight: "15px",
+			color: "#383838",
+
+			// borderBottom: "1px solid rgba(0,0,0,0.15)",
+			"&focused": {
+				backgroundColor: "#EDEDED",
+			},
+		},
+	},
 };
 
-interface SearchInputTypes {
-  placeholder: string;
-  onChange: (value: string) => void;
-  userId: string;
-}
+type SearchInputTypes = {
+	onChange: (value: string) => void;
+	placeholder: string;
+	userId: string;
+};
 
 const SearchInput = (props: SearchInputTypes) => {
-  const { placeholder, onChange, userId } = props;
+	const { placeholder, onChange, userId } = props;
 
-  const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-  const searchText = useMiscellaneousStore((state) => state.searchText);
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
-  const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
-    data: UserTagsData[];
-    error: PostgrestError;
-  };
+	const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
+		data: UserTagsData[];
+		error: PostgrestError;
+	};
 
-  // return (
-  //   <div className="flex items-center bg-custom-gray-6 w-[228px] rounded-[54px] py-[7px] px-[10px]">
-  //     <figure className="w-3 h-3">
-  //       <SearchIconSmallGray />
-  //     </figure>
-  //     <input
-  //       id="bookmarks-search-input"
-  //       onChange={(e) => onChange(e.target.value)}
-  //       placeholder={placeholder}
-  //       className="ml-[6px] w-full bg-custom-gray-6 text-custom-gray-3 text-sm font-normal leading-4 focus:outline-none"
-  //     />
-  //   </div>
-  // );
-
-  return (
-    <MentionsInput
-      value={searchText}
-      placeholder={placeholder}
-      onChange={(e) => onChange(e.target.value)}
-      style={styles}
-    >
-      <Mention
-        markup="@__display__"
-        trigger="#"
-        data={userTagsData?.data?.map((item) => {
-          return {
-            id: item?.id,
-            display: item?.name,
-          };
-        })}
-        style={{
-          backgroundColor: '#cee4e5',
-        }}
-      />
-    </MentionsInput>
-  );
+	return (
+		<div className=" relative">
+			<figure className=" absolute left-[9px] top-[7px]">
+				<SearchInputSearchIcon />
+			</figure>
+			<MentionsInput
+				// eslint-disable-next-line tailwindcss/no-custom-classname
+				className="search-bar"
+				onChange={(event: { target: { value: string } }) =>
+					onChange(event.target.value)
+				}
+				placeholder={placeholder}
+				style={styles}
+				value={searchText}
+			>
+				<Mention
+					data={userTagsData?.data?.map((item) => ({
+						id: item?.id,
+						display: item?.name,
+					}))}
+					markup="@__display__"
+					trigger="#"
+					// style={{
+					//   backgroundColor: "#cee4e5",
+					//   with: "100%",
+					// }}
+				/>
+			</MentionsInput>
+			{isSearchLoading && (
+				<div className=" absolute right-2 top-0">
+					<Spinner />
+				</div>
+			)}
+		</div>
+	);
 };
 
 export default SearchInput;

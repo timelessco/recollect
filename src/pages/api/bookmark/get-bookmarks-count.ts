@@ -1,173 +1,175 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { type NextApiRequest, type NextApiResponse } from "next";
+import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { verify, type VerifyErrors } from "jsonwebtoken";
+import isEmpty from "lodash/isEmpty";
+import isNull from "lodash/isNull";
+
 // import { supabase } from '../../utils/supabaseClient';
-import { BookmarksCountTypes } from '../../../types/apiTypes';
+import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
-  CATEGORIES_TABLE_NAME,
-  MAIN_TABLE_NAME,
-} from '../../../utils/constants';
-import isNull from 'lodash/isNull';
-import { createClient, PostgrestError } from '@supabase/supabase-js';
-import jwt from 'jsonwebtoken';
-import isEmpty from 'lodash/isEmpty';
+	CATEGORIES_TABLE_NAME,
+	MAIN_TABLE_NAME,
+} from "../../../utils/constants";
 
 // get all bookmarks count
 
 type Data = {
-  data: BookmarksCountTypes | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
+	data: BookmarksCountTypes | null;
+	error: PostgrestError | VerifyErrors | string | null;
 };
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
+	request: NextApiRequest,
+	response: NextApiResponse<Data>,
 ) {
-  const accessToken = req.query.access_token as string;
+	const accessToken = request.query.access_token as string;
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.SUPABASE_SERVICE_KEY as string
-  );
+	const supabase = createClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL,
+		process.env.SUPABASE_SERVICE_KEY,
+	);
 
-  let decode;
+	// let decode: { sub: string };
 
-  await jwt.verify(
-    accessToken,
-    process.env.SUPABASE_JWT_SECRET_KEY as string,
-    function (err, decoded) {
-      if (err) {
-        res.status(500).json({ data: null, error: err });
-        throw new Error('ERROR');
-      } else {
-        decode = decoded;
-      }
-    }
-  );
+	let userId: string | (() => string) | undefined;
 
-  // const decode = jwt_decode(accessToken) as unknown;
+	verify(accessToken, process.env.SUPABASE_JWT_SECRET_KEY, (error, decoded) => {
+		if (error) {
+			response.status(500).json({ data: null, error });
+			throw new Error("ERROR");
+		} else {
+			// decode = decoded.s;
+			userId = decoded?.sub;
+		}
+	});
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  const userId = decode?.sub;
+	let count = {
+		allBookmarks: 0,
+		categoryCount: [],
+		trash: 0,
+		uncategorized: 0,
+	} as BookmarksCountTypes;
 
-  let count = {
-    allBookmarks: 0,
-    categoryCount: [],
-    trash: 0,
-    uncategorized: 0,
-  } as BookmarksCountTypes;
-
-  const { error: bookErr, count: bookmarkCount } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .select(
-      `
+	const { error: bookError, count: bookmarkCount } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select(
+			`
     id
   `,
-      { count: 'exact', head: true }
-    )
-    .eq('user_id', userId)
-    .eq('trash', false); // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
+			{ count: "exact", head: true },
+		)
+		.eq("user_id", userId)
+		// this is for '/' (root-page) route , we need bookmakrs by user_id
+		// TODO: check and remove
+		.eq("trash", false);
 
-  count = {
-    ...count,
-    allBookmarks: bookmarkCount as number,
-  };
+	count = {
+		...count,
+		allBookmarks: bookmarkCount as number,
+	};
 
-  const { error: bookTrashErr, count: bookmarkTrashCount } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .select(
-      `
+	const { error: bookTrashError, count: bookmarkTrashCount } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select(
+			`
     id
   `,
-      { count: 'exact', head: true }
-    )
-    .eq('user_id', userId)
-    .eq('trash', true); // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
+			{ count: "exact", head: true },
+		)
+		.eq("user_id", userId)
+		// this is for '/' (root-page) route , we need bookmakrs by user_id
+		// TODO: check and remove
+		.eq("trash", true);
 
-  count = {
-    ...count,
-    trash: bookmarkTrashCount as number,
-  };
+	count = {
+		...count,
+		trash: bookmarkTrashCount as number,
+	};
 
-  const { error: bookUnCatErr, count: bookmarkUnCatCount } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .select(
-      `
+	const { error: bookUnCatError, count: bookmarkUnCatCount } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select(
+			`
     id
   `,
-      { count: 'exact', head: true }
-    )
-    .eq('user_id', userId)
-    .eq('trash', false)
-    .eq('category_id', 0); // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
+			{ count: "exact", head: true },
+		)
+		.eq("user_id", userId)
+		.eq("trash", false)
+		// this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
+		.eq("category_id", 0);
 
-  count = {
-    ...count,
-    uncategorized: bookmarkUnCatCount as number,
-  };
+	count = {
+		...count,
+		uncategorized: bookmarkUnCatCount as number,
+	};
 
-  // category count
-  // get all user category ids
-  const { data: userCategoryIds, error: categoryErr } = await supabase
-    .from(CATEGORIES_TABLE_NAME)
-    .select(
-      `
+	// category count
+	// get all user category ids
+	const { data: userCategoryIds, error: categoryError } = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select(
+			`
     id
-  `
-    )
-    .eq('user_id', userId);
+  `,
+		)
+		.eq("user_id", userId);
 
-  const buildCategoryCount = new Promise<void>((resolve) => {
-    if (isNull(userCategoryIds) || isEmpty(userCategoryIds)) {
-      resolve();
-    }
-    userCategoryIds?.forEach(async (item) => {
-      const { count: bookmarkCount } = await supabase
-        .from(MAIN_TABLE_NAME)
-        .select(
-          `
+	const buildCategoryCount = new Promise<void>((resolve) => {
+		if (isNull(userCategoryIds) || isEmpty(userCategoryIds)) {
+			resolve();
+		}
+
+		// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-misused-promises
+		userCategoryIds?.forEach(async (item) => {
+			const { count: bookmarkCountData } = await supabase
+				.from(MAIN_TABLE_NAME)
+				.select(
+					`
           id
         `,
-          { count: 'exact', head: true }
-        )
-        .eq('user_id', userId)
-        .eq('category_id', item?.id)
-        .eq('trash', false);
+					{ count: "exact", head: true },
+				)
+				.eq("user_id", userId)
+				.eq("category_id", item?.id)
+				.eq("trash", false);
 
-      count = {
-        ...count,
-        categoryCount: [
-          ...count?.categoryCount,
-          {
-            category_id: item?.id,
-            count: bookmarkCount as number,
-          },
-        ],
-      };
+			count = {
+				...count,
+				categoryCount: [
+					// eslint-disable-next-line no-unsafe-optional-chaining
+					...count?.categoryCount,
+					{
+						category_id: item?.id as number,
+						count: bookmarkCountData as number,
+					},
+				],
+			};
 
-      if (
-        // index === userCategoryIds?.length - 1 &&
-        // index === count?.categoryCount?.length - 1
-        userCategoryIds?.length === count?.categoryCount?.length
-      ) {
-        resolve();
-      }
-    });
-  });
+			if (
+				// index === userCategoryIds?.length - 1 &&
+				// index === count?.categoryCount?.length - 1
+				userCategoryIds?.length === count?.categoryCount?.length
+			) {
+				resolve();
+			}
+		});
+	});
 
-  await buildCategoryCount.then(() => {
-    if (
-      isNull(bookErr) &&
-      isNull(bookTrashErr) &&
-      isNull(bookUnCatErr) &&
-      isNull(categoryErr)
-    ) {
-      res.status(200).json({ data: count, error: null });
-    } else {
-      res.status(500).json({
-        data: null,
-        error: bookErr || bookTrashErr || bookUnCatErr || categoryErr,
-      });
-      throw new Error('ERROR');
-    }
-  });
+	await buildCategoryCount.then(() => {
+		if (
+			isNull(bookError) &&
+			isNull(bookTrashError) &&
+			isNull(bookUnCatError) &&
+			isNull(categoryError)
+		) {
+			response.status(200).json({ data: count, error: null });
+		} else {
+			response.status(500).json({
+				data: null,
+				error: bookError ?? bookTrashError ?? bookUnCatError ?? categoryError,
+			});
+			throw new Error("ERROR");
+		}
+	});
 }

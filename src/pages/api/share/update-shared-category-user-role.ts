@@ -1,53 +1,61 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { CategoriesData } from '../../../types/apiTypes';
-import { SHARED_CATEGORIES_TABLE_NAME } from '../../../utils/constants';
-import { isNull } from 'lodash';
-import { createClient, PostgrestError } from '@supabase/supabase-js';
-import jwt from 'jsonwebtoken';
+import { type NextApiResponse } from "next";
+import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { verify, type VerifyErrors } from "jsonwebtoken";
+import { isNull } from "lodash";
+
+import {
+	type CategoriesData,
+	type NextApiRequest,
+	type UpdateSharedCategoriesUserAccessApiPayload,
+} from "../../../types/apiTypes";
+import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
 
 /**
  * Updates user role for a colaborator in a category
  */
 
+type DataResponse = CategoriesData[] | null;
+type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+
 type Data = {
-  data: Array<CategoriesData> | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
+	data: DataResponse;
+	error: ErrorResponse;
 };
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
+	request: NextApiRequest<UpdateSharedCategoriesUserAccessApiPayload>,
+	response: NextApiResponse<Data>,
 ) {
-  await jwt.verify(
-    req.body.access_token as string,
-    process.env.SUPABASE_JWT_SECRET_KEY as string,
-    function (err) {
-      if (err) {
-        res.status(500).json({ data: null, error: err });
-        throw new Error('ERROR');
-      }
-    }
-  );
+	verify(
+		request.body.access_token,
+		process.env.SUPABASE_JWT_SECRET_KEY,
+		(error_) => {
+			if (error_) {
+				response.status(500).json({ data: null, error: error_ });
+				throw new Error("ERROR");
+			}
+		},
+	);
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.SUPABASE_SERVICE_KEY as string
-  );
+	const supabase = createClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL,
+		process.env.SUPABASE_SERVICE_KEY,
+	);
 
-  const { data, error } = await supabase
-    .from(SHARED_CATEGORIES_TABLE_NAME)
-    .update(req.body.updateData)
-    .match({ id: req.body.id })
-    .select();
+	const { data, error }: { data: DataResponse; error: ErrorResponse } =
+		await supabase
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.update(request.body.updateData)
+			.match({ id: request.body.id })
+			.select();
 
-  if (!isNull(data)) {
-    res.status(200).json({
-      data,
-      error,
-    });
-    return;
-  } else {
-    res.status(500).json({ data, error });
-    throw new Error('ERROR');
-  }
+	if (isNull(data)) {
+		response.status(500).json({ data, error });
+		throw new Error("ERROR");
+	} else {
+		response.status(200).json({
+			data,
+			error,
+		});
+	}
 }

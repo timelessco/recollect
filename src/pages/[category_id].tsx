@@ -1,41 +1,36 @@
-import type { GetServerSideProps, NextPage } from 'next';
-import Dashboard from '../pageComponents/dashboard';
-import { dehydrate, QueryClient } from '@tanstack/react-query';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { type GetServerSideProps, type NextPage } from "next";
+import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
 
-const Home: NextPage = () => {
-  return (
-    <>
-      <Dashboard />
-    </>
-  );
-};
+import Dashboard from "../pageComponents/dashboard";
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const queryClient = new QueryClient();
+const Home: NextPage = () => <Dashboard />;
 
-  // Create authenticated Supabase Client
-  const supabase = createServerSupabaseClient(ctx);
-  // Check if we have a session
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+export const getServerSideProps: GetServerSideProps = async (context) => {
+	const queryClient = new QueryClient();
 
-  if (!session)
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
+	// Create authenticated Supabase Client
+	const supabase = createServerSupabaseClient(context);
+	// Check if we have a session
+	const {
+		data: { session },
+	} = await supabase.auth.getSession();
 
-  return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
-      initialSession: session,
-      user: session.user,
-    },
-  };
+	if (!session)
+		return {
+			redirect: {
+				destination: "/login",
+				permanent: false,
+			},
+		};
+
+	return {
+		props: {
+			dehydratedState: dehydrate(queryClient),
+			initialSession: session,
+			user: session.user,
+		},
+	};
 };
 
 export default Home;

@@ -1,39 +1,40 @@
-import React from 'react';
-import Select from 'react-select';
-import { SearchSelectOption } from '../types/componentTypes';
+import React from "react";
+import Select from "react-select";
 
-interface SearchSelectProps {
-  options: Array<SearchSelectOption>;
-  onChange: (value: SearchSelectOption | null) => void;
-  defaultValue: Array<SearchSelectOption>;
-  isLoading: boolean;
-}
+import { type SearchSelectOption } from "../types/componentTypes";
+
+type SearchSelectProps = {
+	defaultValue: SearchSelectOption[];
+	isLoading: boolean;
+	onChange: (value: SearchSelectOption | null) => void;
+	options: SearchSelectOption[];
+};
 
 const SearchSelect = (props: SearchSelectProps) => {
-  const { options, onChange, defaultValue, isLoading = false } = props;
+	const { options, onChange, defaultValue, isLoading = false } = props;
 
-  const handleChange = (
-    value: SearchSelectOption | null
-    // actionMeta: ActionMeta<SearchSelectOption>
-  ) => {
-    onChange(value);
-  };
+	const handleChange = (
+		value: SearchSelectOption | null,
+		// actionMeta: ActionMeta<SearchSelectOption>
+	) => {
+		onChange(value);
+	};
 
-  return (
-    <Select
-      isLoading={isLoading}
-      options={options}
-      defaultValue={defaultValue}
-      menuPortalTarget={document.body}
-      onChange={handleChange}
-      styles={{
-        menuPortal: (provided) => ({
-          ...provided,
-          zIndex: 9999,
-        }),
-      }}
-    />
-  );
+	return (
+		<Select
+			defaultValue={defaultValue}
+			isLoading={isLoading}
+			menuPortalTarget={document.body}
+			onChange={handleChange}
+			options={options}
+			styles={{
+				menuPortal: (provided) => ({
+					...provided,
+					zIndex: 9_999,
+				}),
+			}}
+		/>
+	);
 };
 
 export default SearchSelect;

@@ -1,7 +1,18 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next';
+
 // import nodemailer from 'nodemailer';
-import jwt from 'jsonwebtoken';
+
+import { type NextApiResponse } from "next";
+import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { sign, verify, type VerifyErrors } from "jsonwebtoken";
+import { isNull } from "lodash";
+
+import {
+	type NextApiRequest,
+	type SendCollaborationEmailInviteApiPayload,
+} from "../../../types/apiTypes";
+import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
+
 // import jwt_decode from 'jwt-decode';
 
 /**
@@ -9,70 +20,87 @@ import jwt from 'jsonwebtoken';
  */
 
 type Data = {
-  url: string | null;
-  error: string | null | jwt.VerifyErrors;
+	error: PostgrestError | VerifyErrors | string | null;
+	url: string | null;
 };
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
+	request: NextApiRequest<SendCollaborationEmailInviteApiPayload>,
+	response: NextApiResponse<Data>,
 ) {
-  await jwt.verify(
-    req.body.access_token as string,
-    process.env.SUPABASE_JWT_SECRET_KEY as string,
-    function (err) {
-      if (err) {
-        res.status(500).json({ url: null, error: err });
-        throw new Error('ERROR');
-      }
-    }
-  );
+	verify(
+		request.body.access_token,
+		process.env.SUPABASE_JWT_SECRET_KEY,
+		(error_) => {
+			if (error_) {
+				response.status(500).json({ url: null, error: error_ });
+				throw new Error("ERROR");
+			}
+		},
+	);
 
-  const emailList = req.body.emailList;
-  const hostUrl = req?.body?.hostUrl;
-  const category_id = req?.body?.category_id;
-  const edit_access = req?.body?.edit_access;
-  const userId = req?.body?.userId;
+	const supabase = createClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL,
+		process.env.SUPABASE_SERVICE_KEY,
+	);
 
-  // console.log('emails', emailList);
+	const { emailList } = request.body;
+	const hostUrl = request?.body?.hostUrl;
+	const categoryId = request?.body?.category_id;
+	const editAccess = request?.body?.edit_access;
+	const userId = request?.body?.userId;
 
-  // const transporter = nodemailer.createTransport({
-  //   service: 'gmail',
-  //   host: 'domain',
-  //   port: 587,
-  //   secure: false, // use SSL
-  //   debug: true,
-  //   auth: {
-  //     user: 'abhishek@timeless.co',
-  //     pass: '',
-  //   },
-  // });
+	const { error } = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
+		category_id: categoryId,
+		email: emailList[0],
+		edit_access: editAccess,
+		user_id: userId,
+		is_accept_pending: true,
+	});
 
-  // const mailOptions = {
-  //   from: 'abhishek@timeless.co',
-  //   to: 'abhishekmg.12@gmail.com',
-  //   subject: 'Sending Email using Node.js',
-  //   text: 'That was easy!',
-  // };
+	if (!isNull(error)) {
+		response.status(500).json({ url: null, error });
+		throw new Error("ERROR");
+	}
 
-  // transporter.sendMail(mailOptions, function (error, info) {
-  //   if (error) {
-  //     console.log('err',  error);
-  //   } else {
-  //     console.log('Email sent: ' + info.response);
-  //   }
-  // });
-  const token = jwt.sign(
-    {
-      email: emailList[0],
-      category_id: category_id,
-      edit_access: edit_access,
-      userId: userId,
-    },
-    'shhhhh'
-  );
-  const url = `${hostUrl}/api/invite?token=${token}`;
+	// console.log('emails', emailList);
 
-  res.status(200).json({ url: url, error: null });
-  return;
+	// const transporter = nodemailer.createTransport({
+	//   service: 'gmail',
+	//   host: 'domain',
+	//   port: 587,
+	//   secure: false, // use SSL
+	//   debug: true,
+	//   auth: {
+	//     user: 'abhishek@timeless.co',
+	//     pass: '',
+	//   },
+	// });
+
+	// const mailOptions = {
+	//   from: 'abhishek@timeless.co',
+	//   to: 'abhishekmg.12@gmail.com',
+	//   subject: 'Sending Email using Node.js',
+	//   text: 'That was easy!',
+	// };
+
+	// transporter.sendMail(mailOptions, function (error, info) {
+	//   if (error) {
+	//     console.log('err',  error);
+	//   } else {
+	//     console.log('Email sent: ' + info.response);
+	//   }
+	// });
+	const token = sign(
+		{
+			email: emailList[0],
+			category_id: categoryId,
+			edit_access: editAccess,
+			userId,
+		},
+		"shhhhh",
+	);
+	const url = `${hostUrl}/api/invite?token=${token}`;
+
+	response.status(200).json({ url, error: null });
 }

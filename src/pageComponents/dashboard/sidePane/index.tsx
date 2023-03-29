@@ -1,40 +1,46 @@
-import SidePaneUserDropdown from './sidePaneUserDropdown';
-import SidePaneOptionsMenu from './sidePaneOptionsMenu';
-import CollectionsList from './collectionsList';
-import SidePaneTypesList from './sidePaneTypesList';
+import dynamic from "next/dynamic";
 
-interface SidePaneTypes {
-  onBookmarksDrop: (e: any) => Promise<void>;
-  onCategoryOptionClick: (
-    value: string | number,
-    current: boolean,
-    id: number
-  ) => void;
-  onIconSelect: (value: string, id: number) => void;
-  onAddNewCategory: (value: string) => void;
-}
+import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
+import SidePaneTypesList from "./sidePaneTypesList";
+import SidePaneUserDropdown from "./sidePaneUserDropdown";
+
+const CollectionsList = dynamic(() => import("./collectionsList"), {
+	ssr: false,
+});
+
+type SidePaneTypes = {
+	onAddNewCategory: (value: string) => Promise<void>;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	onBookmarksDrop: (event: any) => Promise<void>;
+	onCategoryOptionClick: (
+		value: number | string,
+		current: boolean,
+		id: number,
+	) => Promise<void>;
+	onIconSelect: (value: string, id: number) => void;
+};
 
 const SidePane = (props: SidePaneTypes) => {
-  const {
-    onBookmarksDrop,
-    onCategoryOptionClick,
-    onIconSelect,
-    onAddNewCategory,
-  } = props;
+	const {
+		onBookmarksDrop,
+		onCategoryOptionClick,
+		onIconSelect,
+		onAddNewCategory,
+	} = props;
 
-  return (
-    <nav className="p-2 border-r-[0.5px] border-r-custom-gray-4 h-full">
-      <SidePaneUserDropdown />
-      <SidePaneOptionsMenu />
-      <CollectionsList
-        onBookmarksDrop={onBookmarksDrop}
-        onCategoryOptionClick={onCategoryOptionClick}
-        onIconSelect={(value, id) => onIconSelect(value, id)}
-        onAddNewCategory={onAddNewCategory}
-      />
-      <SidePaneTypesList />
-    </nav>
-  );
+	return (
+		<nav className="h-full border-r-[0.5px] border-r-custom-gray-4 p-2">
+			<SidePaneUserDropdown />
+			<SidePaneOptionsMenu />
+			<CollectionsList
+				onAddNewCategory={onAddNewCategory}
+				onBookmarksDrop={onBookmarksDrop}
+				onCategoryOptionClick={onCategoryOptionClick}
+				onIconSelect={(value, id) => onIconSelect(value, id)}
+			/>
+			<SidePaneTypesList />
+		</nav>
+	);
 };
 
 export default SidePane;

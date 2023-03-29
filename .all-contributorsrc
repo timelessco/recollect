@@ -1,0 +1,42 @@
+{
+	"badgeTemplate": "<img alt=\"All Contributors: <%= contributors.length %>\" src=\"https://img.shields.io/badge/all_contributors-<%= contributors.length %>-21bb42.svg\" />",
+	"commit": false,
+	"commitConvention": "angular",
+	"contributors": [
+		{
+			"login": "sandeepprabhakaran",
+			"name": "Sandeep Prabhakaran",
+			"avatar_url": "https://avatars2.githubusercontent.com/u/6380293?v=4",
+			"profile": "http://timeless.co/",
+			"contributions": ["design", "ideas"]
+		},
+		{
+			"login": "abhishekmg",
+			"name": "Abishek M G",
+			"avatar_url": "https://avatars.githubusercontent.com/u/34393560?v=4",
+			"profile": "https://creact.app/",
+			"contributions": ["code", "a11y", "maintenance"]
+		},
+		{
+			"login": "navin-moorthy",
+			"name": "Navin Moorthy",
+			"avatar_url": "https://avatars.githubusercontent.com/u/35562287?v=4",
+			"profile": "https://navinmoorthy.me/",
+			"contributions": ["tool", "code"]
+		},
+		{
+			"login": "JoshuaKGoldberg",
+			"name": "Josh Goldberg",
+			"avatar_url": "https://avatars.githubusercontent.com/u/3335181?v=4",
+			"profile": "http://www.joshuakgoldberg.com",
+			"contributions": ["tool"]
+		}
+	],
+	"contributorsPerLine": 7,
+	"files": ["README.md"],
+	"imageSize": 100,
+	"projectName": "mondo-web",
+	"projectOwner": "timelessco",
+	"repoHost": "https://github.com",
+	"repoType": "github"
+}

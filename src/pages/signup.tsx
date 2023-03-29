@@ -1,8 +1,7 @@
-import type { NextPage } from 'next';
-import SignupPage from '../pageComponents/signup';
+import { type NextPage } from "next";
 
-const SignUp: NextPage = () => {
-  return <SignupPage />;
-};
+import SignupPage from "../pageComponents/signup";
+
+const SignUp: NextPage = () => <SignupPage />;
 
 export default SignUp;

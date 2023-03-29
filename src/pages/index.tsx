@@ -1,33 +1,32 @@
-import type { GetServerSideProps, NextPage } from 'next';
-import Dashboard from '../pageComponents/dashboard';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { type GetServerSideProps, type NextPage } from "next";
+import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
 
-const Home: NextPage = () => {
-  return <Dashboard />;
-};
+import Dashboard from "../pageComponents/dashboard";
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  // Create authenticated Supabase Client
-  const supabase = createServerSupabaseClient(ctx);
-  // Check if we have a session
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+const Home: NextPage = () => <Dashboard />;
 
-  if (!session)
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
+export const getServerSideProps: GetServerSideProps = async (context) => {
+	// Create authenticated Supabase Client
+	const supabase = createServerSupabaseClient(context);
+	// Check if we have a session
+	const {
+		data: { session },
+	} = await supabase.auth.getSession();
 
-  return {
-    props: {
-      initialSession: session,
-      user: session.user,
-    },
-  };
+	if (!session)
+		return {
+			redirect: {
+				destination: "/login",
+				permanent: false,
+			},
+		};
+
+	return {
+		props: {
+			initialSession: session,
+			user: session.user,
+		},
+	};
 };
 
 export default Home;
