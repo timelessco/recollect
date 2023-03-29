@@ -1,0 +1,126 @@
+{
+	"git.branchProtection": ["main"],
+	"typescript.tsdk": "node_modules/typescript/lib",
+
+	"files.associations": {
+		"*.svg": "html",
+		".env.*": "dotenv",
+		"*.json": "jsonc"
+	},
+
+	// Recommended Extensions
+
+	// Linters & Formatters
+	"prettier.enable": true,
+	"eslint.enable": true,
+	"eslint.useESLintClass": true,
+	"eslint.workingDirectories": [{ "mode": "auto" }],
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact",
+		"json",
+		"jsonc",
+		"json5",
+		"yaml",
+		"toml"
+	],
+	"stylelint.enable": true,
+
+	// Tailwind CSS
+	// Enable features in languages that are not supported by default. Add a mapping here between the new language and an already supported language.
+	"tailwindCSS.includeLanguages": {
+		"plaintext": "html",
+		"typescript": "javascript",
+		"typescriptreact": "javascript",
+		"javascriptreact": "javascript"
+	},
+
+	// Editor Formatters & Linters.
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.formatOnPaste": false,
+	"editor.codeActionsOnSave": {
+		"source.addMissingImports": true,
+		// "source.organizeImports": true,
+		// "source.sortImports": true,
+		// "source.fixAll": true
+		"source.formatDocument": true,
+		"source.fixAll.eslint": true,
+		"source.fixAll.stylelint": true,
+		"source.fixAll.markdownlint": true
+	},
+
+	// Language based settings
+
+	// JavaScript
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"javascript.referencesCodeLens.enabled": true,
+	"javascript.referencesCodeLens.showOnAllFunctions": true,
+
+	// TypeScript
+	"typescript.updateImportsOnFileMove.enabled": "always",
+	"typescript.validate.enable": true,
+	"typescript.surveys.enabled": false,
+
+	// CSS
+	"css.validate": false,
+	"css.lint.unknownAtRules": "ignore",
+	"less.validate": false,
+	"scss.validate": false,
+	"stylelint.validate": ["css", "scss"],
+
+	// Markdown
+	"markdown.validate.enabled": true,
+	"markdown.experimental.editor.pasteLinks.enabled": true,
+	"[markdown]": {
+		"editor.quickSuggestions": {
+			"comments": "on",
+			"strings": "on",
+			"other": "on"
+		}
+	},
+
+	// Other Installed Extensions
+
+	// Error Translator for TypeScript
+	"totalTypeScript.hideAllTips": true,
+	"totalTypeScript.hideBasicTips": true,
+	"totalTypeScript.showFullTranslation": true,
+
+	// Conventional Commit
+	"conventionalCommits.emojiFormat": "emoji",
+	"conventionalCommits.showEditor": true,
+	"conventionalCommits.lineBreak": "\\n",
+	"conventionalCommits.promptFooter": false,
+	"conventionalCommits.promptBody": false,
+
+	// AutoClosing Tag
+	"html.autoClosingTags": true,
+	"javascript.autoClosingTags": true,
+	"typescript.autoClosingTags": true,
+
+	// Auto close tag
+	"auto-close-tag.SublimeText3Mode": true,
+	"auto-close-tag.activationOnLanguage": [
+		"xml",
+		"php",
+		"blade",
+		"ejs",
+		"jinja",
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact",
+		"plaintext",
+		"markdown",
+		"vue",
+		"liquid",
+		"erb",
+		"lang-cfml",
+		"cfml",
+		"HTML (Eex)",
+		"mdx"
+	]
+}

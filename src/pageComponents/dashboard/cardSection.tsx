@@ -1,714 +1,1026 @@
 /* eslint-disable @next/next/no-img-element */
 
+import { useEffect, useRef, useState, type Key, type ReactNode } from "react";
+import { useRouter } from "next/router";
 import {
-  CategoriesData,
-  FetchSharedCategoriesData,
-  ProfilesTableTypes,
-  SingleListData,
-} from '../../types/apiTypes';
+	MinusCircleIcon,
+	PencilAltIcon,
+	TrashIcon,
+} from "@heroicons/react/solid";
+import { useSession } from "@supabase/auth-helpers-react";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import classNames from "classnames";
+import format from "date-fns/format";
+import { flatten, type Many } from "lodash";
+import find from "lodash/find";
+import isEmpty from "lodash/isEmpty";
+import isNull from "lodash/isNull";
 import {
-  MinusCircleIcon,
-  PencilAltIcon,
-  TrashIcon,
-} from '@heroicons/react/solid';
-import { useRouter } from 'next/router';
+	DragPreview,
+	mergeProps,
+	useDraggableCollection,
+	useDraggableItem,
+	useFocusRing,
+	useListBox,
+	useOption,
+	type DraggableItemProps,
+	type DragItem,
+} from "react-aria";
+import Avatar from "react-avatar";
 import {
-  ALL_BOOKMARKS_URL,
-  BOOKMARKS_KEY,
-  CATEGORIES_KEY,
-  SHARED_CATEGORIES_TABLE_NAME,
-  TRASH_URL,
-  USER_PROFILE,
-} from '../../utils/constants';
-import find from 'lodash/find';
-import isEmpty from 'lodash/isEmpty';
-import Spinner from '../../components/spinner';
-import Avatar from 'react-avatar';
-import { useQueryClient } from '@tanstack/react-query';
-import { PostgrestError } from '@supabase/supabase-js';
-import Badge from '../../components/badge';
-import isNull from 'lodash/isNull';
-import Masonry from 'react-masonry-css';
-import MasonryCardSkeleton from '../../components/loadersSkeleton/masonryCardSkeleton';
-import { getBaseUrl, isUserInACategory } from '../../utils/helpers';
-import format from 'date-fns/format';
-import classNames from 'classnames';
-import { options } from '../../utils/commonData';
-import { useMiscellaneousStore } from '../../store/componentStore';
+	Item,
+	useDraggableCollectionState,
+	useListState,
+	type DraggableCollectionState,
+	type ListProps,
+	type ListState,
+} from "react-stately";
 
-interface CardSectionProps {
-  listData: Array<SingleListData>;
-  onDeleteClick: (post: SingleListData) => void;
-  onMoveOutOfTrashClick: (post: SingleListData) => void;
-  onEditClick: (item: SingleListData) => void;
-  isLoading: boolean;
-  userId: string;
-  showAvatar: boolean;
-  isOgImgLoading: boolean;
-  isBookmarkLoading: boolean;
-  addScreenshotBookmarkId: number | undefined;
-  deleteBookmarkId: number | undefined;
-}
+import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
+import Badge from "../../components/badge";
+import Checkbox from "../../components/checkbox";
+import Spinner from "../../components/spinner";
+import ErrorImgPlaceholder from "../../icons/errorImgPlaceholder";
+import LinkExternalIcon from "../../icons/linkExternalIcon";
+import MoveIcon from "../../icons/moveIcon";
+import {
+	useLoadersStore,
+	useMiscellaneousStore,
+} from "../../store/componentStore";
+import {
+	type CategoriesData,
+	type FetchSharedCategoriesData,
+	type ProfilesTableTypes,
+	type SingleListData,
+} from "../../types/apiTypes";
+import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
+import {
+	dropdownMenuClassName,
+	dropdownMenuItemClassName,
+} from "../../utils/commonClassNames";
+import { options } from "../../utils/commonData";
+import {
+	ALL_BOOKMARKS_URL,
+	BOOKMARKS_KEY,
+	CATEGORIES_KEY,
+	SEARCH_URL,
+	SHARED_CATEGORIES_TABLE_NAME,
+	TRASH_URL,
+	USER_PROFILE,
+} from "../../utils/constants";
+import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
+
+type onBulkBookmarkDeleteType = (
+	bookmark_ids: number[],
+	isTrash: boolean,
+	deleteForever: boolean,
+) => void;
+
+type CardSectionProps = {
+	deleteBookmarkId: number[] | undefined;
+	isBookmarkLoading: boolean;
+	isOgImgLoading: boolean;
+	listData: SingleListData[];
+	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
+	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
+	onDeleteClick: (post: SingleListData[]) => void;
+	onEditClick: (item: SingleListData) => void;
+	onMoveOutOfTrashClick: (post: SingleListData) => void;
+	showAvatar: boolean;
+	userId: string;
+};
+type ListBoxDropTypes = ListProps<object> & {
+	// bookmarksColumns: string | number[] | string[] | undefined;
+	bookmarksColumns: number[];
+	bookmarksList: SingleListData[];
+	cardTypeCondition: unknown;
+	getItems?: (keys: Set<Key>) => DragItem[];
+	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
+	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
+	// onReorder: (event: DroppableCollectionReorderEvent) => unknown;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	onItemDrop?: (event: any) => void;
+};
+
+const ListBox = (props: ListBoxDropTypes) => {
+	const {
+		getItems,
+		bookmarksColumns,
+		cardTypeCondition,
+		bookmarksList,
+		onCategoryChange,
+		onBulkBookmarkDelete,
+	} = props;
+	const setIsCardDragging = useMiscellaneousStore(
+		(store) => store.setIsCardDragging,
+	);
+	const queryClient = useQueryClient();
+	const session = useSession();
+
+	const categoryData = queryClient.getQueryData([
+		CATEGORIES_KEY,
+		session?.user?.id,
+	]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
+
+	const router = useRouter();
+	// cat_id reffers to cat slug here as its got from url
+	const categorySlug = router?.asPath?.split("/")[1] || null;
+
+	// Setup listbox as normal. See the useListBox docs for more details.
+	const preview = useRef(null);
+	const state = useListState(props);
+	const ref = useRef(null);
+	const { listBoxProps } = useListBox(
+		{
+			...props,
+			// Prevent dragging from changing selection.
+			shouldSelectOnPressUp: true,
+		},
+		state,
+		ref,
+	);
+
+	useEffect(() => {
+		state.selectionManager.clearSelection();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [router.asPath]);
+
+	// Setup drag state for the collection.
+	const dragState = useDraggableCollectionState({
+		// Pass through events from props.
+		...props,
+
+		// Collection and selection manager come from list state.
+		collection: state.collection,
+		selectionManager: state.selectionManager,
+		onDragStart() {
+			setIsCardDragging(true);
+		},
+		onDragEnd() {
+			setIsCardDragging(false);
+			state.selectionManager.clearSelection();
+		},
+		preview,
+		// Provide data for each dragged item. This function could
+		// also be provided by the user of the component.
+		getItems:
+			getItems ??
+			((keys) =>
+				[...keys].map((key) => {
+					const item = state.collection.getItem(key);
+
+					return {
+						"text/plain": item.textValue,
+					};
+				})),
+	});
+
+	useDraggableCollection(props, dragState, ref);
+
+	const cardGridClassNames = classNames({
+		"grid gap-6": true,
+		"grid-cols-5":
+			typeof bookmarksColumns === "object" &&
+			!isNull(bookmarksColumns) &&
+			bookmarksColumns[0] === 10,
+		"grid-cols-4":
+			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 20,
+		"grid-cols-3":
+			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 30,
+		"grid-cols-2":
+			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 40,
+		"grid-cols-1":
+			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
+	});
+
+	const moodboardColsLogic = () => {
+		switch (bookmarksColumns && bookmarksColumns[0] / 10) {
+			case 1:
+				return "5";
+			case 2:
+				return "4";
+			case 3:
+				return "3";
+			case 4:
+				return "2";
+			case 5:
+				return "1";
+			default:
+				return "1";
+				break;
+		}
+	};
+
+	const ulClassName = classNames("outline-none focus:outline-none", {
+		[`columns-${moodboardColsLogic()} gap-6`]:
+			cardTypeCondition === "moodboard",
+		block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		[cardGridClassNames]: cardTypeCondition === "card",
+	});
+
+	const isTrashPage = categorySlug === TRASH_URL;
+
+	return (
+		<>
+			<ul {...listBoxProps} className={ulClassName} ref={ref}>
+				{[...state.collection].map((item) => (
+					<Option
+						cardTypeCondition={cardTypeCondition}
+						dragState={dragState}
+						item={item}
+						key={item.key}
+						state={state}
+						url={
+							find(
+								bookmarksList,
+								(listItem) =>
+									listItem?.id === Number.parseInt(item.key as string, 10),
+							)?.url ?? ""
+						}
+					/>
+				))}
+				<DragPreview ref={preview}>
+					{(items) => (
+						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
+							{items.length > 1
+								? `${items.length} bookmarks`
+								: find(
+										bookmarksList,
+										(item) =>
+											item?.id === Number.parseInt(items[0]["text/plain"], 10),
+								  )?.title}
+						</div>
+					)}
+				</DragPreview>
+			</ul>
+			{state.selectionManager.selectedKeys.size > 0 && (
+				<div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white px-[11px] py-[9px] shadow-custom-6">
+					<Checkbox
+						checked={
+							Array.from(state.selectionManager.selectedKeys.keys())?.length > 0
+						}
+						label={`${
+							Array.from(state.selectionManager.selectedKeys.keys())?.length
+						}
+            bookmarks`}
+						onChange={() => state.selectionManager.clearSelection()}
+						value="selected-bookmarks"
+					/>
+					<div className="flex items-center">
+						<div
+							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+							onClick={() => {
+								onBulkBookmarkDelete(
+									Array.from(
+										state.selectionManager.selectedKeys.keys(),
+									) as number[],
+									true,
+									Boolean(isTrashPage),
+								);
+								state.selectionManager.clearSelection();
+							}}
+							onKeyDown={() => {}}
+							role="button"
+							tabIndex={0}
+						>
+							{isTrashPage ? "Delete Forever" : "Delete"}
+						</div>
+						{isTrashPage && (
+							<div
+								className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+								onClick={() => {
+									onBulkBookmarkDelete(
+										Array.from(
+											state.selectionManager.selectedKeys.keys(),
+										) as number[],
+										false,
+										false,
+									);
+									state.selectionManager.clearSelection();
+								}}
+								onKeyDown={() => {}}
+								role="button"
+								tabIndex={0}
+							>
+								Recover
+							</div>
+						)}
+						<AriaDropdown
+							menuButton={
+								<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-custom-gray-5">
+									<figure className=" mr-[6px]">
+										<MoveIcon />
+									</figure>
+									<p>Move to</p>
+								</div>
+							}
+							menuClassName={dropdownMenuClassName}
+						>
+							{categoryData?.data
+								?.map((item) => ({
+									label: item?.category_name,
+									value: item?.id,
+								}))
+								?.map((dropdownItem) => (
+									<AriaDropdownMenu
+										key={dropdownItem?.value}
+										onClick={() =>
+											onCategoryChange(
+												Array.from(
+													state.selectionManager.selectedKeys.keys(),
+												) as number[],
+												dropdownItem?.value,
+											)
+										}
+									>
+										<div className={dropdownMenuItemClassName}>
+											{dropdownItem?.label}
+										</div>
+									</AriaDropdownMenu>
+								))}
+						</AriaDropdown>
+					</div>
+				</div>
+			)}
+		</>
+	);
+};
+
+type OptionDropItemTypes = DraggableItemProps & {
+	rendered: ReactNode;
+};
+
+const Option = ({
+	item,
+	state,
+	dragState,
+	cardTypeCondition,
+	url,
+}: {
+	cardTypeCondition: unknown;
+	dragState: DraggableCollectionState;
+	item: OptionDropItemTypes;
+	state: ListState<unknown>;
+	url: string;
+}) => {
+	// Setup listbox option as normal. See useListBox docs for details.
+	const ref = useRef(null);
+	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
+	const { focusProps } = useFocusRing();
+	// Register the item as a drag source.
+	const { dragProps } = useDraggableItem(
+		{
+			key: item.key,
+		},
+		dragState,
+	);
+	// Merge option props and dnd props, and render the item.
+
+	const liClassName = classNames(
+		"single-bookmark group relative flex cursor-pointer rounded-lg duration-150 outline-none",
+		{
+			"mb-6": cardTypeCondition === "moodboard",
+			"mb-[18px]": cardTypeCondition === "card",
+			"hover:shadow-custom-4":
+				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			"hover:bg-custom-gray-8 mb-1":
+				(cardTypeCondition === "list" || cardTypeCondition === "headlines") &&
+				!isSelected,
+
+			" mb-1":
+				cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		},
+	);
+
+	return (
+		<li
+			{...mergeProps(dragProps, focusProps, optionProps)}
+			className={liClassName}
+			// className="single-bookmark group relative mb-6 flex cursor-pointer rounded-lg duration-150 hover:shadow-custom-4"
+			ref={ref}
+		>
+			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
+			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+			<a
+				className="absolute left-0 top-0 h-full w-full rounded-lg"
+				draggable={false}
+				href={url}
+				onClick={(event) => {
+					event.preventDefault();
+					if (event.detail === 2) {
+						window.open(url, "_blank");
+					}
+				}}
+			/>
+			{/* <input
+        type="checkbox"
+        checked={isSelected}
+        // {...optionProps}
+        // eslint-disable-next-line tailwindcss/no-custom-classname
+        className={`card-checkbox absolute top-[7px] left-[6px] z-20 group-hover:block ${
+          isSelected ? "block" : "hidden"
+        }`}
+      /> */}
+			{item.rendered}
+		</li>
+	);
+};
 
 const CardSection = ({
-  listData = [],
-  onDeleteClick,
-  onMoveOutOfTrashClick,
-  onEditClick = () => null,
-  isLoading = false,
-  userId,
-  showAvatar = false,
-  isOgImgLoading = false,
-  isBookmarkLoading = false,
-  // addScreenshotBookmarkId,
-  deleteBookmarkId,
+	listData = [],
+	onDeleteClick,
+	onMoveOutOfTrashClick,
+	onEditClick = () => null,
+	userId,
+	showAvatar = false,
+	isOgImgLoading = false,
+	isBookmarkLoading = false,
+	deleteBookmarkId,
+	onCategoryChange,
+	onBulkBookmarkDelete,
 }: CardSectionProps) => {
-  const router = useRouter();
-  const category_id = router?.asPath?.split('/')[1] || null; // cat_id reffers to cat slug here as its got from url
-  const queryClient = useQueryClient();
+	const [errorImgs, setErrorImgs] = useState([]);
 
-  const isDeleteBookmarkLoading = false;
-  const searchText = useMiscellaneousStore((state) => state.searchText);
+	const router = useRouter();
+	// cat_id reffers to cat slug here as its got from url
+	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const queryClient = useQueryClient();
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+	const isDeleteBookmarkLoading = false;
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const setCurrentBookmarkView = useMiscellaneousStore(
+		(state) => state.setCurrentBookmarkView,
+	);
+	const toggleIsSearchLoading = useLoadersStore(
+		(state) => state.toggleIsSearchLoading,
+	);
 
-  const categoryIdFromSlug = find(
-    categoryData?.data,
-    (item) => item?.category_slug === category_id
-  )?.id;
+	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-    data: ProfilesTableTypes[];
-    error: PostgrestError;
-  };
+	const categoryIdFromSlug = find(
+		categoryData?.data,
+		(item) => item?.category_slug === categorySlug,
+	)?.id;
 
-  const searchBookmarksData = queryClient.getQueryData([
-    BOOKMARKS_KEY,
-    userId,
-    category_id === ALL_BOOKMARKS_URL
-      ? null
-      : typeof categoryIdFromSlug === 'number'
-      ? categoryIdFromSlug
-      : category_id,
-    searchText,
-  ]) as {
-    data: SingleListData[];
-    error: PostgrestError;
-  };
+	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
+		data: ProfilesTableTypes[];
+		error: PostgrestError;
+	};
 
-  const sharedCategoriesData = queryClient.getQueryData([
-    SHARED_CATEGORIES_TABLE_NAME,
-  ]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
+	const searchSlugKey = () => {
+		if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
+			return null;
+		}
 
-  const bookmarksList = isEmpty(searchText)
-    ? listData
-    : searchBookmarksData?.data;
+		if (typeof categoryIdFromSlug === "number") {
+			return categoryIdFromSlug;
+		}
 
-  const currentCategoryData = find(
-    categoryData?.data,
-    (item) => item?.category_slug === category_id
-  );
+		return categorySlug;
+	};
 
-  const isUserTheCategoryOwner = userId === currentCategoryData?.user_id?.id;
+	const searchBookmarksData = queryClient.getQueryData([
+		BOOKMARKS_KEY,
+		userId,
+		// categorySlug === ALL_BOOKMARKS_URL
+		//   ? null
+		//   : typeof categoryIdFromSlug === "number"
+		//   ? categoryIdFromSlug
+		//   : categorySlug,
+		searchSlugKey(),
+		searchText,
+	]) as {
+		data: SingleListData[];
+		error: PostgrestError;
+	};
 
-  const bookmarksInfoValue = isUserInACategory(category_id as string)
-    ? isUserTheCategoryOwner
-      ? currentCategoryData?.category_views?.cardContentViewArray
-      : !isEmpty(sharedCategoriesData?.data)
-      ? sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
-      : []
-    : !isEmpty(userProfilesData?.data)
-    ? userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
-    : [];
+	useEffect(() => {
+		if (searchBookmarksData?.data === undefined) {
+			toggleIsSearchLoading(true);
+		} else {
+			toggleIsSearchLoading(false);
+		}
+	}, [searchBookmarksData, toggleIsSearchLoading]);
 
-  const bookmarksColumns = isUserInACategory(category_id as string)
-    ? isUserTheCategoryOwner
-      ? currentCategoryData?.category_views?.moodboardColumns
-      : !isEmpty(sharedCategoriesData?.data)
-      ? sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
-      : [10]
-    : !isEmpty(userProfilesData?.data)
-    ? userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
-    : [10];
+	const sharedCategoriesData = queryClient.getQueryData([
+		SHARED_CATEGORIES_TABLE_NAME,
+	]) as {
+		data: FetchSharedCategoriesData[];
+		error: PostgrestError;
+	};
 
-  const cardTypeCondition = isUserInACategory(category_id as string)
-    ? isUserTheCategoryOwner
-      ? currentCategoryData?.category_views?.bookmarksView
-      : !isEmpty(sharedCategoriesData?.data)
-      ? sharedCategoriesData?.data[0]?.category_views?.bookmarksView
-      : ''
-    : !isEmpty(userProfilesData?.data)
-    ? userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
-    : '';
+	const bookmarksList = isEmpty(searchText)
+		? listData
+		: searchBookmarksData?.data;
 
-  const isLoggedInUserTheCategoryOwner =
-    !isUserInACategory(category_id as string) ||
-    find(categoryData?.data, (item) => item?.category_slug === category_id)
-      ?.user_id?.id === userId;
+	const currentCategoryData = find(
+		categoryData?.data,
+		(item) => item?.category_slug === categorySlug,
+	);
 
-  const renderEditAndDeleteCondition = (post: SingleListData) => {
-    if (isLoggedInUserTheCategoryOwner) {
-      return true;
-    } else {
-      // show if bookmark is created by loggedin user
-      if (post?.user_id?.id === userId) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-  };
+	const isUserTheCategoryOwner = userId === currentCategoryData?.user_id?.id;
 
-  const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
-    // show if bookmark is created by loggedin user
-    if (post?.user_id?.id === userId) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+	const getViewValue = (
+		viewType: "bookmarksView" | "cardContentViewArray" | "moodboardColumns",
+		defaultReturnValue: string | [] | [number],
+	) => {
+		if (isUserInACategory(categorySlug as string)) {
+			if (isUserTheCategoryOwner) {
+				return currentCategoryData?.category_views?.[viewType];
+			}
 
-  const singleBookmarkCategoryData = (category_id: number) => {
-    const name = find(categoryData?.data, (item) => item?.id === category_id);
+			if (!isEmpty(sharedCategoriesData?.data)) {
+				return sharedCategoriesData?.data[0]?.category_views?.[viewType];
+			}
 
-    return name as CategoriesData;
-  };
+			return defaultReturnValue;
+		}
 
-  // category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
-  const renderEditAndDeleteIcons = (post: SingleListData) => {
-    if (renderEditAndDeleteCondition(post)) {
-      return (
-        <>
-          {isBookmarkCreatedByLoggedinUser(post) ? (
-            <>
-              <figure>
-                <PencilAltIcon
-                  className="h-5 w-5 text-gray-400 cursor-pointer"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onEditClick(post);
-                  }}
-                />
-              </figure>
-              {isDeleteBookmarkLoading && deleteBookmarkId === post?.id ? (
-                <div>
-                  <Spinner size={15} />
-                </div>
-              ) : (
-                <figure>
-                  <TrashIcon
-                    id="delete-bookmark-icon"
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    aria-hidden="true"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onDeleteClick(post);
-                    }}
-                  />
-                </figure>
+		if (!isEmpty(userProfilesData?.data)) {
+			return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
+		}
+
+		return defaultReturnValue;
+	};
+
+	const bookmarksInfoValue = getViewValue("cardContentViewArray", []);
+	const bookmarksColumns = flatten([
+		getViewValue("moodboardColumns", [10]) as Many<string | undefined>,
+	]) as unknown as number[];
+	const cardTypeCondition = getViewValue("bookmarksView", "");
+
+	useEffect(() => {
+		if (!isEmpty(cardTypeCondition)) {
+			setCurrentBookmarkView(cardTypeCondition as BookmarksViewTypes);
+		}
+	}, [cardTypeCondition, setCurrentBookmarkView]);
+
+	const isLoggedInUserTheCategoryOwner =
+		!isUserInACategory(categorySlug as string) ||
+		find(categoryData?.data, (item) => item?.category_slug === categorySlug)
+			?.user_id?.id === userId;
+
+	const renderEditAndDeleteCondition = (post: SingleListData) => {
+		if (isLoggedInUserTheCategoryOwner) {
+			return true;
+		}
+
+		// show if bookmark is created by loggedin user
+		if (post?.user_id?.id === userId) {
+			return true;
+		}
+
+		return false;
+	};
+
+	const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
+		// show if bookmark is created by loggedin user
+		if (post?.user_id?.id === userId) {
+			return true;
+		}
+
+		return false;
+	};
+
+	const singleBookmarkCategoryData = (category_id: number) => {
+		const name = find(categoryData?.data, (item) => item?.id === category_id);
+
+		return name as CategoriesData;
+	};
+
+	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
+	const renderEditAndDeleteIcons = (post: SingleListData) => {
+		const iconBgClassName =
+			"rounded-lg bg-custom-white-1 p-[7px] backdrop-blur-sm";
+
+		if (renderEditAndDeleteCondition(post)) {
+			return (
+				<>
+					{categorySlug === TRASH_URL && (
+						<figure className={`${iconBgClassName}`}>
+							<MinusCircleIcon
+								className="h-4 w-4 cursor-pointer text-red-400"
+								onClick={(event) => {
+									event.preventDefault();
+									onMoveOutOfTrashClick(post);
+								}}
+								onPointerDown={(event) => {
+									event.stopPropagation();
+								}}
+							/>
+						</figure>
+					)}
+					<div
+						onClick={() => window.open(post?.url, "_blank")}
+						onKeyDown={() => {}}
+						role="button"
+						tabIndex={0}
+					>
+						<figure className={`${iconBgClassName} ml-1`}>
+							<LinkExternalIcon />
+						</figure>
+					</div>
+					{isBookmarkCreatedByLoggedinUser(post) ? (
+						<>
+							<figure className={`ml-1 ${iconBgClassName}`}>
+								<PencilAltIcon
+									className="h-4 w-4 cursor-pointer text-gray-700"
+									onClick={(event) => {
+										event.preventDefault();
+										onEditClick(post);
+									}}
+									onPointerDown={(event) => {
+										event.stopPropagation();
+									}}
+								/>
+							</figure>
+							{isDeleteBookmarkLoading &&
+							deleteBookmarkId?.includes(post?.id) ? (
+								<div>
+									<Spinner size={15} />
+								</div>
+							) : (
+								<figure className={`ml-1 ${iconBgClassName}`}>
+									<TrashIcon
+										aria-hidden="true"
+										className="h-4 w-4 cursor-pointer text-red-400"
+										id="delete-bookmark-icon"
+										onClick={(event) => {
+											event.stopPropagation();
+											onDeleteClick([post]);
+										}}
+										onPointerDown={(event) => {
+											event.stopPropagation();
+										}}
+									/>
+								</figure>
+							)}
+						</>
+					) : (
+						<figure>
+							<PencilAltIcon
+								className="h-4 w-4 cursor-pointer text-gray-700"
+								onClick={(event) => {
+									event.preventDefault();
+									onEditClick(post);
+								}}
+								onPointerDown={(event) => {
+									event.stopPropagation();
+								}}
+							/>
+						</figure>
+					)}
+				</>
+			);
+		}
+
+		return null;
+	};
+
+	const renderAvatar = (item: SingleListData) => (
+		<Avatar
+			className="mr-1"
+			name={item?.user_id?.email}
+			round
+			size="20"
+			src={item?.user_id?.profile_pic}
+		/>
+	);
+
+	const renderUrl = (item: SingleListData) => (
+		<p
+			className={`relative text-[13px] leading-4  text-custom-gray-10 ${
+				!isNull(item?.category_id) && isNull(categorySlug)
+					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
+					: ""
+			}`}
+			id="base-url"
+		>
+			{getBaseUrl(item?.url)}
+		</p>
+	);
+
+	const renderOgImage = (img: string, id: number) => {
+		const imgClassName = classNames({
+			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
+			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img":
+				cardTypeCondition === "card",
+			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img":
+				cardTypeCondition === "moodboard",
+			"h-4 w-4 rounded object-cover": cardTypeCondition === "headlines",
+		});
+
+		const loaderClassName = classNames({
+			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover":
+				cardTypeCondition === "list",
+			"animate-pulse bg-slate-200 w-full h-[194px] w-full object-cover":
+				cardTypeCondition === "card",
+			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
+				cardTypeCondition === "moodboard",
+		});
+
+		const figureClassName = classNames({
+			"h-[48px] w-[80px] ": cardTypeCondition === "list",
+			"w-full h-[194px] ": cardTypeCondition === "card",
+			"h-36":
+				cardTypeCondition === "moodboard" &&
+				(isOgImgLoading || isBookmarkLoading) &&
+				img === undefined,
+			"h-4 w-4": cardTypeCondition === "headlines",
+		});
+
+		const imgLogic = () => {
+			if (bookmarksInfoValue?.includes("cover" as never)) {
+				if (isBookmarkLoading && img === undefined) {
+					return <div className={loaderClassName} />;
+				}
+
+				if (errorImgs?.includes(id as never)) {
+					return <ErrorImgPlaceholder />;
+				}
+
+				return (
+					<>
+						{img && (
+							<img
+								alt="bookmark-img"
+								className={imgClassName}
+								onError={() => setErrorImgs([id as never, ...errorImgs])}
+								src={`${img}`}
+							/>
+						)}
+					</>
+				);
+			}
+
+			return null;
+		};
+
+		return <figure className={figureClassName}>{imgLogic()}</figure>;
+	};
+
+	const renderCategoryBadge = (item: SingleListData) => {
+		const bookmarkCategoryData = singleBookmarkCategoryData(item?.category_id);
+		return (
+			<>
+				{!isNull(item?.category_id) &&
+					categorySlug === ALL_BOOKMARKS_URL &&
+					item?.category_id !== 0 && (
+						<Badge
+							renderBadgeContent={() => (
+								<div className="flex items-center">
+									<figure className="h-[12px] w-[12px]">
+										{find(
+											options,
+											(optionItem) =>
+												optionItem?.label === bookmarkCategoryData?.icon,
+										)?.icon()}
+									</figure>
+									<p className="ml-1">{bookmarkCategoryData?.category_name}</p>
+								</div>
+							)}
+						/>
+					)}
+			</>
+		);
+	};
+
+	const renderSortByCondition = () =>
+		bookmarksList?.map((item) => ({
+			...item,
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-expect-error // disabling because don't know why ogimage is in smallcase
+			ogImage: item?.ogImage || (item?.ogimage as string),
+		}));
+
+	const renderBookmarkCardTypes = (item: SingleListData) => {
+		switch (cardTypeCondition) {
+			case "moodboard":
+				return renderMoodboardAndCardType(item);
+			case "card":
+				return renderMoodboardAndCardType(item);
+			case "headlines":
+				return renderHeadlinesCard(item);
+			case "list":
+				return renderListCard(item);
+			default:
+				return renderMoodboardAndCardType(item);
+		}
+	};
+
+	const renderMoodboardAndCardType = (item: SingleListData) => (
+		<div className="w-full" id="single-moodboard-card">
+			<div className="inline-block w-full">
+				{renderOgImage(item?.ogImage, item?.id)}
+				{bookmarksInfoValue?.length === 1 &&
+				bookmarksInfoValue[0] === "cover" ? null : (
+					<div className="space-y-[6px] rounded-lg px-2 py-3">
+						{bookmarksInfoValue?.includes("title" as never) && (
+							<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+								{item?.title}
+							</p>
+						)}
+						{bookmarksInfoValue?.includes("description" as never) &&
+							!isEmpty(item?.description) && (
+								<p className="overflow-hidden break-all  text-sm leading-4">
+									{item?.description}
+								</p>
+							)}
+						<div className="space-y-[6px]">
+							{bookmarksInfoValue?.includes("tags" as never) && (
+								<div className="flex items-center space-x-1">
+									{item?.addedTags?.map((tag) => (
+										<div className="text-xs text-blue-500" key={tag?.id}>
+											#{tag?.name}
+										</div>
+									))}
+								</div>
+							)}
+							{bookmarksInfoValue?.includes("info" as never) && (
+								<div className="flex flex-wrap items-center space-x-2">
+									{renderCategoryBadge(item)}
+									{renderUrl(item)}
+									<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										{format(new Date(item?.inserted_at), "MMMM dd")}
+									</p>
+								</div>
+							)}
+						</div>
+					</div>
+				)}
+				{/* {renderOgImage(item?.ogImage)}
+          {bookmarksInfoValue?.length === 1 &&
+          bookmarksInfoValue[0] === "cover" ? null : (
+            <div className="space-y-2 rounded-lg p-4">
+              {bookmarksInfoValue?.includes("title" as never) && (
+                <p className="text-base font-medium leading-4">{item?.title}</p>
               )}
-            </>
-          ) : (
-            <figure>
-              <PencilAltIcon
-                className="h-5 w-5 text-gray-700 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onEditClick(post);
-                }}
-              />
-            </figure>
-          )}
-        </>
-      );
-    } else {
-      return null;
-    }
-  };
-
-  const renderAvatar = (item: SingleListData) => {
-    return (
-      <Avatar
-        name={item?.user_id?.email}
-        src={item?.user_id?.profile_pic}
-        size="20"
-        round={true}
-        className="mr-1 h-"
-      />
-    );
-  };
-
-  const renderUrl = (item: SingleListData) => {
-    return (
-      <p
-        className={`text-xs leading-4 relative ${
-          !isNull(item?.category_id) && isNull(category_id)
-            ? "pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']"
-            : ''
-        }`}
-        id="base-url"
-      >
-        {getBaseUrl(item?.url)}
-      </p>
-    );
-  };
-
-  const renderOgImage = (img: string) => {
-    const imgClassName = classNames({
-      'h-14 w-full object-cover': cardTypeCondition === 'list',
-      'h-48 w-full object-cover': cardTypeCondition === 'card',
-      'rounded-lg w-full': cardTypeCondition === 'moodboard',
-    });
-
-    const loaderClassName = classNames({
-      'animate-pulse bg-slate-200 w-full h-14 w-20 object-cover':
-        cardTypeCondition === 'list',
-      'animate-pulse bg-slate-200 w-full h-48 w-full object-cover':
-        cardTypeCondition === 'card',
-      'animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full':
-        cardTypeCondition === 'moodboard',
-    });
-
-    const figureClassName = classNames({
-      ' w-full h-14 w-20 ': cardTypeCondition === 'list',
-      'w-full h-48 ': cardTypeCondition === 'card',
-      ' h-36  w-full':
-        cardTypeCondition === 'moodboard' &&
-        (isOgImgLoading || isBookmarkLoading) &&
-        img === undefined,
-    });
-    return (
-      <figure className={figureClassName}>
-        {bookmarksInfoValue?.includes('cover') && (
-          <>
-            {(isOgImgLoading || isBookmarkLoading) && img === undefined ? (
-              <div className={loaderClassName} />
-            ) : (
-              <>
-                {img && (
-                  <img src={img} alt="bookmark-img" className={imgClassName} />
-                )}
-              </>
-            )}
-          </>
-        )}
-      </figure>
-    );
-  };
-
-  const renderCategoryBadge = (item: SingleListData) => {
-    const categoryData = singleBookmarkCategoryData(item?.category_id);
-    return (
-      <>
-        {!isNull(item?.category_id) &&
-          category_id === ALL_BOOKMARKS_URL &&
-          item?.category_id !== 0 && (
-            <Badge
-              renderBadgeContent={() => {
-                return (
-                  <div className="flex items-center">
-                    {find(
-                      options,
-                      (optionItem) => optionItem?.label === categoryData?.icon
-                    )?.icon()}
-                    <p className="ml-1">{categoryData?.category_name}</p>
-                  </div>
-                );
-              }}
-            />
-          )}
-      </>
-    );
-  };
-
-  const renderSortByCondition = () => {
-    return bookmarksList?.map((item) => {
-      return {
-        ...item,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore // disabling because don't know why ogimage is in smallcase
-        ogImage: item?.ogImage || item?.ogimage,
-      };
-    });
-  };
-
-  const renderHeadlinesType = () => {
-    return (
-      <div className="space-y-4">
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id || index}
-              className="group relative"
-            >
-              <a
-                href={item?.url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center"
-              >
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
+              {bookmarksInfoValue?.includes("description" as never) && (
+                <p className="overflow-hidden break-all  text-sm leading-4">
+                  {item?.description}
+                </p>
+              )}
+              <div className="space-y-2">
+                {bookmarksInfoValue?.includes("tags" as never) && (
+                  <div className="flex items-center space-x-1">
+                    {item?.addedTags?.map(tag => {
+                      return (
+                        <div className="text-xs text-blue-500" key={tag?.id}>
+                          #{tag?.name}
                         </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
-              </a>
-              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
+                {bookmarksInfoValue?.includes("info" as never) && (
+                  <div className="flex flex-wrap items-center space-x-2">
+                    {renderCategoryBadge(item)}
+                    {renderUrl(item)}
+                    <p className="relative pl-3 text-xs leading-4 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']">
+                      {format(new Date(item?.inserted_at), "dd MMM")}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
-          );
-        })}
-      </div>
-    );
-  };
+          )} */}
+				<div
+					// eslint-disable-next-line tailwindcss/no-custom-classname
+					className={`items-center space-x-1 ${
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+						// @ts-expect-error // this is cypress env, TS check not needed
+						window?.Cypress ? "flex" : "hidden"
+					} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
+				>
+					{showAvatar && renderAvatar(item)}
+					{renderEditAndDeleteIcons(item)}
+				</div>
+			</div>
+		</div>
+	);
 
-  const renderListType = () => {
-    return (
-      <div className="space-y-4">
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id || index}
-              className="group relative h-[104px]"
-            >
-              <a
-                href={item?.url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center"
-              >
-                <>{renderOgImage(item?.ogImage)}</>
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    {bookmarksInfoValue?.includes('description') && (
-                      <p className="text-sm leading-4  overflow-hidden break-all">
-                        {item?.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </a>
-              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[25px]">
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+	const renderListCard = (item: SingleListData) => (
+		<div
+			className="flex h-[64px] w-full items-center p-2"
+			id="single-moodboard-card"
+		>
+			{renderOgImage(item?.ogImage, item?.id)}
+			{bookmarksInfoValue?.length === 1 &&
+			bookmarksInfoValue[0] === "cover" ? null : (
+				<div className=" ml-3">
+					{bookmarksInfoValue?.includes("title" as never) && (
+						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+							{item?.title}
+						</p>
+					)}
+					<div className="flex items-center space-x-1 space-y-2">
+						{bookmarksInfoValue?.includes("description" as never) &&
+							!isEmpty(item.description) && (
+								<p className="mt-[6px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10">
+									{item?.description}
+								</p>
+							)}
+						{bookmarksInfoValue?.includes("tags" as never) && (
+							<div className="mt-[6px] flex items-center space-x-1">
+								{item?.addedTags?.map((tag) => (
+									<div className="text-xs text-blue-500" key={tag?.id}>
+										#{tag?.name}
+									</div>
+								))}
+							</div>
+						)}
+						{bookmarksInfoValue?.includes("info" as never) && (
+							<div className="mt-[6px] flex items-center space-x-2">
+								{renderCategoryBadge(item)}
+								{renderUrl(item)}
+								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									{format(new Date(item?.inserted_at), "dd MMM")}
+								</p>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
+			<div className="absolute right-[8px] top-[15px] hidden items-center space-x-1 group-hover:flex">
+				{showAvatar && renderAvatar(item)}
+				{renderEditAndDeleteIcons(item)}
+			</div>
+		</div>
+	);
 
-  const cardGridClassNames = classNames({
-    'grid gap-3': true,
-    'grid-cols-1':
-      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 10,
-    'grid-cols-2':
-      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 20,
-    'grid-cols-3':
-      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 30,
-    'grid-cols-4':
-      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 40,
-    'grid-cols-5':
-      typeof bookmarksColumns === 'object' && bookmarksColumns[0] === 50,
-  });
+	const renderHeadlinesCard = (item: SingleListData) => (
+		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
+			{renderOgImage(item?.ogImage, item?.id)}
+			{bookmarksInfoValue?.length === 1 &&
+			bookmarksInfoValue[0] === "cover" ? null : (
+				<div className=" ml-[10px]">
+					{bookmarksInfoValue?.includes("title" as never) && (
+						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+							{item?.title}
+						</p>
+					)}
+					<div className="mt-[6px] space-y-2">
+						{/* {bookmarksInfoValue?.includes("tags" as never) && (
+                <div className="flex items-center space-x-1">
+                  {item?.addedTags?.map(tag => {
+                    return (
+                      <div className="text-xs text-blue-500" key={tag?.id}>
+                        #{tag?.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              )} */}
+						{bookmarksInfoValue?.includes("info" as never) && (
+							<div className="flex items-center space-x-2">
+								{/* {renderCategoryBadge(item)} */}
+								{renderUrl(item)}
+								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									{format(new Date(item?.inserted_at), "dd MMM")}
+								</p>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
+			<div className="absolute right-[8px] top-[11px] hidden items-center space-x-1 group-hover:flex">
+				{showAvatar && renderAvatar(item)}
+				{renderEditAndDeleteIcons(item)}
+			</div>
+		</div>
+	);
 
-  const renderCardType = () => {
-    return (
-      <div className={cardGridClassNames}>
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              style={{ boxShadow: '0px 0px 2.5px rgba(0, 0, 0, 0.11)' }} // added inline as its not working via tailwind
-              key={item?.id || index}
-              className="group relative"
-            >
-              <a href={item?.url} target="_blank" rel="noreferrer">
-                <>{renderOgImage(item?.ogImage)}</>
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    {bookmarksInfoValue?.includes('description') && (
-                      <p className="text-sm leading-4  overflow-hidden break-all">
-                        {item?.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2 flex-wrap">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </a>
-              <div className="items-center space-x-1 hidden group-hover:flex absolute right-[8px] top-[10px]">
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+	const listWrapperClass = classNames({
+		"p-2": cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		"p-6": cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+	});
 
-  const renderMoodboard = () => {
-    return (
-      <Masonry
-        breakpointCols={{
-          default:
-            typeof bookmarksColumns === 'object'
-              ? bookmarksColumns[0] / 10
-              : (bookmarksColumns as unknown as number) / 10,
-          1100: 2,
-          700: 2,
-          500: 1,
-        }}
-        className="my-masonry-grid"
-        columnClassName="my-masonry-grid_column"
-      >
-        {renderSortByCondition()?.map((item, index) => {
-          return (
-            <div
-              key={item?.id || index}
-              className="rounded-lg drop-shadow-custom-1 group relative single-bookmark"
-              id="single-moodboard-card"
-            >
-              <a href={item?.url} target="_blank" rel="noreferrer">
-                <>{renderOgImage(item?.ogImage)}</>
-                {bookmarksInfoValue?.length === 1 &&
-                bookmarksInfoValue[0] === 'cover' ? null : (
-                  <div className="rounded-lg p-4 space-y-2">
-                    {bookmarksInfoValue?.includes('title') && (
-                      <p className="text-base font-medium leading-4">
-                        {item?.title}
-                      </p>
-                    )}
-                    {bookmarksInfoValue?.includes('description') && (
-                      <p className="text-sm leading-4  overflow-hidden break-all">
-                        {item?.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {bookmarksInfoValue?.includes('tags') && (
-                        <div className="flex items-center space-x-1">
-                          {item?.addedTags?.map((tag) => {
-                            return (
-                              <div
-                                className="text-xs text-blue-500"
-                                key={tag?.id}
-                              >
-                                #{tag?.name}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {bookmarksInfoValue?.includes('info') && (
-                        <div className="flex items-center space-x-2 flex-wrap">
-                          {renderCategoryBadge(item)}
-                          {renderUrl(item)}
-                          <p className="text-xs leading-4 relative pl-3 before:w-1 before:h-1 before:bg-black before:absolute before:left-0 before:top-1.5 before:rounded-full before:content-['']">
-                            {format(new Date(item?.inserted_at), 'dd MMM')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </a>
-              <div
-                className={`items-center space-x-1 ${
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  //@ts-ignore // this is cypress env, TS check not needed
-                  window?.Cypress ? 'flex' : 'hidden'
-                } group-hover:flex absolute right-[8px] top-[10px] helper-icons`}
-              >
-                {showAvatar && renderAvatar(item)}
-                {renderEditAndDeleteIcons(item)}
-                {category_id === TRASH_URL && (
-                  <MinusCircleIcon
-                    className="h-5 w-5 ml-1 text-red-400 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onMoveOutOfTrashClick(item);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </Masonry>
-    );
-  };
-
-  const renderBookmarkCardTypes = () => {
-    switch (cardTypeCondition) {
-      case 'moodboard':
-        return renderMoodboard();
-      case 'card':
-        return renderCardType();
-      case 'headlines':
-        return renderHeadlinesType();
-      case 'list':
-        return renderListType();
-      default:
-        return renderMoodboard();
-      // code block
-    }
-  };
-
-  const renderMainCardContent = () => {
-    if (isLoading) {
-      return (
-        <div
-          className={
-            cardTypeCondition === 'card' || cardTypeCondition === 'moodboard'
-              ? cardGridClassNames
-              : 'space-y-4'
-          }
-        >
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-          <MasonryCardSkeleton />
-        </div>
-      );
-    } else {
-      if (!isEmpty(bookmarksList)) {
-        return renderBookmarkCardTypes();
-      } else {
-        return <div id="no-bookmarks-text">No Bookmarks</div>;
-      }
-    }
-  };
-
-  return renderMainCardContent();
+	return (
+		<div className={listWrapperClass}>
+			<ListBox
+				aria-label="Categories"
+				bookmarksColumns={bookmarksColumns}
+				bookmarksList={bookmarksList}
+				cardTypeCondition={cardTypeCondition}
+				onBulkBookmarkDelete={onBulkBookmarkDelete}
+				onCategoryChange={onCategoryChange}
+				selectionMode="multiple"
+			>
+				{renderSortByCondition()?.map((item) => (
+					<Item key={item?.id} textValue={item?.id?.toString()}>
+						{renderBookmarkCardTypes(item)}
+					</Item>
+				))}
+			</ListBox>
+		</div>
+	);
 };
 
 export default CardSection;

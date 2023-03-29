@@ -1,0 +1,17 @@
+{
+	"recommendations": [
+		"esbenp.prettier-vscode",
+		"dbaeumer.vscode-eslint",
+		"bradlc.vscode-tailwindcss",
+		"stylelint.vscode-stylelint",
+		"DavidAnson.vscode-markdownlint",
+
+		// Optional
+		"vivaxy.vscode-conventional-commits",
+		"aaron-bond.better-comments",
+		"formulahendry.auto-close-tag",
+		"formulahendry.auto-rename-tag",
+		"christian-kohler.npm-intellisense",
+		"christian-kohler.path-intellisense"
+	]
+}

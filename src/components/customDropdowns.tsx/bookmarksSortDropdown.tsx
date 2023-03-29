@@ -1,122 +1,160 @@
-import { PostgrestError } from '@supabase/supabase-js';
-import { useQueryClient } from '@tanstack/react-query';
-import { Menu, MenuButton, useMenuState } from 'ariakit/menu';
-import { isEmpty } from 'lodash';
-import find from 'lodash/find';
-import { useRef } from 'react';
-import SortByDateIconGray from '../../icons/sortByDateIconGray';
-import { useLoadersStore } from '../../store/componentStore';
-import { CategoriesData, ProfilesTableTypes } from '../../types/apiTypes';
-import {
-  BookmarksSortByTypes,
-  BookmarkViewCategories,
-} from '../../types/componentStoreTypes';
-import { CategoryIdUrlTypes } from '../../types/componentTypes';
-import { CATEGORIES_KEY, USER_PROFILE } from '../../utils/constants';
-import Button from '../atoms/button';
-import RadioGroup from '../radioGroup';
-import Spinner from '../spinner';
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import { isEmpty } from "lodash";
+import find from "lodash/find";
 
-interface BookmarksSortDropdownTypes {
-  setBookmarksView: (
-    value: BookmarksSortByTypes,
-    type: BookmarkViewCategories
-  ) => void;
-  categoryId: CategoryIdUrlTypes;
-  userId: string;
-}
+import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
+import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
+import DateIcon from "../../icons/sortByIcons/dateIcon";
+import TickIcon from "../../icons/tickIcon";
+import { useLoadersStore } from "../../store/componentStore";
+import {
+	type CategoriesData,
+	type ProfilesTableTypes,
+} from "../../types/apiTypes";
+import {
+	type BookmarksSortByTypes,
+	type BookmarkViewCategories,
+} from "../../types/componentStoreTypes";
+import { type CategoryIdUrlTypes } from "../../types/componentTypes";
+import { CATEGORIES_KEY, USER_PROFILE } from "../../utils/constants";
+import AriaSelect from "../ariaSelect";
+import Spinner from "../spinner";
+
+type BookmarksSortDropdownTypes = {
+	categoryId: CategoryIdUrlTypes;
+	setBookmarksView: (
+		value: BookmarksSortByTypes,
+		type: BookmarkViewCategories,
+	) => void;
+	userId: string;
+};
 
 const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
-  const { setBookmarksView, categoryId, userId } = props;
+	const { setBookmarksView, categoryId, userId } = props;
 
-  const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-    data: ProfilesTableTypes[];
-    error: PostgrestError;
-  };
+	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
+		data: ProfilesTableTypes[];
+		error: PostgrestError;
+	};
 
-  const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
+	const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
-  const currentCategory = find(
-    categoryData?.data,
-    (item) => item?.id === categoryId
-  );
+	const currentCategory = find(
+		categoryData?.data,
+		(item) => item?.id === categoryId,
+	);
 
-  const isInNonCategoryPage = typeof categoryId !== 'number';
+	const isInNonCategoryPage = typeof categoryId !== "number";
 
-  const bookmarksSortValue = !isInNonCategoryPage
-    ? currentCategory?.category_views?.sortBy
-    : !isEmpty(userProfilesData?.data)
-    ? (userProfilesData?.data[0]?.bookmarks_view?.sortBy as string)
-    : '';
+	const getSortValue = () => {
+		if (!isInNonCategoryPage) {
+			return currentCategory?.category_views?.sortBy;
+		}
 
-  const menu = useMenuState({ gutter: 8 });
+		if (!isEmpty(userProfilesData?.data)) {
+			return userProfilesData?.data[0]?.bookmarks_view?.sortBy as string;
+		}
 
-  const sortOptions = [
-    {
-      label: 'By date ↑',
-      value: 'date-sort-acending',
-    },
-    {
-      label: 'By date ↓',
-      value: 'date-sort-decending',
-    },
-    {
-      label: 'By Name (A → Z)',
-      value: 'alphabetical-sort-acending',
-    },
-    {
-      label: 'By name (Z → A)',
-      value: 'alphabetical-sort-decending',
-    },
-    {
-      label: 'By url (A → Z)',
-      value: 'url-sort-acending',
-    },
-    {
-      label: 'By url (Z → A)',
-      value: 'url-sort-decending',
-    },
-  ];
+		return "";
+	};
 
-  const radioFocusRef = useRef(null);
-  return (
-    <>
-      <MenuButton state={menu} className="button" as="div">
-        <Button type="light">
-          <figure className="w-3 h-3">
-            {isSortByLoading ? <Spinner /> : <SortByDateIconGray />}
-          </figure>
-          <span className="ml-[7px] text-custom-gray-1">
-            {
-              find(sortOptions, (item) => item?.value === bookmarksSortValue)
-                ?.label
-            }
-          </span>
-        </Button>
-      </MenuButton>
-      <Menu
-        initialFocusRef={radioFocusRef}
-        state={menu}
-        className="w-[170px] py-3 px-1 origin-top-left rounded-xl bg-white shadow-custom-1 ring-1 ring-black ring-opacity-5 z-20"
-      >
-        <RadioGroup
-          radioList={sortOptions}
-          onChange={(value) =>
-            setBookmarksView(value as BookmarksSortByTypes, 'sort')
-          }
-          value={bookmarksSortValue || ''}
-          initialRadioRef={radioFocusRef}
-        />
-      </Menu>
-    </>
-  );
+	const bookmarksSortValue = getSortValue();
+
+	const sortOptions = [
+		// {
+		//   label: "By date ↑",
+		//   value: "date-sort-acending",
+		// },
+		// {
+		//   label: "By Date",
+		//   value: "date-sort-decending",
+		// },
+		// {
+		//   label: "By Name (A → Z)",
+		//   value: "alphabetical-sort-acending",
+		// },
+		// {
+		//   label: "By name (Z → A)",
+		//   value: "alphabetical-sort-decending",
+		// },
+		// {
+		//   label: "By url (A → Z)",
+		//   value: "url-sort-acending",
+		// },
+		// {
+		//   label: "By url (Z → A)",
+		//   value: "url-sort-decending",
+		// },
+		{
+			label: "Recent First",
+			value: "date-sort-acending",
+			icon: <DateIcon />,
+		},
+		{
+			label: "Oldest First",
+			value: "date-sort-decending",
+			icon: <ClockRewindIcon />,
+		},
+		{
+			label: "Alphabetical",
+			value: "alphabetical-sort-decending",
+			icon: <AlphabeticalIcon />,
+		},
+	];
+
+	const currentValue = find(
+		sortOptions,
+		(item) => item?.value === bookmarksSortValue,
+	);
+	return (
+		<AriaSelect
+			defaultValue={currentValue?.label ?? ""}
+			key={bookmarksSortValue}
+			onOptionClick={(value) => {
+				setBookmarksView(value as BookmarksSortByTypes, "sort");
+			}}
+			options={sortOptions}
+			renderCustomSelectButton={(open) => (
+				<div
+					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-8 ${
+						open ? "bg-custom-gray-8" : ""
+					}`}
+				>
+					{isSortByLoading ? (
+						<span className="mr-[6px]">
+							<Spinner />
+						</span>
+					) : (
+						<figure className=" mr-[6px] h-4 w-4">{currentValue?.icon}</figure>
+					)}
+					<p>{currentValue?.label}</p>
+				</div>
+			)}
+			renderCustomSelectItem={(value) => (
+				<div className="flex items-center py-[1px]">
+					<figure className="mr-[6px] h-4 w-4">
+						{find(sortOptions, (item) => item?.label === value)?.icon}
+					</figure>
+					<div className=" flex w-full items-center justify-between">
+						{find(sortOptions, (item) => item?.label === value)?.label}
+						{value === currentValue?.label ? (
+							<figure className=" h-3 w-3">
+								<TickIcon />
+							</figure>
+						) : null}
+					</div>
+				</div>
+			)}
+		/>
+	);
 };
 
 export default BookmarksSortDropdown;

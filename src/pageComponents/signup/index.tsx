@@ -1,142 +1,151 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useRouter } from 'next/router';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { ALL_BOOKMARKS_URL } from '../../utils/constants';
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 import {
-  signInWithOauth,
-  signUpWithEmailPassword,
-} from '../../async/supabaseCrudHelpers';
-import { errorToast } from '../../utils/toastMessages';
+	signInWithOauth,
+	signUpWithEmailPassword,
+} from "../../async/supabaseCrudHelpers";
+import Input from "../../components/atoms/input";
+import Spinner from "../../components/spinner";
+import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import LaterpadLogoBlack from "../../icons/laterpadLogoBlack";
+import {
+	bottomBarButton,
+	bottomBarText,
+	buttonDarkClassName,
+	buttonLightClassName,
+	grayInputClassName,
+} from "../../utils/commonClassNames";
+import {
+	ALL_BOOKMARKS_URL,
+	EMAIL_CHECK_PATTERN,
+	SIGNIN_URL,
+} from "../../utils/constants";
+import { errorToast } from "../../utils/toastMessages";
 
 const SignUp = () => {
-  const router = useRouter();
-  const supabase = useSupabaseClient();
+	const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    // formState,
-    // reset,
-  } = useForm<{ email: string; password: string }>();
-  const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
-    data
-  ) => {
-    const { error } = await signUpWithEmailPassword(
-      data?.email,
-      data?.password,
-      supabase
-    );
+	const router = useRouter();
+	const supabase = useSupabaseClient();
 
-    if (error) {
-      errorToast(error?.message);
-    } else {
-      router?.push(`/${ALL_BOOKMARKS_URL}`);
-    }
-  };
-  return (
-    <>
-      {/*
-        This example requires updating your template:
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<{ email: string; password: string }>();
+	const onSubmit: SubmitHandler<{
+		email: string;
+		password: string;
+	}> = async (data) => {
+		setIsLoading(true);
+		const { error } = await signUpWithEmailPassword(
+			data?.email,
+			data?.password,
+			supabase,
+		);
+		setIsLoading(false);
 
-        ```
-        <html class="h-full bg-gray-50">
-        <body class="h-full">
-        ```
-      */}
-      <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form
-              className="space-y-6"
-              // action="#"
-              // method="POST"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email address
-                </label>
-                <div className="mt-1">
-                  <input
-                    {...register('email', {
-                      required: true,
-                    })}
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
+		if (error) {
+			errorToast(error?.message);
+		} else {
+			void router?.push(`/${ALL_BOOKMARKS_URL}`)?.catch(() => {});
+		}
+	};
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-                <div className="mt-1">
-                  <input
-                    {...register('password', {
-                      required: true,
-                    })}
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Sign up
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-2 text-gray-500">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6 ">
-                <div>
-                  <div
-                    onClick={() => signInWithOauth('google', supabase)}
-                    className=" cursor-pointer inline-flex w-full justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50"
-                  >
-                    <span>Log in with Google</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <ToastContainer />
-    </>
-  );
+	return (
+		<>
+			<div className="sign-up-parent flex h-screen">
+				<div className="flex w-1/2 items-center justify-end pr-[140px]">
+					<div className="w-[374px]">
+						<figure>
+							<LaterpadLogoBlack />
+						</figure>
+						<p className="text-8xl font-semibold leading-[110px] text-black">
+							laterpad
+						</p>
+						<p className=" text-40 font-semibold leading-[46px] tracking-[-0.005em] text-black">
+							Life happens, save it.
+						</p>
+					</div>
+				</div>
+				<div className="flex w-1/2 items-center justify-start pl-[140px]">
+					<div className="w-[300px]">
+						<form
+							className="flex flex-col items-center justify-center space-y-4"
+							// disabled as handleSubmit is part of react forms
+							// eslint-disable-next-line @typescript-eslint/no-misused-promises
+							onSubmit={handleSubmit(onSubmit)}
+						>
+							<Input
+								{...register("email", {
+									required: {
+										value: true,
+										message: "Please enter email",
+									},
+									pattern: {
+										value: EMAIL_CHECK_PATTERN,
+										message: "Please enter valid email",
+									},
+								})}
+								className={grayInputClassName}
+								errorText={errors?.email?.message ?? ""}
+								id="email"
+								isError={Boolean(errors?.email)}
+								placeholder="Email"
+							/>
+							<Input
+								{...register("password", {
+									required: {
+										value: true,
+										message: "Please enter password",
+									},
+								})}
+								className={grayInputClassName}
+								errorText={errors?.password?.message ?? ""}
+								id="password"
+								isError={Boolean(errors?.password)}
+								placeholder="Password"
+							/>
+							<button className={buttonDarkClassName} type="submit">
+								{isLoading ? <Spinner /> : "Sign up"}
+							</button>
+							<div
+								className={buttonLightClassName}
+								// onClick={() => void signInWithOauth("google", supabase)}
+								onClick={() => {
+									(async () => {
+										await signInWithOauth("google", supabase);
+									})()?.catch(() => {});
+								}}
+								onKeyDown={() => {}}
+								role="button"
+								tabIndex={0}
+							>
+								<figure className="mr-[6px]">
+									<GoogleLoginIcon />
+								</figure>
+								<p>Continue with Google</p>
+							</div>
+						</form>
+						<div className="fixed bottom-0 flex items-center justify-center py-5">
+							<div className="flex w-[300px] items-center justify-between">
+								<p className={bottomBarText}>Already have an account ?</p>
+								<a className={bottomBarButton} href={`/${SIGNIN_URL}`}>
+									Sign in
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<ToastContainer />
+		</>
+	);
 };
 
 export default SignUp;

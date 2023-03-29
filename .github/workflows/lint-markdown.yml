@@ -1,0 +1,16 @@
+name: Markdownlint
+
+on:
+  pull_request: ~
+
+  push:
+    branches:
+      - main
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/prepare
+      - run: pnpm lint:md

@@ -1,7 +1,5 @@
-const MasonryCardSkeleton = () => {
-  return (
-    <div className="w-full animate-pulse h-[150px] rounded-lg drop-shadow-custom-1 bg-slate-100" />
-  );
-};
+const MasonryCardSkeleton = () => (
+	<div className="h-[150px] w-full animate-pulse rounded-lg bg-slate-100 drop-shadow-custom-1" />
+);
 
 export default MasonryCardSkeleton;
