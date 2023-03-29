@@ -19,12 +19,15 @@ export const EMAIL_CHECK_PATTERN =
 	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
 
 // api constants
-export const NEXT_API_URL = `${
-	process.env.NODE_ENV === "development"
-		? "http://localhost:3000"
-		: "https://bookmark-tags-git-ts-migration-timelessco.vercel.app"
-	// :'https://bookmark-tags-git-dev-timelessco.vercel.app'
-}/api`;
+const getBaseUrl = () => {
+	if (process.env.VERCEL === "1") {
+		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+	}
+
+	return "http://localhost:3000";
+};
+
+export const NEXT_API_URL = `${getBaseUrl()}/api`;
 export const TIMELESS_SCRAPPER_API =
 	"https://link-preview-livid-ten.vercel.app/api/getUrlData";
 export const SCREENSHOT_API = "https://s.vercel.app/api?url=";
