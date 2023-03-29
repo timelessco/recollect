@@ -20,7 +20,7 @@ export const EMAIL_CHECK_PATTERN =
 
 // api constants
 const getBaseUrl = () => {
-	if (process.env.VERCEL === "1") {
+	if (process.env.NEXT_PUBLIC_VERCEL === "1") {
 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 	}
 
