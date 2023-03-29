@@ -30,7 +30,7 @@ const getBaseUrl = () => {
 		process.env.VERCEL_URL,
 		process.env.NEXT_PUBLIC_VERCEL_URL,
 	);
-	if (process.env.NEXT_PUBLIC_VERCEL === 1) {
+	if (process.env.NEXT_PUBLIC_VERCEL === "1") {
 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 	}
 
