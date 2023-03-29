@@ -1,41 +1,41 @@
+import { type RefObject } from "react";
 import {
-  RadioGroup as AriaRadioGroup,
-  Radio,
-  useRadioState,
+	RadioGroup as AriaRadioGroup,
+	Radio,
+	useRadioState,
 } from "ariakit/radio";
-import React from "react";
 
 import TickIcon from "../icons/tickIcon";
-import type { ChildrenTypes } from "../types/componentTypes";
+import { type ChildrenTypes } from "../types/componentTypes";
 
-interface RadioGroupProps {
-  radioList: Array<{ label: string; value: string; icon: ChildrenTypes }>;
-  onChange: (value: string) => void;
-  value: string;
-  initialRadioRef?:
-    | ((instance: HTMLInputElement | null) => void)
-    | React.RefObject<HTMLInputElement>
-    | null
-    | undefined;
-}
+type RadioGroupProps = {
+	initialRadioRef?:
+		| RefObject<HTMLInputElement>
+		| ((instance: HTMLInputElement | null) => void)
+		| null
+		| undefined;
+	onChange: (value: string) => void;
+	radioList: Array<{ icon: ChildrenTypes; label: string; value: string }>;
+	value: string;
+};
 
 const RadioGroup = (props: RadioGroupProps) => {
-  const { radioList, onChange, value, initialRadioRef } = props;
-  const radio = useRadioState();
-  return (
-    <AriaRadioGroup state={radio} className="dropdown-container flex flex-col">
-      {radioList?.map(item => {
-        const isRadioSelected = value === item?.value;
-        return (
-          // as per docs htmlFor is not needed ref: https://ariakit.org/components/radio
-          // eslint-disable-next-line jsx-a11y/label-has-associated-control
-          <label
-            key={item?.value}
-            className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-[5px] text-sm leading-4 text-custom-gray-1 hover:bg-custom-gray-9"
-          >
-            <div className="flex items-center text-[13px] font-450 text-custom-gray-1">
-              <figure className="mr-2 flex h-4 w-4 items-center justify-center">
-                {/* <svg
+	const { radioList, onChange, value, initialRadioRef } = props;
+	const radio = useRadioState();
+	return (
+		<AriaRadioGroup className="dropdown-container flex flex-col" state={radio}>
+			{radioList?.map((item) => {
+				const isRadioSelected = value === item?.value;
+				return (
+					// as per docs htmlFor is not needed ref: https://ariakit.org/components/radio
+					// eslint-disable-next-line jsx-a11y/label-has-associated-control
+					<label
+						className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-[5px] text-sm leading-4 text-custom-gray-1 hover:bg-custom-gray-9"
+						key={item?.value}
+					>
+						<div className="flex items-center text-[13px] font-450 text-custom-gray-1">
+							<figure className="mr-2 flex h-4 w-4 items-center justify-center">
+								{/* <svg
                   width="16"
                   height="16"
                   viewBox="0 0 16 16"
@@ -56,28 +56,29 @@ const RadioGroup = (props: RadioGroupProps) => {
                     strokeLinejoin="round"
                   />
                 </svg> */}
-                {item?.icon}
-              </figure>
-              <Radio
-                // className="mr-1 h-4 w-4 border-gray-300 text-indigo-600 transition-all duration-200 ease-in-out focus:ring-indigo-500"
-                value={item?.value}
-                onChange={e => onChange((e.target as HTMLInputElement).value)}
-                checked={isRadioSelected}
-                ref={isRadioSelected ? initialRadioRef : null}
-              />
-              {item?.label}
-            </div>
-
-            {isRadioSelected && (
-              <figure>
-                <TickIcon />
-              </figure>
-            )}
-          </label>
-        );
-      })}
-    </AriaRadioGroup>
-  );
+								{item?.icon}
+							</figure>
+							<Radio
+								// className="mr-1 h-4 w-4 border-gray-300 text-indigo-600 transition-all duration-200 ease-in-out focus:ring-indigo-500"
+								checked={isRadioSelected}
+								onChange={(event) =>
+									onChange((event.target as HTMLInputElement).value)
+								}
+								ref={isRadioSelected ? initialRadioRef : null}
+								value={item?.value}
+							/>
+							{item?.label}
+						</div>
+						{isRadioSelected && (
+							<figure>
+								<TickIcon />
+							</figure>
+						)}
+					</label>
+				);
+			})}
+		</AriaRadioGroup>
+	);
 };
 
 RadioGroup.displayName = "RadioGroup";

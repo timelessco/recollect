@@ -10,21 +10,23 @@ export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
 // regx
 
 export const URL_PATTERN =
-  // eslint-disable-next-line no-useless-escape
-  /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/g;
-export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/;
-export const GET_TEXT_WITH_AT_CHAR = /[a-zA-Z]*@[a-zA-Z]*/g;
+	// eslint-disable-next-line no-useless-escape, unicorn/no-unsafe-regex
+	/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[\da-z]+([.\-][\da-z]+)*\.[a-z]{2,5}(:\d{1,5})?(\/.*)?$/gu;
+export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
+export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+	// eslint-disable-next-line unicorn/no-unsafe-regex
+	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
 
 // api constants
 export const NEXT_API_URL = `${
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://bookmark-tags-git-ts-migration-timelessco.vercel.app" // :'https://bookmark-tags-git-dev-timelessco.vercel.app'
+	process.env.NODE_ENV === "development"
+		? "http://localhost:3000"
+		: "https://bookmark-tags-git-ts-migration-timelessco.vercel.app"
+	// :'https://bookmark-tags-git-dev-timelessco.vercel.app'
 }/api`;
 export const TIMELESS_SCRAPPER_API =
-  "https://link-preview-livid-ten.vercel.app/api/getUrlData";
+	"https://link-preview-livid-ten.vercel.app/api/getUrlData";
 export const SCREENSHOT_API = "https://s.vercel.app/api?url=";
 export const PAGINATION_LIMIT = 25;
 
@@ -50,20 +52,20 @@ export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
 export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
 export const ADD_CATEGORY_TO_BOOKMARK_API =
-  "/category/add-category-to-bookmark";
+	"/category/add-category-to-bookmark";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
 export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
 // share api
 export const GET_PUBLIC_CATEGORY_BOOKMARKS_API =
-  "/get-public-category-bookmarks";
+	"/get-public-category-bookmarks";
 // collab share api
 export const FETCH_SHARED_CATEGORIES_DATA_API =
-  "/share/fetch-shared-categories-data";
+	"/share/fetch-shared-categories-data";
 export const UPDATE_SHARED_CATEGORY_USER_ROLE_API =
-  "/share/update-shared-category-user-role";
+	"/share/update-shared-category-user-role";
 export const DELETE_SHARED_CATEGORIES_USER_API =
-  "/share/delete-shared-categories-user";
+	"/share/delete-shared-categories-user";
 export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
@@ -94,6 +96,6 @@ export const USER_PROFILE_PIC = "user_profile_pic";
 // error msgs
 
 export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
-  "You dont have access to add to this category, this bookmark will be added without a category";
+	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
-  "You already have a category with this name , please add anyother name";
+	"You already have a category with this name , please add anyother name";

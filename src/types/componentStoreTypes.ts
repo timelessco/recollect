@@ -1,47 +1,47 @@
-export interface ModalStoreState {
-  showShareCategoryModal: boolean;
-  toggleShareCategoryModal: () => void;
-  showAddBookmarkShortcutModal: boolean;
-  toggleShowAddBookmarkShortcutModal: () => void;
-  showDeleteBookmarkWarningModal: boolean;
-  toggleShowDeleteBookmarkWarningModal: () => void;
-  showClearTrashWarningModal: boolean;
-  toggleShowClearTrashWarningModal: () => void;
-}
+export type ModalStoreState = {
+	showAddBookmarkShortcutModal: boolean;
+	showClearTrashWarningModal: boolean;
+	showDeleteBookmarkWarningModal: boolean;
+	showShareCategoryModal: boolean;
+	toggleShareCategoryModal: () => void;
+	toggleShowAddBookmarkShortcutModal: () => void;
+	toggleShowClearTrashWarningModal: () => void;
+	toggleShowDeleteBookmarkWarningModal: () => void;
+};
 
-export interface LoadersStoreState {
-  isSortByLoading: boolean;
-  toggleIsSortByLoading: () => void;
-  sidePaneOptionLoading: string | number | null;
-  setSidePaneOptionLoading: (value: string | number | null) => void;
-  isSearchLoading: boolean;
-  toggleIsSearchLoading: (value: boolean) => void;
-}
+export type LoadersStoreState = {
+	isSearchLoading: boolean;
+	isSortByLoading: boolean;
+	setSidePaneOptionLoading: (value: number | string | null) => void;
+	sidePaneOptionLoading: number | string | null;
+	toggleIsSearchLoading: (value: boolean) => void;
+	toggleIsSortByLoading: () => void;
+};
 
-export interface MiscellaneousStoreState {
-  shareCategoryId: number | undefined;
-  setShareCategoryId: (id: number | undefined) => void;
-  searchText: string;
-  setSearchText: (value: string) => void;
-  addScreenshotBookmarkId: number | undefined;
-  setAddScreenshotBookmarkId: (value: number | undefined) => void;
-  isCardDragging: boolean;
-  setIsCardDragging: (value: boolean) => void;
-  showSidePane: boolean;
-  setShowSidePane: (value: boolean) => void;
-  currentBookmarkView: BookmarksViewTypes;
-  setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
-}
+export type MiscellaneousStoreState = {
+	addScreenshotBookmarkId: number | undefined;
+	currentBookmarkView: BookmarksViewTypes;
+	isCardDragging: boolean;
+	searchText: string;
+	setAddScreenshotBookmarkId: (value: number | undefined) => void;
+	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
+	setIsCardDragging: (value: boolean) => void;
+	setSearchText: (value: string) => void;
+	setShareCategoryId: (id: number | undefined) => void;
+	setShowSidePane: (value: boolean) => void;
+	shareCategoryId: number | undefined;
+	showSidePane: boolean;
+};
 
-export type BookmarksViewTypes = "card" | "moodboard" | "list" | "headlines";
-export type BookmarkViewCategories = "view" | "info" | "colums" | "sort";
+export type BookmarksViewTypes = "card" | "headlines" | "list" | "moodboard";
+export type BookmarkViewCategories = "colums" | "info" | "sort" | "view";
 export type BookmarksSortByTypes =
-  | "date-sort-acending"
-  | "date-sort-decending"
-  | "alphabetical-sort-acending"
-  | "alphabetical-sort-decending"
-  | "url-sort-acending"
-  | "url-sort-decending";
+	| "alphabetical-sort-acending"
+	| "alphabetical-sort-decending"
+	| "date-sort-acending"
+	| "date-sort-decending"
+	| "url-sort-acending"
+	| "url-sort-decending";
 
 // export interface BookmarkCardViewState {
 //   moodboardColumns: number[] | number;

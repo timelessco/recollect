@@ -5,13 +5,13 @@ import { removeTagFromBookmark } from "../../supabaseCrudHelpers";
 
 // add new tag for a user to add to bookmark
 export default function useRemoveTagFromBookmarkMutation() {
-  const queryClient = useQueryClient();
-  const removeTagFromBookmarkMutation = useMutation(removeTagFromBookmark, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY])?.catch(() => {});
-    },
-  });
+	const queryClient = useQueryClient();
+	const removeTagFromBookmarkMutation = useMutation(removeTagFromBookmark, {
+		onSuccess: () => {
+			// Invalidate and refetch
+			void queryClient.invalidateQueries([BOOKMARKS_KEY]);
+		},
+	});
 
-  return { removeTagFromBookmarkMutation };
+	return { removeTagFromBookmarkMutation };
 }

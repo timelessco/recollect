@@ -19,13 +19,16 @@
 # Optional tool caches
 .eslintcache
 .stylelintcache
+.prettiercache
+.cspellcache
 
 # Dependency directories
 node_modules
 jspm_packages
 
-# Optional npm cache directory
+# npm
 .npm
+.npmrc
 
 # Yarn 2
 .pnp/
@@ -67,8 +70,12 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
+# Custom
+release-it/commit.hbs
+release-it/remote-commits.json
+release-it/conventionalChangelogWriterOptsTransform.cjs
+
 ## library folder
 dist
 CHANGELOG.md
 public
-

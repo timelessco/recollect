@@ -19,6 +19,8 @@
 # Optional tool caches
 .eslintcache
 .stylelintcache
+.prettiercache
+.cspellcache
 
 # Dependency directories
 node_modules
@@ -64,6 +66,26 @@ storybook-static
 
 # Turbo Repo
 .turbo
+
+# Release-it
+release-it/remote-commits.json
+
+# Next PWA
+**/public/precache.*.*.js
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/fallback-*.js
+**/public/precache.*.*.js.map
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+**/public/fallback-*.js
+
+# Next Sitemap
+**/public/robots.txt
+**/public/sitemap.xml
+**/public/sitemap-0.xml
 
 ## library folder
 build

@@ -1,44 +1,28 @@
 // Thanks to https://github.com/t3-oss/create-t3-app/
-// @ts-check
-import { clientEnv, clientSchema } from "./schema.js";
+import { clientEnvironment, clientSchema } from "./schema.js";
+import { formatErrors } from "./utils.js";
 
-export const isNonNullable = /** @type {<T>(x: T) => x is NonNullable<T>} */ (
-  x => x != null
-);
+const parsedClientEnvironment = clientSchema.safeParse(clientEnvironment);
 
-export const formatErrors = (
-  /** @type {import('zod').ZodFormattedError<Map<string,string>,string>} */
-  errors,
-) => {
-  return Object.entries(errors)
-    .map(([name, value]) => {
-      if (value && "_errors" in value) {
-        return `${name}: ${value._errors.join(", ")}\n`;
-      }
+if (!parsedClientEnvironment.success) {
+	console.error(
+		"❌ Invalid environment variables:\n",
+		...formatErrors(parsedClientEnvironment.error.format()),
+	);
 
-      return null;
-    })
-    .filter(isNonNullable);
-};
-
-const parsedClientEnv = clientSchema.safeParse(clientEnv);
-
-if (!parsedClientEnv.success) {
-  console.error(
-    "❌ Invalid environment variables:\n",
-    ...formatErrors(parsedClientEnv.error.format()),
-  );
-  throw new Error("Invalid environment variables");
+	throw new Error("Invalid environment variables");
 }
 
-Object.keys(parsedClientEnv.data).forEach(key => {
-  if (!key.startsWith("NEXT_PUBLIC_")) {
-    console.warn(
-      `❌ Invalid public environment variable name: ${key}. It must begin with 'NEXT_PUBLIC_'`,
-    );
+const regex = /^NEXT_PUBLIC_/u;
 
-    throw new Error("Invalid public environment variable name");
-  }
-});
+for (const key of Object.keys(parsedClientEnvironment.data)) {
+	if (!regex.test(key)) {
+		console.warn(
+			`❌ Invalid public environment variable name: ${key}. It must begin with 'NEXT_PUBLIC_'`,
+		);
 
-export const env = parsedClientEnv.data;
+		throw new Error("Invalid public environment variable name");
+	}
+}
+
+export const clientEnvironmentParsedData = parsedClientEnvironment.data;

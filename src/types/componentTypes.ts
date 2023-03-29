@@ -1,31 +1,31 @@
-import type {
-  ALL_BOOKMARKS_URL,
-  TRASH_URL,
-  UNCATEGORIZED_URL,
+import {
+	type ALL_BOOKMARKS_URL,
+	type TRASH_URL,
+	type UNCATEGORIZED_URL,
 } from "../utils/constants";
 
-export interface UrlInput {
-  urlText: string;
-}
+export type UrlInput = {
+	urlText: string;
+};
 
-export type ChildrenTypes = JSX.Element | JSX.Element[] | string | string[];
+export type ChildrenTypes = JSX.Element | JSX.Element[] | string[] | string;
 
-export interface TagInputOption {
-  value: string | number;
-  label: string;
-  color?: string;
-  isFixed?: boolean;
-  isDisabled?: boolean;
-}
+export type TagInputOption = {
+	color?: string;
+	isDisabled?: boolean;
+	isFixed?: boolean;
+	label: string;
+	value: number | string;
+};
 
-export interface SearchSelectOption {
-  value: number | string;
-  label: string;
-}
+export type SearchSelectOption = {
+	label: string;
+	value: number | string;
+};
 
 export type CategoryIdUrlTypes =
-  | number
-  | typeof TRASH_URL
-  | null
-  | typeof UNCATEGORIZED_URL
-  | typeof ALL_BOOKMARKS_URL;
+	| number
+	| typeof ALL_BOOKMARKS_URL
+	| typeof TRASH_URL
+	| typeof UNCATEGORIZED_URL
+	| null;

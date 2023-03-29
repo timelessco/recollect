@@ -6,20 +6,16 @@ import { updateCategoryOrder } from "../../supabaseCrudHelpers";
 
 // add category to bookmark un-optimistically , used when creating a new category when editing a bookmark
 export default function useUpdateCategoryOrderMutation() {
-  const session = useSession();
-  const queryClient = useQueryClient();
-  const updateCategoryOrderMutation = useMutation(updateCategoryOrder, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient
-        .invalidateQueries([CATEGORIES_KEY, session?.user?.id])
-        ?.catch(() => {});
+	const session = useSession();
+	const queryClient = useQueryClient();
+	const updateCategoryOrderMutation = useMutation(updateCategoryOrder, {
+		onSuccess: () => {
+			// Invalidate and refetch
+			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
 
-      queryClient
-        .invalidateQueries([USER_PROFILE, session?.user?.id])
-        ?.catch(() => {});
-    },
-  });
+			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
+		},
+	});
 
-  return { updateCategoryOrderMutation };
+	return { updateCategoryOrderMutation };
 }

@@ -1,31 +1,32 @@
 import CollectionsList from "./collectionsList";
 
-interface SidePaneCollectionsListTypes {
-  onBookmarksDrop: (e: any) => Promise<void>;
-  onCategoryOptionClick: (
-    value: string | number,
-    current: boolean,
-    id: number,
-  ) => Promise<void>;
-  onIconSelect: (value: string, id: number) => void;
-  onAddNewCategory: (value: string) => Promise<void>;
-}
+type SidePaneCollectionsListTypes = {
+	onAddNewCategory: (value: string) => Promise<void>;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	onBookmarksDrop: (event: any) => Promise<void>;
+	onCategoryOptionClick: (
+		value: number | string,
+		current: boolean,
+		id: number,
+	) => Promise<void>;
+	onIconSelect: (value: string, id: number) => void;
+};
 
 const SidePaneCollectionsList = (props: SidePaneCollectionsListTypes) => {
-  const {
-    onBookmarksDrop,
-    onCategoryOptionClick,
-    onIconSelect,
-    onAddNewCategory,
-  } = props;
-  return (
-    <CollectionsList
-      onBookmarksDrop={onBookmarksDrop}
-      onCategoryOptionClick={onCategoryOptionClick}
-      onIconSelect={(value, id) => onIconSelect(value, id)}
-      onAddNewCategory={onAddNewCategory}
-    />
-  );
+	const {
+		onBookmarksDrop,
+		onCategoryOptionClick,
+		onIconSelect,
+		onAddNewCategory,
+	} = props;
+	return (
+		<CollectionsList
+			onAddNewCategory={onAddNewCategory}
+			onBookmarksDrop={onBookmarksDrop}
+			onCategoryOptionClick={onCategoryOptionClick}
+			onIconSelect={(value, id) => onIconSelect(value, id)}
+		/>
+	);
 };
 
 export default SidePaneCollectionsList;

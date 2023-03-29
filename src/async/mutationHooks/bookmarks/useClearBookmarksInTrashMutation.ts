@@ -6,18 +6,19 @@ import { clearBookmarksInTrash } from "../../supabaseCrudHelpers";
 
 // clears trash
 export default function useClearBookmarksInTrashMutation() {
-  const session = useSession();
-  const queryClient = useQueryClient();
+	const session = useSession();
+	const queryClient = useQueryClient();
 
-  const clearBookmarksInTrashMutation = useMutation(clearBookmarksInTrash, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY])?.catch(() => {});
-      queryClient
-        .invalidateQueries([BOOKMARKS_COUNT_KEY, session?.user?.id])
-        ?.catch(() => {});
-    },
-  });
+	const clearBookmarksInTrashMutation = useMutation(clearBookmarksInTrash, {
+		onSuccess: () => {
+			// Invalidate and refetch
+			void queryClient.invalidateQueries([BOOKMARKS_KEY]);
+			void queryClient.invalidateQueries([
+				BOOKMARKS_COUNT_KEY,
+				session?.user?.id,
+			]);
+		},
+	});
 
-  return { clearBookmarksInTrashMutation };
+	return { clearBookmarksInTrashMutation };
 }

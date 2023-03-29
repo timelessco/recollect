@@ -1,88 +1,88 @@
+import { type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
-import jwt from "jsonwebtoken";
+import { verify, type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
-import type { NextApiResponse } from "next";
 
-import type {
-  AddBookmarkScreenshotPayloadTypes,
-  NextAPIReq,
-  SingleListData,
+import {
+	type AddBookmarkScreenshotPayloadTypes,
+	type NextApiRequest,
+	type SingleListData,
 } from "../../../types/apiTypes";
 import { MAIN_TABLE_NAME, SCREENSHOT_API } from "../../../utils/constants";
 
 type Data = {
-  data: SingleListData[] | null;
-  error: PostgrestError | null | string | jwt.VerifyErrors;
+	data: SingleListData[] | null;
+	error: PostgrestError | VerifyErrors | string | null;
 };
 
 export default async function handler(
-  req: NextAPIReq<AddBookmarkScreenshotPayloadTypes>,
-  res: NextApiResponse<Data>,
+	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
+	response: NextApiResponse<Data>,
 ) {
-  jwt.verify(
-    req.body.access_token,
-    process.env.SUPABASE_JWT_SECRET_KEY,
-    function (err) {
-      if (err) {
-        res.status(500).json({ data: null, error: err });
-        throw new Error("ERROR");
-      }
-    },
-  );
+	verify(
+		request.body.access_token,
+		process.env.SUPABASE_JWT_SECRET_KEY,
+		(error_) => {
+			if (error_) {
+				response.status(500).json({ data: null, error: error_ });
+				throw new Error("ERROR");
+			}
+		},
+	);
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY,
-  );
+	const supabase = createClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL,
+		process.env.SUPABASE_SERVICE_KEY,
+	);
 
-  const upload = async (base64data: string) => {
-    const imgName = `img${Math.random()}.jpg`;
+	const upload = async (base64info: string) => {
+		const imgName = `img${Math.random()}.jpg`;
 
-    await supabase.storage
-      .from("bookmarks")
-      .upload(`public/${imgName}`, decode(base64data), {
-        contentType: "image/jpg",
-      });
+		await supabase.storage
+			.from("bookmarks")
+			.upload(`public/${imgName}`, decode(base64info), {
+				contentType: "image/jpg",
+			});
 
-    const { data } = supabase.storage
-      .from("bookmarks")
-      .getPublicUrl(`public/${imgName}`);
+		const { data: storageData } = supabase.storage
+			.from("bookmarks")
+			.getPublicUrl(`public/${imgName}`);
 
-    return data?.publicUrl;
-  };
+		return storageData?.publicUrl;
+	};
 
-  // screen shot api call
-  const screenShotRes = await axios.get<
-    | WithImplicitCoercion<string>
-    | { [Symbol.toPrimitive](hint: "string"): string }
-  >(`${SCREENSHOT_API}${req.body.url}`, {
-    responseType: "arraybuffer",
-  });
+	// screen shot api call
+	const screenShotResponse = await axios.get<
+		| WithImplicitCoercion<string>
+		| { [Symbol.toPrimitive]: (hint: "string") => string }
+	>(`${SCREENSHOT_API}${request.body.url}`, {
+		responseType: "arraybuffer",
+	});
 
-  const base64data = Buffer.from(screenShotRes.data, "binary").toString(
-    "base64",
-  );
+	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
+		"base64",
+	);
 
-  const publicURL = await upload(base64data);
+	const publicURL = await upload(base64data);
 
-  const {
-    data,
-    error,
-  }: {
-    data: SingleListData[] | null;
-    error: PostgrestError | null | string | jwt.VerifyErrors;
-  } = await supabase
-    .from(MAIN_TABLE_NAME)
-    .update({ ogImage: publicURL })
-    .match({ id: req.body.id })
-    .select();
+	const {
+		data,
+		error,
+	}: {
+		data: SingleListData[] | null;
+		error: PostgrestError | VerifyErrors | string | null;
+	} = await supabase
+		.from(MAIN_TABLE_NAME)
+		.update({ ogImage: publicURL })
+		.match({ id: request.body.id })
+		.select();
 
-  if (isNull(error)) {
-    res.status(200).json({ data, error: null });
-  } else {
-    res.status(500).json({ data: null, error });
-    throw new Error("ERROR");
-  }
+	if (isNull(error)) {
+		response.status(200).json({ data, error: null });
+	} else {
+		response.status(500).json({ data: null, error });
+		throw new Error("ERROR");
+	}
 }

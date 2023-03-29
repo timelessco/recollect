@@ -5,12 +5,12 @@ import { addTagToBookmark } from "../../supabaseCrudHelpers";
 
 // add tag to a bookmark
 export default function useAddTagToBookmarkMutation() {
-  const queryClient = useQueryClient();
-  const addTagToBookmarkMutation = useMutation(addTagToBookmark, {
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries([BOOKMARKS_KEY])?.catch(() => {});
-    },
-  });
-  return { addTagToBookmarkMutation };
+	const queryClient = useQueryClient();
+	const addTagToBookmarkMutation = useMutation(addTagToBookmark, {
+		onSuccess: () => {
+			// Invalidate and refetch
+			void queryClient.invalidateQueries([BOOKMARKS_KEY]);
+		},
+	});
+	return { addTagToBookmarkMutation };
 }

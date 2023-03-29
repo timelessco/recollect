@@ -1,64 +1,64 @@
 import React from "react";
-import type { ActionMeta, OnChangeValue } from "react-select";
+import { type ActionMeta, type OnChangeValue } from "react-select";
 // import Select from 'react-select';
 import CreatableSelect from "react-select/creatable";
 
-import type { TagInputOption } from "../types/componentTypes";
+import { type TagInputOption } from "../types/componentTypes";
 
-interface TagInputProps {
-  options: Array<TagInputOption> | undefined;
-  createTag: (
-    value: OnChangeValue<TagInputOption, true>,
-  ) => void | Promise<void>;
-  addExistingTag: (
-    value: OnChangeValue<TagInputOption, true>,
-  ) => void | Promise<void>;
-  defaultValue: Array<TagInputOption> | undefined;
-  removeExistingTag: (value: TagInputOption) => void | Promise<void>;
-}
+type TagInputProps = {
+	addExistingTag: (
+		value: OnChangeValue<TagInputOption, true>,
+	) => Promise<void> | void;
+	createTag: (
+		value: OnChangeValue<TagInputOption, true>,
+	) => Promise<void> | void;
+	defaultValue: TagInputOption[] | undefined;
+	options: TagInputOption[] | undefined;
+	removeExistingTag: (value: TagInputOption) => Promise<void> | void;
+};
 
 const TagInput = (props: TagInputProps) => {
-  const {
-    options,
-    createTag,
-    addExistingTag,
-    defaultValue,
-    removeExistingTag,
-  } = props;
+	const {
+		options,
+		createTag,
+		addExistingTag,
+		defaultValue,
+		removeExistingTag,
+	} = props;
 
-  const handleChange = (
-    newValue: OnChangeValue<TagInputOption, true>,
-    actionMeta: ActionMeta<TagInputOption>,
-  ) => {
-    if (actionMeta.action === "create-option") {
-      createTag(newValue)?.catch(() => {});
-    }
+	const handleChange = (
+		newValue: OnChangeValue<TagInputOption, true>,
+		actionMeta: ActionMeta<TagInputOption>,
+	) => {
+		if (actionMeta.action === "create-option") {
+			void createTag(newValue);
+		}
 
-    if (actionMeta.action === "select-option") {
-      addExistingTag(newValue)?.catch(() => {});
-    }
+		if (actionMeta.action === "select-option") {
+			void addExistingTag(newValue);
+		}
 
-    if (actionMeta.action === "remove-value") {
-      removeExistingTag(actionMeta.removedValue)?.catch(() => {});
-    }
-  };
+		if (actionMeta.action === "remove-value") {
+			void removeExistingTag(actionMeta.removedValue);
+		}
+	};
 
-  return (
-    <CreatableSelect
-      key={defaultValue?.length}
-      options={options}
-      defaultValue={defaultValue}
-      isMulti
-      menuPortalTarget={document.body}
-      onChange={handleChange}
-      styles={{
-        menuPortal: provided => ({
-          ...provided,
-          zIndex: 9999,
-        }),
-      }}
-    />
-  );
+	return (
+		<CreatableSelect
+			defaultValue={defaultValue}
+			isMulti
+			key={defaultValue?.length}
+			menuPortalTarget={document.body}
+			onChange={handleChange}
+			options={options}
+			styles={{
+				menuPortal: (provided) => ({
+					...provided,
+					zIndex: 9_999,
+				}),
+			}}
+		/>
+	);
 };
 
 export default TagInput;

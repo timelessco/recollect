@@ -5,25 +5,29 @@
  * It has to be a `.js`-file to be imported there.
  */
 
-import { env as clientEnv, formatErrors } from "./client.js";
-import { serverEnv, serverSchema } from "./schema.js";
+import { clientEnvironmentParsedData } from "./client.js";
+import { serverEnvironment, serverSchema } from "./schema.js";
+import { formatErrors } from "./utils.js";
 
-const _serverEnv = serverSchema.safeParse(serverEnv);
+const parsedServerEnvironment = serverSchema.safeParse(serverEnvironment);
 
-if (!_serverEnv.success) {
-  console.error(
-    "❌ Invalid environment variables:\n",
-    ...formatErrors(_serverEnv.error.format()),
-  );
-  throw new Error("Invalid environment variables");
+if (!parsedServerEnvironment.success) {
+	console.error(
+		"❌ Invalid environment variables:\n",
+		...formatErrors(parsedServerEnvironment.error.format()),
+	);
+	throw new Error("Invalid environment variables");
 }
 
-Object.keys(_serverEnv.data).forEach(key => {
-  if (key.startsWith("NEXT_PUBLIC_")) {
-    console.warn("❌ You are exposing a server-side env-variable:", key);
+for (const key of Object.keys(parsedServerEnvironment.data)) {
+	if (key.startsWith("NEXT_PUBLIC_")) {
+		console.warn("❌ You are exposing a server-side env-variable:", key);
 
-    throw new Error("You are exposing a server-side env-variable");
-  }
-});
+		throw new Error("You are exposing a server-side env-variable");
+	}
+}
 
-export const env = { ..._serverEnv.data, ...clientEnv };
+export const environment = {
+	...parsedServerEnvironment.data,
+	...clientEnvironmentParsedData,
+};

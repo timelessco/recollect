@@ -21,7 +21,7 @@ require_automerge_label = false
 
 # By default, Kodiak will only act on PRs that have this label. You can disable
 # this requirement via `merge.require_automerge_label`.
-automerge_label = ['automerge 🚀'] # default: "automerge"
+automerge_label = [ 'automerge 🚀' ] # default: "automerge"
 
 # Choose merge method for Kodiak to use.
 #
@@ -83,6 +83,15 @@ strip_html_comments = true # default: false
 # This setting only applies when merge.message.body = "pull_request" is set.
 include_coauthors = true # default: false
 
+[merge.automerge_dependencies]
+# auto merge all PRs opened by "dependabot" that are "minor" or "patch" version upgrades. "major" version upgrades will be ignored.
+versions = [
+  "major",
+  "minor",
+  "patch"
+]
+usernames = [ "renovate" ]
+
 
 [update]
 
@@ -98,6 +107,7 @@ include_coauthors = true # default: false
 # `master` _all_ of those PRs against `master` will update. For `N` PRs against
 # a target you will see at least `N(N-1)/2` updates. If this configuration
 # option was disabled you would only see at least `N-1` updates.
+
 always = true # default: false
 
 # When enabled, Kodiak will only update PRs that have an automerge label
@@ -113,18 +123,12 @@ autoupdate_label = 'autoupdate 🔁' # default: "null"
 # dependabot to update and close stale dependency upgrades.
 # ignored_usernames = ["renovate"]
 
-[merge.automerge_dependencies]
-# auto merge all PRs opened by "dependabot" that are "minor" or "patch" version upgrades. "major" version upgrades will be ignored.
-versions = ["major", "minor", "patch"]
-usernames = ["renovate"]
-
-
 [approve]
 
 # If a PR is opened by a user with a username in the `approve.auto_approve_usernames` list,
 # Kodiak will automatically add an approval to the PR.
-auto_approve_usernames = ["renovate"]
+auto_approve_usernames = [ "renovate" ]
 
 # If a PR has a label assigned which is in the `approve.auto_approve_labels` list,
 # Kodiak will automatically add an approval to the PR.
-auto_approve_labels = ["autoapprove ✅"] # default: []
+auto_approve_labels = [ "autoapprove ✅" ] # default: []
