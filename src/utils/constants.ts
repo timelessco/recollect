@@ -20,17 +20,14 @@ export const EMAIL_CHECK_PATTERN =
 
 // api constants
 const getBaseUrl = () => {
-	console.log(
-		"🚀 ~ file: constants.ts:24 ~ getBaseUrl ~ process.env.VERCEL :",
-		process.env.VERCEL,
-		process.env.NEXT_PUBLIC_VERCEL,
-	);
-	console.log(
-		"🚀 ~ file: constants.ts:24 ~ getBaseUrl ~ process.env.VERCEL_URL :",
-		process.env.VERCEL_URL,
-		process.env.NEXT_PUBLIC_VERCEL_URL,
-	);
-	if (process.env.NEXT_PUBLIC_VERCEL === "1") {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+		return process.env.NEXT_PUBLIC_SITE_URL;
+	}
+
+	if (
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+	) {
 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 	}
 
