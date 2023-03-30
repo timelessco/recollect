@@ -148,8 +148,8 @@ devDependencies:
     specifier: 5.57.0
     version: 5.57.0(eslint@8.37.0)(typescript@5.0.2)
   autoprefixer:
-    specifier: 10.4.13
-    version: 10.4.13(postcss@8.4.21)
+    specifier: 10.4.14
+    version: 10.4.14(postcss@8.4.21)
   cspell:
     specifier: 6.31.1
     version: 6.31.1
@@ -190,8 +190,8 @@ devDependencies:
     specifier: 2.2.0
     version: 2.2.0
   knip:
-    specifier: 2.2.0
-    version: 2.2.0
+    specifier: 2.2.4
+    version: 2.2.4
   lint-staged:
     specifier: 13.2.0
     version: 13.2.0
@@ -226,8 +226,8 @@ devDependencies:
     specifier: 2.4.3
     version: 2.4.3(prettier@2.8.7)
   prettier-plugin-tailwindcss:
-    specifier: 0.2.5
-    version: 0.2.5(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7)
+    specifier: 0.2.6
+    version: 0.2.6(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7)
   release-it:
     specifier: 15.9.3
     version: 15.9.3
@@ -4311,15 +4311,15 @@ packages:
     engines: {node: '>= 4.0.0'}
     dev: true
 
-  /autoprefixer@10.4.13(postcss@8.4.21):
-    resolution: {integrity: sha512-49vKpMqcZYsJjwotvt4+h/BCjJVnhGwcLpDt5xkcaOG3eLrG/HUYLagrihYsQ+qrIBgIzX1Rw7a6L8I/ZA1Atg==}
+  /autoprefixer@10.4.14(postcss@8.4.21):
+    resolution: {integrity: sha512-FQzyfOsTlwVzjHxKEqRIAdJx9niO6VCBCoEwax/VLSoQF29ggECcPuBqUMZ+u8jCZOPSy8b8/8KnuFbp0SaFZQ==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.21.5
-      caniuse-lite: 1.0.30001458
+      caniuse-lite: 1.0.30001473
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -4526,7 +4526,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001458
+      caniuse-lite: 1.0.30001473
       electron-to-chromium: 1.4.311
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10(browserslist@4.21.5)
@@ -4689,6 +4689,9 @@ packages:
 
   /caniuse-lite@1.0.30001458:
     resolution: {integrity: sha512-lQ1VlUUq5q9ro9X+5gOEyH7i3vm+AYVT1WDCVB69XOZ17KZRhnZ9J0Sqz7wTHQaLBJccNCHq8/Ww5LlOIZbB0w==}
+
+  /caniuse-lite@1.0.30001473:
+    resolution: {integrity: sha512-ewDad7+D2vlyy+E4UJuVfiBsU69IL+8oVmTuZnH5Q6CIUbxNfI50uVpRHbUPDD6SUaN2o0Lh4DhTrvLG/Tn1yg==}
 
   /caseless@0.12.0:
     resolution: {integrity: sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==}
@@ -8723,8 +8726,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /knip@2.2.0:
-    resolution: {integrity: sha512-6fJnCkz8GeOEu045NdNp9ANhjgKX7qKADxlMew/k2Og1j6oD3bTKMmDkBRFxW5/Ywtw/Mqspaf/hDh1GcTresw==}
+  /knip@2.2.4:
+    resolution: {integrity: sha512-4loaaUuORe46GLTXUgCU+JFKfn2h/HOfVoN0n+hO8JWB/ZK0tmePgFZTWpBacBczukljX24X/RqpvFnuM7oaYw==}
     engines: {node: '>=16.17.0 <17 || >=18.6.0'}
     hasBin: true
     dependencies:
@@ -10432,8 +10435,8 @@ packages:
       synckit: 0.8.5
     dev: true
 
-  /prettier-plugin-tailwindcss@0.2.5(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7):
-    resolution: {integrity: sha512-vZ/iKieyCx0WTxHbkf5E1rBlv/ybFk8WTT4hL5W2jlVxum2Zbe0jMUpuQdDrpa4z2vnPiJ5KIWCqL/kd16fKYg==}
+  /prettier-plugin-tailwindcss@0.2.6(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7):
+    resolution: {integrity: sha512-F+7XCl9RLF/LPrGdUMHWpsT6TM31JraonAUyE6eBmpqymFvDwyl0ETHsKFHP1NG+sEfv8bmKqnTxEbWQbHPlBA==}
     engines: {node: '>=12.17.0'}
     peerDependencies:
       '@ianvs/prettier-plugin-sort-imports': '*'
