@@ -46,6 +46,11 @@
   color: 2af79e
   description: "Generic maintenance tasks, e.g., package updates."
 
+- name: "Type: Testing"
+  color: 6009D7
+  description:
+    "Improving how the repository's tests are run and/or code is tested"
+
 - name: "Type: RFC"
   color: fbca04
 
@@ -106,6 +111,11 @@
 
 - name: "Status: Good first issue"
   color: d7e102
+  description: Good for newcomers, please hop on
+
+- name: "Status: Accepting PRs"
+  color: 0E8A16
+  description: Please, send a pull request to resolve this!
 
 # Resolution Status labels
 - name: "Resolution: By Design"
