@@ -78,7 +78,6 @@ const LoginPage = () => {
 						</div>
 						<form
 							className="flex flex-col items-center justify-center space-y-4"
-							// eslint-disable-next-line @typescript-eslint/no-misused-promises
 							onSubmit={handleSubmit(onSubmit)}
 						>
 							<Input

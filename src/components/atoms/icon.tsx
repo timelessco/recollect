@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-
 import { type ComponentPropsWithoutRef, type FC } from "react";
 import clsx from "clsx";
 
@@ -11,10 +9,9 @@ export const Icon: FC<IconProps> = ({ label, ...props }) => {
 	const _viewBox = props.viewBox ?? fallbackIcon.viewBox;
 	const _path = (props.children ?? fallbackIcon.path) as string;
 
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 	const className = clsx(props.className);
 
-	// eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unsafe-assignment
+	// eslint-disable-next-line no-param-reassign
 	props = { ...props, viewBox: _viewBox, children: _path, className };
 
 	// For accessibility - https://allyjs.io/tutorials/focusing-in-svg.html#making-svg-elements-focusable

@@ -24,7 +24,6 @@ export default function useGetCurrentCategoryId() {
 
 	const categorySlug = router?.asPath?.split("/")[1] || null;
 	// disabling here as everywhere else is correct case
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	const category_id =
 		getCategoryIdFromSlug(categorySlug, allCategories?.data) ?? null;
 

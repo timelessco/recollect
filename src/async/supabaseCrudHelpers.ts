@@ -102,10 +102,9 @@ export const fetchBookmakrsData = async (
 		}>(
 			`${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${
 				session?.access_token
-			}&category_id=${
-				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-				isNull(categoryId) ? "null" : categoryId
-			}&from=${pageParameter as string}`,
+			}&category_id=${isNull(categoryId) ? "null" : categoryId}&from=${
+				pageParameter as string
+			}`,
 		);
 
 		return {

@@ -795,7 +795,6 @@ const CardSection = ({
 	const renderSortByCondition = () =>
 		bookmarksList?.map((item) => ({
 			...item,
-			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-expect-error // disabling because don't know why ogimage is in smallcase
 			ogImage: item?.ogImage || (item?.ogimage as string),
 		}));
@@ -894,7 +893,6 @@ const CardSection = ({
 				<div
 					// eslint-disable-next-line tailwindcss/no-custom-classname
 					className={`items-center space-x-1 ${
-						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 						// @ts-expect-error // this is cypress env, TS check not needed
 						window?.Cypress ? "flex" : "hidden"
 					} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}

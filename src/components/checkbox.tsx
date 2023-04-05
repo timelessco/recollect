@@ -13,7 +13,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 
 	return (
 		// disabling this because as per docs htmlFor is not needed
-		// eslint-disable-next-line jsx-a11y/label-has-associated-control, tailwindcss/no-custom-classname
+		// eslint-disable-next-line tailwindcss/no-custom-classname
 		<label className="checkbox-container relative flex cursor-pointer items-center">
 			<AriaCheckbox
 				// className="h-4 w-4 rounded border-gray-300 text-custom-gray-5  transition-all duration-200 ease-in-out  disabled:opacity-50"

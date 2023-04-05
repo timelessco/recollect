@@ -469,7 +469,6 @@ const Dashboard = () => {
 										if (!deleteForever) {
 											// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
 											bookmarkIds.forEach((item: any) => {
-												// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 												const bookmarkId = Number.parseInt(item as string, 10);
 												const delBookmarksData = find(
 													flattendPaginationBookmarkData,
@@ -489,7 +488,6 @@ const Dashboard = () => {
 										}
 									}}
 									onCategoryChange={(value, cat_id) => {
-										// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 										const categoryId = cat_id;
 
 										const currentCategory =
@@ -510,9 +508,8 @@ const Dashboard = () => {
 											)?.edit_access === true ||
 											currentCategory?.user_id?.id === session?.user?.id;
 
-										// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, unicorn/no-array-for-each, @typescript-eslint/no-misused-promises, @typescript-eslint/no-explicit-any
+										// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-misused-promises, @typescript-eslint/no-explicit-any
 										value.forEach(async (item: any) => {
-											// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 											const bookmarkId = item as string;
 
 											await addCategoryToBookmarkOptimisticMutation.mutateAsync(
@@ -767,9 +764,7 @@ const Dashboard = () => {
 					}
 				}}
 				onBookmarksDrop={async (event) => {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					if (event?.isInternal === false) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 						const categoryId = Number.parseInt(
 							event?.target?.key as string,
 							10,
@@ -787,9 +782,8 @@ const Dashboard = () => {
 							)?.edit_access === true ||
 							currentCategory?.user_id?.id === session?.user?.id;
 
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
+						// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
 						await event?.items?.forEach(async (item: any) => {
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 							const bookmarkId = (await item.getText("text/plain")) as string;
 
 							await addCategoryToBookmarkOptimisticMutation.mutateAsync({

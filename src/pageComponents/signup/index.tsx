@@ -78,7 +78,6 @@ const SignUp = () => {
 						<form
 							className="flex flex-col items-center justify-center space-y-4"
 							// disabled as handleSubmit is part of react forms
-							// eslint-disable-next-line @typescript-eslint/no-misused-promises
 							onSubmit={handleSubmit(onSubmit)}
 						>
 							<Input

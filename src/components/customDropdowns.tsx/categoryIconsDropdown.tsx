@@ -43,7 +43,6 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 	const renderComboBoxItem = (value: string, index: number) => (
 		<ComboboxItem
-			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			className="data-active-item:bg-custom-gray-7 rounded-md p-1 hover:bg-custom-gray-7"
 			focusOnHover
 			key={value + index}

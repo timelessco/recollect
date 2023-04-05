@@ -46,7 +46,6 @@ const AddBookarkShortcutModal = (props: AddBookarkShortcutModalProps) => {
 			) : (
 				<LabelledComponent label="Add URL">
 					{/* disabling as handleSubmit is part of react hook form  */}
-					{/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<Input
 							{...register("url", {

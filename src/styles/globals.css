@@ -322,7 +322,7 @@ main {
 	background-color: hsl(204deg 10% 10% / 50%);
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
 	[data-backdrop] {
 		align-items: flex-start;
 	}
@@ -369,7 +369,7 @@ main {
 	border-width: 1px;
 }
 
-@media (min-width: 640px) {
+@media (width >= 640px) {
 	.dialog {
 		width: 460px;
 
@@ -377,7 +377,7 @@ main {
 	}
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
 	.dialog {
 		max-height: calc(100% - 6rem * 2);
 

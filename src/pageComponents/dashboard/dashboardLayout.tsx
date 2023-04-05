@@ -90,9 +90,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	useEffect(() => {
 		// disabling as we need this for allotement width
-		// eslint-disable-next-line no-restricted-globals
 		if (screen) {
-			// eslint-disable-next-line no-restricted-globals
 			setScreenWidth(screen.width);
 		}
 	}, []);

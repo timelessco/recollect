@@ -479,7 +479,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 								className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
 								id="add-category-input"
 								// disabling it as we do need it here
-								// eslint-disable-next-line jsx-a11y/no-autofocus
 								onBlur={() => setShowAddCategoryInput(false)}
 								onKeyUp={(event) => {
 									if (
