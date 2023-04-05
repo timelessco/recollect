@@ -7,7 +7,12 @@ const config: KnipConfig = {
 		"next.config.js",
 		"tailwind.config.cjs",
 		"env/**/*",
+		"release-it/**/*",
 	],
+	// sharp - used by next/image
+	// autoprefixer - used by postcss for tailwind workflow
+	// tilg - used for debugging react components
+	ignoreDependencies: ["sharp", "autoprefixer", "tilg"],
 };
 
 export default config;

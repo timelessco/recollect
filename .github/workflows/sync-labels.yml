@@ -8,7 +8,7 @@ on:
       - .github/labels.yml
 
 jobs:
-  build:
+  sync-label:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

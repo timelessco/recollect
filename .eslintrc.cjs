@@ -96,7 +96,6 @@ module.exports = {
 				...commonTypescriptIgnoredRules,
 			},
 		},
-
 		{
 			files: ["src/**/*.{ts,tsx}"],
 			extends: [
@@ -128,7 +127,7 @@ module.exports = {
 					},
 				},
 				{
-					files: ["*.tsx"],
+					files: ["*.tsx", "use*.ts"],
 					extends: [
 						"canonical/react",
 						"canonical/jsx-a11y",

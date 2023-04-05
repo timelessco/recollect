@@ -27,14 +27,14 @@
 Before you get started, you will need to have the following tools installed on
 your machine:
 
-- **[Node.js](https://nodejs.org/en/)** (version 12 or later)
-- **[pnpm](https://pnpm.io/)** (version 7 or later)
-- **[Git](https://git-scm.com/)** (optional, but recommended for version
-  control)
+- **[Node.js][1]** (version 12 or later)
+- **[pnpm][2]** (version 5 or later) or **[npm][3]** or **[yarn][4]** (version 6
+  or later)
+- **[Git][5]** (optional, but recommended for version control)
 
 > This repository includes a list of suggested VS Code extensions. It's a good
-> idea to use [VS Code](https://code.visualstudio.com) and accept its suggestion
-> to install them, as they'll help with development.
+> idea to use [VS Code][6] and accept its suggestion to install them, as they'll
+> help with development.
 
 ## Getting Started
 
@@ -58,8 +58,8 @@ After you have set the environmental variables in the **`.env`** file, you can
 run the project locally by
 
 ```shell
-git clone https://github.com/timelessco/bookmark-tags
-cd bookmark-tags
+git clone https://github.com/timelessco/next-react-app
+cd next-react-app
 pnpm install
 ```
 
@@ -95,23 +95,22 @@ pnpm start
 
 ## Deploying the project
 
-Guide on how to deploy Next.js to various
-[hosting providers](https://nextjs.org/docs/deployment).
+Guide on how to deploy Next.js to various [hosting providers][7].
 
 ## More DX scripts
 
-> Check for all the below errors in one command
+> Check for all the below errors in one command using [Turbo Repo][8]
 
 `pnpm lint`
 
-> AutoFix all the linting errors in one command
+> AutoFix all the linting errors in one command using [Turbo Repo][8]
 
 `pnpm format`
 
 ### Prettier
 
-[Prettier](https://prettier.io) is used to format code. It should be applied
-automatically when you save files in VS Code or make a Git commit.
+[Prettier][9] is used to format code. It should be applied automatically when
+you save files in VS Code or make a Git commit.
 
 > Check the formatting errors
 
@@ -127,9 +126,8 @@ automatically when you save files in VS Code or make a Git commit.
 
 ### Eslint
 
-Extends all the necessary rulesets from
-[eslint-config-canonical](https://github.com/gajus/eslint-config-canonical) for
-the Next.js project that lints JavaScript and TypeScript source files
+Extends all the necessary rulesets from [eslint-config-canonical][10] for the
+Next.js project that lints JavaScript and TypeScript source files
 
 > Check for the linting errors
 
@@ -141,7 +139,7 @@ the Next.js project that lints JavaScript and TypeScript source files
 
 ### Stylelint
 
-([Stylelint](https://stylelint.io/)): Checks all css files
+([Stylelint][11]): Checks all css files
 
 > Check the css linting errors
 
@@ -153,8 +151,7 @@ the Next.js project that lints JavaScript and TypeScript source files
 
 ### Markdown
 
-([Markdownlint](https://github.com/DavidAnson/markdownlint)): Checks all
-Markdown files
+([Markdownlint][12]): Checks all Markdown files
 
 > Check the markdown linting errors
 
@@ -166,7 +163,7 @@ Markdown files
 
 ### Check Types
 
-([TypeScript](https://www.typescriptlang.org/)): Checks all TypeScript files
+([TypeScript][13]): Checks all TypeScript files
 
 > Check TypeScript types
 
@@ -174,8 +171,7 @@ Markdown files
 
 ### Check unused dependencies, exports & types
 
-([knip](https://github.com/webpro/knip)): Checks all unused dependencies,
-exports & types
+([knip][14]): Checks all unused dependencies, exports & types
 
 > Check the spelling errors
 
@@ -183,7 +179,7 @@ exports & types
 
 ### Check Spelling
 
-([cspell](https://cspell.org)): Spell checks across all source files
+([cspell][15]): Spell checks across all source files
 
 > Check the spelling errors
 
@@ -191,8 +187,7 @@ exports & types
 
 ### Check package.json
 
-([npm-package-json-lint](https://npmpackagejsonlint.org/)): Lints the
-`package.json` file
+([npm-package-json-lint][16]): Lints the `package.json` file
 
 > Check the package.json linting errors
 
@@ -203,3 +198,20 @@ exports & types
 > Run the test suite
 
 `pnpm test`
+
+[1]: https://nodejs.org/en/
+[2]: https://pnpm.io/
+[3]: https://www.npmjs.com/
+[4]: https://yarnpkg.com/
+[5]: https://git-scm.com/
+[6]: https://code.visualstudio.com
+[7]: https://nextjs.org/docs/deployment
+[8]: https://turbo.build/repo
+[9]: https://prettier.io
+[10]: https://github.com/gajus/eslint-config-canonical
+[11]: https://stylelint.io/
+[12]: https://github.com/DavidAnson/markdownlint
+[13]: https://www.typescriptlang.org/
+[14]: https://github.com/webpro/knip
+[15]: https://cspell.org
+[16]: https://npmpackagejsonlint.org/

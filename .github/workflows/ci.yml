@@ -1,4 +1,4 @@
-name: Eslint
+name: CI
 
 on:
   pull_request: ~
@@ -8,9 +8,11 @@ on:
       - main
 
 jobs:
-  eslint:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/prepare
-      - run: pnpm lint:eslint
+      - run:
+          npx turbo run lint:eslint lint:types lint:css lint:md lint:knip
+          lint:package-json lint:spelling lint:prettier test

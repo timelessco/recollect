@@ -1,6 +1,7 @@
 const prettierPluginPackagejson = require("prettier-plugin-packagejson");
-const prettierPluginTailwindcss = require("prettier-plugin-tailwindcss");
 const prettierPluginSortImports = require("@ianvs/prettier-plugin-sort-imports");
+// Tailwind plugin should be last
+const prettierPluginTailwindcss = require("prettier-plugin-tailwindcss");
 
 module.exports = {
 	// Plugins

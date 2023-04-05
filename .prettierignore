@@ -65,13 +65,16 @@ jspm_packages
 # Storybook Build
 storybook-static
 
+# Turbo Repo
+.turbo
+
 # Lock files
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
 # Custom
-release-it/commit.hbs
+release-it/**/*.hbs
 release-it/remote-commits.json
 
 # Library files
