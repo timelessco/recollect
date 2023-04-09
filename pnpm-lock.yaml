@@ -181,8 +181,8 @@ devDependencies:
     specifier: 2.7.0
     version: 2.7.0(eslint@8.37.0)
   eslint-plugin-tailwindcss:
-    specifier: 3.10.3
-    version: 3.10.3(tailwindcss@3.3.1)
+    specifier: 3.11.0
+    version: 3.11.0(tailwindcss@3.3.1)
   eslint-plugin-toml:
     specifier: 0.4.0
     version: 0.4.0(eslint@8.37.0)
@@ -208,14 +208,14 @@ devDependencies:
     specifier: 2.2.0
     version: 2.2.0
   knip:
-    specifier: 2.7.1
-    version: 2.7.1
+    specifier: 2.8.2
+    version: 2.8.2
   lint-staged:
     specifier: 13.2.0
     version: 13.2.0
   markdownlint:
-    specifier: 0.28.0
-    version: 0.28.0
+    specifier: 0.28.1
+    version: 0.28.1
   markdownlint-cli:
     specifier: 0.33.0
     version: 0.33.0
@@ -238,8 +238,8 @@ devDependencies:
     specifier: 2.4.3
     version: 2.4.3(prettier@2.8.7)
   prettier-plugin-tailwindcss:
-    specifier: 0.2.6
-    version: 0.2.6(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7)
+    specifier: 0.2.7
+    version: 0.2.7(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7)
   release-it:
     specifier: 15.10.1
     version: 15.10.1
@@ -6614,8 +6614,8 @@ packages:
       eslint: 8.37.0
     dev: true
 
-  /eslint-plugin-tailwindcss@3.10.3(tailwindcss@3.3.1):
-    resolution: {integrity: sha512-yDJDs0R6AHT1quc9cCB5mpg5s5hBH0yE5L57GYWfRQWidF3HVEVrRF+Hg/4metBJzKikTD9QPIFd6CZANarWOQ==}
+  /eslint-plugin-tailwindcss@3.11.0(tailwindcss@3.3.1):
+    resolution: {integrity: sha512-RaraOG4D6VXutKnoNvFQ4+frTWGJDKtezy1yCrGFS7Um1to/npDNdh2GL19IRoGB/eanbtwhxFXy+xyEw0grAg==}
     engines: {node: '>=12.13.0'}
     peerDependencies:
       tailwindcss: ^3.2.2
@@ -8768,8 +8768,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /knip@2.7.1:
-    resolution: {integrity: sha512-4iDRLUmGCrgA1pY51/NH3C0AeNIZ3/ALVN/N/hdKJ31jhTFwGf9NDAl7n2LejcVstSGKawMQpx8oB1hqPd+kkQ==}
+  /knip@2.8.2:
+    resolution: {integrity: sha512-GUv6UliufgGMuwwkr2NkOsa/JuKNPRFgfGX1CjGPA2HGZYstYh3iiIBgl14pTuU1pelUVuzdlXW+U10AiV2D5A==}
     engines: {node: '>=16.17.0 <17 || >=18.6.0'}
     hasBin: true
     dependencies:
@@ -9208,8 +9208,8 @@ packages:
       markdown-it: 13.0.1
     dev: true
 
-  /markdownlint@0.28.0:
-    resolution: {integrity: sha512-7Gt/SzjE5420Dr93wZgTLlgfcWj5vxAWJtvN7bBfN35ytQwsVDEW46L+NswzeCVhZSFdWRgLdEwQo3lMavUjvQ==}
+  /markdownlint@0.28.1:
+    resolution: {integrity: sha512-8At2DbgGKT/RVBinkqIPqLETopPXyQFGWSiTCJSr9Y6wVVyY70cDJ9dw3FXePn4AkytIUclgrsgI6KVeqeHFoA==}
     engines: {node: '>=14.18.0'}
     dependencies:
       markdown-it: 13.0.1
@@ -10345,8 +10345,8 @@ packages:
       synckit: 0.8.5
     dev: true
 
-  /prettier-plugin-tailwindcss@0.2.6(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7):
-    resolution: {integrity: sha512-F+7XCl9RLF/LPrGdUMHWpsT6TM31JraonAUyE6eBmpqymFvDwyl0ETHsKFHP1NG+sEfv8bmKqnTxEbWQbHPlBA==}
+  /prettier-plugin-tailwindcss@0.2.7(@ianvs/prettier-plugin-sort-imports@3.7.2)(prettier@2.8.7):
+    resolution: {integrity: sha512-jQopIOgjLpX+y8HeD56XZw7onupRTC0cw7eKKUimI7vhjkPF5/1ltW5LyqaPtSyc8HvEpvNZsvvsGFa2qpa59w==}
     engines: {node: '>=12.17.0'}
     peerDependencies:
       '@ianvs/prettier-plugin-sort-imports': '*'
