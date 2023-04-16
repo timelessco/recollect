@@ -8,8 +8,8 @@ dependencies:
     specifier: 1.7.13
     version: 1.7.13(react-dom@18.2.0)(react@18.2.0)
   '@heroicons/react':
-    specifier: 1.0.6
-    version: 1.0.6(react@18.2.0)
+    specifier: 2.0.17
+    version: 2.0.17(react@18.2.0)
   '@supabase/auth-helpers-nextjs':
     specifier: 0.5.6
     version: 0.5.6(@supabase/supabase-js@2.13.1)
@@ -1652,8 +1652,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@heroicons/react@1.0.6(react@18.2.0):
-    resolution: {integrity: sha512-JJCXydOFWMDpCP4q13iEplA503MQO3xLoZiKum+955ZCtHINWnx26CUxVxxFQu/uLb4LW3ge15ZpzIkXKkJ8oQ==}
+  /@heroicons/react@2.0.17(react@18.2.0):
+    resolution: {integrity: sha512-90GMZktkA53YbNzHp6asVEDevUQCMtxWH+2UK2S8OpnLEu7qckTJPhNxNQG52xIR1WFTwFqtH6bt7a60ZNcLLA==}
     peerDependencies:
       react: '>= 16'
     dependencies:
