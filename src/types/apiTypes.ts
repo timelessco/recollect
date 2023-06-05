@@ -9,6 +9,7 @@ import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 } from "./componentStoreTypes";
+import { type FileType } from "./componentTypes";
 
 export type SupabaseSessionType = Session | null;
 export type SingleListData = {
@@ -155,6 +156,13 @@ export type UserProfilePicTypes = {
 	profile_pic: string | null;
 };
 
+// file upload
+
+export type UploadFileApiResponse = {
+	error: Error | string | null;
+	success: boolean;
+};
+
 // NEXT API types
 export type NextApiRequest<T> = Omit<NextJsApiRequest, "body"> & {
 	body: T & { access_token: string };
@@ -266,4 +274,9 @@ export type AddUserTagsApiPayload = {
 	session: SupabaseSessionType;
 	tagsData: { name: string };
 	userData: UserIdentity;
+};
+
+export type UploadFileApiPayload = {
+	file: FileType;
+	session: SupabaseSessionType;
 };

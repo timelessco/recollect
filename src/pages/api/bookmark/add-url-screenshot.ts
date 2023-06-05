@@ -10,7 +10,11 @@ import {
 	type NextApiRequest,
 	type SingleListData,
 } from "../../../types/apiTypes";
-import { MAIN_TABLE_NAME, SCREENSHOT_API } from "../../../utils/constants";
+import {
+	BOOKMAKRS_STORAGE_NAME,
+	MAIN_TABLE_NAME,
+	SCREENSHOT_API,
+} from "../../../utils/constants";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -41,13 +45,13 @@ export default async function handler(
 		const imgName = `img${Math.random()}.jpg`;
 
 		await supabase.storage
-			.from("bookmarks")
+			.from(BOOKMAKRS_STORAGE_NAME)
 			.upload(`public/${imgName}`, decode(base64info), {
 				contentType: "image/jpg",
 			});
 
 		const { data: storageData } = supabase.storage
-			.from("bookmarks")
+			.from(BOOKMAKRS_STORAGE_NAME)
 			.getPublicUrl(`public/${imgName}`);
 
 		return storageData?.publicUrl;

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type UserIdentity } from "@supabase/supabase-js";
 import { find, flatten, isEmpty, isNull } from "lodash";
+import { useDropzone } from "react-dropzone";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ToastContainer } from "react-toastify";
 
@@ -21,7 +22,7 @@ import {
 	type SingleListData,
 	type UserTagsData,
 } from "../../types/apiTypes";
-import { type TagInputOption } from "../../types/componentTypes";
+import { type FileType, type TagInputOption } from "../../types/componentTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	LOGIN_URL,
@@ -45,6 +46,7 @@ import useAddCategoryToBookmarkMutation from "../../async/mutationHooks/category
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useDeleteCategoryOtimisticMutation from "../../async/mutationHooks/category/useDeleteCategoryOtimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useAddTagToBookmarkMutation from "../../async/mutationHooks/tags/useAddTagToBookmarkMutation";
 import useAddUserTagsMutation from "../../async/mutationHooks/tags/useAddUserTagsMutation";
@@ -227,6 +229,9 @@ const Dashboard = () => {
 
 	const { updateUserProfileOptimisticMutation } =
 		useUpdateUserProfileOptimisticMutation();
+
+	// files mutation
+	const { fileUploadOptimisticMutation } = useFileUploadOptimisticMutation();
 
 	// END OF MUTATIONS ---------
 
@@ -412,6 +417,18 @@ const Dashboard = () => {
 		return true;
 	};
 
+	const onDrop = useCallback(
+		(acceptedFiles: FileType[]) => {
+			fileUploadOptimisticMutation.mutate({
+				file: acceptedFiles[0],
+				session,
+			});
+		},
+		[fileUploadOptimisticMutation, session],
+	);
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
 	const renderAllBookmarkCards = () => (
 		<>
 			<div className="">
@@ -438,137 +455,148 @@ const Dashboard = () => {
 									</p>
 								}
 								hasMore={hasMoreLogic()}
-								// className="px-6"
-								// className="px-2"
 								loader={
 									<div
 										style={{
 											height: 200,
 											textAlign: "center",
 											paddingTop: 100,
+											zIndex: 0,
 										}}
 									>
-										Loading...
+										{isDragActive ? "" : "Loading..."}
 									</div>
 								}
 								next={fetchNextPage}
 								scrollableTarget="scrollableDiv"
 							>
-								<CardSection
-									deleteBookmarkId={deleteBookmarkId}
-									isBookmarkLoading={
-										addBookmarkMinDataOptimisticMutation?.isLoading
+								<div
+									{...getRootProps()}
+									className={
+										isDragActive
+											? " absolute z-10 h-full w-full bg-gray-800 opacity-50"
+											: ""
 									}
-									isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
-									listData={flattendPaginationBookmarkData}
-									onBulkBookmarkDelete={(
-										bookmarkIds,
-										isTrash,
-										deleteForever,
-									) => {
-										if (!deleteForever) {
-											// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
-											bookmarkIds.forEach((item: any) => {
-												const bookmarkId = Number.parseInt(item as string, 10);
-												const delBookmarksData = find(
-													flattendPaginationBookmarkData,
-													(delItem) => delItem?.id === bookmarkId,
-												) as SingleListData;
-												void mutationApiCall(
-													moveBookmarkToTrashOptimisticMutation.mutateAsync({
-														data: delBookmarksData,
-														isTrash,
-														session,
-													}),
-												).catch(() => {});
-											});
-										} else {
-											setDeleteBookmarkId(bookmarkIds);
-											toggleShowDeleteBookmarkWarningModal();
+								>
+									<input {...getInputProps()} />
+									<CardSection
+										deleteBookmarkId={deleteBookmarkId}
+										isBookmarkLoading={
+											addBookmarkMinDataOptimisticMutation?.isLoading
 										}
-									}}
-									onCategoryChange={(value, cat_id) => {
-										const categoryId = cat_id;
+										isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
+										listData={flattendPaginationBookmarkData}
+										onBulkBookmarkDelete={(
+											bookmarkIds,
+											isTrash,
+											deleteForever,
+										) => {
+											if (!deleteForever) {
+												// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
+												bookmarkIds.forEach((item: any) => {
+													const bookmarkId = Number.parseInt(
+														item as string,
+														10,
+													);
+													const delBookmarksData = find(
+														flattendPaginationBookmarkData,
+														(delItem) => delItem?.id === bookmarkId,
+													) as SingleListData;
+													void mutationApiCall(
+														moveBookmarkToTrashOptimisticMutation.mutateAsync({
+															data: delBookmarksData,
+															isTrash,
+															session,
+														}),
+													).catch(() => {});
+												});
+											} else {
+												setDeleteBookmarkId(bookmarkIds);
+												toggleShowDeleteBookmarkWarningModal();
+											}
+										}}
+										onCategoryChange={(value, cat_id) => {
+											const categoryId = cat_id;
 
-										const currentCategory =
-											find(
-												allCategories?.data,
-												(item) => item?.id === categoryId,
-											) ??
-											find(
-												allCategories?.data,
-												(item) => item?.id === CATEGORY_ID,
-											);
-										// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
-
-										const updateAccessCondition =
-											find(
-												currentCategory?.collabData,
-												(item) => item?.userEmail === session?.user?.email,
-											)?.edit_access === true ||
-											currentCategory?.user_id?.id === session?.user?.id;
-
-										// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-misused-promises, @typescript-eslint/no-explicit-any
-										value.forEach(async (item: any) => {
-											const bookmarkId = item as string;
-
-											await addCategoryToBookmarkOptimisticMutation.mutateAsync(
-												{
-													category_id: categoryId,
-													bookmark_id: Number.parseInt(bookmarkId, 10),
-													// if user is changing to uncategoried then thay always have access
-													update_access: updateAccessCondition,
-													session,
-												},
-											);
-										});
-									}}
-									onDeleteClick={(item) => {
-										setDeleteBookmarkId(item?.map((delItem) => delItem?.id));
-
-										if (CATEGORY_ID === TRASH_URL) {
-											// delete bookmark if in trash
-											toggleShowDeleteBookmarkWarningModal();
-										} else if (!isEmpty(item) && item?.length > 0) {
-											// if not in trash then move bookmark to trash
-											void mutationApiCall(
-												moveBookmarkToTrashOptimisticMutation.mutateAsync({
-													data: item[0],
-													isTrash: true,
-													session,
-												}),
-											).catch(() => {});
-										}
-									}}
-									onEditClick={(item) => {
-										setAddedUrlData(item);
-										setIsEdit(true);
-										setShowAddBookmarkModal(true);
-									}}
-									onMoveOutOfTrashClick={(data) => {
-										void mutationApiCall(
-											moveBookmarkToTrashOptimisticMutation.mutateAsync({
-												data,
-												isTrash: false,
-												session,
-											}),
-										);
-									}}
-									showAvatar={
-										// only show for a collab category
-										Boolean(
-											CATEGORY_ID &&
-												!isNull(CATEGORY_ID) &&
-												// @ts-expect-error-Need to fix this
+											const currentCategory =
+												find(
+													allCategories?.data,
+													(item) => item?.id === categoryId,
+												) ??
 												find(
 													allCategories?.data,
 													(item) => item?.id === CATEGORY_ID,
-												)?.collabData?.length > 1,
-										)
-									}
-									userId={session?.user?.id ?? ""}
-									// isLoading={isAllBookmarksDataLoading}
-								/>
+												);
+											// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+
+											const updateAccessCondition =
+												find(
+													currentCategory?.collabData,
+													(item) => item?.userEmail === session?.user?.email,
+												)?.edit_access === true ||
+												currentCategory?.user_id?.id === session?.user?.id;
+
+											// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-misused-promises, @typescript-eslint/no-explicit-any
+											value.forEach(async (item: any) => {
+												const bookmarkId = item as string;
+
+												await addCategoryToBookmarkOptimisticMutation.mutateAsync(
+													{
+														category_id: categoryId,
+														bookmark_id: Number.parseInt(bookmarkId, 10),
+														// if user is changing to uncategoried then thay always have access
+														update_access: updateAccessCondition,
+														session,
+													},
+												);
+											});
+										}}
+										onDeleteClick={(item) => {
+											setDeleteBookmarkId(item?.map((delItem) => delItem?.id));
+
+											if (CATEGORY_ID === TRASH_URL) {
+												// delete bookmark if in trash
+												toggleShowDeleteBookmarkWarningModal();
+											} else if (!isEmpty(item) && item?.length > 0) {
+												// if not in trash then move bookmark to trash
+												void mutationApiCall(
+													moveBookmarkToTrashOptimisticMutation.mutateAsync({
+														data: item[0],
+														isTrash: true,
+														session,
+													}),
+												).catch(() => {});
+											}
+										}}
+										onEditClick={(item) => {
+											setAddedUrlData(item);
+											setIsEdit(true);
+											setShowAddBookmarkModal(true);
+										}}
+										onMoveOutOfTrashClick={(data) => {
+											void mutationApiCall(
+												moveBookmarkToTrashOptimisticMutation.mutateAsync({
+													data,
+													isTrash: false,
+													session,
+												}),
+											);
+										}}
+										showAvatar={
+											// only show for a collab category
+											Boolean(
+												CATEGORY_ID &&
+													!isNull(CATEGORY_ID) &&
+													// @ts-expect-error-Need to fix this
+													find(
+														allCategories?.data,
+														(item) => item?.id === CATEGORY_ID,
+													)?.collabData?.length > 1,
+											)
+										}
+										userId={session?.user?.id ?? ""}
+									/>
+								</div>
 							</InfiniteScroll>
 						</div>
 					</>

@@ -6,6 +6,7 @@ export const CATEGORIES_TABLE_NAME = "categories";
 export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
 export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
+export const FILES_STORAGE_NAME = "files";
 
 // regx
 
@@ -81,6 +82,8 @@ export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const GET_USER_PROFILE_PIC_API = "/profiles/get-user-profile-pic";
+// file upload api
+export const UPLOAD_FILE_API = "/file/upload-file";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";

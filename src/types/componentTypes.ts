@@ -29,3 +29,5 @@ export type CategoryIdUrlTypes =
 	| typeof TRASH_URL
 	| typeof UNCATEGORIZED_URL
 	| null;
+
+export type FileType = File;
