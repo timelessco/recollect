@@ -159,7 +159,7 @@ export type UserProfilePicTypes = {
 // file upload
 
 export type UploadFileApiResponse = {
-	error: Error | string | null;
+	error: Error | PostgrestError | string | null;
 	success: boolean;
 };
 
