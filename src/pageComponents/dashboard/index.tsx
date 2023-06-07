@@ -419,10 +419,21 @@ const Dashboard = () => {
 
 	const onDrop = useCallback(
 		(acceptedFiles: FileType[]) => {
-			fileUploadOptimisticMutation.mutate({
-				file: acceptedFiles[0],
-				session,
-			});
+			for (let index = 0; index < acceptedFiles?.length; index++) {
+				if (
+					acceptedFiles[index] &&
+					(acceptedFiles[index]?.type === "image/jpg" ||
+						acceptedFiles[index]?.type === "image/jpeg" ||
+						acceptedFiles[index]?.type === "image/png")
+				) {
+					fileUploadOptimisticMutation.mutate({
+						file: acceptedFiles[index],
+						session,
+					});
+				} else {
+					errorToast(`File type ${acceptedFiles[index]?.type} is not accepted`);
+				}
+			}
 		},
 		[fileUploadOptimisticMutation, session],
 	);
@@ -904,9 +915,14 @@ const Dashboard = () => {
 						toggleShowDeleteBookmarkWarningModal();
 
 						for (const delItem of deleteBookmarkId) {
+							const delBookmarkTitle = find(
+								flattendPaginationBookmarkData,
+								(item) => item?.id === delItem,
+							)?.title;
 							void mutationApiCall(
 								deleteBookmarkOptismicMutation.mutateAsync({
 									id: delItem,
+									title: delBookmarkTitle ?? "",
 									session,
 								}),
 							);

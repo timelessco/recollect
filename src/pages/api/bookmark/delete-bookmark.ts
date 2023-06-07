@@ -10,6 +10,7 @@ import {
 import {
 	BOOKMAKRS_STORAGE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
+	FILES_STORAGE_NAME,
 	MAIN_TABLE_NAME,
 } from "../../../utils/constants";
 
@@ -24,7 +25,7 @@ type Data = {
 
 export default async function handler(
 	request: NextApiRequest<{
-		data: { id: string; screenshot: string };
+		data: { id: string; screenshot: string; title: SingleListData["title"] };
 	}>,
 	response: NextApiResponse<Data>,
 ) {
@@ -53,6 +54,10 @@ export default async function handler(
 	await supabase.storage
 		.from(BOOKMAKRS_STORAGE_NAME)
 		.remove([`public/${screenshotImgName}`]);
+
+	await supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.remove([`public/${bookmarkData?.title}`]);
 
 	await supabase
 		.from(BOOKMARK_TAGS_TABLE_NAME)

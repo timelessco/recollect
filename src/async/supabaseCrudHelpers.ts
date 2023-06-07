@@ -213,12 +213,13 @@ export const addBookmarkScreenshot = async ({
 export const deleteData = async (item: {
 	id: number;
 	session: SupabaseSessionType;
+	title: SingleListData["title"];
 }) => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 			{
-				data: { id: item?.id },
+				data: { id: item?.id, title: item?.title },
 				access_token: item?.session?.access_token,
 			},
 		);

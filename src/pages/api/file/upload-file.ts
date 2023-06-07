@@ -97,6 +97,7 @@ export default async (
 					description: "",
 					ogImage: storageData?.publicUrl,
 					category_id: 0,
+					type: fileType,
 				},
 			])
 			.select();
