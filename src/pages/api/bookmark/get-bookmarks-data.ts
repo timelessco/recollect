@@ -16,8 +16,10 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	acceptedFileTypes,
 	BOOKMARK_TAGS_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
+	IMAGES_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
 	PROFILES,
@@ -68,7 +70,8 @@ export default async function handler(
 		category_id !== null &&
 		category_id !== "null" &&
 		category_id !== TRASH_URL &&
-		category_id !== UNCATEGORIZED_URL;
+		category_id !== UNCATEGORIZED_URL &&
+		category_id !== IMAGES_URL;
 
 	let data;
 	let sortVaue;
@@ -123,6 +126,10 @@ user_id (
 
 	if (category_id === UNCATEGORIZED_URL) {
 		query = query.eq("category_id", 0);
+	}
+
+	if (category_id === IMAGES_URL) {
+		query = query.in("type", acceptedFileTypes);
 	}
 
 	if (sortVaue === "date-sort-acending") {

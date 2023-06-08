@@ -12,6 +12,7 @@ import { type UrlInput } from "../types/componentTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	GET_NAME_FROM_EMAIL_PATTERN,
+	IMAGES_URL,
 	INBOX_URL,
 	SEARCH_URL,
 	TRASH_URL,
@@ -36,7 +37,7 @@ export const getCategoryIdFromSlug = (
 	slug: string | null,
 	allCategories: CategoriesData[] | undefined,
 ) => {
-	if (slug === TRASH_URL || slug === UNCATEGORIZED_URL) {
+	if (slug === TRASH_URL || slug === UNCATEGORIZED_URL || slug === IMAGES_URL) {
 		return slug;
 	}
 
@@ -88,6 +89,7 @@ export const isUserInACategory = (url: string) => {
 		INBOX_URL,
 		SEARCH_URL,
 		TRASH_URL,
+		IMAGES_URL,
 	];
 
 	return !nonCategoryPages?.includes(url);

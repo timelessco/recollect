@@ -1,12 +1,14 @@
+import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import ArticleIcon from "../../../icons/articleIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import VideoIcon from "../../../icons/videoIcon";
-import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
+import { ALL_BOOKMARKS_URL, IMAGES_URL } from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
 
 const SidePaneTypesList = () => {
+	const currentPath = useGetCurrentUrlPath();
 	const optionsMenuList = [
 		{
 			icon: <ArticleIcon />,
@@ -19,8 +21,8 @@ const SidePaneTypesList = () => {
 		{
 			icon: <ImageIcon />,
 			name: "Image",
-			href: `/${ALL_BOOKMARKS_URL}`,
-			current: false,
+			href: `/${IMAGES_URL}`,
+			current: currentPath === IMAGES_URL,
 			id: 1,
 			count: undefined,
 		},

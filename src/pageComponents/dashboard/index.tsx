@@ -24,7 +24,9 @@ import {
 } from "../../types/apiTypes";
 import { type FileType, type TagInputOption } from "../../types/componentTypes";
 import {
+	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
+	IMAGES_URL,
 	LOGIN_URL,
 	SETTINGS_URL,
 	TRASH_URL,
@@ -422,9 +424,7 @@ const Dashboard = () => {
 			for (let index = 0; index < acceptedFiles?.length; index++) {
 				if (
 					acceptedFiles[index] &&
-					(acceptedFiles[index]?.type === "image/jpg" ||
-						acceptedFiles[index]?.type === "image/jpeg" ||
-						acceptedFiles[index]?.type === "image/png")
+					acceptedFileTypes?.includes(acceptedFiles[index]?.type)
 				) {
 					fileUploadOptimisticMutation.mutate({
 						file: acceptedFiles[index],
@@ -782,6 +782,17 @@ const Dashboard = () => {
 		</>
 	);
 
+	const renderMainPaneContent = () => {
+		switch (categorySlug) {
+			case SETTINGS_URL:
+				return <div className="p-6">Settings page</div>;
+			case IMAGES_URL:
+				return renderAllBookmarkCards();
+			default:
+				return renderAllBookmarkCards();
+		}
+	};
+
 	return (
 		<>
 			<DashboardLayout
@@ -879,13 +890,7 @@ const Dashboard = () => {
 					);
 				}}
 				onNavAddClick={() => toggleShowAddBookmarkShortcutModal()}
-				renderMainContent={() =>
-					categorySlug === SETTINGS_URL ? (
-						<div className="p-6">Settings page </div>
-					) : (
-						renderAllBookmarkCards()
-					)
-				}
+				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}

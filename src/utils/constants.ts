@@ -95,6 +95,7 @@ export const SETTINGS_URL = "settings";
 export const LOGIN_URL = "login";
 export const SIGNUP_URL = "signup";
 export const SIGNIN_URL = "login";
+export const IMAGES_URL = "images";
 
 // react-query keys
 
@@ -112,3 +113,6 @@ export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
 	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
 	"You already have a category with this name , please add anyother name";
+
+// accepted file type constants
+export const acceptedFileTypes = ["image/jpg", "image/jpeg", "image/png"];

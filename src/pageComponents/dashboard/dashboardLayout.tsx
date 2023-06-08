@@ -28,6 +28,7 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	IMAGES_URL,
 	SEARCH_URL,
 	SETTINGS_URL,
 	TRASH_URL,
@@ -40,6 +41,7 @@ import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmark
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
+import ImageIcon from "../../icons/imageIcon";
 import SettingsIcon from "../../icons/settingsIcon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
@@ -168,6 +170,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			href: `/${SETTINGS_URL}`,
 			current: currentPath === SETTINGS_URL,
 			id: 4,
+			count: undefined,
+		},
+		{
+			icon: <ImageIcon />,
+			name: "Image",
+			href: `/${IMAGES_URL}`,
+			current: currentPath === IMAGES_URL,
+			id: 5,
 			count: undefined,
 		},
 	];
