@@ -438,7 +438,10 @@ const Dashboard = () => {
 		[fileUploadOptimisticMutation, session],
 	);
 
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		noClick: true,
+	});
 
 	const renderAllBookmarkCards = () => (
 		<>

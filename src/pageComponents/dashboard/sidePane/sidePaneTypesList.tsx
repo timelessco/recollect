@@ -1,14 +1,34 @@
+import { useSession } from "@supabase/auth-helpers-react";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import ArticleIcon from "../../../icons/articleIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import VideoIcon from "../../../icons/videoIcon";
-import { ALL_BOOKMARKS_URL, IMAGES_URL } from "../../../utils/constants";
+import { type BookmarksCountTypes } from "../../../types/apiTypes";
+import {
+	ALL_BOOKMARKS_URL,
+	BOOKMARKS_COUNT_KEY,
+	IMAGES_URL,
+} from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
 
 const SidePaneTypesList = () => {
 	const currentPath = useGetCurrentUrlPath();
+	const session = useSession();
+
+	const queryClient = useQueryClient();
+	const bookmarksCountData = queryClient.getQueryData([
+		BOOKMARKS_COUNT_KEY,
+		session?.user?.id,
+	]) as {
+		data: BookmarksCountTypes;
+		error: PostgrestError;
+	};
+
 	const optionsMenuList = [
 		{
 			icon: <ArticleIcon />,
@@ -24,7 +44,7 @@ const SidePaneTypesList = () => {
 			href: `/${IMAGES_URL}`,
 			current: currentPath === IMAGES_URL,
 			id: 1,
-			count: undefined,
+			count: bookmarksCountData?.data?.images,
 		},
 		{
 			icon: <VideoIcon />,

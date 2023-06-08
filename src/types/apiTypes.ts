@@ -29,6 +29,7 @@ export type SingleListData = {
 export type BookmarksCountTypes = {
 	allBookmarks: number;
 	categoryCount: Array<{ category_id: number; count: number }>;
+	images: number;
 	trash: number;
 	uncategorized: number;
 };
