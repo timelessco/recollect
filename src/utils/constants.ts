@@ -20,23 +20,21 @@ export const EMAIL_CHECK_PATTERN =
 	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
 
 // api constants
-const getBaseUrl = () =>
-	// if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-	// 	return process.env.NEXT_PUBLIC_SITE_URL;
-	// }
+const getBaseUrl = () => {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+		return process.env.NEXT_PUBLIC_SITE_URL;
+	}
 
-	// if (
-	// 	process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
-	// 	process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-	// ) {
-	// 	return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-	// }
+	if (
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+	) {
+		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+	}
 
-	// return "http://localhost:3000";
+	return "http://localhost:3000";
+};
 
-	// TODO: this is temp fix
-
-	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
 export const NEXT_API_URL = `${getBaseUrl()}/api`;
 export const TIMELESS_SCRAPPER_API =
 	"https://link-preview-livid-ten.vercel.app/api/getUrlData";
@@ -117,4 +115,15 @@ export const DUPLICATE_CATEGORY_NAME_ERROR =
 	"You already have a category with this name , please add anyother name";
 
 // accepted file type constants
-export const acceptedFileTypes = ["image/jpg", "image/jpeg", "image/png"];
+export const acceptedFileTypes = [
+	"image/jpg",
+	"image/jpeg",
+	"image/png",
+	"video/mp4",
+	"video/mov",
+	"video/wmv",
+	"video/webm",
+	"application/pdf",
+	"audio/mp3",
+	"audio/mpeg",
+];
