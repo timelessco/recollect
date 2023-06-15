@@ -1,5 +1,6 @@
 // you might want to use regular 'fs' and not a promise one
-import { promises as fs } from "fs";
+
+import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
@@ -7,6 +8,7 @@ import { IncomingForm } from "formidable";
 import { verify } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
+import fetch from "node-fetch";
 
 import { type UploadFileApiResponse } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
@@ -16,6 +18,23 @@ export const config = {
 	api: {
 		bodyParser: false,
 	},
+};
+
+const query = async (filename: string) => {
+	const data = fs.readFileSync(filename);
+	// TODO: move this to env
+	const imgCaptionResponse = await fetch(
+		"https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+		{
+			headers: {
+				Authorization: "Bearer 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",
+			},
+			method: "POST",
+			body: data,
+		},
+	);
+
+	return imgCaptionResponse;
 };
 
 export default async (
@@ -65,7 +84,7 @@ export default async (
 	let contents;
 
 	if (data?.files?.file?.filepath) {
-		contents = await fs.readFile(data?.files?.file?.filepath, {
+		contents = await fileSystem.readFile(data?.files?.file?.filepath, {
 			encoding: "base64",
 		});
 	}
@@ -79,13 +98,18 @@ export default async (
 			.upload(`public/${fileName}`, decode(contents), {
 				contentType: fileType,
 			});
-
 		const { data: storageData, error: publicUrlError } = supabase.storage
 			.from(FILES_STORAGE_NAME)
 			.getPublicUrl(`public/${fileName}`) as {
 			data: { publicUrl: string };
 			error: UploadFileApiResponse["error"];
 		};
+
+		const imageCaption = await query(data?.files?.file?.filepath as string);
+
+		const jsonResponse = (await imageCaption.json()) as Array<{
+			generated_text: string;
+		}>;
 
 		const { error: DBerror } = await supabase
 			.from(MAIN_TABLE_NAME)
@@ -98,10 +122,12 @@ export default async (
 					ogImage: storageData?.publicUrl,
 					category_id: 0,
 					type: fileType,
+					meta_data: {
+						img_caption: jsonResponse[0]?.generated_text,
+					},
 				},
 			])
 			.select();
-
 		if (isNil(storageError) && isNil(publicUrlError) && isNil(DBerror)) {
 			response.status(200).json({ success: true, error: null });
 		} else {
