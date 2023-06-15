@@ -707,6 +707,14 @@ const CardSection = ({
 		</p>
 	);
 
+	const renderCaption = (caption: string | undefined) => {
+		if (caption) {
+			return <p className=" font-semibold">Caption: {caption}</p>;
+		}
+
+		return null;
+	};
+
 	const renderOgImage = (img: string, id: number) => {
 		const imgClassName = classNames({
 			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
@@ -824,6 +832,7 @@ const CardSection = ({
 						{bookmarksInfoValue?.includes("title" as never) && (
 							<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
 								{item?.title}
+								{renderCaption(item?.meta_data?.img_caption)}
 							</p>
 						)}
 						{bookmarksInfoValue?.includes("description" as never) &&
@@ -916,6 +925,7 @@ const CardSection = ({
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
 							{item?.title}
+							{renderCaption(item?.meta_data?.img_caption)}
 						</p>
 					)}
 					<div className="flex items-center space-x-1 space-y-2">

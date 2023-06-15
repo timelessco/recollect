@@ -18,6 +18,7 @@ export type SingleListData = {
 	description: string;
 	id: number;
 	inserted_at: string;
+	meta_data: { img_caption: string };
 	ogImage: string;
 	screenshot: string;
 	title: string;
