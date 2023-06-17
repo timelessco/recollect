@@ -20,23 +20,20 @@ export const EMAIL_CHECK_PATTERN =
 	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
 
 // api constants
-// const getBaseUrl = () => {
-// 	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-// 		return process.env.NEXT_PUBLIC_SITE_URL;
-// 	}
+const getBaseUrl = () => {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+		return process.env.NEXT_PUBLIC_SITE_URL;
+	}
 
-// 	if (
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-// 	) {
-// 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-// 	}
+	if (
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+	) {
+		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+	}
 
-// 	return "http://localhost:3000";
-// };
-
-const getBaseUrl = () =>
-	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
+	return "http://localhost:3000";
+};
 
 export const NEXT_API_URL = `${getBaseUrl()}/api`;
 export const TIMELESS_SCRAPPER_API =

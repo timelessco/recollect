@@ -22,12 +22,11 @@ export const config = {
 
 const query = async (filename: string) => {
 	const data = fs.readFileSync(filename);
-	// TODO: move this to env
 	const imgCaptionResponse = await fetch(
-		"https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+		process.env.IMAGE_CAPTION_URL as string,
 		{
 			headers: {
-				Authorization: "Bearer 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",
+				Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
 			},
 			method: "POST",
 			body: data,

@@ -15,6 +15,8 @@ export const serverSchema = z.object({
 	GOOGLE_ID: z.string(),
 	GOOGLE_SECRET: z.string(),
 	GOOGLE_REFRESH_TOKEN: z.string(),
+	IMAGE_CAPTION_URL: z.string(),
+	IMAGE_CAPTION_TOKEN: z.string(),
 });
 
 /**
@@ -32,6 +34,8 @@ export const serverEnvironment = {
 	SUPABASE_JWT_SECRET_KEY: process.env.SUPABASE_JWT_SECRET_KEY,
 	GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
 	TEST_USER_PASSWORD: process.env.TEST_USER_PASSWORD,
+	IMAGE_CAPTION_URL: process.env.IMAGE_CAPTION_URL,
+	IMAGE_CAPTION_TOKEN: process.env.IMAGE_CAPTION_TOKEN,
 };
 
 /**
