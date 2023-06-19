@@ -15,8 +15,10 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	acceptedFileTypes,
 	BOOKMARK_TAGS_TABLE_NAME,
 	GET_TEXT_WITH_AT_CHAR,
+	IMAGES_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
@@ -82,12 +84,17 @@ export default async function handler(
 	if (
 		!isNull(category_id) &&
 		category_id !== "null" &&
-		category_id !== TRASH_URL
+		category_id !== TRASH_URL &&
+		category_id !== IMAGES_URL
 	) {
 		query = query.eq(
 			"category_id",
 			category_id === UNCATEGORIZED_URL ? 0 : category_id,
 		);
+	}
+
+	if (category_id === IMAGES_URL) {
+		query = query.in("type", acceptedFileTypes);
 	}
 
 	const { data, error } = (await query) as unknown as {
@@ -148,7 +155,7 @@ export default async function handler(
 			tag_id: number;
 		}>;
 
-		if (isEmpty(data)) {
+		if (isEmpty(searchText)) {
 			// user as only searched for tags and no text
 
 			const finalResponse: SingleListData[] = bookmarksWithTags?.map(

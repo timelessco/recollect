@@ -408,8 +408,8 @@ main {
 	background-image: url("/public/tickIcon.svg");
 }
 
-.search-bar__control textarea::placeholder {
-	color: #707070;
+.search-bar__input:focus-visible {
+	outline: none;
 }
 
 .aria-select-item[data-active-item] {

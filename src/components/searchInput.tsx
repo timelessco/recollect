@@ -14,6 +14,11 @@ import { USER_TAGS_KEY } from "../utils/constants";
 import Spinner from "./spinner";
 
 const styles = {
+	input: {
+		left: 27,
+		top: 3,
+		width: "90%",
+	},
 	control: {
 		backgroundColor: "rgba(0, 0, 0, 0.047)",
 		fontSize: 14,
@@ -85,13 +90,15 @@ const SearchInput = (props: SearchInputTypes) => {
 			<figure className=" absolute left-[9px] top-[7px]">
 				<SearchInputSearchIcon />
 			</figure>
+			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
 				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className="search-bar"
-				onChange={(event: { target: { value: string } }) =>
-					onChange(event.target.value)
-				}
+				onChange={(event: { target: { value: string } }) => {
+					onChange(event.target.value);
+				}}
 				placeholder={placeholder}
+				singleLine
 				style={styles}
 				value={searchText}
 			>
@@ -100,6 +107,7 @@ const SearchInput = (props: SearchInputTypes) => {
 						id: item?.id,
 						display: item?.name,
 					}))}
+					displayTransform={(url) => `#${url}`}
 					markup="@__display__"
 					trigger="#"
 					// style={{
