@@ -897,6 +897,17 @@ const Dashboard = () => {
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}
+				updateCategoryName={(id, name) => {
+					void mutationApiCall(
+						updateCategoryOptimisticMutation.mutateAsync({
+							category_id: id,
+							updateData: {
+								category_name: name,
+							},
+							session,
+						}),
+					);
+				}}
 				userId={session?.user?.id ?? ""}
 				// onShareClick={() => {
 				//   if (CATEGORY_ID && !isNull(CATEGORY_ID) && CATEGORY_ID !== "trash") {

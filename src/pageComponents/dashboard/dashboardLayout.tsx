@@ -36,8 +36,12 @@ import {
 } from "../../utils/constants";
 
 import "allotment/dist/style.css";
+import isEmpty from "lodash/isEmpty";
+
+import Input from "../../components/atoms/input";
 import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmarksViewDropdown";
+import CategoryIconsDropdown from "../../components/customDropdowns.tsx/categoryIconsDropdown";
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
@@ -49,7 +53,6 @@ import {
 	type BookmarksViewTypes,
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
-import { options } from "../../utils/commonData";
 
 import SidePane from "./sidePane";
 
@@ -71,6 +74,10 @@ type DashboardLayoutProps = {
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
 		type: BookmarkViewCategories,
 	) => void;
+	updateCategoryName: (
+		id: CategoriesData["id"],
+		name: CategoriesData["category_name"],
+	) => void;
 	userId: string;
 };
 
@@ -86,9 +93,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		setBookmarksView,
 		onNavAddClick,
 		onBookmarksDrop,
+		updateCategoryName,
 	} = props;
 
 	const [screenWidth, setScreenWidth] = useState(1_200);
+	const [showHeadingInput, setShowHeadingInput] = useState(false);
+	const [headingInputValue, setHeadingInputValue] = useState("");
 
 	useEffect(() => {
 		// disabling as we need this for allotement width
@@ -189,10 +199,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		if (currentCategory) {
-			return find(
-				options,
-				(item) => item?.label === currentCategory?.icon,
-			)?.icon();
+			return (
+				<CategoryIconsDropdown
+					iconValue={currentCategory?.icon}
+					onIconSelect={(value) => {
+						onIconSelect(value, currentCategory?.id);
+					}}
+				/>
+			);
 		}
 
 		return find(optionsMenuList, (item) => item?.current === true)?.icon;
@@ -304,6 +318,81 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	//   );
 	// };
 
+	const navBarHeading = () => {
+		const currentCategoryData = find(
+			categoryData?.data,
+			(item) => item?.category_slug === currentPath,
+		);
+		const headerName =
+			currentCategoryData?.category_name ??
+			find(optionsMenuList, (item) => item?.current === true)?.name;
+
+		if (!showHeadingInput) {
+			return (
+				<div
+					className=" text-xl font-semibold leading-[23px] text-custom-gray-5"
+					onClick={(event) => {
+						event.preventDefault();
+						if (event.detail === 2) {
+							if (currentCategoryData) {
+								setShowHeadingInput(true);
+							}
+
+							if (headerName) {
+								setHeadingInputValue(headerName);
+							}
+						}
+					}}
+					onKeyDown={() => {}}
+					role="button"
+					tabIndex={0}
+				>
+					{headerName}
+				</div>
+			);
+		} else {
+			return (
+				<Input
+					className="m-0 h-[23px]  border-none p-0 text-xl font-semibold leading-[23px] text-custom-gray-5 focus:outline-none"
+					errorText=""
+					isError={false}
+					isFullWidth={false}
+					onBlur={() => {
+						setShowHeadingInput(false);
+						setHeadingInputValue("");
+
+						if (
+							currentCategoryData?.id &&
+							!isEmpty(headingInputValue) &&
+							headingInputValue !== currentCategoryData?.category_name
+						) {
+							updateCategoryName(currentCategoryData?.id, headingInputValue);
+						}
+					}}
+					onChange={(event) => {
+						setHeadingInputValue(event.target.value);
+					}}
+					onKeyDown={(event) => {
+						if (
+							event.key === "Enter" &&
+							!isEmpty(headingInputValue) &&
+							headingInputValue !== currentCategoryData?.category_name
+						) {
+							updateCategoryName(
+								currentCategoryData?.id as number,
+								headingInputValue,
+							);
+							setShowHeadingInput(false);
+							setHeadingInputValue("");
+						}
+					}}
+					placeholder="Enter name"
+					value={headingInputValue}
+				/>
+			);
+		}
+	};
+
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
 			"flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px]",
@@ -321,13 +410,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					<figure className="mr-2 flex h-5 w-5 items-center">
 						{navBarLogo()}
 					</figure>
-					<p className="text-xl font-semibold leading-[23px] text-custom-gray-5">
-						{find(
-							categoryData?.data,
-							(item) => item?.category_slug === currentPath,
-						)?.category_name ??
-							find(optionsMenuList, (item) => item?.current === true)?.name}
-					</p>
+					{navBarHeading()}
 				</div>
 				{currentPath !== SETTINGS_URL && (
 					<>

@@ -6,6 +6,7 @@ import omit from "lodash/omit";
 import { type ChildrenTypes } from "../../types/componentTypes";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+	autoFocus?: boolean;
 	className: string;
 	errorClassName?: string;
 	errorIconClassName?: string;
@@ -13,6 +14,8 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 	id?: string;
 	isDisabled?: boolean;
 	isError: boolean;
+	isFullWidth?: boolean;
+	onBlur?: () => void;
 	placeholder: string;
 	rendedRightSideElement?: ChildrenTypes;
 	wrapperClassName?: string;
@@ -33,6 +36,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		rendedRightSideElement,
 		errorClassName = "",
 		errorIconClassName = "",
+		autoFocus = true,
+		onBlur,
+		isFullWidth = true,
 	} = props;
 
 	const inputClass = classNames(className, {
@@ -53,7 +59,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 	});
 
 	return (
-		<div className="w-full">
+		<div className={isFullWidth ? "w-full" : ""}>
 			<div className={wrapperClassName}>
 				<input
 					id={id}
@@ -61,8 +67,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 					type="text"
 					value={value}
 					{...omit(props, ["isError", "errorText", "isDisabled"])}
+					autoFocus={autoFocus}
 					className={inputClass}
 					disabled={isDisabled}
+					onBlur={onBlur}
 					onChange={onChange}
 					onKeyUp={onKeyUp}
 					placeholder={placeholder}

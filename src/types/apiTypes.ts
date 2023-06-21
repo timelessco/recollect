@@ -230,6 +230,7 @@ export type UpdateCategoryApiPayload = {
 	category_id: number | string | null;
 	session: SupabaseSessionType;
 	updateData: {
+		category_name?: CategoriesData["category_name"];
 		category_views?: BookmarkViewDataTypes;
 		icon?: string | null;
 		is_public?: boolean;
