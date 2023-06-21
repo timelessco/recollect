@@ -109,12 +109,12 @@ export default async function handler(
 			.from(BOOKMARK_TAGS_TABLE_NAME)
 			.select(
 				`
-        bookmark_id,
-        tag_id (
-          id,
-          name
-        )
-      `,
+		bookmark_id,
+		tag_id (
+			id,
+			name
+		)
+	`,
 			)
 			.eq("user_id", user_id);
 
@@ -138,7 +138,7 @@ export default async function handler(
 
 		response.status(200).json({ data: finalData, error });
 	} else {
-		const { data: bookmarksWithTags } = (await supabase
+		let tagSearchQuery = supabase
 			.from(BOOKMARK_TAGS_TABLE_NAME)
 			.select(
 				`
@@ -150,10 +150,34 @@ export default async function handler(
     `,
 			)
 			.eq("user_id", user_id)
-			.in("tag_id.name", tagName)) as PostgrestResponse<{
-			bookmark_id: SingleListData;
-			tag_id: number;
-		}>;
+			.in("tag_id.name", tagName);
+
+		if (
+			!isNull(category_id) &&
+			category_id !== "null" &&
+			category_id !== TRASH_URL &&
+			category_id !== IMAGES_URL
+		) {
+			tagSearchQuery = tagSearchQuery.eq(
+				"bookmark_id.category_id",
+				category_id === UNCATEGORIZED_URL ? 0 : category_id,
+			);
+		}
+
+		if (category_id === IMAGES_URL) {
+			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", acceptedFileTypes);
+		}
+
+		let { data: bookmarksWithTags } =
+			(await tagSearchQuery) as PostgrestResponse<{
+				bookmark_id: SingleListData;
+				tag_id: number;
+			}>;
+
+		// we filter out any null values
+		bookmarksWithTags = bookmarksWithTags
+			? bookmarksWithTags?.filter((item) => item?.bookmark_id !== null)
+			: [];
 
 		if (isEmpty(searchText)) {
 			// user as only searched for tags and no text
