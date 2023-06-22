@@ -413,6 +413,12 @@ const Dashboard = () => {
 				return count !== flattendPaginationBookmarkData?.length;
 			}
 
+			if ((CATEGORY_ID as unknown) === IMAGES_URL) {
+				const count = bookmarksCountData?.data?.images;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
 			return true;
 		}
 
