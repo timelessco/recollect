@@ -4190,6 +4190,7 @@ packages:
 
   /ariakit@2.0.0-next.36(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-H/ZqRgy5tGGKOcOsZ24lc5cBoQ83vgCFd+mC87UWdIEdYqhKNPPjFZona/V/l0SRtn9Mar+t93QbggyThOw6Qg==}
+    deprecated: The ariakit package has been renamed to @ariakit/react. Visit https://ariakit.org for more info.
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
@@ -4202,6 +4203,7 @@ packages:
 
   /ariakit@2.0.0-next.43(@types/react@18.0.35)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-CatNgIMyurefYTEvp8aF3aQQGR5m9bZxYQXuqyw/MKwxJ/aJ295SSSY5pXyTHbbsgDI28GOKFYa5pfUBvkd7cQ==}
+    deprecated: The ariakit package has been renamed to @ariakit/react. Visit https://ariakit.org for more info.
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
