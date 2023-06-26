@@ -43,7 +43,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 	const renderComboBoxItem = (value: string, index: number) => (
 		<ComboboxItem
-			className="data-active-item:bg-custom-gray-7 rounded-md p-1 hover:bg-custom-gray-7"
+			className="data-active-item:bg-custom-gray-7 custom-select rounded-md p-1 hover:bg-custom-gray-7"
 			focusOnHover
 			key={value + index}
 			onClick={() => onIconSelect(value)}

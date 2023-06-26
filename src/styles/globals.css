@@ -224,6 +224,11 @@ main {
 	margin: 0 0 0 8px;
 }
 
+/* for icon dropdown */
+.custom-select[aria-selected="true"] {
+	@apply bg-custom-gray-7; /* Apply your desired styles here */
+}
+
 /* drag and drop */
 
 .single-bookmark[aria-selected="true"] {
