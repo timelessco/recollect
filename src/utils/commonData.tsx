@@ -1,38 +1,72 @@
-import CardIcon from "../icons/categoryIcons/cardIcon";
-import CodeIcon from "../icons/categoryIcons/codeIcon";
-import DesignIcon from "../icons/categoryIcons/designIcon";
-import FileIcon from "../icons/categoryIcons/fileIcon";
-import HomeIcon from "../icons/categoryIcons/homeIcon";
-import OpenSourceIcon from "../icons/categoryIcons/openSourceIcon";
-import CollectionPlaceholderIcon from "../icons/collectionPlaceholderIcon";
-
-export const options = [
+export const options = (color: string) => [
 	{
 		label: "home",
-		icon: () => <HomeIcon />,
+		icon: () => (
+			<div className="icon-svg-parent" style={{ color }}>
+				<svg height="18" width="18">
+					<use href="/sprite.svg#home" />
+				</svg>
+			</div>
+		),
 	},
 	{
 		label: "design",
-		icon: () => <DesignIcon />,
+		icon: () => (
+			<div className="icon-svg-parent" style={{ color }}>
+				<svg height="18" width="18">
+					<use href="/sprite.svg#design" />
+				</svg>
+			</div>
+		),
 	},
 	{
 		label: "inspiration",
-		icon: () => <CollectionPlaceholderIcon />,
+		icon: () => (
+			<div className="icon-svg-parent" style={{ color }}>
+				<svg height="18" width="18">
+					<use href="/sprite.svg#inspiration" />
+				</svg>
+			</div>
+		),
 	},
 	{
 		label: "open-src",
-		icon: () => <OpenSourceIcon />,
+		icon: () => (
+			<div className="icon-svg-parent" style={{ color }}>
+				<svg height="18" width="18">
+					<use href="/sprite.svg#open-src" />
+				</svg>
+			</div>
+		),
 	},
 	{
 		label: "file",
-		icon: () => <FileIcon />,
+		icon: () => (
+			<div className="icon-svg-parent" style={{ color }}>
+				<svg height="18" width="18">
+					<use href="/sprite.svg#file" />
+				</svg>
+			</div>
+		),
 	},
 	{
 		label: "code",
-		icon: () => <CodeIcon />,
+		icon: () => (
+			<div className="icon-svg-parent" style={{ color }}>
+				<svg height="18" width="18">
+					<use href="/sprite.svg#code" />
+				</svg>
+			</div>
+		),
 	},
 	{
 		label: "card",
-		icon: () => <CardIcon />,
+		icon: () => (
+			<div className="icon-svg-parent" style={{ color }}>
+				<svg height="18" width="18">
+					<use href="/sprite.svg#card" />
+				</svg>
+			</div>
+		),
 	},
 ];

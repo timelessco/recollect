@@ -102,6 +102,7 @@ export type CategoriesData = {
 	collabData: CollabDataInCategory[] | [];
 	created_at: string;
 	icon: string | null;
+	icon_color: string;
 	id: number;
 	is_public: boolean;
 	user_id: { email: string; id: string; profile_pic?: string | null };
@@ -233,6 +234,7 @@ export type UpdateCategoryApiPayload = {
 		category_name?: CategoriesData["category_name"];
 		category_views?: BookmarkViewDataTypes;
 		icon?: string | null;
+		icon_color?: CategoriesData["icon_color"];
 		is_public?: boolean;
 	};
 };

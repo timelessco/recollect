@@ -306,14 +306,14 @@ const Dashboard = () => {
 						}),
 					);
 				} else {
-					const id = !isNull(sharedCategoriesData?.data)
+					const sharedCategoriesId = !isNull(sharedCategoriesData?.data)
 						? sharedCategoriesData?.data[0]?.id
 						: undefined;
 
-					if (id !== undefined) {
+					if (sharedCategoriesId !== undefined) {
 						void mutationApiCall(
 							updateSharedCategoriesOptimisticMutation.mutateAsync({
-								id,
+								id: sharedCategoriesId,
 								updateData: {
 									category_views: {
 										...currentCategory?.category_views,
@@ -855,7 +855,7 @@ const Dashboard = () => {
 						});
 					}
 				}}
-				onCategoryOptionClick={async (value, current, id) => {
+				onCategoryOptionClick={async (value, current, categoryId) => {
 					switch (value) {
 						case "delete":
 							if (
@@ -864,7 +864,7 @@ const Dashboard = () => {
 							) {
 								await mutationApiCall(
 									deleteCategoryOtimisticMutation.mutateAsync({
-										category_id: id,
+										category_id: categoryId,
 										category_order: userProfileData?.data[0]?.category_order,
 										session,
 									}),
@@ -879,7 +879,7 @@ const Dashboard = () => {
 							break;
 						case "share":
 							toggleShareCategoryModal();
-							setShareCategoryId(id);
+							setShareCategoryId(categoryId);
 							// code block
 							break;
 						default:
@@ -889,10 +889,21 @@ const Dashboard = () => {
 				onClearTrash={() => {
 					toggleShowClearTrashWarningModal();
 				}}
-				onIconSelect={(value, id) => {
+				onIconColorChange={(color) => {
 					void mutationApiCall(
 						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: id,
+							category_id: CATEGORY_ID,
+							updateData: {
+								icon_color: color,
+							},
+							session,
+						}),
+					);
+				}}
+				onIconSelect={(value, categoryId) => {
+					void mutationApiCall(
+						updateCategoryOptimisticMutation.mutateAsync({
+							category_id: categoryId,
 							updateData: { icon: value },
 							session,
 						}),
@@ -903,10 +914,10 @@ const Dashboard = () => {
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}
-				updateCategoryName={(id, name) => {
+				updateCategoryName={(categoryId, name) => {
 					void mutationApiCall(
 						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: id,
+							category_id: categoryId,
 							updateData: {
 								category_name: name,
 							},

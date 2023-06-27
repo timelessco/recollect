@@ -1,5 +1,7 @@
 import dynamic from "next/dynamic";
 
+import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
+
 import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
 import SidePaneTypesList from "./sidePaneTypesList";
 import SidePaneUserDropdown from "./sidePaneUserDropdown";
@@ -17,6 +19,7 @@ type SidePaneTypes = {
 		current: boolean,
 		id: number,
 	) => Promise<void>;
+	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 };
 
@@ -26,6 +29,7 @@ const SidePane = (props: SidePaneTypes) => {
 		onCategoryOptionClick,
 		onIconSelect,
 		onAddNewCategory,
+		onIconColorChange,
 	} = props;
 
 	return (
@@ -36,6 +40,7 @@ const SidePane = (props: SidePaneTypes) => {
 				onAddNewCategory={onAddNewCategory}
 				onBookmarksDrop={onBookmarksDrop}
 				onCategoryOptionClick={onCategoryOptionClick}
+				onIconColorChange={onIconColorChange}
 				onIconSelect={(value, id) => onIconSelect(value, id)}
 			/>
 			<SidePaneTypesList />

@@ -4,6 +4,8 @@ import {
 	type UNCATEGORIZED_URL,
 } from "../utils/constants";
 
+import { type CategoriesData } from "./apiTypes";
+
 export type UrlInput = {
 	urlText: string;
 };
@@ -31,3 +33,10 @@ export type CategoryIdUrlTypes =
 	| null;
 
 export type FileType = File;
+
+export type CategoryIconsDropdownTypes = {
+	iconColor: CategoriesData["icon_color"];
+	iconValue: string | null;
+	onIconColorChange: (value: string) => void;
+	onIconSelect: (value: string) => void;
+};

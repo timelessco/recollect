@@ -21,6 +21,7 @@ import {
 	type CategoriesData,
 } from "../../types/apiTypes";
 import {
+	type CategoryIconsDropdownTypes,
 	type CategoryIdUrlTypes,
 	type ChildrenTypes,
 } from "../../types/componentTypes";
@@ -67,6 +68,7 @@ type DashboardLayoutProps = {
 		id: number,
 	) => Promise<void>;
 	onClearTrash: () => void;
+	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 	onNavAddClick: () => void;
 	renderMainContent: () => ChildrenTypes;
@@ -94,6 +96,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		onNavAddClick,
 		onBookmarksDrop,
 		updateCategoryName,
+		onIconColorChange,
 	} = props;
 
 	const [screenWidth, setScreenWidth] = useState(1_200);
@@ -201,7 +204,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (currentCategory) {
 			return (
 				<CategoryIconsDropdown
+					iconColor={currentCategory?.icon_color}
 					iconValue={currentCategory?.icon}
+					onIconColorChange={onIconColorChange}
 					onIconSelect={(value) => {
 						onIconSelect(value, currentCategory?.id);
 					}}
@@ -498,6 +503,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							onAddNewCategory={onAddNewCategory}
 							onBookmarksDrop={onBookmarksDrop}
 							onCategoryOptionClick={onCategoryOptionClick}
+							onIconColorChange={onIconColorChange}
 							onIconSelect={(value, id) => onIconSelect(value, id)}
 						/>
 					)}

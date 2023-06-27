@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import Slider from "@uiw/react-color-slider";
 import {
 	Combobox,
 	ComboboxItem,
@@ -9,17 +11,21 @@ import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import { find } from "lodash";
 
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
+import { type CategoryIconsDropdownTypes } from "../../types/componentTypes";
 import { options } from "../../utils/commonData";
 
-type CategoryIconsDropdownTypes = {
-	iconValue: string | null;
-	onIconSelect: (value: string) => void;
-};
-
 const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
-	const { onIconSelect, iconValue } = props;
+	const { onIconSelect, iconValue, onIconColorChange, iconColor } = props;
+	// const [hsva, setHsva] = useState({ h: 0, s: 0, v: 289, a: 1 });
+	const [color, setColor] = useState(iconColor);
 
-	const defaultList = options?.map((item) => item?.label);
+	useEffect(() => {
+		setColor(iconColor);
+	}, [iconColor]);
+
+	const iconsList = options(color);
+
+	const defaultList = iconsList?.map((item) => item?.label);
 
 	const combobox = useComboboxState({
 		defaultList,
@@ -32,7 +38,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	}
 
 	const renderItem = (value: string) => {
-		const data = find(options, (item) => item?.label === value);
+		const data = find(iconsList, (item) => item?.label === value);
 
 		return (
 			<div className="h-[18px] w-[18px]" title={data?.label}>
@@ -57,7 +63,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	return (
 		<>
 			<MenuButton state={menu}>
-				{find(options, (item) => item?.label === iconValue)?.icon()}
+				{find(iconsList, (item) => item?.label === iconValue)?.icon()}
 			</MenuButton>
 			<Menu
 				className="absolute left-4 z-10 mt-2 w-[319px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
@@ -80,6 +86,16 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 							state={combobox}
 						/>
 					</div>
+				</div>
+				<div>
+					<Slider
+						color="#F58024"
+						onChange={(sliderColor) => {
+							setColor(sliderColor.hex);
+							// setHsva({ ...hsva, ...sliderColor.hsv });
+							onIconColorChange(sliderColor.hex);
+						}}
+					/>
 				</div>
 				<ComboboxList className="flex flex-col pb-3 pt-2" state={combobox}>
 					<ComboboxRow className="flex space-x-3">

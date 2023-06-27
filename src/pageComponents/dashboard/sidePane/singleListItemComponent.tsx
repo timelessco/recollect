@@ -9,7 +9,11 @@ import {
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import Spinner from "../../../components/spinner";
 import OptionsIconGray from "../../../icons/optionsIconGray";
-import { type ChildrenTypes } from "../../../types/componentTypes";
+import { type CategoriesData } from "../../../types/apiTypes";
+import {
+	type CategoryIconsDropdownTypes,
+	type ChildrenTypes,
+} from "../../../types/componentTypes";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
@@ -20,6 +24,7 @@ export type CollectionItemTypes = {
 	current: boolean;
 	href: string;
 	icon?: ChildrenTypes;
+	iconColor: CategoriesData["icon_color"];
 	iconValue?: string | null;
 	id: number;
 	isCollab?: boolean;
@@ -36,6 +41,7 @@ export type listPropsTypes = {
 		current: boolean,
 		id: number,
 	) => void;
+	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect?: (value: string, id: number) => void;
 	showDropdown?: boolean;
 	showIconDropdown?: boolean;
@@ -54,7 +60,9 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		onIconSelect = () => null,
 		onCategoryOptionClick = () => null,
 		showSpinner = false,
+		onIconColorChange,
 	} = listProps;
+
 	return (
 		<Link href={item?.href} legacyBehavior passHref>
 			{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
@@ -73,7 +81,9 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							onClick={(event) => event.preventDefault()}
 						>
 							<CategoryIconsDropdown
+								iconColor={item?.iconColor}
 								iconValue={item?.iconValue ?? null}
+								onIconColorChange={onIconColorChange}
 								onIconSelect={(value) => {
 									onIconSelect(value, item?.id);
 								}}

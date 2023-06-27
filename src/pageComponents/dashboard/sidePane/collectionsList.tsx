@@ -53,6 +53,7 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
+import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
 	dropdownMenuClassName,
@@ -78,6 +79,7 @@ type CollectionsListPropertyTypes = {
 		current: boolean,
 		id: number,
 	) => Promise<void>;
+	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 };
 // interface OnReorderPayloadTypes {
@@ -270,6 +272,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		onCategoryOptionClick,
 		onIconSelect,
 		onAddNewCategory,
+		onIconColorChange,
 	} = listProps;
 
 	const queryClient = useQueryClient();
@@ -333,6 +336,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					bookmarksCountData?.data?.categoryCount,
 					(catItem) => catItem?.category_id === item?.id,
 				)?.count,
+				iconColor: item?.icon_color,
 		  }))
 		: [];
 
@@ -460,6 +464,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 									item={item}
 									listNameId="collection-name"
 									onCategoryOptionClick={onCategoryOptionClick}
+									onIconColorChange={onIconColorChange}
 									onIconSelect={onIconSelect}
 									showDropdown
 									showSpinner={item?.id === sidePaneOptionLoading}

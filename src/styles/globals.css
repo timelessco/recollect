@@ -449,3 +449,7 @@ main {
 input[type="checkbox"]:checked + .checkbox-div {
 	border: none;
 }
+
+.icon-svg-parent svg {
+	fill: currentColor;
+}
