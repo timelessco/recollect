@@ -43,6 +43,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === SEARCH_URL,
 			id: 0,
 			count: undefined,
+			iconColor: "",
 		},
 		{
 			icon: <InboxIconGray />,
@@ -51,6 +52,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === UNCATEGORIZED_URL,
 			id: 2,
 			count: bookmarksCountData?.data?.uncategorized,
+			iconColor: "",
 		},
 		{
 			icon: <HomeIconGray />,
@@ -59,6 +61,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === ALL_BOOKMARKS_URL,
 			id: 1,
 			count: bookmarksCountData?.data?.allBookmarks,
+			iconColor: "",
 		},
 
 		{
@@ -68,6 +71,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === TRASH_URL,
 			id: 3,
 			count: bookmarksCountData?.data?.trash,
+			iconColor: "",
 		},
 		{
 			icon: <SettingsIcon />,
@@ -76,6 +80,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === SETTINGS_URL,
 			id: 4,
 			count: undefined,
+			iconColor: "",
 		},
 	];
 

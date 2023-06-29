@@ -786,7 +786,7 @@ const CardSection = ({
 								<div className="flex items-center">
 									<figure className="h-[12px] w-[12px]">
 										{find(
-											options,
+											options(bookmarkCategoryData?.icon_color),
 											(optionItem) =>
 												optionItem?.label === bookmarkCategoryData?.icon,
 										)?.icon()}

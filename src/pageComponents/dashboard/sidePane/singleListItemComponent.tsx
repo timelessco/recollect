@@ -41,7 +41,7 @@ export type listPropsTypes = {
 		current: boolean,
 		id: number,
 	) => void;
-	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
+	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect?: (value: string, id: number) => void;
 	showDropdown?: boolean;
 	showIconDropdown?: boolean;
@@ -60,7 +60,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		onIconSelect = () => null,
 		onCategoryOptionClick = () => null,
 		showSpinner = false,
-		onIconColorChange,
+		onIconColorChange = () => null,
 	} = listProps;
 
 	return (

@@ -13,24 +13,81 @@ import { find } from "lodash";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
 import { type CategoryIconsDropdownTypes } from "../../types/componentTypes";
 import { options } from "../../utils/commonData";
+import Button from "../atoms/button";
 
 const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	const { onIconSelect, iconValue, onIconColorChange, iconColor } = props;
 	// const [hsva, setHsva] = useState({ h: 0, s: 0, v: 289, a: 1 });
 	const [color, setColor] = useState(iconColor);
+	const [pageIndex, setPageIndex] = useState(0);
+
+	const iconsList = options(color);
+
+	const [myList, setMyList] = useState(
+		iconsList
+			?.map((item) => item?.label)
+			?.filter((_filterItem, index) => index < 100),
+	);
 
 	useEffect(() => {
 		setColor(iconColor);
 	}, [iconColor]);
 
-	const iconsList = options(color);
-
-	const defaultList = iconsList?.map((item) => item?.label);
-
 	const combobox = useComboboxState({
-		defaultList,
+		list: myList,
+
+		setList: setMyList,
 	});
 	const menu = useMenuState(combobox);
+
+	// constants
+	const totalIconsPerPage = 100;
+	const totalPagesValue = Math.ceil(iconsList?.length / totalIconsPerPage);
+	const currentPage = pageIndex + 1;
+
+	const onPaginationClick = (paginationType: "next" | "prev") => {
+		if (paginationType === "next") {
+			const paginationLimitLogic = !pageIndex
+				? totalIconsPerPage
+				: pageIndex * totalIconsPerPage + totalIconsPerPage;
+
+			const defaultList = iconsList
+				?.map((item) => item?.label)
+				?.filter((_filterItem, index) => {
+					if (
+						index > paginationLimitLogic &&
+						index < paginationLimitLogic + totalIconsPerPage
+					) {
+						return true;
+					} else {
+						return false;
+					}
+				});
+
+			setMyList(defaultList);
+			setPageIndex(pageIndex + 1);
+		} else {
+			const paginationLimitLogic = !pageIndex
+				? totalIconsPerPage
+				: pageIndex * totalIconsPerPage;
+
+			const defaultList = iconsList
+				?.map((item) => item?.label)
+				?.filter((_filterItem, index) => {
+					if (
+						index > paginationLimitLogic - totalIconsPerPage &&
+						index < paginationLimitLogic
+					) {
+						return true;
+					} else {
+						return false;
+					}
+				});
+
+			setMyList(defaultList);
+			setPageIndex(pageIndex - 1);
+		}
+	};
 
 	// Resets combobox value when menu is closed
 	if (!menu.mounted && combobox.value) {
@@ -93,20 +150,41 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						onChange={(sliderColor) => {
 							setColor(sliderColor.hex);
 							// setHsva({ ...hsva, ...sliderColor.hsv });
-							onIconColorChange(sliderColor.hex);
+							if (onIconColorChange) {
+								onIconColorChange(sliderColor.hex);
+							}
 						}}
 					/>
 				</div>
-				<ComboboxList className="flex flex-col pb-3 pt-2" state={combobox}>
-					<ComboboxRow className="flex space-x-3">
-						{combobox.matches.map((values, index) =>
-							renderComboBoxItem(values, index),
-						)}
+				<ComboboxList
+					className="flex flex-col overflow-y-scroll pb-3 pt-2"
+					id="icon-selector"
+					state={combobox}
+				>
+					<ComboboxRow className="flex flex-wrap">
+						<div className="flex flex-wrap" id="icon-selector">
+							{combobox.matches.map((values, index) =>
+								renderComboBoxItem(values, index),
+							)}
+						</div>
 					</ComboboxRow>
-					{/* <ComboboxRow>
-            {renderComboBoxItem(combobox.matches[0])}
-            {renderComboBoxItem(combobox.matches[1])}
-          </ComboboxRow> */}
+					<div className="flex w-full justify-between pt-2">
+						<Button
+							isDisabled={currentPage === 1}
+							onClick={() => onPaginationClick("prev")}
+						>
+							prev
+						</Button>
+						<span className=" text-[13px] font-medium">
+							{currentPage}/{totalPagesValue}
+						</span>
+						<Button
+							isDisabled={currentPage === totalPagesValue}
+							onClick={() => onPaginationClick("next")}
+						>
+							next
+						</Button>
+					</div>
 				</ComboboxList>
 			</Menu>
 		</>

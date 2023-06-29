@@ -15,7 +15,6 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 	isDisabled?: boolean;
 	isError: boolean;
 	isFullWidth?: boolean;
-	onBlur?: () => void;
 	placeholder: string;
 	rendedRightSideElement?: ChildrenTypes;
 	wrapperClassName?: string;

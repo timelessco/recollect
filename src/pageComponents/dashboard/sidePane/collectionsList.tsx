@@ -79,7 +79,7 @@ type CollectionsListPropertyTypes = {
 		current: boolean,
 		id: number,
 	) => Promise<void>;
-	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
+	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 };
 // interface OnReorderPayloadTypes {

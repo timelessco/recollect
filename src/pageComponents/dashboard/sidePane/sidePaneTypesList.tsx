@@ -37,6 +37,7 @@ const SidePaneTypesList = () => {
 			current: false,
 			id: 0,
 			count: undefined,
+			iconColor: "",
 		},
 		{
 			icon: <ImageIcon />,
@@ -45,6 +46,7 @@ const SidePaneTypesList = () => {
 			current: currentPath === IMAGES_URL,
 			id: 1,
 			count: bookmarksCountData?.data?.images,
+			iconColor: "",
 		},
 		{
 			icon: <VideoIcon />,
@@ -53,6 +55,7 @@ const SidePaneTypesList = () => {
 			current: false,
 			id: 2,
 			count: undefined,
+			iconColor: "",
 		},
 		{
 			icon: <FolderIcon />,
@@ -61,6 +64,7 @@ const SidePaneTypesList = () => {
 			current: false,
 			id: 3,
 			count: undefined,
+			iconColor: "",
 		},
 	];
 

@@ -34,6 +34,7 @@ const Button: FC<ButtonProps> = (props) => {
 			"bg-custom-gray-5 hover:bg-gray-800": type === "dark",
 			"bg-white hover:bg-custom-gray-8": type === "light",
 			"bg-custom-gray-8": isActive,
+			"disabled:opacity-5": isDisabled,
 		}),
 		className,
 	);
