@@ -35,6 +35,7 @@ export type CategoryIdUrlTypes =
 export type FileType = File;
 
 export type CategoryIconsDropdownTypes = {
+	buttonIconSize: number;
 	iconColor: CategoriesData["icon_color"];
 	iconValue: string | null;
 	onIconColorChange: (value: string) => void;

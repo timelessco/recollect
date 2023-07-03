@@ -81,6 +81,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							onClick={(event) => event.preventDefault()}
 						>
 							<CategoryIconsDropdown
+								buttonIconSize={18}
 								iconColor={item?.iconColor}
 								iconValue={item?.iconValue ?? null}
 								onIconColorChange={onIconColorChange}

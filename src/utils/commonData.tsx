@@ -3745,14 +3745,12 @@ const object = [
 		name: "youtube-logo",
 	},
 ];
-export const options = (color: string) =>
+export const options = () =>
 	object.map((index) => ({
 		label: index.name,
-		icon: () => (
-			<div className="icon-svg-parent" style={{ color }}>
-				<svg height="18" width="18">
-					<use href={`/sprite.svg#${index.name}`} />
-				</svg>
-			</div>
+		icon: (iconColor: string, size: string = "16") => (
+			<svg fill={iconColor} height={size} viewBox="0 0 18 18" width={size}>
+				<use href={`/sprite.svg#${index.name}`} />
+			</svg>
 		),
 	}));

@@ -62,6 +62,7 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	colorPickerColors,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -477,7 +478,14 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
 						<div className="flex items-center">
 							<figure className="mr-2 h-[18px] w-[18px]">
-								<FileIcon />
+								<svg
+									fill={colorPickerColors[1]}
+									height="16"
+									viewBox="0 0 18 18"
+									width="16"
+								>
+									<use href="/sprite.svg#file" />
+								</svg>
 							</figure>
 							<input
 								autoFocus

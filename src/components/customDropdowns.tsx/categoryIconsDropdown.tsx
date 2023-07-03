@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Slider from "@uiw/react-color-slider";
 import {
 	Combobox,
 	ComboboxItem,
@@ -13,20 +12,33 @@ import { find } from "lodash";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
 import { type CategoryIconsDropdownTypes } from "../../types/componentTypes";
 import { options } from "../../utils/commonData";
+import { colorPickerColors } from "../../utils/constants";
 import Button from "../atoms/button";
+import ColorPicker from "../colorPicker";
 
 const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
-	const { onIconSelect, iconValue, onIconColorChange, iconColor } = props;
+	const {
+		onIconSelect,
+		iconValue,
+		onIconColorChange,
+		iconColor,
+		buttonIconSize = 20,
+	} = props;
 	// const [hsva, setHsva] = useState({ h: 0, s: 0, v: 289, a: 1 });
 	const [color, setColor] = useState(iconColor);
 	const [pageIndex, setPageIndex] = useState(0);
 
-	const iconsList = options(color);
+	const iconsList = options();
+
+	// constants
+	const totalIconsPerPage = 99;
+	const totalPagesValue = Math.ceil(iconsList?.length / totalIconsPerPage);
+	const currentPage = pageIndex + 1;
 
 	const [myList, setMyList] = useState(
 		iconsList
 			?.map((item) => item?.label)
-			?.filter((_filterItem, index) => index < 100),
+			?.filter((_filterItem, index) => index < totalIconsPerPage),
 	);
 
 	useEffect(() => {
@@ -40,11 +52,6 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	});
 	const menu = useMenuState(combobox);
 
-	// constants
-	const totalIconsPerPage = 100;
-	const totalPagesValue = Math.ceil(iconsList?.length / totalIconsPerPage);
-	const currentPage = pageIndex + 1;
-
 	const onPaginationClick = (paginationType: "next" | "prev") => {
 		if (paginationType === "next") {
 			const paginationLimitLogic = !pageIndex
@@ -55,7 +62,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				?.map((item) => item?.label)
 				?.filter((_filterItem, index) => {
 					if (
-						index > paginationLimitLogic &&
+						index >= paginationLimitLogic &&
 						index < paginationLimitLogic + totalIconsPerPage
 					) {
 						return true;
@@ -75,7 +82,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				?.map((item) => item?.label)
 				?.filter((_filterItem, index) => {
 					if (
-						index > paginationLimitLogic - totalIconsPerPage &&
+						index >= paginationLimitLogic - totalIconsPerPage &&
 						index < paginationLimitLogic
 					) {
 						return true;
@@ -99,7 +106,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 		return (
 			<div className="h-[18px] w-[18px]" title={data?.label}>
-				{data?.icon()}
+				{data?.icon(colorPickerColors[1])}
 			</div>
 		);
 	};
@@ -120,10 +127,24 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	return (
 		<>
 			<MenuButton state={menu}>
-				{find(iconsList, (item) => item?.label === iconValue)?.icon()}
+				<div
+					className="flex items-center justify-center rounded-full p-0.5"
+					style={{
+						width: buttonIconSize,
+						height: buttonIconSize,
+						backgroundColor: color,
+					}}
+				>
+					{find(iconsList, (item) => item?.label === iconValue)?.icon(
+						color === colorPickerColors[0]
+							? colorPickerColors[1]
+							: colorPickerColors[0],
+						"14",
+					)}
+				</div>
 			</MenuButton>
 			<Menu
-				className="absolute left-4 z-10 mt-2 w-[319px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
+				className="absolute left-4 z-10 mt-2 h-[368px] w-[319px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
 				composite={false}
 				state={menu}
 			>
@@ -144,16 +165,16 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						/>
 					</div>
 				</div>
-				<div>
-					<Slider
-						color="#F58024"
+				<div className="pt-2">
+					<ColorPicker
+						colorsList={colorPickerColors}
 						onChange={(sliderColor) => {
-							setColor(sliderColor.hex);
-							// setHsva({ ...hsva, ...sliderColor.hsv });
+							setColor(sliderColor);
 							if (onIconColorChange) {
-								onIconColorChange(sliderColor.hex);
+								onIconColorChange(sliderColor);
 							}
 						}}
+						selectedColor={color}
 					/>
 				</div>
 				<ComboboxList
@@ -168,7 +189,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 							)}
 						</div>
 					</ComboboxRow>
-					<div className="flex w-full justify-between pt-2">
+					<div className="absolute bottom-2 left-0 flex w-full justify-between px-2 pt-2 ">
 						<Button
 							isDisabled={currentPage === 1}
 							onClick={() => onPaginationClick("prev")}

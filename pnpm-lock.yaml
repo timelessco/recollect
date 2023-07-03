@@ -29,9 +29,6 @@ dependencies:
   '@tanstack/react-query-devtools':
     specifier: 4.28.0
     version: 4.28.0(@tanstack/react-query@4.28.0)(react-dom@18.2.0)(react@18.2.0)
-  '@uiw/react-color-slider':
-    specifier: ^1.3.1
-    version: 1.3.1(react-dom@18.2.0)(react@18.2.0)
   allotment:
     specifier: 1.18.1
     version: 1.18.1(react-dom@18.2.0)(react@18.2.0)
@@ -3891,49 +3888,6 @@ packages:
       '@typescript-eslint/types': 5.58.0
       eslint-visitor-keys: 3.4.0
     dev: true
-
-  /@uiw/color-convert@1.3.1:
-    resolution: {integrity: sha512-YVoL/nBU0D2krOtv5ovbqNZacNRclZbDirNS89x08Ah07VyP6eP1wOss/vacjgIqSqCvfsdeyiy9lQLdU/nAqw==}
-    peerDependencies:
-      '@babel/runtime': '>=7.19.0'
-    dev: false
-
-  /@uiw/react-color-alpha@1.3.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-zWG2Hr3jm8V0/DYM2Tw6ikdOGsrrrJ0ZdKw7m+BfajtvnCxGYjuguolKTtcuYm2h0cd0nVH+OYN99v6nndVBAg==}
-    peerDependencies:
-      '@babel/runtime': '>=7.19.0'
-      react: '>=16.9.0'
-      react-dom: '>=16.9.0'
-    dependencies:
-      '@uiw/color-convert': 1.3.1
-      '@uiw/react-drag-event-interactive': 1.3.1(react-dom@18.2.0)(react@18.2.0)
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
-  /@uiw/react-color-slider@1.3.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-eVE53IMfM5iF+Zb+cXCGaZ1w0JZnbZA7bOeWX4zjO+hFZQjNK7Uy0rFpUMcLGR+NERD3hSQvsn94I5efucKg7A==}
-    peerDependencies:
-      '@babel/runtime': '>=7.19.0'
-      react: '>=16.9.0'
-      react-dom: '>=16.9.0'
-    dependencies:
-      '@uiw/color-convert': 1.3.1
-      '@uiw/react-color-alpha': 1.3.1(react-dom@18.2.0)(react@18.2.0)
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
-  /@uiw/react-drag-event-interactive@1.3.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-YtjVzcDO/dCT6/7efnL2OAC+g1yP61xSqgCvA/A/N6ZaC2WOvEaE0xCDEeVmLDDJmD7KOMnazYMNLHd/4IfIKQ==}
-    peerDependencies:
-      '@babel/runtime': '>=7.19.0'
-      react: '>=16.9.0'
-      react-dom: '>=16.9.0'
-    dependencies:
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
 
   /@vivaxy/git@4.2.1:
     resolution: {integrity: sha512-Gpnne7sk3oTd0fyw1J3clVX2ZBkJjNRduccDbOcgYv31M35nBzUHSzQ56eFiJsOTNfdVadL2bo0ICw5oilGfEA==}

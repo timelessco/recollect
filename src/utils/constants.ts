@@ -127,3 +127,13 @@ export const acceptedFileTypes = [
 	"audio/mp3",
 	"audio/mpeg",
 ];
+
+// color picker colors
+export const colorPickerColors = [
+	"#ffffff",
+	"#000000",
+	"#F44E3B",
+	"#FE9200",
+	"#FCDC00",
+	"#DBDF00",
+];
