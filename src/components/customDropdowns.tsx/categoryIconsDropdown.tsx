@@ -124,6 +124,28 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 		</ComboboxItem>
 	);
 
+	const renderList = () => {
+		const batchSize = 11;
+
+		const batches = Array.from(
+			{ length: Math.ceil(combobox.matches.length / batchSize) },
+			(_, index) => {
+				const start = index * batchSize;
+				const end = start + batchSize;
+				return combobox.matches.slice(start, end);
+			},
+		);
+		return (
+			<>
+				{batches?.map((item) => (
+					<ComboboxRow className="flex justify-between" key={Math.random()}>
+						{item.map((values, index) => renderComboBoxItem(values, index))}
+					</ComboboxRow>
+				))}
+			</>
+		);
+	};
+
 	return (
 		<>
 			<MenuButton state={menu}>
@@ -182,13 +204,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 					id="icon-selector"
 					state={combobox}
 				>
-					<ComboboxRow className="flex flex-wrap">
-						<div className="flex flex-wrap" id="icon-selector">
-							{combobox.matches.map((values, index) =>
-								renderComboBoxItem(values, index),
-							)}
-						</div>
-					</ComboboxRow>
+					{renderList()}
 					<div className="absolute bottom-2 left-0 flex w-full justify-between px-2 pt-2 ">
 						<Button
 							isDisabled={currentPage === 1}

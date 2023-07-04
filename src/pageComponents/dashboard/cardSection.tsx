@@ -64,6 +64,7 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	colorPickerColors,
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
@@ -789,7 +790,7 @@ const CardSection = ({
 											options(),
 											(optionItem) =>
 												optionItem?.label === bookmarkCategoryData?.icon,
-										)?.icon("12")}
+										)?.icon(colorPickerColors[1], "12")}
 									</figure>
 									<p className="ml-1">{bookmarkCategoryData?.category_name}</p>
 								</div>

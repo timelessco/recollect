@@ -34,10 +34,15 @@ export default function useUpdateCategoryOptimisticMutation() {
 							if (item?.id === data?.category_id) {
 								return {
 									...item,
-									category_views: data?.updateData?.category_views,
+									category_views: data?.updateData?.category_views
+										? data?.updateData?.category_views
+										: item?.category_views,
 									icon: data?.updateData?.icon
 										? data?.updateData?.icon
 										: item?.icon,
+									icon_color: data?.updateData?.icon_color
+										? data?.updateData?.icon_color
+										: item?.icon_color,
 									is_public:
 										data?.updateData?.is_public !== undefined
 											? data?.updateData?.is_public
