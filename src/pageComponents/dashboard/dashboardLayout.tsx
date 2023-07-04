@@ -204,6 +204,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (currentCategory) {
 			return (
 				<CategoryIconsDropdown
+					buttonIconSize={20}
 					iconColor={currentCategory?.icon_color}
 					iconValue={currentCategory?.icon}
 					onIconColorChange={onIconColorChange}

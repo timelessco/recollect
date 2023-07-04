@@ -33,7 +33,6 @@ export const EMAIL_CHECK_PATTERN =
 // 	}
 
 // 	return "http://localhost:3000";
-
 // };
 
 const getBaseUrl = () =>

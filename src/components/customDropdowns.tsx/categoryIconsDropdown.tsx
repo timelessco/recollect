@@ -138,8 +138,10 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 		return (
 			<>
 				{batches?.map((item) => (
-					<ComboboxRow className="flex justify-between" key={Math.random()}>
-						{item.map((values, index) => renderComboBoxItem(values, index))}
+					<ComboboxRow className="flex justify-between" key={item[0]}>
+						{item.map((values, innerIndex) =>
+							renderComboBoxItem(values, innerIndex),
+						)}
 					</ComboboxRow>
 				))}
 			</>
