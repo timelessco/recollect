@@ -38,6 +38,6 @@ export type CategoryIconsDropdownTypes = {
 	buttonIconSize: number;
 	iconColor: CategoriesData["icon_color"];
 	iconValue: string | null;
-	onIconColorChange: (value: string) => void;
+	onIconColorChange: (value: string, id?: CategoriesData["id"]) => void;
 	onIconSelect: (value: string) => void;
 };

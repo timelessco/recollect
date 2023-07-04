@@ -41,7 +41,6 @@ import {
 } from "../../../components/ariaDropdown";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
-import FileIcon from "../../../icons/categoryIcons/fileIcon";
 import OptionsIconGray from "../../../icons/optionsIconGray";
 import {
 	useLoadersStore,
@@ -465,7 +464,9 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 									item={item}
 									listNameId="collection-name"
 									onCategoryOptionClick={onCategoryOptionClick}
-									onIconColorChange={onIconColorChange}
+									onIconColorChange={(color) =>
+										onIconColorChange?.(color, item?.id)
+									}
 									onIconSelect={onIconSelect}
 									showDropdown
 									showSpinner={item?.id === sidePaneOptionLoading}

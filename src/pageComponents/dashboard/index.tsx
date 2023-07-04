@@ -889,10 +889,10 @@ const Dashboard = () => {
 				onClearTrash={() => {
 					toggleShowClearTrashWarningModal();
 				}}
-				onIconColorChange={(color) => {
+				onIconColorChange={(color, id) => {
 					void mutationApiCall(
 						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: CATEGORY_ID,
+							category_id: id ?? CATEGORY_ID,
 							updateData: {
 								icon_color: color,
 							},
