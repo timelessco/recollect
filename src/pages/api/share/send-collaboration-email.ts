@@ -4,8 +4,11 @@
 
 import { type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
+// import fromData from "form-data";
 import { sign, verify, type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
+
+// import MainGun from "mailgun.js";
 
 import {
 	type NextApiRequest,
@@ -63,34 +66,6 @@ export default async function handler(
 		throw new Error("ERROR");
 	}
 
-	// console.log('emails', emailList);
-
-	// const transporter = nodemailer.createTransport({
-	//   service: 'gmail',
-	//   host: 'domain',
-	//   port: 587,
-	//   secure: false, // use SSL
-	//   debug: true,
-	//   auth: {
-	//     user: 'abhishek@timeless.co',
-	//     pass: '',
-	//   },
-	// });
-
-	// const mailOptions = {
-	//   from: 'abhishek@timeless.co',
-	//   to: 'abhishekmg.12@gmail.com',
-	//   subject: 'Sending Email using Node.js',
-	//   text: 'That was easy!',
-	// };
-
-	// transporter.sendMail(mailOptions, function (error, info) {
-	//   if (error) {
-	//     console.log('err',  error);
-	//   } else {
-	//     console.log('Email sent: ' + info.response);
-	//   }
-	// });
 	const token = sign(
 		{
 			email: emailList[0],
@@ -101,6 +76,23 @@ export default async function handler(
 		"shhhhh",
 	);
 	const url = `${hostUrl}/api/invite?token=${token}`;
+
+	// const mailgun = new Mailgun(formData);
+	// const mg = mailgun.client({
+	// 	username: "api",
+	// 	key: "",
+	// });
+
+	// mg.messages
+	// 	.create("", {
+	// 		from: "Excited User <mailgun@>",
+	// 		to: "abhishek@timeless.co",
+	// 		subject: "Bookmarks invite",
+	// 		text: "Bookmarks invite link",
+	// 		html: `<div>This is your invite link <a href=${url}>${url}</a></div>`,
+	// 	})
+	// 	.then((message) => console.log("email success", message)) // logs response data
+	// 	.catch((error_) => console.log("error1123", error_));
 
 	response.status(200).json({ url, error: null });
 }
