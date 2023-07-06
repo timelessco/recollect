@@ -138,7 +138,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 		return (
 			<>
 				{batches?.map((item) => (
-					<ComboboxRow className="flex justify-between" key={item[0]}>
+					<ComboboxRow className="flex justify-start" key={item[0]}>
 						{item.map((values, innerIndex) =>
 							renderComboBoxItem(values, innerIndex),
 						)}
@@ -168,7 +168,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				</div>
 			</MenuButton>
 			<Menu
-				className="absolute left-4 z-10 mt-2 h-[368px] w-[319px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
+				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
 				composite={false}
 				state={menu}
 			>
