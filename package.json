@@ -164,7 +164,7 @@
 		"prettier": "3.0.0",
 		"prettier-plugin-packagejson": "2.4.3",
 		"prettier-plugin-tailwindcss": "0.2.7",
-		"release-it": "15.10.1",
+		"release-it": "16.0.0",
 		"sharp": "0.32.0",
 		"source-map-explorer": "2.5.3",
 		"stylelint": "15.4.0",
