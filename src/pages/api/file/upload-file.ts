@@ -9,6 +9,7 @@ import { verify } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
 import fetch from "node-fetch";
+import probe from "probe-image-size";
 
 import { type UploadFileApiResponse } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
@@ -110,6 +111,18 @@ export default async (
 			generated_text: string;
 		}>;
 
+		let imgData;
+
+		if (storageData?.publicUrl) {
+			imgData = await probe(storageData?.publicUrl);
+		}
+
+		const meta_data = {
+			img_caption: jsonResponse[0]?.generated_text,
+			width: imgData?.width,
+			height: imgData?.height,
+		};
+
 		const { error: DBerror } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.insert([
@@ -121,9 +134,7 @@ export default async (
 					ogImage: storageData?.publicUrl,
 					category_id: 0,
 					type: fileType,
-					meta_data: {
-						img_caption: jsonResponse[0]?.generated_text,
-					},
+					meta_data,
 				},
 			])
 			.select();

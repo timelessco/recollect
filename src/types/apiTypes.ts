@@ -12,13 +12,19 @@ import {
 import { type FileType } from "./componentTypes";
 
 export type SupabaseSessionType = Session | null;
+
+export type ImgMetadataType = {
+	height: number | null;
+	img_caption: string | null;
+	width: number | null;
+};
 export type SingleListData = {
 	addedTags: UserTagsData[];
 	category_id: number;
 	description: string;
 	id: number;
 	inserted_at: string;
-	meta_data: { img_caption: string };
+	meta_data: ImgMetadataType;
 	ogImage: string;
 	screenshot: string;
 	title: string;

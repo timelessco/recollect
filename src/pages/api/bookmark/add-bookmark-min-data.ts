@@ -6,6 +6,7 @@ import axios from "axios";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
+import probe from "probe-image-size";
 
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -56,6 +57,18 @@ export default async function handler(
 		url,
 	});
 
+	let imgData;
+
+	if (scrapperResponse?.data?.OgImage) {
+		imgData = await probe(scrapperResponse?.data?.OgImage);
+	}
+
+	const meta_data = {
+		img_caption: null,
+		width: imgData?.width,
+		height: imgData?.height,
+	};
+
 	if (
 		updateAccess === true &&
 		!isNull(categoryId) &&
@@ -79,6 +92,7 @@ export default async function handler(
 					description: scrapperResponse?.data?.description,
 					ogImage: scrapperResponse?.data?.OgImage,
 					category_id: categoryId,
+					meta_data,
 				},
 			])
 			.select();
@@ -105,6 +119,7 @@ export default async function handler(
 					description: scrapperResponse?.data?.description,
 					ogImage: scrapperResponse?.data?.OgImage,
 					category_id: 0,
+					meta_data,
 				},
 			])
 			.select();

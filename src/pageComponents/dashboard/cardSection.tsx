@@ -833,7 +833,8 @@ const CardSection = ({
 						{bookmarksInfoValue?.includes("title" as never) && (
 							<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
 								{item?.title}
-								{renderCaption(item?.meta_data?.img_caption)}
+								{item?.meta_data?.img_caption &&
+									renderCaption(item?.meta_data?.img_caption)}
 							</p>
 						)}
 						{bookmarksInfoValue?.includes("description" as never) &&
@@ -926,7 +927,8 @@ const CardSection = ({
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
 							{item?.title}
-							{renderCaption(item?.meta_data?.img_caption)}
+							{item?.meta_data?.img_caption &&
+								renderCaption(item?.meta_data?.img_caption)}
 						</p>
 					)}
 					<div className="flex items-center space-x-1 space-y-2">
