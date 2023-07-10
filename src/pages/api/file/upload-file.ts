@@ -105,45 +105,54 @@ export default async (
 			error: UploadFileApiResponse["error"];
 		};
 
-		const imageCaption = await query(data?.files?.file?.filepath as string);
+		if (isNil(storageError)) {
+			const imageCaption = await query(data?.files?.file?.filepath as string);
 
-		const jsonResponse = (await imageCaption.json()) as Array<{
-			generated_text: string;
-		}>;
+			const jsonResponse = (await imageCaption.json()) as Array<{
+				generated_text: string;
+			}>;
 
-		let imgData;
+			let imgData;
 
-		if (storageData?.publicUrl) {
-			imgData = await probe(storageData?.publicUrl);
-		}
+			if (storageData?.publicUrl) {
+				imgData = await probe(storageData?.publicUrl);
+			}
 
-		const meta_data = {
-			img_caption: jsonResponse[0]?.generated_text,
-			width: imgData?.width,
-			height: imgData?.height,
-		};
+			const meta_data = {
+				img_caption: jsonResponse[0]?.generated_text,
+				width: imgData?.width,
+				height: imgData?.height,
+			};
 
-		const { error: DBerror } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.insert([
-				{
-					url: storageData?.publicUrl,
-					title: fileName,
-					user_id: userId,
-					description: "",
-					ogImage: storageData?.publicUrl,
-					category_id: 0,
-					type: fileType,
-					meta_data,
-				},
-			])
-			.select();
-		if (isNil(storageError) && isNil(publicUrlError) && isNil(DBerror)) {
-			response.status(200).json({ success: true, error: null });
+			const { error: DBerror } = await supabase
+				.from(MAIN_TABLE_NAME)
+				.insert([
+					{
+						url: storageData?.publicUrl,
+						title: fileName,
+						user_id: userId,
+						description: "",
+						ogImage: storageData?.publicUrl,
+						category_id: 0,
+						type: fileType,
+						meta_data,
+					},
+				])
+				.select();
+
+			if (isNil(storageError) && isNil(publicUrlError) && isNil(DBerror)) {
+				response.status(200).json({ success: true, error: null });
+			} else {
+				response.status(500).json({
+					success: false,
+					error: storageError ?? publicUrlError ?? DBerror,
+				});
+			}
 		} else {
+			// storage error
 			response.status(500).json({
 				success: false,
-				error: storageError ?? publicUrlError ?? DBerror,
+				error: storageError,
 			});
 		}
 	} else {

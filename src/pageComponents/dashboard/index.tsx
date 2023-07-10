@@ -432,10 +432,12 @@ const Dashboard = () => {
 					acceptedFiles[index] &&
 					acceptedFileTypes?.includes(acceptedFiles[index]?.type)
 				) {
-					fileUploadOptimisticMutation.mutate({
-						file: acceptedFiles[index],
-						session,
-					});
+					mutationApiCall(
+						fileUploadOptimisticMutation.mutateAsync({
+							file: acceptedFiles[index],
+							session,
+						}),
+					).catch((error) => console.error(error));
 				} else {
 					errorToast(`File type ${acceptedFiles[index]?.type} is not accepted`);
 				}
