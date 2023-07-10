@@ -13,6 +13,7 @@ import probe from "probe-image-size";
 
 import { type UploadFileApiResponse } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
+import { isUserInACategory } from "../../../utils/helpers";
 
 // first we need to disable the default body parser
 export const config = {
@@ -59,7 +60,7 @@ export default async (
 			resolve({ fields, files });
 		});
 	})) as {
-		fields: { access_token?: string };
+		fields: { access_token?: string; category_id?: string };
 		files: {
 			file?: { filepath?: string; mimetype: string; originalFilename?: string };
 		};
@@ -75,6 +76,14 @@ export default async (
 			}
 		},
 	);
+
+	const categoryId = data?.fields?.category_id;
+
+	const categoryIdLogic = categoryId
+		? isUserInACategory(categoryId)
+			? categoryId
+			: 0
+		: 0;
 
 	const tokenDecode: { sub: string } = jwtDecode(
 		data?.fields?.access_token as string,
@@ -133,7 +142,7 @@ export default async (
 						user_id: userId,
 						description: "",
 						ogImage: storageData?.publicUrl,
-						category_id: 0,
+						category_id: categoryIdLogic,
 						type: fileType,
 						meta_data,
 					},

@@ -436,6 +436,7 @@ const Dashboard = () => {
 						fileUploadOptimisticMutation.mutateAsync({
 							file: acceptedFiles[index],
 							session,
+							category_id: CATEGORY_ID,
 						}),
 					).catch((error) => console.error(error));
 				} else {
@@ -443,6 +444,7 @@ const Dashboard = () => {
 				}
 			}
 		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[fileUploadOptimisticMutation, session],
 	);
 

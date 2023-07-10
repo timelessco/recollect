@@ -9,7 +9,7 @@ import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 } from "./componentStoreTypes";
-import { type FileType } from "./componentTypes";
+import { type CategoryIdUrlTypes, type FileType } from "./componentTypes";
 
 export type SupabaseSessionType = Session | null;
 
@@ -288,6 +288,7 @@ export type AddUserTagsApiPayload = {
 };
 
 export type UploadFileApiPayload = {
+	category_id: CategoryIdUrlTypes;
 	file: FileType;
 	session: SupabaseSessionType;
 };

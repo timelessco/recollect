@@ -793,13 +793,18 @@ export const getUserProfilePic = async ({
 
 // file upload
 
-export const uploadFile = async ({ file, session }: UploadFileApiPayload) => {
+export const uploadFile = async ({
+	file,
+	session,
+	category_id,
+}: UploadFileApiPayload) => {
 	try {
 		const response = await axios.post<UploadFileApiResponse>(
 			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
 			{
 				file,
 				access_token: session?.access_token,
+				category_id,
 			},
 			{
 				headers: {
