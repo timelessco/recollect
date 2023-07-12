@@ -751,7 +751,7 @@ const CardSection = ({
 					return <div className={loaderClassName} />;
 				}
 
-				if (errorImgs?.includes(id as never)) {
+				if (errorImgs?.includes(id as never) || !img) {
 					return <ErrorImgPlaceholder />;
 				}
 

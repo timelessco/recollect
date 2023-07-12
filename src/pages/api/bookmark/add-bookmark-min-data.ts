@@ -3,6 +3,7 @@
 import { type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
+import { decode } from "base64-arraybuffer";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
@@ -15,7 +16,9 @@ import {
 } from "../../../types/apiTypes";
 import {
 	ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
+	BOOKMAKRS_STORAGE_NAME,
 	MAIN_TABLE_NAME,
+	STORAGE_SCRAPPED_IMAGES_PATH,
 	TIMELESS_SCRAPPER_API,
 	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
@@ -49,6 +52,26 @@ export default async function handler(
 		process.env.SUPABASE_SERVICE_KEY,
 	);
 
+	const upload = async (base64info: string) => {
+		const imgName = `img${Math.random()}.jpg`;
+
+		await supabase.storage
+			.from(BOOKMAKRS_STORAGE_NAME)
+			.upload(
+				`${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`,
+				decode(base64info),
+				{
+					contentType: "image/jpg",
+				},
+			);
+
+		const { data: storageData } = supabase.storage
+			.from(BOOKMAKRS_STORAGE_NAME)
+			.getPublicUrl(`${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`);
+
+		return storageData?.publicUrl;
+	};
+
 	const scrapperResponse = await axios.post<{
 		OgImage: string;
 		description: string;
@@ -59,8 +82,17 @@ export default async function handler(
 
 	let imgData;
 
+	let imgUrl;
+
 	if (scrapperResponse?.data?.OgImage) {
 		imgData = await probe(scrapperResponse?.data?.OgImage);
+
+		const image = await axios.get(scrapperResponse?.data?.OgImage, {
+			responseType: "arraybuffer",
+		});
+		const returnedB64 = Buffer.from(image.data).toString("base64");
+
+		imgUrl = await upload(returnedB64);
 	}
 
 	const meta_data = {
@@ -90,7 +122,7 @@ export default async function handler(
 					title: scrapperResponse.data.title,
 					user_id: userId,
 					description: scrapperResponse?.data?.description,
-					ogImage: scrapperResponse?.data?.OgImage,
+					ogImage: imgUrl,
 					category_id: categoryId,
 					meta_data,
 				},
@@ -117,7 +149,7 @@ export default async function handler(
 					title: scrapperResponse?.data?.title,
 					user_id: userId,
 					description: scrapperResponse?.data?.description,
-					ogImage: scrapperResponse?.data?.OgImage,
+					ogImage: imgUrl,
 					category_id: 0,
 					meta_data,
 				},

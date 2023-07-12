@@ -955,14 +955,18 @@ const Dashboard = () => {
 						toggleShowDeleteBookmarkWarningModal();
 
 						for (const delItem of deleteBookmarkId) {
-							const delBookmarkTitle = find(
+							const delBookmarkData = find(
 								flattendPaginationBookmarkData,
 								(item) => item?.id === delItem,
-							)?.title;
+							);
+							const delBookmarkTitle = delBookmarkData?.title;
+							const delBookmarkImgLink = delBookmarkData?.ogImage;
+
 							void mutationApiCall(
 								deleteBookmarkOptismicMutation.mutateAsync({
 									id: delItem,
 									title: delBookmarkTitle ?? "",
+									ogImage: delBookmarkImgLink ?? "",
 									session,
 								}),
 							);

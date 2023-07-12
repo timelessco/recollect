@@ -4,6 +4,7 @@ import { verify, type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
 
 import {
+	type DeleteBookmarkPayload,
 	type NextApiRequest,
 	type SingleListData,
 } from "../../../types/apiTypes";
@@ -12,6 +13,7 @@ import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	FILES_STORAGE_NAME,
 	MAIN_TABLE_NAME,
+	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
 
 // this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
@@ -25,7 +27,7 @@ type Data = {
 
 export default async function handler(
 	request: NextApiRequest<{
-		data: { id: string; screenshot: string; title: SingleListData["title"] };
+		data: DeleteBookmarkPayload;
 	}>,
 	response: NextApiResponse<Data>,
 ) {
@@ -47,13 +49,21 @@ export default async function handler(
 		},
 	);
 
-	const screenshot = bookmarkData?.screenshot;
-	const screenshotImgName =
-		screenshot?.split("/")[screenshot.split("/").length - 1];
+	// TODO: uncomment after fixing screenshot issue
+	// const screenshot = bookmarkData?.screenshot;
+	// const screenshotImgName =
+	// 	screenshot?.split("/")[screenshot.split("/").length - 1];
+
+	// await supabase.storage
+	// 	.from(BOOKMAKRS_STORAGE_NAME)
+	// 	.remove([`public/${screenshotImgName}`]);
+
+	const ogImageLink = bookmarkData?.ogImage;
+	const imgName = ogImageLink?.split("/")[ogImageLink.split("/").length - 1];
 
 	await supabase.storage
 		.from(BOOKMAKRS_STORAGE_NAME)
-		.remove([`public/${screenshotImgName}`]);
+		.remove([`${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`]);
 
 	await supabase.storage
 		.from(FILES_STORAGE_NAME)

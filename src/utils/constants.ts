@@ -8,6 +8,8 @@ export const PROFILES = "profiles";
 export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 
+export const STORAGE_SCRAPPED_IMAGES_PATH = "public/scrapped_imgs";
+
 // regx
 
 export const URL_PATTERN =
@@ -20,23 +22,23 @@ export const EMAIL_CHECK_PATTERN =
 	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
 
 // api constants
-// const getBaseUrl = () => {
-// 	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-// 		return process.env.NEXT_PUBLIC_SITE_URL;
-// 	}
+const getBaseUrl = () => {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+		return process.env.NEXT_PUBLIC_SITE_URL;
+	}
 
-// 	if (
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-// 	) {
-// 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-// 	}
+	if (
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+	) {
+		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+	}
 
-// 	return "http://localhost:3000";
-// };
+	return "http://localhost:3000";
+};
 
-const getBaseUrl = () =>
-	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
+// const getBaseUrl = () =>
+// 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
 
 export const NEXT_API_URL = `${getBaseUrl()}/api`;
 export const TIMELESS_SCRAPPER_API =

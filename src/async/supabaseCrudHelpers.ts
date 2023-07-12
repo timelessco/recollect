@@ -18,6 +18,7 @@ import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type ClearBookmarksInTrashApiPayloadTypes,
+	type DeleteBookmarkPayload,
 	type DeleteUserCategoryApiPayload,
 	type FetchDataResponse,
 	type FetchSharedCategoriesData,
@@ -210,16 +211,12 @@ export const addBookmarkScreenshot = async ({
 	}
 };
 
-export const deleteData = async (item: {
-	id: number;
-	session: SupabaseSessionType;
-	title: SingleListData["title"];
-}) => {
+export const deleteData = async (item: DeleteBookmarkPayload) => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 			{
-				data: { id: item?.id, title: item?.title },
+				data: { id: item?.id, title: item?.title, ogImage: item?.ogImage },
 				access_token: item?.session?.access_token,
 			},
 		);
