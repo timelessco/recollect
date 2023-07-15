@@ -216,7 +216,7 @@ export const deleteData = async (item: DeleteBookmarkPayload) => {
 		const response = await axios.post(
 			`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 			{
-				data: { id: item?.id, title: item?.title, ogImage: item?.ogImage },
+				data: { deleteData: item?.deleteData },
 				access_token: item?.session?.access_token,
 			},
 		);

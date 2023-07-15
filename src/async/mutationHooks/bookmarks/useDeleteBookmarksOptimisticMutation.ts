@@ -37,8 +37,10 @@ export default function useDeleteBookmarksOptimisticMutation() {
 							...old,
 							pages: old?.pages?.map((item) => ({
 								...item,
-								data: item.data?.filter(
-									(dataItem) => dataItem?.id !== data?.id,
+								data: item.data?.filter((dataItem) =>
+									data.deleteData?.find(
+										(findItem) => findItem?.id !== dataItem?.id,
+									),
 								),
 							})),
 						};

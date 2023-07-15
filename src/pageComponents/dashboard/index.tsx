@@ -953,24 +953,32 @@ const Dashboard = () => {
 				onContinueCick={() => {
 					if (deleteBookmarkId && !isEmpty(deleteBookmarkId)) {
 						toggleShowDeleteBookmarkWarningModal();
+						const deleteData = deleteBookmarkId?.map((delItem) => {
+							const idAsNumber = Number.parseInt(
+								delItem as unknown as string,
+								10,
+							);
 
-						for (const delItem of deleteBookmarkId) {
 							const delBookmarkData = find(
 								flattendPaginationBookmarkData,
-								(item) => item?.id === delItem,
+								(item) => item?.id === idAsNumber,
 							);
-							const delBookmarkTitle = delBookmarkData?.title;
-							const delBookmarkImgLink = delBookmarkData?.ogImage;
 
-							void mutationApiCall(
-								deleteBookmarkOptismicMutation.mutateAsync({
-									id: delItem,
-									title: delBookmarkTitle ?? "",
-									ogImage: delBookmarkImgLink ?? "",
-									session,
-								}),
-							);
-						}
+							const delBookmarkTitle = delBookmarkData?.title as string;
+							const delBookmarkImgLink = delBookmarkData?.ogImage as string;
+							return {
+								id: idAsNumber,
+								title: delBookmarkTitle,
+								ogImage: delBookmarkImgLink,
+							};
+						});
+
+						void mutationApiCall(
+							deleteBookmarkOptismicMutation.mutateAsync({
+								deleteData,
+								session,
+							}),
+						);
 					}
 
 					setDeleteBookmarkId(undefined);

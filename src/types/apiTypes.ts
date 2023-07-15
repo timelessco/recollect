@@ -294,8 +294,10 @@ export type UploadFileApiPayload = {
 };
 
 export type DeleteBookmarkPayload = {
-	id: SingleListData["id"];
-	ogImage: SingleListData["ogImage"];
+	deleteData: Array<{
+		id: SingleListData["id"];
+		ogImage: SingleListData["ogImage"];
+		title: SingleListData["title"];
+	}>;
 	session: SupabaseSessionType;
-	title: SingleListData["title"];
 };

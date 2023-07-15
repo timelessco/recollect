@@ -36,7 +36,7 @@ export default async function handler(
 		process.env.SUPABASE_SERVICE_KEY,
 	);
 
-	const bookmarkData = request.body.data;
+	const apiData = request.body.data;
 
 	verify(
 		request.body.access_token,
@@ -58,34 +58,66 @@ export default async function handler(
 	// 	.from(BOOKMAKRS_STORAGE_NAME)
 	// 	.remove([`public/${screenshotImgName}`]);
 
-	const ogImageLink = bookmarkData?.ogImage;
-	const imgName = ogImageLink?.split("/")[ogImageLink.split("/").length - 1];
+	// delete ogImages in bucket
+	const deleteImagePaths = apiData?.deleteData?.map((item) => {
+		const ogImageLink = item?.ogImage;
+		const imgName = ogImageLink?.split("/")[ogImageLink.split("/").length - 1];
+		return `${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`;
+	});
 
-	await supabase.storage
+	const { error: storageOgImageError } = (await supabase.storage
 		.from(BOOKMAKRS_STORAGE_NAME)
-		.remove([`${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`]);
+		.remove(deleteImagePaths)) as { error: ErrorResponse };
 
-	await supabase.storage
+	// delete file images in bucket
+
+	const deleteFileImagesPaths = apiData?.deleteData?.map(
+		(item) => `public/${item?.title}`,
+	);
+
+	const { error: fileStorageError } = (await supabase.storage
 		.from(FILES_STORAGE_NAME)
-		.remove([`public/${bookmarkData?.title}`]);
+		.remove(deleteFileImagesPaths)) as { error: ErrorResponse };
 
-	await supabase
+	// delete tags
+
+	const deleteBookmarkIds = apiData?.deleteData?.map((item) => item?.id);
+
+	const { error: bookmarkTagsError } = await supabase
 		.from(BOOKMARK_TAGS_TABLE_NAME)
 		.delete()
-		.match({ bookmark_id: bookmarkData?.id })
+		.in("bookmark_id", deleteBookmarkIds)
 		.select();
 
-	const { data, error }: { data: DataResponse; error: ErrorResponse } =
-		await supabase
-			.from(MAIN_TABLE_NAME)
-			.delete()
-			.match({ id: bookmarkData?.id })
-			.select();
+	// delete bookmarks
 
-	if (!isNull(data)) {
-		response.status(200).json({ data, error });
+	const {
+		data: bookmarksData,
+		error: bookmarksError,
+	}: { data: DataResponse; error: ErrorResponse } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.delete()
+		.in("id", deleteBookmarkIds)
+		.select();
+
+	if (
+		isNull(bookmarksError) &&
+		isNull(bookmarkTagsError) &&
+		isNull(fileStorageError) &&
+		isNull(storageOgImageError)
+	) {
+		response.status(200).json({
+			data: bookmarksData,
+			error: null,
+		});
 	} else {
-		response.status(500).json({ data, error });
-		throw new Error("ERROR");
+		response.status(500).json({
+			data: bookmarksData,
+			error:
+				storageOgImageError ??
+				fileStorageError ??
+				bookmarkTagsError ??
+				bookmarksError,
+		});
 	}
 }

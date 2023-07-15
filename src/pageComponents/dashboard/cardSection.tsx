@@ -719,9 +719,9 @@ const CardSection = ({
 	const renderOgImage = (img: string, id: number) => {
 		const imgClassName = classNames({
 			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
-			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img":
+			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
 				cardTypeCondition === "card",
-			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img":
+			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
 				cardTypeCondition === "moodboard",
 			"h-4 w-4 rounded object-cover": cardTypeCondition === "headlines",
 		});
@@ -747,7 +747,7 @@ const CardSection = ({
 
 		const imgLogic = () => {
 			if (bookmarksInfoValue?.includes("cover" as never)) {
-				if (isBookmarkLoading && img === undefined) {
+				if (isBookmarkLoading && img === undefined && id === undefined) {
 					return <div className={loaderClassName} />;
 				}
 
@@ -755,15 +755,21 @@ const CardSection = ({
 					return <ErrorImgPlaceholder />;
 				}
 
+				if (id && !img) {
+					return <ErrorImgPlaceholder />;
+				}
+
 				return (
 					<>
-						{img && (
+						{img ? (
 							<img
 								alt="bookmark-img"
 								className={imgClassName}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								src={`${img}`}
 							/>
+						) : (
+							<ErrorImgPlaceholder />
 						)}
 					</>
 				);
