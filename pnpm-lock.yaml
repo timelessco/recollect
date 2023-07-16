@@ -164,8 +164,8 @@ devDependencies:
     specifier: 12.9.0
     version: 12.9.0
   dedent:
-    specifier: 0.7.0
-    version: 0.7.0
+    specifier: 1.0.1
+    version: 1.0.1
   del-cli:
     specifier: 5.0.0
     version: 5.0.0
@@ -4469,7 +4469,6 @@ packages:
       '@babel/runtime': 7.21.0
       cosmiconfig: 7.1.0
       resolve: 1.22.1
-    dev: false
 
   /babylon@6.18.0:
     resolution: {integrity: sha512-q/UEjfGJ2Cm3oKV71DJz9d25TPnq5rhBVL2Q4fA5wcC3jcrdn7+SssEybFIxwAvvP+YCsCYNKughoF33GxgycQ==}
@@ -5747,8 +5746,10 @@ packages:
       mimic-response: 3.1.0
     dev: true
 
-  /dedent@0.7.0:
-    resolution: {integrity: sha512-Q6fKUPqnAHAyhiUgFU7BUzLiv0kd8saH9al7tnu5Q/okj6dnupxyTgFIBjVzJATdfIAm9NAsvXNzjaKa+bxVyA==}
+  /dedent@1.0.1:
+    resolution: {integrity: sha512-ISfLyH40XVmphoIMyGwOpN4w9kB4Jjz5r62myZDJMbjJSwur7r/EZ0xg64yyZl50qoDVIvCT9UMLmQAjepmjiA==}
+    dependencies:
+      babel-plugin-macros: 3.1.0
     dev: true
 
   /deep-equal@2.2.0:
