@@ -137,7 +137,7 @@
 		"autoprefixer": "10.4.14",
 		"cspell": "6.31.1",
 		"cypress": "12.9.0",
-		"dedent": "0.7.0",
+		"dedent": "1.0.1",
 		"del-cli": "5.0.0",
 		"dotenv": "16.0.3",
 		"eslint": "8.38.0",
