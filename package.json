@@ -124,7 +124,7 @@
 		"@next/bundle-analyzer": "13.3.0",
 		"@next/env": "13.3.0",
 		"@next/eslint-plugin-next": "13.3.0",
-		"@octokit/core": "4.2.0",
+		"@octokit/core": "5.0.0",
 		"@release-it/conventional-changelog": "7.0.0",
 		"@types/jsonwebtoken": "9.0.1",
 		"@types/lodash": "4.14.192",
