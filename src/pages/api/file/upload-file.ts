@@ -4,12 +4,12 @@ import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
+import { blurhashFromURL } from "blurhash-from-url";
 import { IncomingForm } from "formidable";
 import { verify } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
 import fetch from "node-fetch";
-import probe from "probe-image-size";
 
 import { type UploadFileApiResponse } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
@@ -124,13 +124,14 @@ export default async (
 			let imgData;
 
 			if (storageData?.publicUrl) {
-				imgData = await probe(storageData?.publicUrl);
+				imgData = await blurhashFromURL(storageData?.publicUrl);
 			}
 
 			const meta_data = {
 				img_caption: jsonResponse[0]?.generated_text,
 				width: imgData?.width,
 				height: imgData?.height,
+				ogImgBlurUrl: imgData?.encoded,
 			};
 
 			const { error: DBerror } = await supabase

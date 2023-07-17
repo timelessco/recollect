@@ -1,6 +1,5 @@
-/* eslint-disable @next/next/no-img-element */
-
 import { useEffect, useRef, useState, type Key, type ReactNode } from "react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import {
 	MinusCircleIcon,
@@ -10,9 +9,11 @@ import {
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { getImgFromArr } from "array-to-image";
+import { decode } from "blurhash";
 import classNames from "classnames";
 import format from "date-fns/format";
-import { flatten, type Many } from "lodash";
+import { flatten, isNil, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -65,6 +66,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	colorPickerColors,
+	defaultBlur,
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
@@ -401,7 +403,6 @@ const Option = ({
 		<li
 			{...mergeProps(dragProps, focusProps, optionProps)}
 			className={liClassName}
-			// className="single-bookmark group relative mb-6 flex cursor-pointer rounded-lg duration-150 hover:shadow-custom-4"
 			ref={ref}
 		>
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
@@ -417,15 +418,6 @@ const Option = ({
 					}
 				}}
 			/>
-			{/* <input
-        type="checkbox"
-        checked={isSelected}
-        // {...optionProps}
-        // eslint-disable-next-line tailwindcss/no-custom-classname
-        className={`card-checkbox absolute top-[7px] left-[6px] z-20 group-hover:block ${
-          isSelected ? "block" : "hidden"
-        }`}
-      /> */}
 			{item.rendered}
 		</li>
 	);
@@ -716,7 +708,7 @@ const CardSection = ({
 		return null;
 	};
 
-	const renderOgImage = (img: string, id: number) => {
+	const renderOgImage = (img: string, id: number, blurUrl: string) => {
 		const imgClassName = classNames({
 			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
 			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
@@ -759,14 +751,26 @@ const CardSection = ({
 					return <ErrorImgPlaceholder />;
 				}
 
+				let blurSource = "";
+
+				if (!isNil(img) && !isNil(blurUrl) && !isEmpty(blurUrl)) {
+					const pixels = decode(blurUrl, 32, 32);
+					const image = getImgFromArr(pixels, 32, 32);
+					blurSource = image.src;
+				}
+
 				return (
 					<>
 						{img ? (
-							<img
+							<Image
 								alt="bookmark-img"
+								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
+								height={194}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
+								placeholder="blur"
 								src={`${img}`}
+								width={366}
 							/>
 						) : (
 							<ErrorImgPlaceholder />
@@ -832,7 +836,11 @@ const CardSection = ({
 	const renderMoodboardAndCardType = (item: SingleListData) => (
 		<div className="w-full" id="single-moodboard-card">
 			<div className="inline-block w-full">
-				{renderOgImage(item?.ogImage, item?.id)}
+				{renderOgImage(
+					item?.ogImage,
+					item?.id,
+					item?.meta_data?.ogImgBlurUrl ?? "",
+				)}
 				{bookmarksInfoValue?.length === 1 &&
 				bookmarksInfoValue[0] === "cover" ? null : (
 					<div className="space-y-[6px] rounded-lg px-2 py-3">
@@ -845,7 +853,7 @@ const CardSection = ({
 						)}
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item?.description) && (
-								<p className="overflow-hidden break-all  text-sm leading-4">
+								<p className="overflow-hidden break-all text-sm leading-4">
 									{item?.description}
 								</p>
 							)}
@@ -871,42 +879,6 @@ const CardSection = ({
 						</div>
 					</div>
 				)}
-				{/* {renderOgImage(item?.ogImage)}
-          {bookmarksInfoValue?.length === 1 &&
-          bookmarksInfoValue[0] === "cover" ? null : (
-            <div className="space-y-2 rounded-lg p-4">
-              {bookmarksInfoValue?.includes("title" as never) && (
-                <p className="text-base font-medium leading-4">{item?.title}</p>
-              )}
-              {bookmarksInfoValue?.includes("description" as never) && (
-                <p className="overflow-hidden break-all  text-sm leading-4">
-                  {item?.description}
-                </p>
-              )}
-              <div className="space-y-2">
-                {bookmarksInfoValue?.includes("tags" as never) && (
-                  <div className="flex items-center space-x-1">
-                    {item?.addedTags?.map(tag => {
-                      return (
-                        <div className="text-xs text-blue-500" key={tag?.id}>
-                          #{tag?.name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {bookmarksInfoValue?.includes("info" as never) && (
-                  <div className="flex flex-wrap items-center space-x-2">
-                    {renderCategoryBadge(item)}
-                    {renderUrl(item)}
-                    <p className="relative pl-3 text-xs leading-4 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']">
-                      {format(new Date(item?.inserted_at), "dd MMM")}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )} */}
 				<div
 					// eslint-disable-next-line tailwindcss/no-custom-classname
 					className={`items-center space-x-1 ${
@@ -926,7 +898,11 @@ const CardSection = ({
 			className="flex h-[64px] w-full items-center p-2"
 			id="single-moodboard-card"
 		>
-			{renderOgImage(item?.ogImage, item?.id)}
+			{renderOgImage(
+				item?.ogImage,
+				item?.id,
+				item?.meta_data?.ogImgBlurUrl ?? "",
+			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className=" ml-3">
@@ -974,7 +950,11 @@ const CardSection = ({
 
 	const renderHeadlinesCard = (item: SingleListData) => (
 		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
-			{renderOgImage(item?.ogImage, item?.id)}
+			{renderOgImage(
+				item?.ogImage,
+				item?.id,
+				item?.meta_data?.ogImgBlurUrl ?? "",
+			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className=" ml-[10px]">
@@ -984,20 +964,8 @@ const CardSection = ({
 						</p>
 					)}
 					<div className="mt-[6px] space-y-2">
-						{/* {bookmarksInfoValue?.includes("tags" as never) && (
-                <div className="flex items-center space-x-1">
-                  {item?.addedTags?.map(tag => {
-                    return (
-                      <div className="text-xs text-blue-500" key={tag?.id}>
-                        #{tag?.name}
-                      </div>
-                    );
-                  })}
-                </div>
-              )} */}
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="flex items-center space-x-2">
-								{/* {renderCategoryBadge(item)} */}
 								{renderUrl(item)}
 								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
 									{format(new Date(item?.inserted_at), "dd MMM")}

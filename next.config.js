@@ -28,6 +28,7 @@ const nextConfig = {
 			"lh3.googleusercontent.com",
 			"images.unsplash.com",
 			"upload.wikimedia.org",
+			"migvwxtngvrjsyawpuwk.supabase.co",
 		],
 		formats: ["image/avif", "image/webp"],
 		deviceSizes: [384, 640, 768, 1_024, 1_280, 1_440, 2_560],

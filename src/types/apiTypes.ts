@@ -16,6 +16,7 @@ export type SupabaseSessionType = Session | null;
 export type ImgMetadataType = {
 	height: number | null;
 	img_caption: string | null;
+	ogImgBlurUrl: string | null;
 	width: number | null;
 };
 export type SingleListData = {

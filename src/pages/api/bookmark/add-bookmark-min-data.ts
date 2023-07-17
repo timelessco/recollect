@@ -4,10 +4,10 @@ import { type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
+import { blurhashFromURL } from "blurhash-from-url";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
-import probe from "probe-image-size";
 
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -85,7 +85,7 @@ export default async function handler(
 	let imgUrl;
 
 	if (scrapperResponse?.data?.OgImage) {
-		imgData = await probe(scrapperResponse?.data?.OgImage);
+		imgData = await blurhashFromURL(scrapperResponse?.data?.OgImage);
 
 		const image = await axios.get(scrapperResponse?.data?.OgImage, {
 			responseType: "arraybuffer",
@@ -99,6 +99,7 @@ export default async function handler(
 		img_caption: null,
 		width: imgData?.width,
 		height: imgData?.height,
+		ogImgBlurUrl: imgData?.encoded,
 	};
 
 	if (
