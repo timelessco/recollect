@@ -374,6 +374,7 @@ const Option = ({
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
+
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -437,6 +438,7 @@ const CardSection = ({
 	onBulkBookmarkDelete,
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
+	const CARD_DEFAULT_HEIGHT = 194;
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
@@ -708,7 +710,12 @@ const CardSection = ({
 		return null;
 	};
 
-	const renderOgImage = (img: string, id: number, blurUrl: string) => {
+	const renderOgImage = (
+		img: string,
+		id: number,
+		blurUrl: string,
+		height: number,
+	) => {
 		const imgClassName = classNames({
 			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
 			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
@@ -759,6 +766,8 @@ const CardSection = ({
 					blurSource = image.src;
 				}
 
+				const heightCalc = height > 630 ? 630 : height;
+
 				return (
 					<>
 						{img ? (
@@ -766,7 +775,7 @@ const CardSection = ({
 								alt="bookmark-img"
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
-								height={194}
+								height={heightCalc}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
 								src={`${img}`}
@@ -840,6 +849,7 @@ const CardSection = ({
 					item?.ogImage,
 					item?.id,
 					item?.meta_data?.ogImgBlurUrl ?? "",
+					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				)}
 				{bookmarksInfoValue?.length === 1 &&
 				bookmarksInfoValue[0] === "cover" ? null : (
@@ -902,6 +912,7 @@ const CardSection = ({
 				item?.ogImage,
 				item?.id,
 				item?.meta_data?.ogImgBlurUrl ?? "",
+				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -954,6 +965,7 @@ const CardSection = ({
 				item?.ogImage,
 				item?.id,
 				item?.meta_data?.ogImgBlurUrl ?? "",
+				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
