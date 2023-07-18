@@ -104,6 +104,9 @@ dependencies:
   react-infinite-scroll-component:
     specifier: 6.1.0
     version: 6.1.0(react@18.2.0)
+  react-masonry-css:
+    specifier: ^1.0.16
+    version: 1.0.16(react@18.2.0)
   react-mentions:
     specifier: 4.4.7
     version: 4.4.7(react-dom@18.2.0)(react@18.2.0)
@@ -10822,6 +10825,14 @@ packages:
 
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
+
+  /react-masonry-css@1.0.16(react@18.2.0):
+    resolution: {integrity: sha512-KSW0hR2VQmltt/qAa3eXOctQDyOu7+ZBevtKgpNDSzT7k5LA/0XntNa9z9HKCdz3QlxmJHglTZ18e4sX4V8zZQ==}
+    peerDependencies:
+      react: '>=16.0.0'
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /react-mentions@4.4.7(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-VNriu2h/uOB+RS0mwZgPG2Vf+UtdDvRh5zbXa2TNc1WqacKuNDgTdhlbo9LEOZRBxRzIeTUYQmYJ7p9M9rDHqQ==}

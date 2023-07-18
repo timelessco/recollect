@@ -29,6 +29,7 @@ import {
 	type DragItem,
 } from "react-aria";
 import Avatar from "react-avatar";
+import Masonry from "react-masonry-css";
 import {
 	Item,
 	useDraggableCollectionState,
@@ -219,33 +220,46 @@ const ListBox = (props: ListBoxDropTypes) => {
 	};
 
 	const ulClassName = classNames("outline-none focus:outline-none", {
-		[`columns-${moodboardColsLogic()} gap-6`]:
-			cardTypeCondition === "moodboard",
+		// [`columns-${moodboardColsLogic()} gap-6`]:
+		// 	cardTypeCondition === "moodboard",
 		block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
 		[cardGridClassNames]: cardTypeCondition === "card",
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
 
+	const renderOption = () =>
+		[...state.collection].map((item) => (
+			<Option
+				cardTypeCondition={cardTypeCondition}
+				dragState={dragState}
+				item={item}
+				key={item.key}
+				state={state}
+				url={
+					find(
+						bookmarksList,
+						(listItem) =>
+							listItem?.id === Number.parseInt(item.key as string, 10),
+					)?.url ?? ""
+				}
+			/>
+		));
+
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{[...state.collection].map((item) => (
-					<Option
-						cardTypeCondition={cardTypeCondition}
-						dragState={dragState}
-						item={item}
-						key={item.key}
-						state={state}
-						url={
-							find(
-								bookmarksList,
-								(listItem) =>
-									listItem?.id === Number.parseInt(item.key as string, 10),
-							)?.url ?? ""
-						}
-					/>
-				))}
+				{cardTypeCondition === "moodboard" ? (
+					<Masonry
+						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
+						className="my-masonry-grid"
+						columnClassName="my-masonry-grid_column"
+					>
+						{renderOption()}
+					</Masonry>
+				) : (
+					renderOption()
+				)}
 				<DragPreview ref={preview}>
 					{(items) => (
 						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
@@ -439,6 +453,7 @@ const CardSection = ({
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
 	const CARD_DEFAULT_HEIGHT = 194;
+	const CARD_DEFAULT_WIDTH = 200;
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
@@ -715,6 +730,7 @@ const CardSection = ({
 		id: number,
 		blurUrl: string,
 		height: number,
+		width: number,
 	) => {
 		const imgClassName = classNames({
 			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
@@ -766,8 +782,6 @@ const CardSection = ({
 					blurSource = image.src;
 				}
 
-				const heightCalc = height > 630 ? 630 : height;
-
 				return (
 					<>
 						{img ? (
@@ -775,11 +789,11 @@ const CardSection = ({
 								alt="bookmark-img"
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
-								height={heightCalc}
+								height={height}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
 								src={`${img}`}
-								width={366}
+								width={width}
 							/>
 						) : (
 							<ErrorImgPlaceholder />
@@ -850,6 +864,7 @@ const CardSection = ({
 					item?.id,
 					item?.meta_data?.ogImgBlurUrl ?? "",
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				)}
 				{bookmarksInfoValue?.length === 1 &&
 				bookmarksInfoValue[0] === "cover" ? null : (
@@ -913,6 +928,7 @@ const CardSection = ({
 				item?.id,
 				item?.meta_data?.ogImgBlurUrl ?? "",
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -966,6 +982,7 @@ const CardSection = ({
 				item?.id,
 				item?.meta_data?.ogImgBlurUrl ?? "",
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
