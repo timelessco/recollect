@@ -736,7 +736,7 @@ const CardSection = ({
 			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
 			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
 				cardTypeCondition === "card",
-			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
+			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === "moodboard",
 			"h-4 w-4 rounded object-cover": cardTypeCondition === "headlines",
 		});
