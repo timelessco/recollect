@@ -24,10 +24,9 @@ type Data = {
 	url: string | null;
 };
 
-export default async function handler(
-	request: NextApiRequest<SendCollaborationEmailInviteApiPayload>,
-	response: NextApiResponse<Data>,
-) {
+export default async function handler() {
+	// request: NextApiRequest<SendCollaborationEmailInviteApiPayload>,
+	// response: NextApiResponse<Data>,
 	// verify(
 	// 	request.body.access_token,
 	// 	process.env.SUPABASE_JWT_SECgRET_KEY,
@@ -97,7 +96,7 @@ export default async function handler(
 
 	await Email.send({
 		to: "abhishek@timeless.co",
-		from: "noreply@laterpad.tmls.dev",
+		from: "noreply@tmls.dev",
 		subject: "Hello World",
 		text: "Hello World",
 	});
