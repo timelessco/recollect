@@ -128,6 +128,9 @@ dependencies:
   tailwind-merge:
     specifier: 1.12.0
     version: 1.12.0
+  vercel-email:
+    specifier: ^0.0.6
+    version: 0.0.6
   zustand:
     specifier: 4.3.7
     version: 4.3.7(react@18.2.0)
@@ -12806,6 +12809,10 @@ packages:
     resolution: {integrity: sha512-Z6Uz+TYwEqE7ZN50gwn+1LCVo9ZVrpxRPOhOLnncYkY1ZzOYtrX8Fwf/rFktZ8R5mJms6EZf5TqNOMeZmnPq9Q==}
     engines: {node: '>=12'}
     dev: true
+
+  /vercel-email@0.0.6:
+    resolution: {integrity: sha512-lpELZ8/B6qyLMUOzmvZiU5evo1Hv5jfSpI/rrzny5UYfOAUKFYycraXNT+fT/cC6ewUKQVJDg8/v3LwyX3cCzA==}
+    dev: false
 
   /verror@1.10.0:
     resolution: {integrity: sha512-ZZKSmDAEFOijERBLkmYfJ+vmk3w+7hOLYDNkRCuRuMJGEmqYNCNLyBBFwWKVMhfwaEF3WOd0Zlw86U/WC/+nYw==}
