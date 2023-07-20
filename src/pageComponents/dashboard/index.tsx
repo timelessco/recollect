@@ -28,7 +28,6 @@ import {
 	ALL_BOOKMARKS_URL,
 	IMAGES_URL,
 	LOGIN_URL,
-	NEXT_API_URL,
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
@@ -39,8 +38,6 @@ import AddModalContent from "./modals/addModalContent";
 import SignedOutSection from "./signedOutSection";
 
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
-
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
@@ -811,26 +808,6 @@ const Dashboard = () => {
 
 	return (
 		<>
-			<button
-				onClick={async () => {
-					try {
-						const testResponse = await axios.post(
-							`${NEXT_API_URL}/share/send-email`,
-							{
-								url: "test-url",
-								emailList: "abhishek@timeless.co",
-							},
-						);
-
-						console.warn("1", testResponse);
-					} catch (catchError: unknown) {
-						console.warn("2", catchError);
-					}
-				}}
-				type="button"
-			>
-				Send email test
-			</button>
 			<DashboardLayout
 				categoryId={CATEGORY_ID}
 				onAddNewCategory={async (newCategoryName) => {
