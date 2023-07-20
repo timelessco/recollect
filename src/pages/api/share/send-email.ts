@@ -12,10 +12,10 @@ export default async function handler(request: NextRequest) {
 
 	try {
 		const response: unknown = await Email.send({
-			to: "abhishek@timeless.co",
+			to: data.emailList,
 			from: "noreply@laterpad.tmls.dev",
 			subject: "Laterpad Invite",
-			text: `Please click on this invite link to join the category`,
+			text: `Please click on this invite link to join the category ${data.url}`,
 		});
 
 		console.warn("res", response);
