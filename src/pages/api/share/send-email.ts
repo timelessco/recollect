@@ -10,14 +10,18 @@ export default async function handler(request: NextRequest) {
 
 	console.warn("dddd", data.emailList, data.url);
 
-	const response: unknown = await Email.send({
-		to: data.emailList,
-		from: "noreply@laterpad.tmls.dev",
-		subject: "Laterpad Invite",
-		text: `Please click on this invite link to join the category ${data.url}`,
-	});
+	try {
+		const response: unknown = await Email.send({
+			to: data.emailList,
+			from: "noreply@laterpad.tmls.dev",
+			subject: "Laterpad Invite",
+			text: `Please click on this invite link to join the category ${data.url}`,
+		});
 
-	console.warn("res", response);
+		console.warn("res", response);
+	} catch (error) {
+		console.warn("email error man", error);
+	}
 }
 
 export const config = {
