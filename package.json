@@ -179,7 +179,7 @@
 		"yaml-eslint-parser": "1.2.0",
 		"zod": "3.21.4"
 	},
-	"packageManager": "pnpm@8.6.7",
+	"packageManager": "pnpm@8.6.9",
 	"gacp": {
 		"add": false,
 		"push": false,
