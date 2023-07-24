@@ -44,22 +44,20 @@ const AddBookarkShortcutModal = (props: AddBookarkShortcutModalProps) => {
 					<Spinner />
 				</div>
 			) : (
-				<LabelledComponent label="Add URL">
-					{/* disabling as handleSubmit is part of react hook form  */}
-					<form onSubmit={handleSubmit(onSubmit)}>
-						<Input
-							{...register("url", {
-								required: true,
-								pattern: URL_PATTERN,
-							})}
-							className=" bg-custom-gray-8 px-2 py-1  outline-none focus:border-transparent"
-							errorText="Enter valid URL"
-							id="add-url-input"
-							isError={!isEmpty(errors)}
-							placeholder="Add URL"
-						/>
-					</form>
-				</LabelledComponent>
+				<form onSubmit={handleSubmit(onSubmit)}>
+					<Input
+						{...register("url", {
+							required: true,
+							pattern: URL_PATTERN,
+						})}
+						className=" bg-custom-gray-8 px-2 py-1  outline-none focus:border-transparent"
+						errorClassName="ml-2"
+						errorText="Enter valid URL"
+						id="add-url-input"
+						isError={!isEmpty(errors)}
+						placeholder="Add URL"
+					/>
+				</form>
 			)}
 		</Modal>
 	);

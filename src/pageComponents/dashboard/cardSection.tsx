@@ -423,7 +423,7 @@ const Option = ({
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="absolute left-0 top-0 h-full w-full rounded-lg"
+				className="absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
 				draggable={false}
 				href={url}
 				onClick={(event) => {

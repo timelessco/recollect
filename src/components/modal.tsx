@@ -23,7 +23,7 @@ const Modal = (props: ModalProps) => {
 	});
 
 	return (
-		<Dialog className="dialog" id="modal-parent" state={dialog}>
+		<Dialog className="dialog shadow-xl" id="modal-parent" state={dialog}>
 			{children}
 		</Dialog>
 	);

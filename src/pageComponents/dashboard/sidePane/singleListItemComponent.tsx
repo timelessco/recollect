@@ -17,6 +17,7 @@ import {
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
+	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
 
 export type CollectionItemTypes = {
@@ -69,7 +70,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 			<a
 				className={`${
 					item?.current ? "bg-custom-gray-2" : "bg-white"
-				} ${extendedClassname} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-custom-gray-2`}
+				} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-custom-gray-2`}
 				draggable={false}
 			>
 				<div className="flex w-4/5 items-center">

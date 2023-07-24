@@ -2,6 +2,7 @@ import { type FC } from "react";
 import classNames from "classnames";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
+import { smoothHoverClassName } from "../../utils/commonClassNames";
 import { tcm } from "../../utils/tailwindMerge";
 
 type ButtonProps = {
@@ -29,6 +30,7 @@ const Button: FC<ButtonProps> = (props) => {
 
 	const buttonClassNames = tcm(
 		classNames({
+			[smoothHoverClassName]: true,
 			"flex items-center rounded-lg py-[5px] px-2 text-[13px] font-medium leading-[14px]":
 				true,
 			"bg-custom-gray-5 hover:bg-gray-800": type === "dark",

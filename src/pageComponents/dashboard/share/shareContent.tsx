@@ -14,6 +14,7 @@ import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutation
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
+import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
@@ -260,27 +261,31 @@ const ShareContent = () => {
 					isError={!isEmpty(errors)}
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
-						<AriaSelect
-							defaultValue="View"
-							onOptionClick={(value) =>
-								setInviteUserEditAccess(value === "Editor")
-							}
-							options={[
-								{ label: "Editor", value: "Editor" },
-								{ label: "View", value: "View" },
-							]}
-							// disabled
-							renderCustomSelectButton={() => (
-								<div className="flex items-center">
-									<p className=" mr-1">
-										{inviteUserEditAccess ? "Editor" : "View"}
-									</p>
-									<figure>
-										<DownArrowGray />
-									</figure>
-								</div>
-							)}
-						/>
+						sendCollaborationEmailInviteMutation?.isLoading ? (
+							<Spinner />
+						) : (
+							<AriaSelect
+								defaultValue="View"
+								onOptionClick={(value) =>
+									setInviteUserEditAccess(value === "Editor")
+								}
+								options={[
+									{ label: "Editor", value: "Editor" },
+									{ label: "View", value: "View" },
+								]}
+								// disabled
+								renderCustomSelectButton={() => (
+									<div className="flex items-center">
+										<p className=" mr-1">
+											{inviteUserEditAccess ? "Editor" : "View"}
+										</p>
+										<figure>
+											<DownArrowGray />
+										</figure>
+									</div>
+								)}
+							/>
+						)
 					}
 					wrapperClassName="py-[7px] px-[10px] bg-custom-gray-11 rounded-lg flex items-center justify-between relative"
 				/>
@@ -337,7 +342,9 @@ const ShareContent = () => {
 				</div>
 				<div
 					className={`flex items-center p-2 ${
-						currentCategory?.is_public ? " cursor-pointer" : " opacity-50"
+						currentCategory?.is_public
+							? " cursor-pointer"
+							: " cursor-not-allowed opacity-50"
 					}`}
 					onClick={() => {
 						if (currentCategory?.is_public) {

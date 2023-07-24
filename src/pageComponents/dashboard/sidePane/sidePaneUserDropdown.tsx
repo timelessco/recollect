@@ -15,6 +15,7 @@ import { useMiscellaneousStore } from "../../../store/componentStore";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
+	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
 
 const SidePaneUserDropdown = () => {
@@ -34,9 +35,13 @@ const SidePaneUserDropdown = () => {
 		<div className="flex justify-between">
 			<AriaDropdown
 				menuButton={
-					<div className="flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-8">
+					<div
+						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-8`}
+					>
 						<div className="flex w-4/5 items-center space-x-2">
-							{!isEmpty(userProfilePicData?.data) ? (
+							{!isEmpty(userProfilePicData?.data) &&
+							!isNull(userProfilePicData?.data) &&
+							!isNull(userProfilePicData?.data[0]?.profile_pic) ? (
 								<Image
 									alt=""
 									className="h-6 w-6 rounded-full object-cover"
@@ -49,7 +54,16 @@ const SidePaneUserDropdown = () => {
 									width={24}
 								/>
 							) : (
-								<div className="h-6 w-6 rounded-full bg-slate-200" />
+								<div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200">
+									<svg
+										fill="#000000"
+										height="14"
+										viewBox="0 0 18 18"
+										width="14"
+									>
+										<use href="/sprite.svg#user" />
+									</svg>
+								</div>
 							)}
 							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-custom-gray-1">
 								{userData?.name || session?.user?.email}
