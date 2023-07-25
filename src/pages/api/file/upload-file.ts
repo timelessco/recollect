@@ -106,6 +106,7 @@ export default async (
 			.from(FILES_STORAGE_NAME)
 			.upload(`public/${fileName}`, decode(contents), {
 				contentType: fileType,
+				upsert: true,
 			});
 		const { data: storageData, error: publicUrlError } = supabase.storage
 			.from(FILES_STORAGE_NAME)
