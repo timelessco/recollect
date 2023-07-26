@@ -2,7 +2,6 @@
 
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import error from "next/error";
 import { createClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { blurhashFromURL } from "blurhash-from-url";
