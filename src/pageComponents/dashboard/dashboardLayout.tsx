@@ -489,7 +489,18 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			)}
 			<Allotment
 				defaultSizes={[144, screenWidth]}
-				onVisibleChange={() => setShowSidePane(false)}
+				onChange={(value: number[]) => {
+					if (value[0] === 0) {
+						setShowSidePane(false);
+					}
+
+					if (value[0] === 244) {
+						setShowSidePane(true);
+					}
+				}}
+				onVisibleChange={() => {
+					setShowSidePane(false);
+				}}
 				separator={false}
 			>
 				<Allotment.Pane

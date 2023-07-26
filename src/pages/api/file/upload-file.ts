@@ -2,6 +2,7 @@
 
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
+import error from "next/error";
 import { createClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { blurhashFromURL } from "blurhash-from-url";
@@ -11,7 +12,10 @@ import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
 import fetch from "node-fetch";
 
-import { type UploadFileApiResponse } from "../../../types/apiTypes";
+import {
+	type ImgMetadataType,
+	type UploadFileApiResponse,
+} from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
 import { isUserInACategory } from "../../../utils/helpers";
 
@@ -116,24 +120,34 @@ export default async (
 		};
 
 		if (isNil(storageError)) {
-			const imageCaption = await query(data?.files?.file?.filepath as string);
-
-			const jsonResponse = (await imageCaption.json()) as Array<{
-				generated_text: string;
-			}>;
-
-			let imgData;
-
-			if (storageData?.publicUrl) {
-				imgData = await blurhashFromURL(storageData?.publicUrl);
-			}
-
-			const meta_data = {
-				img_caption: jsonResponse[0]?.generated_text,
-				width: imgData?.width,
-				height: imgData?.height,
-				ogImgBlurUrl: imgData?.encoded,
+			let meta_data: ImgMetadataType = {
+				img_caption: null,
+				width: null,
+				height: null,
+				ogImgBlurUrl: null,
 			};
+			const isVideo = fileType?.includes("video");
+
+			if (!isVideo) {
+				const imageCaption = await query(data?.files?.file?.filepath as string);
+
+				const jsonResponse = (await imageCaption.json()) as Array<{
+					generated_text: string;
+				}>;
+
+				let imgData;
+
+				if (storageData?.publicUrl) {
+					imgData = await blurhashFromURL(storageData?.publicUrl);
+				}
+
+				meta_data = {
+					img_caption: jsonResponse[0]?.generated_text,
+					width: imgData?.width ?? null,
+					height: imgData?.height ?? null,
+					ogImgBlurUrl: imgData?.encoded ?? null,
+				};
+			}
 
 			const { error: DBerror } = await supabase
 				.from(MAIN_TABLE_NAME)
@@ -142,7 +156,7 @@ export default async (
 						url: storageData?.publicUrl,
 						title: fileName,
 						user_id: userId,
-						description: "",
+						description: (meta_data?.img_caption as string) || "",
 						ogImage: storageData?.publicUrl,
 						category_id: categoryIdLogic,
 						type: fileType,

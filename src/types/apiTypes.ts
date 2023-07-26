@@ -30,6 +30,7 @@ export type SingleListData = {
 	screenshot: string;
 	title: string;
 	trash: boolean;
+	type: string;
 	url: string;
 	user_id: ProfilesTableTypes;
 };

@@ -9,7 +9,7 @@ const ColorPicker = ({
 	onChange,
 	selectedColor,
 }: ColorPickerProps) => (
-	<div className="flex cursor-pointer items-center space-x-3">
+	<div className="flex cursor-pointer items-center space-x-1">
 		{colorsList?.map((colorItem) => (
 			<div
 				className={`rounded-md p-1 hover:bg-custom-gray-7 ${

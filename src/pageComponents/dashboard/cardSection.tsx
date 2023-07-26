@@ -731,6 +731,7 @@ const CardSection = ({
 		blurUrl: string,
 		height: number,
 		width: number,
+		type: string,
 	) => {
 		const imgClassName = classNames({
 			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
@@ -782,24 +783,38 @@ const CardSection = ({
 					blurSource = image.src;
 				}
 
-				return (
-					<>
-						{img ? (
-							<Image
-								alt="bookmark-img"
-								blurDataURL={blurSource || defaultBlur}
-								className={imgClassName}
-								height={height}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
-								placeholder="blur"
-								src={`${img}`}
-								width={width}
-							/>
-						) : (
-							<ErrorImgPlaceholder />
-						)}
-					</>
-				);
+				const isVideo = type?.includes("video");
+
+				if (!isVideo) {
+					return (
+						<>
+							{img ? (
+								<Image
+									alt="bookmark-img"
+									blurDataURL={blurSource || defaultBlur}
+									className={imgClassName}
+									height={height}
+									onError={() => setErrorImgs([id as never, ...errorImgs])}
+									placeholder="blur"
+									src={`${img}`}
+									width={width}
+								/>
+							) : (
+								<ErrorImgPlaceholder />
+							)}
+						</>
+					);
+				} else {
+					return (
+						// eslint-disable-next-line jsx-a11y/media-has-caption
+						<video
+							// controls
+							id="video"
+							src={img}
+							// type="video/mp4"
+						/>
+					);
+				}
 			}
 
 			return null;
@@ -865,6 +880,7 @@ const CardSection = ({
 					item?.meta_data?.ogImgBlurUrl ?? "",
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+					item?.type,
 				)}
 				{bookmarksInfoValue?.length === 1 &&
 				bookmarksInfoValue[0] === "cover" ? null : (
@@ -929,6 +945,7 @@ const CardSection = ({
 				item?.meta_data?.ogImgBlurUrl ?? "",
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+				item?.type,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -983,6 +1000,7 @@ const CardSection = ({
 				item?.meta_data?.ogImgBlurUrl ?? "",
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+				item?.type,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (

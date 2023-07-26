@@ -22,23 +22,23 @@ export const EMAIL_CHECK_PATTERN =
 	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
 
 // api constants
-// const getBaseUrl = () => {
-// 	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-// 		return process.env.NEXT_PUBLIC_SITE_URL;
-// 	}
+const getBaseUrl = () => {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+		return process.env.NEXT_PUBLIC_SITE_URL;
+	}
 
-// 	if (
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-// 	) {
-// 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-// 	}
+	if (
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+	) {
+		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+	}
 
-// 	return "http://localhost:3000";
-// };
+	return "http://localhost:3000";
+};
 
-const getBaseUrl = () =>
-	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
+// const getBaseUrl = () =>
+// 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
 
 export const NEXT_API_URL = `${getBaseUrl()}/api`;
 export const TIMELESS_SCRAPPER_API =
@@ -134,13 +134,42 @@ export const acceptedFileTypes = [
 ];
 
 // color picker colors
+// export const colorPickerColors = [
+// 	"#ffffff",
+// 	"#000000",
+// 	"#F44E3B",
+// 	"#FE9200",
+// 	"#FCDC00",
+// 	"#DBDF00",
+// 	"#66ff99",
+// ];
+
 export const colorPickerColors = [
 	"#ffffff",
-	"#000000",
-	"#F44E3B",
-	"#FE9200",
-	"#FCDC00",
-	"#DBDF00",
+	"#1a1a1a",
+
+	"#ff2d5f",
+	"#ff339b",
+	"#ea35f7",
+	"#a14fff",
+	"#5a46fa",
+
+	"#0082ff",
+	"#00a9ef",
+	"#00b0ff",
+	"#00bec9",
+	"#00bc7b",
+
+	"#00cb49",
+	"#6ccf00",
+	"#f4b100",
+	"#ff9900",
+	"#ff6800",
+
+	"#ff2a39",
+	"#d2b24d",
+	"#ce8849",
+	"#003468",
 ];
 
 // blur-hash
