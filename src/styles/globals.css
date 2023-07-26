@@ -437,3 +437,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 .icon-svg-parent svg {
 	fill: currentColor;
 }
+
+.icon-color-container::-webkit-scrollbar {
+	display: none; /* Safari and Chrome */
+}

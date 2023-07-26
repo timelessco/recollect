@@ -189,7 +189,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						/>
 					</div>
 				</div>
-				<div className="overflow-x-auto pt-2">
+				<div className="icon-color-container overflow-x-auto pt-2">
 					<ColorPicker
 						colorsList={colorPickerColors}
 						onChange={(sliderColor) => {

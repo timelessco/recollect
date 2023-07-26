@@ -51,6 +51,7 @@ import {
 	useMiscellaneousStore,
 } from "../../store/componentStore";
 import {
+	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
@@ -82,15 +83,19 @@ type onBulkBookmarkDeleteType = (
 ) => void;
 
 type CardSectionProps = {
+	categoryViewsFromProps?: BookmarkViewDataTypes;
+
 	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
 	isOgImgLoading: boolean;
+	isPublicPage?: boolean;
 	listData: SingleListData[];
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
 	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
+
 	showAvatar: boolean;
 	userId: string;
 };
@@ -100,6 +105,7 @@ type ListBoxDropTypes = ListProps<object> & {
 	bookmarksList: SingleListData[];
 	cardTypeCondition: unknown;
 	getItems?: (keys: Set<Key>) => DragItem[];
+	isPublicPage?: boolean;
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	// onReorder: (event: DroppableCollectionReorderEvent) => unknown;
@@ -115,6 +121,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 		bookmarksList,
 		onCategoryChange,
 		onBulkBookmarkDelete,
+		isPublicPage,
 	} = props;
 	const setIsCardDragging = useMiscellaneousStore(
 		(store) => store.setIsCardDragging,
@@ -233,6 +240,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			<Option
 				cardTypeCondition={cardTypeCondition}
 				dragState={dragState}
+				isPublicPage={isPublicPage}
 				item={item}
 				key={item.key}
 				state={state}
@@ -377,9 +385,11 @@ const Option = ({
 	dragState,
 	cardTypeCondition,
 	url,
+	isPublicPage,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
+	isPublicPage: CardSectionProps["isPublicPage"];
 	item: OptionDropItemTypes;
 	state: ListState<unknown>;
 	url: string;
@@ -416,7 +426,11 @@ const Option = ({
 
 	return (
 		<li
-			{...mergeProps(dragProps, focusProps, optionProps)}
+			{...mergeProps(
+				isPublicPage ? [] : dragProps,
+				isPublicPage ? [] : focusProps,
+				isPublicPage ? [] : optionProps,
+			)}
 			className={liClassName}
 			ref={ref}
 		>
@@ -450,6 +464,8 @@ const CardSection = ({
 	deleteBookmarkId,
 	onCategoryChange,
 	onBulkBookmarkDelete,
+	isPublicPage = false,
+	categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
 	const CARD_DEFAULT_HEIGHT = 194;
@@ -541,20 +557,28 @@ const CardSection = ({
 		viewType: "bookmarksView" | "cardContentViewArray" | "moodboardColumns",
 		defaultReturnValue: string | [] | [number],
 	) => {
-		if (isUserInACategory(categorySlug as string)) {
-			if (isUserTheCategoryOwner) {
-				return currentCategoryData?.category_views?.[viewType];
+		if (!isPublicPage) {
+			if (isUserInACategory(categorySlug as string)) {
+				if (isUserTheCategoryOwner) {
+					return currentCategoryData?.category_views?.[viewType];
+				}
+
+				if (!isEmpty(sharedCategoriesData?.data)) {
+					return sharedCategoriesData?.data[0]?.category_views?.[viewType];
+				}
+
+				return defaultReturnValue;
 			}
 
-			if (!isEmpty(sharedCategoriesData?.data)) {
-				return sharedCategoriesData?.data[0]?.category_views?.[viewType];
+			if (!isEmpty(userProfilesData?.data)) {
+				return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
 			}
+		} else {
+			// we are in a public page
 
-			return defaultReturnValue;
-		}
-
-		if (!isEmpty(userProfilesData?.data)) {
-			return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
+			return categoryViewsFromProps
+				? categoryViewsFromProps[viewType]
+				: defaultReturnValue;
 		}
 
 		return defaultReturnValue;
@@ -610,6 +634,23 @@ const CardSection = ({
 		const iconBgClassName =
 			"rounded-lg bg-custom-white-1 p-[7px] backdrop-blur-sm";
 
+		const externalLinkIcon = (
+			<div
+				onClick={() => window.open(post?.url, "_blank")}
+				onKeyDown={() => {}}
+				role="button"
+				tabIndex={0}
+			>
+				<figure className={`${iconBgClassName} ml-1`}>
+					<LinkExternalIcon />
+				</figure>
+			</div>
+		);
+
+		if (isPublicPage) {
+			return externalLinkIcon;
+		}
+
 		if (renderEditAndDeleteCondition(post)) {
 			return (
 				<>
@@ -627,16 +668,7 @@ const CardSection = ({
 							/>
 						</figure>
 					)}
-					<div
-						onClick={() => window.open(post?.url, "_blank")}
-						onKeyDown={() => {}}
-						role="button"
-						tabIndex={0}
-					>
-						<figure className={`${iconBgClassName} ml-1`}>
-							<LinkExternalIcon />
-						</figure>
-					</div>
+					{externalLinkIcon}
 					{isBookmarkCreatedByLoggedinUser(post) ? (
 						<>
 							<figure className={`ml-1 ${iconBgClassName}`}>
@@ -777,7 +809,12 @@ const CardSection = ({
 
 				let blurSource = "";
 
-				if (!isNil(img) && !isNil(blurUrl) && !isEmpty(blurUrl)) {
+				if (
+					!isNil(img) &&
+					!isNil(blurUrl) &&
+					!isEmpty(blurUrl) &&
+					!isPublicPage
+				) {
 					const pixels = decode(blurUrl, 32, 32);
 					const image = getImgFromArr(pixels, 32, 32);
 					blurSource = image.src;
@@ -886,11 +923,11 @@ const CardSection = ({
 				bookmarksInfoValue[0] === "cover" ? null : (
 					<div className="space-y-[6px] rounded-lg px-2 py-3">
 						{bookmarksInfoValue?.includes("title" as never) && (
-							<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
-								{item?.title}
+							<div className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+								<p>{item?.title}</p>
 								{item?.meta_data?.img_caption &&
 									renderCaption(item?.meta_data?.img_caption)}
-							</p>
+							</div>
 						)}
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item?.description) && (
@@ -924,7 +961,7 @@ const CardSection = ({
 					// eslint-disable-next-line tailwindcss/no-custom-classname
 					className={`items-center space-x-1 ${
 						// @ts-expect-error // this is cypress env, TS check not needed
-						window?.Cypress ? "flex" : "hidden"
+						!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
 					} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
 				>
 					{showAvatar && renderAvatar(item)}
@@ -951,11 +988,11 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className=" ml-3">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
-							{item?.title}
+						<div className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+							<p>{item?.title}</p>
 							{item?.meta_data?.img_caption &&
 								renderCaption(item?.meta_data?.img_caption)}
-						</p>
+						</div>
 					)}
 					<div className="flex items-center space-x-1 space-y-2">
 						{bookmarksInfoValue?.includes("description" as never) &&
@@ -1041,6 +1078,7 @@ const CardSection = ({
 				bookmarksColumns={bookmarksColumns}
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
+				isPublicPage={isPublicPage}
 				onBulkBookmarkDelete={onBulkBookmarkDelete}
 				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"

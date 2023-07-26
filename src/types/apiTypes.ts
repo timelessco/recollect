@@ -303,3 +303,15 @@ export type DeleteBookmarkPayload = {
 	}>;
 	session: SupabaseSessionType;
 };
+
+type DataResponse = SingleListData[] | null;
+type ErrorResponse = PostgrestError | string | null;
+
+export type GetPublicCategoryBookmarksApiResponseType = {
+	category_name: CategoriesData["category_name"] | null;
+	category_views: BookmarkViewDataTypes | null;
+	data: DataResponse;
+	error: ErrorResponse;
+	icon: CategoriesData["icon"] | null;
+	icon_color: CategoriesData["icon_color"] | null;
+};
