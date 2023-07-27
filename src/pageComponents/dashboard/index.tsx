@@ -651,7 +651,11 @@ const Dashboard = () => {
 							);
 						}
 					}}
-					addedTags={addedUrlData?.addedTags ?? []}
+					addedTags={
+						flattendPaginationBookmarkData?.find(
+							(item) => item?.id === addedUrlData?.id,
+						)?.addedTags ?? []
+					}
 					createTag={async (tagData) => {
 						const userData = session?.user as unknown as UserIdentity;
 						try {

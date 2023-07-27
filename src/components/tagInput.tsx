@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { type ActionMeta, type OnChangeValue } from "react-select";
 // import Select from 'react-select';
 import CreatableSelect from "react-select/creatable";
@@ -17,6 +17,11 @@ type TagInputProps = {
 	removeExistingTag: (value: TagInputOption) => Promise<void> | void;
 };
 
+type StateValueType = {
+	label: TagInputOption["label"];
+	value: TagInputOption["value"];
+};
+
 const TagInput = (props: TagInputProps) => {
 	const {
 		options,
@@ -26,10 +31,18 @@ const TagInput = (props: TagInputProps) => {
 		removeExistingTag,
 	} = props;
 
+	const [value, setValue] = useState<StateValueType[]>([]);
+
+	useEffect(() => {
+		setValue(defaultValue ?? []);
+	}, [defaultValue, defaultValue?.length]);
+
 	const handleChange = (
 		newValue: OnChangeValue<TagInputOption, true>,
 		actionMeta: ActionMeta<TagInputOption>,
 	) => {
+		setValue(newValue as StateValueType[]);
+
 		if (actionMeta.action === "create-option") {
 			void createTag(newValue);
 		}
@@ -45,10 +58,10 @@ const TagInput = (props: TagInputProps) => {
 
 	return (
 		<CreatableSelect
-			defaultValue={defaultValue}
 			isMulti
 			key={defaultValue?.length}
-			menuPortalTarget={document.body}
+			// @ts-expect-error - type this properly
+			menuPortalTarget={document.querySelector("#modal-parent")}
 			onChange={handleChange}
 			options={options}
 			styles={{
@@ -57,6 +70,7 @@ const TagInput = (props: TagInputProps) => {
 					zIndex: 9_999,
 				}),
 			}}
+			value={value}
 		/>
 	);
 };
