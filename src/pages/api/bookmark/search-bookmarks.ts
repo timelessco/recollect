@@ -25,6 +25,8 @@ import {
 
 // searches bookmarks
 
+// TODO: current logic not efficient, rethink this logic
+
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
 
@@ -102,24 +104,23 @@ export default async function handler(
 		error: ErrorResponse;
 	};
 
+	const { data: allUserBookmarksWithTags } = await supabase
+		.from(BOOKMARK_TAGS_TABLE_NAME)
+		.select(
+			`
+bookmark_id,
+tag_id (
+	id,
+	name
+)
+`,
+		)
+		.eq("user_id", user_id);
 	if (!tagName) {
 		// user has searched for text without tags
 
-		const { data: bookmarksWithTags } = await supabase
-			.from(BOOKMARK_TAGS_TABLE_NAME)
-			.select(
-				`
-		bookmark_id,
-		tag_id (
-			id,
-			name
-		)
-	`,
-			)
-			.eq("user_id", user_id);
-
 		const finalData = data?.map((item) => {
-			const matchedBookmarkWithTag = bookmarksWithTags?.filter(
+			const matchedBookmarkWithTag = allUserBookmarksWithTags?.filter(
 				(tagItem) => tagItem?.bookmark_id === item?.id,
 			) as BookmarksWithTagsWithTagForginKeys;
 
@@ -138,6 +139,7 @@ export default async function handler(
 
 		response.status(200).json({ data: finalData, error });
 	} else {
+		// user searched for tags
 		let tagSearchQuery = supabase
 			.from(BOOKMARK_TAGS_TABLE_NAME)
 			.select(
@@ -179,15 +181,47 @@ export default async function handler(
 			? bookmarksWithTags?.filter((item) => item?.bookmark_id !== null)
 			: [];
 
-		if (isEmpty(searchText)) {
+		if (isEmpty(searchText?.trim())) {
 			// user as only searched for tags and no text
 
-			const finalResponse: SingleListData[] = bookmarksWithTags?.map(
-				(item) => ({
-					...item?.bookmark_id,
-					addedTags: [item?.tag_id],
-				}),
-			) as unknown as SingleListData[];
+			// get all unique bookmark ids
+			const allBookmarkIds = bookmarksWithTags?.map(
+				(item) => item?.bookmark_id?.id,
+			);
+
+			const onlyUniqueBookmarkIds = [...new Set(allBookmarkIds)];
+
+			// fetch the tags for the bookmarks
+
+			const finalResponse = onlyUniqueBookmarkIds?.map((item) => {
+				const matchedBookmarkWithTag = allUserBookmarksWithTags?.filter(
+					(tagItem) => tagItem?.bookmark_id === item,
+				) as BookmarksWithTagsWithTagForginKeys;
+
+				const bookmarkData = find(
+					bookmarksWithTags,
+					(bookmarkItem) => bookmarkItem?.bookmark_id?.id === item,
+				);
+
+				if (!isEmpty(matchedBookmarkWithTag)) {
+					return {
+						...bookmarkData?.bookmark_id,
+						addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
+							id: matchedItem?.tag_id?.id,
+							name: matchedItem?.tag_id?.name,
+						})),
+					};
+				}
+
+				return item;
+			}) as SingleListData[];
+
+			// const finalResponse: SingleListData[] = bookmarksWithTags?.map(
+			// 	(item) => ({
+			// 		...item?.bookmark_id,
+			// 		addedTags: [item?.tag_id],
+			// 	}),
+			// ) as unknown as SingleListData[];
 
 			response.status(200).json({
 				data: finalResponse,

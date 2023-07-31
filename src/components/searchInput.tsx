@@ -103,17 +103,14 @@ const SearchInput = (props: SearchInputTypes) => {
 				value={searchText}
 			>
 				<Mention
+					appendSpaceOnAdd
 					data={userTagsData?.data?.map((item) => ({
 						id: item?.id,
 						display: item?.name,
 					}))}
-					displayTransform={(url) => `#${url}`}
+					displayTransform={(url, display) => `#${display}`}
 					markup="@__display__"
 					trigger="#"
-					// style={{
-					//   backgroundColor: "#cee4e5",
-					//   with: "100%",
-					// }}
 				/>
 			</MentionsInput>
 			{isSearchLoading && (
