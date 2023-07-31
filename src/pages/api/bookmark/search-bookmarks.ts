@@ -22,6 +22,7 @@ import {
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
+import { checker } from "../../../utils/helpers";
 
 // searches bookmarks
 
@@ -216,6 +217,15 @@ tag_id (
 				return item;
 			}) as SingleListData[];
 
+			// this filters from current res, this helps is intersection filter
+			const finalResponseFiltered = finalResponse?.filter((item) => {
+				const currentTagsNames = item?.addedTags?.map(
+					(tagItem) => tagItem?.name,
+				);
+
+				return checker(currentTagsNames, tagName);
+			});
+			// const four = "44444";
 			// const finalResponse: SingleListData[] = bookmarksWithTags?.map(
 			// 	(item) => ({
 			// 		...item?.bookmark_id,
@@ -224,7 +234,8 @@ tag_id (
 			// ) as unknown as SingleListData[];
 
 			response.status(200).json({
-				data: finalResponse,
+				// data: finalResponse,
+				data: finalResponseFiltered,
 				error,
 			});
 		} else {

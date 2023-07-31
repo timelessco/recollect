@@ -94,3 +94,7 @@ export const isUserInACategory = (url: string) => {
 
 	return !nonCategoryPages?.includes(url);
 };
+
+// checks if one array has all values in another array
+export const checker = (array: unknown[], target: unknown[]) =>
+	target.every((value: unknown) => array.includes(value));
