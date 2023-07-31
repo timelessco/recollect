@@ -108,7 +108,7 @@ const SearchInput = (props: SearchInputTypes) => {
 						id: item?.id,
 						display: item?.name,
 					}))}
-					displayTransform={(url, display) => `#${display}`}
+					displayTransform={(_url, display) => `#${display}`}
 					markup="@__display__"
 					trigger="#"
 				/>
