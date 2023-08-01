@@ -442,7 +442,13 @@ const Option = ({
 				href={url}
 				onClick={(event) => {
 					event.preventDefault();
-					if (event.detail === 2) {
+					// open on single click
+					if (isPublicPage) {
+						window.open(url, "_blank");
+					}
+
+					// open on double click
+					if (event.detail === 2 && !isPublicPage) {
 						window.open(url, "_blank");
 					}
 				}}
@@ -910,7 +916,7 @@ const CardSection = ({
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
 		<div className="w-full" id="single-moodboard-card">
-			<div className="inline-block w-full">
+			<div className="w-full">
 				{renderOgImage(
 					item?.ogImage,
 					item?.id,
@@ -925,13 +931,11 @@ const CardSection = ({
 						{bookmarksInfoValue?.includes("title" as never) && (
 							<div className="card-title text-sm font-medium leading-4 text-custom-gray-5">
 								<p>{item?.title}</p>
-								{item?.meta_data?.img_caption &&
-									renderCaption(item?.meta_data?.img_caption)}
 							</div>
 						)}
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item?.description) && (
-								<p className="overflow-hidden break-all text-sm leading-4">
+								<p className="line-clamp-3 overflow-hidden break-all text-sm leading-4">
 									{item?.description}
 								</p>
 							)}
@@ -990,8 +994,6 @@ const CardSection = ({
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<div className="card-title text-sm font-medium leading-4 text-custom-gray-5">
 							<p>{item?.title}</p>
-							{item?.meta_data?.img_caption &&
-								renderCaption(item?.meta_data?.img_caption)}
 						</div>
 					)}
 					<div className="flex items-center space-x-1 space-y-2">
