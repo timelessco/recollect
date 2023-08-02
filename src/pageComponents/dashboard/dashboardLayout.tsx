@@ -218,112 +218,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return find(optionsMenuList, (item) => item?.current === true)?.icon;
 	};
 
-	// const renderMainPaneNav = () => {
-	//   return (
-	//     <header className="flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px] px-4">
-	//       <div className="flex items-center space-x-[9px]">
-	//         <figure className="flex h-5 w-5 items-center">{navBarLogo()}</figure>
-	//         <p className="text-xl font-semibold leading-6 text-black">
-	//           {find(
-	//             categoryData?.data,
-	//             item => item?.category_slug === currentPath,
-	//           )?.category_name ||
-	//             find(optionsMenuList, item => item?.current === true)?.name}
-	//         </p>
-	//       </div>
-	//       <SearchInput
-	//         userId={userId}
-	//         placeholder={`Search in ${
-	//           find(
-	//             categoryData?.data,
-	//             item => item?.category_slug === currentPath,
-	//           )?.category_name || "All Bookmarks"
-	//         }`}
-	//         onChange={value => {
-	//           setSearchText(value);
-	//         }}
-	//       />
-	//       <div className="flex items-center">
-	//         <div className="mr-[17px] flex items-center space-x-1">
-	// <BookmarksViewDropdown
-	//   setBookmarksView={setBookmarksView}
-	//   categoryId={categoryId}
-	//   userId={userId}
-	// />
-	//           <BookmarksSortDropdown
-	//             setBookmarksView={setBookmarksView}
-	//             categoryId={categoryId}
-	//             userId={userId}
-	//           />
-	//           {typeof categoryId === "number" && (
-	// <Button
-	//   type="light"
-	//   onClick={() => onShareClick()}
-	//   id="share-button"
-	// >
-	//   <figure className="h-3 w-3">
-	//     <UserIconGray />
-	//   </figure>
-	//   <span className="ml-[7px] text-custom-gray-1">Share</span>
-	// </Button>
-	//           )}
-	//           <Menu as="div" className="relative shrink-0">
-	//             <Menu.Button as="div">
-	//               <Button type="light" className="p-[5px]" style={{ padding: 5 }}>
-	//                 <figure className="h-4 w-4">
-	//                   <OptionsIconGray />
-	//                 </figure>
-	//               </Button>
-	//             </Menu.Button>
-	//             <Transition
-	//               as={Fragment}
-	//               enter="transition ease-out duration-100"
-	//               enterFrom="transform opacity-0 scale-95"
-	//               enterTo="transform opacity-100 scale-100"
-	//               leave="transition ease-in duration-75"
-	//               leaveFrom="transform opacity-100 scale-100"
-	//               leaveTo="transform opacity-0 scale-95"
-	//             >
-	//               <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
-	//                 <Menu.Item>
-	//                   {({ active }) => (
-	//                     <div
-	//                       className={` cursor-pointer ${classNames(
-	//                         active ? "bg-gray-100" : "",
-	//                         "block py-2 px-4 text-sm text-gray-700",
-	//                       )}`}
-	//                     >
-	//                       Option one
-	//                     </div>
-	//                   )}
-	//                 </Menu.Item>
-	//               </Menu.Items>
-	//             </Transition>
-	//           </Menu>
-	//         </div>
-
-	//         {currentPath === TRASH_URL && (
-	//           <Button
-	//             type="dark"
-	//             className="mr-[17px] bg-red-700 hover:bg-red-900"
-	//             onClick={() => onClearTrash()}
-	//             id="clear-trash-button"
-	//           >
-	//             <span className="text-white">Clear Trash</span>
-	//           </Button>
-	//         )}
-
-	// <Button type="dark" onClick={onNavAddClick}>
-	//   <figure className="h-3 w-3">
-	//     <PlusIconWhite />
-	//   </figure>
-	//   <span className="ml-[7px] text-white">Add</span>
-	// </Button>
-	//       </div>
-	//     </header>
-	//   );
-	// };
-
 	const navBarHeading = () => {
 		const currentCategoryData = find(
 			categoryData?.data,
@@ -359,7 +253,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[23px]  border-none p-0 text-xl font-semibold leading-[23px] text-custom-gray-5 focus:outline-none"
+					className="m-0 h-[23px] rounded-none  border-none p-0 text-xl font-semibold leading-[23px] text-custom-gray-5 focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -412,7 +306,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 		return (
 			<header className={headerClass}>
-				<div className="flex items-center px-2 py-[3.5px]">
+				<div className="flex min-w-[250px] items-center px-2 py-[3.5px]">
 					<figure className="mr-2 flex h-5 w-5 items-center">
 						{navBarLogo()}
 					</figure>
@@ -432,7 +326,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							}`}
 							userId={userId}
 						/>
-						<div className="flex items-center">
+						<div className="flex min-w-[420px] items-center">
 							<div className="mr-3 flex items-center space-x-2">
 								<BookmarksViewDropdown
 									categoryId={categoryId}

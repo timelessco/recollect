@@ -14,7 +14,7 @@ export const STORAGE_SCRAPPED_IMAGES_PATH = "public/scrapped_imgs";
 
 export const URL_PATTERN =
 	// eslint-disable-next-line no-useless-escape, unicorn/no-unsafe-regex
-	/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[\da-z]+([.\-][\da-z]+)*\.[a-z]{2,5}(:\d{1,5})?(\/.*)?$/gu;
+	/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[\da-z]+([.\-][\da-z]+)*\.[a-z]{2,6}(:\d{1,5})?(\/.*)?$/gu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =
@@ -22,23 +22,23 @@ export const EMAIL_CHECK_PATTERN =
 	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
 
 // api constants
-// const getBaseUrl = () => {
-// 	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-// 		return process.env.NEXT_PUBLIC_SITE_URL;
-// 	}
+const getBaseUrl = () => {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+		return process.env.NEXT_PUBLIC_SITE_URL;
+	}
 
-// 	if (
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
-// 		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-// 	) {
-// 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-// 	}
+	if (
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
+		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+	) {
+		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+	}
 
-// 	return "http://localhost:3000";
-// };
+	return "http://localhost:3000";
+};
 
-const getBaseUrl = () =>
-	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
+// const getBaseUrl = () =>
+// 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
 
 export const NEXT_API_URL = `${getBaseUrl()}/api`;
 export const TIMELESS_SCRAPPER_API =

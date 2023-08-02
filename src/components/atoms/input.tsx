@@ -71,6 +71,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 					disabled={isDisabled}
 					onBlur={onBlur}
 					onChange={onChange}
+					onFocus={(event) => event.target.select()}
 					onKeyUp={onKeyUp}
 					placeholder={placeholder}
 				/>
