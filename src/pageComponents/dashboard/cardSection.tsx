@@ -943,7 +943,7 @@ const CardSection = ({
 							)}
 						<div className="space-y-[6px]">
 							{bookmarksInfoValue?.includes("tags" as never) && (
-								<div className="flex items-center space-x-1">
+								<div className="flex flex-wrap items-center space-x-1">
 									{item?.addedTags?.map((tag) => (
 										<div className="text-xs text-blue-500" key={tag?.id}>
 											#{tag?.name}

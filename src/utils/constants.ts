@@ -124,6 +124,7 @@ export const acceptedFileTypes = [
 	"image/jpg",
 	"image/jpeg",
 	"image/png",
+	"image/gif",
 	"video/mp4",
 	"video/mov",
 	"video/wmv",
@@ -134,16 +135,6 @@ export const acceptedFileTypes = [
 ];
 
 // color picker colors
-// export const colorPickerColors = [
-// 	"#ffffff",
-// 	"#000000",
-// 	"#F44E3B",
-// 	"#FE9200",
-// 	"#FCDC00",
-// 	"#DBDF00",
-// 	"#66ff99",
-// ];
-
 export const colorPickerColors = [
 	"#ffffff",
 	"#1a1a1a",

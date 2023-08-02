@@ -109,6 +109,7 @@ const SignUp = () => {
 								id="password"
 								isError={Boolean(errors?.password)}
 								placeholder="Password"
+								type="password"
 							/>
 							<button className={buttonDarkClassName} type="submit">
 								{isLoading ? <Spinner /> : "Sign up"}

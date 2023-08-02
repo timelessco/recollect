@@ -17,6 +17,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 	isFullWidth?: boolean;
 	placeholder: string;
 	rendedRightSideElement?: ChildrenTypes;
+	type?: string;
 	wrapperClassName?: string;
 };
 
@@ -38,6 +39,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		autoFocus = true,
 		onBlur,
 		isFullWidth = true,
+		type = "text",
 	} = props;
 
 	const inputClass = classNames(className, {
@@ -63,7 +65,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 				<input
 					id={id}
 					ref={ref}
-					type="text"
+					type={type}
 					value={value}
 					{...omit(props, ["isError", "errorText", "isDisabled"])}
 					autoFocus={autoFocus}
