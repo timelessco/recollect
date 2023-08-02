@@ -326,7 +326,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							}`}
 							userId={userId}
 						/>
-						<div className="flex min-w-[420px] items-center">
+						<div className="flex min-w-[420px] items-center justify-end">
 							<div className="mr-3 flex items-center space-x-2">
 								<BookmarksViewDropdown
 									categoryId={categoryId}

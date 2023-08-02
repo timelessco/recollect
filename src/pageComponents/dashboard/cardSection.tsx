@@ -43,7 +43,6 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import Badge from "../../components/badge";
 import Checkbox from "../../components/checkbox";
 import Spinner from "../../components/spinner";
-import ErrorImgPlaceholder from "../../icons/errorImgPlaceholder";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
 import MoveIcon from "../../icons/moveIcon";
 import {
@@ -755,14 +754,6 @@ const CardSection = ({
 		</p>
 	);
 
-	const renderCaption = (caption: string | undefined) => {
-		if (caption) {
-			return <p className=" font-semibold">Caption: {caption}</p>;
-		}
-
-		return null;
-	};
-
 	const renderOgImage = (
 		img: string,
 		id: number,
@@ -799,6 +790,22 @@ const CardSection = ({
 			"h-4 w-4": cardTypeCondition === "headlines",
 		});
 
+		const errorImgAndVideoClassName = classNames({
+			"h-full w-full rounded-lg object-cover": true,
+			"group-hover:rounded-b-none":
+				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
+		});
+
+		const errorImgPlaceholder = (
+			<Image
+				alt="img-error"
+				className={errorImgAndVideoClassName}
+				height={200}
+				src="/app-svgs/errorImgPlaceholder.svg"
+				width={265}
+			/>
+		);
+
 		const imgLogic = () => {
 			if (bookmarksInfoValue?.includes("cover" as never)) {
 				if (isBookmarkLoading && img === undefined && id === undefined) {
@@ -806,11 +813,11 @@ const CardSection = ({
 				}
 
 				if (errorImgs?.includes(id as never) || !img) {
-					return <ErrorImgPlaceholder />;
+					return errorImgPlaceholder;
 				}
 
 				if (id && !img) {
-					return <ErrorImgPlaceholder />;
+					return errorImgPlaceholder;
 				}
 
 				let blurSource = "";
@@ -843,19 +850,14 @@ const CardSection = ({
 									width={width}
 								/>
 							) : (
-								<ErrorImgPlaceholder />
+								errorImgPlaceholder
 							)}
 						</>
 					);
 				} else {
 					return (
 						// eslint-disable-next-line jsx-a11y/media-has-caption
-						<video
-							// controls
-							id="video"
-							src={img}
-							// type="video/mp4"
-						/>
+						<video className={errorImgAndVideoClassName} id="video" src={img} />
 					);
 				}
 			}
