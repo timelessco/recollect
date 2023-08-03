@@ -22,6 +22,7 @@ import {
 	TIMELESS_SCRAPPER_API,
 	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
+import { getBaseUrl } from "../../../utils/helpers";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -75,6 +76,7 @@ export default async function handler(
 	const scrapperResponse = await axios.post<{
 		OgImage: string;
 		description: string;
+		favIcon: string;
 		title: string;
 	}>(TIMELESS_SCRAPPER_API, {
 		url,
@@ -95,11 +97,24 @@ export default async function handler(
 		imgUrl = await upload(returnedB64);
 	}
 
+	const favIconLogic = () => {
+		if (scrapperResponse?.data?.favIcon) {
+			if (scrapperResponse?.data?.favIcon?.includes("https://")) {
+				return scrapperResponse?.data?.favIcon;
+			} else {
+				return `https://${getBaseUrl(url)}${scrapperResponse?.data?.favIcon}`;
+			}
+		} else {
+			return null;
+		}
+	};
+
 	const meta_data = {
 		img_caption: null,
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
+		favIcon: favIconLogic(),
 	};
 
 	if (

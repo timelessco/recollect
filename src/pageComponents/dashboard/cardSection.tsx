@@ -868,6 +868,21 @@ const CardSection = ({
 		return <figure className={figureClassName}>{imgLogic()}</figure>;
 	};
 
+	const renderFavIcon = (item: SingleListData) => {
+		if (item?.meta_data?.favIcon) {
+			return (
+				<Image
+					alt="fav-icon"
+					height={15}
+					src={item?.meta_data?.favIcon}
+					width={15}
+				/>
+			);
+		}
+
+		return null;
+	};
+
 	const renderCategoryBadge = (item: SingleListData) => {
 		const bookmarkCategoryData = singleBookmarkCategoryData(item?.category_id);
 		return (
@@ -954,6 +969,7 @@ const CardSection = ({
 							{bookmarksInfoValue?.includes("info" as never) && (
 								<div className="flex flex-wrap items-center space-x-2">
 									{renderCategoryBadge(item)}
+									{renderFavIcon(item)}
 									{renderUrl(item)}
 									<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
 										{format(new Date(item?.inserted_at), "MMMM dd")}
@@ -1016,6 +1032,7 @@ const CardSection = ({
 						)}
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="mt-[6px] flex items-center space-x-2">
+								{renderFavIcon(item)}
 								{renderCategoryBadge(item)}
 								{renderUrl(item)}
 								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
@@ -1054,6 +1071,7 @@ const CardSection = ({
 					<div className="mt-[6px] space-y-2">
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="flex items-center space-x-2">
+								{renderFavIcon(item)}
 								{renderUrl(item)}
 								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
 									{format(new Date(item?.inserted_at), "dd MMM")}

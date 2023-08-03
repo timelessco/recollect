@@ -14,6 +14,7 @@ import { type CategoryIdUrlTypes, type FileType } from "./componentTypes";
 export type SupabaseSessionType = Session | null;
 
 export type ImgMetadataType = {
+	favIcon: string | null;
 	height: number | null;
 	img_caption: string | null;
 	ogImgBlurUrl: string | null;

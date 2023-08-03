@@ -33,6 +33,12 @@ const nextConfig = {
 		formats: ["image/avif", "image/webp"],
 		deviceSizes: [384, 640, 768, 1_024, 1_280, 1_440, 2_560],
 		imageSizes: [128, 256],
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "**",
+			},
+		],
 	},
 };
 
