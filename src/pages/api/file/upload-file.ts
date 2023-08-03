@@ -124,6 +124,7 @@ export default async (
 				width: null,
 				height: null,
 				ogImgBlurUrl: null,
+				favIcon: null,
 			};
 			const isVideo = fileType?.includes("video");
 
@@ -145,6 +146,7 @@ export default async (
 					width: imgData?.width ?? null,
 					height: imgData?.height ?? null,
 					ogImgBlurUrl: imgData?.encoded ?? null,
+					favIcon: null,
 				};
 			}
 
