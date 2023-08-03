@@ -140,10 +140,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		error: PostgrestError;
 	};
 
-	// function classNames(...classes: Array<string>) {
-	//   return classes.filter(Boolean).join(" ");
-	// }
-
 	const optionsMenuList = [
 		{
 			icon: <SearchIconGray />,
@@ -195,6 +191,20 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		},
 	];
 
+	const currentCategoryData = find(
+		categoryData?.data,
+		(item) => item?.category_slug === currentPath,
+	);
+	const headerName =
+		currentCategoryData?.category_name ??
+		find(optionsMenuList, (item) => item?.current === true)?.name;
+
+	useEffect(() => {
+		if (headerName) {
+			setHeadingInputValue(headerName);
+		}
+	}, [headerName]);
+
 	const navBarLogo = () => {
 		const currentCategory = find(
 			categoryData?.data,
@@ -219,14 +229,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const navBarHeading = () => {
-		const currentCategoryData = find(
-			categoryData?.data,
-			(item) => item?.category_slug === currentPath,
-		);
-		const headerName =
-			currentCategoryData?.category_name ??
-			find(optionsMenuList, (item) => item?.current === true)?.name;
-
 		if (!showHeadingInput) {
 			return (
 				<div
@@ -247,7 +249,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					role="button"
 					tabIndex={0}
 				>
-					{headerName}
+					{headingInputValue}
 				</div>
 			);
 		} else {
@@ -259,7 +261,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					isFullWidth={false}
 					onBlur={() => {
 						setShowHeadingInput(false);
-						setHeadingInputValue("");
 
 						if (
 							currentCategoryData?.id &&
@@ -283,7 +284,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								headingInputValue,
 							);
 							setShowHeadingInput(false);
-							setHeadingInputValue("");
+							// setHeadingInputValue("");
 						}
 					}}
 					placeholder="Enter name"

@@ -34,6 +34,9 @@ export default function useUpdateCategoryOptimisticMutation() {
 							if (item?.id === data?.category_id) {
 								return {
 									...item,
+									category_name: data?.updateData?.category_name
+										? data?.updateData?.category_name
+										: item?.category_name,
 									category_views: data?.updateData?.category_views
 										? data?.updateData?.category_views
 										: item?.category_views,
