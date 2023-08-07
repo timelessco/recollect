@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
@@ -9,7 +10,7 @@ import {
 	useMiscellaneousStore,
 } from "../store/componentStore";
 import { type UserTagsData } from "../types/apiTypes";
-import { USER_TAGS_KEY } from "../utils/constants";
+import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
 import Spinner from "./spinner";
 
@@ -74,6 +75,7 @@ type SearchInputTypes = {
 
 const SearchInput = (props: SearchInputTypes) => {
 	const { placeholder, onChange, userId } = props;
+	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 
 	const queryClient = useQueryClient();
 
@@ -96,6 +98,17 @@ const SearchInput = (props: SearchInputTypes) => {
 				className="search-bar"
 				onChange={(event: { target: { value: string } }) => {
 					onChange(event.target.value);
+
+					const search = event.target.value;
+
+					const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
+
+					const tagName =
+						!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
+							? matchedSearchTag?.map((item) => item?.replace("@", ""))
+							: undefined;
+
+					setAddedTags(tagName);
 				}}
 				placeholder={placeholder}
 				singleLine
@@ -104,10 +117,12 @@ const SearchInput = (props: SearchInputTypes) => {
 			>
 				<Mention
 					appendSpaceOnAdd
-					data={userTagsData?.data?.map((item) => ({
-						id: item?.id,
-						display: item?.name,
-					}))}
+					data={userTagsData?.data
+						?.map((item) => ({
+							id: item?.id,
+							display: item?.name,
+						}))
+						?.filter((filterItem) => !addedTags?.includes(filterItem?.display))}
 					displayTransform={(_url, display) => `#${display}`}
 					markup="@__display__"
 					trigger="#"

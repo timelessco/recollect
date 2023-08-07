@@ -226,12 +226,6 @@ tag_id (
 				return checker(currentTagsNames, tagName);
 			});
 			// const four = "44444";
-			// const finalResponse: SingleListData[] = bookmarksWithTags?.map(
-			// 	(item) => ({
-			// 		...item?.bookmark_id,
-			// 		addedTags: [item?.tag_id],
-			// 	}),
-			// ) as unknown as SingleListData[];
 
 			response.status(200).json({
 				// data: finalResponse,
@@ -253,21 +247,39 @@ tag_id (
 				return null;
 			});
 
-			response.status(200).json({
-				data: finalData?.map((item) => {
-					const bookmarkTagId = find(
-						bookmarksWithTags,
-						(tagBookmark) => tagBookmark?.bookmark_id?.id === item?.id,
-					);
-					if (bookmarkTagId) {
-						return {
-							...item,
-							addedTags: [bookmarkTagId?.tag_id],
-						};
-					}
+			const finalAddedTagsData = finalData?.map((item) => {
+				// get all tags for the bookmark
+				const allBookmarkTags = allUserBookmarksWithTags?.filter(
+					(tagItem) => tagItem?.bookmark_id === item?.id,
+				) as BookmarksWithTagsWithTagForginKeys;
+				if (allBookmarkTags) {
+					return {
+						...item,
+						addedTags: allBookmarkTags?.map((matchedItem) => ({
+							id: matchedItem?.tag_id?.id,
+							name: matchedItem?.tag_id?.name,
+						})),
+					};
+				}
 
-					return null;
-				}) as unknown as SingleListData[] | null,
+				return null;
+			}) as unknown as SingleListData[] | null;
+
+			// this checks if all the tags in search are present in the bookmark, if even one search tag is missing in the bookmark tags then the bookmark will not be returned
+			const finalDataWithTextTagAndOperatorFilter = finalAddedTagsData?.filter(
+				(item) => {
+					const allAddedTags = item?.addedTags?.map(
+						(addedTagsItem) => addedTagsItem?.name,
+					);
+
+					const tags = checker(allAddedTags, tagName);
+
+					return tags;
+				},
+			) as unknown as SingleListData[] | null;
+
+			response.status(200).json({
+				data: finalDataWithTextTagAndOperatorFilter,
 				error,
 			});
 		}
