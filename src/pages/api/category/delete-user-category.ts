@@ -15,12 +15,22 @@ import {
 	type CategoriesData,
 	type DeleteUserCategoryApiPayload,
 	type NextApiRequest,
+	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
-import { CATEGORIES_TABLE_NAME, PROFILES } from "../../../utils/constants";
+import {
+	CATEGORIES_TABLE_NAME,
+	MAIN_TABLE_NAME,
+	PROFILES,
+	SHARED_CATEGORIES_TABLE_NAME,
+} from "../../../utils/constants";
 
 type Data = {
 	data: CategoriesData[] | null;
-	error: PostgrestError | string | { message: string } | null;
+	error:
+		| PostgrestError
+		| string
+		| { dbErrorMessage?: PostgrestError; message: string }
+		| null;
 };
 
 /**
@@ -48,6 +58,100 @@ export default async function handler(
 
 	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
 	const userId = tokenDecode?.sub;
+
+	const {
+		data: categoryData,
+		error: categoryDataError,
+	}: PostgrestResponse<{ user_id: ProfilesTableTypes["id"] }> = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select(`user_id`)
+		.eq("id", request.body.category_id);
+
+	if (
+		!isNull(categoryDataError) &&
+		isEmpty(categoryData) &&
+		isNull(categoryData)
+	) {
+		response.status(500).json({
+			data: null,
+			error: {
+				message: `error in getting category data`,
+				dbErrorMessage: categoryDataError,
+			},
+		});
+		throw new Error("ERROR");
+	}
+
+	// deletes any the category in shared collabs table
+	// when the category is deleted then all the collab users will also have the category deleted
+	// but this should only happen if the owner deletes the category
+
+	// this tells if the person deleting the category is the owner of the category
+	const isDelTriggerUserTheOwner = !isNull(categoryData)
+		? categoryData[0]?.user_id === userId
+		: false;
+
+	if (!isDelTriggerUserTheOwner) {
+		response.status(500).json({
+			data: null,
+			error: {
+				message: `Only collection owner can delete this collection`,
+			},
+		});
+		throw new Error("ERROR");
+	}
+
+	// deleting all its associations in shared_category table
+	const { error: sharedCategoryError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.delete()
+		.match({ category_id: request.body.category_id });
+
+	if (!isNull(sharedCategoryError)) {
+		response.status(500).json({
+			data: null,
+			error: {
+				message: `error on deleting associations in shared_category table`,
+				dbErrorMessage: sharedCategoryError,
+			},
+		});
+		throw new Error("ERROR");
+	}
+
+	if (isNull(sharedCategoryError)) {
+		// eslint-disable-next-line no-console
+		console.info(
+			`have deleted this category_id in shared_category table: `,
+			request.body.category_id,
+		);
+	}
+
+	// if bookmarks from the del category is in trash
+	// then we need to set the category id of the bookmark to uncategorized
+
+	const { data: trashData, error: trashDataError } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.update({
+			category_id: 0,
+		})
+		.match({ category_id: request.body.category_id, trash: true })
+		.select(`id`);
+
+	if (!isNull(trashDataError)) {
+		response.status(500).json({
+			data: null,
+			error: {
+				message: `error on updating all trash bookmarks to uncategorized`,
+				dbErrorMessage: trashDataError,
+			},
+		});
+		throw new Error("ERROR");
+	}
+
+	if (!isEmpty(trashData)) {
+		// eslint-disable-next-line no-console
+		console.info(`Updated trash bookmarks to uncategorized`, trashData);
+	}
 
 	const { data, error }: PostgrestResponse<CategoriesData> = await supabase
 		.from(CATEGORIES_TABLE_NAME)
