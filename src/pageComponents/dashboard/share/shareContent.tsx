@@ -19,7 +19,10 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
 import LinkIcon from "../../../icons/linkIcon";
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useModalStore,
+} from "../../../store/componentStore";
 import {
 	type CategoriesData,
 	type CollabDataInCategory,
@@ -166,6 +169,10 @@ const ShareContent = () => {
 	const [linkCopied, setLinkCopied] = useState(false);
 	const [inviteUserEditAccess, setInviteUserEditAccess] = useState(false);
 
+	const showShareCategoryModal = useModalStore(
+		(state) => state.showShareCategoryModal,
+	);
+
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
@@ -200,6 +207,15 @@ const ShareContent = () => {
 		formState: { errors },
 		reset,
 	} = useForm<EmailInput>();
+
+	// this resets all the state
+	useEffect(() => {
+		if (!showShareCategoryModal) {
+			setInviteUserEditAccess(false);
+			setLinkCopied(false);
+			reset({ email: "" });
+		}
+	}, [reset, showShareCategoryModal]);
 
 	const onSubmit: SubmitHandler<EmailInput> = async (data) => {
 		const emailList = data?.email?.split(",");

@@ -237,6 +237,12 @@ const Dashboard = () => {
 
 	// END OF MUTATIONS ---------
 
+	const flattendPaginationBookmarkData = flatten(
+		allBookmarksData?.pages?.map((item) =>
+			item?.data?.map((twoItem) => twoItem),
+		),
+	) as SingleListData[];
+
 	const addBookmarkLogic = async (url: string) => {
 		const currentCategory = find(
 			allCategories?.data,
@@ -253,6 +259,19 @@ const Dashboard = () => {
 				  )?.edit_access === true ||
 				  currentCategory?.user_id?.id === session?.user?.id
 				: true;
+
+		if (typeof CATEGORY_ID === "number") {
+			// to check that the same bookmark should not be there in the same category
+			const existingBookmarkCheck = find(
+				flattendPaginationBookmarkData,
+				(item) => item?.url === url && item?.category_id === CATEGORY_ID,
+			);
+
+			if (existingBookmarkCheck) {
+				errorToast("This bookmark already exists in the category");
+				return;
+			}
+		}
 
 		await mutationApiCall(
 			addBookmarkMinDataOptimisticMutation.mutateAsync({
@@ -369,12 +388,6 @@ const Dashboard = () => {
 				break;
 		}
 	};
-
-	const flattendPaginationBookmarkData = flatten(
-		allBookmarksData?.pages?.map((item) =>
-			item?.data?.map((twoItem) => twoItem),
-		),
-	) as SingleListData[];
 
 	// tells if the latest paginated data is the end for total bookmark data based on current category
 	const hasMoreLogic = (): boolean => {

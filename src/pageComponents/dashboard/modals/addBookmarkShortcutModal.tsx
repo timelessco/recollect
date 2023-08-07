@@ -1,8 +1,8 @@
+import { useEffect } from "react";
 import isEmpty from "lodash/isEmpty";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import Input from "../../../components/atoms/input";
-import LabelledComponent from "../../../components/labelledComponent";
 import Modal from "../../../components/modal";
 import Spinner from "../../../components/spinner";
 import { useModalStore } from "../../../store/componentStore";
@@ -33,6 +33,13 @@ const AddBookarkShortcutModal = (props: AddBookarkShortcutModalProps) => {
 		onAddBookmark(data.url);
 		reset({ url: "" });
 	};
+
+	// reset state on modal close
+	useEffect(() => {
+		if (!showAddBookmarkShortcutModal) {
+			reset({ url: "" });
+		}
+	}, [reset, showAddBookmarkShortcutModal]);
 
 	return (
 		<Modal
