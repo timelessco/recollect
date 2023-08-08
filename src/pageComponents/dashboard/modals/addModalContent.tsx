@@ -202,7 +202,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 						removeExistingTag={removeExistingTag}
 					/>
 				</LabelledComponent>
-				<LabelledComponent label="Add Category">
+				<LabelledComponent label="Add Collection">
 					<CreatableSearchSelect
 						createOption={onCreateCategory}
 						defaultValue={defaultValue}

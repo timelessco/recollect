@@ -431,7 +431,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					menuButtonClassName="pr-1"
 					menuClassName={`${dropdownMenuClassName} z-10`}
 				>
-					{[{ label: "Add Category", value: "add-category" }]?.map((item) => (
+					{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
 						<AriaDropdownMenu
 							key={item?.value}
 							onClick={() => {
@@ -505,7 +505,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 										setShowAddCategoryInput(false);
 									}
 								}}
-								placeholder="Category Name"
+								placeholder="Collection Name"
 							/>
 						</div>
 					</div>
@@ -522,7 +522,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 						<AddCategoryIcon />
 					</figure>
 					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-custom-gray-3">
-						Add Category
+						Add Collection
 					</p>
 				</div>
 			</div>

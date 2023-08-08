@@ -777,7 +777,7 @@ const Dashboard = () => {
 								}),
 							);
 						} else {
-							errorToast("Category name is missing");
+							errorToast("Collection name is missing");
 						}
 					}}
 					removeExistingTag={async (tag) => {

@@ -43,6 +43,7 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import Badge from "../../components/badge";
 import Checkbox from "../../components/checkbox";
 import Spinner from "../../components/spinner";
+import ImageIcon from "../../icons/imageIcon";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
 import MoveIcon from "../../icons/moveIcon";
 import {
@@ -473,6 +474,8 @@ const CardSection = ({
 	categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
+	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
+
 	const CARD_DEFAULT_HEIGHT = 194;
 	const CARD_DEFAULT_WIDTH = 200;
 
@@ -869,11 +872,18 @@ const CardSection = ({
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
+		if (favIconErrorImgs?.includes(item?.id)) {
+			return <ImageIcon size="15" />;
+		}
+
 		if (item?.meta_data?.favIcon) {
 			return (
 				<Image
 					alt="fav-icon"
 					height={15}
+					onError={() =>
+						setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
+					}
 					src={item?.meta_data?.favIcon}
 					width={15}
 				/>

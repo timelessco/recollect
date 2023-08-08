@@ -64,13 +64,33 @@ export default async function handler(
 			category_name: null,
 		});
 	} else {
-		const { data, error } = (await supabase
+		const sortBy = categoryData[0]?.category_views?.sortBy;
+
+		let query = supabase
 			.from(MAIN_TABLE_NAME)
 			.select("*, category_id!inner(*), user_id!inner(*)")
 			.eq("category_id.category_slug", request.query.category_slug)
 			// .eq('user_id.user_name', req.query.user_name) // if this is there then collabs bookmakrs are not coming
 			.eq("category_id.is_public", true)
-			.eq("trash", false)) as unknown as {
+			.eq("trash", false);
+
+		if (sortBy === "date-sort-acending") {
+			query = query.order("id", { ascending: false });
+		}
+
+		if (sortBy === "date-sort-decending") {
+			query = query.order("id", { ascending: true });
+		}
+
+		if (sortBy === "alphabetical-sort-acending") {
+			query = query.order("title", { ascending: true });
+		}
+
+		if (sortBy === "alphabetical-sort-decending") {
+			query = query.order("title", { ascending: false });
+		}
+
+		const { data, error } = (await query) as unknown as {
 			data: GetPublicCategoryBookmarksApiResponseType["data"];
 			error: GetPublicCategoryBookmarksApiResponseType["error"];
 		};
