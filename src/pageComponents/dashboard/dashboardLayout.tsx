@@ -34,6 +34,7 @@ import {
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	VIDEOS_URL,
 } from "../../utils/constants";
 
 import "allotment/dist/style.css";
@@ -48,6 +49,7 @@ import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import ImageIcon from "../../icons/imageIcon";
 import SettingsIcon from "../../icons/settingsIcon";
+import VideoIcon from "../../icons/videoIcon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
@@ -189,6 +191,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			id: 5,
 			count: undefined,
 		},
+		{
+			icon: <VideoIcon />,
+			name: "Videos",
+			href: `/${VIDEOS_URL}`,
+			current: currentPath === VIDEOS_URL,
+			id: 6,
+			count: undefined,
+		},
 	];
 
 	const currentCategoryData = find(
@@ -232,7 +242,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className=" text-xl font-semibold leading-[23px] text-custom-gray-5"
+					className=" w-52 truncate text-xl font-semibold leading-[23px] text-custom-gray-5"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -305,9 +315,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			},
 		);
 
+		const figureWrapperClass = classNames(
+			"flex  items-center px-2 py-[3.5px]",
+			{
+				"min-w-[250px]": currentBookmarkView !== "list",
+				"min-w-[255px]": currentBookmarkView === "list",
+			},
+		);
+
 		return (
 			<header className={headerClass}>
-				<div className="flex min-w-[250px] items-center px-2 py-[3.5px]">
+				<div className={figureWrapperClass}>
 					<figure className="mr-2 flex h-5 w-5 items-center">
 						{navBarLogo()}
 					</figure>

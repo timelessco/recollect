@@ -890,7 +890,7 @@ const CardSection = ({
 			);
 		}
 
-		return null;
+		return <ImageIcon size="15" />;
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {

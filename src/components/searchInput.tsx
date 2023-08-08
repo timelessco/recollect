@@ -18,7 +18,7 @@ const styles = {
 	input: {
 		left: 27,
 		top: 3,
-		width: "90%",
+		width: "80%",
 	},
 	control: {
 		backgroundColor: "rgba(0, 0, 0, 0.047)",
