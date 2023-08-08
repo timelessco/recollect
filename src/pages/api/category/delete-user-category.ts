@@ -165,7 +165,7 @@ export default async function handler(
 	const { data, error }: PostgrestResponse<CategoriesData> = await supabase
 		.from(CATEGORIES_TABLE_NAME)
 		.delete()
-		.match({ id: request.body.category_id })
+		.eq("id", request.body.category_id)
 		.select(`*`);
 
 	if (isNull(data)) {
