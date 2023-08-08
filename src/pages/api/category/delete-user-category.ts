@@ -103,10 +103,11 @@ export default async function handler(
 	}
 
 	// deleting all its associations in shared_category table
-	const { error: sharedCategoryError } = await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.delete()
-		.match({ category_id: request.body.category_id });
+	const { data: sharedCategoryData, error: sharedCategoryError } =
+		await supabase
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.delete()
+			.match({ category_id: request.body.category_id });
 
 	if (!isNull(sharedCategoryError)) {
 		response.status(500).json({
@@ -119,12 +120,18 @@ export default async function handler(
 		throw new Error("ERROR");
 	}
 
-	if (isNull(sharedCategoryError)) {
+	if (
+		isNull(sharedCategoryError) &&
+		!isEmpty(sharedCategoryData) &&
+		!isNull(sharedCategoryData)
+	) {
 		console.info(
 			`have deleted this category_id in shared_category table: `,
 			request.body.category_id,
 		);
 	}
+
+	console.info(`111111111111111111111111111111111111111`);
 
 	// if bookmarks from the del category is in trash
 	// then we need to set the category id of the bookmark to uncategorized
@@ -152,11 +159,15 @@ export default async function handler(
 		console.info(`Updated trash bookmarks to uncategorized`, trashData);
 	}
 
+	console.info(`22222222222222222222222222222222222`);
+
 	const { data, error }: PostgrestResponse<CategoriesData> = await supabase
 		.from(CATEGORIES_TABLE_NAME)
 		.delete()
 		.match({ id: request.body.category_id })
 		.select();
+
+	console.info(`333333333333333333333333333333333`);
 
 	if (
 		data &&
@@ -164,7 +175,7 @@ export default async function handler(
 		!isNull(request.body.category_order) &&
 		request.body.category_order
 	) {
-		console.log("in cat order");
+		console.info("444444444444444444444444444444");
 		// updates user category order
 		const { error: orderError } = await supabase
 			.from(PROFILES)
@@ -176,7 +187,7 @@ export default async function handler(
 			.match({ id: userId }).select(`
       id, category_order`);
 
-		console.log("order err", orderError);
+		console.info("5555555555555555555555555555", orderError);
 
 		if (!isNull(orderError)) {
 			response.status(500).json({ data: null, error: orderError });
