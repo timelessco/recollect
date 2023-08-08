@@ -101,6 +101,7 @@ export const LOGIN_URL = "login";
 export const SIGNUP_URL = "signup";
 export const SIGNIN_URL = "login";
 export const IMAGES_URL = "images";
+export const VIDEOS_URL = "videos";
 
 // react-query keys
 
@@ -133,6 +134,14 @@ export const acceptedFileTypes = [
 	"audio/mp3",
 	"audio/mpeg",
 ];
+
+export const imageFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("image"),
+);
+
+export const videoFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("video"),
+);
 
 // color picker colors
 export const colorPickerColors = [

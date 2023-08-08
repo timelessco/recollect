@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { type NextApiRequest, type NextApiResponse } from "next";
 import {
 	createClient,
@@ -15,12 +16,14 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
-	acceptedFileTypes,
 	BOOKMARK_TAGS_TABLE_NAME,
 	GET_TEXT_WITH_AT_CHAR,
+	imageFileTypes,
 	IMAGES_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	videoFileTypes,
+	VIDEOS_URL,
 } from "../../../utils/constants";
 import { checker } from "../../../utils/helpers";
 
@@ -88,7 +91,8 @@ export default async function handler(
 		!isNull(category_id) &&
 		category_id !== "null" &&
 		category_id !== TRASH_URL &&
-		category_id !== IMAGES_URL
+		category_id !== IMAGES_URL &&
+		category_id !== VIDEOS_URL
 	) {
 		query = query.eq(
 			"category_id",
@@ -97,7 +101,11 @@ export default async function handler(
 	}
 
 	if (category_id === IMAGES_URL) {
-		query = query.in("type", acceptedFileTypes);
+		query = query.in("type", imageFileTypes);
+	}
+
+	if (category_id === VIDEOS_URL) {
+		query = query.in("type", videoFileTypes);
 	}
 
 	const { data, error } = (await query) as unknown as {
@@ -159,7 +167,8 @@ tag_id (
 			!isNull(category_id) &&
 			category_id !== "null" &&
 			category_id !== TRASH_URL &&
-			category_id !== IMAGES_URL
+			category_id !== IMAGES_URL &&
+			category_id !== VIDEOS_URL
 		) {
 			tagSearchQuery = tagSearchQuery.eq(
 				"bookmark_id.category_id",
@@ -168,7 +177,11 @@ tag_id (
 		}
 
 		if (category_id === IMAGES_URL) {
-			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", acceptedFileTypes);
+			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", imageFileTypes);
+		}
+
+		if (category_id === VIDEOS_URL) {
+			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", videoFileTypes);
 		}
 
 		let { data: bookmarksWithTags } =

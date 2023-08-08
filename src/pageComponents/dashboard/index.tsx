@@ -31,6 +31,7 @@ import {
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	VIDEOS_URL,
 } from "../../utils/constants";
 
 import DashboardLayout from "./dashboardLayout";
@@ -432,6 +433,12 @@ const Dashboard = () => {
 				return count !== flattendPaginationBookmarkData?.length;
 			}
 
+			if ((CATEGORY_ID as unknown) === VIDEOS_URL) {
+				const count = bookmarksCountData?.data?.videos;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
 			return true;
 		}
 
@@ -817,6 +824,8 @@ const Dashboard = () => {
 			case SETTINGS_URL:
 				return <div className="p-6">Settings page</div>;
 			case IMAGES_URL:
+				return renderAllBookmarkCards();
+			case VIDEOS_URL:
 				return renderAllBookmarkCards();
 			default:
 				return renderAllBookmarkCards();

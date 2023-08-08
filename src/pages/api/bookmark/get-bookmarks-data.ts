@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { type NextApiRequest, type NextApiResponse } from "next";
 import {
 	createClient,
@@ -19,12 +20,15 @@ import {
 	acceptedFileTypes,
 	BOOKMARK_TAGS_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
+	imageFileTypes,
 	IMAGES_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
 	PROFILES,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	videoFileTypes,
+	VIDEOS_URL,
 } from "../../../utils/constants";
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
@@ -64,14 +68,13 @@ export default async function handler(
 		},
 	);
 
-	// const userId = decode?.sub;
-
 	const categoryCondition =
 		category_id !== null &&
 		category_id !== "null" &&
 		category_id !== TRASH_URL &&
 		category_id !== UNCATEGORIZED_URL &&
-		category_id !== IMAGES_URL;
+		category_id !== IMAGES_URL &&
+		category_id !== VIDEOS_URL;
 
 	let data;
 	let sortVaue;
@@ -129,7 +132,11 @@ user_id (
 	}
 
 	if (category_id === IMAGES_URL) {
-		query = query.in("type", acceptedFileTypes);
+		query = query.in("type", imageFileTypes);
+	}
+
+	if (category_id === VIDEOS_URL) {
+		query = query.in("type", videoFileTypes);
 	}
 
 	if (sortVaue === "date-sort-acending") {

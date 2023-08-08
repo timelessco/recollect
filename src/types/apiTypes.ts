@@ -42,6 +42,7 @@ export type BookmarksCountTypes = {
 	images: number;
 	trash: number;
 	uncategorized: number;
+	videos: number;
 };
 
 export type SingleBookmarksPaginatedDataTypes = {

@@ -17,6 +17,7 @@ import {
 	SEARCH_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	VIDEOS_URL,
 } from "./constants";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
@@ -37,7 +38,12 @@ export const getCategoryIdFromSlug = (
 	slug: string | null,
 	allCategories: CategoriesData[] | undefined,
 ) => {
-	if (slug === TRASH_URL || slug === UNCATEGORIZED_URL || slug === IMAGES_URL) {
+	if (
+		slug === TRASH_URL ||
+		slug === UNCATEGORIZED_URL ||
+		slug === IMAGES_URL ||
+		slug === VIDEOS_URL
+	) {
 		return slug;
 	}
 
@@ -90,6 +96,7 @@ export const isUserInACategory = (url: string) => {
 		SEARCH_URL,
 		TRASH_URL,
 		IMAGES_URL,
+		VIDEOS_URL,
 	];
 
 	return !nonCategoryPages?.includes(url);

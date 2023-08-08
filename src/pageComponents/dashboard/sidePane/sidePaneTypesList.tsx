@@ -12,6 +12,7 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	IMAGES_URL,
+	VIDEOS_URL,
 } from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
@@ -51,10 +52,10 @@ const SidePaneTypesList = () => {
 		{
 			icon: <VideoIcon />,
 			name: "Videos",
-			href: `/${ALL_BOOKMARKS_URL}`,
-			current: false,
+			href: `/${VIDEOS_URL}`,
+			current: currentPath === VIDEOS_URL,
 			id: 2,
-			count: undefined,
+			count: bookmarksCountData?.data?.videos,
 			iconColor: "",
 		},
 		{
