@@ -38,6 +38,7 @@ type Data = {
  * Deletes catagory for a user
  */
 
+// eslint-disable-next-line complexity
 export default async function handler(
 	request: NextApiRequest<DeleteUserCategoryApiPayload>,
 	response: NextApiResponse<Data>,
@@ -166,6 +167,11 @@ export default async function handler(
 		.delete()
 		.match({ id: request.body.category_id })
 		.select(`*`);
+
+	if (isNull(data)) {
+		response.status(500).json({ data: null, error });
+		throw new Error("ERROR");
+	}
 
 	console.info(`333333333333333333333333333333333`, data, error);
 
