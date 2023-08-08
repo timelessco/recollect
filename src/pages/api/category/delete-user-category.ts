@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiResponse } from "next";
@@ -119,7 +120,6 @@ export default async function handler(
 	}
 
 	if (isNull(sharedCategoryError)) {
-		// eslint-disable-next-line no-console
 		console.info(
 			`have deleted this category_id in shared_category table: `,
 			request.body.category_id,
@@ -149,7 +149,6 @@ export default async function handler(
 	}
 
 	if (!isEmpty(trashData)) {
-		// eslint-disable-next-line no-console
 		console.info(`Updated trash bookmarks to uncategorized`, trashData);
 	}
 
@@ -165,6 +164,7 @@ export default async function handler(
 		!isNull(request.body.category_order) &&
 		request.body.category_order
 	) {
+		console.log("in cat order");
 		// updates user category order
 		const { error: orderError } = await supabase
 			.from(PROFILES)
@@ -175,6 +175,8 @@ export default async function handler(
 			})
 			.match({ id: userId }).select(`
       id, category_order`);
+
+		console.log("order err", orderError);
 
 		if (!isNull(orderError)) {
 			response.status(500).json({ data: null, error: orderError });
