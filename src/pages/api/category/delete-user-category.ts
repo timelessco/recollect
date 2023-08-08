@@ -173,7 +173,8 @@ export default async function handler(
 		data &&
 		!isEmpty(data) &&
 		!isNull(request.body.category_order) &&
-		request.body.category_order
+		request.body.category_order &&
+		!isNull(data)
 	) {
 		console.info("444444444444444444444444444444");
 		// updates user category order
