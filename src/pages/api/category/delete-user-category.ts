@@ -165,9 +165,9 @@ export default async function handler(
 		.from(CATEGORIES_TABLE_NAME)
 		.delete()
 		.match({ id: request.body.category_id })
-		.select();
+		.select(`*`);
 
-	console.info(`333333333333333333333333333333333`);
+	console.info(`333333333333333333333333333333333`, data, error);
 
 	if (
 		data &&
