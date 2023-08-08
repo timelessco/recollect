@@ -169,7 +169,13 @@ export default async function handler(
 		.select(`*`);
 
 	if (isNull(data)) {
-		response.status(500).json({ data: null, error });
+		console.info(
+			`44444444444444444444444444444444444444444444444`,
+			data,
+			error,
+		);
+
+		response.status(500).json({ data: null, error: "it broke" });
 		throw new Error("ERROR");
 	}
 
