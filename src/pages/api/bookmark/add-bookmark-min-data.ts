@@ -7,7 +7,7 @@ import { decode } from "base64-arraybuffer";
 import { blurhashFromURL } from "blurhash-from-url";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
-import { isNull } from "lodash";
+import { isEmpty, isNull } from "lodash";
 
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -73,6 +73,32 @@ export default async function handler(
 		return storageData?.publicUrl;
 	};
 
+	// when adding a bookmark into a category the same bookmark should not be present in the category
+	const checkIfBookmarkAlreadyExists = async () => {
+		const {
+			data: checkBookmarkData,
+			error: checkBookmarkError,
+		}: {
+			data: Array<{ id: SingleListData["id"] }> | null;
+			error: PostgrestError | VerifyErrors | string | null;
+		} = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select(`id`)
+			.eq("url", url)
+			.eq("category_id", categoryId);
+
+		if (!isNull(checkBookmarkError)) {
+			response.status(500).json({
+				data: null,
+				error: checkBookmarkError,
+				message: "Something went wrong in duplicate bookmark category check",
+			});
+			throw new Error("Duplicate check error");
+		}
+
+		return !isEmpty(checkBookmarkData);
+	};
+
 	const scrapperResponse = await axios.post<{
 		OgImage: string;
 		description: string;
@@ -124,31 +150,45 @@ export default async function handler(
 		categoryId !== 0 &&
 		categoryId !== UNCATEGORIZED_URL
 	) {
-		const {
-			data,
-			error,
-		}: {
-			data: SingleListData[] | null;
-			error: PostgrestError | VerifyErrors | string | null;
-		} = await supabase
-			.from(MAIN_TABLE_NAME)
-			.insert([
-				{
-					url,
-					title: scrapperResponse.data.title,
-					user_id: userId,
-					description: scrapperResponse?.data?.description,
-					ogImage: imgUrl,
-					category_id: categoryId,
-					meta_data,
-				},
-			])
-			.select();
-		if (!isNull(error)) {
-			response.status(500).json({ data: null, error, message: null });
+		const isBookmarkAlreadyPresentInCategory =
+			await checkIfBookmarkAlreadyExists();
+
+		if (isBookmarkAlreadyPresentInCategory) {
+			// the bookmark is already there in the category
+			response.status(500).json({
+				data: null,
+				error: "Bookmark already present in this category",
+				message: "Bookmark already present in this category",
+			});
 			throw new Error("ERROR");
 		} else {
-			response.status(200).json({ data, error: null, message: null });
+			// the bookmark to be added is not there in the category so we add
+			const {
+				data,
+				error,
+			}: {
+				data: SingleListData[] | null;
+				error: PostgrestError | VerifyErrors | string | null;
+			} = await supabase
+				.from(MAIN_TABLE_NAME)
+				.insert([
+					{
+						url,
+						title: scrapperResponse.data.title,
+						user_id: userId,
+						description: scrapperResponse?.data?.description,
+						ogImage: imgUrl,
+						category_id: categoryId,
+						meta_data,
+					},
+				])
+				.select();
+			if (!isNull(error)) {
+				response.status(500).json({ data: null, error, message: null });
+				throw new Error("ERROR");
+			} else {
+				response.status(200).json({ data, error: null, message: null });
+			}
 		}
 	} else {
 		const {
