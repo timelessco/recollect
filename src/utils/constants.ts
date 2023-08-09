@@ -34,13 +34,13 @@ const getBaseUrl = () => {
 		return `${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 	}
 
-	return "http://localhost:3000";
+	return "http://localhost:3000/";
 };
 
 // const getBaseUrl = () =>
 // 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
 
-export const NEXT_API_URL = `${getBaseUrl()}/api`;
+export const NEXT_API_URL = `${getBaseUrl()}api`;
 export const TIMELESS_SCRAPPER_API =
 	"https://link-preview-livid-ten.vercel.app/api/getUrlData";
 export const SCREENSHOT_API = "https://s.vercel.app/api?url=";
