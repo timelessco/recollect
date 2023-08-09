@@ -175,8 +175,8 @@ export default async function handler(
 			error,
 		);
 
-		response.status(500).json({ data: null, error: "it broke" });
-		throw new Error("ERROR");
+		response.status(500).json({ data: null, error });
+		// throw new Error("ERROR");
 	}
 
 	console.info(`333333333333333333333333333333333`, data, error);
