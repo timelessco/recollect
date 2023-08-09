@@ -892,13 +892,19 @@ const Dashboard = () => {
 								!isNull(userProfileData?.data) &&
 								userProfileData?.data[0]?.category_order
 							) {
-								await mutationApiCall(
-									deleteCategoryOtimisticMutation.mutateAsync({
-										category_id: categoryId,
-										category_order: userProfileData?.data[0]?.category_order,
-										session,
-									}),
-								);
+								if (isEmpty(flattendPaginationBookmarkData)) {
+									await mutationApiCall(
+										deleteCategoryOtimisticMutation.mutateAsync({
+											category_id: categoryId,
+											category_order: userProfileData?.data[0]?.category_order,
+											session,
+										}),
+									);
+								} else {
+									errorToast(
+										"This collection still has bookmarks, Please empty collection",
+									);
+								}
 							}
 
 							// only push to home if user is deleting the category when user is currently in that category
