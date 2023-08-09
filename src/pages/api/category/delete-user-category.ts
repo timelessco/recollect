@@ -211,7 +211,7 @@ export default async function handler(
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error });
 		throw new Error("ERROR");
-	} else if (isEmpty(data)) {
+	} else if (isEmpty(data) || isNull(data)) {
 		response
 			.status(500)
 			.json({ data: null, error: { message: "Something went wrong" } });
