@@ -777,7 +777,6 @@ const CardSection = ({
 				cardTypeCondition === "card",
 			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === "moodboard",
-			"h-4 w-4 rounded object-cover": cardTypeCondition === "headlines",
 		});
 
 		const loaderClassName = classNames({
@@ -796,7 +795,6 @@ const CardSection = ({
 				cardTypeCondition === "moodboard" &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"h-4 w-4": cardTypeCondition === "headlines",
 		});
 
 		const errorImgAndVideoClassName = classNames({
@@ -878,21 +876,30 @@ const CardSection = ({
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
+		const size = cardTypeCondition === "headlines" ? 16 : 15;
+		const favIconFigureClassName = classNames({
+			"h-4 w-4": cardTypeCondition === "headlines",
+			"h-[15] w-[15px]": cardTypeCondition !== "headlines",
+		});
+
 		if (favIconErrorImgs?.includes(item?.id)) {
-			return <ImageIcon size="15" />;
+			return <ImageIcon size={`${size}`} />;
 		}
 
 		if (item?.meta_data?.favIcon) {
 			return (
-				<Image
-					alt="fav-icon"
-					height={15}
-					onError={() =>
-						setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
-					}
-					src={item?.meta_data?.favIcon}
-					width={15}
-				/>
+				<figure className={favIconFigureClassName}>
+					<Image
+						alt="fav-icon"
+						className="rounded"
+						height={size}
+						onError={() =>
+							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
+						}
+						src={item?.meta_data?.favIcon}
+						width={size}
+					/>
+				</figure>
 			);
 		}
 
@@ -973,15 +980,16 @@ const CardSection = ({
 								</p>
 							)}
 						<div className="space-y-[6px]">
-							{bookmarksInfoValue?.includes("tags" as never) && (
-								<div className="flex flex-wrap items-center space-x-1">
-									{item?.addedTags?.map((tag) => (
-										<div className="text-xs text-blue-500" key={tag?.id}>
-											#{tag?.name}
-										</div>
-									))}
-								</div>
-							)}
+							{bookmarksInfoValue?.includes("tags" as never) &&
+								!isEmpty(item?.addedTags) && (
+									<div className="flex flex-wrap items-center space-x-1">
+										{item?.addedTags?.map((tag) => (
+											<div className="text-xs text-blue-500" key={tag?.id}>
+												#{tag?.name}
+											</div>
+										))}
+									</div>
+								)}
 							{bookmarksInfoValue?.includes("info" as never) && (
 								<div className="flex flex-wrap items-center space-x-2">
 									{renderCategoryBadge(item)}
@@ -1068,14 +1076,7 @@ const CardSection = ({
 
 	const renderHeadlinesCard = (item: SingleListData) => (
 		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
-			{renderOgImage(
-				item?.ogImage,
-				item?.id,
-				item?.meta_data?.ogImgBlurUrl ?? "",
-				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-				item?.type,
-			)}
+			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className=" ml-[10px]">
@@ -1087,7 +1088,6 @@ const CardSection = ({
 					<div className="mt-[6px] space-y-2">
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="flex items-center space-x-2">
-								{renderFavIcon(item)}
 								{renderUrl(item)}
 								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
 									{format(new Date(item?.inserted_at), "dd MMM")}
