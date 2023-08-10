@@ -81,6 +81,7 @@ export default async function handler(
 			{ count: "exact", head: true },
 		)
 		.eq("user_id", userId)
+		.eq("trash", false)
 		.in("type", imageFileTypes);
 
 	count = {
@@ -97,6 +98,7 @@ id
 			{ count: "exact", head: true },
 		)
 		.eq("user_id", userId)
+		.eq("trash", false)
 		.in("type", videoFileTypes);
 
 	count = {

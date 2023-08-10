@@ -28,7 +28,6 @@ import {
 	type DraggableItemProps,
 	type DragItem,
 } from "react-aria";
-import Avatar from "react-avatar";
 import Masonry from "react-masonry-css";
 import {
 	Item,
@@ -46,6 +45,7 @@ import Spinner from "../../components/spinner";
 import ImageIcon from "../../icons/imageIcon";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
 import MoveIcon from "../../icons/moveIcon";
+import DefaultUserIcon from "../../icons/user/defaultUserIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -734,15 +734,21 @@ const CardSection = ({
 		return null;
 	};
 
-	const renderAvatar = (item: SingleListData) => (
-		<Avatar
-			className="mr-1"
-			name={item?.user_id?.email}
-			round
-			size="20"
-			src={item?.user_id?.profile_pic}
-		/>
-	);
+	const renderAvatar = (item: SingleListData) => {
+		if (!isNil(item?.user_id?.profile_pic)) {
+			return (
+				<Image
+					alt="user_img"
+					className=" h-5 w-5 rounded-full"
+					height={20}
+					src={item?.user_id?.profile_pic}
+					width={20}
+				/>
+			);
+		}
+
+		return <DefaultUserIcon className="h-5 w-5" />;
+	};
 
 	const renderUrl = (item: SingleListData) => (
 		<p

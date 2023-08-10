@@ -4,7 +4,6 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty, isNull } from "lodash";
-import Avatar from "react-avatar";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
@@ -19,6 +18,7 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
 import LinkIcon from "../../../icons/linkIcon";
+import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
 	useModalStore,
@@ -135,21 +135,7 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
 						src={userProfilePicData?.data[0]?.profile_pic}
 					/>
 				) : (
-					<Avatar
-						className="mr-1"
-						name={
-							!isNull(userProfilePicData?.data)
-								? userProfilePicData?.data[0]?.profile_pic ?? ""
-								: ""
-						}
-						round
-						size="20"
-						src={
-							(!isNull(userProfilePicData?.data) &&
-								userProfilePicData?.data[0]?.profile_pic) ||
-							undefined
-						}
-					/>
+					<DefaultUserIcon className="h-5 w-5" />
 				)}
 				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-custom-gray-1">
 					{item.userEmail}

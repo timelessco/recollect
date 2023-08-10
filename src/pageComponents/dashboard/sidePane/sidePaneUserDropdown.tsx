@@ -11,6 +11,7 @@ import {
 } from "../../../components/ariaDropdown";
 import Button from "../../../components/atoms/button";
 import DownArrowGray from "../../../icons/downArrowGray";
+import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import {
 	dropdownMenuClassName,
@@ -54,16 +55,7 @@ const SidePaneUserDropdown = () => {
 									width={24}
 								/>
 							) : (
-								<div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200">
-									<svg
-										fill="#000000"
-										height="14"
-										viewBox="0 0 18 18"
-										width="14"
-									>
-										<use href="/sprite.svg#user" />
-									</svg>
-								</div>
+								<DefaultUserIcon />
 							)}
 							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-custom-gray-1">
 								{userData?.name || session?.user?.email}
