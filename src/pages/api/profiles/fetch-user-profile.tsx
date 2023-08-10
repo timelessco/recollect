@@ -3,15 +3,18 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import { verify, type VerifyErrors } from "jsonwebtoken";
-import { isEmpty } from "lodash";
+import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
-import { type UserTagsData } from "../../../types/apiTypes";
+import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
 
 // fetches profiles data for a perticular user
+// checks if profile pic is present
+// if its not present and in session data some oauth profile pic is there, then we update the oauth profile pic in profiles table
+// we are doing this because in auth triggers we do not get the oauth profile pic
 
-type DataResponse = UserTagsData[] | null;
+type DataResponse = ProfilesTableTypes[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
 
 type Data = {
@@ -39,6 +42,7 @@ export default async function handler(
 	);
 
 	const userId = request.query.user_id;
+	const existingOauthAvatar = request.query?.avatar;
 
 	if (!userId || isEmpty(userId)) {
 		response.status(500).json({ data: null, error: "User id is missing" });
@@ -52,6 +56,25 @@ export default async function handler(
 		data: DataResponse;
 		error: ErrorResponse;
 	};
+
+	if (
+		!isEmpty(data) &&
+		!isNull(data) &&
+		isNull(data[0]?.profile_pic) &&
+		!isNil(existingOauthAvatar)
+	) {
+		const { error: updateProfilePicError } = await supabase
+			.from(PROFILES)
+			.update({
+				profile_pic: existingOauthAvatar,
+			})
+			.match({ id: userId });
+
+		if (!isNull(updateProfilePicError)) {
+			response.status(500).json({ data: null, error: updateProfilePicError });
+			throw new Error("UPDATE PROFILE_PIC ERROR");
+		}
+	}
 
 	if (isNull(error)) {
 		response.status(200).json({ data, error: null });

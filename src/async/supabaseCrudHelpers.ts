@@ -4,6 +4,7 @@ import {
 	type QueryKey,
 } from "@tanstack/react-query";
 import axios from "axios";
+import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -720,13 +721,21 @@ export const fetchUserProfiles = async ({
 		};
 	}
 
+	const existingOauthAvatarUrl = session?.user?.user_metadata?.avatar_url;
+
 	try {
 		if (userId) {
 			const response = await axios.get<{
 				data: ProfilesTableTypes[] | null;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}`,
+				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${
+					session?.access_token
+				}&user_id=${userId}${
+					!isNil(existingOauthAvatarUrl)
+						? `&avatar=${existingOauthAvatarUrl}`
+						: ``
+				}`,
 			);
 			return response?.data;
 		}
