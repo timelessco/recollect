@@ -1,6 +1,8 @@
+import { count } from "console";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { id } from "date-fns/locale";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import ArticleIcon from "../../../icons/articleIcon";
@@ -12,6 +14,7 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	IMAGES_URL,
+	LINKS_URL,
 	VIDEOS_URL,
 } from "../../../utils/constants";
 
@@ -33,11 +36,11 @@ const SidePaneTypesList = () => {
 	const optionsMenuList = [
 		{
 			icon: <ArticleIcon />,
-			name: "Articles",
-			href: `/${ALL_BOOKMARKS_URL}`,
-			current: false,
+			name: "Links",
+			href: `/${LINKS_URL}`,
+			current: currentPath === LINKS_URL,
 			id: 0,
-			count: undefined,
+			count: bookmarksCountData?.data?.links,
 			iconColor: "",
 		},
 		{

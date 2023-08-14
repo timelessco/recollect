@@ -7,6 +7,7 @@ import isNull from "lodash/isNull";
 // import { supabase } from '../../utils/supabaseClient';
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
+	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	imageFileTypes,
 	MAIN_TABLE_NAME,
@@ -52,6 +53,7 @@ export default async function handler(
 		uncategorized: 0,
 		images: 0,
 		videos: 0,
+		links: 0,
 	} as BookmarksCountTypes;
 
 	const { error: bookError, count: bookmarkCount } = await supabase
@@ -104,6 +106,23 @@ id
 	count = {
 		...count,
 		videos: bookmarkVideoCount as number,
+	};
+
+	const { error: bookmakrsLinksError, count: bookmakrsLinks } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select(
+			`
+id
+`,
+			{ count: "exact", head: true },
+		)
+		.eq("user_id", userId)
+		.eq("trash", false)
+		.eq("type", bookmarkType);
+
+	count = {
+		...count,
+		links: bookmakrsLinks as number,
 	};
 
 	const { error: bookTrashError, count: bookmarkTrashCount } = await supabase
@@ -201,7 +220,8 @@ id
 			isNull(bookUnCatError) &&
 			isNull(categoryError) &&
 			isNull(bookImageError) &&
-			isNull(bookVideoError)
+			isNull(bookVideoError) &&
+			isNull(bookmakrsLinksError)
 		) {
 			response.status(200).json({ data: count, error: null });
 		} else {

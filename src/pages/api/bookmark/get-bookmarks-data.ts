@@ -17,11 +17,12 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
-	acceptedFileTypes,
 	BOOKMARK_TAGS_TABLE_NAME,
+	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	imageFileTypes,
 	IMAGES_URL,
+	LINKS_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
 	PROFILES,
@@ -74,7 +75,8 @@ export default async function handler(
 		category_id !== TRASH_URL &&
 		category_id !== UNCATEGORIZED_URL &&
 		category_id !== IMAGES_URL &&
-		category_id !== VIDEOS_URL;
+		category_id !== VIDEOS_URL &&
+		category_id !== LINKS_URL;
 
 	let data;
 	let sortVaue;
@@ -137,6 +139,10 @@ user_id (
 
 	if (category_id === VIDEOS_URL) {
 		query = query.in("type", videoFileTypes);
+	}
+
+	if (category_id === LINKS_URL) {
+		query = query.eq("type", bookmarkType);
 	}
 
 	if (sortVaue === "date-sort-acending") {

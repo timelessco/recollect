@@ -14,6 +14,7 @@ import {
 	GET_NAME_FROM_EMAIL_PATTERN,
 	IMAGES_URL,
 	INBOX_URL,
+	LINKS_URL,
 	SEARCH_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
@@ -42,7 +43,8 @@ export const getCategoryIdFromSlug = (
 		slug === TRASH_URL ||
 		slug === UNCATEGORIZED_URL ||
 		slug === IMAGES_URL ||
-		slug === VIDEOS_URL
+		slug === VIDEOS_URL ||
+		slug === LINKS_URL
 	) {
 		return slug;
 	}
@@ -97,6 +99,7 @@ export const isUserInACategory = (url: string) => {
 		TRASH_URL,
 		IMAGES_URL,
 		VIDEOS_URL,
+		LINKS_URL,
 	];
 
 	return !nonCategoryPages?.includes(url);

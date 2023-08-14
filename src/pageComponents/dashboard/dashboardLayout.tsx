@@ -30,6 +30,7 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
 	IMAGES_URL,
+	LINKS_URL,
 	SEARCH_URL,
 	SETTINGS_URL,
 	TRASH_URL,
@@ -47,6 +48,7 @@ import CategoryIconsDropdown from "../../components/customDropdowns.tsx/category
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
+import ArticleIcon from "../../icons/articleIcon";
 import ImageIcon from "../../icons/imageIcon";
 import SettingsIcon from "../../icons/settingsIcon";
 import VideoIcon from "../../icons/videoIcon";
@@ -196,6 +198,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			name: "Videos",
 			href: `/${VIDEOS_URL}`,
 			current: currentPath === VIDEOS_URL,
+			id: 6,
+			count: undefined,
+		},
+		{
+			icon: <ArticleIcon />,
+			name: "Links",
+			href: `/${LINKS_URL}`,
+			current: currentPath === LINKS_URL,
 			id: 6,
 			count: undefined,
 		},

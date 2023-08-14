@@ -17,9 +17,11 @@ import {
 } from "../../../types/apiTypes";
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
+	bookmarkType,
 	GET_TEXT_WITH_AT_CHAR,
 	imageFileTypes,
 	IMAGES_URL,
+	LINKS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 	videoFileTypes,
@@ -92,7 +94,8 @@ export default async function handler(
 		category_id !== "null" &&
 		category_id !== TRASH_URL &&
 		category_id !== IMAGES_URL &&
-		category_id !== VIDEOS_URL
+		category_id !== VIDEOS_URL &&
+		category_id !== LINKS_URL
 	) {
 		query = query.eq(
 			"category_id",
@@ -106,6 +109,10 @@ export default async function handler(
 
 	if (category_id === VIDEOS_URL) {
 		query = query.in("type", videoFileTypes);
+	}
+
+	if (category_id === LINKS_URL) {
+		query = query.eq("type", bookmarkType);
 	}
 
 	const { data, error } = (await query) as unknown as {
@@ -168,7 +175,8 @@ tag_id (
 			category_id !== "null" &&
 			category_id !== TRASH_URL &&
 			category_id !== IMAGES_URL &&
-			category_id !== VIDEOS_URL
+			category_id !== VIDEOS_URL &&
+			category_id !== LINKS_URL
 		) {
 			tagSearchQuery = tagSearchQuery.eq(
 				"bookmark_id.category_id",
@@ -182,6 +190,10 @@ tag_id (
 
 		if (category_id === VIDEOS_URL) {
 			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", videoFileTypes);
+		}
+
+		if (category_id === LINKS_URL) {
+			tagSearchQuery = tagSearchQuery.eq("bookmark_id.type", bookmarkType);
 		}
 
 		let { data: bookmarksWithTags } =

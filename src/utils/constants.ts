@@ -103,6 +103,7 @@ export const SIGNUP_URL = "signup";
 export const SIGNIN_URL = "login";
 export const IMAGES_URL = "images";
 export const VIDEOS_URL = "videos";
+export const LINKS_URL = "links";
 
 // react-query keys
 
@@ -135,6 +136,8 @@ export const acceptedFileTypes = [
 	"audio/mp3",
 	"audio/mpeg",
 ];
+
+export const bookmarkType = "bookmark";
 
 export const imageFileTypes = acceptedFileTypes?.filter((item) =>
 	item?.includes("image"),

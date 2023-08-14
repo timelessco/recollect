@@ -27,6 +27,7 @@ import {
 	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
 	IMAGES_URL,
+	LINKS_URL,
 	LOGIN_URL,
 	SETTINGS_URL,
 	TRASH_URL,
@@ -439,6 +440,12 @@ const Dashboard = () => {
 				return count !== flattendPaginationBookmarkData?.length;
 			}
 
+			if ((CATEGORY_ID as unknown) === LINKS_URL) {
+				const count = bookmarksCountData?.data?.links;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
 			return true;
 		}
 
@@ -826,6 +833,8 @@ const Dashboard = () => {
 			case IMAGES_URL:
 				return renderAllBookmarkCards();
 			case VIDEOS_URL:
+				return renderAllBookmarkCards();
+			case LINKS_URL:
 				return renderAllBookmarkCards();
 			default:
 				return renderAllBookmarkCards();

@@ -40,6 +40,7 @@ export type BookmarksCountTypes = {
 	allBookmarks: number;
 	categoryCount: Array<{ category_id: number; count: number }>;
 	images: number;
+	links: number;
 	trash: number;
 	uncategorized: number;
 	videos: number;
