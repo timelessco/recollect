@@ -22,10 +22,9 @@ import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
 	CATEGORIES_KEY,
 	SHARED_CATEGORIES_TABLE_NAME,
-	TRASH_URL,
-	UNCATEGORIZED_URL,
 	USER_PROFILE,
 } from "../../utils/constants";
+import { isUserInACategory } from "../../utils/helpers";
 import { errorToast } from "../../utils/toastMessages";
 import Button from "../atoms/button";
 // import Checkbox from "../checkbox";
@@ -76,7 +75,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	) => {
 		if (categoryId !== null) {
 			// TODO: change this into array check
-			if (categoryId === UNCATEGORIZED_URL || categoryId === TRASH_URL) {
+			if (typeof categoryId !== "number" && !isUserInACategory(categoryId)) {
 				return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
 			}
 
