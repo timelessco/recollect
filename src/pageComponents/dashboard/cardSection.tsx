@@ -37,6 +37,7 @@ import {
 	type ListProps,
 	type ListState,
 } from "react-stately";
+import { Player } from "video-react";
 
 import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import Badge from "../../components/badge";
@@ -75,6 +76,10 @@ import {
 	USER_PROFILE,
 } from "../../utils/constants";
 import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
+
+// this import is the built in styles for video player we need its css file, this disabling the rule
+// eslint-disable-next-line import/extensions
+import "node_modules/video-react/dist/video-react.css";
 
 type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -337,7 +342,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						<AriaDropdown
 							menuButton={
 								<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-custom-gray-5">
-									<figure className=" mr-[6px]">
+									<figure className="mr-[6px]">
 										<MoveIcon />
 									</figure>
 									<p>Move to</p>
@@ -655,6 +660,31 @@ const CardSection = ({
 			</div>
 		);
 
+		const pencilIcon = (
+			<div
+				className={`ml-1 ${iconBgClassName}`}
+				onClick={(event) => {
+					event.preventDefault();
+					onEditClick(post);
+				}}
+				onKeyDown={() => {}}
+				onPointerDown={(event) => {
+					event.stopPropagation();
+				}}
+				role="button"
+				tabIndex={0}
+			>
+				<figure>
+					<PencilAltIcon
+						className="h-4 w-4 cursor-pointer text-gray-700"
+						onPointerDown={(event) => {
+							event.stopPropagation();
+						}}
+					/>
+				</figure>
+			</div>
+		);
+
 		if (isPublicPage) {
 			return externalLinkIcon;
 		}
@@ -663,69 +693,61 @@ const CardSection = ({
 			return (
 				<>
 					{categorySlug === TRASH_URL && (
-						<figure className={`${iconBgClassName}`}>
-							<MinusCircleIcon
-								className="h-4 w-4 cursor-pointer text-red-400"
-								onClick={(event) => {
-									event.preventDefault();
-									onMoveOutOfTrashClick(post);
-								}}
-								onPointerDown={(event) => {
-									event.stopPropagation();
-								}}
-							/>
-						</figure>
-					)}
-					{externalLinkIcon}
-					{isBookmarkCreatedByLoggedinUser(post) ? (
-						<>
-							<figure className={`ml-1 ${iconBgClassName}`}>
-								<PencilAltIcon
-									className="h-4 w-4 cursor-pointer text-gray-700"
-									onClick={(event) => {
-										event.preventDefault();
-										onEditClick(post);
-									}}
+						<div
+							className={`${iconBgClassName}`}
+							onClick={(event) => {
+								event.preventDefault();
+								onMoveOutOfTrashClick(post);
+							}}
+							onKeyDown={() => {}}
+							role="button"
+							tabIndex={0}
+						>
+							<figure>
+								<MinusCircleIcon
+									className="h-4 w-4 cursor-pointer text-red-400"
 									onPointerDown={(event) => {
 										event.stopPropagation();
 									}}
 								/>
 							</figure>
+						</div>
+					)}
+					{externalLinkIcon}
+					{isBookmarkCreatedByLoggedinUser(post) ? (
+						<>
+							{pencilIcon}
 							{isDeleteBookmarkLoading &&
 							deleteBookmarkId?.includes(post?.id) ? (
 								<div>
 									<Spinner size={15} />
 								</div>
 							) : (
-								<figure className={`ml-1 ${iconBgClassName}`}>
-									<TrashIcon
-										aria-hidden="true"
-										className="h-4 w-4 cursor-pointer text-red-400"
-										id="delete-bookmark-icon"
-										onClick={(event) => {
-											event.stopPropagation();
-											onDeleteClick([post]);
-										}}
-										onPointerDown={(event) => {
-											event.stopPropagation();
-										}}
-									/>
-								</figure>
+								<div
+									className={`ml-1 ${iconBgClassName}`}
+									onClick={(event) => {
+										event.stopPropagation();
+										onDeleteClick([post]);
+									}}
+									onKeyDown={() => {}}
+									role="button"
+									tabIndex={0}
+								>
+									<figure>
+										<TrashIcon
+											aria-hidden="true"
+											className="h-4 w-4 cursor-pointer text-red-400"
+											id="delete-bookmark-icon"
+											onPointerDown={(event) => {
+												event.stopPropagation();
+											}}
+										/>
+									</figure>
+								</div>
 							)}
 						</>
 					) : (
-						<figure>
-							<PencilAltIcon
-								className="h-4 w-4 cursor-pointer text-gray-700"
-								onClick={(event) => {
-									event.preventDefault();
-									onEditClick(post);
-								}}
-								onPointerDown={(event) => {
-									event.stopPropagation();
-								}}
-							/>
-						</figure>
+						pencilIcon
 					)}
 				</>
 			);
@@ -861,6 +883,11 @@ const CardSection = ({
 							)}
 						</>
 					);
+				} else if (
+					cardTypeCondition === "moodboard" ||
+					cardTypeCondition === "card"
+				) {
+					return <Player playsInline src={img} />;
 				} else {
 					return (
 						// eslint-disable-next-line jsx-a11y/media-has-caption
