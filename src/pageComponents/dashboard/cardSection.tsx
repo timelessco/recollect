@@ -685,34 +685,64 @@ const CardSection = ({
 			</div>
 		);
 
+		const trashIcon = (
+			<div
+				className={`ml-1 ${iconBgClassName}`}
+				onClick={(event) => {
+					event.stopPropagation();
+					onDeleteClick([post]);
+				}}
+				onKeyDown={() => {}}
+				role="button"
+				tabIndex={0}
+			>
+				<figure>
+					<TrashIcon
+						aria-hidden="true"
+						className="h-4 w-4 cursor-pointer text-red-400"
+						id="delete-bookmark-icon"
+						onPointerDown={(event) => {
+							event.stopPropagation();
+						}}
+					/>
+				</figure>
+			</div>
+		);
+
 		if (isPublicPage) {
 			return externalLinkIcon;
+		}
+
+		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
+			return (
+				<>
+					<div
+						className={`${iconBgClassName}`}
+						onClick={(event) => {
+							event.preventDefault();
+							onMoveOutOfTrashClick(post);
+						}}
+						onKeyDown={() => {}}
+						role="button"
+						tabIndex={0}
+					>
+						<figure>
+							<MinusCircleIcon
+								className="h-4 w-4 cursor-pointer text-red-400"
+								onPointerDown={(event) => {
+									event.stopPropagation();
+								}}
+							/>
+						</figure>
+					</div>
+					{trashIcon}
+				</>
+			);
 		}
 
 		if (renderEditAndDeleteCondition(post)) {
 			return (
 				<>
-					{categorySlug === TRASH_URL && (
-						<div
-							className={`${iconBgClassName}`}
-							onClick={(event) => {
-								event.preventDefault();
-								onMoveOutOfTrashClick(post);
-							}}
-							onKeyDown={() => {}}
-							role="button"
-							tabIndex={0}
-						>
-							<figure>
-								<MinusCircleIcon
-									className="h-4 w-4 cursor-pointer text-red-400"
-									onPointerDown={(event) => {
-										event.stopPropagation();
-									}}
-								/>
-							</figure>
-						</div>
-					)}
 					{externalLinkIcon}
 					{isBookmarkCreatedByLoggedinUser(post) ? (
 						<>
@@ -723,27 +753,7 @@ const CardSection = ({
 									<Spinner size={15} />
 								</div>
 							) : (
-								<div
-									className={`ml-1 ${iconBgClassName}`}
-									onClick={(event) => {
-										event.stopPropagation();
-										onDeleteClick([post]);
-									}}
-									onKeyDown={() => {}}
-									role="button"
-									tabIndex={0}
-								>
-									<figure>
-										<TrashIcon
-											aria-hidden="true"
-											className="h-4 w-4 cursor-pointer text-red-400"
-											id="delete-bookmark-icon"
-											onPointerDown={(event) => {
-												event.stopPropagation();
-											}}
-										/>
-									</figure>
-								</div>
+								trashIcon
 							)}
 						</>
 					) : (

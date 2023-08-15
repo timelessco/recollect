@@ -379,18 +379,20 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								/>
 								{typeof categoryId === "number" && <ShareDropdown />}
 							</div>
-							<Button
-								className="hover:bg-black"
-								onClick={onNavAddClick}
-								type="dark"
-							>
-								<figure className="h-4 w-4">
-									<PlusIconWhite />
-								</figure>
-								<span className="ml-[6px] font-medium leading-[14px] text-white">
-									Create
-								</span>
-							</Button>
+							{currentPath !== TRASH_URL && (
+								<Button
+									className="hover:bg-black"
+									onClick={onNavAddClick}
+									type="dark"
+								>
+									<figure className="h-4 w-4">
+										<PlusIconWhite />
+									</figure>
+									<span className="ml-[6px] font-medium leading-[14px] text-white">
+										Create
+									</span>
+								</Button>
+							)}
 						</div>
 					</>
 				)}

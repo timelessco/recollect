@@ -140,7 +140,7 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		const down = (event: KeyboardEvent) => {
-			if (event.key === "k" && event.metaKey) {
+			if (event.key === "k" && event.metaKey && categorySlug !== TRASH_URL) {
 				toggleShowAddBookmarkShortcutModal();
 			}
 		};
@@ -148,7 +148,7 @@ const Dashboard = () => {
 		document.addEventListener("keydown", down);
 		return () => document.removeEventListener("keydown", down);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [categorySlug]);
 
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
