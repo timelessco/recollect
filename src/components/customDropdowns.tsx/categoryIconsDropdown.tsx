@@ -26,6 +26,8 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	} = props;
 	// const [hsva, setHsva] = useState({ h: 0, s: 0, v: 289, a: 1 });
 	const [color, setColor] = useState(iconColor);
+	const [isSearch, setIsSearch] = useState(false);
+
 	const [pageIndex, setPageIndex] = useState(0);
 
 	const iconsList = options();
@@ -46,7 +48,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	}, [iconColor]);
 
 	const combobox = useComboboxState({
-		list: myList,
+		list: !isSearch ? myList : iconsList?.map((item) => item?.label),
 
 		setList: setMyList,
 	});
@@ -183,6 +185,13 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						<Combobox
 							autoSelect
 							className="w-[101px] bg-custom-gray-6 text-sm font-normal leading-4 text-custom-gray-3 focus:outline-none"
+							onChange={(e) => {
+								if (e?.target?.value?.length > 1) {
+									setIsSearch(true);
+								} else {
+									setIsSearch(false);
+								}
+							}}
 							placeholder="Search..."
 							role="grid"
 							state={combobox}
