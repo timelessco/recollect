@@ -185,8 +185,8 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						<Combobox
 							autoSelect
 							className="w-[101px] bg-custom-gray-6 text-sm font-normal leading-4 text-custom-gray-3 focus:outline-none"
-							onChange={(e) => {
-								if (e?.target?.value?.length > 1) {
+							onChange={(changeEvent) => {
+								if (changeEvent?.target?.value?.length > 1) {
 									setIsSearch(true);
 								} else {
 									setIsSearch(false);
