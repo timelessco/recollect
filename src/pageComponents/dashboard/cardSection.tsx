@@ -897,7 +897,13 @@ const CardSection = ({
 					cardTypeCondition === "moodboard" ||
 					cardTypeCondition === "card"
 				) {
-					return <Player playsInline src={img} />;
+					return (
+						<Player
+							className={cardTypeCondition === "card" ? "card-player" : ""}
+							playsInline
+							src={img}
+						/>
+					);
 				} else {
 					return (
 						// eslint-disable-next-line jsx-a11y/media-has-caption

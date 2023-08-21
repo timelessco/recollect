@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type UserIdentity } from "@supabase/supabase-js";
-import { find, flatten, isEmpty, isNull } from "lodash";
+import { find, flatten, isEmpty, isNil, isNull } from "lodash";
 import { useDropzone } from "react-dropzone";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ToastContainer } from "react-toastify";
@@ -16,6 +16,7 @@ import {
 } from "../../store/componentStore";
 import {
 	type BookmarksTagData,
+	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
@@ -312,14 +313,46 @@ const Dashboard = () => {
 				toggleIsSortByLoading();
 			}
 
+			const cardContentViewLogic = (
+				existingViewData: BookmarkViewDataTypes["cardContentViewArray"],
+				// TS disabled because we need to have thi function here as its under the scope of the parent function
+				// eslint-disable-next-line unicorn/consistent-function-scoping
+			) => {
+				// this function sets the always on values for different views
+				// like if in moodboard then the cover img should always be present, even if its turned off in another view like list view
+				if (value === "moodboard" && !existingViewData?.includes("cover")) {
+					// if view is moodboard and it does not include card then add card
+					return ["cover", ...existingViewData];
+				}
+
+				if (value === "card" && !existingViewData?.includes("cover")) {
+					return ["cover", ...existingViewData];
+				}
+
+				if (value === "list" && !existingViewData?.includes("title")) {
+					return ["title", ...existingViewData];
+				}
+
+				if (value === "headlines") {
+					return ["title", "cover", "info"];
+				}
+
+				return existingViewData;
+			};
+
 			if (currentCategory) {
+				// for a collection
 				if (isUserTheCategoryOwner) {
+					// if user is the collection owner
 					void mutationApiCall(
 						updateCategoryOptimisticMutation.mutateAsync({
 							category_id: CATEGORY_ID,
 							updateData: {
 								category_views: {
 									...currentCategory?.category_views,
+									cardContentViewArray: cardContentViewLogic(
+										currentCategory?.category_views?.cardContentViewArray,
+									),
 									[updateValue]: value,
 								},
 							},
@@ -327,9 +360,12 @@ const Dashboard = () => {
 						}),
 					);
 				} else {
-					const sharedCategoriesId = !isNull(sharedCategoriesData?.data)
-						? sharedCategoriesData?.data[0]?.id
-						: undefined;
+					// if user is not the collection owner
+
+					const sharedCategoriesId = find(
+						sharedCategoriesData?.data,
+						(item) => item?.category_id === CATEGORY_ID,
+					)?.id;
 
 					if (sharedCategoriesId !== undefined) {
 						void mutationApiCall(
@@ -338,6 +374,9 @@ const Dashboard = () => {
 								updateData: {
 									category_views: {
 										...currentCategory?.category_views,
+										cardContentViewArray: cardContentViewLogic(
+											currentCategory?.category_views?.cardContentViewArray,
+										),
 										[updateValue]: value,
 									},
 								},
@@ -347,15 +386,21 @@ const Dashboard = () => {
 					}
 				}
 			} else {
+				// user is updating for non collection pages
+
 				// only if user is updating sortby, then scroll to top
 				if (updateValue === "sortBy" && !isNull(infiniteScrollRef?.current)) {
 					infiniteScrollRef?.current?.scrollTo(0, 0);
 				}
 
-				if (!isNull(userProfileData?.data)) {
+				if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
 					const data = {
 						bookmarks_view: {
 							...userProfileData?.data[0]?.bookmarks_view,
+							cardContentViewArray: cardContentViewLogic(
+								userProfileData?.data[0]?.bookmarks_view
+									?.cardContentViewArray as string[],
+							),
 							[updateValue]: value,
 						},
 					} as ProfilesTableTypes;

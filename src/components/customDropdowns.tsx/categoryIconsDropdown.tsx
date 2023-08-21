@@ -211,14 +211,16 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 					/>
 				</div>
 				<ComboboxList
-					className="flex flex-col overflow-y-scroll pb-3 pt-2"
+					className="flex h-[253px] flex-col overflow-y-scroll pb-3 pt-2"
 					id="icon-selector"
 					state={combobox}
 				>
-					{renderList()}
+					<div className=" overflow-hidden overflow-y-scroll">
+						{renderList()}
+					</div>
 					<div className="absolute bottom-2 left-0 flex w-full justify-between px-2 pt-2 ">
 						<Button
-							isDisabled={currentPage === 1}
+							isDisabled={currentPage === 1 || isSearch}
 							onClick={() => onPaginationClick("prev")}
 						>
 							prev
@@ -227,7 +229,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 							{currentPage}/{totalPagesValue}
 						</span>
 						<Button
-							isDisabled={currentPage === totalPagesValue}
+							isDisabled={currentPage === totalPagesValue || isSearch}
 							onClick={() => onPaginationClick("next")}
 						>
 							next

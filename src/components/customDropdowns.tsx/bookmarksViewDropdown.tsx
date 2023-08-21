@@ -84,7 +84,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			}
 
 			if (!isEmpty(sharedCategoriesData?.data)) {
-				return sharedCategoriesData?.data[0]?.category_views?.[viewType];
+				return find(
+					sharedCategoriesData?.data,
+					(item) => item?.category_id === currentCategory?.id,
+				)?.category_views?.[viewType];
 			}
 
 			return defaultReturnValue;
@@ -100,39 +103,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const bookmarksInfoValue = getViewValue("cardContentViewArray", []) as [];
 	const bookmarksColumns = getViewValue("moodboardColumns", [10]);
 	const bookmarksViewValue = getViewValue("bookmarksView", "");
-
-	// const bookmarksInfoValue =
-	//   categoryId !== null
-	//     ? isUserTheCategoryOwner
-	//       ? currentCategory?.category_views?.cardContentViewArray
-	// isEmpty(sharedCategoriesData?.data[0])
-	//       ? sharedCategoriesData?.data[0]?.category_views?.cardContentViewArray
-	//       : []
-	//     : !isEmpty(userProfilesData?.data[0])
-	//     ? userProfilesData?.data[0]?.bookmarks_view?.cardContentViewArray
-	//     : [];
-
-	// const bookmarksColumns =
-	//   categoryId !== null
-	//     ? isUserTheCategoryOwner
-	//       ? currentCategory?.category_views?.moodboardColumns
-	//       : !isEmpty(sharedCategoriesData?.data[0])
-	//       ? sharedCategoriesData?.data[0]?.category_views?.moodboardColumns
-	//       : [10]
-	//     : !isEmpty(userProfilesData?.data[0])
-	//     ? userProfilesData?.data[0]?.bookmarks_view?.moodboardColumns
-	//     : [10];
-
-	// const bookmarksViewValue =
-	//   typeof categoryId === "number"
-	//     ? isUserTheCategoryOwner
-	//       ? currentCategory?.category_views?.bookmarksView
-	//       : !isEmpty(sharedCategoriesData?.data[0])
-	//       ? sharedCategoriesData?.data[0]?.category_views?.bookmarksView
-	//       : ""
-	//     : !isEmpty(userProfilesData?.data[0])
-	//     ? userProfilesData?.data[0]?.bookmarks_view?.bookmarksView
-	//     : "";
 
 	type CardContentOptionsTypes = {
 		label: string;
@@ -202,7 +172,44 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				);
 			}
 
+			if (bookmarksViewValue === "moodboard" || bookmarksViewValue === "card") {
+				// if in moodboard or card only enable cover
+				if (item?.label === "Cover") {
+					return true;
+				} else {
+					return bookmarksInfoValue?.includes(item?.value as never) || false;
+				}
+			}
+
+			if (bookmarksViewValue === "list") {
+				// if in list only enable title
+				if (item?.label === "Title") {
+					return true;
+				} else {
+					return bookmarksInfoValue?.includes(item?.value as never) || false;
+				}
+			}
+
 			return bookmarksInfoValue?.includes(item?.value as never) || false;
+		};
+
+		const isDisabledLogic = () => {
+			if (bookmarksViewValue === "headlines") {
+				// if headlines disable all
+				return true;
+			}
+
+			if (bookmarksViewValue === "moodboard" || bookmarksViewValue === "card") {
+				// if moodboard or card disable cover
+				return item?.label === "Cover";
+			}
+
+			if (bookmarksViewValue === "list") {
+				// if in title disable title
+				return item?.label === "Title";
+			}
+
+			return false;
 		};
 
 		return (
@@ -214,7 +221,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 					{item?.label}
 				</p>
 				<Switch
-					disabled={bookmarksViewValue === "headlines"}
+					disabled={isDisabledLogic()}
 					enabled={isEnabledLogic()}
 					setEnabled={() => {
 						if (bookmarksInfoValue?.includes(item.value as never)) {
@@ -272,49 +279,15 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				<div>
 					<RadioGroup
 						initialRadioRef={radio0ref}
-						onChange={(value) =>
-							setBookmarksView(value as BookmarksViewTypes, "view")
-						}
+						onChange={(value) => {
+							setBookmarksView(value as BookmarksViewTypes, "view");
+						}}
 						radioList={bookmarksViewOptions}
 						value={bookmarksViewValue as string}
 					/>
 				</div>
 				{renderDropdownHeader("Show in Cards")}
-				<div>
-					{cardContentOptions?.map((item) =>
-						// return (
-						//   <Checkbox
-						//     disabled={bookmarksViewValue === "headlines"}
-						//     key={item?.value}
-						//     label={item?.label}
-						//     value={item?.value}
-						// checked={
-						//   bookmarksInfoValue?.includes(item?.value as never) || false
-						// }
-						// onChange={value => {
-						//   if (bookmarksInfoValue?.includes(value as never)) {
-						//     if (bookmarksInfoValue?.length > 1) {
-						//       setBookmarksView(
-						//         bookmarksInfoValue?.filter(
-						//           viewItem => viewItem !== value,
-						//         ),
-						//         "info",
-						//       );
-						//     } else {
-						//       errorToast("Atleast one view option needs to be selcted");
-						//     }
-						//   } else {
-						//     setBookmarksView(
-						//       [...(bookmarksInfoValue as string[]), value as string],
-						//       "info",
-						//     );
-						//   }
-						// }}
-						//   />
-						// );
-						renderViewsSwitch(item),
-					)}
-				</div>
+				<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
 				{bookmarksViewValue === "card" || bookmarksViewValue === "moodboard" ? (
 					<div className="flex items-center justify-between px-2 py-[4.5px]">
 						<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
@@ -330,8 +303,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 								}
 								step={10}
 								value={bookmarksColumns as unknown as number}
-								// value={20}
-								// onChange={(value) => setMoodboardColumns(value)}
 							/>
 						</div>
 					</div>

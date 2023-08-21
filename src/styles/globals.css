@@ -446,3 +446,11 @@ input[type="checkbox"]:checked + .checkbox-div {
 	/* this is to solve the sidepane resize bar z-index issue */
 	z-index: 5;
 }
+
+.card-player.video-react.video-react-fluid,
+.video-react.video-react-16-9,
+.video-react.video-react-4-3 {
+	/* we are having important as in this video player library styles are added inline and we need to overide them */
+	height: 194px !important;
+	padding-top: 0px !important;
+}

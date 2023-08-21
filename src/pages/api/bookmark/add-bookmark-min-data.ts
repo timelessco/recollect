@@ -17,6 +17,7 @@ import {
 import {
 	ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
 	BOOKMAKRS_STORAGE_NAME,
+	bookmarkType,
 	MAIN_TABLE_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	TIMELESS_SCRAPPER_API,
@@ -180,6 +181,7 @@ export default async function handler(
 						ogImage: imgUrl,
 						category_id: categoryId,
 						meta_data,
+						type: bookmarkType,
 					},
 				])
 				.select();
@@ -208,6 +210,7 @@ export default async function handler(
 					ogImage: imgUrl,
 					category_id: 0,
 					meta_data,
+					type: bookmarkType,
 				},
 			])
 			.select();
