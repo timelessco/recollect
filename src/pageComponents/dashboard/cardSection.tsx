@@ -821,6 +821,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
+			"mr-3": true,
 			"h-[48px] w-[80px] ": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
 			"h-36":
@@ -833,6 +834,11 @@ const CardSection = ({
 			"h-full w-full rounded-lg object-cover": true,
 			"group-hover:rounded-b-none":
 				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
+		});
+
+		const videoPlayerClassName = classNames({
+			"card-player": cardTypeCondition === "card",
+			"rounded-lg": true,
 		});
 
 		const errorImgPlaceholder = (
@@ -898,11 +904,7 @@ const CardSection = ({
 					cardTypeCondition === "card"
 				) {
 					return (
-						<Player
-							className={cardTypeCondition === "card" ? "card-player" : ""}
-							playsInline
-							src={img}
-						/>
+						<Player className={videoPlayerClassName} playsInline src={img} />
 					);
 				} else {
 					return (
@@ -915,7 +917,11 @@ const CardSection = ({
 			return null;
 		};
 
-		return <figure className={figureClassName}>{imgLogic()}</figure>;
+		return (
+			!isNull(imgLogic()) && (
+				<figure className={figureClassName}>{imgLogic()}</figure>
+			)
+		);
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
@@ -1075,7 +1081,7 @@ const CardSection = ({
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-3">
+				<div>
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<div className="card-title text-sm font-medium leading-4 text-custom-gray-5">
 							<p>{item?.title}</p>

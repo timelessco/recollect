@@ -454,3 +454,12 @@ input[type="checkbox"]:checked + .checkbox-div {
 	height: 194px !important;
 	padding-top: 0px !important;
 }
+
+.video-react-video {
+	border-radius: 8px;
+}
+
+.video-react-video:hover {
+	border-bottom-left-radius: unset;
+	border-bottom-right-radius: unset;
+}
