@@ -73,6 +73,7 @@ import {
 } from "../../types/componentStoreTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import { errorToast } from "../../utils/toastMessages";
+import Settings from "../settings";
 
 import AddBookarkShortcutModal from "./modals/addBookmarkShortcutModal";
 import ShareCategoryModal from "./modals/shareCategoryModal";
@@ -874,7 +875,7 @@ const Dashboard = () => {
 	const renderMainPaneContent = () => {
 		switch (categorySlug) {
 			case SETTINGS_URL:
-				return <div className="p-6">Settings page</div>;
+				return <Settings />;
 			case IMAGES_URL:
 				return renderAllBookmarkCards();
 			case VIDEOS_URL:

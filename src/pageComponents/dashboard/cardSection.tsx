@@ -37,7 +37,6 @@ import {
 	type ListProps,
 	type ListState,
 } from "react-stately";
-import { Player } from "video-react";
 
 import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import Badge from "../../components/badge";
@@ -80,6 +79,7 @@ import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
 // this import is the built in styles for video player we need its css file, this disabling the rule
 // eslint-disable-next-line import/extensions
 import "node_modules/video-react/dist/video-react.css";
+import CustomPlayer from "../../components/videoPlayer";
 
 type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -904,7 +904,11 @@ const CardSection = ({
 					cardTypeCondition === "card"
 				) {
 					return (
-						<Player className={videoPlayerClassName} playsInline src={img} />
+						<CustomPlayer
+							className={videoPlayerClassName}
+							playsInline
+							src={img}
+						/>
 					);
 				} else {
 					return (
