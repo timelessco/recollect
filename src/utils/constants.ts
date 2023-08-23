@@ -7,6 +7,7 @@ export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
 export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
+export const USER_PROFILE_STORAGE_NAME = "user_profile";
 
 export const STORAGE_SCRAPPED_IMAGES_PATH = "public/scrapped_imgs";
 
@@ -20,6 +21,8 @@ export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex
 	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
+
+export const URL_IMAGE_CHECK_PATTERN = /^http.+(png|jpeg|gif|jpg)$/gmu;
 
 // api constants
 const getBaseUrl = () => {
@@ -90,6 +93,8 @@ export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const GET_USER_PROFILE_PIC_API = "/profiles/get-user-profile-pic";
 // file upload api
 export const UPLOAD_FILE_API = "/file/upload-file";
+// user settings api
+export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";

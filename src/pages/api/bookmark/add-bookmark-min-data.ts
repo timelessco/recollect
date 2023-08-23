@@ -7,7 +7,7 @@ import { decode } from "base64-arraybuffer";
 import { blurhashFromURL } from "blurhash-from-url";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty, isNil, isNull } from "lodash";
 
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -22,6 +22,7 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	TIMELESS_SCRAPPER_API,
 	UNCATEGORIZED_URL,
+	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { getBaseUrl } from "../../../utils/helpers";
 
@@ -112,6 +113,12 @@ export default async function handler(
 	let imgData;
 
 	let imgUrl;
+
+	const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
+
+	if (!isNil(isUrlAnImage) && !isEmpty(isUrlAnImage)) {
+		imgUrl = url;
+	}
 
 	if (scrapperResponse?.data?.OgImage) {
 		imgData = await blurhashFromURL(scrapperResponse?.data?.OgImage);

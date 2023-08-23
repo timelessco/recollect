@@ -177,6 +177,13 @@ export type UploadFileApiResponse = {
 	success: boolean;
 };
 
+// settings
+
+export type UploadProfilePicApiResponse = {
+	error: Error | PostgrestError | string | null;
+	success: boolean;
+};
+
 // NEXT API types
 export type NextApiRequest<T> = Omit<NextJsApiRequest, "body"> & {
 	body: T & { access_token: string };
@@ -304,6 +311,11 @@ export type DeleteBookmarkPayload = {
 		ogImage: SingleListData["ogImage"];
 		title: SingleListData["title"];
 	}>;
+	session: SupabaseSessionType;
+};
+
+export type UploadProfilePicPayload = {
+	file: FileType;
 	session: SupabaseSessionType;
 };
 

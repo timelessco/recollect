@@ -34,6 +34,8 @@ import {
 	type UpdateUserProfileApiPayload,
 	type UploadFileApiPayload,
 	type UploadFileApiResponse,
+	type UploadProfilePicApiResponse,
+	type UploadProfilePicPayload,
 	type UserProfilePicTypes,
 	type UserTagsData,
 } from "../types/apiTypes";
@@ -67,6 +69,7 @@ import {
 	UPDATE_USER_CATEGORIES_API,
 	UPDATE_USER_PROFILE_API,
 	UPLOAD_FILE_API,
+	UPLOAD_PROFILE_PIC_API,
 } from "../utils/constants";
 import { isUserInACategory } from "../utils/helpers";
 
@@ -811,6 +814,31 @@ export const uploadFile = async ({
 				file,
 				access_token: session?.access_token,
 				category_id,
+			},
+			{
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+			},
+		);
+
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
+
+// user settings
+export const uploadProfilePic = async ({
+	file,
+	session,
+}: UploadProfilePicPayload) => {
+	try {
+		const response = await axios.post<UploadProfilePicApiResponse>(
+			`${NEXT_API_URL}${UPLOAD_PROFILE_PIC_API}`,
+			{
+				file,
+				access_token: session?.access_token,
 			},
 			{
 				headers: {
