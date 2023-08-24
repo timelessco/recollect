@@ -821,7 +821,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
-			"mr-3": true,
+			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px] ": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
 			"h-36":

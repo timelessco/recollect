@@ -7,6 +7,7 @@ import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import { verify } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
+import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
 
 import { type UploadProfilePicApiResponse } from "../../../types/apiTypes";
@@ -60,6 +61,35 @@ export default async (
 
 	// const categoryId = data?.fields?.category_id;
 
+	// deletes all current profile pic in the users profile pic bucket
+	const deleteLogic = async () => {
+		const { data: list, error: listError } = await supabase.storage
+			.from(USER_PROFILE_STORAGE_NAME)
+			.list(`public/${userId}`);
+
+		if (!isNull(listError)) {
+			response.status(500).json({
+				success: false,
+				error: listError,
+			});
+		}
+		const filesToRemove =
+			!isEmpty(list) && list
+				? list?.map((x) => `public/${userId}/${x.name}`)
+				: [];
+
+		const { error: removeError } = await supabase.storage
+			.from(USER_PROFILE_STORAGE_NAME)
+			.remove(filesToRemove);
+
+		if (!isNil(removeError)) {
+			response.status(500).json({
+				success: false,
+				error: removeError,
+			});
+		}
+	};
+
 	const tokenDecode: { sub: string } = jwtDecode(
 		data?.fields?.access_token as string,
 	);
@@ -81,7 +111,7 @@ export default async (
 			.from(USER_PROFILE_STORAGE_NAME)
 			.upload(`public/${userId}/${fileName}`, decode(contents), {
 				contentType: fileType,
-				upsert: false,
+				upsert: true,
 			});
 
 		if (!isNil(storageError)) {
