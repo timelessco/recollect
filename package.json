@@ -147,7 +147,7 @@
 		"eslint-plugin-tailwindcss": "3.11.0",
 		"eslint-plugin-toml": "0.4.0",
 		"eslint-plugin-yml": "1.5.0",
-		"execa": "7.1.1",
+		"execa": "8.0.1",
 		"gacp": "3.0.3",
 		"git-remote-origin-url": "4.0.0",
 		"git-url-parse": "13.1.0",
