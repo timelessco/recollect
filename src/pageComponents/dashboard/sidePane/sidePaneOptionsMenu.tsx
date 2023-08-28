@@ -9,12 +9,12 @@ import InboxIconGray from "../../../icons/inboxIconGray";
 import SearchIconGray from "../../../icons/searchIconGray";
 import SettingsIcon from "../../../icons/settingsIcon";
 import TrashIconGray from "../../../icons/trashIconGray";
+import { useModalStore } from "../../../store/componentStore";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	SEARCH_URL,
-	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
@@ -34,6 +34,10 @@ const SidePaneOptionsMenu = () => {
 		data: BookmarksCountTypes;
 		error: PostgrestError;
 	};
+
+	const toggleShowSettingsModal = useModalStore(
+		(state) => state.toggleShowSettingsModal,
+	);
 
 	const optionsMenuList = [
 		{
@@ -76,8 +80,8 @@ const SidePaneOptionsMenu = () => {
 		{
 			icon: <SettingsIcon />,
 			name: "Settings",
-			href: `/${SETTINGS_URL}`,
-			current: currentPath === SETTINGS_URL,
+			href: "",
+			current: false,
 			id: 4,
 			count: undefined,
 			iconColor: "",
@@ -89,8 +93,15 @@ const SidePaneOptionsMenu = () => {
 			{optionsMenuList?.map((item) => (
 				<SingleListItem
 					extendedClassname="py-[6px]"
+					isLink={item?.id !== 4}
 					item={item}
 					key={item.id}
+					onClick={() => {
+						if (item?.id === 4) {
+							// we clicked on settings
+							toggleShowSettingsModal();
+						}
+					}}
 					showIconDropdown={false}
 				/>
 			))}

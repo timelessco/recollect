@@ -28,6 +28,11 @@ export const useModalStore = create<ModalStoreState>((set) => ({
 		set((state) => ({
 			showClearTrashWarningModal: !state.showClearTrashWarningModal,
 		})),
+	showSettingsModal: false,
+	toggleShowSettingsModal: () =>
+		set((state) => ({
+			showSettingsModal: !state.showSettingsModal,
+		})),
 }));
 
 export const useLoadersStore = create<LoadersStoreState>((set) => ({

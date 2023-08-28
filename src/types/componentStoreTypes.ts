@@ -2,11 +2,13 @@ export type ModalStoreState = {
 	showAddBookmarkShortcutModal: boolean;
 	showClearTrashWarningModal: boolean;
 	showDeleteBookmarkWarningModal: boolean;
+	showSettingsModal: boolean;
 	showShareCategoryModal: boolean;
 	toggleShareCategoryModal: () => void;
 	toggleShowAddBookmarkShortcutModal: () => void;
 	toggleShowClearTrashWarningModal: () => void;
 	toggleShowDeleteBookmarkWarningModal: () => void;
+	toggleShowSettingsModal: () => void;
 };
 
 export type LoadersStoreState = {

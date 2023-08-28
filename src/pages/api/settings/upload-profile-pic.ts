@@ -73,6 +73,7 @@ export default async (
 				error: listError,
 			});
 		}
+
 		const filesToRemove =
 			!isEmpty(list) && list
 				? list?.map((x) => `public/${userId}/${x.name}`)
@@ -107,6 +108,7 @@ export default async (
 	const fileType = data?.files?.file?.mimetype;
 
 	if (contents) {
+		await deleteLogic();
 		const { error: storageError } = await supabase.storage
 			.from(USER_PROFILE_STORAGE_NAME)
 			.upload(`public/${userId}/${fileName}`, decode(contents), {

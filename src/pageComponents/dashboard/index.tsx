@@ -76,6 +76,7 @@ import { errorToast } from "../../utils/toastMessages";
 import Settings from "../settings";
 
 import AddBookarkShortcutModal from "./modals/addBookmarkShortcutModal";
+import SettingsModal from "./modals/settingsModal";
 import ShareCategoryModal from "./modals/shareCategoryModal";
 import WarningActionModal from "./modals/warningActionModal";
 
@@ -1034,6 +1035,7 @@ const Dashboard = () => {
 					toggleShowAddBookmarkShortcutModal();
 				}}
 			/>
+			<SettingsModal />
 			<WarningActionModal
 				buttonText="Delete"
 				isLoading={false}

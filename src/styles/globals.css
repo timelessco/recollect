@@ -34,7 +34,7 @@
 }
 
 body {
-	overflow: hidden;
+	@apply overflow-hidden outline-none;
 }
 
 main {
@@ -317,7 +317,13 @@ main {
 	}
 }
 
-.dialog {
+[data-backdrop] {
+	/* @apply bg-black opacity-50 */
+	/* background: #00000045;; */
+	@apply bg-modal-bg;
+}
+
+/* .dialog {
 	z-index: 50;
 
 	overflow: auto;
@@ -337,32 +343,27 @@ main {
 
 	background-color: hsl(204deg 20% 100%);
 	border-radius: 12px;
-
-	/* box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%); */
-	/* box-shadow: 0 0 1px rgb(0 0 0 / 19%), 0 1px 2px rgb(0 0 0 / 7%),
-		0 6px 15px -5px rgb(0 0 0 / 11%); */
 }
 
 .dialog:focus-visible,
 .dialog[data-focus-visible] {
 	outline: 2px solid hsl(204deg 100% 40%);
 	outline-offset: 2px;
-}
+} */
 
-.dark .dialog {
+/* .dark .dialog {
 	color: hsl(204deg 20% 100%);
 
 	background-color: hsl(204deg 3% 18%);
 	border-color: hsl(204deg 3% 26%);
 	border-style: solid;
 	border-width: 1px;
-}
+} */
 
-@media (width >= 640px) {
+/* @media (width >= 640px) {
 	.dialog {
 		width: 460px;
 
-		/* padding: 1.5rem; */
 	}
 }
 
@@ -370,12 +371,11 @@ main {
 	.dialog {
 		max-height: calc(100% - 6rem * 2);
 
-		/* margin: auto 0; */
 
 		margin-top: 10rem;
 		margin-bottom: 10rem;
 	}
-}
+} */
 
 .dropdown-container input[type="radio"] {
 	/* display: none; */

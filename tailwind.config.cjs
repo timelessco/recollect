@@ -36,6 +36,11 @@ module.exports = {
 				"custom-gradient": {
 					1: "linear-gradient(180deg, #2E2E2E 0%, #242424 100%)",
 				},
+				"custom-red": {
+					100: "#FFF0F0",
+					700: "#B52A2A",
+				},
+				"modal-bg": "#00000045",
 			},
 
 			dropShadow: {
