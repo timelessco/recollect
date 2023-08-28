@@ -308,6 +308,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						}
 					}}
 					placeholder="Enter name"
+					selectTextOnFocus
 					value={headingInputValue}
 				/>
 			);

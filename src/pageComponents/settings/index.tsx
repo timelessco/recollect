@@ -17,6 +17,7 @@ import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import { defaultBlur, USER_PROFILE } from "../../utils/constants";
+import { successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
 	username: string;
@@ -45,7 +46,7 @@ const Settings = () => {
 	const {
 		register,
 		handleSubmit,
-		// formState: { errors },
+		formState: { errors },
 		reset,
 	} = useForm<SettingsFormTypes>({
 		defaultValues: {
@@ -76,7 +77,9 @@ const Settings = () => {
 								file: uploadedFile,
 								session,
 							}),
-						).catch((error) => console.error(error));
+						)
+							.then(() => successToast("Profile pic has been updated"))
+							.catch((error) => console.error(error));
 					}
 				}}
 				ref={inputFile}
@@ -88,16 +91,27 @@ const Settings = () => {
 					My Profile
 				</p>
 				<div className=" flex w-full items-center space-x-4">
-					<figure className={` h-[72px] w-[72px]`}>
-						<Image
-							alt="profile-pic"
-							blurDataURL={defaultBlur}
-							className={profilePicClassName}
-							height={72}
-							src={userData?.profile_pic ?? ""}
-							width={72}
-						/>
-					</figure>
+					<div
+						onClick={() => {
+							if (inputFile.current) {
+								inputFile.current.click();
+							}
+						}}
+						onKeyDown={() => {}}
+						role="button"
+						tabIndex={-1}
+					>
+						<figure className="h-[72px] w-[72px] cursor-pointer transition delay-75 ease-in-out hover:opacity-50">
+							<Image
+								alt="profile-pic"
+								blurDataURL={defaultBlur}
+								className={profilePicClassName}
+								height={72}
+								src={userData?.profile_pic ?? ""}
+								width={72}
+							/>
+						</figure>
+					</div>
 					<div>
 						<div className=" flex text-sm font-semibold leading-[21px] text-black">
 							<p>Upload new photo</p>
@@ -135,18 +149,26 @@ const Settings = () => {
 						label="Name"
 						labelClassName=" text-custom-gray-10 font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]"
 					>
-						<div className="flex w-[280px] items-center rounded-lg bg-custom-gray-8 px-[10px] py-2">
+						<div className="relative flex w-[280px] items-center rounded-lg bg-custom-gray-8 px-[10px] py-2">
 							<figure className=" mr-2">
 								<SettingsUserIcon />
 							</figure>
 							<Input
+								errorClassName=" absolute w-full top-[29px]"
 								{...register("username", {
-									required: true,
+									required: {
+										value: true,
+										message: "Username cannot be empty",
+									},
+									minLength: {
+										value: 4,
+										message: "Username must have a minimum of 4 characters",
+									},
 								})}
 								className="rounded-none bg-custom-gray-8 text-sm font-[420] leading-4 tracking-[0.02em] text-custom-gray-1  outline-none"
-								errorText=""
+								errorText={errors?.username?.message ?? ""}
 								id="username"
-								isError={false}
+								isError={Boolean(errors?.username)}
 								placeholder="Enter username"
 							/>
 						</div>

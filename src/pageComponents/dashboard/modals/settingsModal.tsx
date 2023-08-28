@@ -1,8 +1,13 @@
 import Image from "next/image";
 import { useSession } from "@supabase/auth-helpers-react";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import { isEmpty } from "lodash";
 
 import Modal from "../../../components/modal";
 import { useModalStore } from "../../../store/componentStore";
+import { type ProfilesTableTypes } from "../../../types/apiTypes";
+import { USER_PROFILE } from "../../../utils/constants";
 import Settings from "../../settings";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
@@ -11,19 +16,32 @@ import SingleListItemComponent from "../sidePane/singleListItemComponent";
 const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
 	const session = useSession();
+	const queryClient = useQueryClient();
 
 	const toggleShowSettingsModal = useModalStore(
 		(state) => state.toggleShowSettingsModal,
 	);
+
+	const userProfilesData = queryClient.getQueryData([
+		USER_PROFILE,
+		session?.user?.id,
+	]) as {
+		data: ProfilesTableTypes[];
+		error: PostgrestError;
+	};
+
+	const userData = !isEmpty(userProfilesData?.data)
+		? userProfilesData?.data[0]
+		: {};
 
 	const optionsList = [
 		{
 			icon: (
 				<Image
 					alt="profile-pic"
-					className="rounded-full"
+					className="h-[18px] w-[18px] rounded-full object-cover"
 					height={18}
-					src={session?.user.user_metadata?.avatar_url}
+					src={userData?.profile_pic ?? ""}
 					width={18}
 				/>
 			),
