@@ -21,6 +21,10 @@ export const mutationApiCall = async (apiCall: Promise<any>) => {
 		errorToast(response?.response?.data?.error?.message);
 	}
 
+	if (response?.response?.status !== 200 && response?.response?.data?.error) {
+		errorToast(response?.response?.data?.error);
+	}
+
 	return response;
 };
 

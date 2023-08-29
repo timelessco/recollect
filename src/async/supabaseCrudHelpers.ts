@@ -31,6 +31,7 @@ import {
 	type UpdateCategoryApiPayload,
 	type UpdateCategoryOrderApiPayload,
 	type UpdateSharedCategoriesUserAccessApiPayload,
+	type UpdateUsernameApiPayload,
 	type UpdateUserProfileApiPayload,
 	type UploadFileApiPayload,
 	type UploadFileApiResponse,
@@ -68,6 +69,7 @@ import {
 	UPDATE_SHARED_CATEGORY_USER_ROLE_API,
 	UPDATE_USER_CATEGORIES_API,
 	UPDATE_USER_PROFILE_API,
+	UPDATE_USERNAME_API,
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
 } from "../utils/constants";
@@ -768,6 +770,27 @@ export const updateUserProfile = async ({
 		}>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
 			id,
 			updateData,
+			access_token: session?.access_token,
+		});
+
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
+
+export const updateUsername = async ({
+	id,
+	username,
+	session,
+}: UpdateUsernameApiPayload) => {
+	try {
+		const response = await axios.post<{
+			data: ProfilesTableTypes[] | null;
+			error: Error;
+		}>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, {
+			id,
+			username,
 			access_token: session?.access_token,
 		});
 

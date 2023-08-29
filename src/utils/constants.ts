@@ -91,6 +91,8 @@ export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const GET_USER_PROFILE_PIC_API = "/profiles/get-user-profile-pic";
+export const UPDATE_USERNAME_API = "/profiles/update-username";
+
 // file upload api
 export const UPLOAD_FILE_API = "/file/upload-file";
 // user settings api

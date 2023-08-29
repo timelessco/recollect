@@ -4,10 +4,11 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty, isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
+import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -23,25 +24,41 @@ type SettingsFormTypes = {
 	username: string;
 };
 
-const onSubmit: SubmitHandler<SettingsFormTypes> = () => {
-	// console.log("submit", data);
-};
-
 const Settings = () => {
 	const inputFile = useRef<HTMLInputElement>(null);
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const userId = session?.user?.id;
 
+	// mutations
+	const { updateUsernameMutation } = useUpdateUsernameMutation();
+	const { uploadProfilePicMutation } = useUploadProfilePicMutation();
+
 	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
 		data: ProfilesTableTypes[];
 		error: PostgrestError;
 	};
-	const { uploadProfilePicMutation } = useUploadProfilePicMutation();
 
 	const userData = !isEmpty(userProfilesData?.data)
 		? userProfilesData?.data[0]
 		: {};
+
+	const onSubmit: SubmitHandler<SettingsFormTypes> = async (data) => {
+		try {
+			const response = await mutationApiCall(
+				updateUsernameMutation.mutateAsync({
+					id: session?.user?.id as string,
+					username: data?.username,
+					session,
+				}),
+			);
+			if (!isNil(response?.data)) {
+				successToast("User name has been updated");
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
 	const {
 		register,
