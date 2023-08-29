@@ -8,6 +8,7 @@ import { blurhashFromURL } from "blurhash-from-url";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isEmpty, isNil, isNull } from "lodash";
+import uniqid from "uniqid";
 
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -56,7 +57,7 @@ export default async function handler(
 	);
 
 	const upload = async (base64info: string) => {
-		const imgName = `img${Math.random()}.jpg`;
+		const imgName = `img-${uniqid?.time()}.jpg`;
 
 		await supabase.storage
 			.from(BOOKMAKRS_STORAGE_NAME)

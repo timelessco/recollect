@@ -29,7 +29,6 @@ import {
 } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { CATEGORIES_KEY, EMAIL_CHECK_PATTERN } from "../../../utils/constants";
-import { getUserNameFromEmail } from "../../../utils/helpers";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
 const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
@@ -178,9 +177,7 @@ const ShareContent = () => {
 	useEffect(() => {
 		if (typeof window !== "undefined") {
 			const categorySlug = currentCategory?.category_slug as string;
-			const userName = getUserNameFromEmail(
-				currentCategory?.user_id?.email ?? "",
-			) as string;
+			const userName = currentCategory?.user_id?.user_name;
 			const url = `${window?.location?.origin}/${userName}/${categorySlug}`;
 			setPublicUrl(url);
 		}

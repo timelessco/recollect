@@ -127,7 +127,7 @@ export const USER_PROFILE_PIC = "user_profile_pic";
 export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
 	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
-	"You already have a category with this name , please add anyother name";
+	"You already have a category with this name , please add any other name";
 
 // accepted file type constants
 export const acceptedFileTypes = [

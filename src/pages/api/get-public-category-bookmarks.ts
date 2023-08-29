@@ -1,5 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
+import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
@@ -8,9 +9,9 @@ import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type GetPublicCategoryBookmarksApiResponseType,
+	type ProfilesTableTypes,
 } from "../../types/apiTypes";
 import { CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "../../utils/constants";
-import { getUserNameFromEmail } from "../../utils/helpers";
 
 /**
  * gets all bookmarks in a public category
@@ -31,7 +32,8 @@ export default async function handler(
 		.select(
 			`
       user_id (
-        email
+        email,
+				user_name
       ),
 			category_views,
 			icon,
@@ -45,15 +47,15 @@ export default async function handler(
 			category_views: BookmarkViewDataTypes;
 			icon: CategoriesData["icon"];
 			icon_color: CategoriesData["icon_color"];
-			user_id: { email: string };
+			user_id: {
+				email: ProfilesTableTypes["email"];
+				user_name: ProfilesTableTypes["user_name"];
+			};
 		}>;
 		error: PostgrestError;
 	};
 
-	// data of the user that created the category
-	const urlUserName = getUserNameFromEmail(categoryData[0]?.user_id?.email);
-
-	if (urlUserName !== request.query.user_name) {
+	if (categoryData[0]?.user_id?.user_name !== request.query.user_name) {
 		// this is to check if we change user name in url then this page should show 404
 		// status is 200 as DB is not giving any error
 		response.status(200).json({
@@ -64,6 +66,8 @@ export default async function handler(
 			icon_color: null,
 			category_name: null,
 		});
+
+		log("username mismatch from url query");
 	} else {
 		const sortBy = categoryData[0]?.category_views?.sortBy;
 

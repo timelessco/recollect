@@ -4,6 +4,7 @@ import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
+import uniqid from "uniqid";
 
 import {
 	type AddBookmarkScreenshotPayloadTypes,
@@ -42,7 +43,7 @@ export default async function handler(
 	);
 
 	const upload = async (base64info: string) => {
-		const imgName = `img${Math.random()}.jpg`;
+		const imgName = `img-${uniqid?.time()}.jpg`;
 
 		await supabase.storage
 			.from(BOOKMAKRS_STORAGE_NAME)

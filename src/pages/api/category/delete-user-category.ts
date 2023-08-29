@@ -1,6 +1,6 @@
-/* eslint-disable no-console */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
+import { log } from "console";
 import { type NextApiResponse } from "next";
 import {
 	createClient,
@@ -126,13 +126,11 @@ export default async function handler(
 		!isEmpty(sharedCategoryData) &&
 		!isNull(sharedCategoryData)
 	) {
-		console.info(
+		log(
 			`have deleted this category_id in shared_category table: `,
 			request.body.category_id,
 		);
 	}
-
-	console.info(`111111111111111111111111111111111111111`);
 
 	// if bookmarks from the del category is in trash
 	// then we need to set the category id of the bookmark to uncategorized
@@ -157,10 +155,8 @@ export default async function handler(
 	}
 
 	if (!isEmpty(trashData)) {
-		console.info(`Updated trash bookmarks to uncategorized`, trashData);
+		log(`Updated trash bookmarks to uncategorized`, trashData);
 	}
-
-	console.info(`22222222222222222222222222222222222`);
 
 	const { data, error }: PostgrestResponse<CategoriesData> = await supabase
 		.from(CATEGORIES_TABLE_NAME)
@@ -169,17 +165,9 @@ export default async function handler(
 		.select(`*`);
 
 	if (isNull(data)) {
-		console.info(
-			`44444444444444444444444444444444444444444444444`,
-			data,
-			error,
-		);
-
 		response.status(500).json({ data: null, error });
 		throw new Error("ERROR");
 	}
-
-	console.info(`333333333333333333333333333333333`, data, error);
 
 	if (
 		data &&
@@ -188,7 +176,6 @@ export default async function handler(
 		request.body.category_order &&
 		!isNull(data)
 	) {
-		console.info("444444444444444444444444444444");
 		// updates user category order
 		const { error: orderError } = await supabase
 			.from(PROFILES)
@@ -199,8 +186,6 @@ export default async function handler(
 			})
 			.match({ id: userId }).select(`
       id, category_order`);
-
-		console.info("5555555555555555555555555555", orderError);
 
 		if (!isNull(orderError)) {
 			response.status(500).json({ data: null, error: orderError });

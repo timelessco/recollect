@@ -116,7 +116,7 @@ export type CategoriesData = {
 	icon_color: string;
 	id: number;
 	is_public: boolean;
-	user_id: { email: string; id: string; profile_pic?: string | null };
+	user_id: ProfilesTableTypes;
 };
 
 export type FetchCategoriesDataResponse = {

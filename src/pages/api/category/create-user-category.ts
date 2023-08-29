@@ -10,6 +10,7 @@ import { verify, type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 import slugify from "slugify";
+import uniqid from "uniqid";
 
 import {
 	type AddUserCategoryApiPayload,
@@ -73,9 +74,7 @@ export default async function handler(
 				{
 					category_name: name,
 					user_id: userId,
-					category_slug: `${slugify(name, { lower: true })}-${Math.floor(
-						Math.random() * 10_000,
-					)}`,
+					category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
 				},
 			])
 			.select();
