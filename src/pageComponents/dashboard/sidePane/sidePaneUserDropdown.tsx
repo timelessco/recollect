@@ -45,7 +45,7 @@ const SidePaneUserDropdown = () => {
 							!isNull(userProfilePicData?.data[0]?.profile_pic) ? (
 								<Image
 									alt=""
-									className="h-6 w-6 rounded-full object-cover"
+									className="h-6 w-6 rounded-full bg-black object-contain"
 									height={24}
 									src={
 										!isNull(userProfilePicData?.data)

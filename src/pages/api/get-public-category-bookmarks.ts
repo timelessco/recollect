@@ -50,6 +50,7 @@ export default async function handler(
 		error: PostgrestError;
 	};
 
+	// data of the user that created the category
 	const urlUserName = getUserNameFromEmail(categoryData[0]?.user_id?.email);
 
 	if (urlUserName !== request.query.user_name) {

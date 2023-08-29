@@ -39,7 +39,7 @@ const SettingsModal = () => {
 			icon: (
 				<Image
 					alt="profile-pic"
-					className="h-[18px] w-[18px] rounded-full object-cover"
+					className="h-[18px] w-[18px] rounded-full bg-black object-contain"
 					height={18}
 					src={userData?.profile_pic ?? ""}
 					width={18}

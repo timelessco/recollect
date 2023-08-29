@@ -59,7 +59,8 @@ const Settings = () => {
 	}, [reset, userData?.user_name]);
 
 	const profilePicClassName = classNames({
-		[`rounded-full min-w-[72px] min-h-[72px] object-cover`]: true,
+		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]:
+			true,
 		"opacity-50": uploadProfilePicMutation?.isLoading,
 	});
 
@@ -90,7 +91,7 @@ const Settings = () => {
 				<p className=" mb-[30px] text-base font-semibold leading-[18px] text-black">
 					My Profile
 				</p>
-				<div className=" flex w-full items-center space-x-4">
+				<div className="flex w-full items-center space-x-4">
 					<div
 						onClick={() => {
 							if (inputFile.current) {
@@ -124,22 +125,6 @@ const Settings = () => {
 							<p>Photos help people recognize you</p>
 						</div>
 					</div>
-					{/* <div>
-						<Button
-							className="px-2 py-3 text-white"
-							onClick={() => {
-								if (inputFile.current) {
-									inputFile.current.click();
-								}
-							}}
-							type="dark"
-						>
-							Change Avatar
-						</Button>
-						<p className="mt-2 text-xs font-[450] leading-4 text-custom-gray-1">
-							JPG, GIF or PNG. 1MB max.
-						</p>
-					</div> */}
 				</div>
 				<form
 					className="border-b-[1px] border-b-custom-gray-9 pb-[28px] pt-5"
