@@ -5,9 +5,11 @@ import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
+import uniqid from "uniqid";
 
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
+import { getUserNameFromEmail } from "../../../utils/helpers";
 
 // fetches profiles data for a perticular user
 // checks if profile pic is present
@@ -63,6 +65,7 @@ export default async function handler(
 		isNull(data[0]?.profile_pic) &&
 		!isNil(existingOauthAvatar)
 	) {
+		// updates profile pic if its not there in DB and oAuth profile pic is there
 		const { error: updateProfilePicError } = await supabase
 			.from(PROFILES)
 			.update({
@@ -73,6 +76,53 @@ export default async function handler(
 		if (!isNull(updateProfilePicError)) {
 			response.status(500).json({ data: null, error: updateProfilePicError });
 			throw new Error("UPDATE PROFILE_PIC ERROR");
+		}
+	}
+
+	// updates username if its not present
+	if (!isEmpty(data) && !isNull(data) && isNil(data[0]?.user_name)) {
+		const newUsername = getUserNameFromEmail(
+			data[0].email as unknown as string,
+		);
+
+		// check if username is already present
+		const {
+			data: checkData,
+			error: checkError,
+		}: { data: DataResponse; error: ErrorResponse } = await supabase
+			.from(PROFILES)
+			.select(`user_name`)
+			.eq("user_name", newUsername);
+
+		if (!isNull(checkError)) {
+			throw new Error("ERROR: Check if username is there error");
+		}
+
+		if (isEmpty(checkData)) {
+			// the username is not present
+			const { error: updateUsernameError } = await supabase
+				.from(PROFILES)
+				.update({
+					user_name: newUsername,
+				})
+				.match({ id: userId });
+
+			if (!isNull(updateUsernameError)) {
+				throw new Error("ERROR: Update username when its not present error");
+			}
+		} else {
+			// the user name is already present
+			const uniqueUsername = `${newUsername}-${uniqid.time()}`;
+			const { error: updateUniqueUsernameError } = await supabase
+				.from(PROFILES)
+				.update({
+					user_name: uniqueUsername,
+				})
+				.match({ id: userId });
+
+			if (!isNull(updateUniqueUsernameError)) {
+				throw new Error("ERROR: Update unique username error");
+			}
 		}
 	}
 
