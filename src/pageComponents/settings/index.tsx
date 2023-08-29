@@ -12,6 +12,7 @@ import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateU
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
+import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
@@ -120,9 +121,8 @@ const Settings = () => {
 						tabIndex={-1}
 					>
 						<figure className="h-[72px] w-[72px] cursor-pointer transition delay-75 ease-in-out hover:opacity-50">
-							<Image
+							<UserAvatar
 								alt="profile-pic"
-								blurDataURL={defaultBlur}
 								className={profilePicClassName}
 								height={72}
 								src={userData?.profile_pic ?? ""}

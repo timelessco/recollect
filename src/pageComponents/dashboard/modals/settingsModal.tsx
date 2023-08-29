@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash";
 
 import Modal from "../../../components/modal";
+import UserAvatar from "../../../components/userAvatar";
 import { useModalStore } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
@@ -37,7 +38,7 @@ const SettingsModal = () => {
 	const optionsList = [
 		{
 			icon: (
-				<Image
+				<UserAvatar
 					alt="profile-pic"
 					className="h-[18px] w-[18px] rounded-full bg-black object-contain"
 					height={18}
