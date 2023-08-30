@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import Image from "next/image";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,7 +17,7 @@ import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { defaultBlur, USER_PROFILE } from "../../utils/constants";
+import { USER_PROFILE } from "../../utils/constants";
 import { successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {

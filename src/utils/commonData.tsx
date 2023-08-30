@@ -3748,8 +3748,14 @@ const object = [
 export const options = () =>
 	object.map((index) => ({
 		label: index.name,
-		icon: (iconColor: string, size: string = "16") => (
-			<svg fill={iconColor} height={size} viewBox="0 0 18 18" width={size}>
+		icon: (iconColor: string, size: string = "16", className: string = "") => (
+			<svg
+				className={className}
+				fill={iconColor}
+				height={size}
+				viewBox="0 0 18 18"
+				width={size}
+			>
 				<use href={`/sprite.svg#${index.name}`} />
 			</svg>
 		),
