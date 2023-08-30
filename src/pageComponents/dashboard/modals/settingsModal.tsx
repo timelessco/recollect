@@ -5,10 +5,14 @@ import { isEmpty } from "lodash";
 
 import Modal from "../../../components/modal";
 import UserAvatar from "../../../components/userAvatar";
-import { useModalStore } from "../../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useModalStore,
+} from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
 import Settings from "../../settings";
+import ChangeEmail from "../../settings/changeEmail";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 // type SettingsModalTypes = {};
@@ -20,6 +24,10 @@ const SettingsModal = () => {
 
 	const toggleShowSettingsModal = useModalStore(
 		(state) => state.toggleShowSettingsModal,
+	);
+
+	const currentSettingsPage = useMiscellaneousStore(
+		(state) => state.currentSettingsPage,
 	);
 
 	const userProfilesData = queryClient.getQueryData([
@@ -54,6 +62,17 @@ const SettingsModal = () => {
 		},
 	];
 
+	const renderMainContent = () => {
+		switch (currentSettingsPage) {
+			case "main":
+				return <Settings />;
+			case "change-email":
+				return <ChangeEmail />;
+			default:
+				return null;
+		}
+	};
+
 	return (
 		<Modal
 			open={showSettingsModal}
@@ -78,9 +97,7 @@ const SettingsModal = () => {
 						))}
 					</div>
 				</div>
-				<div className=" w-full px-[68px] py-[43px]">
-					<Settings />
-				</div>
+				<div className=" w-full px-[68px] py-[43px]">{renderMainContent()}</div>
 			</div>
 		</Modal>
 	);

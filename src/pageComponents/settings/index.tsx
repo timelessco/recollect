@@ -15,8 +15,15 @@ import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
+import {
+	settingsInputClassName,
+	settingsInputContainerClassName,
+	settingsInputLabelClassName,
+	settingsMainHeadingClassName,
+} from "../../utils/commonClassNames";
 import { USER_PROFILE } from "../../utils/constants";
 import { successToast } from "../../utils/toastMessages";
 
@@ -29,6 +36,10 @@ const Settings = () => {
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const userId = session?.user?.id;
+
+	const setCurrentSettingsPage = useMiscellaneousStore(
+		(state) => state.setCurrentSettingsPage,
+	);
 
 	// mutations
 	const { updateUsernameMutation } = useUpdateUsernameMutation();
@@ -105,7 +116,7 @@ const Settings = () => {
 				type="file"
 			/>
 			<div>
-				<p className=" mb-[30px] text-base font-semibold leading-[18px] text-black">
+				<p className={`${settingsMainHeadingClassName} mb-[30px]`}>
 					My Profile
 				</p>
 				<div className="flex w-full items-center space-x-4">
@@ -148,9 +159,9 @@ const Settings = () => {
 				>
 					<LabelledComponent
 						label="Name"
-						labelClassName=" text-custom-gray-10 font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]"
+						labelClassName={settingsInputLabelClassName}
 					>
-						<div className="relative flex w-[280px] items-center rounded-lg bg-custom-gray-8 px-[10px] py-2">
+						<div className={settingsInputContainerClassName}>
 							<figure className=" mr-2">
 								<SettingsUserIcon />
 							</figure>
@@ -166,7 +177,7 @@ const Settings = () => {
 										message: "Username must have a minimum of 4 characters",
 									},
 								})}
-								className="rounded-none bg-custom-gray-8 text-sm font-[420] leading-4 tracking-[0.02em] text-custom-gray-1  outline-none"
+								className={settingsInputClassName}
 								errorText={errors?.username?.message ?? ""}
 								id="username"
 								isError={Boolean(errors?.username)}
@@ -189,7 +200,8 @@ const Settings = () => {
 							</p>
 						</div>
 						<Button
-							className="rounded-lg bg-custom-gray-8 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-gray-1 hover:bg-slate-100"
+							className="rounded-lg bg-custom-gray-8 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-gray-1 hover:bg-slate-300"
+							onClick={() => setCurrentSettingsPage("change-email")}
 							type="light"
 						>
 							Change email

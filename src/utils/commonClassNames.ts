@@ -18,3 +18,15 @@ export const dropdownMenuItemClassName =
 
 // BUTTON TRANSITION CLASS NAMES
 export const smoothHoverClassName = "transition ease-in-out delay-50";
+
+// SETTINGS PAGE CLASS NAMES
+
+export const settingsMainHeadingClassName =
+	"text-base font-semibold leading-[18px] text-black";
+export const settingsInputLabelClassName =
+	"text-custom-gray-10 font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]";
+export const settingsInputContainerClassName =
+	"relative flex w-[280px] items-center rounded-lg bg-custom-gray-8 px-[10px] py-2";
+
+export const settingsInputClassName =
+	"rounded-none bg-custom-gray-8 text-sm font-[420] leading-4 tracking-[0.02em] text-custom-gray-1  outline-none";

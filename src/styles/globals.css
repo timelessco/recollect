@@ -34,7 +34,7 @@
 }
 
 body {
-	@apply overflow-hidden outline-none;
+	@apply overflow-hidden antialiased outline-none;
 }
 
 main {
