@@ -269,6 +269,11 @@ export type UpdateUsernameApiPayload = {
 	username: ProfilesTableTypes["user_name"];
 };
 
+export type DeleteUserApiPayload = {
+	id: string;
+	session: SupabaseSessionType;
+};
+
 export type GetUserProfilePicPayload = {
 	email: string;
 	session: SupabaseSessionType;

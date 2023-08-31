@@ -51,7 +51,9 @@ export default async function handler(
 		throw new Error("ERROR");
 	}
 
-	const { data, error } = (await supabase
+	let finalData;
+
+	const { data: profileData, error } = (await supabase
 		.from(PROFILES)
 		.select(`*`)
 		.eq("id", userId)) as unknown as {
@@ -59,30 +61,40 @@ export default async function handler(
 		error: ErrorResponse;
 	};
 
+	finalData = profileData;
+
 	if (
-		!isEmpty(data) &&
-		!isNull(data) &&
-		isNull(data[0]?.profile_pic) &&
+		!isEmpty(profileData) &&
+		!isNull(profileData) &&
+		isNull(profileData[0]?.profile_pic) &&
 		!isNil(existingOauthAvatar)
 	) {
 		// updates profile pic if its not there in DB and oAuth profile pic is there
-		const { error: updateProfilePicError } = await supabase
-			.from(PROFILES)
-			.update({
-				profile_pic: existingOauthAvatar,
-			})
-			.match({ id: userId });
+		const { data: updateProfilePicData, error: updateProfilePicError } =
+			await supabase
+				.from(PROFILES)
+				.update({
+					profile_pic: existingOauthAvatar,
+				})
+				.match({ id: userId })
+				.select(`*`);
 
 		if (!isNull(updateProfilePicError)) {
 			response.status(500).json({ data: null, error: updateProfilePicError });
 			throw new Error("UPDATE PROFILE_PIC ERROR");
+		} else {
+			finalData = updateProfilePicData;
 		}
 	}
 
 	// updates username if its not present
-	if (!isEmpty(data) && !isNull(data) && isNil(data[0]?.user_name)) {
+	if (
+		!isEmpty(profileData) &&
+		!isNull(profileData) &&
+		isNil(profileData[0]?.user_name)
+	) {
 		const newUsername = getUserNameFromEmail(
-			data[0].email as unknown as string,
+			profileData[0].email as unknown as string,
 		);
 
 		// check if username is already present
@@ -100,34 +112,44 @@ export default async function handler(
 
 		if (isEmpty(checkData)) {
 			// the username is not present
-			const { error: updateUsernameError } = await supabase
-				.from(PROFILES)
-				.update({
-					user_name: newUsername,
-				})
-				.match({ id: userId });
+			const { data: userNameNotPresentUpdateData, error: updateUsernameError } =
+				await supabase
+					.from(PROFILES)
+					.update({
+						user_name: newUsername,
+					})
+					.match({ id: userId })
+					.select(`*`);
 
 			if (!isNull(updateUsernameError)) {
 				throw new Error("ERROR: Update username when its not present error");
+			} else {
+				finalData = userNameNotPresentUpdateData;
 			}
 		} else {
 			// the user name is already present
 			const uniqueUsername = `${newUsername}-${uniqid.time()}`;
-			const { error: updateUniqueUsernameError } = await supabase
+			const {
+				data: updateUniqueUsernameData,
+				error: updateUniqueUsernameError,
+			} = await supabase
 				.from(PROFILES)
 				.update({
 					user_name: uniqueUsername,
 				})
-				.match({ id: userId });
+				.match({ id: userId })
+				.select(`*`);
 
 			if (!isNull(updateUniqueUsernameError)) {
 				throw new Error("ERROR: Update unique username error");
+			} else {
+				finalData = updateUniqueUsernameData;
 			}
 		}
 	}
 
 	if (isNull(error)) {
-		response.status(200).json({ data, error: null });
+		response.status(200).json({ data: finalData, error: null });
 	} else {
 		response.status(500).json({ data: null, error });
 		throw new Error("ERROR");

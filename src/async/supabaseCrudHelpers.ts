@@ -20,6 +20,7 @@ import {
 	type CategoriesData,
 	type ClearBookmarksInTrashApiPayloadTypes,
 	type DeleteBookmarkPayload,
+	type DeleteUserApiPayload,
 	type DeleteUserCategoryApiPayload,
 	type FetchDataResponse,
 	type FetchSharedCategoriesData,
@@ -51,6 +52,7 @@ import {
 	CREATE_USER_TAGS_API,
 	DELETE_BOOKMARK_DATA_API,
 	DELETE_SHARED_CATEGORIES_USER_API,
+	DELETE_USER_API,
 	DELETE_USER_CATEGORIES_API,
 	FETCH_BOOKMARKS_VIEW,
 	FETCH_SHARED_CATEGORIES_DATA_API,
@@ -791,6 +793,23 @@ export const updateUsername = async ({
 		}>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, {
 			id,
 			username,
+			access_token: session?.access_token,
+		});
+
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
+
+export const deleteUser = async ({ id, session }: DeleteUserApiPayload) => {
+	try {
+		const response = await axios.post<{
+			data: ProfilesTableTypes[] | null;
+			error: Error;
+		}>(`${NEXT_API_URL}${DELETE_USER_API}`, {
+			id,
+			email: session?.user?.email,
 			access_token: session?.access_token,
 		});
 

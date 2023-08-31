@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -7,10 +7,13 @@ import { isEmpty, isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
+import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
+import { signOut } from "../../async/supabaseCrudHelpers";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
+import Spinner from "../../components/spinner";
 import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
@@ -37,6 +40,8 @@ const Settings = () => {
 	const session = useSession();
 	const userId = session?.user?.id;
 
+	const supabase = useSupabaseClient();
+
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
 	);
@@ -44,6 +49,7 @@ const Settings = () => {
 	// mutations
 	const { updateUsernameMutation } = useUpdateUsernameMutation();
 	const { uploadProfilePicMutation } = useUploadProfilePicMutation();
+	const { deleteUserMutation } = useDeleteUserMutation();
 
 	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
 		data: ProfilesTableTypes[];
@@ -223,11 +229,28 @@ const Settings = () => {
 								to be recovered.
 							</p>
 						</div>
-						<Button className=" bg-custom-red-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-red-100">
+						<Button
+							className="w-[150px] bg-custom-red-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-red-100"
+							onClick={async () => {
+								const response = await mutationApiCall(
+									deleteUserMutation.mutateAsync({
+										id: session?.user?.id as string,
+										session,
+									}),
+								);
+
+								if (isNull(response?.error)) {
+									successToast("Account has been successfully deleted");
+									await signOut(supabase);
+								}
+							}}
+						>
 							<figure className="mr-2">
 								<TrashIconRed />
 							</figure>
-							<p>Delete account</p>
+							<p className="flex w-full justify-center">
+								{deleteUserMutation?.isLoading ? <Spinner /> : "Delete account"}
+							</p>
 						</Button>
 					</div>
 				</div>

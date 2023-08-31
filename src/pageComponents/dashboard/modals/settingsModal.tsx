@@ -109,7 +109,9 @@ const SettingsModal = () => {
 						))}
 					</div>
 				</div>
-				<div className=" w-full px-[68px] py-[43px]">{renderMainContent()}</div>
+				<div className=" w-full overflow-y-scroll px-[68px] py-[43px]">
+					{renderMainContent()}
+				</div>
 			</div>
 		</Modal>
 	);
