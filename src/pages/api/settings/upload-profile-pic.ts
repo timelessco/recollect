@@ -54,7 +54,7 @@ export default async (
 		(error_) => {
 			if (error_) {
 				response.status(500).json({ success: false, error: error_ });
-				// throw new Error("ERROR");
+				throw new Error("ERROR");
 			}
 		},
 	);
@@ -72,6 +72,7 @@ export default async (
 				success: false,
 				error: listError,
 			});
+			throw new Error("ERROR: list error");
 		}
 
 		const filesToRemove =
@@ -79,15 +80,18 @@ export default async (
 				? list?.map((x) => `public/${userId}/${x.name}`)
 				: [];
 
-		const { error: removeError } = await supabase.storage
-			.from(USER_PROFILE_STORAGE_NAME)
-			.remove(filesToRemove);
+		if (!isNil(filesToRemove) && !isEmpty(filesToRemove)) {
+			const { error: removeError } = await supabase.storage
+				.from(USER_PROFILE_STORAGE_NAME)
+				.remove(filesToRemove);
 
-		if (!isNil(removeError)) {
-			response.status(500).json({
-				success: false,
-				error: removeError,
-			});
+			if (!isNil(removeError)) {
+				response.status(500).json({
+					success: false,
+					error: removeError,
+				});
+				throw new Error("ERROR: remove error");
+			}
 		}
 	};
 
@@ -121,6 +125,8 @@ export default async (
 				success: false,
 				error: storageError,
 			});
+
+			throw new Error("ERROR: storage error");
 		}
 
 		const { data: storageData, error: publicUrlError } = supabase.storage
@@ -135,6 +141,8 @@ export default async (
 				success: false,
 				error: publicUrlError as unknown as string,
 			});
+
+			throw new Error("ERROR: public url error");
 		}
 
 		const { error: databaseError } = await supabase
@@ -147,6 +155,8 @@ export default async (
 				success: false,
 				error: databaseError,
 			});
+
+			throw new Error("ERROR: DB error");
 		}
 
 		response.status(200).json({
@@ -158,5 +168,7 @@ export default async (
 			success: false,
 			error: "error in payload file data",
 		});
+
+		throw new Error("ERROR: payload error");
 	}
 };

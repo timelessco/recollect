@@ -102,19 +102,21 @@ const Settings = () => {
 		<>
 			<input
 				id="file"
-				onChange={(event) => {
+				onChange={async (event) => {
 					const uploadedFile = event?.target?.files
 						? event?.target?.files[0]
 						: null;
 					if (!isNull(uploadedFile)) {
-						mutationApiCall(
+						const response = await mutationApiCall(
 							uploadProfilePicMutation.mutateAsync({
 								file: uploadedFile,
 								session,
 							}),
-						)
-							.then(() => successToast("Profile pic has been updated"))
-							.catch((error) => console.error(error));
+						);
+
+						if (isNull(response?.error)) {
+							successToast("Profile pic has been updated");
+						}
 					}
 				}}
 				ref={inputFile}
