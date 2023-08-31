@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -29,6 +30,17 @@ const SettingsModal = () => {
 	const currentSettingsPage = useMiscellaneousStore(
 		(state) => state.currentSettingsPage,
 	);
+
+	const setCurrentSettingsPage = useMiscellaneousStore(
+		(state) => state.setCurrentSettingsPage,
+	);
+
+	// reset useeffect
+	useEffect(() => {
+		if (!showSettingsModal) {
+			setCurrentSettingsPage("main");
+		}
+	}, [setCurrentSettingsPage, showSettingsModal]);
 
 	const userProfilesData = queryClient.getQueryData([
 		USER_PROFILE,

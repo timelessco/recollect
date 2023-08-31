@@ -242,6 +242,29 @@ const Dashboard = () => {
 
 	// END OF MUTATIONS ---------
 
+	// if the user email as been changed then this updates the email in the profiles table
+	useEffect(() => {
+		if (
+			!isNull(userProfileData?.data) &&
+			!isEmpty(userProfileData?.data) &&
+			session?.user?.email !== userProfileData?.data[0]?.email &&
+			userProfileData?.data[0]?.email
+		) {
+			void mutationApiCall(
+				updateUserProfileOptimisticMutation.mutateAsync({
+					id: session?.user?.id as string,
+					updateData: { email: session?.user?.email },
+					session,
+				}),
+			);
+		}
+	}, [
+		session,
+		session?.user?.email,
+		updateUserProfileOptimisticMutation,
+		userProfileData,
+	]);
+
 	const flattendPaginationBookmarkData = flatten(
 		allBookmarksData?.pages?.map((item) =>
 			item?.data?.map((twoItem) => twoItem),

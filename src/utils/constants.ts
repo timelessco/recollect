@@ -92,11 +92,11 @@ export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const GET_USER_PROFILE_PIC_API = "/profiles/get-user-profile-pic";
 export const UPDATE_USERNAME_API = "/profiles/update-username";
+// settings profile api
+export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
 
 // file upload api
 export const UPLOAD_FILE_API = "/file/upload-file";
-// user settings api
-export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";

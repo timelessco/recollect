@@ -1,12 +1,14 @@
-import { useSession } from "@supabase/auth-helpers-react";
+import { useState } from "react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { isEmpty } from "lodash";
+import { isEmpty, isNil } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
+import Spinner from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
 import { useMiscellaneousStore } from "../../store/componentStore";
@@ -18,21 +20,22 @@ import {
 	settingsMainHeadingClassName,
 } from "../../utils/commonClassNames";
 import { EMAIL_CHECK_PATTERN, USER_PROFILE } from "../../utils/constants";
+import { errorToast, successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
 	newEmail: string;
 };
 
-const onSubmit: SubmitHandler<SettingsFormTypes> = async () => {
-	// console.log("d", data);
-};
-
 const ChangeEmail = () => {
+	const [changeEmailLoader, setChangeEmailLoader] = useState(false);
+
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
 	);
+
+	const supabase = useSupabaseClient();
 
 	const userProfilesData = queryClient.getQueryData([
 		USER_PROFILE,
@@ -45,6 +48,22 @@ const ChangeEmail = () => {
 	const userData = !isEmpty(userProfilesData?.data)
 		? userProfilesData?.data[0]
 		: {};
+
+	const onSubmit: SubmitHandler<SettingsFormTypes> = async (data) => {
+		setChangeEmailLoader(true);
+
+		const { error } = await supabase.auth.updateUser({ email: data.newEmail });
+
+		if (!isNil(error)) {
+			errorToast(error.message);
+		}
+
+		if (isNil(error)) {
+			successToast("Comformation email sent");
+		}
+
+		setChangeEmailLoader(false);
+	};
 
 	const {
 		register,
@@ -124,11 +143,12 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 				<div className="flex w-1/2 justify-end">
 					<Button
-						className="px-[10px] py-2 text-sm leading-4"
+						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4"
+						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
 						type="dark"
 					>
-						Change email
+						{changeEmailLoader ? <Spinner /> : "Change email"}
 					</Button>
 				</div>
 			</form>
