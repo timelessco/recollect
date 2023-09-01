@@ -30,3 +30,12 @@ export const settingsInputContainerClassName =
 
 export const settingsInputClassName =
 	"rounded-none bg-custom-gray-8 text-sm font-[420] leading-4 tracking-[0.02em] text-custom-gray-1  outline-none";
+
+export const settingsSubHeadingClassName =
+	"text-sm font-medium leading-4 tracking-[1.5%] text-custom-gray-5";
+
+export const settingsParagraphClassName =
+	"text-sm font-[420] leading-[21px] tracking-[2%] text-custom-gray-10";
+
+export const settingsDeleteButtonRedClassName =
+	"bg-custom-red-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-red-100";

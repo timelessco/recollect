@@ -826,20 +826,24 @@ export const getUserProfilePic = async ({
 	data: UserProfilePicTypes[] | null;
 	error: Error;
 }> => {
-	try {
-		const response = await axios.get<{
-			data: UserProfilePicTypes[] | null;
-			error: Error;
-		}>(
-			`${NEXT_API_URL}${GET_USER_PROFILE_PIC_API}?access_token=${
-				session?.access_token ?? ""
-			}&email=${email}`,
-		);
+	if (!isNil(email) && !isEmpty(email)) {
+		try {
+			const response = await axios.get<{
+				data: UserProfilePicTypes[] | null;
+				error: Error;
+			}>(
+				`${NEXT_API_URL}${GET_USER_PROFILE_PIC_API}?access_token=${
+					session?.access_token ?? ""
+				}&email=${email}`,
+			);
 
-		return response?.data;
-	} catch (error) {
-		return { data: null, error: error as Error };
+			return response?.data;
+		} catch (error) {
+			return { data: null, error: error as Error };
+		}
 	}
+
+	return { data: null, error: "Email not present" as unknown as Error };
 };
 
 // file upload

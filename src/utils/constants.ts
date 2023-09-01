@@ -19,8 +19,8 @@ export const URL_PATTERN =
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =
-	// eslint-disable-next-line unicorn/no-unsafe-regex
-	/^[\w!#$%&'*+./=?^`{|}~-]+@[\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*$/u;
+	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
+	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
 export const URL_IMAGE_CHECK_PATTERN = /^http.+(png|jpeg|gif|jpg)$/gmu;
 

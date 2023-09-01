@@ -14,6 +14,7 @@ import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
 import Settings from "../../settings";
 import ChangeEmail from "../../settings/changeEmail";
+import DeleteAccout from "../../settings/deleteAccount";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 // type SettingsModalTypes = {};
@@ -80,6 +81,8 @@ const SettingsModal = () => {
 				return <Settings />;
 			case "change-email":
 				return <ChangeEmail />;
+			case "delete":
+				return <DeleteAccout />;
 			default:
 				return null;
 		}

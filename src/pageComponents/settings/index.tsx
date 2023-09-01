@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -9,7 +9,6 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
-import { signOut } from "../../async/supabaseCrudHelpers";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -22,10 +21,13 @@ import { useMiscellaneousStore } from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
+	settingsDeleteButtonRedClassName,
 	settingsInputClassName,
 	settingsInputContainerClassName,
 	settingsInputLabelClassName,
 	settingsMainHeadingClassName,
+	settingsParagraphClassName,
+	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
 import { USER_PROFILE } from "../../utils/constants";
 import { successToast } from "../../utils/toastMessages";
@@ -39,8 +41,6 @@ const Settings = () => {
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const userId = session?.user?.id;
-
-	const supabase = useSupabaseClient();
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
@@ -200,10 +200,8 @@ const Settings = () => {
 					</p>
 					<div className="flex items-center justify-between">
 						<div>
-							<p className=" text-sm font-medium leading-4 tracking-[1.5%] text-custom-gray-5">
-								Email
-							</p>
-							<p className="mt-1 text-sm font-[420] leading-[21px] tracking-[2%] text-custom-gray-10">
+							<p className={settingsSubHeadingClassName}>Email</p>
+							<p className={`mt-1 ${settingsParagraphClassName}`}>
 								{userData?.email}
 							</p>
 						</div>
@@ -222,30 +220,16 @@ const Settings = () => {
 					</p>
 					<div className="flex items-center justify-between">
 						<div className="w-[70%]">
-							<p className=" text-sm font-medium leading-4 tracking-[1.5%] text-custom-gray-5">
-								Delete account
-							</p>
-							<p className="mt-1 w-[90%] text-sm font-[420] leading-[21px] tracking-[2%] text-custom-gray-10">
+							<p className={settingsSubHeadingClassName}>Delete account</p>
+							<p className={`mt-1 w-[90%] ${settingsParagraphClassName}`}>
 								By deleting your account, you’ll not be able to log in and all
 								the content you have uploaded will be lost and will not be able
 								to be recovered.
 							</p>
 						</div>
 						<Button
-							className="w-[150px] bg-custom-red-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-red-100"
-							onClick={async () => {
-								const response = await mutationApiCall(
-									deleteUserMutation.mutateAsync({
-										id: session?.user?.id as string,
-										session,
-									}),
-								);
-
-								if (isNull(response?.error)) {
-									successToast("Account has been successfully deleted");
-									await signOut(supabase);
-								}
-							}}
+							className={`w-[150px] ${settingsDeleteButtonRedClassName}`}
+							onClick={() => setCurrentSettingsPage("delete")}
 						>
 							<figure className="mr-2">
 								<TrashIconRed />
