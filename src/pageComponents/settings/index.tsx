@@ -174,6 +174,7 @@ const Settings = () => {
 								<SettingsUserIcon />
 							</figure>
 							<Input
+								autoFocus={false}
 								errorClassName=" absolute w-full top-[29px]"
 								{...register("username", {
 									required: {

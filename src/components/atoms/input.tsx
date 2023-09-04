@@ -18,6 +18,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 	placeholder: string;
 	rendedRightSideElement?: ChildrenTypes;
 	selectTextOnFocus?: boolean;
+	tabIndex?: number;
 	type?: string;
 	wrapperClassName?: string;
 };
@@ -42,6 +43,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		isFullWidth = true,
 		type = "text",
 		selectTextOnFocus = false,
+		tabIndex = -1,
 	} = props;
 
 	const inputClass = classNames(className, {
@@ -78,6 +80,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 					onFocus={(event) => selectTextOnFocus && event.target.select()}
 					onKeyUp={onKeyUp}
 					placeholder={placeholder}
+					tabIndex={tabIndex}
 				/>
 				{isError && (
 					<div className={errorIconClass}>

@@ -13,6 +13,7 @@ type ButtonProps = {
 	isDisabled?: boolean;
 	onClick?: () => void;
 	style?: Record<string, unknown>;
+	tabIndex?: number;
 	type?: "dark" | "light";
 };
 
@@ -26,6 +27,7 @@ const Button: FC<ButtonProps> = (props) => {
 		id = "",
 		style,
 		isActive = false,
+		tabIndex = -1,
 	} = props;
 
 	const buttonClassNames = tcm(
@@ -48,6 +50,7 @@ const Button: FC<ButtonProps> = (props) => {
 			id={id}
 			onClick={onClick}
 			style={style}
+			tabIndex={tabIndex}
 			type="button"
 		>
 			{children}
