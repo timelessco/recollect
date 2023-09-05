@@ -6,7 +6,10 @@ import jwt_decode from "jwt-decode";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
-import { SHARED_CATEGORIES_TABLE_NAME } from "../../utils/constants";
+import {
+	ALL_BOOKMARKS_URL,
+	SHARED_CATEGORIES_TABLE_NAME,
+} from "../../utils/constants";
 
 /**
  * Adds user as colaborator in DB
@@ -84,10 +87,8 @@ export default async function handler(
 				.eq("category_id", insertData?.category_id);
 
 			if (isNull(catError)) {
-				response.status(200).json({
-					success: "User has been added as a colaborator to the category",
-					error: null,
-				});
+				// User has been added as a colaborator to the category
+				response?.redirect(`/${ALL_BOOKMARKS_URL}`);
 			} else if (catError?.code === "23503") {
 				// if collab user does not have an existing account
 				response.status(500).json({
