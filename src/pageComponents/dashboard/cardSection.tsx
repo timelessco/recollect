@@ -784,7 +784,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative text-[13px] leading-4  text-custom-gray-10 ${
+			className={`relative truncate text-[13px]  leading-4 text-custom-gray-10 ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""

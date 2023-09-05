@@ -23,7 +23,9 @@ export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
 	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
-export const URL_IMAGE_CHECK_PATTERN = /^http.+(png|jpeg|gif|jpg)$/gmu;
+export const URL_IMAGE_CHECK_PATTERN =
+	// eslint-disable-next-line unicorn/no-unsafe-regex
+	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp)(\?(.*))?$/gimu;
 
 // api constants
 const getBaseUrl = () => {

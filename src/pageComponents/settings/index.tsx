@@ -200,21 +200,28 @@ const Settings = () => {
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
 						Account security
 					</p>
-					<div className="flex items-center justify-between">
-						<div>
-							<p className={settingsSubHeadingClassName}>Email</p>
-							<p className={`mt-1 ${settingsParagraphClassName}`}>
-								{userData?.email}
-							</p>
+					{session?.user?.app_metadata?.provider === "email" ? (
+						<div className="flex items-center justify-between">
+							<div>
+								<p className={settingsSubHeadingClassName}>Email</p>
+								<p className={`mt-1 ${settingsParagraphClassName}`}>
+									{userData?.email}
+								</p>
+							</div>
+							<Button
+								className="rounded-lg bg-custom-gray-8 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-gray-1 hover:bg-slate-300"
+								onClick={() => setCurrentSettingsPage("change-email")}
+								type="light"
+							>
+								Change email
+							</Button>
 						</div>
-						<Button
-							className="rounded-lg bg-custom-gray-8 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-gray-1 hover:bg-slate-300"
-							onClick={() => setCurrentSettingsPage("change-email")}
-							type="light"
-						>
-							Change email
-						</Button>
-					</div>
+					) : (
+						<div className={settingsParagraphClassName}>
+							You have logged in using google auth with this email{" "}
+							{userData?.email}
+						</div>
+					)}
 				</div>
 				<div className="pt-6">
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">

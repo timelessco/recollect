@@ -92,7 +92,7 @@ const SettingsModal = () => {
 		<Modal
 			open={showSettingsModal}
 			setOpen={() => toggleShowSettingsModal()}
-			wrapperClassName="w-[75%] h-[83%] rounded-2xl"
+			wrapperClassName="w-[1020px] h-[768px] rounded-2xl outline-none"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="flex h-full">
@@ -112,7 +112,7 @@ const SettingsModal = () => {
 						))}
 					</div>
 				</div>
-				<div className=" w-full overflow-y-scroll px-[68px] py-[43px]">
+				<div className=" w-full overflow-y-scroll p-6">
 					{renderMainContent()}
 				</div>
 			</div>
