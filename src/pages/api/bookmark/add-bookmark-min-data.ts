@@ -1,5 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
+import { log } from "console";
 import { type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
@@ -13,6 +14,7 @@ import uniqid from "uniqid";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type NextApiRequest,
+	type ProfilesTableTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
@@ -56,22 +58,22 @@ export default async function handler(
 		process.env.SUPABASE_SERVICE_KEY,
 	);
 
-	const upload = async (base64info: string) => {
+	const upload = async (
+		base64info: string,
+		userIdForStorage: ProfilesTableTypes["id"],
+	) => {
 		const imgName = `img-${uniqid?.time()}.jpg`;
+		const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
 
 		await supabase.storage
 			.from(BOOKMAKRS_STORAGE_NAME)
-			.upload(
-				`${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`,
-				decode(base64info),
-				{
-					contentType: "image/jpg",
-				},
-			);
+			.upload(storagePath, decode(base64info), {
+				contentType: "image/jpg",
+			});
 
 		const { data: storageData } = supabase.storage
 			.from(BOOKMAKRS_STORAGE_NAME)
-			.getPublicUrl(`${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`);
+			.getPublicUrl(storagePath);
 
 		return storageData?.publicUrl;
 	};
@@ -102,76 +104,110 @@ export default async function handler(
 		return !isEmpty(checkBookmarkData);
 	};
 
-	const scrapperResponse = await axios.post<{
-		OgImage: string;
-		description: string;
-		favIcon: string;
-		title: string;
-	}>(TIMELESS_SCRAPPER_API, {
-		url,
-	});
-
-	let imgData;
-
-	let imgUrl;
-
-	const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
-
-	if (!isNil(isUrlAnImage) && !isEmpty(isUrlAnImage)) {
-		imgUrl = url;
-	}
-
-	if (scrapperResponse?.data?.OgImage) {
-		imgData = await blurhashFromURL(scrapperResponse?.data?.OgImage);
-
-		const image = await axios.get(scrapperResponse?.data?.OgImage, {
-			responseType: "arraybuffer",
+	try {
+		const scrapperResponse = await axios.post<{
+			OgImage: string;
+			description: string;
+			favIcon: string;
+			title: string;
+		}>(TIMELESS_SCRAPPER_API, {
+			url,
 		});
-		const returnedB64 = Buffer.from(image.data).toString("base64");
 
-		imgUrl = await upload(returnedB64);
-	}
+		let imgData;
 
-	const favIconLogic = () => {
-		if (scrapperResponse?.data?.favIcon) {
-			if (scrapperResponse?.data?.favIcon?.includes("https://")) {
-				return scrapperResponse?.data?.favIcon;
+		let imgUrl;
+
+		const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
+
+		if (!isNil(isUrlAnImage) && !isEmpty(isUrlAnImage)) {
+			imgUrl = url;
+		}
+
+		if (scrapperResponse?.data?.OgImage) {
+			try {
+				const image = await axios.get(scrapperResponse?.data?.OgImage, {
+					responseType: "arraybuffer",
+				});
+				const returnedB64 = Buffer.from(image.data).toString("base64");
+				imgData = await blurhashFromURL(scrapperResponse?.data?.OgImage);
+
+				imgUrl = await upload(returnedB64, userId);
+			} catch (error) {
+				log("Error: ogImage is 404", error);
+				imgUrl = null;
+			}
+		}
+
+		const favIconLogic = () => {
+			if (scrapperResponse?.data?.favIcon) {
+				if (scrapperResponse?.data?.favIcon?.includes("https://")) {
+					return scrapperResponse?.data?.favIcon;
+				} else {
+					return `https://${getBaseUrl(url)}${scrapperResponse?.data?.favIcon}`;
+				}
 			} else {
-				return `https://${getBaseUrl(url)}${scrapperResponse?.data?.favIcon}`;
+				return null;
+			}
+		};
+
+		const meta_data = {
+			img_caption: null,
+			width: imgData?.width,
+			height: imgData?.height,
+			ogImgBlurUrl: imgData?.encoded,
+			favIcon: favIconLogic(),
+		};
+
+		if (
+			updateAccess === true &&
+			!isNull(categoryId) &&
+			categoryId !== "null" &&
+			categoryId !== 0 &&
+			categoryId !== UNCATEGORIZED_URL
+		) {
+			const isBookmarkAlreadyPresentInCategory =
+				await checkIfBookmarkAlreadyExists();
+
+			if (isBookmarkAlreadyPresentInCategory) {
+				// the bookmark is already there in the category
+				response.status(500).json({
+					data: null,
+					error: "Bookmark already present in this category",
+					message: "Bookmark already present in this category",
+				});
+				throw new Error("ERROR");
+			} else {
+				// the bookmark to be added is not there in the category so we add
+				const {
+					data,
+					error,
+				}: {
+					data: SingleListData[] | null;
+					error: PostgrestError | VerifyErrors | string | null;
+				} = await supabase
+					.from(MAIN_TABLE_NAME)
+					.insert([
+						{
+							url,
+							title: scrapperResponse.data.title,
+							user_id: userId,
+							description: scrapperResponse?.data?.description,
+							ogImage: imgUrl,
+							category_id: categoryId,
+							meta_data,
+							type: bookmarkType,
+						},
+					])
+					.select();
+				if (!isNull(error)) {
+					response.status(500).json({ data: null, error, message: null });
+					throw new Error("ERROR");
+				} else {
+					response.status(200).json({ data, error: null, message: null });
+				}
 			}
 		} else {
-			return null;
-		}
-	};
-
-	const meta_data = {
-		img_caption: null,
-		width: imgData?.width,
-		height: imgData?.height,
-		ogImgBlurUrl: imgData?.encoded,
-		favIcon: favIconLogic(),
-	};
-
-	if (
-		updateAccess === true &&
-		!isNull(categoryId) &&
-		categoryId !== "null" &&
-		categoryId !== 0 &&
-		categoryId !== UNCATEGORIZED_URL
-	) {
-		const isBookmarkAlreadyPresentInCategory =
-			await checkIfBookmarkAlreadyExists();
-
-		if (isBookmarkAlreadyPresentInCategory) {
-			// the bookmark is already there in the category
-			response.status(500).json({
-				data: null,
-				error: "Bookmark already present in this category",
-				message: "Bookmark already present in this category",
-			});
-			throw new Error("ERROR");
-		} else {
-			// the bookmark to be added is not there in the category so we add
 			const {
 				data,
 				error,
@@ -183,56 +219,35 @@ export default async function handler(
 				.insert([
 					{
 						url,
-						title: scrapperResponse.data.title,
+						title: scrapperResponse?.data?.title,
 						user_id: userId,
 						description: scrapperResponse?.data?.description,
 						ogImage: imgUrl,
-						category_id: categoryId,
+						category_id: 0,
 						meta_data,
 						type: bookmarkType,
 					},
 				])
 				.select();
+
 			if (!isNull(error)) {
 				response.status(500).json({ data: null, error, message: null });
 				throw new Error("ERROR");
 			} else {
-				response.status(200).json({ data, error: null, message: null });
+				response.status(200).json({
+					data,
+					error: null,
+					message:
+						updateAccess === false ? ADD_UPDATE_BOOKMARK_ACCESS_ERROR : null,
+				});
 			}
 		}
-	} else {
-		const {
-			data,
-			error,
-		}: {
-			data: SingleListData[] | null;
-			error: PostgrestError | VerifyErrors | string | null;
-		} = await supabase
-			.from(MAIN_TABLE_NAME)
-			.insert([
-				{
-					url,
-					title: scrapperResponse?.data?.title,
-					user_id: userId,
-					description: scrapperResponse?.data?.description,
-					ogImage: imgUrl,
-					category_id: 0,
-					meta_data,
-					type: bookmarkType,
-				},
-			])
-			.select();
-
-		if (!isNull(error)) {
-			response.status(500).json({ data: null, error, message: null });
-			throw new Error("ERROR");
-		} else {
-			response.status(200).json({
-				data,
-				error: null,
-				message:
-					updateAccess === false ? ADD_UPDATE_BOOKMARK_ACCESS_ERROR : null,
-			});
-		}
+	} catch (scrapperError) {
+		response.status(500).json({
+			data: null,
+			error: scrapperError as string,
+			message: "Scrapper error",
+		});
+		throw new Error("ERROR: scrapper error");
 	}
 }

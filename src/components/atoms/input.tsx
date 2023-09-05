@@ -43,7 +43,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		isFullWidth = true,
 		type = "text",
 		selectTextOnFocus = false,
-		tabIndex = -1,
+		tabIndex = 0,
 	} = props;
 
 	const inputClass = classNames(className, {

@@ -1,5 +1,6 @@
 // you might want to use regular 'fs' and not a promise one
 
+import { log } from "console";
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
@@ -27,18 +28,24 @@ export const config = {
 
 const query = async (filename: string) => {
 	const data = fs.readFileSync(filename);
-	const imgCaptionResponse = await fetch(
-		process.env.IMAGE_CAPTION_URL as string,
-		{
-			headers: {
-				Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
-			},
-			method: "POST",
-			body: data,
-		},
-	);
 
-	return imgCaptionResponse;
+	try {
+		const imgCaptionResponse = await fetch(
+			process.env.IMAGE_CAPTION_URL as string,
+			{
+				headers: {
+					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
+				},
+				method: "POST",
+				body: data,
+			},
+		);
+
+		return imgCaptionResponse;
+	} catch (error) {
+		log("Img caption error", error);
+		return null;
+	}
 };
 
 export default async (
@@ -105,15 +112,16 @@ export default async (
 	const fileType = data?.files?.file?.mimetype;
 
 	if (contents) {
+		const storagePath = `public/${userId}/${fileName}`;
 		const { error: storageError } = await supabase.storage
 			.from(FILES_STORAGE_NAME)
-			.upload(`public/${fileName}`, decode(contents), {
+			.upload(storagePath, decode(contents), {
 				contentType: fileType,
 				upsert: true,
 			});
 		const { data: storageData, error: publicUrlError } = supabase.storage
 			.from(FILES_STORAGE_NAME)
-			.getPublicUrl(`public/${fileName}`) as {
+			.getPublicUrl(storagePath) as {
 			data: { publicUrl: string };
 			error: UploadFileApiResponse["error"];
 		};
@@ -131,14 +139,19 @@ export default async (
 			if (!isVideo) {
 				const imageCaption = await query(data?.files?.file?.filepath as string);
 
-				const jsonResponse = (await imageCaption.json()) as Array<{
+				const jsonResponse = (await imageCaption?.json()) as Array<{
 					generated_text: string;
 				}>;
 
 				let imgData;
 
 				if (storageData?.publicUrl) {
-					imgData = await blurhashFromURL(storageData?.publicUrl);
+					try {
+						imgData = await blurhashFromURL(storageData?.publicUrl);
+					} catch (error) {
+						log("Blur hash error", error);
+						imgData = {};
+					}
 				}
 
 				meta_data = {

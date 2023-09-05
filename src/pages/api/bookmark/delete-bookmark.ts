@@ -1,6 +1,7 @@
 import { type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import { verify, type VerifyErrors } from "jsonwebtoken";
+import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
 
 import {
@@ -14,6 +15,7 @@ import {
 	FILES_STORAGE_NAME,
 	MAIN_TABLE_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
+	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 
 // this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
@@ -49,20 +51,25 @@ export default async function handler(
 		},
 	);
 
-	// TODO: uncomment after fixing screenshot issue
-	// const screenshot = bookmarkData?.screenshot;
-	// const screenshotImgName =
-	// 	screenshot?.split("/")[screenshot.split("/").length - 1];
+	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
+	const userId = tokenDecode?.sub;
 
-	// await supabase.storage
-	// 	.from(BOOKMAKRS_STORAGE_NAME)
-	// 	.remove([`public/${screenshotImgName}`]);
+	// screenshots ogImages in bucket
+	const deleteScreenshotImagePaths = apiData?.deleteData?.map((item) => {
+		const ogImageLink = item?.ogImage;
+		const imgName = ogImageLink?.split("/")[ogImageLink.split("/").length - 1];
+		return `${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${imgName}`;
+	});
+
+	const { error: storageScreenshotOgImageError } = (await supabase.storage
+		.from(BOOKMAKRS_STORAGE_NAME)
+		.remove(deleteScreenshotImagePaths)) as { error: ErrorResponse };
 
 	// delete ogImages in bucket
 	const deleteImagePaths = apiData?.deleteData?.map((item) => {
 		const ogImageLink = item?.ogImage;
 		const imgName = ogImageLink?.split("/")[ogImageLink.split("/").length - 1];
-		return `${STORAGE_SCRAPPED_IMAGES_PATH}/${imgName}`;
+		return `${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/${imgName}`;
 	});
 
 	const { error: storageOgImageError } = (await supabase.storage
@@ -72,7 +79,7 @@ export default async function handler(
 	// delete file images in bucket
 
 	const deleteFileImagesPaths = apiData?.deleteData?.map(
-		(item) => `public/${item?.title}`,
+		(item) => `public/${userId}/${item?.title}`,
 	);
 
 	const { error: fileStorageError } = (await supabase.storage
@@ -104,7 +111,8 @@ export default async function handler(
 		isNull(bookmarksError) &&
 		isNull(bookmarkTagsError) &&
 		isNull(fileStorageError) &&
-		isNull(storageOgImageError)
+		isNull(storageOgImageError) &&
+		isNull(storageScreenshotOgImageError)
 	) {
 		response.status(200).json({
 			data: bookmarksData,

@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { log } from "console";
@@ -9,15 +10,21 @@ import {
 	type User,
 } from "@supabase/supabase-js";
 import { verify, type VerifyErrors } from "jsonwebtoken";
+import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
 import {
+	BOOKMAKRS_STORAGE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
+	FILES_STORAGE_NAME,
 	MAIN_TABLE_NAME,
 	PROFILES,
 	SHARED_CATEGORIES_TABLE_NAME,
+	STORAGE_SCRAPPED_IMAGES_PATH,
+	STORAGE_SCREENSHOT_IMAGES_PATH,
 	TAG_TABLE_NAME,
+	USER_PROFILE_STORAGE_NAME,
 } from "../../../utils/constants";
 
 // deletes user
@@ -150,6 +157,166 @@ export default async function handler(
 	} else {
 		log("deleted profiles table data", userId);
 	}
+
+	// bookmarks storage ogImages delete
+
+	const { data: bookmarksStorageFiles, error: bookmarksStorageError } =
+		await supabase.storage
+			.from(BOOKMAKRS_STORAGE_NAME)
+			.list(`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}`);
+	const filesToRemove = bookmarksStorageFiles?.map(
+		(x) => `${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/${x.name}`,
+	);
+
+	if (!isNull(bookmarksStorageError)) {
+		response
+			.status(500)
+			.json({ data: null, error: bookmarksStorageError as unknown as string });
+		throw new Error("ERROR: bookmarksStorageError");
+	}
+
+	if (!isEmpty(filesToRemove) && !isNil(filesToRemove)) {
+		const {
+			data: bookmarksStorageDeleteData,
+			error: bookmarksStorageDeleteError,
+		} = await supabase.storage
+			.from(BOOKMAKRS_STORAGE_NAME)
+			.remove(filesToRemove);
+
+		if (!isNull(bookmarksStorageDeleteError)) {
+			response.status(500).json({
+				data: null,
+				error: bookmarksStorageDeleteError as unknown as string,
+			});
+			throw new Error("ERROR: bookmarksStorageDeleteError");
+		} else {
+			log("deleted og images", bookmarksStorageDeleteData?.length);
+		}
+	} else {
+		log("files to delete is empty: ogImages");
+	}
+
+	// bookmarks storage screenshot delete
+
+	const {
+		data: bookmarksStorageScreenshotFiles,
+		error: bookmarksStorageScreenshotError,
+	} = await supabase.storage
+		.from(BOOKMAKRS_STORAGE_NAME)
+		.list(`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}`);
+	const filesToRemoveScreenshot = bookmarksStorageScreenshotFiles?.map(
+		(x) => `${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${x.name}`,
+	);
+
+	if (!isNull(bookmarksStorageScreenshotError)) {
+		response.status(500).json({
+			data: null,
+			error: bookmarksStorageScreenshotError as unknown as string,
+		});
+		throw new Error("ERROR: bookmarksStorageScreenshotError");
+	}
+
+	if (!isEmpty(filesToRemoveScreenshot) && !isNil(filesToRemoveScreenshot)) {
+		const {
+			data: bookmarksStorageScreenshotDeleteData,
+			error: bookmarksStorageScreenshotDeleteError,
+		} = await supabase.storage
+			.from(BOOKMAKRS_STORAGE_NAME)
+			.remove(filesToRemoveScreenshot);
+
+		if (!isNull(bookmarksStorageScreenshotDeleteError)) {
+			response.status(500).json({
+				data: null,
+				error: bookmarksStorageScreenshotDeleteError as unknown as string,
+			});
+			throw new Error("ERROR: bookmarksStorageScreenshotDeleteError");
+		} else {
+			log(
+				"deleted screenshot images",
+				bookmarksStorageScreenshotDeleteData?.length,
+			);
+		}
+	} else {
+		log("files to delete is empty: screenshot");
+	}
+
+	// files storage delete
+
+	const { data: filesStorageData, error: filesStorageDataError } =
+		await supabase.storage.from(FILES_STORAGE_NAME).list(`public/${userId}`);
+	const filesStorageFilesToRemove = filesStorageData?.map(
+		(x) => `public/${userId}/${x.name}`,
+	);
+
+	if (!isNull(filesStorageDataError)) {
+		response
+			.status(500)
+			.json({ data: null, error: filesStorageDataError as unknown as string });
+		throw new Error("ERROR: filesStorageDataError");
+	}
+
+	if (
+		!isEmpty(filesStorageFilesToRemove) &&
+		!isNil(filesStorageFilesToRemove)
+	) {
+		const { data: filesDeleteData, error: filesDeleteError } =
+			await supabase.storage
+				.from(FILES_STORAGE_NAME)
+				.remove(filesStorageFilesToRemove);
+
+		if (!isNull(filesDeleteError)) {
+			response
+				.status(500)
+				.json({ data: null, error: filesDeleteError as unknown as string });
+			throw new Error("ERROR: filesDeleteError");
+		} else {
+			log("deleted files", filesDeleteData?.length);
+		}
+	} else {
+		log("files to delete is empty : files");
+	}
+
+	// user profile storage delete
+
+	const { data: userProfileFilesData, error: userProfileFilesError } =
+		await supabase.storage
+			.from(USER_PROFILE_STORAGE_NAME)
+			.list(`public/${userId}`);
+	const userProfileFilesToRemove = userProfileFilesData?.map(
+		(x) => `public/${userId}/${x.name}`,
+	);
+
+	if (!isNull(userProfileFilesError)) {
+		response
+			.status(500)
+			.json({ data: null, error: userProfileFilesError as unknown as string });
+		throw new Error("ERROR: userProfileFilesError");
+	}
+
+	if (!isEmpty(userProfileFilesToRemove) && !isNil(userProfileFilesToRemove)) {
+		const {
+			data: userProfileFilesDeleteData,
+			error: userProfileFilesDeleteError,
+		} = await supabase.storage
+			.from(USER_PROFILE_STORAGE_NAME)
+			.remove(userProfileFilesToRemove);
+
+		if (!isNull(userProfileFilesDeleteError)) {
+			response
+				.status(500)
+				.json({
+					data: null,
+					error: userProfileFilesDeleteError as unknown as string,
+				});
+			throw new Error("ERROR: userProfileFilesDeleteError");
+		} else {
+			log("deleted user profile files", userProfileFilesDeleteData?.length);
+		}
+	} else {
+		log("files to delete is empty : user profiles");
+	}
+
+	// deleting user in main auth table
 
 	const { data, error } = await supabase.auth.admin.deleteUser(userId);
 

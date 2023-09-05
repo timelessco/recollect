@@ -176,6 +176,7 @@ const Settings = () => {
 							<Input
 								autoFocus={false}
 								errorClassName=" absolute w-full top-[29px]"
+								tabIndex={-1}
 								{...register("username", {
 									required: {
 										value: true,

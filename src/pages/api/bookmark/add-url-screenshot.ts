@@ -3,6 +3,7 @@ import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { verify, type VerifyErrors } from "jsonwebtoken";
+import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
 import uniqid from "uniqid";
 
@@ -15,6 +16,7 @@ import {
 	BOOKMAKRS_STORAGE_NAME,
 	MAIN_TABLE_NAME,
 	SCREENSHOT_API,
+	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 
 type Data = {
@@ -42,21 +44,25 @@ export default async function handler(
 		process.env.SUPABASE_SERVICE_KEY,
 	);
 
-	const upload = async (base64info: string) => {
+	const upload = async (base64info: string, uploadUserId: string) => {
 		const imgName = `img-${uniqid?.time()}.jpg`;
+		const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
 
 		await supabase.storage
 			.from(BOOKMAKRS_STORAGE_NAME)
-			.upload(`public/${imgName}`, decode(base64info), {
+			.upload(storagePath, decode(base64info), {
 				contentType: "image/jpg",
 			});
 
 		const { data: storageData } = supabase.storage
 			.from(BOOKMAKRS_STORAGE_NAME)
-			.getPublicUrl(`public/${imgName}`);
+			.getPublicUrl(storagePath);
 
 		return storageData?.publicUrl;
 	};
+
+	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
+	const userId = tokenDecode?.sub;
 
 	// screen shot api call
 	const screenShotResponse = await axios.get<
@@ -70,7 +76,7 @@ export default async function handler(
 		"base64",
 	);
 
-	const publicURL = await upload(base64data);
+	const publicURL = await upload(base64data, userId);
 
 	const {
 		data,
