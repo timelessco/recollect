@@ -8,6 +8,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
+import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -25,12 +26,13 @@ import {
 	settingsInputClassName,
 	settingsInputContainerClassName,
 	settingsInputLabelClassName,
+	settingsLightButtonClassName,
 	settingsMainHeadingClassName,
 	settingsParagraphClassName,
 	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
 import { USER_PROFILE } from "../../utils/constants";
-import { successToast } from "../../utils/toastMessages";
+import { errorToast, successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
 	username: string;
@@ -50,6 +52,7 @@ const Settings = () => {
 	const { updateUsernameMutation } = useUpdateUsernameMutation();
 	const { uploadProfilePicMutation } = useUploadProfilePicMutation();
 	const { deleteUserMutation } = useDeleteUserMutation();
+	const { removeProfilePic } = useRemoveUserProfilePicMutation();
 
 	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
 		data: ProfilesTableTypes[];
@@ -95,7 +98,8 @@ const Settings = () => {
 	const profilePicClassName = classNames({
 		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]:
 			true,
-		"opacity-50": uploadProfilePicMutation?.isLoading,
+		"opacity-50":
+			uploadProfilePicMutation?.isLoading || removeProfilePic?.isLoading,
 	});
 
 	return (
@@ -106,16 +110,25 @@ const Settings = () => {
 					const uploadedFile = event?.target?.files
 						? event?.target?.files[0]
 						: null;
-					if (!isNull(uploadedFile)) {
-						const response = await mutationApiCall(
-							uploadProfilePicMutation.mutateAsync({
-								file: uploadedFile,
-								session,
-							}),
-						);
 
-						if (isNull(response?.error)) {
-							successToast("Profile pic has been updated");
+					const size = uploadedFile?.size as number;
+
+					if (!isNull(uploadedFile)) {
+						// eslint-disable-next-line unicorn/numeric-separators-style
+						if (size < 1000000) {
+							// file size is less than 1mb
+							const response = await mutationApiCall(
+								uploadProfilePicMutation.mutateAsync({
+									file: uploadedFile,
+									session,
+								}),
+							);
+
+							if (isNull(response?.error)) {
+								successToast("Profile pic has been updated");
+							}
+						} else {
+							errorToast("File size is greater then 1MB");
 						}
 					}
 				}}
@@ -127,7 +140,7 @@ const Settings = () => {
 				<p className={`${settingsMainHeadingClassName} mb-[30px]`}>
 					My Profile
 				</p>
-				<div className="flex w-full items-center space-x-4">
+				<div className="flex w-full items-center space-x-2">
 					<div
 						onClick={() => {
 							if (inputFile.current) {
@@ -150,19 +163,44 @@ const Settings = () => {
 					</div>
 					<div>
 						<div className=" flex text-sm font-semibold leading-[21px] text-black">
-							<p>Upload new photo</p>
-							<p className="mx-1 flex items-center">
+							<Button
+								className="py-0 text-sm font-semibold leading-[21px] text-black"
+								onClick={() => {
+									if (inputFile.current) {
+										inputFile.current.click();
+									}
+								}}
+							>
+								Upload new photo
+							</Button>
+							<p className="flex items-center">
 								<DotIcon />
 							</p>
-							<p>Remove</p>
+							<Button
+								className="py-0 text-sm font-semibold leading-[21px] text-black"
+								onClick={async () => {
+									const response = await mutationApiCall(
+										removeProfilePic.mutateAsync({
+											id: userData?.id as string,
+											session,
+										}),
+									);
+
+									if (isNull(response?.error)) {
+										successToast("Profile pic has been removed");
+									}
+								}}
+							>
+								Remove
+							</Button>
 						</div>
-						<div className=" mt-1 text-13 font-[420] leading-[15px] text-custom-gray-10">
+						<div className=" ml-2 mt-1 text-13 font-[420] leading-[15px] text-custom-gray-10">
 							<p>Photos help people recognize you</p>
 						</div>
 					</div>
 				</div>
 				<form
-					className="border-b-[1px] border-b-custom-gray-9 pb-[28px] pt-5"
+					className="flex items-end border-b-[1px] border-b-custom-gray-9 pb-[28px] pt-5"
 					onSubmit={handleSubmit(onSubmit)}
 				>
 					<LabelledComponent
@@ -195,6 +233,13 @@ const Settings = () => {
 							/>
 						</div>
 					</LabelledComponent>
+					<Button
+						className={`w-[164px] ${settingsLightButtonClassName}`}
+						onClick={handleSubmit(onSubmit)}
+						type="light"
+					>
+						Change username
+					</Button>
 				</form>
 				<div className="border-b-[1px] border-b-custom-gray-9  pb-6 pt-[25px]">
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
@@ -209,7 +254,7 @@ const Settings = () => {
 								</p>
 							</div>
 							<Button
-								className="rounded-lg bg-custom-gray-8 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-gray-1 hover:bg-slate-300"
+								className={settingsLightButtonClassName}
 								onClick={() => setCurrentSettingsPage("change-email")}
 								type="light"
 							>

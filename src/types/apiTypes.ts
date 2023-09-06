@@ -274,6 +274,11 @@ export type DeleteUserApiPayload = {
 	session: SupabaseSessionType;
 };
 
+export type RemoveUserProfilePicPayload = {
+	id: string;
+	session: SupabaseSessionType;
+};
+
 export type GetUserProfilePicPayload = {
 	email: string;
 	session: SupabaseSessionType;

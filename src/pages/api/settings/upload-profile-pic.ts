@@ -2,7 +2,7 @@
 
 import { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import { verify } from "jsonwebtoken";
@@ -10,7 +10,10 @@ import jwtDecode from "jwt-decode";
 import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
 
-import { type UploadProfilePicApiResponse } from "../../../types/apiTypes";
+import {
+	type ProfilesTableTypes,
+	type UploadProfilePicApiResponse,
+} from "../../../types/apiTypes";
 import { PROFILES, USER_PROFILE_STORAGE_NAME } from "../../../utils/constants";
 
 // first we need to disable the default body parser
@@ -18,6 +21,44 @@ export const config = {
 	api: {
 		bodyParser: false,
 	},
+};
+
+// deletes all current profile pic in the users profile pic bucket
+export const deleteLogic = async (
+	supabase: SupabaseClient,
+	response: NextApiResponse,
+	userId: ProfilesTableTypes["id"],
+) => {
+	const { data: list, error: listError } = await supabase.storage
+		.from(USER_PROFILE_STORAGE_NAME)
+		.list(`public/${userId}`);
+
+	if (!isNull(listError)) {
+		response.status(500).json({
+			success: false,
+			error: listError,
+		});
+		throw new Error("ERROR: list error");
+	}
+
+	const filesToRemove =
+		!isEmpty(list) && list
+			? list?.map((x) => `public/${userId}/${x.name}`)
+			: [];
+
+	if (!isNil(filesToRemove) && !isEmpty(filesToRemove)) {
+		const { error: removeError } = await supabase.storage
+			.from(USER_PROFILE_STORAGE_NAME)
+			.remove(filesToRemove);
+
+		if (!isNil(removeError)) {
+			response.status(500).json({
+				success: false,
+				error: removeError,
+			});
+			throw new Error("ERROR: remove error");
+		}
+	}
 };
 
 export default async (
@@ -61,40 +102,6 @@ export default async (
 
 	// const categoryId = data?.fields?.category_id;
 
-	// deletes all current profile pic in the users profile pic bucket
-	const deleteLogic = async () => {
-		const { data: list, error: listError } = await supabase.storage
-			.from(USER_PROFILE_STORAGE_NAME)
-			.list(`public/${userId}`);
-
-		if (!isNull(listError)) {
-			response.status(500).json({
-				success: false,
-				error: listError,
-			});
-			throw new Error("ERROR: list error");
-		}
-
-		const filesToRemove =
-			!isEmpty(list) && list
-				? list?.map((x) => `public/${userId}/${x.name}`)
-				: [];
-
-		if (!isNil(filesToRemove) && !isEmpty(filesToRemove)) {
-			const { error: removeError } = await supabase.storage
-				.from(USER_PROFILE_STORAGE_NAME)
-				.remove(filesToRemove);
-
-			if (!isNil(removeError)) {
-				response.status(500).json({
-					success: false,
-					error: removeError,
-				});
-				throw new Error("ERROR: remove error");
-			}
-		}
-	};
-
 	const tokenDecode: { sub: string } = jwtDecode(
 		data?.fields?.access_token as string,
 	);
@@ -112,7 +119,7 @@ export default async (
 	const fileType = data?.files?.file?.mimetype;
 
 	if (contents) {
-		await deleteLogic();
+		await deleteLogic(supabase, response, userId);
 		const { error: storageError } = await supabase.storage
 			.from(USER_PROFILE_STORAGE_NAME)
 			.upload(`public/${userId}/${fileName}`, decode(contents), {

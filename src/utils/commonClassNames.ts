@@ -39,3 +39,6 @@ export const settingsParagraphClassName =
 
 export const settingsDeleteButtonRedClassName =
 	"bg-custom-red-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-red-100";
+
+export const settingsLightButtonClassName =
+	"rounded-lg bg-custom-gray-8 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-gray-1 hover:bg-slate-300";

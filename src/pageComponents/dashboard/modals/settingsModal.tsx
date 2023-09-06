@@ -92,7 +92,7 @@ const SettingsModal = () => {
 		<Modal
 			open={showSettingsModal}
 			setOpen={() => toggleShowSettingsModal()}
-			wrapperClassName="w-[1020px] h-[768px] rounded-2xl outline-none"
+			wrapperClassName="w-[65.4%] h-[82%] rounded-2xl outline-none"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="flex h-full">

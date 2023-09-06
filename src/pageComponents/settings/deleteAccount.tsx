@@ -108,12 +108,12 @@ const DeleteAccout = () => {
 				</p>
 			</div>
 			<form
-				className="mt-6 flex items-center justify-between"
+				className="mt-6 flex items-end justify-between"
 				onSubmit={handleSubmit(onSubmit)}
 			>
 				<div className="w-[70%]">
 					<LabelledComponent
-						label="If you are sure you want to delete your account, please type your username to continue"
+						label={`Please type your username ${userData?.user_name} to continue`}
 						labelClassName={settingsInputLabelClassName}
 					>
 						<div className={settingsInputContainerClassName}>

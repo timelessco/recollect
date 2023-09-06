@@ -27,6 +27,7 @@ import {
 	type GetUserProfilePicPayload,
 	type MoveBookmarkToTrashApiPayload,
 	type ProfilesTableTypes,
+	type RemoveUserProfilePicPayload,
 	type SingleListData,
 	type SupabaseSessionType,
 	type UpdateCategoryApiPayload,
@@ -64,6 +65,7 @@ import {
 	GET_USER_PROFILE_PIC_API,
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
+	REMOVE_PROFILE_PIC_API,
 	REMOVE_TAG_FROM_BOOKMARK_API,
 	SEARCH_BOOKMARKS,
 	SEND_COLLABORATION_EMAIL_API,
@@ -844,6 +846,26 @@ export const getUserProfilePic = async ({
 	}
 
 	return { data: null, error: "Email not present" as unknown as Error };
+};
+
+export const removeUserProfilePic = async ({
+	id,
+	session,
+}: RemoveUserProfilePicPayload) => {
+	try {
+		const response = await axios.post<{
+			data: ProfilesTableTypes[] | null;
+			error: Error;
+		}>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, {
+			id,
+			email: session?.user?.email,
+			access_token: session?.access_token,
+		});
+
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
 };
 
 // file upload

@@ -96,6 +96,7 @@ export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const GET_USER_PROFILE_PIC_API = "/profiles/get-user-profile-pic";
 export const UPDATE_USERNAME_API = "/profiles/update-username";
 export const DELETE_USER_API = "/profiles/delete-user";
+export const REMOVE_PROFILE_PIC_API = "/profiles/remove-profile-pic";
 
 // settings profile api
 export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
