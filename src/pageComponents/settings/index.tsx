@@ -178,6 +178,7 @@ const Settings = () => {
 							</p>
 							<Button
 								className="py-0 text-sm font-semibold leading-[21px] text-black"
+								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
 										removeProfilePic.mutateAsync({

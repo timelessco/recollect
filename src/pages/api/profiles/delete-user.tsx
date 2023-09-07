@@ -47,7 +47,7 @@ export default async function handler(
 		(error_) => {
 			if (error_) {
 				response.status(500).json({ data: null, error: error_ });
-				throw new Error("ERROR");
+				throw new Error("ERROR: access token");
 			}
 		},
 	);
@@ -67,7 +67,7 @@ export default async function handler(
 
 	if (!isNull(bookmarkTagsError)) {
 		response.status(500).json({ data: null, error: bookmarkTagsError });
-		throw new Error("ERROR");
+		throw new Error("ERROR: bookmarkTagsError");
 	} else {
 		log("deleted bookmark_tags table data", userId);
 	}
@@ -80,7 +80,7 @@ export default async function handler(
 
 	if (!isNull(bookmarksTableError)) {
 		response.status(500).json({ data: null, error: bookmarksTableError });
-		throw new Error("ERROR");
+		throw new Error("ERROR: bookmarksTableError");
 	} else {
 		log("deleted bookmarks table data", userId);
 	}
@@ -93,7 +93,7 @@ export default async function handler(
 
 	if (!isNull(tagsError)) {
 		response.status(500).json({ data: null, error: tagsError });
-		throw new Error("ERROR");
+		throw new Error("ERROR: tagsError");
 	} else {
 		log("deleted tags table data", userId);
 	}
@@ -106,7 +106,7 @@ export default async function handler(
 
 	if (!isNull(sharedCategoriesError)) {
 		response.status(500).json({ data: null, error: sharedCategoriesError });
-		throw new Error("ERROR");
+		throw new Error("ERROR: sharedCategoriesError");
 	} else {
 		log("deleted shared categories table data", userId, "and emails ", email);
 	}
@@ -122,7 +122,7 @@ export default async function handler(
 		response
 			.status(500)
 			.json({ data: null, error: sharedCategoriesEmailError });
-		throw new Error("ERROR");
+		throw new Error("ERROR: sharedCategoriesEmailError");
 	} else {
 		log(
 			"deleted shared categories email table data",
@@ -133,6 +133,43 @@ export default async function handler(
 	}
 	// categories delete
 
+	// the collab categories created by the user might have bookmarks added by other user that are collaborators
+	// these bookmakrs added by other users need to be set as uncategorised (id : 0)
+	// get all category ids for the user
+	const { data: categoriesData, error: categoriesDataError } = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select(`id`)
+		.eq("user_id", userId);
+
+	if (!isNull(categoriesDataError)) {
+		response.status(500).json({ data: null, error: categoriesDataError });
+		throw new Error("ERROR: categoriesDataError");
+	}
+
+	// set category id to uncategorised (id: 0)
+
+	if (!isNil(categoriesData) && !isEmpty(categoriesData)) {
+		const { data: updateData, error: updateError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.update({ category_id: 0 })
+			.in(
+				"category_id",
+				categoriesData?.map((item) => item?.id),
+			)
+			.select(`id`);
+
+		if (!isNull(updateError)) {
+			response.status(500).json({ data: null, error: updateError });
+			throw new Error("ERROR: updateError");
+		} else {
+			log(
+				"updated collab bookmarks to uncategoried",
+				updateData?.map((item) => item?.id),
+			);
+		}
+	}
+
+	// delete all the categories for the user
 	const { error: categoriesError } = await supabase
 		.from(CATEGORIES_TABLE_NAME)
 		.delete()
@@ -140,7 +177,7 @@ export default async function handler(
 
 	if (!isNull(categoriesError)) {
 		response.status(500).json({ data: null, error: categoriesError });
-		throw new Error("ERROR");
+		throw new Error("ERROR: categoriesError");
 	} else {
 		log("deleted categories table data", userId);
 	}
@@ -153,7 +190,7 @@ export default async function handler(
 
 	if (!isNull(profileError)) {
 		response.status(500).json({ data: null, error: profileError });
-		throw new Error("ERROR");
+		throw new Error("ERROR: profileError");
 	} else {
 		log("deleted profiles table data", userId);
 	}
@@ -302,12 +339,10 @@ export default async function handler(
 			.remove(userProfileFilesToRemove);
 
 		if (!isNull(userProfileFilesDeleteError)) {
-			response
-				.status(500)
-				.json({
-					data: null,
-					error: userProfileFilesDeleteError as unknown as string,
-				});
+			response.status(500).json({
+				data: null,
+				error: userProfileFilesDeleteError as unknown as string,
+			});
 			throw new Error("ERROR: userProfileFilesDeleteError");
 		} else {
 			log("deleted user profile files", userProfileFilesDeleteData?.length);
@@ -322,7 +357,7 @@ export default async function handler(
 
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error });
-		throw new Error("ERROR");
+		throw new Error("ERROR: del user auth table");
 	}
 
 	response.status(200).json({ data, error: null });
