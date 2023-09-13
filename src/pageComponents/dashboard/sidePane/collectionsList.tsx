@@ -521,7 +521,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					<figure>
 						<AddCategoryIcon />
 					</figure>
-					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-custom-gray-3">
+					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-grayDark-grayDark-600">
 						Add Collection
 					</p>
 				</div>

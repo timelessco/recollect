@@ -302,7 +302,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 					/>
 					<div className="flex items-center">
 						<div
-							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
 							onClick={() => {
 								onBulkBookmarkDelete(
 									Array.from(
@@ -321,7 +321,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</div>
 						{isTrashPage && (
 							<div
-								className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+								className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
 								onClick={() => {
 									onBulkBookmarkDelete(
 										Array.from(
@@ -341,7 +341,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						)}
 						<AriaDropdown
 							menuButton={
-								<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-custom-gray-5">
+								<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-gray-light-12 ">
 									<figure className="mr-[6px]">
 										<MoveIcon />
 									</figure>
@@ -1022,7 +1022,7 @@ const CardSection = ({
 				bookmarksInfoValue[0] === "cover" ? null : (
 					<div className="space-y-[6px] rounded-lg px-2 py-3">
 						{bookmarksInfoValue?.includes("title" as never) && (
-							<div className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+							<div className="card-title text-sm font-medium leading-4 text-gray-light-12 ">
 								<p>{item?.title}</p>
 							</div>
 						)}
@@ -1087,7 +1087,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<div className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+						<div className="card-title text-sm font-medium leading-4 text-gray-light-12 ">
 							<p>{item?.title}</p>
 						</div>
 					)}
@@ -1134,7 +1134,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className=" ml-[10px]">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+						<p className="card-title text-sm font-medium leading-4 text-gray-light-12 ">
 							{item?.title}
 						</p>
 					)}

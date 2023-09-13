@@ -29,7 +29,7 @@ const RadioGroup = (props: RadioGroupProps) => {
 				return (
 					// as per docs htmlFor is not needed ref: https://ariakit.org/components/radio
 					<label
-						className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-[5px] text-sm leading-4 text-custom-gray-1 hover:bg-custom-gray-9"
+						className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-[5px] text-sm leading-4 text-custom-gray-1 hover:bg-gray-light-4"
 						key={item?.value}
 					>
 						<div className="flex items-center text-[13px] font-450 text-custom-gray-1">

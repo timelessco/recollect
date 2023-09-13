@@ -16,13 +16,10 @@ module.exports = {
 				"custom-gray": {
 					1: "#383838",
 					2: "rgba(0, 0, 0, 0.04)",
-					3: "#707070",
 					4: "rgba(0, 0, 0, 0.13)",
-					5: "#171717",
 					6: "rgba(236, 236, 236, 0.86)",
 					7: "#E8E8E8",
 					8: "#f3f3f3",
-					9: "#EDEDED",
 					10: "#858585",
 					11: "rgba(0, 0, 0, 0.047)",
 					12: "rgba(0, 0, 0, 0.071)",
@@ -41,6 +38,22 @@ module.exports = {
 					700: "#B52A2A",
 				},
 				"modal-bg": "#00000045",
+				overlay: {
+					black: {
+						"A/3": "#0000000C",
+					},
+				},
+				grayDark: {
+					grayDark: {
+						600: "#707070",
+					},
+				},
+				gray: {
+					light: {
+						4: "#EDEDED",
+						12: "#171717",
+					},
+				},
 			},
 
 			dropShadow: {
@@ -58,6 +71,8 @@ module.exports = {
 				"custom-5": "inset 0px 0px 1px rgba(0, 0, 0, 0.11)",
 				"custom-6":
 					"0px -3px 60px 11px rgba(0, 0, 0, 0.11), 0px 0px 3px rgba(0, 0, 0, 0.19)",
+				"custom-7":
+					"0px 6px 15px -5px #0000001C, 0px 1px 2px 0px #00000012, 0px 0px 1px 0px #00000030",
 			},
 			fontSize: {
 				40: "40px",

@@ -201,7 +201,7 @@ const Settings = () => {
 					</div>
 				</div>
 				<form
-					className="flex items-end border-b-[1px] border-b-custom-gray-9 pb-[28px] pt-5"
+					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5"
 					onSubmit={handleSubmit(onSubmit)}
 				>
 					<LabelledComponent
@@ -242,7 +242,7 @@ const Settings = () => {
 						Change username
 					</Button>
 				</form>
-				<div className="border-b-[1px] border-b-custom-gray-9  pb-6 pt-[25px]">
+				<div className="border-b-[1px] border-b-gray-light-4  pb-6 pt-[25px]">
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
 						Account security
 					</p>

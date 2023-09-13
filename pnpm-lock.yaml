@@ -8,6 +8,9 @@ dependencies:
   '@adaptui/react':
     specifier: 1.0.0-alpha.9
     version: 1.0.0-alpha.9(react-dom@18.2.0)(react@18.2.0)
+  '@ariakit/react':
+    specifier: ^0.3.0
+    version: 0.3.0(react-dom@18.2.0)(react@18.2.0)
   '@headlessui/react':
     specifier: 1.7.13
     version: 1.7.13(react-dom@18.2.0)(react@18.2.0)
@@ -77,6 +80,9 @@ dependencies:
   mailgun.js:
     specifier: ^9.1.2
     version: 9.1.2
+  match-sorter:
+    specifier: ^6.3.1
+    version: 6.3.1
   next:
     specifier: 13.2.4
     version: 13.2.4(@babel/core@7.21.0)(react-dom@18.2.0)(react@18.2.0)
@@ -378,8 +384,36 @@ packages:
       - encoding
     dev: true
 
-  /@babel/code-frame@7.21.4:
-    resolution: {integrity: sha512-LYvhNKfwWSPpocw8GI7gpK2nq3HSDuEPC/uSYaALSJu9xjsalaaYFOq0Pwt5KmVqwEbZlDu81aLXwBOmD/Fv9g==}
+  /@ariakit/core@0.3.0:
+    resolution: {integrity: sha512-exgssWsuLeT24UlZDMOVPPNKa0QdTr2Tr+TapVbQelCN5TWTgkV9/e2jCvgtV7MzEKHflHX6g6ca52lu2G/RVQ==}
+    dev: false
+
+  /@ariakit/react-core@0.3.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-g7hqkk4kZVyd0DJ+zYJOZbhsfECieqde3FSFfDKt+RXMsdkDUWb58HpUtsQmWc52Y7BWu2hIbHPd7FukSRLcpQ==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0
+      react-dom: ^17.0.0 || ^18.0.0
+    dependencies:
+      '@ariakit/core': 0.3.0
+      '@floating-ui/dom': 1.2.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      use-sync-external-store: 1.2.0(react@18.2.0)
+    dev: false
+
+  /@ariakit/react@0.3.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-k9nHYTi6sxOLQ7atsYYVY7jn+375L4kQfmXRIYARdUAksWh2xQ4EGg9X3Ej86zaYfWXccb5VlZ7kTr3Mj7B/rA==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0
+      react-dom: ^17.0.0 || ^18.0.0
+    dependencies:
+      '@ariakit/react-core': 0.3.0(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@babel/code-frame@7.18.6:
+    resolution: {integrity: sha512-TDCmlK5eOvH+eH7cdAFlNXeVJqWIQ7gW9tY1GJIpUtFb6CmjVyq2VM3u71bOyR8CRihcCgMUYoDNyLXao3+70Q==}
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/highlight': 7.18.6
@@ -9394,6 +9428,13 @@ packages:
       markdown-it: 13.0.1
       markdownlint-micromark: 0.1.2
     dev: true
+
+  /match-sorter@6.3.1:
+    resolution: {integrity: sha512-mxybbo3pPNuA+ZuCUhm5bwNkXrJTbsk5VWbR5wiwz/GC6LIiegBGn2w3O08UG/jdbYLinw51fSQ5xNU1U3MgBw==}
+    dependencies:
+      '@babel/runtime': 7.21.0
+      remove-accents: 0.4.2
+    dev: false
 
   /mathml-tag-names@2.1.3:
     resolution: {integrity: sha512-APMBEanjybaPzUrfqU0IMU5I0AswKMH7k8OTLs0vvV4KZpExkTkY87nR/zpbuTPj+gARop7aGUbl11pnDfW6xg==}

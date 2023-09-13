@@ -2,25 +2,26 @@
 
 // import nodemailer from 'nodemailer';
 
-import { type NextRequest } from "next/server";
+import { type NextRequest, type NextResponse } from "next/server";
 import Email from "vercel-email";
 
-export default async function handler(request: NextRequest) {
+export default async function handler(
+	request: NextRequest,
+	response: NextResponse,
+) {
 	const data = await request.json();
 
-	console.warn("dddd", data.emailList, data.url);
-
 	try {
-		const response: unknown = await Email.send({
+		const emailResponse: unknown = await Email.send({
 			to: data.emailList,
 			from: "noreply@tmls.dev",
 			subject: "Laterpad Invite",
 			text: `Please click on this invite link to join the category ${data.url}`,
 		});
 
-		console.warn("res", response);
+		console.warn("res", emailResponse);
 	} catch (error) {
-		console.warn("email error man", error);
+		console.warn("email error", error);
 	}
 }
 

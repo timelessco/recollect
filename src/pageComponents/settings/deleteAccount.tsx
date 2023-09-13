@@ -98,7 +98,7 @@ const DeleteAccout = () => {
 					Delete account confirmation
 				</div>
 			</div>
-			<div className=" border-b-[1px] border-b-custom-gray-9 pb-6 ">
+			<div className=" border-b-[1px] border-b-gray-light-4 pb-6 ">
 				<p className={settingsSubHeadingClassName}>
 					Are you sure you want to delete your account ?
 				</p>

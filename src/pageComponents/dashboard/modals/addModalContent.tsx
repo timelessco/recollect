@@ -5,14 +5,12 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
 import filter from "lodash/filter";
-// import find from "lodash/find";
-import { type OnChangeValue } from "react-select";
 
+import AriaMultiSelect from "../../../components/ariaMultiSelect";
 import Button from "../../../components/atoms/button";
 import Input from "../../../components/atoms/input";
 import CreatableSearchSelect from "../../../components/creatableSearchSelect";
 import LabelledComponent from "../../../components/labelledComponent";
-import TagInput from "../../../components/tagInput";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
 	type CategoriesData,
@@ -27,9 +25,11 @@ import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../../utils/constants";
 
 // Modal for adding a bookmark
 type AddModalContentProps = {
-	addExistingTag: (value: OnChangeValue<TagInputOption, true>) => Promise<void>;
+	addExistingTag: (
+		value: Array<{ label: string; value: number }>,
+	) => Promise<void>;
 	addedTags: UserTagsData[];
-	createTag: (value: OnChangeValue<TagInputOption, true>) => Promise<void>;
+	createTag: (value: Array<{ label: string }>) => Promise<void>;
 	isCategoryChangeLoading: boolean;
 	mainButtonText: string;
 	onCategoryChange: (value: SearchSelectOption | null) => Promise<void>;
@@ -188,18 +188,40 @@ const AddModalContent = (props: AddModalContentProps) => {
 					/>
 				</LabelledComponent>
 				<LabelledComponent label="Tags">
-					<TagInput
-						addExistingTag={addExistingTag}
-						createTag={createTag}
-						defaultValue={addedTags?.map((item) => ({
-							value: item?.id,
-							label: item?.name,
-						}))}
-						options={userTags?.map((item) => ({
-							value: item?.id,
-							label: item?.name,
-						}))}
-						removeExistingTag={removeExistingTag}
+					<AriaMultiSelect
+						defaultList={addedTags?.map((item) => item?.name)}
+						list={userTags?.map((item) => item?.name) ?? []}
+						onChange={async (action, value) => {
+							if (action === "remove") {
+								const tagData = find(
+									addedTags,
+									(findItem) => findItem.name === value,
+								);
+								if (tagData) {
+									await removeExistingTag({
+										label: tagData?.name,
+										value: tagData?.id,
+									});
+								}
+							}
+
+							if (action === "add" && typeof value !== "string") {
+								await addExistingTag(
+									value?.map((addItem) => ({
+										label: addItem,
+										value: find(
+											userTags,
+											(findItem) => findItem.name === addItem,
+										)?.id as number,
+									})),
+								);
+							}
+
+							if (action === "create") {
+								await createTag([{ label: value as string }]);
+							}
+						}}
+						placeholder="Tag name..."
 					/>
 				</LabelledComponent>
 				<LabelledComponent label="Add Collection">
