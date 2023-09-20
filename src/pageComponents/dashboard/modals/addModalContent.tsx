@@ -7,9 +7,9 @@ import { find } from "lodash";
 import filter from "lodash/filter";
 
 import AriaMultiSelect from "../../../components/ariaMultiSelect";
+import AriaSearchableSelect from "../../../components/ariaSearchableSelect";
 import Button from "../../../components/atoms/button";
 import Input from "../../../components/atoms/input";
-import CreatableSearchSelect from "../../../components/creatableSearchSelect";
 import LabelledComponent from "../../../components/labelledComponent";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
@@ -30,7 +30,7 @@ type AddModalContentProps = {
 	) => Promise<void>;
 	addedTags: UserTagsData[];
 	createTag: (value: Array<{ label: string }>) => Promise<void>;
-	isCategoryChangeLoading: boolean;
+	// isCategoryChangeLoading: boolean;
 	mainButtonText: string;
 	onCategoryChange: (value: SearchSelectOption | null) => Promise<void>;
 	onCreateCategory: (value: SearchSelectOption | null) => Promise<void>;
@@ -56,7 +56,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 		onCategoryChange,
 		// categoryId,
 		userId,
-		isCategoryChangeLoading = false,
+		// isCategoryChangeLoading = false,
 		showMainButton = true,
 		onCreateCategory,
 	} = props;
@@ -225,12 +225,21 @@ const AddModalContent = (props: AddModalContentProps) => {
 					/>
 				</LabelledComponent>
 				<LabelledComponent label="Add Collection">
-					<CreatableSearchSelect
-						createOption={onCreateCategory}
-						defaultValue={defaultValue}
-						isLoading={isCategoryChangeLoading}
-						onChange={onCategoryChange}
-						options={categoryOptions()}
+					<AriaSearchableSelect
+						defaultValue={defaultValue?.label}
+						list={categoryOptions()?.map((item) => item?.label)}
+						onChange={async (value) => {
+							const data = find(
+								categoryOptions(),
+								(item) => item.label === value,
+							);
+							if (data) {
+								await onCategoryChange(data);
+							} else {
+								console.error("Payload data is empty");
+							}
+						}}
+						onCreate={(value) => onCreateCategory({ label: value, value })}
 					/>
 				</LabelledComponent>
 			</div>

@@ -72,7 +72,7 @@ import {
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { errorToast } from "../../utils/toastMessages";
+import { errorToast, successToast } from "../../utils/toastMessages";
 import Settings from "../settings";
 
 import AddBookarkShortcutModal from "./modals/addBookmarkShortcutModal";
@@ -811,18 +811,24 @@ const Dashboard = () => {
 								)?.edit_access === true ||
 								currentCategory?.user_id?.id === session?.user?.id;
 
-							await mutationApiCall(
-								addCategoryToBookmarkOptimisticMutation.mutateAsync({
-									category_id: value?.value ? (value?.value as number) : null,
-									bookmark_id: addedUrlData?.id as number,
-									update_access:
-										// if user is changing to uncategoried then thay always have access
-										isNull(value?.value) || !value?.value
-											? true
-											: updateAccessCondition,
-									session,
-								}),
-							);
+							try {
+								await mutationApiCall(
+									addCategoryToBookmarkOptimisticMutation.mutateAsync({
+										category_id: value?.value ? (value?.value as number) : null,
+										bookmark_id: addedUrlData?.id as number,
+										update_access:
+											// if user is changing to uncategoried then thay always have access
+											isNull(value?.value) || !value?.value
+												? true
+												: updateAccessCondition,
+										session,
+									}),
+								);
+
+								successToast("Collection updated");
+							} catch (error) {
+								errorToast(`Something went wrong: ${error}`);
+							}
 						} else {
 							// setSelectedCategoryDuringAdd(value);
 						}
@@ -842,17 +848,23 @@ const Dashboard = () => {
 								}),
 							)) as { data: CategoriesData[] };
 
-							// this is not optimistic as we need cat_id to add bookmark into that category
-							// add the bookmark to the category after its created in add bookmark modal
-							await mutationApiCall(
-								addCategoryToBookmarkMutation.mutateAsync({
-									category_id: response?.data[0]?.id,
-									bookmark_id: addedUrlData?.id as number,
-									// in this case user is creating the category , so they will have access
-									update_access: true,
-									session,
-								}),
-							);
+							try {
+								// this is not optimistic as we need cat_id to add bookmark into that category
+								// add the bookmark to the category after its created in add bookmark modal
+								await mutationApiCall(
+									addCategoryToBookmarkMutation.mutateAsync({
+										category_id: response?.data[0]?.id,
+										bookmark_id: addedUrlData?.id as number,
+										// in this case user is creating the category , so they will have access
+										update_access: true,
+										session,
+									}),
+								);
+
+								successToast("New collection created");
+							} catch (error) {
+								errorToast(`Something went wrong ${error}`);
+							}
 						} else {
 							errorToast("Collection name is missing");
 						}
@@ -971,7 +983,12 @@ const Dashboard = () => {
 								!isNull(userProfileData?.data) &&
 								userProfileData?.data[0]?.category_order
 							) {
-								if (isEmpty(flattendPaginationBookmarkData)) {
+								const isDataPresentCheck =
+									find(
+										bookmarksCountData?.data?.categoryCount,
+										(item) => item?.category_id === categoryId,
+									)?.count === 0;
+								if (isDataPresentCheck) {
 									await mutationApiCall(
 										deleteCategoryOtimisticMutation.mutateAsync({
 											category_id: categoryId,
