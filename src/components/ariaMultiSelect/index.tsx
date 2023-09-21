@@ -217,6 +217,9 @@ const AriaMultiSelect = ({
 							Create new "{value}" tag
 						</ComboboxItem>
 					)}
+					{isEmpty(filtertedMatch) && (
+						<div className={menuItemClassName}>No results</div>
+					)}
 				</Combobox>
 			</div>
 		</div>

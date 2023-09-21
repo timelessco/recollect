@@ -26,7 +26,11 @@ const ShareCategoryModal = () => {
 	}, [setShareCategoryId, showShareCategoryModal]);
 
 	return (
-		<Modal open={showShareCategoryModal} setOpen={toggleShareCategoryModal}>
+		<Modal
+			open={showShareCategoryModal}
+			setOpen={toggleShareCategoryModal}
+			wrapperClassName="w-[30%] p-4 rounded-lg"
+		>
 			<ShareContent />
 		</Modal>
 	);
