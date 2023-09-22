@@ -79,6 +79,7 @@ const AriaSearchableSelect = ({
 				>
 					{matches.length
 						? matches.map((value) => (
+								// eslint-disable-next-line react/jsx-indent
 								<Ariakit.SelectItem
 									className={menuItemClassName}
 									key={value}
