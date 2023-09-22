@@ -2,12 +2,12 @@
 
 // import nodemailer from 'nodemailer';
 
-import { type NextRequest, type NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import Email from "vercel-email";
 
 export default async function handler(
 	request: NextRequest,
-	response: NextResponse,
+	// response: NextResponse,
 ) {
 	const data = await request.json();
 
