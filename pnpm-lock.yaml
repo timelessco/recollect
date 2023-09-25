@@ -20,6 +20,9 @@ dependencies:
   '@heroicons/react':
     specifier: 1.0.6
     version: 1.0.6(react@18.2.0)
+  '@sendgrid/mail':
+    specifier: ^7.7.0
+    version: 7.7.0
   '@supabase/auth-helpers-nextjs':
     specifier: 0.5.6
     version: 0.5.6(@supabase/supabase-js@2.13.1)
@@ -3637,6 +3640,33 @@ packages:
     resolution: {integrity: sha512-sXo/qW2/pAcmT43VoRKOJbDOfV3cYpq3szSVfIThQXNt+E4DfKj361vaAt3c88U5tPUxzEswam7GW48PJqtKAg==}
     dev: true
 
+  /@sendgrid/client@7.7.0:
+    resolution: {integrity: sha512-SxH+y8jeAQSnDavrTD0uGDXYIIkFylCo+eDofVmZLQ0f862nnqbC3Vd1ej6b7Le7lboyzQF6F7Fodv02rYspuA==}
+    engines: {node: 6.* || 8.* || >=10.*}
+    dependencies:
+      '@sendgrid/helpers': 7.7.0
+      axios: 0.26.1
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@sendgrid/helpers@7.7.0:
+    resolution: {integrity: sha512-3AsAxfN3GDBcXoZ/y1mzAAbKzTtUZ5+ZrHOmWQ279AuaFXUNCh9bPnRpN504bgveTqoW+11IzPg3I0WVgDINpw==}
+    engines: {node: '>= 6.0.0'}
+    dependencies:
+      deepmerge: 4.3.1
+    dev: false
+
+  /@sendgrid/mail@7.7.0:
+    resolution: {integrity: sha512-5+nApPE9wINBvHSUxwOxkkQqM/IAAaBYoP9hw7WwgDNQPxraruVqHizeTitVtKGiqWCKm2mnjh4XGN3fvFLqaw==}
+    engines: {node: 6.* || 8.* || >=10.*}
+    dependencies:
+      '@sendgrid/client': 7.7.0
+      '@sendgrid/helpers': 7.7.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /@sindresorhus/is@0.14.0:
     resolution: {integrity: sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==}
     engines: {node: '>=6'}
@@ -4653,6 +4683,14 @@ packages:
     resolution: {integrity: sha512-/BQzOX780JhsxDnPpH4ZiyrJAzcd8AfzFPkv+89veFSr1rcMjuq2JDCwypKaPeB6ljHp9KjXhPpjgCvQlWYuqg==}
     engines: {node: '>=4'}
     dev: true
+
+  /axios@0.26.1:
+    resolution: {integrity: sha512-fPwcX4EvnSHuInCMItEhAGnaSEXRBjtzh9fOtsE6E1G6p7vl7edEeZe11QHf18+6+9gR5PbKV/sGKNaD8YaMeA==}
+    dependencies:
+      follow-redirects: 1.15.2
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /axios@1.3.4:
     resolution: {integrity: sha512-toYm+Bsyl6VC5wSkfkbbNB6ROv7KY93PEBBL6xyDczaIHasAiv4wPqQ/c4RjoQzipxRD2W5g21cOqQulZ7rHwQ==}
@@ -5981,7 +6019,6 @@ packages:
   /deepmerge@4.3.1:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
     engines: {node: '>=0.10.0'}
-    dev: true
 
   /default-browser-id@3.0.0:
     resolution: {integrity: sha512-OZ1y3y0SqSICtE8DE4S8YOE9UZOJ8wO16fKWVP5J1Qz42kV9jcnMVFrEE/noXb/ss3Q4pZIH79kxofzyNNtUNA==}

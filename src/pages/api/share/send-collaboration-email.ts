@@ -88,9 +88,7 @@ export default async function handler(
 				url,
 				emailList: emailList[0],
 			});
-			response
-				.status(200)
-				.json({ url, error, message: "email sent via vercel email" });
+			response.status(200).json({ url, error });
 		} catch (catchError: unknown) {
 			response.status(500).json({
 				url: null,

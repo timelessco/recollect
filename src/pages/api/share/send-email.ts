@@ -2,29 +2,48 @@
 
 // import nodemailer from 'nodemailer';
 
-import { type NextRequest } from "next/server";
-import Email from "vercel-email";
+import { type NextApiRequest, type NextApiResponse } from "next";
+import sgMail from "@sendgrid/mail";
+
+// import Email from "vercel-email";
 
 export default async function handler(
-	request: NextRequest,
-	// response: NextResponse,
+	request: NextApiRequest,
+	response: NextApiResponse,
 ) {
-	const data = await request.json();
+	// const data = await request.json();
+
+	const data = request.body;
+
+	sgMail.setApiKey(process.env.SENDGRID_KEY as string);
+
+	// try {
+	// const emailResponse: unknown = await Email.send({
+	// 	to: data.emailList,
+	// 	from: "noreply@tmls.dev",
+	// 	subject: "Laterpad Invite",
+	// 	text: `Please click on this invite link to join the category ${data.url}`,
+	// });
+
+	// 	console.warn("res", emailResponse);
+	// } catch (error) {
+	// 	console.warn("email error", error);
+	// }
 
 	try {
-		const emailResponse: unknown = await Email.send({
+		await sgMail.send({
 			to: data.emailList,
-			from: "noreply@tmls.dev",
+			from: "abhishek@timeless.co",
 			subject: "Laterpad Invite",
 			text: `Please click on this invite link to join the category ${data.url}`,
 		});
 
-		console.warn("res", emailResponse);
+		response.status(200).json({ data: "email sent" });
 	} catch (error) {
-		console.warn("email error", error);
+		response.status(500).json({ data: `error: ${error}` });
 	}
 }
 
-export const config = {
-	runtime: "edge",
-};
+// export const config = {
+// 	runtime: "edge",
+// };
