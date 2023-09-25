@@ -92,7 +92,7 @@ export type ComboboxItemProps = ComponentPropsWithoutRef<"div"> & {
 };
 
 const menuItemClassName =
-	"rounded-lg px-2 py-[5px] text-13 font-450 leading-[15px] tracking-[1%] text-gray-light-12 data-[active-item]:bg-gray-light-4 truncate";
+	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[1%] text-gray-light-12 data-[active-item]:bg-gray-light-4 truncate";
 
 export const ComboboxItem = forwardRef<HTMLDivElement, ComboboxItemProps>(
 	(props, ref) => (

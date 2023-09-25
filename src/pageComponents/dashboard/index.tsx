@@ -835,16 +835,13 @@ const Dashboard = () => {
 						}
 					}}
 					onCreateCategory={async (value) => {
-						if (
-							value?.label &&
-							!isNull(userProfileData?.data) &&
-							userProfileData?.data[0]?.category_order
-						) {
+						if (value?.label && userProfileData?.data) {
 							const response = (await mutationApiCall(
 								addCategoryOptimisticMutation.mutateAsync({
 									user_id: session?.user?.id as string,
 									name: value?.label,
-									category_order: userProfileData?.data[0]?.category_order,
+									category_order: userProfileData?.data[0]
+										?.category_order as number[],
 									session,
 								}),
 							)) as { data: CategoriesData[] };

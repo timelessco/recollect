@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useMemo, useState } from "react";
 import * as Ariakit from "@ariakit/react";
 import classNames from "classnames";
-import { find, isEmpty } from "lodash";
+import { find, isEmpty, isNil } from "lodash";
 import { matchSorter } from "match-sorter";
 
 type AriaSearchableSelectTypes = {
@@ -24,7 +24,11 @@ const AriaSearchableSelect = ({
 	);
 
 	useEffect(() => {
-		setSearchValue(defaultValue);
+		if (!isNil(defaultValue)) {
+			setSearchValue(defaultValue);
+		} else {
+			setSearchValue("");
+		}
 	}, [defaultValue]);
 
 	const combobox = Ariakit.useComboboxStore({
