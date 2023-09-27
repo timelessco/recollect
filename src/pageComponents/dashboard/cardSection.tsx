@@ -80,6 +80,7 @@ import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
 // eslint-disable-next-line import/extensions
 import "node_modules/video-react/dist/video-react.css";
 import CustomPlayer from "../../components/videoPlayer";
+import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 
 type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -339,40 +340,42 @@ const ListBox = (props: ListBoxDropTypes) => {
 								Recover
 							</div>
 						)}
-						<AriaDropdown
-							menuButton={
-								<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-gray-light-12 ">
-									<figure className="mr-[6px]">
-										<MoveIcon />
-									</figure>
-									<p>Move to</p>
-								</div>
-							}
-							menuClassName={dropdownMenuClassName}
-						>
-							{categoryData?.data
-								?.map((item) => ({
-									label: item?.category_name,
-									value: item?.id,
-								}))
-								?.map((dropdownItem) => (
-									<AriaDropdownMenu
-										key={dropdownItem?.value}
-										onClick={() =>
-											onCategoryChange(
-												Array.from(
-													state.selectionManager.selectedKeys.keys(),
-												) as number[],
-												dropdownItem?.value,
-											)
-										}
-									>
-										<div className={dropdownMenuItemClassName}>
-											{dropdownItem?.label}
-										</div>
-									</AriaDropdownMenu>
-								))}
-						</AriaDropdown>
+						{!isEmpty(categoryData?.data) && (
+							<AriaDropdown
+								menuButton={
+									<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-gray-light-12 ">
+										<figure className="mr-[6px]">
+											<MoveIcon />
+										</figure>
+										<p>Move to</p>
+									</div>
+								}
+								menuClassName={dropdownMenuClassName}
+							>
+								{categoryData?.data
+									?.map((item) => ({
+										label: item?.category_name,
+										value: item?.id,
+									}))
+									?.map((dropdownItem) => (
+										<AriaDropdownMenu
+											key={dropdownItem?.value}
+											onClick={() =>
+												onCategoryChange(
+													Array.from(
+														state.selectionManager.selectedKeys.keys(),
+													) as number[],
+													dropdownItem?.value,
+												)
+											}
+										>
+											<div className={dropdownMenuItemClassName}>
+												{dropdownItem?.label}
+											</div>
+										</AriaDropdownMenu>
+									))}
+							</AriaDropdown>
+						)}
 					</div>
 				</div>
 			)}
@@ -403,6 +406,7 @@ const Option = ({
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
+	const currentPath = useGetCurrentUrlPath();
 
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
@@ -429,12 +433,17 @@ const Option = ({
 		},
 	);
 
+	const isInTrashPage = currentPath === TRASH_URL;
+
+	// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+	const disableDndCondition = isPublicPage || isInTrashPage;
+
 	return (
 		<li
 			{...mergeProps(
-				isPublicPage ? [] : dragProps,
-				isPublicPage ? [] : focusProps,
-				isPublicPage ? [] : optionProps,
+				disableDndCondition ? [] : dragProps,
+				disableDndCondition ? [] : focusProps,
+				disableDndCondition ? [] : optionProps,
 			)}
 			className={liClassName}
 			ref={ref}
@@ -1163,7 +1172,10 @@ const CardSection = ({
 	});
 
 	return (
-		<div className={listWrapperClass}>
+		<div
+			className={listWrapperClass}
+			// style={{ height: "calc(100vh - 270px)"}}
+		>
 			<ListBox
 				aria-label="Categories"
 				bookmarksColumns={bookmarksColumns}

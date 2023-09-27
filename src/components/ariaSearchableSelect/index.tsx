@@ -70,6 +70,8 @@ const AriaSearchableSelect = ({
 				}}
 			>
 				<Ariakit.Combobox
+					autoComplete="both"
+					autoSelect
 					className="ml-1 w-full bg-transparent text-sm font-normal leading-4 text-grayDark-grayDark-600 outline-none"
 					placeholder="e.g., Apple"
 					store={combobox}

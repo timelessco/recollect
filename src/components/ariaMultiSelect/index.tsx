@@ -18,6 +18,7 @@ export type ComboboxProps = Omit<
 	ComponentPropsWithoutRef<"input">,
 	"onChange"
 > & {
+	autoSelect: boolean;
 	defaultValue?: string;
 	defaultValues?: string[];
 	label?: string;
@@ -162,6 +163,7 @@ const AriaMultiSelect = ({
 		"py-[7px] px-[10px] rounded-lg  w-full": true,
 		"flex items-center": breakValue,
 		"bg-overlay-black-A/3": true,
+		"h-[30px]": true,
 	});
 
 	const tagsWrapperClassName = classNames({
@@ -185,6 +187,8 @@ const AriaMultiSelect = ({
 			</div>
 			<div className="w-full">
 				<Combobox
+					autoComplete="both"
+					autoSelect
 					label=""
 					onChange={(changeValue: string[] | string) => {
 						setValue(changeValue as string);
