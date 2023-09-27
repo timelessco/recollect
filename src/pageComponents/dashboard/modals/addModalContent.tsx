@@ -179,7 +179,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 			<div className="pt-4">
 				<LabelledComponent label="Url">
 					<Input
-						className="px-2 py-1"
+						className="px-2 py-1 opacity-50"
 						errorText=""
 						isDisabled
 						isError={false}

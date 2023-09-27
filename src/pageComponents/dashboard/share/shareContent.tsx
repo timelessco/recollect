@@ -3,6 +3,7 @@ import { TrashIcon } from "@heroicons/react/solid";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
@@ -31,9 +32,15 @@ import { mutationApiCall } from "../../../utils/apiHelpers";
 import { CATEGORIES_KEY, EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
-const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
+const rightTextStyles =
+	"text-13 font-medium leading-[15px] text-custom-gray-10";
+
+const AccessUserInfo = (props: {
+	isLoggedinUserTheOwner: boolean;
+	item: CollabDataInCategory;
+}) => {
 	const session = useSession();
-	const { item } = props;
+	const { item, isLoggedinUserTheOwner } = props;
 
 	const { updateSharedCategoriesUserAccessMutation } =
 		useUpdateSharedCategoriesUserAccessMutation();
@@ -42,8 +49,6 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
 		useDeleteSharedCategoriesUserMutation();
 
 	const renderRightContent = () => {
-		const rightTextStyles =
-			"text-13 font-medium leading-[15px] text-custom-gray-10";
 		if (item.is_accept_pending) {
 			return (
 				<div className=" flex items-center space-x-1">
@@ -52,12 +57,18 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
 						<TrashIcon
 							className="h-4 w-4 cursor-pointer text-red-400 hover:text-red-600"
 							onClick={() => {
-								void mutationApiCall(
-									deleteSharedCategoriesUserMutation.mutateAsync({
-										id: item.share_id as number,
-										session,
-									}),
-								);
+								if (isLoggedinUserTheOwner) {
+									void mutationApiCall(
+										deleteSharedCategoriesUserMutation.mutateAsync({
+											id: item.share_id as number,
+											session,
+										}),
+									);
+								} else {
+									errorToast(
+										"You cannot perform this action as you are not the owner of this collection",
+									);
+								}
 							}}
 						/>
 					</figure>
@@ -65,11 +76,9 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
 			);
 		}
 
-		return (
-			<>
-				{item.isOwner ? (
-					<p className={rightTextStyles}>Owner</p>
-				) : (
+		const renderSelectOption = () => {
+			if (isLoggedinUserTheOwner) {
+				return (
 					<AriaSelect
 						defaultValue={item.edit_access ? "Can Edit" : "Can View"}
 						onOptionClick={async (value) => {
@@ -114,6 +123,22 @@ const AccessUserInfo = (props: { item: CollabDataInCategory }) => {
 							</div>
 						)}
 					/>
+				);
+			} else {
+				return (
+					<div className={rightTextStyles}>
+						{item.edit_access ? "Can Edit" : "Can View"}
+					</div>
+				);
+			}
+		};
+
+		return (
+			<>
+				{item.isOwner ? (
+					<p className={rightTextStyles}>Owner</p>
+				) : (
+					renderSelectOption()
 				)}
 			</>
 		);
@@ -245,18 +270,33 @@ const ShareContent = () => {
 		(item) => item?.id === dynamicCategoryId,
 	);
 
+	const isUserTheCategoryOwner =
+		currentCategory?.user_id?.id === session?.user?.id;
+
+	const inputClassName = classNames({
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none":
+			true,
+		"cursor-not-allowed": !isUserTheCategoryOwner,
+	});
+
 	return (
 		<div>
+			{!isUserTheCategoryOwner && (
+				<p className="p-2 text-xs text-red-600">
+					Actions cannot be performed as you are not the collection owner
+				</p>
+			)}
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<Input
 					{...register("email", {
 						required: true,
 						pattern: EMAIL_CHECK_PATTERN,
 					})}
-					className="rounded-none  bg-transparent text-sm leading-4 shadow-none outline-none"
+					className={inputClassName}
 					errorClassName="ml-2"
 					errorIconClassName="right-[48px]"
 					errorText={errors.email ? "Enter valid email" : ""}
+					isDisabled={!isUserTheCategoryOwner}
 					isError={!isEmpty(errors)}
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
@@ -295,7 +335,11 @@ const ShareContent = () => {
 				</p>
 				<div className="pb-2">
 					{currentCategory?.collabData?.map((item) => (
-						<AccessUserInfo item={item} key={item.userEmail} />
+						<AccessUserInfo
+							isLoggedinUserTheOwner={isUserTheCategoryOwner}
+							item={item}
+							key={item.userEmail}
+						/>
 					))}
 				</div>
 				<div className="mx-2 flex items-end justify-between border-y-[1px] border-custom-gray-11 py-[15.5px]">
@@ -307,37 +351,43 @@ const ShareContent = () => {
 							Anyone with link
 						</p>
 					</div>
-					<AriaSelect
-						defaultValue={
-							currentCategory?.is_public ? "View access" : "No access"
-						}
-						onOptionClick={async (value) => {
-							await mutationApiCall(
-								updateCategoryOptimisticMutation.mutateAsync({
-									category_id: dynamicCategoryId,
-									updateData: {
-										is_public: value === "View access",
-									},
-									session,
-								}),
-							);
-							setLinkCopied(false);
-						}}
-						options={[
-							{ label: "View access", value: "View access" },
-							{ label: "No access", value: "No access" },
-						]}
-						renderCustomSelectButton={() => (
-							<div className="flex items-center">
-								<p className=" mr-1">
-									{currentCategory?.is_public ? "View access" : "No access"}
-								</p>
-								<figure>
-									<DownArrowGray />
-								</figure>
-							</div>
-						)}
-					/>
+					{isUserTheCategoryOwner ? (
+						<AriaSelect
+							defaultValue={
+								currentCategory?.is_public ? "View access" : "No access"
+							}
+							onOptionClick={async (value) => {
+								await mutationApiCall(
+									updateCategoryOptimisticMutation.mutateAsync({
+										category_id: dynamicCategoryId,
+										updateData: {
+											is_public: value === "View access",
+										},
+										session,
+									}),
+								);
+								setLinkCopied(false);
+							}}
+							options={[
+								{ label: "View access", value: "View access" },
+								{ label: "No access", value: "No access" },
+							]}
+							renderCustomSelectButton={() => (
+								<div className="flex items-center">
+									<p className=" mr-1">
+										{currentCategory?.is_public ? "View access" : "No access"}
+									</p>
+									<figure>
+										<DownArrowGray />
+									</figure>
+								</div>
+							)}
+						/>
+					) : (
+						<div className={rightTextStyles}>
+							{currentCategory?.is_public ? "View access" : "No access"}
+						</div>
+					)}
 				</div>
 				<div
 					className={`flex items-center p-2 ${

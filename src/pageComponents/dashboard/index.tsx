@@ -557,49 +557,49 @@ const Dashboard = () => {
 					<>
 						<div className="mx-auto w-full lg:w-1/2" />
 						<div
-							className=""
-							id="scrollableDiv"
-							ref={infiniteScrollRef}
-							style={{ height: "calc(100vh - 63.5px)", overflow: "auto" }}
+							{...getRootProps()}
+							className={
+								isDragActive
+									? " absolute z-10 h-full w-full bg-gray-800 opacity-50"
+									: ""
+							}
 						>
-							<InfiniteScroll
-								dataLength={flattendPaginationBookmarkData?.length}
-								endMessage={
-									<p
-										style={{
-											height: 200,
-											textAlign: "center",
-											paddingTop: 100,
-										}}
-									>
-										Life happens, save it.
-									</p>
-								}
-								hasMore={hasMoreLogic()}
-								loader={
-									<div
-										style={{
-											height: 200,
-											textAlign: "center",
-											paddingTop: 100,
-											zIndex: 0,
-										}}
-									>
-										{isDragActive ? "" : "Loading..."}
-									</div>
-								}
-								next={fetchNextPage}
-								scrollableTarget="scrollableDiv"
+							<input {...getInputProps()} />
+							<div
+								className=""
+								id="scrollableDiv"
+								ref={infiniteScrollRef}
+								style={{ height: "calc(100vh - 63.5px)", overflow: "auto" }}
 							>
-								<div
-									{...getRootProps()}
-									className={
-										isDragActive
-											? " absolute z-10 h-full w-full bg-gray-800 opacity-50"
-											: ""
+								<InfiniteScroll
+									dataLength={flattendPaginationBookmarkData?.length}
+									endMessage={
+										<p
+											style={{
+												height: 200,
+												textAlign: "center",
+												paddingTop: 100,
+											}}
+										>
+											Life happens, save it.
+										</p>
 									}
+									hasMore={hasMoreLogic()}
+									loader={
+										<div
+											style={{
+												height: 200,
+												textAlign: "center",
+												paddingTop: 100,
+												zIndex: 0,
+											}}
+										>
+											{isDragActive ? "" : "Loading..."}
+										</div>
+									}
+									next={fetchNextPage}
+									scrollableTarget="scrollableDiv"
 								>
-									<input {...getInputProps()} />
 									<CardSection
 										deleteBookmarkId={deleteBookmarkId}
 										isBookmarkLoading={
@@ -717,8 +717,8 @@ const Dashboard = () => {
 										}
 										userId={session?.user?.id ?? ""}
 									/>
-								</div>
-							</InfiniteScroll>
+								</InfiniteScroll>
+							</div>
 						</div>
 					</>
 				) : (
