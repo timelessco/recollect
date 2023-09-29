@@ -430,13 +430,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				separator={false}
 			>
 				<Allotment.Pane
-					className="transition-all duration-150 ease-in-out"
+					// className="transition-all duration-150 ease-in-out"
 					maxSize={600}
 					minSize={244}
 					snap
 					visible={showSidePane}
 				>
-					{showSidePane && (
+					<div className={showSidePane ? "block" : " hidden"}>
 						<SidePane
 							onAddNewCategory={onAddNewCategory}
 							onBookmarksDrop={onBookmarksDrop}
@@ -444,7 +444,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							onIconColorChange={onIconColorChange}
 							onIconSelect={(value, id) => onIconSelect(value, id)}
 						/>
-					)}
+					</div>
 				</Allotment.Pane>
 				<Allotment.Pane className="transition-all duration-150 ease-in-out">
 					<div className="w-full">
