@@ -436,7 +436,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					snap
 					visible={showSidePane}
 				>
-					<div className={showSidePane ? "block" : " hidden"}>
+					<div className={`h-full ${showSidePane ? "block" : " hidden"}`}>
 						<SidePane
 							onAddNewCategory={onAddNewCategory}
 							onBookmarksDrop={onBookmarksDrop}
