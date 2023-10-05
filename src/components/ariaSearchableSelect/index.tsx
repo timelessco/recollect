@@ -1,11 +1,14 @@
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
 import * as Ariakit from "@ariakit/react";
 import classNames from "classnames";
-import { find, isEmpty, isNil } from "lodash";
+import { isEmpty } from "lodash";
 import { matchSorter } from "match-sorter";
+
+import Spinner from "../spinner";
 
 type AriaSearchableSelectTypes = {
 	defaultValue: string;
+	isLoading: boolean;
 	list: string[];
 	onChange: (value: string) => void;
 	onCreate: (value: string) => void;
@@ -16,42 +19,19 @@ const AriaSearchableSelect = ({
 	defaultValue,
 	onChange,
 	onCreate,
+	isLoading,
 }: AriaSearchableSelectTypes) => {
 	const [searchValue, setSearchValue] = useState("");
+
 	const matches = useMemo(
-		() => (isEmpty(searchValue) ? list : matchSorter(list, searchValue)),
+		() =>
+			isEmpty(searchValue)
+				? list
+				: matchSorter(list, searchValue, {
+						baseSort: (a, b) => (a.index < b.index ? -1 : 1),
+				  }),
 		[searchValue, list],
 	);
-
-	useEffect(() => {
-		if (!isNil(defaultValue)) {
-			setSearchValue(defaultValue);
-		} else {
-			setSearchValue("");
-		}
-	}, [defaultValue]);
-
-	const combobox = Ariakit.useComboboxStore({
-		value: searchValue,
-		setValue: (value) => setSearchValue(value),
-		// setItems: (items) => console.log("item", items) // gives the filtered list
-	});
-
-	const select = Ariakit.useSelectStore({
-		combobox,
-		value: searchValue,
-		setValue: (value) => {
-			setSearchValue(value);
-
-			const isNew = !list?.includes(value);
-
-			if (isNew) {
-				onCreate(searchValue);
-			} else {
-				onChange(value);
-			}
-		},
-	});
 
 	const menuItemClassName =
 		"rounded-lg cursor-pointer px-2 py-[5px] text-13 font-450 leading-[15px] tracking-[1%] text-gray-light-12 data-[active-item]:bg-gray-light-4 truncate";
@@ -65,45 +45,55 @@ const AriaSearchableSelect = ({
 	return (
 		<div className={mainWrapperClassName}>
 			<Ariakit.ComboboxProvider
+				resetValueOnHide
 				setValue={(value) => {
-					startTransition(() => setSearchValue(value));
+					startTransition(() => {
+						setSearchValue(value);
+					});
 				}}
 			>
-				<Ariakit.Combobox
-					autoComplete="both"
-					autoSelect
-					className="ml-1 w-full bg-transparent text-sm font-normal leading-4 text-grayDark-grayDark-600 outline-none"
-					placeholder="e.g., Apple"
-					store={combobox}
-				/>
-				<Ariakit.ComboboxPopover
-					className="z-10 rounded-xl bg-white p-[6px] shadow-custom-7"
-					gutter={8}
-					render={<Ariakit.SelectList store={select} />}
-					sameWidth
-					store={combobox}
+				<Ariakit.SelectProvider
+					setValue={(value) => {
+						setSearchValue(value);
+
+						const isNew = !list?.includes(value);
+
+						if (isNew) {
+							onCreate(searchValue);
+						} else {
+							onChange(value);
+						}
+
+						setSearchValue("");
+					}}
+					value={isEmpty(defaultValue) ? "Uncategorized" : defaultValue}
 				>
-					{matches.length
-						? matches.map((value) => (
-								// eslint-disable-next-line react/jsx-indent
+					<Ariakit.Select className="aria-multi-select flex w-full items-center justify-between text-13 font-450 leading-[15px] tracking-[1%] text-gray-light-12 outline-none" />
+					{isLoading && <Spinner />}
+					<Ariakit.SelectPopover
+						className="z-10 rounded-xl bg-white p-[6px] shadow-custom-7"
+						gutter={4}
+						sameWidth
+					>
+						<div className="px-2 py-[5px]">
+							<Ariakit.Combobox
+								autoSelect
+								className="w-full bg-transparent text-sm font-normal leading-4 text-grayDark-grayDark-600 outline-none"
+								placeholder="Search..."
+							/>
+						</div>
+						<Ariakit.ComboboxList>
+							{matches.map((value) => (
 								<Ariakit.SelectItem
 									className={menuItemClassName}
 									key={value}
 									render={<Ariakit.ComboboxItem />}
 									value={value}
 								/>
-						  ))
-						: null}
-					{!isEmpty(searchValue) &&
-						!find(list, (findItem) => findItem === searchValue) && (
-							<Ariakit.SelectItem
-								className={menuItemClassName}
-								key="create_new_item"
-								render={<Ariakit.ComboboxItem />}
-								value="Create new"
-							/>
-						)}
-				</Ariakit.ComboboxPopover>
+							))}
+						</Ariakit.ComboboxList>
+					</Ariakit.SelectPopover>
+				</Ariakit.SelectProvider>
 			</Ariakit.ComboboxProvider>
 		</div>
 	);

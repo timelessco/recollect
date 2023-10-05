@@ -463,3 +463,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 	border-bottom-left-radius: unset;
 	border-bottom-right-radius: unset;
 }
+
+.aria-multi-select span {
+	@apply hidden;
+}

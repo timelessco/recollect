@@ -801,7 +801,10 @@ const Dashboard = () => {
 							/* empty */
 						}
 					}}
-					// isCategoryChangeLoading={addCategoryToBookmarkMutation?.isLoading}
+					isCategoryChangeLoading={
+						addCategoryToBookmarkMutation?.isLoading ||
+						addCategoryToBookmarkOptimisticMutation?.isLoading
+					}
 					mainButtonText={isEdit ? "Update Bookmark" : "Add Bookmark"}
 					onCategoryChange={async (value) => {
 						if (isEdit) {
