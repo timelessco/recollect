@@ -269,8 +269,8 @@ devDependencies:
     specifier: 0.1.1
     version: 0.1.1(react@18.2.0)
   title-case:
-    specifier: 3.0.3
-    version: 3.0.3
+    specifier: 4.1.0
+    version: 4.1.0
   toml-eslint-parser:
     specifier: 0.5.0
     version: 0.5.0
@@ -12288,10 +12288,8 @@ packages:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
     dev: false
 
-  /title-case@3.0.3:
-    resolution: {integrity: sha512-e1zGYRvbffpcHIrnuqT0Dh+gEJtDaxDSoG4JAIpq4oDFyooziLBIiYQv0GBT4FUAnUop5uZ1hiIAj7oAF6sOCA==}
-    dependencies:
-      tslib: 2.5.0
+  /title-case@4.1.0:
+    resolution: {integrity: sha512-X6j4JkYviJJ7jPVuBkd1geC35pq+3J5z3q1N5z57FIhBooKQqrO4B7C6dy3RzSJIKYB6Ze0/G3KcWtinzO7MGg==}
     dev: true
 
   /titleize@3.0.0:
