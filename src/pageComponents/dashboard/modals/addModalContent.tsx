@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";

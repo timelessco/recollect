@@ -49,7 +49,7 @@ export default async function handler(
 	verify(accessToken, process.env.SUPABASE_JWT_SECRET_KEY, (error) => {
 		if (error) {
 			response.status(500).json({ data: null, error, message: null });
-			throw new Error("ERROR");
+			throw new Error("ERROR: token error");
 		}
 	});
 
