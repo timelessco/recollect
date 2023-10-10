@@ -39,7 +39,7 @@ export default async function handler(
 	verify(accessToken, process.env.SUPABASE_JWT_SECRET_KEY, (error, decoded) => {
 		if (error) {
 			response.status(500).json({ data: null, error });
-			throw new Error("ERROR");
+			throw new Error("ERROR: token error");
 		} else {
 			// decode = decoded.s;
 			userId = decoded?.sub;
@@ -229,7 +229,7 @@ id
 				data: null,
 				error: bookError ?? bookTrashError ?? bookUnCatError ?? categoryError,
 			});
-			throw new Error("ERROR");
+			throw new Error("ERROR: count db error");
 		}
 	});
 }

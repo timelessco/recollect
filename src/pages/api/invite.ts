@@ -63,7 +63,7 @@ export default async function handler(
 					isNull(error) ? "db error null" : error
 				}`,
 			});
-			throw new Error("ERROR");
+			throw new Error("ERROR: invite has been deleted");
 		}
 
 		// the data will be present as it will be added with is_accept_pending true when invite is sent
@@ -95,13 +95,13 @@ export default async function handler(
 					success: null,
 					error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${catError?.message}`,
 				});
-				throw new Error("ERROR");
+				throw new Error("ERROR: invite no existing account");
 			} else {
 				response.status(500).json({
 					success: null,
 					error: catError?.message,
 				});
-				throw new Error("ERROR");
+				throw new Error(`ERROR: invite error ${catError?.message}`);
 			}
 		} else {
 			response.status(500).json({
@@ -110,7 +110,7 @@ export default async function handler(
 					? "The user is alredy a colaborator of this category"
 					: error,
 			});
-			throw new Error("ERROR");
+			throw new Error("ERROR: invite error");
 		}
 	}
 }

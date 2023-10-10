@@ -46,7 +46,7 @@ export default async function handler(
 			(error_) => {
 				if (error_) {
 					response.status(500).json({ data: null, error: error_ });
-					throw new Error("ERROR");
+					throw new Error("ERROR: token error");
 				}
 			},
 		);
@@ -156,7 +156,7 @@ export default async function handler(
 
 				if (!isNull(delError)) {
 					response.status(500).json({ data: delData, error: delError });
-					throw new Error("ERROR");
+					throw new Error("ERROR: del trash error");
 				} else {
 					response.status(200).json({
 						data: delData,
@@ -175,7 +175,7 @@ export default async function handler(
 			});
 		} else {
 			response.status(500).json({ data, error });
-			throw new Error("ERROR");
+			throw new Error("ERROR: del ids error");
 		}
 	}
 }

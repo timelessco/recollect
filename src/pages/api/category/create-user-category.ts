@@ -42,7 +42,7 @@ export default async function handler(
 		(error) => {
 			if (error) {
 				response.status(500).json({ data: null, error });
-				throw new Error("ERROR");
+				throw new Error("ERROR: token error");
 			}
 		},
 	);

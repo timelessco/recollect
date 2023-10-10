@@ -26,7 +26,7 @@ export default async function handler(
 		(error_) => {
 			if (error_) {
 				response.status(500).json({ data: null, error: error_ });
-				throw new Error("ERROR");
+				throw new Error("ERROR: token error");
 			}
 		},
 	);
@@ -51,6 +51,6 @@ export default async function handler(
 		response.status(200).json({ data, error });
 	} else {
 		response.status(500).json({ data, error });
-		throw new Error("ERROR");
+		throw new Error("ERROR: fetch bookmarks views db error");
 	}
 }

@@ -34,7 +34,7 @@ export default async function handler(
 		(error_) => {
 			if (error_) {
 				response.status(500).json({ data: null, error: error_, message: null });
-				throw new Error("ERROR");
+				throw new Error("ERROR: token error");
 			}
 		},
 	);
@@ -64,6 +64,6 @@ export default async function handler(
 		});
 	} else {
 		response.status(500).json({ data, error, message: null });
-		throw new Error("ERROR");
+		throw new Error("ERROR: update category db error");
 	}
 }

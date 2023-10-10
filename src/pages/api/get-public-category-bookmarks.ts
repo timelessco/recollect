@@ -109,7 +109,7 @@ export default async function handler(
 				icon_color: null,
 				category_name: null,
 			});
-			throw new Error("ERROR");
+			throw new Error("ERROR: get public category bookmark error");
 		} else {
 			response.status(200).json({
 				data,

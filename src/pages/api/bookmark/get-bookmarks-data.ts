@@ -62,7 +62,7 @@ export default async function handler(
 		(error_, decoded) => {
 			if (error_) {
 				response.status(500).json({ data: null, error: error_, count: null });
-				throw new Error("ERROR");
+				throw new Error("ERROR: token error");
 			} else {
 				userId = decoded?.sub;
 			}

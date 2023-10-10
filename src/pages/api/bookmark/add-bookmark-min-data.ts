@@ -176,7 +176,7 @@ export default async function handler(
 					error: "Bookmark already present in this category",
 					message: "Bookmark already present in this category",
 				});
-				throw new Error("ERROR");
+				throw new Error("ERROR: Bookmark already present in this category");
 			} else {
 				// the bookmark to be added is not there in the category so we add
 				const {
@@ -202,7 +202,7 @@ export default async function handler(
 					.select();
 				if (!isNull(error)) {
 					response.status(500).json({ data: null, error, message: null });
-					throw new Error("ERROR");
+					throw new Error("ERROR: add min data error");
 				} else {
 					response.status(200).json({ data, error: null, message: null });
 				}
@@ -232,7 +232,7 @@ export default async function handler(
 
 			if (!isNull(error)) {
 				response.status(500).json({ data: null, error, message: null });
-				throw new Error("ERROR");
+				throw new Error("ERROR: add min data error");
 			} else {
 				response.status(200).json({
 					data,

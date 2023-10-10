@@ -36,7 +36,7 @@ export default async function handler(
 		(error_) => {
 			if (error_) {
 				response.status(500).json({ data: null, error: error_ });
-				throw new Error("ERROR");
+				throw new Error("ERROR: token error");
 			}
 		},
 	);
