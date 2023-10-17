@@ -1,12 +1,16 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
 import { type UserProfilePicTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 import { deleteLogic } from "../settings/upload-profile-pic";
 
 // removes user profile pic
@@ -23,21 +27,16 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	verify(
+	const { error: _error } = verifyAuthToken(
 		request.body.access_token as string,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_) => {
-			if (error_) {
-				response.status(500).json({ data: null, error: error_ });
-				throw new Error("ERROR: token error");
-			}
-		},
-	);
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
 	);
 
+	if (_error) {
+		response.status(500).json({ data: null, error: _error });
+		throw new Error("ERROR: token error");
+	}
+
+	const supabase = apiSupabaseClient();
 	const userId = request.body.id;
 
 	if (userId) {

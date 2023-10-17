@@ -2,11 +2,11 @@
 
 import { log } from "console";
 import { type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { blurhashFromURL } from "blurhash-from-url";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
@@ -28,6 +28,10 @@ import {
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { getBaseUrl } from "../../../utils/helpers";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -46,17 +50,14 @@ export default async function handler(
 	const tokenDecode: { sub: string } = jwtDecode(accessToken);
 	const userId = tokenDecode?.sub;
 
-	verify(accessToken, process.env.SUPABASE_JWT_SECRET_KEY, (error) => {
-		if (error) {
-			response.status(500).json({ data: null, error, message: null });
-			throw new Error("ERROR: token error");
-		}
-	});
+	const { error: _error } = verifyAuthToken(accessToken);
 
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	if (_error) {
+		response.status(500).json({ data: null, error: _error, message: null });
+		throw new Error("ERROR: token error");
+	}
+
+	const supabase = apiSupabaseClient();
 
 	const upload = async (
 		base64info: string,

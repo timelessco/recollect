@@ -1,11 +1,11 @@
 /* eslint-disable complexity */
+
 import { type NextApiRequest, type NextApiResponse } from "next";
 import {
-	createClient,
 	type PostgrestError,
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
@@ -28,6 +28,10 @@ import {
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { checker } from "../../../utils/helpers";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // searches bookmarks
 
@@ -45,21 +49,16 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	verify(
+	const { error: _error } = verifyAuthToken(
 		request.query.access_token as string,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_) => {
-			if (error_) {
-				response.status(500).json({ data: null, error: error_ });
-				throw new Error("ERROR: token error");
-			}
-		},
 	);
 
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	if (_error) {
+		response.status(500).json({ data: null, error: _error });
+		throw new Error("ERROR: token error");
+	}
+
+	const supabase = apiSupabaseClient();
 
 	// disabling as this check is not needed here
 	const { category_id } = request.query;

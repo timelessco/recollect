@@ -3,11 +3,9 @@
 import { log } from "console";
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { blurhashFromURL } from "blurhash-from-url";
 import { IncomingForm } from "formidable";
-import { verify } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
 import fetch from "node-fetch";
@@ -18,6 +16,10 @@ import {
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
 import { isUserInACategory } from "../../../utils/helpers";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
 export const config = {
@@ -52,10 +54,7 @@ export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
 ) => {
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	// parse form with a Promise wrapper
 	const data = (await new Promise((resolve, reject) => {
@@ -76,16 +75,14 @@ export default async (
 		};
 	};
 
-	verify(
+	const { error: _error } = verifyAuthToken(
 		data?.fields?.access_token as string,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_) => {
-			if (error_) {
-				response.status(500).json({ success: false, error: error_ });
-				throw new Error("ERROR: token error");
-			}
-		},
 	);
+
+	if (_error) {
+		response.status(500).json({ success: false, error: _error });
+		throw new Error("ERROR: token error");
+	}
 
 	const categoryId = data?.fields?.category_id;
 

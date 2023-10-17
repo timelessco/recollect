@@ -1,11 +1,7 @@
 import { type NextApiResponse } from "next";
-import {
-	createClient,
-	type PostgrestError,
-	type Session,
-} from "@supabase/supabase-js";
+import { type PostgrestError, type Session } from "@supabase/supabase-js";
 import differenceInDays from "date-fns/differenceInDays";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -16,6 +12,10 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // this api clears trash for a single user and also takes care of CRON job to clear trash every 30 days
 type DataResponse = SingleListData[] | null;
@@ -31,25 +31,18 @@ export default async function handler(
 	request: NextApiRequest<ClearBookmarksInTrashApiPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	if (request.body.user_id) {
 		// this is called by user then they click clear-trash button in UI , hence user_id is being checked
 		// this part needs the access_token check as its called from UI and in a userbased action
 
-		verify(
-			request.body.access_token,
-			process.env.SUPABASE_JWT_SECRET_KEY,
-			(error_) => {
-				if (error_) {
-					response.status(500).json({ data: null, error: error_ });
-					throw new Error("ERROR: token error");
-				}
-			},
-		);
+		const { error: _error } = verifyAuthToken(request.body.access_token);
+
+		if (_error) {
+			response.status(500).json({ data: null, error: _error });
+			throw new Error("ERROR: token error");
+		}
 
 		// const {
 		// 	data,

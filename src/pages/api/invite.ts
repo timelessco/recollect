@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import jwt_decode from "jwt-decode";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -10,6 +10,7 @@ import {
 	ALL_BOOKMARKS_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../utils/constants";
+import { apiSupabaseClient } from "../../utils/supabaseServerClient";
 
 /**
  * Adds user as colaborator in DB
@@ -31,10 +32,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	if (request?.query?.token) {
 		const tokenData: InviteTokenData = jwt_decode(

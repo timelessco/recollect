@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -13,6 +14,10 @@ import {
 	MAIN_TABLE_NAME,
 	videoFileTypes,
 } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // get all bookmarks count
 
@@ -27,24 +32,20 @@ export default async function handler(
 ) {
 	const accessToken = request.query.access_token as string;
 
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	// let decode: { sub: string };
 
 	let userId: string | (() => string) | undefined;
 
-	verify(accessToken, process.env.SUPABASE_JWT_SECRET_KEY, (error, decoded) => {
-		if (error) {
-			response.status(500).json({ data: null, error });
-			throw new Error("ERROR: token error");
-		} else {
-			// decode = decoded.s;
-			userId = decoded?.sub;
-		}
-	});
+	const { error: _error, decoded } = verifyAuthToken(accessToken);
+
+	if (_error) {
+		response.status(500).json({ data: null, error: _error });
+		throw new Error("ERROR: token error");
+	} else {
+		userId = decoded?.sub;
+	}
 
 	let count = {
 		allBookmarks: 0,

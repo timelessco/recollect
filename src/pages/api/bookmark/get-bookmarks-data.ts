@@ -1,15 +1,13 @@
 /* eslint-disable complexity */
 import { type NextApiRequest, type NextApiResponse } from "next";
 import {
-	createClient,
 	type PostgrestError,
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 
-// import { supabase } from '../../utils/supabaseClient';
 import {
 	type BookmarksCountTypes,
 	type BookmarksWithTagsWithTagForginKeys,
@@ -31,6 +29,10 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
@@ -47,27 +49,21 @@ export default async function handler(
 	// disabling as this is not that big of an issue
 	const { category_id } = request.query;
 	const from = Number.parseInt(request.query.from as string, 10);
+
 	const accessToken = request.query.access_token as string;
 
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	let userId: string | (() => string) | undefined;
 
-	verify(
-		accessToken,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_, decoded) => {
-			if (error_) {
-				response.status(500).json({ data: null, error: error_, count: null });
-				throw new Error("ERROR: token error");
-			} else {
-				userId = decoded?.sub;
-			}
-		},
-	);
+	const { error: _error, decoded } = verifyAuthToken(accessToken);
+
+	if (_error) {
+		response.status(500).json({ data: null, error: _error, count: null });
+		throw new Error("ERROR: token error");
+	} else {
+		userId = decoded?.sub;
+	}
 
 	const categoryCondition =
 		category_id !== null &&

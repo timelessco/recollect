@@ -3,10 +3,10 @@
 // import nodemailer from 'nodemailer';
 
 import { type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 // import fromData from "form-data";
-import { sign, verify, type VerifyErrors } from "jsonwebtoken";
+import { sign, type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
 
 // import MainGun from "mailgun.js";
@@ -19,6 +19,10 @@ import {
 	NEXT_API_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // import jwt_decode from 'jwt-decode';
 
@@ -36,21 +40,14 @@ export default async function handler(
 	request: NextApiRequest<SendCollaborationEmailInviteApiPayload>,
 	response: NextApiResponse<Data>,
 ) {
-	verify(
-		request.body.access_token,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_) => {
-			if (error_) {
-				response.status(500).json({ url: null, error: error_ });
-				throw new Error("ERROR: token error");
-			}
-		},
-	);
+	const { error: _error } = verifyAuthToken(request.body.access_token);
 
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	if (_error) {
+		response.status(500).json({ url: null, error: _error });
+		throw new Error("ERROR: token error");
+	}
+
+	const supabase = apiSupabaseClient();
 
 	const { emailList } = request.body;
 	const hostUrl = request?.body?.hostUrl;

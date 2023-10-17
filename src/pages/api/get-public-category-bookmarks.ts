@@ -2,7 +2,7 @@
 
 import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
 
 import {
@@ -12,6 +12,7 @@ import {
 	type ProfilesTableTypes,
 } from "../../types/apiTypes";
 import { CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "../../utils/constants";
+import { apiSupabaseClient } from "../../utils/supabaseServerClient";
 
 /**
  * gets all bookmarks in a public category
@@ -21,10 +22,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<GetPublicCategoryBookmarksApiResponseType>,
 ) {
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	// get category data
 	const { data: categoryData, error: categoryError } = (await supabase
