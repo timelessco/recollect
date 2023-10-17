@@ -19,6 +19,10 @@ export const serverSchema = z.object({
 	GOOGLE_REFRESH_TOKEN: z.string(),
 	IMAGE_CAPTION_URL: z.string(),
 	IMAGE_CAPTION_TOKEN: z.string(),
+	PROD_SUPABASE_JWT_SECRET_KEY: z.string(),
+	PROD_SUPABASE_SERVICE_KEY: z.string(),
+	PROD_GOOGLE_SECRET: z.string(),
+	PROD_GOOGLE_ID: z.string(),
 });
 
 /**
@@ -40,6 +44,10 @@ export const serverEnvironment = {
 	TEST_USER_PASSWORD: process.env.TEST_USER_PASSWORD,
 	IMAGE_CAPTION_URL: process.env.IMAGE_CAPTION_URL,
 	IMAGE_CAPTION_TOKEN: process.env.IMAGE_CAPTION_TOKEN,
+	PROD_SUPABASE_JWT_SECRET_KEY: process.env.PROD_SUPABASE_JWT_SECRET_KEY,
+	PROD_SUPABASE_SERVICE_KEY: process.env.PROD_SUPABASE_SERVICE_KEY,
+	PROD_GOOGLE_SECRET: process.env.PROD_GOOGLE_SECRET,
+	PROD_GOOGLE_ID: process.env.PROD_GOOGLE_ID,
 };
 
 /**
@@ -52,6 +60,8 @@ export const clientSchema = z.object({
 	NEXT_PUBLIC_SITE_URL: z.string().url(),
 	NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
 	NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+	NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY: z.string(),
+	NEXT_PUBLIC_PROD_SUPABASE_URL: z.string(),
 });
 
 /**
@@ -66,4 +76,7 @@ export const clientEnvironment = {
 	NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
 	NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
 	NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+	NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY:
+		process.env.NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY,
+	NEXT_PUBLIC_PROD_SUPABASE_URL: process.env.NEXT_PUBLIC_PROD_SUPABASE_URL,
 };

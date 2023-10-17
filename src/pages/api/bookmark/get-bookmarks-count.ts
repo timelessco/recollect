@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { createClient, type PostgrestError } from "@supabase/supabase-js";
 import { verify, type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
-// import { supabase } from '../../utils/supabaseClient';
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
 	bookmarkType,
@@ -18,7 +18,7 @@ import {
 
 type Data = {
 	data: BookmarksCountTypes | null;
-	error: PostgrestError | VerifyErrors | string | null;
+	error: PostgrestError | unknown[] | VerifyErrors | string | null;
 };
 
 export default async function handler(
@@ -71,7 +71,7 @@ export default async function handler(
 
 	count = {
 		...count,
-		allBookmarks: bookmarkCount as number,
+		allBookmarks: bookmarkCount || (0 as number),
 	};
 
 	const { error: bookImageError, count: bookmarkImageCount } = await supabase
@@ -88,7 +88,7 @@ export default async function handler(
 
 	count = {
 		...count,
-		images: bookmarkImageCount as number,
+		images: bookmarkImageCount || (0 as number),
 	};
 
 	const { error: bookVideoError, count: bookmarkVideoCount } = await supabase
@@ -105,7 +105,7 @@ id
 
 	count = {
 		...count,
-		videos: bookmarkVideoCount as number,
+		videos: bookmarkVideoCount || (0 as number),
 	};
 
 	const { error: bookmakrsLinksError, count: bookmakrsLinks } = await supabase
@@ -122,7 +122,7 @@ id
 
 	count = {
 		...count,
-		links: bookmakrsLinks as number,
+		links: bookmakrsLinks || (0 as number),
 	};
 
 	const { error: bookTrashError, count: bookmarkTrashCount } = await supabase
@@ -140,7 +140,7 @@ id
 
 	count = {
 		...count,
-		trash: bookmarkTrashCount as number,
+		trash: bookmarkTrashCount || (0 as number),
 	};
 
 	const { error: bookUnCatError, count: bookmarkUnCatCount } = await supabase
@@ -158,7 +158,7 @@ id
 
 	count = {
 		...count,
-		uncategorized: bookmarkUnCatCount as number,
+		uncategorized: bookmarkUnCatCount || (0 as number),
 	};
 
 	// category count
@@ -198,7 +198,7 @@ id
 					...count?.categoryCount,
 					{
 						category_id: item?.id as number,
-						count: bookmarkCountData as number,
+						count: bookmarkCountData || (0 as number),
 					},
 				],
 			};
@@ -214,22 +214,30 @@ id
 	});
 
 	await buildCategoryCount.then(() => {
+		let errorText = [] as unknown[];
+
 		if (
-			isNull(bookError) &&
-			isNull(bookTrashError) &&
-			isNull(bookUnCatError) &&
-			isNull(categoryError) &&
-			isNull(bookImageError) &&
-			isNull(bookVideoError) &&
-			isNull(bookmakrsLinksError)
+			!isEmpty(bookError?.message) ||
+			!isEmpty(bookTrashError?.message) ||
+			!isEmpty(bookUnCatError?.message) ||
+			!isEmpty(categoryError?.message) ||
+			!isEmpty(bookImageError?.message) ||
+			!isEmpty(bookVideoError?.message) ||
+			!isEmpty(bookmakrsLinksError?.message)
 		) {
-			response.status(200).json({ data: count, error: null });
-		} else {
-			response.status(500).json({
-				data: null,
-				error: bookError ?? bookTrashError ?? bookUnCatError ?? categoryError,
-			});
-			throw new Error("ERROR: count db error");
+			errorText = [
+				...errorText,
+				bookError?.message ||
+					bookTrashError?.message ||
+					bookUnCatError?.message ||
+					categoryError?.message ||
+					bookImageError?.message ||
+					bookVideoError?.message ||
+					bookmakrsLinksError?.message ||
+					bookError?.message,
+			];
 		}
+
+		response.status(200).json({ data: count, error: errorText });
 	});
 }

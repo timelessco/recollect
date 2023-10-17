@@ -14,6 +14,7 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
+import { supabaseAnonKey, supabaseUrl } from "../utils/supabaseClient";
 
 const MyApp = ({
 	Component,
@@ -26,7 +27,12 @@ const MyApp = ({
 	// const queryClient = new QueryClient();
 
 	// Create a new supabase browser client on every first render.
-	const [supabaseClient] = useState(() => createBrowserSupabaseClient());
+	const [supabaseClient] = useState(() =>
+		createBrowserSupabaseClient({
+			supabaseUrl,
+			supabaseKey: supabaseAnonKey,
+		}),
+	);
 
 	const [queryClient] = useState(
 		() =>

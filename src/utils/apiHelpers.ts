@@ -2,6 +2,8 @@ import isNull from "lodash/isNull";
 
 import { errorToast } from "./toastMessages";
 
+// This file has front end api related helpers
+
 // NOTE: We are disabling lint in this file as we are not sure for a unified response for api calls
 
 // the apiCall param should have mutateAsync
@@ -27,12 +29,3 @@ export const mutationApiCall = async (apiCall: Promise<any>) => {
 
 	return response;
 };
-
-// tells if token is authenticated or not
-// export const isAccessTokenAuthenticated = (token: string) => {
-//   const decode = jwt_decode(token) as unknown;
-
-//   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//   //@ts-ignore
-//   return decode?.aud === 'authenticated';
-// };
