@@ -55,7 +55,7 @@ export default async function handler(
 			data: null,
 			error: checkError,
 		});
-		throw new Error("ERROR");
+		throw new Error("ERROR: check username DB error");
 	}
 
 	if (isEmpty(checkData)) {
@@ -76,7 +76,7 @@ export default async function handler(
 				data: null,
 				error: updateError,
 			});
-			throw new Error("ERROR");
+			throw new Error("ERROR: update username in db error");
 		}
 
 		response.status(200).json({
@@ -89,6 +89,6 @@ export default async function handler(
 			data: null,
 			error: "Username already exists, please try another username",
 		});
-		throw new Error("ERROR");
+		throw new Error("ERROR: username is already present");
 	}
 }

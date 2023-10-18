@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { isEmpty, isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import slugify from "slugify";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
@@ -31,7 +32,10 @@ import {
 	settingsParagraphClassName,
 	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
-import { USER_PROFILE } from "../../utils/constants";
+import {
+	LETTERS_NUMBERS_CHECK_PATTERN,
+	USER_PROFILE,
+} from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
@@ -68,7 +72,7 @@ const Settings = () => {
 			const response = await mutationApiCall(
 				updateUsernameMutation.mutateAsync({
 					id: session?.user?.id as string,
-					username: data?.username,
+					username: slugify(data?.username, { lower: true, strict: true }),
 					session,
 				}),
 			);
@@ -205,7 +209,7 @@ const Settings = () => {
 					onSubmit={handleSubmit(onSubmit)}
 				>
 					<LabelledComponent
-						label="Name"
+						label="Username"
 						labelClassName={settingsInputLabelClassName}
 					>
 						<div className={settingsInputContainerClassName}>
@@ -224,6 +228,10 @@ const Settings = () => {
 									minLength: {
 										value: 4,
 										message: "Username must have a minimum of 4 characters",
+									},
+									pattern: {
+										value: LETTERS_NUMBERS_CHECK_PATTERN,
+										message: "Only have letters and numbers",
 									},
 								})}
 								className={settingsInputClassName}
