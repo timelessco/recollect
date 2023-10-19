@@ -3,7 +3,12 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type UserIdentity } from "@supabase/supabase-js";
-import { find, flatten, isEmpty, isNil, isNull } from "lodash";
+import find from "lodash/find";
+import flatten from "lodash/flatten";
+import isEmpty from "lodash/isEmpty";
+import isNil from "lodash/isNil";
+import isNull from "lodash/isNull";
+import omit from "lodash/omit";
 import Dropzone from "react-dropzone";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ToastContainer } from "react-toastify";
@@ -554,7 +559,7 @@ const Dashboard = () => {
 						<Dropzone noClick onDrop={onDrop}>
 							{({ getRootProps, getInputProps, isDragActive }) => (
 								<div
-									{...getRootProps()}
+									{...omit(getRootProps(), ["onBlur", "onFocus"])}
 									className={
 										isDragActive
 											? " absolute z-10 h-full w-full bg-gray-800 opacity-50"
