@@ -13,7 +13,7 @@ import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
 import format from "date-fns/format";
-import { flatten, isNil, type Many } from "lodash";
+import { flatten, isNil, omit, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -156,6 +156,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			...props,
 			// Prevent dragging from changing selection.
 			shouldSelectOnPressUp: true,
+			autoFocus: false,
 		},
 		state,
 		ref,
@@ -441,7 +442,11 @@ const Option = ({
 	return (
 		<li
 			{...mergeProps(
-				disableDndCondition ? [] : dragProps,
+				// NOTE: we are omiting some keys in dragprops because they are causing focus trap issue
+				// the main problem that caused the focus trap issue is onKeyUpCapture
+				disableDndCondition
+					? []
+					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
 				disableDndCondition ? [] : focusProps,
 				disableDndCondition ? [] : optionProps,
 			)}

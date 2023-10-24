@@ -562,8 +562,8 @@ const Dashboard = () => {
 									{...omit(getRootProps(), ["onBlur", "onFocus"])}
 									className={
 										isDragActive
-											? " absolute z-10 h-full w-full bg-gray-800 opacity-50"
-											: ""
+											? "absolute z-10 h-full w-full bg-gray-800 opacity-50"
+											: "outline-none"
 									}
 								>
 									<input {...getInputProps()} />
