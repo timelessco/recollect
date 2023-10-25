@@ -84,10 +84,14 @@ export const getUserNameFromEmail = (email: string) => {
 };
 
 export const getBaseUrl = (href: string) => {
-	const url = new URL(href);
-	const baseUrl = `${url.host}`;
+	if (href && !isEmpty(href)) {
+		const url = new URL(href);
+		const baseUrl = `${url.host}`;
 
-	return baseUrl;
+		return baseUrl;
+	}
+
+	return "";
 };
 
 export const isUserInACategory = (url: string) => {
