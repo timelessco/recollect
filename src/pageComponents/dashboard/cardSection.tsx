@@ -818,7 +818,7 @@ const CardSection = ({
 		type: string,
 	) => {
 		const imgClassName = classNames({
-			"min-h-[48px] min-w-[80px] object-cover rounded":
+			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
 				cardTypeCondition === "list",
 			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
 				cardTypeCondition === "card",

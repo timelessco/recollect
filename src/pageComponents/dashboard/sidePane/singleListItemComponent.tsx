@@ -75,7 +75,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 					<span
-						className="h-[18px] w-[18px]"
+						className="flex h-[18px] w-[18px]"
 						onClick={(event) => event.preventDefault()}
 					>
 						<CategoryIconsDropdown
