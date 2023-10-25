@@ -818,7 +818,8 @@ const CardSection = ({
 		type: string,
 	) => {
 		const imgClassName = classNames({
-			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
+			"min-h-[48px] min-w-[80px] object-cover rounded":
+				cardTypeCondition === "list",
 			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
 				cardTypeCondition === "card",
 			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px] object-cover":
@@ -945,7 +946,7 @@ const CardSection = ({
 	const renderFavIcon = (item: SingleListData) => {
 		const size = cardTypeCondition === "headlines" ? 16 : 15;
 		const favIconFigureClassName = classNames({
-			"h-4 w-4": cardTypeCondition === "headlines",
+			"min-h-[16px] min-w-[16px]": cardTypeCondition === "headlines",
 			"h-[15] w-[15px]": cardTypeCondition !== "headlines",
 		});
 
@@ -1036,9 +1037,9 @@ const CardSection = ({
 				bookmarksInfoValue[0] === "cover" ? null : (
 					<div className="space-y-[6px] rounded-lg px-2 py-3">
 						{bookmarksInfoValue?.includes("title" as never) && (
-							<div className="card-title text-sm font-medium leading-4 text-gray-light-12 ">
-								<p>{item?.title}</p>
-							</div>
+							<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
+								{item?.title}
+							</p>
 						)}
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item?.description) && (
@@ -1099,23 +1100,23 @@ const CardSection = ({
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div>
+				<div className="w-[94%]">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<div className="card-title text-sm font-medium leading-4 text-gray-light-12 ">
-							<p>{item?.title}</p>
-						</div>
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
+							{item?.title}
+						</p>
 					)}
 					<div className="flex items-center space-x-1 space-y-2">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10">
+								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10">
 									{item?.description}
 								</p>
 							)}
 						{bookmarksInfoValue?.includes("tags" as never) && (
-							<div className="mt-[6px] flex items-center space-x-1">
+							<div className="mt-[6px] flex items-center">
 								{item?.addedTags?.map((tag) => (
-									<div className="text-xs text-blue-500" key={tag?.id}>
+									<div className="mr-1 text-xs text-blue-500" key={tag?.id}>
 										#{tag?.name}
 									</div>
 								))}
@@ -1146,9 +1147,9 @@ const CardSection = ({
 			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-[10px]">
+				<div className=" ml-[10px] w-full">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title text-sm font-medium leading-4 text-gray-light-12 ">
+						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}
 						</p>
 					)}
