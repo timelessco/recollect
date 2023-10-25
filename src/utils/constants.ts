@@ -143,6 +143,7 @@ export const acceptedFileTypes = [
 	"image/png",
 	"image/gif",
 	"image/webp",
+	"image/heic",
 	"video/mp4",
 	"video/mov",
 	"video/wmv",
