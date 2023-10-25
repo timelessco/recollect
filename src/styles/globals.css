@@ -35,6 +35,7 @@
 
 body {
 	@apply overflow-hidden antialiased outline-none;
+	font-variation-settings: "opsz" 20;
 }
 
 main {

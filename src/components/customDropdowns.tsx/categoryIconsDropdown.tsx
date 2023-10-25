@@ -154,7 +154,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 		<>
 			<MenuButton state={menu}>
 				<div
-					className="relative rounded-full p-0.5"
+					className="relative flex items-center justify-center rounded-full p-0.5"
 					style={{
 						width: buttonIconSize,
 						height: buttonIconSize,
@@ -166,7 +166,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 							? colorPickerColors[1]
 							: colorPickerColors[0],
 						"12",
-						"absolute left-[18%] top-[18%]",
+						// "absolute left-[18%] top-[18%]",
 					)}
 				</div>
 			</MenuButton>
