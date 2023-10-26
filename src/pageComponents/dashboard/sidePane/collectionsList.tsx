@@ -492,8 +492,12 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 								autoFocus
 								className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
 								id="add-category-input"
-								// disabling it as we do need it here
-								onBlur={() => setShowAddCategoryInput(false)}
+								onBlur={(event) => {
+									void onAddNewCategory(
+										(event.target as HTMLInputElement).value,
+									);
+									setShowAddCategoryInput(false);
+								}}
 								onKeyUp={(event) => {
 									if (
 										event.key === "Enter" &&
