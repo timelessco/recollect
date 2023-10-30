@@ -7,6 +7,7 @@ import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import pick from "lodash/pick";
 import {
+	DragPreview,
 	ListDropTargetDelegate,
 	ListKeyboardDelegate,
 	mergeProps,
@@ -93,11 +94,39 @@ type ListBoxDropTypes = ListProps<object> & {
 	onReorder: (event: DroppableCollectionReorderEvent) => unknown;
 };
 
+const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
+	const queryClient = useQueryClient();
+	const session = useSession();
+	const categoryData = queryClient.getQueryData([
+		CATEGORIES_KEY,
+		session?.user?.id,
+	]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
+
+	const userId = session?.user?.id;
+
+	const singleCategoryData = find(
+		categoryData?.data,
+		(item) => item.category_name === collectionName,
+	);
+
+	const isUserCollectionOwner = singleCategoryData?.user_id?.id === userId;
+
+	if (isUserCollectionOwner) {
+		return <div>{collectionName}</div>;
+	}
+
+	return <div>Non Owner collection cannot be sorted</div>;
+};
+
 const ListBoxDrop = (props: ListBoxDropTypes) => {
 	const { getItems } = props;
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const state = useListState(props);
 	const ref = useRef(null);
+	const preview = useRef(null);
 	const { listBoxProps } = useListBox(
 		{ ...props, shouldSelectOnPressUp: true },
 		state,
@@ -133,6 +162,7 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 		// Collection and selection manager come from list state.
 		collection: state.collection,
 		selectionManager: state.selectionManager,
+		preview,
 		// Provide data for each dragged item. This function could
 		// also be provided by the user of the component.
 		getItems:
@@ -161,6 +191,11 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 					state={state}
 				/>
 			))}
+			<DragPreview ref={preview}>
+				{(items) => (
+					<RenderDragPreview collectionName={items[0]["text/plain"]} />
+				)}
+			</DragPreview>
 		</ul>
 	);
 };

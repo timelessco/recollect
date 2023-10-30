@@ -34,7 +34,7 @@ export default async function handler(
 		await sgMail.send({
 			to: data.emailList,
 			from: "abhishek@timeless.co",
-			subject: "Laterpad Invite",
+			subject: "Recollect Invite",
 			text: `Please click on this invite link to join the category ${data.url}`,
 		});
 

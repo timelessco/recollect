@@ -248,6 +248,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				cardTypeCondition={cardTypeCondition}
 				dragState={dragState}
 				isPublicPage={isPublicPage}
+				isTrashPage={isTrashPage}
 				item={item}
 				key={item.key}
 				state={state}
@@ -395,10 +396,12 @@ const Option = ({
 	cardTypeCondition,
 	url,
 	isPublicPage,
+	isTrashPage,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
 	isPublicPage: CardSectionProps["isPublicPage"];
+	isTrashPage: boolean;
 	item: OptionDropItemTypes;
 	state: ListState<unknown>;
 	url: string;
@@ -467,7 +470,7 @@ const Option = ({
 					}
 
 					// open on double click
-					if (event.detail === 2 && !isPublicPage) {
+					if (event.detail === 2 && !isPublicPage && !isTrashPage) {
 						window.open(url, "_blank");
 					}
 				}}

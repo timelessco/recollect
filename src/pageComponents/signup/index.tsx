@@ -65,10 +65,10 @@ const SignUp = () => {
 						<figure>
 							<LaterpadLogoBlack />
 						</figure>
-						<p className="text-8xl font-semibold leading-[110px] text-black">
-							laterpad
+						<p className="text-8xl font-semibold leading-[110px] tracking-[-2px] text-black">
+							recollect
 						</p>
-						<p className=" text-40 font-semibold leading-[46px] tracking-[-0.005em] text-black">
+						<p className="text-40 font-semibold leading-[46px] tracking-[-0.2px] text-black">
 							Life happens, save it.
 						</p>
 					</div>

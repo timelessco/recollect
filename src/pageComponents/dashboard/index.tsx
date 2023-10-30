@@ -576,26 +576,13 @@ const Dashboard = () => {
 										<InfiniteScroll
 											dataLength={flattendPaginationBookmarkData?.length}
 											endMessage={
-												<p
-													style={{
-														height: 200,
-														textAlign: "center",
-														paddingTop: 100,
-													}}
-												>
+												<p className=" absolute right-[50%] h-[200px] pt-[100px] text-center">
 													Life happens, save it.
 												</p>
 											}
 											hasMore={hasMoreLogic()}
 											loader={
-												<div
-													style={{
-														height: 200,
-														textAlign: "center",
-														paddingTop: 100,
-														zIndex: 0,
-													}}
-												>
+												<div className="absolute right-[50%] z-0 h-[200px] pt-[100px] text-center">
 													{isDragActive ? "" : "Loading..."}
 												</div>
 											}
