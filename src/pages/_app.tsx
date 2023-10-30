@@ -53,7 +53,11 @@ const MyApp = ({
 			<QueryClientProvider client={queryClient}>
 				<Hydrate state={pageProps.dehydratedState}>
 					<Head>
-						<title>Bookmarks</title>
+						<title>Recollect</title>
+						<meta
+							content="https://www.recollect.so/bookmarks-signup.png"
+							property="og:image"
+						/>
 						<meta
 							content="initial-scale=1.0, width=device-width"
 							name="viewport"
