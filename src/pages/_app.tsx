@@ -55,7 +55,7 @@ const MyApp = ({
 					<Head>
 						<title>Recollect</title>
 						<meta
-							content="https://www.recollect.so/bookmarks-signup.png"
+							content="https://www.recollect.so/bookmarks-signup-1.png"
 							property="og:image"
 						/>
 						<meta
