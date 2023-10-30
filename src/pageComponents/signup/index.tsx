@@ -61,7 +61,7 @@ const SignUp = () => {
 		<>
 			<div className="sign-up-parent flex h-screen">
 				<div className="flex w-1/2 items-center justify-end pr-[140px]">
-					<div className="w-[374px]">
+					<div className="w-[397px]">
 						<figure>
 							<LaterpadLogoBlack />
 						</figure>
