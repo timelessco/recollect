@@ -528,9 +528,12 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 								className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
 								id="add-category-input"
 								onBlur={(event) => {
-									void onAddNewCategory(
-										(event.target as HTMLInputElement).value,
-									);
+									if (!isEmpty(event?.target?.value)) {
+										void onAddNewCategory(
+											(event.target as HTMLInputElement).value,
+										);
+									}
+
 									setShowAddCategoryInput(false);
 								}}
 								onKeyUp={(event) => {

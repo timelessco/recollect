@@ -571,7 +571,7 @@ const Dashboard = () => {
 										className=""
 										id="scrollableDiv"
 										ref={infiniteScrollRef}
-										style={{ height: "calc(100vh - 63.5px)", overflow: "auto" }}
+										style={{ height: "calc(100vh - 48.5px)", overflow: "auto" }}
 									>
 										<InfiniteScroll
 											dataLength={flattendPaginationBookmarkData?.length}
@@ -588,6 +588,7 @@ const Dashboard = () => {
 											}
 											next={fetchNextPage}
 											scrollableTarget="scrollableDiv"
+											style={{ overflow: "unset" }}
 										>
 											<CardSection
 												deleteBookmarkId={deleteBookmarkId}

@@ -39,7 +39,7 @@ body {
 }
 
 main {
-	height: calc(100vh - 68.5px);
+	height: calc(100vh - 48.5px);
 }
 
 .my-masonry-grid {
