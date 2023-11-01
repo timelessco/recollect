@@ -281,6 +281,7 @@ export const searchBookmarks = async (
 	searchText: string,
 	category_id: CategoryIdUrlTypes,
 	session: SupabaseSessionType,
+	isSharedCategory: boolean,
 ): Promise<{
 	data: BookmarksPaginatedDataTypes[] | null;
 	error: Error;
@@ -298,7 +299,7 @@ export const searchBookmarks = async (
 				data: BookmarksPaginatedDataTypes[];
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${accessToken}&user_id=${session?.user?.id}&category_id=${categoryId}`,
+				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${accessToken}&user_id=${session?.user?.id}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
 			);
 			return response?.data;
 		} catch (error_) {

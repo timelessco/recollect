@@ -33,6 +33,7 @@ export default async function handler(
 		response.status(500).json({ data: null, error: _error });
 		throw new Error("ERROR: token error");
 	}
+	// TODO: only fetch the shared collections where the user email or id is matched with email / user_id columns , do not fetch all the rows
 
 	const supabase = apiSupabaseClient();
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
