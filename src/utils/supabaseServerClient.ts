@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { verify, type JwtPayload, type VerifyErrors } from "jsonwebtoken";
+import { verify, type VerifyErrors } from "jsonwebtoken";
 
 export const isProductionEnvironment = process.env.NODE_ENV === "production";
 
@@ -26,6 +26,6 @@ export const verifyAuthToken = (accessToken: string) =>
 			: process.env.SUPABASE_JWT_SECRET_KEY,
 		(error, decoded) => ({ error, decoded }),
 	) as unknown as {
-		decoded: JwtPayload | string | undefined;
+		decoded: { email: string; sub: string };
 		error: VerifyErrors | null;
 	};

@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
-
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
 
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
@@ -12,6 +9,7 @@ import {
 	CATEGORIES_TABLE_NAME,
 	imageFileTypes,
 	MAIN_TABLE_NAME,
+	SHARED_CATEGORIES_TABLE_NAME,
 	videoFileTypes,
 } from "../../../utils/constants";
 import {
@@ -37,6 +35,7 @@ export default async function handler(
 	// let decode: { sub: string };
 
 	let userId: string | (() => string) | undefined;
+	let email: string | (() => string) | undefined;
 
 	const { error: _error, decoded } = verifyAuthToken(accessToken);
 
@@ -45,6 +44,7 @@ export default async function handler(
 		throw new Error("ERROR: token error");
 	} else {
 		userId = decoded?.sub;
+		email = decoded?.email;
 	}
 
 	let count = {
@@ -72,7 +72,7 @@ export default async function handler(
 
 	count = {
 		...count,
-		allBookmarks: bookmarkCount || (0 as number),
+		allBookmarks: bookmarkCount ?? (0 as number),
 	};
 
 	const { error: bookImageError, count: bookmarkImageCount } = await supabase
@@ -89,7 +89,7 @@ export default async function handler(
 
 	count = {
 		...count,
-		images: bookmarkImageCount || (0 as number),
+		images: bookmarkImageCount ?? (0 as number),
 	};
 
 	const { error: bookVideoError, count: bookmarkVideoCount } = await supabase
@@ -106,7 +106,7 @@ id
 
 	count = {
 		...count,
-		videos: bookmarkVideoCount || (0 as number),
+		videos: bookmarkVideoCount ?? (0 as number),
 	};
 
 	const { error: bookmakrsLinksError, count: bookmakrsLinks } = await supabase
@@ -123,7 +123,7 @@ id
 
 	count = {
 		...count,
-		links: bookmakrsLinks || (0 as number),
+		links: bookmakrsLinks ?? (0 as number),
 	};
 
 	const { error: bookTrashError, count: bookmarkTrashCount } = await supabase
@@ -141,7 +141,7 @@ id
 
 	count = {
 		...count,
-		trash: bookmarkTrashCount || (0 as number),
+		trash: bookmarkTrashCount ?? (0 as number),
 	};
 
 	const { error: bookUnCatError, count: bookmarkUnCatCount } = await supabase
@@ -159,7 +159,7 @@ id
 
 	count = {
 		...count,
-		uncategorized: bookmarkUnCatCount || (0 as number),
+		uncategorized: bookmarkUnCatCount ?? (0 as number),
 	};
 
 	// category count
@@ -173,72 +173,83 @@ id
 		)
 		.eq("user_id", userId);
 
-	const buildCategoryCount = new Promise<void>((resolve) => {
-		if (isNull(userCategoryIds) || isEmpty(userCategoryIds)) {
-			resolve();
-		}
+	const { data: sharedCategoryIds, error: sharedCategoryError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.select(
+			`
+	category_id
+`,
+		)
+		.eq("email", email);
 
-		// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-misused-promises
-		userCategoryIds?.forEach(async (item) => {
-			const { count: bookmarkCountData } = await supabase
+	const buildCategoryPromises = userCategoryIds?.map(async (item) => {
+		const { count: bookmarkCountData } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select(
+				`
+						id
+					`,
+				{ count: "exact", head: true },
+			)
+			.eq("category_id", item?.id)
+			.eq("trash", false);
+
+		return {
+			category_id: item?.id as number,
+			count: bookmarkCountData ?? (0 as number),
+		};
+	});
+
+	const sharedCategoryPromises = sharedCategoryIds?.map(
+		async (sharedCategory) => {
+			const { count: sharedBookmarkCountData } = await supabase
 				.from(MAIN_TABLE_NAME)
 				.select(
 					`
-          id
-        `,
+						id
+					`,
 					{ count: "exact", head: true },
 				)
-				.eq("user_id", userId)
-				.eq("category_id", item?.id)
+				.eq("category_id", sharedCategory?.category_id)
 				.eq("trash", false);
 
-			count = {
-				...count,
-				categoryCount: [
-					// eslint-disable-next-line no-unsafe-optional-chaining
-					...count?.categoryCount,
-					{
-						category_id: item?.id as number,
-						count: bookmarkCountData || (0 as number),
-					},
-				],
+			return {
+				category_id: sharedCategory?.category_id as number,
+				count: sharedBookmarkCountData ?? (0 as number),
 			};
+		},
+	);
 
-			if (
-				// index === userCategoryIds?.length - 1 &&
-				// index === count?.categoryCount?.length - 1
-				userCategoryIds?.length === count?.categoryCount?.length
-			) {
-				resolve();
-			}
-		});
-	});
+	const [userCategoryResults, sharedCategoryResults] = await Promise.all([
+		Promise.all(buildCategoryPromises ?? []),
+		Promise.all(sharedCategoryPromises ?? []),
+	]);
 
-	await buildCategoryCount.then(() => {
-		let errorText = [] as unknown[];
+	// Combine the results into the count object
+	count = {
+		...count,
+		categoryCount: [
+			...count.categoryCount,
+			...userCategoryResults,
+			...sharedCategoryResults,
+		],
+	};
 
-		if (
-			!isEmpty(bookError?.message) ||
-			!isEmpty(bookTrashError?.message) ||
-			!isEmpty(bookUnCatError?.message) ||
-			!isEmpty(categoryError?.message) ||
-			!isEmpty(bookImageError?.message) ||
-			!isEmpty(bookVideoError?.message) ||
-			!isEmpty(bookmakrsLinksError?.message)
-		) {
-			errorText = [
-				...errorText,
-				bookError?.message ||
-					bookTrashError?.message ||
-					bookUnCatError?.message ||
-					categoryError?.message ||
-					bookImageError?.message ||
-					bookVideoError?.message ||
-					bookmakrsLinksError?.message ||
-					bookError?.message,
-			];
-		}
+	const errorMessages = [
+		bookError?.message,
+		bookTrashError?.message,
+		bookUnCatError?.message,
+		categoryError?.message,
+		bookImageError?.message,
+		bookVideoError?.message,
+		sharedCategoryError?.message,
+		bookmakrsLinksError?.message,
+	];
 
-		response.status(200).json({ data: count, error: errorText });
-	});
+	const nonEmptyErrors = errorMessages.filter((message) => !isEmpty(message));
+
+	const errorText = nonEmptyErrors as unknown[];
+	// Check for errors and update errorText array
+
+	response.status(200).json({ data: count, error: errorText });
 }
