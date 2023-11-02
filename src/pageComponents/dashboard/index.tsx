@@ -391,28 +391,37 @@ const Dashboard = () => {
 					);
 				} else {
 					// if user is not the collection owner
-
 					const sharedCategoriesId = find(
 						sharedCategoriesData?.data,
 						(item) => item?.category_id === CATEGORY_ID,
 					)?.id;
 
 					if (sharedCategoriesId !== undefined) {
-						void mutationApiCall(
-							updateSharedCategoriesOptimisticMutation.mutateAsync({
-								id: sharedCategoriesId,
-								updateData: {
-									category_views: {
-										...currentCategory?.category_views,
-										cardContentViewArray: cardContentViewLogic(
-											currentCategory?.category_views?.cardContentViewArray,
-										),
-										[updateValue]: value,
-									},
-								},
-								session,
-							}),
+						const existingSharedCollectionViewsData = find(
+							sharedCategoriesData?.data,
+							(item) => item?.id === sharedCategoriesId,
 						);
+
+						if (!isNil(existingSharedCollectionViewsData)) {
+							void mutationApiCall(
+								updateSharedCategoriesOptimisticMutation.mutateAsync({
+									id: sharedCategoriesId,
+									updateData: {
+										category_views: {
+											...existingSharedCollectionViewsData?.category_views,
+											cardContentViewArray: cardContentViewLogic(
+												existingSharedCollectionViewsData?.category_views
+													?.cardContentViewArray,
+											),
+											[updateValue]: value,
+										},
+									},
+									session,
+								}),
+							);
+						}
+
+						console.error("existing share collab data is not present");
 					}
 				}
 			} else {
