@@ -790,7 +790,7 @@ const CardSection = ({
 			);
 		}
 
-		return null;
+		return externalLinkIcon;
 	};
 
 	const renderAvatar = (item: SingleListData) => {

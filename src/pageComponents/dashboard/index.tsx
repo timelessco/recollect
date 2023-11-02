@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type UserIdentity } from "@supabase/supabase-js";
 import find from "lodash/find";
-import flatten from "lodash/flatten";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
@@ -71,6 +70,7 @@ import useFetchSharedCategories from "../../async/queryHooks/share/useFetchShare
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import useFetchUserTags from "../../async/queryHooks/userTags/useFetchUserTags";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
@@ -270,11 +270,8 @@ const Dashboard = () => {
 		userProfileData,
 	]);
 
-	const flattendPaginationBookmarkData = flatten(
-		allBookmarksData?.pages?.map((item) =>
-			item?.data?.map((twoItem) => twoItem),
-		),
-	) as SingleListData[];
+	const { flattendPaginationBookmarkData } =
+		useGetFlattendPaginationBookmarkData();
 
 	const addBookmarkLogic = async (url: string) => {
 		const currentCategory = find(
@@ -624,15 +621,23 @@ const Dashboard = () => {
 																flattendPaginationBookmarkData,
 																(delItem) => delItem?.id === bookmarkId,
 															) as SingleListData;
-															void mutationApiCall(
-																moveBookmarkToTrashOptimisticMutation.mutateAsync(
-																	{
-																		data: delBookmarksData,
-																		isTrash,
-																		session,
-																	},
-																),
-															).catch(() => {});
+
+															if (
+																delBookmarksData?.user_id?.id ===
+																session?.user?.id
+															) {
+																void mutationApiCall(
+																	moveBookmarkToTrashOptimisticMutation.mutateAsync(
+																		{
+																			data: delBookmarksData,
+																			isTrash,
+																			session,
+																		},
+																	),
+																).catch(() => {});
+															} else {
+																errorToast("Cannot delete other users uploads");
+															}
 														});
 													} else {
 														setDeleteBookmarkId(bookmarkIds);
@@ -665,15 +670,28 @@ const Dashboard = () => {
 													value.forEach(async (item: any) => {
 														const bookmarkId = item as string;
 
-														await addCategoryToBookmarkOptimisticMutation.mutateAsync(
-															{
-																category_id: categoryId,
-																bookmark_id: Number.parseInt(bookmarkId, 10),
-																// if user is changing to uncategoried then thay always have access
-																update_access: updateAccessCondition,
-																session,
-															},
-														);
+														const bookmarkCreatedUserId = find(
+															flattendPaginationBookmarkData,
+															(bookmarkItem) =>
+																Number.parseInt(bookmarkId, 10) ===
+																bookmarkItem?.id,
+														)?.user_id?.id;
+
+														if (bookmarkCreatedUserId === session?.user?.id) {
+															await addCategoryToBookmarkOptimisticMutation.mutateAsync(
+																{
+																	category_id: categoryId,
+																	bookmark_id: Number.parseInt(bookmarkId, 10),
+																	// if user is changing to uncategoried then thay always have access
+																	update_access: updateAccessCondition,
+																	session,
+																},
+															);
+														} else {
+															errorToast(
+																"You cannot move collaborators uploads",
+															);
+														}
 													});
 												}}
 												onDeleteClick={(item) => {
@@ -977,13 +995,23 @@ const Dashboard = () => {
 						await event?.items?.forEach(async (item: any) => {
 							const bookmarkId = (await item.getText("text/plain")) as string;
 
-							await addCategoryToBookmarkOptimisticMutation.mutateAsync({
-								category_id: categoryId,
-								bookmark_id: Number.parseInt(bookmarkId, 10),
-								// if user is changing to uncategoried then thay always have access
-								update_access: updateAccessCondition,
-								session,
-							});
+							const bookmarkCreatedUserId = find(
+								flattendPaginationBookmarkData,
+								(bookmarkItem) =>
+									Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
+							)?.user_id?.id;
+
+							if (bookmarkCreatedUserId === session?.user?.id) {
+								await addCategoryToBookmarkOptimisticMutation.mutateAsync({
+									category_id: categoryId,
+									bookmark_id: Number.parseInt(bookmarkId, 10),
+									// if user is changing to uncategoried then thay always have access
+									update_access: updateAccessCondition,
+									session,
+								});
+							} else {
+								errorToast("You cannot move collaborators uploads");
+							}
 						});
 					}
 				}}
