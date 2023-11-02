@@ -1027,17 +1027,30 @@ const Dashboard = () => {
 										bookmarksCountData?.data?.categoryCount,
 										(item) => item?.category_id === categoryId,
 									)?.count === 0;
-								if (isDataPresentCheck) {
-									await mutationApiCall(
-										deleteCategoryOtimisticMutation.mutateAsync({
-											category_id: categoryId,
-											category_order: userProfileData?.data[0]?.category_order,
-											session,
-										}),
-									);
+
+								const currentCategory = find(
+									allCategories?.data,
+									(item) => item?.id === categoryId,
+								);
+
+								if (currentCategory?.user_id?.id === session?.user?.id) {
+									if (isDataPresentCheck) {
+										await mutationApiCall(
+											deleteCategoryOtimisticMutation.mutateAsync({
+												category_id: categoryId,
+												category_order:
+													userProfileData?.data[0]?.category_order,
+												session,
+											}),
+										);
+									} else {
+										errorToast(
+											"This collection still has bookmarks, Please empty collection",
+										);
+									}
 								} else {
 									errorToast(
-										"This collection still has bookmarks, Please empty collection",
+										"Only collection owner can delete this collection",
 									);
 								}
 							}

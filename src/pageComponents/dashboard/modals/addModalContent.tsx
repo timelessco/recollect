@@ -62,6 +62,9 @@ const AddModalContent = (props: AddModalContentProps) => {
 	const queryClient = useQueryClient();
 	const session = useSession();
 
+	// tells if the logged in user is the bookmark owner
+	const isOwner = urlData?.user_id?.id === session?.user?.id;
+
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 	const latestBookmarkData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
@@ -185,43 +188,45 @@ const AddModalContent = (props: AddModalContentProps) => {
 						value={urlData?.url ?? ""}
 					/>
 				</LabelledComponent> */}
-				<LabelledComponent label="Tags">
-					<AriaMultiSelect
-						defaultList={addedTags?.map((item) => item?.name)}
-						list={userTags?.map((item) => item?.name) ?? []}
-						onChange={async (action, value) => {
-							if (action === "remove") {
-								const tagData = find(
-									addedTags,
-									(findItem) => findItem.name === value,
-								);
-								if (tagData) {
-									await removeExistingTag({
-										label: tagData?.name,
-										value: tagData?.id,
-									});
+				{isOwner && (
+					<LabelledComponent label="Tags">
+						<AriaMultiSelect
+							defaultList={addedTags?.map((item) => item?.name)}
+							list={userTags?.map((item) => item?.name) ?? []}
+							onChange={async (action, value) => {
+								if (action === "remove") {
+									const tagData = find(
+										addedTags,
+										(findItem) => findItem.name === value,
+									);
+									if (tagData) {
+										await removeExistingTag({
+											label: tagData?.name,
+											value: tagData?.id,
+										});
+									}
 								}
-							}
 
-							if (action === "add" && typeof value !== "string") {
-								await addExistingTag(
-									value?.map((addItem) => ({
-										label: addItem,
-										value: find(
-											userTags,
-											(findItem) => findItem.name === addItem,
-										)?.id as number,
-									})),
-								);
-							}
+								if (action === "add" && typeof value !== "string") {
+									await addExistingTag(
+										value?.map((addItem) => ({
+											label: addItem,
+											value: find(
+												userTags,
+												(findItem) => findItem.name === addItem,
+											)?.id as number,
+										})),
+									);
+								}
 
-							if (action === "create") {
-								await createTag([{ label: value as string }]);
-							}
-						}}
-						placeholder="Tag name..."
-					/>
-				</LabelledComponent>
+								if (action === "create") {
+									await createTag([{ label: value as string }]);
+								}
+							}}
+							placeholder="Tag name..."
+						/>
+					</LabelledComponent>
+				)}
 				<LabelledComponent label="Add Collection">
 					<AriaSearchableSelect
 						defaultValue={defaultValue?.label}
