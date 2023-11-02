@@ -500,7 +500,7 @@ const CardSection = ({
 
 	// const CARD_DEFAULT_HEIGHT = 194;
 	// const CARD_DEFAULT_WIDTH = 200;
-
+	const session = useSession();
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;
@@ -590,11 +590,21 @@ const CardSection = ({
 		if (!isPublicPage) {
 			if (isUserInACategory(categorySlug as string)) {
 				if (isUserTheCategoryOwner) {
+					// user is the owner of the category
 					return currentCategoryData?.category_views?.[viewType];
 				}
 
 				if (!isEmpty(sharedCategoriesData?.data)) {
-					return sharedCategoriesData?.data[0]?.category_views?.[viewType];
+					// the user is not the category owner
+					// gets the collab users layout data for the shared collection
+					const sharedCategoriesDataUserData = find(
+						sharedCategoriesData?.data,
+						(item) =>
+							item?.email === session?.user?.email &&
+							item?.category_id === categoryIdFromSlug,
+					);
+
+					return sharedCategoriesDataUserData?.category_views?.[viewType];
 				}
 
 				return defaultReturnValue;

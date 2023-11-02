@@ -1,3 +1,4 @@
+import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash";
@@ -10,6 +11,7 @@ import TickIcon from "../../icons/tickIcon";
 import { useLoadersStore } from "../../store/componentStore";
 import {
 	type CategoriesData,
+	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../../types/apiTypes";
 import {
@@ -17,7 +19,11 @@ import {
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
-import { CATEGORIES_KEY, USER_PROFILE } from "../../utils/constants";
+import {
+	CATEGORIES_KEY,
+	SHARED_CATEGORIES_TABLE_NAME,
+	USER_PROFILE,
+} from "../../utils/constants";
 import AriaSelect from "../ariaSelect";
 import Spinner from "../spinner";
 
@@ -34,6 +40,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 	const { setBookmarksView, categoryId, userId } = props;
 
 	const queryClient = useQueryClient();
+	const session = useSession();
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -42,6 +49,13 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 
 	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
 		data: ProfilesTableTypes[];
+		error: PostgrestError;
+	};
+
+	const sharedCategoriesData = queryClient.getQueryData([
+		SHARED_CATEGORIES_TABLE_NAME,
+	]) as {
+		data: FetchSharedCategoriesData[];
 		error: PostgrestError;
 	};
 
@@ -56,7 +70,25 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 
 	const getSortValue = () => {
 		if (!isInNonCategoryPage) {
-			return currentCategory?.category_views?.sortBy;
+			// user is in a category page
+
+			// tells if the user is the category owner
+			const isUserTheCategoryOwner = currentCategory?.user_id?.id === userId;
+
+			if (isUserTheCategoryOwner) {
+				// if user is the category owner then get value from category table
+				return currentCategory?.category_views?.sortBy;
+			} else {
+				// if user is not the category owner then get value from the shared category table
+				const sharedCategoryUserData = find(
+					sharedCategoriesData?.data,
+					(item) =>
+						item?.category_id === categoryId &&
+						item?.email === session?.user?.email,
+				);
+
+				return sharedCategoryUserData?.category_views?.sortBy;
+			}
 		}
 
 		if (!isEmpty(userProfilesData?.data)) {
