@@ -324,60 +324,6 @@ main {
 	@apply bg-modal-bg;
 }
 
-/* .dialog {
-	z-index: 50;
-
-	overflow: auto;
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-
-	width: 100%;
-	max-width: calc(100% - 1rem * 2);
-	height: fit-content;
-	max-height: calc(100% - 1rem * 2);
-	margin-top: 1rem;
-	margin-bottom: 1rem;
-	padding: 6px;
-
-	color: hsl(204deg 10% 10%);
-
-	background-color: hsl(204deg 20% 100%);
-	border-radius: 12px;
-}
-
-.dialog:focus-visible,
-.dialog[data-focus-visible] {
-	outline: 2px solid hsl(204deg 100% 40%);
-	outline-offset: 2px;
-} */
-
-/* .dark .dialog {
-	color: hsl(204deg 20% 100%);
-
-	background-color: hsl(204deg 3% 18%);
-	border-color: hsl(204deg 3% 26%);
-	border-style: solid;
-	border-width: 1px;
-} */
-
-/* @media (width >= 640px) {
-	.dialog {
-		width: 460px;
-
-	}
-}
-
-@media (width >= 768px) {
-	.dialog {
-		max-height: calc(100% - 6rem * 2);
-
-
-		margin-top: 10rem;
-		margin-bottom: 10rem;
-	}
-} */
-
 .dropdown-container input[type="radio"] {
 	/* display: none; */
 	position: absolute;

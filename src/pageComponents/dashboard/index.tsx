@@ -676,7 +676,6 @@ const Dashboard = () => {
 																Number.parseInt(bookmarkId, 10) ===
 																bookmarkItem?.id,
 														)?.user_id?.id;
-
 														if (bookmarkCreatedUserId === session?.user?.id) {
 															await addCategoryToBookmarkOptimisticMutation.mutateAsync(
 																{
@@ -1002,6 +1001,12 @@ const Dashboard = () => {
 							)?.user_id?.id;
 
 							if (bookmarkCreatedUserId === session?.user?.id) {
+								if (!updateAccessCondition) {
+									// if update access is not there then user cannot drag and drop anything into the collection
+									errorToast("Cannot upload in other owners collection");
+									return;
+								}
+
 								await addCategoryToBookmarkOptimisticMutation.mutateAsync({
 									category_id: categoryId,
 									bookmark_id: Number.parseInt(bookmarkId, 10),

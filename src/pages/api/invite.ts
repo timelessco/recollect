@@ -16,6 +16,8 @@ import { apiSupabaseClient } from "../../utils/supabaseServerClient";
  * Adds user as colaborator in DB
  */
 
+// NOTE: check https://app.asana.com/0/1202643527638612/1205842037172641 for this apis short comings
+
 type Data = {
 	error: PostgrestError | string | null;
 	success: string | null;
@@ -108,7 +110,7 @@ export default async function handler(
 					? "The user is alredy a colaborator of this category"
 					: error,
 			});
-			throw new Error("ERROR: invite error");
+			// throw new Error("ERROR: invite error");
 		}
 	}
 }
