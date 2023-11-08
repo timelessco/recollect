@@ -43,21 +43,27 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 			</div>
 		</header>
 		<main className=" overflow-y-scroll">
-			<CardSection
-				categoryViewsFromProps={props?.category_views ?? undefined}
-				deleteBookmarkId={undefined}
-				isBookmarkLoading={false}
-				isOgImgLoading={false}
-				isPublicPage
-				listData={props?.data as SingleListData[]}
-				onBulkBookmarkDelete={() => {}}
-				onCategoryChange={() => {}}
-				onDeleteClick={() => {}}
-				onEditClick={() => {}}
-				onMoveOutOfTrashClick={() => {}}
-				showAvatar={false}
-				userId=""
-			/>
+			{!isEmpty(props?.data) ? (
+				<CardSection
+					categoryViewsFromProps={props?.category_views ?? undefined}
+					deleteBookmarkId={undefined}
+					isBookmarkLoading={false}
+					isOgImgLoading={false}
+					isPublicPage
+					listData={props?.data as SingleListData[]}
+					onBulkBookmarkDelete={() => {}}
+					onCategoryChange={() => {}}
+					onDeleteClick={() => {}}
+					onEditClick={() => {}}
+					onMoveOutOfTrashClick={() => {}}
+					showAvatar={false}
+					userId=""
+				/>
+			) : (
+				<div className=" flex items-center justify-center pt-[15%] text-2xl font-semibold">
+					There is no data in this collection
+				</div>
+			)}
 		</main>
 	</div>
 );
@@ -69,9 +75,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		}&user_name=${context?.query?.category_id as string}`,
 	);
 
-	if (isEmpty(response?.data?.data) || isNull(response?.data?.data)) {
+	if (!response?.data?.is_public) {
+		// this page is not a public page
 		return {
 			notFound: true,
+		};
+	}
+
+	if (isEmpty(response?.data?.data) || isNull(response?.data?.data)) {
+		return {
+			props: {
+				data: response?.data?.data,
+				category_views: response?.data?.category_views,
+				icon: response?.data?.icon,
+				icon_color: response?.data?.icon_color,
+				category_name: response?.data?.category_name,
+			},
 		};
 	}
 

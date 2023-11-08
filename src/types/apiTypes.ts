@@ -345,4 +345,5 @@ export type GetPublicCategoryBookmarksApiResponseType = {
 	error: ErrorResponse;
 	icon: CategoriesData["icon"] | null;
 	icon_color: CategoriesData["icon_color"] | null;
+	is_public: CategoriesData["is_public"] | null;
 };

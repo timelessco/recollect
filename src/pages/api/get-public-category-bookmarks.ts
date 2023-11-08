@@ -36,7 +36,8 @@ export default async function handler(
 			category_views,
 			icon,
 			icon_color,
-			category_name
+			category_name, 
+			is_public
     `,
 		)
 		.eq("category_slug", request.query.category_slug)) as unknown as {
@@ -45,6 +46,7 @@ export default async function handler(
 			category_views: BookmarkViewDataTypes;
 			icon: CategoriesData["icon"];
 			icon_color: CategoriesData["icon_color"];
+			is_public: CategoriesData["is_public"];
 			user_id: {
 				email: ProfilesTableTypes["email"];
 				user_name: ProfilesTableTypes["user_name"];
@@ -63,6 +65,7 @@ export default async function handler(
 			icon: null,
 			icon_color: null,
 			category_name: null,
+			is_public: null,
 		});
 
 		log("username mismatch from url query");
@@ -106,6 +109,7 @@ export default async function handler(
 				icon: null,
 				icon_color: null,
 				category_name: null,
+				is_public: null,
 			});
 			throw new Error("ERROR: get public category bookmark error");
 		} else {
@@ -116,6 +120,7 @@ export default async function handler(
 				icon: categoryData[0]?.icon,
 				icon_color: categoryData[0]?.icon_color,
 				category_name: categoryData[0]?.category_name,
+				is_public: categoryData[0]?.is_public,
 			});
 		}
 	}
