@@ -243,7 +243,7 @@ const Settings = () => {
 						</div>
 					</LabelledComponent>
 					<Button
-						className={`w-[164px] ${settingsLightButtonClassName}`}
+						className={`min-w-[150px] max-w-[150px justify-center ${settingsLightButtonClassName}`}
 						onClick={handleSubmit(onSubmit)}
 						type="light"
 					>

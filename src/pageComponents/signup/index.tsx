@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { ToastContainer } from "react-toastify";
 
@@ -32,6 +32,12 @@ const SignUp = () => {
 
 	const router = useRouter();
 	const supabase = useSupabaseClient();
+	const session = useSession();
+
+	useEffect(() => {
+		if (session) void router.push(`/${ALL_BOOKMARKS_URL}`);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [session]);
 
 	const {
 		register,
