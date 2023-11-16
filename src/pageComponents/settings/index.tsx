@@ -242,13 +242,15 @@ const Settings = () => {
 							/>
 						</div>
 					</LabelledComponent>
-					<Button
-						className={`min-w-[150px] max-w-[150px justify-center ${settingsLightButtonClassName}`}
-						onClick={handleSubmit(onSubmit)}
-						type="light"
-					>
-						Change username
-					</Button>
+					<div className="flex min-w-[150px] max-w-[150px] justify-end">
+						<Button
+							className={settingsLightButtonClassName}
+							onClick={handleSubmit(onSubmit)}
+							type="light"
+						>
+							Change username
+						</Button>
+					</div>
 				</form>
 				<div className="border-b-[1px] border-b-gray-light-4  pb-6 pt-[25px]">
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
