@@ -498,8 +498,8 @@ const CardSection = ({
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
-	// const CARD_DEFAULT_HEIGHT = 194;
-	// const CARD_DEFAULT_WIDTH = 200;
+	const CARD_DEFAULT_HEIGHT = 194;
+	const CARD_DEFAULT_WIDTH = 200;
 	const session = useSession();
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
@@ -826,8 +826,8 @@ const CardSection = ({
 		img: string,
 		id: number,
 		blurUrl: string,
-		// height: number,
-		// width: number,
+		height: number,
+		width: number,
 		type: string,
 	) => {
 		const imgClassName = classNames({
@@ -916,11 +916,11 @@ const CardSection = ({
 									alt="bookmark-img"
 									blurDataURL={blurSource || defaultBlur}
 									className={imgClassName}
-									height={200}
+									height={height}
 									onError={() => setErrorImgs([id as never, ...errorImgs])}
 									placeholder="blur"
 									src={`${img}`}
-									width={200}
+									width={width}
 								/>
 							) : (
 								errorImgPlaceholder
@@ -1042,8 +1042,8 @@ const CardSection = ({
 					item?.ogImage,
 					item?.id,
 					item?.meta_data?.ogImgBlurUrl ?? "",
-					// item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-					// item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 					item?.type,
 				)}
 				{bookmarksInfoValue?.length === 1 &&
@@ -1107,8 +1107,8 @@ const CardSection = ({
 				item?.ogImage,
 				item?.id,
 				item?.meta_data?.ogImgBlurUrl ?? "",
-				// item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-				// item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				item?.type,
 			)}
 			{bookmarksInfoValue?.length === 1 &&

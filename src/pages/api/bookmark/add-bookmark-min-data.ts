@@ -122,6 +122,7 @@ export default async function handler(
 		const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
 
 		if (!isNil(isUrlAnImage) && !isEmpty(isUrlAnImage)) {
+			// if the url itself is an img, like something.com/img.jgp, then we are not going to upload it to s3
 			imgUrl = url;
 		}
 
@@ -132,6 +133,18 @@ export default async function handler(
 				});
 				const returnedB64 = Buffer.from(image.data).toString("base64");
 				imgData = await blurhashFromURL(scrapperResponse?.data?.OgImage);
+				// this code is for the blur hash resize issue, uncomment this after blurhashFromURL supports image resize
+				// let returnedB64;
+				// if (imgData?.height > 600 || imgData?.width > 600) {
+				// 	const compressedImg = await sharp(image.data)
+				// 	.resize({ width: 600, height: 600 })
+				// 	.toBuffer();
+
+				// 	returnedB64 = compressedImg?.toString("base64");
+				// 	console.log("com", compressedImg, imgData);
+				// } else {
+				// 	returnedB64 = Buffer.from(image.data).toString("base64");
+				// }
 
 				imgUrl = await upload(returnedB64, userId);
 			} catch (error) {
