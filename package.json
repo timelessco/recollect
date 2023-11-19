@@ -136,7 +136,7 @@
 		"all-contributors-cli": "6.24.0",
 		"autoprefixer": "10.4.14",
 		"cspell": "8.0.0",
-		"cypress": "12.9.0",
+		"cypress": "13.5.1",
 		"dedent": "1.0.1",
 		"del-cli": "5.0.0",
 		"dotenv": "16.0.3",
