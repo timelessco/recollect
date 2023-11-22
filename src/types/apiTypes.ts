@@ -198,6 +198,14 @@ export type AddBookmarkMinDataPayloadTypes = {
 	url: string;
 };
 
+export type AddBookmarkRemainingDataPayloadTypes = {
+	access_token: string;
+	favIcon: string;
+	id: SingleListData["id"];
+	image: SingleListData["ogImage"];
+	url: SingleListData["url"];
+};
+
 export type AddBookmarkScreenshotPayloadTypes = {
 	id: number;
 	session: SupabaseSessionType;

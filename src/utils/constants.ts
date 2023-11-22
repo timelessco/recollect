@@ -66,6 +66,8 @@ export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
 export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const GET_BOOKMARKS_COUNT = "/bookmark/get-bookmarks-count";
+export const ADD_REMAINING_BOOKMARK_API =
+	"/bookmark/add-remaining-bookmark-data";
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
