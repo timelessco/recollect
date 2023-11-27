@@ -1,6 +1,5 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import isEmpty from "lodash/isEmpty";
 
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
@@ -17,11 +16,51 @@ import {
 	verifyAuthToken,
 } from "../../../utils/supabaseServerClient";
 
-// get all bookmarks count
-
 type Data = {
 	data: BookmarksCountTypes | null;
-	error: PostgrestError | unknown[] | VerifyErrors | string | null;
+	error: string[] | null;
+};
+
+const getCategoryCount = async (
+	supabase: SupabaseClient,
+	_userId: string,
+	categoryIds: number[],
+	sharedCategories: unknown[],
+) => {
+	const buildCategoryPromises = categoryIds.map(async (categoryId) => {
+		const { count } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("id", { count: "exact", head: true })
+			.eq("category_id", categoryId)
+			.eq("trash", false);
+
+		return {
+			category_id: categoryId,
+			count: count ?? 0,
+		};
+	});
+
+	const sharedCategoryPromises = sharedCategories.map(
+		async (sharedCategory) => {
+			const { count } = await supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("category_id", sharedCategory)
+				.eq("trash", false);
+
+			return {
+				category_id: sharedCategory,
+				count: count ?? 0,
+			};
+		},
+	);
+
+	const [userCategoryResults, sharedCategoryResults] = await Promise.all([
+		Promise.all(buildCategoryPromises),
+		Promise.all(sharedCategoryPromises),
+	]);
+
+	return [...userCategoryResults, ...sharedCategoryResults];
 };
 
 export default async function handler(
@@ -29,25 +68,22 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const accessToken = request.query.access_token as string;
-
 	const supabase = apiSupabaseClient();
 
-	// let decode: { sub: string };
+	let userId: string | undefined;
+	let email: string | undefined;
 
-	let userId: string | (() => string) | undefined;
-	let email: string | (() => string) | undefined;
+	const { error: authError, decoded } = verifyAuthToken(accessToken);
 
-	const { error: _error, decoded } = verifyAuthToken(accessToken);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
+	if (authError) {
+		response.status(401).json({ data: null, error: ["Unauthorized"] });
+		return;
 	} else {
 		userId = decoded?.sub;
 		email = decoded?.email;
 	}
 
-	let count = {
+	let count: BookmarksCountTypes = {
 		allBookmarks: 0,
 		categoryCount: [],
 		trash: 0,
@@ -55,201 +91,94 @@ export default async function handler(
 		images: 0,
 		videos: 0,
 		links: 0,
-	} as BookmarksCountTypes;
-
-	const { error: bookError, count: bookmarkCount } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select(
-			`
-    id
-  `,
-			{ count: "exact", head: true },
-		)
-		.eq("user_id", userId)
-		// this is for '/' (root-page) route , we need bookmakrs by user_id
-		// TODO: check and remove
-		.eq("trash", false);
-
-	count = {
-		...count,
-		allBookmarks: bookmarkCount ?? (0 as number),
 	};
 
-	const { error: bookImageError, count: bookmarkImageCount } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select(
-			`
-	id
-`,
-			{ count: "exact", head: true },
-		)
-		.eq("user_id", userId)
-		.eq("trash", false)
-		.in("type", imageFileTypes);
-
-	count = {
-		...count,
-		images: bookmarkImageCount ?? (0 as number),
-	};
-
-	const { error: bookVideoError, count: bookmarkVideoCount } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select(
-			`
-id
-`,
-			{ count: "exact", head: true },
-		)
-		.eq("user_id", userId)
-		.eq("trash", false)
-		.in("type", videoFileTypes);
-
-	count = {
-		...count,
-		videos: bookmarkVideoCount ?? (0 as number),
-	};
-
-	const { error: bookmakrsLinksError, count: bookmakrsLinks } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select(
-			`
-id
-`,
-			{ count: "exact", head: true },
-		)
-		.eq("user_id", userId)
-		.eq("trash", false)
-		.eq("type", bookmarkType);
-
-	count = {
-		...count,
-		links: bookmakrsLinks ?? (0 as number),
-	};
-
-	const { error: bookTrashError, count: bookmarkTrashCount } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select(
-			`
-    id
-  `,
-			{ count: "exact", head: true },
-		)
-		.eq("user_id", userId)
-		// this is for '/' (root-page) route , we need bookmakrs by user_id
-		// TODO: check and remove
-		.eq("trash", true);
-
-	count = {
-		...count,
-		trash: bookmarkTrashCount ?? (0 as number),
-	};
-
-	const { error: bookUnCatError, count: bookmarkUnCatCount } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select(
-			`
-    id
-  `,
-			{ count: "exact", head: true },
-		)
-		.eq("user_id", userId)
-		.eq("trash", false)
-		// this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
-		.eq("category_id", 0);
-
-	count = {
-		...count,
-		uncategorized: bookmarkUnCatCount ?? (0 as number),
-	};
-
-	// category count
-	// get all user category ids
-	const { data: userCategoryIds, error: categoryError } = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.select(
-			`
-    id
-  `,
-		)
-		.eq("user_id", userId);
-
-	const { data: sharedCategoryIds, error: sharedCategoryError } = await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.select(
-			`
-	category_id
-`,
-		)
-		.eq("email", email);
-
-	const buildCategoryPromises = userCategoryIds?.map(async (item) => {
-		const { count: bookmarkCountData } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.select(
-				`
-						id
-					`,
-				{ count: "exact", head: true },
-			)
-			.eq("category_id", item?.id)
-			.eq("trash", false);
-
-		return {
-			category_id: item?.id as number,
-			count: bookmarkCountData ?? (0 as number),
-		};
-	});
-
-	const sharedCategoryPromises = sharedCategoryIds?.map(
-		async (sharedCategory) => {
-			const { count: sharedBookmarkCountData } = await supabase
+	try {
+		const [
+			{ count: bookmarkCount },
+			{ count: bookmarkImageCount },
+			{ count: bookmarkVideoCount },
+			{ count: bookmakrsLinks },
+			{ count: bookmarkTrashCount },
+			{ count: bookmarkUnCatCount },
+			{ data: userCategoryIds },
+			{ data: sharedCategoryIds },
+		] = await Promise.all([
+			supabase
 				.from(MAIN_TABLE_NAME)
-				.select(
-					`
-						id
-					`,
-					{ count: "exact", head: true },
-				)
-				.eq("category_id", sharedCategory?.category_id)
-				.eq("trash", false);
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", false),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", false)
+				.in("type", imageFileTypes),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", false)
+				.in("type", videoFileTypes),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", false)
+				.eq("type", bookmarkType),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", true),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", false)
+				.eq("category_id", 0),
+			supabase.from(CATEGORIES_TABLE_NAME).select("id").eq("user_id", userId),
+			supabase
+				.from(SHARED_CATEGORIES_TABLE_NAME)
+				.select("category_id")
+				.eq("email", email),
+		]);
 
-			return {
-				category_id: sharedCategory?.category_id as number,
-				count: sharedBookmarkCountData ?? (0 as number),
-			};
-		},
-	);
+		count = {
+			...count,
+			allBookmarks: bookmarkCount ?? 0,
+			images: bookmarkImageCount ?? 0,
+			videos: bookmarkVideoCount ?? 0,
+			links: bookmakrsLinks ?? 0,
+			trash: bookmarkTrashCount ?? 0,
+			uncategorized: bookmarkUnCatCount ?? 0,
+		};
 
-	const [userCategoryResults, sharedCategoryResults] = await Promise.all([
-		Promise.all(buildCategoryPromises ?? []),
-		Promise.all(sharedCategoryPromises ?? []),
-	]);
+		const userCategoryIdsArray = userCategoryIds?.map((item) => item.id) ?? [];
+		const sharedCategoryIdsArray =
+			sharedCategoryIds?.map((item) => item.category_id) ?? [];
 
-	// Combine the results into the count object
-	count = {
-		...count,
-		categoryCount: [
-			...count.categoryCount,
-			...userCategoryResults,
-			...sharedCategoryResults,
-		],
-	};
+		const categoryCount = (await getCategoryCount(
+			supabase,
+			userId,
+			userCategoryIdsArray,
+			sharedCategoryIdsArray,
+		)) as BookmarksCountTypes["categoryCount"];
 
-	const errorMessages = [
-		bookError?.message,
-		bookTrashError?.message,
-		bookUnCatError?.message,
-		categoryError?.message,
-		bookImageError?.message,
-		bookVideoError?.message,
-		sharedCategoryError?.message,
-		bookmakrsLinksError?.message,
-	];
+		count = {
+			...count,
+			categoryCount,
+		};
+	} catch (error) {
+		console.error("Error in API:", error);
+		response.status(500).json({ data: null, error: ["Internal Server Error"] });
+		return;
+	}
+
+	const errorMessages = ["Unauthorized", "Internal Server Error"];
 
 	const nonEmptyErrors = errorMessages.filter((message) => !isEmpty(message));
 
-	const errorText = nonEmptyErrors as unknown[];
-	// Check for errors and update errorText array
-
-	response.status(200).json({ data: count, error: errorText });
+	response.status(200).json({ data: count, error: nonEmptyErrors });
 }
