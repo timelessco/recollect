@@ -89,3 +89,12 @@ tiktok
 uniqid
 uncategorised
 opsz
+pkey
+fkey
+todos
+trgm
+fuction
+timestamptz
+plpgsql
+ILIKE
+plpgsql
