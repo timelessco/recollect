@@ -2,6 +2,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -14,6 +15,7 @@ export default function useAddCategoryToBookmarkMutation() {
 	const session = useSession();
 	const queryClient = useQueryClient();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const { sortBy } = useGetSortBy();
 	const addCategoryToBookmarkMutation = useMutation(addCategoryToBookmark, {
 		onSuccess: () => {
 			// Invalidate and refetch
@@ -22,6 +24,7 @@ export default function useAddCategoryToBookmarkMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 			void queryClient.invalidateQueries([
 				BOOKMARKS_COUNT_KEY,

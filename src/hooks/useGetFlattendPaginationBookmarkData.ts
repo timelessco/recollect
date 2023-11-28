@@ -6,16 +6,20 @@ import { type SingleListData } from "../types/apiTypes";
 import { BOOKMARKS_KEY } from "../utils/constants";
 
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
+import useGetSortBy from "./useGetSortBy";
 
 export default function useGetFlattendPaginationBookmarkData() {
 	const session = useSession();
 	const queryClient = useQueryClient();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 
+	const { sortBy } = useGetSortBy();
+
 	const allBookmarksData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
 		categoryId,
+		sortBy,
 	]) as {
 		pages: Array<{
 			data: SingleListData[];

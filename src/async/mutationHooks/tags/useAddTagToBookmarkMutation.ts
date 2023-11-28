@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { find, isArray } from "lodash";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	type AddTagToBookmarkApiPayload,
 	type SingleListData,
@@ -16,7 +17,7 @@ export default function useAddTagToBookmarkMutation() {
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-
+	const { sortBy } = useGetSortBy();
 	const addTagToBookmarkMutation = useMutation(addTagToBookmark, {
 		onMutate: async (data: AddTagToBookmarkApiPayload) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -24,6 +25,7 @@ export default function useAddTagToBookmarkMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			// Snapshot the previous value
@@ -31,6 +33,7 @@ export default function useAddTagToBookmarkMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			const userTagsData = queryClient.getQueryData([
@@ -49,7 +52,7 @@ export default function useAddTagToBookmarkMutation() {
 
 			// Optimistically update to the new value
 			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				(oldData: unknown) => {
 					const old = oldData as { pages: Array<{ data: SingleListData[] }> };
 					const updateData = {
@@ -95,7 +98,7 @@ export default function useAddTagToBookmarkMutation() {
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (context: { previousData: unknown }) => {
 			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				context?.previousData,
 			);
 		},
@@ -105,6 +108,7 @@ export default function useAddTagToBookmarkMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 		},
 	});

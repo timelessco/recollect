@@ -42,6 +42,7 @@ import {
 	type UserProfilePicTypes,
 	type UserTagsData,
 } from "../types/apiTypes";
+import { type BookmarksSortByTypes } from "../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../types/componentTypes";
 import {
 	ADD_BOOKMARK_MIN_DATA,
@@ -88,12 +89,13 @@ export const fetchBookmakrsData = async (
 	}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	QueryFunctionContext<Array<number | string | null | undefined>, any>,
 	session: SupabaseSessionType,
+	sortBy: BookmarksSortByTypes,
 ) => {
 	const categoryId =
-		!isEmpty(queryKey) && queryKey?.length <= 3 ? queryKey[2] : null;
+		!isEmpty(queryKey) && queryKey?.length <= 4 ? queryKey[2] : null;
 
 	const userId =
-		!isEmpty(queryKey) && queryKey?.length <= 4 ? queryKey[1] : null;
+		!isEmpty(queryKey) && queryKey?.length <= 5 ? queryKey[1] : null;
 
 	if (!userId) {
 		return {
@@ -104,6 +106,10 @@ export const fetchBookmakrsData = async (
 	}
 
 	if (!session?.access_token) {
+		return undefined;
+	}
+
+	if (!sortBy) {
 		return undefined;
 	}
 
@@ -118,7 +124,7 @@ export const fetchBookmakrsData = async (
 				session?.access_token
 			}&category_id=${isNull(categoryId) ? "null" : categoryId}&from=${
 				pageParameter as string
-			}`,
+			}&sort_by=${sortBy}`,
 		);
 
 		return {

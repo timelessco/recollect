@@ -2,6 +2,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
 import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
 import { uploadFile } from "../../supabaseCrudHelpers";
@@ -19,6 +20,8 @@ export default function useFileUploadOptimisticMutation() {
 	// 	},
 	// });
 
+	const { sortBy } = useGetSortBy();
+
 	const fileUploadOptimisticMutation = useMutation(uploadFile, {
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -26,6 +29,7 @@ export default function useFileUploadOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			// Snapshot the previous value
@@ -33,11 +37,12 @@ export default function useFileUploadOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			// Optimistically update to the new value
 			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				(old) => {
 					if (typeof old === "object") {
 						const latestData = {
@@ -73,7 +78,7 @@ export default function useFileUploadOptimisticMutation() {
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
 			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				context?.previousData,
 			);
 		},
@@ -83,6 +88,7 @@ export default function useFileUploadOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 			void queryClient.invalidateQueries([
 				BOOKMARKS_COUNT_KEY,

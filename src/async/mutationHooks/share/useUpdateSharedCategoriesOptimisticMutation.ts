@@ -2,6 +2,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import { type FetchSharedCategoriesData } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_KEY,
@@ -15,6 +16,7 @@ export default function useUpdateSharedCategoriesOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();
+	const { sortBy } = useGetSortBy();
 
 	const updateSharedCategoriesOptimisticMutation = useMutation(
 		updateSharedCategoriesUserAccess,
@@ -58,6 +60,7 @@ export default function useUpdateSharedCategoriesOptimisticMutation() {
 					BOOKMARKS_KEY,
 					session?.user?.id,
 					CATEGORIES_ID,
+					sortBy,
 				]);
 			},
 		},

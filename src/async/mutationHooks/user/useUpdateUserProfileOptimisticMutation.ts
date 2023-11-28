@@ -2,6 +2,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_KEY,
@@ -14,6 +15,7 @@ import { updateUserProfile } from "../../supabaseCrudHelpers";
 export default function useUpdateUserProfileOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSession();
+	const { sortBy } = useGetSortBy();
 
 	const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();
 	const updateUserProfileOptimisticMutation = useMutation(updateUserProfile, {
@@ -57,6 +59,7 @@ export default function useUpdateUserProfileOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORIES_ID,
+				sortBy,
 			]);
 		},
 	});

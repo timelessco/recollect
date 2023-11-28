@@ -1076,9 +1076,11 @@ const CardSection = ({
 									{renderCategoryBadge(item)}
 									{renderFavIcon(item)}
 									{renderUrl(item)}
-									<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-										{format(new Date(item?.inserted_at), "MMMM dd")}
-									</p>
+									{item?.inserted_at && (
+										<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+											{format(new Date(item?.inserted_at || ""), "MMMM dd")}
+										</p>
+									)}
 								</div>
 							)}
 						</div>
@@ -1140,9 +1142,11 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderCategoryBadge(item)}
 								{renderUrl(item)}
-								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-									{format(new Date(item?.inserted_at), "dd MMM")}
-								</p>
+								{item?.inserted_at && (
+									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										{format(new Date(item?.inserted_at || ""), "dd MMM")}
+									</p>
+								)}
 							</div>
 						)}
 					</div>
@@ -1170,9 +1174,11 @@ const CardSection = ({
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
-								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-									{format(new Date(item?.inserted_at), "dd MMM")}
-								</p>
+								{item?.inserted_at && (
+									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										{format(new Date(item?.inserted_at || ""), "dd MMM")}
+									</p>
+								)}
 							</div>
 						)}
 					</div>

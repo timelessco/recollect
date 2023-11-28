@@ -10,6 +10,7 @@ import Button from "../../../components/atoms/button";
 // import Input from "../../../components/atoms/input";
 import LabelledComponent from "../../../components/labelledComponent";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -61,7 +62,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 
 	const queryClient = useQueryClient();
 	const session = useSession();
-
+	const { sortBy } = useGetSortBy();
 	// tells if the logged in user is the bookmark owner
 	const isOwner = urlData?.user_id?.id === session?.user?.id;
 
@@ -70,6 +71,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 		BOOKMARKS_KEY,
 		session?.user?.id,
 		categoryId,
+		sortBy,
 	]) as {
 		pages: Array<{
 			data: SingleListData[];

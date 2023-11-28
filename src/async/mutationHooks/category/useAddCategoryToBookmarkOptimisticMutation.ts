@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useLoadersStore } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
 import {
@@ -16,6 +17,7 @@ import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 export default function useAddCategoryToBookmarkOptimisticMutation() {
 	const session = useSession();
 	const queryClient = useQueryClient();
+	const { sortBy } = useGetSortBy();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	const setSidePaneOptionLoading = useLoadersStore(
@@ -73,6 +75,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
 					BOOKMARKS_KEY,
 					session?.user?.id,
 					CATEGORY_ID,
+					sortBy,
 				]);
 				void queryClient.invalidateQueries([
 					BOOKMARKS_COUNT_KEY,

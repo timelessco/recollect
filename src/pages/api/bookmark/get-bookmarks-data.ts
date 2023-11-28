@@ -1,31 +1,21 @@
-/* eslint-disable complexity */
 import { type NextApiRequest, type NextApiResponse } from "next";
-import {
-	type PostgrestError,
-	type PostgrestResponse,
-} from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
-import isNil from "lodash/isNil";
-import isNull from "lodash/isNull";
 
 import {
 	type BookmarksCountTypes,
 	type BookmarksWithTagsWithTagForginKeys,
-	type BookmarkViewDataTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
-	CATEGORIES_TABLE_NAME,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
-	PROFILES,
-	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 	videoFileTypes,
@@ -49,7 +39,7 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	// disabling as this is not that big of an issue
-	const { category_id } = request.query;
+	const { category_id, sort_by: sortVaue } = request.query;
 	const from = Number.parseInt(request.query.from as string, 10);
 
 	const accessToken = request.query.access_token as string;
@@ -57,7 +47,6 @@ export default async function handler(
 	const supabase = apiSupabaseClient();
 
 	let userId: string | (() => string) | undefined;
-	let email: string | (() => string) | undefined;
 
 	const { error: _error, decoded } = verifyAuthToken(accessToken);
 
@@ -66,7 +55,6 @@ export default async function handler(
 		throw new Error("ERROR: token error");
 	} else {
 		userId = decoded?.sub;
-		email = decoded?.email;
 	}
 
 	// tells if user is in a category or not
@@ -80,57 +68,6 @@ export default async function handler(
 		category_id !== LINKS_URL;
 
 	let data;
-	let sortVaue;
-
-	if (categoryCondition) {
-		// if in a category, get sortBy from category table
-
-		// gets shared category data, if this is not empty then it means the user not the category owner
-		const { data: sharedCategoryData, error: sharedCategoryError } =
-			await supabase
-				.from(SHARED_CATEGORIES_TABLE_NAME)
-				.select(`category_views`)
-				.eq("email", email)
-				.eq("category_id", category_id);
-
-		if (!isNil(sharedCategoryError)) {
-			throw new Error("ERROR: sharedCategoryError");
-		}
-
-		if (isEmpty(sharedCategoryData) || isNull(sharedCategoryData)) {
-			// when the sharedCategoryData is empty then the user is the owner of the category
-			// get the sort value from the category table
-			const {
-				data: userCategorySortData,
-			}: PostgrestResponse<{ category_views: BookmarkViewDataTypes }> =
-				await supabase
-					.from(CATEGORIES_TABLE_NAME)
-					.select(`category_views`)
-					.eq("user_id", userId)
-					.eq("id", category_id);
-
-			sortVaue =
-				!isEmpty(userCategorySortData) &&
-				!isNull(userCategorySortData) &&
-				userCategorySortData[0]?.category_views?.sortBy;
-		} else {
-			// user is not the category owner , so get the sort value from share category table
-			sortVaue =
-				!isEmpty(sharedCategoryData) &&
-				sharedCategoryData[0]?.category_views?.sortBy;
-		}
-	} else {
-		// if not in a category, get sortBy from PROFILES table
-		const {
-			data: userSortData,
-		}: PostgrestResponse<{ bookmarks_view: BookmarkViewDataTypes }> =
-			await supabase.from(PROFILES).select(`bookmarks_view`).eq("id", userId);
-
-		sortVaue =
-			!isNull(userSortData) &&
-			!isEmpty(userSortData) &&
-			userSortData[0]?.bookmarks_view?.sortBy;
-	}
 
 	// get all bookmarks
 	let query = supabase

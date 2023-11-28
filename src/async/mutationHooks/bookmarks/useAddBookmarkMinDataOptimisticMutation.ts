@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import {
 	type BookmarksPaginatedDataTypes,
@@ -25,6 +26,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
+	const { sortBy } = useGetSortBy();
 
 	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
 		onMutate: async (data) => {
@@ -33,6 +35,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			// Snapshot the previous value
@@ -40,11 +43,12 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			// Optimistically update to the new value
 			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				(old) => {
 					if (typeof old === "object") {
 						const latestData = {
@@ -80,7 +84,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
 			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				context?.previousData,
 			);
 		},
@@ -91,6 +95,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 			void queryClient.invalidateQueries([
 				BOOKMARKS_COUNT_KEY,

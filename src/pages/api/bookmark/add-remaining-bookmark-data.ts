@@ -111,7 +111,6 @@ export default async function handler(
 			// 	.toBuffer();
 
 			// 	returnedB64 = compressedImg?.toString("base64");
-			// 	console.log("com", compressedImg, imgData);
 			// } else {
 			// 	returnedB64 = Buffer.from(image.data).toString("base64");
 			// }
