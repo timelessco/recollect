@@ -1,0 +1,43 @@
+{
+	"$schema": "http://json.schemastore.org/prettierrc",
+	"plugins": [
+		"prettier-plugin-packagejson",
+		"prettier-plugin-tailwindcss",
+		"@ianvs/prettier-plugin-sort-imports"
+	],
+
+	"importOrder": [
+		"^react$",
+		"^react-dom$",
+		"^next$",
+		"^next/+",
+		"^@?\\w",
+		"",
+		"^../",
+		"",
+		"^./",
+		"",
+		"^.+\\.s?css$"
+	],
+	"importOrderParserPlugins": [
+		"typescript",
+		"jsx",
+		"decorators-legacy",
+		"importAssertions"
+	],
+
+	"useTabs": true,
+
+	"trailingComma": "all",
+
+	"proseWrap": "preserve",
+
+	"overrides": [
+		{
+			"files": ".*rc",
+			"options": { "parser": "json" }
+		},
+		{ "files": ".nvmrc", "options": { "parser": "yaml" } },
+		{ "files": ".npmrc", "options": { "parser": "yaml" } }
+	]
+}

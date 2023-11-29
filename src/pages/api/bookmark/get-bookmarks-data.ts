@@ -151,7 +151,7 @@ user_id (
 	const finalData = data?.map((item) => {
 		const matchedBookmarkWithTag = bookmarksWithTags?.filter(
 			(tagItem) => tagItem?.bookmark_id === item?.id,
-		) as BookmarksWithTagsWithTagForginKeys;
+		) as unknown as BookmarksWithTagsWithTagForginKeys;
 
 		if (!isEmpty(matchedBookmarkWithTag)) {
 			return {

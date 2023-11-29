@@ -172,7 +172,7 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 					const item = state.collection.getItem(key);
 
 					return {
-						"text/plain": item.textValue,
+						"text/plain": !isNull(item) ? item.textValue : "",
 					};
 				})),
 	});

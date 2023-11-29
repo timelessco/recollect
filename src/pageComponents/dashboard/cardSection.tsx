@@ -79,6 +79,7 @@ import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
 // this import is the built in styles for video player we need its css file, this disabling the rule
 // eslint-disable-next-line import/extensions
 import "node_modules/video-react/dist/video-react.css";
+
 import CustomPlayer from "../../components/videoPlayer";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 
@@ -192,7 +193,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 					const item = state.collection.getItem(key);
 
 					return {
-						"text/plain": item.textValue,
+						"text/plain": !isNull(item) ? item.textValue : "",
 					};
 				})),
 	});
@@ -296,9 +297,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 						checked={
 							Array.from(state.selectionManager.selectedKeys.keys())?.length > 0
 						}
-						label={`${
-							Array.from(state.selectionManager.selectedKeys.keys())?.length
-						}
+						label={`${Array.from(state.selectionManager.selectedKeys.keys())
+							?.length}
             bookmarks`}
 						onChange={() => state.selectionManager.clearSelection()}
 						value="selected-bookmarks"

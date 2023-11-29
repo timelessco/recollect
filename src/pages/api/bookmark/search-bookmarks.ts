@@ -143,7 +143,7 @@ tag_id (
 		const finalData = data?.map((item) => {
 			const matchedBookmarkWithTag = allUserBookmarksWithTags?.filter(
 				(tagItem) => tagItem?.bookmark_id === item?.id,
-			) as BookmarksWithTagsWithTagForginKeys;
+			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
 			if (!isEmpty(matchedBookmarkWithTag)) {
 				return {
@@ -227,7 +227,7 @@ tag_id (
 			const finalResponse = onlyUniqueBookmarkIds?.map((item) => {
 				const matchedBookmarkWithTag = allUserBookmarksWithTags?.filter(
 					(tagItem) => tagItem?.bookmark_id === item,
-				) as BookmarksWithTagsWithTagForginKeys;
+				) as unknown as BookmarksWithTagsWithTagForginKeys;
 
 				const bookmarkData = find(
 					bookmarksWithTags,
@@ -281,7 +281,7 @@ tag_id (
 				// get all tags for the bookmark
 				const allBookmarkTags = allUserBookmarksWithTags?.filter(
 					(tagItem) => tagItem?.bookmark_id === item?.id,
-				) as BookmarksWithTagsWithTagForginKeys;
+				) as unknown as BookmarksWithTagsWithTagForginKeys;
 				if (allBookmarkTags) {
 					return {
 						...item,
