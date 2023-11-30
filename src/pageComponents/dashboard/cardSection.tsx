@@ -1,6 +1,5 @@
-/* eslint-disable @next/next/no-img-element */
-
 import { useEffect, useRef, useState, type Key, type ReactNode } from "react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import {
 	MinusCircleIcon,
@@ -10,9 +9,11 @@ import {
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { getImgFromArr } from "array-to-image";
+import { decode } from "blurhash";
 import classNames from "classnames";
 import format from "date-fns/format";
-import { flatten, type Many } from "lodash";
+import { flatten, isNil, omit, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -27,7 +28,7 @@ import {
 	type DraggableItemProps,
 	type DragItem,
 } from "react-aria";
-import Avatar from "react-avatar";
+import Masonry from "react-masonry-css";
 import {
 	Item,
 	useDraggableCollectionState,
@@ -41,14 +42,16 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import Badge from "../../components/badge";
 import Checkbox from "../../components/checkbox";
 import Spinner from "../../components/spinner";
-import ErrorImgPlaceholder from "../../icons/errorImgPlaceholder";
+import ImageIcon from "../../icons/imageIcon";
 import LinkExternalIcon from "../../icons/linkExternalIcon";
 import MoveIcon from "../../icons/moveIcon";
+import DefaultUserIcon from "../../icons/user/defaultUserIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
 } from "../../store/componentStore";
 import {
+	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
@@ -64,12 +67,21 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	colorPickerColors,
+	defaultBlur,
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
 	USER_PROFILE,
 } from "../../utils/constants";
 import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
+
+// this import is the built in styles for video player we need its css file, this disabling the rule
+// eslint-disable-next-line import/extensions
+import "node_modules/video-react/dist/video-react.css";
+
+import CustomPlayer from "../../components/videoPlayer";
+import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 
 type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -78,15 +90,19 @@ type onBulkBookmarkDeleteType = (
 ) => void;
 
 type CardSectionProps = {
+	categoryViewsFromProps?: BookmarkViewDataTypes;
+
 	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
 	isOgImgLoading: boolean;
+	isPublicPage?: boolean;
 	listData: SingleListData[];
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
 	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
+
 	showAvatar: boolean;
 	userId: string;
 };
@@ -96,6 +112,7 @@ type ListBoxDropTypes = ListProps<object> & {
 	bookmarksList: SingleListData[];
 	cardTypeCondition: unknown;
 	getItems?: (keys: Set<Key>) => DragItem[];
+	isPublicPage?: boolean;
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	// onReorder: (event: DroppableCollectionReorderEvent) => unknown;
@@ -111,6 +128,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 		bookmarksList,
 		onCategoryChange,
 		onBulkBookmarkDelete,
+		isPublicPage,
 	} = props;
 	const setIsCardDragging = useMiscellaneousStore(
 		(store) => store.setIsCardDragging,
@@ -139,6 +157,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			...props,
 			// Prevent dragging from changing selection.
 			shouldSelectOnPressUp: true,
+			autoFocus: false,
 		},
 		state,
 		ref,
@@ -174,7 +193,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 					const item = state.collection.getItem(key);
 
 					return {
-						"text/plain": item.textValue,
+						"text/plain": !isNull(item) ? item.textValue : "",
 					};
 				})),
 	});
@@ -216,33 +235,48 @@ const ListBox = (props: ListBoxDropTypes) => {
 	};
 
 	const ulClassName = classNames("outline-none focus:outline-none", {
-		[`columns-${moodboardColsLogic()} gap-6`]:
-			cardTypeCondition === "moodboard",
+		// [`columns-${moodboardColsLogic()} gap-6`]:
+		// 	cardTypeCondition === "moodboard",
 		block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
 		[cardGridClassNames]: cardTypeCondition === "card",
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
 
+	const renderOption = () =>
+		[...state.collection].map((item) => (
+			<Option
+				cardTypeCondition={cardTypeCondition}
+				dragState={dragState}
+				isPublicPage={isPublicPage}
+				isTrashPage={isTrashPage}
+				item={item}
+				key={item.key}
+				state={state}
+				url={
+					find(
+						bookmarksList,
+						(listItem) =>
+							listItem?.id === Number.parseInt(item.key as string, 10),
+					)?.url ?? ""
+				}
+			/>
+		));
+
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{[...state.collection].map((item) => (
-					<Option
-						cardTypeCondition={cardTypeCondition}
-						dragState={dragState}
-						item={item}
-						key={item.key}
-						state={state}
-						url={
-							find(
-								bookmarksList,
-								(listItem) =>
-									listItem?.id === Number.parseInt(item.key as string, 10),
-							)?.url ?? ""
-						}
-					/>
-				))}
+				{cardTypeCondition === "moodboard" ? (
+					<Masonry
+						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
+						className="my-masonry-grid"
+						columnClassName="my-masonry-grid_column"
+					>
+						{renderOption()}
+					</Masonry>
+				) : (
+					renderOption()
+				)}
 				<DragPreview ref={preview}>
 					{(items) => (
 						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
@@ -263,16 +297,15 @@ const ListBox = (props: ListBoxDropTypes) => {
 						checked={
 							Array.from(state.selectionManager.selectedKeys.keys())?.length > 0
 						}
-						label={`${
-							Array.from(state.selectionManager.selectedKeys.keys())?.length
-						}
+						label={`${Array.from(state.selectionManager.selectedKeys.keys())
+							?.length}
             bookmarks`}
 						onChange={() => state.selectionManager.clearSelection()}
 						value="selected-bookmarks"
 					/>
 					<div className="flex items-center">
 						<div
-							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
 							onClick={() => {
 								onBulkBookmarkDelete(
 									Array.from(
@@ -291,7 +324,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</div>
 						{isTrashPage && (
 							<div
-								className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-custom-gray-5"
+								className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
 								onClick={() => {
 									onBulkBookmarkDelete(
 										Array.from(
@@ -309,40 +342,42 @@ const ListBox = (props: ListBoxDropTypes) => {
 								Recover
 							</div>
 						)}
-						<AriaDropdown
-							menuButton={
-								<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-custom-gray-5">
-									<figure className=" mr-[6px]">
-										<MoveIcon />
-									</figure>
-									<p>Move to</p>
-								</div>
-							}
-							menuClassName={dropdownMenuClassName}
-						>
-							{categoryData?.data
-								?.map((item) => ({
-									label: item?.category_name,
-									value: item?.id,
-								}))
-								?.map((dropdownItem) => (
-									<AriaDropdownMenu
-										key={dropdownItem?.value}
-										onClick={() =>
-											onCategoryChange(
-												Array.from(
-													state.selectionManager.selectedKeys.keys(),
-												) as number[],
-												dropdownItem?.value,
-											)
-										}
-									>
-										<div className={dropdownMenuItemClassName}>
-											{dropdownItem?.label}
-										</div>
-									</AriaDropdownMenu>
-								))}
-						</AriaDropdown>
+						{!isEmpty(categoryData?.data) && (
+							<AriaDropdown
+								menuButton={
+									<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-gray-light-12 ">
+										<figure className="mr-[6px]">
+											<MoveIcon />
+										</figure>
+										<p>Move to</p>
+									</div>
+								}
+								menuClassName={dropdownMenuClassName}
+							>
+								{categoryData?.data
+									?.map((item) => ({
+										label: item?.category_name,
+										value: item?.id,
+									}))
+									?.map((dropdownItem) => (
+										<AriaDropdownMenu
+											key={dropdownItem?.value}
+											onClick={() =>
+												onCategoryChange(
+													Array.from(
+														state.selectionManager.selectedKeys.keys(),
+													) as number[],
+													dropdownItem?.value,
+												)
+											}
+										>
+											<div className={dropdownMenuItemClassName}>
+												{dropdownItem?.label}
+											</div>
+										</AriaDropdownMenu>
+									))}
+							</AriaDropdown>
+						)}
 					</div>
 				</div>
 			)}
@@ -360,9 +395,13 @@ const Option = ({
 	dragState,
 	cardTypeCondition,
 	url,
+	isPublicPage,
+	isTrashPage,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
+	isPublicPage: CardSectionProps["isPublicPage"];
+	isTrashPage: boolean;
 	item: OptionDropItemTypes;
 	state: ListState<unknown>;
 	url: string;
@@ -371,6 +410,8 @@ const Option = ({
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
+	const currentPath = useGetCurrentUrlPath();
+
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -396,35 +437,44 @@ const Option = ({
 		},
 	);
 
+	const isInTrashPage = currentPath === TRASH_URL;
+
+	// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+	const disableDndCondition = isPublicPage || isInTrashPage;
+
 	return (
 		<li
-			{...mergeProps(dragProps, focusProps, optionProps)}
+			{...mergeProps(
+				// NOTE: we are omiting some keys in dragprops because they are causing focus trap issue
+				// the main problem that caused the focus trap issue is onKeyUpCapture
+				disableDndCondition
+					? []
+					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+				disableDndCondition ? [] : focusProps,
+				disableDndCondition ? [] : optionProps,
+			)}
 			className={liClassName}
-			// className="single-bookmark group relative mb-6 flex cursor-pointer rounded-lg duration-150 hover:shadow-custom-4"
 			ref={ref}
 		>
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="absolute left-0 top-0 h-full w-full rounded-lg"
+				className="absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
 				draggable={false}
 				href={url}
 				onClick={(event) => {
 					event.preventDefault();
-					if (event.detail === 2) {
+					// open on single click
+					if (isPublicPage) {
+						window.open(url, "_blank");
+					}
+
+					// open on double click
+					if (event.detail === 2 && !isPublicPage && !isTrashPage) {
 						window.open(url, "_blank");
 					}
 				}}
 			/>
-			{/* <input
-        type="checkbox"
-        checked={isSelected}
-        // {...optionProps}
-        // eslint-disable-next-line tailwindcss/no-custom-classname
-        className={`card-checkbox absolute top-[7px] left-[6px] z-20 group-hover:block ${
-          isSelected ? "block" : "hidden"
-        }`}
-      /> */}
 			{item.rendered}
 		</li>
 	);
@@ -442,9 +492,15 @@ const CardSection = ({
 	deleteBookmarkId,
 	onCategoryChange,
 	onBulkBookmarkDelete,
+	isPublicPage = false,
+	categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
+	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
+	const CARD_DEFAULT_HEIGHT = 194;
+	const CARD_DEFAULT_WIDTH = 200;
+	const session = useSession();
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;
@@ -531,20 +587,38 @@ const CardSection = ({
 		viewType: "bookmarksView" | "cardContentViewArray" | "moodboardColumns",
 		defaultReturnValue: string | [] | [number],
 	) => {
-		if (isUserInACategory(categorySlug as string)) {
-			if (isUserTheCategoryOwner) {
-				return currentCategoryData?.category_views?.[viewType];
+		if (!isPublicPage) {
+			if (isUserInACategory(categorySlug as string)) {
+				if (isUserTheCategoryOwner) {
+					// user is the owner of the category
+					return currentCategoryData?.category_views?.[viewType];
+				}
+
+				if (!isEmpty(sharedCategoriesData?.data)) {
+					// the user is not the category owner
+					// gets the collab users layout data for the shared collection
+					const sharedCategoriesDataUserData = find(
+						sharedCategoriesData?.data,
+						(item) =>
+							item?.email === session?.user?.email &&
+							item?.category_id === categoryIdFromSlug,
+					);
+
+					return sharedCategoriesDataUserData?.category_views?.[viewType];
+				}
+
+				return defaultReturnValue;
 			}
 
-			if (!isEmpty(sharedCategoriesData?.data)) {
-				return sharedCategoriesData?.data[0]?.category_views?.[viewType];
+			if (!isEmpty(userProfilesData?.data)) {
+				return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
 			}
+		} else {
+			// we are in a public page
 
-			return defaultReturnValue;
-		}
-
-		if (!isEmpty(userProfilesData?.data)) {
-			return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
+			return categoryViewsFromProps
+				? categoryViewsFromProps[viewType]
+				: defaultReturnValue;
 		}
 
 		return defaultReturnValue;
@@ -600,103 +674,144 @@ const CardSection = ({
 		const iconBgClassName =
 			"rounded-lg bg-custom-white-1 p-[7px] backdrop-blur-sm";
 
-		if (renderEditAndDeleteCondition(post)) {
+		const externalLinkIcon = (
+			<div
+				onClick={() => window.open(post?.url, "_blank")}
+				onKeyDown={() => {}}
+				role="button"
+				tabIndex={0}
+			>
+				<figure className={`${iconBgClassName} ml-1`}>
+					<LinkExternalIcon />
+				</figure>
+			</div>
+		);
+
+		const pencilIcon = (
+			<div
+				className={`ml-1 ${iconBgClassName}`}
+				onClick={(event) => {
+					event.preventDefault();
+					onEditClick(post);
+				}}
+				onKeyDown={() => {}}
+				onPointerDown={(event) => {
+					event.stopPropagation();
+				}}
+				role="button"
+				tabIndex={0}
+			>
+				<figure>
+					<PencilAltIcon
+						className="h-4 w-4 cursor-pointer text-gray-700"
+						onPointerDown={(event) => {
+							event.stopPropagation();
+						}}
+					/>
+				</figure>
+			</div>
+		);
+
+		const trashIcon = (
+			<div
+				className={`ml-1 ${iconBgClassName}`}
+				onClick={(event) => {
+					event.stopPropagation();
+					onDeleteClick([post]);
+				}}
+				onKeyDown={() => {}}
+				role="button"
+				tabIndex={0}
+			>
+				<figure>
+					<TrashIcon
+						aria-hidden="true"
+						className="h-4 w-4 cursor-pointer text-red-400"
+						id="delete-bookmark-icon"
+						onPointerDown={(event) => {
+							event.stopPropagation();
+						}}
+					/>
+				</figure>
+			</div>
+		);
+
+		if (isPublicPage) {
+			return externalLinkIcon;
+		}
+
+		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
 			return (
 				<>
-					{categorySlug === TRASH_URL && (
-						<figure className={`${iconBgClassName}`}>
+					<div
+						className={`${iconBgClassName}`}
+						onClick={(event) => {
+							event.preventDefault();
+							onMoveOutOfTrashClick(post);
+						}}
+						onKeyDown={() => {}}
+						role="button"
+						tabIndex={0}
+					>
+						<figure>
 							<MinusCircleIcon
 								className="h-4 w-4 cursor-pointer text-red-400"
-								onClick={(event) => {
-									event.preventDefault();
-									onMoveOutOfTrashClick(post);
-								}}
 								onPointerDown={(event) => {
 									event.stopPropagation();
 								}}
 							/>
 						</figure>
-					)}
-					<div
-						onClick={() => window.open(post?.url, "_blank")}
-						onKeyDown={() => {}}
-						role="button"
-						tabIndex={0}
-					>
-						<figure className={`${iconBgClassName} ml-1`}>
-							<LinkExternalIcon />
-						</figure>
 					</div>
+					{trashIcon}
+				</>
+			);
+		}
+
+		if (renderEditAndDeleteCondition(post)) {
+			return (
+				<>
+					{externalLinkIcon}
 					{isBookmarkCreatedByLoggedinUser(post) ? (
 						<>
-							<figure className={`ml-1 ${iconBgClassName}`}>
-								<PencilAltIcon
-									className="h-4 w-4 cursor-pointer text-gray-700"
-									onClick={(event) => {
-										event.preventDefault();
-										onEditClick(post);
-									}}
-									onPointerDown={(event) => {
-										event.stopPropagation();
-									}}
-								/>
-							</figure>
+							{pencilIcon}
 							{isDeleteBookmarkLoading &&
 							deleteBookmarkId?.includes(post?.id) ? (
 								<div>
 									<Spinner size={15} />
 								</div>
 							) : (
-								<figure className={`ml-1 ${iconBgClassName}`}>
-									<TrashIcon
-										aria-hidden="true"
-										className="h-4 w-4 cursor-pointer text-red-400"
-										id="delete-bookmark-icon"
-										onClick={(event) => {
-											event.stopPropagation();
-											onDeleteClick([post]);
-										}}
-										onPointerDown={(event) => {
-											event.stopPropagation();
-										}}
-									/>
-								</figure>
+								trashIcon
 							)}
 						</>
 					) : (
-						<figure>
-							<PencilAltIcon
-								className="h-4 w-4 cursor-pointer text-gray-700"
-								onClick={(event) => {
-									event.preventDefault();
-									onEditClick(post);
-								}}
-								onPointerDown={(event) => {
-									event.stopPropagation();
-								}}
-							/>
-						</figure>
+						pencilIcon
 					)}
 				</>
 			);
 		}
 
-		return null;
+		return externalLinkIcon;
 	};
 
-	const renderAvatar = (item: SingleListData) => (
-		<Avatar
-			className="mr-1"
-			name={item?.user_id?.email}
-			round
-			size="20"
-			src={item?.user_id?.profile_pic}
-		/>
-	);
+	const renderAvatar = (item: SingleListData) => {
+		if (!isNil(item?.user_id?.profile_pic)) {
+			return (
+				<Image
+					alt="user_img"
+					className=" h-5 w-5 rounded-full"
+					height={20}
+					src={item?.user_id?.profile_pic}
+					width={20}
+				/>
+			);
+		}
+
+		return <DefaultUserIcon className="h-5 w-5" />;
+	};
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative text-[13px] leading-4  text-custom-gray-10 ${
+			className={`relative truncate text-[13px]  leading-4 text-custom-gray-10 ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -707,14 +822,21 @@ const CardSection = ({
 		</p>
 	);
 
-	const renderOgImage = (img: string, id: number) => {
+	const renderOgImage = (
+		img: string,
+		id: number,
+		blurUrl: string,
+		height: number,
+		width: number,
+		type: string,
+	) => {
 		const imgClassName = classNames({
-			"h-[48px] w-[80px] object-cover rounded": cardTypeCondition === "list",
-			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img":
+			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
+				cardTypeCondition === "list",
+			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
 				cardTypeCondition === "card",
-			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img":
+			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === "moodboard",
-			"h-4 w-4 rounded object-cover": cardTypeCondition === "headlines",
 		});
 
 		const loaderClassName = classNames({
@@ -727,43 +849,142 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
+			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px] ": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
 			"h-36":
 				cardTypeCondition === "moodboard" &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"h-4 w-4": cardTypeCondition === "headlines",
 		});
+
+		const errorImgAndVideoClassName = classNames({
+			"h-full w-full rounded-lg object-cover": true,
+			"group-hover:rounded-b-none":
+				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
+		});
+
+		const videoPlayerClassName = classNames({
+			"card-player": cardTypeCondition === "card",
+			"rounded-lg": true,
+		});
+
+		const errorImgPlaceholder = (
+			<Image
+				alt="img-error"
+				className={errorImgAndVideoClassName}
+				height={200}
+				src="/app-svgs/errorImgPlaceholder.svg"
+				width={265}
+			/>
+		);
 
 		const imgLogic = () => {
 			if (bookmarksInfoValue?.includes("cover" as never)) {
-				if (isBookmarkLoading && img === undefined) {
+				if (isBookmarkLoading && img === undefined && id === undefined) {
 					return <div className={loaderClassName} />;
 				}
 
-				if (errorImgs?.includes(id as never)) {
-					return <ErrorImgPlaceholder />;
+				if (errorImgs?.includes(id as never) || !img) {
+					return errorImgPlaceholder;
 				}
 
-				return (
-					<>
-						{img && (
-							<img
-								alt="bookmark-img"
-								className={imgClassName}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
-								src={`${img}`}
-							/>
-						)}
-					</>
-				);
+				if (id && !img) {
+					return errorImgPlaceholder;
+				}
+
+				let blurSource = "";
+
+				if (
+					!isNil(img) &&
+					!isNil(blurUrl) &&
+					!isEmpty(blurUrl) &&
+					!isPublicPage
+				) {
+					const pixels = decode(blurUrl, 32, 32);
+					const image = getImgFromArr(pixels, 32, 32);
+					blurSource = image.src;
+				}
+
+				const isVideo = type?.includes("video");
+
+				if (!isVideo) {
+					return (
+						<>
+							{img ? (
+								<Image
+									alt="bookmark-img"
+									blurDataURL={blurSource || defaultBlur}
+									className={imgClassName}
+									height={height}
+									onError={() => setErrorImgs([id as never, ...errorImgs])}
+									placeholder="blur"
+									src={`${img}`}
+									width={width}
+								/>
+							) : (
+								errorImgPlaceholder
+							)}
+						</>
+					);
+				} else if (
+					cardTypeCondition === "moodboard" ||
+					cardTypeCondition === "card"
+				) {
+					return (
+						<CustomPlayer
+							className={videoPlayerClassName}
+							playsInline
+							src={img}
+						/>
+					);
+				} else {
+					return (
+						// eslint-disable-next-line jsx-a11y/media-has-caption
+						<video className={errorImgAndVideoClassName} id="video" src={img} />
+					);
+				}
 			}
 
 			return null;
 		};
 
-		return <figure className={figureClassName}>{imgLogic()}</figure>;
+		return (
+			!isNull(imgLogic()) && (
+				<figure className={figureClassName}>{imgLogic()}</figure>
+			)
+		);
+	};
+
+	const renderFavIcon = (item: SingleListData) => {
+		const size = cardTypeCondition === "headlines" ? 16 : 15;
+		const favIconFigureClassName = classNames({
+			"min-h-[16px] min-w-[16px]": cardTypeCondition === "headlines",
+			"h-[15] w-[15px]": cardTypeCondition !== "headlines",
+		});
+
+		if (favIconErrorImgs?.includes(item?.id)) {
+			return <ImageIcon size={`${size}`} />;
+		}
+
+		if (item?.meta_data?.favIcon) {
+			return (
+				<figure className={favIconFigureClassName}>
+					<Image
+						alt="fav-icon"
+						className="rounded"
+						height={size}
+						onError={() =>
+							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
+						}
+						src={item?.meta_data?.favIcon}
+						width={size}
+					/>
+				</figure>
+			);
+		}
+
+		return <ImageIcon size="15" />;
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
@@ -778,10 +999,10 @@ const CardSection = ({
 								<div className="flex items-center">
 									<figure className="h-[12px] w-[12px]">
 										{find(
-											options,
+											options(),
 											(optionItem) =>
 												optionItem?.label === bookmarkCategoryData?.icon,
-										)?.icon()}
+										)?.icon(colorPickerColors[1], "12")}
 									</figure>
 									<p className="ml-1">{bookmarkCategoryData?.category_name}</p>
 								</div>
@@ -816,85 +1037,60 @@ const CardSection = ({
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
 		<div className="w-full" id="single-moodboard-card">
-			<div className="inline-block w-full">
-				{renderOgImage(item?.ogImage, item?.id)}
+			<div className="w-full">
+				{renderOgImage(
+					item?.ogImage,
+					item?.id,
+					item?.meta_data?.ogImgBlurUrl ?? "",
+					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+					item?.type,
+				)}
 				{bookmarksInfoValue?.length === 1 &&
 				bookmarksInfoValue[0] === "cover" ? null : (
 					<div className="space-y-[6px] rounded-lg px-2 py-3">
 						{bookmarksInfoValue?.includes("title" as never) && (
-							<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+							<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
 								{item?.title}
 							</p>
 						)}
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item?.description) && (
-								<p className="overflow-hidden break-all  text-sm leading-4">
+								<p className="line-clamp-3 overflow-hidden break-all text-sm leading-4">
 									{item?.description}
 								</p>
 							)}
 						<div className="space-y-[6px]">
-							{bookmarksInfoValue?.includes("tags" as never) && (
-								<div className="flex items-center space-x-1">
-									{item?.addedTags?.map((tag) => (
-										<div className="text-xs text-blue-500" key={tag?.id}>
-											#{tag?.name}
-										</div>
-									))}
-								</div>
-							)}
+							{bookmarksInfoValue?.includes("tags" as never) &&
+								!isEmpty(item?.addedTags) && (
+									<div className="flex flex-wrap items-center space-x-1">
+										{item?.addedTags?.map((tag) => (
+											<div className="text-xs text-blue-500" key={tag?.id}>
+												#{tag?.name}
+											</div>
+										))}
+									</div>
+								)}
 							{bookmarksInfoValue?.includes("info" as never) && (
 								<div className="flex flex-wrap items-center space-x-2">
 									{renderCategoryBadge(item)}
+									{renderFavIcon(item)}
 									{renderUrl(item)}
-									<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-										{format(new Date(item?.inserted_at), "MMMM dd")}
-									</p>
+									{item?.inserted_at && (
+										<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+											{format(new Date(item?.inserted_at || ""), "MMMM dd")}
+										</p>
+									)}
 								</div>
 							)}
 						</div>
 					</div>
 				)}
-				{/* {renderOgImage(item?.ogImage)}
-          {bookmarksInfoValue?.length === 1 &&
-          bookmarksInfoValue[0] === "cover" ? null : (
-            <div className="space-y-2 rounded-lg p-4">
-              {bookmarksInfoValue?.includes("title" as never) && (
-                <p className="text-base font-medium leading-4">{item?.title}</p>
-              )}
-              {bookmarksInfoValue?.includes("description" as never) && (
-                <p className="overflow-hidden break-all  text-sm leading-4">
-                  {item?.description}
-                </p>
-              )}
-              <div className="space-y-2">
-                {bookmarksInfoValue?.includes("tags" as never) && (
-                  <div className="flex items-center space-x-1">
-                    {item?.addedTags?.map(tag => {
-                      return (
-                        <div className="text-xs text-blue-500" key={tag?.id}>
-                          #{tag?.name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {bookmarksInfoValue?.includes("info" as never) && (
-                  <div className="flex flex-wrap items-center space-x-2">
-                    {renderCategoryBadge(item)}
-                    {renderUrl(item)}
-                    <p className="relative pl-3 text-xs leading-4 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']">
-                      {format(new Date(item?.inserted_at), "dd MMM")}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )} */}
 				<div
 					// eslint-disable-next-line tailwindcss/no-custom-classname
 					className={`items-center space-x-1 ${
 						// @ts-expect-error // this is cypress env, TS check not needed
-						window?.Cypress ? "flex" : "hidden"
+						!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
 					} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
 				>
 					{showAvatar && renderAvatar(item)}
@@ -909,26 +1105,33 @@ const CardSection = ({
 			className="flex h-[64px] w-full items-center p-2"
 			id="single-moodboard-card"
 		>
-			{renderOgImage(item?.ogImage, item?.id)}
+			{renderOgImage(
+				item?.ogImage,
+				item?.id,
+				item?.meta_data?.ogImgBlurUrl ?? "",
+				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+				item?.type,
+			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-3">
+				<div className="w-[94%]">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}
 						</p>
 					)}
 					<div className="flex items-center space-x-1 space-y-2">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10">
+								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10">
 									{item?.description}
 								</p>
 							)}
 						{bookmarksInfoValue?.includes("tags" as never) && (
-							<div className="mt-[6px] flex items-center space-x-1">
+							<div className="mt-[6px] flex items-center">
 								{item?.addedTags?.map((tag) => (
-									<div className="text-xs text-blue-500" key={tag?.id}>
+									<div className="mr-1 text-xs text-blue-500" key={tag?.id}>
 										#{tag?.name}
 									</div>
 								))}
@@ -936,11 +1139,14 @@ const CardSection = ({
 						)}
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="mt-[6px] flex items-center space-x-2">
+								{renderFavIcon(item)}
 								{renderCategoryBadge(item)}
 								{renderUrl(item)}
-								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-									{format(new Date(item?.inserted_at), "dd MMM")}
-								</p>
+								{item?.inserted_at && (
+									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										{format(new Date(item?.inserted_at || ""), "dd MMM")}
+									</p>
+								)}
 							</div>
 						)}
 					</div>
@@ -955,34 +1161,24 @@ const CardSection = ({
 
 	const renderHeadlinesCard = (item: SingleListData) => (
 		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
-			{renderOgImage(item?.ogImage, item?.id)}
+			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-[10px]">
+				<div className=" ml-[10px] w-full">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title text-sm font-medium leading-4 text-custom-gray-5">
+						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}
 						</p>
 					)}
 					<div className="mt-[6px] space-y-2">
-						{/* {bookmarksInfoValue?.includes("tags" as never) && (
-                <div className="flex items-center space-x-1">
-                  {item?.addedTags?.map(tag => {
-                    return (
-                      <div className="text-xs text-blue-500" key={tag?.id}>
-                        #{tag?.name}
-                      </div>
-                    );
-                  })}
-                </div>
-              )} */}
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="flex items-center space-x-2">
-								{/* {renderCategoryBadge(item)} */}
 								{renderUrl(item)}
-								<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-									{format(new Date(item?.inserted_at), "dd MMM")}
-								</p>
+								{item?.inserted_at && (
+									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										{format(new Date(item?.inserted_at || ""), "dd MMM")}
+									</p>
+								)}
 							</div>
 						)}
 					</div>
@@ -1001,12 +1197,16 @@ const CardSection = ({
 	});
 
 	return (
-		<div className={listWrapperClass}>
+		<div
+			className={listWrapperClass}
+			// style={{ height: "calc(100vh - 270px)"}}
+		>
 			<ListBox
 				aria-label="Categories"
 				bookmarksColumns={bookmarksColumns}
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
+				isPublicPage={isPublicPage}
 				onBulkBookmarkDelete={onBulkBookmarkDelete}
 				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"

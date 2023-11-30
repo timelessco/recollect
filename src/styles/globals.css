@@ -34,46 +34,31 @@
 }
 
 body {
-	overflow: hidden;
+	@apply overflow-hidden antialiased outline-none;
+	font-variation-settings: "opsz" 20;
 }
 
 main {
-	height: calc(100vh - 68.5px);
+	height: calc(100vh - 48.5px);
 }
 
 .my-masonry-grid {
 	display: -webkit-box; /* Not needed if autoprefixing */
-	display: flexbox; /* Not needed if autoprefixing */
+	display: -ms-flexbox; /* Not needed if autoprefixing */
 	display: flex;
-	justify-content: center;
-
+	margin-left: -30px; /* gutter size offset */
 	width: auto;
 }
-
 .my-masonry-grid_column {
-	padding-left: 16px; /* gutter size */
+	padding-left: 30px; /* gutter size */
 	background-clip: padding-box;
-}
-
-.my-masonry-grid_column:nth-child(1) {
-	width: 35% !important;
-	padding-left: 0;
-}
-
-.my-masonry-grid_column:nth-child(2) {
-	width: 35% !important;
-}
-
-.my-masonry-grid_column:nth-child(3) {
-	width: 35% !important;
 }
 
 /* Style your items */
 .my-masonry-grid_column > div {
-	margin-bottom: 16px;
-
 	/* change div to reference your elements you put in <Masonry> */
-	background: white;
+	background: grey;
+	margin-bottom: 30px;
 }
 
 /* for side pane options menu being cut after it passed side pane width */
@@ -224,6 +209,11 @@ main {
 	margin: 0 0 0 8px;
 }
 
+/* for icon dropdown */
+.custom-select[aria-selected="true"] {
+	@apply bg-custom-gray-7; /* Apply your desired styles here */
+}
+
 /* drag and drop */
 
 .single-bookmark[aria-selected="true"] {
@@ -328,64 +318,10 @@ main {
 	}
 }
 
-.dialog {
-	z-index: 50;
-
-	overflow: auto;
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-
-	width: 100%;
-	max-width: calc(100% - 1rem * 2);
-	height: fit-content;
-	max-height: calc(100% - 1rem * 2);
-	margin-top: 1rem;
-	margin-bottom: 1rem;
-	padding: 6px;
-
-	color: hsl(204deg 10% 10%);
-
-	background-color: hsl(204deg 20% 100%);
-	border-radius: 12px;
-
-	/* box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%); */
-	box-shadow: 0 0 1px rgb(0 0 0 / 19%), 0 1px 2px rgb(0 0 0 / 7%),
-		0 6px 15px -5px rgb(0 0 0 / 11%);
-}
-
-.dialog:focus-visible,
-.dialog[data-focus-visible] {
-	outline: 2px solid hsl(204deg 100% 40%);
-	outline-offset: 2px;
-}
-
-.dark .dialog {
-	color: hsl(204deg 20% 100%);
-
-	background-color: hsl(204deg 3% 18%);
-	border-color: hsl(204deg 3% 26%);
-	border-style: solid;
-	border-width: 1px;
-}
-
-@media (width >= 640px) {
-	.dialog {
-		width: 460px;
-
-		/* padding: 1.5rem; */
-	}
-}
-
-@media (width >= 768px) {
-	.dialog {
-		max-height: calc(100% - 6rem * 2);
-
-		/* margin: auto 0; */
-
-		margin-top: 10rem;
-		margin-bottom: 10rem;
-	}
+[data-backdrop] {
+	/* @apply bg-black opacity-50 */
+	/* background: #00000045;; */
+	@apply bg-modal-bg;
 }
 
 .dropdown-container input[type="radio"] {
@@ -408,8 +344,8 @@ main {
 	background-image: url("/public/tickIcon.svg");
 }
 
-.search-bar__control textarea::placeholder {
-	color: #707070;
+.search-bar__input:focus-visible {
+	outline: none;
 }
 
 .aria-select-item[data-active-item] {
@@ -443,4 +379,38 @@ main {
 
 input[type="checkbox"]:checked + .checkbox-div {
 	border: none;
+}
+
+.icon-svg-parent svg {
+	fill: currentColor;
+}
+
+.icon-color-container::-webkit-scrollbar {
+	display: none; /* Safari and Chrome */
+}
+
+.sash-container .sash-module_sash__K-9lB {
+	/* this is to solve the sidepane resize bar z-index issue */
+	z-index: 5;
+}
+
+.card-player.video-react.video-react-fluid,
+.video-react.video-react-16-9,
+.video-react.video-react-4-3 {
+	/* we are having important as in this video player library styles are added inline and we need to overide them */
+	height: 194px !important;
+	padding-top: 0px !important;
+}
+
+.video-react-video {
+	border-radius: 8px;
+}
+
+.video-react-video:hover {
+	border-bottom-left-radius: unset;
+	border-bottom-right-radius: unset;
+}
+
+.aria-multi-select span {
+	@apply hidden;
 }

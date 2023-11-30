@@ -1,10 +1,8 @@
 import { type NextApiResponse } from "next";
 import {
-	createClient,
 	type PostgrestError,
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
-import { verify } from "jsonwebtoken";
 import { find, isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 
@@ -18,6 +16,10 @@ import {
 	CATEGORIES_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 /**
  * Fetches user categories and builds it so that we get all its colaborators data
@@ -32,20 +34,14 @@ export default async function handler(
 	request: NextApiRequest<{ userEmail: string; user_id: string }>,
 	response: NextApiResponse<Data>,
 ) {
-	verify(
-		request.body.access_token,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_) => {
-			if (error_) {
-				response.status(500).json({ data: null, error: error_ });
-				throw new Error("ERROR");
-			}
-		},
-	);
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const { error: _error } = verifyAuthToken(request.body.access_token);
+
+	if (_error) {
+		response.status(500).json({ data: null, error: _error });
+		throw new Error("ERROR: token error");
+	}
+
+	const supabase = apiSupabaseClient();
 
 	const userId = request.body.user_id;
 

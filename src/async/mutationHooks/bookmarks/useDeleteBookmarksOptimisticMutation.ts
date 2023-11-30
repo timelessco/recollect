@@ -2,6 +2,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
 import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
 import { deleteData } from "../../supabaseCrudHelpers";
@@ -12,6 +13,8 @@ export default function useDeleteBookmarksOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
+	const { sortBy } = useGetSortBy();
+
 	const deleteBookmarkOptismicMutation = useMutation(deleteData, {
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -19,6 +22,7 @@ export default function useDeleteBookmarksOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			// Snapshot the previous value
@@ -26,19 +30,22 @@ export default function useDeleteBookmarksOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			// Optimistically update to the new value
 			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				(old) => {
 					if (typeof old === "object") {
 						return {
 							...old,
 							pages: old?.pages?.map((item) => ({
 								...item,
-								data: item.data?.filter(
-									(dataItem) => dataItem?.id !== data?.id,
+								data: item.data?.filter((dataItem) =>
+									data.deleteData?.find(
+										(findItem) => findItem?.id !== dataItem?.id,
+									),
 								),
 							})),
 						};
@@ -54,7 +61,7 @@ export default function useDeleteBookmarksOptimisticMutation() {
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
 			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				context?.previousData,
 			);
 		},
@@ -64,6 +71,7 @@ export default function useDeleteBookmarksOptimisticMutation() {
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
+				sortBy,
 			]);
 
 			void queryClient.invalidateQueries([

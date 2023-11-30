@@ -90,3 +90,6 @@ release-it/remote-commits.json
 ## library folder
 build
 .husky/post-checkout
+
+# Sentry Auth Token
+.sentryclirc

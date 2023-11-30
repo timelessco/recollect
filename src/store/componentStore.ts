@@ -28,6 +28,11 @@ export const useModalStore = create<ModalStoreState>((set) => ({
 		set((state) => ({
 			showClearTrashWarningModal: !state.showClearTrashWarningModal,
 		})),
+	showSettingsModal: false,
+	toggleShowSettingsModal: () =>
+		set((state) => ({
+			showSettingsModal: !state.showSettingsModal,
+		})),
 }));
 
 export const useLoadersStore = create<LoadersStoreState>((set) => ({
@@ -65,4 +70,8 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	currentBookmarkView: "moodboard",
 	setCurrentBookmarkView: (value: BookmarksViewTypes) =>
 		set(() => ({ currentBookmarkView: value })),
+	currentSettingsPage: "main",
+	setCurrentSettingsPage: (
+		value: MiscellaneousStoreState["currentSettingsPage"],
+	) => set(() => ({ currentSettingsPage: value })),
 }));

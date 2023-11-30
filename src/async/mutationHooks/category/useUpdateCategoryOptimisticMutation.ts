@@ -1,17 +1,16 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { type CategoriesData } from "../../../types/apiTypes";
-import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../../utils/constants";
+import { CATEGORIES_KEY } from "../../../utils/constants";
 import { updateCategory } from "../../supabaseCrudHelpers";
 
 // updates a category optimistically
 export default function useUpdateCategoryOptimisticMutation() {
 	const session = useSession();
 	const queryClient = useQueryClient();
-
-	const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();
+	// const { sortBy } = useGetSortBy();
+	// const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();
 
 	const updateCategoryOptimisticMutation = useMutation(updateCategory, {
 		onMutate: async (data) => {
@@ -34,10 +33,18 @@ export default function useUpdateCategoryOptimisticMutation() {
 							if (item?.id === data?.category_id) {
 								return {
 									...item,
-									category_views: data?.updateData?.category_views,
+									category_name: data?.updateData?.category_name
+										? data?.updateData?.category_name
+										: item?.category_name,
+									category_views: data?.updateData?.category_views
+										? data?.updateData?.category_views
+										: item?.category_views,
 									icon: data?.updateData?.icon
 										? data?.updateData?.icon
 										: item?.icon,
+									icon_color: data?.updateData?.icon_color
+										? data?.updateData?.icon_color
+										: item?.icon_color,
 									is_public:
 										data?.updateData?.is_public !== undefined
 											? data?.updateData?.is_public
@@ -63,11 +70,13 @@ export default function useUpdateCategoryOptimisticMutation() {
 		// Always refetch after error or success:
 		onSettled: () => {
 			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORIES_ID,
-			]);
+			// removed due to the multiple get bookmark fetch when changing sort by issue
+			// void queryClient.invalidateQueries([
+			// 	BOOKMARKS_KEY,
+			// 	session?.user?.id,
+			// 	CATEGORIES_ID,
+			// 	// sortBy
+			// ]);
 		},
 	});
 

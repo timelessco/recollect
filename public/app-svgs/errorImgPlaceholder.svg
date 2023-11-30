@@ -1,5 +1,4 @@
-const ErrorImgPlaceholder = () => (
-	<svg
+<svg
 		fill="none"
 		height="100%"
 		viewBox="0 0 370 194"
@@ -12,7 +11,7 @@ const ErrorImgPlaceholder = () => (
 				height="42"
 				id="mask0_1_6"
 				maskUnits="userSpaceOnUse"
-				style={{ maskType: "alpha" }}
+				style="mask-type: alpha"
 				width="52"
 				x="159"
 				y="76"
@@ -31,7 +30,7 @@ const ErrorImgPlaceholder = () => (
 						fill="url(#paint0_radial_1_6)"
 					/>
 				</g>
-				<g filter="url(#filter1_f_1_6)" style={{ mixBlendMode: "screen" }}>
+				<g filter="url(#filter1_f_1_6)" style="mix-blend-mode: screen">
 					<path
 						d="M183.798 85.6521C150.158 37.2556 84.4236 24.758 36.978 57.7384C-10.4673 90.7189 -21.6577 156.688 11.9837 205.085C45.6255 253.481 111.36 265.979 158.805 232.998C206.251 200.018 217.442 134.049 183.798 85.6521Z"
 						fill="url(#paint1_radial_1_6)"
@@ -49,7 +48,7 @@ const ErrorImgPlaceholder = () => (
 						fill="url(#paint3_radial_1_6)"
 					/>
 				</g>
-				<g filter="url(#filter4_f_1_6)" style={{ mixBlendMode: "screen" }}>
+				<g filter="url(#filter4_f_1_6)" style="mix-blend-mode: screen">
 					<path
 						d="M280.929 55.9241C244.045 2.86525 172.443 -11.1582 120.997 24.6027C69.5519 60.3638 57.7463 132.366 94.6287 185.425C131.511 238.484 203.115 252.507 254.561 216.746C306.005 180.985 317.811 108.983 280.929 55.9241Z"
 						fill="url(#paint4_radial_1_6)"
@@ -305,6 +304,3 @@ const ErrorImgPlaceholder = () => (
 			</clipPath>
 		</defs>
 	</svg>
-);
-
-export default ErrorImgPlaceholder;

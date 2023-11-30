@@ -4,6 +4,7 @@ import {
 	type QueryKey,
 } from "@tanstack/react-query";
 import axios from "axios";
+import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -18,21 +19,30 @@ import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type ClearBookmarksInTrashApiPayloadTypes,
+	type DeleteBookmarkPayload,
+	type DeleteUserApiPayload,
 	type DeleteUserCategoryApiPayload,
 	type FetchDataResponse,
 	type FetchSharedCategoriesData,
 	type GetUserProfilePicPayload,
 	type MoveBookmarkToTrashApiPayload,
 	type ProfilesTableTypes,
+	type RemoveUserProfilePicPayload,
 	type SingleListData,
 	type SupabaseSessionType,
 	type UpdateCategoryApiPayload,
 	type UpdateCategoryOrderApiPayload,
 	type UpdateSharedCategoriesUserAccessApiPayload,
+	type UpdateUsernameApiPayload,
 	type UpdateUserProfileApiPayload,
+	type UploadFileApiPayload,
+	type UploadFileApiResponse,
+	type UploadProfilePicApiResponse,
+	type UploadProfilePicPayload,
 	type UserProfilePicTypes,
 	type UserTagsData,
 } from "../types/apiTypes";
+import { type BookmarksSortByTypes } from "../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../types/componentTypes";
 import {
 	ADD_BOOKMARK_MIN_DATA,
@@ -44,6 +54,7 @@ import {
 	CREATE_USER_TAGS_API,
 	DELETE_BOOKMARK_DATA_API,
 	DELETE_SHARED_CATEGORIES_USER_API,
+	DELETE_USER_API,
 	DELETE_USER_CATEGORIES_API,
 	FETCH_BOOKMARKS_VIEW,
 	FETCH_SHARED_CATEGORIES_DATA_API,
@@ -55,6 +66,7 @@ import {
 	GET_USER_PROFILE_PIC_API,
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
+	REMOVE_PROFILE_PIC_API,
 	REMOVE_TAG_FROM_BOOKMARK_API,
 	SEARCH_BOOKMARKS,
 	SEND_COLLABORATION_EMAIL_API,
@@ -62,6 +74,9 @@ import {
 	UPDATE_SHARED_CATEGORY_USER_ROLE_API,
 	UPDATE_USER_CATEGORIES_API,
 	UPDATE_USER_PROFILE_API,
+	UPDATE_USERNAME_API,
+	UPLOAD_FILE_API,
+	UPLOAD_PROFILE_PIC_API,
 } from "../utils/constants";
 import { isUserInACategory } from "../utils/helpers";
 
@@ -74,12 +89,13 @@ export const fetchBookmakrsData = async (
 	}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	QueryFunctionContext<Array<number | string | null | undefined>, any>,
 	session: SupabaseSessionType,
+	sortBy: BookmarksSortByTypes,
 ) => {
 	const categoryId =
-		!isEmpty(queryKey) && queryKey?.length <= 3 ? queryKey[2] : null;
+		!isEmpty(queryKey) && queryKey?.length <= 4 ? queryKey[2] : null;
 
 	const userId =
-		!isEmpty(queryKey) && queryKey?.length <= 4 ? queryKey[1] : null;
+		!isEmpty(queryKey) && queryKey?.length <= 5 ? queryKey[1] : null;
 
 	if (!userId) {
 		return {
@@ -90,6 +106,10 @@ export const fetchBookmakrsData = async (
 	}
 
 	if (!session?.access_token) {
+		return undefined;
+	}
+
+	if (!sortBy) {
 		return undefined;
 	}
 
@@ -104,7 +124,7 @@ export const fetchBookmakrsData = async (
 				session?.access_token
 			}&category_id=${isNull(categoryId) ? "null" : categoryId}&from=${
 				pageParameter as string
-			}`,
+			}&sort_by=${sortBy}`,
 		);
 
 		return {
@@ -207,15 +227,12 @@ export const addBookmarkScreenshot = async ({
 	}
 };
 
-export const deleteData = async (item: {
-	id: number;
-	session: SupabaseSessionType;
-}) => {
+export const deleteData = async (item: DeleteBookmarkPayload) => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 			{
-				data: { id: item?.id },
+				data: { deleteData: item?.deleteData },
 				access_token: item?.session?.access_token,
 			},
 		);
@@ -270,6 +287,7 @@ export const searchBookmarks = async (
 	searchText: string,
 	category_id: CategoryIdUrlTypes,
 	session: SupabaseSessionType,
+	isSharedCategory: boolean,
 ): Promise<{
 	data: BookmarksPaginatedDataTypes[] | null;
 	error: Error;
@@ -287,7 +305,7 @@ export const searchBookmarks = async (
 				data: BookmarksPaginatedDataTypes[];
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${accessToken}&user_id=${session?.user?.id}&category_id=${categoryId}`,
+				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${accessToken}&user_id=${session?.user?.id}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
 			);
 			return response?.data;
 		} catch (error_) {
@@ -719,13 +737,21 @@ export const fetchUserProfiles = async ({
 		};
 	}
 
+	const existingOauthAvatarUrl = session?.user?.user_metadata?.avatar_url;
+
 	try {
 		if (userId) {
 			const response = await axios.get<{
 				data: ProfilesTableTypes[] | null;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}`,
+				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${
+					session?.access_token
+				}&user_id=${userId}${
+					!isNil(existingOauthAvatarUrl)
+						? `&avatar=${existingOauthAvatarUrl}`
+						: ``
+				}`,
 			);
 			return response?.data;
 		}
@@ -764,6 +790,44 @@ export const updateUserProfile = async ({
 	}
 };
 
+export const updateUsername = async ({
+	id,
+	username,
+	session,
+}: UpdateUsernameApiPayload) => {
+	try {
+		const response = await axios.post<{
+			data: ProfilesTableTypes[] | null;
+			error: Error;
+		}>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, {
+			id,
+			username,
+			access_token: session?.access_token,
+		});
+
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
+
+export const deleteUser = async ({ id, session }: DeleteUserApiPayload) => {
+	try {
+		const response = await axios.post<{
+			data: ProfilesTableTypes[] | null;
+			error: Error;
+		}>(`${NEXT_API_URL}${DELETE_USER_API}`, {
+			id,
+			email: session?.user?.email,
+			access_token: session?.access_token,
+		});
+
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
+
 export const getUserProfilePic = async ({
 	email,
 	session,
@@ -771,19 +835,96 @@ export const getUserProfilePic = async ({
 	data: UserProfilePicTypes[] | null;
 	error: Error;
 }> => {
+	if (!isNil(email) && !isEmpty(email)) {
+		try {
+			const response = await axios.get<{
+				data: UserProfilePicTypes[] | null;
+				error: Error;
+			}>(
+				`${NEXT_API_URL}${GET_USER_PROFILE_PIC_API}?access_token=${
+					session?.access_token ?? ""
+				}&email=${email}`,
+			);
+
+			return response?.data;
+		} catch (error) {
+			return { data: null, error: error as Error };
+		}
+	}
+
+	return { data: null, error: "Email not present" as unknown as Error };
+};
+
+export const removeUserProfilePic = async ({
+	id,
+	session,
+}: RemoveUserProfilePicPayload) => {
 	try {
-		const response = await axios.get<{
-			data: UserProfilePicTypes[] | null;
+		const response = await axios.post<{
+			data: ProfilesTableTypes[] | null;
 			error: Error;
-		}>(
-			`${NEXT_API_URL}${GET_USER_PROFILE_PIC_API}?access_token=${
-				session?.access_token ?? ""
-			}&email=${email}`,
+		}>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, {
+			id,
+			email: session?.user?.email,
+			access_token: session?.access_token,
+		});
+
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
+
+// file upload
+
+export const uploadFile = async ({
+	file,
+	session,
+	category_id,
+}: UploadFileApiPayload) => {
+	try {
+		const response = await axios.post<UploadFileApiResponse>(
+			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
+			{
+				file,
+				access_token: session?.access_token,
+				category_id,
+			},
+			{
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+			},
 		);
 
 		return response?.data;
 	} catch (error) {
-		return { data: null, error: error as Error };
+		return error;
+	}
+};
+
+// user settings
+export const uploadProfilePic = async ({
+	file,
+	session,
+}: UploadProfilePicPayload) => {
+	try {
+		const response = await axios.post<UploadProfilePicApiResponse>(
+			`${NEXT_API_URL}${UPLOAD_PROFILE_PIC_API}`,
+			{
+				file,
+				access_token: session?.access_token,
+			},
+			{
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+			},
+		);
+
+		return response?.data;
+	} catch (error) {
+		return error;
 	}
 };
 

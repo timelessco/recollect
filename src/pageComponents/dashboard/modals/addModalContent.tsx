@@ -1,19 +1,16 @@
-/* eslint-disable @next/next/no-img-element */
-
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
 import filter from "lodash/filter";
-// import find from "lodash/find";
-import { type OnChangeValue } from "react-select";
 
+import AriaMultiSelect from "../../../components/ariaMultiSelect";
+import AriaSearchableSelect from "../../../components/ariaSearchableSelect";
 import Button from "../../../components/atoms/button";
-import Input from "../../../components/atoms/input";
-import CreatableSearchSelect from "../../../components/creatableSearchSelect";
+// import Input from "../../../components/atoms/input";
 import LabelledComponent from "../../../components/labelledComponent";
-import TagInput from "../../../components/tagInput";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -27,9 +24,11 @@ import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../../utils/constants";
 
 // Modal for adding a bookmark
 type AddModalContentProps = {
-	addExistingTag: (value: OnChangeValue<TagInputOption, true>) => Promise<void>;
+	addExistingTag: (
+		value: Array<{ label: string; value: number }>,
+	) => Promise<void>;
 	addedTags: UserTagsData[];
-	createTag: (value: OnChangeValue<TagInputOption, true>) => Promise<void>;
+	createTag: (value: Array<{ label: string }>) => Promise<void>;
 	isCategoryChangeLoading: boolean;
 	mainButtonText: string;
 	onCategoryChange: (value: SearchSelectOption | null) => Promise<void>;
@@ -63,12 +62,16 @@ const AddModalContent = (props: AddModalContentProps) => {
 
 	const queryClient = useQueryClient();
 	const session = useSession();
+	const { sortBy } = useGetSortBy();
+	// tells if the logged in user is the bookmark owner
+	const isOwner = urlData?.user_id?.id === session?.user?.id;
 
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 	const latestBookmarkData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
 		categoryId,
+		sortBy,
 	]) as {
 		pages: Array<{
 			data: SingleListData[];
@@ -90,46 +93,46 @@ const AddModalContent = (props: AddModalContentProps) => {
 		error: PostgrestError;
 	};
 
-	const renderBookmarkDataCard = () => {
-		if (urlData) {
-			return (
-				<>
-					<div className="shrink-0">
-						<img
-							alt=""
-							className="h-10 w-10 rounded-sm"
-							src={urlData?.ogImage || urlData?.screenshot}
-						/>
-					</div>
-					<div className="min-w-0 flex-1">
-						{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-						<a className="focus:outline-none" href="#">
-							<span aria-hidden="true" className="absolute inset-0" />
-							<p className="text-sm font-medium text-gray-900">
-								{urlData?.title}
-							</p>
-							<p className="truncate text-sm text-gray-500">
-								{urlData?.description}
-							</p>
-						</a>
-					</div>
-				</>
-			);
-		}
+	// const renderBookmarkDataCard = () => {
+	// 	if (urlData) {
+	// 		return (
+	// 			<>
+	// 				<div className="shrink-0">
+	// 					<img
+	// 						alt=""
+	// 						className="h-10 w-10 rounded-sm"
+	// 						src={urlData?.ogImage || urlData?.screenshot}
+	// 					/>
+	// 				</div>
+	// 				<div className="min-w-0 flex-1">
+	// 					{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+	// 					<a className="focus:outline-none" href="#">
+	// 						<span aria-hidden="true" className="absolute inset-0" />
+	// 						<p className="text-sm font-medium text-gray-900">
+	// 							{urlData?.title}
+	// 						</p>
+	// 						<p className="truncate text-sm text-gray-500">
+	// 							{urlData?.description}
+	// 						</p>
+	// 					</a>
+	// 				</div>
+	// 			</>
+	// 		);
+	// 	}
 
-		return (
-			<div className="flex w-full animate-pulse flex-row items-center space-x-4">
-				<div className="h-10 w-10 rounded-sm bg-slate-200" id="image-load" />
-				<div className="min-w-0 flex-1">
-					<div className="mb-1 h-3 w-1/2 rounded bg-slate-200" />
-					<div className="space-y-1">
-						<div className="h-2 rounded  bg-slate-200" />
-						<div className="h-2 w-4/5 rounded bg-slate-200" />
-					</div>
-				</div>
-			</div>
-		);
-	};
+	// 	return (
+	// 		<div className="flex w-full animate-pulse flex-row items-center space-x-4">
+	// 			<div className="h-10 w-10 rounded-sm bg-slate-200" id="image-load" />
+	// 			<div className="min-w-0 flex-1">
+	// 				<div className="mb-1 h-3 w-1/2 rounded bg-slate-200" />
+	// 				<div className="space-y-1">
+	// 					<div className="h-2 rounded  bg-slate-200" />
+	// 					<div className="h-2 w-4/5 rounded bg-slate-200" />
+	// 				</div>
+	// 			</div>
+	// 		</div>
+	// 	);
+	// };
 
 	// if the bookmaks is not created by logged in user , then only show the option in else case
 	const categoryOptions = () => {
@@ -173,42 +176,76 @@ const AddModalContent = (props: AddModalContentProps) => {
 
 	return (
 		<div id="modal-content">
-			<div className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400">
+			{/* <div className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400">
 				{renderBookmarkDataCard()}
-			</div>
+			</div> */}
 			<div className="pt-4">
-				<LabelledComponent label="Url">
+				{/* <LabelledComponent label="Url">
 					<Input
-						className="px-2 py-1"
+						className="px-2 py-1 opacity-50"
 						errorText=""
 						isDisabled
 						isError={false}
 						placeholder=""
 						value={urlData?.url ?? ""}
 					/>
-				</LabelledComponent>
-				<LabelledComponent label="Tags">
-					<TagInput
-						addExistingTag={addExistingTag}
-						createTag={createTag}
-						defaultValue={addedTags?.map((item) => ({
-							value: item?.id,
-							label: item?.name,
-						}))}
-						options={userTags?.map((item) => ({
-							value: item?.id,
-							label: item?.name,
-						}))}
-						removeExistingTag={removeExistingTag}
-					/>
-				</LabelledComponent>
-				<LabelledComponent label="Add Category">
-					<CreatableSearchSelect
-						createOption={onCreateCategory}
-						defaultValue={defaultValue}
+				</LabelledComponent> */}
+				{isOwner && (
+					<LabelledComponent label="Tags">
+						<AriaMultiSelect
+							defaultList={addedTags?.map((item) => item?.name)}
+							list={userTags?.map((item) => item?.name) ?? []}
+							onChange={async (action, value) => {
+								if (action === "remove") {
+									const tagData = find(
+										addedTags,
+										(findItem) => findItem.name === value,
+									);
+									if (tagData) {
+										await removeExistingTag({
+											label: tagData?.name,
+											value: tagData?.id,
+										});
+									}
+								}
+
+								if (action === "add" && typeof value !== "string") {
+									await addExistingTag(
+										value?.map((addItem) => ({
+											label: addItem,
+											value: find(
+												userTags,
+												(findItem) => findItem.name === addItem,
+											)?.id as number,
+										})),
+									);
+								}
+
+								if (action === "create") {
+									await createTag([{ label: value as string }]);
+								}
+							}}
+							placeholder="Tag name..."
+						/>
+					</LabelledComponent>
+				)}
+				<LabelledComponent label="Add Collection">
+					<AriaSearchableSelect
+						defaultValue={defaultValue?.label}
 						isLoading={isCategoryChangeLoading}
-						onChange={onCategoryChange}
-						options={categoryOptions()}
+						list={categoryOptions()?.map((item) => item?.label)}
+						onChange={async (value) => {
+							const data = find(
+								categoryOptions(),
+								(item) => item.label === value,
+							);
+							if (data) {
+								await onCategoryChange(data);
+							} else {
+								console.error("Payload data is empty");
+							}
+						}}
+						onCreate={(value) => onCreateCategory({ label: value, value })}
 					/>
 				</LabelledComponent>
 			</div>

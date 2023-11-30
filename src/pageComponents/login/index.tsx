@@ -70,11 +70,11 @@ const LoginPage = () => {
 			<div>
 				<div className="flex h-[calc(100vh-95px)] items-center justify-center sm:mx-auto sm:w-full sm:max-w-md">
 					<div className="w-[300px]">
-						<div className="mb-[21px] flex w-full items-center justify-center text-2xl font-semibold leading-[28px]">
+						<div className="mb-[21px] flex w-full items-center justify-center text-2xl font-semibold leading-[28px] tracking-[0.24px]">
 							<figure className="mr-[6px]">
 								<LaterpadLogo />
 							</figure>
-							<p>laterpad</p>
+							<p>recollect</p>
 						</div>
 						<form
 							className="flex flex-col items-center justify-center space-y-4"
@@ -109,6 +109,7 @@ const LoginPage = () => {
 								id="password"
 								isError={Boolean(errors?.password)}
 								placeholder="Password"
+								type="password"
 							/>
 							<button className={buttonDarkClassName} type="submit">
 								{!isLoading ? "Sign in" : <Spinner />}

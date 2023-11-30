@@ -2,14 +2,14 @@
 
 import { type NextApiResponse } from "next";
 import {
-	createClient,
 	type PostgrestError,
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 import slugify from "slugify";
+import uniqid from "uniqid";
 
 import {
 	type AddUserCategoryApiPayload,
@@ -21,6 +21,10 @@ import {
 	DUPLICATE_CATEGORY_NAME_ERROR,
 	PROFILES,
 } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: CategoriesData[] | null;
@@ -35,20 +39,14 @@ export default async function handler(
 	request: NextApiRequest<AddUserCategoryApiPayload>,
 	response: NextApiResponse<Data>,
 ) {
-	verify(
-		request.body.access_token,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error) => {
-			if (error) {
-				response.status(500).json({ data: null, error });
-				throw new Error("ERROR");
-			}
-		},
-	);
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const { error: _error } = verifyAuthToken(request.body.access_token);
+
+	if (_error) {
+		response.status(500).json({ data: null, error: _error });
+		throw new Error("ERROR: token error");
+	}
+
+	const supabase = apiSupabaseClient();
 
 	const { user_id: userId } = request.body;
 	const { name } = request.body;
@@ -73,9 +71,7 @@ export default async function handler(
 				{
 					category_name: name,
 					user_id: userId,
-					category_slug: `${slugify(name, { lower: true })}-${Math.floor(
-						Math.random() * 10_000,
-					)}`,
+					category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
 				},
 			])
 			.select();

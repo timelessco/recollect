@@ -9,12 +9,12 @@ import InboxIconGray from "../../../icons/inboxIconGray";
 import SearchIconGray from "../../../icons/searchIconGray";
 import SettingsIcon from "../../../icons/settingsIcon";
 import TrashIconGray from "../../../icons/trashIconGray";
+import { useModalStore } from "../../../store/componentStore";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	SEARCH_URL,
-	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
@@ -35,6 +35,10 @@ const SidePaneOptionsMenu = () => {
 		error: PostgrestError;
 	};
 
+	const toggleShowSettingsModal = useModalStore(
+		(state) => state.toggleShowSettingsModal,
+	);
+
 	const optionsMenuList = [
 		{
 			icon: <SearchIconGray />,
@@ -43,6 +47,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === SEARCH_URL,
 			id: 0,
 			count: undefined,
+			iconColor: "",
 		},
 		{
 			icon: <InboxIconGray />,
@@ -51,6 +56,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === UNCATEGORIZED_URL,
 			id: 2,
 			count: bookmarksCountData?.data?.uncategorized,
+			iconColor: "",
 		},
 		{
 			icon: <HomeIconGray />,
@@ -59,6 +65,7 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === ALL_BOOKMARKS_URL,
 			id: 1,
 			count: bookmarksCountData?.data?.allBookmarks,
+			iconColor: "",
 		},
 
 		{
@@ -68,14 +75,16 @@ const SidePaneOptionsMenu = () => {
 			current: currentPath === TRASH_URL,
 			id: 3,
 			count: bookmarksCountData?.data?.trash,
+			iconColor: "",
 		},
 		{
 			icon: <SettingsIcon />,
 			name: "Settings",
-			href: `/${SETTINGS_URL}`,
-			current: currentPath === SETTINGS_URL,
+			href: "",
+			current: false,
 			id: 4,
 			count: undefined,
+			iconColor: "",
 		},
 	];
 
@@ -84,8 +93,15 @@ const SidePaneOptionsMenu = () => {
 			{optionsMenuList?.map((item) => (
 				<SingleListItem
 					extendedClassname="py-[6px]"
+					isLink={item?.id !== 4}
 					item={item}
 					key={item.id}
+					onClick={() => {
+						if (item?.id === 4) {
+							// we clicked on settings
+							toggleShowSettingsModal();
+						}
+					}}
 					showIconDropdown={false}
 				/>
 			))}

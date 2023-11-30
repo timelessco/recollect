@@ -7,6 +7,7 @@ import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import pick from "lodash/pick";
 import {
+	DragPreview,
 	ListDropTargetDelegate,
 	ListKeyboardDelegate,
 	mergeProps,
@@ -41,7 +42,6 @@ import {
 } from "../../../components/ariaDropdown";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
-import FileIcon from "../../../icons/categoryIcons/fileIcon";
 import OptionsIconGray from "../../../icons/optionsIconGray";
 import {
 	useLoadersStore,
@@ -53,6 +53,7 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
+import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
 	dropdownMenuClassName,
@@ -61,6 +62,7 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	colorPickerColors,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -78,6 +80,7 @@ type CollectionsListPropertyTypes = {
 		current: boolean,
 		id: number,
 	) => Promise<void>;
+	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 };
 // interface OnReorderPayloadTypes {
@@ -91,11 +94,39 @@ type ListBoxDropTypes = ListProps<object> & {
 	onReorder: (event: DroppableCollectionReorderEvent) => unknown;
 };
 
+const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
+	const queryClient = useQueryClient();
+	const session = useSession();
+	const categoryData = queryClient.getQueryData([
+		CATEGORIES_KEY,
+		session?.user?.id,
+	]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
+
+	const userId = session?.user?.id;
+
+	const singleCategoryData = find(
+		categoryData?.data,
+		(item) => item.category_name === collectionName,
+	);
+
+	const isUserCollectionOwner = singleCategoryData?.user_id?.id === userId;
+
+	if (isUserCollectionOwner) {
+		return <div>{collectionName}</div>;
+	}
+
+	return <div>Non Owner collection cannot be sorted</div>;
+};
+
 const ListBoxDrop = (props: ListBoxDropTypes) => {
 	const { getItems } = props;
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const state = useListState(props);
 	const ref = useRef(null);
+	const preview = useRef(null);
 	const { listBoxProps } = useListBox(
 		{ ...props, shouldSelectOnPressUp: true },
 		state,
@@ -131,6 +162,7 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 		// Collection and selection manager come from list state.
 		collection: state.collection,
 		selectionManager: state.selectionManager,
+		preview,
 		// Provide data for each dragged item. This function could
 		// also be provided by the user of the component.
 		getItems:
@@ -140,7 +172,7 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 					const item = state.collection.getItem(key);
 
 					return {
-						"text/plain": item.textValue,
+						"text/plain": !isNull(item) ? item.textValue : "",
 					};
 				})),
 	});
@@ -159,6 +191,11 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 					state={state}
 				/>
 			))}
+			<DragPreview ref={preview}>
+				{(items) => (
+					<RenderDragPreview collectionName={items[0]["text/plain"]} />
+				)}
+			</DragPreview>
 		</ul>
 	);
 };
@@ -270,6 +307,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		onCategoryOptionClick,
 		onIconSelect,
 		onAddNewCategory,
+		onIconColorChange,
 	} = listProps;
 
 	const queryClient = useQueryClient();
@@ -333,6 +371,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					bookmarksCountData?.data?.categoryCount,
 					(catItem) => catItem?.category_id === item?.id,
 				)?.count,
+				iconColor: item?.icon_color,
 		  }))
 		: [];
 
@@ -427,7 +466,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					menuButtonClassName="pr-1"
 					menuClassName={`${dropdownMenuClassName} z-10`}
 				>
-					{[{ label: "Add Category", value: "add-category" }]?.map((item) => (
+					{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
 						<AriaDropdownMenu
 							key={item?.value}
 							onClick={() => {
@@ -460,6 +499,9 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 									item={item}
 									listNameId="collection-name"
 									onCategoryOptionClick={onCategoryOptionClick}
+									onIconColorChange={(color) =>
+										onIconColorChange?.(color, item?.id)
+									}
 									onIconSelect={onIconSelect}
 									showDropdown
 									showSpinner={item?.id === sidePaneOptionLoading}
@@ -472,14 +514,28 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
 						<div className="flex items-center">
 							<figure className="mr-2 h-[18px] w-[18px]">
-								<FileIcon />
+								<svg
+									fill={colorPickerColors[1]}
+									height="16"
+									viewBox="0 0 18 18"
+									width="16"
+								>
+									<use href="/sprite.svg#file" />
+								</svg>
 							</figure>
 							<input
 								autoFocus
 								className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
 								id="add-category-input"
-								// disabling it as we do need it here
-								onBlur={() => setShowAddCategoryInput(false)}
+								onBlur={(event) => {
+									if (!isEmpty(event?.target?.value)) {
+										void onAddNewCategory(
+											(event.target as HTMLInputElement).value,
+										);
+									}
+
+									setShowAddCategoryInput(false);
+								}}
 								onKeyUp={(event) => {
 									if (
 										event.key === "Enter" &&
@@ -491,7 +547,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 										setShowAddCategoryInput(false);
 									}
 								}}
-								placeholder="Category Name"
+								placeholder="Collection Name"
 							/>
 						</div>
 					</div>
@@ -507,8 +563,8 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					<figure>
 						<AddCategoryIcon />
 					</figure>
-					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-custom-gray-3">
-						Add Category
+					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-grayDark-grayDark-600">
+						Add Collection
 					</p>
 				</div>
 			</div>

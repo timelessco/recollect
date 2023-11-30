@@ -25,7 +25,7 @@ const Thumb = (props: SliderThumbProps) => {
 	return (
 		<div
 			className="slider-thumb"
-			style={{ left: `calc(${getThumbPercent(index) * 100}%)` }}
+			style={{ left: `calc(${getThumbPercent(index as number) * 100}%)` }}
 		>
 			<SliderThumb className="slider-thumb-handle" state={sliderThumb} />
 		</div>

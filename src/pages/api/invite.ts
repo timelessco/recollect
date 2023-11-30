@@ -1,16 +1,22 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import jwt_decode from "jwt-decode";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
-import { SHARED_CATEGORIES_TABLE_NAME } from "../../utils/constants";
+import {
+	ALL_BOOKMARKS_URL,
+	SHARED_CATEGORIES_TABLE_NAME,
+} from "../../utils/constants";
+import { apiSupabaseClient } from "../../utils/supabaseServerClient";
 
 /**
  * Adds user as colaborator in DB
  */
+
+// NOTE: check https://app.asana.com/0/1202643527638612/1205842037172641 for this apis short comings
 
 type Data = {
 	error: PostgrestError | string | null;
@@ -28,10 +34,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	if (request?.query?.token) {
 		const tokenData: InviteTokenData = jwt_decode(
@@ -60,7 +63,7 @@ export default async function handler(
 					isNull(error) ? "db error null" : error
 				}`,
 			});
-			throw new Error("ERROR");
+			throw new Error("ERROR: invite has been deleted");
 		}
 
 		// the data will be present as it will be added with is_accept_pending true when invite is sent
@@ -84,23 +87,21 @@ export default async function handler(
 				.eq("category_id", insertData?.category_id);
 
 			if (isNull(catError)) {
-				response.status(200).json({
-					success: "User has been added as a colaborator to the category",
-					error: null,
-				});
+				// User has been added as a colaborator to the category
+				response?.redirect(`/${ALL_BOOKMARKS_URL}`);
 			} else if (catError?.code === "23503") {
 				// if collab user does not have an existing account
 				response.status(500).json({
 					success: null,
 					error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${catError?.message}`,
 				});
-				throw new Error("ERROR");
+				throw new Error("ERROR: invite no existing account");
 			} else {
 				response.status(500).json({
 					success: null,
 					error: catError?.message,
 				});
-				throw new Error("ERROR");
+				throw new Error(`ERROR: invite error ${catError?.message}`);
 			}
 		} else {
 			response.status(500).json({
@@ -109,7 +110,7 @@ export default async function handler(
 					? "The user is alredy a colaborator of this category"
 					: error,
 			});
-			throw new Error("ERROR");
+			// throw new Error("ERROR: invite error");
 		}
 	}
 }

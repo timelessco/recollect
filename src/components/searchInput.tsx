@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
@@ -9,11 +10,16 @@ import {
 	useMiscellaneousStore,
 } from "../store/componentStore";
 import { type UserTagsData } from "../types/apiTypes";
-import { USER_TAGS_KEY } from "../utils/constants";
+import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
 import Spinner from "./spinner";
 
 const styles = {
+	input: {
+		left: 27,
+		top: 3,
+		width: "80%",
+	},
 	control: {
 		backgroundColor: "rgba(0, 0, 0, 0.047)",
 		fontSize: 14,
@@ -69,6 +75,7 @@ type SearchInputTypes = {
 
 const SearchInput = (props: SearchInputTypes) => {
 	const { placeholder, onChange, userId } = props;
+	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 
 	const queryClient = useQueryClient();
 
@@ -85,27 +92,40 @@ const SearchInput = (props: SearchInputTypes) => {
 			<figure className=" absolute left-[9px] top-[7px]">
 				<SearchInputSearchIcon />
 			</figure>
+			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
 				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className="search-bar"
-				onChange={(event: { target: { value: string } }) =>
-					onChange(event.target.value)
-				}
+				onChange={(event: { target: { value: string } }) => {
+					onChange(event.target.value);
+
+					const search = event.target.value;
+
+					const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
+
+					const tagName =
+						!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
+							? matchedSearchTag?.map((item) => item?.replace("@", ""))
+							: undefined;
+
+					setAddedTags(tagName);
+				}}
 				placeholder={placeholder}
+				singleLine
 				style={styles}
 				value={searchText}
 			>
 				<Mention
-					data={userTagsData?.data?.map((item) => ({
-						id: item?.id,
-						display: item?.name,
-					}))}
+					appendSpaceOnAdd
+					data={userTagsData?.data
+						?.map((item) => ({
+							id: item?.id,
+							display: item?.name,
+						}))
+						?.filter((filterItem) => !addedTags?.includes(filterItem?.display))}
+					displayTransform={(_url, display) => `#${display}`}
 					markup="@__display__"
 					trigger="#"
-					// style={{
-					//   backgroundColor: "#cee4e5",
-					//   with: "100%",
-					// }}
 				/>
 			</MentionsInput>
 			{isSearchLoading && (

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { ToastContainer } from "react-toastify";
 
@@ -32,6 +32,12 @@ const SignUp = () => {
 
 	const router = useRouter();
 	const supabase = useSupabaseClient();
+	const session = useSession();
+
+	useEffect(() => {
+		if (session) void router.push(`/${ALL_BOOKMARKS_URL}`);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [session]);
 
 	const {
 		register,
@@ -61,14 +67,14 @@ const SignUp = () => {
 		<>
 			<div className="sign-up-parent flex h-screen">
 				<div className="flex w-1/2 items-center justify-end pr-[140px]">
-					<div className="w-[374px]">
+					<div className="w-[397px]">
 						<figure>
 							<LaterpadLogoBlack />
 						</figure>
-						<p className="text-8xl font-semibold leading-[110px] text-black">
-							laterpad
+						<p className="text-8xl font-semibold leading-[110px] tracking-[-2px] text-black">
+							recollect
 						</p>
-						<p className=" text-40 font-semibold leading-[46px] tracking-[-0.005em] text-black">
+						<p className="text-40 font-semibold leading-[46px] tracking-[-0.2px] text-black">
 							Life happens, save it.
 						</p>
 					</div>
@@ -109,6 +115,7 @@ const SignUp = () => {
 								id="password"
 								isError={Boolean(errors?.password)}
 								placeholder="Password"
+								type="password"
 							/>
 							<button className={buttonDarkClassName} type="submit">
 								{isLoading ? <Spinner /> : "Sign up"}

@@ -9,18 +9,29 @@ import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 } from "./componentStoreTypes";
+import { type CategoryIdUrlTypes, type FileType } from "./componentTypes";
 
 export type SupabaseSessionType = Session | null;
+
+export type ImgMetadataType = {
+	favIcon: string | null;
+	height: number | null;
+	img_caption: string | null;
+	ogImgBlurUrl: string | null;
+	width: number | null;
+};
 export type SingleListData = {
 	addedTags: UserTagsData[];
 	category_id: number;
 	description: string;
 	id: number;
 	inserted_at: string;
+	meta_data: ImgMetadataType;
 	ogImage: string;
 	screenshot: string;
 	title: string;
 	trash: boolean;
+	type: string;
 	url: string;
 	user_id: ProfilesTableTypes;
 };
@@ -28,8 +39,11 @@ export type SingleListData = {
 export type BookmarksCountTypes = {
 	allBookmarks: number;
 	categoryCount: Array<{ category_id: number; count: number }>;
+	images: number;
+	links: number;
 	trash: number;
 	uncategorized: number;
+	videos: number;
 };
 
 export type SingleBookmarksPaginatedDataTypes = {
@@ -99,9 +113,10 @@ export type CategoriesData = {
 	collabData: CollabDataInCategory[] | [];
 	created_at: string;
 	icon: string | null;
+	icon_color: string;
 	id: number;
 	is_public: boolean;
-	user_id: { email: string; id: string; profile_pic?: string | null };
+	user_id: ProfilesTableTypes;
 };
 
 export type FetchCategoriesDataResponse = {
@@ -155,6 +170,20 @@ export type UserProfilePicTypes = {
 	profile_pic: string | null;
 };
 
+// file upload
+
+export type UploadFileApiResponse = {
+	error: Error | PostgrestError | string | null;
+	success: boolean;
+};
+
+// settings
+
+export type UploadProfilePicApiResponse = {
+	error: Error | PostgrestError | string | null;
+	success: boolean;
+};
+
 // NEXT API types
 export type NextApiRequest<T> = Omit<NextJsApiRequest, "body"> & {
 	body: T & { access_token: string };
@@ -167,6 +196,14 @@ export type AddBookmarkMinDataPayloadTypes = {
 	session: SupabaseSessionType;
 	update_access: boolean;
 	url: string;
+};
+
+export type AddBookmarkRemainingDataPayloadTypes = {
+	access_token: string;
+	favIcon: string;
+	id: SingleListData["id"];
+	image: SingleListData["ogImage"];
+	url: SingleListData["url"];
 };
 
 export type AddBookmarkScreenshotPayloadTypes = {
@@ -220,8 +257,10 @@ export type UpdateCategoryApiPayload = {
 	category_id: number | string | null;
 	session: SupabaseSessionType;
 	updateData: {
+		category_name?: CategoriesData["category_name"];
 		category_views?: BookmarkViewDataTypes;
 		icon?: string | null;
+		icon_color?: CategoriesData["icon_color"];
 		is_public?: boolean;
 	};
 };
@@ -230,6 +269,22 @@ export type UpdateUserProfileApiPayload = {
 	id: string;
 	session: SupabaseSessionType;
 	updateData: ProfilesTableTypes;
+};
+
+export type UpdateUsernameApiPayload = {
+	id: string;
+	session: SupabaseSessionType;
+	username: ProfilesTableTypes["user_name"];
+};
+
+export type DeleteUserApiPayload = {
+	id: string;
+	session: SupabaseSessionType;
+};
+
+export type RemoveUserProfilePicPayload = {
+	id: string;
+	session: SupabaseSessionType;
 };
 
 export type GetUserProfilePicPayload = {
@@ -266,4 +321,37 @@ export type AddUserTagsApiPayload = {
 	session: SupabaseSessionType;
 	tagsData: { name: string };
 	userData: UserIdentity;
+};
+
+export type UploadFileApiPayload = {
+	category_id: CategoryIdUrlTypes;
+	file: FileType;
+	session: SupabaseSessionType;
+};
+
+export type DeleteBookmarkPayload = {
+	deleteData: Array<{
+		id: SingleListData["id"];
+		ogImage: SingleListData["ogImage"];
+		title: SingleListData["title"];
+	}>;
+	session: SupabaseSessionType;
+};
+
+export type UploadProfilePicPayload = {
+	file: FileType;
+	session: SupabaseSessionType;
+};
+
+type DataResponse = SingleListData[] | null;
+type ErrorResponse = PostgrestError | string | null;
+
+export type GetPublicCategoryBookmarksApiResponseType = {
+	category_name: CategoriesData["category_name"] | null;
+	category_views: BookmarkViewDataTypes | null;
+	data: DataResponse;
+	error: ErrorResponse;
+	icon: CategoriesData["icon"] | null;
+	icon_color: CategoriesData["icon_color"] | null;
+	is_public: CategoriesData["is_public"] | null;
 };

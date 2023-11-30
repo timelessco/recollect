@@ -150,6 +150,7 @@ module.exports = {
 						"react/prop-types": "off",
 						"react/jsx-handler-names": "off",
 						"react/jsx-curly-newline": "off",
+						"react/prefer-read-only-props": "off",
 					},
 					settings: {
 						tailwindcss: {

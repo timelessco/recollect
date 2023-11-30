@@ -14,6 +14,7 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
+import { supabaseAnonKey, supabaseUrl } from "../utils/supabaseClient";
 
 const MyApp = ({
 	Component,
@@ -26,7 +27,12 @@ const MyApp = ({
 	// const queryClient = new QueryClient();
 
 	// Create a new supabase browser client on every first render.
-	const [supabaseClient] = useState(() => createBrowserSupabaseClient());
+	const [supabaseClient] = useState(() =>
+		createBrowserSupabaseClient({
+			supabaseUrl,
+			supabaseKey: supabaseAnonKey,
+		}),
+	);
 
 	const [queryClient] = useState(
 		() =>
@@ -47,7 +53,11 @@ const MyApp = ({
 			<QueryClientProvider client={queryClient}>
 				<Hydrate state={pageProps.dehydratedState}>
 					<Head>
-						<title>Bookmarks</title>
+						<title>Recollect</title>
+						<meta
+							content="https://www.recollect.so/bookmarks-signup-1.png"
+							property="og:image"
+						/>
 						<meta
 							content="initial-scale=1.0, width=device-width"
 							name="viewport"

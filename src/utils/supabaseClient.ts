@@ -1,6 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { isProductionEnvironment } from "./supabaseServerClient";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabaseUrl = isProductionEnvironment
+	? process.env.NEXT_PUBLIC_PROD_SUPABASE_URL
+	: process.env.NEXT_PUBLIC_SUPABASE_URL;
+export const supabaseAnonKey = isProductionEnvironment
+	? process.env.NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY
+	: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

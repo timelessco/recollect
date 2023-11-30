@@ -1,29 +1,30 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
-import {
-	createClient,
-	type PostgrestError,
-	type PostgrestResponse,
-} from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
-import { isEmpty } from "lodash";
-import isNull from "lodash/isNull";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { type VerifyErrors } from "jsonwebtoken";
+import isEmpty from "lodash/isEmpty";
 
-// import { supabase } from '../../utils/supabaseClient';
 import {
 	type BookmarksCountTypes,
 	type BookmarksWithTagsWithTagForginKeys,
-	type BookmarkViewDataTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
-	CATEGORIES_TABLE_NAME,
+	bookmarkType,
+	imageFileTypes,
+	IMAGES_URL,
+	LINKS_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
-	PROFILES,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	videoFileTypes,
+	VIDEOS_URL,
 } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
@@ -38,66 +39,35 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	// disabling as this is not that big of an issue
-	const { category_id } = request.query;
+	const { category_id, sort_by: sortVaue } = request.query;
 	const from = Number.parseInt(request.query.from as string, 10);
+
 	const accessToken = request.query.access_token as string;
 
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
-	);
+	const supabase = apiSupabaseClient();
 
 	let userId: string | (() => string) | undefined;
 
-	verify(
-		accessToken,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_, decoded) => {
-			if (error_) {
-				response.status(500).json({ data: null, error: error_, count: null });
-				throw new Error("ERROR");
-			} else {
-				userId = decoded?.sub;
-			}
-		},
-	);
+	const { error: _error, decoded } = verifyAuthToken(accessToken);
 
-	// const userId = decode?.sub;
+	if (_error) {
+		response.status(500).json({ data: null, error: _error, count: null });
+		throw new Error("ERROR: token error");
+	} else {
+		userId = decoded?.sub;
+	}
 
+	// tells if user is in a category or not
 	const categoryCondition =
 		category_id !== null &&
 		category_id !== "null" &&
 		category_id !== TRASH_URL &&
-		category_id !== UNCATEGORIZED_URL;
+		category_id !== UNCATEGORIZED_URL &&
+		category_id !== IMAGES_URL &&
+		category_id !== VIDEOS_URL &&
+		category_id !== LINKS_URL;
 
 	let data;
-	let sortVaue;
-
-	if (categoryCondition) {
-		const {
-			data: userCategorySortData,
-		}: PostgrestResponse<{ category_views: BookmarkViewDataTypes }> =
-			await supabase
-				.from(CATEGORIES_TABLE_NAME)
-				.select(`category_views`)
-				.eq("user_id", userId)
-				.eq("id", category_id);
-
-		sortVaue =
-			!isEmpty(userCategorySortData) &&
-			!isNull(userCategorySortData) &&
-			userCategorySortData[0]?.category_views?.sortBy;
-	} else {
-		const {
-			data: userSortData,
-		}: PostgrestResponse<{ bookmarks_view: BookmarkViewDataTypes }> =
-			await supabase.from(PROFILES).select(`bookmarks_view`).eq("id", userId);
-
-		sortVaue =
-			!isNull(userSortData) &&
-			!isEmpty(userSortData) &&
-			userSortData[0]?.bookmarks_view?.sortBy;
-	}
 
 	// get all bookmarks
 	let query = supabase
@@ -123,6 +93,18 @@ user_id (
 
 	if (category_id === UNCATEGORIZED_URL) {
 		query = query.eq("category_id", 0);
+	}
+
+	if (category_id === IMAGES_URL) {
+		query = query.in("type", imageFileTypes);
+	}
+
+	if (category_id === VIDEOS_URL) {
+		query = query.in("type", videoFileTypes);
+	}
+
+	if (category_id === LINKS_URL) {
+		query = query.eq("type", bookmarkType);
 	}
 
 	if (sortVaue === "date-sort-acending") {
@@ -169,7 +151,7 @@ user_id (
 	const finalData = data?.map((item) => {
 		const matchedBookmarkWithTag = bookmarksWithTags?.filter(
 			(tagItem) => tagItem?.bookmark_id === item?.id,
-		) as BookmarksWithTagsWithTagForginKeys;
+		) as unknown as BookmarksWithTagsWithTagForginKeys;
 
 		if (!isEmpty(matchedBookmarkWithTag)) {
 			return {

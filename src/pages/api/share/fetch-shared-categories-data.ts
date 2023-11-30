@@ -1,12 +1,16 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { createClient, type PostgrestError } from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
 import { type FetchSharedCategoriesData } from "../../../types/apiTypes";
 import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
+import {
+	apiSupabaseClient,
+	verifyAuthToken,
+} from "../../../utils/supabaseServerClient";
 
 // fetches shared categories
 
@@ -21,21 +25,17 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	verify(
+	const { error: _error } = verifyAuthToken(
 		request.query.access_token as string,
-		process.env.SUPABASE_JWT_SECRET_KEY,
-		(error_) => {
-			if (error_) {
-				response.status(500).json({ data: null, error: error_ });
-				throw new Error("ERROR");
-			}
-		},
-	);
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.SUPABASE_SERVICE_KEY,
 	);
 
+	if (_error) {
+		response.status(500).json({ data: null, error: _error });
+		throw new Error("ERROR: token error");
+	}
+	// TODO: only fetch the shared collections where the user email or id is matched with email / user_id columns , do not fetch all the rows
+
+	const supabase = apiSupabaseClient();
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase.from(SHARED_CATEGORIES_TABLE_NAME).select();
 	// .eq('email', email); // TODO: check and remove

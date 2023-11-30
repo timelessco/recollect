@@ -21,6 +21,7 @@ import {
 	type CategoriesData,
 } from "../../types/apiTypes";
 import {
+	type CategoryIconsDropdownTypes,
 	type CategoryIdUrlTypes,
 	type ChildrenTypes,
 } from "../../types/componentTypes";
@@ -28,26 +29,35 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	IMAGES_URL,
+	LINKS_URL,
 	SEARCH_URL,
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	VIDEOS_URL,
 } from "../../utils/constants";
 
 import "allotment/dist/style.css";
+import isEmpty from "lodash/isEmpty";
+
+import Input from "../../components/atoms/input";
 import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmarksViewDropdown";
+import CategoryIconsDropdown from "../../components/customDropdowns.tsx/categoryIconsDropdown";
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
+import ArticleIcon from "../../icons/articleIcon";
+import ImageIcon from "../../icons/imageIcon";
 import SettingsIcon from "../../icons/settingsIcon";
+import VideoIcon from "../../icons/videoIcon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
-import { options } from "../../utils/commonData";
 
 import SidePane from "./sidePane";
 
@@ -62,12 +72,17 @@ type DashboardLayoutProps = {
 		id: number,
 	) => Promise<void>;
 	onClearTrash: () => void;
+	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 	onNavAddClick: () => void;
 	renderMainContent: () => ChildrenTypes;
 	setBookmarksView: (
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
 		type: BookmarkViewCategories,
+	) => void;
+	updateCategoryName: (
+		id: CategoriesData["id"],
+		name: CategoriesData["category_name"],
 	) => void;
 	userId: string;
 };
@@ -84,9 +99,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		setBookmarksView,
 		onNavAddClick,
 		onBookmarksDrop,
+		updateCategoryName,
+		onIconColorChange,
 	} = props;
 
 	const [screenWidth, setScreenWidth] = useState(1_200);
+	const [showHeadingInput, setShowHeadingInput] = useState(false);
+	const [headingInputValue, setHeadingInputValue] = useState("");
 
 	useEffect(() => {
 		// disabling as we need this for allotement width
@@ -124,10 +143,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		data: BookmarksCountTypes;
 		error: PostgrestError;
 	};
-
-	// function classNames(...classes: Array<string>) {
-	//   return classes.filter(Boolean).join(" ");
-	// }
 
 	const optionsMenuList = [
 		{
@@ -170,7 +185,45 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			id: 4,
 			count: undefined,
 		},
+		{
+			icon: <ImageIcon />,
+			name: "Image",
+			href: `/${IMAGES_URL}`,
+			current: currentPath === IMAGES_URL,
+			id: 5,
+			count: undefined,
+		},
+		{
+			icon: <VideoIcon />,
+			name: "Videos",
+			href: `/${VIDEOS_URL}`,
+			current: currentPath === VIDEOS_URL,
+			id: 6,
+			count: undefined,
+		},
+		{
+			icon: <ArticleIcon />,
+			name: "Links",
+			href: `/${LINKS_URL}`,
+			current: currentPath === LINKS_URL,
+			id: 6,
+			count: undefined,
+		},
 	];
+
+	const currentCategoryData = find(
+		categoryData?.data,
+		(item) => item?.category_slug === currentPath,
+	);
+	const headerName =
+		currentCategoryData?.category_name ??
+		find(optionsMenuList, (item) => item?.current === true)?.name;
+
+	useEffect(() => {
+		if (headerName) {
+			setHeadingInputValue(headerName);
+		}
+	}, [headerName]);
 
 	const navBarLogo = () => {
 		const currentCategory = find(
@@ -179,120 +232,88 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		if (currentCategory) {
-			return find(
-				options,
-				(item) => item?.label === currentCategory?.icon,
-			)?.icon();
+			return (
+				<CategoryIconsDropdown
+					buttonIconSize={20}
+					iconColor={currentCategory?.icon_color}
+					iconValue={currentCategory?.icon}
+					onIconColorChange={onIconColorChange}
+					onIconSelect={(value) => {
+						onIconSelect(value, currentCategory?.id);
+					}}
+				/>
+			);
 		}
 
 		return find(optionsMenuList, (item) => item?.current === true)?.icon;
 	};
 
-	// const renderMainPaneNav = () => {
-	//   return (
-	//     <header className="flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px] px-4">
-	//       <div className="flex items-center space-x-[9px]">
-	//         <figure className="flex h-5 w-5 items-center">{navBarLogo()}</figure>
-	//         <p className="text-xl font-semibold leading-6 text-black">
-	//           {find(
-	//             categoryData?.data,
-	//             item => item?.category_slug === currentPath,
-	//           )?.category_name ||
-	//             find(optionsMenuList, item => item?.current === true)?.name}
-	//         </p>
-	//       </div>
-	//       <SearchInput
-	//         userId={userId}
-	//         placeholder={`Search in ${
-	//           find(
-	//             categoryData?.data,
-	//             item => item?.category_slug === currentPath,
-	//           )?.category_name || "All Bookmarks"
-	//         }`}
-	//         onChange={value => {
-	//           setSearchText(value);
-	//         }}
-	//       />
-	//       <div className="flex items-center">
-	//         <div className="mr-[17px] flex items-center space-x-1">
-	// <BookmarksViewDropdown
-	//   setBookmarksView={setBookmarksView}
-	//   categoryId={categoryId}
-	//   userId={userId}
-	// />
-	//           <BookmarksSortDropdown
-	//             setBookmarksView={setBookmarksView}
-	//             categoryId={categoryId}
-	//             userId={userId}
-	//           />
-	//           {typeof categoryId === "number" && (
-	// <Button
-	//   type="light"
-	//   onClick={() => onShareClick()}
-	//   id="share-button"
-	// >
-	//   <figure className="h-3 w-3">
-	//     <UserIconGray />
-	//   </figure>
-	//   <span className="ml-[7px] text-custom-gray-1">Share</span>
-	// </Button>
-	//           )}
-	//           <Menu as="div" className="relative shrink-0">
-	//             <Menu.Button as="div">
-	//               <Button type="light" className="p-[5px]" style={{ padding: 5 }}>
-	//                 <figure className="h-4 w-4">
-	//                   <OptionsIconGray />
-	//                 </figure>
-	//               </Button>
-	//             </Menu.Button>
-	//             <Transition
-	//               as={Fragment}
-	//               enter="transition ease-out duration-100"
-	//               enterFrom="transform opacity-0 scale-95"
-	//               enterTo="transform opacity-100 scale-100"
-	//               leave="transition ease-in duration-75"
-	//               leaveFrom="transform opacity-100 scale-100"
-	//               leaveTo="transform opacity-0 scale-95"
-	//             >
-	//               <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
-	//                 <Menu.Item>
-	//                   {({ active }) => (
-	//                     <div
-	//                       className={` cursor-pointer ${classNames(
-	//                         active ? "bg-gray-100" : "",
-	//                         "block py-2 px-4 text-sm text-gray-700",
-	//                       )}`}
-	//                     >
-	//                       Option one
-	//                     </div>
-	//                   )}
-	//                 </Menu.Item>
-	//               </Menu.Items>
-	//             </Transition>
-	//           </Menu>
-	//         </div>
+	const navBarHeading = () => {
+		if (!showHeadingInput) {
+			return (
+				<div
+					className=" w-52 truncate text-xl font-semibold leading-[23px] text-gray-light-12 "
+					onClick={(event) => {
+						event.preventDefault();
+						if (event.detail === 2) {
+							if (currentCategoryData) {
+								setShowHeadingInput(true);
+							}
 
-	//         {currentPath === TRASH_URL && (
-	//           <Button
-	//             type="dark"
-	//             className="mr-[17px] bg-red-700 hover:bg-red-900"
-	//             onClick={() => onClearTrash()}
-	//             id="clear-trash-button"
-	//           >
-	//             <span className="text-white">Clear Trash</span>
-	//           </Button>
-	//         )}
+							if (headerName) {
+								setHeadingInputValue(headerName);
+							}
+						}
+					}}
+					onKeyDown={() => {}}
+					role="button"
+					tabIndex={0}
+				>
+					{headingInputValue}
+				</div>
+			);
+		} else {
+			return (
+				<Input
+					className="m-0 h-[23px] rounded-none  border-none p-0 text-xl font-semibold leading-[23px] text-gray-light-12  focus:outline-none"
+					errorText=""
+					isError={false}
+					isFullWidth={false}
+					onBlur={() => {
+						setShowHeadingInput(false);
 
-	// <Button type="dark" onClick={onNavAddClick}>
-	//   <figure className="h-3 w-3">
-	//     <PlusIconWhite />
-	//   </figure>
-	//   <span className="ml-[7px] text-white">Add</span>
-	// </Button>
-	//       </div>
-	//     </header>
-	//   );
-	// };
+						if (
+							currentCategoryData?.id &&
+							!isEmpty(headingInputValue) &&
+							headingInputValue !== currentCategoryData?.category_name
+						) {
+							updateCategoryName(currentCategoryData?.id, headingInputValue);
+						}
+					}}
+					onChange={(event) => {
+						setHeadingInputValue(event.target.value);
+					}}
+					onKeyDown={(event) => {
+						if (
+							event.key === "Enter" &&
+							!isEmpty(headingInputValue) &&
+							headingInputValue !== currentCategoryData?.category_name
+						) {
+							updateCategoryName(
+								currentCategoryData?.id as number,
+								headingInputValue,
+							);
+							setShowHeadingInput(false);
+							// setHeadingInputValue("");
+						}
+					}}
+					placeholder="Enter name"
+					selectTextOnFocus
+					value={headingInputValue}
+				/>
+			);
+		}
+	};
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
@@ -305,19 +326,21 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			},
 		);
 
+		const figureWrapperClass = classNames(
+			"flex  items-center px-2 py-[3.5px]",
+			{
+				"min-w-[250px]": currentBookmarkView !== "list",
+				"min-w-[255px]": currentBookmarkView === "list",
+			},
+		);
+
 		return (
 			<header className={headerClass}>
-				<div className="flex items-center px-2 py-[3.5px]">
+				<div className={figureWrapperClass}>
 					<figure className="mr-2 flex h-5 w-5 items-center">
 						{navBarLogo()}
 					</figure>
-					<p className="text-xl font-semibold leading-[23px] text-custom-gray-5">
-						{find(
-							categoryData?.data,
-							(item) => item?.category_slug === currentPath,
-						)?.category_name ??
-							find(optionsMenuList, (item) => item?.current === true)?.name}
-					</p>
+					{navBarHeading()}
 				</div>
 				{currentPath !== SETTINGS_URL && (
 					<>
@@ -333,7 +356,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							}`}
 							userId={userId}
 						/>
-						<div className="flex items-center">
+						<div className="flex min-w-[420px] items-center justify-end">
 							<div className="mr-3 flex items-center space-x-2">
 								<BookmarksViewDropdown
 									categoryId={categoryId}
@@ -357,18 +380,20 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								/>
 								{typeof categoryId === "number" && <ShareDropdown />}
 							</div>
-							<Button
-								className="hover:bg-black"
-								onClick={onNavAddClick}
-								type="dark"
-							>
-								<figure className="h-4 w-4">
-									<PlusIconWhite />
-								</figure>
-								<span className="ml-[6px] font-medium leading-[14px] text-white">
-									Create
-								</span>
-							</Button>
+							{currentPath !== TRASH_URL && (
+								<Button
+									className="hover:bg-black"
+									onClick={onNavAddClick}
+									type="dark"
+								>
+									<figure className="h-4 w-4">
+										<PlusIconWhite />
+									</figure>
+									<span className="ml-[6px] font-medium leading-[14px] text-white">
+										Create
+									</span>
+								</Button>
+							)}
 						</div>
 					</>
 				)}
@@ -390,24 +415,36 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			)}
 			<Allotment
 				defaultSizes={[144, screenWidth]}
-				onVisibleChange={() => setShowSidePane(false)}
+				onChange={(value: number[]) => {
+					if (value[0] === 0) {
+						setShowSidePane(false);
+					}
+
+					if (value[0] === 244) {
+						setShowSidePane(true);
+					}
+				}}
+				onVisibleChange={() => {
+					setShowSidePane(false);
+				}}
 				separator={false}
 			>
 				<Allotment.Pane
-					className="transition-all duration-150 ease-in-out"
+					// className="transition-all duration-150 ease-in-out"
 					maxSize={600}
 					minSize={244}
 					snap
 					visible={showSidePane}
 				>
-					{showSidePane && (
+					<div className={`h-full ${showSidePane ? "block" : " hidden"}`}>
 						<SidePane
 							onAddNewCategory={onAddNewCategory}
 							onBookmarksDrop={onBookmarksDrop}
 							onCategoryOptionClick={onCategoryOptionClick}
+							onIconColorChange={onIconColorChange}
 							onIconSelect={(value, id) => onIconSelect(value, id)}
 						/>
-					)}
+					</div>
 				</Allotment.Pane>
 				<Allotment.Pane className="transition-all duration-150 ease-in-out">
 					<div className="w-full">

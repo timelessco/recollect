@@ -1,36 +1,65 @@
+import { count } from "console";
+import { useSession } from "@supabase/auth-helpers-react";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
+import { id } from "date-fns/locale";
+
+import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import ArticleIcon from "../../../icons/articleIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import VideoIcon from "../../../icons/videoIcon";
-import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
+import { type BookmarksCountTypes } from "../../../types/apiTypes";
+import {
+	ALL_BOOKMARKS_URL,
+	BOOKMARKS_COUNT_KEY,
+	IMAGES_URL,
+	LINKS_URL,
+	VIDEOS_URL,
+} from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
 
 const SidePaneTypesList = () => {
+	const currentPath = useGetCurrentUrlPath();
+	const session = useSession();
+
+	const queryClient = useQueryClient();
+	const bookmarksCountData = queryClient.getQueryData([
+		BOOKMARKS_COUNT_KEY,
+		session?.user?.id,
+	]) as {
+		data: BookmarksCountTypes;
+		error: PostgrestError;
+	};
+
 	const optionsMenuList = [
 		{
 			icon: <ArticleIcon />,
-			name: "Articles",
-			href: `/${ALL_BOOKMARKS_URL}`,
-			current: false,
+			name: "Links",
+			href: `/${LINKS_URL}`,
+			current: currentPath === LINKS_URL,
 			id: 0,
-			count: undefined,
+			count: bookmarksCountData?.data?.links,
+			iconColor: "",
 		},
 		{
 			icon: <ImageIcon />,
 			name: "Image",
-			href: `/${ALL_BOOKMARKS_URL}`,
-			current: false,
+			href: `/${IMAGES_URL}`,
+			current: currentPath === IMAGES_URL,
 			id: 1,
-			count: undefined,
+			count: bookmarksCountData?.data?.images,
+			iconColor: "",
 		},
 		{
 			icon: <VideoIcon />,
 			name: "Videos",
-			href: `/${ALL_BOOKMARKS_URL}`,
-			current: false,
+			href: `/${VIDEOS_URL}`,
+			current: currentPath === VIDEOS_URL,
 			id: 2,
-			count: undefined,
+			count: bookmarksCountData?.data?.videos,
+			iconColor: "",
 		},
 		{
 			icon: <FolderIcon />,
@@ -39,6 +68,7 @@ const SidePaneTypesList = () => {
 			current: false,
 			id: 3,
 			count: undefined,
+			iconColor: "",
 		},
 	];
 

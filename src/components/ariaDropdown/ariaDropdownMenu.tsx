@@ -12,7 +12,7 @@ const AriaDropdownMenu = (props: AriaDropdownMenuTypes) => {
 
 	return (
 		<MenuItem
-			className="rounded-lg hover:bg-custom-gray-9 focus:bg-custom-gray-9 focus-visible:outline-none"
+			className="rounded-lg hover:bg-gray-light-4 focus:bg-gray-light-4 focus-visible:outline-none"
 			onClick={onClick}
 		>
 			{children}

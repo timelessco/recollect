@@ -2,11 +2,13 @@ export type ModalStoreState = {
 	showAddBookmarkShortcutModal: boolean;
 	showClearTrashWarningModal: boolean;
 	showDeleteBookmarkWarningModal: boolean;
+	showSettingsModal: boolean;
 	showShareCategoryModal: boolean;
 	toggleShareCategoryModal: () => void;
 	toggleShowAddBookmarkShortcutModal: () => void;
 	toggleShowClearTrashWarningModal: () => void;
 	toggleShowDeleteBookmarkWarningModal: () => void;
+	toggleShowSettingsModal: () => void;
 };
 
 export type LoadersStoreState = {
@@ -21,10 +23,14 @@ export type LoadersStoreState = {
 export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	currentBookmarkView: BookmarksViewTypes;
+	currentSettingsPage: "change-email" | "delete" | "main";
 	isCardDragging: boolean;
 	searchText: string;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
 	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
+	setCurrentSettingsPage: (
+		value: MiscellaneousStoreState["currentSettingsPage"],
+	) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setSearchText: (value: string) => void;
 	setShareCategoryId: (id: number | undefined) => void;

@@ -12,10 +12,13 @@ import { type UrlInput } from "../types/componentTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	GET_NAME_FROM_EMAIL_PATTERN,
+	IMAGES_URL,
 	INBOX_URL,
+	LINKS_URL,
 	SEARCH_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	VIDEOS_URL,
 } from "./constants";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
@@ -36,7 +39,13 @@ export const getCategoryIdFromSlug = (
 	slug: string | null,
 	allCategories: CategoriesData[] | undefined,
 ) => {
-	if (slug === TRASH_URL || slug === UNCATEGORIZED_URL) {
+	if (
+		slug === TRASH_URL ||
+		slug === UNCATEGORIZED_URL ||
+		slug === IMAGES_URL ||
+		slug === VIDEOS_URL ||
+		slug === LINKS_URL
+	) {
 		return slug;
 	}
 
@@ -75,10 +84,14 @@ export const getUserNameFromEmail = (email: string) => {
 };
 
 export const getBaseUrl = (href: string) => {
-	const url = new URL(href);
-	const baseUrl = `${url.host}`;
+	if (href && !isEmpty(href)) {
+		const url = new URL(href);
+		const baseUrl = `${url.host}`;
 
-	return baseUrl;
+		return baseUrl;
+	}
+
+	return "";
 };
 
 export const isUserInACategory = (url: string) => {
@@ -88,7 +101,14 @@ export const isUserInACategory = (url: string) => {
 		INBOX_URL,
 		SEARCH_URL,
 		TRASH_URL,
+		IMAGES_URL,
+		VIDEOS_URL,
+		LINKS_URL,
 	];
 
 	return !nonCategoryPages?.includes(url);
 };
+
+// checks if one array has all values in another array
+export const checker = (array: unknown[], target: unknown[]) =>
+	target.every((value: unknown) => array.includes(value));

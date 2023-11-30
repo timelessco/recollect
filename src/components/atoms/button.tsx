@@ -2,6 +2,7 @@ import { type FC } from "react";
 import classNames from "classnames";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
+import { smoothHoverClassName } from "../../utils/commonClassNames";
 import { tcm } from "../../utils/tailwindMerge";
 
 type ButtonProps = {
@@ -12,6 +13,7 @@ type ButtonProps = {
 	isDisabled?: boolean;
 	onClick?: () => void;
 	style?: Record<string, unknown>;
+	tabIndex?: number;
 	type?: "dark" | "light";
 };
 
@@ -25,15 +27,18 @@ const Button: FC<ButtonProps> = (props) => {
 		id = "",
 		style,
 		isActive = false,
+		tabIndex = -1,
 	} = props;
 
 	const buttonClassNames = tcm(
 		classNames({
+			[smoothHoverClassName]: true,
 			"flex items-center rounded-lg py-[5px] px-2 text-[13px] font-medium leading-[14px]":
 				true,
-			"bg-custom-gray-5 hover:bg-gray-800": type === "dark",
+			"bg-gray-light-12  hover:bg-gray-800 text-white": type === "dark",
 			"bg-white hover:bg-custom-gray-8": type === "light",
 			"bg-custom-gray-8": isActive,
+			"disabled:opacity-5": isDisabled,
 		}),
 		className,
 	);
@@ -45,6 +50,7 @@ const Button: FC<ButtonProps> = (props) => {
 			id={id}
 			onClick={onClick}
 			style={style}
+			tabIndex={tabIndex}
 			type="button"
 		>
 			{children}
