@@ -140,7 +140,7 @@
 		"@next/env": "13.3.0",
 		"@next/eslint-plugin-next": "13.3.0",
 		"@octokit/core": "5.0.2",
-		"@release-it/conventional-changelog": "6.0.0",
+		"@release-it/conventional-changelog": "7.0.2",
 		"@types/formidable": "^2.0.6",
 		"@types/jsonwebtoken": "9.0.1",
 		"@types/lodash": "4.14.192",
