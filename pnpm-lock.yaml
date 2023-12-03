@@ -164,14 +164,14 @@ devDependencies:
     specifier: 4.1.1
     version: 4.1.1(prettier@3.0.3)
   '@next/bundle-analyzer':
-    specifier: 13.3.0
-    version: 13.3.0
+    specifier: 14.0.3
+    version: 14.0.3
   '@next/env':
-    specifier: 13.3.0
-    version: 13.3.0
+    specifier: 14.0.3
+    version: 14.0.3
   '@next/eslint-plugin-next':
-    specifier: 13.3.0
-    version: 13.3.0
+    specifier: 14.0.3
+    version: 14.0.3
   '@octokit/core':
     specifier: 5.0.2
     version: 5.0.2
@@ -285,7 +285,7 @@ devDependencies:
     version: 0.33.0
   next-sitemap:
     specifier: 4.0.7
-    version: 4.0.7(@next/env@13.3.0)(next@13.2.4)
+    version: 4.0.7(@next/env@14.0.3)(next@13.2.4)
   npm-package-json-lint:
     specifier: 7.0.0
     version: 7.0.0(typescript@5.0.4)
@@ -1793,8 +1793,8 @@ packages:
       call-bind: 1.0.5
     dev: true
 
-  /@next/bundle-analyzer@13.3.0:
-    resolution: {integrity: sha512-MNtsx3MFh/kqq2DDa4ladjzfUV8McncEowNvt/s7Z9UjvX6DkuJGFRdjq/RYtxWvjQAsDgiOsgyIOLzDbvQo3g==}
+  /@next/bundle-analyzer@14.0.3:
+    resolution: {integrity: sha512-+UriXNEn2vGR2IxTiiuen45G7lXUbtMh0hgS/UH2o2E4TnScwjEEepqT76pY8fdpa5JEZ+gvBy6aSnrw4G2P2w==}
     dependencies:
       webpack-bundle-analyzer: 4.7.0
     transitivePeerDependencies:
@@ -1805,12 +1805,18 @@ packages:
   /@next/env@13.2.4:
     resolution: {integrity: sha512-+Mq3TtpkeeKFZanPturjcXt+KHfKYnLlX6jMLyCrmpq6OOs4i1GqBOAauSkii9QeKCMTYzGppar21JU57b/GEA==}
 
-  /@next/env@13.3.0:
-    resolution: {integrity: sha512-AjppRV4uG3No7L1plinoTQETH+j2F10TEnrMfzbTUYwze5sBUPveeeBAPZPm8OkJZ1epq9OyYKhZrvbD6/9HCQ==}
+  /@next/env@14.0.3:
+    resolution: {integrity: sha512-7xRqh9nMvP5xrW4/+L0jgRRX+HoNRGnfJpD+5Wq6/13j3dsdzxO3BCXn7D3hMqsDb+vjZnJq+vI7+EtgrYZTeA==}
     dev: true
 
   /@next/eslint-plugin-next@13.3.0:
     resolution: {integrity: sha512-wuGN5qSEjSgcq9fVkH0Y/qIPFjnZtW3ZPwfjJOn7l/rrf6y8J24h/lo61kwqunTyzZJm/ETGfGVU9PUs8cnzEA==}
+    dependencies:
+      glob: 7.1.7
+    dev: true
+
+  /@next/eslint-plugin-next@14.0.3:
+    resolution: {integrity: sha512-j4K0n+DcmQYCVnSAM+UByTVfIHnYQy2ODozfQP+4RdwtRDfobrIvKq1K4Exb2koJ79HSSa7s6B2SA8T/1YR3RA==}
     dependencies:
       glob: 7.1.7
     dev: true
@@ -10048,7 +10054,7 @@ packages:
       type-fest: 2.19.0
     dev: true
 
-  /next-sitemap@4.0.7(@next/env@13.3.0)(next@13.2.4):
+  /next-sitemap@4.0.7(@next/env@14.0.3)(next@13.2.4):
     resolution: {integrity: sha512-S2g5IwJeO0+ecmFq981fb+Mw9YWmntOuN/qTCxclSkUibOJ8qKIOye0vn6NEJ1S4tKhbY+MTYKgJpNdFZYxLoA==}
     engines: {node: '>=14.18'}
     hasBin: true
@@ -10057,7 +10063,7 @@ packages:
       next: '*'
     dependencies:
       '@corex/deepmerge': 4.0.43
-      '@next/env': 13.3.0
+      '@next/env': 14.0.3
       minimist: 1.2.8
       next: 13.2.4(react-dom@18.2.0)(react@18.2.0)
     dev: true
