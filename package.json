@@ -133,8 +133,8 @@
 		"zustand": "4.3.7"
 	},
 	"devDependencies": {
-		"@commitlint/cli": "17.6.0",
-		"@commitlint/config-conventional": "17.6.0",
+		"@commitlint/cli": "18.4.3",
+		"@commitlint/config-conventional": "18.4.3",
 		"@ianvs/prettier-plugin-sort-imports": "4.1.1",
 		"@next/bundle-analyzer": "13.3.0",
 		"@next/env": "13.3.0",
