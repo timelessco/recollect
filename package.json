@@ -139,7 +139,7 @@
 		"@next/bundle-analyzer": "13.3.0",
 		"@next/env": "13.3.0",
 		"@next/eslint-plugin-next": "13.3.0",
-		"@octokit/core": "4.2.0",
+		"@octokit/core": "5.0.2",
 		"@release-it/conventional-changelog": "5.1.1",
 		"@types/formidable": "^2.0.6",
 		"@types/jsonwebtoken": "9.0.1",
