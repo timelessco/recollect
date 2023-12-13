@@ -45,6 +45,7 @@ import AddModalContent from "./modals/addModalContent";
 import SignedOutSection from "./signedOutSection";
 
 import "react-toastify/dist/ReactToastify.css";
+
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
@@ -582,13 +583,16 @@ const Dashboard = () => {
 										<InfiniteScroll
 											dataLength={flattendPaginationBookmarkData?.length}
 											endMessage={
-												<p className=" absolute right-[50%] h-[200px] pt-[100px] text-center">
+												<p
+													// className=" absolute right-[50%] h-[200px] pt-[100px] text-center"
+													className="flex justify-center py-12"
+												>
 													Life happens, save it.
 												</p>
 											}
 											hasMore={hasMoreLogic()}
 											loader={
-												<div className="absolute right-[50%] z-0 h-[200px] pt-[100px] text-center">
+												<div className="py-12 flex justify-center">
 													{isDragActive ? "" : "Loading..."}
 												</div>
 											}
@@ -754,7 +758,6 @@ const Dashboard = () => {
 			</div>
 			<Modal
 				open={showAddBookmarkModal}
-				setOpen={() => setShowAddBookmarkModal(false)}
 				wrapperClassName="w-[50%] p-4 rounded-lg"
 			>
 				<AddModalContent
