@@ -688,6 +688,7 @@ const CardSection = ({
 		);
 
 		const pencilIcon = (
+			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div
 				className={`ml-1 ${iconBgClassName}`}
 				onClick={(event) => {
@@ -699,7 +700,7 @@ const CardSection = ({
 					event.stopPropagation();
 				}}
 				role="button"
-				tabIndex={0}
+				// tabIndex={1}
 			>
 				<figure>
 					<PencilAltIcon

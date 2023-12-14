@@ -592,7 +592,7 @@ const Dashboard = () => {
 											}
 											hasMore={hasMoreLogic()}
 											loader={
-												<div className="py-12 flex justify-center">
+												<div className="flex justify-center py-12">
 													{isDragActive ? "" : "Loading..."}
 												</div>
 											}
@@ -758,6 +758,7 @@ const Dashboard = () => {
 			</div>
 			<Modal
 				open={showAddBookmarkModal}
+				setOpen={() => setShowAddBookmarkModal(false)}
 				wrapperClassName="w-[50%] p-4 rounded-lg"
 			>
 				<AddModalContent
