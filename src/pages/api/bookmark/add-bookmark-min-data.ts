@@ -156,6 +156,7 @@ export default async function handler(
 				}
 			} catch (remainingUploadError) {
 				console.error(remainingUploadError);
+				throw new Error("ERROR: remaining upload api error");
 			}
 		}
 	} catch (scrapperError) {

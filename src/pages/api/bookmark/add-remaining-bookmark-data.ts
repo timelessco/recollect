@@ -5,7 +5,7 @@ import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
-import { blurhashFromURL } from "blurhash-from-url";
+// import { blurhashFromURL } from "blurhash-from-url";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isEmpty, isNil, isNull } from "lodash";
@@ -82,7 +82,7 @@ export default async function handler(
 		return storageData?.publicUrl;
 	};
 
-	let imgData;
+	const imgData = { width: null, height: null, encoded: null };
 
 	let imgUrl;
 
@@ -101,7 +101,7 @@ export default async function handler(
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
 
-			imgData = await blurhashFromURL(ogImage);
+			// imgData = await blurhashFromURL(ogImage);
 
 			// this code is for the blur hash resize issue, uncomment this after blurhashFromURL supports image resize
 			// let returnedB64;
