@@ -80,6 +80,9 @@ dependencies:
   formidable:
     specifier: ^2.1.1
     version: 2.1.2
+  image-size:
+    specifier: 1.0.2
+    version: 1.0.2
   jsonwebtoken:
     specifier: 9.0.0
     version: 9.0.0
