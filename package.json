@@ -88,6 +88,7 @@
 		"@ariakit/react-core": "0.3.1",
 		"@headlessui/react": "1.7.13",
 		"@heroicons/react": "1.0.6",
+		"@img/sharp-linux-x64": "0.33.1",
 		"@sendgrid/mail": "^7.7.0",
 		"@sentry/nextjs": "^7.73.0",
 		"@supabase/auth-helpers-nextjs": "0.5.6",

@@ -23,6 +23,9 @@ dependencies:
   '@heroicons/react':
     specifier: 1.0.6
     version: 1.0.6(react@18.2.0)
+  '@img/sharp-linux-x64':
+    specifier: 0.33.1
+    version: 0.33.1
   '@sendgrid/mail':
     specifier: ^7.7.0
     version: 7.7.0
@@ -1869,6 +1872,15 @@ packages:
       '@img/sharp-libvips-linux-x64': 1.0.0
     dev: false
     optional: true
+
+  /@img/sharp-linux-x64@0.33.1:
+    resolution: {integrity: sha512-4y8osC0cAc1TRpy02yn5omBeloZZwS62fPZ0WUAYQiLhSFSpWJfY/gMrzKzLcHB9ulUV6ExFiu2elMaixKDbeg==}
+    engines: {glibc: '>=2.26', node: ^18.17.0 || ^20.3.0 || >=21.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0', yarn: '>=3.2.0'}
+    cpu: [x64]
+    os: [linux]
+    optionalDependencies:
+      '@img/sharp-libvips-linux-x64': 1.0.0
+    dev: false
 
   /@img/sharp-linuxmusl-arm64@0.33.0:
     resolution: {integrity: sha512-1QLbbN0zt+32eVrg7bb1lwtvEaZwlhEsY1OrijroMkwAqlHqFj6R33Y47s2XUv7P6Ie1PwCxK/uFnNqMnkd5kg==}
