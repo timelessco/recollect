@@ -18,7 +18,9 @@ const ColorPicker = ({
 				key={colorItem}
 			>
 				<div
-					className="h-4 w-4 rounded-full border-[1px] border-gray-900 p-1"
+					className={`h-4 w-4 rounded-full border-[1px] p-1 ${
+						colorItem === "#ffffff" ? "border-gray-900" : "border-transparent"
+					}`}
 					onClick={() => onChange(colorItem)}
 					onKeyDown={() => {}}
 					role="button"
