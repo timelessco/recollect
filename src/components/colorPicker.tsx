@@ -1,3 +1,5 @@
+import { colorPickerColors } from "../utils/constants";
+
 type ColorPickerProps = {
 	colorsList: string[];
 	onChange: (value: string) => void;
@@ -19,7 +21,9 @@ const ColorPicker = ({
 			>
 				<div
 					className={`h-4 w-4 rounded-full border-[1px] p-1 ${
-						colorItem === "#ffffff" ? "border-gray-900" : "border-transparent"
+						colorItem === colorPickerColors[0]
+							? "border-gray-900"
+							: "border-transparent"
 					}`}
 					onClick={() => onChange(colorItem)}
 					onKeyDown={() => {}}
