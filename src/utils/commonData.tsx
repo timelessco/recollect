@@ -1,3 +1,26 @@
+import { type PostgrestError } from "@supabase/supabase-js";
+
+import ArticleIcon from "../icons/articleIcon";
+import HomeIconGray from "../icons/homeIconGray";
+import ImageIcon from "../icons/imageIcon";
+import InboxIconGray from "../icons/inboxIconGray";
+import SearchIconGray from "../icons/searchIconGray";
+import SettingsIcon from "../icons/settingsIcon";
+import TrashIconGray from "../icons/trashIconGray";
+import VideoIcon from "../icons/videoIcon";
+import { type BookmarksCountTypes } from "../types/apiTypes";
+
+import {
+	ALL_BOOKMARKS_URL,
+	IMAGES_URL,
+	LINKS_URL,
+	SEARCH_URL,
+	SETTINGS_URL,
+	TRASH_URL,
+	UNCATEGORIZED_URL,
+	VIDEOS_URL,
+} from "./constants";
+
 // TODO: check if this is needed (for code cleanup)
 const object = [
 	{
@@ -3760,3 +3783,75 @@ export const options = () =>
 			</svg>
 		),
 	}));
+
+export const optionsMenuListArray = (
+	currentPath: string | null,
+	bookmarksCountData: {
+		data: BookmarksCountTypes;
+		error: PostgrestError;
+	},
+) => [
+	{
+		icon: <HomeIconGray />,
+		name: "All Bookmarks",
+		href: `/${ALL_BOOKMARKS_URL}`,
+		current: currentPath === ALL_BOOKMARKS_URL,
+		id: 0,
+		count: bookmarksCountData?.data?.allBookmarks,
+		iconColor: "",
+	},
+	{
+		icon: <InboxIconGray />,
+		name: "Inbox",
+		href: `/${UNCATEGORIZED_URL}`,
+		current: currentPath === UNCATEGORIZED_URL,
+		id: 1,
+		count: bookmarksCountData?.data?.uncategorized,
+		iconColor: "",
+	},
+	{
+		icon: <TrashIconGray />,
+		name: "Trash",
+		href: `/${TRASH_URL}`,
+		current: currentPath === TRASH_URL,
+		id: 2,
+		count: bookmarksCountData?.data?.trash,
+		iconColor: "",
+	},
+	{
+		icon: <SettingsIcon />,
+		name: "Settings",
+		href: `/${SETTINGS_URL}`,
+		current: currentPath === SETTINGS_URL,
+		id: 3,
+		count: undefined,
+		iconColor: "",
+	},
+	{
+		icon: <ImageIcon />,
+		name: "Image",
+		href: `/${IMAGES_URL}`,
+		current: currentPath === IMAGES_URL,
+		id: 4,
+		count: undefined,
+		iconColor: "",
+	},
+	{
+		icon: <VideoIcon />,
+		name: "Videos",
+		href: `/${VIDEOS_URL}`,
+		current: currentPath === VIDEOS_URL,
+		id: 5,
+		count: undefined,
+		iconColor: "",
+	},
+	{
+		icon: <ArticleIcon />,
+		name: "Links",
+		href: `/${LINKS_URL}`,
+		current: currentPath === LINKS_URL,
+		id: 6,
+		count: undefined,
+		iconColor: "",
+	},
+];

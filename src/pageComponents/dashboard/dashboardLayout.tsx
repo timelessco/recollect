@@ -39,6 +39,7 @@ import {
 } from "../../utils/constants";
 
 import "allotment/dist/style.css";
+
 import isEmpty from "lodash/isEmpty";
 
 import Input from "../../components/atoms/input";
@@ -58,6 +59,7 @@ import {
 	type BookmarksViewTypes,
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
+import { optionsMenuListArray } from "../../utils/commonData";
 
 import SidePane from "./sidePane";
 
@@ -144,72 +146,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		error: PostgrestError;
 	};
 
-	const optionsMenuList = [
-		{
-			icon: <SearchIconGray />,
-			name: "Search",
-			href: `/${SEARCH_URL}`,
-			current: currentPath === SEARCH_URL,
-			id: 0,
-			count: undefined,
-		},
-		{
-			icon: <HomeIconGray />,
-			name: "All Bookmarks",
-			href: `/${ALL_BOOKMARKS_URL}`,
-			current: currentPath === ALL_BOOKMARKS_URL,
-			id: 1,
-			count: bookmarksCountData?.data?.allBookmarks,
-		},
-		{
-			icon: <InboxIconGray />,
-			name: "Inbox",
-			href: `/${UNCATEGORIZED_URL}`,
-			current: currentPath === UNCATEGORIZED_URL,
-			id: 2,
-			count: bookmarksCountData?.data?.uncategorized,
-		},
-		{
-			icon: <TrashIconGray />,
-			name: "Trash",
-			href: `/${TRASH_URL}`,
-			current: currentPath === TRASH_URL,
-			id: 3,
-			count: bookmarksCountData?.data?.trash,
-		},
-		{
-			icon: <SettingsIcon />,
-			name: "Settings",
-			href: `/${SETTINGS_URL}`,
-			current: currentPath === SETTINGS_URL,
-			id: 4,
-			count: undefined,
-		},
-		{
-			icon: <ImageIcon />,
-			name: "Image",
-			href: `/${IMAGES_URL}`,
-			current: currentPath === IMAGES_URL,
-			id: 5,
-			count: undefined,
-		},
-		{
-			icon: <VideoIcon />,
-			name: "Videos",
-			href: `/${VIDEOS_URL}`,
-			current: currentPath === VIDEOS_URL,
-			id: 6,
-			count: undefined,
-		},
-		{
-			icon: <ArticleIcon />,
-			name: "Links",
-			href: `/${LINKS_URL}`,
-			current: currentPath === LINKS_URL,
-			id: 6,
-			count: undefined,
-		},
-	];
+	const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData);
 
 	const currentCategoryData = find(
 		categoryData?.data,
