@@ -29,34 +29,34 @@ export const config = {
 	},
 };
 
-const query = async (filename: string) => {
-	const data = fs.readFileSync(filename);
+// const query = async (filename: string) => {
+// 	const data = fs.readFileSync(filename);
 
-	try {
-		const imgCaptionResponse = await fetch(
-			process.env.IMAGE_CAPTION_URL as string,
-			{
-				headers: {
-					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
-				},
-				method: "POST",
-				body: data,
-			},
-		);
+// 	try {
+// 		const imgCaptionResponse = await fetch(
+// 			process.env.IMAGE_CAPTION_URL as string,
+// 			{
+// 				headers: {
+// 					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
+// 				},
+// 				method: "POST",
+// 				body: data,
+// 			},
+// 		);
 
-		return imgCaptionResponse;
-	} catch (error) {
-		log("Img caption error", error);
-		return null;
-	}
-};
+// 		return imgCaptionResponse;
+// 	} catch (error) {
+// 		log("Img caption error", error);
+// 		return null;
+// 	}
+// };
 
 export default async (
-	// request: NextApiRequest,
+	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
 ) => {
 	const supabase = apiSupabaseClient();
-
+	const request_ = request;
 	// // parse form with a Promise wrapper
 	// const data = (await new Promise((resolve, reject) => {
 	// 	const form = new IncomingForm();
