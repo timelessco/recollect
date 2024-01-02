@@ -7,7 +7,8 @@ import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
-import fetch from "node-fetch";
+
+// import fetch from "node-fetch";
 
 import {
 	type ImgMetadataType,
@@ -29,27 +30,27 @@ export const config = {
 	},
 };
 
-const query = async (filename: string) => {
-	const data = fs.readFileSync(filename);
+// const query = async (filename: string) => {
+// 	const data = fs.readFileSync(filename);
 
-	try {
-		const imgCaptionResponse = await fetch(
-			process.env.IMAGE_CAPTION_URL as string,
-			{
-				headers: {
-					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
-				},
-				method: "POST",
-				body: data,
-			},
-		);
+// 	try {
+// 		const imgCaptionResponse = await fetch(
+// 			process.env.IMAGE_CAPTION_URL as string,
+// 			{
+// 				headers: {
+// 					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
+// 				},
+// 				method: "POST",
+// 				body: data,
+// 			},
+// 		);
 
-		return imgCaptionResponse;
-	} catch (error) {
-		log("Img caption error", error);
-		return null;
-	}
-};
+// 		return imgCaptionResponse;
+// 	} catch (error) {
+// 		log("Img caption error", error);
+// 		return null;
+// 	}
+// };
 
 export default async (
 	request: NextApiRequest,
@@ -135,11 +136,13 @@ export default async (
 			const isVideo = fileType?.includes("video");
 
 			if (!isVideo) {
-				const imageCaption = await query(data?.files?.file?.filepath as string);
+				// const imageCaption = await query(data?.files?.file?.filepath as string);
 
-				const jsonResponse = (await imageCaption?.json()) as Array<{
-					generated_text: string;
-				}>;
+				// const jsonResponse = (await imageCaption?.json()) as Array<{
+				// 	generated_text: string;
+				// }>;
+
+				const jsonResponse = [{ generated_text: "" }];
 
 				let imgData;
 
