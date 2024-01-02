@@ -1,10 +1,10 @@
 // you might want to use regular 'fs' and not a promise one
 
-import { log } from "console";
+// import { log } from "console";
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { decode } from "base64-arraybuffer";
-import { blurhashFromURL } from "blurhash-from-url";
+// import { blurhashFromURL } from "blurhash-from-url";
 import { IncomingForm } from "formidable";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
@@ -16,7 +16,6 @@ import {
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
-// import { blurhashFromURL } from "blurhash-from-url";
 import { isUserInACategory } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
@@ -144,16 +143,16 @@ export default async (
 
 				const jsonResponse = [{ generated_text: "" }];
 
-				let imgData;
+				const imgData = { width: null, height: null, encoded: null };
 
-				if (storageData?.publicUrl) {
-					try {
-						imgData = await blurhashFromURL(storageData?.publicUrl);
-					} catch (error) {
-						log("Blur hash error", error);
-						imgData = {};
-					}
-				}
+				// if (storageData?.publicUrl) {
+				// 	try {
+				// 		imgData = await blurhashFromURL(storageData?.publicUrl);
+				// 	} catch (error) {
+				// 		log("Blur hash error", error);
+				// 		imgData = {};
+				// 	}
+				// }
 
 				meta_data = {
 					img_caption: jsonResponse[0]?.generated_text,
