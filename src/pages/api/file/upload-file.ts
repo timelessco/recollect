@@ -52,7 +52,7 @@ const query = async (filename: string) => {
 };
 
 export default async (
-	request: NextApiRequest,
+	// request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
 ) => {
 	const supabase = apiSupabaseClient();
