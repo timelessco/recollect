@@ -73,7 +73,11 @@ export default async (
 	})) as {
 		fields: { access_token?: string; category_id?: string };
 		files: {
-			file?: { filepath?: string; mimetype: string; originalFilename?: string };
+			file?: Array<{
+				filepath?: string;
+				mimetype: string;
+				originalFilename?: string;
+			}>;
 		};
 	};
 
@@ -86,7 +90,7 @@ export default async (
 		throw new Error(`ERROR: token error!!! ${_error.message}`, _error);
 	}
 
-	const categoryId = data?.fields?.category_id;
+	const categoryId = data?.fields?.category_id?.[0];
 
 	const categoryIdLogic = categoryId
 		? isUserInACategory(categoryId)
@@ -99,14 +103,14 @@ export default async (
 
 	let contents;
 
-	if (data?.files?.file?.filepath) {
-		contents = await fileSystem.readFile(data?.files?.file?.filepath, {
+	if (data?.files?.file && data?.files?.file[0]?.filepath) {
+		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
 			encoding: "base64",
 		});
 	}
 
-	const fileName = data?.files?.file?.originalFilename;
-	const fileType = data?.files?.file?.mimetype;
+	const fileName = data?.files?.file?.[0]?.originalFilename;
+	const fileType = data?.files?.file?.[0]?.mimetype;
 
 	if (contents) {
 		const storagePath = `public/${userId}/${fileName}`;
@@ -134,7 +138,9 @@ export default async (
 			const isVideo = fileType?.includes("video");
 
 			if (!isVideo) {
-				const imageCaption = await query(data?.files?.file?.filepath as string);
+				const imageCaption = await query(
+					data?.files?.file?.[0]?.filepath as string,
+				);
 
 				const jsonResponse = (await imageCaption?.json()) as Array<{
 					generated_text: string;
