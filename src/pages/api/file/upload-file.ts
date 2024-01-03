@@ -4,7 +4,6 @@ import { log } from "console";
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { decode } from "base64-arraybuffer";
-import { blurhashFromURL } from "blurhash-from-url";
 import { IncomingForm } from "formidable";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
@@ -16,6 +15,8 @@ import {
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
+// import { blurhashFromURL } from "blurhash-from-url";
+import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { isUserInACategory } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
@@ -29,178 +30,173 @@ export const config = {
 	},
 };
 
-// const query = async (filename: string) => {
-// 	const data = fs.readFileSync(filename);
+const query = async (filename: string) => {
+	const data = fs.readFileSync(filename);
 
-// 	try {
-// 		const imgCaptionResponse = await fetch(
-// 			process.env.IMAGE_CAPTION_URL as string,
-// 			{
-// 				headers: {
-// 					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
-// 				},
-// 				method: "POST",
-// 				body: data,
-// 			},
-// 		);
+	try {
+		const imgCaptionResponse = await fetch(
+			process.env.IMAGE_CAPTION_URL as string,
+			{
+				headers: {
+					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
+				},
+				method: "POST",
+				body: data,
+			},
+		);
 
-// 		return imgCaptionResponse;
-// 	} catch (error) {
-// 		log("Img caption error", error);
-// 		return null;
-// 	}
-// };
+		return imgCaptionResponse;
+	} catch (error) {
+		log("Img caption error", error);
+		return null;
+	}
+};
 
 export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
 ) => {
 	const supabase = apiSupabaseClient();
-	const request_ = request;
-	// // parse form with a Promise wrapper
-	// const data = (await new Promise((resolve, reject) => {
-	// 	const form = new IncomingForm();
 
-	// 	form.parse(request, (error, fields, files) => {
-	// 		if (error) {
-	// 			reject(error);
-	// 			return;
-	// 		}
+	// parse form with a Promise wrapper
+	const data = (await new Promise((resolve, reject) => {
+		const form = new IncomingForm();
 
-	// 		resolve({ fields, files });
-	// 	});
-	// })) as {
-	// 	fields: { access_token?: string; category_id?: string };
-	// 	files: {
-	// 		file?: { filepath?: string; mimetype: string; originalFilename?: string };
-	// 	};
-	// };
+		form.parse(request, (error, fields, files) => {
+			if (error) {
+				reject(error);
+				return;
+			}
 
-	// const { error: _error } = verifyAuthToken(
-	// 	data?.fields?.access_token as string,
-	// );
+			resolve({ fields, files });
+		});
+	})) as {
+		fields: { access_token?: string; category_id?: string };
+		files: {
+			file?: { filepath?: string; mimetype: string; originalFilename?: string };
+		};
+	};
 
-	// if (_error) {
-	// 	response.status(500).json({ success: false, error: _error });
-	// 	throw new Error("ERROR: token error");
-	// }
+	const { error: _error } = verifyAuthToken(
+		data?.fields?.access_token as string,
+	);
 
-	// const categoryId = data?.fields?.category_id;
+	if (_error) {
+		response.status(500).json({ success: false, error: _error });
+		throw new Error("ERROR: token error");
+	}
 
-	// const categoryIdLogic = categoryId
-	// 	? isUserInACategory(categoryId)
-	// 		? categoryId
-	// 		: 0
-	// 	: 0;
+	const categoryId = data?.fields?.category_id;
 
-	// const tokenDecode: { sub: string } = jwtDecode(
-	// 	data?.fields?.access_token as string,
-	// );
-	// const userId = tokenDecode?.sub;
+	const categoryIdLogic = categoryId
+		? isUserInACategory(categoryId)
+			? categoryId
+			: 0
+		: 0;
 
-	// let contents;
+	const tokenDecode: { sub: string } = jwtDecode(
+		data?.fields?.access_token as string,
+	);
+	const userId = tokenDecode?.sub;
 
-	// if (data?.files?.file?.filepath) {
-	// 	contents = await fileSystem.readFile(data?.files?.file?.filepath, {
-	// 		encoding: "base64",
-	// 	});
-	// }
+	let contents;
 
-	// const fileName = data?.files?.file?.originalFilename;
-	// const fileType = data?.files?.file?.mimetype;
+	if (data?.files?.file?.filepath) {
+		contents = await fileSystem.readFile(data?.files?.file?.filepath, {
+			encoding: "base64",
+		});
+	}
 
-	// if (contents) {
-	// 	const storagePath = `public/${userId}/${fileName}`;
-	// 	const { error: storageError } = await supabase.storage
-	// 		.from(FILES_STORAGE_NAME)
-	// 		.upload(storagePath, decode(contents), {
-	// 			contentType: fileType,
-	// 			upsert: true,
-	// 		});
-	// 	const { data: storageData, error: publicUrlError } = supabase.storage
-	// 		.from(FILES_STORAGE_NAME)
-	// 		.getPublicUrl(storagePath) as {
-	// 		data: { publicUrl: string };
-	// 		error: UploadFileApiResponse["error"];
-	// 	};
+	const fileName = data?.files?.file?.originalFilename;
+	const fileType = data?.files?.file?.mimetype;
 
-	// 	if (isNil(storageError)) {
-	// 		let meta_data: ImgMetadataType = {
-	// 			img_caption: null,
-	// 			width: null,
-	// 			height: null,
-	// 			ogImgBlurUrl: null,
-	// 			favIcon: null,
-	// 		};
-	// 		const isVideo = fileType?.includes("video");
+	if (contents) {
+		const storagePath = `public/${userId}/${fileName}`;
+		const { error: storageError } = await supabase.storage
+			.from(FILES_STORAGE_NAME)
+			.upload(storagePath, decode(contents), {
+				contentType: fileType,
+				upsert: true,
+			});
+		const { data: storageData, error: publicUrlError } = supabase.storage
+			.from(FILES_STORAGE_NAME)
+			.getPublicUrl(storagePath) as {
+			data: { publicUrl: string };
+			error: UploadFileApiResponse["error"];
+		};
 
-	// 		if (!isVideo) {
-	// 			const imageCaption = await query(data?.files?.file?.filepath as string);
+		if (isNil(storageError)) {
+			let meta_data: ImgMetadataType = {
+				img_caption: null,
+				width: null,
+				height: null,
+				ogImgBlurUrl: null,
+				favIcon: null,
+			};
+			const isVideo = fileType?.includes("video");
 
-	// 			const jsonResponse = (await imageCaption?.json()) as Array<{
-	// 				generated_text: string;
-	// 			}>;
+			if (!isVideo) {
+				const imageCaption = await query(data?.files?.file?.filepath as string);
 
-	// 			let imgData;
+				const jsonResponse = (await imageCaption?.json()) as Array<{
+					generated_text: string;
+				}>;
 
-	// 			if (storageData?.publicUrl) {
-	// 				try {
-	// 					imgData = await blurhashFromURL(storageData?.publicUrl);
-	// 				} catch (error) {
-	// 					log("Blur hash error", error);
-	// 					imgData = {};
-	// 				}
-	// 			}
+				let imgData;
 
-	// 			meta_data = {
-	// 				img_caption: jsonResponse[0]?.generated_text,
-	// 				width: imgData?.width ?? null,
-	// 				height: imgData?.height ?? null,
-	// 				ogImgBlurUrl: imgData?.encoded ?? null,
-	// 				favIcon: null,
-	// 			};
-	// 		}
+				if (storageData?.publicUrl) {
+					try {
+						imgData = await blurhashFromURL(storageData?.publicUrl);
+					} catch (error) {
+						log("Blur hash error", error);
+						imgData = {};
+					}
+				}
 
-	// 		const { error: DBerror } = await supabase
-	// 			.from(MAIN_TABLE_NAME)
-	// 			.insert([
-	// 				{
-	// 					url: storageData?.publicUrl,
-	// 					title: fileName,
-	// 					user_id: userId,
-	// 					description: (meta_data?.img_caption as string) || "",
-	// 					ogImage: storageData?.publicUrl,
-	// 					category_id: categoryIdLogic,
-	// 					type: fileType,
-	// 					meta_data,
-	// 				},
-	// 			])
-	// 			.select();
+				meta_data = {
+					img_caption: jsonResponse[0]?.generated_text,
+					width: imgData?.width ?? null,
+					height: imgData?.height ?? null,
+					ogImgBlurUrl: imgData?.encoded ?? null,
+					favIcon: null,
+				};
+			}
 
-	// 		if (isNil(storageError) && isNil(publicUrlError) && isNil(DBerror)) {
-	// 			response.status(200).json({ success: true, error: null });
-	// 		} else {
-	// 			response.status(500).json({
-	// 				success: false,
-	// 				error: storageError ?? publicUrlError ?? DBerror,
-	// 			});
-	// 		}
-	// 	} else {
-	// 		// storage error
-	// 		response.status(500).json({
-	// 			success: false,
-	// 			error: storageError,
-	// 		});
-	// 	}
-	// } else {
-	// 	response.status(500).json({
-	// 		success: false,
-	// 		error: "error in payload file data",
-	// 	});
-	// }
+			const { error: DBerror } = await supabase
+				.from(MAIN_TABLE_NAME)
+				.insert([
+					{
+						url: storageData?.publicUrl,
+						title: fileName,
+						user_id: userId,
+						description: (meta_data?.img_caption as string) || "",
+						ogImage: storageData?.publicUrl,
+						category_id: categoryIdLogic,
+						type: fileType,
+						meta_data,
+					},
+				])
+				.select();
 
-	response.status(200).json({
-		success: true,
-		error: "no error man",
-	});
+			if (isNil(storageError) && isNil(publicUrlError) && isNil(DBerror)) {
+				response.status(200).json({ success: true, error: null });
+			} else {
+				response.status(500).json({
+					success: false,
+					error: storageError ?? publicUrlError ?? DBerror,
+				});
+			}
+		} else {
+			// storage error
+			response.status(500).json({
+				success: false,
+				error: storageError,
+			});
+		}
+	} else {
+		response.status(500).json({
+			success: false,
+			error: "error in payload file data",
+		});
+	}
 };
