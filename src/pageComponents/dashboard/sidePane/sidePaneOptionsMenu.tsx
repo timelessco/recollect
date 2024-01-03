@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { isLink } from "@adaptui/react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ import { optionsMenuListArray } from "../../../utils/commonData";
 import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
+	menuListItemName,
 	SEARCH_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
@@ -45,10 +47,10 @@ const SidePaneOptionsMenu = () => {
 		bookmarksCountData,
 	).filter((item) => {
 		if (
-			item?.name === "Inbox" ||
-			item?.name === "All Bookmarks" ||
-			item?.name === "Trash" ||
-			item?.name === "Settings"
+			item?.name === menuListItemName.inbox ||
+			item?.name === menuListItemName.allBookmarks ||
+			item?.name === menuListItemName.trash ||
+			item?.name === menuListItemName.settings
 		) {
 			return item;
 		} else return null;

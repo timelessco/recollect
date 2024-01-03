@@ -45,6 +45,7 @@ import AddModalContent from "./modals/addModalContent";
 import SignedOutSection from "./signedOutSection";
 
 import "react-toastify/dist/ReactToastify.css";
+
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
@@ -1058,12 +1059,16 @@ const Dashboard = () => {
 										"Only collection owner can delete this collection",
 									);
 								}
+
+								if (isDataPresentCheck) {
+									void router.push(`/${ALL_BOOKMARKS_URL}`);
+								}
 							}
 
 							// only push to home if user is deleting the category when user is currently in that category
-							if (current) {
-								void router.push(`/${ALL_BOOKMARKS_URL}`);
-							}
+							// if (current) {
+							// 	void router.push(`/${ALL_BOOKMARKS_URL}`);
+							// }
 
 							break;
 						case "share":

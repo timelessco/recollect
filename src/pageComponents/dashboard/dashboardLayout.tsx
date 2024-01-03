@@ -31,6 +31,7 @@ import {
 	CATEGORIES_KEY,
 	IMAGES_URL,
 	LINKS_URL,
+	menuListItemName,
 	SEARCH_URL,
 	SETTINGS_URL,
 	TRASH_URL,
@@ -289,7 +290,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								find(
 									categoryData?.data,
 									(item) => item?.category_slug === currentPath,
-								)?.category_name ?? "All Bookmarks"
+								)?.category_name ?? menuListItemName.allBookmarks
 							}`}
 							userId={userId}
 						/>

@@ -1,6 +1,7 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 
 import ArticleIcon from "../icons/articleIcon";
+import FolderIcon from "../icons/folderIcon";
 import HomeIconGray from "../icons/homeIconGray";
 import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inboxIconGray";
@@ -14,6 +15,7 @@ import {
 	ALL_BOOKMARKS_URL,
 	IMAGES_URL,
 	LINKS_URL,
+	menuListItemName,
 	SEARCH_URL,
 	SETTINGS_URL,
 	TRASH_URL,
@@ -3793,7 +3795,7 @@ export const optionsMenuListArray = (
 ) => [
 	{
 		icon: <HomeIconGray />,
-		name: "All Bookmarks",
+		name: menuListItemName.allBookmarks,
 		href: `/${ALL_BOOKMARKS_URL}`,
 		current: currentPath === ALL_BOOKMARKS_URL,
 		id: 0,
@@ -3802,7 +3804,7 @@ export const optionsMenuListArray = (
 	},
 	{
 		icon: <InboxIconGray />,
-		name: "Inbox",
+		name: menuListItemName.inbox,
 		href: `/${UNCATEGORIZED_URL}`,
 		current: currentPath === UNCATEGORIZED_URL,
 		id: 1,
@@ -3811,7 +3813,7 @@ export const optionsMenuListArray = (
 	},
 	{
 		icon: <TrashIconGray />,
-		name: "Trash",
+		name: menuListItemName.trash,
 		href: `/${TRASH_URL}`,
 		current: currentPath === TRASH_URL,
 		id: 2,
@@ -3820,7 +3822,7 @@ export const optionsMenuListArray = (
 	},
 	{
 		icon: <SettingsIcon />,
-		name: "Settings",
+		name: menuListItemName.settings,
 		href: `/${SETTINGS_URL}`,
 		current: currentPath === SETTINGS_URL,
 		id: 3,
@@ -3829,7 +3831,7 @@ export const optionsMenuListArray = (
 	},
 	{
 		icon: <ImageIcon />,
-		name: "Image",
+		name: menuListItemName.image,
 		href: `/${IMAGES_URL}`,
 		current: currentPath === IMAGES_URL,
 		id: 4,
@@ -3838,7 +3840,7 @@ export const optionsMenuListArray = (
 	},
 	{
 		icon: <VideoIcon />,
-		name: "Videos",
+		name: menuListItemName.videos,
 		href: `/${VIDEOS_URL}`,
 		current: currentPath === VIDEOS_URL,
 		id: 5,
@@ -3847,10 +3849,19 @@ export const optionsMenuListArray = (
 	},
 	{
 		icon: <ArticleIcon />,
-		name: "Links",
+		name: menuListItemName.links,
 		href: `/${LINKS_URL}`,
 		current: currentPath === LINKS_URL,
 		id: 6,
+		count: undefined,
+		iconColor: "",
+	},
+	{
+		icon: <FolderIcon />,
+		name: menuListItemName.documents,
+		href: `/${ALL_BOOKMARKS_URL}`,
+		current: false,
+		id: 7,
 		count: undefined,
 		iconColor: "",
 	},
