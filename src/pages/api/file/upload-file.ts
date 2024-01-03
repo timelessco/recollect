@@ -84,7 +84,7 @@ export default async (
 	if (_error) {
 		response.status(500).json({ success: false, error: _error });
 		log("error prod token", _error);
-		throw new Error("ERROR: token error!!!", _error);
+		throw new Error(`ERROR: token error!!! ${_error.message}`, _error);
 	}
 
 	const categoryId = data?.fields?.category_id;
