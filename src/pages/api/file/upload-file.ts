@@ -77,13 +77,12 @@ export default async (
 		};
 	};
 
-	const { error: _error } = verifyAuthToken(
-		data?.fields?.access_token as string,
-	);
+	const accessToken = data?.fields?.access_token?.[0];
+
+	const { error: _error } = verifyAuthToken(accessToken as string);
 
 	if (_error) {
 		response.status(500).json({ success: false, error: _error });
-		log("error prod token", _error);
 		throw new Error(`ERROR: token error!!! ${_error.message}`, _error);
 	}
 
@@ -95,9 +94,7 @@ export default async (
 			: 0
 		: 0;
 
-	const tokenDecode: { sub: string } = jwtDecode(
-		data?.fields?.access_token as string,
-	);
+	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
 	const userId = tokenDecode?.sub;
 
 	let contents;
