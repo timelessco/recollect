@@ -4,17 +4,16 @@ import { log } from "console";
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { decode } from "base64-arraybuffer";
-import { blurhashFromURL } from "blurhash-from-url";
 import { IncomingForm } from "formidable";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
-import fetch from "node-fetch";
 
 import {
 	type ImgMetadataType,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
+import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { isUserInACategory } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
@@ -71,20 +70,24 @@ export default async (
 	})) as {
 		fields: { access_token?: string; category_id?: string };
 		files: {
-			file?: { filepath?: string; mimetype: string; originalFilename?: string };
+			file?: Array<{
+				filepath?: string;
+				mimetype: string;
+				originalFilename?: string;
+			}>;
 		};
 	};
 
-	const { error: _error } = verifyAuthToken(
-		data?.fields?.access_token as string,
-	);
+	const accessToken = data?.fields?.access_token?.[0];
+
+	const { error: _error } = verifyAuthToken(accessToken as string);
 
 	if (_error) {
 		response.status(500).json({ success: false, error: _error });
-		throw new Error("ERROR: token error");
+		throw new Error(`ERROR: token error ${_error.message}`, _error);
 	}
 
-	const categoryId = data?.fields?.category_id;
+	const categoryId = data?.fields?.category_id?.[0];
 
 	const categoryIdLogic = categoryId
 		? isUserInACategory(categoryId)
@@ -92,21 +95,19 @@ export default async (
 			: 0
 		: 0;
 
-	const tokenDecode: { sub: string } = jwtDecode(
-		data?.fields?.access_token as string,
-	);
+	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
 	const userId = tokenDecode?.sub;
 
 	let contents;
 
-	if (data?.files?.file?.filepath) {
-		contents = await fileSystem.readFile(data?.files?.file?.filepath, {
+	if (data?.files?.file && data?.files?.file[0]?.filepath) {
+		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
 			encoding: "base64",
 		});
 	}
 
-	const fileName = data?.files?.file?.originalFilename;
-	const fileType = data?.files?.file?.mimetype;
+	const fileName = data?.files?.file?.[0]?.originalFilename;
+	const fileType = data?.files?.file?.[0]?.mimetype;
 
 	if (contents) {
 		const storagePath = `public/${userId}/${fileName}`;
@@ -134,7 +135,9 @@ export default async (
 			const isVideo = fileType?.includes("video");
 
 			if (!isVideo) {
-				const imageCaption = await query(data?.files?.file?.filepath as string);
+				const imageCaption = await query(
+					data?.files?.file?.[0]?.filepath as string,
+				);
 
 				const jsonResponse = (await imageCaption?.json()) as Array<{
 					generated_text: string;
