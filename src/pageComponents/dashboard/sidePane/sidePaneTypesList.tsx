@@ -1,23 +1,13 @@
-import { count } from "console";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { id } from "date-fns/locale";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import ArticleIcon from "../../../icons/articleIcon";
-import FolderIcon from "../../../icons/folderIcon";
-import ImageIcon from "../../../icons/imageIcon";
-import VideoIcon from "../../../icons/videoIcon";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
-	IMAGES_URL,
-	LINKS_URL,
 	menuListItemName,
-	VIDEOS_URL,
 } from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
