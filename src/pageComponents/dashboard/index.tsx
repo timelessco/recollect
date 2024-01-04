@@ -1060,15 +1060,12 @@ const Dashboard = () => {
 									);
 								}
 
-								if (isDataPresentCheck) {
+								// current - only push to home if user is deleting the category when user is currently in that category
+								// isDataPresentCheck - only push to home after category get delete successfully
+								if (isDataPresentCheck && current) {
 									void router.push(`/${ALL_BOOKMARKS_URL}`);
 								}
 							}
-
-							// only push to home if user is deleting the category when user is currently in that category
-							// if (current) {
-							// 	void router.push(`/${ALL_BOOKMARKS_URL}`);
-							// }
 
 							break;
 						case "share":

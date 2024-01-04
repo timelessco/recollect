@@ -35,45 +35,6 @@ const SidePaneTypesList = () => {
 		error: PostgrestError;
 	};
 
-	// const optionsMenuList = [
-	// 	{
-	// 		icon: <ArticleIcon />,
-	// 		name: menuListItemName.links,
-	// 		href: `/${LINKS_URL}`,
-	// 		current: currentPath === LINKS_URL,
-	// 		id: 0,
-	// 		count: bookmarksCountData?.data?.links,
-	// 		iconColor: "",
-	// 	},
-	// 	{
-	// 		icon: <ImageIcon />,
-	// 		name: menuListItemName.image,
-	// 		href: `/${IMAGES_URL}`,
-	// 		current: currentPath === IMAGES_URL,
-	// 		id: 1,
-	// 		count: bookmarksCountData?.data?.images,
-	// 		iconColor: "",
-	// 	},
-	// 	{
-	// 		icon: <VideoIcon />,
-	// 		name: menuListItemName.videos,
-	// 		href: `/${VIDEOS_URL}`,
-	// 		current: currentPath === VIDEOS_URL,
-	// 		id: 2,
-	// 		count: bookmarksCountData?.data?.videos,
-	// 		iconColor: "",
-	// 	},
-	// 	{
-	// 		icon: <FolderIcon />,
-	// 		name: menuListItemName.documents,
-	// 		href: `/${ALL_BOOKMARKS_URL}`,
-	// 		current: false,
-	// 		id: 3,
-	// 		count: undefined,
-	// 		iconColor: "",
-	// 	},
-	// ];
-
 	const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData)
 		.filter((item) => {
 			if (
