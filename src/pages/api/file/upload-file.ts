@@ -8,14 +8,11 @@ import { IncomingForm } from "formidable";
 import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
 
-// import fetch from "node-fetch";
-
 import {
 	type ImgMetadataType,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
-// import { blurhashFromURL } from "blurhash-from-url";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { isUserInACategory } from "../../../utils/helpers";
 import {
@@ -87,7 +84,7 @@ export default async (
 
 	if (_error) {
 		response.status(500).json({ success: false, error: _error });
-		throw new Error(`ERROR: token error!!! ${_error.message}`, _error);
+		throw new Error(`ERROR: token error ${_error.message}`, _error);
 	}
 
 	const categoryId = data?.fields?.category_id?.[0];
