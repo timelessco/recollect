@@ -1,25 +1,15 @@
 import { useCallback } from "react";
-import { isLink } from "@adaptui/react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import HomeIconGray from "../../../icons/homeIconGray";
-import InboxIconGray from "../../../icons/inboxIconGray";
-import SearchIconGray from "../../../icons/searchIconGray";
-import SettingsIcon from "../../../icons/settingsIcon";
-import TrashIconGray from "../../../icons/trashIconGray";
 import { useModalStore } from "../../../store/componentStore";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	menuListItemName,
-	SEARCH_URL,
-	TRASH_URL,
-	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
