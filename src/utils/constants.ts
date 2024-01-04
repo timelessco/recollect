@@ -157,12 +157,12 @@ export const acceptedFileTypes = [
 
 export const bookmarkType = "bookmark";
 
-export const imageFileTypes = acceptedFileTypes?.filter((item) =>
-	item?.includes("image"),
+export const imageFileTypes = acceptedFileTypes?.filter(
+	(item) => item?.includes("image"),
 );
 
-export const videoFileTypes = acceptedFileTypes?.filter((item) =>
-	item?.includes("video"),
+export const videoFileTypes = acceptedFileTypes?.filter(
+	(item) => item?.includes("video"),
 );
 
 // color picker colors
@@ -197,3 +197,14 @@ export const colorPickerColors = [
 // blur-hash
 export const defaultBlur =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAA8RJREFUWEeNVwly4zAMk5z/v2+b++wvYmuHJEhCspPdTFv5SEUQBA/V39ejFXxai8tSStMf+9hF99pf+dtKDzYu+9dpp/4vgN54btAKbf0FxCaAVkoCUId9Y/eePWd2iJyVtzC1AaZ2rNo/1t+nhSCNO9cGQp/jGxQMMssM/CMOYnAArADgJ8Itdw3xFuP2G99hacRu7HVe15U5eM3wX2AgRSfGYViBLAkghCCANjyvYrLCzXz/iRd5XgOAbg5v3eswDhCrUMgOuk2psqolWQEEt/p+1AokZQDcM6FajS/qOV9bGJwZyEKNGwjzfLLr8TmMbzFRXw8Roasdni6yAsRiq947Q+4NvA+jdYJxsODsGEr6m/Wlvh73yLXwGEbbMhsTDCirU9AvnlsIxjVDEawglZyN+robAPPOjJnRGb9yP5fiz7cATGJY6Le1A+P62EhB2SoBeOzVkBufyxJAZmQDxIrYW9wBAEAMBOvBRbgOQ30KA6T68H5+BwsKQlhwYSpfrnwAcBamHVhwJjwM60zQ/HnebhaCYMC8XwJAAonMEACu/ElivytVAeTqerDYZ2YoB1TVDYBm1xj79xoEMeD5roamqRT1fAQi5oyJkfwQ4eMqDKAASfw15u+yLO/SZlntPjJCUjLSkOgXAE7/tOsEaeatUNW+p5X6uFwRgoEBNe4gEoDVAyo+Qr0woN73IMxziHGrFkgW3BXANwZGDfQMmHEBMQDgTIjy3Mdf/bifL9Z0tQxT/jsDyoJlAYswav4XACFED8FGSa638zkrodeAWfJfPDfv7TrLs9d/K8EiQMoA6KArStGMqBug/9Tb6WzdPhgQFrgGDPH3xqW6AgAPAa1jGoZusw2YH9fTKUSoIFT1BiKqoFZGiT26pdbQLETJAkqxh2VszYNxBXA5HqkZcQfMchzdULsiBTIYqChEVJapM36aBQDgQJUQQgwx+lzg8ac+oBGgDkh9IOcD5P+HYUQBnA8GIOgd5oD0Pse0XoTe+735TFR6aVYcCpAzWc+HfQ6l3USUbORg2u9iDLAWuO6vZ0M+2ZjRVurpsPf5OyeeGMt8Qs55MQsaSqsLrZsNo9L35Md0jcdNAOx/VmO5HdFS8XlkSwZ4+g0mfEb4MI5DbASqlXrc//Ckb20ZhxEeQldnIQyePmp52+0YirSjk0fnrgL4E271CJ2BjeTV/q7uQo85HefTATIdbvicGQD45BNZYTrxgNkavZ2unY0g1wDxcY/D2AE4EAP9kXw4L1LkMv6oBVGbXPmJOQ51fKqiZPoLu7CiXKiHtJUAAAAASUVORK5CYII=";
+
+export const menuListItemName = {
+	allBookmarks: "All Bookmarks",
+	inbox: "Inbox",
+	trash: "Trash",
+	settings: "Settings",
+	image: "Image",
+	videos: "Videos",
+	links: "Links",
+	documents: "Documents",
+};

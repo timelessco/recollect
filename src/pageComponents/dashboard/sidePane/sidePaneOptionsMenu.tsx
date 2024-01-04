@@ -4,20 +4,12 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import HomeIconGray from "../../../icons/homeIconGray";
-import InboxIconGray from "../../../icons/inboxIconGray";
-import SearchIconGray from "../../../icons/searchIconGray";
-import SettingsIcon from "../../../icons/settingsIcon";
-import TrashIconGray from "../../../icons/trashIconGray";
 import { useModalStore } from "../../../store/componentStore";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
-	SEARCH_URL,
-	TRASH_URL,
-	UNCATEGORIZED_URL,
+	menuListItemName,
 } from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
@@ -45,10 +37,10 @@ const SidePaneOptionsMenu = () => {
 		bookmarksCountData,
 	).filter((item) => {
 		if (
-			item?.name === "Inbox" ||
-			item?.name === "All Bookmarks" ||
-			item?.name === "Trash" ||
-			item?.name === "Settings"
+			item?.name === menuListItemName.inbox ||
+			item?.name === menuListItemName.allBookmarks ||
+			item?.name === menuListItemName.trash ||
+			item?.name === menuListItemName.settings
 		) {
 			return item;
 		} else return null;
