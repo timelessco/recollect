@@ -908,42 +908,62 @@ const CardSection = ({
 
 				const isVideo = type?.includes("video");
 
-				if (!isVideo) {
-					return (
-						<>
-							{img ? (
-								<Image
-									alt="bookmark-img"
-									blurDataURL={blurSource || defaultBlur}
-									className={imgClassName}
-									height={height}
-									onError={() => setErrorImgs([id as never, ...errorImgs])}
-									placeholder="blur"
-									src={`${img}`}
-									width={width}
-								/>
-							) : (
-								errorImgPlaceholder
-							)}
-						</>
-					);
-				} else if (
-					cardTypeCondition === "moodboard" ||
-					cardTypeCondition === "card"
-				) {
-					return (
-						<CustomPlayer
-							className={videoPlayerClassName}
-							playsInline
-							src={img}
-						/>
-					);
-				} else {
-					return (
-						// eslint-disable-next-line jsx-a11y/media-has-caption
-						<video className={errorImgAndVideoClassName} id="video" src={img} />
-					);
-				}
+				return (
+					<>
+						{img ? (
+							<Image
+								alt="bookmark-img"
+								blurDataURL={blurSource || defaultBlur}
+								className={imgClassName}
+								height={height}
+								onError={() => setErrorImgs([id as never, ...errorImgs])}
+								placeholder="blur"
+								src={`${img}`}
+								width={width}
+							/>
+						) : (
+							errorImgPlaceholder
+						)}
+					</>
+				);
+
+				// TODO: check and remove this video logic
+				// if (!isVideo) {
+				// 	return (
+				// 		<>
+				// 			{img ? (
+				// 				<Image
+				// 					alt="bookmark-img"
+				// 					blurDataURL={blurSource || defaultBlur}
+				// 					className={imgClassName}
+				// 					height={height}
+				// 					onError={() => setErrorImgs([id as never, ...errorImgs])}
+				// 					placeholder="blur"
+				// 					src={`${img}`}
+				// 					width={width}
+				// 				/>
+				// 			) : (
+				// 				errorImgPlaceholder
+				// 			)}
+				// 		</>
+				// 	);
+				// } else if (
+				// 	cardTypeCondition === "moodboard" ||
+				// 	cardTypeCondition === "card"
+				// ) {
+				// 	return (
+				// 		<CustomPlayer
+				// 			className={videoPlayerClassName}
+				// 			playsInline
+				// 			src={img}
+				// 		/>
+				// 	);
+				// } else {
+				// 	return (
+				// 		// eslint-disable-next-line jsx-a11y/media-has-caption
+				// 		<video className={errorImgAndVideoClassName} id="video" src={img} />
+				// 	);
+				// }
 			}
 
 			return null;
