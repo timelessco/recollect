@@ -10,6 +10,7 @@ import isNil from "lodash/isNil";
 
 import {
 	type ImgMetadataType,
+	type UploadFileApiPayload,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
@@ -20,6 +21,8 @@ import {
 	verifyAuthToken,
 } from "../../../utils/supabaseServerClient";
 
+// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable complexity */
 // first we need to disable the default body parser
 export const config = {
 	api: {
@@ -68,7 +71,11 @@ export default async (
 			resolve({ fields, files });
 		});
 	})) as {
-		fields: { access_token?: string; category_id?: string };
+		fields: {
+			access_token?: string;
+			category_id?: string;
+			thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
+		};
 		files: {
 			file?: Array<{
 				filepath?: string;
@@ -134,7 +141,10 @@ export default async (
 			};
 			const isVideo = fileType?.includes("video");
 
+			let ogImage;
+
 			if (!isVideo) {
+				ogImage = storageData?.publicUrl;
 				const imageCaption = await query(
 					data?.files?.file?.[0]?.filepath as string,
 				);
@@ -161,6 +171,56 @@ export default async (
 					ogImgBlurUrl: imgData?.encoded ?? null,
 					favIcon: null,
 				};
+			} else {
+				// if the file is a video, we upload the video thumbnail base64 to s3 and then we get the images blur hash and set the img s3 url as ogImage and blur hash in meta data
+				const base64 = data?.fields?.thumbnailBase64?.[0]?.split("base64,")[1];
+
+				const videoStoragePath = `public/${userId}/thumbnail-${fileName}`;
+
+				const { error: thumbnailError } = await supabase.storage
+					.from(FILES_STORAGE_NAME)
+					.upload(videoStoragePath, decode(base64 ?? ""), {
+						contentType: "image/png",
+						upsert: true,
+					});
+
+				if (!isNil(thumbnailError)) {
+					throw new Error(`ERROR: thumbnailError ${thumbnailError?.message}`);
+				}
+
+				const { data: thumbnailUrl, error: thumbnailUrlError } =
+					supabase.storage
+						.from(FILES_STORAGE_NAME)
+						.getPublicUrl(videoStoragePath) as {
+						data: { publicUrl: string };
+						error: UploadFileApiResponse["error"];
+					};
+
+				if (!isNil(thumbnailUrlError)) {
+					throw new Error(
+						`ERROR: thumbnailUrlError ${thumbnailUrlError?.toString}`,
+					);
+				}
+
+				ogImage = thumbnailUrl?.publicUrl;
+
+				let imgData;
+				if (thumbnailUrl?.publicUrl) {
+					try {
+						imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
+					} catch (error) {
+						log("Blur hash error", error);
+						imgData = {};
+					}
+				}
+
+				meta_data = {
+					img_caption: null,
+					width: imgData?.width ?? null,
+					height: imgData?.height ?? null,
+					ogImgBlurUrl: imgData?.encoded ?? null,
+					favIcon: null,
+				};
 			}
 
 			const { error: DBerror } = await supabase
@@ -171,7 +231,7 @@ export default async (
 						title: fileName,
 						user_id: userId,
 						description: (meta_data?.img_caption as string) || "",
-						ogImage: storageData?.publicUrl,
+						ogImage,
 						category_id: categoryIdLogic,
 						type: fileType,
 						meta_data,

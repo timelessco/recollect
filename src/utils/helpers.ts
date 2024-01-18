@@ -112,3 +112,30 @@ export const isUserInACategory = (url: string) => {
 // checks if one array has all values in another array
 export const checker = (array: unknown[], target: unknown[]) =>
 	target.every((value: unknown) => array.includes(value));
+
+// gets thumbnail from image, it gets it from the first frame
+export const generateVideoThumbnail = async (file: File) =>
+	await new Promise((resolve) => {
+		const canvas = document.createElement("canvas");
+		const video = document.createElement("video");
+
+		// this is important
+		video.autoplay = true;
+		video.muted = true;
+		video.src = URL.createObjectURL(file);
+
+		video.onloadeddata = () => {
+			const element = canvas.getContext("2d");
+
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+
+			element?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+			video.pause();
+			resolve(canvas.toDataURL("image/png"));
+		};
+	});
+
+// tells if the bookmark is of video type
+export const isBookmarkVideo = (type: string): boolean =>
+	type?.includes("video");

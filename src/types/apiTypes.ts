@@ -327,6 +327,7 @@ export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
 	file: FileType;
 	session: SupabaseSessionType;
+	thumbnailBase64: string | null;
 };
 
 export type DeleteBookmarkPayload = {

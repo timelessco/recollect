@@ -78,6 +78,7 @@ import {
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
+import { generateVideoThumbnail } from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
 import Settings from "../settings";
 
@@ -535,17 +536,26 @@ const Dashboard = () => {
 	};
 
 	const onDrop = useCallback(
-		(acceptedFiles: FileType[]) => {
+		async (acceptedFiles: FileType[]) => {
 			for (let index = 0; index < acceptedFiles?.length; index++) {
 				if (
 					acceptedFiles[index] &&
 					acceptedFileTypes?.includes(acceptedFiles[index]?.type)
 				) {
+					let thumbnailBase64 = null;
+					if (acceptedFiles[index]?.type?.includes("video")) {
+						// if file is a video this gets its first frame as a png base64
+						thumbnailBase64 = (await generateVideoThumbnail(
+							acceptedFiles[0],
+						)) as string;
+					}
+
 					mutationApiCall(
 						fileUploadOptimisticMutation.mutateAsync({
 							file: acceptedFiles[index],
 							session,
 							category_id: CATEGORY_ID,
+							thumbnailBase64,
 						}),
 					).catch((error) => console.error(error));
 				} else {
@@ -563,7 +573,11 @@ const Dashboard = () => {
 				{session ? (
 					<>
 						<div className="mx-auto w-full lg:w-1/2" />
-						<Dropzone noClick onDrop={onDrop}>
+						<Dropzone
+							disabled={CATEGORY_ID === TRASH_URL}
+							noClick
+							onDrop={onDrop}
+						>
 							{({ getRootProps, getInputProps, isDragActive }) => (
 								<div
 									{...omit(getRootProps(), ["onBlur", "onFocus"])}
@@ -583,13 +597,13 @@ const Dashboard = () => {
 										<InfiniteScroll
 											dataLength={flattendPaginationBookmarkData?.length}
 											endMessage={
-												<p className=" absolute right-[50%] h-[200px] pt-[100px] text-center">
+												<p className="pb-6 text-center">
 													Life happens, save it.
 												</p>
 											}
 											hasMore={hasMoreLogic()}
 											loader={
-												<div className="absolute right-[50%] z-0 h-[200px] pt-[100px] text-center">
+												<div className="z-0 pb-6 text-center">
 													{isDragActive ? "" : "Loading..."}
 												</div>
 											}

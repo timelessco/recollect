@@ -83,6 +83,15 @@ export default async function handler(
 		.from(FILES_STORAGE_NAME)
 		.remove(deleteFileImagesPaths)) as { error: ErrorResponse };
 
+	// deletes the video thumbnails that are generated
+	const deleteFileThumbnailImagesPaths = apiData?.deleteData?.map(
+		(item) => `public/${userId}/thumbnail-${item?.title}`,
+	);
+
+	const { error: fileThumbnailStorageError } = (await supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.remove(deleteFileThumbnailImagesPaths)) as { error: ErrorResponse };
+
 	// delete tags
 
 	const deleteBookmarkIds = apiData?.deleteData?.map((item) => item?.id);
@@ -108,6 +117,7 @@ export default async function handler(
 		isNull(bookmarksError) &&
 		isNull(bookmarkTagsError) &&
 		isNull(fileStorageError) &&
+		isNull(fileThumbnailStorageError) &&
 		isNull(storageOgImageError) &&
 		isNull(storageScreenshotOgImageError)
 	) {

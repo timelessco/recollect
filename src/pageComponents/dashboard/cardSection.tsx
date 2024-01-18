@@ -74,14 +74,18 @@ import {
 	TRASH_URL,
 	USER_PROFILE,
 } from "../../utils/constants";
-import { getBaseUrl, isUserInACategory } from "../../utils/helpers";
+import {
+	getBaseUrl,
+	isBookmarkVideo,
+	isUserInACategory,
+} from "../../utils/helpers";
 
 // this import is the built in styles for video player we need its css file, this disabling the rule
 // eslint-disable-next-line import/extensions
 import "node_modules/video-react/dist/video-react.css";
 
-import CustomPlayer from "../../components/videoPlayer";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
+import PlayIcon from "../../icons/actionIcons/playIcon";
 
 type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -244,24 +248,25 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const isTrashPage = categorySlug === TRASH_URL;
 
 	const renderOption = () =>
-		[...state.collection].map((item) => (
-			<Option
-				cardTypeCondition={cardTypeCondition}
-				dragState={dragState}
-				isPublicPage={isPublicPage}
-				isTrashPage={isTrashPage}
-				item={item}
-				key={item.key}
-				state={state}
-				url={
-					find(
-						bookmarksList,
-						(listItem) =>
-							listItem?.id === Number.parseInt(item.key as string, 10),
-					)?.url ?? ""
-				}
-			/>
-		));
+		[...state.collection].map((item) => {
+			const bookmarkData = find(
+				bookmarksList,
+				(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
+			);
+			return (
+				<Option
+					cardTypeCondition={cardTypeCondition}
+					dragState={dragState}
+					isPublicPage={isPublicPage}
+					isTrashPage={isTrashPage}
+					item={item}
+					key={item.key}
+					state={state}
+					type={bookmarkData?.type ?? ""}
+					url={bookmarkData?.url ?? ""}
+				/>
+			);
+		});
 
 	return (
 		<>
@@ -397,6 +402,7 @@ const Option = ({
 	url,
 	isPublicPage,
 	isTrashPage,
+	type,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
@@ -404,6 +410,7 @@ const Option = ({
 	isTrashPage: boolean;
 	item: OptionDropItemTypes;
 	state: ListState<unknown>;
+	type: SingleListData["type"];
 	url: string;
 }) => {
 	// Setup listbox option as normal. See useListBox docs for details.
@@ -442,6 +449,8 @@ const Option = ({
 	// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 	const disableDndCondition = isPublicPage || isInTrashPage;
 
+	const isVideo = isBookmarkVideo(type);
+
 	return (
 		<li
 			{...mergeProps(
@@ -465,12 +474,12 @@ const Option = ({
 				onClick={(event) => {
 					event.preventDefault();
 					// open on single click
-					if (isPublicPage) {
+					if (isPublicPage || isVideo) {
 						window.open(url, "_blank");
 					}
 
 					// open on double click
-					if (event.detail === 2 && !isPublicPage && !isTrashPage) {
+					if (event.detail === 2 && !isPublicPage && !isTrashPage && !isVideo) {
 						window.open(url, "_blank");
 					}
 				}}
@@ -864,11 +873,6 @@ const CardSection = ({
 				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
 		});
 
-		const videoPlayerClassName = classNames({
-			"card-player": cardTypeCondition === "card",
-			"rounded-lg": true,
-		});
-
 		const errorImgPlaceholder = (
 			<Image
 				alt="img-error"
@@ -906,57 +910,50 @@ const CardSection = ({
 					blurSource = image.src;
 				}
 
-				const isVideo = type?.includes("video");
-
-				if (!isVideo) {
-					return (
-						<>
-							{img ? (
-								<Image
-									alt="bookmark-img"
-									blurDataURL={blurSource || defaultBlur}
-									className={imgClassName}
-									height={height}
-									onError={() => setErrorImgs([id as never, ...errorImgs])}
-									placeholder="blur"
-									src={`${img}`}
-									width={width}
-								/>
-							) : (
-								errorImgPlaceholder
-							)}
-						</>
-					);
-				} else if (
-					cardTypeCondition === "moodboard" ||
-					cardTypeCondition === "card"
-				) {
-					return (
-						<CustomPlayer
-							className={videoPlayerClassName}
-							playsInline
-							src={img}
-						/>
-					);
-				} else {
-					return (
-						// eslint-disable-next-line jsx-a11y/media-has-caption
-						<video className={errorImgAndVideoClassName} id="video" src={img} />
-					);
-				}
+				return (
+					<>
+						{img ? (
+							<Image
+								alt="bookmark-img"
+								blurDataURL={blurSource || defaultBlur}
+								className={imgClassName}
+								height={height}
+								onError={() => setErrorImgs([id as never, ...errorImgs])}
+								placeholder="blur"
+								src={`${img}`}
+								width={width}
+							/>
+						) : (
+							errorImgPlaceholder
+						)}
+					</>
+				);
 			}
 
 			return null;
 		};
 
+		const isVideo = isBookmarkVideo(type);
+
+		const playSvgClassName = classNames({
+			absolute: true,
+			"top-[43%] left-[43%]":
+				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			"top-[13%] left-[27%]": cardTypeCondition === "list",
+		});
+
 		return (
 			!isNull(imgLogic()) && (
-				<figure className={figureClassName}>{imgLogic()}</figure>
+				<figure className={figureClassName}>
+					{isVideo ? <PlayIcon className={playSvgClassName} /> : null}{" "}
+					{imgLogic()}
+				</figure>
 			)
 		);
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
+		const isVideo = isBookmarkVideo(item?.type);
 		const size = cardTypeCondition === "headlines" ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === "headlines",
@@ -982,6 +979,10 @@ const CardSection = ({
 					/>
 				</figure>
 			);
+		}
+
+		if (isVideo) {
+			return <PlayIcon className="" size="15" />;
 		}
 
 		return <ImageIcon size="15" />;

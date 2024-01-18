@@ -120,11 +120,9 @@ export const fetchBookmakrsData = async (
 				data: SingleListData[];
 			};
 		}>(
-			`${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${
-				session?.access_token
-			}&category_id=${isNull(categoryId) ? "null" : categoryId}&from=${
-				pageParameter as string
-			}&sort_by=${sortBy}`,
+			`${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${
+				isNull(categoryId) ? "null" : categoryId
+			}&from=${pageParameter as string}&sort_by=${sortBy}`,
 		);
 
 		return {
@@ -745,9 +743,7 @@ export const fetchUserProfiles = async ({
 				data: ProfilesTableTypes[] | null;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${
-					session?.access_token
-				}&user_id=${userId}${
+				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}${
 					!isNil(existingOauthAvatarUrl)
 						? `&avatar=${existingOauthAvatarUrl}`
 						: ``
@@ -881,6 +877,7 @@ export const uploadFile = async ({
 	file,
 	session,
 	category_id,
+	thumbnailBase64,
 }: UploadFileApiPayload) => {
 	try {
 		const response = await axios.post<UploadFileApiResponse>(
@@ -889,6 +886,7 @@ export const uploadFile = async ({
 				file,
 				access_token: session?.access_token,
 				category_id,
+				thumbnailBase64,
 			},
 			{
 				headers: {
