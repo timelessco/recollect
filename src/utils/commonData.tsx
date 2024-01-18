@@ -3835,7 +3835,7 @@ export const optionsMenuListArray = (
 		href: `/${IMAGES_URL}`,
 		current: currentPath === IMAGES_URL,
 		id: 4,
-		count: undefined,
+		count: bookmarksCountData?.data?.images,
 		iconColor: "",
 	},
 	{
@@ -3844,7 +3844,7 @@ export const optionsMenuListArray = (
 		href: `/${VIDEOS_URL}`,
 		current: currentPath === VIDEOS_URL,
 		id: 5,
-		count: undefined,
+		count: bookmarksCountData?.data?.videos,
 		iconColor: "",
 	},
 	{
@@ -3853,7 +3853,7 @@ export const optionsMenuListArray = (
 		href: `/${LINKS_URL}`,
 		current: currentPath === LINKS_URL,
 		id: 6,
-		count: undefined,
+		count: bookmarksCountData?.data?.links,
 		iconColor: "",
 	},
 	{
