@@ -135,3 +135,7 @@ export const generateVideoThumbnail = async (file: File) =>
 			resolve(canvas.toDataURL("image/png"));
 		};
 	});
+
+// tells if the bookmark is of video type
+export const isBookmarkVideo = (type: string): boolean =>
+	type?.includes("video");

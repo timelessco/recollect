@@ -573,7 +573,11 @@ const Dashboard = () => {
 				{session ? (
 					<>
 						<div className="mx-auto w-full lg:w-1/2" />
-						<Dropzone noClick onDrop={onDrop}>
+						<Dropzone
+							disabled={CATEGORY_ID === TRASH_URL}
+							noClick
+							onDrop={onDrop}
+						>
 							{({ getRootProps, getInputProps, isDragActive }) => (
 								<div
 									{...omit(getRootProps(), ["onBlur", "onFocus"])}

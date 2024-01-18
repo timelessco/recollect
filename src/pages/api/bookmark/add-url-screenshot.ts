@@ -62,10 +62,14 @@ export default async function handler(
 	const userId = tokenDecode?.sub;
 
 	// screen shot api call
-	const screenShotResponse = await axios.get<
-		| WithImplicitCoercion<string>
-		| { [Symbol.toPrimitive]: (hint: "string") => string }
-	>(`${SCREENSHOT_API}${request.body.url}`, {
+	const screenShotResponse = await axios.request({
+		method: "POST",
+		url: SCREENSHOT_API,
+		headers: {
+			"content-type": "application/json",
+			Authorization: `Bearer ${process.env.SCREENSHOT_TOKEN}`,
+		},
+		data: { url: request.body.url },
 		responseType: "arraybuffer",
 	});
 
