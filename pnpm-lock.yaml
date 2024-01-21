@@ -96,8 +96,8 @@ dependencies:
     specifier: 4.17.21
     version: 4.17.21
   mailgun.js:
-    specifier: ^9.1.2
-    version: 9.3.0
+    specifier: ^10.0.0
+    version: 10.0.0
   match-sorter:
     specifier: ^6.3.1
     version: 6.3.1
@@ -138,8 +138,8 @@ dependencies:
     specifier: 3.21.0
     version: 3.21.0(react@18.2.0)
   react-toastify:
-    specifier: 9.1.2
-    version: 9.1.2(react-dom@18.2.0)(react@18.2.0)
+    specifier: 10.0.3
+    version: 10.0.3(react-dom@18.2.0)(react@18.2.0)
   sharp:
     specifier: 0.32.6
     version: 0.32.6
@@ -5604,6 +5604,11 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
+  /clsx@2.1.0:
+    resolution: {integrity: sha512-m3iNNWpd9rl3jvvcBnu70ylMdrXt8Vlq4HYadnU5fwcOtvkSQWPmj7amUcDT2qYI7risszBjI5AUIUox9D16pg==}
+    engines: {node: '>=6'}
+    dev: false
+
   /color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
     dependencies:
@@ -10023,8 +10028,9 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: false
 
-  /mailgun.js@9.3.0:
-    resolution: {integrity: sha512-iRqCglCdi+Q5anFpeRKHiytT/i34E14p/WtTE57VSeq5bATK+zQ8UnpFgPRaqGGTJqyGjqcO9m5YDRRB4/qirw==}
+  /mailgun.js@10.0.0:
+    resolution: {integrity: sha512-5AIGLwF5IsT0rck/Z/l+OUQiqwCto5tMaArgkSDPX+i7G4OJPbeDurT0qgr1IlQCrEF3CPTGrUYpSv27eHipaw==}
+    engines: {node: '>=18.0.0'}
     dependencies:
       axios: 1.6.0
       base-64: 1.0.0
@@ -11762,13 +11768,13 @@ packages:
       react: 18.2.0
     dev: false
 
-  /react-toastify@9.1.2(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-PBfzXO5jMGEtdYR5jxrORlNZZe/EuOkwvwKijMatsZZm8IZwLj01YvobeJYNjFcA6uy6CVrx2fzL9GWbhWPTDA==}
+  /react-toastify@10.0.3(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-PBJwXjFKKM73tgb6iSld4GMs9ShBWGUvc9zPHmdDgT4CdSr32iqSNh6y/fFN/tosvkTS6/tBLptDxXiXgcjvuw==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
     dependencies:
-      clsx: 1.2.1
+      clsx: 2.1.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
