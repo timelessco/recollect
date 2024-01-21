@@ -175,7 +175,7 @@
 		"git-url-parse": "14.0.0",
 		"husky": "8.0.3",
 		"jsonc-eslint-parser": "2.2.0",
-		"knip": "3.3.4",
+		"knip": "4.0.3",
 		"lint-staged": "15.0.2",
 		"markdownlint": "0.28.1",
 		"markdownlint-cli": "0.33.0",
