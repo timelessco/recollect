@@ -5,6 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
+
 import {
 	signInWithEmailPassword,
 	signInWithOauth,
@@ -111,7 +112,11 @@ const LoginPage = () => {
 								placeholder="Password"
 								type="password"
 							/>
-							<button className={buttonDarkClassName} type="submit">
+							<button
+								className={buttonDarkClassName}
+								id="sign-in-button"
+								type="submit"
+							>
 								{!isLoading ? "Sign in" : <Spinner />}
 							</button>
 							<div
