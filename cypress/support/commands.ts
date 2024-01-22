@@ -55,7 +55,7 @@ declare global {
 Cypress.Commands.add("login", (email, pw) => {
 	cy.get("#email").type(email);
 	cy.get("#password").type(pw);
-	cy.get(":nth-child(4) > .flex").click();
+	cy.get("#sign-in-button").click();
 	cy.wait(5000);
 });
 

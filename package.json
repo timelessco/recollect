@@ -36,6 +36,7 @@
 		"commit": "gacp",
 		"contributors:add": "all-contributors add",
 		"contributors:generate": "all-contributors generate",
+		"cypress:open": "cypress open",
 		"dev": "next dev",
 		"dev:sourcemap": "SOURCEMAP=true pnpm dev",
 		"format": "npx turbo run format:eslint format:css format:md format:prettier",

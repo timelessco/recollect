@@ -8,7 +8,7 @@ export default defineConfig({
 		},
 	},
 	env: {
-		test_email: "test@test.com",
-		test_password: "qqqqqq",
+		test_email: "test16@test.com",
+		test_password: "123456",
 	},
 });
