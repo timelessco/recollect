@@ -174,7 +174,7 @@
 		"gacp": "3.0.3",
 		"git-remote-origin-url": "4.0.0",
 		"git-url-parse": "14.0.0",
-		"husky": "8.0.3",
+		"husky": "9.0.5",
 		"jsonc-eslint-parser": "2.2.0",
 		"knip": "4.0.3",
 		"lint-staged": "15.0.2",
