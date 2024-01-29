@@ -31,6 +31,7 @@ import { type FileType, type TagInputOption } from "../../types/componentTypes";
 import {
 	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
+	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
 	LOGIN_URL,
@@ -519,6 +520,12 @@ const Dashboard = () => {
 
 			if ((CATEGORY_ID as unknown) === VIDEOS_URL) {
 				const count = bookmarksCountData?.data?.videos;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
+			if ((CATEGORY_ID as unknown) === DOCUMENTS_URL) {
+				const count = bookmarksCountData?.data?.documents;
 
 				return count !== flattendPaginationBookmarkData?.length;
 			}

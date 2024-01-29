@@ -84,7 +84,6 @@ import {
 // eslint-disable-next-line import/extensions
 import "node_modules/video-react/dist/video-react.css";
 
-import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import PlayIcon from "../../icons/actionIcons/playIcon";
 
 type onBulkBookmarkDeleteType = (
@@ -418,8 +417,6 @@ const Option = ({
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
-	const currentPath = useGetCurrentUrlPath();
-
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -445,10 +442,8 @@ const Option = ({
 		},
 	);
 
-	const isInTrashPage = currentPath === TRASH_URL;
-
 	// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-	const disableDndCondition = isPublicPage || isInTrashPage;
+	const disableDndCondition = isPublicPage;
 
 	const isVideo = isBookmarkVideo(type);
 

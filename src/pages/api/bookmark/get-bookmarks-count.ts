@@ -6,6 +6,7 @@ import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
+	documentFileTypes,
 	imageFileTypes,
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
@@ -91,6 +92,7 @@ export default async function handler(
 		images: 0,
 		videos: 0,
 		links: 0,
+		documents: 0,
 	};
 
 	try {
@@ -98,6 +100,7 @@ export default async function handler(
 			{ count: bookmarkCount },
 			{ count: bookmarkImageCount },
 			{ count: bookmarkVideoCount },
+			{ count: bookmarkDocumentCount },
 			{ count: bookmakrsLinks },
 			{ count: bookmarkTrashCount },
 			{ count: bookmarkUnCatCount },
@@ -121,6 +124,12 @@ export default async function handler(
 				.eq("user_id", userId)
 				.eq("trash", false)
 				.in("type", videoFileTypes),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", false)
+				.in("type", documentFileTypes),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
@@ -150,6 +159,7 @@ export default async function handler(
 			allBookmarks: bookmarkCount ?? 0,
 			images: bookmarkImageCount ?? 0,
 			videos: bookmarkVideoCount ?? 0,
+			documents: bookmarkDocumentCount ?? 0,
 			links: bookmakrsLinks ?? 0,
 			trash: bookmarkTrashCount ?? 0,
 			uncategorized: bookmarkUnCatCount ?? 0,

@@ -11,6 +11,7 @@ import { type UrlInput } from "../types/componentTypes";
 
 import {
 	ALL_BOOKMARKS_URL,
+	DOCUMENTS_URL,
 	GET_NAME_FROM_EMAIL_PATTERN,
 	IMAGES_URL,
 	INBOX_URL,
@@ -44,7 +45,8 @@ export const getCategoryIdFromSlug = (
 		slug === UNCATEGORIZED_URL ||
 		slug === IMAGES_URL ||
 		slug === VIDEOS_URL ||
-		slug === LINKS_URL
+		slug === LINKS_URL ||
+		slug === DOCUMENTS_URL
 	) {
 		return slug;
 	}
@@ -103,6 +105,7 @@ export const isUserInACategory = (url: string) => {
 		TRASH_URL,
 		IMAGES_URL,
 		VIDEOS_URL,
+		DOCUMENTS_URL,
 		LINKS_URL,
 	];
 
@@ -139,3 +142,16 @@ export const generateVideoThumbnail = async (file: File) =>
 // tells if the bookmark is of video type
 export const isBookmarkVideo = (type: string): boolean =>
 	type?.includes("video");
+
+// used in fetch bookmarks api to tell if user is in a collection or not
+export const isUserInACategoryInFetchBookmarksApi = (
+	category_id: string,
+): boolean =>
+	category_id !== null &&
+	category_id !== "null" &&
+	category_id !== TRASH_URL &&
+	category_id !== UNCATEGORIZED_URL &&
+	category_id !== IMAGES_URL &&
+	category_id !== VIDEOS_URL &&
+	category_id !== DOCUMENTS_URL &&
+	category_id !== LINKS_URL;

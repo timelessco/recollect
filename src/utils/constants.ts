@@ -114,6 +114,7 @@ export const UNCATEGORIZED_URL = "uncategorized";
 export const SEARCH_URL = "search";
 export const INBOX_URL = "inbox";
 export const TRASH_URL = "trash";
+export const DOCUMENTS_URL = "documents";
 export const SETTINGS_URL = "settings";
 export const LOGIN_URL = "login";
 export const SIGNUP_URL = "signup";
@@ -164,6 +165,10 @@ export const imageFileTypes = acceptedFileTypes?.filter(
 
 export const videoFileTypes = acceptedFileTypes?.filter(
 	(item) => item?.includes("video"),
+);
+
+export const documentFileTypes = acceptedFileTypes?.filter(
+	(item) => item === acceptedFileTypes[10],
 );
 
 // color picker colors

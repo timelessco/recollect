@@ -18,6 +18,8 @@ import {
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
+	documentFileTypes,
+	DOCUMENTS_URL,
 	GET_TEXT_WITH_AT_CHAR,
 	imageFileTypes,
 	IMAGES_URL,
@@ -100,6 +102,7 @@ export default async function handler(
 		category_id !== TRASH_URL &&
 		category_id !== IMAGES_URL &&
 		category_id !== VIDEOS_URL &&
+		category_id !== DOCUMENTS_URL &&
 		category_id !== LINKS_URL
 	) {
 		query = query.eq(
@@ -114,6 +117,10 @@ export default async function handler(
 
 	if (category_id === VIDEOS_URL) {
 		query = query.in("type", videoFileTypes);
+	}
+
+	if (category_id === DOCUMENTS_URL) {
+		query = query.in("type", documentFileTypes);
 	}
 
 	if (category_id === LINKS_URL) {
@@ -181,6 +188,7 @@ tag_id (
 			category_id !== TRASH_URL &&
 			category_id !== IMAGES_URL &&
 			category_id !== VIDEOS_URL &&
+			category_id !== DOCUMENTS_URL &&
 			category_id !== LINKS_URL
 		) {
 			tagSearchQuery = tagSearchQuery.eq(
@@ -195,6 +203,10 @@ tag_id (
 
 		if (category_id === VIDEOS_URL) {
 			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", videoFileTypes);
+		}
+
+		if (category_id === DOCUMENTS_URL) {
+			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", documentFileTypes);
 		}
 
 		if (category_id === LINKS_URL) {
