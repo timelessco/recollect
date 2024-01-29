@@ -367,14 +367,15 @@ const ListBox = (props: ListBoxDropTypes) => {
 									?.map((dropdownItem) => (
 										<AriaDropdownMenu
 											key={dropdownItem?.value}
-											onClick={() =>
+											onClick={() => {
+												state.selectionManager.clearSelection();
 												onCategoryChange(
 													Array.from(
 														state.selectionManager.selectedKeys.keys(),
 													) as number[],
 													dropdownItem?.value,
-												)
-											}
+												);
+											}}
 										>
 											<div className={dropdownMenuItemClassName}>
 												{dropdownItem?.label}
