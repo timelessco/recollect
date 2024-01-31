@@ -1,17 +1,17 @@
-/* eslint-disable complexity */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
 import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import {
 	type AuthError,
 	type PostgrestError,
+	type SupabaseClient,
 	type User,
 } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
+import { type SingleListData } from "../../../types/apiTypes";
 import {
 	BOOKMAKRS_STORAGE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
@@ -30,7 +30,7 @@ import {
 	verifyAuthToken,
 } from "../../../utils/supabaseServerClient";
 
-// deletes user
+// this api deletes user
 
 type DataResponse = { user: User | null } | null;
 type ErrorResponse = AuthError | PostgrestError | VerifyErrors | string | null;
@@ -40,98 +40,12 @@ type Data = {
 	error: ErrorResponse;
 };
 
-export default async function handler(
-	request: NextApiRequest,
+// deletes category data
+const categoriesDelete = async (
+	userId: SingleListData["user_id"]["id"],
 	response: NextApiResponse<Data>,
-) {
-	const { error: _error } = verifyAuthToken(
-		request.body.access_token as string,
-	);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
-
-	const userId = request?.body?.id;
-	const email = request?.body?.email;
-
-	// bookmark_tags delete
-	const { error: bookmarkTagsError } = await supabase
-		.from(BOOKMARK_TAGS_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
-
-	if (!isNull(bookmarkTagsError)) {
-		response.status(500).json({ data: null, error: bookmarkTagsError });
-		throw new Error("ERROR: bookmarkTagsError");
-	} else {
-		log("deleted bookmark_tags table data", userId);
-	}
-	// bookmarks_table delete
-
-	const { error: bookmarksTableError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
-
-	if (!isNull(bookmarksTableError)) {
-		response.status(500).json({ data: null, error: bookmarksTableError });
-		throw new Error("ERROR: bookmarksTableError");
-	} else {
-		log("deleted bookmarks table data", userId);
-	}
-	// tags delete
-
-	const { error: tagsError } = await supabase
-		.from(TAG_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
-
-	if (!isNull(tagsError)) {
-		response.status(500).json({ data: null, error: tagsError });
-		throw new Error("ERROR: tagsError");
-	} else {
-		log("deleted tags table data", userId);
-	}
-	// shared_categories delete (user delete , deletes all categories that the user has created)
-
-	const { error: sharedCategoriesError } = await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
-
-	if (!isNull(sharedCategoriesError)) {
-		response.status(500).json({ data: null, error: sharedCategoriesError });
-		throw new Error("ERROR: sharedCategoriesError");
-	} else {
-		log("deleted shared categories table data", userId, "and emails ", email);
-	}
-
-	// shared_categories delete (email delete , deletes all categories connections user is part of)
-
-	const { error: sharedCategoriesEmailError } = await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.delete()
-		.eq("email", email);
-
-	if (!isNull(sharedCategoriesEmailError)) {
-		response
-			.status(500)
-			.json({ data: null, error: sharedCategoriesEmailError });
-		throw new Error("ERROR: sharedCategoriesEmailError");
-	} else {
-		log(
-			"deleted shared categories email table data",
-			userId,
-			"and emails ",
-			email,
-		);
-	}
-	// categories delete
-
+	supabase: SupabaseClient,
+) => {
 	// the collab categories created by the user might have bookmarks added by other user that are collaborators
 	// these bookmakrs added by other users need to be set as uncategorised (id : 0)
 	// get all category ids for the user
@@ -151,10 +65,7 @@ export default async function handler(
 		const { data: updateData, error: updateError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ category_id: 0 })
-			.in(
-				"category_id",
-				categoriesData?.map((item) => item?.id),
-			)
+			.in("category_id", categoriesData?.map((item) => item?.id))
 			.select(`id`);
 
 		if (!isNull(updateError)) {
@@ -180,20 +91,14 @@ export default async function handler(
 	} else {
 		log("deleted categories table data", userId);
 	}
+};
 
-	// profile delete
-	const { error: profileError } = await supabase
-		.from(PROFILES)
-		.delete()
-		.eq("id", userId);
-
-	if (!isNull(profileError)) {
-		response.status(500).json({ data: null, error: profileError });
-		throw new Error("ERROR: profileError");
-	} else {
-		log("deleted profiles table data", userId);
-	}
-
+// all deletes related to s3 storage
+const storageDeleteLogic = async (
+	supabase: SupabaseClient,
+	userId: SingleListData["user_id"]["id"],
+	response: NextApiResponse<Data>,
+) => {
 	// bookmarks storage ogImages delete
 
 	const { data: bookmarksStorageFiles, error: bookmarksStorageError } =
@@ -349,7 +254,117 @@ export default async function handler(
 	} else {
 		log("files to delete is empty : user profiles");
 	}
+};
 
+export default async function handler(
+	request: NextApiRequest,
+	response: NextApiResponse<Data>,
+) {
+	const { error: _error } = verifyAuthToken(
+		request.body.access_token as string,
+	);
+
+	if (_error) {
+		response.status(500).json({ data: null, error: _error });
+		throw new Error("ERROR: token error");
+	}
+
+	const supabase = apiSupabaseClient();
+
+	const userId = request?.body?.id;
+	const email = request?.body?.email;
+
+	// bookmark_tags delete
+	const { error: bookmarkTagsError } = await supabase
+		.from(BOOKMARK_TAGS_TABLE_NAME)
+		.delete()
+		.eq("user_id", userId);
+
+	if (!isNull(bookmarkTagsError)) {
+		response.status(500).json({ data: null, error: bookmarkTagsError });
+		throw new Error("ERROR: bookmarkTagsError");
+	} else {
+		log("deleted bookmark_tags table data", userId);
+	}
+	// bookmarks_table delete
+
+	const { error: bookmarksTableError } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.delete()
+		.eq("user_id", userId);
+
+	if (!isNull(bookmarksTableError)) {
+		response.status(500).json({ data: null, error: bookmarksTableError });
+		throw new Error("ERROR: bookmarksTableError");
+	} else {
+		log("deleted bookmarks table data", userId);
+	}
+	// tags delete
+
+	const { error: tagsError } = await supabase
+		.from(TAG_TABLE_NAME)
+		.delete()
+		.eq("user_id", userId);
+
+	if (!isNull(tagsError)) {
+		response.status(500).json({ data: null, error: tagsError });
+		throw new Error("ERROR: tagsError");
+	} else {
+		log("deleted tags table data", userId);
+	}
+	// shared_categories delete (user delete , deletes all categories that the user has created)
+
+	const { error: sharedCategoriesError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.delete()
+		.eq("user_id", userId);
+
+	if (!isNull(sharedCategoriesError)) {
+		response.status(500).json({ data: null, error: sharedCategoriesError });
+		throw new Error("ERROR: sharedCategoriesError");
+	} else {
+		log("deleted shared categories table data", userId, "and emails ", email);
+	}
+
+	// shared_categories delete (email delete , deletes all categories connections user is part of)
+
+	const { error: sharedCategoriesEmailError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.delete()
+		.eq("email", email);
+
+	if (!isNull(sharedCategoriesEmailError)) {
+		response
+			.status(500)
+			.json({ data: null, error: sharedCategoriesEmailError });
+		throw new Error("ERROR: sharedCategoriesEmailError");
+	} else {
+		log(
+			"deleted shared categories email table data",
+			userId,
+			"and emails ",
+			email,
+		);
+	}
+	// categories delete
+
+	await categoriesDelete(userId, response, supabase);
+
+	// profile delete
+	const { error: profileError } = await supabase
+		.from(PROFILES)
+		.delete()
+		.eq("id", userId);
+
+	if (!isNull(profileError)) {
+		response.status(500).json({ data: null, error: profileError });
+		throw new Error("ERROR: profileError");
+	} else {
+		log("deleted profiles table data", userId);
+	}
+
+	// all bookmarks s3 storage deletes
+	await storageDeleteLogic(supabase, userId, response);
 	// deleting user in main auth table
 
 	const { data, error } = await supabase.auth.admin.deleteUser(userId);

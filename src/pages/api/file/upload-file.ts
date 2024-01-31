@@ -3,6 +3,7 @@
 import { log } from "console";
 import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import jwtDecode from "jwt-decode";
@@ -10,6 +11,7 @@ import isNil from "lodash/isNil";
 
 import {
 	type ImgMetadataType,
+	type SingleListData,
 	type UploadFileApiPayload,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
@@ -21,8 +23,6 @@ import {
 	verifyAuthToken,
 } from "../../../utils/supabaseServerClient";
 
-// eslint-disable-next-line eslint-comments/disable-enable-pair
-/* eslint-disable complexity */
 // first we need to disable the default body parser
 export const config = {
 	api: {
@@ -30,6 +30,28 @@ export const config = {
 	},
 };
 
+type StorageDataType = {
+	publicUrl: string;
+};
+
+type FileNameType = string | undefined;
+
+type ParsedFormDataType = {
+	fields: {
+		access_token?: string;
+		category_id?: string;
+		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
+	};
+	files: {
+		file?: Array<{
+			filepath?: string;
+			mimetype: string;
+			originalFilename?: FileNameType;
+		}>;
+	};
+};
+
+// this func gets the image caption
 const query = async (filename: string) => {
 	const data = fs.readFileSync(filename);
 
@@ -52,6 +74,105 @@ const query = async (filename: string) => {
 	}
 };
 
+/* 
+If the uploaded file is not a video then this function is called 
+this function generates the imageCaption and the meta_data for the file
+*/
+const notVideoLogic = async (
+	storageData: StorageDataType,
+	data: ParsedFormDataType,
+) => {
+	const ogImage = storageData?.publicUrl;
+	const imageCaption = await query(data?.files?.file?.[0]?.filepath as string);
+
+	const jsonResponse = (await imageCaption?.json()) as Array<{
+		generated_text: string;
+	}>;
+
+	let imgData;
+
+	if (storageData?.publicUrl) {
+		try {
+			imgData = await blurhashFromURL(storageData?.publicUrl);
+		} catch (error) {
+			log("Blur hash error", error);
+			imgData = {};
+		}
+	}
+
+	const meta_data = {
+		img_caption: jsonResponse[0]?.generated_text,
+		width: imgData?.width ?? null,
+		height: imgData?.height ?? null,
+		ogImgBlurUrl: imgData?.encoded ?? null,
+		favIcon: null,
+	};
+
+	return { ogImage, meta_data };
+};
+
+/* 
+If the uploaded file is a video then this function is called 
+This adds the video thumbnail into S3 
+Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
+Image caption is not generated for the thumbnail 
+*/
+const videoLogic = async (
+	data: ParsedFormDataType,
+	userId: SingleListData["user_id"]["id"],
+	fileName: FileNameType,
+	supabase: SupabaseClient,
+) => {
+	// if the file is a video, we upload the video thumbnail base64 to s3 and then we get the images blur hash and set the img s3 url as ogImage and blur hash in meta data
+	const base64 = data?.fields?.thumbnailBase64?.[0]?.split("base64,")[1];
+
+	const videoStoragePath = `public/${userId}/thumbnail-${fileName}`;
+
+	const { error: thumbnailError } = await supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.upload(videoStoragePath, decode(base64 ?? ""), {
+			contentType: "image/png",
+			upsert: true,
+		});
+
+	if (!isNil(thumbnailError)) {
+		throw new Error(`ERROR: thumbnailError ${thumbnailError?.message}`);
+	}
+
+	const { data: thumbnailUrl, error: thumbnailUrlError } = supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.getPublicUrl(videoStoragePath) as {
+		data: StorageDataType;
+		error: UploadFileApiResponse["error"];
+	};
+
+	if (!isNil(thumbnailUrlError)) {
+		throw new Error(`ERROR: thumbnailUrlError ${thumbnailUrlError?.toString}`);
+	}
+
+	const ogImage = thumbnailUrl?.publicUrl;
+
+	let imgData;
+	if (thumbnailUrl?.publicUrl) {
+		try {
+			imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
+		} catch (error) {
+			log("Blur hash error", error);
+			imgData = {};
+		}
+	}
+
+	const meta_data = {
+		img_caption: null,
+		width: imgData?.width ?? null,
+		height: imgData?.height ?? null,
+		ogImgBlurUrl: imgData?.encoded ?? null,
+		favIcon: null,
+	};
+
+	return { ogImage, meta_data };
+};
+
 export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
@@ -70,20 +191,7 @@ export default async (
 
 			resolve({ fields, files });
 		});
-	})) as {
-		fields: {
-			access_token?: string;
-			category_id?: string;
-			thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
-		};
-		files: {
-			file?: Array<{
-				filepath?: string;
-				mimetype: string;
-				originalFilename?: string;
-			}>;
-		};
-	};
+	})) as ParsedFormDataType;
 
 	const accessToken = data?.fields?.access_token?.[0];
 
@@ -117,17 +225,22 @@ export default async (
 	const fileType = data?.files?.file?.[0]?.mimetype;
 
 	if (contents) {
+		// if the uploaded file is valid this happens
 		const storagePath = `public/${userId}/${fileName}`;
+
+		// the file is uploaded
 		const { error: storageError } = await supabase.storage
 			.from(FILES_STORAGE_NAME)
 			.upload(storagePath, decode(contents), {
 				contentType: fileType,
 				upsert: true,
 			});
+
+		// the public url for the uploaded file is got
 		const { data: storageData, error: publicUrlError } = supabase.storage
 			.from(FILES_STORAGE_NAME)
 			.getPublicUrl(storagePath) as {
-			data: { publicUrl: string };
+			data: StorageDataType;
 			error: UploadFileApiResponse["error"];
 		};
 
@@ -144,85 +257,28 @@ export default async (
 			let ogImage;
 
 			if (!isVideo) {
-				ogImage = storageData?.publicUrl;
-				const imageCaption = await query(
-					data?.files?.file?.[0]?.filepath as string,
+				// if file is not a video
+				const { ogImage: image, meta_data: metaData } = await notVideoLogic(
+					storageData,
+					data,
 				);
 
-				const jsonResponse = (await imageCaption?.json()) as Array<{
-					generated_text: string;
-				}>;
-
-				let imgData;
-
-				if (storageData?.publicUrl) {
-					try {
-						imgData = await blurhashFromURL(storageData?.publicUrl);
-					} catch (error) {
-						log("Blur hash error", error);
-						imgData = {};
-					}
-				}
-
-				meta_data = {
-					img_caption: jsonResponse[0]?.generated_text,
-					width: imgData?.width ?? null,
-					height: imgData?.height ?? null,
-					ogImgBlurUrl: imgData?.encoded ?? null,
-					favIcon: null,
-				};
+				ogImage = image;
+				meta_data = metaData;
 			} else {
-				// if the file is a video, we upload the video thumbnail base64 to s3 and then we get the images blur hash and set the img s3 url as ogImage and blur hash in meta data
-				const base64 = data?.fields?.thumbnailBase64?.[0]?.split("base64,")[1];
+				// if file is a video
+				const { ogImage: image, meta_data: metaData } = await videoLogic(
+					data,
+					userId,
+					fileName,
+					supabase,
+				);
 
-				const videoStoragePath = `public/${userId}/thumbnail-${fileName}`;
-
-				const { error: thumbnailError } = await supabase.storage
-					.from(FILES_STORAGE_NAME)
-					.upload(videoStoragePath, decode(base64 ?? ""), {
-						contentType: "image/png",
-						upsert: true,
-					});
-
-				if (!isNil(thumbnailError)) {
-					throw new Error(`ERROR: thumbnailError ${thumbnailError?.message}`);
-				}
-
-				const { data: thumbnailUrl, error: thumbnailUrlError } =
-					supabase.storage
-						.from(FILES_STORAGE_NAME)
-						.getPublicUrl(videoStoragePath) as {
-						data: { publicUrl: string };
-						error: UploadFileApiResponse["error"];
-					};
-
-				if (!isNil(thumbnailUrlError)) {
-					throw new Error(
-						`ERROR: thumbnailUrlError ${thumbnailUrlError?.toString}`,
-					);
-				}
-
-				ogImage = thumbnailUrl?.publicUrl;
-
-				let imgData;
-				if (thumbnailUrl?.publicUrl) {
-					try {
-						imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
-					} catch (error) {
-						log("Blur hash error", error);
-						imgData = {};
-					}
-				}
-
-				meta_data = {
-					img_caption: null,
-					width: imgData?.width ?? null,
-					height: imgData?.height ?? null,
-					ogImgBlurUrl: imgData?.encoded ?? null,
-					favIcon: null,
-				};
+				ogImage = image;
+				meta_data = metaData;
 			}
 
+			// we upload the final data in DB
 			const { error: DBerror } = await supabase
 				.from(MAIN_TABLE_NAME)
 				.insert([
@@ -255,6 +311,7 @@ export default async (
 			});
 		}
 	} else {
+		// if the file uploaded is not valid
 		response.status(500).json({
 			success: false,
 			error: "error in payload file data",

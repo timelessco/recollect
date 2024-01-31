@@ -1,5 +1,3 @@
-/* eslint-disable complexity */
-
 import { type NextApiRequest, type NextApiResponse } from "next";
 import {
 	type PostgrestError,
@@ -29,7 +27,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { checker } from "../../../utils/helpers";
+import { checker, isUserInACategoryInApi } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
 	verifyAuthToken,
@@ -96,15 +94,12 @@ export default async function handler(
 		query = query.eq("user_id", request.query.user_id);
 	}
 
-	if (
-		!isNull(category_id) &&
-		category_id !== "null" &&
-		category_id !== TRASH_URL &&
-		category_id !== IMAGES_URL &&
-		category_id !== VIDEOS_URL &&
-		category_id !== DOCUMENTS_URL &&
-		category_id !== LINKS_URL
-	) {
+	const userInCollectionsCondition = isUserInACategoryInApi(
+		category_id as string,
+		false,
+	);
+
+	if (userInCollectionsCondition) {
 		query = query.eq(
 			"category_id",
 			category_id === UNCATEGORIZED_URL ? 0 : category_id,
@@ -182,15 +177,7 @@ tag_id (
 			.eq("user_id", user_id)
 			.in("tag_id.name", tagName);
 
-		if (
-			!isNull(category_id) &&
-			category_id !== "null" &&
-			category_id !== TRASH_URL &&
-			category_id !== IMAGES_URL &&
-			category_id !== VIDEOS_URL &&
-			category_id !== DOCUMENTS_URL &&
-			category_id !== LINKS_URL
-		) {
+		if (userInCollectionsCondition) {
 			tagSearchQuery = tagSearchQuery.eq(
 				"bookmark_id.category_id",
 				category_id === UNCATEGORIZED_URL ? 0 : category_id,

@@ -143,15 +143,23 @@ export const generateVideoThumbnail = async (file: File) =>
 export const isBookmarkVideo = (type: string): boolean =>
 	type?.includes("video");
 
-// used in fetch bookmarks api to tell if user is in a collection or not
-export const isUserInACategoryInFetchBookmarksApi = (
+// used in apis to tell if user is in a collection or not
+export const isUserInACategoryInApi = (
 	category_id: string,
-): boolean =>
-	category_id !== null &&
-	category_id !== "null" &&
-	category_id !== TRASH_URL &&
-	category_id !== UNCATEGORIZED_URL &&
-	category_id !== IMAGES_URL &&
-	category_id !== VIDEOS_URL &&
-	category_id !== DOCUMENTS_URL &&
-	category_id !== LINKS_URL;
+	uncategorizedCheck: boolean = true,
+): boolean => {
+	const condition =
+		category_id !== null &&
+		category_id !== "null" &&
+		category_id !== TRASH_URL &&
+		category_id !== IMAGES_URL &&
+		category_id !== VIDEOS_URL &&
+		category_id !== DOCUMENTS_URL &&
+		category_id !== LINKS_URL;
+
+	if (uncategorizedCheck) {
+		return condition && category_id !== UNCATEGORIZED_URL;
+	} else {
+		return condition;
+	}
+};

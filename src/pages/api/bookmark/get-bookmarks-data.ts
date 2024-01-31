@@ -23,7 +23,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { isUserInACategoryInFetchBookmarksApi } from "../../../utils/helpers";
+import { isUserInACategoryInApi } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
 	verifyAuthToken,
@@ -61,9 +61,7 @@ export default async function handler(
 	}
 
 	// tells if user is in a category or not
-	const categoryCondition = isUserInACategoryInFetchBookmarksApi(
-		category_id as string,
-	);
+	const categoryCondition = isUserInACategoryInApi(category_id as string);
 	let data;
 
 	// get all bookmarks
