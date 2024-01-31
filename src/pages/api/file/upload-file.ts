@@ -10,9 +10,10 @@ import jwtDecode from "jwt-decode";
 import isNil from "lodash/isNil";
 
 import {
+	type FileNameType,
 	type ImgMetadataType,
+	type ParsedFormDataType,
 	type SingleListData,
-	type UploadFileApiPayload,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
@@ -32,23 +33,6 @@ export const config = {
 
 type StorageDataType = {
 	publicUrl: string;
-};
-
-type FileNameType = string | undefined;
-
-type ParsedFormDataType = {
-	fields: {
-		access_token?: string;
-		category_id?: string;
-		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
-	};
-	files: {
-		file?: Array<{
-			filepath?: string;
-			mimetype: string;
-			originalFilename?: FileNameType;
-		}>;
-	};
 };
 
 // this func gets the image caption

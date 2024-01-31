@@ -357,3 +357,22 @@ export type GetPublicCategoryBookmarksApiResponseType = {
 	icon_color: CategoriesData["icon_color"] | null;
 	is_public: CategoriesData["is_public"] | null;
 };
+
+// common types used in next js API
+
+export type FileNameType = string | undefined;
+
+export type ParsedFormDataType = {
+	fields: {
+		access_token?: string;
+		category_id?: string;
+		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
+	};
+	files: {
+		file?: Array<{
+			filepath?: string;
+			mimetype: string;
+			originalFilename?: FileNameType;
+		}>;
+	};
+};
