@@ -39,6 +39,7 @@ export type SingleListData = {
 export type BookmarksCountTypes = {
 	allBookmarks: number;
 	categoryCount: Array<{ category_id: number; count: number }>;
+	documents: number;
 	images: number;
 	links: number;
 	trash: number;
@@ -355,4 +356,23 @@ export type GetPublicCategoryBookmarksApiResponseType = {
 	icon: CategoriesData["icon"] | null;
 	icon_color: CategoriesData["icon_color"] | null;
 	is_public: CategoriesData["is_public"] | null;
+};
+
+// common types used in next js API
+
+export type FileNameType = string | undefined;
+
+export type ParsedFormDataType = {
+	fields: {
+		access_token?: string;
+		category_id?: string;
+		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
+	};
+	files: {
+		file?: Array<{
+			filepath?: string;
+			mimetype: string;
+			originalFilename?: FileNameType;
+		}>;
+	};
 };

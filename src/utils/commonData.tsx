@@ -5,7 +5,6 @@ import FolderIcon from "../icons/folderIcon";
 import HomeIconGray from "../icons/homeIconGray";
 import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inboxIconGray";
-import SearchIconGray from "../icons/searchIconGray";
 import SettingsIcon from "../icons/settingsIcon";
 import TrashIconGray from "../icons/trashIconGray";
 import VideoIcon from "../icons/videoIcon";
@@ -13,10 +12,10 @@ import { type BookmarksCountTypes } from "../types/apiTypes";
 
 import {
 	ALL_BOOKMARKS_URL,
+	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
 	menuListItemName,
-	SEARCH_URL,
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
@@ -3859,10 +3858,10 @@ export const optionsMenuListArray = (
 	{
 		icon: <FolderIcon />,
 		name: menuListItemName.documents,
-		href: `/${ALL_BOOKMARKS_URL}`,
-		current: false,
+		href: `/${DOCUMENTS_URL}`,
+		current: currentPath === DOCUMENTS_URL,
 		id: 7,
-		count: undefined,
+		count: bookmarksCountData?.data?.documents,
 		iconColor: "",
 	},
 ];

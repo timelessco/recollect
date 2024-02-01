@@ -10,6 +10,7 @@ import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
 
 import {
+	type ParsedFormDataType,
 	type ProfilesTableTypes,
 	type UploadProfilePicApiResponse,
 } from "../../../types/apiTypes";
@@ -83,15 +84,16 @@ export default async (
 			resolve({ fields, files });
 		});
 	})) as {
-		fields: { access_token?: string; category_id?: string };
-		files: {
-			file?: { filepath?: string; mimetype: string; originalFilename?: string };
+		fields: {
+			access_token?: ParsedFormDataType["fields"]["access_token"];
+			category_id?: ParsedFormDataType["fields"]["category_id"];
 		};
+		files: ParsedFormDataType["files"];
 	};
 
-	const { error: _error } = verifyAuthToken(
-		data?.fields?.access_token as string,
-	);
+	const accessToken = data?.fields?.access_token?.[0] as string;
+
+	const { error: _error } = verifyAuthToken(accessToken);
 
 	if (_error) {
 		response.status(500).json({ success: false, error: _error });
@@ -99,21 +101,19 @@ export default async (
 	}
 	// const categoryId = data?.fields?.category_id;
 
-	const tokenDecode: { sub: string } = jwtDecode(
-		data?.fields?.access_token as string,
-	);
+	const tokenDecode: { sub: string } = jwtDecode(accessToken);
 	const userId = tokenDecode?.sub;
 
 	let contents;
 
-	if (data?.files?.file?.filepath) {
-		contents = await fileSystem.readFile(data?.files?.file?.filepath, {
+	if (data?.files?.file && data?.files?.file[0]?.filepath) {
+		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
 			encoding: "base64",
 		});
 	}
 
-	const fileName = data?.files?.file?.originalFilename;
-	const fileType = data?.files?.file?.mimetype;
+	const fileName = data?.files?.file?.[0]?.originalFilename;
+	const fileType = data?.files?.file?.[0]?.mimetype;
 
 	if (contents) {
 		await deleteLogic(supabase, response, userId);

@@ -84,7 +84,6 @@ import {
 // eslint-disable-next-line import/extensions
 import "node_modules/video-react/dist/video-react.css";
 
-import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import PlayIcon from "../../icons/actionIcons/playIcon";
 
 type onBulkBookmarkDeleteType = (
@@ -367,14 +366,15 @@ const ListBox = (props: ListBoxDropTypes) => {
 									?.map((dropdownItem) => (
 										<AriaDropdownMenu
 											key={dropdownItem?.value}
-											onClick={() =>
+											onClick={() => {
+												state.selectionManager.clearSelection();
 												onCategoryChange(
 													Array.from(
 														state.selectionManager.selectedKeys.keys(),
 													) as number[],
 													dropdownItem?.value,
-												)
-											}
+												);
+											}}
 										>
 											<div className={dropdownMenuItemClassName}>
 												{dropdownItem?.label}
@@ -417,8 +417,6 @@ const Option = ({
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
-	const currentPath = useGetCurrentUrlPath();
-
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -444,10 +442,7 @@ const Option = ({
 		},
 	);
 
-	const isInTrashPage = currentPath === TRASH_URL;
-
-	// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-	const disableDndCondition = isPublicPage || isInTrashPage;
+	const disableDndCondition = isPublicPage;
 
 	const isVideo = isBookmarkVideo(type);
 
@@ -935,18 +930,18 @@ const CardSection = ({
 
 		const isVideo = isBookmarkVideo(type);
 
-		const playSvgClassName = classNames({
-			absolute: true,
-			"top-[43%] left-[43%]":
-				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[13%] left-[27%]": cardTypeCondition === "list",
-		});
+		// const playSvgClassName = classNames({
+		// 	absolute: true,
+		// 	"top-[43%] left-[43%]":
+		// 		cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+		// 	"top-[13%] left-[27%]": cardTypeCondition === "list",
+		// });
 
 		return (
 			!isNull(imgLogic()) && (
 				<figure className={figureClassName}>
-					{isVideo ? <PlayIcon className={playSvgClassName} /> : null}{" "}
-					{imgLogic()}
+					{/* {isVideo ? <PlayIcon className={playSvgClassName} /> : null}{" "} */}
+					{isVideo ? null : null} {imgLogic()}
 				</figure>
 			)
 		);

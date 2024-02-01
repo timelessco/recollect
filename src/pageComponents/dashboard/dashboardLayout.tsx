@@ -10,12 +10,8 @@ import find from "lodash/find";
 
 import Button from "../../components/atoms/button";
 // import SearchInput from "../../components/searchInput";
-import HomeIconGray from "../../icons/homeIconGray";
-import InboxIconGray from "../../icons/inboxIconGray";
 // import OptionsIconGray from "../../icons/optionsIconGray";
 import PlusIconWhite from "../../icons/plusIconWhite";
-import SearchIconGray from "../../icons/searchIconGray";
-import TrashIconGray from "../../icons/trashIconGray";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
@@ -26,17 +22,11 @@ import {
 	type ChildrenTypes,
 } from "../../types/componentTypes";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
-	IMAGES_URL,
-	LINKS_URL,
 	menuListItemName,
-	SEARCH_URL,
 	SETTINGS_URL,
 	TRASH_URL,
-	UNCATEGORIZED_URL,
-	VIDEOS_URL,
 } from "../../utils/constants";
 
 import "allotment/dist/style.css";
@@ -50,10 +40,6 @@ import CategoryIconsDropdown from "../../components/customDropdowns.tsx/category
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
-import ArticleIcon from "../../icons/articleIcon";
-import ImageIcon from "../../icons/imageIcon";
-import SettingsIcon from "../../icons/settingsIcon";
-import VideoIcon from "../../icons/videoIcon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
@@ -267,7 +253,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		const figureWrapperClass = classNames(
 			"flex  items-center px-2 py-[3.5px]",
 			{
-				"min-w-[250px]": currentBookmarkView !== "list",
+				"min-w-[398px]": currentBookmarkView !== "list",
 				"min-w-[255px]": currentBookmarkView === "list",
 			},
 		);

@@ -11,6 +11,8 @@ import {
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
+	documentFileTypes,
+	DOCUMENTS_URL,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
@@ -21,6 +23,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
+import { isUserInACategoryInApi } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
 	verifyAuthToken,
@@ -58,15 +61,7 @@ export default async function handler(
 	}
 
 	// tells if user is in a category or not
-	const categoryCondition =
-		category_id !== null &&
-		category_id !== "null" &&
-		category_id !== TRASH_URL &&
-		category_id !== UNCATEGORIZED_URL &&
-		category_id !== IMAGES_URL &&
-		category_id !== VIDEOS_URL &&
-		category_id !== LINKS_URL;
-
+	const categoryCondition = isUserInACategoryInApi(category_id as string);
 	let data;
 
 	// get all bookmarks
@@ -101,6 +96,10 @@ user_id (
 
 	if (category_id === VIDEOS_URL) {
 		query = query.in("type", videoFileTypes);
+	}
+
+	if (category_id === DOCUMENTS_URL) {
+		query = query.in("type", documentFileTypes);
 	}
 
 	if (category_id === LINKS_URL) {
