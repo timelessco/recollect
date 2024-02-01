@@ -442,7 +442,6 @@ const Option = ({
 		},
 	);
 
-	// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 	const disableDndCondition = isPublicPage;
 
 	const isVideo = isBookmarkVideo(type);
