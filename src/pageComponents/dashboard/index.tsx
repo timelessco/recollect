@@ -73,6 +73,7 @@ import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile
 import useFetchUserTags from "../../async/queryHooks/userTags/useFetchUserTags";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
+import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
@@ -81,6 +82,7 @@ import {
 import { mutationApiCall } from "../../utils/apiHelpers";
 import { generateVideoThumbnail } from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
+import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
 import AddBookarkShortcutModal from "./modals/addBookmarkShortcutModal";
@@ -173,13 +175,14 @@ const Dashboard = () => {
 		if (!session) void router.push(`/${LOGIN_URL}`);
 	}, [router, session]);
 
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const { isInNotFoundPage } = useIsInNotFoundPage();
+
 	// react-query
 
 	const { allCategories } = useFetchCategories();
 
 	const { bookmarksCountData } = useFetchBookmarksCount();
-
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	const { allBookmarksData, fetchNextPage } = useFetchPaginatedBookmarks();
 
@@ -959,17 +962,21 @@ const Dashboard = () => {
 	);
 
 	const renderMainPaneContent = () => {
-		switch (categorySlug) {
-			case SETTINGS_URL:
-				return <Settings />;
-			case IMAGES_URL:
-				return renderAllBookmarkCards();
-			case VIDEOS_URL:
-				return renderAllBookmarkCards();
-			case LINKS_URL:
-				return renderAllBookmarkCards();
-			default:
-				return renderAllBookmarkCards();
+		if (!isInNotFoundPage) {
+			switch (categorySlug) {
+				case SETTINGS_URL:
+					return <Settings />;
+				case IMAGES_URL:
+					return renderAllBookmarkCards();
+				case VIDEOS_URL:
+					return renderAllBookmarkCards();
+				case LINKS_URL:
+					return renderAllBookmarkCards();
+				default:
+					return renderAllBookmarkCards();
+			}
+		} else {
+			return <NotFoundPage />;
 		}
 	};
 

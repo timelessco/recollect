@@ -931,18 +931,18 @@ const CardSection = ({
 
 		const isVideo = isBookmarkVideo(type);
 
-		const playSvgClassName = classNames({
-			absolute: true,
-			"top-[43%] left-[43%]":
-				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[13%] left-[27%]": cardTypeCondition === "list",
-		});
+		// const playSvgClassName = classNames({
+		// 	absolute: true,
+		// 	"top-[43%] left-[43%]":
+		// 		cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+		// 	"top-[13%] left-[27%]": cardTypeCondition === "list",
+		// });
 
 		return (
 			!isNull(imgLogic()) && (
 				<figure className={figureClassName}>
-					{isVideo ? <PlayIcon className={playSvgClassName} /> : null}{" "}
-					{imgLogic()}
+					{/* {isVideo ? <PlayIcon className={playSvgClassName} /> : null}{" "} */}
+					{isVideo ? null : null} {imgLogic()}
 				</figure>
 			)
 		);
