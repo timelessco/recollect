@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type Key, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import {
@@ -13,56 +13,31 @@ import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
 import format from "date-fns/format";
-import { flatten, isNil, omit, type Many } from "lodash";
+import { flatten, isNil, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
-import {
-	DragPreview,
-	mergeProps,
-	useDraggableCollection,
-	useDraggableItem,
-	useFocusRing,
-	useListBox,
-	useOption,
-	type DraggableItemProps,
-	type DragItem,
-} from "react-aria";
-import Masonry from "react-masonry-css";
-import {
-	Item,
-	useDraggableCollectionState,
-	useListState,
-	type DraggableCollectionState,
-	type ListProps,
-	type ListState,
-} from "react-stately";
+import { Item } from "react-stately";
 
-import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
-import Badge from "../../components/badge";
-import Checkbox from "../../components/checkbox";
-import Spinner from "../../components/spinner";
-import ImageIcon from "../../icons/imageIcon";
-import LinkExternalIcon from "../../icons/linkExternalIcon";
-import MoveIcon from "../../icons/moveIcon";
-import DefaultUserIcon from "../../icons/user/defaultUserIcon";
+import Badge from "../../../components/badge";
+import Spinner from "../../../components/spinner";
+import ImageIcon from "../../../icons/imageIcon";
+import LinkExternalIcon from "../../../icons/linkExternalIcon";
+import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-} from "../../store/componentStore";
+	useModalStore,
+} from "../../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 	type SingleListData,
-} from "../../types/apiTypes";
-import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../utils/commonClassNames";
-import { options } from "../../utils/commonData";
+} from "../../../types/apiTypes";
+import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
+import { options } from "../../../utils/commonData";
 import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
@@ -73,26 +48,29 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
 	USER_PROFILE,
-} from "../../utils/constants";
+} from "../../../utils/constants";
 import {
 	getBaseUrl,
 	isBookmarkVideo,
 	isUserInACategory,
-} from "../../utils/helpers";
+} from "../../../utils/helpers";
 
 // this import is the built in styles for video player we need its css file, this disabling the rule
 // eslint-disable-next-line import/extensions
 import "node_modules/video-react/dist/video-react.css";
 
-import PlayIcon from "../../icons/actionIcons/playIcon";
+import PlayIcon from "../../../icons/actionIcons/playIcon";
+import VideoModal from "../modals/videoModal";
 
-type onBulkBookmarkDeleteType = (
+import ListBox from "./listBox";
+
+export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
 	isTrash: boolean,
 	deleteForever: boolean,
 ) => void;
 
-type CardSectionProps = {
+export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
 
 	deleteBookmarkId: number[] | undefined;
@@ -108,380 +86,6 @@ type CardSectionProps = {
 
 	showAvatar: boolean;
 	userId: string;
-};
-type ListBoxDropTypes = ListProps<object> & {
-	// bookmarksColumns: string | number[] | string[] | undefined;
-	bookmarksColumns: number[];
-	bookmarksList: SingleListData[];
-	cardTypeCondition: unknown;
-	getItems?: (keys: Set<Key>) => DragItem[];
-	isPublicPage?: boolean;
-	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
-	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
-	// onReorder: (event: DroppableCollectionReorderEvent) => unknown;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onItemDrop?: (event: any) => void;
-};
-
-const ListBox = (props: ListBoxDropTypes) => {
-	const {
-		getItems,
-		bookmarksColumns,
-		cardTypeCondition,
-		bookmarksList,
-		onCategoryChange,
-		onBulkBookmarkDelete,
-		isPublicPage,
-	} = props;
-	const setIsCardDragging = useMiscellaneousStore(
-		(store) => store.setIsCardDragging,
-	);
-	const queryClient = useQueryClient();
-	const session = useSession();
-
-	const categoryData = queryClient.getQueryData([
-		CATEGORIES_KEY,
-		session?.user?.id,
-	]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
-
-	const router = useRouter();
-	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1] || null;
-
-	// Setup listbox as normal. See the useListBox docs for more details.
-	const preview = useRef(null);
-	const state = useListState(props);
-	const ref = useRef(null);
-	const { listBoxProps } = useListBox(
-		{
-			...props,
-			// Prevent dragging from changing selection.
-			shouldSelectOnPressUp: true,
-			autoFocus: false,
-		},
-		state,
-		ref,
-	);
-
-	useEffect(() => {
-		state.selectionManager.clearSelection();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [router.asPath]);
-
-	// Setup drag state for the collection.
-	const dragState = useDraggableCollectionState({
-		// Pass through events from props.
-		...props,
-
-		// Collection and selection manager come from list state.
-		collection: state.collection,
-		selectionManager: state.selectionManager,
-		onDragStart() {
-			setIsCardDragging(true);
-		},
-		onDragEnd() {
-			setIsCardDragging(false);
-			state.selectionManager.clearSelection();
-		},
-		preview,
-		// Provide data for each dragged item. This function could
-		// also be provided by the user of the component.
-		getItems:
-			getItems ??
-			((keys) =>
-				[...keys].map((key) => {
-					const item = state.collection.getItem(key);
-
-					return {
-						"text/plain": !isNull(item) ? item.textValue : "",
-					};
-				})),
-	});
-
-	useDraggableCollection(props, dragState, ref);
-
-	const cardGridClassNames = classNames({
-		"grid gap-6": true,
-		"grid-cols-5":
-			typeof bookmarksColumns === "object" &&
-			!isNull(bookmarksColumns) &&
-			bookmarksColumns[0] === 10,
-		"grid-cols-4":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 20,
-		"grid-cols-3":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 30,
-		"grid-cols-2":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 40,
-		"grid-cols-1":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
-	});
-
-	const moodboardColsLogic = () => {
-		switch (bookmarksColumns && bookmarksColumns[0] / 10) {
-			case 1:
-				return "5";
-			case 2:
-				return "4";
-			case 3:
-				return "3";
-			case 4:
-				return "2";
-			case 5:
-				return "1";
-			default:
-				return "1";
-				break;
-		}
-	};
-
-	const ulClassName = classNames("outline-none focus:outline-none", {
-		// [`columns-${moodboardColsLogic()} gap-6`]:
-		// 	cardTypeCondition === "moodboard",
-		block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
-		[cardGridClassNames]: cardTypeCondition === "card",
-	});
-
-	const isTrashPage = categorySlug === TRASH_URL;
-
-	const renderOption = () =>
-		[...state.collection].map((item) => {
-			const bookmarkData = find(
-				bookmarksList,
-				(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
-			);
-			return (
-				<Option
-					cardTypeCondition={cardTypeCondition}
-					dragState={dragState}
-					isPublicPage={isPublicPage}
-					isTrashPage={isTrashPage}
-					item={item}
-					key={item.key}
-					state={state}
-					type={bookmarkData?.type ?? ""}
-					url={bookmarkData?.url ?? ""}
-				/>
-			);
-		});
-
-	return (
-		<>
-			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === "moodboard" ? (
-					<Masonry
-						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
-						className="my-masonry-grid"
-						columnClassName="my-masonry-grid_column"
-					>
-						{renderOption()}
-					</Masonry>
-				) : (
-					renderOption()
-				)}
-				<DragPreview ref={preview}>
-					{(items) => (
-						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
-							{items.length > 1
-								? `${items.length} bookmarks`
-								: find(
-										bookmarksList,
-										(item) =>
-											item?.id === Number.parseInt(items[0]["text/plain"], 10),
-								  )?.title}
-						</div>
-					)}
-				</DragPreview>
-			</ul>
-			{state.selectionManager.selectedKeys.size > 0 && (
-				<div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white px-[11px] py-[9px] shadow-custom-6">
-					<Checkbox
-						checked={
-							Array.from(state.selectionManager.selectedKeys.keys())?.length > 0
-						}
-						label={`${Array.from(state.selectionManager.selectedKeys.keys())
-							?.length}
-            bookmarks`}
-						onChange={() => state.selectionManager.clearSelection()}
-						value="selected-bookmarks"
-					/>
-					<div className="flex items-center">
-						<div
-							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
-							onClick={() => {
-								onBulkBookmarkDelete(
-									Array.from(
-										state.selectionManager.selectedKeys.keys(),
-									) as number[],
-									true,
-									Boolean(isTrashPage),
-								);
-								state.selectionManager.clearSelection();
-							}}
-							onKeyDown={() => {}}
-							role="button"
-							tabIndex={0}
-						>
-							{isTrashPage ? "Delete Forever" : "Delete"}
-						</div>
-						{isTrashPage && (
-							<div
-								className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
-								onClick={() => {
-									onBulkBookmarkDelete(
-										Array.from(
-											state.selectionManager.selectedKeys.keys(),
-										) as number[],
-										false,
-										false,
-									);
-									state.selectionManager.clearSelection();
-								}}
-								onKeyDown={() => {}}
-								role="button"
-								tabIndex={0}
-							>
-								Recover
-							</div>
-						)}
-						{!isEmpty(categoryData?.data) && (
-							<AriaDropdown
-								menuButton={
-									<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-gray-light-12 ">
-										<figure className="mr-[6px]">
-											<MoveIcon />
-										</figure>
-										<p>Move to</p>
-									</div>
-								}
-								menuClassName={dropdownMenuClassName}
-							>
-								{categoryData?.data
-									?.map((item) => ({
-										label: item?.category_name,
-										value: item?.id,
-									}))
-									?.map((dropdownItem) => (
-										<AriaDropdownMenu
-											key={dropdownItem?.value}
-											onClick={() => {
-												state.selectionManager.clearSelection();
-												onCategoryChange(
-													Array.from(
-														state.selectionManager.selectedKeys.keys(),
-													) as number[],
-													dropdownItem?.value,
-												);
-											}}
-										>
-											<div className={dropdownMenuItemClassName}>
-												{dropdownItem?.label}
-											</div>
-										</AriaDropdownMenu>
-									))}
-							</AriaDropdown>
-						)}
-					</div>
-				</div>
-			)}
-		</>
-	);
-};
-
-type OptionDropItemTypes = DraggableItemProps & {
-	rendered: ReactNode;
-};
-
-const Option = ({
-	item,
-	state,
-	dragState,
-	cardTypeCondition,
-	url,
-	isPublicPage,
-	isTrashPage,
-	type,
-}: {
-	cardTypeCondition: unknown;
-	dragState: DraggableCollectionState;
-	isPublicPage: CardSectionProps["isPublicPage"];
-	isTrashPage: boolean;
-	item: OptionDropItemTypes;
-	state: ListState<unknown>;
-	type: SingleListData["type"];
-	url: string;
-}) => {
-	// Setup listbox option as normal. See useListBox docs for details.
-	const ref = useRef(null);
-	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
-	const { focusProps } = useFocusRing();
-	// Register the item as a drag source.
-	const { dragProps } = useDraggableItem(
-		{
-			key: item.key,
-		},
-		dragState,
-	);
-	// Merge option props and dnd props, and render the item.
-
-	const liClassName = classNames(
-		"single-bookmark group relative flex cursor-pointer rounded-lg duration-150 outline-none",
-		{
-			"mb-6": cardTypeCondition === "moodboard",
-			"mb-[18px]": cardTypeCondition === "card",
-			"hover:shadow-custom-4":
-				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"hover:bg-custom-gray-8 mb-1":
-				(cardTypeCondition === "list" || cardTypeCondition === "headlines") &&
-				!isSelected,
-
-			" mb-1":
-				cardTypeCondition === "list" || cardTypeCondition === "headlines",
-		},
-	);
-
-	const disableDndCondition = isPublicPage;
-
-	const isVideo = isBookmarkVideo(type);
-
-	return (
-		<li
-			{...mergeProps(
-				// NOTE: we are omiting some keys in dragprops because they are causing focus trap issue
-				// the main problem that caused the focus trap issue is onKeyUpCapture
-				disableDndCondition
-					? []
-					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-				disableDndCondition ? [] : focusProps,
-				disableDndCondition ? [] : optionProps,
-			)}
-			className={liClassName}
-			ref={ref}
-		>
-			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
-			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
-			<a
-				className="absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
-				draggable={false}
-				href={url}
-				onClick={(event) => {
-					event.preventDefault();
-					// open on single click
-					if (isPublicPage || isVideo) {
-						window.open(url, "_blank");
-					}
-
-					// open on double click
-					if (event.detail === 2 && !isPublicPage && !isTrashPage && !isVideo) {
-						window.open(url, "_blank");
-					}
-				}}
-			/>
-			{item.rendered}
-		</li>
-	);
 };
 
 const CardSection = ({
@@ -517,6 +121,12 @@ const CardSection = ({
 	);
 	const toggleIsSearchLoading = useLoadersStore(
 		(state) => state.toggleIsSearchLoading,
+	);
+	const toggleShowVideoModal = useModalStore(
+		(state) => state.toggleShowVideoModal,
+	);
+	const setSelectedVideoId = useMiscellaneousStore(
+		(state) => state.setSelectedVideoId,
 	);
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
@@ -834,6 +444,8 @@ const CardSection = ({
 		width: number,
 		type: string,
 	) => {
+		const isVideo = isBookmarkVideo(type);
+
 		const imgClassName = classNames({
 			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
 				cardTypeCondition === "list",
@@ -853,6 +465,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
+			relative: isVideo,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px] ": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
@@ -928,19 +541,27 @@ const CardSection = ({
 			return null;
 		};
 
-		const isVideo = isBookmarkVideo(type);
-
-		// const playSvgClassName = classNames({
-		// 	absolute: true,
-		// 	"top-[43%] left-[43%]":
-		// 		cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-		// 	"top-[13%] left-[27%]": cardTypeCondition === "list",
-		// });
+		const playSvgClassName = classNames({
+			"hover:fill-slate-500 transition ease-in-out delay-50": true,
+			absolute: true,
+			"top-[43%] left-[43%]":
+				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			"top-[13%] left-[27%]": cardTypeCondition === "list",
+		});
 
 		return (
 			!isNull(imgLogic()) && (
 				<figure className={figureClassName}>
-					{/* {isVideo ? <PlayIcon className={playSvgClassName} /> : null}{" "} */}
+					{isVideo && (
+						<PlayIcon
+							className={playSvgClassName}
+							onClick={() => {
+								toggleShowVideoModal();
+								setSelectedVideoId(id);
+							}}
+							onPointerDown={(event) => event.stopPropagation()}
+						/>
+					)}
 					{isVideo ? null : null} {imgLogic()}
 				</figure>
 			)
@@ -1193,27 +814,30 @@ const CardSection = ({
 	});
 
 	return (
-		<div
-			className={listWrapperClass}
-			// style={{ height: "calc(100vh - 270px)"}}
-		>
-			<ListBox
-				aria-label="Categories"
-				bookmarksColumns={bookmarksColumns}
-				bookmarksList={bookmarksList}
-				cardTypeCondition={cardTypeCondition}
-				isPublicPage={isPublicPage}
-				onBulkBookmarkDelete={onBulkBookmarkDelete}
-				onCategoryChange={onCategoryChange}
-				selectionMode="multiple"
+		<>
+			<div
+				className={listWrapperClass}
+				// style={{ height: "calc(100vh - 270px)"}}
 			>
-				{renderSortByCondition()?.map((item) => (
-					<Item key={item?.id} textValue={item?.id?.toString()}>
-						{renderBookmarkCardTypes(item)}
-					</Item>
-				))}
-			</ListBox>
-		</div>
+				<ListBox
+					aria-label="Categories"
+					bookmarksColumns={bookmarksColumns}
+					bookmarksList={bookmarksList}
+					cardTypeCondition={cardTypeCondition}
+					isPublicPage={isPublicPage}
+					onBulkBookmarkDelete={onBulkBookmarkDelete}
+					onCategoryChange={onCategoryChange}
+					selectionMode="multiple"
+				>
+					{renderSortByCondition()?.map((item) => (
+						<Item key={item?.id} textValue={item?.id?.toString()}>
+							{renderBookmarkCardTypes(item)}
+						</Item>
+					))}
+				</ListBox>
+			</div>
+			<VideoModal listData={listData} />
+		</>
 	);
 };
 
