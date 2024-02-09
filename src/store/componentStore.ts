@@ -33,6 +33,11 @@ export const useModalStore = create<ModalStoreState>((set) => ({
 		set((state) => ({
 			showSettingsModal: !state.showSettingsModal,
 		})),
+	showVideoModal: false,
+	toggleShowVideoModal: () =>
+		set((state) => ({
+			showVideoModal: !state.showVideoModal,
+		})),
 }));
 
 export const useLoadersStore = create<LoadersStoreState>((set) => ({
@@ -74,4 +79,7 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	setCurrentSettingsPage: (
 		value: MiscellaneousStoreState["currentSettingsPage"],
 	) => set(() => ({ currentSettingsPage: value })),
+	selectedVideoId: null,
+	setSelectedVideoId: (value: number | null) =>
+		set(() => ({ selectedVideoId: value })),
 }));

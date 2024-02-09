@@ -4,11 +4,13 @@ export type ModalStoreState = {
 	showDeleteBookmarkWarningModal: boolean;
 	showSettingsModal: boolean;
 	showShareCategoryModal: boolean;
+	showVideoModal: boolean;
 	toggleShareCategoryModal: () => void;
 	toggleShowAddBookmarkShortcutModal: () => void;
 	toggleShowClearTrashWarningModal: () => void;
 	toggleShowDeleteBookmarkWarningModal: () => void;
 	toggleShowSettingsModal: () => void;
+	toggleShowVideoModal: () => void;
 };
 
 export type LoadersStoreState = {
@@ -26,6 +28,7 @@ export type MiscellaneousStoreState = {
 	currentSettingsPage: "change-email" | "delete" | "main";
 	isCardDragging: boolean;
 	searchText: string;
+	selectedVideoId: number | null;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
 	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
 	setCurrentSettingsPage: (
@@ -33,6 +36,7 @@ export type MiscellaneousStoreState = {
 	) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setSearchText: (value: string) => void;
+	setSelectedVideoId: (id: number | null) => void;
 	setShareCategoryId: (id: number | undefined) => void;
 	setShowSidePane: (value: boolean) => void;
 	shareCategoryId: number | undefined;

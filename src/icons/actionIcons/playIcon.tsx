@@ -1,14 +1,22 @@
+import { type PointerEvent } from "react";
+
 const PlayIcon = ({
 	className,
 	size = "40",
+	onClick,
+	onPointerDown,
 }: {
 	className: string;
+	onClick?: () => void;
+	onPointerDown?: (event: PointerEvent) => void;
 	size?: string;
 }) => (
 	<svg
 		className={className}
 		height={size}
 		id="play"
+		onClick={onClick}
+		onPointerDown={onPointerDown}
 		viewBox="0 0 256 256"
 		width={size}
 	>

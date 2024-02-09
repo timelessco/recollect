@@ -93,12 +93,12 @@ const Option = ({
 				onClick={(event) => {
 					event.preventDefault();
 					// open on single click
-					if (isPublicPage || isVideo) {
+					if (isPublicPage) {
 						window.open(url, "_blank");
 					}
 
 					// open on double click
-					if (event.detail === 2 && !isPublicPage && !isTrashPage && !isVideo) {
+					if (event.detail === 2 && !isPublicPage && !isTrashPage) {
 						window.open(url, "_blank");
 					}
 				}}

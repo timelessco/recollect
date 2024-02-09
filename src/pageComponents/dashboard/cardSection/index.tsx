@@ -27,6 +27,7 @@ import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
+	useModalStore,
 } from "../../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
@@ -59,6 +60,7 @@ import {
 import "node_modules/video-react/dist/video-react.css";
 
 import PlayIcon from "../../../icons/actionIcons/playIcon";
+import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
 
@@ -119,6 +121,12 @@ const CardSection = ({
 	);
 	const toggleIsSearchLoading = useLoadersStore(
 		(state) => state.toggleIsSearchLoading,
+	);
+	const toggleShowVideoModal = useModalStore(
+		(state) => state.toggleShowVideoModal,
+	);
+	const setSelectedVideoId = useMiscellaneousStore(
+		(state) => state.setSelectedVideoId,
 	);
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
@@ -436,6 +444,8 @@ const CardSection = ({
 		width: number,
 		type: string,
 	) => {
+		const isVideo = isBookmarkVideo(type);
+
 		const imgClassName = classNames({
 			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
 				cardTypeCondition === "list",
@@ -455,6 +465,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
+			relative: isVideo,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px] ": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
@@ -530,19 +541,27 @@ const CardSection = ({
 			return null;
 		};
 
-		const isVideo = isBookmarkVideo(type);
-
-		// const playSvgClassName = classNames({
-		// 	absolute: true,
-		// 	"top-[43%] left-[43%]":
-		// 		cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-		// 	"top-[13%] left-[27%]": cardTypeCondition === "list",
-		// });
+		const playSvgClassName = classNames({
+			"hover:fill-slate-500 transition ease-in-out delay-50": true,
+			absolute: true,
+			"top-[43%] left-[43%]":
+				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			"top-[13%] left-[27%]": cardTypeCondition === "list",
+		});
 
 		return (
 			!isNull(imgLogic()) && (
 				<figure className={figureClassName}>
-					{/* {isVideo ? <PlayIcon className={playSvgClassName} /> : null}{" "} */}
+					{isVideo && (
+						<PlayIcon
+							className={playSvgClassName}
+							onClick={() => {
+								toggleShowVideoModal();
+								setSelectedVideoId(id);
+							}}
+							onPointerDown={(event) => event.stopPropagation()}
+						/>
+					)}
 					{isVideo ? null : null} {imgLogic()}
 				</figure>
 			)
@@ -795,27 +814,30 @@ const CardSection = ({
 	});
 
 	return (
-		<div
-			className={listWrapperClass}
-			// style={{ height: "calc(100vh - 270px)"}}
-		>
-			<ListBox
-				aria-label="Categories"
-				bookmarksColumns={bookmarksColumns}
-				bookmarksList={bookmarksList}
-				cardTypeCondition={cardTypeCondition}
-				isPublicPage={isPublicPage}
-				onBulkBookmarkDelete={onBulkBookmarkDelete}
-				onCategoryChange={onCategoryChange}
-				selectionMode="multiple"
+		<>
+			<div
+				className={listWrapperClass}
+				// style={{ height: "calc(100vh - 270px)"}}
 			>
-				{renderSortByCondition()?.map((item) => (
-					<Item key={item?.id} textValue={item?.id?.toString()}>
-						{renderBookmarkCardTypes(item)}
-					</Item>
-				))}
-			</ListBox>
-		</div>
+				<ListBox
+					aria-label="Categories"
+					bookmarksColumns={bookmarksColumns}
+					bookmarksList={bookmarksList}
+					cardTypeCondition={cardTypeCondition}
+					isPublicPage={isPublicPage}
+					onBulkBookmarkDelete={onBulkBookmarkDelete}
+					onCategoryChange={onCategoryChange}
+					selectionMode="multiple"
+				>
+					{renderSortByCondition()?.map((item) => (
+						<Item key={item?.id} textValue={item?.id?.toString()}>
+							{renderBookmarkCardTypes(item)}
+						</Item>
+					))}
+				</ListBox>
+			</div>
+			<VideoModal listData={listData} />
+		</>
 	);
 };
 
