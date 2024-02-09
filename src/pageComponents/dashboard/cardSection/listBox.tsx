@@ -39,7 +39,6 @@ import {
 import { CATEGORIES_KEY, TRASH_URL } from "../../../utils/constants";
 
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
-// eslint-disable-next-line import/no-cycle
 import Option from "./option";
 
 type ListBoxDropTypes = ListProps<object> & {
