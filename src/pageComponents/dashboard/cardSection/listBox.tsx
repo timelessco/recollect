@@ -56,7 +56,6 @@ type ListBoxDropTypes = ListProps<object> & {
 	onItemDrop?: (event: any) => void;
 };
 
-// move
 const ListBox = (props: ListBoxDropTypes) => {
 	const {
 		getItems,
