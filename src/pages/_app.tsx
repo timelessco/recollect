@@ -14,6 +14,7 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
+
 import { supabaseAnonKey, supabaseUrl } from "../utils/supabaseClient";
 
 const MyApp = ({
@@ -58,9 +59,33 @@ const MyApp = ({
 							content="https://www.recollect.so/bookmarks-signup-1.png"
 							property="og:image"
 						/>
+						<meta content="product" property="og:type" />
+						<meta content="https://www.recollect.so" property="og:url" />
+						<meta content="Recollect" property="og:title" />
+						<meta
+							content="Open source bookmark manager built using Next js and Supabase"
+							property="og:description"
+						/>
 						<meta
 							content="initial-scale=1.0, width=device-width"
 							name="viewport"
+						/>
+						{/* Twitter */}
+						<meta content="summary" name="twitter:card" />
+						<meta content="https://www.recollect.so" name="twitter:site" />
+						<meta content="Recollect" name="twitter:title" />
+						<meta
+							content="Open source bookmark manager built using Next js and Supabase"
+							name="twitter:description"
+						/>
+						<meta
+							content="https://www.recollect.so/bookmarks-signup-1.png"
+							name="twitter:image"
+						/>
+						<script
+							async
+							data-website-id="852ac1e0-4078-40bd-8a41-5a525fa8344c"
+							src="https://eu.umami.is/script.js"
 						/>
 					</Head>
 					<Component {...pageProps} />
