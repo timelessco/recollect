@@ -36,7 +36,11 @@ import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
 } from "../../../utils/commonClassNames";
-import { CATEGORIES_KEY, TRASH_URL } from "../../../utils/constants";
+import {
+	CATEGORIES_KEY,
+	TRASH_URL,
+	UNCATEGORIZED_URL,
+} from "../../../utils/constants";
 
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
@@ -199,6 +203,24 @@ const ListBox = (props: ListBoxDropTypes) => {
 			);
 		});
 
+	const categoryDataMapper =
+		categoryData?.data?.map((item) => ({
+			label: item?.category_name,
+			value: item?.id,
+		})) || [];
+
+	let finalCategoryData;
+
+	if (categorySlug !== UNCATEGORIZED_URL) {
+		// is user is in uncategorized page then the bottom bar should not have the uncategorized option
+		finalCategoryData = [
+			{ label: "Uncategorized", value: 0 },
+			...categoryDataMapper,
+		];
+	} else {
+		finalCategoryData = [...categoryDataMapper];
+	}
+
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
@@ -290,29 +312,24 @@ const ListBox = (props: ListBoxDropTypes) => {
 								}
 								menuClassName={dropdownMenuClassName}
 							>
-								{categoryData?.data
-									?.map((item) => ({
-										label: item?.category_name,
-										value: item?.id,
-									}))
-									?.map((dropdownItem) => (
-										<AriaDropdownMenu
-											key={dropdownItem?.value}
-											onClick={() => {
-												state.selectionManager.clearSelection();
-												onCategoryChange(
-													Array.from(
-														state.selectionManager.selectedKeys.keys(),
-													) as number[],
-													dropdownItem?.value,
-												);
-											}}
-										>
-											<div className={dropdownMenuItemClassName}>
-												{dropdownItem?.label}
-											</div>
-										</AriaDropdownMenu>
-									))}
+								{finalCategoryData?.map((dropdownItem) => (
+									<AriaDropdownMenu
+										key={dropdownItem?.value}
+										onClick={() => {
+											state.selectionManager.clearSelection();
+											onCategoryChange(
+												Array.from(
+													state.selectionManager.selectedKeys.keys(),
+												) as number[],
+												dropdownItem?.value,
+											);
+										}}
+									>
+										<div className={dropdownMenuItemClassName}>
+											{dropdownItem?.label}
+										</div>
+									</AriaDropdownMenu>
+								))}
 							</AriaDropdown>
 						)}
 					</div>

@@ -681,8 +681,8 @@ const Dashboard = () => {
 															allCategories?.data,
 															(item) => item?.id === CATEGORY_ID,
 														);
-													// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
 
+													// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorized
 													const updateAccessCondition =
 														find(
 															currentCategory?.collabData,
@@ -707,7 +707,10 @@ const Dashboard = () => {
 																	category_id: categoryId,
 																	bookmark_id: Number.parseInt(bookmarkId, 10),
 																	// if user is changing to uncategoried then thay always have access
-																	update_access: updateAccessCondition,
+																	update_access:
+																		isNull(categoryId) || !categoryId
+																			? true
+																			: updateAccessCondition,
 																	session,
 																},
 															);
