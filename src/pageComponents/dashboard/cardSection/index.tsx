@@ -60,6 +60,7 @@ import {
 import "node_modules/video-react/dist/video-react.css";
 
 import PlayIcon from "../../../icons/actionIcons/playIcon";
+import VideoIcon from "../../../icons/videoIcon";
 import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
@@ -465,7 +466,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
-			relative: isVideo,
+			// "relative pointer-events-auto": isVideo,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px] ": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
@@ -544,14 +545,15 @@ const CardSection = ({
 		const playSvgClassName = classNames({
 			"hover:fill-slate-500 transition ease-in-out delay-50": true,
 			absolute: true,
-			"top-[43%] left-[43%]":
+			"top-[37%] left-[43%]":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[13%] left-[27%]": cardTypeCondition === "list",
+			"top-[11px] left-[25px]": cardTypeCondition === "list",
 		});
 
 		return (
 			!isNull(imgLogic()) && (
-				<figure className={figureClassName}>
+				<>
+					<figure className={figureClassName}>{imgLogic()}</figure>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -562,8 +564,7 @@ const CardSection = ({
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
-					{isVideo ? null : null} {imgLogic()}
-				</figure>
+				</>
 			)
 		);
 	};
@@ -598,7 +599,7 @@ const CardSection = ({
 		}
 
 		if (isVideo) {
-			return <PlayIcon className="" size="15" />;
+			return <VideoIcon size="15" />;
 		}
 
 		return <ImageIcon size="15" />;
