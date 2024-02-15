@@ -28,7 +28,6 @@ import {
 export const config = {
 	api: {
 		bodyParser: false,
-		sizeLimit: "20mb",
 	},
 };
 
