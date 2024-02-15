@@ -9,7 +9,15 @@ import {
 	type BookmarksPaginatedDataTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
-import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
+import {
+	BOOKMARKS_COUNT_KEY,
+	BOOKMARKS_KEY,
+	DOCUMENTS_URL,
+	IMAGES_URL,
+	menuListItemName,
+	VIDEOS_URL,
+} from "../../../utils/constants";
+import { successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData } from "../../supabaseCrudHelpers";
 
 import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
@@ -111,6 +119,20 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 					session,
 				});
 				setAddScreenshotBookmarkId(data?.id);
+			}
+		},
+		onSuccess: (apiResponse) => {
+			const apiResponseTyped = apiResponse as unknown as { status: number };
+			if (
+				(CATEGORY_ID === VIDEOS_URL ||
+					CATEGORY_ID === DOCUMENTS_URL ||
+					CATEGORY_ID === IMAGES_URL) &&
+				apiResponseTyped?.status === 200
+			) {
+				// if user is adding a link in any of the Types pages (Videos, Images etc ...) then we get this toast message
+				successToast(
+					`This bookmark will be added to ${menuListItemName?.links}`,
+				);
 			}
 		},
 	});

@@ -214,3 +214,12 @@ export const menuListItemName = {
 	links: "Links",
 	documents: "Documents",
 };
+
+// if user is adding anything in these pages then the added item will be in uncategorized
+export const uncategorizedPages = [
+	UNCATEGORIZED_URL,
+	LINKS_URL,
+	VIDEOS_URL,
+	DOCUMENTS_URL,
+	IMAGES_URL,
+];

@@ -50,6 +50,7 @@ import {
 	USER_PROFILE,
 } from "../../../utils/constants";
 import {
+	clickToOpenInNewTabLogic,
 	getBaseUrl,
 	isBookmarkVideo,
 	isUserInACategory,
@@ -438,12 +439,13 @@ const CardSection = ({
 	);
 
 	const renderOgImage = (
-		img: string,
-		id: number,
-		blurUrl: string,
-		height: number,
-		width: number,
-		type: string,
+		img: SingleListData["ogImage"],
+		id: SingleListData["id"],
+		blurUrl: SingleListData["meta_data"]["ogImgBlurUrl"],
+		height: SingleListData["meta_data"]["height"],
+		width: SingleListData["meta_data"]["width"],
+		type: SingleListData["type"],
+		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
 
@@ -466,7 +468,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
-			// "relative pointer-events-auto": isVideo,
+			relative: isVideo,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px] ": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
@@ -526,11 +528,11 @@ const CardSection = ({
 								alt="bookmark-img"
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
-								height={height}
+								height={height ?? 200}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
 								src={`${img}`}
-								width={width}
+								width={width ?? 200}
 							/>
 						) : (
 							errorImgPlaceholder
@@ -545,15 +547,27 @@ const CardSection = ({
 		const playSvgClassName = classNames({
 			"hover:fill-slate-500 transition ease-in-out delay-50": true,
 			absolute: true,
-			"top-[37%] left-[43%]":
+			"top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%]":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 			"top-[11px] left-[25px]": cardTypeCondition === "list",
 		});
 
 		return (
-			!isNull(imgLogic()) && (
-				<>
-					<figure className={figureClassName}>{imgLogic()}</figure>
+			// disabling as we dont need tab focus here
+			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
+			<div
+				onClick={(event) =>
+					clickToOpenInNewTabLogic(
+						event,
+						url,
+						isPublicPage,
+						categorySlug === TRASH_URL,
+					)
+				}
+				onKeyDown={() => {}}
+				role="button"
+			>
+				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -564,8 +578,9 @@ const CardSection = ({
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
-				</>
-			)
+					{imgLogic()}
+				</figure>
+			</div>
 		);
 	};
 
@@ -663,6 +678,7 @@ const CardSection = ({
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 					item?.type,
+					item?.url,
 				)}
 				{bookmarksInfoValue?.length === 1 &&
 				bookmarksInfoValue[0] === "cover" ? null : (
@@ -730,6 +746,7 @@ const CardSection = ({
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				item?.type,
+				item?.url,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (

@@ -1,9 +1,3 @@
-import {
-	type ALL_BOOKMARKS_URL,
-	type TRASH_URL,
-	type UNCATEGORIZED_URL,
-} from "../utils/constants";
-
 import { type CategoriesData } from "./apiTypes";
 
 export type UrlInput = {
@@ -25,12 +19,15 @@ export type SearchSelectOption = {
 	value: number | string;
 };
 
-export type CategoryIdUrlTypes =
-	| number
-	| typeof ALL_BOOKMARKS_URL
-	| typeof TRASH_URL
-	| typeof UNCATEGORIZED_URL
-	| null;
+// export type CategoryIdUrlTypes =
+// 	| number
+// 	| typeof ALL_BOOKMARKS_URL
+// 	| typeof TRASH_URL
+// 	| typeof UNCATEGORIZED_URL
+// 	| null;
+
+// this type is for the category ids that we sent in the api urls
+export type CategoryIdUrlTypes = number | string | null;
 
 export type FileType = File;
 
