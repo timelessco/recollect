@@ -552,13 +552,13 @@ const Dashboard = () => {
 					acceptedFiles[index] &&
 					acceptedFileTypes?.includes(acceptedFiles[index]?.type)
 				) {
-					let thumbnailBase64 = null;
-					if (acceptedFiles[index]?.type?.includes("video")) {
-						// if file is a video this gets its first frame as a png base64
-						thumbnailBase64 = (await generateVideoThumbnail(
-							acceptedFiles[0],
-						)) as string;
-					}
+					const thumbnailBase64 = null;
+					// if (acceptedFiles[index]?.type?.includes("video")) {
+					// 	// if file is a video this gets its first frame as a png base64
+					// 	thumbnailBase64 = (await generateVideoThumbnail(
+					// 		acceptedFiles[0],
+					// 	)) as string;
+					// }
 
 					mutationApiCall(
 						fileUploadOptimisticMutation.mutateAsync({
