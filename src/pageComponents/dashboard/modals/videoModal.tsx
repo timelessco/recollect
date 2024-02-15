@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import find from "lodash/find";
 
+// import ModalVideo from "react-modal-video";
+
+// import "node_modules/react-modal-video/scss/modal-video.scss";
+
 import Modal from "../../../components/modal";
 import {
 	useMiscellaneousStore,
@@ -35,16 +39,32 @@ const VideoModal = ({ listData }: { listData: SingleListData[] }) => {
 		<Modal
 			open={showVideoModal}
 			setOpen={() => toggleShowVideoModal()}
-			wrapperClassName="w-[65.4%] h-[82%] rounded-2xl outline-none"
+			wrapperClassName="h-auto w-auto max-h-full max-w-[80%] rounded-2xl outline-none"
 		>
 			{/* eslint-disable-next-line jsx-a11y/media-has-caption */}
 			<video
-				className="h-full w-full rounded-2xl"
+				autoPlay
+				className="rounded-2xl bg-black"
 				controls
+				preload="auto"
 				src={selectedVideoData?.url}
 			/>
 		</Modal>
 	);
+
+	// TODO: check and remove this and its dependencies, remove sass as well
+	// 	return (
+	// 		<ModalVideo
+	// 			autoplay
+	// 			channel="custom"
+	// 			isOpen={showVideoModal}
+	// 			onClose={() =>  {
+	// 				console.log("close");
+	// 				toggleShowVideoModal()
+	// 			}}
+	// 			url={selectedVideoData?.url}
+	// 		/>
+	// 	);
 };
 
 export default VideoModal;

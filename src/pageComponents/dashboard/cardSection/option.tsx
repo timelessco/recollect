@@ -12,7 +12,7 @@ import {
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import { type SingleListData } from "../../../types/apiTypes";
-import { isBookmarkVideo } from "../../../utils/helpers";
+import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
@@ -26,7 +26,6 @@ const Option = ({
 	url,
 	isPublicPage,
 	isTrashPage,
-	type,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
@@ -68,8 +67,6 @@ const Option = ({
 
 	const disableDndCondition = isPublicPage;
 
-	const isVideo = isBookmarkVideo(type);
-
 	return (
 		<li
 			{...mergeProps(
@@ -90,18 +87,9 @@ const Option = ({
 				className="absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
 				draggable={false}
 				href={url}
-				onClick={(event) => {
-					event.preventDefault();
-					// open on single click
-					if (isPublicPage) {
-						window.open(url, "_blank");
-					}
-
-					// open on double click
-					if (event.detail === 2 && !isPublicPage && !isTrashPage) {
-						window.open(url, "_blank");
-					}
-				}}
+				onClick={(event) =>
+					clickToOpenInNewTabLogic(event, url, isPublicPage, isTrashPage)
+				}
 			/>
 			{item.rendered}
 		</li>

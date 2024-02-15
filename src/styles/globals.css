@@ -35,6 +35,7 @@
 
 body {
 	@apply overflow-hidden antialiased outline-none;
+
 	font-variation-settings: "opsz" 20;
 }
 
@@ -44,11 +45,13 @@ main {
 
 .my-masonry-grid {
 	display: -webkit-box; /* Not needed if autoprefixing */
-	display: -ms-flexbox; /* Not needed if autoprefixing */
+	display: flexbox; /* Not needed if autoprefixing */
 	display: flex;
-	margin-left: -30px; /* gutter size offset */
+
 	width: auto;
+	margin-left: -30px; /* gutter size offset */
 }
+
 .my-masonry-grid_column {
 	padding-left: 30px; /* gutter size */
 	background-clip: padding-box;
@@ -56,9 +59,10 @@ main {
 
 /* Style your items */
 .my-masonry-grid_column > div {
+	margin-bottom: 30px;
+
 	/* change div to reference your elements you put in <Masonry> */
 	background: grey;
-	margin-bottom: 30px;
 }
 
 /* for side pane options menu being cut after it passed side pane width */
@@ -194,7 +198,9 @@ main {
 
 	background: #fff;
 	border-radius: 9999px;
-	box-shadow: 0 0 1px rgb(0 0 0 / 40%), 0 1px 2px rgb(0 0 0 / 15%);
+	box-shadow:
+		0 0 1px rgb(0 0 0 / 40%),
+		0 1px 2px rgb(0 0 0 / 15%);
 }
 
 .chakra-slider-group .slider-thumb-handle:focus-within {
@@ -320,6 +326,7 @@ main {
 
 [data-backdrop] {
 	/* @apply bg-black opacity-50 */
+
 	/* background: #00000045;; */
 	@apply bg-modal-bg;
 }
@@ -382,7 +389,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .icon-svg-parent svg {
-	fill: currentColor;
+	fill: currentcolor;
 }
 
 .icon-color-container::-webkit-scrollbar {
@@ -399,7 +406,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 .video-react.video-react-4-3 {
 	/* we are having important as in this video player library styles are added inline and we need to overide them */
 	height: 194px !important;
-	padding-top: 0px !important;
+	padding-top: 0 !important;
 }
 
 .video-react-video {
@@ -407,10 +414,25 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .video-react-video:hover {
-	border-bottom-left-radius: unset;
 	border-bottom-right-radius: unset;
+	border-bottom-left-radius: unset;
 }
 
 .aria-multi-select span {
 	@apply hidden;
+}
+
+/* video modal */
+
+/* NOTE: remove this video modal styles if not using */
+.modal-video-close-btn {
+	@apply hidden !important;
+}
+
+.modal-video-movie-wrap {
+	@apply rounded-2xl;
+}
+
+.modal-video-movie-wrap iframe {
+	@apply rounded-2xl;
 }

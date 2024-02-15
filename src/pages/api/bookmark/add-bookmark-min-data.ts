@@ -18,7 +18,7 @@ import {
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 	TIMELESS_SCRAPPER_API,
-	UNCATEGORIZED_URL,
+	uncategorizedPages,
 } from "../../../utils/constants";
 import {
 	apiSupabaseClient,
@@ -89,12 +89,13 @@ export default async function handler(
 		});
 
 		// this will either be 0 (uncategorized) or any number
+		// this also checks if the categoryId is one of the strings mentioned in uncategorizedPages , if they are it will be 0
 		const computedCategoryId =
 			updateAccess === true &&
 			!isNull(categoryId) &&
 			categoryId !== "null" &&
 			categoryId !== 0 &&
-			categoryId !== UNCATEGORIZED_URL
+			!uncategorizedPages?.includes(categoryId as string)
 				? categoryId
 				: 0;
 

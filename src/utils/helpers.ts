@@ -2,6 +2,7 @@ import { isEmpty } from "lodash";
 import find from "lodash/find";
 import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
 
+import { type CardSectionProps } from "../pageComponents/dashboard/cardSection";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -11,14 +12,19 @@ import { type UrlInput } from "../types/componentTypes";
 
 import {
 	ALL_BOOKMARKS_URL,
+	bookmarkType,
+	documentFileTypes,
 	DOCUMENTS_URL,
 	GET_NAME_FROM_EMAIL_PATTERN,
+	imageFileTypes,
 	IMAGES_URL,
 	INBOX_URL,
 	LINKS_URL,
+	menuListItemName,
 	SEARCH_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
 
@@ -162,4 +168,44 @@ export const isUserInACategoryInApi = (
 	} else {
 		return condition;
 	}
+};
+
+// this is the logic for clicking a bookmark card and when the url need to open in new tab
+export const clickToOpenInNewTabLogic = (
+	event: React.MouseEvent<unknown, MouseEvent>,
+	url: SingleListData["url"],
+	isPublicPage: CardSectionProps["isPublicPage"],
+	isTrashPage: boolean,
+) => {
+	event.preventDefault();
+	// open on single click
+	if (isPublicPage) {
+		window.open(url, "_blank");
+	}
+
+	// open on double click
+	if (event.detail === 2 && !isPublicPage && !isTrashPage) {
+		window.open(url, "_blank");
+	}
+};
+
+// based on sent type this will tell what it belongs to, eg if type is application/pdf this function will output Documents
+export const fileTypeIdentifier = (type: string) => {
+	if (imageFileTypes?.includes(type)) {
+		return menuListItemName?.image;
+	}
+
+	if (videoFileTypes?.includes(type)) {
+		return menuListItemName?.videos;
+	}
+
+	if (documentFileTypes?.includes(type)) {
+		return menuListItemName?.documents;
+	}
+
+	if (type === bookmarkType) {
+		return menuListItemName?.links;
+	}
+
+	return null;
 };

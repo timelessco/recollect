@@ -4,7 +4,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
-import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
+import {
+	BOOKMARKS_COUNT_KEY,
+	BOOKMARKS_KEY,
+	bookmarkType,
+	documentFileTypes,
+	DOCUMENTS_URL,
+	imageFileTypes,
+	IMAGES_URL,
+	LINKS_URL,
+	videoFileTypes,
+	VIDEOS_URL,
+} from "../../../utils/constants";
+import { fileTypeIdentifier } from "../../../utils/helpers";
+import { successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
@@ -94,6 +107,45 @@ export default function useFileUploadOptimisticMutation() {
 				BOOKMARKS_COUNT_KEY,
 				session?.user?.id,
 			]);
+		},
+		onSuccess: (apiResponse, data) => {
+			const uploadedDataType = data?.file?.type;
+
+			const apiResponseTyped = apiResponse as unknown as { success: boolean };
+
+			if (apiResponseTyped?.success === true) {
+				const fileTypeName = fileTypeIdentifier(uploadedDataType);
+
+				/* If the user uploads to a type page (links, videos) and the uploaded type is not of the page eg: user 
+					is uploading images in videos page then this logic fires and it tells where the item has been uploaded. 
+					Eg: If user uploads images in documents page then the user will get a toast message 
+				telling "Added to documents page"  */
+
+				if (
+					CATEGORY_ID === IMAGES_URL &&
+					!imageFileTypes?.includes(uploadedDataType)
+				) {
+					successToast(`Added to ${fileTypeName}`);
+				}
+
+				if (
+					CATEGORY_ID === VIDEOS_URL &&
+					!videoFileTypes?.includes(uploadedDataType)
+				) {
+					successToast(`Added to ${fileTypeName}`);
+				}
+
+				if (
+					CATEGORY_ID === DOCUMENTS_URL &&
+					!documentFileTypes?.includes(uploadedDataType)
+				) {
+					successToast(`Added to ${fileTypeName}`);
+				}
+
+				if (CATEGORY_ID === LINKS_URL && uploadedDataType !== bookmarkType) {
+					successToast(`Added to ${fileTypeName}`);
+				}
+			}
 		},
 	});
 
