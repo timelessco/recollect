@@ -82,11 +82,14 @@ const MyApp = ({
 							content="https://www.recollect.so/bookmarks-signup-1.png"
 							name="twitter:image"
 						/>
-						<script
-							async
-							data-website-id="852ac1e0-4078-40bd-8a41-5a525fa8344c"
-							src="https://eu.umami.is/script.js"
-						/>
+						{/* analytics script */}
+						{process.env.NODE_ENV === "production" && (
+							<script
+								async
+								data-website-id="852ac1e0-4078-40bd-8a41-5a525fa8344c"
+								src="https://eu.umami.is/script.js"
+							/>
+						)}
 					</Head>
 					<Component {...pageProps} />
 				</Hydrate>
