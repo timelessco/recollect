@@ -1,4 +1,4 @@
-import { useSession } from "@supabase/auth-helpers-react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -10,6 +10,7 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	FILES_STORAGE_NAME,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
@@ -25,6 +26,7 @@ export default function useFileUploadOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const supabase = useSupabaseClient();
 
 	// const fileUploadOptimisticMutation = useMutation(uploadFile, {
 	// 	onSuccess: () => {
@@ -84,6 +86,21 @@ export default function useFileUploadOptimisticMutation() {
 					return undefined;
 				},
 			);
+
+			// generate signed url
+			await supabase.storage
+				.from(FILES_STORAGE_NAME)
+				.createSignedUploadUrl(
+					`public/${session?.user?.id}/${data?.file?.name}`,
+				);
+
+			await supabase.storage
+				.from(FILES_STORAGE_NAME)
+				.uploadToSignedUrl(
+					`public/${session?.user?.id}/${data?.file?.name}`,
+					data?.file?.name,
+					data?.file,
+				);
 
 			// Return a context object with the snapshotted value
 			return { previousData };

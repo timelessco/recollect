@@ -213,12 +213,12 @@ export default async (
 		const storagePath = `public/${userId}/${fileName}`;
 
 		// the file is uploaded
-		const { error: storageError } = await supabase.storage
-			.from(FILES_STORAGE_NAME)
-			.upload(storagePath, decode(contents), {
-				contentType: fileType,
-				upsert: true,
-			});
+		// const { error: storageError } = await supabase.storage
+		// 	.from(FILES_STORAGE_NAME)
+		// 	.upload(storagePath, decode(contents), {
+		// 		contentType: fileType,
+		// 		upsert: true,
+		// 	});
 
 		// the public url for the uploaded file is got
 		const { data: storageData, error: publicUrlError } = supabase.storage
@@ -228,70 +228,62 @@ export default async (
 			error: UploadFileApiResponse["error"];
 		};
 
-		if (isNil(storageError)) {
-			let meta_data: ImgMetadataType = {
-				img_caption: null,
-				width: null,
-				height: null,
-				ogImgBlurUrl: null,
-				favIcon: null,
-			};
-			const isVideo = fileType?.includes("video");
+		let meta_data: ImgMetadataType = {
+			img_caption: null,
+			width: null,
+			height: null,
+			ogImgBlurUrl: null,
+			favIcon: null,
+		};
+		const isVideo = fileType?.includes("video");
 
-			let ogImage;
+		let ogImage;
 
-			if (!isVideo) {
-				// if file is not a video
-				const { ogImage: image, meta_data: metaData } = await notVideoLogic(
-					storageData,
-					data,
-				);
+		if (!isVideo) {
+			// if file is not a video
+			const { ogImage: image, meta_data: metaData } = await notVideoLogic(
+				storageData,
+				data,
+			);
 
-				ogImage = image;
-				meta_data = metaData;
-			} else {
-				// if file is a video
-				const { ogImage: image, meta_data: metaData } = await videoLogic(
-					data,
-					userId,
-					fileName,
-					supabase,
-				);
-
-				ogImage = image;
-				meta_data = metaData;
-			}
-
-			// we upload the final data in DB
-			const { error: DBerror } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.insert([
-					{
-						url: storageData?.publicUrl,
-						title: fileName,
-						user_id: userId,
-						description: (meta_data?.img_caption as string) || "",
-						ogImage,
-						category_id: categoryIdLogic,
-						type: fileType,
-						meta_data,
-					},
-				])
-				.select();
-
-			if (isNil(storageError) && isNil(publicUrlError) && isNil(DBerror)) {
-				response.status(200).json({ success: true, error: null });
-			} else {
-				response.status(500).json({
-					success: false,
-					error: storageError ?? publicUrlError ?? DBerror,
-				});
-			}
+			ogImage = image;
+			meta_data = metaData;
 		} else {
-			// storage error
+			// if file is a video
+			const { ogImage: image, meta_data: metaData } = await videoLogic(
+				data,
+				userId,
+				fileName,
+				supabase,
+			);
+
+			ogImage = image;
+			meta_data = metaData;
+		}
+
+		// we upload the final data in DB
+		const { error: DBerror } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.insert([
+				{
+					url: storageData?.publicUrl,
+					title: fileName,
+					user_id: userId,
+					description: (meta_data?.img_caption as string) || "",
+					ogImage,
+					category_id: categoryIdLogic,
+					type: fileType,
+					meta_data,
+				},
+			])
+			.select();
+
+		if (isNil(publicUrlError) && isNil(DBerror)) {
+			response.status(200).json({ success: true, error: null });
+		} else {
 			response.status(500).json({
 				success: false,
-				error: storageError,
+				error: publicUrlError ?? DBerror,
 			});
 		}
 	} else {
