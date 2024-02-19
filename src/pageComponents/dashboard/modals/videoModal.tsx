@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import find from "lodash/find";
 
 // import ModalVideo from "react-modal-video";
@@ -14,6 +14,8 @@ import { type SingleListData } from "../../../types/apiTypes";
 
 const VideoModal = ({ listData }: { listData: SingleListData[] }) => {
 	const showVideoModal = useModalStore((state) => state.showVideoModal);
+	const ref = useRef<HTMLVideoElement>(null);
+
 	const toggleShowVideoModal = useModalStore(
 		(state) => state.toggleShowVideoModal,
 	);
@@ -27,6 +29,8 @@ const VideoModal = ({ listData }: { listData: SingleListData[] }) => {
 	useEffect(() => {
 		if (!showVideoModal) {
 			setSelectedVideoId(null);
+			// if this is not there then video keeps playing even on modal close
+			ref?.current?.pause();
 		}
 	}, [setSelectedVideoId, showVideoModal]);
 
@@ -39,14 +43,17 @@ const VideoModal = ({ listData }: { listData: SingleListData[] }) => {
 		<Modal
 			open={showVideoModal}
 			setOpen={() => toggleShowVideoModal()}
-			wrapperClassName="h-auto w-auto max-h-full max-w-[80%] rounded-2xl outline-none"
+			// wrapperClassName="h-auto w-auto max-w-[80%] rounded-2xl outline-none"
+			wrapperClassName="h-[80%] w-[80%] rounded-2xl outline-none"
+			// wrapperClassName="relative h-[100vh] w-[100vw] rounded-2xl outline-none"
 		>
 			{/* eslint-disable-next-line jsx-a11y/media-has-caption */}
 			<video
 				autoPlay
-				className="rounded-2xl bg-black"
+				className="h-full w-full rounded-2xl bg-black object-contain"
 				controls
 				preload="auto"
+				ref={ref}
 				src={selectedVideoData?.url}
 			/>
 		</Modal>
