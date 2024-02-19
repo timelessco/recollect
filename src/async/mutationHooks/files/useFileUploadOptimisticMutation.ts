@@ -88,19 +88,21 @@ export default function useFileUploadOptimisticMutation() {
 			);
 
 			// generate signed url
-			await supabase.storage
+			const { data: uploadTokenData } = await supabase.storage
 				.from(FILES_STORAGE_NAME)
 				.createSignedUploadUrl(
 					`public/${session?.user?.id}/${data?.file?.name}`,
 				);
 
-			await supabase.storage
-				.from(FILES_STORAGE_NAME)
-				.uploadToSignedUrl(
-					`public/${session?.user?.id}/${data?.file?.name}`,
-					data?.file?.name,
-					data?.file,
-				);
+			if (uploadTokenData?.token) {
+				await supabase.storage
+					.from(FILES_STORAGE_NAME)
+					.uploadToSignedUrl(
+						`public/${session?.user?.id}/${data?.file?.name}`,
+						uploadTokenData?.token,
+						data?.file,
+					);
+			}
 
 			// Return a context object with the snapshotted value
 			return { previousData };

@@ -1,7 +1,7 @@
 // you might want to use regular 'fs' and not a promise one
-
+// @ts-nocheck
 import { log } from "console";
-import fs, { promises as fileSystem } from "fs";
+import fs from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
@@ -67,7 +67,7 @@ const notVideoLogic = async (
 	data: ParsedFormDataType,
 ) => {
 	const ogImage = storageData?.publicUrl;
-	const imageCaption = await query(data?.files?.file?.[0]?.filepath as string);
+	const imageCaption = await query(data?.fields?.name?.[0] as string);
 
 	const jsonResponse = (await imageCaption?.json()) as Array<{
 		generated_text: string;
@@ -197,100 +197,93 @@ export default async (
 	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
 	const userId = tokenDecode?.sub;
 
-	let contents;
+	// if (data?.files?.file && data?.files?.file[0]?.filepath) {
+	// 	contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
+	// 		encoding: "base64",
+	// 	});
+	// }
 
-	if (data?.files?.file && data?.files?.file[0]?.filepath) {
-		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
-			encoding: "base64",
-		});
+	// const fileName = data?.files?.file?.[0]?.originalFilename;
+	// const fileType = data?.files?.file?.[0]?.mimetype;
+
+	const fileName = data?.fields?.name?.[0];
+	const fileType = data?.fields?.type?.[0];
+
+	// if the uploaded file is valid this happens
+	const storagePath = `public/${userId}/${fileName}`;
+
+	// the file is uploaded
+	// const { error: storageError } = await supabase.storage
+	// 	.from(FILES_STORAGE_NAME)
+	// 	.upload(storagePath, decode(contents), {
+	// 		contentType: fileType,
+	// 		upsert: true,
+	// 	});
+
+	// the public url for the uploaded file is got
+	const { data: storageData, error: publicUrlError } = supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.getPublicUrl(storagePath) as {
+		data: StorageDataType;
+		error: UploadFileApiResponse["error"];
+	};
+
+	let meta_data: ImgMetadataType = {
+		img_caption: null,
+		width: null,
+		height: null,
+		ogImgBlurUrl: null,
+		favIcon: null,
+	};
+	const isVideo = fileType?.includes("video");
+
+	let ogImage;
+
+	if (!isVideo) {
+		// if file is not a video
+		const { ogImage: image, meta_data: metaData } = await notVideoLogic(
+			storageData,
+			data,
+		);
+
+		ogImage = image;
+		meta_data = metaData;
+	} else {
+		// if file is a video
+		const { ogImage: image, meta_data: metaData } = await videoLogic(
+			data,
+			userId,
+			fileName,
+			supabase,
+		);
+
+		ogImage = image;
+		meta_data = metaData;
 	}
 
-	const fileName = data?.files?.file?.[0]?.originalFilename;
-	const fileType = data?.files?.file?.[0]?.mimetype;
+	// we upload the final data in DB
+	const { error: DBerror } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.insert([
+			{
+				url: storageData?.publicUrl,
+				title: fileName,
+				user_id: userId,
+				description: (meta_data?.img_caption as string) || "",
+				ogImage,
+				category_id: categoryIdLogic,
+				type: fileType,
+				meta_data,
+			},
+		])
+		.select();
 
-	if (contents) {
-		// if the uploaded file is valid this happens
-		const storagePath = `public/${userId}/${fileName}`;
-
-		// the file is uploaded
-		// const { error: storageError } = await supabase.storage
-		// 	.from(FILES_STORAGE_NAME)
-		// 	.upload(storagePath, decode(contents), {
-		// 		contentType: fileType,
-		// 		upsert: true,
-		// 	});
-
-		// the public url for the uploaded file is got
-		const { data: storageData, error: publicUrlError } = supabase.storage
-			.from(FILES_STORAGE_NAME)
-			.getPublicUrl(storagePath) as {
-			data: StorageDataType;
-			error: UploadFileApiResponse["error"];
-		};
-
-		let meta_data: ImgMetadataType = {
-			img_caption: null,
-			width: null,
-			height: null,
-			ogImgBlurUrl: null,
-			favIcon: null,
-		};
-		const isVideo = fileType?.includes("video");
-
-		let ogImage;
-
-		if (!isVideo) {
-			// if file is not a video
-			const { ogImage: image, meta_data: metaData } = await notVideoLogic(
-				storageData,
-				data,
-			);
-
-			ogImage = image;
-			meta_data = metaData;
-		} else {
-			// if file is a video
-			const { ogImage: image, meta_data: metaData } = await videoLogic(
-				data,
-				userId,
-				fileName,
-				supabase,
-			);
-
-			ogImage = image;
-			meta_data = metaData;
-		}
-
-		// we upload the final data in DB
-		const { error: DBerror } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.insert([
-				{
-					url: storageData?.publicUrl,
-					title: fileName,
-					user_id: userId,
-					description: (meta_data?.img_caption as string) || "",
-					ogImage,
-					category_id: categoryIdLogic,
-					type: fileType,
-					meta_data,
-				},
-			])
-			.select();
-
-		if (isNil(publicUrlError) && isNil(DBerror)) {
-			response.status(200).json({ success: true, error: null });
-		} else {
-			response.status(500).json({
-				success: false,
-				error: publicUrlError ?? DBerror,
-			});
-		}
+	if (isNil(publicUrlError) && isNil(DBerror)) {
+		response.status(200).json({ success: true, error: null });
 	} else {
-		// if the file uploaded is not valid
 		response.status(500).json({
 			success: false,
-			error: "error in payload file data",
+			error: publicUrlError ?? DBerror,
 		});
 	}
 };

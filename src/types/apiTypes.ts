@@ -327,8 +327,11 @@ export type AddUserTagsApiPayload = {
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
 	file: FileType;
+	// name: string;
+	// path: string;
 	session: SupabaseSessionType;
 	thumbnailBase64: string | null;
+	// type: string;
 };
 
 export type DeleteBookmarkPayload = {
