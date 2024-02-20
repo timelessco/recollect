@@ -1,7 +1,6 @@
 // you might want to use regular 'fs' and not a promise one
 // @ts-nocheck
 import { log } from "console";
-import fs from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
@@ -36,8 +35,15 @@ type StorageDataType = {
 };
 
 // this func gets the image caption
-const query = async (filename: string) => {
-	const data = fs.readFileSync(filename);
+const query = async (
+	// filename: string
+	source: string,
+) => {
+	// const data = fs.readFileSync(filename);
+
+	const response = await fetch(source);
+	const arrayBuffer = await response.arrayBuffer();
+	const data = Buffer.from(arrayBuffer);
 
 	try {
 		const imgCaptionResponse = await fetch(
@@ -62,12 +68,9 @@ const query = async (filename: string) => {
 If the uploaded file is not a video then this function is called 
 this function generates the imageCaption and the meta_data for the file
 */
-const notVideoLogic = async (
-	storageData: StorageDataType,
-	data: ParsedFormDataType,
-) => {
+const notVideoLogic = async (storageData: StorageDataType) => {
 	const ogImage = storageData?.publicUrl;
-	const imageCaption = await query(data?.fields?.name?.[0] as string);
+	const imageCaption = await query(ogImage as string);
 
 	const jsonResponse = (await imageCaption?.json()) as Array<{
 		generated_text: string;
