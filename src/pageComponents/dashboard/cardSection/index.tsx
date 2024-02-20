@@ -52,6 +52,7 @@ import {
 import {
 	clickToOpenInNewTabLogic,
 	getBaseUrl,
+	isBookmarkDocument,
 	isBookmarkVideo,
 	isUserInACategory,
 } from "../../../utils/helpers";
@@ -61,6 +62,7 @@ import {
 import "node_modules/video-react/dist/video-react.css";
 
 import PlayIcon from "../../../icons/actionIcons/playIcon";
+import FolderIcon from "../../../icons/folderIcon";
 import VideoIcon from "../../../icons/videoIcon";
 import VideoModal from "../modals/videoModal";
 
@@ -586,6 +588,7 @@ const CardSection = ({
 
 	const renderFavIcon = (item: SingleListData) => {
 		const isVideo = isBookmarkVideo(item?.type);
+		const isDocument = isBookmarkDocument(item?.type);
 		const size = cardTypeCondition === "headlines" ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === "headlines",
@@ -615,6 +618,10 @@ const CardSection = ({
 
 		if (isVideo) {
 			return <VideoIcon size="15" />;
+		}
+
+		if (isDocument) {
+			return <FolderIcon size="15" />;
 		}
 
 		return <ImageIcon size="15" />;

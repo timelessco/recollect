@@ -149,6 +149,10 @@ export const generateVideoThumbnail = async (file: File) =>
 export const isBookmarkVideo = (type: string): boolean =>
 	type?.includes("video");
 
+// tells if the bookmark is of document type
+export const isBookmarkDocument = (type: string): boolean =>
+	documentFileTypes?.includes(type);
+
 // used in apis to tell if user is in a collection or not
 export const isUserInACategoryInApi = (
 	category_id: string,
