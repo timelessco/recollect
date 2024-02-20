@@ -98,4 +98,3 @@ timestamptz
 plpgsql
 ILIKE
 plpgsql
-nocheck

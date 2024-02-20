@@ -1,3 +1,5 @@
+import { type FileWithPath } from "react-dropzone";
+
 import { type CategoriesData } from "./apiTypes";
 
 export type UrlInput = {
@@ -29,7 +31,7 @@ export type SearchSelectOption = {
 // this type is for the category ids that we sent in the api urls
 export type CategoryIdUrlTypes = number | string | null;
 
-export type FileType = File;
+export type FileType = FileWithPath;
 
 export type CategoryIconsDropdownTypes = {
 	buttonIconSize: number;

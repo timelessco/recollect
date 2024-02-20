@@ -1,5 +1,4 @@
 // you might want to use regular 'fs' and not a promise one
-// @ts-nocheck
 import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type SupabaseClient } from "@supabase/supabase-js";
@@ -35,12 +34,7 @@ type StorageDataType = {
 };
 
 // this func gets the image caption
-const query = async (
-	// filename: string
-	source: string,
-) => {
-	// const data = fs.readFileSync(filename);
-
+const query = async (source: string) => {
 	const response = await fetch(source);
 	const arrayBuffer = await response.arrayBuffer();
 	const data = Buffer.from(arrayBuffer);
@@ -200,29 +194,13 @@ export default async (
 	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
 	const userId = tokenDecode?.sub;
 
-	// if (data?.files?.file && data?.files?.file[0]?.filepath) {
-	// 	contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
-	// 		encoding: "base64",
-	// 	});
-	// }
-
-	// const fileName = data?.files?.file?.[0]?.originalFilename;
-	// const fileType = data?.files?.file?.[0]?.mimetype;
-
 	const fileName = data?.fields?.name?.[0];
 	const fileType = data?.fields?.type?.[0];
 
 	// if the uploaded file is valid this happens
 	const storagePath = `public/${userId}/${fileName}`;
 
-	// the file is uploaded
-	// const { error: storageError } = await supabase.storage
-	// 	.from(FILES_STORAGE_NAME)
-	// 	.upload(storagePath, decode(contents), {
-	// 		contentType: fileType,
-	// 		upsert: true,
-	// 	});
-
+	// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
 	// the public url for the uploaded file is got
 	const { data: storageData, error: publicUrlError } = supabase.storage
 		.from(FILES_STORAGE_NAME)
@@ -244,10 +222,8 @@ export default async (
 
 	if (!isVideo) {
 		// if file is not a video
-		const { ogImage: image, meta_data: metaData } = await notVideoLogic(
-			storageData,
-			data,
-		);
+		const { ogImage: image, meta_data: metaData } =
+			await notVideoLogic(storageData);
 
 		ogImage = image;
 		meta_data = metaData;

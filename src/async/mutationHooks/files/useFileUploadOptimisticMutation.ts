@@ -87,7 +87,12 @@ export default function useFileUploadOptimisticMutation() {
 				},
 			);
 
-			// generate signed url
+			/* Vercel has a limit where we cannot send files that are more than 4.5mb to 
+				server less functions https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions.
+				Because of this constraint we are uploading the resource in the client side itself
+			*/
+
+			// generate signed url to make the upload more secure as its taking place in client side
 			const { data: uploadTokenData } = await supabase.storage
 				.from(FILES_STORAGE_NAME)
 				.createSignedUploadUrl(
@@ -95,6 +100,9 @@ export default function useFileUploadOptimisticMutation() {
 				);
 
 			if (uploadTokenData?.token) {
+				// the token will not be there if the resource is alredy present in the bucket
+				// if the resource is not there then we upload via the token
+				// we get this uploaded file in the api with the help of file name, thus we are not sending the uploaded response to the api from the client side
 				await supabase.storage
 					.from(FILES_STORAGE_NAME)
 					.uploadToSignedUrl(

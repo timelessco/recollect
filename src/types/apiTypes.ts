@@ -327,11 +327,8 @@ export type AddUserTagsApiPayload = {
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
 	file: FileType;
-	// name: string;
-	// path: string;
 	session: SupabaseSessionType;
 	thumbnailBase64: string | null;
-	// type: string;
 };
 
 export type DeleteBookmarkPayload = {
@@ -369,7 +366,9 @@ export type ParsedFormDataType = {
 	fields: {
 		access_token?: string;
 		category_id?: string;
+		name?: string;
 		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
+		type?: string;
 	};
 	files: {
 		file?: Array<{
