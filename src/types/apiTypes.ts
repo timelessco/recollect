@@ -366,7 +366,9 @@ export type ParsedFormDataType = {
 	fields: {
 		access_token?: string;
 		category_id?: string;
+		name?: string;
 		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
+		type?: string;
 	};
 	files: {
 		file?: Array<{

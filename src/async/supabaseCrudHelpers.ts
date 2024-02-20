@@ -883,10 +883,12 @@ export const uploadFile = async ({
 		const response = await axios.post<UploadFileApiResponse>(
 			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
 			{
-				file,
 				access_token: session?.access_token,
 				category_id,
 				thumbnailBase64,
+				path: file?.path,
+				name: file?.name,
+				type: file?.type,
 			},
 			{
 				headers: {

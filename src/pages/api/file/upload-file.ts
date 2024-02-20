@@ -1,7 +1,5 @@
 // you might want to use regular 'fs' and not a promise one
-
 import { log } from "console";
-import fs, { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
@@ -36,8 +34,10 @@ type StorageDataType = {
 };
 
 // this func gets the image caption
-const query = async (filename: string) => {
-	const data = fs.readFileSync(filename);
+const query = async (source: string) => {
+	const response = await fetch(source);
+	const arrayBuffer = await response.arrayBuffer();
+	const data = Buffer.from(arrayBuffer);
 
 	try {
 		const imgCaptionResponse = await fetch(
@@ -62,12 +62,9 @@ const query = async (filename: string) => {
 If the uploaded file is not a video then this function is called 
 this function generates the imageCaption and the meta_data for the file
 */
-const notVideoLogic = async (
-	storageData: StorageDataType,
-	data: ParsedFormDataType,
-) => {
+const notVideoLogic = async (storageData: StorageDataType) => {
 	const ogImage = storageData?.publicUrl;
-	const imageCaption = await query(data?.files?.file?.[0]?.filepath as string);
+	const imageCaption = await query(ogImage as string);
 
 	const jsonResponse = (await imageCaption?.json()) as Array<{
 		generated_text: string;
@@ -197,108 +194,75 @@ export default async (
 	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
 	const userId = tokenDecode?.sub;
 
-	let contents;
+	const fileName = data?.fields?.name?.[0];
+	const fileType = data?.fields?.type?.[0];
 
-	if (data?.files?.file && data?.files?.file[0]?.filepath) {
-		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
-			encoding: "base64",
-		});
+	// if the uploaded file is valid this happens
+	const storagePath = `public/${userId}/${fileName}`;
+
+	// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
+	// the public url for the uploaded file is got
+	const { data: storageData, error: publicUrlError } = supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.getPublicUrl(storagePath) as {
+		data: StorageDataType;
+		error: UploadFileApiResponse["error"];
+	};
+
+	let meta_data: ImgMetadataType = {
+		img_caption: null,
+		width: null,
+		height: null,
+		ogImgBlurUrl: null,
+		favIcon: null,
+	};
+	const isVideo = fileType?.includes("video");
+
+	let ogImage;
+
+	if (!isVideo) {
+		// if file is not a video
+		const { ogImage: image, meta_data: metaData } =
+			await notVideoLogic(storageData);
+
+		ogImage = image;
+		meta_data = metaData;
+	} else {
+		// if file is a video
+		const { ogImage: image, meta_data: metaData } = await videoLogic(
+			data,
+			userId,
+			fileName,
+			supabase,
+		);
+
+		ogImage = image;
+		meta_data = metaData;
 	}
 
-	const fileName = data?.files?.file?.[0]?.originalFilename;
-	const fileType = data?.files?.file?.[0]?.mimetype;
+	// we upload the final data in DB
+	const { error: DBerror } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.insert([
+			{
+				url: storageData?.publicUrl,
+				title: fileName,
+				user_id: userId,
+				description: (meta_data?.img_caption as string) || "",
+				ogImage,
+				category_id: categoryIdLogic,
+				type: fileType,
+				meta_data,
+			},
+		])
+		.select();
 
-	if (contents) {
-		// if the uploaded file is valid this happens
-		const storagePath = `public/${userId}/${fileName}`;
-
-		// the file is uploaded
-		const { error: storageError } = await supabase.storage
-			.from(FILES_STORAGE_NAME)
-			.upload(storagePath, decode(contents), {
-				contentType: fileType,
-				upsert: true,
-			});
-
-		// the public url for the uploaded file is got
-		const { data: storageData, error: publicUrlError } = supabase.storage
-			.from(FILES_STORAGE_NAME)
-			.getPublicUrl(storagePath) as {
-			data: StorageDataType;
-			error: UploadFileApiResponse["error"];
-		};
-
-		if (isNil(storageError)) {
-			let meta_data: ImgMetadataType = {
-				img_caption: null,
-				width: null,
-				height: null,
-				ogImgBlurUrl: null,
-				favIcon: null,
-			};
-			const isVideo = fileType?.includes("video");
-
-			let ogImage;
-
-			if (!isVideo) {
-				// if file is not a video
-				const { ogImage: image, meta_data: metaData } = await notVideoLogic(
-					storageData,
-					data,
-				);
-
-				ogImage = image;
-				meta_data = metaData;
-			} else {
-				// if file is a video
-				const { ogImage: image, meta_data: metaData } = await videoLogic(
-					data,
-					userId,
-					fileName,
-					supabase,
-				);
-
-				ogImage = image;
-				meta_data = metaData;
-			}
-
-			// we upload the final data in DB
-			const { error: DBerror } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.insert([
-					{
-						url: storageData?.publicUrl,
-						title: fileName,
-						user_id: userId,
-						description: (meta_data?.img_caption as string) || "",
-						ogImage,
-						category_id: categoryIdLogic,
-						type: fileType,
-						meta_data,
-					},
-				])
-				.select();
-
-			if (isNil(storageError) && isNil(publicUrlError) && isNil(DBerror)) {
-				response.status(200).json({ success: true, error: null });
-			} else {
-				response.status(500).json({
-					success: false,
-					error: storageError ?? publicUrlError ?? DBerror,
-				});
-			}
-		} else {
-			// storage error
-			response.status(500).json({
-				success: false,
-				error: storageError,
-			});
-		}
+	if (isNil(publicUrlError) && isNil(DBerror)) {
+		response.status(200).json({ success: true, error: null });
 	} else {
-		// if the file uploaded is not valid
 		response.status(500).json({
 			success: false,
-			error: "error in payload file data",
+			error: publicUrlError ?? DBerror,
 		});
 	}
 };

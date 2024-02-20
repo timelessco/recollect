@@ -1,4 +1,4 @@
-import { useSession } from "@supabase/auth-helpers-react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -10,6 +10,7 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	FILES_STORAGE_NAME,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
@@ -25,6 +26,7 @@ export default function useFileUploadOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const supabase = useSupabaseClient();
 
 	// const fileUploadOptimisticMutation = useMutation(uploadFile, {
 	// 	onSuccess: () => {
@@ -84,6 +86,31 @@ export default function useFileUploadOptimisticMutation() {
 					return undefined;
 				},
 			);
+
+			/* Vercel has a limit where we cannot send files that are more than 4.5mb to 
+				server less functions https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions.
+				Because of this constraint we are uploading the resource in the client side itself
+			*/
+
+			// generate signed url to make the upload more secure as its taking place in client side
+			const { data: uploadTokenData } = await supabase.storage
+				.from(FILES_STORAGE_NAME)
+				.createSignedUploadUrl(
+					`public/${session?.user?.id}/${data?.file?.name}`,
+				);
+
+			if (uploadTokenData?.token) {
+				// the token will not be there if the resource is alredy present in the bucket
+				// if the resource is not there then we upload via the token
+				// we get this uploaded file in the api with the help of file name, thus we are not sending the uploaded response to the api from the client side
+				await supabase.storage
+					.from(FILES_STORAGE_NAME)
+					.uploadToSignedUrl(
+						`public/${session?.user?.id}/${data?.file?.name}`,
+						uploadTokenData?.token,
+						data?.file,
+					);
+			}
 
 			// Return a context object with the snapshotted value
 			return { previousData };
