@@ -8,8 +8,9 @@ type ModalProps = {
 	children: ChildrenTypes;
 	open: boolean;
 	setOpen: () => void;
-	wrapperClassName?: string;
 	// onClose: () => void;
+	style?: React.CSSProperties;
+	wrapperClassName?: string;
 };
 
 const Modal = (props: ModalProps) => {
@@ -19,6 +20,7 @@ const Modal = (props: ModalProps) => {
 		children,
 		wrapperClassName = "",
 		// onClose,
+		style,
 	} = props;
 
 	const dialog = useDialogState({
@@ -33,7 +35,12 @@ const Modal = (props: ModalProps) => {
 	});
 
 	return (
-		<Dialog className={modalClassName} id="modal-parent" state={dialog}>
+		<Dialog
+			className={modalClassName}
+			id="modal-parent"
+			state={dialog}
+			style={style}
+		>
 			{children}
 		</Dialog>
 	);
