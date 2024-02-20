@@ -1,16 +1,13 @@
 import { useEffect, useRef } from "react";
 import find from "lodash/find";
 
-// import ModalVideo from "react-modal-video";
-
-// import "node_modules/react-modal-video/scss/modal-video.scss";
-
 import Modal from "../../../components/modal";
 import {
 	useMiscellaneousStore,
 	useModalStore,
 } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
+import { aspectRatio } from "../../../utils/helpers";
 
 const VideoModal = ({ listData }: { listData: SingleListData[] }) => {
 	const showVideoModal = useModalStore((state) => state.showVideoModal);
@@ -39,13 +36,18 @@ const VideoModal = ({ listData }: { listData: SingleListData[] }) => {
 		(item) => selectedVideoId === item?.id,
 	);
 
+	const ratio = aspectRatio(
+		selectedVideoData?.meta_data?.width ?? 0,
+		selectedVideoData?.meta_data?.height ?? 0,
+	);
+
 	return (
 		<Modal
 			open={showVideoModal}
 			setOpen={() => toggleShowVideoModal()}
-			// wrapperClassName="h-auto w-auto max-w-[80%] rounded-2xl outline-none"
-			wrapperClassName="h-[80%] w-[80%] rounded-2xl outline-none"
-			// wrapperClassName="relative h-[100vh] w-[100vw] rounded-2xl outline-none"
+			// only the aspect ratio we have it as styled as in tailwind we cant have custom ratio
+			style={{ aspectRatio: ratio?.width / ratio?.height }}
+			wrapperClassName="h-[80%] w-[80%] rounded-2xl outline-none max-w-max"
 		>
 			{/* eslint-disable-next-line jsx-a11y/media-has-caption */}
 			<video
@@ -58,20 +60,6 @@ const VideoModal = ({ listData }: { listData: SingleListData[] }) => {
 			/>
 		</Modal>
 	);
-
-	// TODO: check and remove this and its dependencies, remove sass as well
-	// 	return (
-	// 		<ModalVideo
-	// 			autoplay
-	// 			channel="custom"
-	// 			isOpen={showVideoModal}
-	// 			onClose={() =>  {
-	// 				console.log("close");
-	// 				toggleShowVideoModal()
-	// 			}}
-	// 			url={selectedVideoData?.url}
-	// 		/>
-	// 	);
 };
 
 export default VideoModal;

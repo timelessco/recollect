@@ -209,3 +209,22 @@ export const fileTypeIdentifier = (type: string) => {
 
 	return null;
 };
+
+// gets aspect ratio based on width and height
+export const aspectRatio = (
+	width: number,
+	height: number,
+): { height: number; width: number } => {
+	const gcd = (...array: number[]): number => {
+		// eslint-disable-next-line unicorn/consistent-function-scoping
+		const _gcd = (x: number, y: number) => (!y ? x : gcd(y, x % y));
+		return [...array].reduce((a, b) => _gcd(a, b));
+	};
+
+	const gcdResult = gcd(width, height);
+
+	return {
+		width: width / gcdResult,
+		height: height / gcdResult,
+	};
+};
