@@ -5,7 +5,6 @@ import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
-import { blurhashFromURL } from "blurhash-from-url";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isEmpty, isNil, isNull } from "lodash";
@@ -23,6 +22,7 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
+import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { getBaseUrl } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
