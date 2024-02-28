@@ -40,6 +40,7 @@ import CategoryIconsDropdown from "../../components/customDropdowns.tsx/category
 import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
+import useIsMobileView from "../../hooks/useIsMobileView";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
@@ -95,6 +96,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [screenWidth, setScreenWidth] = useState(1_200);
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
+
+	const { isMobile } = useIsMobileView();
 
 	useEffect(() => {
 		// disabling as we need this for allotement width
@@ -241,7 +244,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between border-b-[0.5px] border-b-custom-gray-4 py-[9px]",
+			"flex xl:block items-center justify-between sm:justify-end border-b-[0.5px] border-b-custom-gray-4 py-[9px]",
 			{
 				"pl-[15px] pr-3":
 					currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -251,7 +254,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		const figureWrapperClass = classNames(
-			"flex  items-center px-2 py-[3.5px]",
+			"flex  items-center px-2 py-[3.5px] sm:hidden",
 			{
 				"min-w-[398px]": currentBookmarkView !== "list",
 				"min-w-[255px]": currentBookmarkView === "list",
@@ -261,72 +264,79 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return (
 			<header className={headerClass}>
 				<div className={figureWrapperClass}>
-					<figure className="mr-2 flex h-5 w-5 items-center">
+					<figure className="mr-2 flex h-5 w-5 items-center sm:hidden">
 						{navBarLogo()}
 					</figure>
 					{navBarHeading()}
 				</div>
-				{currentPath !== SETTINGS_URL && (
-					<>
-						<SearchInput
-							onChange={(value) => {
-								setSearchText(value);
-							}}
-							placeholder={`Search in ${
-								find(
-									categoryData?.data,
-									(item) => item?.category_slug === currentPath,
-								)?.category_name ?? menuListItemName.allBookmarks
-							}`}
-							userId={userId}
-						/>
-						<div className="flex min-w-[420px] items-center justify-end">
-							<div className="mr-3 flex items-center space-x-2">
-								<BookmarksViewDropdown
-									categoryId={categoryId}
-									setBookmarksView={setBookmarksView}
+				<div className="flex w-full items-center justify-between xl:mt-2 xl:pl-2 sm:mt-0">
+					{currentPath !== SETTINGS_URL && (
+						<>
+							<div className="w-full min-w-[300px] max-w-[300px] sm:w-[50%] sm:min-w-[50%] sm:max-w-[50%]">
+								<SearchInput
+									onChange={(value) => {
+										setSearchText(value);
+									}}
+									placeholder={`Search in ${
+										find(
+											categoryData?.data,
+											(item) => item?.category_slug === currentPath,
+										)?.category_name ?? menuListItemName.allBookmarks
+									}`}
 									userId={userId}
 								/>
-								{currentPath === TRASH_URL && (
+							</div>
+							<div className="flex min-w-[420px] items-center justify-end xl:min-w-0 sm:w-[50%]">
+								<div className="mr-3 flex items-center space-x-2">
+									<BookmarksViewDropdown
+										categoryId={categoryId}
+										setBookmarksView={setBookmarksView}
+										userId={userId}
+									/>
+									{currentPath === TRASH_URL && (
+										<Button
+											className="bg-red-700 hover:bg-red-900"
+											id="clear-trash-button"
+											onClick={() => onClearTrash()}
+											type="dark"
+										>
+											<span className="text-white">
+												{isMobile ? "Clear" : "Clear trash"}
+											</span>
+										</Button>
+									)}
+									<BookmarksSortDropdown
+										categoryId={categoryId}
+										setBookmarksView={setBookmarksView}
+										userId={userId}
+									/>
+									{typeof categoryId === "number" && <ShareDropdown />}
+								</div>
+								{currentPath !== TRASH_URL && (
 									<Button
-										className="bg-red-700 hover:bg-red-900"
-										id="clear-trash-button"
-										onClick={() => onClearTrash()}
+										className="hover:bg-black"
+										onClick={onNavAddClick}
+										title="create"
 										type="dark"
 									>
-										<span className="text-white">Clear Trash</span>
+										<figure className="h-4 w-4">
+											<PlusIconWhite />
+										</figure>
+										<span className="ml-[6px] font-medium leading-[14px] text-white xl:hidden">
+											Create
+										</span>
 									</Button>
 								)}
-								<BookmarksSortDropdown
-									categoryId={categoryId}
-									setBookmarksView={setBookmarksView}
-									userId={userId}
-								/>
-								{typeof categoryId === "number" && <ShareDropdown />}
 							</div>
-							{currentPath !== TRASH_URL && (
-								<Button
-									className="hover:bg-black"
-									onClick={onNavAddClick}
-									type="dark"
-								>
-									<figure className="h-4 w-4">
-										<PlusIconWhite />
-									</figure>
-									<span className="ml-[6px] font-medium leading-[14px] text-white">
-										Create
-									</span>
-								</Button>
-							)}
-						</div>
-					</>
-				)}
+						</>
+					)}
+				</div>
 			</header>
 		);
 	};
 
-	return (
-		<div style={{ width: "100vw", height: "100vh" }}>
+	const renderSidePaneCollapseButton = (
+		<>
 			{!showSidePane && (
 				<Button
 					className="absolute left-[12px] top-[64px] z-50 cursor-pointer bg-slate-200 shadow-2xl"
@@ -337,6 +347,28 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					</figure>
 				</Button>
 			)}
+		</>
+	);
+
+	const renderSidePane = (
+		<SidePane
+			onAddNewCategory={onAddNewCategory}
+			onBookmarksDrop={onBookmarksDrop}
+			onCategoryOptionClick={onCategoryOptionClick}
+			onIconColorChange={onIconColorChange}
+			onIconSelect={(value, id) => onIconSelect(value, id)}
+		/>
+	);
+
+	const renderMainPaneContent = (
+		<div className="w-full">
+			{renderMainPaneNav()}
+			<main>{renderMainContent()}</main>
+		</div>
+	);
+	const renderDeskTopView = (
+		<div style={{ width: "100vw", height: "100vh" }}>
+			{renderSidePaneCollapseButton}
 			<Allotment
 				defaultSizes={[144, screenWidth]}
 				onChange={(value: number[]) => {
@@ -361,24 +393,29 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					visible={showSidePane}
 				>
 					<div className={`h-full ${showSidePane ? "block" : " hidden"}`}>
-						<SidePane
-							onAddNewCategory={onAddNewCategory}
-							onBookmarksDrop={onBookmarksDrop}
-							onCategoryOptionClick={onCategoryOptionClick}
-							onIconColorChange={onIconColorChange}
-							onIconSelect={(value, id) => onIconSelect(value, id)}
-						/>
+						{renderSidePane}
 					</div>
 				</Allotment.Pane>
 				<Allotment.Pane className="transition-all duration-150 ease-in-out">
-					<div className="w-full">
-						{renderMainPaneNav()}
-						<main>{renderMainContent()}</main>
-					</div>
+					{renderMainPaneContent}
 				</Allotment.Pane>
 			</Allotment>
 		</div>
 	);
+
+	const renderMobileView = (
+		<div className="flex">
+			{renderSidePaneCollapseButton}
+			{showSidePane && (
+				<div className="z-10 h-[100vh] w-[244px] bg-white">
+					{renderSidePane}
+				</div>
+			)}
+			<div className="absolute w-[100vw]">{renderMainPaneContent}</div>
+		</div>
+	);
+
+	return !isMobile ? renderDeskTopView : renderMobileView;
 };
 
 export default DashboardLayout;

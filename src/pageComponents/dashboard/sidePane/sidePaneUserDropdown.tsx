@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { ChevronDoubleLeftIcon } from "@heroicons/react/solid";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";

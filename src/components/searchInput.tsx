@@ -26,7 +26,8 @@ const styles = {
 		fontWeight: 400,
 		color: "#707070",
 
-		width: 300,
+		width: "100%",
+
 		padding: "3px 10px 3px 28px",
 		borderRadius: 8,
 	},

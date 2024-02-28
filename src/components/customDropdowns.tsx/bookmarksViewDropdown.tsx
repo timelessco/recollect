@@ -251,7 +251,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	return (
 		<>
 			<MenuButton as="div" className="outline-none" state={menu}>
-				<Button isActive={menu.open} type="light">
+				<Button isActive={menu.open} title="views" type="light">
 					<figure className="h-4 w-4">
 						{
 							find(
@@ -260,7 +260,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 							)?.icon
 						}
 					</figure>
-					<span className="ml-[7px] text-custom-gray-1">
+					<span className="ml-[7px] text-custom-gray-1 xl:hidden">
 						{
 							find(
 								bookmarksViewOptions,

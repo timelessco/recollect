@@ -14,6 +14,7 @@ type ButtonProps = {
 	onClick?: () => void;
 	style?: Record<string, unknown>;
 	tabIndex?: number;
+	title?: string;
 	type?: "dark" | "light";
 };
 
@@ -28,6 +29,7 @@ const Button: FC<ButtonProps> = (props) => {
 		style,
 		isActive = false,
 		tabIndex = -1,
+		title = "",
 	} = props;
 
 	const buttonClassNames = tcm(
@@ -51,6 +53,7 @@ const Button: FC<ButtonProps> = (props) => {
 			onClick={onClick}
 			style={style}
 			tabIndex={tabIndex}
+			title={title}
 			type="button"
 		>
 			{children}

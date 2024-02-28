@@ -547,7 +547,8 @@ const CardSection = ({
 		};
 
 		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out delay-50": true,
+			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
+				true,
 			absolute: true,
 			"top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%]":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
@@ -718,7 +719,7 @@ const CardSection = ({
 									{renderFavIcon(item)}
 									{renderUrl(item)}
 									{item?.inserted_at && (
-										<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
 											{format(new Date(item?.inserted_at || ""), "MMMM dd")}
 										</p>
 									)}
