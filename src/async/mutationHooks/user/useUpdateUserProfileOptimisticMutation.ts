@@ -39,7 +39,7 @@ export default function useUpdateUserProfileOptimisticMutation() {
 							...item,
 							bookmarks_view: data?.updateData?.bookmarks_view,
 						})),
-					} as { data: ProfilesTableTypes[] }),
+					}) as { data: ProfilesTableTypes[] },
 			);
 
 			// Return a context object with the snapshotted value

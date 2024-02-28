@@ -55,7 +55,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
 							data: isNull(CATEGORY_ID)
 								? old?.data
 								: old?.data?.filter((item) => item?.id !== data?.bookmark_id),
-						} as { data: CategoriesData[] }),
+						}) as { data: CategoriesData[] },
 				);
 
 				// Return a context object with the snapshotted value

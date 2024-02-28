@@ -28,7 +28,7 @@ export default function useDeleteCategoryOtimisticMutation() {
 					({
 						...old,
 						data: old?.data?.filter((item) => item?.id !== data?.category_id),
-					} as { data: CategoriesData[] }),
+					}) as { data: CategoriesData[] },
 			);
 
 			// Return a context object with the snapshotted value

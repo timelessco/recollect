@@ -27,8 +27,8 @@ export default function useGetFlattendPaginationBookmarkData() {
 	};
 
 	const flattendPaginationBookmarkData = flatten(
-		allBookmarksData?.pages?.map((item) =>
-			item?.data?.map((twoItem) => twoItem),
+		allBookmarksData?.pages?.map(
+			(item) => item?.data?.map((twoItem) => twoItem),
 		),
 	) as SingleListData[];
 

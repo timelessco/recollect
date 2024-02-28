@@ -54,7 +54,7 @@ export default function useUpdateCategoryOptimisticMutation() {
 
 							return item;
 						}),
-					} as { data: CategoriesData[] }),
+					}) as { data: CategoriesData[] },
 			);
 
 			// Return a context object with the snapshotted value
