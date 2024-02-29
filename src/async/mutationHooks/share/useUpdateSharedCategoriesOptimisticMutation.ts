@@ -40,7 +40,7 @@ export default function useUpdateSharedCategoriesOptimisticMutation() {
 								...item,
 								category_views: data?.updateData?.category_views,
 							})),
-						} as { data: FetchSharedCategoriesData[] }),
+						}) as { data: FetchSharedCategoriesData[] },
 				);
 
 				// Return a context object with the snapshotted value

@@ -113,7 +113,7 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 			</div>
 			<form
-				className="flex items-center justify-between pt-[28px]"
+				className="flex items-end justify-between pt-[28px] sm:flex-col"
 				onSubmit={handleSubmit(onSubmit)}
 			>
 				<LabelledComponent
@@ -141,9 +141,9 @@ const ChangeEmail = () => {
 						/>
 					</div>
 				</LabelledComponent>
-				<div className="flex w-1/2 justify-end">
+				<div className="flex w-1/2 justify-end sm:w-full">
 					<Button
-						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4"
+						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4 sm:mt-5 sm:w-full"
 						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
 						type="dark"

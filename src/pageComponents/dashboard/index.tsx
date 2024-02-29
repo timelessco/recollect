@@ -41,7 +41,6 @@ import {
 	VIDEOS_URL,
 } from "../../utils/constants";
 
-import DashboardLayout from "./dashboardLayout";
 import AddModalContent from "./modals/addModalContent";
 import SignedOutSection from "./signedOutSection";
 
@@ -92,6 +91,10 @@ import WarningActionModal from "./modals/warningActionModal";
 
 // import CardSection from "./cardSection";
 const CardSection = dynamic(() => import("./cardSection"), {
+	ssr: false,
+});
+
+const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
 	ssr: false,
 });
 
@@ -582,7 +585,7 @@ const Dashboard = () => {
 			<div className="">
 				{session ? (
 					<>
-						<div className="mx-auto w-full lg:w-1/2" />
+						<div className="mx-auto w-full xl:w-1/2" />
 						<Dropzone
 							disabled={CATEGORY_ID === TRASH_URL}
 							noClick

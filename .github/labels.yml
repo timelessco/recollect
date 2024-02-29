@@ -22,8 +22,7 @@
 # Type labels
 - name: "Type: Bug"
   color: ee0701
-  description:
-    Inconsistencies or issues which will cause a problem for users or
+  description: Inconsistencies or issues which will cause a problem for users or
     implementors.
 
 - name: "Type: Documentation"
@@ -48,8 +47,7 @@
 
 - name: "Type: Testing"
   color: 6009D7
-  description:
-    "Improving how the repository's tests are run and/or code is tested"
+  description: "Improving how the repository's tests are run and/or code is tested"
 
 - name: "Type: RFC"
   color: fbca04
@@ -94,8 +92,7 @@
 
 - name: "Status: Stale"
   color: fef2c0
-  description:
-    There has not been activity on this issue or PR for quite some time.
+  description: There has not been activity on this issue or PR for quite some time.
 
 - name: "Status: Awaiting Response"
   color: fef2c0

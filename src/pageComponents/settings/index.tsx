@@ -144,7 +144,7 @@ const Settings = () => {
 				<p className={`${settingsMainHeadingClassName} mb-[30px]`}>
 					My Profile
 				</p>
-				<div className="flex w-full items-center space-x-2">
+				<div className="flex w-full items-center space-x-2 sm:flex-col">
 					<div
 						onClick={() => {
 							if (inputFile.current) {
@@ -165,7 +165,7 @@ const Settings = () => {
 							/>
 						</figure>
 					</div>
-					<div>
+					<div className="sm:mt-2">
 						<div className=" flex text-sm font-semibold leading-[21px] text-black">
 							<Button
 								className="py-0 text-sm font-semibold leading-[21px] text-black"
@@ -205,7 +205,7 @@ const Settings = () => {
 					</div>
 				</div>
 				<form
-					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5"
+					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5 sm:flex-col"
 					onSubmit={handleSubmit(onSubmit)}
 				>
 					<LabelledComponent
@@ -242,7 +242,7 @@ const Settings = () => {
 							/>
 						</div>
 					</LabelledComponent>
-					<div className="flex min-w-[150px] max-w-[150px] justify-end">
+					<div className="flex min-w-[150px] max-w-[150px] justify-end sm:mt-5 sm:w-full sm:min-w-0 sm:max-w-full">
 						<Button
 							className={settingsLightButtonClassName}
 							onClick={handleSubmit(onSubmit)}
@@ -257,15 +257,15 @@ const Settings = () => {
 						Account security
 					</p>
 					{session?.user?.app_metadata?.provider === "email" ? (
-						<div className="flex items-center justify-between">
-							<div>
+						<div className="flex items-center justify-between sm:flex-col">
+							<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
 								<p className={settingsSubHeadingClassName}>Email</p>
-								<p className={`mt-1 ${settingsParagraphClassName}`}>
+								<p className={`mt-1 sm:mt-0 ${settingsParagraphClassName}`}>
 									{userData?.email}
 								</p>
 							</div>
 							<Button
-								className={settingsLightButtonClassName}
+								className={`sm:mt-5 ${settingsLightButtonClassName}`}
 								onClick={() => setCurrentSettingsPage("change-email")}
 								type="light"
 							>
@@ -283,9 +283,11 @@ const Settings = () => {
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
 						Danger zone
 					</p>
-					<div className="flex items-center justify-between">
-						<div className="w-[70%]">
-							<p className={settingsSubHeadingClassName}>Delete account</p>
+					<div className="flex items-center justify-between sm:flex-col">
+						<div className="w-[70%] sm:w-full">
+							<p className={`sm:mb-2 ${settingsSubHeadingClassName}`}>
+								Delete account
+							</p>
 							<p className={`mt-1 w-[90%] ${settingsParagraphClassName}`}>
 								By deleting your account, you’ll not be able to log in and all
 								the content you have uploaded will be lost and will not be able
@@ -293,15 +295,21 @@ const Settings = () => {
 							</p>
 						</div>
 						<Button
-							className={`w-[150px] ${settingsDeleteButtonRedClassName}`}
+							className={`w-[150px] sm:mt-5 sm:w-full ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
-							<figure className="mr-2">
-								<TrashIconRed />
-							</figure>
-							<p className="flex w-full justify-center">
-								{deleteUserMutation?.isLoading ? <Spinner /> : "Delete account"}
-							</p>
+							<div className="flex w-full justify-center">
+								<figure className="mr-2">
+									<TrashIconRed />
+								</figure>
+								<p className="flex w-full justify-center sm:w-[105px]">
+									{deleteUserMutation?.isLoading ? (
+										<Spinner />
+									) : (
+										"Delete account"
+									)}
+								</p>
+							</div>
 						</Button>
 					</div>
 				</div>

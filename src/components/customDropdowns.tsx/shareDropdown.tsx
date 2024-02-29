@@ -12,13 +12,14 @@ const ShareDropdown = () => {
 				<Button
 					id="share-button"
 					isActive={menu.open}
+					title="share"
 					type="light"
 					// onClick={() => onShareClick()}
 				>
 					<figure className="h-4 w-4">
 						<ShareIcon />
 					</figure>
-					<span className="ml-[7px] text-custom-gray-1">Share</span>
+					<span className="ml-[7px] text-custom-gray-1 xl:hidden">Share</span>
 				</Button>
 			</MenuButton>
 			<Menu

@@ -159,15 +159,16 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-8 ${
 						open ? "bg-custom-gray-8" : ""
 					}`}
+					title="sort-by"
 				>
 					{isSortByLoading ? (
 						<span className="mr-[6px]">
 							<Spinner />
 						</span>
 					) : (
-						<figure className=" mr-[6px] h-4 w-4">{currentValue?.icon}</figure>
+						<figure className="h-4 w-4">{currentValue?.icon}</figure>
 					)}
-					<p>{currentValue?.label}</p>
+					<p className="ml-[6px] xl:hidden">{currentValue?.label}</p>
 				</div>
 			)}
 			renderCustomSelectItem={(value) => (

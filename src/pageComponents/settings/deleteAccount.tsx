@@ -108,10 +108,10 @@ const DeleteAccout = () => {
 				</p>
 			</div>
 			<form
-				className="mt-6 flex items-end justify-between"
+				className="mt-6 flex items-end justify-between sm:flex-col"
 				onSubmit={handleSubmit(onSubmit)}
 			>
-				<div className="w-[70%]">
+				<div className="w-[70%] sm:w-full">
 					<LabelledComponent
 						label={`Please type your username ${userData?.user_name} to continue`}
 						labelClassName={settingsInputLabelClassName}
@@ -135,15 +135,17 @@ const DeleteAccout = () => {
 					</LabelledComponent>
 				</div>
 				<Button
-					className={`w-[150px] ${settingsDeleteButtonRedClassName}`}
+					className={`w-[150px] sm:mt-5 sm:w-full ${settingsDeleteButtonRedClassName}`}
 					onClick={handleSubmit(onSubmit)}
 				>
-					<figure className="mr-2">
-						<TrashIconRed />
-					</figure>
-					<p className="flex w-full justify-center">
-						{deleteUserMutation?.isLoading ? <Spinner /> : "Confirm delete"}
-					</p>
+					<div className="flex w-full items-center justify-center">
+						<figure className="mr-2">
+							<TrashIconRed />
+						</figure>
+						<p className="flex w-full justify-center  sm:w-[100px]">
+							{deleteUserMutation?.isLoading ? <Spinner /> : "Confirm delete"}
+						</p>
+					</div>
 				</Button>
 			</form>
 		</>

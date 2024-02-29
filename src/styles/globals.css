@@ -422,17 +422,9 @@ input[type="checkbox"]:checked + .checkbox-div {
 	@apply hidden;
 }
 
-/* video modal */
+#modal-parent-portal div[role="presentation"] {
+	/* adding this to have z-index in modal so that nothing overlaps the modal */
 
-/* NOTE: remove this video modal styles if not using */
-.modal-video-close-btn {
-	@apply hidden !important;
-}
-
-.modal-video-movie-wrap {
-	@apply rounded-2xl;
-}
-
-.modal-video-movie-wrap iframe {
-	@apply rounded-2xl;
+	/* adding important as the modal library does not give access to this div and the div already has z-index: auto so we are overriding it */
+	@apply z-10 !important;
 }
