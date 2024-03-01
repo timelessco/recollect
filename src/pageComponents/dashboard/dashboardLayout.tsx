@@ -254,7 +254,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		const figureWrapperClass = classNames(
-			"flex  items-center px-2 py-[3.5px] sm:hidden",
+			"flex  items-center px-2 py-[3.5px] sm:hidden w-2/5 xl:w-0",
 			{
 				"min-w-[398px]": currentBookmarkView !== "list",
 				"min-w-[255px]": currentBookmarkView === "list",
@@ -269,7 +269,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					</figure>
 					{navBarHeading()}
 				</div>
-				<div className="flex w-full items-center justify-between xl:mt-2 xl:pl-2 sm:mt-0">
+				<div className="flex w-3/5 items-center justify-between xl:mt-2 xl:w-full xl:pl-2 sm:mt-0">
 					{currentPath !== SETTINGS_URL && (
 						<>
 							<div className="w-full min-w-[300px] max-w-[300px] sm:w-[50%] sm:min-w-[50%] sm:max-w-[50%]">
