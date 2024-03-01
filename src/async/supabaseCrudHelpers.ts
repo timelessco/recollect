@@ -78,7 +78,7 @@ import {
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
 } from "../utils/constants";
-import { isUserInACategory } from "../utils/helpers";
+import { isUserInACategory, parseUploadFileName } from "../utils/helpers";
 
 // bookmark
 // gets bookmarks data
@@ -880,6 +880,7 @@ export const uploadFile = async ({
 	thumbnailBase64,
 }: UploadFileApiPayload) => {
 	try {
+		const fileName = parseUploadFileName(file?.name);
 		const response = await axios.post<UploadFileApiResponse>(
 			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
 			{
@@ -887,7 +888,7 @@ export const uploadFile = async ({
 				category_id,
 				thumbnailBase64,
 				path: file?.path,
-				name: file?.name,
+				name: fileName,
 				type: file?.type,
 			},
 			{

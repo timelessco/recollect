@@ -1,5 +1,6 @@
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -17,8 +18,11 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { fileTypeIdentifier } from "../../../utils/helpers";
-import { successToast } from "../../../utils/toastMessages";
+import {
+	fileTypeIdentifier,
+	parseUploadFileName,
+} from "../../../utils/helpers";
+import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
@@ -55,6 +59,8 @@ export default function useFileUploadOptimisticMutation() {
 				sortBy,
 			]);
 
+			const fileName = parseUploadFileName(data?.file?.name);
+
 			// Optimistically update to the new value
 			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -68,7 +74,7 @@ export default function useFileUploadOptimisticMutation() {
 										...item,
 										data: [
 											{
-												title: data?.file?.name,
+												title: fileName,
 												url: "https://supabase.com/",
 												inserted_at: new Date(),
 											},
@@ -93,23 +99,33 @@ export default function useFileUploadOptimisticMutation() {
 			*/
 
 			// generate signed url to make the upload more secure as its taking place in client side
-			const { data: uploadTokenData } = await supabase.storage
+			const { data: uploadTokenData, error } = await supabase.storage
 				.from(FILES_STORAGE_NAME)
-				.createSignedUploadUrl(
-					`public/${session?.user?.id}/${data?.file?.name}`,
-				);
+				.createSignedUploadUrl(`public/${session?.user?.id}/${fileName}`);
 
-			if (uploadTokenData?.token) {
+			// if this is true only then upload the file to s3
+			const errorCondition =
+				isNull(error) || error?.message === "The resource already exists";
+
+			if (uploadTokenData?.token && errorCondition) {
 				// the token will not be there if the resource is alredy present in the bucket
 				// if the resource is not there then we upload via the token
 				// we get this uploaded file in the api with the help of file name, thus we are not sending the uploaded response to the api from the client side
-				await supabase.storage
+				const { error: uploadError } = await supabase.storage
 					.from(FILES_STORAGE_NAME)
 					.uploadToSignedUrl(
-						`public/${session?.user?.id}/${data?.file?.name}`,
+						`public/${session?.user?.id}/${fileName}`,
 						uploadTokenData?.token,
 						data?.file,
 					);
+
+				if (uploadError?.message) {
+					errorToast(uploadError?.message);
+				}
+			}
+
+			if (!errorCondition) {
+				errorToast(error?.message);
 			}
 
 			// Return a context object with the snapshotted value

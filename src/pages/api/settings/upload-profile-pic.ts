@@ -8,6 +8,7 @@ import { IncomingForm } from "formidable";
 import jwtDecode from "jwt-decode";
 import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
+import uniqid from "uniqid";
 
 import {
 	type ParsedFormDataType,
@@ -15,6 +16,7 @@ import {
 	type UploadProfilePicApiResponse,
 } from "../../../types/apiTypes";
 import { PROFILES, USER_PROFILE_STORAGE_NAME } from "../../../utils/constants";
+import { parseUploadFileName } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
 	verifyAuthToken,
@@ -112,7 +114,9 @@ export default async (
 		});
 	}
 
-	const fileName = data?.files?.file?.[0]?.originalFilename;
+	const fileName = data?.files?.file?.[0]?.originalFilename
+		? parseUploadFileName(data?.files?.file?.[0]?.originalFilename)
+		: `${uniqid.time()}`;
 	const fileType = data?.files?.file?.[0]?.mimetype;
 
 	if (contents) {

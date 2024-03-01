@@ -32,6 +32,7 @@ import {
 	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
 	DOCUMENTS_URL,
+	FILE_NAME_PARSING_PATTERN,
 	IMAGES_URL,
 	LINKS_URL,
 	LOGIN_URL,
@@ -79,7 +80,7 @@ import {
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { generateVideoThumbnail } from "../../utils/helpers";
+import { generateVideoThumbnail, uploadFileLimit } from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
@@ -563,14 +564,27 @@ const Dashboard = () => {
 						)) as string;
 					}
 
-					mutationApiCall(
-						fileUploadOptimisticMutation.mutateAsync({
-							file: acceptedFiles[index],
-							session,
-							category_id: CATEGORY_ID,
-							thumbnailBase64,
-						}),
-					).catch((error) => console.error(error));
+					const fileNamePatternCheck = acceptedFiles[index]?.name?.match(
+						FILE_NAME_PARSING_PATTERN,
+					);
+
+					if (!isNull(fileNamePatternCheck)) {
+						errorToast("File name as unwanted charecters");
+						return;
+					}
+
+					if (uploadFileLimit(acceptedFiles[index]?.size)) {
+						errorToast("File size is larger than 10mb");
+					} else {
+						mutationApiCall(
+							fileUploadOptimisticMutation.mutateAsync({
+								file: acceptedFiles[index],
+								session,
+								category_id: CATEGORY_ID,
+								thumbnailBase64,
+							}),
+						).catch((error) => console.error(error));
+					}
 				} else {
 					errorToast(`File type ${acceptedFiles[index]?.type} is not accepted`);
 				}
