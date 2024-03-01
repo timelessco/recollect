@@ -18,7 +18,7 @@ import "../styles/globals.css";
 import { supabaseAnonKey, supabaseUrl } from "../utils/supabaseClient";
 
 const MyApp = ({
-	Component,
+	// Component,
 	pageProps: { ...pageProps },
 }: AppProps<{
 	dehydratedState: unknown;
@@ -91,7 +91,10 @@ const MyApp = ({
 							/>
 						)}
 					</Head>
-					<Component {...pageProps} />
+					{/* <Component {...pageProps} /> */}
+					<div>
+						Recollect is under maintenance, will be up and running soon!!
+					</div>
 				</Hydrate>
 				<ReactQueryDevtools />
 			</QueryClientProvider>

@@ -21,9 +21,15 @@ import { Item } from "react-stately";
 
 import Badge from "../../../components/badge";
 import Spinner from "../../../components/spinner";
+// this import is the built in styles for video player we need its css file, this disabling the rule
+// import "node_modules/video-react/dist/video-react.css";
+
+import PlayIcon from "../../../icons/actionIcons/playIcon";
+import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
+import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -56,14 +62,6 @@ import {
 	isBookmarkVideo,
 	isUserInACategory,
 } from "../../../utils/helpers";
-
-// this import is the built in styles for video player we need its css file, this disabling the rule
-// eslint-disable-next-line import/extensions
-import "node_modules/video-react/dist/video-react.css";
-
-import PlayIcon from "../../../icons/actionIcons/playIcon";
-import FolderIcon from "../../../icons/folderIcon";
-import VideoIcon from "../../../icons/videoIcon";
 import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
