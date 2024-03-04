@@ -19,12 +19,14 @@ export default function useIsMobileView() {
 	}, []);
 
 	let isMobile = false;
+	let isTablet = false;
 
 	if (isNil(width)) {
 		isMobile = false;
 	} else {
 		isMobile = width <= 600;
+		isTablet = width <= 1_023 && width >= 600;
 	}
 
-	return { isMobile };
+	return { isMobile, isTablet };
 }
