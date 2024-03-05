@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import classNames from "classnames";
 import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
@@ -22,13 +23,18 @@ const styles = {
 	},
 	control: {
 		backgroundColor: "rgba(0, 0, 0, 0.047)",
+
 		fontSize: 14,
 		fontWeight: 400,
 		color: "#707070",
 
 		width: "100%",
 
-		padding: "3px 10px 3px 28px",
+		// padding: "3px 10px 3px 28px",
+		// padding: "2px 10px 2px 28px",
+		paddingTop: "3px",
+		paddingBottom: "3px",
+
 		borderRadius: 8,
 	},
 	"&multiLine": {
@@ -69,13 +75,23 @@ const styles = {
 };
 
 type SearchInputTypes = {
+	inputClassName?: string;
+	onBlur: () => void;
 	onChange: (value: string) => void;
 	placeholder: string;
 	userId: string;
+	wrapperClassName?: string;
 };
 
 const SearchInput = (props: SearchInputTypes) => {
-	const { placeholder, onChange, userId } = props;
+	const {
+		placeholder,
+		onChange,
+		userId,
+		onBlur,
+		wrapperClassName = "",
+		inputClassName = "",
+	} = props;
 	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 
 	const queryClient = useQueryClient();
@@ -88,15 +104,25 @@ const SearchInput = (props: SearchInputTypes) => {
 		error: PostgrestError;
 	};
 
+	const wrapperClassNameBuilder = classNames("relative", {
+		[wrapperClassName]: true,
+	});
+
+	const inputClassNamesBuilder = classNames("search-bar", {
+		[inputClassName]: true,
+	});
+
 	return (
-		<div className=" relative">
+		<div className={wrapperClassNameBuilder}>
 			<figure className=" absolute left-[9px] top-[7px]">
 				<SearchInputSearchIcon />
 			</figure>
 			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
 				// eslint-disable-next-line tailwindcss/no-custom-classname
-				className="search-bar"
+				autoFocus
+				className={inputClassNamesBuilder}
+				onBlur={onBlur}
 				onChange={(event: { target: { value: string } }) => {
 					onChange(event.target.value);
 

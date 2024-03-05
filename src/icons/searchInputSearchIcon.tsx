@@ -1,9 +1,9 @@
-const SearchInputSearchIcon = () => (
+const SearchInputSearchIcon = ({ size = "12" }) => (
 	<svg
 		fill="none"
-		height="12"
+		height={size}
 		viewBox="0 0 12 12"
-		width="12"
+		width={size}
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<g clipPath="url(#clip0_6475_12653)">

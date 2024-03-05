@@ -806,7 +806,7 @@ const CardSection = ({
 			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-[10px] w-full">
+				<div className=" ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}

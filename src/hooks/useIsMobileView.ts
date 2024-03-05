@@ -25,7 +25,7 @@ export default function useIsMobileView() {
 		isMobile = false;
 	} else {
 		isMobile = width <= 600;
-		isTablet = width <= 1_023 && width >= 600;
+		isTablet = width <= 1_300 && width >= 600;
 	}
 
 	return { isMobile, isTablet };
