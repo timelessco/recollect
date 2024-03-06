@@ -1,6 +1,7 @@
 import { isEmpty } from "lodash";
 import find from "lodash/find";
 import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
+import slugify from "slugify";
 
 import { type CardSectionProps } from "../pageComponents/dashboard/cardSection";
 import {
@@ -15,6 +16,7 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	FILE_NAME_PARSING_PATTERN,
 	GET_NAME_FROM_EMAIL_PATTERN,
 	imageFileTypes,
 	IMAGES_URL,
@@ -232,3 +234,14 @@ export const aspectRatio = (
 		height: height / gcdResult,
 	};
 };
+
+// this parses the file name when uploading something , it removes all the special charecters
+export const parseUploadFileName = (name: string): string =>
+	slugify(name, {
+		lower: true,
+		remove: FILE_NAME_PARSING_PATTERN,
+	});
+
+// tells if file size is less than 10mb, if it returns true then we have hit the upload limit
+export const uploadFileLimit = (size: number): boolean =>
+	!(Number.parseFloat((size / (1_024 * 1_024)).toFixed(2)) < 10);

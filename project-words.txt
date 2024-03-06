@@ -98,3 +98,4 @@ timestamptz
 plpgsql
 ILIKE
 plpgsql
+upstash

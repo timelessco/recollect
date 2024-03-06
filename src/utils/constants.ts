@@ -27,6 +27,8 @@ export const LETTERS_NUMBERS_CHECK_PATTERN = /^[^*|\":<>[\]{}`\\()';@&$]+$/;
 export const URL_IMAGE_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex
 	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp)(\?(.*))?$/gimu;
+// eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
+export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 
 // api constants
 const getBaseUrl = () => {
