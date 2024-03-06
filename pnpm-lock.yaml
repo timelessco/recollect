@@ -131,6 +131,9 @@ dependencies:
   react-mentions:
     specifier: 4.4.7
     version: 4.4.7(react-dom@18.2.0)(react@18.2.0)
+  react-modern-drawer:
+    specifier: 1.2.2
+    version: 1.2.2(react@18.2.0)
   react-spinners:
     specifier: 0.13.8
     version: 0.13.8(react-dom@18.2.0)(react@18.2.0)
@@ -11771,6 +11774,15 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       substyle: 9.4.1(react@18.2.0)
+    dev: false
+
+  /react-modern-drawer@1.2.2(react@18.2.0):
+    resolution: {integrity: sha512-SXUNjofHzeoEas0kdMWWafuF2+vwdtbQD1cpkHxo7oyFj3v+2l2CMeJjc/GodYsnxVhSiYj75xosMJXXed9ykQ==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: '>16.0.0'
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /react-spinners@0.13.8(react-dom@18.2.0)(react@18.2.0):

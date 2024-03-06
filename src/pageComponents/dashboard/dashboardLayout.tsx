@@ -32,6 +32,8 @@ import {
 import "allotment/dist/style.css";
 
 import isEmpty from "lodash/isEmpty";
+// import component 👇
+import Drawer from "react-modern-drawer";
 
 import Input from "../../components/atoms/input";
 import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
@@ -51,6 +53,9 @@ import {
 import { optionsMenuListArray } from "../../utils/commonData";
 
 import SidePane from "./sidePane";
+
+// import styles 👇
+import "react-modern-drawer/dist/index.css";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -305,10 +310,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 		const figureWrapperClass = classNames(
 			"flex items-center px-2 py-[3px] w-1/5 xl:w-2/5",
-			// {
-			// 	"min-w-[398px]": currentBookmarkView !== "list",
-			// 	"min-w-[255px]": currentBookmarkView === "list",
-			// },
 		);
 
 		const showHeadingCondition = isDesktop ? true : !showSearchBar;
@@ -328,20 +329,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					<div className="h-5 w-5 xl:hidden" />
 					{currentPath !== SETTINGS_URL && (
 						<>
-							{/* <div className="w-full min-w-[300px] max-w-[300px] sm:w-[50%] sm:min-w-[50%] sm:max-w-[50%]">
-								<SearchInput
-									onChange={(value) => {
-										setSearchText(value);
-									}}
-									placeholder={`Search in ${
-										find(
-											categoryData?.data,
-											(item) => item?.category_slug === currentPath,
-										)?.category_name ?? menuListItemName.allBookmarks
-									}`}
-									userId={userId}
-								/>
-							</div> */}
 							{renderSearchBar}
 							<div className="flex w-[407px] items-center justify-end xl:w-max">
 								<div className="mr-3 flex items-center space-x-2">
@@ -410,7 +397,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	);
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
-			{/* {renderSidePaneCollapseButton} */}
 			<Allotment
 				defaultSizes={[144, screenWidth]}
 				onChange={(value: number[]) => {
@@ -447,13 +433,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMobileView = (
 		<div className="flex">
-			{/* {renderSidePaneCollapseButton} */}
-			{showSidePane && (
-				<div className="z-10 h-[100vh] w-[244px] bg-white">
-					{renderSidePane}
-				</div>
-			)}
-			<div className="absolute w-[100vw]">{renderMainPaneContent}</div>
+			<Drawer
+				direction="left"
+				onClose={() => setShowSidePane(false)}
+				open={showSidePane}
+			>
+				{renderSidePane}
+			</Drawer>
+			<div className="w-[100vw]">{renderMainPaneContent}</div>
 		</div>
 	);
 
