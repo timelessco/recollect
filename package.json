@@ -97,8 +97,6 @@
 		"@supabase/supabase-js": "2.13.1",
 		"@tanstack/react-query": "4.28.0",
 		"@tanstack/react-query-devtools": "4.28.0",
-		"@upstash/ratelimit": "1.0.1",
-		"@vercel/kv": "1.0.1",
 		"allotment": "1.18.1",
 		"ariakit": "2.0.0-next.43",
 		"array-to-image": "^1.0.0",
