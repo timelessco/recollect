@@ -119,7 +119,6 @@ const SearchInput = (props: SearchInputTypes) => {
 			</figure>
 			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
-				// eslint-disable-next-line tailwindcss/no-custom-classname
 				autoFocus
 				className={inputClassNamesBuilder}
 				onBlur={onBlur}

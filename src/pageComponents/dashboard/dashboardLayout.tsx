@@ -105,6 +105,18 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const { isMobile, isTablet } = useIsMobileView();
 
+	const [showSearchBar, setShowSearchBar] = useState(true);
+
+	const isDesktop = !isMobile && !isTablet;
+
+	useEffect(() => {
+		if (isDesktop) {
+			setShowSearchBar(true);
+		} else {
+			setShowSearchBar(false);
+		}
+	}, [isDesktop]);
+
 	useEffect(() => {
 		// disabling as we need this for allotement width
 		if (screen) {
@@ -247,18 +259,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			);
 		}
 	};
-
-	const [showSearchBar, setShowSearchBar] = useState(true);
-
-	const isDesktop = !isMobile && !isTablet;
-
-	useEffect(() => {
-		if (isDesktop) {
-			setShowSearchBar(true);
-		} else {
-			setShowSearchBar(false);
-		}
-	}, [isDesktop]);
 
 	const renderSearchBar = showSearchBar ? (
 		<div className="w-[300px] xl:w-full">

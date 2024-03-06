@@ -21,10 +21,6 @@ import { Item } from "react-stately";
 
 import Badge from "../../../components/badge";
 import Spinner from "../../../components/spinner";
-// this import is the built in styles for video player we need its css file, this disabling the rule
-// eslint-disable-next-line import/extensions
-// import "node_modules/video-react/dist/video-react.css";
-
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
