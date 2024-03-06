@@ -32,6 +32,8 @@ import {
 import "allotment/dist/style.css";
 
 import isEmpty from "lodash/isEmpty";
+// import component 👇
+import Drawer from "react-modern-drawer";
 
 import Input from "../../components/atoms/input";
 import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
@@ -41,6 +43,7 @@ import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
 import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import useIsMobileView from "../../hooks/useIsMobileView";
+import SearchInputSearchIcon from "../../icons/searchInputSearchIcon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
@@ -50,6 +53,9 @@ import {
 import { optionsMenuListArray } from "../../utils/commonData";
 
 import SidePane from "./sidePane";
+
+// import styles 👇
+import "react-modern-drawer/dist/index.css";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -97,7 +103,19 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
-	const { isMobile } = useIsMobileView();
+	const { isMobile, isTablet } = useIsMobileView();
+
+	const [showSearchBar, setShowSearchBar] = useState(true);
+
+	const isDesktop = !isMobile && !isTablet;
+
+	useEffect(() => {
+		if (isDesktop) {
+			setShowSearchBar(true);
+		} else {
+			setShowSearchBar(false);
+		}
+	}, [isDesktop]);
 
 	useEffect(() => {
 		// disabling as we need this for allotement width
@@ -242,9 +260,46 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		}
 	};
 
+	const renderSearchBar = showSearchBar ? (
+		<div className="w-[300px] xl:w-full">
+			<SearchInput
+				onBlur={() => !isDesktop && setShowSearchBar(false)}
+				onChange={(value) => {
+					setSearchText(value);
+				}}
+				placeholder={`Search in ${
+					find(
+						categoryData?.data,
+						(item) => item?.category_slug === currentPath,
+					)?.category_name ?? menuListItemName.allBookmarks
+				}`}
+				userId={userId}
+			/>
+		</div>
+	) : (
+		<Button className="mr-2" onClick={() => setShowSearchBar(true)}>
+			<SearchInputSearchIcon size="16" />
+		</Button>
+	);
+
+	const renderSidePaneCollapseButton = (
+		<>
+			{!showSidePane && (
+				<Button
+					className="mr-2 cursor-pointer bg-custom-gray-2 shadow-2xl hover:bg-custom-gray-4"
+					onClick={() => setShowSidePane(true)}
+				>
+					<figure>
+						<ChevronDoubleRightIcon className="h-3 w-3 shrink-0 text-gray-400" />
+					</figure>
+				</Button>
+			)}
+		</>
+	);
+
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex xl:block items-center justify-between sm:justify-end border-b-[0.5px] border-b-custom-gray-4 py-[9px]",
+			"flex items-center justify-between  border-b-[0.5px] border-b-custom-gray-4 py-[9px]",
 			{
 				"pl-[15px] pr-3":
 					currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -254,39 +309,28 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		const figureWrapperClass = classNames(
-			"flex  items-center px-2 py-[3.5px] sm:hidden w-2/5 xl:w-0",
-			{
-				"min-w-[398px]": currentBookmarkView !== "list",
-				"min-w-[255px]": currentBookmarkView === "list",
-			},
+			"flex items-center px-2 py-[3px] w-1/5 xl:w-2/5",
 		);
+
+		const showHeadingCondition = isDesktop ? true : !showSearchBar;
 
 		return (
 			<header className={headerClass}>
-				<div className={figureWrapperClass}>
-					<figure className="mr-2 flex h-5 w-5 items-center sm:hidden">
-						{navBarLogo()}
-					</figure>
-					{navBarHeading()}
-				</div>
-				<div className="flex w-3/5 items-center justify-between xl:mt-2 xl:w-full xl:pl-2 sm:mt-0">
+				{showHeadingCondition && (
+					<div className={figureWrapperClass}>
+						{renderSidePaneCollapseButton}
+						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center ">
+							{navBarLogo()}
+						</figure>
+						{navBarHeading()}
+					</div>
+				)}
+				<div className="flex w-4/5 items-center justify-between xl:w-full xl:justify-end xl:pl-2 sm:mt-0">
+					<div className="h-5 w-5 xl:hidden" />
 					{currentPath !== SETTINGS_URL && (
 						<>
-							<div className="w-full min-w-[300px] max-w-[300px] sm:w-[50%] sm:min-w-[50%] sm:max-w-[50%]">
-								<SearchInput
-									onChange={(value) => {
-										setSearchText(value);
-									}}
-									placeholder={`Search in ${
-										find(
-											categoryData?.data,
-											(item) => item?.category_slug === currentPath,
-										)?.category_name ?? menuListItemName.allBookmarks
-									}`}
-									userId={userId}
-								/>
-							</div>
-							<div className="flex min-w-[420px] items-center justify-end xl:min-w-0 sm:w-[50%]">
+							{renderSearchBar}
+							<div className="flex w-[407px] items-center justify-end xl:w-max">
 								<div className="mr-3 flex items-center space-x-2">
 									<BookmarksViewDropdown
 										categoryId={categoryId}
@@ -335,21 +379,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 	};
 
-	const renderSidePaneCollapseButton = (
-		<>
-			{!showSidePane && (
-				<Button
-					className="absolute left-[12px] top-[64px] z-50 cursor-pointer bg-slate-200 shadow-2xl"
-					onClick={() => setShowSidePane(true)}
-				>
-					<figure>
-						<ChevronDoubleRightIcon className="h-4 w-4 shrink-0 text-gray-400" />
-					</figure>
-				</Button>
-			)}
-		</>
-	);
-
 	const renderSidePane = (
 		<SidePane
 			onAddNewCategory={onAddNewCategory}
@@ -368,7 +397,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	);
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
-			{renderSidePaneCollapseButton}
 			<Allotment
 				defaultSizes={[144, screenWidth]}
 				onChange={(value: number[]) => {
@@ -405,13 +433,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMobileView = (
 		<div className="flex">
-			{renderSidePaneCollapseButton}
-			{showSidePane && (
-				<div className="z-10 h-[100vh] w-[244px] bg-white">
-					{renderSidePane}
-				</div>
-			)}
-			<div className="absolute w-[100vw]">{renderMainPaneContent}</div>
+			<Drawer
+				direction="left"
+				onClose={() => setShowSidePane(false)}
+				open={showSidePane}
+			>
+				{renderSidePane}
+			</Drawer>
+			<div className="w-[100vw]">{renderMainPaneContent}</div>
 		</div>
 	);
 

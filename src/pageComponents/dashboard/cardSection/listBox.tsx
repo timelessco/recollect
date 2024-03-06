@@ -26,6 +26,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import Checkbox from "../../../components/checkbox";
+import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import {
@@ -155,21 +156,26 @@ const ListBox = (props: ListBoxDropTypes) => {
 			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
 	});
 
+	const { isMobile, isTablet } = useIsMobileView();
 	const moodboardColsLogic = () => {
-		switch (bookmarksColumns && bookmarksColumns[0] / 10) {
-			case 1:
-				return "5";
-			case 2:
-				return "4";
-			case 3:
-				return "3";
-			case 4:
-				return "2";
-			case 5:
-				return "1";
-			default:
-				return "1";
-				break;
+		if (isTablet || isMobile) {
+			return "2";
+		} else {
+			switch (bookmarksColumns && bookmarksColumns[0] / 10) {
+				case 1:
+					return "5";
+				case 2:
+					return "4";
+				case 3:
+					return "3";
+				case 4:
+					return "2";
+				case 5:
+					return "1";
+				default:
+					return "1";
+					break;
+			}
 		}
 	};
 
@@ -177,7 +183,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 		// [`columns-${moodboardColsLogic()} gap-6`]:
 		// 	cardTypeCondition === "moodboard",
 		block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
-		[cardGridClassNames]: cardTypeCondition === "card",
+		[isMobile || isTablet ? "grid gap-6 grid-cols-2" : cardGridClassNames]:
+			cardTypeCondition === "card",
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;

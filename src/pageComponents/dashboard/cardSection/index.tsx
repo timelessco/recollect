@@ -21,9 +21,12 @@ import { Item } from "react-stately";
 
 import Badge from "../../../components/badge";
 import Spinner from "../../../components/spinner";
+import PlayIcon from "../../../icons/actionIcons/playIcon";
+import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
+import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -56,14 +59,6 @@ import {
 	isBookmarkVideo,
 	isUserInACategory,
 } from "../../../utils/helpers";
-
-// this import is the built in styles for video player we need its css file, this disabling the rule
-// eslint-disable-next-line import/extensions
-import "node_modules/video-react/dist/video-react.css";
-
-import PlayIcon from "../../../icons/actionIcons/playIcon";
-import FolderIcon from "../../../icons/folderIcon";
-import VideoIcon from "../../../icons/videoIcon";
 import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
@@ -552,7 +547,7 @@ const CardSection = ({
 			absolute: true,
 			"top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%]":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[11px] left-[25px]": cardTypeCondition === "list",
+			"top-[4px] left-[21px]": cardTypeCondition === "list",
 		});
 
 		return (
@@ -758,7 +753,7 @@ const CardSection = ({
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="w-[94%]">
+				<div className=" overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}
@@ -807,7 +802,7 @@ const CardSection = ({
 			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-[10px] w-full">
+				<div className=" ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}
