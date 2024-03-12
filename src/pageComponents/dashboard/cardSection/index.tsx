@@ -243,6 +243,7 @@ const CardSection = ({
 	]) as unknown as number[];
 	const cardTypeCondition = getViewValue("bookmarksView", "");
 
+	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
 	useEffect(() => {
 		if (!isEmpty(cardTypeCondition)) {
 			setCurrentBookmarkView(cardTypeCondition as BookmarksViewTypes);
@@ -467,7 +468,7 @@ const CardSection = ({
 		const figureClassName = classNames({
 			relative: isVideo,
 			"mr-3": cardTypeCondition === "list",
-			"h-[48px] w-[80px] ": cardTypeCondition === "list",
+			"h-[48px] w-[80px]": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
 			"h-36":
 				cardTypeCondition === "moodboard" &&
@@ -492,7 +493,7 @@ const CardSection = ({
 		);
 
 		const imgLogic = () => {
-			if (bookmarksInfoValue?.includes("cover" as never)) {
+			if (hasCoverImg) {
 				if (isBookmarkLoading && img === undefined && id === undefined) {
 					return <div className={loaderClassName} />;
 				}
@@ -739,14 +740,18 @@ const CardSection = ({
 
 	const renderListCard = (item: SingleListData) => (
 		<div className="flex w-full items-center p-2" id="single-moodboard-card">
-			{renderOgImage(
-				item?.ogImage,
-				item?.id,
-				item?.meta_data?.ogImgBlurUrl ?? "",
-				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-				item?.type,
-				item?.url,
+			{hasCoverImg ? (
+				renderOgImage(
+					item?.ogImage,
+					item?.id,
+					item?.meta_data?.ogImgBlurUrl ?? "",
+					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+					item?.type,
+					item?.url,
+				)
+			) : (
+				<div className="h-[48px]" />
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
