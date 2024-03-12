@@ -332,7 +332,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 											);
 										}}
 									>
-										<div className={dropdownMenuItemClassName}>
+										<div
+											className={`w-full truncate ${dropdownMenuItemClassName}`}
+										>
 											{dropdownItem?.label}
 										</div>
 									</AriaDropdownMenu>
