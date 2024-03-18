@@ -349,32 +349,14 @@ main {
 }
 
 [data-backdrop] {
-	/* @apply bg-black opacity-50 */
-
-	/* background: #00000045;; */
 	@apply bg-modal-bg;
 }
 
 .dropdown-container input[type="radio"] {
-	/* position: absolute;
-	opacity: 0; */
-
 	@apply absolute opacity-0;
 }
 
 .dropdown-container input[aria-checked="true"] + input::after {
-	/* content: "";
-
-	position: absolute;
-	top: 50%;
-	right: 8px;
-	transform: translateY(-50%);
-
-	width: 12px;
-	height: 12px;
-
-	background-image: url("/public/tickIcon.svg"); */
-
 	@apply absolute right-2 top-[50%] h-3 w-3 -translate-y-2/4 bg-[url('/public/tickIcon.svg')] content-[""];
 }
 
@@ -447,4 +429,21 @@ input[type="checkbox"]:checked + .checkbox-div {
 
 	/* adding important as the modal library does not give access to this div and the div already has z-index: auto so we are overriding it */
 	@apply z-10 !important;
+}
+
+.menu-wrapper {
+	/* scroll-behavior: smooth;
+	scroll-snap-type: x mandatory;
+	scroll-snap-stop: always;
+
+	z-index: 50;
+
+	overflow: scroll hidden;
+
+	border-style: solid;
+	border-width: 1px; */
+
+	scrollbar-width: none;
+
+	@apply z-50 snap-x snap-mandatory snap-always overflow-scroll scroll-smooth rounded-xl border border-solid;
 }

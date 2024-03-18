@@ -26,6 +26,7 @@ export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	currentBookmarkView: BookmarksViewTypes;
 	currentSettingsPage: "change-email" | "delete" | "main";
+	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
 	searchText: string;
 	selectedVideoId: number | null;
@@ -34,6 +35,7 @@ export type MiscellaneousStoreState = {
 	setCurrentSettingsPage: (
 		value: MiscellaneousStoreState["currentSettingsPage"],
 	) => void;
+	setCurrentSliderDropdownSlide: (value: string | null) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setSearchText: (value: string) => void;
 	setSelectedVideoId: (id: number | null) => void;

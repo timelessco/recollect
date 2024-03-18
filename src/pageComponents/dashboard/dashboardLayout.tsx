@@ -25,7 +25,6 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
 	menuListItemName,
-	SETTINGS_URL,
 	TRASH_URL,
 } from "../../utils/constants";
 
@@ -56,6 +55,9 @@ import SidePane from "./sidePane";
 
 // import styles 👇
 import "react-modern-drawer/dist/index.css";
+
+import { Menu, MenuItem } from "../../components/ariaSlidingMenu";
+import MenuIcon from "../../icons/menuIcon";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -277,9 +279,113 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			/>
 		</div>
 	) : (
-		<Button className="mr-2" onClick={() => setShowSearchBar(true)}>
+		<Button className="mr-1" onClick={() => setShowSearchBar(true)}>
 			<SearchInputSearchIcon size="16" />
 		</Button>
+	);
+
+	const renderViewBasedHeaderOptions = !isDesktop ? (
+		<div className="mr-3 flex xl:mr-1">
+			<Menu
+				renderButton={
+					<Button className="px-[6px] py-[3px]">
+						<MenuIcon />
+					</Button>
+				}
+			>
+				<BookmarksViewDropdown
+					categoryId={categoryId}
+					isDropdown={false}
+					setBookmarksView={setBookmarksView}
+					userId={userId}
+				/>
+				<BookmarksSortDropdown
+					categoryId={categoryId}
+					isDropdown={false}
+					setBookmarksView={setBookmarksView}
+					userId={userId}
+				/>
+				{currentPath === TRASH_URL && (
+					<MenuItem
+						className="text-red-700"
+						label=""
+						onClick={() => onClearTrash()}
+					>
+						Clear Trash
+					</MenuItem>
+				)}
+				{currentPath !== TRASH_URL && (
+					<>
+						<MenuItem label="add-bookmark" onClick={onNavAddClick}>
+							{/* TODO: get this svg from design */}
+							<svg
+								className="mr-[6px] h-4 w-4"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								viewBox="0 0 24 24"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M12 4.5v15m7.5-7.5h-15"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+							Add bookmark
+						</MenuItem>
+						<MenuItem
+							label="name-update"
+							onClick={() => {
+								setShowHeadingInput(true);
+							}}
+						>
+							{/* TODO: get this svg from design */}
+							<svg
+								className="mr-[6px] h-4 w-4"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth={1.5}
+								viewBox="0 0 24 24"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+							Update name
+						</MenuItem>
+					</>
+				)}
+			</Menu>
+		</div>
+	) : (
+		<div className="flex items-center space-x-2">
+			<BookmarksViewDropdown
+				categoryId={categoryId}
+				setBookmarksView={setBookmarksView}
+				userId={userId}
+			/>
+			{currentPath === TRASH_URL && (
+				<Button
+					className="bg-red-700 hover:bg-red-900"
+					id="clear-trash-button"
+					onClick={() => onClearTrash()}
+					type="dark"
+				>
+					<span className="text-white">
+						{isMobile ? "Clear" : "Clear trash"}
+					</span>
+				</Button>
+			)}
+			<BookmarksSortDropdown
+				categoryId={categoryId}
+				setBookmarksView={setBookmarksView}
+				userId={userId}
+			/>
+		</div>
 	);
 
 	const renderSidePaneCollapseButton = (
@@ -326,54 +432,28 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					</div>
 				)}
 				<div className="flex w-4/5 items-center justify-between xl:w-full xl:justify-end xl:pl-2 sm:mt-0">
+					{/* this div is there for centering needs */}
 					<div className="h-5 w-5 xl:hidden" />
-					{currentPath !== SETTINGS_URL && (
-						<>
-							{renderSearchBar}
-							<div className="flex w-[407px] items-center justify-end xl:w-max">
-								<div className="mr-3 flex items-center space-x-2">
-									<BookmarksViewDropdown
-										categoryId={categoryId}
-										setBookmarksView={setBookmarksView}
-										userId={userId}
-									/>
-									{currentPath === TRASH_URL && (
-										<Button
-											className="bg-red-700 hover:bg-red-900"
-											id="clear-trash-button"
-											onClick={() => onClearTrash()}
-											type="dark"
-										>
-											<span className="text-white">
-												{isMobile ? "Clear" : "Clear trash"}
-											</span>
-										</Button>
-									)}
-									<BookmarksSortDropdown
-										categoryId={categoryId}
-										setBookmarksView={setBookmarksView}
-										userId={userId}
-									/>
-									{typeof categoryId === "number" && <ShareDropdown />}
-								</div>
-								{currentPath !== TRASH_URL && (
-									<Button
-										className="hover:bg-black"
-										onClick={onNavAddClick}
-										title="create"
-										type="dark"
-									>
-										<figure className="h-4 w-4">
-											<PlusIconWhite />
-										</figure>
-										<span className="ml-[6px] font-medium leading-[14px] text-white xl:hidden">
-											Create
-										</span>
-									</Button>
-								)}
-							</div>
-						</>
-					)}
+					{renderSearchBar}
+					<div className="flex w-[407px] items-center justify-end space-x-2 xl:w-max xl:space-x-0">
+						{renderViewBasedHeaderOptions}
+						{typeof categoryId === "number" && <ShareDropdown />}
+						{currentPath !== TRASH_URL && isDesktop && (
+							<Button
+								className="hover:bg-black xl:px-[5px]"
+								onClick={onNavAddClick}
+								title="create"
+								type="dark"
+							>
+								<figure className="h-4 w-4">
+									<PlusIconWhite />
+								</figure>
+								<span className="ml-[6px] font-medium leading-[14px] text-white xl:hidden">
+									Create
+								</span>
+							</Button>
+						)}
+					</div>
 				</div>
 			</header>
 		);
