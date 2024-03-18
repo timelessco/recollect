@@ -82,4 +82,8 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	selectedVideoId: null,
 	setSelectedVideoId: (value: number | null) =>
 		set(() => ({ selectedVideoId: value })),
+
+	currentSliderDropdownSlide: null,
+	setCurrentSliderDropdownSlide: (value: string | null) =>
+		set(() => ({ currentSliderDropdownSlide: value })),
 }));

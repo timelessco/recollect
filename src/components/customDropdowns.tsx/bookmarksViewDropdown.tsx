@@ -9,6 +9,7 @@ import CardIcon from "../../icons/viewIcons/cardIcon";
 import HeadlinesIcon from "../../icons/viewIcons/headLinesIcon";
 import ListIcon from "../../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type CategoriesData,
 	type FetchSharedCategoriesData,
@@ -26,6 +27,7 @@ import {
 } from "../../utils/constants";
 import { isUserInACategory } from "../../utils/helpers";
 import { errorToast } from "../../utils/toastMessages";
+import { Menu as CustomMenu } from "../ariaSlidingMenu";
 import Button from "../atoms/button";
 // import Checkbox from "../checkbox";
 import RadioGroup from "../radioGroup";
@@ -34,6 +36,8 @@ import Switch from "../switch";
 
 type BookmarksViewDropdownProps = {
 	categoryId: CategoryIdUrlTypes;
+	// based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
+	isDropdown?: boolean;
 	setBookmarksView: (
 		value: BookmarksViewTypes | number[] | string[],
 		type: BookmarkViewCategories,
@@ -41,9 +45,14 @@ type BookmarksViewDropdownProps = {
 	userId: string;
 };
 
+// This renders the view options
 const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
-	const { setBookmarksView, categoryId, userId } = props;
+	const { setBookmarksView, categoryId, userId, isDropdown = true } = props;
 	const queryClient = useQueryClient();
+
+	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
+		(state) => state.setCurrentSliderDropdownSlide,
+	);
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -248,26 +257,71 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		);
 	};
 
-	return (
+	const dropdownContent = (
+		<>
+			{renderDropdownHeader("View as")}
+			<div>
+				<RadioGroup
+					initialRadioRef={radio0ref}
+					onChange={(value) => {
+						setBookmarksView(value as BookmarksViewTypes, "view");
+					}}
+					radioList={bookmarksViewOptions}
+					value={bookmarksViewValue as string}
+				/>
+			</div>
+			{renderDropdownHeader("Show in Cards")}
+			<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
+			{bookmarksViewValue === "card" || bookmarksViewValue === "moodboard" ? (
+				<div className="flex items-center justify-between px-2 py-[4.5px]">
+					<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
+						Cover size
+					</p>
+					<div className="w-[90px]">
+						<Slider
+							label="moodboard-cols-slider"
+							maxValue={50}
+							minValue={10}
+							onChange={(value) =>
+								setBookmarksView(value as number[], "colums")
+							}
+							step={10}
+							value={bookmarksColumns as unknown as number}
+						/>
+					</div>
+				</div>
+			) : (
+				<div className="h-[34px] w-[162px]" />
+			)}
+		</>
+	);
+
+	const dropdownButtonContent = (
+		<>
+			<figure className="h-4 w-4">
+				{
+					find(
+						bookmarksViewOptions,
+						(item) => item?.value === bookmarksViewValue,
+					)?.icon
+				}
+			</figure>
+			<span className="ml-[7px] text-custom-gray-1">
+				{
+					find(
+						bookmarksViewOptions,
+						(item) => item?.value === bookmarksViewValue,
+					)?.label
+				}
+			</span>
+		</>
+	);
+
+	return isDropdown ? (
 		<>
 			<MenuButton as="div" className="outline-none" state={menu}>
 				<Button isActive={menu.open} title="views" type="light">
-					<figure className="h-4 w-4">
-						{
-							find(
-								bookmarksViewOptions,
-								(item) => item?.value === bookmarksViewValue,
-							)?.icon
-						}
-					</figure>
-					<span className="ml-[7px] text-custom-gray-1 xl:hidden">
-						{
-							find(
-								bookmarksViewOptions,
-								(item) => item?.value === bookmarksViewValue,
-							)?.label
-						}
-					</span>
+					{dropdownButtonContent}
 				</Button>
 			</MenuButton>
 			<Menu
@@ -275,42 +329,18 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				initialFocusRef={radio0ref}
 				state={menu}
 			>
-				{renderDropdownHeader("View as")}
-				<div>
-					<RadioGroup
-						initialRadioRef={radio0ref}
-						onChange={(value) => {
-							setBookmarksView(value as BookmarksViewTypes, "view");
-						}}
-						radioList={bookmarksViewOptions}
-						value={bookmarksViewValue as string}
-					/>
-				</div>
-				{renderDropdownHeader("Show in Cards")}
-				<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
-				{bookmarksViewValue === "card" || bookmarksViewValue === "moodboard" ? (
-					<div className="flex items-center justify-between px-2 py-[4.5px]">
-						<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
-							Cover size
-						</p>
-						<div className="w-[90px]">
-							<Slider
-								label="moodboard-cols-slider"
-								maxValue={50}
-								minValue={10}
-								onChange={(value) =>
-									setBookmarksView(value as number[], "colums")
-								}
-								step={10}
-								value={bookmarksColumns as unknown as number}
-							/>
-						</div>
-					</div>
-				) : (
-					<div className="h-[34px] w-[162px]" />
-				)}
+				{dropdownContent}
 			</Menu>
 		</>
+	) : (
+		<CustomMenu
+			onClick={() => setCurrentSliderDropdownSlide("view")}
+			renderButton={
+				<div className=" flex items-center">{dropdownButtonContent}</div>
+			}
+		>
+			{dropdownContent}
+		</CustomMenu>
 	);
 };
 

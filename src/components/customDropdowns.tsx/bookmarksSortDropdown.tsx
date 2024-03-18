@@ -8,7 +8,10 @@ import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
 import TickIcon from "../../icons/tickIcon";
-import { useLoadersStore } from "../../store/componentStore";
+import {
+	useLoadersStore,
+	useMiscellaneousStore,
+} from "../../store/componentStore";
 import {
 	type CategoriesData,
 	type FetchSharedCategoriesData,
@@ -25,10 +28,12 @@ import {
 	USER_PROFILE,
 } from "../../utils/constants";
 import AriaSelect from "../ariaSelect";
+import { Menu, MenuItem } from "../ariaSlidingMenu";
 import Spinner from "../spinner";
 
 type BookmarksSortDropdownTypes = {
 	categoryId: CategoryIdUrlTypes;
+	isDropdown?: boolean;
 	setBookmarksView: (
 		value: BookmarksSortByTypes,
 		type: BookmarkViewCategories,
@@ -37,7 +42,7 @@ type BookmarksSortDropdownTypes = {
 };
 
 const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
-	const { setBookmarksView, categoryId, userId } = props;
+	const { setBookmarksView, categoryId, userId, isDropdown = true } = props;
 
 	const queryClient = useQueryClient();
 	const session = useSession();
@@ -58,6 +63,10 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 		data: FetchSharedCategoriesData[];
 		error: PostgrestError;
 	};
+
+	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
+		(state) => state.setCurrentSliderDropdownSlide,
+	);
 
 	const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
@@ -146,7 +155,36 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 		sortOptions,
 		(item) => item?.value === bookmarksSortValue,
 	);
-	return (
+
+	const buttonContent = (
+		<>
+			{isSortByLoading ? (
+				<span className="mr-[6px]">
+					<Spinner />
+				</span>
+			) : (
+				<figure className="h-4 w-4">{currentValue?.icon}</figure>
+			)}
+			<p className="ml-[6px]">{currentValue?.label}</p>
+		</>
+	);
+
+	const selectItemContent = (value: string) => (
+		<div className="flex items-center py-[1px]">
+			<figure className="mr-[6px] h-4 w-4">
+				{find(sortOptions, (item) => item?.label === value)?.icon}
+			</figure>
+			<div className="flex w-full items-center justify-between">
+				{find(sortOptions, (item) => item?.label === value)?.label}
+				{value === currentValue?.label ? (
+					<figure className=" h-3 w-3">
+						<TickIcon />
+					</figure>
+				) : null}
+			</div>
+		</div>
+	);
+	return isDropdown ? (
 		<AriaSelect
 			defaultValue={currentValue?.label ?? ""}
 			key={bookmarksSortValue}
@@ -161,32 +199,31 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 					}`}
 					title="sort-by"
 				>
-					{isSortByLoading ? (
-						<span className="mr-[6px]">
-							<Spinner />
-						</span>
-					) : (
-						<figure className="h-4 w-4">{currentValue?.icon}</figure>
-					)}
-					<p className="ml-[6px] xl:hidden">{currentValue?.label}</p>
+					{buttonContent}
 				</div>
 			)}
-			renderCustomSelectItem={(value) => (
-				<div className="flex items-center py-[1px]">
-					<figure className="mr-[6px] h-4 w-4">
-						{find(sortOptions, (item) => item?.label === value)?.icon}
-					</figure>
-					<div className=" flex w-full items-center justify-between">
-						{find(sortOptions, (item) => item?.label === value)?.label}
-						{value === currentValue?.label ? (
-							<figure className=" h-3 w-3">
-								<TickIcon />
-							</figure>
-						) : null}
-					</div>
-				</div>
-			)}
+			renderCustomSelectItem={(value) => selectItemContent(value)}
 		/>
+	) : (
+		<Menu
+			onClick={() => setCurrentSliderDropdownSlide("sort")}
+			renderButton={<div className=" flex items-center">{buttonContent}</div>}
+		>
+			{sortOptions?.map((item) => {
+				const value = item?.label;
+				return (
+					<MenuItem
+						key={value}
+						label=""
+						onClick={() =>
+							setBookmarksView(item?.value as BookmarksSortByTypes, "sort")
+						}
+					>
+						{selectItemContent(value)}
+					</MenuItem>
+				);
+			})}
+		</Menu>
 	);
 };
 

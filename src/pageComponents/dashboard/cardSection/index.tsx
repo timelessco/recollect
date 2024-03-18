@@ -243,6 +243,7 @@ const CardSection = ({
 	]) as unknown as number[];
 	const cardTypeCondition = getViewValue("bookmarksView", "");
 
+	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
 	useEffect(() => {
 		if (!isEmpty(cardTypeCondition)) {
 			setCurrentBookmarkView(cardTypeCondition as BookmarksViewTypes);
@@ -424,7 +425,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative truncate text-[13px]  leading-4 text-custom-gray-10 ${
+			className={`relative truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -467,7 +468,7 @@ const CardSection = ({
 		const figureClassName = classNames({
 			relative: isVideo,
 			"mr-3": cardTypeCondition === "list",
-			"h-[48px] w-[80px] ": cardTypeCondition === "list",
+			"h-[48px] w-[80px]": cardTypeCondition === "list",
 			"w-full h-[194px] ": cardTypeCondition === "card",
 			"h-36":
 				cardTypeCondition === "moodboard" &&
@@ -492,7 +493,7 @@ const CardSection = ({
 		);
 
 		const imgLogic = () => {
-			if (bookmarksInfoValue?.includes("cover" as never)) {
+			if (hasCoverImg) {
 				if (isBookmarkLoading && img === undefined && id === undefined) {
 					return <div className={loaderClassName} />;
 				}
@@ -738,45 +739,47 @@ const CardSection = ({
 	);
 
 	const renderListCard = (item: SingleListData) => (
-		<div
-			className="flex h-[64px] w-full items-center p-2"
-			id="single-moodboard-card"
-		>
-			{renderOgImage(
-				item?.ogImage,
-				item?.id,
-				item?.meta_data?.ogImgBlurUrl ?? "",
-				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-				item?.type,
-				item?.url,
+		<div className="flex w-full items-center p-2" id="single-moodboard-card">
+			{hasCoverImg ? (
+				renderOgImage(
+					item?.ogImage,
+					item?.id,
+					item?.meta_data?.ogImgBlurUrl ?? "",
+					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+					item?.type,
+					item?.url,
+				)
+			) : (
+				<div className="h-[48px]" />
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" overflow-hidden">
+				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}
 						</p>
 					)}
-					<div className="flex items-center space-x-1 space-y-2">
+					<div className="flex flex-wrap items-center space-x-1 sm:space-x-0 sm:space-y-1">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10">
+								<p className="mt-[6px]  min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10 sm:mt-[1px]">
 									{item?.description}
 								</p>
 							)}
-						{bookmarksInfoValue?.includes("tags" as never) && (
-							<div className="mt-[6px] flex items-center">
-								{item?.addedTags?.map((tag) => (
-									<div className="mr-1 text-xs text-blue-500" key={tag?.id}>
-										#{tag?.name}
-									</div>
-								))}
-							</div>
-						)}
+						{bookmarksInfoValue?.includes("tags" as never) &&
+							!isEmpty(item?.addedTags) && (
+								<div className="mt-[6px] flex items-center sm:mt-[1px]">
+									{item?.addedTags?.map((tag) => (
+										<div className="mr-1 text-xs text-blue-500" key={tag?.id}>
+											#{tag?.name}
+										</div>
+									))}
+								</div>
+							)}
 						{bookmarksInfoValue?.includes("info" as never) && (
-							<div className="mt-[6px] flex items-center space-x-2">
+							<div className="mt-[6px] flex flex-wrap items-center space-x-2 sm:mt-[1px] sm:space-x-1">
 								{renderFavIcon(item)}
 								{renderCategoryBadge(item)}
 								{renderUrl(item)}
