@@ -1,5 +1,3 @@
-// import { Menu, Transition } from "@headlessui/react";
-
 import { useEffect, useState } from "react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/solid";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -111,6 +109,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const isDesktop = !isMobile && !isTablet;
 
+	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
+		(state) => state.setCurrentSliderDropdownSlide,
+	);
+
 	useEffect(() => {
 		if (isDesktop) {
 			setShowSearchBar(true);
@@ -199,7 +201,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className=" w-52 truncate text-xl font-semibold leading-[23px] text-gray-light-12 "
+					className="truncate text-xl font-semibold leading-[23px] text-gray-light-12"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -287,6 +289,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const renderViewBasedHeaderOptions = !isDesktop ? (
 		<div className="mr-3 flex xl:mr-1">
 			<Menu
+				onClose={() => setCurrentSliderDropdownSlide(null)}
 				renderButton={
 					<Button className="px-[6px] py-[3px]">
 						<MenuIcon />
@@ -355,7 +358,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 									strokeLinejoin="round"
 								/>
 							</svg>
-							Update name
+							Update collection
 						</MenuItem>
 					</>
 				)}
@@ -415,8 +418,15 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		const figureWrapperClass = classNames(
-			"flex items-center px-2 py-[3px] w-1/5 xl:w-2/5",
+			"flex items-center px-2 py-[3px] w-1/5 xl:w-3/4",
 		);
+
+		const navOptionsWrapperClass = classNames({
+			"flex w-4/5 items-center justify-between xl:justify-end xl:pl-2 sm:mt-0":
+				true,
+			"xl:w-full": showSearchBar,
+			"xl:w-1/4": !showSearchBar,
+		});
 
 		const showHeadingCondition = isDesktop ? true : !showSearchBar;
 
@@ -431,7 +441,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						{navBarHeading()}
 					</div>
 				)}
-				<div className="flex w-4/5 items-center justify-between xl:w-full xl:justify-end xl:pl-2 sm:mt-0">
+				<div className={navOptionsWrapperClass}>
 					{/* this div is there for centering needs */}
 					<div className="h-5 w-5 xl:hidden" />
 					{renderSearchBar}

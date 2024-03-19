@@ -25,13 +25,14 @@ const MenuContext = React.createContext<MenuContextProps | null>(null);
 
 export type MenuProps = React.ComponentPropsWithoutRef<"div"> & {
 	disabled?: boolean;
+	onClose?: () => void;
 	renderButton: React.ReactNode;
 };
 
 const menuItemClassName = `flex w-full ${dropdownMenuItemClassName}`;
 
 export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
-	({ renderButton, children, ...props }, ref) => {
+	({ renderButton, children, onClose = () => null, ...props }, ref) => {
 		const parent = React.useContext(MenuContext);
 		const isSubmenu = Boolean(parent);
 
@@ -41,6 +42,13 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 		});
 
 		const open = menu.useState("open");
+
+		React.useEffect(() => {
+			if (open === false) {
+				onClose();
+			}
+		}, [open, onClose]);
+
 		const autoFocusOnShow = menu.useState("autoFocusOnShow");
 
 		// By default, submenus don't automatically receive focus when they open.
