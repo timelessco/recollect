@@ -1,5 +1,3 @@
-// import { Menu, Transition } from "@headlessui/react";
-
 import { useEffect, useState } from "react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/solid";
 import { type PostgrestError } from "@supabase/supabase-js";

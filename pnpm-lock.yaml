@@ -23,9 +23,6 @@ dependencies:
   '@heroicons/react':
     specifier: 1.0.6
     version: 1.0.6(react@18.2.0)
-  '@img/sharp-linux-x64':
-    specifier: 0.33.1
-    version: 0.33.1
   '@sendgrid/mail':
     specifier: ^8.0.0
     version: 8.1.0
@@ -44,9 +41,6 @@ dependencies:
   '@tanstack/react-query':
     specifier: 4.28.0
     version: 4.28.0(react-dom@18.2.0)(react@18.2.0)
-  '@tanstack/react-query-devtools':
-    specifier: 4.28.0
-    version: 4.28.0(@tanstack/react-query@4.28.0)(react-dom@18.2.0)(react@18.2.0)
   allotment:
     specifier: 1.18.1
     version: 1.18.1(react-dom@18.2.0)(react@18.2.0)
@@ -77,9 +71,6 @@ dependencies:
   date-fns:
     specifier: 2.29.3
     version: 2.29.3
-  form-data:
-    specifier: ^4.0.0
-    version: 4.0.0
   formidable:
     specifier: ^3.0.0
     version: 3.5.1
@@ -95,9 +86,6 @@ dependencies:
   lodash:
     specifier: 4.17.21
     version: 4.17.21
-  mailgun.js:
-    specifier: ^10.0.0
-    version: 10.0.0
   match-sorter:
     specifier: ^6.3.1
     version: 6.3.1
@@ -190,6 +178,9 @@ devDependencies:
   '@release-it/conventional-changelog':
     specifier: 8.0.1
     version: 8.0.1(release-it@17.0.0)
+  '@tanstack/react-query-devtools':
+    specifier: 4.28.0
+    version: 4.28.0(@tanstack/react-query@4.28.0)(react-dom@18.2.0)(react@18.2.0)
   '@types/formidable':
     specifier: ^3.0.0
     version: 3.4.5
@@ -1747,24 +1738,6 @@ packages:
   /@iarna/toml@2.2.5:
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
     dev: true
-
-  /@img/sharp-libvips-linux-x64@1.0.0:
-    resolution: {integrity: sha512-naldaJy4hSVhWBgEjfdBY85CAa4UO+W1nx6a1sWStHZ7EUfNiuBTTN2KUYT5dH1+p/xij1t2QSXfCiFJoC5S/Q==}
-    engines: {glibc: '>=2.26', npm: '>=9.6.5', pnpm: '>=7.1.0', yarn: '>=3.2.0'}
-    cpu: [x64]
-    os: [linux]
-    requiresBuild: true
-    dev: false
-    optional: true
-
-  /@img/sharp-linux-x64@0.33.1:
-    resolution: {integrity: sha512-4y8osC0cAc1TRpy02yn5omBeloZZwS62fPZ0WUAYQiLhSFSpWJfY/gMrzKzLcHB9ulUV6ExFiu2elMaixKDbeg==}
-    engines: {glibc: '>=2.26', node: ^18.17.0 || ^20.3.0 || >=21.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0', yarn: '>=3.2.0'}
-    cpu: [x64]
-    os: [linux]
-    optionalDependencies:
-      '@img/sharp-libvips-linux-x64': 1.0.0
-    dev: false
 
   /@internationalized/date@3.0.0:
     resolution: {integrity: sha512-mvlQCeYNg7JgO+QtIIx1zFJx10CJNVnt8cOjW2pYab1Ap/c7BYybS37Z5oTCdmRZbvnpmWtjhOEH324zlgWHLw==}
@@ -4086,11 +4059,10 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       remove-accents: 0.4.2
-    dev: false
+    dev: true
 
   /@tanstack/query-core@4.27.0:
     resolution: {integrity: sha512-sm+QncWaPmM73IPwFlmWSKPqjdTXZeFf/7aEmWh00z7yl2FjqophPt0dE1EHW9P1giMC5rMviv7OUbSDmWzXXA==}
-    dev: false
 
   /@tanstack/react-query-devtools@4.28.0(@tanstack/react-query@4.28.0)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-1SnoMw1CWn8FdPEIHvlAzmMBX3heXJo11fyBtt+FzYAHj5yFC8P67Kpgi0HpLkY7SLnd6QK/7qFkpeH4AQbgZg==}
@@ -4105,7 +4077,7 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
       superjson: 1.13.3
       use-sync-external-store: 1.2.0(react@18.2.0)
-    dev: false
+    dev: true
 
   /@tanstack/react-query@4.28.0(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-8cGBV5300RHlvYdS4ea+G1JcZIt5CIuprXYFnsWggkmGoC0b5JaqG0fIX3qwDL9PTNkKvG76NGThIWbpXivMrQ==}
@@ -4123,7 +4095,6 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       use-sync-external-store: 1.2.0(react@18.2.0)
-    dev: false
 
   /@tootallnate/quickjs-emscripten@0.23.0:
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
@@ -5143,10 +5114,6 @@ packages:
     resolution: {integrity: sha512-1ugUSr8BHXRnK23KfuYS+gVMC3LB8QGH9W1iGtDPsNWoQbgtXSExkBu2aDR4epiGWZOjZsj6lDl/N/AqqTC3UA==}
     dev: true
 
-  /base-64@1.0.0:
-    resolution: {integrity: sha512-kwDPIFCGx0NZHog36dj+tHiwP4QMzsZ3AgMViUBKI0+V5n4U0ufTCUMhnQ04diaRI8EX/QcPfql7zlhZ7j4zgg==}
-    dev: false
-
   /base64-arraybuffer@1.0.2:
     resolution: {integrity: sha512-I3yl4r9QB5ZRY3XuJVEPfc2XhZO6YweFPI+UovAzn+8/hb3oJ6lnysaFcjVpkCPfVWFUDvoZ8kmVDP7WyRtYtQ==}
     engines: {node: '>= 0.6.0'}
@@ -5989,7 +5956,7 @@ packages:
     engines: {node: '>=12.13'}
     dependencies:
       is-what: 4.1.16
-    dev: false
+    dev: true
 
   /core-js-pure@3.33.3:
     resolution: {integrity: sha512-taJ00IDOP+XYQEA2dAe4ESkmHt1fL8wzYDo3mRWQey8uO9UojlBFMneA65kMyxfYP7106c6LzWaq7/haDT6BCQ==}
@@ -9374,7 +9341,7 @@ packages:
   /is-what@4.1.16:
     resolution: {integrity: sha512-ZhMwEosbFJkA0YhFnNDgTM4ZxDRsS6HqTo7qsZM08fehyRYIYa0yHu5R6mgo1n/8MgaPBXiPimPD77baVFYg+A==}
     engines: {node: '>=12.13'}
-    dev: false
+    dev: true
 
   /is-wsl@2.2.0:
     resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
@@ -10095,17 +10062,6 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
-    dev: false
-
-  /mailgun.js@10.0.0:
-    resolution: {integrity: sha512-5AIGLwF5IsT0rck/Z/l+OUQiqwCto5tMaArgkSDPX+i7G4OJPbeDurT0qgr1IlQCrEF3CPTGrUYpSv27eHipaw==}
-    engines: {node: '>=18.0.0'}
-    dependencies:
-      axios: 1.6.0
-      base-64: 1.0.0
-      url-join: 4.0.1
-    transitivePeerDependencies:
-      - debug
     dev: false
 
   /make-dir@3.1.0:
@@ -12111,7 +12067,6 @@ packages:
 
   /remove-accents@0.4.2:
     resolution: {integrity: sha512-7pXIJqJOq5tFgG1A2Zxti3Ht8jJF337m4sowbuHsW30ZnkQFnDzy9qBNhgzX8ZLW4+UBcXiiR7SwR6pokHsxiA==}
-    dev: false
 
   /remove-trailing-separator@1.1.0:
     resolution: {integrity: sha512-/hS+Y0u3aOfIETiaiirUFwDBDzmXPvO+jAfKTitUngIPzdKc6Z0LoFjM/CK5PL4C+eKwHohlHAb6H0VFfmmUsw==}
@@ -13079,7 +13034,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       copy-anything: 3.0.5
-    dev: false
+    dev: true
 
   /supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
@@ -13748,10 +13703,6 @@ packages:
       punycode: 2.3.1
     dev: true
 
-  /url-join@4.0.1:
-    resolution: {integrity: sha512-jk1+QP6ZJqyOiuEI9AEWQfju/nB2Pw466kbA0LEZljHwKeMgd9WrAEgEGxjPDD2+TNbbb37rTyhEfrCXfuKXnA==}
-    dev: false
-
   /url-join@5.0.0:
     resolution: {integrity: sha512-n2huDr9h9yzd6exQVnH/jU5mr+Pfx08LRXXZhkLLetAMESRj+anQsTAh940iMrIetKAmry9coFuZQ2jY8/p3WA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -13792,7 +13743,6 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
       react: 18.2.0
-    dev: false
 
   /utf-8-validate@5.0.10:
     resolution: {integrity: sha512-Z6czzLq4u8fPOyx7TU6X3dvUZVvoJmxSQ+IcrlmagKhilxlhZgxPK6C5Jqbkw1IDUmFTM+cz9QDnnLTwDz/2gQ==}
