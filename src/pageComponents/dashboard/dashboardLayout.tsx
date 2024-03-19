@@ -111,6 +111,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const isDesktop = !isMobile && !isTablet;
 
+	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
+		(state) => state.setCurrentSliderDropdownSlide,
+	);
+
 	useEffect(() => {
 		if (isDesktop) {
 			setShowSearchBar(true);
@@ -287,6 +291,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const renderViewBasedHeaderOptions = !isDesktop ? (
 		<div className="mr-3 flex xl:mr-1">
 			<Menu
+				onClose={() => setCurrentSliderDropdownSlide(null)}
 				renderButton={
 					<Button className="px-[6px] py-[3px]">
 						<MenuIcon />

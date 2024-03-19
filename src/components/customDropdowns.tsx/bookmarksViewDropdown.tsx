@@ -1,8 +1,8 @@
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
-import { isEmpty } from "lodash";
+import { debounce, isEmpty } from "lodash";
 import find from "lodash/find";
 
 import CardIcon from "../../icons/viewIcons/cardIcon";
@@ -257,6 +257,12 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		);
 	};
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	const setColumnsCallback = useCallback(
+		debounce((value) => setBookmarksView(value as number[], "colums"), 200),
+		[setBookmarksView],
+	);
+
 	const dropdownContent = (
 		<>
 			{renderDropdownHeader("View as")}
@@ -279,14 +285,18 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 					</p>
 					<div className="w-[90px]">
 						<Slider
+							defaultValue={bookmarksColumns as unknown as number}
 							label="moodboard-cols-slider"
 							maxValue={50}
 							minValue={10}
-							onChange={(value) =>
-								setBookmarksView(value as number[], "colums")
-							}
+							onChangeEnd={(value) => {
+								const columValue = value as number[];
+								// do not fire api if the new value is the same as previous value
+								if (columValue?.[0] !== bookmarksColumns?.[0]) {
+									setColumnsCallback(value);
+								}
+							}}
 							step={10}
-							value={bookmarksColumns as unknown as number}
 						/>
 					</div>
 				</div>

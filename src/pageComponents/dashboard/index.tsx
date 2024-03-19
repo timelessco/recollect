@@ -800,7 +800,7 @@ const Dashboard = () => {
 			<Modal
 				open={showAddBookmarkModal}
 				setOpen={() => setShowAddBookmarkModal(false)}
-				wrapperClassName="w-[50%] p-4 rounded-lg"
+				wrapperClassName="w-[50%] xl:w-[80%] p-4 rounded-lg"
 			>
 				<AddModalContent
 					addExistingTag={async (tag) => {
