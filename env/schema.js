@@ -8,15 +8,15 @@ import { z } from "zod";
  */
 export const serverSchema = z.object({
 	NODE_ENV: z.enum(["development", "test", "production"]),
-	SUPABASE_SERVICE_KEY: z.string()?.optional(),
-	SUPABASE_JWT_SECRET_KEY: z.string().optional(),
+	SUPABASE_SERVICE_KEY: z.string(),
+	SUPABASE_JWT_SECRET_KEY: z.string(),
 	SENDGRID_KEY: z.string().optional(),
 	SENTRY_DSN: z.string().optional(),
 	SCREENSHOT_TOKEN: z.string().optional(),
 	IMAGE_CAPTION_URL: z.string().optional(),
 	IMAGE_CAPTION_TOKEN: z.string().optional(),
-	PROD_SUPABASE_JWT_SECRET_KEY: z.string(),
-	PROD_SUPABASE_SERVICE_KEY: z.string(),
+	DEV_SUPABASE_JWT_SECRET_KEY: z.string().optional(),
+	DEV_SUPABASE_SERVICE_KEY: z.string().optional(),
 });
 
 /**
@@ -34,8 +34,8 @@ export const serverEnvironment = {
 	SUPABASE_JWT_SECRET_KEY: process.env.SUPABASE_JWT_SECRET_KEY,
 	IMAGE_CAPTION_URL: process.env.IMAGE_CAPTION_URL,
 	IMAGE_CAPTION_TOKEN: process.env.IMAGE_CAPTION_TOKEN,
-	PROD_SUPABASE_JWT_SECRET_KEY: process.env.PROD_SUPABASE_JWT_SECRET_KEY,
-	PROD_SUPABASE_SERVICE_KEY: process.env.PROD_SUPABASE_SERVICE_KEY,
+	DEV_SUPABASE_JWT_SECRET_KEY: process.env.DEV_SUPABASE_JWT_SECRET_KEY,
+	DEV_SUPABASE_SERVICE_KEY: process.env.DEV_SUPABASE_SERVICE_KEY,
 };
 
 /**
@@ -46,10 +46,10 @@ export const serverEnvironment = {
 export const clientSchema = z.object({
 	// Needed for sitemap generation
 	NEXT_PUBLIC_SITE_URL: z.string().url()?.optional(),
-	NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
-	NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
-	NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY: z.string(),
-	NEXT_PUBLIC_PROD_SUPABASE_URL: z.string(),
+	NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+	NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+	NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY: z.string().optional(),
+	NEXT_PUBLIC_DEV_SUPABASE_URL: z.string().optional(),
 });
 
 /**
@@ -64,7 +64,7 @@ export const clientEnvironment = {
 	NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
 	NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
 	NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-	NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY:
-		process.env.NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY,
-	NEXT_PUBLIC_PROD_SUPABASE_URL: process.env.NEXT_PUBLIC_PROD_SUPABASE_URL,
+	NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY:
+		process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY,
+	NEXT_PUBLIC_DEV_SUPABASE_URL: process.env.NEXT_PUBLIC_DEV_SUPABASE_URL,
 };
