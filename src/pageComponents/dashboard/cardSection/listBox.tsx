@@ -289,7 +289,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</div>
 						{isTrashPage && (
 							<div
-								className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
+								className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
 								onClick={() => {
 									onBulkBookmarkDelete(
 										Array.from(
@@ -307,7 +307,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 								Recover
 							</div>
 						)}
-						{!isEmpty(categoryData?.data) && (
+						{!isEmpty(categoryData?.data) && !isTrashPage && (
 							<AriaDropdown
 								menuButton={
 									<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-gray-light-12 ">
