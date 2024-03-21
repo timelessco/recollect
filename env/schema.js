@@ -8,22 +8,15 @@ import { z } from "zod";
  */
 export const serverSchema = z.object({
 	NODE_ENV: z.enum(["development", "test", "production"]),
-	TEST_USER_EMAIL: z.string().email(),
-	TEST_USER_PASSWORD: z.string(),
-	SUPABASE_SERVICE_KEY: z.string(),
-	SUPABASE_JWT_SECRET_KEY: z.string(),
-	GOOGLE_ID: z.string(),
-	SENDGRID_KEY: z.string(),
-	SENTRY_DSN: z.string(),
-	SCREENSHOT_TOKEN: z.string(),
-	GOOGLE_SECRET: z.string(),
-	GOOGLE_REFRESH_TOKEN: z.string(),
-	IMAGE_CAPTION_URL: z.string(),
-	IMAGE_CAPTION_TOKEN: z.string(),
+	SUPABASE_SERVICE_KEY: z.string()?.optional(),
+	SUPABASE_JWT_SECRET_KEY: z.string().optional(),
+	SENDGRID_KEY: z.string().optional(),
+	SENTRY_DSN: z.string().optional(),
+	SCREENSHOT_TOKEN: z.string().optional(),
+	IMAGE_CAPTION_URL: z.string().optional(),
+	IMAGE_CAPTION_TOKEN: z.string().optional(),
 	PROD_SUPABASE_JWT_SECRET_KEY: z.string(),
 	PROD_SUPABASE_SERVICE_KEY: z.string(),
-	PROD_GOOGLE_SECRET: z.string(),
-	PROD_GOOGLE_ID: z.string(),
 });
 
 /**
@@ -34,22 +27,15 @@ export const serverSchema = z.object({
  */
 export const serverEnvironment = {
 	NODE_ENV: process.env.NODE_ENV,
-	TEST_USER_EMAIL: process.env.TEST_USER_EMAIL,
-	GOOGLE_ID: process.env.GOOGLE_ID,
 	SENDGRID_KEY: process.env.SENDGRID_KEY,
 	SENTRY_DSN: process.env.SENTRY_DSN,
 	SCREENSHOT_TOKEN: process.env.SCREENSHOT_TOKEN,
-	GOOGLE_SECRET: process.env.GOOGLE_SECRET,
 	SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
 	SUPABASE_JWT_SECRET_KEY: process.env.SUPABASE_JWT_SECRET_KEY,
-	GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
-	TEST_USER_PASSWORD: process.env.TEST_USER_PASSWORD,
 	IMAGE_CAPTION_URL: process.env.IMAGE_CAPTION_URL,
 	IMAGE_CAPTION_TOKEN: process.env.IMAGE_CAPTION_TOKEN,
 	PROD_SUPABASE_JWT_SECRET_KEY: process.env.PROD_SUPABASE_JWT_SECRET_KEY,
 	PROD_SUPABASE_SERVICE_KEY: process.env.PROD_SUPABASE_SERVICE_KEY,
-	PROD_GOOGLE_SECRET: process.env.PROD_GOOGLE_SECRET,
-	PROD_GOOGLE_ID: process.env.PROD_GOOGLE_ID,
 };
 
 /**
@@ -59,9 +45,9 @@ export const serverEnvironment = {
  */
 export const clientSchema = z.object({
 	// Needed for sitemap generation
-	NEXT_PUBLIC_SITE_URL: z.string().url(),
-	NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-	NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+	NEXT_PUBLIC_SITE_URL: z.string().url()?.optional(),
+	NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+	NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
 	NEXT_PUBLIC_PROD_SUPABASE_ANON_KEY: z.string(),
 	NEXT_PUBLIC_PROD_SUPABASE_URL: z.string(),
 });
