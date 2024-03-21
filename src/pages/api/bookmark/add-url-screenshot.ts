@@ -39,6 +39,13 @@ export default async function handler(
 		throw new Error("ERROR: token error");
 	}
 
+	if (!process.env.SCREENSHOT_TOKEN) {
+		response
+			.status(500)
+			.json({ data: null, error: "Screen shot token missing in env" });
+		throw new Error("ERROR: Screen shot token missing in env");
+	}
+
 	const supabase = apiSupabaseClient();
 
 	const upload = async (base64info: string, uploadUserId: string) => {

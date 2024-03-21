@@ -35,25 +35,33 @@ type StorageDataType = {
 
 // this func gets the image caption
 const query = async (source: string) => {
-	const response = await fetch(source);
-	const arrayBuffer = await response.arrayBuffer();
-	const data = Buffer.from(arrayBuffer);
+	const isImgCaptionEnvironmentsPresent =
+		process.env.IMAGE_CAPTION_TOKEN && process.env.IMAGE_CAPTION_URL;
 
-	try {
-		const imgCaptionResponse = await fetch(
-			process.env.IMAGE_CAPTION_URL as string,
-			{
-				headers: {
-					Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
+	if (isImgCaptionEnvironmentsPresent) {
+		const response = await fetch(source);
+		const arrayBuffer = await response.arrayBuffer();
+		const data = Buffer.from(arrayBuffer);
+
+		try {
+			const imgCaptionResponse = await fetch(
+				process.env.IMAGE_CAPTION_URL as string,
+				{
+					headers: {
+						Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
+					},
+					method: "POST",
+					body: data,
 				},
-				method: "POST",
-				body: data,
-			},
-		);
+			);
 
-		return imgCaptionResponse;
-	} catch (error) {
-		log("Img caption error", error);
+			return imgCaptionResponse;
+		} catch (error) {
+			log("Img caption error", error);
+			return null;
+		}
+	} else {
+		log(`ERROR: Img caption failed due to missing tokens in env`);
 		return null;
 	}
 };
@@ -82,7 +90,7 @@ const notVideoLogic = async (storageData: StorageDataType) => {
 	}
 
 	const meta_data = {
-		img_caption: jsonResponse[0]?.generated_text,
+		img_caption: jsonResponse?.[0]?.generated_text,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,

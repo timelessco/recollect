@@ -21,6 +21,7 @@
     - [Check Spelling](#check-spelling)
     - [Check package.json](#check-packagejson)
     - [Test](#test)
+  - [Add google login](#add-google-login)
   - [Things to do in supabase](#things-to-do-in-supabase)
     - [Create tables](#create-tables)
     - [Create buckets](#create-buckets)
@@ -207,6 +208,10 @@ Next.js project that lints JavaScript and TypeScript source files
 > Run the test suite
 
 `pnpm test`
+
+## Add google login
+
+To enable google login please reffer [supabase google login](https://supabase.com/docs/guides/auth/social-login/auth-google)
 
 ## Things to do in supabase
 
