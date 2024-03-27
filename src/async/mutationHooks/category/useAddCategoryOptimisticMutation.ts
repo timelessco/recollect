@@ -37,7 +37,7 @@ export default function useAddCategoryOptimisticMutation() {
 								{
 									category_name: data?.name,
 									user_id: data?.user_id,
-									icon: "file",
+									icon: "star-04",
 								},
 							],
 						} as { data: CategoriesData[] };

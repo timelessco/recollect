@@ -520,7 +520,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 									viewBox="0 0 18 18"
 									width="16"
 								>
-									<use href="/sprite.svg#file" />
+									<use href="/sprite.svg#star-04" />
 								</svg>
 							</figure>
 							<input

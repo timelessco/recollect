@@ -99,3 +99,4 @@ plpgsql
 ILIKE
 plpgsql
 upstash
+pilcrow
