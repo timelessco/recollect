@@ -280,7 +280,7 @@ main {
 .drop-indicator.drop-target {
 	/* background: red; */
 
-	@apply bg-red-800;
+	@apply bg-black;
 }
 
 /* signup-page */

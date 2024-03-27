@@ -1,0 +1,68 @@
+import { useSession } from "@supabase/auth-helpers-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import {
+	type CategoriesData,
+	type ProfilesTableTypes,
+} from "../../../types/apiTypes";
+import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
+import { updateCategoryOrder } from "../../supabaseCrudHelpers";
+
+// update collection order optimistically
+export default function useUpdateCategoryOrderOptimisticMutation() {
+	const session = useSession();
+	const queryClient = useQueryClient();
+
+	const updateCategoryOrderMutation = useMutation(updateCategoryOrder, {
+		onMutate: async (data) => {
+			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+			await queryClient.cancelQueries([USER_PROFILE, session?.user?.id]);
+			await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
+
+			// Snapshot the previous value
+			const previousData = queryClient.getQueryData([
+				USER_PROFILE,
+				session?.user?.id,
+			]);
+
+			const newOrder = data?.order;
+
+			// Optimistically update to the new value
+			queryClient.setQueryData(
+				[USER_PROFILE, session?.user?.id],
+				(old: { data: ProfilesTableTypes[] } | undefined) =>
+					({
+						...old,
+						data: old?.data?.map((item) => {
+							if (item.id === data?.session?.user?.id) {
+								return {
+									...item,
+									category_order: newOrder,
+								};
+							} else {
+								return item;
+							}
+						}),
+					}) as { data: ProfilesTableTypes[] },
+			);
+
+			// Return a context object with the snapshotted value
+			return { previousData };
+		},
+		// If the mutation fails, use the context returned from onMutate to roll back
+		onError: (context: { previousData: CategoriesData }) => {
+			queryClient.setQueryData(
+				[USER_PROFILE, session?.user?.id],
+				context?.previousData,
+			);
+		},
+		// Always refetch after error or success:
+		onSettled: () => {
+			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+
+			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
+		},
+	});
+
+	return { updateCategoryOrderMutation };
+}
