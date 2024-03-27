@@ -184,7 +184,8 @@ const Dashboard = () => {
 
 	// react-query
 
-	const { allCategories } = useFetchCategories();
+	const { allCategories, isLoadingCategories, isFetchingCategories } =
+		useFetchCategories();
 
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
@@ -209,7 +210,6 @@ const Dashboard = () => {
 		useMoveBookmarkToTrashOptimisticMutation();
 
 	const { clearBookmarksInTrashMutation } = useClearBookmarksInTrashMutation();
-
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 
 	const { addBookmarkMinDataOptimisticMutation } =
@@ -995,6 +995,8 @@ const Dashboard = () => {
 				default:
 					return renderAllBookmarkCards();
 			}
+		} else if (isLoadingCategories || isFetchingCategories) {
+			return "Loading";
 		} else {
 			return <NotFoundPage />;
 		}

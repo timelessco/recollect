@@ -9,7 +9,11 @@ import { fetchCategoriesData } from "../../supabaseCrudHelpers";
 export default function useFetchCategories() {
 	const session = useSession();
 
-	const { data: allCategories } = useQuery<{
+	const {
+		data: allCategories,
+		isLoading: isLoadingCategories,
+		isFetching: isFetchingCategories,
+	} = useQuery<{
 		data: CategoriesData[] | null;
 		error: Error;
 	}>(
@@ -24,5 +28,7 @@ export default function useFetchCategories() {
 
 	return {
 		allCategories,
+		isLoadingCategories,
+		isFetchingCategories,
 	};
 }
