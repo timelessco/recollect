@@ -10,7 +10,7 @@ const DefaultUserIcon = ({ className = "h-6 w-6 " }) => {
 	return (
 		<div className={iconClassName}>
 			<svg fill="#000000" height="14" viewBox="0 0 18 18" width="14">
-				<use href="/sprite.svg#user" />
+				<use href="/sprite.svg#user-01" />
 			</svg>
 		</div>
 	);
