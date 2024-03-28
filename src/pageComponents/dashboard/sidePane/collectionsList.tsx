@@ -35,7 +35,7 @@ import {
 	type ListState,
 } from "react-stately";
 
-import useUpdateCategoryOrderMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderMutation";
+import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
@@ -314,7 +314,8 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	const session = useSession();
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 
-	const { updateCategoryOrderMutation } = useUpdateCategoryOrderMutation();
+	const { updateCategoryOrderMutation } =
+		useUpdateCategoryOrderOptimisticMutation();
 
 	const currentPath = useGetCurrentUrlPath();
 
