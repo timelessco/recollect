@@ -46,6 +46,8 @@ const MyApp = ({
 			}),
 	);
 
+	const productionUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+
 	return (
 		<SessionContextProvider
 			initialSession={pageProps.initialSession}
@@ -56,11 +58,11 @@ const MyApp = ({
 					<Head>
 						<title>Recollect</title>
 						<meta
-							content="https://www.recollect.so/bookmarks-signup-1.png"
+							content={`${productionUrl}/bookmarks-signup-1.png`}
 							property="og:image"
 						/>
 						<meta content="product" property="og:type" />
-						<meta content="https://www.recollect.so" property="og:url" />
+						<meta content={productionUrl} property="og:url" />
 						<meta content="Recollect" property="og:title" />
 						<meta
 							content="Open source bookmark manager built using Next js and Supabase"
@@ -72,14 +74,14 @@ const MyApp = ({
 						/>
 						{/* Twitter */}
 						<meta content="summary" name="twitter:card" />
-						<meta content="https://www.recollect.so" name="twitter:site" />
+						<meta content={productionUrl} name="twitter:site" />
 						<meta content="Recollect" name="twitter:title" />
 						<meta
 							content="Open source bookmark manager built using Next js and Supabase"
 							name="twitter:description"
 						/>
 						<meta
-							content="https://www.recollect.so/bookmarks-signup-1.png"
+							content={`${productionUrl}/bookmarks-signup-1.png`}
 							name="twitter:image"
 						/>
 						{/* analytics script */}

@@ -16,6 +16,7 @@ import {
 	type SendCollaborationEmailInviteApiPayload,
 } from "../../../types/apiTypes";
 import {
+	getBaseUrl,
 	NEXT_API_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
@@ -81,7 +82,7 @@ export default async function handler(
 
 	if (process.env.NODE_ENV !== "development") {
 		try {
-			await axios.post(`${NEXT_API_URL}/share/send-email`, {
+			await axios.post(`${getBaseUrl()}${NEXT_API_URL}/share/send-email`, {
 				url,
 				emailList: emailList[0],
 			});
