@@ -22,7 +22,7 @@ const MyApp = ({
 	pageProps: { ...pageProps },
 }: AppProps<{
 	dehydratedState: unknown;
-	initialSession: Session | null | undefined;
+	initialSession: Session;
 }>) => {
 	// Create a client
 	// const queryClient = new QueryClient();
