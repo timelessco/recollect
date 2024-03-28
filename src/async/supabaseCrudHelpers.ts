@@ -64,6 +64,7 @@ import {
 	GET_BOOKMARKS_COUNT,
 	GET_BOOKMARKS_DATA_API,
 	GET_USER_PROFILE_PIC_API,
+	getBaseUrl,
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
 	REMOVE_PROFILE_PIC_API,
@@ -228,7 +229,7 @@ export const addBookmarkScreenshot = async ({
 export const deleteData = async (item: DeleteBookmarkPayload) => {
 	try {
 		const response = await axios.post(
-			`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
+			`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 			{
 				data: { deleteData: item?.deleteData },
 				access_token: item?.session?.access_token,
