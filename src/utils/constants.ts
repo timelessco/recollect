@@ -44,8 +44,6 @@ export const getBaseUrl = () =>
 // export const NEXT_API_URL = `${getBaseUrl()}api`;
 export const NEXT_API_URL = `/api/`;
 
-export const TIMELESS_SCRAPPER_API =
-	"https://link-preview-livid-ten.vercel.app/api/getUrlData";
 // export const SCREENSHOT_API = "https://strapi.tmls.dev/screenshot?url=";
 export const SCREENSHOT_API = "https://screenshot-api.tmls.dev/screenshot";
 

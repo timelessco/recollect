@@ -6,6 +6,7 @@ import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isEmpty, isNull } from "lodash";
+import ogs from "open-graph-scraper";
 
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -18,7 +19,6 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
-	TIMELESS_SCRAPPER_API,
 	uncategorizedPages,
 } from "../../../utils/constants";
 import {
@@ -80,14 +80,22 @@ export default async function handler(
 	};
 
 	try {
-		const scrapperResponse = await axios.post<{
-			OgImage: string;
-			description: string;
-			favIcon: string;
-			title: string;
-		}>(TIMELESS_SCRAPPER_API, {
+		const { result: ogScrapperResponse, error: scrapperError } = await ogs({
 			url,
 		});
+
+		if (scrapperError) {
+			console.error("ERROR: scrapper error");
+		}
+
+		const scrapperResponse = {
+			data: {
+				title: ogScrapperResponse?.ogTitle,
+				description: ogScrapperResponse?.ogDescription,
+				OgImage: ogScrapperResponse?.ogImage?.[0]?.url,
+				favIcon: ogScrapperResponse?.favicon,
+			},
+		};
 
 		// this will either be 0 (uncategorized) or any number
 		// this also checks if the categoryId is one of the strings mentioned in uncategorizedPages , if they are it will be 0
