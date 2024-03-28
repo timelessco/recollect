@@ -15,6 +15,7 @@ import {
 import {
 	ADD_REMAINING_BOOKMARK_API,
 	bookmarkType,
+	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 	TIMELESS_SCRAPPER_API,
@@ -145,13 +146,16 @@ export default async function handler(
 			try {
 				if (!isNull(data) && !isEmpty(data)) {
 					// this adds the remaining data , like blur hash bucket uploads and all
-					await axios.post(`${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`, {
-						id: data[0]?.id,
-						image: scrapperResponse?.data?.OgImage,
-						favIcon: scrapperResponse?.data?.favIcon,
-						access_token: accessToken,
-						url,
-					});
+					await axios.post(
+						`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+						{
+							id: data[0]?.id,
+							image: scrapperResponse?.data?.OgImage,
+							favIcon: scrapperResponse?.data?.favIcon,
+							access_token: accessToken,
+							url,
+						},
+					);
 				} else {
 					console.error("Data is empty");
 				}

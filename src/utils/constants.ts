@@ -1,3 +1,5 @@
+import { isProductionEnvironment } from "./supabaseServerClient";
+
 // table names
 export const MAIN_TABLE_NAME = "bookmarks_table";
 export const TAG_TABLE_NAME = "tags";
@@ -31,20 +33,10 @@ export const URL_IMAGE_CHECK_PATTERN =
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 
 // api constants
-const getBaseUrl = () => {
-	if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-		return process.env.NEXT_PUBLIC_SITE_URL;
-	}
-
-	if (
-		process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
-		process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-	) {
-		return `${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-	}
-
-	return "http://localhost:3000/";
-};
+export const getBaseUrl = () =>
+	isProductionEnvironment
+		? process.env.NEXT_PUBLIC_VERCEL_URL
+		: "http://localhost:3000/";
 
 // const getBaseUrl = () =>
 // 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
