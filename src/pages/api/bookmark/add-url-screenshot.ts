@@ -32,7 +32,8 @@ type Data = {
 const takeScreenshot = async (url: string) => {
 	// const browser = await launch();
 
-	const browser = await chromium.puppeteer.launch({
+	// eslint-disable-next-line import/no-named-as-default-member
+	const browser = await puppeteer.launch({
 		args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
 		defaultViewport: chromium.defaultViewport,
 		executablePath: await chromium.executablePath,
