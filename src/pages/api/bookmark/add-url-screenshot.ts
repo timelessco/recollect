@@ -60,8 +60,7 @@ const takeScreenshot = async (url: string) => {
 	// eslint-disable-next-line import/no-named-as-default-member
 	const browser = await puppeteer.launch({
 		args: chromium.args,
-		// eslint-disable-next-line @typescript-eslint/await-thenable
-		executablePath: (await chromium.executablePath) as unknown as string,
+		executablePath: (await chromium.executablePath()) as unknown as string,
 		headless: chromium.headless as boolean,
 	});
 
