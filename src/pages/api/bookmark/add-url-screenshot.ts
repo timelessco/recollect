@@ -1,8 +1,8 @@
 import { type NextApiResponse } from "next";
-// import chromium from "chrome-aws-lambda";
-import chromium from "@sparticuz/chromium-min";
+// import chromium from "@sparticuz/chromium-min";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
+import chromium from "chrome-aws-lambda";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
@@ -25,6 +25,8 @@ import {
 	apiSupabaseClient,
 	verifyAuthToken,
 } from "../../../utils/supabaseServerClient";
+
+// import { chromium } from "playwright";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -60,7 +62,7 @@ const takeScreenshot = async (url: string) => {
 	// eslint-disable-next-line import/no-named-as-default-member
 	const browser = await puppeteer.launch({
 		args: chromium.args,
-		executablePath: (await chromium.executablePath()) as unknown as string,
+		executablePath: await chromium.executablePath,
 		headless: chromium.headless as boolean,
 	});
 
