@@ -33,19 +33,16 @@ export const URL_IMAGE_CHECK_PATTERN =
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 
 // api constants
-export const getBaseUrl = () =>
-	isProductionEnvironment
-		? process.env.NEXT_PUBLIC_VERCEL_URL
-		: "http://localhost:3000/";
+// export const getBaseUrl = () =>
+// 	isProductionEnvironment
+// 		? process.env.NEXT_PUBLIC_VERCEL_URL
+// 		: "http://localhost:3000/";
 
-// const getBaseUrl = () =>
-// 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
+export const getBaseUrl = () =>
+	"https://bookmark-tags-git-fix-move-externalapis-timelessco.vercel.app";
 
 // export const NEXT_API_URL = `${getBaseUrl()}api`;
 export const NEXT_API_URL = `/api/`;
-
-// export const SCREENSHOT_API = "https://strapi.tmls.dev/screenshot?url=";
-export const SCREENSHOT_API = "https://screenshot-api.tmls.dev/screenshot";
 
 export const PAGINATION_LIMIT = 25;
 

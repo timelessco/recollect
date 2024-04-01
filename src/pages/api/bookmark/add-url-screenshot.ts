@@ -1,10 +1,10 @@
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
-import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
+import { launch } from "puppeteer";
 import uniqid from "uniqid";
 
 import {
@@ -15,7 +15,6 @@ import {
 import {
 	BOOKMAKRS_STORAGE_NAME,
 	MAIN_TABLE_NAME,
-	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 import {
@@ -26,6 +25,19 @@ import {
 type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
+};
+
+const takeScreenshot = async (url: string) => {
+	const browser = await launch();
+	const page = await browser.newPage();
+	await page.goto(url, { waitUntil: "networkidle2" });
+
+	const buffer = await page.screenshot();
+
+	await page.close();
+	await browser.close();
+
+	return buffer;
 };
 
 export default async function handler(
@@ -69,18 +81,22 @@ export default async function handler(
 	const userId = tokenDecode?.sub;
 
 	// screen shot api call
-	const screenShotResponse = await axios.request({
-		method: "POST",
-		url: SCREENSHOT_API,
-		headers: {
-			"content-type": "application/json",
-			Authorization: `Bearer ${process.env.SCREENSHOT_TOKEN}`,
-		},
-		data: { url: request.body.url },
-		responseType: "arraybuffer",
-	});
+	// const screenShotResponse = await axios.request({
+	// 	method: "POST",
+	// 	url: SCREENSHOT_API,
+	// 	headers: {
+	// 		"content-type": "application/json",
+	// 		Authorization: `Bearer ${process.env.SCREENSHOT_TOKEN}`,
+	// 	},
+	// 	data: { url: request.body.url },
+	// 	responseType: "arraybuffer",
+	// });
 
-	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
+	const screenShotResponse = (await takeScreenshot(
+		request.body.url,
+	)) as unknown as string;
+
+	const base64data = Buffer.from(screenShotResponse, "binary").toString(
 		"base64",
 	);
 
