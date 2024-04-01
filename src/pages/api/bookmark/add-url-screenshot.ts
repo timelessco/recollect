@@ -1,4 +1,5 @@
 import { type NextApiResponse } from "next";
+import chromium from "@sparticuz/chromium";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
@@ -27,8 +28,21 @@ type Data = {
 	error: PostgrestError | VerifyErrors | string | null;
 };
 
+chromium.setHeadlessMode = true;
+
+// Optional: If you'd like to disable webgl, true is the default.
+chromium.setGraphicsMode = false;
+
 const takeScreenshot = async (url: string) => {
-	const browser = await launch();
+	// const browser = await launch();
+
+	const browser = await launch({
+		args: chromium.args,
+		defaultViewport: chromium.defaultViewport,
+		executablePath: await chromium.executablePath(),
+		headless: chromium.headless,
+	});
+
 	const page = await browser.newPage();
 	await page.goto(url, { waitUntil: "networkidle2" });
 
