@@ -61,7 +61,7 @@ const takeScreenshot = async (url: string) => {
 		args: chromium.args,
 		// eslint-disable-next-line @typescript-eslint/await-thenable
 		executablePath: (await chromium.executablePath) as unknown as string,
-		headless: chromium.headless,
+		headless: chromium.headless as boolean,
 	});
 
 	const page = await browser.newPage();
