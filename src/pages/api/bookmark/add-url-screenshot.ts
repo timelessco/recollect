@@ -1,13 +1,14 @@
 import { type NextApiResponse } from "next";
+// import chromium from "chrome-aws-lambda";
+import chromium from "@sparticuz/chromium-min";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
-import chromium from "chrome-aws-lambda";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
 // import { chromium } from "playwright";
-import { launch } from "puppeteer";
-import puppeteer from "puppeteer-core";
+// import { launch } from "puppeteer";
+import puppeteer, { launch } from "puppeteer-core";
 import uniqid from "uniqid";
 
 import {
@@ -41,10 +42,12 @@ const takeScreenshot = async (url: string) => {
 	// 	ignoreHTTPSErrors: true,
 	// });
 
-	const browser = await chromium.puppeteer.launch({
-		args: chromium.args,
+	const browser = await launch({
+		args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
 		defaultViewport: chromium.defaultViewport,
-		executablePath: await chromium.executablePath,
+		executablePath: await chromium.executablePath(
+			`https://github.com/Sparticuz/chromium/releases/download/v116.0.0/chromium-v116.0.0-pack.tar`,
+		),
 		headless: chromium.headless,
 		ignoreHTTPSErrors: true,
 	});

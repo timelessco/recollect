@@ -32,6 +32,9 @@ dependencies:
   '@sparticuz/chromium':
     specifier: 123.0.0
     version: 123.0.0
+  '@sparticuz/chromium-min':
+    specifier: 123.0.0
+    version: 123.0.0
   '@supabase/auth-helpers-nextjs':
     specifier: 0.5.6
     version: 0.5.6(@supabase/supabase-js@2.13.1)
@@ -3976,6 +3979,16 @@ packages:
       ignore: 5.3.0
       p-map: 4.0.0
     dev: true
+
+  /@sparticuz/chromium-min@123.0.0:
+    resolution: {integrity: sha512-poJ+ykcM/cbtHLcYCuvn9mPbFa9elyTvKmq/1cvlUPo6nFbBwdthRnVVlv/9DfBaaH4Gy7XdzBRTinS1sTJw7g==}
+    engines: {node: '>= 16'}
+    dependencies:
+      follow-redirects: 1.15.6
+      tar-fs: 3.0.5
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /@sparticuz/chromium@123.0.0:
     resolution: {integrity: sha512-W1iR3CHiuiyeRix6WK2eKbQLiKkdhiayzDlDNiZAako1pvnSvh+y1UKaZoYIL37eI47zraMA9OkAhkbubp1qUA==}
