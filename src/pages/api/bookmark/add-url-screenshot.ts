@@ -42,19 +42,26 @@ const takeScreenshot = async (url: string) => {
 	// 	ignoreHTTPSErrors: true,
 	// });
 
+	// const browser = await launch({
+	// 	args: [
+	// 		...chromium.args,
+	// 		"--hide-scrollbars",
+	// 		"--disable-web-security",
+	// 		"--disable-extensions",
+	// 	],
+	// 	defaultViewport: chromium.defaultViewport,
+	// 	executablePath: await chromium.executablePath(
+	// 		`https://github.com/Sparticuz/chromium/releases/download/v116.0.0/chromium-v116.0.0-pack.tar`,
+	// 	),
+	// 	headless: chromium.headless,
+	// 	ignoreHTTPSErrors: true,
+	// });
+
 	const browser = await launch({
-		args: [
-			...chromium.args,
-			"--hide-scrollbars",
-			"--disable-web-security",
-			"--disable-extensions",
-		],
-		defaultViewport: chromium.defaultViewport,
-		executablePath: await chromium.executablePath(
-			`https://github.com/Sparticuz/chromium/releases/download/v116.0.0/chromium-v116.0.0-pack.tar`,
-		),
+		args: chromium.args,
+		// eslint-disable-next-line @typescript-eslint/await-thenable
+		executablePath: (await chromium.executablePath) as unknown as string,
 		headless: chromium.headless,
-		ignoreHTTPSErrors: true,
 	});
 
 	const page = await browser.newPage();
