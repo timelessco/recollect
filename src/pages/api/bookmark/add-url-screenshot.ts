@@ -1,11 +1,12 @@
 import { type NextApiResponse } from "next";
-import chromium from "@sparticuz/chromium";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
+import chromium from "chrome-aws-lambda";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
 import { launch } from "puppeteer";
+import puppeteer from "puppeteer-core";
 import uniqid from "uniqid";
 
 import {
@@ -28,19 +29,15 @@ type Data = {
 	error: PostgrestError | VerifyErrors | string | null;
 };
 
-chromium.setHeadlessMode = true;
-
-// Optional: If you'd like to disable webgl, true is the default.
-chromium.setGraphicsMode = false;
-
 const takeScreenshot = async (url: string) => {
 	// const browser = await launch();
 
-	const browser = await launch({
-		args: chromium.args,
+	const browser = await chromium.puppeteer.launch({
+		args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
 		defaultViewport: chromium.defaultViewport,
-		executablePath: await chromium.executablePath(),
-		headless: chromium.headless,
+		executablePath: await chromium.executablePath,
+		headless: true,
+		ignoreHTTPSErrors: true,
 	});
 
 	const page = await browser.newPage();
