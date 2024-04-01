@@ -43,7 +43,12 @@ const takeScreenshot = async (url: string) => {
 	// });
 
 	const browser = await launch({
-		args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
+		args: [
+			...chromium.args,
+			"--hide-scrollbars",
+			"--disable-web-security",
+			"--disable-extensions",
+		],
 		defaultViewport: chromium.defaultViewport,
 		executablePath: await chromium.executablePath(
 			`https://github.com/Sparticuz/chromium/releases/download/v116.0.0/chromium-v116.0.0-pack.tar`,
