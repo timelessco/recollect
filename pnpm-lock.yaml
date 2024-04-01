@@ -104,6 +104,9 @@ dependencies:
   open-graph-scraper:
     specifier: 6.5.0
     version: 6.5.0
+  playwright-core:
+    specifier: 1.42.1
+    version: 1.42.1
   puppeteer:
     specifier: 22.6.1
     version: 22.6.1(typescript@5.0.4)
@@ -11383,6 +11386,12 @@ packages:
     dependencies:
       find-up: 5.0.0
     dev: true
+
+  /playwright-core@1.42.1:
+    resolution: {integrity: sha512-mxz6zclokgrke9p1vtdy/COWBH+eOZgYUVVU34C73M+4j4HLlQJHtfcqiqqxpP0o8HhMkflvfbquLX5dg6wlfA==}
+    engines: {node: '>=16'}
+    hasBin: true
+    dev: false
 
   /plur@4.0.0:
     resolution: {integrity: sha512-4UGewrYgqDFw9vV6zNV+ADmPAUAfJPKtGvb/VdpQAx25X5f3xXdGdyOEVFwkl8Hl/tl7+xbeHqSEM+D5/TirUg==}

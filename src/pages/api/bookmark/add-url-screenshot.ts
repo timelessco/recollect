@@ -1,10 +1,11 @@
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
-import chromium from "chrome-aws-lambda";
+// import chromium from "chrome-aws-lambda";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
+import { chromium } from "playwright-core";
 import { launch } from "puppeteer";
 import puppeteer from "puppeteer-core";
 import uniqid from "uniqid";
@@ -33,16 +34,32 @@ const takeScreenshot = async (url: string) => {
 	// const browser = await launch();
 
 	// eslint-disable-next-line import/no-named-as-default-member
-	const browser = await puppeteer.launch({
-		args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
-		defaultViewport: chromium.defaultViewport,
-		executablePath: await chromium.executablePath,
+	// const browser = await puppeteer.launch({
+	// 	args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
+	// 	defaultViewport: chromium.defaultViewport,
+	// 	executablePath: await chromium.executablePath,
+	// 	headless: true,
+	// 	ignoreHTTPSErrors: true,
+	// });
+
+	const browser = await chromium.launch({
+		// eslint-disable-next-line no-unsafe-optional-chaining
+		// args: [...chromium?.args, "--font-render-hinting=none"],
+		// executablePath:
+		// 	process.env.NODE_ENV === "production"
+		// 		? // eslint-disable-next-line @typescript-eslint/await-thenable, @typescript-eslint/unbound-method
+		// 		  await chromium.executablePath
+		// 		: "/usr/local/bin/chromium",
 		headless: true,
-		ignoreHTTPSErrors: true,
 	});
 
-	const page = await browser.newPage();
-	await page.goto(url, { waitUntil: "networkidle2" });
+	// const page = await browser.newPage();
+
+	const context = await browser.newContext();
+
+	const page = await context.newPage();
+
+	await page.goto(url, { waitUntil: "load" });
 
 	const buffer = await page.screenshot();
 
