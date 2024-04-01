@@ -33,7 +33,6 @@ type Data = {
 const takeScreenshot = async (url: string) => {
 	// const browser = await launch();
 
-	// eslint-disable-next-line import/no-named-as-default-member
 	// const browser = await puppeteer.launch({
 	// 	args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
 	// 	defaultViewport: chromium.defaultViewport,
@@ -43,13 +42,6 @@ const takeScreenshot = async (url: string) => {
 	// });
 
 	const browser = await chromium.launch({
-		// eslint-disable-next-line no-unsafe-optional-chaining
-		// args: [...chromium?.args, "--font-render-hinting=none"],
-		// executablePath:
-		// 	process.env.NODE_ENV === "production"
-		// 		? // eslint-disable-next-line @typescript-eslint/await-thenable, @typescript-eslint/unbound-method
-		// 		  await chromium.executablePath
-		// 		: "/usr/local/bin/chromium",
 		headless: true,
 	});
 
