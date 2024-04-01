@@ -8,7 +8,7 @@ import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
 // import { chromium } from "playwright";
 // import { launch } from "puppeteer";
-import puppeteer, { launch } from "puppeteer-core";
+import puppeteer from "puppeteer-core";
 import uniqid from "uniqid";
 
 import {
@@ -57,7 +57,8 @@ const takeScreenshot = async (url: string) => {
 	// 	ignoreHTTPSErrors: true,
 	// });
 
-	const browser = await launch({
+	// eslint-disable-next-line import/no-named-as-default-member
+	const browser = await puppeteer.launch({
 		args: chromium.args,
 		// eslint-disable-next-line @typescript-eslint/await-thenable
 		executablePath: (await chromium.executablePath) as unknown as string,
