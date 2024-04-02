@@ -1,11 +1,11 @@
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/router";
+import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
-import { signOut } from "../../async/supabaseCrudHelpers";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -24,7 +24,8 @@ import {
 	settingsParagraphClassName,
 	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
-import { USER_PROFILE } from "../../utils/constants";
+import { LOGIN_URL, USER_PROFILE } from "../../utils/constants";
+import { delete_cookie } from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
@@ -34,7 +35,7 @@ type SettingsFormTypes = {
 const DeleteAccout = () => {
 	const session = useSession();
 	const queryClient = useQueryClient();
-	const supabase = useSupabaseClient();
+	const router = useRouter();
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
@@ -78,7 +79,9 @@ const DeleteAccout = () => {
 
 			if (isNull(response?.error)) {
 				successToast("Account has been successfully deleted");
-				await signOut(supabase);
+				// await signOut(supabase);
+				delete_cookie("supabase-auth-token", document);
+				await router?.push(LOGIN_URL);
 			}
 		}
 	};

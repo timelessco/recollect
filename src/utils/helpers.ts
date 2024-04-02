@@ -245,3 +245,8 @@ export const parseUploadFileName = (name: string): string =>
 // tells if file size is less than 10mb, if it returns true then we have hit the upload limit
 export const uploadFileLimit = (size: number): boolean =>
 	!(Number.parseFloat((size / (1_024 * 1_024)).toFixed(2)) < 10);
+
+// deletes a browser cookie
+export const delete_cookie = (name: string, document: Document) => {
+	document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+};
