@@ -201,7 +201,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold leading-[16px] text-gray-light-12"
+					className="truncate text-xl font-semibold text-gray-light-12"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -224,7 +224,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[23px] rounded-none  border-none p-0 text-xl font-semibold leading-[16px] text-gray-light-12  focus:outline-none"
+					className="m-0 h-[28px] rounded-none  border-none p-0 text-xl font-semibold leading-[16px] text-gray-light-12  focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -408,7 +408,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between  border-b-[0.5px] border-b-custom-gray-4 py-[9px]",
+			"flex items-center justify-between  border-b-[0.5px] border-b-custom-gray-4 py-[6.5px]",
 			{
 				"pl-[15px] pr-3":
 					currentBookmarkView === "card" || currentBookmarkView === "moodboard",

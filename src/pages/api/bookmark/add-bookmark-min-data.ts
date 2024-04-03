@@ -141,7 +141,13 @@ export default async function handler(
 			response.status(500).json({ data: null, error, message: null });
 			throw new Error("ERROR: add min data error");
 		} else {
-			response.status(200).json({ data, error: null, message: null });
+			response.status(200).json({
+				data,
+				error: null,
+				message: !updateAccess
+					? "bookmark added to uncategorized, user does not have update access pls check if user has access to add into the category"
+					: null,
+			});
 
 			try {
 				if (!isNull(data) && !isEmpty(data)) {
