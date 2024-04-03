@@ -30,6 +30,10 @@ import {
 
 // import { chromium } from "playwright";
 
+export const config = {
+	maxDuration: 250,
+};
+
 type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
