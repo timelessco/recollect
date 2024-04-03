@@ -9,6 +9,8 @@ import { isNull } from "lodash";
 // import { chromium } from "playwright";
 // import { launch } from "puppeteer";
 import puppeteer from "puppeteer-core";
+import { Browser, Builder, By, Key, until } from "selenium-webdriver";
+import chrome from "selenium-webdriver/chrome";
 import uniqid from "uniqid";
 
 import {
@@ -34,52 +36,76 @@ type Data = {
 };
 
 const takeScreenshot = async (url: string) => {
-	// const browser = await launch();
+	// // const browser = await launch();
 
+	// // const browser = await puppeteer.launch({
+	// // 	args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
+	// // 	defaultViewport: chromium.defaultViewport,
+	// // 	executablePath: await chromium.executablePath,
+	// // 	headless: true,
+	// // 	ignoreHTTPSErrors: true,
+	// // });
+
+	// // const browser = await launch({
+	// // 	args: [
+	// // 		...chromium.args,
+	// // 		"--hide-scrollbars",
+	// // 		"--disable-web-security",
+	// // 		"--disable-extensions",
+	// // 	],
+	// // 	defaultViewport: chromium.defaultViewport,
+	// // 	executablePath: await chromium.executablePath(
+	// // 		`https://github.com/Sparticuz/chromium/releases/download/v116.0.0/chromium-v116.0.0-pack.tar`,
+	// // 	),
+	// // 	headless: chromium.headless,
+	// // 	ignoreHTTPSErrors: true,
+	// // });
+
+	// // eslint-disable-next-line import/no-named-as-default-member
 	// const browser = await puppeteer.launch({
-	// 	args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
-	// 	defaultViewport: chromium.defaultViewport,
+	// 	args: chromium.args,
 	// 	executablePath: await chromium.executablePath,
-	// 	headless: true,
-	// 	ignoreHTTPSErrors: true,
+	// 	headless: chromium.headless as boolean,
 	// });
 
-	// const browser = await launch({
-	// 	args: [
-	// 		...chromium.args,
-	// 		"--hide-scrollbars",
-	// 		"--disable-web-security",
-	// 		"--disable-extensions",
-	// 	],
-	// 	defaultViewport: chromium.defaultViewport,
-	// 	executablePath: await chromium.executablePath(
-	// 		`https://github.com/Sparticuz/chromium/releases/download/v116.0.0/chromium-v116.0.0-pack.tar`,
-	// 	),
-	// 	headless: chromium.headless,
-	// 	ignoreHTTPSErrors: true,
-	// });
+	// const page = await browser.newPage();
 
-	// eslint-disable-next-line import/no-named-as-default-member
-	const browser = await puppeteer.launch({
-		args: chromium.args,
-		executablePath: await chromium.executablePath,
-		headless: chromium.headless as boolean,
-	});
+	// // const context = await browser.newContext();
 
-	const page = await browser.newPage();
+	// // const page = await context.newPage();
 
-	// const context = await browser.newContext();
+	// await page.goto(url, { waitUntil: "load" });
 
-	// const page = await context.newPage();
+	// const buffer = await page.screenshot();
 
-	await page.goto(url, { waitUntil: "load" });
+	// await page.close();
+	// await browser.close();
 
-	const buffer = await page.screenshot();
+	// return buffer;
 
-	await page.close();
-	await browser.close();
+	const driver = await new Builder()
+		.forBrowser("chrome")
+		.setChromeOptions(
+			new chrome.Options()
+				.addArguments("--headless")
+				.windowSize({ width: 500, height: 500 }),
+		)
+		.build();
 
-	return buffer;
+	// Navigate to the url passed in
+	await driver.get(url);
+
+	// Capture the screenshot
+	const image = await driver.takeScreenshot();
+
+	// await fs.writeFileSync("./nyt-selenium.png", image, "base64");
+	await driver.quit();
+
+	const base64 = Buffer.from(image, "binary").toString("base64");
+
+	// eslint-disable-next-line no-console
+	console.log("iii", base64);
+	return base64;
 };
 
 export default async function handler(
