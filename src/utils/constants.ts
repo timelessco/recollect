@@ -18,7 +18,7 @@ export const STORAGE_SCREENSHOT_IMAGES_PATH = "public/screenshot_imgs";
 
 export const URL_PATTERN =
 	// eslint-disable-next-line no-useless-escape, unicorn/no-unsafe-regex
-	/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[\da-z]+([.\-][\da-z]+)*\.[a-z]{2,6}(:\d{1,5})?(\/.*)?$/gu;
+	/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[\da-z]+([.\-][\da-z]+)*\.[a-z]{2,10}(:\d{1,5})?(\/.*)?$/gu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =

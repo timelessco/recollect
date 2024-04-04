@@ -32,7 +32,6 @@ import {
 	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
 	DOCUMENTS_URL,
-	FILE_NAME_PARSING_PATTERN,
 	IMAGES_URL,
 	LINKS_URL,
 	LOGIN_URL,
@@ -562,15 +561,6 @@ const Dashboard = () => {
 						thumbnailBase64 = (await generateVideoThumbnail(
 							acceptedFiles[0],
 						)) as string;
-					}
-
-					const fileNamePatternCheck = acceptedFiles[index]?.name?.match(
-						FILE_NAME_PARSING_PATTERN,
-					);
-
-					if (!isNull(fileNamePatternCheck)) {
-						errorToast("File name as unwanted charecters");
-						return;
 					}
 
 					if (uploadFileLimit(acceptedFiles[index]?.size)) {
