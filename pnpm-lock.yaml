@@ -39,8 +39,8 @@ dependencies:
     specifier: 2.13.1
     version: 2.13.1
   '@tanstack/react-query':
-    specifier: 4.28.0
-    version: 4.28.0(react-dom@18.2.0)(react@18.2.0)
+    specifier: 5.28.14
+    version: 5.28.14(react@18.2.0)
   allotment:
     specifier: 1.18.1
     version: 1.18.1(react-dom@18.2.0)(react@18.2.0)
@@ -180,7 +180,7 @@ devDependencies:
     version: 8.0.1(release-it@17.0.0)
   '@tanstack/react-query-devtools':
     specifier: 5.28.6
-    version: 5.28.6(@tanstack/react-query@4.28.0)(react@18.2.0)
+    version: 5.28.6(@tanstack/react-query@5.28.14)(react@18.2.0)
   '@types/formidable':
     specifier: ^3.0.0
     version: 3.4.5
@@ -4054,40 +4054,31 @@ packages:
       defer-to-connect: 2.0.1
     dev: true
 
-  /@tanstack/query-core@4.27.0:
-    resolution: {integrity: sha512-sm+QncWaPmM73IPwFlmWSKPqjdTXZeFf/7aEmWh00z7yl2FjqophPt0dE1EHW9P1giMC5rMviv7OUbSDmWzXXA==}
+  /@tanstack/query-core@5.28.13:
+    resolution: {integrity: sha512-C3+CCOcza+mrZ7LglQbjeYEOTEC3LV0VN0eYaIN6GvqAZ8Foegdgch7n6QYPtT4FuLae5ALy+m+ZMEKpD6tMCQ==}
 
   /@tanstack/query-devtools@5.28.6:
     resolution: {integrity: sha512-DXJGqbrsteWU9XehDf6s3k3QxwQqGUlNXpitsF1xbwkYBcDaAakiC6hjJSMfPBHOrbZCnWfAGCVf4vh2D75/xw==}
     dev: true
 
-  /@tanstack/react-query-devtools@5.28.6(@tanstack/react-query@4.28.0)(react@18.2.0):
+  /@tanstack/react-query-devtools@5.28.6(@tanstack/react-query@5.28.14)(react@18.2.0):
     resolution: {integrity: sha512-xSfskHlM2JkP7WpN89UqhJV2RbFxg8YnOMzQz+EEzWSsgxMI5Crce8HO9pcUAcJce8gSmw93RQwuKNdG3FbT6w==}
     peerDependencies:
       '@tanstack/react-query': ^5.28.6
       react: ^18.0.0
     dependencies:
       '@tanstack/query-devtools': 5.28.6
-      '@tanstack/react-query': 4.28.0(react-dom@18.2.0)(react@18.2.0)
+      '@tanstack/react-query': 5.28.14(react@18.2.0)
       react: 18.2.0
     dev: true
 
-  /@tanstack/react-query@4.28.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-8cGBV5300RHlvYdS4ea+G1JcZIt5CIuprXYFnsWggkmGoC0b5JaqG0fIX3qwDL9PTNkKvG76NGThIWbpXivMrQ==}
+  /@tanstack/react-query@5.28.14(react@18.2.0):
+    resolution: {integrity: sha512-cZqt03Igb3I9tM72qNX5TAAmeYl75Z+k4Mv92VkXIXc2hCrv0fIywd7GN3JV1BBJl4mr7Cc+OOKKOPy8sNVOkA==}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-native: '*'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
+      react: ^18.0.0
     dependencies:
-      '@tanstack/query-core': 4.27.0
+      '@tanstack/query-core': 5.28.13
       react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      use-sync-external-store: 1.2.0(react@18.2.0)
 
   /@tootallnate/quickjs-emscripten@0.23.0:
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
@@ -12198,6 +12189,7 @@ packages:
   /right-pad@1.0.1:
     resolution: {integrity: sha512-bYBjgxmkvTAfgIYy328fmkwhp39v8lwVgWhhrzxPV3yHtcSqyYKe9/XOhvW48UFjATg3VuJbpsp5822ACNvkmw==}
     engines: {node: '>= 0.10'}
+    deprecated: Please use String.prototype.padEnd() over this package.
     dev: true
 
   /rimraf@2.6.3:
@@ -13718,6 +13710,7 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
       react: 18.2.0
+    dev: false
 
   /utf-8-validate@5.0.10:
     resolution: {integrity: sha512-Z6czzLq4u8fPOyx7TU6X3dvUZVvoJmxSQ+IcrlmagKhilxlhZgxPK6C5Jqbkw1IDUmFTM+cz9QDnnLTwDz/2gQ==}
