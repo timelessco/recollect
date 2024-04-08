@@ -213,9 +213,6 @@
 		"zod": "3.21.4"
 	},
 	"packageManager": "pnpm@8.15.5",
-	"engines": {
-		"node": "14.x"
-	},
 	"gacp": {
 		"add": false,
 		"push": false,
