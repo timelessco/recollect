@@ -15,7 +15,6 @@ import {
 import {
 	BOOKMAKRS_STORAGE_NAME,
 	MAIN_TABLE_NAME,
-	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 import {
@@ -71,7 +70,7 @@ export default async function handler(
 	// screen shot api call
 	const screenShotResponse = await axios.request({
 		method: "POST",
-		url: SCREENSHOT_API,
+		url: process.env.SCREENSHOT_API,
 		headers: {
 			"content-type": "application/json",
 			Authorization: `Bearer ${process.env.SCREENSHOT_TOKEN}`,
