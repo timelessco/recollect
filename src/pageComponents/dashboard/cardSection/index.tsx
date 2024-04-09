@@ -105,8 +105,8 @@ const CardSection = ({
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
-	const CARD_DEFAULT_HEIGHT = 194;
-	const CARD_DEFAULT_WIDTH = 200;
+	const CARD_DEFAULT_HEIGHT = 600;
+	const CARD_DEFAULT_WIDTH = 600;
 	const session = useSession();
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
