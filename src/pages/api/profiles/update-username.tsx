@@ -90,7 +90,7 @@ export default async function handler(
 				data: null,
 				error: "Username already exists, please try another username",
 			});
-			throw new Error("ERROR: username is already present");
+			// throw new Error("ERROR: username is already present");
 		}
 	}
 }
