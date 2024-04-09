@@ -89,9 +89,5 @@ export default async function handler(
 			data: null,
 			error: "Username already exists, please try another username",
 		});
-		// throw new Error("ERROR: username is already present");
 	}
-
-	// eslint-disable-next-line no-console
-	console.log("OVER TESTING");
 }

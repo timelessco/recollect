@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
@@ -164,9 +165,11 @@ export default async function handler(
 					);
 				} else {
 					console.error("Data is empty");
+					Sentry.captureException(`Min bookmark data is empty`);
 				}
 			} catch (remainingUploadError) {
-				console.error(remainingUploadError);
+				console.error("Remaining api error", remainingUploadError);
+				Sentry.captureException(`Remaining api error ${remainingUploadError}`);
 			}
 		}
 	} catch (scrapperError) {
