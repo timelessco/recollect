@@ -19,7 +19,6 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
-	TIMELESS_SCRAPPER_API,
 	uncategorizedPages,
 } from "../../../utils/constants";
 import {
@@ -86,7 +85,7 @@ export default async function handler(
 			description: string;
 			favIcon: string;
 			title: string;
-		}>(TIMELESS_SCRAPPER_API, {
+		}>(process.env.SCRAPPER_API, {
 			url,
 		});
 

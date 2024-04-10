@@ -38,14 +38,7 @@ export const getBaseUrl = () =>
 		? process.env.NEXT_PUBLIC_VERCEL_URL
 		: "http://localhost:3000/";
 
-// const getBaseUrl = () =>
-// 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
-
-// export const NEXT_API_URL = `${getBaseUrl()}api`;
 export const NEXT_API_URL = `/api/`;
-
-export const TIMELESS_SCRAPPER_API =
-	"https://link-preview-livid-ten.vercel.app/api/getUrlData";
 
 export const PAGINATION_LIMIT = 25;
 
