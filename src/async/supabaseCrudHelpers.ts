@@ -56,14 +56,14 @@ import {
 	DELETE_SHARED_CATEGORIES_USER_API,
 	DELETE_USER_API,
 	DELETE_USER_CATEGORIES_API,
+	FETCH_BOOKMARKS_COUNT,
+	FETCH_BOOKMARKS_DATA_API,
 	FETCH_BOOKMARKS_VIEW,
 	FETCH_SHARED_CATEGORIES_DATA_API,
 	FETCH_USER_CATEGORIES_API,
 	FETCH_USER_PROFILE_API,
+	FETCH_USER_PROFILE_PIC_API,
 	FETCH_USER_TAGS_API,
-	GET_BOOKMARKS_COUNT,
-	GET_BOOKMARKS_DATA_API,
-	GET_USER_PROFILE_PIC_API,
 	getBaseUrl,
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
@@ -121,7 +121,7 @@ export const fetchBookmakrsData = async (
 				data: SingleListData[];
 			};
 		}>(
-			`${NEXT_API_URL}${GET_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${
+			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${
 				isNull(categoryId) ? "null" : categoryId
 			}&from=${pageParameter as string}&sort_by=${sortBy}`,
 		);
@@ -162,7 +162,7 @@ export const getBookmarksCount = async (
 				data: BookmarksCountTypes;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${GET_BOOKMARKS_COUNT}?access_token=${session?.access_token}`,
+				`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}?access_token=${session?.access_token}`,
 			);
 
 			return bookmarksData?.data;
@@ -838,7 +838,7 @@ export const getUserProfilePic = async ({
 				data: UserProfilePicTypes[] | null;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${GET_USER_PROFILE_PIC_API}?access_token=${
+				`${NEXT_API_URL}${FETCH_USER_PROFILE_PIC_API}?access_token=${
 					session?.access_token ?? ""
 				}&email=${email}`,
 			);
