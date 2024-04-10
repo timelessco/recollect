@@ -16,7 +16,7 @@ import {
 } from "../../../types/apiTypes";
 import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { isUserInACategory } from "../../../utils/helpers";
+import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
 import {
 	apiSupabaseClient,
 	verifyAuthToken,
@@ -202,7 +202,7 @@ export default async (
 	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
 	const userId = tokenDecode?.sub;
 
-	const fileName = data?.fields?.name?.[0];
+	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
 	const fileType = data?.fields?.type?.[0];
 
 	// if the uploaded file is valid this happens

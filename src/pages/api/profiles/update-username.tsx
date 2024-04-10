@@ -4,6 +4,7 @@ import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
+import slugify from "slugify";
 
 import {
 	type NextApiRequest,
@@ -41,14 +42,19 @@ export default async function handler(
 
 	const supabase = apiSupabaseClient();
 
-	// check if username is already presen
+	const username = slugify(request?.body?.username ?? "", {
+		lower: true,
+		strict: true,
+	});
+
+	// check if username is already present
 	const {
 		data: checkData,
 		error: checkError,
 	}: { data: DataResponse; error: ErrorResponse } = await supabase
 		.from(PROFILES)
 		.select(`user_name`)
-		.eq("user_name", request.body.username);
+		.eq("user_name", username);
 
 	if (!isNull(checkError)) {
 		response.status(500).json({
@@ -66,7 +72,7 @@ export default async function handler(
 		}: { data: DataResponse; error: ErrorResponse } = await supabase
 			.from(PROFILES)
 			.update({
-				user_name: request.body.username,
+				user_name: username,
 			})
 			.match({ id: request.body.id })
 			.select(`user_name`);

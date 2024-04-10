@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { isEmpty, isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import slugify from "slugify";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
@@ -72,7 +71,7 @@ const Settings = () => {
 			const response = await mutationApiCall(
 				updateUsernameMutation.mutateAsync({
 					id: session?.user?.id as string,
-					username: slugify(data?.username, { lower: true, strict: true }),
+					username: data?.username,
 					session,
 				}),
 			);
@@ -231,7 +230,7 @@ const Settings = () => {
 									},
 									pattern: {
 										value: LETTERS_NUMBERS_CHECK_PATTERN,
-										message: "Only have letters and numbers",
+										message: "Only have lowercase and no blank spaces",
 									},
 								})}
 								className={settingsInputClassName}

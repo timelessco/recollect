@@ -25,7 +25,7 @@ export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
 	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 // eslint-disable-next-line unicorn/better-regex, require-unicode-regexp, regexp/no-useless-escape, regexp/strict, no-useless-escape
-export const LETTERS_NUMBERS_CHECK_PATTERN = /^[^*|\":<>[\]{}`\\()';@&$]+$/;
+export const LETTERS_NUMBERS_CHECK_PATTERN = /^[a-z\d]+$/;
 export const URL_IMAGE_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex
 	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp)(\?(.*))?$/gimu;
