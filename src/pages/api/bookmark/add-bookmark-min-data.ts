@@ -7,6 +7,7 @@ import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
 import { isEmpty, isNull } from "lodash";
+import ogs from "open-graph-scraper";
 
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -19,7 +20,6 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
-	TIMELESS_SCRAPPER_API,
 	uncategorizedPages,
 } from "../../../utils/constants";
 import {
@@ -32,6 +32,15 @@ type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
 	message: string | null;
+};
+
+type ScrapperTypes = {
+	data: {
+		OgImage: string | null;
+		description: string | null;
+		favIcon: string | null;
+		title: string | null;
+	};
 };
 
 export default async function handler(
@@ -49,7 +58,8 @@ export default async function handler(
 
 	if (_error) {
 		response.status(500).json({ data: null, error: _error, message: null });
-		throw new Error("ERROR: token error");
+		Sentry.captureException("Invalid token");
+		return;
 	}
 
 	const supabase = apiSupabaseClient();
@@ -80,104 +90,119 @@ export default async function handler(
 		return !isEmpty(checkBookmarkData);
 	};
 
+	let scrapperResponse: ScrapperTypes = {
+		data: {
+			title: null,
+			description: null,
+			OgImage: null,
+			favIcon: null,
+		},
+	};
+
+	let scraperApiError = null;
+
 	try {
-		const scrapperResponse = await axios.post<{
-			OgImage: string;
-			description: string;
-			favIcon: string;
-			title: string;
-		}>(TIMELESS_SCRAPPER_API, {
+		const { result: ogScrapperResponse } = await ogs({
 			url,
 		});
 
-		// this will either be 0 (uncategorized) or any number
-		// this also checks if the categoryId is one of the strings mentioned in uncategorizedPages , if they are it will be 0
-		const computedCategoryId =
-			updateAccess === true &&
-			!isNull(categoryId) &&
-			categoryId !== "null" &&
-			categoryId !== 0 &&
-			!uncategorizedPages?.includes(categoryId as string)
-				? categoryId
-				: 0;
-
-		if (computedCategoryId !== 0) {
-			// user is adding bookmark into a category
-			const isBookmarkAlreadyPresentInCategory =
-				await checkIfBookmarkAlreadyExists();
-
-			if (isBookmarkAlreadyPresentInCategory) {
-				response.status(500).json({
-					data: null,
-					error: "Bookmark already present in this category",
-					message: "Bookmark already present in this category",
-				});
-			}
-		}
-
-		// here we add the scrapper data , in the remainingApi call we add s3 data
-		const {
-			data,
-			error,
-		}: {
-			data: SingleListData[] | null;
-			error: PostgrestError | VerifyErrors | string | null;
-		} = await supabase
-			.from(MAIN_TABLE_NAME)
-			.insert([
-				{
-					url,
-					title: scrapperResponse.data.title,
-					user_id: userId,
-					description: scrapperResponse?.data?.description,
-					ogImage: scrapperResponse?.data?.OgImage,
-					category_id: computedCategoryId,
-					meta_data: null,
-					type: bookmarkType,
-				},
-			])
-			.select();
-
-		if (!isNull(error)) {
-			response.status(500).json({ data: null, error, message: null });
-			throw new Error("ERROR: add min data error");
-		} else {
-			response.status(200).json({
-				data,
-				error: null,
-				message: !updateAccess
-					? "bookmark added to uncategorized, user does not have update access pls check if user has access to add into the category"
-					: null,
-			});
-
-			try {
-				if (!isNull(data) && !isEmpty(data)) {
-					// this adds the remaining data , like blur hash bucket uploads and all
-					await axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
-						{
-							id: data[0]?.id,
-							image: scrapperResponse?.data?.OgImage,
-							favIcon: scrapperResponse?.data?.favIcon,
-							access_token: accessToken,
-							url,
-						},
-					);
-				} else {
-					console.error("Data is empty");
-					Sentry.captureException(`Min bookmark data is empty`);
-				}
-			} catch (remainingUploadError) {
-				console.error("Remaining api error", remainingUploadError);
-				Sentry.captureException(`Remaining api error ${remainingUploadError}`);
-			}
-		}
+		scrapperResponse = {
+			data: {
+				title: ogScrapperResponse?.ogTitle ?? null,
+				description: ogScrapperResponse?.ogDescription ?? null,
+				OgImage: ogScrapperResponse?.ogImage?.[0]?.url ?? null,
+				favIcon: ogScrapperResponse?.favicon ?? null,
+			},
+		};
 	} catch (scrapperError) {
-		response.status(500).json({
-			data: null,
-			error: scrapperError as string,
-			message: "Scrapper error",
-		});
-		throw new Error("ERROR: scrapper error");
+		if (scrapperError) {
+			scraperApiError = scrapperError as VerifyErrors;
+			response.status(500).json({
+				data: null,
+				error: scrapperError as string,
+				message: "Scrapper error",
+			});
+			throw new Error("ERROR: scrapper error");
+		}
+	}
+
+	// this will either be 0 (uncategorized) or any number
+	// this also checks if the categoryId is one of the strings mentioned in uncategorizedPages , if they are it will be 0
+	const computedCategoryId =
+		updateAccess === true &&
+		!isNull(categoryId) &&
+		categoryId !== "null" &&
+		categoryId !== 0 &&
+		!uncategorizedPages?.includes(categoryId as string)
+			? categoryId
+			: 0;
+
+	if (computedCategoryId !== 0) {
+		// user is adding bookmark into a category
+		const isBookmarkAlreadyPresentInCategory =
+			await checkIfBookmarkAlreadyExists();
+
+		if (isBookmarkAlreadyPresentInCategory) {
+			response.status(500).json({
+				data: null,
+				error: "Bookmark already present in this category",
+				message: "Bookmark already present in this category",
+			});
+			return;
+		}
+	}
+
+	// here we add the scrapper data , in the remainingApi call we add s3 data
+	const {
+		data,
+		error,
+	}: {
+		data: SingleListData[] | null;
+		error: PostgrestError | VerifyErrors | string | null;
+	} = await supabase
+		.from(MAIN_TABLE_NAME)
+		.insert([
+			{
+				url,
+				title: scrapperResponse?.data?.title,
+				user_id: userId,
+				description: scrapperResponse?.data?.description,
+				ogImage: scrapperResponse?.data?.OgImage,
+				category_id: computedCategoryId,
+				meta_data: null,
+				type: bookmarkType,
+			},
+		])
+		.select();
+
+	if (!isNull(error)) {
+		response.status(500).json({ data: null, error, message: null });
+		throw new Error("ERROR: add min data error");
+	} else {
+		response
+			.status(200)
+			.json({ data, error: scraperApiError ?? null, message: null });
+
+		try {
+			if (!isNull(data) && !isEmpty(data)) {
+				// this adds the remaining data , like blur hash bucket uploads and all
+				await axios.post(
+					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+					{
+						id: data[0]?.id,
+						image: scrapperResponse?.data?.OgImage,
+						favIcon: scrapperResponse?.data?.favIcon,
+						access_token: accessToken,
+						url,
+					},
+				);
+			} else {
+				console.error("Data is empty");
+				Sentry.captureException(`Min bookmark data is empty`);
+			}
+		} catch (remainingUploadError) {
+			console.error(remainingUploadError);
+			Sentry.captureException(`Remaining api error ${remainingUploadError}`);
+		}
 	}
 }

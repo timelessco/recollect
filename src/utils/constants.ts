@@ -24,8 +24,8 @@ export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
 	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp, regexp/no-useless-escape, regexp/strict, no-useless-escape
-export const LETTERS_NUMBERS_CHECK_PATTERN = /^[^*|\":<>[\]{}`\\()';@&$]+$/;
+// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp
+export const LETTERS_NUMBERS_CHECK_PATTERN = /^[a-z\d]+$/;
 export const URL_IMAGE_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex
 	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp)(\?(.*))?$/gimu;
@@ -38,21 +38,14 @@ export const getBaseUrl = () =>
 		? process.env.NEXT_PUBLIC_VERCEL_URL
 		: "http://localhost:3000/";
 
-// const getBaseUrl = () =>
-// 	"https://bookmark-tags-git-file-upload-feat-timelessco.vercel.app";
-
-// export const NEXT_API_URL = `${getBaseUrl()}api`;
 export const NEXT_API_URL = `/api/`;
-
-export const TIMELESS_SCRAPPER_API =
-	"https://link-preview-livid-ten.vercel.app/api/getUrlData";
 
 export const PAGINATION_LIMIT = 25;
 
 // auth api
 // no auth api yet
 // bookmark api
-export const GET_BOOKMARKS_DATA_API = "/bookmark/get-bookmarks-data";
+export const FETCH_BOOKMARKS_DATA_API = "/bookmark/fetch-bookmarks-data";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
@@ -60,7 +53,7 @@ export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
 export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
-export const GET_BOOKMARKS_COUNT = "/bookmark/get-bookmarks-count";
+export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
 
@@ -78,8 +71,8 @@ export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
 export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
 // share api
-export const GET_PUBLIC_CATEGORY_BOOKMARKS_API =
-	"/get-public-category-bookmarks";
+export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API =
+	"/fetch-public-category-bookmarks";
 // collab share api
 export const FETCH_SHARED_CATEGORIES_DATA_API =
 	"/share/fetch-shared-categories-data";
@@ -91,7 +84,7 @@ export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
-export const GET_USER_PROFILE_PIC_API = "/profiles/get-user-profile-pic";
+export const FETCH_USER_PROFILE_PIC_API = "/profiles/fetch-user-profile-pic";
 export const UPDATE_USERNAME_API = "/profiles/update-username";
 export const DELETE_USER_API = "/profiles/delete-user";
 export const REMOVE_PROFILE_PIC_API = "/profiles/remove-profile-pic";

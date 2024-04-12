@@ -10,7 +10,7 @@ import {
 import { options } from "../../utils/commonData";
 import {
 	colorPickerColors,
-	GET_PUBLIC_CATEGORY_BOOKMARKS_API,
+	FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../../utils/constants";
@@ -71,7 +71,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
 	const response = await axios.post<GetPublicCategoryBookmarksApiResponseType>(
-		`${getBaseUrl()}${NEXT_API_URL}${GET_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
+		`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
 			context?.query?.id as string
 		}&user_name=${context?.query?.category_id as string}`,
 	);
