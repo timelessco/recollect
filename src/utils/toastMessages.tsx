@@ -47,7 +47,6 @@ export const errorToast = (error: string, type?: "fileSizeError") => {
 			closeButton: () => null,
 			icon: () => null,
 			hideProgressBar: true,
-			autoClose: false,
 		})
 	);
 };
