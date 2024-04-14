@@ -54,8 +54,18 @@ import SidePane from "./sidePane";
 // import styles 👇
 import "react-modern-drawer/dist/index.css";
 
-import { Menu, MenuItem } from "../../components/ariaSlidingMenu";
-import MenuIcon from "../../icons/menuIcon";
+import { isNull } from "lodash";
+
+import { AriaDropdown } from "../../components/ariaDropdown";
+import RenameIcon from "../../icons/actionIcons/renameIcon";
+import TrashIconRed from "../../icons/actionIcons/trashIconRed";
+import OptionsIconBlack from "../../icons/optionsIconBlack";
+import {
+	dropdownMenuClassName,
+	dropdownMenuItemClassName,
+} from "../../utils/commonClassNames";
+
+import ShareContent from "./share/shareContent";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -108,10 +118,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showSearchBar, setShowSearchBar] = useState(true);
 
 	const isDesktop = !isMobile && !isTablet;
-
-	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
-		(state) => state.setCurrentSliderDropdownSlide,
-	);
 
 	useEffect(() => {
 		if (isDesktop) {
@@ -265,7 +271,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const renderSearchBar = showSearchBar ? (
-		<div className="w-[300px] xl:w-full">
+		<div className="w-[246px] xl:my-[2px] xl:w-full">
 			<SearchInput
 				onBlur={() => !isDesktop && setShowSearchBar(false)}
 				onChange={(value) => {
@@ -286,110 +292,144 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		</Button>
 	);
 
-	const renderViewBasedHeaderOptions = !isDesktop ? (
-		<div className="mr-3 flex xl:mr-1">
-			<Menu
-				onClose={() => setCurrentSliderDropdownSlide(null)}
-				renderButton={
-					<Button className="px-[6px] py-[3px]">
-						<MenuIcon />
-					</Button>
-				}
-			>
-				<BookmarksViewDropdown
-					categoryId={categoryId}
-					isDropdown={false}
-					setBookmarksView={setBookmarksView}
-					userId={userId}
-				/>
-				<BookmarksSortDropdown
-					categoryId={categoryId}
-					isDropdown={false}
-					setBookmarksView={setBookmarksView}
-					userId={userId}
-				/>
-				{currentPath === TRASH_URL && (
-					<MenuItem
-						className="text-red-700"
-						label=""
+	const [headerOptionsCurrentTab, setHeaderOptionsCurrentTab] = useState<
+		string | null
+	>(null);
+
+	const renderViewBasedHeaderOptions = () => {
+		const optionsData = [
+			{
+				show: true,
+				value: "view",
+				render: (
+					<BookmarksViewDropdown
+						categoryId={categoryId}
+						renderOnlyButton
+						setBookmarksView={setBookmarksView}
+						userId={userId}
+					/>
+				),
+			},
+			{
+				show: true,
+				value: "sort",
+				render: (
+					<BookmarksSortDropdown
+						categoryId={categoryId}
+						renderOnlyButton
+						setBookmarksView={setBookmarksView}
+						userId={userId}
+					/>
+				),
+			},
+			{
+				show: currentPath === TRASH_URL,
+				value: "trash",
+				render: (
+					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+					<div
+						className={`flex items-center text-red-700 ${dropdownMenuItemClassName}`}
 						onClick={() => onClearTrash()}
 					>
-						Clear Trash
-					</MenuItem>
-				)}
-				{currentPath !== TRASH_URL && (
-					<>
-						<MenuItem label="add-bookmark" onClick={onNavAddClick}>
-							{/* TODO: get this svg from design */}
-							<svg
-								className="mr-[6px] h-4 w-4"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.5"
-								viewBox="0 0 24 24"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M12 4.5v15m7.5-7.5h-15"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								/>
-							</svg>
-							Add bookmark
-						</MenuItem>
-						<MenuItem
-							label="name-update"
-							onClick={() => {
-								setShowHeadingInput(true);
-							}}
-						>
-							{/* TODO: get this svg from design */}
-							<svg
-								className="mr-[6px] h-4 w-4"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth={1.5}
-								viewBox="0 0 24 24"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								/>
-							</svg>
-							Update collection
-						</MenuItem>
-					</>
-				)}
-			</Menu>
-		</div>
-	) : (
-		<div className="flex items-center space-x-2">
-			<BookmarksViewDropdown
-				categoryId={categoryId}
-				setBookmarksView={setBookmarksView}
-				userId={userId}
-			/>
-			{currentPath === TRASH_URL && (
-				<Button
-					className="bg-red-700 hover:bg-red-900"
-					id="clear-trash-button"
-					onClick={() => onClearTrash()}
-					type="dark"
+						<TrashIconRed />
+						<p className="ml-[6px]">Clear Trash</p>
+					</div>
+				),
+			},
+			{
+				show: typeof categoryId === "number",
+				value: "share",
+				render: <ShareDropdown renderOnlyButton />,
+			},
+			{
+				show: typeof categoryId === "number",
+				value: "rename",
+				render: (
+					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+					<div
+						className={`flex items-center ${dropdownMenuItemClassName}`}
+						onClick={() => {
+							setShowHeadingInput(true);
+						}}
+					>
+						<RenameIcon />
+						<p className="ml-[6px]">Rename</p>
+					</div>
+				),
+			},
+		];
+
+		const optionsList = optionsData
+			?.filter((optionItem) => optionItem?.show === true)
+			?.map((item) => (
+				// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+				<div
+					key={item?.value}
+					onClick={() => setHeaderOptionsCurrentTab(item?.value)}
 				>
-					<span className="text-white">
-						{isMobile ? "Clear" : "Clear trash"}
-					</span>
-				</Button>
-			)}
-			<BookmarksSortDropdown
-				categoryId={categoryId}
-				setBookmarksView={setBookmarksView}
-				userId={userId}
-			/>
-		</div>
-	);
+					{item?.render}
+				</div>
+			));
+
+		let content = <div />;
+
+		switch (headerOptionsCurrentTab) {
+			case "view":
+				content = (
+					<BookmarksViewDropdown
+						categoryId={categoryId}
+						isDropdown={false}
+						setBookmarksView={setBookmarksView}
+						userId={userId}
+					/>
+				);
+				break;
+			case "sort":
+				content = (
+					<BookmarksSortDropdown
+						categoryId={categoryId}
+						isDropdown={false}
+						setBookmarksView={setBookmarksView}
+						userId={userId}
+					/>
+				);
+				break;
+			case "share":
+				content = (
+					<div className="w-[300px]">
+						<ShareContent />
+					</div>
+				);
+				break;
+			default:
+				break;
+		}
+
+		const dropdownClassNames = classNames({
+			"z-10": true,
+			"w-full": headerOptionsCurrentTab === "share",
+			"w-[180px]": headerOptionsCurrentTab !== "share",
+			[dropdownMenuClassName]: true,
+		});
+
+		return (
+			<AriaDropdown
+				menuButton={
+					<Button className="p-[7px]">
+						<OptionsIconBlack />
+					</Button>
+				}
+				menuClassName={dropdownClassNames}
+				menuOpenToggle={(value) => {
+					if (!value) {
+						setHeaderOptionsCurrentTab(null);
+					}
+				}}
+			>
+				{isNull(headerOptionsCurrentTab) ? optionsList : content}
+			</AriaDropdown>
+		);
+	};
 
 	const renderSidePaneCollapseButton = (
 		<>
@@ -445,12 +485,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					{/* this div is there for centering needs */}
 					<div className="h-5 w-5 xl:hidden" />
 					{renderSearchBar}
-					<div className="flex w-[407px] items-center justify-end space-x-2 xl:w-max xl:space-x-0">
-						{renderViewBasedHeaderOptions}
-						{typeof categoryId === "number" && <ShareDropdown />}
+					<div className="flex w-[252px] items-center justify-end space-x-3 xl:w-max xl:space-x-0">
+						{renderViewBasedHeaderOptions()}
+						{/* {typeof categoryId === "number" && <ShareDropdown />} */}
 						{currentPath !== TRASH_URL && isDesktop && (
 							<Button
-								className="hover:bg-black xl:px-[5px]"
+								className="rounded-full p-[7px] hover:bg-black"
 								onClick={onNavAddClick}
 								title="create"
 								type="dark"
@@ -458,9 +498,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								<figure className="h-4 w-4">
 									<PlusIconWhite />
 								</figure>
-								<span className="ml-[6px] font-medium leading-[14px] text-white xl:hidden">
+								{/* <span className="ml-[6px] font-medium leading-[14px] text-white xl:hidden">
 									Create
-								</span>
+								</span> */}
 							</Button>
 						)}
 					</div>

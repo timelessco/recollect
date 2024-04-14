@@ -12,39 +12,9 @@ import Dropzone from "react-dropzone";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ToastContainer } from "react-toastify";
 
-import Modal from "../../components/modal";
-import {
-	useLoadersStore,
-	useMiscellaneousStore,
-	useModalStore,
-} from "../../store/componentStore";
-import {
-	type BookmarksTagData,
-	type BookmarkViewDataTypes,
-	type CategoriesData,
-	type ProfilesTableTypes,
-	type SingleBookmarksPaginatedDataTypes,
-	type SingleListData,
-	type UserTagsData,
-} from "../../types/apiTypes";
-import { type FileType, type TagInputOption } from "../../types/componentTypes";
-import {
-	acceptedFileTypes,
-	ALL_BOOKMARKS_URL,
-	DOCUMENTS_URL,
-	IMAGES_URL,
-	LINKS_URL,
-	LOGIN_URL,
-	SETTINGS_URL,
-	TRASH_URL,
-	UNCATEGORIZED_URL,
-	VIDEOS_URL,
-} from "../../utils/constants";
-
-import AddModalContent from "./modals/addModalContent";
-import SignedOutSection from "./signedOutSection";
-
 import "react-toastify/dist/ReactToastify.css";
+
+// import "react-toastify/dist/ReactToastify.minimal.css";
 
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
@@ -70,24 +40,54 @@ import useFetchCategories from "../../async/queryHooks/category/useFetchCategori
 import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import useFetchUserTags from "../../async/queryHooks/userTags/useFetchUserTags";
+import Modal from "../../components/modal";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
+import {
+	useLoadersStore,
+	useMiscellaneousStore,
+	useModalStore,
+} from "../../store/componentStore";
+import {
+	type BookmarksTagData,
+	type BookmarkViewDataTypes,
+	type CategoriesData,
+	type ProfilesTableTypes,
+	type SingleBookmarksPaginatedDataTypes,
+	type SingleListData,
+	type UserTagsData,
+} from "../../types/apiTypes";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
+import { type FileType, type TagInputOption } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
+import {
+	acceptedFileTypes,
+	ALL_BOOKMARKS_URL,
+	DOCUMENTS_URL,
+	IMAGES_URL,
+	LINKS_URL,
+	LOGIN_URL,
+	SETTINGS_URL,
+	TRASH_URL,
+	UNCATEGORIZED_URL,
+	VIDEOS_URL,
+} from "../../utils/constants";
 import { generateVideoThumbnail, uploadFileLimit } from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
 import AddBookarkShortcutModal from "./modals/addBookmarkShortcutModal";
+import AddModalContent from "./modals/addModalContent";
 import SettingsModal from "./modals/settingsModal";
 import ShareCategoryModal from "./modals/shareCategoryModal";
 import WarningActionModal from "./modals/warningActionModal";
+import SignedOutSection from "./signedOutSection";
 
 // import CardSection from "./cardSection";
 const CardSection = dynamic(() => import("./cardSection"), {
@@ -564,7 +564,7 @@ const Dashboard = () => {
 					}
 
 					if (uploadFileLimit(acceptedFiles[index]?.size)) {
-						errorToast("File size is larger than 10mb");
+						errorToast("File size is larger than 10mb", "fileSizeError");
 					} else {
 						mutationApiCall(
 							fileUploadOptimisticMutation.mutateAsync({

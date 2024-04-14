@@ -589,7 +589,7 @@ const CardSection = ({
 		const size = cardTypeCondition === "headlines" ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === "headlines",
-			"h-[15] w-[15px]": cardTypeCondition !== "headlines",
+			"h-[14] w-[14px]": cardTypeCondition !== "headlines",
 		});
 
 		if (favIconErrorImgs?.includes(item?.id)) {
@@ -626,25 +626,32 @@ const CardSection = ({
 
 	const renderCategoryBadge = (item: SingleListData) => {
 		const bookmarkCategoryData = singleBookmarkCategoryData(item?.category_id);
+
 		return (
 			<>
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<Badge
-							renderBadgeContent={() => (
-								<div className="flex items-center">
-									<figure className="h-[12px] w-[12px]">
-										{find(
-											options(),
-											(optionItem) =>
-												optionItem?.label === bookmarkCategoryData?.icon,
-										)?.icon(colorPickerColors[1], "12")}
-									</figure>
-									<p className="ml-1">{bookmarkCategoryData?.category_name}</p>
-								</div>
-							)}
-						/>
+						<div className="flex items-center">
+							<div
+								className="flex h-[14px] w-[14px] items-center justify-center rounded-full"
+								style={{ backgroundColor: bookmarkCategoryData?.icon_color }}
+							>
+								{find(
+									options(),
+									(optionItem) =>
+										optionItem?.label === bookmarkCategoryData?.icon,
+								)?.icon(
+									bookmarkCategoryData?.icon_color === "#ffffff"
+										? colorPickerColors[1]
+										: colorPickerColors[0],
+									"9",
+								)}
+							</div>
+							<p className="ml-1 text-[13px]  font-450 leading-4 text-custom-gray-10">
+								{bookmarkCategoryData?.category_name}
+							</p>
+						</div>
 					)}
 			</>
 		);

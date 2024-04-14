@@ -59,7 +59,7 @@ const ChangeEmail = () => {
 		}
 
 		if (isNil(error)) {
-			successToast("Comformation email sent");
+			successToast("Comformation email sent", "userInvite");
 		}
 
 		setChangeEmailLoader(false);

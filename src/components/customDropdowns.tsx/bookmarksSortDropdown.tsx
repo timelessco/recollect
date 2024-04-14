@@ -8,10 +8,7 @@ import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
 import TickIcon from "../../icons/tickIcon";
-import {
-	useLoadersStore,
-	useMiscellaneousStore,
-} from "../../store/componentStore";
+import { useLoadersStore } from "../../store/componentStore";
 import {
 	type CategoriesData,
 	type FetchSharedCategoriesData,
@@ -22,18 +19,20 @@ import {
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
+import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import {
 	CATEGORIES_KEY,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../utils/constants";
+import { AriaDropdownMenu } from "../ariaDropdown";
 import AriaSelect from "../ariaSelect";
-import { Menu, MenuItem } from "../ariaSlidingMenu";
 import Spinner from "../spinner";
 
 type BookmarksSortDropdownTypes = {
 	categoryId: CategoryIdUrlTypes;
 	isDropdown?: boolean;
+	renderOnlyButton?: boolean;
 	setBookmarksView: (
 		value: BookmarksSortByTypes,
 		type: BookmarkViewCategories,
@@ -42,7 +41,13 @@ type BookmarksSortDropdownTypes = {
 };
 
 const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
-	const { setBookmarksView, categoryId, userId, isDropdown = true } = props;
+	const {
+		setBookmarksView,
+		categoryId,
+		userId,
+		isDropdown = true,
+		renderOnlyButton = false,
+	} = props;
 
 	const queryClient = useQueryClient();
 	const session = useSession();
@@ -63,10 +68,6 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 		data: FetchSharedCategoriesData[];
 		error: PostgrestError;
 	};
-
-	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
-		(state) => state.setCurrentSliderDropdownSlide,
-	);
 
 	const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
@@ -184,6 +185,13 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			</div>
 		</div>
 	);
+
+	if (renderOnlyButton) {
+		return (
+			<div className={`flex ${dropdownMenuItemClassName}`}>{buttonContent}</div>
+		);
+	}
+
 	return isDropdown ? (
 		<AriaSelect
 			defaultValue={currentValue?.label ?? ""}
@@ -205,26 +213,45 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			renderCustomSelectItem={(value) => selectItemContent(value)}
 		/>
 	) : (
-		<Menu
-			onClick={() => setCurrentSliderDropdownSlide("sort")}
-			renderButton={<div className=" flex items-center">{buttonContent}</div>}
-		>
+		<div>
 			{sortOptions?.map((item) => {
 				const value = item?.label;
 				return (
-					<MenuItem
+					<AriaDropdownMenu
+						className={dropdownMenuItemClassName}
 						key={value}
-						label=""
 						onClick={() =>
 							setBookmarksView(item?.value as BookmarksSortByTypes, "sort")
 						}
 					>
 						{selectItemContent(value)}
-					</MenuItem>
+					</AriaDropdownMenu>
 				);
 			})}
-		</Menu>
+		</div>
 	);
+
+	// : (
+	// 	<Menu
+	// 		onClick={() => setCurrentSliderDropdownSlide("sort")}
+	// 		renderButton={<div className=" flex items-center">{buttonContent}</div>}
+	// 	>
+	// {sortOptions?.map((item) => {
+	// 	const value = item?.label;
+	// 	return (
+	// 		<MenuItem
+	// 			key={value}
+	// 			label=""
+	// 			onClick={() =>
+	// 				setBookmarksView(item?.value as BookmarksSortByTypes, "sort")
+	// 			}
+	// 		>
+	// 			{selectItemContent(value)}
+	// 		</MenuItem>
+	// 	);
+	// })}
+	// 	</Menu>
+	// );
 };
 
 export default BookmarksSortDropdown;

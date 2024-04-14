@@ -20,6 +20,7 @@ import {
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
+import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import {
 	CATEGORIES_KEY,
 	SHARED_CATEGORIES_TABLE_NAME,
@@ -38,6 +39,7 @@ type BookmarksViewDropdownProps = {
 	categoryId: CategoryIdUrlTypes;
 	// based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
 	isDropdown?: boolean;
+	renderOnlyButton?: boolean;
 	setBookmarksView: (
 		value: BookmarksViewTypes | number[] | string[],
 		type: BookmarkViewCategories,
@@ -47,7 +49,13 @@ type BookmarksViewDropdownProps = {
 
 // This renders the view options
 const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
-	const { setBookmarksView, categoryId, userId, isDropdown = true } = props;
+	const {
+		setBookmarksView,
+		categoryId,
+		userId,
+		isDropdown = true,
+		renderOnlyButton = false,
+	} = props;
 	const queryClient = useQueryClient();
 
 	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
@@ -327,6 +335,14 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		</>
 	);
 
+	if (renderOnlyButton) {
+		return (
+			<div className={`flex ${dropdownMenuItemClassName}`}>
+				{dropdownButtonContent}
+			</div>
+		);
+	}
+
 	return isDropdown ? (
 		<>
 			<MenuButton as="div" className="outline-none" state={menu}>
@@ -343,14 +359,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			</Menu>
 		</>
 	) : (
-		<CustomMenu
-			onClick={() => setCurrentSliderDropdownSlide("view")}
-			renderButton={
-				<div className=" flex items-center">{dropdownButtonContent}</div>
-			}
-		>
-			{dropdownContent}
-		</CustomMenu>
+		<div>{dropdownContent}</div>
 	);
 };
 
