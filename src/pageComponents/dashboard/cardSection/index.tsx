@@ -457,7 +457,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -664,7 +664,7 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="flex items-center">
+						<div className="mr-1 flex items-center">
 							<div
 								className="flex h-[14px] w-[14px] items-center justify-center rounded-full"
 								style={{ backgroundColor: bookmarkCategoryData?.icon_color }}
@@ -756,7 +756,7 @@ const CardSection = ({
 									</div>
 								)}
 							{bookmarksInfoValue?.includes("info" as never) && (
-								<div className="flex flex-wrap items-center space-x-2">
+								<div className="flex flex-wrap items-center">
 									{renderCategoryBadge(item)}
 									{renderFavIcon(item)}
 									{renderUrl(item)}
@@ -821,9 +821,9 @@ const CardSection = ({
 								</div>
 							)}
 						{bookmarksInfoValue?.includes("info" as never) && (
-							<div className="mt-[6px] flex flex-wrap items-center space-x-2 sm:mt-[1px] sm:space-x-1">
-								{renderFavIcon(item)}
+							<div className="mt-[6px] flex flex-wrap items-center sm:mt-[1px] sm:space-x-1">
 								{renderCategoryBadge(item)}
+								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
 									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
