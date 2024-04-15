@@ -47,6 +47,7 @@ module.exports = {
 				"custom-white": {
 					1: "rgba(255, 255, 255, 0.9)",
 					2: "rgba(255, 255, 255, 0.96)",
+					3: "rgba(255, 255, 255, 0.5)",
 				},
 				"custom-gradient": {
 					1: "linear-gradient(180deg, #2E2E2E 0%, #242424 100%)",

@@ -578,7 +578,9 @@ const CardSection = ({
 			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
 				true,
 			absolute: true,
-			"bottom-[-1%] left-[7%] transform translate-x-[-50%] translate-y-[-50%]":
+			// "bottom-[-1%] left-[7%] transform translate-x-[-50%] translate-y-[-50%]":
+			// 	cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 			"top-[9px] left-[21px]": cardTypeCondition === "list",
 		});
@@ -664,7 +666,8 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="mr-1 flex items-center">
+						<div className="ml-1 flex items-center text-[13px]  font-450 leading-4 text-custom-gray-10">
+							<p className="mr-1">in</p>
 							<div
 								className="flex h-[14px] w-[14px] items-center justify-center rounded-full"
 								style={{ backgroundColor: bookmarkCategoryData?.icon_color }}
@@ -757,7 +760,6 @@ const CardSection = ({
 								)}
 							{bookmarksInfoValue?.includes("info" as never) && (
 								<div className="flex flex-wrap items-center">
-									{renderCategoryBadge(item)}
 									{renderFavIcon(item)}
 									{renderUrl(item)}
 									{item?.inserted_at && (
@@ -765,6 +767,7 @@ const CardSection = ({
 											{format(new Date(item?.inserted_at || ""), "MMMM dd")}
 										</p>
 									)}
+									{renderCategoryBadge(item)}
 								</div>
 							)}
 						</div>
@@ -876,8 +879,11 @@ const CardSection = ({
 
 	const listWrapperClass = classNames({
 		// "p-2": cardTypeCondition === "list" || cardTypeCondition === "headlines",
-		"p-4": cardTypeCondition === "list" || cardTypeCondition === "headlines",
-		"p-6": cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+		"mt-[47px]": true,
+		"px-4 py-2":
+			cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		"px-6 py-2":
+			cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 	});
 
 	return (

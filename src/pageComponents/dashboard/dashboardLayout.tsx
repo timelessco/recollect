@@ -418,7 +418,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return (
 			<AriaDropdown
 				menuButton={
-					<Button className="p-[7px]">
+					<Button className="bg-transparent p-[7px]">
 						<OptionsIconBlack />
 					</Button>
 				}
@@ -438,7 +438,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		<>
 			{!showSidePane && (
 				<Button
-					className="absolute left-[2px] cursor-pointer p-[6px]"
+					className="absolute left-[2px] cursor-pointer p-[6px] hover:bg-transparent"
 					onClick={() => setShowSidePane(true)}
 				>
 					<CollapseHandle />
@@ -449,7 +449,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] bg-custom-white-2",
+			"flex items-center justify-between py-[6.5px] bg-custom-white-2 absolute top-0 w-full z-10 bg-custom-white-3 backdrop-blur-[20.5px]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -477,7 +477,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center ">
+						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}

@@ -586,7 +586,7 @@ const Dashboard = () => {
 
 	const renderAllBookmarkCards = () => (
 		<>
-			<div className="">
+			<div>
 				{session ? (
 					<>
 						<div className="mx-auto w-full xl:w-1/2" />
@@ -609,7 +609,7 @@ const Dashboard = () => {
 										className=""
 										id="scrollableDiv"
 										ref={infiniteScrollRef}
-										style={{ height: "calc(100vh - 48.5px)", overflow: "auto" }}
+										style={{ height: "100vh", overflow: "auto" }}
 									>
 										<InfiniteScroll
 											dataLength={flattendPaginationBookmarkData?.length}
