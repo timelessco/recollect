@@ -105,7 +105,7 @@ const SearchInput = (props: SearchInputTypes) => {
 		error: PostgrestError;
 	};
 
-	const wrapperClassNameBuilder = classNames("relative", {
+	const wrapperClassNameBuilder = classNames("search-wrapper relative", {
 		[wrapperClassName]: true,
 	});
 

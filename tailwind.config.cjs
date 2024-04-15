@@ -42,9 +42,11 @@ module.exports = {
 					13: "rgba(0, 0, 0, 0.141)",
 					// test color for dark button hover
 					14: "#2A2B2E",
+					15: "rgba(0, 0, 0, 0.03)",
 				},
 				"custom-white": {
 					1: "rgba(255, 255, 255, 0.9)",
+					2: "rgba(255, 255, 255, 0.96)",
 				},
 				"custom-gradient": {
 					1: "linear-gradient(180deg, #2E2E2E 0%, #242424 100%)",
@@ -69,6 +71,10 @@ module.exports = {
 						4: "#EDEDED",
 						12: "#171717",
 						1: "#9C9C9C",
+						10: "#858585",
+					},
+					gray: {
+						100: "#f3f3f3",
 					},
 				},
 			},

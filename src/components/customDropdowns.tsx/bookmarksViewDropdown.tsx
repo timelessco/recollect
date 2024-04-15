@@ -289,7 +289,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{bookmarksViewValue === "card" || bookmarksViewValue === "moodboard" ? (
 				<div className="flex items-center justify-between px-2 py-[4.5px]">
 					<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
-						Cover size
+						Cover
 					</p>
 					<div className="w-[90px]">
 						<Slider

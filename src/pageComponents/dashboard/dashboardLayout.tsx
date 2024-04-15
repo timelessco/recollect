@@ -57,9 +57,12 @@ import "react-modern-drawer/dist/index.css";
 import { isNull } from "lodash";
 
 import { AriaDropdown } from "../../components/ariaDropdown";
+import CollapseHandle from "../../icons/actionIcons/collapseHandle";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
+import GlobeIcon from "../../icons/globeIcon";
 import OptionsIconBlack from "../../icons/optionsIconBlack";
+import UsersCollabIcon from "../../icons/usersCollabIcon";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
@@ -435,12 +438,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		<>
 			{!showSidePane && (
 				<Button
-					className="mr-2 cursor-pointer bg-custom-gray-2 shadow-2xl hover:bg-custom-gray-4"
+					className="absolute left-[2px] cursor-pointer p-[6px]"
 					onClick={() => setShowSidePane(true)}
 				>
-					<figure>
-						<ChevronDoubleRightIcon className="h-3 w-3 shrink-0 text-gray-400" />
-					</figure>
+					<CollapseHandle />
 				</Button>
 			)}
 		</>
@@ -448,12 +449,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between  border-b-[0.5px] border-b-custom-gray-4 py-[6.5px]",
+			"flex items-center justify-between py-[6.5px] bg-custom-white-2",
 			{
-				"pl-[15px] pr-3":
-					currentBookmarkView === "card" || currentBookmarkView === "moodboard",
-				"px-[7px]":
-					currentBookmarkView === "headlines" || currentBookmarkView === "list",
+				// "pl-[15px] pr-3":
+				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
+				// "px-[7px]":
+				// 	currentBookmarkView === "headlines" || currentBookmarkView === "list",
+				"pl-[15px] pr-3": true,
 			},
 		);
 
@@ -479,6 +481,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}
+						{/* only show when user is not editing the collection name */}
+						{!showHeadingInput && (
+							<div className="ml-2 flex space-x-2">
+								{currentCategoryData?.is_public && <GlobeIcon />}
+								{currentCategoryData?.collabData &&
+									currentCategoryData?.collabData?.length > 1 && (
+										<UsersCollabIcon />
+									)}
+							</div>
+						)}
 					</div>
 				)}
 				<div className={navOptionsWrapperClass}>

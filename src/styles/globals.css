@@ -59,7 +59,7 @@ main {
 .my-masonry-grid_column {
 	/* pl is gutter size */
 
-	@apply bg-clip-padding pl-[30px];
+	@apply bg-clip-padding pl-[24px];
 }
 
 /* Style your items */
@@ -448,12 +448,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 	@apply z-50 snap-x snap-mandatory snap-always overflow-scroll scroll-smooth rounded-xl border border-solid;
 }
 
-.search-bar__input::placeholder {
-	/* color: ; */
-
-	@apply text-grayDark-grayDark-600;
-}
-
 /* toast styles */
 .Toastify__toast-container.Toastify__toast-container--bottom-right {
 	@apply w-[202px];
@@ -484,4 +478,28 @@ input[type="checkbox"]:checked + .checkbox-div {
 .Toastify__toast-body {
 	/* adding  important to override the default toast styles */
 	@apply m-0 p-0 !important;
+}
+
+.search-bar__input:focus {
+	@apply text-gray-light-12;
+}
+
+.search-wrapper {
+	@apply text-grayDark-grayDark-600;
+}
+
+.search-wrapper:has(:focus) {
+	@apply text-gray-light-12;
+}
+
+.search-bar__input::placeholder {
+	/* color: ; */
+
+	@apply text-grayDark-grayDark-600;
+}
+
+.search-bar__input::placeholder:focus {
+	/* color: ; */
+
+	@apply text-gray-light-12;
 }

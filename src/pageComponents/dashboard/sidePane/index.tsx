@@ -33,7 +33,7 @@ const SidePane = (props: SidePaneTypes) => {
 	} = props;
 
 	return (
-		<nav className="h-full border-r-[0.5px] border-r-custom-gray-4 p-2">
+		<nav className="h-full border-r-[1px] border-solid border-r-custom-gray-15 bg-custom-white-1 p-2">
 			<SidePaneUserDropdown />
 			<SidePaneOptionsMenu />
 			<CollectionsList
