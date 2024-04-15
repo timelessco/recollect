@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Link from "next/link";
-import { GlobeIcon, UsersIcon } from "@heroicons/react/solid";
 
 import {
 	AriaDropdown,
@@ -8,7 +7,9 @@ import {
 } from "../../../components/ariaDropdown";
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import Spinner from "../../../components/spinner";
+import GlobeIcon from "../../../icons/globeIcon";
 import OptionsIconGray from "../../../icons/optionsIconGray";
+import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 import {
 	type CategoryIconsDropdownTypes,
@@ -103,12 +104,14 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 			<div className="flex items-center space-x-3">
 				{showSpinner && <Spinner />}
 				{item?.isPublic && (
-					<figure>
-						<GlobeIcon className="h-4 w-4 shrink-0 text-gray-400" />
+					<figure className="hidden">
+						<GlobeIcon />
 					</figure>
 				)}
 				{item?.isCollab && (
-					<UsersIcon className="h-4 w-4 shrink-0 text-gray-400" />
+					<figure className="hidden">
+						<UsersCollabIcon />
+					</figure>
 				)}
 				{showDropdown && (
 					// disabling eslint as the onClick is just preventdefault
@@ -160,7 +163,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						</AriaDropdown>
 						{item?.count !== undefined && openedMenuId === null && (
 							<p
-								className={`flex h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-custom-gray-10 ${
+								className={` hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-custom-gray-10 ${
 									showDropdown ? " block group-hover:hidden" : " block"
 								}`}
 							>
@@ -171,7 +174,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 				)}
 				{item?.count !== undefined && !showDropdown && (
 					<span
-						className={`text-[11px] font-450 leading-3 text-custom-gray-10 ${
+						className={`hidden text-[11px] font-450 leading-3 text-custom-gray-10 ${
 							showDropdown ? "block group-hover:hidden" : "block"
 						}`}
 					>
@@ -182,23 +185,9 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		</>
 	);
 
-	// return (
-	// <Link href={item?.href} legacyBehavior passHref>
-	// 	{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-	// 	<a
-	// 		className={`${item?.current ? "bg-custom-gray-2" : "bg-white"
-	// 			} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-custom-gray-2`}
-	// 		draggable={false}
-	// 		onClick={onClick}
-	// 	>
-
-	// 	</a>
-	// </Link>
-	// );
-
 	const contentWrapperClassNames = `${
-		item?.current ? "bg-custom-gray-2" : "bg-white"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-custom-gray-2`;
+		item?.current ? "bg-gray-gray-100" : "bg-white"
+	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-gray-100`;
 
 	if (isLink) {
 		return (

@@ -59,7 +59,7 @@ main {
 .my-masonry-grid_column {
 	/* pl is gutter size */
 
-	@apply bg-clip-padding pl-[30px];
+	@apply bg-clip-padding pl-[24px];
 }
 
 /* Style your items */
@@ -446,4 +446,60 @@ input[type="checkbox"]:checked + .checkbox-div {
 	scrollbar-width: none;
 
 	@apply z-50 snap-x snap-mandatory snap-always overflow-scroll scroll-smooth rounded-xl border border-solid;
+}
+
+/* toast styles */
+.Toastify__toast-container.Toastify__toast-container--bottom-right {
+	@apply w-[202px];
+}
+
+.Toastify__toast.Toastify__toast-theme--light.Toastify__toast--error {
+	box-shadow:
+		0 64px 18px 0 rgb(0 0 0 / 0%),
+		0 41px 16px 0 rgb(0 0 0 / 2%),
+		0 23px 14px 0 rgb(0 0 0 / 6%),
+		0 10px 10px 0 rgb(0 0 0 / 11%),
+		0 3px 6px 0 rgb(0 0 0 / 13%);
+
+	@apply min-h-0 rounded-2xl bg-gray-light-12 px-4 py-3;
+}
+
+.Toastify__toast.Toastify__toast-theme--light.Toastify__toast--success {
+	box-shadow:
+		0 64px 18px 0 rgb(0 0 0 / 0%),
+		0 41px 16px 0 rgb(0 0 0 / 2%),
+		0 23px 14px 0 rgb(0 0 0 / 6%),
+		0 10px 10px 0 rgb(0 0 0 / 11%),
+		0 3px 6px 0 rgb(0 0 0 / 13%);
+
+	@apply min-h-0 rounded-2xl bg-gray-light-12 px-4 py-3;
+}
+
+.Toastify__toast-body {
+	/* adding  important to override the default toast styles */
+	@apply m-0 p-0 !important;
+}
+
+.search-bar__input:focus {
+	@apply text-gray-light-12;
+}
+
+.search-wrapper {
+	@apply text-grayDark-grayDark-600;
+}
+
+.search-wrapper:has(:focus) {
+	@apply text-gray-light-12;
+}
+
+.search-bar__input::placeholder {
+	/* color: ; */
+
+	@apply text-grayDark-grayDark-600;
+}
+
+.search-bar__input::placeholder:focus {
+	/* color: ; */
+
+	@apply text-gray-light-12;
 }

@@ -18,7 +18,7 @@ import Spinner from "./spinner";
 const styles = {
 	input: {
 		left: 27,
-		top: 3,
+		top: 6.5,
 		width: "80%",
 	},
 	control: {
@@ -26,16 +26,17 @@ const styles = {
 
 		fontSize: 14,
 		fontWeight: 400,
+		lineHeight: "16px",
 		color: "#707070",
 
 		width: "100%",
-
+		padding: "6px",
 		// padding: "3px 10px 3px 28px",
 		// padding: "2px 10px 2px 28px",
-		paddingTop: "3px",
-		paddingBottom: "3px",
+		// paddingTop: "6px",
+		// paddingBottom: "6px",
 
-		borderRadius: 8,
+		borderRadius: 11,
 	},
 	"&multiLine": {
 		control: {},
@@ -104,7 +105,7 @@ const SearchInput = (props: SearchInputTypes) => {
 		error: PostgrestError;
 	};
 
-	const wrapperClassNameBuilder = classNames("relative", {
+	const wrapperClassNameBuilder = classNames("search-wrapper relative", {
 		[wrapperClassName]: true,
 	});
 
@@ -115,7 +116,7 @@ const SearchInput = (props: SearchInputTypes) => {
 	return (
 		<div className={wrapperClassNameBuilder}>
 			<figure className=" absolute left-[9px] top-[7px]">
-				<SearchInputSearchIcon />
+				<SearchInputSearchIcon size="14" />
 			</figure>
 			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
@@ -155,7 +156,7 @@ const SearchInput = (props: SearchInputTypes) => {
 				/>
 			</MentionsInput>
 			{isSearchLoading && (
-				<div className=" absolute right-2 top-0">
+				<div className=" absolute right-2 top-[3px]">
 					<Spinner />
 				</div>
 			)}

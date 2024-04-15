@@ -6,7 +6,7 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
-import { isEmpty, isNull } from "lodash";
+import { eq, isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
 import {
@@ -76,7 +76,8 @@ export default async function handler(
 			.from(MAIN_TABLE_NAME)
 			.select(`id`)
 			.eq("url", url)
-			.eq("category_id", categoryId);
+			.eq("category_id", categoryId)
+			.eq("trash", false);
 
 		if (!isNull(checkBookmarkError)) {
 			response.status(500).json({

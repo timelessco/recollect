@@ -1,11 +1,27 @@
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
+import x from "uniqid";
 
 import ShareIcon from "../../icons/shareIcon";
 import ShareContent from "../../pageComponents/dashboard/share/shareContent";
+import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import Button from "../atoms/button";
 
-const ShareDropdown = () => {
+const ShareDropdown = ({ renderOnlyButton = false }) => {
 	const menu = useMenuState({ gutter: 8 });
+
+	const buttonContent = (
+		<div className={`flex ${dropdownMenuItemClassName}`}>
+			<figure className="h-4 w-4">
+				<ShareIcon />
+			</figure>
+			<span className="ml-[7px] text-custom-gray-1">Share</span>
+		</div>
+	);
+
+	if (renderOnlyButton) {
+		return buttonContent;
+	}
+
 	return (
 		<>
 			<MenuButton as="div" className="outline-none" state={menu}>
@@ -16,10 +32,7 @@ const ShareDropdown = () => {
 					type="light"
 					// onClick={() => onShareClick()}
 				>
-					<figure className="h-4 w-4">
-						<ShareIcon />
-					</figure>
-					<span className="ml-[7px] text-custom-gray-1 xl:hidden">Share</span>
+					{buttonContent}
 				</Button>
 			</MenuButton>
 			<Menu

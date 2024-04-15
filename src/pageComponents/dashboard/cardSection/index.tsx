@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-	MinusCircleIcon,
-	PencilAltIcon,
-	TrashIcon,
-} from "@heroicons/react/solid";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,9 +14,11 @@ import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import { Item } from "react-stately";
 
-import Badge from "../../../components/badge";
 import Spinner from "../../../components/spinner";
+import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
+import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
+import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
@@ -38,6 +35,7 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 	type SingleListData,
+	type UserTagsData,
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import { options } from "../../../utils/commonData";
@@ -286,7 +284,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[7px] backdrop-blur-sm";
+			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
 
 		const externalLinkIcon = (
 			<div
@@ -303,7 +301,7 @@ const CardSection = ({
 
 		const pencilIcon = (
 			<div
-				className={`ml-1 ${iconBgClassName}`}
+				className={`${iconBgClassName}`}
 				onClick={(event) => {
 					event.preventDefault();
 					onEditClick(post);
@@ -316,19 +314,14 @@ const CardSection = ({
 				tabIndex={0}
 			>
 				<figure>
-					<PencilAltIcon
-						className="h-4 w-4 cursor-pointer text-gray-700"
-						onPointerDown={(event) => {
-							event.stopPropagation();
-						}}
-					/>
+					<EditIcon />
 				</figure>
 			</div>
 		);
 
 		const trashIcon = (
 			<div
-				className={`ml-1 ${iconBgClassName}`}
+				className={`ml-2 ${iconBgClassName}`}
 				onClick={(event) => {
 					event.stopPropagation();
 					onDeleteClick([post]);
@@ -337,11 +330,12 @@ const CardSection = ({
 				role="button"
 				tabIndex={0}
 			>
-				<figure>
-					<TrashIcon
-						aria-hidden="true"
-						className="h-4 w-4 cursor-pointer text-red-400"
-						id="delete-bookmark-icon"
+				<figure
+					onPointerDown={(event) => {
+						event.stopPropagation();
+					}}
+				>
+					<TrashIconGray
 						onPointerDown={(event) => {
 							event.stopPropagation();
 						}}
@@ -351,12 +345,30 @@ const CardSection = ({
 		);
 
 		if (isPublicPage) {
-			return externalLinkIcon;
+			const publicExternalIconClassname = classNames({
+				"absolute  top-0": true,
+				"left-[11px]":
+					cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+				"left-[-34px]":
+					cardTypeCondition === "list" || cardTypeCondition === "headlines",
+			});
+			return (
+				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
+			);
 		}
 
 		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
+			//  in trash page
+
+			const trashIconWrapperClassname = classNames({
+				"absolute  top-[2px] flex": true,
+				"left-[17px]":
+					cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+				"left-[-64px]":
+					cardTypeCondition === "list" || cardTypeCondition === "headlines",
+			});
 			return (
-				<>
+				<div className={trashIconWrapperClassname}>
 					<div
 						className={`${iconBgClassName}`}
 						onClick={(event) => {
@@ -368,8 +380,7 @@ const CardSection = ({
 						tabIndex={0}
 					>
 						<figure>
-							<MinusCircleIcon
-								className="h-4 w-4 cursor-pointer text-red-400"
+							<BackIcon
 								onPointerDown={(event) => {
 									event.stopPropagation();
 								}}
@@ -377,42 +388,63 @@ const CardSection = ({
 						</figure>
 					</div>
 					{trashIcon}
-				</>
+				</div>
 			);
 		}
 
 		if (renderEditAndDeleteCondition(post)) {
+			// default logged in user
+			const editTrashClassname = classNames({
+				"absolute  top-0 flex": true,
+				"left-[15px]":
+					cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+				"left-[-94px]":
+					cardTypeCondition === "list" || cardTypeCondition === "headlines",
+			});
+
 			return (
 				<>
-					{externalLinkIcon}
-					{isBookmarkCreatedByLoggedinUser(post) ? (
-						<>
-							{pencilIcon}
-							{isDeleteBookmarkLoading &&
-							deleteBookmarkId?.includes(post?.id) ? (
-								<div>
-									<Spinner size={15} />
-								</div>
-							) : (
-								trashIcon
-							)}
-						</>
-					) : (
-						pencilIcon
-					)}
+					<div className={editTrashClassname}>
+						{isBookmarkCreatedByLoggedinUser(post) ? (
+							<>
+								{pencilIcon}
+								{isDeleteBookmarkLoading &&
+								deleteBookmarkId?.includes(post?.id) ? (
+									<div>
+										<Spinner size={15} />
+									</div>
+								) : (
+									trashIcon
+								)}
+							</>
+						) : (
+							pencilIcon
+						)}
+					</div>
+					<div className=" absolute right-0 top-0">{externalLinkIcon}</div>
 				</>
 			);
 		}
 
-		return externalLinkIcon;
+		return (
+			<div className=" absolute left-[10px] top-0">{externalLinkIcon}</div>
+		);
 	};
 
 	const renderAvatar = (item: SingleListData) => {
+		const isCreatedByLoggedInUser = isBookmarkCreatedByLoggedinUser(item);
+
+		const avatarClassName = classNames({
+			"absolute h-5 w-5 rounded-full": true,
+			"right-[33px] top-[3px]": isCreatedByLoggedInUser,
+			"right-0 top-0": !isCreatedByLoggedInUser,
+		});
+
 		if (!isNil(item?.user_id?.profile_pic)) {
 			return (
 				<Image
 					alt="user_img"
-					className=" h-5 w-5 rounded-full"
+					className={avatarClassName}
 					height={20}
 					src={item?.user_id?.profile_pic}
 					width={20}
@@ -420,12 +452,12 @@ const CardSection = ({
 			);
 		}
 
-		return <DefaultUserIcon className="h-5 w-5" />;
+		return <DefaultUserIcon className={`h-5 w-5 ${avatarClassName}`} />;
 	};
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -546,9 +578,11 @@ const CardSection = ({
 			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
 				true,
 			absolute: true,
-			"top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%]":
+			// "bottom-[-1%] left-[7%] transform translate-x-[-50%] translate-y-[-50%]":
+			// 	cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[4px] left-[21px]": cardTypeCondition === "list",
+			"top-[9px] left-[21px]": cardTypeCondition === "list",
 		});
 
 		return (
@@ -589,7 +623,7 @@ const CardSection = ({
 		const size = cardTypeCondition === "headlines" ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === "headlines",
-			"h-[15] w-[15px]": cardTypeCondition !== "headlines",
+			"h-[14] w-[14px]": cardTypeCondition !== "headlines",
 		});
 
 		if (favIconErrorImgs?.includes(item?.id)) {
@@ -626,29 +660,46 @@ const CardSection = ({
 
 	const renderCategoryBadge = (item: SingleListData) => {
 		const bookmarkCategoryData = singleBookmarkCategoryData(item?.category_id);
+
 		return (
 			<>
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<Badge
-							renderBadgeContent={() => (
-								<div className="flex items-center">
-									<figure className="h-[12px] w-[12px]">
-										{find(
-											options(),
-											(optionItem) =>
-												optionItem?.label === bookmarkCategoryData?.icon,
-										)?.icon(colorPickerColors[1], "12")}
-									</figure>
-									<p className="ml-1">{bookmarkCategoryData?.category_name}</p>
-								</div>
-							)}
-						/>
+						<div className="ml-1 flex items-center text-[13px]  font-450 leading-4 text-custom-gray-10">
+							<p className="mr-1">in</p>
+							<div
+								className="flex h-[14px] w-[14px] items-center justify-center rounded-full"
+								style={{ backgroundColor: bookmarkCategoryData?.icon_color }}
+							>
+								{find(
+									options(),
+									(optionItem) =>
+										optionItem?.label === bookmarkCategoryData?.icon,
+								)?.icon(
+									bookmarkCategoryData?.icon_color === "#ffffff"
+										? colorPickerColors[1]
+										: colorPickerColors[0],
+									"9",
+								)}
+							</div>
+							<p className="ml-1 text-[13px]  font-450 leading-4 text-custom-gray-10">
+								{bookmarkCategoryData?.category_name}
+							</p>
+						</div>
 					)}
 			</>
 		);
 	};
+
+	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
+		<div
+			className="rounded-[5px] bg-gray-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-light-10"
+			key={id}
+		>
+			#{name}
+		</div>
+	);
 
 	const renderSortByCondition = () =>
 		bookmarksList?.map((item) => ({
@@ -702,16 +753,13 @@ const CardSection = ({
 							{bookmarksInfoValue?.includes("tags" as never) &&
 								!isEmpty(item?.addedTags) && (
 									<div className="flex flex-wrap items-center space-x-1">
-										{item?.addedTags?.map((tag) => (
-											<div className="text-xs text-blue-500" key={tag?.id}>
-												#{tag?.name}
-											</div>
-										))}
+										{item?.addedTags?.map((tag) =>
+											renderTag(tag?.id, tag?.name),
+										)}
 									</div>
 								)}
 							{bookmarksInfoValue?.includes("info" as never) && (
-								<div className="flex flex-wrap items-center space-x-2">
-									{renderCategoryBadge(item)}
+								<div className="flex flex-wrap items-center">
 									{renderFavIcon(item)}
 									{renderUrl(item)}
 									{item?.inserted_at && (
@@ -719,6 +767,7 @@ const CardSection = ({
 											{format(new Date(item?.inserted_at || ""), "MMMM dd")}
 										</p>
 									)}
+									{renderCategoryBadge(item)}
 								</div>
 							)}
 						</div>
@@ -726,7 +775,7 @@ const CardSection = ({
 				)}
 				<div
 					// eslint-disable-next-line tailwindcss/no-custom-classname
-					className={`items-center space-x-1 ${
+					className={`w-full items-center space-x-1 ${
 						// @ts-expect-error // this is cypress env, TS check not needed
 						!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
 					} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
@@ -770,18 +819,14 @@ const CardSection = ({
 							)}
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center sm:mt-[1px]">
-									{item?.addedTags?.map((tag) => (
-										<div className="mr-1 text-xs text-blue-500" key={tag?.id}>
-											#{tag?.name}
-										</div>
-									))}
+								<div className="mt-[6px] flex items-center space-x-[1px] sm:mt-[1px]">
+									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
 						{bookmarksInfoValue?.includes("info" as never) && (
-							<div className="mt-[6px] flex flex-wrap items-center space-x-2 sm:mt-[1px] sm:space-x-1">
-								{renderFavIcon(item)}
+							<div className="mt-[6px] flex flex-wrap items-center sm:mt-[1px] sm:space-x-1">
 								{renderCategoryBadge(item)}
+								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
 									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
@@ -833,8 +878,12 @@ const CardSection = ({
 	);
 
 	const listWrapperClass = classNames({
-		"p-2": cardTypeCondition === "list" || cardTypeCondition === "headlines",
-		"p-6": cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+		// "p-2": cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		"mt-[47px]": true,
+		"px-4 py-2":
+			cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		"px-6 py-2":
+			cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 	});
 
 	return (

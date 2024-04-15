@@ -1,7 +1,7 @@
 const TrashIconRed = () => (
 	<svg
 		fill="none"
-		height="17"
+		height="16"
 		viewBox="0 0 16 17"
 		width="16"
 		xmlns="http://www.w3.org/2000/svg"

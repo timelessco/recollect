@@ -69,13 +69,13 @@ const SidePaneUserDropdown = () => {
 								{userProfileData?.user_name}
 							</p>
 						</div>
-						<figure className="mr-3">
+						<figure>
 							<DownArrowGray />
 						</figure>
 					</div>
 				}
 				menuButtonActiveClassName="bg-custom-gray-8 rounded-lg"
-				menuButtonClassName="w-[86%]"
+				menuButtonClassName="w-full"
 				menuClassName={dropdownMenuClassName}
 			>
 				{[{ label: "Sign Out", value: "sign-out" }]?.map((item) => (
@@ -84,11 +84,11 @@ const SidePaneUserDropdown = () => {
 					</AriaDropdownMenu>
 				))}
 			</AriaDropdown>
-			<Button onClick={() => setShowSidePane(false)}>
+			{/* <Button onClick={() => setShowSidePane(false)}>
 				<figure>
 					<ChevronDoubleLeftIcon className="h-4 w-4 shrink-0 text-gray-400" />
 				</figure>
-			</Button>
+			</Button> */}
 		</div>
 	);
 };
