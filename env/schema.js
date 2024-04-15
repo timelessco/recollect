@@ -9,6 +9,8 @@ import { z } from "zod";
 export const serverSchema = z.object({
 	NODE_ENV: z.enum(["development", "test", "production"]),
 	SUPABASE_SERVICE_KEY: z.string(),
+	UMAMI_SRC: z.string().optional(),
+	UMAMI_ID: z.string().optional(),
 	SUPABASE_JWT_SECRET_KEY: z.string(),
 	SENDGRID_KEY: z.string().optional(),
 	SENTRY_DSN: z.string().optional(),
@@ -33,6 +35,8 @@ export const serverEnvironment = {
 	SCREENSHOT_TOKEN: process.env.SCREENSHOT_TOKEN,
 	SCREENSHOT_API: process.env.SCREENSHOT_API,
 	SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
+	UMAMI_SRC: process.env.UMAMI_SRC,
+	UMAMI_ID: process.env.UMAMI_ID,
 	SUPABASE_JWT_SECRET_KEY: process.env.SUPABASE_JWT_SECRET_KEY,
 	IMAGE_CAPTION_URL: process.env.IMAGE_CAPTION_URL,
 	IMAGE_CAPTION_TOKEN: process.env.IMAGE_CAPTION_TOKEN,
