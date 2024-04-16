@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ChevronDoubleRightIcon } from "@heroicons/react/solid";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment } from "allotment";
@@ -7,8 +6,6 @@ import classNames from "classnames";
 import find from "lodash/find";
 
 import Button from "../../components/atoms/button";
-// import SearchInput from "../../components/searchInput";
-// import OptionsIconGray from "../../icons/optionsIconGray";
 import PlusIconWhite from "../../icons/plusIconWhite";
 import {
 	type BookmarksCountTypes,
@@ -116,11 +113,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
-	const { isMobile, isTablet } = useIsMobileView();
+	const { isMobile, isDesktop } = useIsMobileView();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
-
-	const isDesktop = !isMobile && !isTablet;
 
 	useEffect(() => {
 		if (isDesktop) {
@@ -290,7 +285,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			/>
 		</div>
 	) : (
-		<Button className="mr-1" onClick={() => setShowSearchBar(true)}>
+		<Button
+			className="mr-1 bg-transparent hover:bg-transparent"
+			onClick={() => setShowSearchBar(true)}
+		>
 			<SearchInputSearchIcon size="16" />
 		</Button>
 	);
@@ -438,7 +436,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		<>
 			{!showSidePane && (
 				<Button
-					className="absolute left-[2px] cursor-pointer p-[6px] hover:bg-transparent"
+					className="absolute left-[2px] cursor-pointer bg-transparent p-[6px] hover:bg-transparent"
 					onClick={() => setShowSidePane(true)}
 				>
 					<CollapseHandle />
@@ -449,7 +447,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] bg-custom-white-2 absolute top-0 w-full z-10 bg-custom-white-3 backdrop-blur-[20.5px]",
+			"flex items-center justify-between py-[6.5px] bg-custom-white-1 absolute top-0 w-full z-10  backdrop-blur-[20.5px]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -464,8 +462,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		const navOptionsWrapperClass = classNames({
-			"flex w-4/5 items-center justify-between xl:justify-end xl:pl-2 sm:mt-0":
-				true,
+			"flex w-4/5 items-center justify-between xl:justify-end  sm:mt-0": true,
 			"xl:w-full": showSearchBar,
 			"xl:w-1/4": !showSearchBar,
 		});
@@ -495,12 +492,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				)}
 				<div className={navOptionsWrapperClass}>
 					{/* this div is there for centering needs */}
-					<div className="h-5 w-5 xl:hidden" />
+					<div className="h-5 w-[1%] xl:hidden" />
 					{renderSearchBar}
-					<div className="flex w-[252px] items-center justify-end space-x-3 xl:w-max xl:space-x-0">
+					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
 						{renderViewBasedHeaderOptions()}
 						{/* {typeof categoryId === "number" && <ShareDropdown />} */}
-						{currentPath !== TRASH_URL && isDesktop && (
+						{currentPath !== TRASH_URL && (
 							<Button
 								className="rounded-full p-[7px] hover:bg-black"
 								onClick={onNavAddClick}
@@ -540,7 +537,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
 			<Allotment
-				defaultSizes={[144, screenWidth]}
+				defaultSizes={[10, screenWidth]}
 				onChange={(value: number[]) => {
 					if (value[0] === 0) {
 						setShowSidePane(false);

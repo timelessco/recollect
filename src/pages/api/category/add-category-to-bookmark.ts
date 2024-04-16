@@ -117,8 +117,8 @@ export default async function handler(
 
 	const categoryUserId = categoryData?.[0]?.user_id;
 
-	if (categoryUserId !== userId) {
-		// the user is not the category owner
+	if (categoryUserId !== userId && categoryId !== 0) {
+		// the user is not the category owner, and category id should not be 0 if it is then user is moving bookmark to uncategorized
 
 		// we check if user is a collaborator if so check users edit access in the category
 
