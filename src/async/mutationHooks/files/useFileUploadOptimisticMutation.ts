@@ -32,13 +32,6 @@ export default function useFileUploadOptimisticMutation() {
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const supabase = useSupabaseClient();
 
-	// const fileUploadOptimisticMutation = useMutation(uploadFile, {
-	// 	onSuccess: () => {
-	// 		// Invalidate and refetch
-	// 		void queryClient.invalidateQueries([BOOKMARKS_KEY]);
-	// 	},
-	// });
-
 	const { sortBy } = useGetSortBy();
 
 	const fileUploadOptimisticMutation = useMutation(uploadFile, {
@@ -93,6 +86,7 @@ export default function useFileUploadOptimisticMutation() {
 				},
 			);
 
+			const uploadFileNamePath = data?.uploadFileNamePath;
 			/* Vercel has a limit where we cannot send files that are more than 4.5mb to 
 				server less functions https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions.
 				Because of this constraint we are uploading the resource in the client side itself
@@ -101,7 +95,9 @@ export default function useFileUploadOptimisticMutation() {
 			// generate signed url to make the upload more secure as its taking place in client side
 			const { data: uploadTokenData, error } = await supabase.storage
 				.from(FILES_STORAGE_NAME)
-				.createSignedUploadUrl(`public/${session?.user?.id}/${fileName}`);
+				.createSignedUploadUrl(
+					`public/${session?.user?.id}/${uploadFileNamePath}`,
+				);
 
 			// if this is true only then upload the file to s3
 			const errorCondition =
@@ -114,7 +110,7 @@ export default function useFileUploadOptimisticMutation() {
 				const { error: uploadError } = await supabase.storage
 					.from(FILES_STORAGE_NAME)
 					.uploadToSignedUrl(
-						`public/${session?.user?.id}/${fileName}`,
+						`public/${session?.user?.id}/${uploadFileNamePath}`,
 						uploadTokenData?.token,
 						data?.file,
 					);

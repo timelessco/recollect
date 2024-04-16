@@ -14,6 +14,8 @@ import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
 
+import uniqid from "uniqid";
+
 // import "react-toastify/dist/ReactToastify.minimal.css";
 
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
@@ -77,7 +79,11 @@ import {
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "../../utils/constants";
-import { generateVideoThumbnail, uploadFileLimit } from "../../utils/helpers";
+import {
+	generateVideoThumbnail,
+	parseUploadFileName,
+	uploadFileLimit,
+} from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
@@ -566,12 +572,17 @@ const Dashboard = () => {
 					if (uploadFileLimit(acceptedFiles[index]?.size)) {
 						errorToast("File size is larger than 10mb", "fileSizeError");
 					} else {
+						const uploadFileNamePath = uniqid.time(
+							"",
+							`-${parseUploadFileName(acceptedFiles[index]?.name)}`,
+						);
 						mutationApiCall(
 							fileUploadOptimisticMutation.mutateAsync({
 								file: acceptedFiles[index],
 								session,
 								category_id: CATEGORY_ID,
 								thumbnailBase64,
+								uploadFileNamePath,
 							}),
 						).catch((error) => console.error(error));
 					}

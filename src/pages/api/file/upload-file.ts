@@ -205,8 +205,11 @@ export default async (
 	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
 	const fileType = data?.fields?.type?.[0];
 
+	const uploadPath = parseUploadFileName(
+		data?.fields?.uploadFileNamePath?.[0] as string,
+	);
 	// if the uploaded file is valid this happens
-	const storagePath = `public/${userId}/${fileName}`;
+	const storagePath = `public/${userId}/${uploadPath}`;
 
 	// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
 	// the public url for the uploaded file is got
@@ -240,7 +243,7 @@ export default async (
 		const { ogImage: image, meta_data: metaData } = await videoLogic(
 			data,
 			userId,
-			fileName,
+			uploadPath,
 			supabase,
 		);
 
