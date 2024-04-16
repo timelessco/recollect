@@ -329,6 +329,8 @@ export type UploadFileApiPayload = {
 	file: FileType;
 	session: SupabaseSessionType;
 	thumbnailBase64: string | null;
+	// this is the path where the file in uploaded storage
+	uploadFileNamePath: string;
 };
 
 export type DeleteBookmarkPayload = {
@@ -369,6 +371,7 @@ export type ParsedFormDataType = {
 		name?: string;
 		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
 		type?: string;
+		uploadFileNamePath?: string;
 	};
 	files: {
 		file?: Array<{

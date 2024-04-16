@@ -879,6 +879,7 @@ export const uploadFile = async ({
 	session,
 	category_id,
 	thumbnailBase64,
+	uploadFileNamePath,
 }: UploadFileApiPayload) => {
 	try {
 		const fileName = parseUploadFileName(file?.name);
@@ -891,6 +892,7 @@ export const uploadFile = async ({
 				path: file?.path,
 				name: fileName,
 				type: file?.type,
+				uploadFileNamePath,
 			},
 			{
 				headers: {
