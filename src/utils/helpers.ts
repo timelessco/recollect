@@ -182,11 +182,14 @@ export const clickToOpenInNewTabLogic = (
 	url: SingleListData["url"],
 	isPublicPage: CardSectionProps["isPublicPage"],
 	isTrashPage: boolean,
+	isDesktop: boolean,
 ) => {
 	event.preventDefault();
+
 	// open on single click
-	if (isPublicPage) {
+	if (isPublicPage || !isDesktop) {
 		window.open(url, "_blank");
+		return;
 	}
 
 	// open on double click

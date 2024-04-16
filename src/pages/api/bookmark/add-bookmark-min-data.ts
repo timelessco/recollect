@@ -117,13 +117,14 @@ export default async function handler(
 		};
 	} catch (scrapperError) {
 		if (scrapperError) {
-			scraperApiError = scrapperError as VerifyErrors;
+			scraperApiError = scrapperError as Error;
+			Sentry.captureException(`Scrapper error: ${url}`);
 			response.status(500).json({
 				data: null,
 				error: scrapperError as string,
 				message: "Scrapper error",
 			});
-			throw new Error("ERROR: scrapper error");
+			return;
 		}
 	}
 

@@ -110,6 +110,11 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				session?.user?.id,
 			]);
 
+			if (!response?.data?.data) {
+				// something went wrong when adding min data so we return
+				return;
+			}
+
 			const data = response?.data?.data[0];
 			const ogImg = data?.ogImage;
 			if (!ogImg || isEmpty(ogImg) || !ogImg?.includes("https://")) {

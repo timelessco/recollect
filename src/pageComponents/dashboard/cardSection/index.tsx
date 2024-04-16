@@ -15,6 +15,7 @@ import isNull from "lodash/isNull";
 import { Item } from "react-stately";
 
 import Spinner from "../../../components/spinner";
+import useIsMobileView from "../../../hooks/useIsMobileView";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
@@ -110,7 +111,7 @@ const CardSection = ({
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;
 	const queryClient = useQueryClient();
-
+	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
@@ -482,7 +483,7 @@ const CardSection = ({
 		const imgClassName = classNames({
 			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
 				cardTypeCondition === "list",
-			"h-[194px] w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px]":
+			" w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img aspect-[1.9047]":
 				cardTypeCondition === "card",
 			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === "moodboard",
@@ -491,7 +492,7 @@ const CardSection = ({
 		const loaderClassName = classNames({
 			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover":
 				cardTypeCondition === "list",
-			"animate-pulse bg-slate-200 w-full h-[194px] w-full object-cover":
+			"animate-pulse bg-slate-200 w-full  aspect-[1.9047] w-full object-cover":
 				cardTypeCondition === "card",
 			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
 				cardTypeCondition === "moodboard",
@@ -501,7 +502,7 @@ const CardSection = ({
 			relative: isVideo,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px]": cardTypeCondition === "list",
-			"w-full h-[194px] ": cardTypeCondition === "card",
+			"w-full": cardTypeCondition === "card",
 			"h-36":
 				cardTypeCondition === "moodboard" &&
 				(isOgImgLoading || isBookmarkLoading) &&
@@ -595,6 +596,7 @@ const CardSection = ({
 						url,
 						isPublicPage,
 						categorySlug === TRASH_URL,
+						isDesktop,
 					)
 				}
 				onKeyDown={() => {}}

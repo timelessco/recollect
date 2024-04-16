@@ -11,6 +11,7 @@ import {
 } from "react-aria";
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
+import useIsMobileView from "../../../hooks/useIsMobileView";
 import { type SingleListData } from "../../../types/apiTypes";
 import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
 
@@ -36,6 +37,7 @@ const Option = ({
 	type: SingleListData["type"];
 	url: string;
 }) => {
+	const { isDesktop } = useIsMobileView();
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
@@ -88,7 +90,13 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) =>
-					clickToOpenInNewTabLogic(event, url, isPublicPage, isTrashPage)
+					clickToOpenInNewTabLogic(
+						event,
+						url,
+						isPublicPage,
+						isTrashPage,
+						isDesktop,
+					)
 				}
 			/>
 			{item.rendered}
