@@ -1205,10 +1205,13 @@ const Dashboard = () => {
 
 							const delBookmarkTitle = delBookmarkData?.title as string;
 							const delBookmarkImgLink = delBookmarkData?.ogImage as string;
+							const delBookmarkUrl = delBookmarkData?.url as string;
+
 							return {
 								id: idAsNumber,
 								title: delBookmarkTitle,
 								ogImage: delBookmarkImgLink,
+								url: delBookmarkUrl,
 							};
 						});
 
