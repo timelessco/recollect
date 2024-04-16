@@ -338,6 +338,7 @@ export type DeleteBookmarkPayload = {
 		id: SingleListData["id"];
 		ogImage: SingleListData["ogImage"];
 		title: SingleListData["title"];
+		url: SingleListData["url"];
 	}>;
 	session: SupabaseSessionType;
 };

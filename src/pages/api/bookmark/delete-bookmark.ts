@@ -73,24 +73,30 @@ export default async function handler(
 		.from(BOOKMAKRS_STORAGE_NAME)
 		.remove(deleteImagePaths)) as { error: ErrorResponse };
 
-	// delete file images in bucket
+	// delete file images in bucket, this will delete the video thumbnail too
 
-	const deleteFileImagesPaths = apiData?.deleteData?.map(
-		(item) => `public/${userId}/${item?.title}`,
-	);
+	const deleteFileImagesPaths = apiData?.deleteData?.map((item) => {
+		const name = item?.ogImage?.slice(
+			Math.max(0, item?.ogImage.lastIndexOf("/") + 1),
+		);
+
+		return `public/${userId}/${name}`;
+	});
 
 	const { error: fileStorageError } = (await supabase.storage
 		.from(FILES_STORAGE_NAME)
 		.remove(deleteFileImagesPaths)) as { error: ErrorResponse };
 
-	// deletes the video thumbnails that are generated
-	const deleteFileThumbnailImagesPaths = apiData?.deleteData?.map(
-		(item) => `public/${userId}/thumbnail-${item?.title}`,
-	);
+	// deletes the videos
+	// for this we get name from the url as the ogImage will only have the video thumbnail name
+	const deleteFileVideoPaths = apiData?.deleteData?.map((item) => {
+		const name = item?.url?.slice(Math.max(0, item?.url.lastIndexOf("/") + 1));
+		return `public/${userId}/${name}`;
+	});
 
-	const { error: fileThumbnailStorageError } = (await supabase.storage
+	const { error: fileVideoStorageError } = (await supabase.storage
 		.from(FILES_STORAGE_NAME)
-		.remove(deleteFileThumbnailImagesPaths)) as { error: ErrorResponse };
+		.remove(deleteFileVideoPaths)) as { error: ErrorResponse };
 
 	// delete tags
 
@@ -117,7 +123,7 @@ export default async function handler(
 		isNull(bookmarksError) &&
 		isNull(bookmarkTagsError) &&
 		isNull(fileStorageError) &&
-		isNull(fileThumbnailStorageError) &&
+		isNull(fileVideoStorageError) &&
 		isNull(storageOgImageError) &&
 		isNull(storageScreenshotOgImageError)
 	) {

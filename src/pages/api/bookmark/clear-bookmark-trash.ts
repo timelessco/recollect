@@ -73,11 +73,12 @@ export default async function handler(
 				id: SingleListData["id"];
 				ogImage: SingleListData["ogImage"];
 				title: SingleListData["title"];
+				url: SingleListData["url"];
 			}> | null;
 			error: PostgrestError | VerifyErrors | string | null;
 		} = await supabase
 			.from(MAIN_TABLE_NAME)
-			.select(`id, ogImage, title`)
+			.select(`id, ogImage, title, url`)
 			.eq("user_id", request.body.user_id)
 			.match({ trash: true });
 
