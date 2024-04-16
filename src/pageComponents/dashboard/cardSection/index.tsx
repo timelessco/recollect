@@ -827,7 +827,6 @@ const CardSection = ({
 							)}
 						{bookmarksInfoValue?.includes("info" as never) && (
 							<div className="mt-[6px] flex flex-wrap items-center sm:mt-[1px] sm:space-x-1">
-								{renderCategoryBadge(item)}
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
@@ -835,6 +834,7 @@ const CardSection = ({
 										{format(new Date(item?.inserted_at || ""), "dd MMM")}
 									</p>
 								)}
+								{renderCategoryBadge(item)}
 							</div>
 						)}
 					</div>

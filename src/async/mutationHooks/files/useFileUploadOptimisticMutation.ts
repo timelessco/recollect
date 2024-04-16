@@ -75,7 +75,7 @@ export default function useFileUploadOptimisticMutation() {
 										data: [
 											{
 												title: fileName,
-												url: "https://supabase.com/",
+												url: "",
 												inserted_at: new Date(),
 											},
 											...item.data,
