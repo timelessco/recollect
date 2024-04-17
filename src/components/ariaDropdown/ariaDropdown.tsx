@@ -10,6 +10,7 @@ type AriaDropDownPropertyTypes = {
 	menuButtonClassName?: string;
 	menuClassName?: string;
 	menuOpenToggle?: (value: boolean) => void;
+	onButtonClick?: (event: React.MouseEvent<HTMLElement>) => void;
 };
 
 const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
@@ -22,6 +23,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 		children,
 		// we have this as a prop because i dont want to send menu state to button render prop
 		menuButtonActiveClassName,
+		onButtonClick = () => null,
 	} = props;
 
 	useEffect(() => {
@@ -34,6 +36,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 				className={`${menuButtonClassName ?? ""} ${
 					(menu.open && menuButtonActiveClassName) ?? ""
 				} focus-visible:outline-none`}
+				onClick={onButtonClick}
 				state={menu}
 			>
 				{menuButton}

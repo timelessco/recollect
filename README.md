@@ -52,3 +52,5 @@ Pull requests are welcome please do check out our guides
 
 See [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md), then
 [`.github/DEVELOPMENT.md`](./.github/DEVELOPMENT.md). Thanks! 💖
+
+Docs for self hosting coming very soon !

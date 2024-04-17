@@ -503,3 +503,15 @@ input[type="checkbox"]:checked + .checkbox-div {
 
 	@apply text-gray-light-12;
 }
+
+/* for the collections side pane arrow collapse rotate */
+.aria-disclosure-button[aria-expanded="false"]
+	.collections-sidepane-down-arrow {
+	rotate: -90deg;
+	transition: rotate 150ms;
+}
+
+.aria-disclosure-button[aria-expanded="true"] .collections-sidepane-down-arrow {
+	rotate: 0deg;
+	transition: rotate 150ms;
+}

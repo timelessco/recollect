@@ -2,7 +2,9 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
+import AriaDisclosure from "../../../components/ariaDisclosure";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import DownArrowGray from "../../../icons/downArrowGray";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
@@ -43,21 +45,29 @@ const SidePaneTypesList = () => {
 
 	return (
 		<div className="pt-4">
-			<div className="flex items-center justify-between px-1 py-[7.5px]">
-				<p className="text-[13px] font-medium leading-[15px]  text-custom-gray-10">
-					Types
-				</p>
-			</div>
-			<div>
-				{optionsMenuList?.map((item) => (
-					<SingleListItemComponent
-						extendedClassname="py-[6px]"
-						item={item}
-						key={item.id}
-						showIconDropdown={false}
-					/>
-				))}
-			</div>
+			<AriaDisclosure
+				renderDisclosureButton={
+					<div className="group flex items-center px-1 py-[7.5px] text-[13px] font-medium leading-[15px]  text-custom-gray-10">
+						<p className="mr-1">Types</p>
+						<DownArrowGray
+							className="collections-sidepane-down-arrow hidden group-hover:block"
+							fill="currentColor"
+							size={10}
+						/>
+					</div>
+				}
+			>
+				<div>
+					{optionsMenuList?.map((item) => (
+						<SingleListItemComponent
+							extendedClassname="py-[6px]"
+							item={item}
+							key={item.id}
+							showIconDropdown={false}
+						/>
+					))}
+				</div>
+			</AriaDisclosure>
 		</div>
 	);
 };
