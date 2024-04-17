@@ -36,12 +36,14 @@ import {
 } from "react-stately";
 
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
+import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIconGray from "../../../icons/optionsIconGray";
 import {
 	useLoadersStore,
@@ -313,6 +315,8 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	const queryClient = useQueryClient();
 	const session = useSession();
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
+	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
+		useState(false);
 
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
@@ -452,36 +456,95 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		}
 	};
 
+	const renderAddCategoryInput = showAddCategoryInput ? (
+		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
+			<div className="flex items-center">
+				<figure className="mr-2 h-[18px] w-[18px]">
+					<svg
+						fill={colorPickerColors[1]}
+						height="16"
+						viewBox="0 0 18 18"
+						width="16"
+					>
+						<use href="/sprite.svg#star-04" />
+					</svg>
+				</figure>
+				<input
+					autoFocus
+					className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
+					id="add-category-input"
+					onBlur={(event) => {
+						if (!isEmpty(event?.target?.value)) {
+							void onAddNewCategory((event.target as HTMLInputElement).value);
+						}
+
+						setShowAddCategoryInput(false);
+					}}
+					onKeyUp={(event) => {
+						if (
+							event.key === "Enter" &&
+							!isEmpty((event.target as HTMLInputElement).value)
+						) {
+							void onAddNewCategory((event.target as HTMLInputElement).value);
+							setShowAddCategoryInput(false);
+						}
+					}}
+					placeholder="Collection Name"
+				/>
+			</div>
+		</div>
+	) : (
+		// we have ths as null | undefined is not accepted as AriaDisclosure children
+		<span className="hidden" />
+	);
+
+	const collectionsHeader = (
+		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
+			<div className="flex items-center text-[13px] font-medium leading-[14.95px] text-custom-gray-10">
+				<p className="mr-1">Collections</p>
+				<DownArrowGray
+					className="collections-sidepane-down-arrow hidden group-hover:block"
+					fill="currentColor"
+					size={10}
+				/>
+			</div>
+			<AriaDropdown
+				menuButton={
+					<div
+						className={
+							isCollectionHeaderMenuOpen ? "block" : " hidden group-hover:block"
+						}
+					>
+						<OptionsIconGray />
+					</div>
+				}
+				menuButtonClassName="h-4 w-4"
+				menuClassName={`${dropdownMenuClassName} z-10`}
+				menuOpenToggle={(value) => {
+					setIsCollectionHeaderMenuOpen(value);
+				}}
+				onButtonClick={(event) => event?.stopPropagation()}
+			>
+				{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
+					<AriaDropdownMenu
+						key={item?.value}
+						onClick={() => {
+							if (item?.value === "add-category") {
+								setShowAddCategoryInput(true);
+							}
+						}}
+					>
+						<div className={` text-justify ${dropdownMenuItemClassName}`}>
+							{item?.label}
+						</div>
+					</AriaDropdownMenu>
+				))}
+			</AriaDropdown>
+		</div>
+	);
 	return (
 		<div className="pt-4">
-			<div className="flex items-center justify-between px-1 py-[7.5px]">
-				<p className="text-[13px] font-medium  leading-[15px] text-custom-gray-10">
-					Collections
-				</p>
-				<AriaDropdown
-					menuButton={
-						<div>
-							<OptionsIconGray />
-						</div>
-					}
-					menuButtonClassName="pr-1"
-					menuClassName={`${dropdownMenuClassName} z-10`}
-				>
-					{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
-						<AriaDropdownMenu
-							key={item?.value}
-							onClick={() => {
-								if (item?.value === "add-category") {
-									setShowAddCategoryInput(true);
-								}
-							}}
-						>
-							<div className={dropdownMenuItemClassName}>{item?.label}</div>
-						</AriaDropdownMenu>
-					))}
-				</AriaDropdown>
-			</div>
-			<div>
+			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
 				<div id="collections-wrapper">
 					<ListBoxDrop
 						aria-label="Categories-drop"
@@ -511,48 +574,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 						))}
 					</ListBoxDrop>
 				</div>
-				{showAddCategoryInput && (
-					<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
-						<div className="flex items-center">
-							<figure className="mr-2 h-[18px] w-[18px]">
-								<svg
-									fill={colorPickerColors[1]}
-									height="16"
-									viewBox="0 0 18 18"
-									width="16"
-								>
-									<use href="/sprite.svg#star-04" />
-								</svg>
-							</figure>
-							<input
-								autoFocus
-								className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
-								id="add-category-input"
-								onBlur={(event) => {
-									if (!isEmpty(event?.target?.value)) {
-										void onAddNewCategory(
-											(event.target as HTMLInputElement).value,
-										);
-									}
-
-									setShowAddCategoryInput(false);
-								}}
-								onKeyUp={(event) => {
-									if (
-										event.key === "Enter" &&
-										!isEmpty((event.target as HTMLInputElement).value)
-									) {
-										void onAddNewCategory(
-											(event.target as HTMLInputElement).value,
-										);
-										setShowAddCategoryInput(false);
-									}
-								}}
-								placeholder="Collection Name"
-							/>
-						</div>
-					</div>
-				)}
+				{renderAddCategoryInput}
 				<div
 					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-2"
 					id="add-category-button"
@@ -568,7 +590,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 						Add Collection
 					</p>
 				</div>
-			</div>
+			</AriaDisclosure>
 		</div>
 	);
 };
