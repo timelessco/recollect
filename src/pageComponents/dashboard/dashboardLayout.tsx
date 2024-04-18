@@ -54,6 +54,9 @@ import "react-modern-drawer/dist/index.css";
 import { isNull } from "lodash";
 
 import { AriaDropdown } from "../../components/ariaDropdown";
+import AddBookmarkDropdown, {
+	type AddBookmarkDropdownTypes,
+} from "../../components/customDropdowns.tsx/addBookmarkDropdown";
 import CollapseHandle from "../../icons/actionIcons/collapseHandle";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
@@ -69,6 +72,7 @@ import ShareContent from "./share/shareContent";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
+	onAddBookmark: AddBookmarkDropdownTypes["onAddBookmark"];
 	onAddNewCategory: (value: string) => Promise<void>;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onBookmarksDrop: (event: any) => Promise<void>;
@@ -80,7 +84,6 @@ type DashboardLayoutProps = {
 	onClearTrash: () => void;
 	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
-	onNavAddClick: () => void;
 	renderMainContent: () => ChildrenTypes;
 	setBookmarksView: (
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
@@ -103,7 +106,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		onClearTrash,
 		onIconSelect,
 		setBookmarksView,
-		onNavAddClick,
+		onAddBookmark,
 		onBookmarksDrop,
 		updateCategoryName,
 		onIconColorChange,
@@ -496,8 +499,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					{renderSearchBar}
 					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
 						{renderViewBasedHeaderOptions()}
-						{/* {typeof categoryId === "number" && <ShareDropdown />} */}
-						{currentPath !== TRASH_URL && (
+						{/* {currentPath !== TRASH_URL && (
 							<Button
 								className="rounded-full p-[7px] hover:bg-black"
 								onClick={onNavAddClick}
@@ -507,10 +509,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								<figure className="h-4 w-4">
 									<PlusIconWhite />
 								</figure>
-								{/* <span className="ml-[6px] font-medium leading-[14px] text-white xl:hidden">
-									Create
-								</span> */}
 							</Button>
+						)} */}
+						{currentPath !== TRASH_URL && (
+							<AddBookmarkDropdown onAddBookmark={onAddBookmark} />
 						)}
 					</div>
 				</div>

@@ -88,7 +88,6 @@ import { errorToast, successToast } from "../../utils/toastMessages";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
-import AddBookarkShortcutModal from "./modals/addBookmarkShortcutModal";
 import AddModalContent from "./modals/addModalContent";
 import SettingsModal from "./modals/settingsModal";
 import ShareCategoryModal from "./modals/shareCategoryModal";
@@ -1007,6 +1006,12 @@ const Dashboard = () => {
 		<>
 			<DashboardLayout
 				categoryId={CATEGORY_ID}
+				onAddBookmark={(url) => {
+					const finalUrl = url?.includes("https://") ? url : `https://${url}`;
+					void addBookmarkLogic(finalUrl);
+
+					toggleShowAddBookmarkShortcutModal();
+				}}
 				onAddNewCategory={async (newCategoryName) => {
 					if (!isNull(userProfileData?.data)) {
 						const response = (await mutationApiCall(
@@ -1151,7 +1156,6 @@ const Dashboard = () => {
 						}),
 					);
 				}}
-				onNavAddClick={() => toggleShowAddBookmarkShortcutModal()}
 				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
@@ -1176,7 +1180,7 @@ const Dashboard = () => {
 				// }}
 			/>
 			<ShareCategoryModal />
-			<AddBookarkShortcutModal
+			{/* <AddBookarkShortcutModal
 				isAddBookmarkLoading={false}
 				onAddBookmark={(url) => {
 					const finalUrl = url?.includes("https://") ? url : `https://${url}`;
@@ -1184,7 +1188,7 @@ const Dashboard = () => {
 
 					toggleShowAddBookmarkShortcutModal();
 				}}
-			/>
+			/> */}
 			<SettingsModal />
 			<WarningActionModal
 				buttonText="Delete"
