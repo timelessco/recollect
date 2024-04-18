@@ -1,4 +1,3 @@
-import { useRef, type Ref } from "react";
 import { isEmpty } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
@@ -18,8 +17,6 @@ export type AddBookmarkDropdownTypes = {
 };
 
 const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
-	const inputRef = useRef<HTMLInputElement>(null);
-
 	const {
 		register,
 		handleSubmit,
@@ -34,11 +31,9 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 
 	return (
 		<AriaDropdown
-			// isOpen={showAddBookmarkShortcutModal}
 			menuButton={
 				<Button
 					className="rounded-full p-[7px] hover:bg-black"
-					// onClick={onNavAddClick}
 					title="create"
 					type="dark"
 				>
@@ -48,12 +43,10 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 				</Button>
 			}
 			menuOpenToggle={(value) => {
-				if (!value) {
+				if (value === false) {
 					reset({ url: "" });
 					clearErrors();
 				}
-
-				inputRef?.current?.focus();
 			}}
 		>
 			<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
@@ -70,7 +63,6 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 						errorClassName="ml-2"
 						errorText="Enter valid URL"
 						isError={!isEmpty(errors)}
-						ref={inputRef}
 					/>
 				</form>
 			</div>

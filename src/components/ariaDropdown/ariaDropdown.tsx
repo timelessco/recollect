@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
@@ -18,6 +17,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 	const menu = useMenuState({
 		gutter: 1,
 		defaultOpen: props.isOpen,
+		setOpen: (value) => menuOpenToggle(value),
 	});
 	const {
 		menuButton,
@@ -30,10 +30,6 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 		menuButtonActiveClassName,
 		onButtonClick = () => null,
 	} = props;
-
-	useEffect(() => {
-		menuOpenToggle(menu?.open);
-	}, [menu?.open, menuOpenToggle]);
 
 	return (
 		<>
