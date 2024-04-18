@@ -1,9 +1,12 @@
+import { type RefObject } from "react";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
 
 type AriaDropDownPropertyTypes = {
 	children: ChildrenTypes;
+	// the element you want to focus when the menu opens
+	initialFocusRef?: RefObject<HTMLElement> | undefined;
 	isOpen?: boolean;
 	menuButton: ChildrenTypes;
 	menuButtonActiveClassName?: string;
@@ -44,6 +47,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 			</MenuButton>
 			<Menu
 				className={`${menuClassName ?? ""} focus-visible:outline-none`}
+				initialFocusRef={props.initialFocusRef}
 				state={menu}
 			>
 				{children}

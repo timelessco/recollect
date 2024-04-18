@@ -1,4 +1,5 @@
-import { isEmpty } from "lodash";
+import { useRef } from "react";
+import { isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import AddBoomarkInputIcon from "../../icons/miscellaneousIcons/addBoomarkInputIcon";
@@ -29,8 +30,16 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 		reset({ url: "" });
 	};
 
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const { ref, ...rest } = register("url", {
+		required: true,
+		pattern: URL_PATTERN,
+	});
+
 	return (
 		<AriaDropdown
+			initialFocusRef={inputRef}
 			menuButton={
 				<Button
 					className="rounded-full p-[7px] hover:bg-black"
@@ -55,14 +64,19 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 					<Input
 						autoFocus
 						className={`rounded-[11px] pl-[32px] ${grayInputClassName}`}
-						placeholder="Add a link or drop a file anywhere"
-						{...register("url", {
-							required: true,
-							pattern: URL_PATTERN,
-						})}
 						errorClassName="ml-2"
+						{...rest}
 						errorText="Enter valid URL"
 						isError={!isEmpty(errors)}
+						placeholder="Add a link or drop a file anywhere"
+						ref={(event) => {
+							ref(event);
+							if (!isNull(inputRef)) {
+								// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+								// @ts-expect-error
+								inputRef.current = event;
+							}
+						}}
 					/>
 				</form>
 			</div>
