@@ -16,8 +16,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 import uniqid from "uniqid";
 
-// import "react-toastify/dist/ReactToastify.minimal.css";
-
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
@@ -135,10 +133,6 @@ const Dashboard = () => {
 		(state) => state.toggleShareCategoryModal,
 	);
 
-	const toggleShowAddBookmarkShortcutModal = useModalStore(
-		(state) => state.toggleShowAddBookmarkShortcutModal,
-	);
-
 	const showDeleteBookmarkWarningModal = useModalStore(
 		(state) => state.showDeleteBookmarkWarningModal,
 	);
@@ -158,18 +152,6 @@ const Dashboard = () => {
 	const setShareCategoryId = useMiscellaneousStore(
 		(state) => state.setShareCategoryId,
 	);
-
-	useEffect(() => {
-		const down = (event: KeyboardEvent) => {
-			if (event.key === "k" && event.metaKey && categorySlug !== TRASH_URL) {
-				toggleShowAddBookmarkShortcutModal();
-			}
-		};
-
-		document.addEventListener("keydown", down);
-		return () => document.removeEventListener("keydown", down);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [categorySlug]);
 
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
@@ -1009,8 +991,6 @@ const Dashboard = () => {
 				onAddBookmark={(url) => {
 					const finalUrl = url?.includes("https://") ? url : `https://${url}`;
 					void addBookmarkLogic(finalUrl);
-
-					toggleShowAddBookmarkShortcutModal();
 				}}
 				onAddNewCategory={async (newCategoryName) => {
 					if (!isNull(userProfileData?.data)) {
@@ -1172,23 +1152,8 @@ const Dashboard = () => {
 					);
 				}}
 				userId={session?.user?.id ?? ""}
-				// onShareClick={() => {
-				//   if (CATEGORY_ID && !isNull(CATEGORY_ID) && CATEGORY_ID !== "trash") {
-				//     toggleShareCategoryModal();
-				//     setShareCategoryId(CATEGORY_ID as number);
-				//   }
-				// }}
 			/>
 			<ShareCategoryModal />
-			{/* <AddBookarkShortcutModal
-				isAddBookmarkLoading={false}
-				onAddBookmark={(url) => {
-					const finalUrl = url?.includes("https://") ? url : `https://${url}`;
-					void addBookmarkLogic(finalUrl);
-
-					toggleShowAddBookmarkShortcutModal();
-				}}
-			/> */}
 			<SettingsModal />
 			<WarningActionModal
 				buttonText="Delete"
