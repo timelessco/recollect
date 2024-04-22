@@ -181,8 +181,6 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 				<Ariakit.Menu
 					autoFocusOnHide={autoFocus}
 					autoFocusOnShow={autoFocus}
-					// className="menu"
-					// className={` z-10 ${currentSliderDropdownSlide === null ? "h-[115px]" : "h-[350px]"} ${dropdownMenuClassName}`}
 					className={menuClassName}
 					flip={!isSubmenu}
 					getAnchorRect={(anchor) =>
@@ -207,7 +205,6 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 								>
 									<Ariakit.MenuItem
 										aria-label="Back to parent menu"
-										// className={menuItemClassName}
 										focusOnHover={false}
 										hideOnClick={false}
 										onClick={() => {

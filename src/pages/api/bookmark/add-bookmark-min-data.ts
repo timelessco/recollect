@@ -6,7 +6,7 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
-import { eq, isEmpty, isNull } from "lodash";
+import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
 import {
@@ -117,14 +117,18 @@ export default async function handler(
 		};
 	} catch (scrapperError) {
 		if (scrapperError) {
-			scraperApiError = scrapperError as Error;
+			scraperApiError = scrapperError as string;
 			Sentry.captureException(`Scrapper error: ${url}`);
-			response.status(500).json({
-				data: null,
-				error: scrapperError as string,
-				message: "Scrapper error",
-			});
-			return;
+
+			// if scrapper error is there then we just add the url host name as the title and proceed
+			scrapperResponse = {
+				data: {
+					title: new URL(url)?.hostname,
+					description: null,
+					OgImage: null,
+					favIcon: null,
+				},
+			};
 		}
 	}
 

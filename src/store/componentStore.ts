@@ -13,11 +13,6 @@ export const useModalStore = create<ModalStoreState>((set) => ({
 		set((state) => ({
 			showShareCategoryModal: !state.showShareCategoryModal,
 		})),
-	showAddBookmarkShortcutModal: false,
-	toggleShowAddBookmarkShortcutModal: () =>
-		set((state) => ({
-			showAddBookmarkShortcutModal: !state.showAddBookmarkShortcutModal,
-		})),
 	showDeleteBookmarkWarningModal: false,
 	toggleShowDeleteBookmarkWarningModal: () =>
 		set((state) => ({
