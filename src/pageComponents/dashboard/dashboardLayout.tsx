@@ -456,7 +456,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
 				// "px-[7px]":
 				// 	currentBookmarkView === "headlines" || currentBookmarkView === "list",
-				"pl-[15px] pr-3": true,
+				"pl-[13px] ml-1 pr-3": true,
 			},
 		);
 
@@ -554,20 +554,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				}}
 				separator={false}
 			>
-				<Allotment.Pane
-					// className="transition-all duration-150 ease-in-out"
-					maxSize={600}
-					minSize={244}
-					snap
-					visible={showSidePane}
-				>
+				<Allotment.Pane maxSize={600} minSize={244} snap visible={showSidePane}>
 					<div className={`h-full ${showSidePane ? "block" : " hidden"}`}>
 						{renderSidePane}
 					</div>
 				</Allotment.Pane>
-				<Allotment.Pane className="transition-all duration-150 ease-in-out">
-					{renderMainPaneContent}
-				</Allotment.Pane>
+				<Allotment.Pane>{renderMainPaneContent}</Allotment.Pane>
 			</Allotment>
 		</div>
 	);

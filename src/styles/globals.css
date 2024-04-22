@@ -515,3 +515,8 @@ input[type="checkbox"]:checked + .checkbox-div {
 	rotate: 0deg;
 	transition: rotate 150ms;
 }
+
+.sash:hover {
+	/* adding important as some styles get getting overridden by lib */
+	@apply cursor-grabbing bg-gray-100 transition duration-700 ease-in-out !important;
+}
