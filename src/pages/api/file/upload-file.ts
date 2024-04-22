@@ -1,10 +1,17 @@
 // you might want to use regular 'fs' and not a promise one
 import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { type SupabaseClient } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/nextjs";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
+import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
+import { type VerifyErrors } from "jsonwebtoken";
 import jwtDecode from "jwt-decode";
+import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
 import {
@@ -14,7 +21,13 @@ import {
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
-import { FILES_STORAGE_NAME, MAIN_TABLE_NAME } from "../../../utils/constants";
+import {
+	FILES_STORAGE_NAME,
+	getBaseUrl,
+	MAIN_TABLE_NAME,
+	NEXT_API_URL,
+	UPLOAD_FILE_REMAINING_DATA_API,
+} from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
 import {
@@ -31,73 +44,6 @@ export const config = {
 
 type StorageDataType = {
 	publicUrl: string;
-};
-
-// this func gets the image caption
-const query = async (source: string) => {
-	const isImgCaptionEnvironmentsPresent =
-		process.env.IMAGE_CAPTION_TOKEN && process.env.IMAGE_CAPTION_URL;
-
-	if (isImgCaptionEnvironmentsPresent) {
-		const response = await fetch(source);
-		const arrayBuffer = await response.arrayBuffer();
-		const data = Buffer.from(arrayBuffer);
-
-		try {
-			const imgCaptionResponse = await fetch(
-				process.env.IMAGE_CAPTION_URL as string,
-				{
-					headers: {
-						Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
-					},
-					method: "POST",
-					body: data,
-				},
-			);
-
-			return imgCaptionResponse;
-		} catch (error) {
-			log("Img caption error", error);
-			return null;
-		}
-	} else {
-		log(`ERROR: Img caption failed due to missing tokens in env`);
-		return null;
-	}
-};
-
-/* 
-If the uploaded file is not a video then this function is called 
-this function generates the imageCaption and the meta_data for the file
-*/
-const notVideoLogic = async (storageData: StorageDataType) => {
-	const ogImage = storageData?.publicUrl;
-	const imageCaption = await query(ogImage as string);
-
-	const jsonResponse = (await imageCaption?.json()) as Array<{
-		generated_text: string;
-	}>;
-
-	let imgData;
-
-	if (storageData?.publicUrl) {
-		try {
-			imgData = await blurhashFromURL(storageData?.publicUrl);
-		} catch (error) {
-			log("Blur hash error", error);
-			imgData = {};
-		}
-	}
-
-	const meta_data = {
-		img_caption: jsonResponse?.[0]?.generated_text,
-		width: imgData?.width ?? null,
-		height: imgData?.height ?? null,
-		ogImgBlurUrl: imgData?.encoded ?? null,
-		favIcon: null,
-	};
-
-	return { ogImage, meta_data };
 };
 
 /* 
@@ -233,11 +179,11 @@ export default async (
 
 	if (!isVideo) {
 		// if file is not a video
-		const { ogImage: image, meta_data: metaData } =
-			await notVideoLogic(storageData);
+		// const { ogImage: image, meta_data: metaData } =
+		// 	await notVideoLogic(storageData);
 
-		ogImage = image;
-		meta_data = metaData;
+		ogImage = storageData?.publicUrl;
+		// meta_data = metaData;
 	} else {
 		// if file is a video
 		const { ogImage: image, meta_data: metaData } = await videoLogic(
@@ -252,7 +198,7 @@ export default async (
 	}
 
 	// we upload the final data in DB
-	const { error: DBerror } = await supabase
+	const { data: DatabaseData, error: DBerror } = (await supabase
 		.from(MAIN_TABLE_NAME)
 		.insert([
 			{
@@ -266,10 +212,34 @@ export default async (
 				meta_data,
 			},
 		])
-		.select();
+		.select(`id`)) as unknown as {
+		data: Array<{ id: SingleListData["id"] }>;
+		error: PostgrestError | VerifyErrors | string | null;
+	};
 
 	if (isNil(publicUrlError) && isNil(DBerror)) {
 		response.status(200).json({ success: true, error: null });
+
+		try {
+			if (!isEmpty(DatabaseData)) {
+				await axios.post(
+					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+					{
+						id: DatabaseData[0]?.id,
+						publicUrl: storageData?.publicUrl,
+						access_token: accessToken,
+					},
+				);
+			} else {
+				console.error("Remaining upload api error: upload data is empty");
+				Sentry.captureException(
+					`Remaining upload api error: upload data is empty`,
+				);
+			}
+		} catch (remainingerror) {
+			console.error(remainingerror);
+			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
+		}
 	} else {
 		response.status(500).json({
 			success: false,

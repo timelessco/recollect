@@ -94,6 +94,8 @@ export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
 
 // file upload api
 export const UPLOAD_FILE_API = "/file/upload-file";
+export const UPLOAD_FILE_REMAINING_DATA_API =
+	"/file/upload-file-remaining-data";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
