@@ -115,7 +115,10 @@ export default async function handler(
 
 	const { error: DBerror } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.update({ meta_data })
+		.update({
+			meta_data,
+			description: (meta_data?.img_caption as string) || "",
+		})
 		.match({ id });
 
 	if (isNil(DBerror)) {
