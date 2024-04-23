@@ -97,6 +97,7 @@ module.exports = {
 					"0px -3px 60px 11px rgba(0, 0, 0, 0.11), 0px 0px 3px rgba(0, 0, 0, 0.19)",
 				"custom-7":
 					"0px 6px 15px -5px #0000001C, 0px 1px 2px 0px #00000012, 0px 0px 1px 0px #00000030",
+				"custom-8": "0px 0px 0.87px 0px rgba(0, 0, 0, 0.26) inset",
 			},
 			fontSize: {
 				40: "40px",
