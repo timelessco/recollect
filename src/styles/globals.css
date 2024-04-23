@@ -519,12 +519,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 /* for side pane resizer animation */
 .split-view .sash-vertical {
 	/* adding important as some styles get getting overridden by lib */
-	@apply w-[2px] -translate-x-2/4  !important;
+	@apply ml-[3px] w-[2px] -translate-x-2/4 hover:w-[8px] hover:cursor-grabbing hover:bg-gray-gray-100 [&:not(:hover)]:w-[0.5px] [&:not(:hover)]:bg-custom-gray-15  !important;
 
-	transition: width 400ms;
-}
-
-.split-view .sash-vertical:hover {
-	/* adding important as some styles get getting overridden by lib */
-	@apply w-[8px] cursor-grabbing bg-gray-gray-100 !important;
+	transition: width 400ms ease-out;
 }
