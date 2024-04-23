@@ -232,10 +232,11 @@ main {
 
 /* drag and drop */
 
-.single-bookmark[aria-selected="true"] {
-	/* color: white;
-	background: #000; */
+.single-bookmark[aria-selected="true"] .test {
+	@apply rounded-b-lg rounded-t-none bg-black text-white;
+}
 
+.single-bookmark[aria-selected="true"].list {
 	@apply bg-black text-white;
 }
 
