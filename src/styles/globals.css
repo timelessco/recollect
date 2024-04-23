@@ -516,7 +516,15 @@ input[type="checkbox"]:checked + .checkbox-div {
 	transition: rotate 150ms;
 }
 
-.sash:hover {
+/* for side pane resizer animation */
+.split-view .sash-vertical {
 	/* adding important as some styles get getting overridden by lib */
-	@apply cursor-grabbing bg-gray-100 transition duration-700 ease-in-out !important;
+	@apply w-[2px] -translate-x-2/4  !important;
+
+	transition: width 400ms;
+}
+
+.split-view .sash-vertical:hover {
+	/* adding important as some styles get getting overridden by lib */
+	@apply w-[8px] cursor-grabbing bg-gray-gray-100 !important;
 }
