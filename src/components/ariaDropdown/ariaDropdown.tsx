@@ -19,7 +19,7 @@ type AriaDropDownPropertyTypes = {
 const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 	const menu = useMenuState({
 		gutter: 1,
-		defaultOpen: props.isOpen,
+		open: props.isOpen,
 		setOpen: (value) => menuOpenToggle(value),
 	});
 	const {

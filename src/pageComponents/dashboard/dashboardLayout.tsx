@@ -499,18 +499,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					{renderSearchBar}
 					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
 						{renderViewBasedHeaderOptions()}
-						{/* {currentPath !== TRASH_URL && (
-							<Button
-								className="rounded-full p-[7px] hover:bg-black"
-								onClick={onNavAddClick}
-								title="create"
-								type="dark"
-							>
-								<figure className="h-4 w-4">
-									<PlusIconWhite />
-								</figure>
-							</Button>
-						)} */}
 						{currentPath !== TRASH_URL && (
 							<AddBookmarkDropdown onAddBookmark={onAddBookmark} />
 						)}
