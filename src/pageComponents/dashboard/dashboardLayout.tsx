@@ -434,7 +434,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const collapseButtonCommonClasses =
-		"absolute left-[-16px]  mt-[-2px] h-[14px] w-[4px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
+		"absolute left-[-16px]  mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
@@ -554,7 +554,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				separator={false}
 			>
 				<Allotment.Pane
-					className="transition-all duration-[50ms] ease-in-out"
+					className="transition-all duration-[150ms] ease-in-out"
 					maxSize={600}
 					minSize={244}
 					snap
@@ -564,7 +564,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						{renderSidePane}
 					</div>
 				</Allotment.Pane>
-				<Allotment.Pane className="transition-all duration-[50ms] ease-in-out">
+				<Allotment.Pane className="transition-all duration-[150ms] ease-in-out">
 					{renderMainPaneContent}
 				</Allotment.Pane>
 			</Allotment>
