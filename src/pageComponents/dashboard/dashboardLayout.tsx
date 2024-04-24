@@ -6,7 +6,6 @@ import classNames from "classnames";
 import find from "lodash/find";
 
 import Button from "../../components/atoms/button";
-import PlusIconWhite from "../../icons/plusIconWhite";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
@@ -57,7 +56,6 @@ import { AriaDropdown } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
-import CollapseHandle from "../../icons/actionIcons/collapseHandle";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import GlobeIcon from "../../icons/globeIcon";
@@ -435,15 +433,28 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 	};
 
+	const collapseButtonCommonClasses =
+		"absolute left-[-16px]  mt-[-2px] h-[14px] w-[4px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
-				<Button
-					className="absolute left-[2px] cursor-pointer bg-transparent p-[6px] hover:bg-transparent"
-					onClick={() => setShowSidePane(true)}
-				>
-					<CollapseHandle />
-				</Button>
+				<div className="relative">
+					<div className="">
+						<button
+							className="group"
+							data-am-linearrow="tooltip tooltip-bottom"
+							onClick={() => setShowSidePane(true)}
+							type="button"
+						>
+							<div
+								className={`${collapseButtonCommonClasses} top-[2px] group-hover:rotate-[-20deg]`}
+							/>
+							<div
+								className={`${collapseButtonCommonClasses}  top-[12px]  group-hover:rotate-[20deg]`}
+							/>
+						</button>
+					</div>
+				</div>
 			)}
 		</>
 	);
