@@ -6,7 +6,6 @@ import classNames from "classnames";
 import find from "lodash/find";
 
 import Button from "../../components/atoms/button";
-import PlusIconWhite from "../../icons/plusIconWhite";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
@@ -57,7 +56,6 @@ import { AriaDropdown } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
-import CollapseHandle from "../../icons/actionIcons/collapseHandle";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import GlobeIcon from "../../icons/globeIcon";
@@ -435,15 +433,28 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 	};
 
+	const collapseButtonCommonClasses =
+		"absolute left-[-16px]  mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
-				<Button
-					className="absolute left-[2px] cursor-pointer bg-transparent p-[6px] hover:bg-transparent"
-					onClick={() => setShowSidePane(true)}
-				>
-					<CollapseHandle />
-				</Button>
+				<div className="relative">
+					<div className="">
+						<button
+							className="group"
+							data-am-linearrow="tooltip tooltip-bottom"
+							onClick={() => setShowSidePane(true)}
+							type="button"
+						>
+							<div
+								className={`${collapseButtonCommonClasses} top-[2px] group-hover:rotate-[-20deg]`}
+							/>
+							<div
+								className={`${collapseButtonCommonClasses}  top-[12px]  group-hover:rotate-[20deg]`}
+							/>
+						</button>
+					</div>
+				</div>
 			)}
 		</>
 	);
@@ -456,7 +467,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
 				// "px-[7px]":
 				// 	currentBookmarkView === "headlines" || currentBookmarkView === "list",
-				"pl-[15px] pr-3": true,
+				"pl-[13px] ml-1 pr-3": true,
 			},
 		);
 
@@ -499,18 +510,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					{renderSearchBar}
 					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
 						{renderViewBasedHeaderOptions()}
-						{/* {currentPath !== TRASH_URL && (
-							<Button
-								className="rounded-full p-[7px] hover:bg-black"
-								onClick={onNavAddClick}
-								title="create"
-								type="dark"
-							>
-								<figure className="h-4 w-4">
-									<PlusIconWhite />
-								</figure>
-							</Button>
-						)} */}
 						{currentPath !== TRASH_URL && (
 							<AddBookmarkDropdown onAddBookmark={onAddBookmark} />
 						)}
@@ -555,7 +554,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				separator={false}
 			>
 				<Allotment.Pane
-					// className="transition-all duration-150 ease-in-out"
+					// className="transition-all duration-[150ms] ease-in-out"
 					maxSize={600}
 					minSize={244}
 					snap
@@ -565,9 +564,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						{renderSidePane}
 					</div>
 				</Allotment.Pane>
-				<Allotment.Pane className="transition-all duration-150 ease-in-out">
-					{renderMainPaneContent}
-				</Allotment.Pane>
+				<Allotment.Pane>{renderMainPaneContent}</Allotment.Pane>
 			</Allotment>
 		</div>
 	);

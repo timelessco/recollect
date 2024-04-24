@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
@@ -18,6 +18,20 @@ export type AddBookmarkDropdownTypes = {
 };
 
 const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
+	const [openDropdown, setOpenDropdown] = useState(false);
+
+	useEffect(() => {
+		const down = (event: KeyboardEvent) => {
+			if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+				event.preventDefault();
+				setOpenDropdown(true);
+			}
+		};
+
+		document.addEventListener("keydown", down);
+		return () => document.removeEventListener("keydown", down);
+	}, []);
+
 	const {
 		register,
 		handleSubmit,
@@ -40,6 +54,7 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 	return (
 		<AriaDropdown
 			initialFocusRef={inputRef}
+			isOpen={openDropdown}
 			menuButton={
 				<Button
 					className="rounded-full p-[7px] hover:bg-black"
@@ -52,6 +67,7 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 				</Button>
 			}
 			menuOpenToggle={(value) => {
+				setOpenDropdown(value);
 				if (value === false) {
 					reset({ url: "" });
 					clearErrors();

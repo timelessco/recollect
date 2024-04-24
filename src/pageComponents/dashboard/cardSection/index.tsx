@@ -483,10 +483,12 @@ const CardSection = ({
 		const imgClassName = classNames({
 			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
 				cardTypeCondition === "list",
-			" w-full object-cover duration-150 rounded-lg group-hover:rounded-b-none moodboard-card-img aspect-[1.9047]":
+			" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
 				cardTypeCondition === "card",
-			"rounded-lg w-full rounded-lg group-hover:rounded-b-none moodboard-card-img min-h-[192px] object-cover":
+			"w-full rounded-lg group-hover:rounded-b-none  moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === "moodboard",
+			"relative z-[-1]":
+				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
 		});
 
 		const loaderClassName = classNames({
@@ -502,11 +504,14 @@ const CardSection = ({
 			relative: isVideo,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px]": cardTypeCondition === "list",
-			"w-full": cardTypeCondition === "card",
+			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
+				cardTypeCondition === "card",
 			"h-36":
 				cardTypeCondition === "moodboard" &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
+			"rounded-lg group-hover:rounded-b-none shadow-custom-8":
+				cardTypeCondition === "moodboard",
 		});
 
 		const errorImgAndVideoClassName = classNames({
@@ -725,6 +730,11 @@ const CardSection = ({
 		}
 	};
 
+	const moodboardAndCardInfoWrapperClass = classNames({
+		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
+		"h-[115px]": cardTypeCondition === "card",
+	});
+
 	const renderMoodboardAndCardType = (item: SingleListData) => (
 		<div className="w-full" id="single-moodboard-card">
 			<div className="w-full">
@@ -739,7 +749,7 @@ const CardSection = ({
 				)}
 				{bookmarksInfoValue?.length === 1 &&
 				bookmarksInfoValue[0] === "cover" ? null : (
-					<div className="space-y-[6px] rounded-lg px-2 py-3">
+					<div className={moodboardAndCardInfoWrapperClass}>
 						{bookmarksInfoValue?.includes("title" as never) && (
 							<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
 								{item?.title}

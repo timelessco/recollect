@@ -44,21 +44,10 @@ main {
 }
 
 .my-masonry-grid {
-	/*
-	display: -webkit-box; 
-	display: flexbox; 
-	display: flex;
-
-	width: auto;
-	margin-left: -30px; 
-	*/
-
 	@apply ml-[-30px] flex w-auto;
 }
 
 .my-masonry-grid_column {
-	/* pl is gutter size */
-
 	@apply bg-clip-padding pl-[24px];
 }
 
@@ -89,21 +78,14 @@ main {
 }
 
 .chakra-slider-group .label {
-	/* color: #222; */
-
 	@apply text-custom-gray-2;
 }
 
 .chakra-slider-group .value {
-	/* margin-left: auto;
-	color: #222; */
-
 	@apply ml-auto text-custom-gray-2;
 }
 
 .chakra-slider-group .slider {
-	/* -webkit-tap-highlight-color: rgb(0 0 0 / 0%); */
-
 	@apply relative inline-block w-full touch-none select-none outline-0;
 }
 
@@ -120,108 +102,46 @@ main {
 }
 
 .chakra-slider-group .slider-track {
-	/* width: 100%;
-	height: 4px;
-	background: rgb(0 0 0 / 11.4%);
-	border-radius: 0.125rem; */
-
 	@apply h-1 w-full rounded-sm bg-custom-gray-2;
 }
 
 .chakra-slider-group .vertical .slider-track {
-	/* width: 4px;
-	height: 100%; */
-
 	@apply h-full w-1;
 }
 
 .chakra-slider-group .slider-filled-track {
-	/* position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-
-	height: 4px;
-
-	background: #171717;
-	border-radius: 0.125rem; */
-
 	@apply absolute top-[50%] h-1 -translate-y-2/4 rounded-sm bg-gray-light-12;
 }
 
 .chakra-slider-group .vertical .slider-filled-track {
-	/* top: unset;
-	bottom: 0;
-	left: 50%;
-	transform: translateX(-50%);
-
-	width: 4px; */
-
 	@apply bottom-0 left-[50%] w-1 -translate-x-2/4;
 }
 
 .chakra-slider-group .slider-thumb {
-	/* position: absolute;
-	z-index: 1;
-	top: 50%;
-
-	display: flex;
-	flex-direction: column;
-	align-items: center; */
-
 	@apply absolute top-[50%] z-[1] flex flex-col items-center;
 }
 
 .chakra-slider-group .vertical .slider-thumb {
-	/* top: unset;
-	left: 2px;
-	flex-direction: row;
-	align-items: center; */
-
 	@apply left-[2px] flex-row items-center;
 }
 
 .chakra-slider-group .slider-thumb:focus-within {
-	/* z-index: 10; */
-
 	@apply z-10;
 }
 
 .chakra-slider-group .slider-thumb .slider-thumb-handle {
-	/* touch-action: none;
-	cursor: pointer;
-	user-select: none;
-
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	width: 16px;
-	height: 16px;
-
-	background: #fff;
-	border-radius: 9999px;
-	box-shadow:
-		0 0 1px rgb(0 0 0 / 40%),
-		0 1px 2px rgb(0 0 0 / 15%); */
-
 	@apply flex h-4 w-4 cursor-pointer touch-none select-none items-center justify-center rounded-full bg-white shadow-md;
 }
 
 .chakra-slider-group .slider-thumb-handle:focus-within {
 	box-shadow: 0 0 0 2px #171717;
-
-	/* @apply bg-gray-light-12; */
 }
 
 .chakra-slider-group .slider-thumb-tip {
-	/* margin: 8px 0 0; */
-
 	@apply mt-2;
 }
 
 .chakra-slider-group .vertical .slider-thumb-tip {
-	/* margin: 0 0 0 8px; */
-
 	@apply ml-2;
 }
 
@@ -232,106 +152,53 @@ main {
 
 /* drag and drop */
 
-.single-bookmark[aria-selected="true"] {
-	/* color: white;
-	background: #000; */
+/* for the select card styles on card and moodboard views */
+.single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper {
+	@apply rounded-b-lg rounded-t-none bg-black text-white;
+}
 
+/* for the select card styles on list and headlines views */
+.single-bookmark[aria-selected="true"].list-headlines-wrapper {
 	@apply bg-black text-white;
 }
 
 .single-bookmark[aria-selected="true"] .card-title {
-	/* color: white; */
-
 	@apply text-white;
 }
 
 .single-bookmark[aria-selected="true"] .moodboard-card-img {
-	/* border-bottom-right-radius: unset;
-	border-bottom-left-radius: unset; */
-
 	@apply rounded-bl-none rounded-br-none;
 }
 
 .drop-target .side-pane-anchor {
-	/* background-color: #cbd5e1; */
-
 	@apply bg-custom-gray-2;
 }
 
 .drop-indicator {
-	/* width: 100%;
-	height: 2px;
-	margin-bottom: -2px;
-	margin-left: 0;
-
-	background: transparent;
-	outline: none; */
-
 	@apply -mb-[2px] ml-0 h-[2px] w-full bg-transparent outline-none;
 }
 
 .drop-indicator:last-child {
-	/* margin-top: -2px;
-	margin-bottom: 0; */
-
 	@apply -mt-[2px] mb-0;
 }
 
 .drop-indicator.drop-target {
-	/* background: red; */
-
 	@apply bg-black;
 }
 
 /* signup-page */
 
 .sign-up-parent {
-	/* position: relative; */
-
-	/* background-image: url("/group-svg.svg");
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: left 0 top 0; */
-
 	@apply relative;
 }
 
 .sign-up-parent::before {
-	/* content: "";
-
-	position: absolute;
-	z-index: -10;
-	top: 0;
-	left: 0;
-
-	width: 100%;
-	height: 100%;
-
-	background-image: url("/Group1.png");
-	background-repeat: no-repeat;
-	background-size: contain; */
-
 	@apply absolute left-0 top-0 -z-10 h-full w-full bg-[url('/Group1.png')] bg-contain bg-no-repeat content-[""];
 }
 
 /* aria modal */
 .secondary {
-	/* color: currentcolor;
-	background-color: transparent; */
-
 	@apply bg-transparent text-current;
-}
-
-.secondary:hover {
-	/* background-color: hsl(204deg 10% 10% / 5%); */
-}
-
-.dark .secondary {
-	/* background-color: transparent; */
-}
-
-.dark .secondary:hover {
-	/* background-color: hsl(204deg 20% 100% / 5%); */
 }
 
 [data-backdrop] {
@@ -339,7 +206,6 @@ main {
 }
 
 .dark [data-backdrop] {
-	/* background-color: hsl(204deg 10% 10% / 50%); */
 }
 
 @media (width >= 768px) {
@@ -361,56 +227,26 @@ main {
 }
 
 .search-bar__input:focus-visible {
-	/* outline: none; */
-
 	@apply outline-0;
 }
 
 .aria-select-item[data-active-item] {
-	/* color: #171717;
-	background-color: #ededed; */
-
 	@apply bg-gray-light-4 text-gray-light-12;
 }
 
 .aria-checkbox:checked + .checkbox-div::before {
-	/* content: "";
-
-	position: absolute;
-	z-index: 2;
-
-	width: 100%;
-	height: 100%;
-
-	background-color: black;
-	background-image: url("/checkbox-tick.svg");
-	background-repeat: no-repeat;
-	background-position: center;
-	border-radius: 4.5px; */
-
 	@apply absolute z-[2] h-full w-full rounded bg-black bg-[url('/checkbox-tick.svg')] bg-center bg-no-repeat content-[""];
 }
 
-.checkbox-div {
-	/* margin-right: 12px;
-	border: 1px solid black;
-	border-radius: 4.5px; */
-}
-
 input[type="checkbox"]:checked + .checkbox-div {
-	/* border: none; */
 	@apply border-none;
 }
 
 .icon-svg-parent svg {
-	/* fill: currentcolor; */
-
 	@apply fill-current;
 }
 
 .icon-color-container::-webkit-scrollbar {
-	/* display: none; */
-
 	@apply hidden;
 }
 
@@ -432,17 +268,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .menu-wrapper {
-	/* scroll-behavior: smooth;
-	scroll-snap-type: x mandatory;
-	scroll-snap-stop: always;
-
-	z-index: 50;
-
-	overflow: scroll hidden;
-
-	border-style: solid;
-	border-width: 1px; */
-
 	scrollbar-width: none;
 
 	@apply z-50 snap-x snap-mandatory snap-always overflow-scroll scroll-smooth rounded-xl border border-solid;
@@ -514,4 +339,12 @@ input[type="checkbox"]:checked + .checkbox-div {
 .aria-disclosure-button[aria-expanded="true"] .collections-sidepane-down-arrow {
 	rotate: 0deg;
 	transition: rotate 150ms;
+}
+
+/* for side pane resizer animation */
+.split-view .sash-vertical {
+	/* adding important as some styles get getting overridden by lib */
+	@apply ml-[3px] w-[2px] -translate-x-2/4 hover:w-[8px] hover:cursor-grab hover:bg-gray-gray-100  active:cursor-grabbing  [&:not(:hover)]:w-[0.5px] [&:not(:hover)]:bg-custom-gray-15  !important;
+
+	transition: width 200ms ease-out;
 }
