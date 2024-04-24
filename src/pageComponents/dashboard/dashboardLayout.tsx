@@ -554,7 +554,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				separator={false}
 			>
 				<Allotment.Pane
-					className="transition-all duration-[150ms] ease-in-out"
+					// className="transition-all duration-[150ms] ease-in-out"
 					maxSize={600}
 					minSize={244}
 					snap
@@ -564,9 +564,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						{renderSidePane}
 					</div>
 				</Allotment.Pane>
-				<Allotment.Pane className="transition-all duration-[150ms] ease-in-out">
-					{renderMainPaneContent}
-				</Allotment.Pane>
+				<Allotment.Pane>{renderMainPaneContent}</Allotment.Pane>
 			</Allotment>
 		</div>
 	);
