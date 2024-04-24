@@ -62,7 +62,7 @@ const Option = ({
 				(cardTypeCondition === "list" || cardTypeCondition === "headlines") &&
 				!isSelected,
 
-			"mb-1 list":
+			"mb-1 list-headlines-wrapper":
 				cardTypeCondition === "list" || cardTypeCondition === "headlines",
 		},
 	);

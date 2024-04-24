@@ -542,12 +542,20 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				}}
 				separator={false}
 			>
-				<Allotment.Pane maxSize={600} minSize={244} snap visible={showSidePane}>
+				<Allotment.Pane
+					className="transition-all duration-[50ms] ease-in-out"
+					maxSize={600}
+					minSize={244}
+					snap
+					visible={showSidePane}
+				>
 					<div className={`h-full ${showSidePane ? "block" : " hidden"}`}>
 						{renderSidePane}
 					</div>
 				</Allotment.Pane>
-				<Allotment.Pane>{renderMainPaneContent}</Allotment.Pane>
+				<Allotment.Pane className="transition-all duration-[50ms] ease-in-out">
+					{renderMainPaneContent}
+				</Allotment.Pane>
 			</Allotment>
 		</div>
 	);

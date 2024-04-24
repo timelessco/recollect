@@ -731,7 +731,7 @@ const CardSection = ({
 	};
 
 	const moodboardAndCardInfoWrapperClass = classNames({
-		"test space-y-[6px] rounded-lg px-2 py-3": true,
+		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
 		"h-[115px]": cardTypeCondition === "card",
 	});
 
@@ -816,7 +816,7 @@ const CardSection = ({
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="test overflow-hidden sm:space-y-1">
+				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
 							{item?.title}
