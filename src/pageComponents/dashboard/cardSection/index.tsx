@@ -18,6 +18,7 @@ import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useIsMobileView from "../../../hooks/useIsMobileView";
+import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
@@ -56,6 +57,7 @@ import {
 import {
 	clickToOpenInNewTabLogic,
 	getBaseUrl,
+	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkVideo,
 	isUserInACategory,
@@ -489,13 +491,14 @@ const CardSection = ({
 		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
+		const isAudio = isBookmarkAudio(type);
 
 		const imgClassName = classNames({
 			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
 				cardTypeCondition === "list",
 			" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
 				cardTypeCondition === "card",
-			"w-full rounded-lg group-hover:rounded-b-none  moodboard-card-img min-h-[192px] object-cover":
+			"w-full rounded-lg   moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === "moodboard",
 			"relative z-[-1]":
 				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
@@ -511,7 +514,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
-			relative: isVideo,
+			relative: isVideo || isAudio,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px]": cardTypeCondition === "list",
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
@@ -520,14 +523,12 @@ const CardSection = ({
 				cardTypeCondition === "moodboard" &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-lg group-hover:rounded-b-none shadow-custom-8":
-				cardTypeCondition === "moodboard",
+			"rounded-lg  shadow-custom-8": cardTypeCondition === "moodboard",
 		});
 
 		const errorImgAndVideoClassName = classNames({
 			"h-full w-full rounded-lg object-cover": true,
-			"group-hover:rounded-b-none":
-				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
+			"group-hover:rounded-b-none": cardTypeCondition === "card",
 		});
 
 		const errorImgPlaceholder = (
@@ -598,7 +599,8 @@ const CardSection = ({
 			// 	cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[9px] left-[21px]": cardTypeCondition === "list",
+			"top-[9px] left-[21px]": cardTypeCondition === "list" && isVideo,
+			"top-[3px] left-[21px]": cardTypeCondition === "list" && isAudio,
 		});
 
 		return (
@@ -628,6 +630,7 @@ const CardSection = ({
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
+					{isAudio && <AudioIcon className={playSvgClassName} />}
 					{imgLogic()}
 				</figure>
 			</div>

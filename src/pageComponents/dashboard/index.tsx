@@ -338,7 +338,7 @@ const Dashboard = () => {
 
 			const cardContentViewLogic = (
 				existingViewData: BookmarkViewDataTypes["cardContentViewArray"],
-				// TS disabled because we need to have thi function here as its under the scope of the parent function
+				// TS disabled because we need to have the function here as its under the scope of the parent function
 				// eslint-disable-next-line unicorn/consistent-function-scoping
 			) => {
 				// this function sets the always on values for different views
