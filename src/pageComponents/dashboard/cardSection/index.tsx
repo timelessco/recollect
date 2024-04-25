@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
@@ -15,6 +15,8 @@ import isNull from "lodash/isNull";
 import { Item } from "react-stately";
 
 import Spinner from "../../../components/spinner";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
@@ -127,6 +129,10 @@ const CardSection = ({
 		(state) => state.setSelectedVideoId,
 	);
 
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+
+	const { sortBy } = useGetSortBy();
+
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
 		error: PostgrestError;
@@ -183,6 +189,10 @@ const CardSection = ({
 		data: FetchSharedCategoriesData[];
 		error: PostgrestError;
 	};
+
+	const isAllBookmarksDataFetching = useIsFetching({
+		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+	});
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
@@ -492,9 +502,9 @@ const CardSection = ({
 		});
 
 		const loaderClassName = classNames({
-			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover":
+			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover rounded-lg":
 				cardTypeCondition === "list",
-			"animate-pulse bg-slate-200 w-full  aspect-[1.9047] w-full object-cover":
+			"animate-pulse bg-slate-200 w-full  aspect-[1.9047] w-full object-cover rounded-lg":
 				cardTypeCondition === "card",
 			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
 				cardTypeCondition === "moodboard",
@@ -532,11 +542,11 @@ const CardSection = ({
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
-				if (isBookmarkLoading && img === undefined && id === undefined) {
+				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
 					return <div className={loaderClassName} />;
 				}
 
-				if (errorImgs?.includes(id as never) || !img) {
+				if (errorImgs?.includes(id as never)) {
 					return errorImgPlaceholder;
 				}
 
