@@ -3,13 +3,14 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import { isEmpty, isNil, isNull } from "lodash";
+import { isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
 import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -32,13 +33,18 @@ import {
 	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
 import {
+	DISPLAY_NAME_CHECK_PATTERN,
 	LETTERS_NUMBERS_CHECK_PATTERN,
 	USER_PROFILE,
 } from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
-type SettingsFormTypes = {
+type SettingsUsernameFormTypes = {
 	username: string;
+};
+
+type SettingsDisplaynameFormTypes = {
+	displayname: string;
 };
 
 const Settings = () => {
@@ -53,6 +59,10 @@ const Settings = () => {
 
 	// mutations
 	const { updateUsernameMutation } = useUpdateUsernameMutation();
+
+	const { updateUserProfileOptimisticMutation } =
+		useUpdateUserProfileOptimisticMutation();
+
 	const { uploadProfilePicMutation } = useUploadProfilePicMutation();
 	const { deleteUserMutation } = useDeleteUserMutation();
 	const { removeProfilePic } = useRemoveUserProfilePicMutation();
@@ -62,11 +72,14 @@ const Settings = () => {
 		error: PostgrestError;
 	};
 
-	const userData = !isEmpty(userProfilesData?.data)
-		? userProfilesData?.data[0]
-		: {};
+	const userData = userProfilesData?.data?.[0];
 
-	const onSubmit: SubmitHandler<SettingsFormTypes> = async (data) => {
+	const onSubmit: SubmitHandler<SettingsUsernameFormTypes> = async (data) => {
+		if (data?.username === userData?.user_name) {
+			errorToast("Username is the same as before");
+			return;
+		}
+
 		try {
 			const response = await mutationApiCall(
 				updateUsernameMutation.mutateAsync({
@@ -83,20 +96,61 @@ const Settings = () => {
 		}
 	};
 
+	const onDisplaynameSubmit: SubmitHandler<
+		SettingsDisplaynameFormTypes
+	> = async (data) => {
+		if (data?.displayname === userData?.display_name) {
+			errorToast("Display name is the same as before");
+			return;
+		}
+
+		try {
+			const response = await mutationApiCall(
+				updateUserProfileOptimisticMutation.mutateAsync({
+					id: session?.user?.id as string,
+					updateData: { display_name: data?.displayname },
+					session,
+				}),
+			);
+
+			if (!isNil(response?.data)) {
+				successToast("Display name has been updated");
+			}
+		} catch (error) {
+			console.error(error);
+			errorToast("Something went wrong");
+		}
+	};
+
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 		reset,
-	} = useForm<SettingsFormTypes>({
+	} = useForm<SettingsUsernameFormTypes>({
 		defaultValues: {
 			username: "",
+		},
+	});
+
+	const {
+		register: displayNameRegister,
+		handleSubmit: displaynameHandleSubmit,
+		formState: { errors: displaynameError },
+		reset: displaynameReset,
+	} = useForm<SettingsDisplaynameFormTypes>({
+		defaultValues: {
+			displayname: "",
 		},
 	});
 
 	useEffect(() => {
 		reset({ username: userData?.user_name });
 	}, [reset, userData?.user_name]);
+
+	useEffect(() => {
+		displaynameReset({ displayname: userData?.display_name });
+	}, [displaynameReset, userData?.display_name]);
 
 	const profilePicClassName = classNames({
 		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]:
@@ -228,6 +282,10 @@ const Settings = () => {
 										value: 4,
 										message: "Username must have a minimum of 4 characters",
 									},
+									maxLength: {
+										value: 100,
+										message: "Username must not exceed 100 characters",
+									},
 									pattern: {
 										value: LETTERS_NUMBERS_CHECK_PATTERN,
 										message: "Only have lowercase and no blank spaces",
@@ -248,6 +306,54 @@ const Settings = () => {
 							type="light"
 						>
 							Change username
+						</Button>
+					</div>
+				</form>
+				<form
+					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5 sm:flex-col"
+					onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
+				>
+					<LabelledComponent
+						label="Display name"
+						labelClassName={settingsInputLabelClassName}
+					>
+						<div className={settingsInputContainerClassName}>
+							<figure className=" mr-2">
+								<SettingsUserIcon />
+							</figure>
+							<Input
+								autoFocus={false}
+								errorClassName="absolute w-full top-[29px]"
+								tabIndex={-1}
+								{...displayNameRegister("displayname", {
+									required: {
+										value: true,
+										message: "Name cannot be empty",
+									},
+									maxLength: {
+										value: 100,
+										message: "Name must not exceed 100 characters",
+									},
+									pattern: {
+										value: DISPLAY_NAME_CHECK_PATTERN,
+										message: "Should not have special charecters",
+									},
+								})}
+								className={settingsInputClassName}
+								errorText={displaynameError?.displayname?.message ?? ""}
+								id="displayname"
+								isError={Boolean(displaynameError?.displayname)}
+								placeholder="Enter display name"
+							/>
+						</div>
+					</LabelledComponent>
+					<div className="flex min-w-[150px] max-w-[150px] justify-end sm:mt-5 sm:w-full sm:min-w-0 sm:max-w-full">
+						<Button
+							className={settingsLightButtonClassName}
+							onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
+							type="light"
+						>
+							Change name
 						</Button>
 					</div>
 				</form>

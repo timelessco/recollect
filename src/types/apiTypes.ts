@@ -154,8 +154,19 @@ export type CollabDataInCategory = {
 // profiles table
 
 export type ProfilesTableTypes = {
+	bookmarks_view: BookmarkViewDataTypes;
+	category_order: number[];
+	display_name: string;
+	email: string;
+	id: string;
+	profile_pic: string;
+	user_name: string;
+};
+
+export type ProfilesTableForPayloadTypes = {
 	bookmarks_view?: BookmarkViewDataTypes;
 	category_order?: number[];
+	display_name?: string;
 	email?: string;
 	id?: string;
 	profile_pic?: string;
@@ -269,7 +280,7 @@ export type UpdateCategoryApiPayload = {
 export type UpdateUserProfileApiPayload = {
 	id: string;
 	session: SupabaseSessionType;
-	updateData: ProfilesTableTypes;
+	updateData: ProfilesTableForPayloadTypes;
 };
 
 export type UpdateUsernameApiPayload = {

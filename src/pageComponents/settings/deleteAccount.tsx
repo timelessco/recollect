@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { isEmpty, isNull } from "lodash";
+import { isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
@@ -51,10 +51,7 @@ const DeleteAccout = () => {
 		error: PostgrestError;
 	};
 
-	const userData = !isEmpty(userProfilesData?.data)
-		? userProfilesData?.data[0]
-		: {};
-
+	const userData = userProfilesData?.data?.[0];
 	const {
 		register,
 		handleSubmit,

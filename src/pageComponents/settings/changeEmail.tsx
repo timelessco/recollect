@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { isEmpty, isNil } from "lodash";
+import { isNil } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import Button from "../../components/atoms/button";
@@ -45,9 +45,7 @@ const ChangeEmail = () => {
 		error: PostgrestError;
 	};
 
-	const userData = !isEmpty(userProfilesData?.data)
-		? userProfilesData?.data[0]
-		: {};
+	const userData = userProfilesData?.data?.[0];
 
 	const onSubmit: SubmitHandler<SettingsFormTypes> = async (data) => {
 		setChangeEmailLoader(true);
