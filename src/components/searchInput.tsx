@@ -141,9 +141,9 @@ const SearchInput = (props: SearchInputTypes) => {
 					setAddedTags(tagName);
 				}}
 				// onKeyUp={(e) => e.key === "Enter" && onEnterPress(e.target.value)}
-				onKeyUp={(e) => {
-					if (e.key === "Enter") {
-						onEnterPress(e.target.value);
+				onKeyUp={(event) => {
+					if (event.key === "Enter") {
+						onEnterPress(searchText);
 						setSearchText("");
 					}
 				}}
