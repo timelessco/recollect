@@ -544,7 +544,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						setShowSidePane(false);
 					}
 
-					if (value[0] === 180) {
+					if (value[0] === 184) {
 						setShowSidePane(true);
 					}
 				}}
@@ -556,7 +556,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<Allotment.Pane
 					// className="transition-all duration-[150ms] ease-in-out"
 					maxSize={600}
-					minSize={180}
+					minSize={184}
 					preferredSize={244}
 					snap
 					visible={showSidePane}
