@@ -151,6 +151,10 @@ export const generateVideoThumbnail = async (file: File) =>
 export const isBookmarkVideo = (type: string): boolean =>
 	type?.includes("video");
 
+// tells if the bookmark is of audio type
+export const isBookmarkAudio = (type: string): boolean =>
+	type?.includes("audio");
+
 // tells if the bookmark is of document type
 export const isBookmarkDocument = (type: string): boolean =>
 	documentFileTypes?.includes(type);

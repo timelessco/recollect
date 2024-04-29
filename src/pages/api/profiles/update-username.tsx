@@ -17,7 +17,9 @@ import {
 	verifyAuthToken,
 } from "../../../utils/supabaseServerClient";
 
-type DataResponse = ProfilesTableTypes[] | null;
+type DataResponse = Array<{
+	user_name: ProfilesTableTypes["user_name"];
+}> | null;
 type ErrorResponse = PostgrestError | string | { message: string } | null;
 
 type Data = {

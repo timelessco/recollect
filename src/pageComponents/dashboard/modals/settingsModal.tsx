@@ -51,9 +51,7 @@ const SettingsModal = () => {
 		error: PostgrestError;
 	};
 
-	const userData = !isEmpty(userProfilesData?.data)
-		? userProfilesData?.data[0]
-		: {};
+	const userData = userProfilesData?.data?.[0];
 
 	const optionsList = [
 		{

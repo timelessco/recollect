@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
@@ -53,12 +54,12 @@ export default async function handler(
 			data: null,
 			error: isEmpty(error) ? { message: "Something went wrong" } : error,
 		});
-		throw new Error("ERROR");
+		Sentry.captureException(`ERROR: Update DB error: ${error?.message}`);
 	} else if (isEmpty(data) || isNull(data)) {
 		response
 			.status(500)
 			.json({ data: null, error: { message: "Something went wrong" } });
-		throw new Error("ERROR");
+		Sentry.captureException(`Error: DB data is empty`);
 	} else {
 		response.status(200).json({ data, error: null });
 	}

@@ -1,8 +1,7 @@
-import { ChevronDoubleLeftIcon } from "@heroicons/react/solid";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { isEmpty, isNull } from "lodash";
+import { isNull } from "lodash";
 
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import { signOut } from "../../../async/supabaseCrudHelpers";
@@ -10,10 +9,8 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
-import Button from "../../../components/atoms/button";
 import UserAvatar from "../../../components/userAvatar";
 import DownArrowGray from "../../../icons/downArrowGray";
-import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import {
 	dropdownMenuClassName,
@@ -26,9 +23,6 @@ const SidePaneUserDropdown = () => {
 	const session = useSession();
 	const queryClient = useQueryClient();
 	const supabase = useSupabaseClient();
-	const setShowSidePane = useMiscellaneousStore(
-		(state) => state.setShowSidePane,
-	);
 
 	const { userProfilePicData } = useGetUserProfilePic(
 		session?.user?.email ?? "",
@@ -42,9 +36,7 @@ const SidePaneUserDropdown = () => {
 		error: PostgrestError;
 	};
 
-	const userProfileData = !isEmpty(userProfilesDataQuery?.data)
-		? userProfilesDataQuery?.data[0]
-		: {};
+	const userProfileData = userProfilesDataQuery?.data?.[0];
 
 	return (
 		<div className="flex justify-between">
@@ -66,7 +58,7 @@ const SidePaneUserDropdown = () => {
 								width={24}
 							/>
 							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-custom-gray-1">
-								{userProfileData?.user_name}
+								{userProfileData?.display_name || userProfileData?.user_name}
 							</p>
 						</div>
 						<figure>

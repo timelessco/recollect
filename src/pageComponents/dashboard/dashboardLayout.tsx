@@ -538,13 +538,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
 			<Allotment
-				defaultSizes={[10, screenWidth]}
+				// defaultSizes={[10, screenWidth]}
 				onChange={(value: number[]) => {
 					if (value[0] === 0) {
 						setShowSidePane(false);
 					}
 
-					if (value[0] === 244) {
+					if (value[0] === 184) {
 						setShowSidePane(true);
 					}
 				}}
@@ -556,7 +556,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<Allotment.Pane
 					// className="transition-all duration-[150ms] ease-in-out"
 					maxSize={600}
-					minSize={244}
+					minSize={184}
+					preferredSize={244}
 					snap
 					visible={showSidePane}
 				>

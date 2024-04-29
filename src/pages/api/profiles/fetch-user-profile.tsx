@@ -97,10 +97,7 @@ export default async function handler(
 		);
 
 		// check if username is already present
-		const {
-			data: checkData,
-			error: checkError,
-		}: { data: DataResponse; error: ErrorResponse } = await supabase
+		const { data: checkData, error: checkError } = await supabase
 			.from(PROFILES)
 			.select(`user_name`)
 			.eq("user_name", newUsername);

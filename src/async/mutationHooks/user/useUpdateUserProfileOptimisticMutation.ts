@@ -55,12 +55,12 @@ export default function useUpdateUserProfileOptimisticMutation() {
 		// Always refetch after error or success:
 		onSettled: () => {
 			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORIES_ID,
-				sortBy,
-			]);
+			// void queryClient.invalidateQueries([
+			// 	BOOKMARKS_KEY,
+			// 	session?.user?.id,
+			// 	CATEGORIES_ID,
+			// 	sortBy,
+			// ]);
 		},
 	});
 	return { updateUserProfileOptimisticMutation };

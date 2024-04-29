@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
@@ -15,7 +15,10 @@ import isNull from "lodash/isNull";
 import { Item } from "react-stately";
 
 import Spinner from "../../../components/spinner";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import useIsMobileView from "../../../hooks/useIsMobileView";
+import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
@@ -54,6 +57,7 @@ import {
 import {
 	clickToOpenInNewTabLogic,
 	getBaseUrl,
+	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkVideo,
 	isUserInACategory,
@@ -127,6 +131,10 @@ const CardSection = ({
 		(state) => state.setSelectedVideoId,
 	);
 
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+
+	const { sortBy } = useGetSortBy();
+
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
 		error: PostgrestError;
@@ -183,6 +191,10 @@ const CardSection = ({
 		data: FetchSharedCategoriesData[];
 		error: PostgrestError;
 	};
+
+	const isAllBookmarksDataFetching = useIsFetching({
+		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+	});
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
@@ -479,29 +491,30 @@ const CardSection = ({
 		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
+		const isAudio = isBookmarkAudio(type);
 
 		const imgClassName = classNames({
 			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
 				cardTypeCondition === "list",
 			" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
 				cardTypeCondition === "card",
-			"w-full rounded-lg group-hover:rounded-b-none  moodboard-card-img min-h-[192px] object-cover":
+			"w-full rounded-lg   moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === "moodboard",
 			"relative z-[-1]":
 				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
 		});
 
 		const loaderClassName = classNames({
-			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover":
+			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover rounded-lg":
 				cardTypeCondition === "list",
-			"animate-pulse bg-slate-200 w-full  aspect-[1.9047] w-full object-cover":
+			"animate-pulse bg-slate-200 w-full  aspect-[1.9047] w-full object-cover rounded-lg":
 				cardTypeCondition === "card",
 			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
 				cardTypeCondition === "moodboard",
 		});
 
 		const figureClassName = classNames({
-			relative: isVideo,
+			relative: isVideo || isAudio,
 			"mr-3": cardTypeCondition === "list",
 			"h-[48px] w-[80px]": cardTypeCondition === "list",
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
@@ -510,14 +523,12 @@ const CardSection = ({
 				cardTypeCondition === "moodboard" &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-lg group-hover:rounded-b-none shadow-custom-8":
-				cardTypeCondition === "moodboard",
+			"rounded-lg  shadow-custom-8": cardTypeCondition === "moodboard",
 		});
 
 		const errorImgAndVideoClassName = classNames({
 			"h-full w-full rounded-lg object-cover": true,
-			"group-hover:rounded-b-none":
-				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
+			"group-hover:rounded-b-none": cardTypeCondition === "card",
 		});
 
 		const errorImgPlaceholder = (
@@ -532,11 +543,11 @@ const CardSection = ({
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
-				if (isBookmarkLoading && img === undefined && id === undefined) {
+				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
 					return <div className={loaderClassName} />;
 				}
 
-				if (errorImgs?.includes(id as never) || !img) {
+				if (errorImgs?.includes(id as never)) {
 					return errorImgPlaceholder;
 				}
 
@@ -588,7 +599,8 @@ const CardSection = ({
 			// 	cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[9px] left-[21px]": cardTypeCondition === "list",
+			"top-[9px] left-[21px]": cardTypeCondition === "list" && isVideo,
+			"top-[3px] left-[21px]": cardTypeCondition === "list" && isAudio,
 		});
 
 		return (
@@ -618,6 +630,7 @@ const CardSection = ({
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
+					{isAudio && <AudioIcon className={playSvgClassName} />}
 					{imgLogic()}
 				</figure>
 			</div>
@@ -732,69 +745,65 @@ const CardSection = ({
 
 	const moodboardAndCardInfoWrapperClass = classNames({
 		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
-		"h-[115px]": cardTypeCondition === "card",
+		"flex-grow": cardTypeCondition === "card",
 	});
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
-		<div className="w-full" id="single-moodboard-card">
-			<div className="w-full">
-				{renderOgImage(
-					item?.ogImage,
-					item?.id,
-					item?.meta_data?.ogImgBlurUrl ?? "",
-					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-					item?.type,
-					item?.url,
-				)}
-				{bookmarksInfoValue?.length === 1 &&
-				bookmarksInfoValue[0] === "cover" ? null : (
-					<div className={moodboardAndCardInfoWrapperClass}>
-						{bookmarksInfoValue?.includes("title" as never) && (
-							<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
-								{item?.title}
+		<div className="flex w-full flex-col" id="single-moodboard-card">
+			{renderOgImage(
+				item?.ogImage,
+				item?.id,
+				item?.meta_data?.ogImgBlurUrl ?? "",
+				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+				item?.type,
+				item?.url,
+			)}
+			{bookmarksInfoValue?.length === 1 &&
+			bookmarksInfoValue[0] === "cover" ? null : (
+				<div className={moodboardAndCardInfoWrapperClass}>
+					{bookmarksInfoValue?.includes("title" as never) && (
+						<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
+							{item?.title}
+						</p>
+					)}
+					{bookmarksInfoValue?.includes("description" as never) &&
+						!isEmpty(item?.description) && (
+							<p className="line-clamp-3 overflow-hidden break-all text-sm leading-4">
+								{item?.description}
 							</p>
 						)}
-						{bookmarksInfoValue?.includes("description" as never) &&
-							!isEmpty(item?.description) && (
-								<p className="line-clamp-3 overflow-hidden break-all text-sm leading-4">
-									{item?.description}
-								</p>
-							)}
-						<div className="space-y-[6px]">
-							{bookmarksInfoValue?.includes("tags" as never) &&
-								!isEmpty(item?.addedTags) && (
-									<div className="flex flex-wrap items-center space-x-1">
-										{item?.addedTags?.map((tag) =>
-											renderTag(tag?.id, tag?.name),
-										)}
-									</div>
-								)}
-							{bookmarksInfoValue?.includes("info" as never) && (
-								<div className="flex flex-wrap items-center">
-									{renderFavIcon(item)}
-									{renderUrl(item)}
-									{item?.inserted_at && (
-										<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-											{format(new Date(item?.inserted_at || ""), "MMMM dd")}
-										</p>
-									)}
-									{renderCategoryBadge(item)}
+					<div className="space-y-[6px]">
+						{bookmarksInfoValue?.includes("tags" as never) &&
+							!isEmpty(item?.addedTags) && (
+								<div className="flex flex-wrap items-center space-x-1">
+									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
-						</div>
+						{bookmarksInfoValue?.includes("info" as never) && (
+							<div className="flex flex-wrap items-center">
+								{renderFavIcon(item)}
+								{renderUrl(item)}
+								{item?.inserted_at && (
+									<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										{format(new Date(item?.inserted_at || ""), "MMMM dd")}
+									</p>
+								)}
+								{renderCategoryBadge(item)}
+							</div>
+						)}
 					</div>
-				)}
-				<div
-					// eslint-disable-next-line tailwindcss/no-custom-classname
-					className={`w-full items-center space-x-1 ${
-						// @ts-expect-error // this is cypress env, TS check not needed
-						!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
-					} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
-				>
-					{showAvatar && renderAvatar(item)}
-					{renderEditAndDeleteIcons(item)}
 				</div>
+			)}
+			<div
+				// eslint-disable-next-line tailwindcss/no-custom-classname
+				className={`w-full items-center space-x-1 ${
+					// @ts-expect-error // this is cypress env, TS check not needed
+					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
+				} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
+			>
+				{showAvatar && renderAvatar(item)}
+				{renderEditAndDeleteIcons(item)}
 			</div>
 		</div>
 	);
