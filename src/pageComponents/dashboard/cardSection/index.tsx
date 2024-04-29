@@ -599,8 +599,7 @@ const CardSection = ({
 			// 	cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[9px] left-[21px]": cardTypeCondition === "list" && isVideo,
-			"top-[3px] left-[21px]": cardTypeCondition === "list" && isAudio,
+			"top-[9px] left-[21px]": cardTypeCondition === "list",
 		});
 
 		return (

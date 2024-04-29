@@ -2,9 +2,9 @@ const AudioIcon = ({ className }: { className: string }) => (
 	<svg
 		className={className}
 		fill="none"
-		height="40"
+		height="32"
 		viewBox="0 0 40 40"
-		width="40"
+		width="32"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<g filter="url(#filter0_b_8787_6851)">
