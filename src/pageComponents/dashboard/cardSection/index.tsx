@@ -745,7 +745,7 @@ const CardSection = ({
 
 	const moodboardAndCardInfoWrapperClass = classNames({
 		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
-		"h-[115px]": cardTypeCondition === "card",
+		"h-[135px]": cardTypeCondition === "card",
 	});
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
