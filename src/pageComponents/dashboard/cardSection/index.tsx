@@ -745,69 +745,65 @@ const CardSection = ({
 
 	const moodboardAndCardInfoWrapperClass = classNames({
 		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
-		"h-[135px]": cardTypeCondition === "card",
+		"flex-grow": cardTypeCondition === "card",
 	});
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
-		<div className="w-full" id="single-moodboard-card">
-			<div className="w-full">
-				{renderOgImage(
-					item?.ogImage,
-					item?.id,
-					item?.meta_data?.ogImgBlurUrl ?? "",
-					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-					item?.type,
-					item?.url,
-				)}
-				{bookmarksInfoValue?.length === 1 &&
-				bookmarksInfoValue[0] === "cover" ? null : (
-					<div className={moodboardAndCardInfoWrapperClass}>
-						{bookmarksInfoValue?.includes("title" as never) && (
-							<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
-								{item?.title}
+		<div className="flex w-full flex-col" id="single-moodboard-card">
+			{renderOgImage(
+				item?.ogImage,
+				item?.id,
+				item?.meta_data?.ogImgBlurUrl ?? "",
+				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+				item?.type,
+				item?.url,
+			)}
+			{bookmarksInfoValue?.length === 1 &&
+			bookmarksInfoValue[0] === "cover" ? null : (
+				<div className={moodboardAndCardInfoWrapperClass}>
+					{bookmarksInfoValue?.includes("title" as never) && (
+						<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
+							{item?.title}
+						</p>
+					)}
+					{bookmarksInfoValue?.includes("description" as never) &&
+						!isEmpty(item?.description) && (
+							<p className="line-clamp-3 overflow-hidden break-all text-sm leading-4">
+								{item?.description}
 							</p>
 						)}
-						{bookmarksInfoValue?.includes("description" as never) &&
-							!isEmpty(item?.description) && (
-								<p className="line-clamp-3 overflow-hidden break-all text-sm leading-4">
-									{item?.description}
-								</p>
-							)}
-						<div className="space-y-[6px]">
-							{bookmarksInfoValue?.includes("tags" as never) &&
-								!isEmpty(item?.addedTags) && (
-									<div className="flex flex-wrap items-center space-x-1">
-										{item?.addedTags?.map((tag) =>
-											renderTag(tag?.id, tag?.name),
-										)}
-									</div>
-								)}
-							{bookmarksInfoValue?.includes("info" as never) && (
-								<div className="flex flex-wrap items-center">
-									{renderFavIcon(item)}
-									{renderUrl(item)}
-									{item?.inserted_at && (
-										<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
-											{format(new Date(item?.inserted_at || ""), "MMMM dd")}
-										</p>
-									)}
-									{renderCategoryBadge(item)}
+					<div className="space-y-[6px]">
+						{bookmarksInfoValue?.includes("tags" as never) &&
+							!isEmpty(item?.addedTags) && (
+								<div className="flex flex-wrap items-center space-x-1">
+									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
-						</div>
+						{bookmarksInfoValue?.includes("info" as never) && (
+							<div className="flex flex-wrap items-center">
+								{renderFavIcon(item)}
+								{renderUrl(item)}
+								{item?.inserted_at && (
+									<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+										{format(new Date(item?.inserted_at || ""), "MMMM dd")}
+									</p>
+								)}
+								{renderCategoryBadge(item)}
+							</div>
+						)}
 					</div>
-				)}
-				<div
-					// eslint-disable-next-line tailwindcss/no-custom-classname
-					className={`w-full items-center space-x-1 ${
-						// @ts-expect-error // this is cypress env, TS check not needed
-						!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
-					} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
-				>
-					{showAvatar && renderAvatar(item)}
-					{renderEditAndDeleteIcons(item)}
 				</div>
+			)}
+			<div
+				// eslint-disable-next-line tailwindcss/no-custom-classname
+				className={`w-full items-center space-x-1 ${
+					// @ts-expect-error // this is cypress env, TS check not needed
+					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
+				} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
+			>
+				{showAvatar && renderAvatar(item)}
+				{renderEditAndDeleteIcons(item)}
 			</div>
 		</div>
 	);
