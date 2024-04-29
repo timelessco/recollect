@@ -56,6 +56,7 @@ import { AriaDropdown } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
+import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import GlobeIcon from "../../icons/globeIcon";
@@ -82,6 +83,7 @@ type DashboardLayoutProps = {
 	onClearTrash: () => void;
 	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
+	onSearchEnterPress: (value: string) => void;
 	renderMainContent: () => ChildrenTypes;
 	setBookmarksView: (
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
@@ -108,6 +110,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		onBookmarksDrop,
 		updateCategoryName,
 		onIconColorChange,
+		onSearchEnterPress = () => null,
 	} = props;
 
 	const [screenWidth, setScreenWidth] = useState(1_200);
@@ -276,6 +279,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				onChange={(value) => {
 					setSearchText(value);
 				}}
+				onEnterPress={onSearchEnterPress}
 				placeholder={`Search in ${
 					currentCategoryData?.category_name ?? currentPath
 				}`}
@@ -492,10 +496,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						{/* only show when user is not editing the collection name */}
 						{!showHeadingInput && (
 							<div className="ml-2 flex space-x-2">
-								{currentCategoryData?.is_public && <GlobeIcon />}
+								{currentCategoryData?.is_public && (
+									<ToolTip toolTipContent="Public collection">
+										<GlobeIcon />
+									</ToolTip>
+								)}
 								{currentCategoryData?.collabData &&
 									currentCategoryData?.collabData?.length > 1 && (
-										<UsersCollabIcon />
+										<ToolTip toolTipContent="Shared collection">
+											<UsersCollabIcon />
+										</ToolTip>
 									)}
 							</div>
 						)}

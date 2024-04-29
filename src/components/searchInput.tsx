@@ -79,6 +79,7 @@ type SearchInputTypes = {
 	inputClassName?: string;
 	onBlur: () => void;
 	onChange: (value: string) => void;
+	onEnterPress: (value: string) => void;
 	placeholder: string;
 	userId: string;
 	wrapperClassName?: string;
@@ -92,12 +93,14 @@ const SearchInput = (props: SearchInputTypes) => {
 		onBlur,
 		wrapperClassName = "",
 		inputClassName = "",
+		onEnterPress = () => null,
 	} = props;
 	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 
 	const queryClient = useQueryClient();
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
@@ -136,6 +139,13 @@ const SearchInput = (props: SearchInputTypes) => {
 							: undefined;
 
 					setAddedTags(tagName);
+				}}
+				// onKeyUp={(e) => e.key === "Enter" && onEnterPress(e.target.value)}
+				onKeyUp={(e) => {
+					if (e.key === "Enter") {
+						onEnterPress(e.target.value);
+						setSearchText("");
+					}
 				}}
 				placeholder={placeholder}
 				singleLine

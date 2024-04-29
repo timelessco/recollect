@@ -75,6 +75,7 @@ import {
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	URL_PATTERN,
 	VIDEOS_URL,
 } from "../../utils/constants";
 import {
@@ -1135,6 +1136,14 @@ const Dashboard = () => {
 							session,
 						}),
 					);
+				}}
+				onSearchEnterPress={(value) => {
+					if (!isNil(value.match(URL_PATTERN))) {
+						const finalUrl = value?.includes("https://")
+							? value
+							: `https://${value}`;
+						void addBookmarkLogic(finalUrl);
+					}
 				}}
 				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
