@@ -277,10 +277,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					setSearchText(value);
 				}}
 				placeholder={`Search in ${
-					find(
-						categoryData?.data,
-						(item) => item?.category_slug === currentPath,
-					)?.category_name ?? menuListItemName.allBookmarks
+					currentCategoryData?.category_name ?? currentPath
 				}`}
 				userId={userId}
 			/>
