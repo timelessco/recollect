@@ -469,10 +469,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							type="button"
 						>
 							<div
-								className={`${collapseButtonCommonClasses} top-[2px] group-hover:rotate-[-20deg]`}
+								className={`${collapseButtonCommonClasses} top-[2px] group-hover:rotate-[-25deg]`}
 							/>
 							<div
-								className={`${collapseButtonCommonClasses}  top-[12px]  group-hover:rotate-[20deg]`}
+								className={`${collapseButtonCommonClasses}  top-[12px]  group-hover:rotate-[25deg]`}
 							/>
 						</button>
 					</div>
