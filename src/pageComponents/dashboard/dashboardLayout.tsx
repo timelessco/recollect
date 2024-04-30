@@ -93,6 +93,7 @@ type DashboardLayoutProps = {
 		id: CategoriesData["id"],
 		name: CategoriesData["category_name"],
 	) => void;
+	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 	userId: string;
 };
 
@@ -111,6 +112,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		updateCategoryName,
 		onIconColorChange,
 		onSearchEnterPress = () => null,
+		uploadFileFromAddDropdown,
 	} = props;
 
 	const [screenWidth, setScreenWidth] = useState(1_200);
@@ -518,7 +520,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
 						{renderViewBasedHeaderOptions()}
 						{currentPath !== TRASH_URL && (
-							<AddBookmarkDropdown onAddBookmark={onAddBookmark} />
+							<AddBookmarkDropdown
+								onAddBookmark={onAddBookmark}
+								uploadFile={uploadFileFromAddDropdown}
+							/>
 						)}
 					</div>
 				</div>

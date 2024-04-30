@@ -1155,6 +1155,7 @@ const Dashboard = () => {
 						}),
 					);
 				}}
+				uploadFileFromAddDropdown={onDrop}
 				userId={session?.user?.id ?? ""}
 			/>
 			<ShareCategoryModal />
