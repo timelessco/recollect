@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type AppProps } from "next/app";
 import Head from "next/head";
 import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
@@ -15,7 +15,13 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
 
+import NProgress from "nprogress";
+
 import { supabaseAnonKey, supabaseUrl } from "../utils/supabaseClient";
+
+import "nprogress/nprogress.css";
+
+import Router from "next/router";
 
 const MyApp = ({
 	Component,
@@ -34,6 +40,17 @@ const MyApp = ({
 			supabaseKey: supabaseAnonKey,
 		}),
 	);
+
+	useEffect(() => {
+		Router.events.on("routeChangeStart", NProgress.start);
+		Router.events.on("routeChangeComplete", NProgress.done);
+		Router.events.on("routeChangeError", NProgress.done);
+		return () => {
+			Router.events.off("routeChangeStart", NProgress.start);
+			Router.events.off("routeChangeComplete", NProgress.done);
+			Router.events.off("routeChangeError", NProgress.done);
+		};
+	}, []);
 
 	const [queryClient] = useState(
 		() =>
