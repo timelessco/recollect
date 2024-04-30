@@ -985,14 +985,16 @@ const Dashboard = () => {
 		}
 	};
 
+	const onAddBookmark = (url: string) => {
+		const finalUrl = url?.includes("https://") ? url : `https://${url}`;
+		void addBookmarkLogic(finalUrl);
+	};
+
 	return (
 		<>
 			<DashboardLayout
 				categoryId={CATEGORY_ID}
-				onAddBookmark={(url) => {
-					const finalUrl = url?.includes("https://") ? url : `https://${url}`;
-					void addBookmarkLogic(finalUrl);
-				}}
+				onAddBookmark={onAddBookmark}
 				onAddNewCategory={async (newCategoryName) => {
 					if (!isNull(userProfileData?.data)) {
 						const response = (await mutationApiCall(
@@ -1137,14 +1139,7 @@ const Dashboard = () => {
 						}),
 					);
 				}}
-				onSearchEnterPress={(value) => {
-					if (!isNil(value.match(URL_PATTERN))) {
-						const finalUrl = value?.includes("https://")
-							? value
-							: `https://${value}`;
-						void addBookmarkLogic(finalUrl);
-					}
-				}}
+				onSearchEnterPress={onAddBookmark}
 				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
