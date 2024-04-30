@@ -29,7 +29,7 @@ export const LETTERS_NUMBERS_CHECK_PATTERN = /^[a-z\d]+$/;
 export const DISPLAY_NAME_CHECK_PATTERN = /^[\d\sA-Za-z]+$/u;
 export const URL_IMAGE_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex
-	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp)(\?(.*))?$/gimu;
+	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 

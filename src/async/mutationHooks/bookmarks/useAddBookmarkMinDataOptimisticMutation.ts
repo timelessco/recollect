@@ -1,6 +1,7 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
+import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -15,6 +16,7 @@ import {
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	menuListItemName,
+	URL_IMAGE_CHECK_PATTERN,
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { successToast } from "../../../utils/toastMessages";
@@ -117,7 +119,16 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 			const data = response?.data?.data[0];
 			const ogImg = data?.ogImage;
-			if (!ogImg || isEmpty(ogImg) || !ogImg?.includes("https://")) {
+			const url = data?.url;
+
+			// this is to check if url is not a website like test.pdf
+			// if this is the case then we do not call the screenshot api
+			const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
+
+			if (
+				(!ogImg || isEmpty(ogImg) || !ogImg?.includes("https://")) &&
+				isNull(isUrlOfMimeType)
+			) {
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,
