@@ -75,6 +75,7 @@ import {
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	URL_PATTERN,
 	VIDEOS_URL,
 } from "../../utils/constants";
 import {
@@ -984,14 +985,16 @@ const Dashboard = () => {
 		}
 	};
 
+	const onAddBookmark = (url: string) => {
+		const finalUrl = url?.includes("https://") ? url : `https://${url}`;
+		void addBookmarkLogic(finalUrl);
+	};
+
 	return (
 		<>
 			<DashboardLayout
 				categoryId={CATEGORY_ID}
-				onAddBookmark={(url) => {
-					const finalUrl = url?.includes("https://") ? url : `https://${url}`;
-					void addBookmarkLogic(finalUrl);
-				}}
+				onAddBookmark={onAddBookmark}
 				onAddNewCategory={async (newCategoryName) => {
 					if (!isNull(userProfileData?.data)) {
 						const response = (await mutationApiCall(
@@ -1136,6 +1139,7 @@ const Dashboard = () => {
 						}),
 					);
 				}}
+				onSearchEnterPress={onAddBookmark}
 				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
