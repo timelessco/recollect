@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment } from "allotment";
@@ -18,7 +18,6 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
-	menuListItemName,
 	TRASH_URL,
 } from "../../utils/constants";
 
@@ -52,7 +51,7 @@ import "react-modern-drawer/dist/index.css";
 
 import { isNull } from "lodash";
 
-import { AriaDropdown } from "../../components/ariaDropdown";
+import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
@@ -81,6 +80,7 @@ type DashboardLayoutProps = {
 		id: number,
 	) => Promise<void>;
 	onClearTrash: () => void;
+	onDeleteCollectionClick: () => void;
 	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 	onSearchEnterPress: (value: string) => void;
@@ -113,9 +113,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		onIconColorChange,
 		onSearchEnterPress = () => null,
 		uploadFileFromAddDropdown,
+		onDeleteCollectionClick,
 	} = props;
 
-	const [screenWidth, setScreenWidth] = useState(1_200);
+	// const [screenWidth, setScreenWidth] = useState(1_200);
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
@@ -131,12 +132,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		}
 	}, [isDesktop]);
 
-	useEffect(() => {
-		// disabling as we need this for allotement width
-		if (screen) {
-			setScreenWidth(screen.width);
-		}
-	}, []);
+	// useEffect(() => {
+	// 	// disabling as we need this for allotement width
+	// 	if (screen) {
+	// 		setScreenWidth(screen.width);
+	// 	}
+	// }, []);
 
 	const queryClient = useQueryClient();
 
@@ -146,9 +147,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const showSidePane = useMiscellaneousStore((state) => state.showSidePane);
 	const setShowSidePane = useMiscellaneousStore(
 		(state) => state.setShowSidePane,
-	);
-	const currentBookmarkView = useMiscellaneousStore(
-		(state) => state.currentBookmarkView,
 	);
 
 	useEffect(() => {
@@ -301,6 +299,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		string | null
 	>(null);
 
+	const updateHeaderOptionCurrentTab = useCallback(
+		(value: string) => {
+			setHeaderOptionsCurrentTab(value === "delete-collection" ? null : value);
+		},
+		[setHeaderOptionsCurrentTab],
+	);
+
 	const renderViewBasedHeaderOptions = () => {
 		const optionsData = [
 			{
@@ -362,6 +367,20 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					</div>
 				),
 			},
+			{
+				show: typeof categoryId === "number",
+				value: "delete-collection",
+				render: (
+					// using AriaDropdownMenu as we want the dropdown to close on click
+					<AriaDropdownMenu
+						className={`flex items-center text-red-700 hover:text-red-700 ${dropdownMenuItemClassName}`}
+						onClick={onDeleteCollectionClick}
+					>
+						<TrashIconRed />
+						<p className="ml-[6px]">Delete collection</p>
+					</AriaDropdownMenu>
+				),
+			},
 		];
 
 		const optionsList = optionsData
@@ -370,7 +389,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 				<div
 					key={item?.value}
-					onClick={() => setHeaderOptionsCurrentTab(item?.value)}
+					onClick={() => updateHeaderOptionCurrentTab(item?.value)}
 				>
 					{item?.render}
 				</div>

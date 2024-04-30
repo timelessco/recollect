@@ -990,6 +990,58 @@ const Dashboard = () => {
 		void addBookmarkLogic(finalUrl);
 	};
 
+	const onDeleteCollection = useCallback(
+		async (current: boolean, categoryId: number) => {
+			if (
+				!isNull(userProfileData?.data) &&
+				userProfileData?.data[0]?.category_order
+			) {
+				const isDataPresentCheck =
+					find(
+						bookmarksCountData?.data?.categoryCount,
+						(item) => item?.category_id === categoryId,
+					)?.count === 0;
+
+				const currentCategory = find(
+					allCategories?.data,
+					(item) => item?.id === categoryId,
+				);
+
+				if (currentCategory?.user_id?.id === session?.user?.id) {
+					if (isDataPresentCheck) {
+						await mutationApiCall(
+							deleteCategoryOtimisticMutation.mutateAsync({
+								category_id: categoryId,
+								category_order: userProfileData?.data[0]?.category_order,
+								session,
+							}),
+						);
+					} else {
+						errorToast(
+							"This collection still has bookmarks, Please empty collection",
+						);
+					}
+				} else {
+					errorToast("Only collection owner can delete this collection");
+				}
+
+				// current - only push to home if user is deleting the category when user is currently in that category
+				// isDataPresentCheck - only push to home after category get delete successfully
+				if (isDataPresentCheck && current) {
+					void router.push(`/${ALL_BOOKMARKS_URL}`);
+				}
+			}
+		},
+		[
+			allCategories?.data,
+			bookmarksCountData?.data?.categoryCount,
+			deleteCategoryOtimisticMutation,
+			router,
+			session,
+			userProfileData?.data,
+		],
+	);
+
 	return (
 		<>
 			<DashboardLayout
@@ -1063,49 +1115,7 @@ const Dashboard = () => {
 				onCategoryOptionClick={async (value, current, categoryId) => {
 					switch (value) {
 						case "delete":
-							if (
-								!isNull(userProfileData?.data) &&
-								userProfileData?.data[0]?.category_order
-							) {
-								const isDataPresentCheck =
-									find(
-										bookmarksCountData?.data?.categoryCount,
-										(item) => item?.category_id === categoryId,
-									)?.count === 0;
-
-								const currentCategory = find(
-									allCategories?.data,
-									(item) => item?.id === categoryId,
-								);
-
-								if (currentCategory?.user_id?.id === session?.user?.id) {
-									if (isDataPresentCheck) {
-										await mutationApiCall(
-											deleteCategoryOtimisticMutation.mutateAsync({
-												category_id: categoryId,
-												category_order:
-													userProfileData?.data[0]?.category_order,
-												session,
-											}),
-										);
-									} else {
-										errorToast(
-											"This collection still has bookmarks, Please empty collection",
-										);
-									}
-								} else {
-									errorToast(
-										"Only collection owner can delete this collection",
-									);
-								}
-
-								// current - only push to home if user is deleting the category when user is currently in that category
-								// isDataPresentCheck - only push to home after category get delete successfully
-								if (isDataPresentCheck && current) {
-									void router.push(`/${ALL_BOOKMARKS_URL}`);
-								}
-							}
-
+							await onDeleteCollection(current, categoryId);
 							break;
 						case "share":
 							toggleShareCategoryModal();
@@ -1119,6 +1129,9 @@ const Dashboard = () => {
 				onClearTrash={() => {
 					toggleShowClearTrashWarningModal();
 				}}
+				onDeleteCollectionClick={async () =>
+					await onDeleteCollection(true, CATEGORY_ID as number)
+				}
 				onIconColorChange={(color, id) => {
 					void mutationApiCall(
 						updateCategoryOptimisticMutation.mutateAsync({
