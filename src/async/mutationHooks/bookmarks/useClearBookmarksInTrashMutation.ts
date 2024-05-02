@@ -1,12 +1,13 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useSupabaseSession } from "../../../store/componentStore";
 import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
 import { clearBookmarksInTrash } from "../../supabaseCrudHelpers";
 
 // clears trash
 export default function useClearBookmarksInTrashMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
 	const clearBookmarksInTrashMutation = useMutation(clearBookmarksInTrash, {

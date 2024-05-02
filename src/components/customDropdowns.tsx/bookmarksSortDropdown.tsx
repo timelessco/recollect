@@ -8,7 +8,10 @@ import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
 import TickIcon from "../../icons/tickIcon";
-import { useLoadersStore } from "../../store/componentStore";
+import {
+	useLoadersStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
 import {
 	type CategoriesData,
 	type FetchSharedCategoriesData,
@@ -50,7 +53,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 	} = props;
 
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];

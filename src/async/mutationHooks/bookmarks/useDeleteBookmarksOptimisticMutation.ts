@@ -3,13 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
 import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
 import { deleteData } from "../../supabaseCrudHelpers";
 
 // dels bookmark optimistically
 export default function useDeleteBookmarksOptimisticMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 

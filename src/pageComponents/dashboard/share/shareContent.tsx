@@ -23,6 +23,7 @@ import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
 	useModalStore,
+	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type CategoriesData,
@@ -39,7 +40,7 @@ const AccessUserInfo = (props: {
 	isLoggedinUserTheOwner: boolean;
 	item: CollabDataInCategory;
 }) => {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { item, isLoggedinUserTheOwner } = props;
 
 	const { updateSharedCategoriesUserAccessMutation } =
@@ -184,7 +185,7 @@ const ShareContent = () => {
 	);
 
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 
 	const shareCategoryId = useMiscellaneousStore(

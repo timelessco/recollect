@@ -11,7 +11,10 @@ import LabelledComponent from "../../components/labelledComponent";
 import Spinner from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
-import { useMiscellaneousStore } from "../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import {
 	settingsInputClassName,
@@ -30,7 +33,7 @@ const ChangeEmail = () => {
 	const [changeEmailLoader, setChangeEmailLoader] = useState(false);
 
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
 	);

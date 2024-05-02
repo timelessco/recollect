@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -12,7 +13,7 @@ import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
 // add category to bookmark un-optimistically , used when creating a new category when editing a bookmark
 export default function useAddCategoryToBookmarkMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();

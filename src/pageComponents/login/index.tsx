@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { ToastContainer } from "react-toastify";
 
@@ -14,6 +13,7 @@ import Input from "../../components/atoms/input";
 import Spinner from "../../components/spinner";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogo from "../../icons/laterpadLogo";
+import { useSupabaseSession } from "../../store/componentStore";
 import {
 	bottomBarButton,
 	bottomBarText,
@@ -26,15 +26,22 @@ import {
 	EMAIL_CHECK_PATTERN,
 	SIGNUP_URL,
 } from "../../utils/constants";
+import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 
 const LoginPage = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
 
-	const supabase = useSupabaseClient();
+	// const supabase = useSupabaseClient();
 
-	const session = useSession();
+	const supabase = createClient();
+
+	const session = useSupabaseSession((state) => state.session);
+
+	// const session = await supabase?.auth?.getUser();
+
+	// console.log("ss", session);
 
 	useEffect(() => {
 		if (session) void router.push(`/${ALL_BOOKMARKS_URL}`);

@@ -1,9 +1,9 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 
+import { useSupabaseSession } from "../store/componentStore";
 import {
 	type CategoriesData,
 	type FetchSharedCategoriesData,
@@ -19,7 +19,7 @@ import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
 // gets the sort by value of the user
 export default function useGetSortBy() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 

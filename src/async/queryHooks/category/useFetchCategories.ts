@@ -1,13 +1,14 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { CATEGORIES_KEY } from "../../../utils/constants";
 import { fetchCategoriesData } from "../../supabaseCrudHelpers";
 
 // fetchs user categories
 export default function useFetchCategories() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 
 	const {
 		data: allCategories,

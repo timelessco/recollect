@@ -28,7 +28,10 @@ import {
 import Checkbox from "../../../components/checkbox";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../../store/componentStore";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -74,7 +77,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 		(store) => store.setIsCardDragging,
 	);
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((storeState) => storeState.session);
 
 	const categoryData = queryClient.getQueryData([
 		CATEGORIES_KEY,

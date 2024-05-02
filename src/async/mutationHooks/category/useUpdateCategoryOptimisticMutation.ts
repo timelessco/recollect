@@ -1,13 +1,14 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { CATEGORIES_KEY } from "../../../utils/constants";
 import { updateCategory } from "../../supabaseCrudHelpers";
 
 // updates a category optimistically
 export default function useUpdateCategoryOptimisticMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	// const { sortBy } = useGetSortBy();
 	// const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();

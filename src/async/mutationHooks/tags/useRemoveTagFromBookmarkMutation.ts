@@ -4,6 +4,7 @@ import { find, isArray } from "lodash";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	type SingleListData,
 	type UserTagsData,
@@ -14,7 +15,7 @@ import { removeTagFromBookmark } from "../../supabaseCrudHelpers";
 // add new tag for a user to add to bookmark
 export default function useRemoveTagFromBookmarkMutation() {
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
 

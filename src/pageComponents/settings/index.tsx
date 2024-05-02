@@ -19,7 +19,10 @@ import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
-import { useMiscellaneousStore } from "../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
@@ -50,7 +53,7 @@ type SettingsDisplaynameFormTypes = {
 const Settings = () => {
 	const inputFile = useRef<HTMLInputElement>(null);
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const userId = session?.user?.id;
 
 	const setCurrentSettingsPage = useMiscellaneousStore(

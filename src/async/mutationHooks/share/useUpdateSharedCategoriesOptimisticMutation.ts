@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type FetchSharedCategoriesData } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_KEY,
@@ -14,7 +15,7 @@ import { updateSharedCategoriesUserAccess } from "../../supabaseCrudHelpers";
 // updates shared cat data optimistically
 export default function useUpdateSharedCategoriesOptimisticMutation() {
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
 

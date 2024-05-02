@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useSession } from "@supabase/auth-helpers-react";
-import { type UserIdentity } from "@supabase/supabase-js";
+import { type Session, type UserIdentity } from "@supabase/supabase-js";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
@@ -48,6 +47,7 @@ import {
 	useLoadersStore,
 	useMiscellaneousStore,
 	useModalStore,
+	useSupabaseSession,
 } from "../../store/componentStore";
 import {
 	type BookmarksTagData,
@@ -83,6 +83,7 @@ import {
 	parseUploadFileName,
 	uploadFileLimit,
 } from "../../utils/helpers";
+import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
@@ -103,7 +104,28 @@ const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
 });
 
 const Dashboard = () => {
-	const session = useSession();
+	// const [session, setSession] = useState({});
+
+	const supabase = createClient();
+
+	// const session = {};
+
+	const setSession = useSupabaseSession((state) => state.setSession);
+
+	const session = useSupabaseSession((state) => state.session);
+
+	useEffect(() => {
+		// const session = await useSession();
+
+		const fetchSession = async () => {
+			const ss = await supabase.auth.getSession();
+			setSession(ss?.data?.session as Session);
+		};
+
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
+		fetchSession();
+	}, [setSession, supabase.auth]);
+
 	// move to zustand
 	const [showAddBookmarkModal, setShowAddBookmarkModal] =
 		useState<boolean>(false);
@@ -1041,6 +1063,10 @@ const Dashboard = () => {
 			userProfileData?.data,
 		],
 	);
+
+	if (isEmpty(session)) {
+		return <div />;
+	}
 
 	return (
 		<>

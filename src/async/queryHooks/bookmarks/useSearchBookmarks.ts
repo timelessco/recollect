@@ -5,7 +5,10 @@ import { find } from "lodash";
 
 import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../../store/componentStore";
 import {
 	type BookmarksPaginatedDataTypes,
 	type FetchSharedCategoriesData,
@@ -18,7 +21,7 @@ import { searchBookmarks } from "../../supabaseCrudHelpers";
 
 // searches bookmarks
 export default function useSearchBookmarks() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const queryClient = useQueryClient();
 

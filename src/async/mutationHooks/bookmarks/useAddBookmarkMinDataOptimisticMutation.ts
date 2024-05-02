@@ -5,7 +5,10 @@ import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../../store/componentStore";
 import {
 	type BookmarksPaginatedDataTypes,
 	type SingleListData,
@@ -26,7 +29,7 @@ import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation
 
 // adds bookmark min data
 export default function useAddBookmarkMinDataOptimisticMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 
 	const queryClient = useQueryClient();
 	const setAddScreenshotBookmarkId = useMiscellaneousStore(

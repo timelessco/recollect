@@ -1,6 +1,7 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	type CategoriesData,
 	type ProfilesTableTypes,
@@ -10,7 +11,7 @@ import { updateCategoryOrder } from "../../supabaseCrudHelpers";
 
 // update collection order optimistically
 export default function useUpdateCategoryOrderOptimisticMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
 	const updateCategoryOrderMutation = useMutation(updateCategoryOrder, {

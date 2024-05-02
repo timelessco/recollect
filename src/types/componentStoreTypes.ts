@@ -1,3 +1,5 @@
+import { type Session } from "@supabase/supabase-js";
+
 export type ModalStoreState = {
 	showClearTrashWarningModal: boolean;
 	showDeleteBookmarkWarningModal: boolean;
@@ -41,6 +43,11 @@ export type MiscellaneousStoreState = {
 	setShowSidePane: (value: boolean) => void;
 	shareCategoryId: number | undefined;
 	showSidePane: boolean;
+};
+
+export type SupabaseSessionStore = {
+	session: Session;
+	setSession: (value: Session) => void;
 };
 
 export type BookmarksViewTypes = "card" | "headlines" | "list" | "moodboard";

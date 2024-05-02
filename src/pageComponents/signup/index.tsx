@@ -14,6 +14,7 @@ import Input from "../../components/atoms/input";
 import Spinner from "../../components/spinner";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogoBlack from "../../icons/laterpadLogoBlack";
+import { useSupabaseSession } from "../../store/componentStore";
 import {
 	bottomBarButton,
 	bottomBarText,
@@ -33,7 +34,7 @@ const SignUp = () => {
 
 	const router = useRouter();
 	const supabase = useSupabaseClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 
 	useEffect(() => {
 		if (session) void router.push(`/${ALL_BOOKMARKS_URL}`);

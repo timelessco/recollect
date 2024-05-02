@@ -11,6 +11,7 @@ import {
 } from "../../../components/ariaDropdown";
 import UserAvatar from "../../../components/userAvatar";
 import DownArrowGray from "../../../icons/downArrowGray";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import {
 	dropdownMenuClassName,
@@ -20,7 +21,7 @@ import {
 import { USER_PROFILE } from "../../../utils/constants";
 
 const SidePaneUserDropdown = () => {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const supabase = useSupabaseClient();
 

@@ -10,6 +10,7 @@ import Button from "../../../components/atoms/button";
 import LabelledComponent from "../../../components/labelledComponent";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -56,7 +57,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 	} = props;
 
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { sortBy } = useGetSortBy();
 	// tells if the logged in user is the bookmark owner
 	const isOwner = urlData?.user_id?.id === session?.user?.id;

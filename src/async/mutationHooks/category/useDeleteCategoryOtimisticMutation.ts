@@ -1,13 +1,14 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
 import { deleteUserCategory } from "../../supabaseCrudHelpers";
 
 // deletes a category optimistically
 export default function useDeleteCategoryOtimisticMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
 	const deleteCategoryOtimisticMutation = useMutation(deleteUserCategory, {

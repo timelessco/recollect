@@ -3,6 +3,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { useSupabaseSession } from "../store/componentStore";
 import { type CategoriesData } from "../types/apiTypes";
 import { type CategoryIdUrlTypes } from "../types/componentTypes";
 import { CATEGORIES_KEY } from "../utils/constants";
@@ -10,7 +11,7 @@ import { getCategoryIdFromSlug } from "../utils/helpers";
 
 // gets current category ID that user is in
 export default function useGetCurrentCategoryId() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const router = useRouter();
 	const queryClient = useQueryClient();
 

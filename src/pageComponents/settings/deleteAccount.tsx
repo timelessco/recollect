@@ -12,7 +12,10 @@ import LabelledComponent from "../../components/labelledComponent";
 import Spinner from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
-import { useMiscellaneousStore } from "../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
@@ -33,7 +36,7 @@ type SettingsFormTypes = {
 };
 
 const DeleteAccout = () => {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
