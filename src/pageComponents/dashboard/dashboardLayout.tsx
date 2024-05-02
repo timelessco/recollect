@@ -456,23 +456,23 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const collapseButtonCommonClasses =
-		"absolute left-[-16px]  mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
+		"absolute left-[8px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
 				<div className="relative">
 					<div className="">
 						<button
-							className="group"
+							className="group absolute left-[-25px] top-[-25px]  px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
 							onClick={() => setShowSidePane(true)}
 							type="button"
 						>
 							<div
-								className={`${collapseButtonCommonClasses} top-[2px] group-hover:rotate-[-25deg]`}
+								className={`${collapseButtonCommonClasses} top-[16px] group-hover:rotate-[-25deg]`}
 							/>
 							<div
-								className={`${collapseButtonCommonClasses}  top-[12px]  group-hover:rotate-[25deg]`}
+								className={`${collapseButtonCommonClasses}  top-[26px]  group-hover:rotate-[25deg]`}
 							/>
 						</button>
 					</div>
