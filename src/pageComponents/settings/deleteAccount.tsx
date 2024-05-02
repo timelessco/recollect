@@ -78,7 +78,8 @@ const DeleteAccout = () => {
 				successToast("Account has been successfully deleted");
 				// await signOut(supabase);
 				delete_cookie("supabase-auth-token", document);
-				await router?.push(LOGIN_URL);
+				// await router?.push(LOGIN_URL);
+				window?.location.reload();
 			}
 		}
 	};
