@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty, isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import AddBoomarkInputIcon from "../../icons/miscellaneousIcons/addBoomarkInputIcon";
 import PlusIconWhite from "../../icons/plusIconWhite";
+import { type FileType } from "../../types/componentTypes";
 import {
 	dropdownMenuClassName,
 	grayInputClassName,
@@ -15,9 +16,13 @@ import Input from "../atoms/input";
 
 export type AddBookmarkDropdownTypes = {
 	onAddBookmark: (url: string) => void;
+	uploadFile: (file: FileType[]) => void;
 };
 
-const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
+const AddBookmarkDropdown = ({
+	onAddBookmark,
+	uploadFile,
+}: AddBookmarkDropdownTypes) => {
 	const [openDropdown, setOpenDropdown] = useState(false);
 
 	useEffect(() => {
@@ -45,6 +50,7 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 	};
 
 	const inputRef = useRef<HTMLInputElement>(null);
+	const fileUploadInputRef = useRef<HTMLInputElement>(null);
 
 	const { ref, ...rest } = register("url", {
 		required: true,
@@ -52,51 +58,71 @@ const AddBookmarkDropdown = ({ onAddBookmark }: AddBookmarkDropdownTypes) => {
 	});
 
 	return (
-		<AriaDropdown
-			initialFocusRef={inputRef}
-			isOpen={openDropdown}
-			menuButton={
-				<Button
-					className="rounded-full p-[7px] hover:bg-black"
-					title="create"
-					type="dark"
-				>
-					<figure className="h-4 w-4">
-						<PlusIconWhite />
-					</figure>
-				</Button>
-			}
-			menuOpenToggle={(value) => {
-				setOpenDropdown(value);
-				if (value === false) {
-					reset({ url: "" });
-					clearErrors();
+		<>
+			<input
+				className="hidden"
+				onChange={(event) =>
+					!isNil(event.target.files) &&
+					uploadFile(event.target.files as unknown as FileType[])
 				}
-			}}
-		>
-			<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
-				<AddBoomarkInputIcon className="absolute left-[14px] top-[13px] z-[1]" />
-				<form onSubmit={handleSubmit(onSubmit)}>
-					<Input
-						autoFocus
-						className={`rounded-[11px] pl-[32px] ${grayInputClassName}`}
-						errorClassName="ml-2"
-						{...rest}
-						errorText="Enter valid URL"
-						isError={!isEmpty(errors)}
-						placeholder="Add a link or drop a file anywhere"
-						ref={(event) => {
-							ref(event);
-							if (!isNull(inputRef)) {
-								// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-								// @ts-expect-error
-								inputRef.current = event;
+				ref={fileUploadInputRef}
+				type="file"
+			/>
+			<AriaDropdown
+				initialFocusRef={inputRef}
+				isOpen={openDropdown}
+				menuButton={
+					<Button
+						className="rounded-full p-[7px] hover:bg-black"
+						title="create"
+						type="dark"
+					>
+						<figure className="h-4 w-4">
+							<PlusIconWhite />
+						</figure>
+					</Button>
+				}
+				menuOpenToggle={(value) => {
+					setOpenDropdown(value);
+					if (value === false) {
+						reset({ url: "" });
+						clearErrors();
+					}
+				}}
+			>
+				<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
+					<Button
+						className="p-0 text-grayDark-grayDark-600 hover:text-gray-light-12"
+						onClick={() => {
+							if (fileUploadInputRef.current) {
+								fileUploadInputRef.current.click();
 							}
 						}}
-					/>
-				</form>
-			</div>
-		</AriaDropdown>
+					>
+						<AddBoomarkInputIcon className="absolute left-[14px] top-[13px] z-[1]" />
+					</Button>
+					<form onSubmit={handleSubmit(onSubmit)}>
+						<Input
+							autoFocus
+							className={`rounded-[11px] pl-[32px] ${grayInputClassName}`}
+							errorClassName="ml-2"
+							{...rest}
+							errorText="Enter valid URL"
+							isError={!isEmpty(errors)}
+							placeholder="Add a link or drop a file anywhere"
+							ref={(event) => {
+								ref(event);
+								if (!isNull(inputRef)) {
+									// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+									// @ts-expect-error
+									inputRef.current = event;
+								}
+							}}
+						/>
+					</form>
+				</div>
+			</AriaDropdown>
+		</>
 	);
 };
 

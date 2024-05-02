@@ -38,6 +38,7 @@ export default function useAddCategoryOptimisticMutation() {
 									category_name: data?.name,
 									user_id: data?.user_id,
 									icon: "star-04",
+									icon_color: "#000000",
 								},
 							],
 						} as { data: CategoriesData[] };
