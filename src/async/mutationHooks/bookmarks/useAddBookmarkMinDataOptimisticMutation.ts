@@ -1,4 +1,3 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";

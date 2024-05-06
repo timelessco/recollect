@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { ToastContainer } from "react-toastify";
 
@@ -27,13 +26,14 @@ import {
 	EMAIL_CHECK_PATTERN,
 	SIGNIN_URL,
 } from "../../utils/constants";
+import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 
 const SignUp = () => {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const router = useRouter();
-	const supabase = useSupabaseClient();
+	const supabase = createClient();
 	const session = useSupabaseSession((state) => state.session);
 
 	useEffect(() => {

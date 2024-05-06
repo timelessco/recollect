@@ -1064,7 +1064,7 @@ const Dashboard = () => {
 		],
 	);
 
-	if (isEmpty(session)) {
+	if (isNull(session)) {
 		return <div />;
 	}
 

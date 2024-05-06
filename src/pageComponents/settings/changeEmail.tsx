@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNil } from "lodash";
@@ -23,6 +22,7 @@ import {
 	settingsMainHeadingClassName,
 } from "../../utils/commonClassNames";
 import { EMAIL_CHECK_PATTERN, USER_PROFILE } from "../../utils/constants";
+import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
@@ -38,7 +38,7 @@ const ChangeEmail = () => {
 		(state) => state.setCurrentSettingsPage,
 	);
 
-	const supabase = useSupabaseClient();
+	const supabase = createClient();
 
 	const userProfilesData = queryClient.getQueryData([
 		USER_PROFILE,

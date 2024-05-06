@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { TrashIcon } from "@heroicons/react/solid";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";

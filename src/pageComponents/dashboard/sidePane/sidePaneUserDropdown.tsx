@@ -1,4 +1,4 @@
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
@@ -18,12 +18,16 @@ import {
 	dropdownMenuItemClassName,
 	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
-import { USER_PROFILE } from "../../../utils/constants";
+import { LOGIN_URL, USER_PROFILE } from "../../../utils/constants";
+import { createClient } from "../../../utils/supabaseClient";
 
 const SidePaneUserDropdown = () => {
 	const session = useSupabaseSession((state) => state.session);
+	const setSession = useSupabaseSession((state) => state.setSession);
+	const router = useRouter();
+
 	const queryClient = useQueryClient();
-	const supabase = useSupabaseClient();
+	const supabase = createClient();
 
 	const { userProfilePicData } = useGetUserProfilePic(
 		session?.user?.email ?? "",
@@ -72,7 +76,14 @@ const SidePaneUserDropdown = () => {
 				menuClassName={dropdownMenuClassName}
 			>
 				{[{ label: "Sign Out", value: "sign-out" }]?.map((item) => (
-					<AriaDropdownMenu key={item?.value} onClick={() => signOut(supabase)}>
+					<AriaDropdownMenu
+						key={item?.value}
+						onClick={async () => {
+							await signOut(supabase);
+							setSession({});
+							void router.push(`/${LOGIN_URL}`);
+						}}
+					>
 						<div className={dropdownMenuItemClassName}>{item?.label}</div>
 					</AriaDropdownMenu>
 				))}

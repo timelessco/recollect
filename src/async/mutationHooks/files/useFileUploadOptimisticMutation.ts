@@ -1,4 +1,3 @@
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
@@ -23,6 +22,7 @@ import {
 	fileTypeIdentifier,
 	parseUploadFileName,
 } from "../../../utils/helpers";
+import { createClient } from "../../../utils/supabaseClient";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
 
@@ -31,7 +31,7 @@ export default function useFileUploadOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const supabase = useSupabaseClient();
+	const supabase = createClient();
 
 	const { sortBy } = useGetSortBy();
 

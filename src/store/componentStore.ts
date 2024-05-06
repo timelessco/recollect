@@ -85,7 +85,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 }));
 
 export const useSupabaseSession = create<SupabaseSessionStore>((set) => ({
-	// @ts-expect-error ts-ignore
-	session: {},
+	session: null,
 	setSession: (value) => set(() => ({ session: value })),
 }));

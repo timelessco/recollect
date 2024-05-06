@@ -46,8 +46,8 @@ export type MiscellaneousStoreState = {
 };
 
 export type SupabaseSessionStore = {
-	session: Session;
-	setSession: (value: Session) => void;
+	session: Session | null;
+	setSession: (value: SupabaseSessionStore["session"]) => void;
 };
 
 export type BookmarksViewTypes = "card" | "headlines" | "list" | "moodboard";
