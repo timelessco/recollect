@@ -17,10 +17,7 @@ import {
 } from "../../../types/apiTypes";
 import { PROFILES, USER_PROFILE_STORAGE_NAME } from "../../../utils/constants";
 import { parseUploadFileName } from "../../../utils/helpers";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
 export const config = {
@@ -71,7 +68,7 @@ export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadProfilePicApiResponse>,
 ) => {
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	// parse form with a Promise wrapper
 	const data = (await new Promise((resolve, reject) => {
@@ -94,14 +91,6 @@ export default async (
 	};
 
 	const accessToken = data?.fields?.access_token?.[0] as string;
-
-	const { error: _error } = verifyAuthToken(accessToken);
-
-	if (_error) {
-		response.status(500).json({ success: false, error: _error });
-		throw new Error("ERROR: token error");
-	}
-	// const categoryId = data?.fields?.category_id;
 
 	const tokenDecode: { sub: string } = jwtDecode(accessToken);
 	const userId = tokenDecode?.sub;

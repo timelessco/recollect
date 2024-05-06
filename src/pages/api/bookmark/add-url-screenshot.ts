@@ -17,10 +17,7 @@ import {
 	MAIN_TABLE_NAME,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -31,13 +28,6 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(request.body.access_token);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
 	if (!process.env.SCREENSHOT_TOKEN) {
 		response
 			.status(500)
@@ -45,7 +35,7 @@ export default async function handler(
 		throw new Error("ERROR: Screen shot token missing in env");
 	}
 
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const upload = async (base64info: string, uploadUserId: string) => {
 		const imgName = `img-${uniqid?.time()}.jpg`;

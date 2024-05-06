@@ -20,7 +20,10 @@ export const supabaseAnonKey = !isProductionEnvironment
 	: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const createClient = () => {
-	const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+	const supabase = createBrowserClient(
+		process.env.NEXT_PUBLIC_DEV_SUPABASE_URL as string,
+		process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY as string,
+	);
 
 	return supabase;
 };

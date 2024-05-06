@@ -16,10 +16,7 @@ import {
 	CATEGORIES_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 /**
  * Fetches user categories and builds it so that we get all its colaborators data
@@ -34,14 +31,7 @@ export default async function handler(
 	request: NextApiRequest<{ userEmail: string; user_id: string }>,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(request.body.access_token);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const userId = request.body.user_id;
 
@@ -70,13 +60,19 @@ export default async function handler(
 
 	// fetch categories where user is a colloborator
 
-	const { data: userCollabCategoryData } = (await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.select(`category_id!inner(*, user_id(*))`)
-		.eq("email", request.body.userEmail)
-		.eq("is_accept_pending", false)) as unknown as {
-		data: Array<{ category_id: number }>;
-	};
+	const { data: userCollabCategoryData, error: userCollabError } =
+		await supabase
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.select(`category_id!inner(*, user_id(*))`)
+			.eq("email", request.body.userEmail)
+			.eq("is_accept_pending", false);
+
+	if (!isNull(userCollabError)) {
+		response.status(500).json({
+			data: null,
+			error: `Collab data error: ${userCollabError?.message}`,
+		});
+	}
 
 	const flattenedUserCollabCategoryData = userCollabCategoryData?.map(
 		(item) => item.category_id,
@@ -154,7 +150,6 @@ export default async function handler(
 	// }
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error });
-		throw new Error("ERROR");
 	} else {
 		response.status(200).json({ data: finalPublicFilteredData, error: null });
 	}

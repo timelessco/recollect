@@ -17,10 +17,7 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
 
@@ -37,16 +34,9 @@ export default async function handler(
 	}>,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const apiData = request.body.data;
-
-	const { error: _error } = verifyAuthToken(request.body.access_token);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
 
 	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
 	const userId = tokenDecode?.sub;

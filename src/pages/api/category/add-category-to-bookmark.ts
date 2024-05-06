@@ -14,10 +14,7 @@ import {
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
@@ -34,24 +31,15 @@ export default async function handler(
 	request: NextApiRequest<AddCategoryToBookmarkApiPayload>,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error, decoded } = verifyAuthToken(request.body.access_token);
+	const supabase = apiSupabaseClient(request, response);
 
-	let userId: string | (() => string) | undefined;
-	let email: string | (() => string) | undefined;
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error, message: null });
-		throw new Error("ERROR: token error");
-	} else {
-		userId = decoded?.sub;
-		email = decoded?.email;
-	}
-
-	const supabase = apiSupabaseClient();
-
-	const { category_id: categoryId } = request.body;
-	const { bookmark_id: bookmarkId } = request.body;
-	const { update_access: updateAccess } = request.body;
+	const {
+		update_access: updateAccess,
+		userId,
+		email,
+		category_id: categoryId,
+		bookmark_id: bookmarkId,
+	} = request.body;
 
 	// this updates the category id for the bookmark
 	const updateCategoryIdLogic = async () => {

@@ -24,10 +24,7 @@ import {
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { getBaseUrl } from "../../../utils/helpers";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -54,14 +51,7 @@ export default async function handler(
 	const tokenDecode: { sub: string } = jwtDecode(accessToken);
 	const userId = tokenDecode?.sub;
 
-	const { error: _error } = verifyAuthToken(accessToken);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error, message: null });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const upload = async (
 		base64info: string,

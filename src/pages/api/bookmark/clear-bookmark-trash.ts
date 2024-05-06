@@ -12,10 +12,7 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api clears trash for a single user and also takes care of CRON job to clear trash every 30 days
 type DataResponse = SingleListData[] | null;
@@ -31,18 +28,11 @@ export default async function handler(
 	request: NextApiRequest<ClearBookmarksInTrashApiPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	if (request.body.user_id) {
 		// this is called by user then they click clear-trash button in UI , hence user_id is being checked
 		// this part needs the access_token check as its called from UI and in a userbased action
-
-		const { error: _error } = verifyAuthToken(request.body.access_token);
-
-		if (_error) {
-			response.status(500).json({ data: null, error: _error });
-			throw new Error("ERROR: token error");
-		}
 
 		// const {
 		// 	data,

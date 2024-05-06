@@ -30,10 +30,7 @@ import {
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
 export const config = {
@@ -112,7 +109,7 @@ export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
 ) => {
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	// parse form with a Promise wrapper
 	const data = (await new Promise((resolve, reject) => {
@@ -129,13 +126,6 @@ export default async (
 	})) as ParsedFormDataType;
 
 	const accessToken = data?.fields?.access_token?.[0];
-
-	const { error: _error } = verifyAuthToken(accessToken as string);
-
-	if (_error) {
-		response.status(500).json({ success: false, error: _error });
-		throw new Error(`ERROR: token error ${_error.message}`, _error);
-	}
 
 	const categoryId = data?.fields?.category_id?.[0];
 

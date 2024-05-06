@@ -80,6 +80,8 @@ const SidePaneUserDropdown = () => {
 						key={item?.value}
 						onClick={async () => {
 							await signOut(supabase);
+							// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+							// @ts-expect-error
 							setSession({});
 							void router.push(`/${LOGIN_URL}`);
 						}}

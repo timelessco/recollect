@@ -243,8 +243,10 @@ export type MoveBookmarkToTrashApiPayload = {
 export type AddCategoryToBookmarkApiPayload = {
 	bookmark_id: number;
 	category_id: number | null;
+	email?: ProfilesTableTypes["email"];
 	session: SupabaseSessionType;
 	update_access: boolean;
+	userId?: ProfilesTableTypes["id"];
 };
 
 export type AddUserCategoryApiPayload = {

@@ -121,9 +121,10 @@ export const fetchBookmakrsData = async (
 				data: SingleListData[];
 			};
 		}>(
-			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${
-				isNull(categoryId) ? "null" : categoryId
-			}&from=${pageParameter as string}&sort_by=${sortBy}`,
+			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?user_id=${session?.user
+				?.id}&category_id=${isNull(categoryId) ? "null" : categoryId}&from=${
+				pageParameter as string
+			}&sort_by=${sortBy}`,
 		);
 
 		return {
@@ -162,7 +163,7 @@ export const getBookmarksCount = async (
 				data: BookmarksCountTypes;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}?access_token=${session?.access_token}`,
+				`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}?user_id=${session?.user?.id}&email=${session?.user?.email}`,
 			);
 
 			return bookmarksData?.data;
@@ -563,7 +564,9 @@ export const addCategoryToBookmark = async ({
 				category_id: isNull(category_id) || !category_id ? 0 : category_id,
 				bookmark_id,
 				update_access,
-				access_token: session?.access_token,
+				// access_token: session?.access_token,
+				user_id: session?.user?.id,
+				email: session?.user?.email,
 			},
 		);
 

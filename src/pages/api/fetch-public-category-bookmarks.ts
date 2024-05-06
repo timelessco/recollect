@@ -22,7 +22,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<GetPublicCategoryBookmarksApiResponseType>,
 ) {
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	// get category data
 	const { data: categoryData, error: categoryError } = (await supabase

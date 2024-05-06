@@ -28,10 +28,7 @@ import {
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { checker, isUserInACategoryInApi } from "../../../utils/helpers";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // searches bookmarks
 
@@ -49,16 +46,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(
-		request.query.access_token as string,
-	);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	// disabling as this check is not needed here
 	const { category_id, is_shared_category } = request.query;

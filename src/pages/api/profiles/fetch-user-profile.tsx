@@ -10,10 +10,7 @@ import uniqid from "uniqid";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
 import { getUserNameFromEmail } from "../../../utils/helpers";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // fetches profiles data for a perticular user
 // checks if profile pic is present
@@ -32,16 +29,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(
-		request.query.access_token as string,
-	);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 	const userId = request.query.user_id;
 	const existingOauthAvatar = request.query?.avatar;
 
