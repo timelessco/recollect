@@ -44,7 +44,7 @@ const LoginPage = () => {
 	// console.log("ss", session);
 
 	useEffect(() => {
-		if (session) void router.push(`/${ALL_BOOKMARKS_URL}`);
+		if (session?.user) void router.push(`/${ALL_BOOKMARKS_URL}`);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [session]);
 

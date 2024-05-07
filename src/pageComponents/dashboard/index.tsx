@@ -179,7 +179,7 @@ const Dashboard = () => {
 	}, [showAddBookmarkModal]);
 
 	useEffect(() => {
-		if (!session) void router.push(`/${LOGIN_URL}`);
+		if (!session?.user) void router.push(`/${LOGIN_URL}`);
 	}, [router, session]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
