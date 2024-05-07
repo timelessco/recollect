@@ -81,7 +81,6 @@ const notVideoLogic = async (publicUrl: string) => {
 
 export default async function handler(
 	request: NextApiRequest<{
-		access_token: string;
 		id: SingleListData["id"];
 		publicUrl: SingleListData["ogImage"];
 	}>,

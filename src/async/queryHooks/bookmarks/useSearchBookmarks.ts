@@ -20,8 +20,9 @@ import { searchBookmarks } from "../../supabaseCrudHelpers";
 
 // searches bookmarks
 export default function useSearchBookmarks() {
-	const session = useSupabaseSession((state) => state.session);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const session = useSupabaseSession((state) => state.session);
+
 	const queryClient = useQueryClient();
 
 	const debouncedSearch = useDebounce(searchText, 500);
@@ -48,7 +49,12 @@ export default function useSearchBookmarks() {
 	}>(
 		[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
 		async () =>
-			await searchBookmarks(searchText, CATEGORY_ID, session, isSharedCategory),
+			await searchBookmarks(
+				searchText,
+				CATEGORY_ID,
+				isSharedCategory,
+				session?.user?.id as string,
+			),
 	);
 
 	return { data };

@@ -451,7 +451,10 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 			myArray.splice(index1, 0, movingItem);
 
 			void mutationApiCall(
-				updateCategoryOrderMutation?.mutateAsync({ order: myArray, session }),
+				updateCategoryOrderMutation?.mutateAsync({
+					order: myArray,
+					user_id: session?.user?.id as string,
+				}),
 			);
 		}
 	};

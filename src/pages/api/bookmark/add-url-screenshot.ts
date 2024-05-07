@@ -3,7 +3,6 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
 import uniqid from "uniqid";
 
@@ -54,8 +53,7 @@ export default async function handler(
 		return storageData?.publicUrl;
 	};
 
-	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
-	const userId = tokenDecode?.sub;
+	const userId = request.body.user_id;
 
 	// screen shot api call
 	const screenShotResponse = await axios.request({

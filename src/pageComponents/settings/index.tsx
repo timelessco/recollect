@@ -87,7 +87,6 @@ const Settings = () => {
 				updateUsernameMutation.mutateAsync({
 					id: session?.user?.id as string,
 					username: data?.username,
-					session,
 				}),
 			);
 			if (!isNil(response?.data)) {
@@ -111,7 +110,6 @@ const Settings = () => {
 				updateUserProfileOptimisticMutation.mutateAsync({
 					id: session?.user?.id as string,
 					updateData: { display_name: data?.displayname },
-					session,
 				}),
 			);
 

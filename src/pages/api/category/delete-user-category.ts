@@ -6,7 +6,6 @@ import {
 	type PostgrestError,
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
-import jwtDecode from "jwt-decode";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 
@@ -44,8 +43,7 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
-	const userId = tokenDecode?.sub;
+	const userId = request.body.user_id;
 
 	const {
 		data: categoryData,

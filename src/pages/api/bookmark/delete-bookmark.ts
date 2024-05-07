@@ -1,7 +1,6 @@
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import { isNull } from "lodash";
 
 import {
@@ -38,8 +37,7 @@ export default async function handler(
 
 	const apiData = request.body.data;
 
-	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
-	const userId = tokenDecode?.sub;
+	const userId = request.body?.data?.user_id;
 
 	// screenshots ogImages in bucket
 	const deleteScreenshotImagePaths = apiData?.deleteData?.map((item) => {

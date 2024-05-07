@@ -6,7 +6,6 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
@@ -39,17 +38,8 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const {
-		url,
-		access_token: accessToken,
-		image: ogImage,
-		favIcon,
-		id,
-	} = request.body;
-	// const { category_id: categoryId } = request.body;
-	// const { update_access: updateAccess } = request.body;
-	const tokenDecode: { sub: string } = jwtDecode(accessToken);
-	const userId = tokenDecode?.sub;
+	const { url, image: ogImage, favIcon, id, user_id } = request.body;
+	const userId = user_id;
 
 	const supabase = apiSupabaseClient(request, response);
 

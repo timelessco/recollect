@@ -44,12 +44,10 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const accessToken = request.body.access_token;
 	const { url } = request.body;
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
-	const tokenDecode: { sub: string } = jwtDecode(accessToken);
-	const userId = tokenDecode?.sub;
+	const userId = request.body.user_id;
 
 	const supabase = apiSupabaseClient(request, response);
 
@@ -187,7 +185,7 @@ export default async function handler(
 						id: data[0]?.id,
 						image: scrapperResponse?.data?.OgImage,
 						favIcon: scrapperResponse?.data?.favIcon,
-						access_token: accessToken,
+						user_id: userId,
 						url,
 					},
 				);

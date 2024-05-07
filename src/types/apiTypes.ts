@@ -2,6 +2,7 @@ import { type NextApiRequest as NextJsApiRequest } from "next";
 import {
 	type PostgrestError,
 	type Session,
+	type User,
 	type UserIdentity,
 } from "@supabase/supabase-js";
 
@@ -11,7 +12,7 @@ import {
 } from "./componentStoreTypes";
 import { type CategoryIdUrlTypes, type FileType } from "./componentTypes";
 
-export type SupabaseSessionType = Session | null;
+export type SupabaseSessionType = { user: User | null };
 
 export type ImgMetadataType = {
 	favIcon: string | null;
@@ -205,27 +206,26 @@ export type NextApiRequest<T> = Omit<NextJsApiRequest, "body"> & {
 
 export type AddBookmarkMinDataPayloadTypes = {
 	category_id: number | string | null;
-	session: SupabaseSessionType;
 	update_access: boolean;
 	url: string;
+	user_id: SingleListData["user_id"]["id"];
 };
 
 export type AddBookmarkRemainingDataPayloadTypes = {
-	access_token: string;
 	favIcon: string;
 	id: SingleListData["id"];
 	image: SingleListData["ogImage"];
 	url: SingleListData["url"];
+	user_id: SingleListData["user_id"]["id"];
 };
 
 export type AddBookmarkScreenshotPayloadTypes = {
 	id: number;
-	session: SupabaseSessionType;
 	url: string;
+	user_id: SingleListData["user_id"]["id"];
 };
 
 export type ClearBookmarksInTrashApiPayloadTypes = {
-	session: SupabaseSessionType;
 	user_id: string | undefined;
 };
 
@@ -237,7 +237,6 @@ export type DeleteDataApiPayload = {
 export type MoveBookmarkToTrashApiPayload = {
 	data: SingleListData;
 	isTrash: boolean;
-	session: SupabaseSessionType;
 };
 
 export type AddCategoryToBookmarkApiPayload = {
@@ -259,17 +258,16 @@ export type AddUserCategoryApiPayload = {
 export type DeleteUserCategoryApiPayload = {
 	category_id: number;
 	category_order: number[];
-	session: SupabaseSessionType;
+	user_id: SingleListData["user_id"]["id"];
 };
 
 export type UpdateCategoryOrderApiPayload = {
 	order: number[];
-	session: SupabaseSessionType;
+	user_id: SingleListData["user_id"]["id"];
 };
 
 export type UpdateCategoryApiPayload = {
 	category_id: number | string | null;
-	session: SupabaseSessionType;
 	updateData: {
 		category_name?: CategoriesData["category_name"];
 		category_views?: BookmarkViewDataTypes;
@@ -281,13 +279,11 @@ export type UpdateCategoryApiPayload = {
 
 export type UpdateUserProfileApiPayload = {
 	id: string;
-	session: SupabaseSessionType;
 	updateData: ProfilesTableForPayloadTypes;
 };
 
 export type UpdateUsernameApiPayload = {
 	id: string;
-	session: SupabaseSessionType;
 	username: ProfilesTableTypes["user_name"];
 };
 
@@ -303,7 +299,6 @@ export type RemoveUserProfilePicPayload = {
 
 export type GetUserProfilePicPayload = {
 	email: string;
-	session: SupabaseSessionType;
 };
 
 export type DeleteSharedCategoriesUserApiPayload = {
@@ -322,17 +317,14 @@ export type SendCollaborationEmailInviteApiPayload = {
 
 export type UpdateSharedCategoriesUserAccessApiPayload = {
 	id: number;
-	session: SupabaseSessionType;
 	updateData: { category_views?: BookmarkViewDataTypes; edit_access?: boolean };
 };
 
 export type AddTagToBookmarkApiPayload = {
 	selectedData: BookmarksTagData | BookmarksTagData[];
-	session: SupabaseSessionType;
 };
 
 export type AddUserTagsApiPayload = {
-	session: SupabaseSessionType;
 	tagsData: { name: string };
 	userData: UserIdentity;
 };
@@ -340,10 +332,10 @@ export type AddUserTagsApiPayload = {
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
 	file: FileType;
-	session: SupabaseSessionType;
 	thumbnailBase64: string | null;
 	// this is the path where the file in uploaded storage
 	uploadFileNamePath: string;
+	user_id: SingleListData["user_id"]["id"];
 };
 
 export type DeleteBookmarkPayload = {
@@ -353,7 +345,7 @@ export type DeleteBookmarkPayload = {
 		title: SingleListData["title"];
 		url: SingleListData["url"];
 	}>;
-	session: SupabaseSessionType;
+	user_id: SingleListData["user_id"]["id"];
 };
 
 export type UploadProfilePicPayload = {
@@ -380,12 +372,12 @@ export type FileNameType = string | undefined;
 
 export type ParsedFormDataType = {
 	fields: {
-		access_token?: string;
 		category_id?: string;
 		name?: string;
 		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
 		type?: string;
 		uploadFileNamePath?: string;
+		user_id?: string;
 	};
 	files: {
 		file?: Array<{

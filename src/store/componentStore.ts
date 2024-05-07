@@ -85,6 +85,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 }));
 
 export const useSupabaseSession = create<SupabaseSessionStore>((set) => ({
-	session: null,
+	session: { user: null },
 	setSession: (value) => set(() => ({ session: value })),
 }));

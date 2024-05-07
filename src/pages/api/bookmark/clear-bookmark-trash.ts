@@ -81,7 +81,7 @@ export default async function handler(
 					// call delete bookmark api
 					await deleteData({
 						deleteData: trashBookmarkIds,
-						session: { access_token: request?.body?.access_token } as Session,
+						user_id: request.body.user_id,
 					});
 
 					response

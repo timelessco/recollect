@@ -104,22 +104,16 @@ const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
 });
 
 const Dashboard = () => {
-	// const [session, setSession] = useState({});
-
 	const supabase = createClient();
-
-	// const session = {};
 
 	const setSession = useSupabaseSession((state) => state.setSession);
 
 	const session = useSupabaseSession((state) => state.session);
 
 	useEffect(() => {
-		// const session = await useSession();
-
 		const fetchSession = async () => {
-			const ss = await supabase.auth.getSession();
-			setSession(ss?.data?.session as Session);
+			const supabaseGetUserData = await supabase.auth.getUser();
+			setSession({ user: supabaseGetUserData?.data?.user });
 		};
 
 		// eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -247,12 +241,6 @@ const Dashboard = () => {
 
 	// share category mutation
 
-	// const { deleteSharedCategoriesUserMutation } =
-	//   useDeleteSharedCategoriesUserMutation();
-
-	// const { updateSharedCategoriesUserAccessMutation } =
-	//   useUpdateSharedCategoriesUserAccessMutation();
-
 	const { updateSharedCategoriesOptimisticMutation } =
 		useUpdateSharedCategoriesOptimisticMutation();
 
@@ -278,7 +266,6 @@ const Dashboard = () => {
 				updateUserProfileOptimisticMutation.mutateAsync({
 					id: session?.user?.id as string,
 					updateData: { email: session?.user?.email },
-					session,
 				}),
 			);
 		}
@@ -327,7 +314,7 @@ const Dashboard = () => {
 				url,
 				category_id: CATEGORY_ID,
 				update_access: updateAccessCondition,
-				session,
+				user_id: session?.user?.id as string,
 			}),
 		);
 	};
@@ -402,7 +389,6 @@ const Dashboard = () => {
 									[updateValue]: value,
 								},
 							},
-							session,
 						}),
 					);
 				} else {
@@ -432,7 +418,6 @@ const Dashboard = () => {
 											[updateValue]: value,
 										},
 									},
-									session,
 								}),
 							);
 						}
@@ -464,7 +449,6 @@ const Dashboard = () => {
 						updateUserProfileOptimisticMutation.mutateAsync({
 							id: session?.user?.id as string,
 							updateData: data,
-							session,
 						}),
 					);
 				} else {
@@ -583,7 +567,7 @@ const Dashboard = () => {
 						mutationApiCall(
 							fileUploadOptimisticMutation.mutateAsync({
 								file: acceptedFiles[index],
-								session,
+								user_id: session?.user?.id as string,
 								category_id: CATEGORY_ID,
 								thumbnailBase64,
 								uploadFileNamePath,
@@ -678,7 +662,6 @@ const Dashboard = () => {
 																		{
 																			data: delBookmarksData,
 																			isTrash,
-																			session,
 																		},
 																	),
 																).catch(() => {});
@@ -758,7 +741,6 @@ const Dashboard = () => {
 																{
 																	data: item[0],
 																	isTrash: true,
-																	session,
 																},
 															),
 														).catch(() => {});
@@ -774,7 +756,6 @@ const Dashboard = () => {
 														moveBookmarkToTrashOptimisticMutation.mutateAsync({
 															data,
 															isTrash: false,
-															session,
 														}),
 													);
 												}}
@@ -821,7 +802,6 @@ const Dashboard = () => {
 							await mutationApiCall(
 								addTagToBookmarkMutation.mutateAsync({
 									selectedData: bookmarkTagsData,
-									session,
 								}),
 							);
 						}
@@ -838,7 +818,6 @@ const Dashboard = () => {
 								addUserTagsMutation.mutateAsync({
 									userData,
 									tagsData: { name: tagData[tagData.length - 1]?.label },
-									session,
 								}),
 							)) as { data: UserTagsData[] };
 
@@ -862,7 +841,6 @@ const Dashboard = () => {
 								await mutationApiCall(
 									addTagToBookmarkMutation.mutateAsync({
 										selectedData: bookmarkTagsData,
-										session,
 									}),
 								);
 							}
@@ -922,7 +900,6 @@ const Dashboard = () => {
 									name: value?.label,
 									category_order: userProfileData?.data[0]
 										?.category_order as number[],
-									session,
 								}),
 							)) as { data: CategoriesData[] };
 
@@ -972,7 +949,6 @@ const Dashboard = () => {
 										tag_id: delData?.id as number,
 										bookmark_id: currentBookark?.id,
 									},
-									session,
 								}),
 							);
 						}
@@ -1035,7 +1011,7 @@ const Dashboard = () => {
 							deleteCategoryOtimisticMutation.mutateAsync({
 								category_id: categoryId,
 								category_order: userProfileData?.data[0]?.category_order,
-								session,
+								user_id: session?.user?.id as string,
 							}),
 						);
 					} else {
@@ -1080,7 +1056,6 @@ const Dashboard = () => {
 								user_id: session?.user?.id as string,
 								name: newCategoryName,
 								category_order: userProfileData?.data[0]?.category_order ?? [],
-								session,
 							}),
 						)) as { data: CategoriesData[] };
 
@@ -1165,7 +1140,6 @@ const Dashboard = () => {
 							updateData: {
 								icon_color: color,
 							},
-							session,
 						}),
 					);
 				}}
@@ -1174,7 +1148,6 @@ const Dashboard = () => {
 						updateCategoryOptimisticMutation.mutateAsync({
 							category_id: categoryId,
 							updateData: { icon: value },
-							session,
 						}),
 					);
 				}}
@@ -1190,7 +1163,6 @@ const Dashboard = () => {
 							updateData: {
 								category_name: name,
 							},
-							session,
 						}),
 					);
 				}}
@@ -1231,7 +1203,7 @@ const Dashboard = () => {
 						void mutationApiCall(
 							deleteBookmarkOptismicMutation.mutateAsync({
 								deleteData,
-								session,
+								user_id: session?.user?.id as string,
 							}),
 						);
 					}
@@ -1250,7 +1222,6 @@ const Dashboard = () => {
 					void mutationApiCall(
 						clearBookmarksInTrashMutation.mutateAsync({
 							user_id: session?.user?.id,
-							session,
 						}),
 					);
 					toggleShowClearTrashWarningModal();

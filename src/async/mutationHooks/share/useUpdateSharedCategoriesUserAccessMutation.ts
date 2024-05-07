@@ -18,7 +18,7 @@ export default function useUpdateSharedCategoriesUserAccessMutation() {
 			onSuccess: () => {
 				// Invalidate and refetch
 				void queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-				void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user.id]);
+				void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
 			},
 		},
 	);

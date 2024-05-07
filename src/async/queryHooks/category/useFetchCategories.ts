@@ -22,7 +22,6 @@ export default function useFetchCategories() {
 			await fetchCategoriesData(
 				session?.user?.id ?? "",
 				session?.user?.email ?? "",
-				session,
 			),
 	);
 

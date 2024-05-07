@@ -125,8 +125,6 @@ export default async (
 		});
 	})) as ParsedFormDataType;
 
-	const accessToken = data?.fields?.access_token?.[0];
-
 	const categoryId = data?.fields?.category_id?.[0];
 
 	const categoryIdLogic = categoryId
@@ -135,8 +133,7 @@ export default async (
 			: 0
 		: 0;
 
-	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
-	const userId = tokenDecode?.sub;
+	const userId = data?.fields?.user_id?.[0];
 
 	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
 	const fileType = data?.fields?.type?.[0];
@@ -178,7 +175,7 @@ export default async (
 		// if file is a video
 		const { ogImage: image, meta_data: metaData } = await videoLogic(
 			data,
-			userId,
+			userId as string,
 			uploadPath,
 			supabase,
 		);
@@ -217,7 +214,6 @@ export default async (
 					{
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
-						access_token: accessToken,
 					},
 				);
 			} else {

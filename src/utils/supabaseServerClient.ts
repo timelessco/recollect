@@ -23,10 +23,11 @@ export const supabaseAnonKey = !isProductionEnvironment
 
 export const apiSupabaseClient = (
 	request: NextApiRequest,
-	response: NextApiResponse & {
-		appendHeader: (name: unknown, function_: unknown) => void;
-	},
+	response: NextApiResponse,
 ) => {
+	const apiCookieResponse = response as NextApiResponse & {
+		appendHeader: (name: unknown, function_: unknown) => void;
+	};
 	const supabase = createServerClient(
 		isProductionEnvironment
 			? process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -38,10 +39,16 @@ export const apiSupabaseClient = (
 					return request.cookies[name];
 				},
 				set(name: string, value: string, options: CookieOptions) {
-					response.appendHeader("Set-Cookie", serialize(name, value, options));
+					apiCookieResponse.appendHeader(
+						"Set-Cookie",
+						serialize(name, value, options),
+					);
 				},
 				remove(name: string, options: CookieOptions) {
-					response.appendHeader("Set-Cookie", serialize(name, "", options));
+					apiCookieResponse.appendHeader(
+						"Set-Cookie",
+						serialize(name, "", options),
+					);
 				},
 			},
 			// cookieOptions: {

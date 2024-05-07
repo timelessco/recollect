@@ -1,4 +1,4 @@
-import { type Session } from "@supabase/supabase-js";
+import { type Session, type User } from "@supabase/supabase-js";
 
 export type ModalStoreState = {
 	showClearTrashWarningModal: boolean;
@@ -46,7 +46,7 @@ export type MiscellaneousStoreState = {
 };
 
 export type SupabaseSessionStore = {
-	session: Session | null;
+	session: { user: User | null };
 	setSession: (value: SupabaseSessionStore["session"]) => void;
 };
 

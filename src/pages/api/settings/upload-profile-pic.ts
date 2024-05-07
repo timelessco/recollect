@@ -5,7 +5,6 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
-import jwtDecode from "jwt-decode";
 import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
 import uniqid from "uniqid";
@@ -84,16 +83,13 @@ export default async (
 		});
 	})) as {
 		fields: {
-			access_token?: ParsedFormDataType["fields"]["access_token"];
 			category_id?: ParsedFormDataType["fields"]["category_id"];
+			user_id?: ParsedFormDataType["fields"]["user_id"];
 		};
 		files: ParsedFormDataType["files"];
 	};
 
-	const accessToken = data?.fields?.access_token?.[0] as string;
-
-	const tokenDecode: { sub: string } = jwtDecode(accessToken);
-	const userId = tokenDecode?.sub;
+	const userId = data?.fields?.user_id?.[0] as string;
 
 	let contents;
 

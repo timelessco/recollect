@@ -14,7 +14,7 @@ export default function useFetchUserTags() {
 		error: Error;
 	}>(
 		[USER_TAGS_KEY, session?.user?.id],
-		async () => await fetchUserTags(session?.user?.id ?? "", session),
+		async () => await fetchUserTags(session?.user?.id ?? ""),
 	);
 
 	return {

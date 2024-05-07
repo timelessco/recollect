@@ -4,7 +4,6 @@ import {
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -61,12 +60,8 @@ export default async function handler(
 			? matchedSearchTag?.map((item) => item?.replace("@", ""))
 			: undefined;
 
-	const tokenDecode: { sub: string } = jwtDecode(
-		request.query.access_token as string,
-	);
-
 	// disabling as this check is not needed here
-	const user_id = tokenDecode?.sub;
+	const user_id = request.query.user_id;
 
 	let query = supabase
 		.rpc("search_bookmarks", {
