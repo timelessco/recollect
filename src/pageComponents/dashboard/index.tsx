@@ -1151,7 +1151,8 @@ const Dashboard = () => {
 						}),
 					);
 				}}
-				onSearchEnterPress={onAddBookmark}
+				// onSearchEnterPress={onAddBookmark}
+				onSearchEnterPress={() => {}}
 				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);

@@ -245,7 +245,7 @@ export type AddCategoryToBookmarkApiPayload = {
 	email?: ProfilesTableTypes["email"];
 	session: SupabaseSessionType;
 	update_access: boolean;
-	userId?: ProfilesTableTypes["id"];
+	user_id?: ProfilesTableTypes["id"];
 };
 
 export type AddUserCategoryApiPayload = {

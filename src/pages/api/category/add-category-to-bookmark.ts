@@ -35,7 +35,7 @@ export default async function handler(
 
 	const {
 		update_access: updateAccess,
-		userId,
+		user_id: userId,
 		email,
 		category_id: categoryId,
 		bookmark_id: bookmarkId,

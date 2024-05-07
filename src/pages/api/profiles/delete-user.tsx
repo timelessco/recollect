@@ -25,6 +25,7 @@ import {
 	TAG_TABLE_NAME,
 	USER_PROFILE_STORAGE_NAME,
 } from "../../../utils/constants";
+import { createServiceClient } from "../../../utils/supabaseClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api deletes user
@@ -355,7 +356,9 @@ export default async function handler(
 	await storageDeleteLogic(supabase, userId, response);
 	// deleting user in main auth table
 
-	const { data, error } = await supabase.auth.admin.deleteUser(userId);
+	const serviceSupabase = createServiceClient();
+
+	const { data, error } = await serviceSupabase.auth.admin.deleteUser(userId);
 
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error });

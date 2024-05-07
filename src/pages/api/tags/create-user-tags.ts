@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
@@ -49,6 +50,6 @@ export default async function handler(
 		response.status(200).json({ data, error: null });
 	} else {
 		response.status(500).json({ data: null, error });
-		throw new Error("ERROR");
+		Sentry.captureException(`create tag error : ${error?.message}`);
 	}
 }
