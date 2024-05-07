@@ -10,7 +10,6 @@ import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
@@ -29,7 +28,11 @@ import {
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
+import {
+	apiCookieParser,
+	isUserInACategory,
+	parseUploadFileName,
+} from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
@@ -214,6 +217,11 @@ export default async (
 					{
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
+					},
+					{
+						headers: {
+							Cookie: apiCookieParser(request?.cookies),
+						},
 					},
 				);
 			} else {

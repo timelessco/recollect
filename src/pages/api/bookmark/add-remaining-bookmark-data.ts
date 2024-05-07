@@ -2,6 +2,7 @@
 
 import { log } from "console";
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
@@ -131,14 +132,29 @@ export default async function handler(
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
 		.update({ meta_data, ogImage: imgUrl })
-		.match({ id });
+		.match({ id })
+		.select(`id`);
+
+	if (isNull(data)) {
+		console.error(
+			"add remaining bookmark data error, return data is empty",
+			databaseError,
+		);
+		response
+			.status(500)
+			.json({ data: null, error: "DB return data is empty", message: null });
+		Sentry.captureException(`DB return data is empty`);
+		return;
+	}
 
 	if (!isNull(databaseError)) {
 		console.error("add remaining bookmark data error", databaseError);
 		response
 			.status(500)
 			.json({ data: null, error: databaseError, message: null });
-		throw new Error("ERROR: add remaining bookmark data error");
+		Sentry.captureException(
+			`add remaining bookmark data error: ${databaseError?.message}`,
+		);
 	} else {
 		response.status(200).json({ data, error: null, message: null });
 	}

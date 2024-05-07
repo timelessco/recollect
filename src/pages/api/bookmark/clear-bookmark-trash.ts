@@ -1,17 +1,23 @@
 import { type NextApiResponse } from "next";
-import { type PostgrestError, type Session } from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
+import axios from "axios";
 import differenceInDays from "date-fns/differenceInDays";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
-import { deleteData } from "../../../async/supabaseCrudHelpers";
 import {
 	type ClearBookmarksInTrashApiPayloadTypes,
 	type NextApiRequest,
 	type SingleListData,
 } from "../../../types/apiTypes";
-import { MAIN_TABLE_NAME } from "../../../utils/constants";
+import {
+	DELETE_BOOKMARK_DATA_API,
+	getBaseUrl,
+	MAIN_TABLE_NAME,
+	NEXT_API_URL,
+} from "../../../utils/constants";
+import { apiCookieParser } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api clears trash for a single user and also takes care of CRON job to clear trash every 30 days
@@ -79,10 +85,18 @@ export default async function handler(
 			try {
 				if (!isNull(trashBookmarkIds)) {
 					// call delete bookmark api
-					await deleteData({
-						deleteData: trashBookmarkIds,
-						user_id: request.body.user_id,
-					});
+					await axios.post(
+						`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
+						{
+							data: { deleteData: trashBookmarkIds },
+							user_id: request.body.user_id,
+						},
+						{
+							headers: {
+								Cookie: apiCookieParser(request?.cookies),
+							},
+						},
+					);
 
 					response
 						.status(200)

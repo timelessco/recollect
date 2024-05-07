@@ -257,3 +257,11 @@ export const uploadFileLimit = (size: number): boolean =>
 export const delete_cookie = (name: string, document: Document) => {
 	document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 };
+
+// this fuction parses cookies that is to be sent in api calls
+export const apiCookieParser = (
+	cookies: ArrayLike<unknown> | Partial<{ [key: string]: string }>,
+) =>
+	Object.entries(cookies)
+		.map(([key, value]) => `${key}=${value}`)
+		.join("; ");

@@ -22,6 +22,7 @@ import {
 	NEXT_API_URL,
 	uncategorizedPages,
 } from "../../../utils/constants";
+import { apiCookieParser } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
@@ -187,6 +188,11 @@ export default async function handler(
 						favIcon: scrapperResponse?.data?.favIcon,
 						user_id: userId,
 						url,
+					},
+					{
+						headers: {
+							Cookie: apiCookieParser(request?.cookies),
+						},
 					},
 				);
 			} else {
