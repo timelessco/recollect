@@ -15,15 +15,13 @@ const developmentSupabaseAnonKey = process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY
 export const supabaseUrl = !isProductionEnvironment
 	? developmentSupabaseUrl
 	: process.env.NEXT_PUBLIC_SUPABASE_URL;
+
 export const supabaseAnonKey = !isProductionEnvironment
 	? developmentSupabaseAnonKey
 	: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const createClient = () => {
-	const supabase = createBrowserClient(
-		process.env.NEXT_PUBLIC_DEV_SUPABASE_URL as string,
-		process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY as string,
-	);
+	const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 	return supabase;
 };
