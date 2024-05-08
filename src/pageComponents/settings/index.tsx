@@ -22,7 +22,10 @@ import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import { type ProfilesTableTypes } from "../../types/apiTypes";
+import {
+	type ProfilesTableTypes,
+	type SupabaseSessionType,
+} from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	settingsDeleteButtonRedClassName,
@@ -177,7 +180,7 @@ const Settings = () => {
 							const response = await mutationApiCall(
 								uploadProfilePicMutation.mutateAsync({
 									file: uploadedFile,
-									session,
+									session: session as SupabaseSessionType,
 								}),
 							);
 
@@ -240,7 +243,7 @@ const Settings = () => {
 									const response = await mutationApiCall(
 										removeProfilePic.mutateAsync({
 											id: userData?.id as string,
-											session,
+											session: session as SupabaseSessionType,
 										}),
 									);
 

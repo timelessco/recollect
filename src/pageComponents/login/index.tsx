@@ -33,15 +33,9 @@ const LoginPage = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
 
-	// const supabase = useSupabaseClient();
-
 	const supabase = createClient();
 
 	const session = useSupabaseSession((state) => state.session);
-
-	// const session = await supabase?.auth?.getUser();
-
-	// console.log("ss", session);
 
 	useEffect(() => {
 		if (session?.user) void router.push(`/${ALL_BOOKMARKS_URL}`);

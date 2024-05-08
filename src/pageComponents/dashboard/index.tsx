@@ -5,7 +5,6 @@ import { type Session, type UserIdentity } from "@supabase/supabase-js";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
-import isNull from "lodash/isNull";
 import omit from "lodash/omit";
 import Dropzone from "react-dropzone";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -13,6 +12,7 @@ import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
 
+import isNull from "lodash/isNull";
 import uniqid from "uniqid";
 
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
@@ -56,6 +56,7 @@ import {
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
+	type SupabaseSessionType,
 	type UserTagsData,
 } from "../../types/apiTypes";
 import {
@@ -179,7 +180,7 @@ const Dashboard = () => {
 	}, [showAddBookmarkModal]);
 
 	useEffect(() => {
-		if (!session?.user) void router.push(`/${LOGIN_URL}`);
+		if (isNull(session?.user)) void router.push(`/${LOGIN_URL}`);
 	}, [router, session]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -880,7 +881,7 @@ const Dashboard = () => {
 											isNull(value?.value) || !value?.value
 												? true
 												: updateAccessCondition,
-										session,
+										session: session as SupabaseSessionType,
 									}),
 								);
 
@@ -912,7 +913,7 @@ const Dashboard = () => {
 										bookmark_id: addedUrlData?.id as number,
 										// in this case user is creating the category , so they will have access
 										update_access: true,
-										session,
+										session: session as SupabaseSessionType,
 									}),
 								);
 
@@ -1040,7 +1041,7 @@ const Dashboard = () => {
 		],
 	);
 
-	if (isNull(session)) {
+	if (isNil(session)) {
 		return <div />;
 	}
 

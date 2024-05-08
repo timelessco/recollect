@@ -14,7 +14,7 @@ export default function useFetchBookmarksCount() {
 		error: Error;
 	}>(
 		[BOOKMARKS_COUNT_KEY, session?.user?.id as string],
-		async (data) => await getBookmarksCount(data, session),
+		async (data) => await getBookmarksCount(data, session ?? { user: null }),
 	);
 
 	return {

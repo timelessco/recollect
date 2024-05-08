@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type ProfilesTableTypes } from "../../../types/apiTypes";
+import {
+	type ProfilesTableTypes,
+	type SupabaseSessionType,
+} from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
 import { fetchUserProfiles } from "../../supabaseCrudHelpers";
 
@@ -15,7 +18,10 @@ export default function useFetchUserProfile() {
 	}>(
 		[USER_PROFILE, session?.user?.id],
 		async () =>
-			await fetchUserProfiles({ userId: session?.user?.id as string, session }),
+			await fetchUserProfiles({
+				userId: session?.user?.id as string,
+				session: session as SupabaseSessionType,
+			}),
 	);
 
 	return {

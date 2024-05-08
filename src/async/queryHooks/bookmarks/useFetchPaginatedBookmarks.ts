@@ -6,6 +6,7 @@ import {
 	useLoadersStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
+import { type SupabaseSessionType } from "../../../types/apiTypes";
 import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
 import { BOOKMARKS_KEY, PAGINATION_LIMIT } from "../../../utils/constants";
 import { fetchBookmakrsData } from "../../supabaseCrudHelpers";
@@ -30,7 +31,11 @@ export default function useFetchPaginatedBookmarks() {
 	} = useInfiniteQuery({
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 		queryFn: async (data) =>
-			await fetchBookmakrsData(data, session, sortBy as BookmarksSortByTypes),
+			await fetchBookmakrsData(
+				data,
+				session as SupabaseSessionType,
+				sortBy as BookmarksSortByTypes,
+			),
 		getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
 		onSettled: () => {
 			if (isSortByLoading === true) {

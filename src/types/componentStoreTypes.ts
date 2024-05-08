@@ -46,7 +46,7 @@ export type MiscellaneousStoreState = {
 };
 
 export type SupabaseSessionStore = {
-	session: { user: User | null };
+	session: { user: User | null } | undefined;
 	setSession: (value: SupabaseSessionStore["session"]) => void;
 };
 
