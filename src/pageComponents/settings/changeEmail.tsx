@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNil } from "lodash";
@@ -11,7 +10,10 @@ import LabelledComponent from "../../components/labelledComponent";
 import Spinner from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
-import { useMiscellaneousStore } from "../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import {
 	settingsInputClassName,
@@ -20,6 +22,7 @@ import {
 	settingsMainHeadingClassName,
 } from "../../utils/commonClassNames";
 import { EMAIL_CHECK_PATTERN, USER_PROFILE } from "../../utils/constants";
+import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
@@ -30,12 +33,12 @@ const ChangeEmail = () => {
 	const [changeEmailLoader, setChangeEmailLoader] = useState(false);
 
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
 	);
 
-	const supabase = useSupabaseClient();
+	const supabase = createClient();
 
 	const userProfilesData = queryClient.getQueryData([
 		USER_PROFILE,

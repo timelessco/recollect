@@ -11,10 +11,7 @@ import {
 	type NextApiRequest,
 } from "../../../types/apiTypes";
 import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = FetchSharedCategoriesData[] | null;
 type ErrorResponse = PostgrestError | string | { message: string } | null;
@@ -33,14 +30,7 @@ export default async function handler(
 	request: NextApiRequest<DeleteSharedCategoriesUserApiPayload>,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(request.body.access_token);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase

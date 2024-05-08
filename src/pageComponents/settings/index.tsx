@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -19,8 +18,14 @@ import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
-import { useMiscellaneousStore } from "../../store/componentStore";
-import { type ProfilesTableTypes } from "../../types/apiTypes";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
+import {
+	type ProfilesTableTypes,
+	type SupabaseSessionType,
+} from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	settingsDeleteButtonRedClassName,
@@ -50,7 +55,7 @@ type SettingsDisplaynameFormTypes = {
 const Settings = () => {
 	const inputFile = useRef<HTMLInputElement>(null);
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const userId = session?.user?.id;
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
@@ -85,7 +90,6 @@ const Settings = () => {
 				updateUsernameMutation.mutateAsync({
 					id: session?.user?.id as string,
 					username: data?.username,
-					session,
 				}),
 			);
 			if (!isNil(response?.data)) {
@@ -109,7 +113,6 @@ const Settings = () => {
 				updateUserProfileOptimisticMutation.mutateAsync({
 					id: session?.user?.id as string,
 					updateData: { display_name: data?.displayname },
-					session,
 				}),
 			);
 
@@ -177,7 +180,7 @@ const Settings = () => {
 							const response = await mutationApiCall(
 								uploadProfilePicMutation.mutateAsync({
 									file: uploadedFile,
-									session,
+									session: session as SupabaseSessionType,
 								}),
 							);
 
@@ -240,7 +243,7 @@ const Settings = () => {
 									const response = await mutationApiCall(
 										removeProfilePic.mutateAsync({
 											id: userData?.id as string,
-											session,
+											session: session as SupabaseSessionType,
 										}),
 									);
 

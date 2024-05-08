@@ -7,10 +7,7 @@ import isNull from "lodash/isNull";
 
 import { type UserProfilePicTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { deleteLogic } from "../settings/upload-profile-pic";
 
 // removes user profile pic
@@ -27,16 +24,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(
-		request.body.access_token as string,
-	);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 	const userId = request.body.id;
 
 	if (userId) {

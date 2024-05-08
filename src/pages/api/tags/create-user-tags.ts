@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
@@ -10,10 +11,7 @@ import {
 	type UserTagsData,
 } from "../../../types/apiTypes";
 import { TAG_TABLE_NAME } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = UserTagsData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
@@ -32,14 +30,7 @@ export default async function handler(
 	}>,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(request.body.access_token);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const userId = request.body.user_id;
 	const { name } = request.body;
@@ -59,6 +50,6 @@ export default async function handler(
 		response.status(200).json({ data, error: null });
 	} else {
 		response.status(500).json({ data: null, error });
-		throw new Error("ERROR");
+		Sentry.captureException(`create tag error : ${error?.message}`);
 	}
 }

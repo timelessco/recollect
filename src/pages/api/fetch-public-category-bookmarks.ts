@@ -12,7 +12,7 @@ import {
 	type ProfilesTableTypes,
 } from "../../types/apiTypes";
 import { CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "../../utils/constants";
-import { apiSupabaseClient } from "../../utils/supabaseServerClient";
+import { createServiceClient } from "../../utils/supabaseClient";
 
 /**
  * gets all bookmarks in a public category
@@ -22,7 +22,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<GetPublicCategoryBookmarksApiResponseType>,
 ) {
-	const supabase = apiSupabaseClient();
+	const supabase = createServiceClient();
 
 	// get category data
 	const { data: categoryData, error: categoryError } = (await supabase

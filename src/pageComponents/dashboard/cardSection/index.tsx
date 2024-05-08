@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { getImgFromArr } from "array-to-image";
@@ -32,6 +31,7 @@ import {
 	useLoadersStore,
 	useMiscellaneousStore,
 	useModalStore,
+	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
@@ -110,7 +110,7 @@ const CardSection = ({
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;

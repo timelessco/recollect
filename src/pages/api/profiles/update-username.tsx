@@ -12,10 +12,7 @@ import {
 	type UpdateUsernameApiPayload,
 } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = Array<{
 	user_name: ProfilesTableTypes["user_name"];
@@ -35,14 +32,7 @@ export default async function handler(
 	request: NextApiRequest<UpdateUsernameApiPayload>,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(request.body.access_token);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const username = slugify(request?.body?.username ?? "", {
 		lower: true,

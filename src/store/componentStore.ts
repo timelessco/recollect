@@ -5,6 +5,7 @@ import {
 	type LoadersStoreState,
 	type MiscellaneousStoreState,
 	type ModalStoreState,
+	type SupabaseSessionStore,
 } from "../types/componentStoreTypes";
 
 export const useModalStore = create<ModalStoreState>((set) => ({
@@ -81,4 +82,9 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	currentSliderDropdownSlide: null,
 	setCurrentSliderDropdownSlide: (value: string | null) =>
 		set(() => ({ currentSliderDropdownSlide: value })),
+}));
+
+export const useSupabaseSession = create<SupabaseSessionStore>((set) => ({
+	session: undefined,
+	setSession: (value) => set(() => ({ session: value })),
 }));

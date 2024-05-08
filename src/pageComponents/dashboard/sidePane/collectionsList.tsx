@@ -1,5 +1,4 @@
 import { useRef, useState, type Key, type ReactNode } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
@@ -48,6 +47,7 @@ import OptionsIconGray from "../../../icons/optionsIconGray";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
+	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type BookmarksCountTypes,
@@ -98,7 +98,7 @@ type ListBoxDropTypes = ListProps<object> & {
 
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const categoryData = queryClient.getQueryData([
 		CATEGORIES_KEY,
 		session?.user?.id,
@@ -313,7 +313,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	} = listProps;
 
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
@@ -451,7 +451,10 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 			myArray.splice(index1, 0, movingItem);
 
 			void mutationApiCall(
-				updateCategoryOrderMutation?.mutateAsync({ order: myArray, session }),
+				updateCategoryOrderMutation?.mutateAsync({
+					order: myArray,
+					user_id: session?.user?.id as string,
+				}),
 			);
 		}
 	};

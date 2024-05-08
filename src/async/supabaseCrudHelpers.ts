@@ -106,7 +106,7 @@ export const fetchBookmakrsData = async (
 		} as unknown as FetchDataResponse;
 	}
 
-	if (!session?.access_token) {
+	if (!session?.user) {
 		return undefined;
 	}
 
@@ -121,9 +121,10 @@ export const fetchBookmakrsData = async (
 				data: SingleListData[];
 			};
 		}>(
-			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?access_token=${session?.access_token}&category_id=${
-				isNull(categoryId) ? "null" : categoryId
-			}&from=${pageParameter as string}&sort_by=${sortBy}`,
+			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?user_id=${session?.user
+				?.id}&category_id=${isNull(categoryId) ? "null" : categoryId}&from=${
+				pageParameter as string
+			}&sort_by=${sortBy}`,
 		);
 
 		return {
@@ -149,10 +150,10 @@ export const getBookmarksCount = async (
 			? queryData?.queryKey[1]
 			: undefined;
 
-	if (!session?.access_token) {
+	if (!session?.user) {
 		return {
 			data: null,
-			error: { name: "No access Token", message: "No Access token" },
+			error: { name: "No user session", message: "No user session" },
 		};
 	}
 
@@ -162,7 +163,7 @@ export const getBookmarksCount = async (
 				data: BookmarksCountTypes;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}?access_token=${session?.access_token}`,
+				`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}?user_id=${session?.user?.id}&email=${session?.user?.email}`,
 			);
 
 			return bookmarksData?.data;
@@ -186,16 +187,16 @@ export const addBookmarkMinData = async ({
 	url,
 	category_id,
 	update_access,
-	session,
+	user_id,
 }: AddBookmarkMinDataPayloadTypes) => {
 	try {
 		const apiResponse = await axios.post(
 			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
 			{
-				access_token: session?.access_token,
 				url,
 				category_id: isNull(category_id) ? 0 : category_id,
 				update_access,
+				user_id,
 			},
 		);
 
@@ -208,15 +209,15 @@ export const addBookmarkMinData = async ({
 export const addBookmarkScreenshot = async ({
 	url,
 	id,
-	session,
+	user_id,
 }: AddBookmarkScreenshotPayloadTypes) => {
 	try {
 		const apiResponse = await axios.post(
 			`${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
 			{
-				access_token: session?.access_token,
 				url,
 				id,
+				user_id,
 			},
 		);
 
@@ -232,7 +233,7 @@ export const deleteData = async (item: DeleteBookmarkPayload) => {
 			`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 			{
 				data: { deleteData: item?.deleteData },
-				access_token: item?.session?.access_token,
+				user_id: item?.user_id,
 			},
 		);
 
@@ -245,7 +246,6 @@ export const deleteData = async (item: DeleteBookmarkPayload) => {
 export const moveBookmarkToTrash = async ({
 	data,
 	isTrash,
-	session,
 }: MoveBookmarkToTrashApiPayload) => {
 	try {
 		const response = await axios.post(
@@ -253,7 +253,6 @@ export const moveBookmarkToTrash = async ({
 			{
 				data,
 				isTrash,
-				access_token: session?.access_token,
 			},
 		);
 
@@ -265,14 +264,12 @@ export const moveBookmarkToTrash = async ({
 
 export const clearBookmarksInTrash = async ({
 	user_id = undefined,
-	session,
 }: ClearBookmarksInTrashApiPayloadTypes) => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`,
 			{
 				user_id,
-				access_token: session?.access_token,
 			},
 		);
 
@@ -285,18 +282,13 @@ export const clearBookmarksInTrash = async ({
 export const searchBookmarks = async (
 	searchText: string,
 	category_id: CategoryIdUrlTypes,
-	session: SupabaseSessionType,
 	isSharedCategory: boolean,
+	user_id: SingleListData["user_id"]["id"],
 ): Promise<{
 	data: BookmarksPaginatedDataTypes[] | null;
 	error: Error;
 }> => {
-	if (!isEmpty(searchText) && searchText !== "#" && !isNull(session)) {
-		const accessToken =
-			!isNull(session?.access_token) || session?.access_token
-				? session?.access_token
-				: "null";
-
+	if (!isEmpty(searchText) && searchText !== "#") {
 		const categoryId = !isNull(category_id) ? category_id : "null";
 
 		try {
@@ -304,7 +296,7 @@ export const searchBookmarks = async (
 				data: BookmarksPaginatedDataTypes[];
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&access_token=${accessToken}&user_id=${session?.user?.id}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
+				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&user_id=${user_id}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
 			);
 			return response?.data;
 		} catch (error_) {
@@ -325,19 +317,18 @@ export const searchBookmarks = async (
 // user tags
 export const fetchUserTags = async (
 	user_id: string,
-	session: SupabaseSessionType,
 ): Promise<{ data: UserTagsData[] | null; error: Error }> => {
-	if (!session?.access_token) {
+	if (!user_id) {
 		return {
 			data: null,
-			error: { message: "no access token", name: "no access token" },
+			error: { message: "no user id", name: "no user id" },
 		};
 	}
 
 	if (user_id && !isEmpty(user_id)) {
 		try {
 			const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
-				`${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}&access_token=${session?.access_token}`,
+				`${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}`,
 			);
 			return response?.data;
 		} catch (error_) {
@@ -358,7 +349,6 @@ export const fetchUserTags = async (
 export const addUserTags = async ({
 	userData,
 	tagsData,
-	session,
 }: AddUserTagsApiPayload) => {
 	try {
 		const response = await axios.post<{ data: UserTagsData }>(
@@ -366,7 +356,6 @@ export const addUserTags = async ({
 			{
 				name: tagsData?.name,
 				user_id: userData?.id,
-				access_token: session?.access_token,
 			},
 		);
 		return response?.data;
@@ -377,14 +366,12 @@ export const addUserTags = async ({
 
 export const addTagToBookmark = async ({
 	selectedData,
-	session,
 }: AddTagToBookmarkApiPayload) => {
 	try {
 		const response = await axios.post<{
 			data: SingleListData;
 		}>(`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`, {
 			data: selectedData,
-			access_token: session?.access_token,
 		});
 		return response?.data;
 	} catch (error) {
@@ -394,10 +381,8 @@ export const addTagToBookmark = async ({
 
 export const removeTagFromBookmark = async ({
 	selectedData,
-	session,
 }: {
 	selectedData: { bookmark_id: number; tag_id: number };
-	session: SupabaseSessionType;
 }) => {
 	try {
 		const response = await axios.post<{
@@ -406,7 +391,6 @@ export const removeTagFromBookmark = async ({
 		}>(`${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`, {
 			tag_id: selectedData?.tag_id,
 			bookmark_id: selectedData?.bookmark_id,
-			access_token: session?.access_token,
 		});
 		return response?.data;
 	} catch (error) {
@@ -416,10 +400,8 @@ export const removeTagFromBookmark = async ({
 
 export const fetchBookmarksViews = async ({
 	category_id,
-	session,
 }: {
 	category_id: number | string | null;
-	session: SupabaseSessionType;
 }): Promise<{
 	data: BookmarkViewDataTypes | null;
 	error: Error;
@@ -431,7 +413,7 @@ export const fetchBookmarksViews = async ({
 		};
 	}
 
-	if (!session?.access_token && isNull(category_id)) {
+	if (isNull(category_id)) {
 		return {
 			data: null,
 			error: {
@@ -447,7 +429,6 @@ export const fetchBookmarksViews = async ({
 			error: Error;
 		}>(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
 			category_id: isNull(category_id) ? 0 : category_id,
-			access_token: session?.access_token,
 		});
 		return response?.data;
 	} catch (error_) {
@@ -464,18 +445,10 @@ export const fetchBookmarksViews = async ({
 export const fetchCategoriesData = async (
 	userId: string,
 	userEmail: string,
-	session: SupabaseSessionType,
 ): Promise<{
 	data: CategoriesData[] | null;
 	error: Error;
 }> => {
-	if (!session?.access_token) {
-		return {
-			data: null,
-			error: { name: "no access token", message: "no access token" },
-		};
-	}
-
 	if (!isEmpty(userId)) {
 		try {
 			const response = await axios.post<{
@@ -484,7 +457,6 @@ export const fetchCategoriesData = async (
 			}>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`, {
 				userEmail,
 				user_id: userId,
-				access_token: session?.access_token,
 			});
 
 			return response.data;
@@ -507,11 +479,9 @@ export const addUserCategory = async ({
 	user_id,
 	name,
 	category_order,
-	session,
 }: {
 	category_order: number[];
 	name: string;
-	session: SupabaseSessionType;
 	user_id: string;
 }) => {
 	try {
@@ -521,7 +491,6 @@ export const addUserCategory = async ({
 		}>(`${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`, {
 			name,
 			user_id,
-			access_token: session?.access_token,
 			category_order,
 		});
 		return response?.data;
@@ -533,7 +502,7 @@ export const addUserCategory = async ({
 export const deleteUserCategory = async ({
 	category_id,
 	category_order,
-	session,
+	user_id,
 }: DeleteUserCategoryApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -542,7 +511,7 @@ export const deleteUserCategory = async ({
 		}>(`${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`, {
 			category_id,
 			category_order,
-			access_token: session?.access_token,
+			user_id,
 		});
 		return response?.data;
 	} catch (error) {
@@ -563,7 +532,8 @@ export const addCategoryToBookmark = async ({
 				category_id: isNull(category_id) || !category_id ? 0 : category_id,
 				bookmark_id,
 				update_access,
-				access_token: session?.access_token,
+				user_id: session?.user?.id,
+				email: session?.user?.email,
 			},
 		);
 
@@ -576,7 +546,6 @@ export const addCategoryToBookmark = async ({
 export const updateCategory = async ({
 	category_id,
 	updateData,
-	session,
 }: UpdateCategoryApiPayload) => {
 	try {
 		const response = await axios.post(
@@ -584,7 +553,6 @@ export const updateCategory = async ({
 			{
 				category_id,
 				updateData,
-				access_token: session?.access_token,
 			},
 		);
 
@@ -596,14 +564,14 @@ export const updateCategory = async ({
 
 export const updateCategoryOrder = async ({
 	order,
-	session,
+	user_id,
 }: UpdateCategoryOrderApiPayload) => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`,
 			{
 				category_order: order,
-				access_token: session?.access_token,
+				user_id,
 			},
 		);
 
@@ -620,13 +588,11 @@ export const sendCollaborationEmailInvite = async ({
 	edit_access,
 	hostUrl,
 	userId,
-	session,
 }: {
 	category_id: number;
 	edit_access: boolean;
 	emailList: string[];
 	hostUrl: string;
-	session: SupabaseSessionType;
 	userId: string;
 }) => {
 	const response = await axios.post(
@@ -637,33 +603,21 @@ export const sendCollaborationEmailInvite = async ({
 			edit_access,
 			hostUrl,
 			userId,
-			access_token: session?.access_token,
 		},
 	);
 
 	return response;
 };
 
-export const fetchSharedCategoriesData = async (
-	session: SupabaseSessionType,
-): Promise<{
+export const fetchSharedCategoriesData = async (): Promise<{
 	data: FetchSharedCategoriesData[] | null;
 	error: Error;
 }> => {
-	if (!session?.access_token) {
-		return {
-			data: null,
-			error: { message: "no access token", name: "no access token" },
-		};
-	}
-
 	try {
 		const response = await axios.get<{
 			data: FetchSharedCategoriesData[] | null;
 			error: Error;
-		}>(
-			`${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}?access_token=${session?.access_token}`,
-		);
+		}>(`${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}`);
 
 		return response?.data;
 	} catch (error) {
@@ -675,20 +629,13 @@ export const fetchSharedCategoriesData = async (
 	}
 };
 
-export const deleteSharedCategoriesUser = async ({
-	id,
-	session,
-}: {
-	id: number;
-	session: SupabaseSessionType;
-}) => {
+export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
 	try {
 		const response = await axios.post<{
 			data: FetchSharedCategoriesData[] | null;
 			error: Error;
 		}>(`${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`, {
 			id,
-			access_token: session?.access_token,
 		});
 
 		return response?.data;
@@ -700,7 +647,6 @@ export const deleteSharedCategoriesUser = async ({
 export const updateSharedCategoriesUserAccess = async ({
 	id,
 	updateData,
-	session,
 }: UpdateSharedCategoriesUserAccessApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -709,7 +655,6 @@ export const updateSharedCategoriesUserAccess = async ({
 		}>(`${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`, {
 			id,
 			updateData,
-			access_token: session?.access_token,
 		});
 
 		return response?.data;
@@ -729,13 +674,6 @@ export const fetchUserProfiles = async ({
 	data: ProfilesTableTypes[] | null;
 	error: Error;
 }> => {
-	if (!session?.access_token) {
-		return {
-			data: null,
-			error: { name: "No access Token", message: "No Access token" },
-		};
-	}
-
 	const existingOauthAvatarUrl = session?.user?.user_metadata?.avatar_url;
 
 	try {
@@ -744,7 +682,7 @@ export const fetchUserProfiles = async ({
 				data: ProfilesTableTypes[] | null;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?access_token=${session?.access_token}&user_id=${userId}${
+				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?user_id=${userId}${
 					!isNil(existingOauthAvatarUrl)
 						? `&avatar=${existingOauthAvatarUrl}`
 						: ``
@@ -769,7 +707,6 @@ export const fetchUserProfiles = async ({
 export const updateUserProfile = async ({
 	id,
 	updateData,
-	session,
 }: UpdateUserProfileApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -778,7 +715,6 @@ export const updateUserProfile = async ({
 		}>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
 			id,
 			updateData,
-			access_token: session?.access_token,
 		});
 
 		return response?.data;
@@ -790,7 +726,6 @@ export const updateUserProfile = async ({
 export const updateUsername = async ({
 	id,
 	username,
-	session,
 }: UpdateUsernameApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -799,7 +734,6 @@ export const updateUsername = async ({
 		}>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, {
 			id,
 			username,
-			access_token: session?.access_token,
 		});
 
 		return response?.data;
@@ -816,7 +750,6 @@ export const deleteUser = async ({ id, session }: DeleteUserApiPayload) => {
 		}>(`${NEXT_API_URL}${DELETE_USER_API}`, {
 			id,
 			email: session?.user?.email,
-			access_token: session?.access_token,
 		});
 
 		return response?.data;
@@ -827,7 +760,6 @@ export const deleteUser = async ({ id, session }: DeleteUserApiPayload) => {
 
 export const getUserProfilePic = async ({
 	email,
-	session,
 }: GetUserProfilePicPayload): Promise<{
 	data: UserProfilePicTypes[] | null;
 	error: Error;
@@ -837,11 +769,7 @@ export const getUserProfilePic = async ({
 			const response = await axios.get<{
 				data: UserProfilePicTypes[] | null;
 				error: Error;
-			}>(
-				`${NEXT_API_URL}${FETCH_USER_PROFILE_PIC_API}?access_token=${
-					session?.access_token ?? ""
-				}&email=${email}`,
-			);
+			}>(`${NEXT_API_URL}${FETCH_USER_PROFILE_PIC_API}?email=${email}`);
 
 			return response?.data;
 		} catch (error) {
@@ -863,7 +791,6 @@ export const removeUserProfilePic = async ({
 		}>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, {
 			id,
 			email: session?.user?.email,
-			access_token: session?.access_token,
 		});
 
 		return response?.data;
@@ -876,7 +803,7 @@ export const removeUserProfilePic = async ({
 
 export const uploadFile = async ({
 	file,
-	session,
+	user_id,
 	category_id,
 	thumbnailBase64,
 	uploadFileNamePath,
@@ -886,7 +813,7 @@ export const uploadFile = async ({
 		const response = await axios.post<UploadFileApiResponse>(
 			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
 			{
-				access_token: session?.access_token,
+				user_id,
 				category_id,
 				thumbnailBase64,
 				path: file?.path,
@@ -917,7 +844,7 @@ export const uploadProfilePic = async ({
 			`${NEXT_API_URL}${UPLOAD_PROFILE_PIC_API}`,
 			{
 				file,
-				access_token: session?.access_token,
+				user_id: session?.user?.id,
 			},
 			{
 				headers: {

@@ -1,11 +1,13 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
 
 import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../../store/componentStore";
 import {
 	type BookmarksPaginatedDataTypes,
 	type FetchSharedCategoriesData,
@@ -18,8 +20,9 @@ import { searchBookmarks } from "../../supabaseCrudHelpers";
 
 // searches bookmarks
 export default function useSearchBookmarks() {
-	const session = useSession();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const session = useSupabaseSession((state) => state.session);
+
 	const queryClient = useQueryClient();
 
 	const debouncedSearch = useDebounce(searchText, 500);
@@ -46,7 +49,12 @@ export default function useSearchBookmarks() {
 	}>(
 		[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
 		async () =>
-			await searchBookmarks(searchText, CATEGORY_ID, session, isSharedCategory),
+			await searchBookmarks(
+				searchText,
+				CATEGORY_ID,
+				isSharedCategory,
+				session?.user?.id as string,
+			),
 	);
 
 	return { data };

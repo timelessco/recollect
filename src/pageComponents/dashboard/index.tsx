@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useSession } from "@supabase/auth-helpers-react";
-import { type UserIdentity } from "@supabase/supabase-js";
+import { type Session, type UserIdentity } from "@supabase/supabase-js";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
-import isNull from "lodash/isNull";
 import omit from "lodash/omit";
 import Dropzone from "react-dropzone";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -14,6 +12,7 @@ import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
 
+import isNull from "lodash/isNull";
 import uniqid from "uniqid";
 
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
@@ -48,6 +47,7 @@ import {
 	useLoadersStore,
 	useMiscellaneousStore,
 	useModalStore,
+	useSupabaseSession,
 } from "../../store/componentStore";
 import {
 	type BookmarksTagData,
@@ -56,6 +56,7 @@ import {
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
+	type SupabaseSessionType,
 	type UserTagsData,
 } from "../../types/apiTypes";
 import {
@@ -83,6 +84,7 @@ import {
 	parseUploadFileName,
 	uploadFileLimit,
 } from "../../utils/helpers";
+import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
@@ -103,7 +105,22 @@ const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
 });
 
 const Dashboard = () => {
-	const session = useSession();
+	const supabase = createClient();
+
+	const setSession = useSupabaseSession((state) => state.setSession);
+
+	const session = useSupabaseSession((state) => state.session);
+
+	useEffect(() => {
+		const fetchSession = async () => {
+			const supabaseGetUserData = await supabase.auth.getUser();
+			setSession({ user: supabaseGetUserData?.data?.user });
+		};
+
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
+		fetchSession();
+	}, [setSession, supabase.auth]);
+
 	// move to zustand
 	const [showAddBookmarkModal, setShowAddBookmarkModal] =
 		useState<boolean>(false);
@@ -163,7 +180,7 @@ const Dashboard = () => {
 	}, [showAddBookmarkModal]);
 
 	useEffect(() => {
-		if (!session) void router.push(`/${LOGIN_URL}`);
+		if (isNull(session?.user)) void router.push(`/${LOGIN_URL}`);
 	}, [router, session]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -225,12 +242,6 @@ const Dashboard = () => {
 
 	// share category mutation
 
-	// const { deleteSharedCategoriesUserMutation } =
-	//   useDeleteSharedCategoriesUserMutation();
-
-	// const { updateSharedCategoriesUserAccessMutation } =
-	//   useUpdateSharedCategoriesUserAccessMutation();
-
 	const { updateSharedCategoriesOptimisticMutation } =
 		useUpdateSharedCategoriesOptimisticMutation();
 
@@ -256,7 +267,6 @@ const Dashboard = () => {
 				updateUserProfileOptimisticMutation.mutateAsync({
 					id: session?.user?.id as string,
 					updateData: { email: session?.user?.email },
-					session,
 				}),
 			);
 		}
@@ -305,7 +315,7 @@ const Dashboard = () => {
 				url,
 				category_id: CATEGORY_ID,
 				update_access: updateAccessCondition,
-				session,
+				user_id: session?.user?.id as string,
 			}),
 		);
 	};
@@ -380,7 +390,6 @@ const Dashboard = () => {
 									[updateValue]: value,
 								},
 							},
-							session,
 						}),
 					);
 				} else {
@@ -410,7 +419,6 @@ const Dashboard = () => {
 											[updateValue]: value,
 										},
 									},
-									session,
 								}),
 							);
 						}
@@ -442,7 +450,6 @@ const Dashboard = () => {
 						updateUserProfileOptimisticMutation.mutateAsync({
 							id: session?.user?.id as string,
 							updateData: data,
-							session,
 						}),
 					);
 				} else {
@@ -561,7 +568,7 @@ const Dashboard = () => {
 						mutationApiCall(
 							fileUploadOptimisticMutation.mutateAsync({
 								file: acceptedFiles[index],
-								session,
+								user_id: session?.user?.id as string,
 								category_id: CATEGORY_ID,
 								thumbnailBase64,
 								uploadFileNamePath,
@@ -656,7 +663,6 @@ const Dashboard = () => {
 																		{
 																			data: delBookmarksData,
 																			isTrash,
-																			session,
 																		},
 																	),
 																).catch(() => {});
@@ -736,7 +742,6 @@ const Dashboard = () => {
 																{
 																	data: item[0],
 																	isTrash: true,
-																	session,
 																},
 															),
 														).catch(() => {});
@@ -752,7 +757,6 @@ const Dashboard = () => {
 														moveBookmarkToTrashOptimisticMutation.mutateAsync({
 															data,
 															isTrash: false,
-															session,
 														}),
 													);
 												}}
@@ -799,7 +803,6 @@ const Dashboard = () => {
 							await mutationApiCall(
 								addTagToBookmarkMutation.mutateAsync({
 									selectedData: bookmarkTagsData,
-									session,
 								}),
 							);
 						}
@@ -816,7 +819,6 @@ const Dashboard = () => {
 								addUserTagsMutation.mutateAsync({
 									userData,
 									tagsData: { name: tagData[tagData.length - 1]?.label },
-									session,
 								}),
 							)) as { data: UserTagsData[] };
 
@@ -840,7 +842,6 @@ const Dashboard = () => {
 								await mutationApiCall(
 									addTagToBookmarkMutation.mutateAsync({
 										selectedData: bookmarkTagsData,
-										session,
 									}),
 								);
 							}
@@ -880,7 +881,7 @@ const Dashboard = () => {
 											isNull(value?.value) || !value?.value
 												? true
 												: updateAccessCondition,
-										session,
+										session: session as SupabaseSessionType,
 									}),
 								);
 
@@ -900,7 +901,6 @@ const Dashboard = () => {
 									name: value?.label,
 									category_order: userProfileData?.data[0]
 										?.category_order as number[],
-									session,
 								}),
 							)) as { data: CategoriesData[] };
 
@@ -913,7 +913,7 @@ const Dashboard = () => {
 										bookmark_id: addedUrlData?.id as number,
 										// in this case user is creating the category , so they will have access
 										update_access: true,
-										session,
+										session: session as SupabaseSessionType,
 									}),
 								);
 
@@ -950,7 +950,6 @@ const Dashboard = () => {
 										tag_id: delData?.id as number,
 										bookmark_id: currentBookark?.id,
 									},
-									session,
 								}),
 							);
 						}
@@ -1013,7 +1012,7 @@ const Dashboard = () => {
 							deleteCategoryOtimisticMutation.mutateAsync({
 								category_id: categoryId,
 								category_order: userProfileData?.data[0]?.category_order,
-								session,
+								user_id: session?.user?.id as string,
 							}),
 						);
 					} else {
@@ -1042,6 +1041,10 @@ const Dashboard = () => {
 		],
 	);
 
+	if (isNil(session)) {
+		return <div />;
+	}
+
 	return (
 		<>
 			<DashboardLayout
@@ -1054,7 +1057,6 @@ const Dashboard = () => {
 								user_id: session?.user?.id as string,
 								name: newCategoryName,
 								category_order: userProfileData?.data[0]?.category_order ?? [],
-								session,
 							}),
 						)) as { data: CategoriesData[] };
 
@@ -1139,7 +1141,6 @@ const Dashboard = () => {
 							updateData: {
 								icon_color: color,
 							},
-							session,
 						}),
 					);
 				}}
@@ -1148,11 +1149,11 @@ const Dashboard = () => {
 						updateCategoryOptimisticMutation.mutateAsync({
 							category_id: categoryId,
 							updateData: { icon: value },
-							session,
 						}),
 					);
 				}}
-				onSearchEnterPress={onAddBookmark}
+				// onSearchEnterPress={onAddBookmark}
+				onSearchEnterPress={() => {}}
 				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
@@ -1164,7 +1165,6 @@ const Dashboard = () => {
 							updateData: {
 								category_name: name,
 							},
-							session,
 						}),
 					);
 				}}
@@ -1205,7 +1205,7 @@ const Dashboard = () => {
 						void mutationApiCall(
 							deleteBookmarkOptismicMutation.mutateAsync({
 								deleteData,
-								session,
+								user_id: session?.user?.id as string,
 							}),
 						);
 					}
@@ -1224,7 +1224,6 @@ const Dashboard = () => {
 					void mutationApiCall(
 						clearBookmarksInTrashMutation.mutateAsync({
 							user_id: session?.user?.id,
-							session,
 						}),
 					);
 					toggleShowClearTrashWarningModal();

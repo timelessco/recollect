@@ -1,9 +1,9 @@
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
@@ -22,15 +22,16 @@ import {
 	fileTypeIdentifier,
 	parseUploadFileName,
 } from "../../../utils/helpers";
+import { createClient } from "../../../utils/supabaseClient";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
 export default function useFileUploadOptimisticMutation() {
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const supabase = useSupabaseClient();
+	const supabase = createClient();
 
 	const { sortBy } = useGetSortBy();
 

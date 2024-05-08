@@ -1,10 +1,12 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
-import { useLoadersStore } from "../../../store/componentStore";
+import {
+	useLoadersStore,
+	useSupabaseSession,
+} from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
@@ -15,7 +17,7 @@ import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
 // adds cat to bookmark optimistically
 export default function useAddCategoryToBookmarkOptimisticMutation() {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const { sortBy } = useGetSortBy();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();

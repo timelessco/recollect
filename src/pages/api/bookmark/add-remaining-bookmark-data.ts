@@ -2,11 +2,11 @@
 
 import { log } from "console";
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
@@ -24,10 +24,7 @@ import {
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { getBaseUrl } from "../../../utils/helpers";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -42,26 +39,10 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const {
-		url,
-		access_token: accessToken,
-		image: ogImage,
-		favIcon,
-		id,
-	} = request.body;
-	// const { category_id: categoryId } = request.body;
-	// const { update_access: updateAccess } = request.body;
-	const tokenDecode: { sub: string } = jwtDecode(accessToken);
-	const userId = tokenDecode?.sub;
+	const { url, image: ogImage, favIcon, id, user_id } = request.body;
+	const userId = user_id;
 
-	const { error: _error } = verifyAuthToken(accessToken);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error, message: null });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const upload = async (
 		base64info: string,
@@ -151,14 +132,29 @@ export default async function handler(
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
 		.update({ meta_data, ogImage: imgUrl })
-		.match({ id });
+		.match({ id })
+		.select(`id`);
+
+	if (isNull(data)) {
+		console.error(
+			"add remaining bookmark data error, return data is empty",
+			databaseError,
+		);
+		response
+			.status(500)
+			.json({ data: null, error: "DB return data is empty", message: null });
+		Sentry.captureException(`DB return data is empty`);
+		return;
+	}
 
 	if (!isNull(databaseError)) {
 		console.error("add remaining bookmark data error", databaseError);
 		response
 			.status(500)
 			.json({ data: null, error: databaseError, message: null });
-		throw new Error("ERROR: add remaining bookmark data error");
+		Sentry.captureException(
+			`add remaining bookmark data error: ${databaseError?.message}`,
+		);
 	} else {
 		response.status(200).json({ data, error: null, message: null });
 	}

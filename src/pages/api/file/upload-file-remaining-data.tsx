@@ -12,10 +12,7 @@ import {
 } from "../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = UploadFileApiResponse;
 
@@ -84,22 +81,14 @@ const notVideoLogic = async (publicUrl: string) => {
 
 export default async function handler(
 	request: NextApiRequest<{
-		access_token: string;
 		id: SingleListData["id"];
 		publicUrl: SingleListData["ogImage"];
 	}>,
 	response: NextApiResponse<Data>,
 ) {
-	const { publicUrl, access_token: accessToken, id } = request.body;
+	const { publicUrl, id } = request.body;
 
-	const { error: _error } = verifyAuthToken(accessToken);
-
-	if (_error) {
-		response.status(500).json({ success: false, error: "token error" });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	let meta_data: ImgMetadataType = {
 		img_caption: null,

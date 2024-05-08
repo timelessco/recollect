@@ -144,7 +144,7 @@ const SearchInput = (props: SearchInputTypes) => {
 				onKeyUp={(event) => {
 					if (event.key === "Enter") {
 						onEnterPress(searchText);
-						setSearchText("");
+						// setSearchText("");
 					}
 				}}
 				placeholder={placeholder}

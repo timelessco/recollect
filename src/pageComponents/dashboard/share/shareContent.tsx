@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { TrashIcon } from "@heroicons/react/solid";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -23,6 +22,7 @@ import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
 	useModalStore,
+	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type CategoriesData,
@@ -39,7 +39,7 @@ const AccessUserInfo = (props: {
 	isLoggedinUserTheOwner: boolean;
 	item: CollabDataInCategory;
 }) => {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { item, isLoggedinUserTheOwner } = props;
 
 	const { updateSharedCategoriesUserAccessMutation } =
@@ -61,7 +61,6 @@ const AccessUserInfo = (props: {
 									void mutationApiCall(
 										deleteSharedCategoriesUserMutation.mutateAsync({
 											id: item.share_id as number,
-											session,
 										}),
 									);
 								} else {
@@ -91,7 +90,6 @@ const AccessUserInfo = (props: {
 												Number.parseInt(value === "Can Edit" ? "1" : "0", 10),
 											),
 										},
-										session,
 									}),
 								)) as { error: Error };
 
@@ -102,7 +100,6 @@ const AccessUserInfo = (props: {
 								void mutationApiCall(
 									deleteSharedCategoriesUserMutation.mutateAsync({
 										id: item.share_id as number,
-										session,
 									}),
 								);
 							}
@@ -184,7 +181,7 @@ const ShareContent = () => {
 	);
 
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 
 	const shareCategoryId = useMiscellaneousStore(
@@ -207,7 +204,7 @@ const ShareContent = () => {
 			setPublicUrl(url);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [session?.user.id, dynamicCategoryId]);
+	}, [session?.user?.id, dynamicCategoryId]);
 
 	const {
 		register,
@@ -242,8 +239,7 @@ const ShareContent = () => {
 						edit_access: inviteUserEditAccess,
 						category_id: dynamicCategoryId as number,
 						hostUrl: window?.location?.origin,
-						userId: session?.user.id as unknown as string,
-						session,
+						userId: session?.user?.id as unknown as string,
 					}),
 				);
 
@@ -259,7 +255,7 @@ const ShareContent = () => {
 
 	const categoryData = queryClient.getQueryData([
 		CATEGORIES_KEY,
-		session?.user.id,
+		session?.user?.id,
 	]) as {
 		data: CategoriesData[];
 		error: PostgrestError;
@@ -363,7 +359,6 @@ const ShareContent = () => {
 										updateData: {
 											is_public: value === "View access",
 										},
-										session,
 									}),
 								);
 								setLinkCopied(false);

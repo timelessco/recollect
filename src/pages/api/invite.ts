@@ -34,7 +34,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	if (request?.query?.token) {
 		const tokenData: InviteTokenData = jwt_decode(

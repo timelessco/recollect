@@ -1,4 +1,3 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -8,7 +7,6 @@ import { fetchBookmarksViews } from "../../supabaseCrudHelpers";
 
 // fetchs bookmarks view
 export default function useFetchBookmarksView() {
-	const session = useSession();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	const { data } = useQuery<{
@@ -16,8 +14,7 @@ export default function useFetchBookmarksView() {
 		error: Error;
 	}>(
 		[BOOKMARKS_VIEW, CATEGORY_ID],
-		async () =>
-			await fetchBookmarksViews({ category_id: CATEGORY_ID, session }),
+		async () => await fetchBookmarksViews({ category_id: CATEGORY_ID }),
 	);
 
 	return { data };

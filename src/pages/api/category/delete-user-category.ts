@@ -6,7 +6,6 @@ import {
 	type PostgrestError,
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
-import jwtDecode from "jwt-decode";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 
@@ -22,10 +21,7 @@ import {
 	PROFILES,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: CategoriesData[] | null;
@@ -45,17 +41,9 @@ export default async function handler(
 	request: NextApiRequest<DeleteUserCategoryApiPayload>,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(request.body.access_token);
+	const supabase = apiSupabaseClient(request, response);
 
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
-
-	const tokenDecode: { sub: string } = jwtDecode(request.body.access_token);
-	const userId = tokenDecode?.sub;
+	const userId = request.body.user_id;
 
 	const {
 		data: categoryData,

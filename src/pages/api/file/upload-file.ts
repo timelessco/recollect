@@ -10,7 +10,6 @@ import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
@@ -29,11 +28,12 @@ import {
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
 import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+	apiCookieParser,
+	isUserInACategory,
+	parseUploadFileName,
+} from "../../../utils/helpers";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
 export const config = {
@@ -112,7 +112,7 @@ export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
 ) => {
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	// parse form with a Promise wrapper
 	const data = (await new Promise((resolve, reject) => {
@@ -128,15 +128,6 @@ export default async (
 		});
 	})) as ParsedFormDataType;
 
-	const accessToken = data?.fields?.access_token?.[0];
-
-	const { error: _error } = verifyAuthToken(accessToken as string);
-
-	if (_error) {
-		response.status(500).json({ success: false, error: _error });
-		throw new Error(`ERROR: token error ${_error.message}`, _error);
-	}
-
 	const categoryId = data?.fields?.category_id?.[0];
 
 	const categoryIdLogic = categoryId
@@ -145,8 +136,7 @@ export default async (
 			: 0
 		: 0;
 
-	const tokenDecode: { sub: string } = jwtDecode(accessToken as string);
-	const userId = tokenDecode?.sub;
+	const userId = data?.fields?.user_id?.[0];
 
 	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
 	const fileType = data?.fields?.type?.[0];
@@ -188,7 +178,7 @@ export default async (
 		// if file is a video
 		const { ogImage: image, meta_data: metaData } = await videoLogic(
 			data,
-			userId,
+			userId as string,
 			uploadPath,
 			supabase,
 		);
@@ -227,7 +217,11 @@ export default async (
 					{
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
-						access_token: accessToken,
+					},
+					{
+						headers: {
+							Cookie: apiCookieParser(request?.cookies),
+						},
 					},
 				);
 			} else {

@@ -1,9 +1,9 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { find, isArray } from "lodash";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	type AddTagToBookmarkApiPayload,
 	type SingleListData,
@@ -15,7 +15,7 @@ import { addTagToBookmark } from "../../supabaseCrudHelpers";
 // add tag to a bookmark
 export default function useAddTagToBookmarkMutation() {
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
 	const addTagToBookmarkMutation = useMutation(addTagToBookmark, {

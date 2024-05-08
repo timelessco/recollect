@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash";
@@ -9,6 +8,7 @@ import UserAvatar from "../../../components/userAvatar";
 import {
 	useMiscellaneousStore,
 	useModalStore,
+	useSupabaseSession,
 } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
@@ -21,7 +21,7 @@ import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
 	const toggleShowSettingsModal = useModalStore(

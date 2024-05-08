@@ -1,10 +1,12 @@
 import { useCallback } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import { useModalStore } from "../../../store/componentStore";
+import {
+	useModalStore,
+	useSupabaseSession,
+} from "../../../store/componentStore";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
@@ -17,7 +19,7 @@ import SingleListItemComponent from "./singleListItemComponent";
 const SidePaneOptionsMenu = () => {
 	const currentPath = useGetCurrentUrlPath();
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const SingleListItem = useCallback(SingleListItemComponent, []);
 
 	const bookmarksCountData = queryClient.getQueryData([

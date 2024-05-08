@@ -1,4 +1,3 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { type FetchSharedCategoriesData } from "../../../types/apiTypes";
@@ -7,14 +6,12 @@ import { fetchSharedCategoriesData } from "../../supabaseCrudHelpers";
 
 // fetchs user shared categories
 export default function useFetchSharedCategories() {
-	const session = useSession();
-
 	const { data: sharedCategoriesData } = useQuery<{
 		data: FetchSharedCategoriesData[] | null;
 		error: Error;
 	}>(
 		[SHARED_CATEGORIES_TABLE_NAME],
-		async () => await fetchSharedCategoriesData(session),
+		async () => await fetchSharedCategoriesData(),
 	);
 
 	return {

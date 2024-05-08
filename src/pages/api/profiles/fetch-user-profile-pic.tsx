@@ -8,10 +8,7 @@ import isNull from "lodash/isNull";
 
 import { type UserProfilePicTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // fetches profile pic data for a perticular user
 
@@ -27,16 +24,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(
-		request.query.access_token as string,
-	);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const { email } = request.query;
 

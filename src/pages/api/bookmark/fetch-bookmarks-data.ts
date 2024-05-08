@@ -24,10 +24,7 @@ import {
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { isUserInACategoryInApi } from "../../../utils/helpers";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
@@ -45,20 +42,9 @@ export default async function handler(
 	const { category_id, sort_by: sortVaue } = request.query;
 	const from = Number.parseInt(request.query.from as string, 10);
 
-	const accessToken = request.query.access_token as string;
+	const supabase = apiSupabaseClient(request, response);
 
-	const supabase = apiSupabaseClient();
-
-	let userId: string | (() => string) | undefined;
-
-	const { error: _error, decoded } = verifyAuthToken(accessToken);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error, count: null });
-		throw new Error("ERROR: token error");
-	} else {
-		userId = decoded?.sub;
-	}
+	const userId = request.query.user_id as string;
 
 	// tells if user is in a category or not
 	const categoryCondition = isUserInACategoryInApi(category_id as string);

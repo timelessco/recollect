@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
@@ -12,8 +11,14 @@ import LabelledComponent from "../../components/labelledComponent";
 import Spinner from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
-import { useMiscellaneousStore } from "../../store/componentStore";
-import { type ProfilesTableTypes } from "../../types/apiTypes";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
+import {
+	type ProfilesTableTypes,
+	type SupabaseSessionType,
+} from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	settingsDeleteButtonRedClassName,
@@ -33,7 +38,7 @@ type SettingsFormTypes = {
 };
 
 const DeleteAccout = () => {
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
@@ -70,7 +75,7 @@ const DeleteAccout = () => {
 			const response = await mutationApiCall(
 				deleteUserMutation.mutateAsync({
 					id: session?.user?.id as string,
-					session,
+					session: session as SupabaseSessionType,
 				}),
 			);
 

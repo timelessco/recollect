@@ -1,8 +1,8 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_KEY,
@@ -14,7 +14,7 @@ import { updateUserProfile } from "../../supabaseCrudHelpers";
 // update user profile date optimistically
 export default function useUpdateUserProfileOptimisticMutation() {
 	const queryClient = useQueryClient();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 	const { sortBy } = useGetSortBy();
 
 	const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();

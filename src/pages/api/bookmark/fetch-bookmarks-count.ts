@@ -12,10 +12,7 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	videoFileTypes,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: BookmarksCountTypes | null;
@@ -68,21 +65,10 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const accessToken = request.query.access_token as string;
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
-	let userId: string | undefined;
-	let email: string | undefined;
-
-	const { error: authError, decoded } = verifyAuthToken(accessToken);
-
-	if (authError) {
-		response.status(401).json({ data: null, error: ["Unauthorized"] });
-		return;
-	} else {
-		userId = decoded?.sub;
-		email = decoded?.email;
-	}
+	const userId = request.query.user_id as string;
+	const email = request.query.email as string;
 
 	let count: BookmarksCountTypes = {
 		allBookmarks: 0,

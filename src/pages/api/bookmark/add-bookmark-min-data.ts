@@ -22,10 +22,8 @@ import {
 	NEXT_API_URL,
 	uncategorizedPages,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { apiCookieParser } from "../../../utils/helpers";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
 type Data = {
@@ -47,22 +45,12 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const accessToken = request.body.access_token;
 	const { url } = request.body;
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
-	const tokenDecode: { sub: string } = jwtDecode(accessToken);
-	const userId = tokenDecode?.sub;
+	const userId = request.body.user_id;
 
-	const { error: _error } = verifyAuthToken(accessToken);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error, message: null });
-		Sentry.captureException("Invalid token");
-		return;
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	// when adding a bookmark into a category the same bookmark should not be present in the category
 	const checkIfBookmarkAlreadyExists = async () => {
@@ -198,8 +186,13 @@ export default async function handler(
 						id: data[0]?.id,
 						image: scrapperResponse?.data?.OgImage,
 						favIcon: scrapperResponse?.data?.favIcon,
-						access_token: accessToken,
+						user_id: userId,
 						url,
+					},
+					{
+						headers: {
+							Cookie: apiCookieParser(request?.cookies),
+						},
 					},
 				);
 			} else {

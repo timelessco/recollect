@@ -1,10 +1,10 @@
-import { useSession } from "@supabase/auth-helpers-react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import DownArrowGray from "../../../icons/downArrowGray";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
@@ -16,7 +16,7 @@ import SingleListItemComponent from "./singleListItemComponent";
 
 const SidePaneTypesList = () => {
 	const currentPath = useGetCurrentUrlPath();
-	const session = useSession();
+	const session = useSupabaseSession((state) => state.session);
 
 	const queryClient = useQueryClient();
 	const bookmarksCountData = queryClient.getQueryData([

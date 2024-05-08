@@ -1,5 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
-import { verify, type VerifyErrors } from "jsonwebtoken";
+import { type NextApiRequest, type NextApiResponse } from "next";
+import {
+	createServerClient,
+	serialize,
+	type CookieOptions,
+} from "@supabase/ssr";
 
 export const isProductionEnvironment = process.env.NODE_ENV === "production";
 
@@ -9,37 +13,49 @@ const developmentSupbaseUrl = process.env.NEXT_PUBLIC_DEV_SUPABASE_URL
 	? process.env.NEXT_PUBLIC_DEV_SUPABASE_URL
 	: process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-const developmentSupabaseServiceKey = process.env.DEV_SUPABASE_SERVICE_KEY
-	? process.env.DEV_SUPABASE_SERVICE_KEY
-	: process.env.SUPABASE_SERVICE_KEY;
+const developmentSupabaseAnonKey = process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY
+	? process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY
+	: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const developmentSupabaseSecretKey = process.env.DEV_SUPABASE_JWT_SECRET_KEY
-	? process.env.DEV_SUPABASE_JWT_SECRET_KEY
-	: process.env.SUPABASE_JWT_SECRET_KEY;
+export const supabaseAnonKey = !isProductionEnvironment
+	? developmentSupabaseAnonKey
+	: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const apiSupabaseClient = () => {
-	const supabase = createClient(
+export const apiSupabaseClient = (
+	request: NextApiRequest,
+	response: NextApiResponse,
+) => {
+	const apiCookieResponse = response as NextApiResponse & {
+		appendHeader: (name: unknown, function_: unknown) => void;
+	};
+	const supabase = createServerClient(
 		isProductionEnvironment
 			? process.env.NEXT_PUBLIC_SUPABASE_URL
 			: developmentSupbaseUrl,
-		isProductionEnvironment
-			? process.env.SUPABASE_SERVICE_KEY
-			: developmentSupabaseServiceKey,
+		supabaseAnonKey,
+		{
+			cookies: {
+				get(name: string) {
+					return request.cookies[name];
+				},
+				set(name: string, value: string, options: CookieOptions) {
+					apiCookieResponse.appendHeader(
+						"Set-Cookie",
+						serialize(name, value, options),
+					);
+				},
+				remove(name: string, options: CookieOptions) {
+					apiCookieResponse.appendHeader(
+						"Set-Cookie",
+						serialize(name, "", options),
+					);
+				},
+			},
+			// cookieOptions: {
+			// 	name: "no-cookie-for-you",
+			// },
+		},
 	);
 
 	return supabase;
 };
-
-export const verifyAuthToken = (accessToken: string) =>
-	// we are disabling as we dont care if it gives a void
-	// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-	verify(
-		accessToken,
-		isProductionEnvironment
-			? process.env.SUPABASE_JWT_SECRET_KEY
-			: developmentSupabaseSecretKey,
-		(error, decoded) => ({ error, decoded }),
-	) as unknown as {
-		decoded: { email: string; sub: string };
-		error: VerifyErrors | null;
-	};

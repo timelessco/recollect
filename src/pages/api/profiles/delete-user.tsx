@@ -25,10 +25,8 @@ import {
 	TAG_TABLE_NAME,
 	USER_PROFILE_STORAGE_NAME,
 } from "../../../utils/constants";
-import {
-	apiSupabaseClient,
-	verifyAuthToken,
-} from "../../../utils/supabaseServerClient";
+import { createServiceClient } from "../../../utils/supabaseClient";
+import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api deletes user
 
@@ -260,16 +258,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const { error: _error } = verifyAuthToken(
-		request.body.access_token as string,
-	);
-
-	if (_error) {
-		response.status(500).json({ data: null, error: _error });
-		throw new Error("ERROR: token error");
-	}
-
-	const supabase = apiSupabaseClient();
+	const supabase = apiSupabaseClient(request, response);
 
 	const userId = request?.body?.id;
 	const email = request?.body?.email;
@@ -367,7 +356,9 @@ export default async function handler(
 	await storageDeleteLogic(supabase, userId, response);
 	// deleting user in main auth table
 
-	const { data, error } = await supabase.auth.admin.deleteUser(userId);
+	const serviceSupabase = createServiceClient();
+
+	const { data, error } = await serviceSupabase.auth.admin.deleteUser(userId);
 
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error });
