@@ -629,6 +629,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return () => paneRef.current && observer.unobserve(paneRef.current);
 	}, []);
 
+	console.log("show", showSidePane);
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
 			{/* <button
@@ -657,7 +658,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				}}
 				onDragEnd={(e) => {
 					if (e[0] < 180) {
+						setTimeout(() => allotmentRef.current.resize([0, 100]), 100);
 						setShowSidePane(false);
+					}
+
+					if (e[0] > 180 && e[0] < 244) {
+						allotmentRef.current.reset();
 					}
 				}}
 				onVisibleChange={() => {
