@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+// import { Allotment } from "../../components/allotment";
 import { Allotment } from "allotment";
 import classNames from "classnames";
 import find from "lodash/find";
@@ -455,6 +456,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 	};
 
+	const allotmentRef = useRef(null);
+
 	const collapseButtonCommonClasses =
 		"absolute left-[8px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
@@ -465,7 +468,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						<button
 							className="group absolute left-[-25px] top-[-25px]  px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
-							onClick={() => setShowSidePane(true)}
+							onClick={() => {
+								setShowSidePane(true);
+
+								setTimeout(() => allotmentRef.current.reset(), 120);
+							}}
 							type="button"
 						>
 							<div
@@ -566,11 +573,49 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			<main>{renderMainContent()}</main>
 		</div>
 	);
+
+	const [size, setSize] = useState(null);
+
+	const updateSize = useCallback(
+		(value) => {
+			setSize(value);
+		},
+		[size],
+	);
+
+	const paneRef = useRef(null);
+
+	useEffect(() => {
+		const observer = new ResizeObserver((entries) => {
+			// setwidth(entries[0].contentRect.width)
+
+			console.log("eee", entries[0].contentRect.width);
+
+			if (entries[0].contentRect.width < 180) {
+				document.querySelector("#div").style.scale = 50;
+			}
+		});
+		observer.observe(paneRef.current);
+		return () => paneRef.current && observer.unobserve(paneRef.current);
+	}, []);
+
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
+			{/* <button
+				onClick={() => {
+					console.log("click");
+					// setShowSidePane(true);
+					allotmentRef.current.reset();
+					// allotmentRef.current.resize([50, 50]);
+				}}
+			>
+				reset
+			</button> */}
 			<Allotment
-				// defaultSizes={[10, screenWidth]}
+				// defaultSizes={[184, 1_200]}fs
 				onChange={(value: number[]) => {
+					// setSize(value[0]);
+					// updateSize(value[0]);
 					if (value[0] === 0) {
 						setShowSidePane(false);
 					}
@@ -579,24 +624,35 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						setShowSidePane(true);
 					}
 				}}
+				onDragEnd={(e) => {
+					if (e[0] < 180) {
+						setShowSidePane(false);
+					}
+				}}
 				onVisibleChange={() => {
 					setShowSidePane(false);
 				}}
+				ref={allotmentRef}
 				separator={false}
 			>
 				<Allotment.Pane
-					// className="transition-all duration-[150ms] ease-in-out"
+					className="transition-all duration-[10ms] ease-linear"
 					maxSize={600}
-					minSize={184}
+					minSize={0}
 					preferredSize={244}
+					ref={paneRef}
 					snap
 					visible={showSidePane}
 				>
-					<div className={`h-full ${showSidePane ? "block" : " hidden"}`}>
+					<div className={`h-full ${size < 180 ? "scale-50" : ""}`} id="div">
 						{renderSidePane}
 					</div>
+					{/* {renderSidePane} */}
+					{/* THis is the side pane */}
 				</Allotment.Pane>
-				<Allotment.Pane>{renderMainPaneContent}</Allotment.Pane>
+				<Allotment.Pane className="transition-all duration-[10ms] ease-linear">
+					{renderMainPaneContent}
+				</Allotment.Pane>
 			</Allotment>
 		</div>
 	);

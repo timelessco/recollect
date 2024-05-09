@@ -344,7 +344,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 /* for side pane resizer animation */
 .split-view .sash-vertical {
 	/* adding important as some styles get getting overridden by lib */
-	@apply ml-[5px] w-[20px] -translate-x-2/4 hover:cursor-grab active:cursor-grabbing !important;
+	@apply ml-[5px] w-[20px] -translate-x-2/4 transition-all duration-[10ms] ease-linear hover:cursor-grab active:cursor-grabbing !important;
 
 	&::before {
 		transition: width 200ms ease-out;
@@ -364,3 +364,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 		@apply w-[0px] bg-gray-gray-100 !important;
 	}
 }
+
+/* .side-pane-wrapper figure {
+	@apply -z-10;
+} */
