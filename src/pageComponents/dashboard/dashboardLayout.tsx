@@ -623,6 +623,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					interpolateOpacityValue(elementWidth);
 			} else {
 				document.querySelector("#div").style.scale = 1;
+				document.querySelector("#div").style.opacity = 1;
+				document.querySelector("#div").style.transform = `translateX(0px)`;
 			}
 		});
 		observer.observe(paneRef.current);
@@ -664,6 +666,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 					if (e[0] > 180 && e[0] < 244) {
 						allotmentRef.current.reset();
+					}
+
+					if (e[0] > 244) {
+						setShowSidePane(true);
 					}
 				}}
 				onVisibleChange={() => {
