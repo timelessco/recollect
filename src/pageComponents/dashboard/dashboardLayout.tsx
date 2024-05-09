@@ -459,7 +459,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const allotmentRef = useRef(null);
 
 	const collapseButtonCommonClasses =
-		"absolute left-[8px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
+		"absolute left-[11px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
