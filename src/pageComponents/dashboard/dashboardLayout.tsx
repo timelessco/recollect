@@ -574,25 +574,55 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		</div>
 	);
 
-	const [size, setSize] = useState(null);
-
-	const updateSize = useCallback(
-		(value) => {
-			setSize(value);
-		},
-		[size],
-	);
-
 	const paneRef = useRef(null);
+
+	function interpolateValue(angle) {
+		if (angle < 0) {
+			return 0.95;
+		} else if (angle > 200) {
+			return 1;
+		} else {
+			return 0.95 + (angle / 200) * 0.05;
+		}
+	}
+
+	function interpolateTransformValue(angle) {
+		if (angle <= 0) {
+			return -23;
+		} else if (angle >= 200) {
+			return 0;
+		} else {
+			return -23 + (angle / 200) * 23;
+		}
+	}
+
+	function interpolateOpacityValue(angle) {
+		if (angle <= 0) {
+			return 0;
+		} else if (angle >= 180) {
+			return 1;
+		} else {
+			return angle / 180;
+		}
+	}
 
 	useEffect(() => {
 		const observer = new ResizeObserver((entries) => {
-			// setwidth(entries[0].contentRect.width)
+			const elementWidth = entries[0].contentRect.width;
 
-			console.log("eee", entries[0].contentRect.width);
+			if (elementWidth < 200) {
+				document.querySelector("#div").style.scale =
+					interpolateValue(elementWidth);
+				document.querySelector(
+					"#div",
+				).style.transform = `translateX(${interpolateTransformValue(
+					elementWidth,
+				)}px)`;
 
-			if (entries[0].contentRect.width < 180) {
-				document.querySelector("#div").style.scale = 50;
+				document.querySelector("#div").style.opacity =
+					interpolateOpacityValue(elementWidth);
+			} else {
+				document.querySelector("#div").style.scale = 1;
 			}
 		});
 		observer.observe(paneRef.current);
@@ -613,6 +643,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			</button> */}
 			<Allotment
 				// defaultSizes={[184, 1_200]}fs
+				className="splitViewContainer"
 				onChange={(value: number[]) => {
 					// setSize(value[0]);
 					// updateSize(value[0]);
@@ -636,7 +667,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				separator={false}
 			>
 				<Allotment.Pane
-					className="transition-all duration-[10ms] ease-linear"
+					// className="transition-all duration-[10ms] ease-linear"
+					className="leftPane"
 					maxSize={600}
 					minSize={0}
 					preferredSize={244}
@@ -644,13 +676,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					snap
 					visible={showSidePane}
 				>
-					<div className={`h-full ${size < 180 ? "scale-50" : ""}`} id="div">
+					<div className={`h-full min-w-[200px] `} id="div">
 						{renderSidePane}
 					</div>
-					{/* {renderSidePane} */}
-					{/* THis is the side pane */}
 				</Allotment.Pane>
-				<Allotment.Pane className="transition-all duration-[10ms] ease-linear">
+				<Allotment.Pane
+					// className="transition-all duration-[10ms] ease-linear"
+					className="rightPane"
+				>
 					{renderMainPaneContent}
 				</Allotment.Pane>
 			</Allotment>

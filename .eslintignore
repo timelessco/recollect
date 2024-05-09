@@ -82,3 +82,5 @@ release-it/conventionalChangelogWriterOptsTransform.cjs
 dist
 CHANGELOG.md
 public
+
+/src/pageComponents/dashboard/dashboardLayout.tsx

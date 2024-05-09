@@ -57,11 +57,12 @@ main {
 }
 
 /* for side pane options menu being cut after it passed side pane width */
-.allotment-module_splitView__L-yRc
+
+/* .allotment-module_splitView__L-yRc
 	> .allotment-module_splitViewContainer__rQnVa
 	> .allotment-module_splitViewView__MGZ6O {
 	overflow: unset !important;
-}
+} */
 
 .sash-module_sash__K-9lB::before {
 	background: unset !important;
@@ -368,3 +369,19 @@ input[type="checkbox"]:checked + .checkbox-div {
 /* .side-pane-wrapper figure {
 	@apply -z-10;
 } */
+
+/* .leftPane {
+	overflow: hidden !important;
+} */
+
+.leftPane,
+.rightPane {
+	will-change: width;
+	transition: all 0.15s ease-in-out;
+}
+
+.splitViewContainer.split-view-sash-dragging .leftPane,
+.splitViewContainer.split-view-sash-dragging .rightPane {
+	/* disable animation while sash dragging */
+	transition: none;
+}
