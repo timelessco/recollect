@@ -59,7 +59,7 @@ main {
 /* for side pane options menu being cut after it passed side pane width */
 
 /* .allotment-module_splitView__L-yRc
-	> .allotment-module_splitViewContainer__rQnVa
+	> .allotment-module_split-view-container__rQnVa
 	> .allotment-module_splitViewView__MGZ6O {
 	overflow: unset !important;
 } */
@@ -369,19 +369,19 @@ input[type="checkbox"]:checked + .checkbox-div {
 	}
 }
 
-.leftPane,
-.rightPane {
+.split-left-pane,
+.split-right-pane {
 	will-change: width;
 	transition: all 0.15s ease-in-out;
 }
 
-.splitViewContainer.split-view-sash-dragging .leftPane,
-.splitViewContainer.split-view-sash-dragging .rightPane {
+.split-view-container.split-view-sash-dragging .split-left-pane,
+.split-view-container.split-view-sash-dragging .split-right-pane {
 	/* disable animation while sash dragging */
 	transition: none;
 }
 
 /* for the drag handle to be in sync when side pane size is reset */
-.splitViewContainer.split-view-sash-dragging .sash-vertical {
+.split-view-container.split-view-sash-dragging .sash-vertical {
 	transition: none;
 }
