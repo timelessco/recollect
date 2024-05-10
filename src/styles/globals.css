@@ -57,11 +57,12 @@ main {
 }
 
 /* for side pane options menu being cut after it passed side pane width */
-.allotment-module_splitView__L-yRc
-	> .allotment-module_splitViewContainer__rQnVa
+
+/* .allotment-module_splitView__L-yRc
+	> .allotment-module_split-view-container__rQnVa
 	> .allotment-module_splitViewView__MGZ6O {
 	overflow: unset !important;
-}
+} */
 
 .sash-module_sash__K-9lB::before {
 	background: unset !important;
@@ -344,7 +345,10 @@ input[type="checkbox"]:checked + .checkbox-div {
 /* for side pane resizer animation */
 .split-view .sash-vertical {
 	/* adding important as some styles get getting overridden by lib */
-	@apply ml-[5px] w-[20px] -translate-x-2/4 hover:cursor-grab active:cursor-grabbing !important;
+	@apply z-[999] ml-[5px] w-[20px] -translate-x-2/4  hover:cursor-grab active:cursor-grabbing !important;
+
+	/* for the drag handle to be in sync when side pane size when resizing */
+	transition: all 0.15s ease-in-out;
 
 	&::before {
 		transition: width 200ms ease-out;
@@ -363,4 +367,21 @@ input[type="checkbox"]:checked + .checkbox-div {
 	&::before {
 		@apply w-[0px] bg-gray-gray-100 !important;
 	}
+}
+
+.split-left-pane,
+.split-right-pane {
+	will-change: width;
+	transition: all 0.15s ease-in-out;
+}
+
+.split-view-container.split-view-sash-dragging .split-left-pane,
+.split-view-container.split-view-sash-dragging .split-right-pane {
+	/* disable animation while sash dragging */
+	transition: none;
+}
+
+/* for the drag handle to be in sync when side pane size is reset */
+.split-view-container.split-view-sash-dragging .sash-vertical {
+	transition: none;
 }

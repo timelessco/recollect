@@ -39,8 +39,8 @@ dependencies:
     specifier: 4.28.0
     version: 4.28.0(react-dom@18.2.0)(react@18.2.0)
   allotment:
-    specifier: 1.18.1
-    version: 1.18.1(react-dom@18.2.0)(react@18.2.0)
+    specifier: 1.20.0
+    version: 1.20.0(react-dom@18.2.0)(react@18.2.0)
   ariakit:
     specifier: 2.0.0-next.43
     version: 2.0.0-next.43(@types/react@18.0.35)(react-dom@18.2.0)(react@18.2.0)
@@ -4665,8 +4665,8 @@ packages:
       - encoding
     dev: true
 
-  /allotment@1.18.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-ZhmpHoSvxHyPT5XjzTHeCBjzCMIFn1aGdNAzBCZhj1CcRMp31CaJCi+lfweoOLDbbjJqbFZqUk3xf+p7Mb0x5A==}
+  /allotment@1.20.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-G02sKgkSCIMpQozuuEkBHblv4aWVGrHQJuOgfCZn3YtHrvmfzS5+mu1N5eWUkpucu/JMl/0FmeCta662RtyaAw==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0

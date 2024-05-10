@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { Allotment } from "allotment";
+import { Allotment, type AllotmentHandle } from "allotment";
 import classNames from "classnames";
 import find from "lodash/find";
 
@@ -46,7 +46,6 @@ import { optionsMenuListArray } from "../../utils/commonData";
 
 import SidePane from "./sidePane";
 
-// import styles 👇
 import "react-modern-drawer/dist/index.css";
 
 import { isNull } from "lodash";
@@ -97,6 +96,36 @@ type DashboardLayoutProps = {
 	userId: string;
 };
 
+const interpolateScaleValue = (angle: number) => {
+	if (angle < 0) {
+		return 0.95;
+	} else if (angle > 200) {
+		return 1;
+	} else {
+		return 0.95 + (angle / 200) * 0.05;
+	}
+};
+
+const interpolateTransformValue = (angle: number) => {
+	if (angle <= 0) {
+		return -23;
+	} else if (angle >= 200) {
+		return 0;
+	} else {
+		return -23 + (angle / 200) * 23;
+	}
+};
+
+const interpolateOpacityValue = (angle: number) => {
+	if (angle <= 0) {
+		return 0;
+	} else if (angle >= 180) {
+		return 1;
+	} else {
+		return angle / 180;
+	}
+};
+
 const DashboardLayout = (props: DashboardLayoutProps) => {
 	const {
 		categoryId,
@@ -116,13 +145,51 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		onDeleteCollectionClick,
 	} = props;
 
-	// const [screenWidth, setScreenWidth] = useState(1_200);
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
 	const { isMobile, isDesktop } = useIsMobileView();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
+
+	const allotmentRef = useRef<AllotmentHandle>(null);
+	const paneRef = useRef(null);
+
+	// this is the resize pane animation logic
+	useEffect(() => {
+		const resizePaneRef = paneRef?.current;
+
+		const observer = new ResizeObserver((entries) => {
+			const elementWidth = entries[0]?.contentRect?.width;
+			const sidePaneElement = document.querySelector(
+				"#side-pane-id",
+			) as HTMLElement;
+
+			if (sidePaneElement) {
+				if (elementWidth < 200) {
+					sidePaneElement.style.scale =
+						interpolateScaleValue(elementWidth)?.toString();
+					sidePaneElement.style.transform = `translateX(${interpolateTransformValue(
+						elementWidth,
+					)}px)`;
+
+					sidePaneElement.style.opacity =
+						interpolateOpacityValue(elementWidth)?.toString();
+				} else {
+					sidePaneElement.style.scale = "1";
+					sidePaneElement.style.opacity = "1";
+					sidePaneElement.style.transform = `translateX(0px)`;
+				}
+			}
+		});
+
+		if (resizePaneRef) {
+			observer.observe(resizePaneRef);
+			return () => resizePaneRef && observer.unobserve(resizePaneRef);
+		}
+
+		return undefined;
+	}, []);
 
 	useEffect(() => {
 		if (isDesktop) {
@@ -131,13 +198,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			setShowSearchBar(false);
 		}
 	}, [isDesktop]);
-
-	// useEffect(() => {
-	// 	// disabling as we need this for allotement width
-	// 	if (screen) {
-	// 		setScreenWidth(screen.width);
-	// 	}
-	// }, []);
 
 	const queryClient = useQueryClient();
 
@@ -456,7 +516,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const collapseButtonCommonClasses =
-		"absolute left-[8px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
+		"absolute left-[11px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
@@ -465,7 +525,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						<button
 							className="group absolute left-[-25px] top-[-25px]  px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
-							onClick={() => setShowSidePane(true)}
+							onClick={() => {
+								setShowSidePane(true);
+
+								// opens the side when on collapse button click
+								setTimeout(() => allotmentRef?.current?.reset(), 120);
+							}}
 							type="button"
 						>
 							<div
@@ -566,10 +631,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			<main>{renderMainContent()}</main>
 		</div>
 	);
+
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
 			<Allotment
-				// defaultSizes={[10, screenWidth]}
+				className="split-view-container"
 				onChange={(value: number[]) => {
 					if (value[0] === 0) {
 						setShowSidePane(false);
@@ -579,24 +645,45 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						setShowSidePane(true);
 					}
 				}}
+				onDragEnd={(values: number[]) => {
+					const leftPaneSize = values?.[0];
+					if (leftPaneSize < 180) {
+						// closes the side pane based on resize width
+						setTimeout(() => allotmentRef?.current?.resize([0, 100]), 100);
+						setShowSidePane(false);
+					}
+
+					if (leftPaneSize > 180 && leftPaneSize < 244) {
+						// resets the side pane to default sizes based on user resizing width
+						allotmentRef?.current?.reset();
+					}
+
+					if (leftPaneSize > 244) {
+						setShowSidePane(true);
+					}
+				}}
 				onVisibleChange={() => {
 					setShowSidePane(false);
 				}}
+				ref={allotmentRef}
 				separator={false}
 			>
 				<Allotment.Pane
-					// className="transition-all duration-[150ms] ease-in-out"
+					className="split-left-pane"
 					maxSize={600}
-					minSize={184}
+					minSize={0}
 					preferredSize={244}
+					ref={paneRef}
 					snap
 					visible={showSidePane}
 				>
-					<div className={`h-full ${showSidePane ? "block" : " hidden"}`}>
+					<div className="h-full min-w-[200px]" id="side-pane-id">
 						{renderSidePane}
 					</div>
 				</Allotment.Pane>
-				<Allotment.Pane>{renderMainPaneContent}</Allotment.Pane>
+				<Allotment.Pane className="split-right-pane">
+					{renderMainPaneContent}
+				</Allotment.Pane>
 			</Allotment>
 		</div>
 	);
