@@ -345,7 +345,10 @@ input[type="checkbox"]:checked + .checkbox-div {
 /* for side pane resizer animation */
 .split-view .sash-vertical {
 	/* adding important as some styles get getting overridden by lib */
-	@apply z-[999] ml-[5px] w-[20px] -translate-x-2/4 transition-all duration-[10ms] ease-linear hover:cursor-grab active:cursor-grabbing !important;
+	@apply z-[999] ml-[5px] w-[20px] -translate-x-2/4  hover:cursor-grab active:cursor-grabbing !important;
+
+	/* for the drag handle to be in sync when side pane size when resizing */
+	transition: all 0.15s ease-in-out;
 
 	&::before {
 		transition: width 200ms ease-out;
@@ -366,14 +369,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 	}
 }
 
-/* .side-pane-wrapper figure {
-	@apply -z-10;
-} */
-
-/* .leftPane {
-	overflow: hidden !important;
-} */
-
 .leftPane,
 .rightPane {
 	will-change: width;
@@ -383,5 +378,10 @@ input[type="checkbox"]:checked + .checkbox-div {
 .splitViewContainer.split-view-sash-dragging .leftPane,
 .splitViewContainer.split-view-sash-dragging .rightPane {
 	/* disable animation while sash dragging */
+	transition: none;
+}
+
+/* for the drag handle to be in sync when side pane size is reset */
+.splitViewContainer.split-view-sash-dragging .sash-vertical {
 	transition: none;
 }
