@@ -96,7 +96,7 @@ type DashboardLayoutProps = {
 	userId: string;
 };
 
-const interpolateValue = (angle: number) => {
+const interpolateScaleValue = (angle: number) => {
 	if (angle < 0) {
 		return 0.95;
 	} else if (angle > 200) {
@@ -168,7 +168,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			if (sidePaneElement) {
 				if (elementWidth < 200) {
 					sidePaneElement.style.scale =
-						interpolateValue(elementWidth)?.toString();
+						interpolateScaleValue(elementWidth)?.toString();
 					sidePaneElement.style.transform = `translateX(${interpolateTransformValue(
 						elementWidth,
 					)}px)`;
@@ -528,6 +528,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							onClick={() => {
 								setShowSidePane(true);
 
+								// opens the side when on collapse button click
 								setTimeout(() => allotmentRef?.current?.reset(), 120);
 							}}
 							type="button"
@@ -647,12 +648,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				onDragEnd={(values: number[]) => {
 					const leftPaneSize = values?.[0];
 					if (leftPaneSize < 180) {
-						setTimeout(() => allotmentRef.current.resize([0, 100]), 100);
+						// closes the side pane based on resize width
+						setTimeout(() => allotmentRef?.current?.resize([0, 100]), 100);
 						setShowSidePane(false);
 					}
 
 					if (leftPaneSize > 180 && leftPaneSize < 244) {
-						allotmentRef.current.reset();
+						// resets the side pane to default sizes based on user resizing width
+						allotmentRef?.current?.reset();
 					}
 
 					if (leftPaneSize > 244) {

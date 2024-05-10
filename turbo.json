@@ -2,7 +2,7 @@
 	"$schema": "https://turbo.build/schema.json",
 	"pipeline": {
 		"build:next": {
-			"dependsOn": [],
+			"dependsOn": ["lint:eslint", "lint:types"],
 			"outputs": [".next/**", "!.next/cache/**"]
 		},
 		"test": {},
