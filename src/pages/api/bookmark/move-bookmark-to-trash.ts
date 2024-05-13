@@ -29,11 +29,14 @@ export default async function handler(
 
 	const bookmarkData = request.body.data;
 
+	// this is so that user can trash only the users created items
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ trash: request.body.isTrash })
-			.match({ id: bookmarkData?.id })
+			.match({ id: bookmarkData?.id, user_id: userId })
 			.select();
 
 	if (!isNull(data)) {

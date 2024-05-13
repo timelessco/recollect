@@ -12,10 +12,7 @@ export default function useFetchUserTags() {
 	const { data: userTags } = useQuery<{
 		data: UserTagsData[] | null;
 		error: Error;
-	}>(
-		[USER_TAGS_KEY, session?.user?.id],
-		async () => await fetchUserTags(session?.user?.id ?? ""),
-	);
+	}>([USER_TAGS_KEY, session?.user?.id], async () => await fetchUserTags());
 
 	return {
 		userTags,

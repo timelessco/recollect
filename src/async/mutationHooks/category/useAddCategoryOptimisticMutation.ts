@@ -36,7 +36,7 @@ export default function useAddCategoryOptimisticMutation() {
 								...old.data,
 								{
 									category_name: data?.name,
-									user_id: data?.user_id,
+									user_id: session?.user?.id,
 									icon: "star-04",
 									icon_color: "#000000",
 								},

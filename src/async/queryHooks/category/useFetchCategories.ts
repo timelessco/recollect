@@ -18,11 +18,7 @@ export default function useFetchCategories() {
 		error: Error;
 	}>(
 		[CATEGORIES_KEY, session?.user?.id],
-		async () =>
-			await fetchCategoriesData(
-				session?.user?.id ?? "",
-				session?.user?.email ?? "",
-			),
+		async () => await fetchCategoriesData(),
 	);
 
 	return {

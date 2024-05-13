@@ -37,7 +37,7 @@ export default async function handler(
 
 	const apiData = request.body.data;
 
-	const userId = request.body?.data?.user_id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	// screenshots ogImages in bucket
 	const deleteScreenshotImagePaths = apiData?.deleteData?.map((item) => {

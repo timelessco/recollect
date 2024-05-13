@@ -48,9 +48,12 @@ export default async function handler(
 	const { url } = request.body;
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
-	const userId = request.body.user_id;
 
 	const supabase = apiSupabaseClient(request, response);
+
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id;
 
 	// when adding a bookmark into a category the same bookmark should not be present in the category
 	const checkIfBookmarkAlreadyExists = async () => {
@@ -186,7 +189,6 @@ export default async function handler(
 						id: data[0]?.id,
 						image: scrapperResponse?.data?.OgImage,
 						favIcon: scrapperResponse?.data?.favIcon,
-						user_id: userId,
 						url,
 					},
 					{

@@ -31,12 +31,13 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const supabase = apiSupabaseClient(request, response);
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(SHARED_CATEGORIES_TABLE_NAME)
 			.delete()
-			.match({ id: request.body.id })
+			.match({ id: request.body.id, user_id: userId })
 			.select();
 
 	if (!isNull(error)) {

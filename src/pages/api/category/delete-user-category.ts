@@ -43,7 +43,7 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.body.user_id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	const {
 		data: categoryData,

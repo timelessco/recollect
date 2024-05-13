@@ -453,7 +453,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 			void mutationApiCall(
 				updateCategoryOrderMutation?.mutateAsync({
 					order: myArray,
-					user_id: session?.user?.id as string,
 				}),
 			);
 		}

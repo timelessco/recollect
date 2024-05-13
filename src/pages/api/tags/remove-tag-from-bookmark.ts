@@ -28,6 +28,8 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(BOOKMARK_TAGS_TABLE_NAME)
@@ -35,6 +37,7 @@ export default async function handler(
 			.match({
 				tag_id: request.body?.tag_id,
 				bookmark_id: request.body?.bookmark_id,
+				user_id: userId,
 			})
 			.select();
 

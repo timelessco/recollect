@@ -47,7 +47,6 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	// disabling as this check is not needed here
 	const { category_id, is_shared_category } = request.query;
 	const search = request.query.search as string;
 
@@ -60,8 +59,7 @@ export default async function handler(
 			? matchedSearchTag?.map((item) => item?.replace("@", ""))
 			: undefined;
 
-	// disabling as this check is not needed here
-	const user_id = request.query.user_id;
+	const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	let query = supabase
 		.rpc("search_bookmarks", {
@@ -74,7 +72,7 @@ export default async function handler(
 		// if it is not a shared collection then add user_is to the filter query, as we need to bookmarks that have the uploaded by the user alone
 		// if its is a shared collection then we need all the bookmarks in the collection irrespective of the user ,
 		// because many people belongling to the collection would have uploaded their bookmarks
-		query = query.eq("user_id", request.query.user_id);
+		query = query.eq("user_id", user_id);
 	}
 
 	const userInCollectionsCondition = isUserInACategoryInApi(

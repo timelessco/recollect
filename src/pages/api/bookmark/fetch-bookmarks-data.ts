@@ -44,7 +44,7 @@ export default async function handler(
 
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.query.user_id as string;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	// tells if user is in a category or not
 	const categoryCondition = isUserInACategoryInApi(category_id as string);

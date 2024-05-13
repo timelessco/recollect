@@ -53,7 +53,7 @@ export default async function handler(
 		return storageData?.publicUrl;
 	};
 
-	const userId = request.body.user_id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	// screen shot api call
 	const screenShotResponse = await axios.request({

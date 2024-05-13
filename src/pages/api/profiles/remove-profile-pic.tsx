@@ -25,7 +25,7 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const supabase = apiSupabaseClient(request, response);
-	const userId = request.body.id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	if (userId) {
 		// remove from DB
@@ -44,7 +44,7 @@ export default async function handler(
 
 		// remove from bucket
 
-		await deleteLogic(supabase, response, request?.body?.id);
+		await deleteLogic(supabase, response, userId);
 
 		response.status(200).json({ data: removeData, error: null });
 	} else {

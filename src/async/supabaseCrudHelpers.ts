@@ -121,10 +121,9 @@ export const fetchBookmakrsData = async (
 				data: SingleListData[];
 			};
 		}>(
-			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?user_id=${session?.user
-				?.id}&category_id=${isNull(categoryId) ? "null" : categoryId}&from=${
-				pageParameter as string
-			}&sort_by=${sortBy}`,
+			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?category_id=${
+				isNull(categoryId) ? "null" : categoryId
+			}&from=${pageParameter as string}&sort_by=${sortBy}`,
 		);
 
 		return {
@@ -162,9 +161,7 @@ export const getBookmarksCount = async (
 			const bookmarksData = await axios.get<{
 				data: BookmarksCountTypes;
 				error: Error;
-			}>(
-				`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}?user_id=${session?.user?.id}&email=${session?.user?.email}`,
-			);
+			}>(`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}`);
 
 			return bookmarksData?.data;
 		} catch (error_) {
@@ -187,7 +184,6 @@ export const addBookmarkMinData = async ({
 	url,
 	category_id,
 	update_access,
-	user_id,
 }: AddBookmarkMinDataPayloadTypes) => {
 	try {
 		const apiResponse = await axios.post(
@@ -196,7 +192,6 @@ export const addBookmarkMinData = async ({
 				url,
 				category_id: isNull(category_id) ? 0 : category_id,
 				update_access,
-				user_id,
 			},
 		);
 
@@ -209,7 +204,6 @@ export const addBookmarkMinData = async ({
 export const addBookmarkScreenshot = async ({
 	url,
 	id,
-	user_id,
 }: AddBookmarkScreenshotPayloadTypes) => {
 	try {
 		const apiResponse = await axios.post(
@@ -217,7 +211,6 @@ export const addBookmarkScreenshot = async ({
 			{
 				url,
 				id,
-				user_id,
 			},
 		);
 
@@ -233,7 +226,6 @@ export const deleteData = async (item: DeleteBookmarkPayload) => {
 			`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 			{
 				data: { deleteData: item?.deleteData },
-				user_id: item?.user_id,
 			},
 		);
 
@@ -262,15 +254,10 @@ export const moveBookmarkToTrash = async ({
 	}
 };
 
-export const clearBookmarksInTrash = async ({
-	user_id = undefined,
-}: ClearBookmarksInTrashApiPayloadTypes) => {
+export const clearBookmarksInTrash = async () => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`,
-			{
-				user_id,
-			},
 		);
 
 		return response;
@@ -283,7 +270,6 @@ export const searchBookmarks = async (
 	searchText: string,
 	category_id: CategoryIdUrlTypes,
 	isSharedCategory: boolean,
-	user_id: SingleListData["user_id"]["id"],
 ): Promise<{
 	data: BookmarksPaginatedDataTypes[] | null;
 	error: Error;
@@ -296,7 +282,7 @@ export const searchBookmarks = async (
 				data: BookmarksPaginatedDataTypes[];
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&user_id=${user_id}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
+				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
 			);
 			return response?.data;
 		} catch (error_) {
@@ -315,47 +301,30 @@ export const searchBookmarks = async (
 };
 
 // user tags
-export const fetchUserTags = async (
-	user_id: string,
-): Promise<{ data: UserTagsData[] | null; error: Error }> => {
-	if (!user_id) {
+export const fetchUserTags = async (): Promise<{
+	data: UserTagsData[] | null;
+	error: Error;
+}> => {
+	try {
+		const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
+			`${NEXT_API_URL}${FETCH_USER_TAGS_API}`,
+		);
+		return response?.data;
+	} catch (error_) {
+		const error = error_ as Error;
 		return {
 			data: null,
-			error: { message: "no user id", name: "no user id" },
+			error,
 		};
 	}
-
-	if (user_id && !isEmpty(user_id)) {
-		try {
-			const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
-				`${NEXT_API_URL}${FETCH_USER_TAGS_API}?user_id=${user_id}`,
-			);
-			return response?.data;
-		} catch (error_) {
-			const error = error_ as Error;
-			return {
-				data: null,
-				error,
-			};
-		}
-	}
-
-	return {
-		data: null,
-		error: { message: "no user id", name: "no user id" },
-	};
 };
 
-export const addUserTags = async ({
-	userData,
-	tagsData,
-}: AddUserTagsApiPayload) => {
+export const addUserTags = async ({ tagsData }: AddUserTagsApiPayload) => {
 	try {
 		const response = await axios.post<{ data: UserTagsData }>(
 			`${NEXT_API_URL}${CREATE_USER_TAGS_API}`,
 			{
 				name: tagsData?.name,
-				user_id: userData?.id,
 			},
 		);
 		return response?.data;
@@ -442,47 +411,32 @@ export const fetchBookmarksViews = async ({
 
 // user catagories
 
-export const fetchCategoriesData = async (
-	userId: string,
-	userEmail: string,
-): Promise<{
+export const fetchCategoriesData = async (): Promise<{
 	data: CategoriesData[] | null;
 	error: Error;
 }> => {
-	if (!isEmpty(userId)) {
-		try {
-			const response = await axios.post<{
-				data: CategoriesData[] | null;
-				error: Error;
-			}>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`, {
-				userEmail,
-				user_id: userId,
-			});
+	try {
+		const response = await axios.post<{
+			data: CategoriesData[] | null;
+			error: Error;
+		}>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`, {});
 
-			return response.data;
-		} catch (error_) {
-			const error = error_ as Error;
-			return {
-				data: null,
-				error,
-			};
-		}
-	} else {
+		return response.data;
+	} catch (error_) {
+		const error = error_ as Error;
 		return {
 			data: null,
-			error: { name: "no user id", message: "no user id" },
+			error,
 		};
 	}
 };
 
 export const addUserCategory = async ({
-	user_id,
 	name,
 	category_order,
 }: {
 	category_order: number[];
 	name: string;
-	user_id: string;
 }) => {
 	try {
 		const response = await axios.post<{
@@ -490,7 +444,6 @@ export const addUserCategory = async ({
 			error: Error;
 		}>(`${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`, {
 			name,
-			user_id,
 			category_order,
 		});
 		return response?.data;
@@ -502,7 +455,6 @@ export const addUserCategory = async ({
 export const deleteUserCategory = async ({
 	category_id,
 	category_order,
-	user_id,
 }: DeleteUserCategoryApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -511,7 +463,6 @@ export const deleteUserCategory = async ({
 		}>(`${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`, {
 			category_id,
 			category_order,
-			user_id,
 		});
 		return response?.data;
 	} catch (error) {
@@ -523,7 +474,6 @@ export const addCategoryToBookmark = async ({
 	category_id,
 	bookmark_id,
 	update_access = false,
-	session,
 }: AddCategoryToBookmarkApiPayload) => {
 	try {
 		const response = await axios.post(
@@ -532,8 +482,6 @@ export const addCategoryToBookmark = async ({
 				category_id: isNull(category_id) || !category_id ? 0 : category_id,
 				bookmark_id,
 				update_access,
-				user_id: session?.user?.id,
-				email: session?.user?.email,
 			},
 		);
 
@@ -564,14 +512,12 @@ export const updateCategory = async ({
 
 export const updateCategoryOrder = async ({
 	order,
-	user_id,
 }: UpdateCategoryOrderApiPayload) => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`,
 			{
 				category_order: order,
-				user_id,
 			},
 		);
 
@@ -587,13 +533,11 @@ export const sendCollaborationEmailInvite = async ({
 	category_id,
 	edit_access,
 	hostUrl,
-	userId,
 }: {
 	category_id: number;
 	edit_access: boolean;
 	emailList: string[];
 	hostUrl: string;
-	userId: string;
 }) => {
 	const response = await axios.post(
 		`${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`,
@@ -602,7 +546,6 @@ export const sendCollaborationEmailInvite = async ({
 			category_id,
 			edit_access,
 			hostUrl,
-			userId,
 		},
 	);
 
@@ -705,7 +648,6 @@ export const fetchUserProfiles = async ({
 };
 
 export const updateUserProfile = async ({
-	id,
 	updateData,
 }: UpdateUserProfileApiPayload) => {
 	try {
@@ -713,7 +655,6 @@ export const updateUserProfile = async ({
 			data: ProfilesTableTypes[] | null;
 			error: Error;
 		}>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
-			id,
 			updateData,
 		});
 
@@ -742,15 +683,12 @@ export const updateUsername = async ({
 	}
 };
 
-export const deleteUser = async ({ id, session }: DeleteUserApiPayload) => {
+export const deleteUser = async () => {
 	try {
 		const response = await axios.post<{
 			data: ProfilesTableTypes[] | null;
 			error: Error;
-		}>(`${NEXT_API_URL}${DELETE_USER_API}`, {
-			id,
-			email: session?.user?.email,
-		});
+		}>(`${NEXT_API_URL}${DELETE_USER_API}`, {});
 
 		return response?.data;
 	} catch (error) {
@@ -782,7 +720,6 @@ export const getUserProfilePic = async ({
 
 export const removeUserProfilePic = async ({
 	id,
-	session,
 }: RemoveUserProfilePicPayload) => {
 	try {
 		const response = await axios.post<{
@@ -790,7 +727,6 @@ export const removeUserProfilePic = async ({
 			error: Error;
 		}>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, {
 			id,
-			email: session?.user?.email,
 		});
 
 		return response?.data;
@@ -803,7 +739,6 @@ export const removeUserProfilePic = async ({
 
 export const uploadFile = async ({
 	file,
-	user_id,
 	category_id,
 	thumbnailBase64,
 	uploadFileNamePath,
@@ -813,7 +748,6 @@ export const uploadFile = async ({
 		const response = await axios.post<UploadFileApiResponse>(
 			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
 			{
-				user_id,
 				category_id,
 				thumbnailBase64,
 				path: file?.path,
@@ -835,16 +769,12 @@ export const uploadFile = async ({
 };
 
 // user settings
-export const uploadProfilePic = async ({
-	file,
-	session,
-}: UploadProfilePicPayload) => {
+export const uploadProfilePic = async ({ file }: UploadProfilePicPayload) => {
 	try {
 		const response = await axios.post<UploadProfilePicApiResponse>(
 			`${NEXT_API_URL}${UPLOAD_PROFILE_PIC_API}`,
 			{
 				file,
-				user_id: session?.user?.id,
 			},
 			{
 				headers: {

@@ -36,7 +36,9 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	if (request.body.user_id) {
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
+	if (userId) {
 		// this is called by user then they click clear-trash button in UI , hence user_id is being checked
 		// this part needs the access_token check as its called from UI and in a userbased action
 
@@ -49,7 +51,7 @@ export default async function handler(
 		// } = await supabase
 		// 	.from(MAIN_TABLE_NAME)
 		// 	.delete()
-		// 	.eq("user_id", request.body.user_id)
+		// 	.eq("user_id", userId)
 		// 	.match({ trash: true })
 		// 	.select();
 
@@ -75,7 +77,7 @@ export default async function handler(
 		} = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select(`id, ogImage, title, url`)
-			.eq("user_id", request.body.user_id)
+			.eq("user_id", userId)
 			.match({ trash: true });
 
 		if (!isNull(trashBookmarkIdError)) {
@@ -89,7 +91,7 @@ export default async function handler(
 						`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
 						{
 							data: { deleteData: trashBookmarkIds },
-							user_id: request.body.user_id,
+							user_id: userId,
 						},
 						{
 							headers: {

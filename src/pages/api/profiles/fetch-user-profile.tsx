@@ -30,7 +30,7 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const supabase = apiSupabaseClient(request, response);
-	const userId = request.query.user_id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	const existingOauthAvatar = request.query?.avatar;
 
 	if (!userId || isEmpty(userId)) {

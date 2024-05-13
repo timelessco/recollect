@@ -26,7 +26,7 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.query.user_id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	if (!userId || isEmpty(userId)) {
 		response.status(500).json({ data: null, error: "User id is missing" });

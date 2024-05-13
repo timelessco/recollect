@@ -31,11 +31,13 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(PROFILES)
 			.update(request.body.updateData)
-			.match({ id: request.body.id })
+			.match({ id: userId })
 			.select();
 
 	if (!isNull(error)) {

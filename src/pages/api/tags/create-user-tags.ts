@@ -26,13 +26,12 @@ type Data = {
 export default async function handler(
 	request: NextApiRequest<{
 		name: string;
-		user_id: string;
 	}>,
 	response: NextApiResponse<Data>,
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.body.user_id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	const { name } = request.body;
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =

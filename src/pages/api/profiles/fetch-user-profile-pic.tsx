@@ -26,6 +26,7 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
+	// get email from body as this api gets any users profile pic
 	const { email } = request.query;
 
 	if (!email || isEmpty(email)) {
