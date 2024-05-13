@@ -637,6 +637,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			<Allotment
 				className="split-view-container"
 				onChange={(value: number[]) => {
+					// console.log("vv", value[0]);
+
+					// setIsDraggingValue(value[0]);
 					if (value[0] === 0) {
 						setShowSidePane(false);
 					}
@@ -659,6 +662,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					}
 
 					if (leftPaneSize > 244) {
+						setShowSidePane(true);
+					}
+				}}
+				onDragStart={(values: number[]) => {
+					if (values[0] === 0) {
+						// close collpase button on resize
 						setShowSidePane(true);
 					}
 				}}
