@@ -94,6 +94,7 @@ export default async function handler(
 		.from(BOOKMARK_TAGS_TABLE_NAME)
 		.delete()
 		.in("bookmark_id", deleteBookmarkIds)
+		.eq("user_id", userId)
 		.select();
 
 	// delete bookmarks
@@ -105,6 +106,7 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.delete()
 		.in("id", deleteBookmarkIds)
+		.eq("user_id", userId)
 		.select();
 
 	if (

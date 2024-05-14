@@ -50,7 +50,7 @@ export default async function handler(
 			await supabase
 				.from(MAIN_TABLE_NAME)
 				.update({ category_id: updateAccess ? categoryId : null })
-				.match({ id: bookmarkId })
+				.match({ id: bookmarkId, user_id: userId })
 				.select();
 
 		if (!isNull(data)) {
