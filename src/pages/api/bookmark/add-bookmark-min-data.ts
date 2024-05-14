@@ -1,11 +1,10 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
+// disabling as we need complexity of 21 for this task
+/* eslint-disable complexity  */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
-import jwtDecode from "jwt-decode";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
@@ -17,9 +16,11 @@ import {
 import {
 	ADD_REMAINING_BOOKMARK_API,
 	bookmarkType,
+	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
 } from "../../../utils/constants";
 import { apiCookieParser } from "../../../utils/helpers";
@@ -49,11 +50,21 @@ export default async function handler(
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
 
+	if (!updateAccess) {
+		response.status(500).json({
+			data: null,
+			error: "User does not have update access",
+			message: "User does not have update access",
+		});
+		return;
+	}
+
 	const supabase = apiSupabaseClient(request, response);
 
 	const userData = await supabase?.auth?.getUser();
 
 	const userId = userData?.data?.user?.id;
+	const email = userData?.data?.user?.email;
 
 	// when adding a bookmark into a category the same bookmark should not be present in the category
 	const checkIfBookmarkAlreadyExists = async () => {
@@ -80,6 +91,52 @@ export default async function handler(
 		}
 
 		return !isEmpty(checkBookmarkData);
+	};
+
+	// tells if user is either category owner or collaborator
+	const checkIfUserIsCategoryOwnerOrCollaborator = async () => {
+		const { data: categoryData, error: categoryError } = await supabase
+			.from(CATEGORIES_TABLE_NAME)
+			.select("user_id")
+			.eq("id", categoryId);
+
+		if (categoryError) {
+			response
+				.status(500)
+				.json({ data: null, error: categoryError?.message, message: null });
+			Sentry.captureException(
+				`checkIfUserIsCategoryOwnerOrCollaborator error: ${categoryError?.message}`,
+			);
+			return false;
+		}
+
+		if (categoryData?.[0]?.user_id === userId) {
+			// user is the owner of the category
+			return true;
+		} else {
+			// check if user id a collaborator of the category
+			const { data: shareData, error: shareError } = await supabase
+				.from(SHARED_CATEGORIES_TABLE_NAME)
+				.select("id, edit_access")
+				.eq("category_id", categoryId)
+				.eq("email", email);
+
+			if (shareError) {
+				response
+					.status(500)
+					.json({ data: null, error: shareError?.message, message: null });
+				Sentry.captureException(`share check error: ${shareError?.message}`);
+				return false;
+			}
+
+			if (!isEmpty(shareData)) {
+				// user is a collaborator, if user does not have edit access then return false so that DB is not updated with data
+				return shareData?.[0]?.edit_access;
+			} else {
+				// user is not the owner or the collaborator of the collection
+				return false;
+			}
+		}
 	};
 
 	let scrapperResponse: ScrapperTypes = {
@@ -136,6 +193,20 @@ export default async function handler(
 
 	if (computedCategoryId !== 0) {
 		// user is adding bookmark into a category
+		const checkIfUserIsCategoryOwnerOrCollaboratorValue =
+			await checkIfUserIsCategoryOwnerOrCollaborator();
+
+		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
+			response.status(500).json({
+				data: null,
+				error:
+					"User is neither owner or collaborator for the collection or does not have edit access",
+				message:
+					"User is neither owner or collaborator for the collection does not have edit access",
+			});
+			return;
+		}
+
 		const isBookmarkAlreadyPresentInCategory =
 			await checkIfBookmarkAlreadyExists();
 

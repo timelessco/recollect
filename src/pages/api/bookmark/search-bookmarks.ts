@@ -67,6 +67,7 @@ export default async function handler(
 		})
 		.eq("trash", category_id === TRASH_URL);
 
+	// TODO: is_shared_category needs to be got in api itself not in payload
 	if (is_shared_category === "false") {
 		// if the collection is a shared one then is_shared_category will be true
 		// if it is not a shared collection then add user_is to the filter query, as we need to bookmarks that have the uploaded by the user alone

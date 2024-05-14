@@ -22,12 +22,19 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	// TODO: only fetch the shared collections where the user email or id is matched with email / user_id columns , do not fetch all the rows
-
 	const supabase = apiSupabaseClient(request, response);
+
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id as string;
+	const email = userData?.data?.user?.email as string;
+
+	// fetch data where user is either a collaborator or owner of the category
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
-		await supabase.from(SHARED_CATEGORIES_TABLE_NAME).select();
-	// .eq('email', email); // TODO: check and remove
+		await supabase
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.select()
+			.or(`email.eq.${email},user_id.eq.${userId}`);
 
 	if (isNull(error)) {
 		response.status(200).json({ data, error: null });

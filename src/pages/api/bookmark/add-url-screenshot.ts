@@ -82,7 +82,7 @@ export default async function handler(
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
 		.update({ ogImage: publicURL })
-		.match({ id: request.body.id })
+		.match({ id: request.body.id, user_id: userId })
 		.select();
 
 	if (isNull(error)) {

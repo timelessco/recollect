@@ -792,7 +792,6 @@ const Dashboard = () => {
 							const bookmarkTagsData = {
 								bookmark_id: addedUrlData?.id,
 								tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
-								user_id: userData?.id,
 							} as unknown as BookmarksTagData;
 
 							await mutationApiCall(

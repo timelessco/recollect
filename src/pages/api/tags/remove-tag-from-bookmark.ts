@@ -12,6 +12,8 @@ import {
 import { BOOKMARK_TAGS_TABLE_NAME } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { bookmarkAndTagOwnershipCheck } from "./add-tag-to-bookmark";
+
 // removes tags for a bookmark
 
 type DataResponse = UserTagsData[] | null;
@@ -29,6 +31,14 @@ export default async function handler(
 	const supabase = apiSupabaseClient(request, response);
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
+	await bookmarkAndTagOwnershipCheck(
+		userId,
+		request?.body?.bookmark_id,
+		request?.body?.tag_id,
+		supabase,
+		response,
+	);
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
