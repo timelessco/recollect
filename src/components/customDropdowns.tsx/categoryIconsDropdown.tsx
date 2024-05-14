@@ -173,6 +173,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 			<Menu
 				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
 				composite={false}
+				portal
 				state={menu}
 			>
 				<div className="flex items-center justify-between border-b-[1px] border-b-custom-gray-7 py-3">
