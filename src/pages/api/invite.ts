@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import jwt_decode from "jwt-decode";
 import isEmpty from "lodash/isEmpty";
@@ -10,7 +11,7 @@ import {
 	ALL_BOOKMARKS_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../utils/constants";
-import { apiSupabaseClient } from "../../utils/supabaseServerClient";
+import { createServiceClient } from "../../utils/supabaseClient";
 
 /**
  * Adds user as colaborator in DB
@@ -34,7 +35,8 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = apiSupabaseClient(request, response);
+	// using service client as this api should work irrespective of user auth
+	const supabase = createServiceClient();
 
 	if (request?.query?.token) {
 		const tokenData: InviteTokenData = jwt_decode(
@@ -63,7 +65,12 @@ export default async function handler(
 					isNull(error) ? "db error null" : error
 				}`,
 			});
-			throw new Error("ERROR: invite has been deleted");
+			Sentry.captureException(
+				`This user invite has been deleted , error: ${
+					isNull(error) ? "db error null" : error
+				}`,
+			);
+			return;
 		}
 
 		// the data will be present as it will be added with is_accept_pending true when invite is sent
@@ -95,13 +102,12 @@ export default async function handler(
 					success: null,
 					error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${catError?.message}`,
 				});
-				throw new Error("ERROR: invite no existing account");
 			} else {
 				response.status(500).json({
 					success: null,
 					error: catError?.message,
 				});
-				throw new Error(`ERROR: invite error ${catError?.message}`);
+				Sentry.captureException(`Min bookmark data is empty`);
 			}
 		} else {
 			response.status(500).json({
@@ -110,7 +116,11 @@ export default async function handler(
 					? "The user is alredy a colaborator of this category"
 					: error,
 			});
-			// throw new Error("ERROR: invite error");
+			Sentry.captureException(
+				isNull(error)
+					? "The user is alredy a colaborator of this category"
+					: error,
+			);
 		}
 	}
 }

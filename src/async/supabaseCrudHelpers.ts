@@ -416,10 +416,10 @@ export const fetchCategoriesData = async (): Promise<{
 	error: Error;
 }> => {
 	try {
-		const response = await axios.post<{
+		const response = await axios.get<{
 			data: CategoriesData[] | null;
 			error: Error;
-		}>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`, {});
+		}>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`);
 
 		return response.data;
 	} catch (error_) {
@@ -625,7 +625,7 @@ export const fetchUserProfiles = async ({
 				data: ProfilesTableTypes[] | null;
 				error: Error;
 			}>(
-				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?user_id=${userId}${
+				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?${
 					!isNil(existingOauthAvatarUrl)
 						? `&avatar=${existingOauthAvatarUrl}`
 						: ``
