@@ -43,7 +43,7 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.body.user_id;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	const {
 		data: categoryData,
@@ -92,7 +92,7 @@ export default async function handler(
 		await supabase
 			.from(SHARED_CATEGORIES_TABLE_NAME)
 			.delete()
-			.match({ category_id: request.body.category_id });
+			.match({ category_id: request.body.category_id, user_id: userId });
 
 	if (!isNull(sharedCategoryError)) {
 		response.status(500).json({
@@ -146,6 +146,7 @@ export default async function handler(
 		.from(CATEGORIES_TABLE_NAME)
 		.delete()
 		.eq("id", request.body.category_id)
+		.eq("user_id", userId)
 		.select(`*`);
 
 	if (isNull(data)) {

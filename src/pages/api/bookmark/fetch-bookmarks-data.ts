@@ -1,5 +1,9 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { type PostgrestError } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/nextjs";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 
@@ -18,6 +22,7 @@ import {
 	LINKS_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
+	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 	videoFileTypes,
@@ -44,7 +49,32 @@ export default async function handler(
 
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.query.user_id as string;
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id as string;
+	const email = userData?.data?.user?.email as string;
+
+	// tells if user is a collaborator for the category
+	const isUserCollaboratorInCategory = async () => {
+		const { data: sharedCategoryData, error: sharedCategoryError } =
+			await supabase
+				.from(SHARED_CATEGORIES_TABLE_NAME)
+				.select("id")
+				.eq("category_id", category_id)
+				.eq("email", email);
+
+		if (sharedCategoryError) {
+			Sentry.captureException(
+				`Get shared catagory data error : ${sharedCategoryError?.message}`,
+			);
+			response
+				.status(500)
+				.json({ data: null, error: sharedCategoryError?.message, count: null });
+			return false;
+		}
+
+		return !isEmpty(sharedCategoryData);
+	};
 
 	// tells if user is in a category or not
 	const categoryCondition = isUserInACategoryInApi(category_id as string);
@@ -67,7 +97,20 @@ user_id (
 		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
 
 	if (categoryCondition) {
-		query = query.eq("category_id", category_id);
+		// check if user is user is a collaborator for the category_id
+		const isUserCollaboratorInCategoryValue =
+			await isUserCollaboratorInCategory();
+
+		if (isUserCollaboratorInCategoryValue) {
+			// user is collaborator
+			// get all the items for the category_id irrespective of the user_is , as user has access to all the items in the category
+			query = query.eq("category_id", category_id);
+		} else {
+			// user is not collaborator
+			// get only the items that match the user_id and category_id, as user only has access to items created by the user
+			query = query.eq("category_id", category_id);
+			query = query.eq("user_id", userId);
+		}
 	} else {
 		query = query.eq("user_id", userId);
 	}

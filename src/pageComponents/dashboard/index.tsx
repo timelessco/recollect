@@ -265,7 +265,6 @@ const Dashboard = () => {
 		) {
 			void mutationApiCall(
 				updateUserProfileOptimisticMutation.mutateAsync({
-					id: session?.user?.id as string,
 					updateData: { email: session?.user?.email },
 				}),
 			);
@@ -315,7 +314,6 @@ const Dashboard = () => {
 				url,
 				category_id: CATEGORY_ID,
 				update_access: updateAccessCondition,
-				user_id: session?.user?.id as string,
 			}),
 		);
 	};
@@ -448,7 +446,6 @@ const Dashboard = () => {
 
 					void mutationApiCall(
 						updateUserProfileOptimisticMutation.mutateAsync({
-							id: session?.user?.id as string,
 							updateData: data,
 						}),
 					);
@@ -568,7 +565,6 @@ const Dashboard = () => {
 						mutationApiCall(
 							fileUploadOptimisticMutation.mutateAsync({
 								file: acceptedFiles[index],
-								user_id: session?.user?.id as string,
 								category_id: CATEGORY_ID,
 								thumbnailBase64,
 								uploadFileNamePath,
@@ -717,7 +713,6 @@ const Dashboard = () => {
 																		isNull(categoryId) || !categoryId
 																			? true
 																			: updateAccessCondition,
-																	session,
 																},
 															);
 														} else {
@@ -797,7 +792,6 @@ const Dashboard = () => {
 							const bookmarkTagsData = {
 								bookmark_id: addedUrlData?.id,
 								tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
-								user_id: userData?.id,
 							} as unknown as BookmarksTagData;
 
 							await mutationApiCall(
@@ -817,7 +811,6 @@ const Dashboard = () => {
 						try {
 							const data = (await mutationApiCall(
 								addUserTagsMutation.mutateAsync({
-									userData,
 									tagsData: { name: tagData[tagData.length - 1]?.label },
 								}),
 							)) as { data: UserTagsData[] };
@@ -881,7 +874,6 @@ const Dashboard = () => {
 											isNull(value?.value) || !value?.value
 												? true
 												: updateAccessCondition,
-										session: session as SupabaseSessionType,
 									}),
 								);
 
@@ -897,7 +889,6 @@ const Dashboard = () => {
 						if (value?.label && userProfileData?.data) {
 							const response = (await mutationApiCall(
 								addCategoryOptimisticMutation.mutateAsync({
-									user_id: session?.user?.id as string,
 									name: value?.label,
 									category_order: userProfileData?.data[0]
 										?.category_order as number[],
@@ -913,7 +904,6 @@ const Dashboard = () => {
 										bookmark_id: addedUrlData?.id as number,
 										// in this case user is creating the category , so they will have access
 										update_access: true,
-										session: session as SupabaseSessionType,
 									}),
 								);
 
@@ -1012,7 +1002,6 @@ const Dashboard = () => {
 							deleteCategoryOtimisticMutation.mutateAsync({
 								category_id: categoryId,
 								category_order: userProfileData?.data[0]?.category_order,
-								user_id: session?.user?.id as string,
 							}),
 						);
 					} else {
@@ -1054,7 +1043,6 @@ const Dashboard = () => {
 					if (!isNull(userProfileData?.data)) {
 						const response = (await mutationApiCall(
 							addCategoryOptimisticMutation.mutateAsync({
-								user_id: session?.user?.id as string,
 								name: newCategoryName,
 								category_order: userProfileData?.data[0]?.category_order ?? [],
 							}),
@@ -1106,7 +1094,6 @@ const Dashboard = () => {
 									bookmark_id: Number.parseInt(bookmarkId, 10),
 									// if user is changing to uncategoried then thay always have access
 									update_access: updateAccessCondition,
-									session,
 								});
 							} else {
 								errorToast("You cannot move collaborators uploads");
@@ -1205,7 +1192,6 @@ const Dashboard = () => {
 						void mutationApiCall(
 							deleteBookmarkOptismicMutation.mutateAsync({
 								deleteData,
-								user_id: session?.user?.id as string,
 							}),
 						);
 					}
@@ -1221,11 +1207,7 @@ const Dashboard = () => {
 				buttonText="Clear trash"
 				isLoading={clearBookmarksInTrashMutation?.isLoading}
 				onContinueCick={() => {
-					void mutationApiCall(
-						clearBookmarksInTrashMutation.mutateAsync({
-							user_id: session?.user?.id,
-						}),
-					);
+					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 					toggleShowClearTrashWarningModal();
 				}}
 				open={showClearTrashWarningModal}

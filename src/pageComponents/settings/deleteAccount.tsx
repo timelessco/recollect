@@ -72,12 +72,7 @@ const DeleteAccout = () => {
 		if (userData?.user_name !== data?.confirmText) {
 			errorToast("The username does not match");
 		} else {
-			const response = await mutationApiCall(
-				deleteUserMutation.mutateAsync({
-					id: session?.user?.id as string,
-					session: session as SupabaseSessionType,
-				}),
-			);
+			const response = await mutationApiCall(deleteUserMutation.mutateAsync());
 
 			if (isNull(response?.error)) {
 				successToast("Account has been successfully deleted");

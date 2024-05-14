@@ -32,11 +32,13 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(CATEGORIES_TABLE_NAME)
 			.update(request.body.updateData)
-			.match({ id: request.body.category_id })
+			.match({ id: request.body.category_id, user_id: userId })
 			.select();
 
 	if (!isNull(error)) {

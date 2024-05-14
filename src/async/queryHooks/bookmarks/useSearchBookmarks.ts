@@ -49,12 +49,7 @@ export default function useSearchBookmarks() {
 	}>(
 		[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
 		async () =>
-			await searchBookmarks(
-				searchText,
-				CATEGORY_ID,
-				isSharedCategory,
-				session?.user?.id as string,
-			),
+			await searchBookmarks(searchText, CATEGORY_ID, isSharedCategory),
 	);
 
 	return { data };

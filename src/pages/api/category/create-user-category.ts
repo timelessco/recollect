@@ -38,7 +38,7 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const { user_id: userId } = request.body;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	const { name } = request.body;
 
 	// check if category name is already there for the user

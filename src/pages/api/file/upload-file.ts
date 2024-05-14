@@ -136,7 +136,7 @@ export default async (
 			: 0
 		: 0;
 
-	const userId = data?.fields?.user_id?.[0];
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
 	const fileType = data?.fields?.type?.[0];

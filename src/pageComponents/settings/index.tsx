@@ -111,7 +111,6 @@ const Settings = () => {
 		try {
 			const response = await mutationApiCall(
 				updateUserProfileOptimisticMutation.mutateAsync({
-					id: session?.user?.id as string,
 					updateData: { display_name: data?.displayname },
 				}),
 			);
@@ -180,7 +179,6 @@ const Settings = () => {
 							const response = await mutationApiCall(
 								uploadProfilePicMutation.mutateAsync({
 									file: uploadedFile,
-									session: session as SupabaseSessionType,
 								}),
 							);
 
@@ -243,7 +241,6 @@ const Settings = () => {
 									const response = await mutationApiCall(
 										removeProfilePic.mutateAsync({
 											id: userData?.id as string,
-											session: session as SupabaseSessionType,
 										}),
 									);
 

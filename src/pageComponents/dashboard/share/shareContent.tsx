@@ -239,7 +239,6 @@ const ShareContent = () => {
 						edit_access: inviteUserEditAccess,
 						category_id: dynamicCategoryId as number,
 						hostUrl: window?.location?.origin,
-						userId: session?.user?.id as unknown as string,
 					}),
 				);
 

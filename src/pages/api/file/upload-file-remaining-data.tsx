@@ -90,6 +90,8 @@ export default async function handler(
 
 	const supabase = apiSupabaseClient(request, response);
 
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
 		width: null,
@@ -108,7 +110,7 @@ export default async function handler(
 			meta_data,
 			description: (meta_data?.img_caption as string) || "",
 		})
-		.match({ id });
+		.match({ id, user_id: userId });
 
 	if (isNil(DBerror)) {
 		response.status(200).json({ success: true, error: null });

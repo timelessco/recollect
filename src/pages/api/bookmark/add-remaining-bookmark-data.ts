@@ -39,10 +39,10 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const { url, image: ogImage, favIcon, id, user_id } = request.body;
-	const userId = user_id;
+	const { url, image: ogImage, favIcon, id } = request.body;
 
 	const supabase = apiSupabaseClient(request, response);
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	const upload = async (
 		base64info: string,

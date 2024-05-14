@@ -260,8 +260,10 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request?.body?.id;
-	const email = request?.body?.email;
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id as string;
+	const email = userData?.data?.user?.email as string;
 
 	// bookmark_tags delete
 	const { error: bookmarkTagsError } = await supabase

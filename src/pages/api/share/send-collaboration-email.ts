@@ -44,7 +44,8 @@ export default async function handler(
 	const hostUrl = request?.body?.hostUrl;
 	const categoryId = request?.body?.category_id;
 	const editAccess = request?.body?.edit_access;
-	const userId = request?.body?.userId;
+
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	const { error } = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
 		category_id: categoryId,

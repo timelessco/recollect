@@ -35,11 +35,14 @@ export default async function handler(
 
 	const {
 		update_access: updateAccess,
-		user_id: userId,
-		email,
 		category_id: categoryId,
 		bookmark_id: bookmarkId,
 	} = request.body;
+
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id as string;
+	const email = userData?.data?.user?.email as string;
 
 	// this updates the category id for the bookmark
 	const updateCategoryIdLogic = async () => {
@@ -47,7 +50,7 @@ export default async function handler(
 			await supabase
 				.from(MAIN_TABLE_NAME)
 				.update({ category_id: updateAccess ? categoryId : null })
-				.match({ id: bookmarkId })
+				.match({ id: bookmarkId, user_id: userId })
 				.select();
 
 		if (!isNull(data)) {

@@ -34,6 +34,8 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	const username = slugify(request?.body?.username ?? "", {
 		lower: true,
 		strict: true,
@@ -66,7 +68,7 @@ export default async function handler(
 			.update({
 				user_name: username,
 			})
-			.match({ id: request.body.id })
+			.match({ id: userId })
 			.select(`user_name`);
 
 		if (!isNull(updateError)) {

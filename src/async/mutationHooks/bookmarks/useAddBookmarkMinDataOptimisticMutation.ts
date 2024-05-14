@@ -134,7 +134,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,
-					user_id: data?.user_id?.id,
 				});
 				setAddScreenshotBookmarkId(data?.id);
 			}

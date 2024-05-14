@@ -67,8 +67,10 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.query.user_id as string;
-	const email = request.query.email as string;
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id as string;
+	const email = userData?.data?.user?.email as string;
 
 	let count: BookmarksCountTypes = {
 		allBookmarks: 0,

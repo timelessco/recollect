@@ -25,6 +25,8 @@ export default async function handler(
 
 	const { category_id: categorieId } = request.body;
 
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	const { data, error } = await supabase
 		.from(CATEGORIES_TABLE_NAME)
 		.select(
@@ -32,7 +34,8 @@ export default async function handler(
       category_views
     `,
 		)
-		.eq("id", categorieId);
+		.eq("id", categorieId)
+		.eq("user_id", userId);
 
 	if (!isNull(data)) {
 		response.status(200).json({ data, error });

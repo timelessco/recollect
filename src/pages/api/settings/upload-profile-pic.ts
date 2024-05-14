@@ -89,7 +89,7 @@ export default async (
 		files: ParsedFormDataType["files"];
 	};
 
-	const userId = data?.fields?.user_id?.[0] as string;
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	let contents;
 

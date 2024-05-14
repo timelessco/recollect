@@ -28,12 +28,15 @@ type Data = {
 };
 
 export default async function handler(
-	request: NextApiRequest<{ userEmail: string; user_id: string }>,
+	request: NextApiRequest<{}>,
 	response: NextApiResponse<Data>,
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = request.body.user_id;
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id as string;
+	const userEmail = userData?.data?.user?.email as string;
 
 	// filter onces where is_public true and userId is not same as uuid
 	const { data, error } = await supabase
@@ -64,7 +67,7 @@ export default async function handler(
 		await supabase
 			.from(SHARED_CATEGORIES_TABLE_NAME)
 			.select(`category_id!inner(*, user_id(*))`)
-			.eq("email", request.body.userEmail)
+			.eq("email", userEmail)
 			.eq("is_accept_pending", false);
 
 	if (!isNull(userCollabError)) {
@@ -127,7 +130,7 @@ export default async function handler(
 	const finalPublicFilteredData = finalDataWithCollab?.filter((item) => {
 		const userCollabData = find(
 			item?.collabData,
-			(collabItem) => collabItem?.userEmail === request.body.userEmail,
+			(collabItem) => collabItem?.userEmail === userEmail,
 		);
 		// if logged-in user is a collaborator for this category, then return the category
 		if (!isEmpty(userCollabData) && userCollabData?.isOwner === false) {

@@ -34,7 +34,7 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
 					({
 						...old,
 						data: old?.data?.map((item) => {
-							if (item.id === data?.user_id) {
+							if (item.id === session?.user?.id) {
 								return {
 									...item,
 									category_order: newOrder,

@@ -208,7 +208,6 @@ export type AddBookmarkMinDataPayloadTypes = {
 	category_id: number | string | null;
 	update_access: boolean;
 	url: string;
-	user_id: SingleListData["user_id"]["id"];
 };
 
 export type AddBookmarkRemainingDataPayloadTypes = {
@@ -222,12 +221,9 @@ export type AddBookmarkRemainingDataPayloadTypes = {
 export type AddBookmarkScreenshotPayloadTypes = {
 	id: number;
 	url: string;
-	user_id: SingleListData["user_id"]["id"];
 };
 
-export type ClearBookmarksInTrashApiPayloadTypes = {
-	user_id: string | undefined;
-};
+export type ClearBookmarksInTrashApiPayloadTypes = {};
 
 export type DeleteDataApiPayload = {
 	id: number;
@@ -242,28 +238,22 @@ export type MoveBookmarkToTrashApiPayload = {
 export type AddCategoryToBookmarkApiPayload = {
 	bookmark_id: number;
 	category_id: number | null;
-	email?: ProfilesTableTypes["email"];
-	session: SupabaseSessionType;
 	update_access: boolean;
-	user_id?: ProfilesTableTypes["id"];
 };
 
 export type AddUserCategoryApiPayload = {
 	category_order: number[];
 	name: string;
 	session: SupabaseSessionType;
-	user_id: string;
 };
 
 export type DeleteUserCategoryApiPayload = {
 	category_id: number;
 	category_order: number[];
-	user_id: SingleListData["user_id"]["id"];
 };
 
 export type UpdateCategoryOrderApiPayload = {
 	order: number[];
-	user_id: SingleListData["user_id"]["id"];
 };
 
 export type UpdateCategoryApiPayload = {
@@ -278,7 +268,6 @@ export type UpdateCategoryApiPayload = {
 };
 
 export type UpdateUserProfileApiPayload = {
-	id: string;
 	updateData: ProfilesTableForPayloadTypes;
 };
 
@@ -287,14 +276,10 @@ export type UpdateUsernameApiPayload = {
 	username: ProfilesTableTypes["user_name"];
 };
 
-export type DeleteUserApiPayload = {
-	id: string;
-	session: SupabaseSessionType;
-};
+export type DeleteUserApiPayload = {};
 
 export type RemoveUserProfilePicPayload = {
 	id: string;
-	session: SupabaseSessionType;
 };
 
 export type GetUserProfilePicPayload = {
@@ -326,7 +311,6 @@ export type AddTagToBookmarkApiPayload = {
 
 export type AddUserTagsApiPayload = {
 	tagsData: { name: string };
-	userData: UserIdentity;
 };
 
 export type UploadFileApiPayload = {
@@ -335,7 +319,6 @@ export type UploadFileApiPayload = {
 	thumbnailBase64: string | null;
 	// this is the path where the file in uploaded storage
 	uploadFileNamePath: string;
-	user_id: SingleListData["user_id"]["id"];
 };
 
 export type DeleteBookmarkPayload = {
@@ -345,12 +328,10 @@ export type DeleteBookmarkPayload = {
 		title: SingleListData["title"];
 		url: SingleListData["url"];
 	}>;
-	user_id: SingleListData["user_id"]["id"];
 };
 
 export type UploadProfilePicPayload = {
 	file: FileType;
-	session: SupabaseSessionType;
 };
 
 type DataResponse = SingleListData[] | null;
