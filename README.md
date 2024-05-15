@@ -44,7 +44,7 @@ Recollect is your one stop where you can add and manage your bookmarks, images a
 - Search
 - Drag and drop features
 - Automatic image description generation
-- Self host
+- Self host. Check out [`.github/SELF_HOST.md`](./.github/SELF_HOST.md)
 
 and many more !
 

@@ -277,6 +277,9 @@ create table
     constraint categories_user_id_fkey foreign key (user_id) references profiles (id)
   ) tablespace pg_default;
 
+  -- inserts the uncategorised collection into the table
+  insert into categories (id, category_name, category_slug) values (0, '00uncategorized', '00uncategorized');
+
 
   create table
   public.profiles (
