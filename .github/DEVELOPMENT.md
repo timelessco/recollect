@@ -257,6 +257,13 @@ create table
     constraint bookmarks_table_user_id_fkey foreign key (user_id) references profiles (id)
   ) tablespace pg_default;
 
+  create unique index unique_url_category_id on public.bookmarks_table using btree (url, category_id)
+where
+  (
+    (category_id is not null)
+    and (category_id <> 0)
+  ) tablespace pg_default;
+
 create index if not exists idx_title_description on public.bookmarks_table using btree (title, description) tablespace pg_default;
 
 
