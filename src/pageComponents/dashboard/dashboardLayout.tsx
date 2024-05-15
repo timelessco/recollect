@@ -659,15 +659,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					if (leftPaneSize > 180 && leftPaneSize < 244) {
 						// resets the side pane to default sizes based on user resizing width
 						allotmentRef?.current?.reset();
+						// close collpase button on resize
+						setShowSidePane(true);
 					}
 
 					if (leftPaneSize > 244) {
-						setShowSidePane(true);
-					}
-				}}
-				onDragStart={(values: number[]) => {
-					if (values[0] === 0) {
-						// close collpase button on resize
 						setShowSidePane(true);
 					}
 				}}
