@@ -28,13 +28,17 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const supabase = apiSupabaseClient(request, response);
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id as string;
+	const email = userData?.data?.user?.email as string;
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(SHARED_CATEGORIES_TABLE_NAME)
 			.update(request.body.updateData)
-			.match({ id: request.body.id, user_id: userId })
+			.match({ id: request.body.id })
+			.or(`user_id.eq.${userId},email.eq.${email}`)
 			.select();
 
 	if (isNull(data)) {
