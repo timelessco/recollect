@@ -10,11 +10,13 @@ This will ask the following env variables
 
 Note: you will have a create a project in [Supabase](https://supabase.com/) to get the env variables
 
-`SUPABASE_JWT_SECRET_KEY`: Supabase project secret key got from Supabase dashboard
-`SUPABASE_SERVICE_KEY`: Supabase project service key got from Supabase dashboard
-`NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase project anon key got from Supabase dashboard
-`NEXT_PUBLIC_SUPABASE_URL`: Supabase project url got from Supabase dashboard
-`NEXT_PUBLIC_VERCEL_URL`: the URL where the app is going to be hosted
+```
+SUPABASE_JWT_SECRET_KEY: Supabase project secret key got from Supabase dashboard
+SUPABASE_SERVICE_KEY: Supabase project service key got from Supabase dashboard
+NEXT_PUBLIC_SUPABASE_ANON_KEY: Supabase project anon key got from Supabase dashboard
+NEXT_PUBLIC_SUPABASE_URL: Supabase project url got from Supabase dashboard
+NEXT_PUBLIC_VERCEL_URL: the URL where the app is going to be hosted
+```
 
 Adding these env variables will deploy your app in Vercel !
 
