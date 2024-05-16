@@ -44,7 +44,7 @@ main {
 }
 
 .my-masonry-grid {
-	@apply ml-[-30px] flex w-auto;
+	@apply ml-[-24px] flex w-auto;
 }
 
 .my-masonry-grid_column {
