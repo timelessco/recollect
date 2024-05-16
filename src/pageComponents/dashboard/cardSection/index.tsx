@@ -902,7 +902,7 @@ const CardSection = ({
 		"mt-[47px]": true,
 		"px-4 py-2":
 			cardTypeCondition === "list" || cardTypeCondition === "headlines",
-		"px-6 py-2":
+		"py-2 pl-[28px] pr-[19px]":
 			cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 	});
 
