@@ -663,7 +663,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						setTimeout(() => allotmentRef?.current?.reset(), 120);
 					}
 
-					if (leftPaneSize < 180 && paneRef?.current?.clientWidth > 0) {
+					const sidepaneWidth = paneRef.current?.clientWidth;
+					if (leftPaneSize < 180 && sidepaneWidth && sidepaneWidth > 0) {
 						// closes the side pane when user is resizing it and side pane is less than 180px
 						setTimeout(() => allotmentRef?.current?.resize([0, 100]), 100);
 						setShowSidePane(false);
