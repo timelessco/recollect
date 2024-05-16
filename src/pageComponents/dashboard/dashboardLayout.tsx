@@ -633,16 +633,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
-			{/* {!showSidePane && (
-				<div
-					className=" absolute left-0 z-[10] h-[100vh] w-5 cursor-pointer"
-					onClick={() => {
-						setShowSidePane(true);
-						// opens side pane
-						setTimeout(() => allotmentRef?.current?.reset(), 120);
-					}}
-				/>
-			)} */}
 			<Allotment
 				className="split-view-container"
 				onChange={(value: number[]) => {
