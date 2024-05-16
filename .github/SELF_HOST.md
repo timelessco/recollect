@@ -33,23 +33,6 @@ Follow the following steps to self-host Supabase
 
 Now you should have Supabase running with all the needed tables, functions, and triggers for the project!
 
-### Disable Confirm email
-
-By default once user logs in they will have to confirm their email via a confirmation mail. If you want to disable this then in the `docker/.env` file update `ENABLE_EMAIL_AUTOCONFIRM` to disable the confirm email in signup
-
-### Make Google auth work
-
-To make this work in the `docker/docker-compose.yaml` file as per <https://github.com/orgs/supabase/discussions/4885> discussion add the following
-
-```
-GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${ENABLE_GOOGLE_SIGNUP}
-GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_CLIENT_SECRET}
-GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: http://localhost:8000/auth/v1/callback
-```
-
-You will have to get `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from [Google Console](https://console.cloud.google.com/apis/credentials). After this update the `redirect_uri` in the Google console
-
 ### Make storage work
 
 Add the following RLS policies in your locally running Supabase
@@ -74,6 +57,23 @@ SMTP_USER=resend
 SMTP_PASS=<resend_pass>
 SMTP_SENDER_NAME=<name>
 ```
+
+### Disable Confirm email
+
+By default once user logs in they will have to confirm their email via a confirmation mail. If you want to disable this then in the `docker/.env` file update `ENABLE_EMAIL_AUTOCONFIRM` to disable the confirm email in signup
+
+### Make Google auth work
+
+To make this work in the `docker/docker-compose.yaml` file as per <https://github.com/orgs/supabase/discussions/4885> discussion add the following
+
+```
+GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${ENABLE_GOOGLE_SIGNUP}
+GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_CLIENT_SECRET}
+GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: http://localhost:8000/auth/v1/callback
+```
+
+You will have to get `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from [Google Console](https://console.cloud.google.com/apis/credentials). After this update the `redirect_uri` in the Google console
 
 ### In the Front end
 

@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -153,7 +155,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showSearchBar, setShowSearchBar] = useState(true);
 
 	const allotmentRef = useRef<AllotmentHandle>(null);
-	const paneRef = useRef(null);
+	const paneRef = useRef<HTMLDivElement>(null);
 
 	// this is the resize pane animation logic
 	useEffect(() => {
@@ -396,7 +398,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				show: currentPath === TRASH_URL,
 				value: "trash",
 				render: (
-					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 					<div
 						className={`flex items-center text-red-700 ${dropdownMenuItemClassName}`}
 						onClick={() => onClearTrash()}
@@ -415,7 +416,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				show: typeof categoryId === "number",
 				value: "rename",
 				render: (
-					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 					<div
 						className={`flex items-center ${dropdownMenuItemClassName}`}
 						onClick={() => {
@@ -446,7 +446,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		const optionsList = optionsData
 			?.filter((optionItem) => optionItem?.show === true)
 			?.map((item) => (
-				// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 				<div
 					key={item?.value}
 					onClick={() => updateHeaderOptionCurrentTab(item?.value)}
@@ -634,12 +633,19 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderDeskTopView = (
 		<div style={{ width: "100vw", height: "100vh" }}>
+			{/* {!showSidePane && (
+				<div
+					className=" absolute left-0 z-[10] h-[100vh] w-5 cursor-pointer"
+					onClick={() => {
+						setShowSidePane(true);
+						// opens side pane
+						setTimeout(() => allotmentRef?.current?.reset(), 120);
+					}}
+				/>
+			)} */}
 			<Allotment
 				className="split-view-container"
 				onChange={(value: number[]) => {
-					// console.log("vv", value[0]);
-
-					// setIsDraggingValue(value[0]);
 					if (value[0] === 0) {
 						setShowSidePane(false);
 					}
@@ -650,8 +656,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				}}
 				onDragEnd={(values: number[]) => {
 					const leftPaneSize = values?.[0];
-					if (leftPaneSize < 180) {
-						// closes the side pane based on resize width
+					if (leftPaneSize === 0 && paneRef?.current?.clientWidth === 0) {
+						// open side pane when its fully closed and on the resize pane click
+						setShowSidePane(true);
+						// opens side pane
+						setTimeout(() => allotmentRef?.current?.reset(), 120);
+					}
+
+					const sidepaneWidth = paneRef.current?.clientWidth;
+					if (leftPaneSize < 180 && sidepaneWidth && sidepaneWidth > 0) {
+						// closes the side pane when user is resizing it and side pane is less than 180px
 						setTimeout(() => allotmentRef?.current?.resize([0, 100]), 100);
 						setShowSidePane(false);
 					}
