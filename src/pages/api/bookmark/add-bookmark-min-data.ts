@@ -2,7 +2,10 @@
 /* eslint-disable complexity  */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
@@ -11,6 +14,7 @@ import ogs from "open-graph-scraper";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type NextApiRequest,
+	type ProfilesTableTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
@@ -40,6 +44,58 @@ type ScrapperTypes = {
 		favIcon: string | null;
 		title: string | null;
 	};
+};
+
+// tells if user is either category owner or collaborator
+export const checkIfUserIsCategoryOwnerOrCollaborator = async (
+	supabase: SupabaseClient,
+	categoryId: SingleListData["category_id"],
+	userId: SingleListData["user_id"]["id"],
+	email: ProfilesTableTypes["email"],
+	response: NextApiResponse,
+) => {
+	const { data: categoryData, error: categoryError } = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select("user_id")
+		.eq("id", categoryId);
+
+	if (categoryError) {
+		response
+			.status(500)
+			.json({ data: null, error: categoryError?.message, message: null });
+		Sentry.captureException(
+			`checkIfUserIsCategoryOwnerOrCollaborator error: ${categoryError?.message}`,
+		);
+		return false;
+	}
+
+	if (categoryData?.[0]?.user_id === userId) {
+		// user is the owner of the category
+		return true;
+	} else {
+		// check if user id a collaborator of the category
+		const { data: shareData, error: shareError } = await supabase
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.select("id, edit_access")
+			.eq("category_id", categoryId)
+			.eq("email", email);
+
+		if (shareError) {
+			response
+				.status(500)
+				.json({ data: null, error: shareError?.message, message: null });
+			Sentry.captureException(`share check error: ${shareError?.message}`);
+			return false;
+		}
+
+		if (!isEmpty(shareData)) {
+			// user is a collaborator, if user does not have edit access then return false so that DB is not updated with data
+			return shareData?.[0]?.edit_access;
+		} else {
+			// user is not the owner or the collaborator of the collection
+			return false;
+		}
+	}
 };
 
 export default async function handler(
@@ -91,52 +147,6 @@ export default async function handler(
 		}
 
 		return !isEmpty(checkBookmarkData);
-	};
-
-	// tells if user is either category owner or collaborator
-	const checkIfUserIsCategoryOwnerOrCollaborator = async () => {
-		const { data: categoryData, error: categoryError } = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.select("user_id")
-			.eq("id", categoryId);
-
-		if (categoryError) {
-			response
-				.status(500)
-				.json({ data: null, error: categoryError?.message, message: null });
-			Sentry.captureException(
-				`checkIfUserIsCategoryOwnerOrCollaborator error: ${categoryError?.message}`,
-			);
-			return false;
-		}
-
-		if (categoryData?.[0]?.user_id === userId) {
-			// user is the owner of the category
-			return true;
-		} else {
-			// check if user id a collaborator of the category
-			const { data: shareData, error: shareError } = await supabase
-				.from(SHARED_CATEGORIES_TABLE_NAME)
-				.select("id, edit_access")
-				.eq("category_id", categoryId)
-				.eq("email", email);
-
-			if (shareError) {
-				response
-					.status(500)
-					.json({ data: null, error: shareError?.message, message: null });
-				Sentry.captureException(`share check error: ${shareError?.message}`);
-				return false;
-			}
-
-			if (!isEmpty(shareData)) {
-				// user is a collaborator, if user does not have edit access then return false so that DB is not updated with data
-				return shareData?.[0]?.edit_access;
-			} else {
-				// user is not the owner or the collaborator of the collection
-				return false;
-			}
-		}
 	};
 
 	let scrapperResponse: ScrapperTypes = {
@@ -194,7 +204,13 @@ export default async function handler(
 	if (computedCategoryId !== 0) {
 		// user is adding bookmark into a category
 		const checkIfUserIsCategoryOwnerOrCollaboratorValue =
-			await checkIfUserIsCategoryOwnerOrCollaborator();
+			await checkIfUserIsCategoryOwnerOrCollaborator(
+				supabase,
+				computedCategoryId as number,
+				userId as string,
+				email as string,
+				response,
+			);
 
 		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
 			response.status(500).json({
