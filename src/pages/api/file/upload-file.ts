@@ -34,6 +34,7 @@ import {
 	parseUploadFileName,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
 
 // first we need to disable the default body parser
 export const config = {
@@ -136,7 +137,10 @@ export default async (
 			: 0
 		: 0;
 
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	const userData = await supabase?.auth?.getUser();
+
+	const userId = userData?.data?.user?.id;
+	const email = userData?.data?.user?.email;
 
 	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
 	const fileType = data?.fields?.type?.[0];
@@ -146,6 +150,29 @@ export default async (
 	);
 	// if the uploaded file is valid this happens
 	const storagePath = `public/${userId}/${uploadPath}`;
+
+	if (
+		Number.parseInt(categoryId as string, 10) !== 0 &&
+		typeof categoryId === "number"
+	) {
+		const checkIfUserIsCategoryOwnerOrCollaboratorValue =
+			await checkIfUserIsCategoryOwnerOrCollaborator(
+				supabase,
+				categoryId as number,
+				userId as string,
+				email as string,
+				response,
+			);
+
+		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
+			response.status(500).json({
+				error:
+					"User is neither owner or collaborator for the collection or does not have edit access",
+				success: false,
+			});
+			return;
+		}
+	}
 
 	// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
 	// the public url for the uploaded file is got
