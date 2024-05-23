@@ -105,6 +105,7 @@ export const SEARCH_URL = "search";
 export const INBOX_URL = "inbox";
 export const TRASH_URL = "trash";
 export const DOCUMENTS_URL = "documents";
+export const TWEETS_URL = "tweets";
 export const SETTINGS_URL = "settings";
 export const LOGIN_URL = "login";
 export const SIGNUP_URL = "signup";
@@ -148,6 +149,7 @@ export const acceptedFileTypes = [
 ];
 
 export const bookmarkType = "bookmark";
+export const tweetType = "tweet";
 
 export const imageFileTypes = acceptedFileTypes?.filter(
 	(item) => item?.includes("image"),
@@ -203,6 +205,7 @@ export const menuListItemName = {
 	videos: "Videos",
 	links: "Links",
 	documents: "Documents",
+	tweets: "Tweets",
 };
 
 // if user is adding anything in these pages then the added item will be in uncategorized

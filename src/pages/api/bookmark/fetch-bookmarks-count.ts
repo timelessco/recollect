@@ -10,6 +10,7 @@ import {
 	imageFileTypes,
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
+	tweetType,
 	videoFileTypes,
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -81,6 +82,7 @@ export default async function handler(
 		videos: 0,
 		links: 0,
 		documents: 0,
+		tweets: 0,
 	};
 
 	try {
@@ -92,6 +94,7 @@ export default async function handler(
 			{ count: bookmakrsLinks },
 			{ count: bookmarkTrashCount },
 			{ count: bookmarkUnCatCount },
+			{ count: bookmarkTweetsCount },
 			{ data: userCategoryIds },
 			{ data: sharedCategoryIds },
 		] = await Promise.all([
@@ -135,6 +138,12 @@ export default async function handler(
 				.eq("user_id", userId)
 				.eq("trash", false)
 				.eq("category_id", 0),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.eq("trash", false)
+				.eq("type", tweetType),
 			supabase.from(CATEGORIES_TABLE_NAME).select("id").eq("user_id", userId),
 			supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
@@ -151,6 +160,7 @@ export default async function handler(
 			links: bookmakrsLinks ?? 0,
 			trash: bookmarkTrashCount ?? 0,
 			uncategorized: bookmarkUnCatCount ?? 0,
+			tweets: bookmarkTweetsCount ?? 0,
 		};
 
 		const userCategoryIdsArray = userCategoryIds?.map((item) => item.id) ?? [];

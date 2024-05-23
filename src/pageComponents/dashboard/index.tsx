@@ -74,6 +74,7 @@ import {
 	LOGIN_URL,
 	SETTINGS_URL,
 	TRASH_URL,
+	TWEETS_URL,
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "../../utils/constants";
@@ -522,6 +523,12 @@ const Dashboard = () => {
 
 			if ((CATEGORY_ID as unknown) === DOCUMENTS_URL) {
 				const count = bookmarksCountData?.data?.documents;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
+			if ((CATEGORY_ID as unknown) === TWEETS_URL) {
+				const count = bookmarksCountData?.data?.tweets;
 
 				return count !== flattendPaginationBookmarkData?.length;
 			}

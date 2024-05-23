@@ -25,6 +25,8 @@ import {
 	menuListItemName,
 	SEARCH_URL,
 	TRASH_URL,
+	TWEETS_URL,
+	tweetType,
 	UNCATEGORIZED_URL,
 	videoFileTypes,
 	VIDEOS_URL,
@@ -54,7 +56,8 @@ export const getCategoryIdFromSlug = (
 		slug === IMAGES_URL ||
 		slug === VIDEOS_URL ||
 		slug === LINKS_URL ||
-		slug === DOCUMENTS_URL
+		slug === DOCUMENTS_URL ||
+		slug === TWEETS_URL
 	) {
 		return slug;
 	}
@@ -115,6 +118,7 @@ export const isUserInACategory = (url: string) => {
 		VIDEOS_URL,
 		DOCUMENTS_URL,
 		LINKS_URL,
+		TWEETS_URL,
 	];
 
 	return !nonCategoryPages?.includes(url);
@@ -171,6 +175,7 @@ export const isUserInACategoryInApi = (
 		category_id !== IMAGES_URL &&
 		category_id !== VIDEOS_URL &&
 		category_id !== DOCUMENTS_URL &&
+		category_id !== TWEETS_URL &&
 		category_id !== LINKS_URL;
 
 	if (uncategorizedCheck) {
@@ -218,6 +223,10 @@ export const fileTypeIdentifier = (type: string) => {
 
 	if (type === bookmarkType) {
 		return menuListItemName?.links;
+	}
+
+	if (type === tweetType) {
+		return menuListItemName?.tweets;
 	}
 
 	return null;

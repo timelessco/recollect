@@ -15,6 +15,8 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
+	TWEETS_URL,
+	tweetType,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
@@ -179,6 +181,10 @@ export default function useFileUploadOptimisticMutation() {
 					CATEGORY_ID === DOCUMENTS_URL &&
 					!documentFileTypes?.includes(uploadedDataType)
 				) {
+					successToast(`Added to ${fileTypeName}`);
+				}
+
+				if (CATEGORY_ID === TWEETS_URL && uploadedDataType !== tweetType) {
 					successToast(`Added to ${fileTypeName}`);
 				}
 

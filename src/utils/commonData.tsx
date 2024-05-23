@@ -6,6 +6,7 @@ import HomeIconGray from "../icons/homeIconGray";
 import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inboxIconGray";
 import SettingsIcon from "../icons/settingsIcon";
+import XIcon from "../icons/social/x";
 import TrashIconGray from "../icons/trashIconGray";
 import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
@@ -18,6 +19,7 @@ import {
 	menuListItemName,
 	SETTINGS_URL,
 	TRASH_URL,
+	TWEETS_URL,
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "./constants";
@@ -3649,6 +3651,15 @@ export const optionsMenuListArray = (
 		current: currentPath === DOCUMENTS_URL,
 		id: 7,
 		count: bookmarksCountData?.data?.documents,
+		iconColor: "",
+	},
+	{
+		icon: <XIcon />,
+		name: menuListItemName.tweets,
+		href: `/${TWEETS_URL}`,
+		current: currentPath === TWEETS_URL,
+		id: 8,
+		count: bookmarksCountData?.data?.tweets,
 		iconColor: "",
 	},
 ];

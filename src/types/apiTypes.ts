@@ -44,6 +44,7 @@ export type BookmarksCountTypes = {
 	images: number;
 	links: number;
 	trash: number;
+	tweets: number;
 	uncategorized: number;
 	videos: number;
 };
