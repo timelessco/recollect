@@ -52,6 +52,7 @@ import {
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
+	TWEETS_URL,
 	USER_PROFILE,
 } from "../../../utils/constants";
 import {
@@ -906,28 +907,44 @@ const CardSection = ({
 			cardTypeCondition === "moodboard" || cardTypeCondition === "card",
 	});
 
+	const renderItem = () => {
+		const sortByCondition = renderSortByCondition();
+
+		if (isEmpty(sortByCondition) && categorySlug === TWEETS_URL) {
+			return (
+				<div className="p-6 text-center">
+					Please install the Recollect extension to import all your tweets
+				</div>
+			);
+		}
+
+		return (
+			<ListBox
+				aria-label="Categories"
+				bookmarksColumns={bookmarksColumns}
+				bookmarksList={bookmarksList}
+				cardTypeCondition={cardTypeCondition}
+				isPublicPage={isPublicPage}
+				onBulkBookmarkDelete={onBulkBookmarkDelete}
+				onCategoryChange={onCategoryChange}
+				selectionMode="multiple"
+			>
+				{sortByCondition?.map((item) => (
+					<Item key={item?.id} textValue={item?.id?.toString()}>
+						{renderBookmarkCardTypes(item)}
+					</Item>
+				))}
+			</ListBox>
+		);
+	};
+
 	return (
 		<>
 			<div
 				className={listWrapperClass}
 				// style={{ height: "calc(100vh - 270px)"}}
 			>
-				<ListBox
-					aria-label="Categories"
-					bookmarksColumns={bookmarksColumns}
-					bookmarksList={bookmarksList}
-					cardTypeCondition={cardTypeCondition}
-					isPublicPage={isPublicPage}
-					onBulkBookmarkDelete={onBulkBookmarkDelete}
-					onCategoryChange={onCategoryChange}
-					selectionMode="multiple"
-				>
-					{renderSortByCondition()?.map((item) => (
-						<Item key={item?.id} textValue={item?.id?.toString()}>
-							{renderBookmarkCardTypes(item)}
-						</Item>
-					))}
-				</ListBox>
+				{renderItem()}
 			</div>
 			<VideoModal listData={listData} />
 		</>
