@@ -94,6 +94,7 @@ const videoLogic = async (
 			imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
 		} catch (error) {
 			log("Blur hash error", error);
+			Sentry.captureException(`Blur hash error ${error}`);
 			imgData = {};
 		}
 	}
@@ -238,7 +239,7 @@ export default async (
 		response.status(200).json({ success: true, error: null });
 
 		try {
-			if (!isEmpty(DatabaseData)) {
+			if (!isEmpty(DatabaseData) && !isVideo) {
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
 					{
