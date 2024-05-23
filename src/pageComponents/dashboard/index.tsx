@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { type Session, type UserIdentity } from "@supabase/supabase-js";
+import { type UserIdentity } from "@supabase/supabase-js";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
@@ -56,7 +56,6 @@ import {
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
-	type SupabaseSessionType,
 	type UserTagsData,
 } from "../../types/apiTypes";
 import {
@@ -76,7 +75,6 @@ import {
 	SETTINGS_URL,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
-	URL_PATTERN,
 	VIDEOS_URL,
 } from "../../utils/constants";
 import {
@@ -788,7 +786,6 @@ const Dashboard = () => {
 					addExistingTag={async (tag) => {
 						setSelectedTag([...selectedTag, tag[tag.length - 1]]);
 						if (isEdit) {
-							const userData = session?.user as unknown as UserIdentity;
 							const bookmarkTagsData = {
 								bookmark_id: addedUrlData?.id,
 								tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
