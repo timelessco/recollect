@@ -2,6 +2,7 @@
 
 import { log } from "console";
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { isNil } from "lodash";
 
 import {
@@ -64,6 +65,7 @@ const notVideoLogic = async (publicUrl: string) => {
 			imgData = await blurhashFromURL(publicUrl);
 		} catch (error) {
 			log("Blur hash error", error);
+			Sentry.captureException(`Blur hash error ${error}`);
 			imgData = {};
 		}
 	}
@@ -119,5 +121,6 @@ export default async function handler(
 			success: false,
 			error: DBerror,
 		});
+		Sentry.captureException(`DB error ${DBerror?.message}`);
 	}
 }
