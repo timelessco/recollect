@@ -16,11 +16,6 @@ type RequestType = {
 	>;
 };
 
-type ResponseType = {
-	error: string | null;
-	success: boolean;
-};
-
 const getBodySchema = () =>
 	z.object({
 		data: z.array(
@@ -33,6 +28,11 @@ const getBodySchema = () =>
 			}),
 		),
 	});
+
+type ResponseType = {
+	error: string | null;
+	success: boolean;
+};
 
 export default async function handler(
 	request: NextApiRequest<RequestType>,
@@ -51,6 +51,37 @@ export default async function handler(
 		const supabase = apiSupabaseClient(request, response);
 
 		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
+		// delete all the current tweet data
+
+		const { data: deleteTweets, error: deleteTweetsError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.delete()
+			.eq("type", "tweet")
+			.eq("user_id", userId)
+			.select("id");
+
+		if (isEmpty(deleteTweets)) {
+			response
+				.status(400)
+				.send({ error: "Empty data after tweet delete", success: false });
+
+			Sentry.captureException(`Empty data after tweet delete`);
+
+			return;
+		}
+
+		if (deleteTweetsError) {
+			response.status(400).send({
+				error: `Delete tweets error: ${deleteTweetsError?.message}`,
+				success: false,
+			});
+
+			Sentry.captureException(
+				`Delete tweets error: ${deleteTweetsError?.message}`,
+			);
+			return;
+		}
 
 		// adding user_id in the data to be inserted
 		const insertData = bodyData?.data?.map((item) => ({
