@@ -54,22 +54,13 @@ export default async function handler(
 
 		// delete all the current tweet data
 
-		const { data: deleteTweets, error: deleteTweetsError } = await supabase
+		// NOTE: no empty check for this as sometimes the user may not have any tweets
+		const { error: deleteTweetsError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.delete()
 			.eq("type", "tweet")
 			.eq("user_id", userId)
 			.select("id");
-
-		if (isEmpty(deleteTweets)) {
-			response
-				.status(400)
-				.send({ error: "Empty data after tweet delete", success: false });
-
-			Sentry.captureException(`Empty data after tweet delete`);
-
-			return;
-		}
 
 		if (deleteTweetsError) {
 			response.status(400).send({
