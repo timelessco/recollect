@@ -13,11 +13,13 @@ import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import { Item } from "react-stately";
 
+import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsMobileView from "../../../hooks/useIsMobileView";
+import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
@@ -131,6 +133,7 @@ const CardSection = ({
 	);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const isUserInTweetsPage = useIsUserInTweetsPage();
 
 	const { sortBy } = useGetSortBy();
 
@@ -739,9 +742,12 @@ const CardSection = ({
 					)}
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
-							<p className="line-clamp-3 overflow-hidden break-all text-sm leading-4">
+							<ReadMore
+								className="text-sm leading-4"
+								enable={isUserInTweetsPage}
+							>
 								{item?.description}
-							</p>
+							</ReadMore>
 						)}
 					<div className="space-y-[6px]">
 						{bookmarksInfoValue?.includes("tags" as never) &&
