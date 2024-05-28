@@ -9,7 +9,7 @@ import { CATEGORIES_KEY } from "../utils/constants";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
 // tells if the logged in user is the category owner
-export default function useGetFlattendPaginationBookmarkData() {
+export default function useIsUserCategoryOwner() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const { category_id: categoryId } = useGetCurrentCategoryId();

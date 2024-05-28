@@ -73,7 +73,7 @@ export default function useGetSortBy() {
 		}
 
 		if (!isEmpty(userProfilesData?.data)) {
-			return userProfilesData?.data[0]?.bookmarks_view?.sortBy as string;
+			return userProfilesData?.data?.[0]?.bookmarks_view?.sortBy as string;
 		}
 
 		return undefined;

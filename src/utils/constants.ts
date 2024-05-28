@@ -216,3 +216,27 @@ export const uncategorizedPages = [
 	DOCUMENTS_URL,
 	IMAGES_URL,
 ];
+
+export const viewValues = {
+	timeline: "timeline",
+	moodboard: "moodboard",
+	card: "card",
+	list: "list",
+	headlines: "headlines",
+};
+
+export const singleInfoValues = {
+	title: "title",
+	cover: "cover",
+	info: "info",
+	description: "description",
+	tags: "tags",
+};
+
+export const infoValues = [
+	singleInfoValues.title,
+	singleInfoValues.cover,
+	singleInfoValues.info,
+	singleInfoValues.description,
+	singleInfoValues.tags,
+];

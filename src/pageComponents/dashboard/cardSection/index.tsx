@@ -16,6 +16,7 @@ import { Item } from "react-stately";
 import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
@@ -36,8 +37,6 @@ import {
 import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
-	type FetchSharedCategoriesData,
-	type ProfilesTableTypes,
 	type SingleListData,
 	type UserTagsData,
 } from "../../../types/apiTypes";
@@ -50,10 +49,9 @@ import {
 	colorPickerColors,
 	defaultBlur,
 	SEARCH_URL,
-	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
 	TWEETS_URL,
-	USER_PROFILE,
+	viewValues,
 } from "../../../utils/constants";
 import {
 	clickToOpenInNewTabLogic,
@@ -146,11 +144,6 @@ const CardSection = ({
 		(item) => item?.category_slug === categorySlug,
 	)?.id;
 
-	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
-
 	const searchSlugKey = () => {
 		if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
 			return null;
@@ -186,13 +179,6 @@ const CardSection = ({
 		}
 	}, [searchBookmarksData, toggleIsSearchLoading]);
 
-	const sharedCategoriesData = queryClient.getQueryData([
-		SHARED_CATEGORIES_TABLE_NAME,
-	]) as {
-		data: FetchSharedCategoriesData[];
-		error: PostgrestError;
-	};
-
 	const isAllBookmarksDataFetching = useIsFetching({
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 	});
@@ -201,61 +187,31 @@ const CardSection = ({
 		? listData
 		: searchBookmarksData?.data;
 
-	const currentCategoryData = find(
-		categoryData?.data,
-		(item) => item?.category_slug === categorySlug,
+	const bookmarksInfoValue = useGetViewValue(
+		"cardContentViewArray",
+		[],
+		isPublicPage,
+		categoryViewsFromProps,
 	);
 
-	const isUserTheCategoryOwner = userId === currentCategoryData?.user_id?.id;
-
-	const getViewValue = (
-		viewType: "bookmarksView" | "cardContentViewArray" | "moodboardColumns",
-		defaultReturnValue: string | [] | [number],
-	) => {
-		if (!isPublicPage) {
-			if (isUserInACategory(categorySlug as string)) {
-				if (isUserTheCategoryOwner) {
-					// user is the owner of the category
-					return currentCategoryData?.category_views?.[viewType];
-				}
-
-				if (!isEmpty(sharedCategoriesData?.data)) {
-					// the user is not the category owner
-					// gets the collab users layout data for the shared collection
-					const sharedCategoriesDataUserData = find(
-						sharedCategoriesData?.data,
-						(item) =>
-							item?.email === session?.user?.email &&
-							item?.category_id === categoryIdFromSlug,
-					);
-
-					return sharedCategoriesDataUserData?.category_views?.[viewType];
-				}
-
-				return defaultReturnValue;
-			}
-
-			if (!isEmpty(userProfilesData?.data)) {
-				return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
-			}
-		} else {
-			// we are in a public page
-
-			return categoryViewsFromProps
-				? categoryViewsFromProps[viewType]
-				: defaultReturnValue;
-		}
-
-		return defaultReturnValue;
-	};
-
-	const bookmarksInfoValue = getViewValue("cardContentViewArray", []);
 	const bookmarksColumns = flatten([
-		getViewValue("moodboardColumns", [10]) as Many<string | undefined>,
+		useGetViewValue(
+			"moodboardColumns",
+			[10],
+			isPublicPage,
+			categoryViewsFromProps,
+		) as Many<string | undefined>,
 	]) as unknown as number[];
-	const cardTypeCondition = getViewValue("bookmarksView", "");
+
+	const cardTypeCondition = useGetViewValue(
+		"bookmarksView",
+		"",
+		isPublicPage,
+		categoryViewsFromProps,
+	);
 
 	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
+
 	useEffect(() => {
 		if (!isEmpty(cardTypeCondition)) {
 			setCurrentBookmarkView(cardTypeCondition as BookmarksViewTypes);
@@ -362,9 +318,12 @@ const CardSection = ({
 			const publicExternalIconClassname = classNames({
 				"absolute  top-0": true,
 				"left-[11px]":
-					cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+					cardTypeCondition === viewValues.moodboard ||
+					cardTypeCondition === viewValues.card ||
+					cardTypeCondition === viewValues.timeline,
 				"left-[-34px]":
-					cardTypeCondition === "list" || cardTypeCondition === "headlines",
+					cardTypeCondition === viewValues.list ||
+					cardTypeCondition === viewValues.headlines,
 			});
 			return (
 				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
@@ -377,9 +336,12 @@ const CardSection = ({
 			const trashIconWrapperClassname = classNames({
 				"absolute  top-[2px] flex": true,
 				"left-[17px]":
-					cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+					cardTypeCondition === viewValues.moodboard ||
+					cardTypeCondition === viewValues.card ||
+					cardTypeCondition === viewValues.timeline,
 				"left-[-64px]":
-					cardTypeCondition === "list" || cardTypeCondition === "headlines",
+					cardTypeCondition === viewValues.list ||
+					cardTypeCondition === viewValues.headlines,
 			});
 			return (
 				<div className={trashIconWrapperClassname}>
@@ -411,9 +373,12 @@ const CardSection = ({
 			const editTrashClassname = classNames({
 				"absolute  top-0 flex": true,
 				"left-[15px]":
-					cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+					cardTypeCondition === viewValues.moodboard ||
+					cardTypeCondition === viewValues.card ||
+					cardTypeCondition === viewValues.timeline,
 				"left-[-94px]":
-					cardTypeCondition === "list" || cardTypeCondition === "headlines",
+					cardTypeCondition === viewValues.list ||
+					cardTypeCondition === viewValues.headlines,
 			});
 
 			return (
@@ -496,40 +461,42 @@ const CardSection = ({
 
 		const imgClassName = classNames({
 			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
-				cardTypeCondition === "list",
+				cardTypeCondition === viewValues.list,
 			" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
-				cardTypeCondition === "card",
-			"w-full rounded-lg   moodboard-card-img min-h-[192px] object-cover":
-				cardTypeCondition === "moodboard",
+				cardTypeCondition === viewValues.card,
+			"w-full rounded-lg  moodboard-card-img min-h-[192px] object-cover":
+				cardTypeCondition === viewValues.moodboard ||
+				cardTypeCondition === viewValues.timeline,
 			"relative z-[-1]":
-				cardTypeCondition === "card" || cardTypeCondition === "moodboard",
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const loaderClassName = classNames({
 			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover rounded-lg":
-				cardTypeCondition === "list",
+				cardTypeCondition === viewValues.list,
 			"animate-pulse bg-slate-200 w-full  aspect-[1.9047] w-full object-cover rounded-lg":
-				cardTypeCondition === "card",
+				cardTypeCondition === viewValues.card,
 			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
-				cardTypeCondition === "moodboard",
+				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const figureClassName = classNames({
 			relative: isVideo || isAudio,
-			"mr-3": cardTypeCondition === "list",
-			"h-[48px] w-[80px]": cardTypeCondition === "list",
+			"mr-3": cardTypeCondition === viewValues.list,
+			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
-				cardTypeCondition === "card",
+				cardTypeCondition === viewValues.card,
 			"h-36":
-				cardTypeCondition === "moodboard" &&
+				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-lg  shadow-custom-8": cardTypeCondition === "moodboard",
+			"rounded-lg  shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
 		const errorImgAndVideoClassName = classNames({
 			"h-full w-full rounded-lg object-cover": true,
-			"group-hover:rounded-b-none": cardTypeCondition === "card",
+			"group-hover:rounded-b-none": cardTypeCondition === viewValues.card,
 		});
 
 		const errorImgPlaceholder = (
@@ -597,10 +564,12 @@ const CardSection = ({
 				true,
 			absolute: true,
 			// "bottom-[-1%] left-[7%] transform translate-x-[-50%] translate-y-[-50%]":
-			// 	cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			// 	cardTypeCondition === viewValues.moodboard || cardTypeCondition === viewValues.card,
 			"bottom-[9px] left-[7px] ":
-				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
-			"top-[9px] left-[21px]": cardTypeCondition === "list",
+				cardTypeCondition === viewValues.moodboard ||
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.timeline,
+			"top-[9px] left-[21px]": cardTypeCondition === viewValues.list,
 		});
 
 		return (
@@ -640,10 +609,10 @@ const CardSection = ({
 	const renderFavIcon = (item: SingleListData) => {
 		const isVideo = isBookmarkVideo(item?.type);
 		const isDocument = isBookmarkDocument(item?.type);
-		const size = cardTypeCondition === "headlines" ? 16 : 15;
+		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
 		const favIconFigureClassName = classNames({
-			"min-h-[16px] min-w-[16px]": cardTypeCondition === "headlines",
-			"h-[14] w-[14px]": cardTypeCondition !== "headlines",
+			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
+			"h-[14] w-[14px]": cardTypeCondition !== viewValues.headlines,
 		});
 
 		if (favIconErrorImgs?.includes(item?.id)) {
@@ -729,14 +698,15 @@ const CardSection = ({
 		}));
 
 	const renderBookmarkCardTypes = (item: SingleListData) => {
+		// NOTE: this is no separate view for timeline, only change is a style update in the listBox component
 		switch (cardTypeCondition) {
-			case "moodboard":
+			case viewValues.moodboard:
 				return renderMoodboardAndCardType(item);
-			case "card":
+			case viewValues.card:
 				return renderMoodboardAndCardType(item);
-			case "headlines":
+			case viewValues.headlines:
 				return renderHeadlinesCard(item);
-			case "list":
+			case viewValues.list:
 				return renderListCard(item);
 			default:
 				return renderMoodboardAndCardType(item);
@@ -745,7 +715,7 @@ const CardSection = ({
 
 	const moodboardAndCardInfoWrapperClass = classNames({
 		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
-		"flex-grow": cardTypeCondition === "card",
+		"flex-grow": cardTypeCondition === viewValues.card,
 	});
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
@@ -899,12 +869,14 @@ const CardSection = ({
 	);
 
 	const listWrapperClass = classNames({
-		// "p-2": cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		// "p-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.headlines,
 		"mt-[47px]": true,
 		"px-4 py-2":
-			cardTypeCondition === "list" || cardTypeCondition === "headlines",
+			cardTypeCondition === viewValues.list ||
+			cardTypeCondition === viewValues.headlines,
 		"py-2 pl-[28px] pr-[19px]":
-			cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+			cardTypeCondition === viewValues.moodboard ||
+			cardTypeCondition === viewValues.card,
 	});
 
 	const renderItem = () => {

@@ -1,42 +1,29 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { useCallback, useRef } from "react";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
+import { ViewListIcon } from "@heroicons/react/solid";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
-import { debounce, isEmpty } from "lodash";
+import { debounce } from "lodash";
 import find from "lodash/find";
 
+import useGetViewValue from "../../hooks/useGetViewValue";
+import useIsUserInTweetsPage from "../../hooks/useIsUserInTweetsPage";
 import CardIcon from "../../icons/viewIcons/cardIcon";
 import HeadlinesIcon from "../../icons/viewIcons/headLinesIcon";
 import ListIcon from "../../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
-import { useMiscellaneousStore } from "../../store/componentStore";
-import {
-	type CategoriesData,
-	type FetchSharedCategoriesData,
-	type ProfilesTableTypes,
-} from "../../types/apiTypes";
 import {
 	type BookmarksViewTypes,
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
-import {
-	CATEGORIES_KEY,
-	SHARED_CATEGORIES_TABLE_NAME,
-	USER_PROFILE,
-} from "../../utils/constants";
-import { isUserInACategory } from "../../utils/helpers";
+import { singleInfoValues, viewValues } from "../../utils/constants";
 import { errorToast } from "../../utils/toastMessages";
-import { Menu as CustomMenu } from "../ariaSlidingMenu";
 import Button from "../atoms/button";
-// import Checkbox from "../checkbox";
 import RadioGroup from "../radioGroup";
 import Slider from "../slider";
 import Switch from "../switch";
 
 type BookmarksViewDropdownProps = {
-	categoryId: CategoryIdUrlTypes;
 	// based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
 	isDropdown?: boolean;
 	renderOnlyButton?: boolean;
@@ -44,82 +31,21 @@ type BookmarksViewDropdownProps = {
 		value: BookmarksViewTypes | number[] | string[],
 		type: BookmarkViewCategories,
 	) => void;
-	userId: string;
 };
 
 // This renders the view options
 const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const {
 		setBookmarksView,
-		categoryId,
-		userId,
 		isDropdown = true,
 		renderOnlyButton = false,
 	} = props;
-	const queryClient = useQueryClient();
 
-	const setCurrentSliderDropdownSlide = useMiscellaneousStore(
-		(state) => state.setCurrentSliderDropdownSlide,
-	);
+	const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
+	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
+	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
 
-	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
-
-	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
-
-	const sharedCategoriesData = queryClient.getQueryData([
-		SHARED_CATEGORIES_TABLE_NAME,
-	]) as {
-		data: FetchSharedCategoriesData[];
-		error: PostgrestError;
-	};
-
-	const currentCategory = find(
-		categoryData?.data,
-		(item) => item?.id === categoryId,
-	);
-
-	const isUserTheCategoryOwner = userId === currentCategory?.user_id?.id;
-
-	const getViewValue = (
-		viewType: "bookmarksView" | "cardContentViewArray" | "moodboardColumns",
-		defaultReturnValue: string | [] | [number],
-	) => {
-		if (categoryId !== null) {
-			// TODO: change this into array check
-			if (typeof categoryId !== "number" && !isUserInACategory(categoryId)) {
-				return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
-			}
-
-			if (isUserTheCategoryOwner) {
-				return currentCategory?.category_views?.[viewType];
-			}
-
-			if (!isEmpty(sharedCategoriesData?.data)) {
-				return find(
-					sharedCategoriesData?.data,
-					(item) => item?.category_id === currentCategory?.id,
-				)?.category_views?.[viewType];
-			}
-
-			return defaultReturnValue;
-		}
-
-		if (!isEmpty(userProfilesData?.data)) {
-			return userProfilesData?.data[0]?.bookmarks_view?.[viewType];
-		}
-
-		return defaultReturnValue;
-	};
-
-	const bookmarksInfoValue = getViewValue("cardContentViewArray", []) as [];
-	const bookmarksColumns = getViewValue("moodboardColumns", [10]);
-	const bookmarksViewValue = getViewValue("bookmarksView", "");
+	const isInTweetsPage = useIsUserInTweetsPage();
 
 	type CardContentOptionsTypes = {
 		label: string;
@@ -128,46 +54,51 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const cardContentOptions: CardContentOptionsTypes[] = [
 		{
 			label: "Cover",
-			value: "cover",
+			value: singleInfoValues.cover,
 		},
 		{
 			label: "Title",
-			value: "title",
+			value: singleInfoValues.title,
 		},
 		{
 			label: "Description",
-			value: "description",
+			value: singleInfoValues.description,
 		},
 		{
 			label: "Tags",
-			value: "tags",
+			value: singleInfoValues.tags,
 		},
 		{
 			label: "Info",
-			value: "info",
+			value: singleInfoValues.info,
 		},
 	];
 
 	const bookmarksViewOptions = [
 		{
 			label: "Moodboard",
-			value: "moodboard",
+			value: viewValues.moodboard,
 			icon: <MoodboardIconGray />,
 		},
 		{
 			label: "List",
-			value: "list",
+			value: viewValues.list,
 			icon: <ListIcon />,
 		},
 		{
 			label: "Card",
-			value: "card",
+			value: viewValues.card,
 			icon: <CardIcon />,
 		},
 		{
 			label: "Headlines",
-			value: "headlines",
+			value: viewValues.headlines,
 			icon: <HeadlinesIcon />,
+		},
+		{
+			label: "Timeline",
+			value: viewValues.timeline,
+			icon: <ViewListIcon className="h-4 w-4" />,
 		},
 	];
 	const menu = useMenuState({ gutter: 8 });
@@ -181,15 +112,18 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
 	const renderViewsSwitch = (item: CardContentOptionsTypes) => {
 		const isEnabledLogic = () => {
-			if (bookmarksViewValue === "headlines") {
+			if (bookmarksViewValue === viewValues.headlines) {
 				return (
-					item?.value === "cover" ||
-					item?.value === "title" ||
-					item?.value === "info"
+					item?.value === singleInfoValues.cover ||
+					item?.value === singleInfoValues.title ||
+					item?.value === singleInfoValues.info
 				);
 			}
 
-			if (bookmarksViewValue === "moodboard" || bookmarksViewValue === "card") {
+			if (
+				bookmarksViewValue === viewValues.moodboard ||
+				bookmarksViewValue === viewValues.card
+			) {
 				// if in moodboard or card only enable cover
 				if (item?.label === "Cover") {
 					return true;
@@ -198,7 +132,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				}
 			}
 
-			if (bookmarksViewValue === "list") {
+			if (bookmarksViewValue === viewValues.list) {
 				// if in list only enable title
 				if (item?.label === "Title") {
 					return true;
@@ -211,17 +145,25 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		};
 
 		const isDisabledLogic = () => {
-			if (bookmarksViewValue === "headlines") {
+			if (isInTweetsPage) {
+				// if in twitter page then disable all the options
+				return true;
+			}
+
+			if (bookmarksViewValue === viewValues.headlines) {
 				// if headlines disable all
 				return true;
 			}
 
-			if (bookmarksViewValue === "moodboard" || bookmarksViewValue === "card") {
+			if (
+				bookmarksViewValue === viewValues.moodboard ||
+				bookmarksViewValue === viewValues.card
+			) {
 				// if moodboard or card disable cover
 				return item?.label === "Cover";
 			}
 
-			if (bookmarksViewValue === "list") {
+			if (bookmarksViewValue === viewValues.list) {
 				// if in title disable title
 				return item?.label === "Title";
 			}
@@ -244,10 +186,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 						if (bookmarksInfoValue?.includes(item.value as never)) {
 							if (bookmarksInfoValue?.length > 1) {
 								setBookmarksView(
-									bookmarksInfoValue?.filter(
+									(bookmarksInfoValue as string[])?.filter(
 										(viewItem) => viewItem !== item.value,
 									),
-									"info",
+									singleInfoValues.info as BookmarkViewCategories,
 								);
 							} else {
 								errorToast("Atleast one view option needs to be selcted");
@@ -255,7 +197,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 						} else {
 							setBookmarksView(
 								[...(bookmarksInfoValue as string[]), item.value],
-								"info",
+								singleInfoValues.info as BookmarkViewCategories,
 							);
 						}
 					}}
@@ -276,6 +218,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{renderDropdownHeader("View as")}
 			<div>
 				<RadioGroup
+					disabled={isInTweetsPage}
 					initialRadioRef={radio0ref}
 					onChange={(value) => {
 						setBookmarksView(value as BookmarksViewTypes, "view");
@@ -286,7 +229,8 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			</div>
 			{renderDropdownHeader("Show in Cards")}
 			<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
-			{bookmarksViewValue === "card" || bookmarksViewValue === "moodboard" ? (
+			{bookmarksViewValue === viewValues.card ||
+			bookmarksViewValue === viewValues.moodboard ? (
 				<div className="flex items-center justify-between px-2 py-[4.5px]">
 					<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
 						Cover
