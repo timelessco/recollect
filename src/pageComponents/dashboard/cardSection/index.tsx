@@ -622,6 +622,24 @@ const CardSection = ({
 			return <ImageIcon size={`${size}`} />;
 		}
 
+		if (isUserInTweetsPage && item?.meta_data?.twitter_avatar_url) {
+			// if user is in tweets page then show the twitter user avatar
+			return (
+				<figure className={favIconFigureClassName}>
+					<Image
+						alt="fav-icon"
+						className="rounded"
+						height={size}
+						onError={() =>
+							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
+						}
+						src={item?.meta_data?.twitter_avatar_url}
+						width={size}
+					/>
+				</figure>
+			);
+		}
+
 		if (item?.meta_data?.favIcon) {
 			return (
 				<figure className={favIconFigureClassName}>

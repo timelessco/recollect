@@ -8,6 +8,7 @@ import {
 	type SingleListData,
 } from "../../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
+import { blurhashFromURL } from "../../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 type RequestType = {
@@ -25,6 +26,10 @@ const getBodySchema = () =>
 				title: z.string(),
 				type: z.string(),
 				url: z.string(),
+				meta_data: z.object({
+					twitter_avatar_url: z.string(),
+				}),
+				inserted_at: z.string().datetime(),
 			}),
 		),
 	});
@@ -83,7 +88,16 @@ export default async function handler(
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.insert(insertData)
-			.select("id");
+			.select("*");
+
+		if (error) {
+			response
+				.status(400)
+				.send({ error: `DB error: ${error?.message}`, success: false });
+
+			Sentry.captureException(`DB error: ${error?.message}`);
+			return;
+		}
 
 		if (isEmpty(data)) {
 			response
@@ -95,16 +109,38 @@ export default async function handler(
 			return;
 		}
 
-		if (error) {
-			response
-				.status(400)
-				.send({ error: `DB error: ${error?.message}`, success: false });
+		response.status(200).json({ success: true, error: null });
 
-			Sentry.captureException(`DB error: ${error?.message}`);
+		// get blur hash and upload it to DB
+		const dataWithBlurHash = await Promise.all(
+			data?.map(async (item) => {
+				const imgData = item?.ogImage
+					? await blurhashFromURL(item?.ogImage)
+					: null;
+				return {
+					...item,
+					meta_data: {
+						...item.meta_data,
+						height: imgData?.height ?? null,
+						width: imgData?.width ?? null,
+						ogImgBlurUrl: imgData?.encoded ?? null,
+						favIcon: null,
+					},
+				};
+			}),
+		);
+
+		const { error: blurHashError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.upsert(dataWithBlurHash, { onConflict: "id" })
+			.select("id");
+
+		if (blurHashError) {
+			Sentry.captureException(
+				`blur hash update error: ${blurHashError?.message}`,
+			);
 			return;
 		}
-
-		response.status(200).json({ success: true, error: null });
 	} catch {
 		response
 			.status(400)

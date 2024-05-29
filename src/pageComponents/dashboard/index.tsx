@@ -1005,7 +1005,7 @@ const Dashboard = () => {
 						await mutationApiCall(
 							deleteCategoryOtimisticMutation.mutateAsync({
 								category_id: categoryId,
-								category_order: userProfileData?.data[0]?.category_order,
+								category_order: userProfileData?.data?.[0]?.category_order,
 							}),
 						);
 					} else {
