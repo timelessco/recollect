@@ -161,6 +161,9 @@ export const documentFileTypes = acceptedFileTypes?.filter(
 	(item) => item === acceptedFileTypes[10],
 );
 
+export const isVideoFileType = (type: string): boolean =>
+	videoFileTypes?.includes(type);
+
 // color picker colors
 export const colorPickerColors = [
 	"#ffffff",

@@ -23,6 +23,7 @@ import {
 import {
 	FILES_STORAGE_NAME,
 	getBaseUrl,
+	isVideoFileType,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 	UPLOAD_FILE_REMAINING_DATA_API,
@@ -183,14 +184,14 @@ export default async (
 		error: UploadFileApiResponse["error"];
 	};
 
-	let meta_data: ImgMetadataType = {
+	const meta_data: ImgMetadataType = {
 		img_caption: null,
 		width: null,
 		height: null,
 		ogImgBlurUrl: null,
 		favIcon: null,
 	};
-	const isVideo = fileType?.includes("video");
+	const isVideo = isVideoFileType(fileType ?? "");
 
 	let ogImage;
 
@@ -202,16 +203,15 @@ export default async (
 		ogImage = storageData?.publicUrl;
 		// meta_data = metaData;
 	} else {
-		// if file is a video
-		const { ogImage: image, meta_data: metaData } = await videoLogic(
-			data,
-			userId as string,
-			uploadPath,
-			supabase,
-		);
-
-		ogImage = image;
-		meta_data = metaData;
+		// // if file is a video
+		// const { ogImage: image, meta_data: metaData } = await videoLogic(
+		// 	data,
+		// 	userId as string,
+		// 	uploadPath,
+		// 	supabase,
+		// );
+		// ogImage = image;
+		// meta_data = metaData;
 	}
 
 	// we upload the final data in DB
@@ -244,6 +244,7 @@ export default async (
 					{
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
+						fileType,
 					},
 					{
 						headers: {
