@@ -240,7 +240,9 @@ export default async (
 		try {
 			if (!isEmpty(DatabaseData)) {
 				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+					// `${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+					`https://bookmark-tags-git-fix-api-thumbnail-timelessco.vercel.app/${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+
 					{
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
