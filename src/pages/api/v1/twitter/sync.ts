@@ -57,49 +57,59 @@ export default async function handler(
 
 		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
-		// delete all the current tweet data
-
-		// NOTE: no empty check for this as sometimes the user may not have any tweets
-		const { error: deleteTweetsError } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.delete()
-			.eq("type", "tweet")
-			.eq("user_id", userId)
-			.select("id");
-
-		if (deleteTweetsError) {
-			response.status(400).send({
-				error: `Delete tweets error: ${deleteTweetsError?.message}`,
-				success: false,
-			});
-
-			Sentry.captureException(
-				`Delete tweets error: ${deleteTweetsError?.message}`,
-			);
-			return;
-		}
-
 		// adding user_id in the data to be inserted
 		const insertData = bodyData?.data?.map((item) => ({
 			...item,
 			user_id: userId,
 		}));
 
-		const { data, error } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.insert(insertData)
-			.select("*");
+		// get the urls who are tweets present in table, we fetch only the urls there are there in the insertData for the query optimization
+		const { data: duplicateCheckData, error: duplicateCheckError } =
+			await supabase
+				.from(MAIN_TABLE_NAME)
+				.select("url")
+				// get only the urls that are there in the payload
+				.in("url", insertData?.map((item) => item?.url))
+				.eq("type", "tweet");
 
-		if (error) {
-			response
-				.status(400)
-				.send({ error: `DB error: ${error?.message}`, success: false });
+		if (duplicateCheckError) {
+			response.status(400).send({
+				error: `DB duplicateCheckError: ${duplicateCheckError?.message}`,
+				success: false,
+			});
 
-			Sentry.captureException(`DB error: ${error?.message}`);
+			Sentry.captureException(
+				`DB duplicateCheckError: ${duplicateCheckError?.message}`,
+			);
 			return;
 		}
 
-		if (isEmpty(data)) {
+		// filter out the duplicates from the payload data
+		const duplicateFilteredData = insertData?.filter(
+			(item) =>
+				!duplicateCheckData
+					?.map((duplicateCheckItem) => duplicateCheckItem?.url)
+					?.includes(item?.url),
+		);
+
+		// NOTE: Upsert does not work here as the url is not unique and cannot be unique
+
+		// adding the data in DB
+		const { data: insertDBData, error: insertDBError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.insert(duplicateFilteredData)
+			.select("*");
+
+		if (insertDBError) {
+			response
+				.status(400)
+				.send({ error: `DB error: ${insertDBError?.message}`, success: false });
+
+			Sentry.captureException(`DB error: ${insertDBError?.message}`);
+			return;
+		}
+
+		if (isEmpty(insertDBData)) {
 			response
 				.status(400)
 				.send({ error: "Empty data after insertion", success: false });
@@ -113,7 +123,7 @@ export default async function handler(
 
 		// get blur hash and upload it to DB
 		const dataWithBlurHash = await Promise.all(
-			data?.map(async (item) => {
+			insertDBData?.map(async (item) => {
 				const imgData = item?.ogImage
 					? await blurhashFromURL(item?.ogImage)
 					: null;
