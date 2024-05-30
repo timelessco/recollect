@@ -2,10 +2,8 @@
 
 import { log } from "console";
 import fs from "fs";
-import stream, { Readable } from "stream";
 import { type NextApiResponse } from "next";
 import { type SupabaseClient } from "@supabase/supabase-js";
-import { decode } from "blurhash";
 import ffmpeg from "fluent-ffmpeg";
 // import ffmpegStatic from "ffmpeg-static";
 // import ffmpeg from "fluent-ffmpeg";
@@ -92,7 +90,7 @@ const notVideoLogic = async (publicUrl: string) => {
 };
 
 const videoLogic = async (videoUrl: string, supabase: SupabaseClient) => {
-	const buffer = ffmpeg(videoUrl)
+	ffmpeg(videoUrl)
 		.screenshots({
 			// timestamps: [30.5, "80%", "01:10.123"],
 			timestamps: ["1%"],
@@ -100,19 +98,23 @@ const videoLogic = async (videoUrl: string, supabase: SupabaseClient) => {
 			folder: "./src/pages/api/file",
 			size: "320x240",
 		})
-		.on("end", async () => {
-			const { error: thumbnailError } = await supabase.storage
-				.from(FILES_STORAGE_NAME)
-				.upload(
-					"/testing",
-					fs.readFileSync("./src/pages/api/file/testing.png"),
-					{
-						contentType: "image/png",
-						upsert: true,
-					},
-				);
+		.on("end", () => {
+			(async () => {
+				const { error: thumbnailError } = await supabase.storage
+					.from(FILES_STORAGE_NAME)
+					.upload(
+						"/testing",
+						fs.readFileSync("./src/pages/api/file/testing.png"),
+						{
+							contentType: "image/png",
+							upsert: true,
+						},
+					);
 
-			fs.unlinkSync("./src/pages/api/file/testing.png");
+				fs.unlinkSync("./src/pages/api/file/testing.png");
+			})();
+
+			return null;
 		});
 
 	// .output();
