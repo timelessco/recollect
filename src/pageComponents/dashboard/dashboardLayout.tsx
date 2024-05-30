@@ -375,10 +375,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				value: "view",
 				render: (
 					<BookmarksViewDropdown
-						categoryId={categoryId}
 						renderOnlyButton
 						setBookmarksView={setBookmarksView}
-						userId={userId}
 					/>
 				),
 			},
@@ -387,10 +385,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				value: "sort",
 				render: (
 					<BookmarksSortDropdown
-						categoryId={categoryId}
 						renderOnlyButton
 						setBookmarksView={setBookmarksView}
-						userId={userId}
 					/>
 				),
 			},
@@ -460,20 +456,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			case "view":
 				content = (
 					<BookmarksViewDropdown
-						categoryId={categoryId}
 						isDropdown={false}
 						setBookmarksView={setBookmarksView}
-						userId={userId}
 					/>
 				);
 				break;
 			case "sort":
 				content = (
 					<BookmarksSortDropdown
-						categoryId={categoryId}
 						isDropdown={false}
 						setBookmarksView={setBookmarksView}
-						userId={userId}
 					/>
 				);
 				break;
