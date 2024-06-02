@@ -31,7 +31,7 @@ importers:
         version: 8.1.0
       '@sentry/nextjs':
         specifier: ^7.73.0
-        version: 7.83.0(next@13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0))(react@18.2.0)
+        version: 7.83.0(next@13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0))(react@18.2.0)
       '@supabase/ssr':
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.13.1)
@@ -91,7 +91,7 @@ importers:
         version: 6.3.1
       next:
         specifier: 13.2.4
-        version: 13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)
+        version: 13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)
       node-fetch:
         specifier: ^3.3.1
         version: 3.3.2
@@ -293,7 +293,7 @@ importers:
         version: 0.33.0
       next-sitemap:
         specifier: 4.0.7
-        version: 4.0.7(@next/env@14.0.3)(next@13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0))
+        version: 4.0.7(@next/env@14.0.3)(next@13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0))
       npm-package-json-lint:
         specifier: 7.0.0
         version: 7.0.0(typescript@5.0.4)
@@ -9884,7 +9884,7 @@ snapshots:
       '@sentry/utils': 7.83.0
       localforage: 1.10.0
 
-  '@sentry/nextjs@7.83.0(next@13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0))(react@18.2.0)':
+  '@sentry/nextjs@7.83.0(next@13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0))(react@18.2.0)':
     dependencies:
       '@rollup/plugin-commonjs': 24.0.0(rollup@2.78.0)
       '@sentry/core': 7.83.0
@@ -9896,7 +9896,7 @@ snapshots:
       '@sentry/vercel-edge': 7.83.0
       '@sentry/webpack-plugin': 1.21.0
       chalk: 3.0.0
-      next: 13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)
+      next: 13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)
       react: 18.2.0
       resolve: 1.22.8
       rollup: 2.78.0
@@ -13985,16 +13985,16 @@ snapshots:
     dependencies:
       type-fest: 2.19.0
 
-  next-sitemap@4.0.7(@next/env@14.0.3)(next@13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)):
+  next-sitemap@4.0.7(@next/env@14.0.3)(next@13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)):
     dependencies:
       '@corex/deepmerge': 4.0.43
       '@next/env': 14.0.3
       minimist: 1.2.8
-      next: 13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)
+      next: 13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)
 
   next-tick@1.1.0: {}
 
-  next@13.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0):
+  next@13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0):
     dependencies:
       '@next/env': 13.2.4
       '@swc/helpers': 0.4.36
@@ -14002,7 +14002,7 @@ snapshots:
       postcss: 8.4.14
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      styled-jsx: 5.1.1(react@18.2.0)
+      styled-jsx: 5.1.1(@babel/core@7.23.3)(react@18.2.0)
     optionalDependencies:
       '@next/swc-android-arm-eabi': 13.2.4
       '@next/swc-android-arm64': 13.2.4
@@ -15467,10 +15467,12 @@ snapshots:
 
   strip-json-comments@5.0.1: {}
 
-  styled-jsx@5.1.1(react@18.2.0):
+  styled-jsx@5.1.1(@babel/core@7.23.3)(react@18.2.0):
     dependencies:
       client-only: 0.0.1
       react: 18.2.0
+    optionalDependencies:
+      '@babel/core': 7.23.3
 
   stylelint-config-clean-order@5.0.1(stylelint@16.1.0(typescript@5.0.4)):
     dependencies:
