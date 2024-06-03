@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { type Session, type UserIdentity } from "@supabase/supabase-js";
+import { type UserIdentity } from "@supabase/supabase-js";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
@@ -56,7 +56,6 @@ import {
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
-	type SupabaseSessionType,
 	type UserTagsData,
 } from "../../types/apiTypes";
 import {
@@ -75,8 +74,8 @@ import {
 	LOGIN_URL,
 	SETTINGS_URL,
 	TRASH_URL,
+	TWEETS_URL,
 	UNCATEGORIZED_URL,
-	URL_PATTERN,
 	VIDEOS_URL,
 } from "../../utils/constants";
 import {
@@ -528,6 +527,12 @@ const Dashboard = () => {
 				return count !== flattendPaginationBookmarkData?.length;
 			}
 
+			if ((CATEGORY_ID as unknown) === TWEETS_URL) {
+				const count = bookmarksCountData?.data?.tweets;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
 			if ((CATEGORY_ID as unknown) === LINKS_URL) {
 				const count = bookmarksCountData?.data?.links;
 
@@ -788,7 +793,6 @@ const Dashboard = () => {
 					addExistingTag={async (tag) => {
 						setSelectedTag([...selectedTag, tag[tag.length - 1]]);
 						if (isEdit) {
-							const userData = session?.user as unknown as UserIdentity;
 							const bookmarkTagsData = {
 								bookmark_id: addedUrlData?.id,
 								tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
@@ -1001,7 +1005,7 @@ const Dashboard = () => {
 						await mutationApiCall(
 							deleteCategoryOtimisticMutation.mutateAsync({
 								category_id: categoryId,
-								category_order: userProfileData?.data[0]?.category_order,
+								category_order: userProfileData?.data?.[0]?.category_order,
 							}),
 						);
 					} else {

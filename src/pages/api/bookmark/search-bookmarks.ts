@@ -22,6 +22,8 @@ import {
 	IMAGES_URL,
 	LINKS_URL,
 	TRASH_URL,
+	TWEETS_URL,
+	tweetType,
 	UNCATEGORIZED_URL,
 	videoFileTypes,
 	VIDEOS_URL,
@@ -41,6 +43,8 @@ type Data = {
 	error: ErrorResponse;
 };
 
+// disabling as complexity is only 21
+// eslint-disable-next-line complexity
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -98,6 +102,10 @@ export default async function handler(
 
 	if (category_id === DOCUMENTS_URL) {
 		query = query.in("type", documentFileTypes);
+	}
+
+	if (category_id === TWEETS_URL) {
+		query = query.eq("type", tweetType);
 	}
 
 	if (category_id === LINKS_URL) {
@@ -176,6 +184,10 @@ tag_id (
 
 		if (category_id === DOCUMENTS_URL) {
 			tagSearchQuery = tagSearchQuery.in("bookmark_id.type", documentFileTypes);
+		}
+
+		if (category_id === TWEETS_URL) {
+			tagSearchQuery = tagSearchQuery.eq("bookmark_id.type", tweetType);
 		}
 
 		if (category_id === LINKS_URL) {

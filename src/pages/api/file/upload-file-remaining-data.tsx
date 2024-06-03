@@ -76,6 +76,7 @@ const notVideoLogic = async (publicUrl: string) => {
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
 		favIcon: null,
+		twitter_avatar_url: null,
 	};
 
 	return { ogImage, meta_data };
@@ -100,6 +101,7 @@ export default async function handler(
 		height: null,
 		ogImgBlurUrl: null,
 		favIcon: null,
+		twitter_avatar_url: null,
 	};
 
 	const { meta_data: metaData } = await notVideoLogic(publicUrl);

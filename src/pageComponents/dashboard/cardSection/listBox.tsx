@@ -43,6 +43,7 @@ import {
 	CATEGORIES_KEY,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
+	viewValues,
 } from "../../../utils/constants";
 
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
@@ -184,9 +185,13 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const ulClassName = classNames("outline-none focus:outline-none", {
 		// [`columns-${moodboardColsLogic()} gap-6`]:
 		// 	cardTypeCondition === "moodboard",
-		block: cardTypeCondition === "list" || cardTypeCondition === "headlines",
+		block:
+			cardTypeCondition === viewValues.list ||
+			cardTypeCondition === viewValues.headlines,
 		[isMobile || isTablet ? "grid gap-6 grid-cols-2" : cardGridClassNames]:
 			cardTypeCondition === "card",
+		"max-w-[600px] mx-auto space-y-4":
+			cardTypeCondition === viewValues.timeline,
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
@@ -233,7 +238,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === "moodboard" ? (
+				{cardTypeCondition === viewValues.moodboard ? (
 					<Masonry
 						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
 						className="my-masonry-grid"
@@ -260,16 +265,25 @@ const ListBox = (props: ListBoxDropTypes) => {
 			</ul>
 			{state.selectionManager.selectedKeys.size > 0 && (
 				<div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
-					<Checkbox
-						checked={
-							Array.from(state.selectionManager.selectedKeys.keys())?.length > 0
-						}
-						label={`${Array.from(state.selectionManager.selectedKeys.keys())
-							?.length}
+					<div className="flex items-center gap-1">
+						<Checkbox
+							checked={
+								Array.from(state.selectionManager.selectedKeys.keys())?.length >
+								0
+							}
+							label={`${Array.from(state.selectionManager.selectedKeys.keys())
+								?.length}
             bookmarks`}
-						onChange={() => state.selectionManager.clearSelection()}
-						value="selected-bookmarks"
-					/>
+							onChange={() => state.selectionManager.clearSelection()}
+							value="selected-bookmarks"
+						/>
+						{/* <Button
+							className="p-1 text-13 font-450 leading-[15px] text-gray-light-12"
+							onClick={() => state.selectionManager.selectAll()}
+						>
+							Select all
+						</Button> */}
+					</div>
 					<div className="flex items-center">
 						<div
 							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "

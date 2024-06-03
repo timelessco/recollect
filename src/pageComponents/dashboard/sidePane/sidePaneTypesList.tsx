@@ -33,7 +33,8 @@ const SidePaneTypesList = () => {
 				item.name === menuListItemName.links ||
 				item.name === menuListItemName.image ||
 				item.name === menuListItemName.videos ||
-				item.name === menuListItemName.documents
+				item.name === menuListItemName.documents ||
+				item.name === menuListItemName.tweets
 			) {
 				return item;
 			} else return null;

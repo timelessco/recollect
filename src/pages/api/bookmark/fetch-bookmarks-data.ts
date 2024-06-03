@@ -24,6 +24,8 @@ import {
 	PAGINATION_LIMIT,
 	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
+	TWEETS_URL,
+	tweetType,
 	UNCATEGORIZED_URL,
 	videoFileTypes,
 	VIDEOS_URL,
@@ -129,6 +131,10 @@ user_id (
 
 	if (category_id === DOCUMENTS_URL) {
 		query = query.in("type", documentFileTypes);
+	}
+
+	if (category_id === TWEETS_URL) {
+		query = query.eq("type", tweetType);
 	}
 
 	if (category_id === LINKS_URL) {

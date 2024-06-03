@@ -18,6 +18,7 @@ import {
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	menuListItemName,
+	TWEETS_URL,
 	URL_IMAGE_CHECK_PATTERN,
 	VIDEOS_URL,
 } from "../../../utils/constants";
@@ -143,6 +144,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			if (
 				(CATEGORY_ID === VIDEOS_URL ||
 					CATEGORY_ID === DOCUMENTS_URL ||
+					CATEGORY_ID === TWEETS_URL ||
 					CATEGORY_ID === IMAGES_URL) &&
 				apiResponseTyped?.status === 200
 			) {

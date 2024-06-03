@@ -1,10 +1,5 @@
 import { type NextApiRequest as NextJsApiRequest } from "next";
-import {
-	type PostgrestError,
-	type Session,
-	type User,
-	type UserIdentity,
-} from "@supabase/supabase-js";
+import { type PostgrestError, type User } from "@supabase/supabase-js";
 
 import {
 	type BookmarksSortByTypes,
@@ -19,6 +14,7 @@ export type ImgMetadataType = {
 	height: number | null;
 	img_caption: string | null;
 	ogImgBlurUrl: string | null;
+	twitter_avatar_url: string | null;
 	width: number | null;
 };
 export type SingleListData = {
@@ -44,6 +40,7 @@ export type BookmarksCountTypes = {
 	images: number;
 	links: number;
 	trash: number;
+	tweets: number;
 	uncategorized: number;
 	videos: number;
 };

@@ -13,6 +13,7 @@ import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import { type SingleListData } from "../../../types/apiTypes";
+import { viewValues } from "../../../utils/constants";
 import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
 
 type OptionDropItemTypes = DraggableItemProps & {
@@ -54,16 +55,20 @@ const Option = ({
 	const liClassName = classNames(
 		"single-bookmark group relative flex cursor-pointer rounded-lg duration-150 outline-none",
 		{
-			"mb-6": cardTypeCondition === "moodboard",
-			"mb-[18px]": cardTypeCondition === "card",
+			"mb-6": cardTypeCondition === viewValues.moodboard,
+			"mb-[18px]": cardTypeCondition === viewValues.card,
 			"hover:shadow-custom-4":
-				cardTypeCondition === "moodboard" || cardTypeCondition === "card",
+				cardTypeCondition === viewValues.moodboard ||
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.timeline,
 			"hover:bg-custom-gray-8 mb-1":
-				(cardTypeCondition === "list" || cardTypeCondition === "headlines") &&
+				(cardTypeCondition === viewValues.list ||
+					cardTypeCondition === viewValues.headlines) &&
 				!isSelected,
 
 			"mb-1 list-headlines-wrapper":
-				cardTypeCondition === "list" || cardTypeCondition === "headlines",
+				cardTypeCondition === viewValues.list ||
+				cardTypeCondition === viewValues.headlines,
 		},
 	);
 
