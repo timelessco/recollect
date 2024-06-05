@@ -5,7 +5,7 @@ import {
 	type CookieOptions,
 } from "@supabase/ssr";
 
-export const isProductionEnvironment = process.env.NODE_ENV === "production";
+export const isProductionEnvironment = process.env.NODE_ENV !== "production";
 
 // in case the user did not add the supabase dev keys in env file then even in dev mode the app will point out to the prod keys mentioned in the env file
 // the below ternary conditions handel this logic
