@@ -135,7 +135,8 @@ user_id (
 
 	if (category_id === TWEETS_URL) {
 		query = query.eq("type", tweetType);
-		query = query.order("id", { ascending: true });
+		// this tells the order in which the tweets was saved in twitter
+		query = query.order("sort_index", { ascending: false });
 	}
 
 	if (category_id === LINKS_URL) {

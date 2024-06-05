@@ -17,6 +17,9 @@ export type ImgMetadataType = {
 	twitter_avatar_url: string | null;
 	width: number | null;
 };
+
+export type twitter_sort_index = string;
+
 export type SingleListData = {
 	addedTags: UserTagsData[];
 	category_id: number;
