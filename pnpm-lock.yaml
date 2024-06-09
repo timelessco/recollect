@@ -325,8 +325,8 @@ importers:
         specifier: 16.1.0
         version: 16.1.0(typescript@5.0.4)
       stylelint-config-clean-order:
-        specifier: 5.0.1
-        version: 5.0.1(stylelint@16.1.0(typescript@5.0.4))
+        specifier: 6.0.0
+        version: 6.0.0(stylelint@16.1.0(typescript@5.0.4))
       stylelint-config-standard:
         specifier: 36.0.0
         version: 36.0.0(stylelint@16.1.0(typescript@5.0.4))
@@ -6877,8 +6877,8 @@ packages:
       babel-plugin-macros:
         optional: true
 
-  stylelint-config-clean-order@5.0.1:
-    resolution: {integrity: sha512-zKLXjTgrkZqiml0VXv7Syl11XLpzRErW+1/qSEjIQ+aHAFjGuRq6Uwal9OzxtDHvpoIhlc4wCYjougWDuLN5aA==}
+  stylelint-config-clean-order@6.0.0:
+    resolution: {integrity: sha512-iY+zJn0nt0V5bTCH4AfG1L4Ds/GR1MrGR77jwJ3pUNFQrdFOXFp6F7zwR05adUZ0g6+7Hsu0R4SlfAYCdqss+w==}
     peerDependencies:
       stylelint: '>=14'
 
@@ -6894,10 +6894,10 @@ packages:
     peerDependencies:
       stylelint: ^16.1.0
 
-  stylelint-order@6.0.3:
-    resolution: {integrity: sha512-1j1lOb4EU/6w49qZeT2SQVJXm0Ht+Qnq9GMfUa3pMwoyojIWfuA+JUDmoR97Bht1RLn4ei0xtLGy87M7d29B1w==}
+  stylelint-order@6.0.4:
+    resolution: {integrity: sha512-0UuKo4+s1hgQ/uAxlYU4h0o0HS4NiQDud0NAUNI0aa8FJdmYHA5ZZTFHiV5FpmE3071e9pZx5j0QpVJW5zOCUA==}
     peerDependencies:
-      stylelint: ^14.0.0 || ^15.0.0
+      stylelint: ^14.0.0 || ^15.0.0 || ^16.0.1
 
   stylelint@16.1.0:
     resolution: {integrity: sha512-Sh1rRV0lN1qxz/QsuuooLWsIZ/ona7NKw/fRZd6y6PyXYdD2W0EAzJ8yJcwSx4Iw/muz0CF09VZ+z4EiTAcKmg==}
@@ -14495,9 +14495,9 @@ snapshots:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-sorting@8.0.2(postcss@8.4.31):
+  postcss-sorting@8.0.2(postcss@8.4.32):
     dependencies:
-      postcss: 8.4.31
+      postcss: 8.4.32
 
   postcss-value-parser@4.2.0: {}
 
@@ -15474,10 +15474,10 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.23.3
 
-  stylelint-config-clean-order@5.0.1(stylelint@16.1.0(typescript@5.0.4)):
+  stylelint-config-clean-order@6.0.0(stylelint@16.1.0(typescript@5.0.4)):
     dependencies:
       stylelint: 16.1.0(typescript@5.0.4)
-      stylelint-order: 6.0.3(stylelint@16.1.0(typescript@5.0.4))
+      stylelint-order: 6.0.4(stylelint@16.1.0(typescript@5.0.4))
 
   stylelint-config-recommended@14.0.0(stylelint@16.1.0(typescript@5.0.4)):
     dependencies:
@@ -15488,10 +15488,10 @@ snapshots:
       stylelint: 16.1.0(typescript@5.0.4)
       stylelint-config-recommended: 14.0.0(stylelint@16.1.0(typescript@5.0.4))
 
-  stylelint-order@6.0.3(stylelint@16.1.0(typescript@5.0.4)):
+  stylelint-order@6.0.4(stylelint@16.1.0(typescript@5.0.4)):
     dependencies:
-      postcss: 8.4.31
-      postcss-sorting: 8.0.2(postcss@8.4.31)
+      postcss: 8.4.32
+      postcss-sorting: 8.0.2(postcss@8.4.32)
       stylelint: 16.1.0(typescript@5.0.4)
 
   stylelint@16.1.0(typescript@5.0.4):
