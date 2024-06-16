@@ -295,11 +295,11 @@ importers:
         specifier: 4.0.7
         version: 4.0.7(@next/env@14.0.3)(next@13.2.4(@babel/core@7.23.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0))
       npm-package-json-lint:
-        specifier: 7.0.0
-        version: 7.0.0(typescript@5.0.4)
+        specifier: 8.0.0
+        version: 8.0.0(typescript@5.0.4)
       npm-package-json-lint-config-default:
         specifier: 6.0.0
-        version: 6.0.0(npm-package-json-lint@7.0.0(typescript@5.0.4))
+        version: 6.0.0(npm-package-json-lint@8.0.0(typescript@5.0.4))
       postcss:
         specifier: 8.4.31
         version: 8.4.31
@@ -4493,8 +4493,8 @@ packages:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
 
-  ignore@5.3.0:
-    resolution: {integrity: sha512-g7dmpshy+gD7mh88OC9NwSGTKoc3kyLAZQRU1mt53Aw/vnvfXnbC+F/7F7QoYVKbV+KNvJx8wArewKy1vXMtlg==}
+  ignore@5.3.1:
+    resolution: {integrity: sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==}
     engines: {node: '>= 4'}
 
   image-size@1.0.2:
@@ -4988,8 +4988,8 @@ packages:
     resolution: {integrity: sha512-x5QjzBOORd+T2EjErIxJnkOEbLVEdD1ILEeBbIJt8Eq/zUn7P7M8qdnWiNVBK5f8oxnJpc6SBHOeeIEl/swPjg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  jsonc-parser@3.2.0:
-    resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
+  jsonc-parser@3.2.1:
+    resolution: {integrity: sha512-AilxAyFOAcK5wA1+LeaySVBrHsGQvUFCDWXKpZjzaL0PqW+xfBOttn8GNtWKFWqneyMZj41MWF9Kl6iPWLwgOA==}
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -5611,9 +5611,9 @@ packages:
     peerDependencies:
       npm-package-json-lint: ^7.0.0
 
-  npm-package-json-lint@7.0.0:
-    resolution: {integrity: sha512-Yn8flnPx/7hTxwejWL5urm8sbEahq8ic3R80d7nlBvS6C58JEmJpUqvO7Ksy8izRzpbrHq0Anwlv/nQg5OYf8Q==}
-    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+  npm-package-json-lint@8.0.0:
+    resolution: {integrity: sha512-44xqAKoV0nXnBYYLGUhMItGZb5tW3cLoW3UZxcsaCOX/YAkECrzOQA5F48oAA51vVE5CqAnsJB2CFvtolzMA3Q==}
+    engines: {node: '>=18.0.0', npm: '>=9.0.0'}
     hasBin: true
 
   npm-pick-manifest@9.0.0:
@@ -6602,6 +6602,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.6.2:
+    resolution: {integrity: sha512-FNAIBWCx9qcRhoHcgcJ0gvU7SN1lYU2ZXuSfl04bSC5OpvDHFyJCjdNHomPXxjQlCBU67YW64PzY7/VIEH7F2w==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   set-blocking@2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
 
@@ -7188,8 +7193,8 @@ packages:
     resolution: {integrity: sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==}
     engines: {node: '>=14.16'}
 
-  type-fest@4.8.3:
-    resolution: {integrity: sha512-//BaTm14Q/gHBn09xlnKNqfI8t6bmdzx2DXYfPBNofN0WUybCEUDcbCWcTa0oF09lzLjZgPphXAsvRiMK0V6Bw==}
+  type-fest@4.20.1:
+    resolution: {integrity: sha512-R6wDsVsoS9xYOpy8vgeBlqpdOyzJ12HNfQhC/aAKWM3YoCV9TtunJzh/QpkMgeDhkoynDcw5f1y+qF9yc/HHyg==}
     engines: {node: '>=16'}
 
   type@1.2.0:
@@ -7346,8 +7351,8 @@ packages:
     resolution: {integrity: sha512-mzR0L8ZDktZjpX4OB46KT+56MAhl4EIazWP/+G/HPGuvfdaqg4YsCdtOm6U9+LOFyYDoh4dpnpxZRB9MQQns5Q==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
 
-  validate-npm-package-name@5.0.0:
-    resolution: {integrity: sha512-YuKoXDAhBYxY7SfOKxHBDoSyENFeW5VvIIQp2TGQuit8gpK6MnWaQelBKxso72DoxTZfZdcP3W90LqpSkgPzLQ==}
+  validate-npm-package-name@5.0.1:
+    resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
   validator@13.11.0:
@@ -7903,7 +7908,7 @@ snapshots:
   '@commitlint/is-ignored@19.0.3':
     dependencies:
       '@commitlint/types': 19.0.3
-      semver: 7.6.0
+      semver: 7.6.2
 
   '@commitlint/lint@19.0.3':
     dependencies:
@@ -8249,7 +8254,7 @@ snapshots:
       debug: 4.3.4(supports-color@8.1.1)
       espree: 9.6.1
       globals: 13.23.0
-      ignore: 5.3.0
+      ignore: 5.3.1
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       minimatch: 3.1.2
@@ -8509,7 +8514,7 @@ snapshots:
       '@babel/traverse': 7.23.4
       '@babel/types': 7.23.4
       prettier: 3.0.3
-      semver: 7.6.0
+      semver: 7.6.2
     transitivePeerDependencies:
       - supports-color
 
@@ -8662,7 +8667,7 @@ snapshots:
       proc-log: 3.0.0
       promise-inflight: 1.0.1
       promise-retry: 2.0.1
-      semver: 7.6.0
+      semver: 7.6.2
       which: 4.0.0
     transitivePeerDependencies:
       - bluebird
@@ -8684,7 +8689,7 @@ snapshots:
       json-parse-even-better-errors: 3.0.1
       normalize-package-data: 6.0.0
       proc-log: 3.0.0
-      semver: 7.6.0
+      semver: 7.6.2
     transitivePeerDependencies:
       - bluebird
 
@@ -8861,7 +8866,7 @@ snapshots:
   '@pnpm/npm-package-arg@1.0.0':
     dependencies:
       hosted-git-info: 4.1.0
-      semver: 7.6.0
+      semver: 7.6.2
       validate-npm-package-name: 4.0.0
 
   '@pnpm/npm-resolver@18.1.0(@pnpm/logger@5.0.0)':
@@ -8885,7 +8890,7 @@ snapshots:
       path-temp: 2.1.0
       ramda: '@pnpm/ramda@0.28.1'
       rename-overwrite: 5.0.0
-      semver: 7.6.0
+      semver: 7.6.2
       ssri: 10.0.5
       version-selector-type: 3.0.0
     transitivePeerDependencies:
@@ -8895,7 +8900,7 @@ snapshots:
 
   '@pnpm/resolve-workspace-range@5.0.1':
     dependencies:
-      semver: 7.6.0
+      semver: 7.6.2
 
   '@pnpm/resolver-base@11.1.0':
     dependencies:
@@ -9803,7 +9808,7 @@ snapshots:
       conventional-changelog: 5.1.0
       conventional-recommended-bump: 9.0.0
       release-it: 17.0.0(typescript@5.0.4)
-      semver: 7.6.0
+      semver: 7.6.2
 
   '@repeaterjs/repeater@3.0.4': {}
 
@@ -9962,7 +9967,7 @@ snapshots:
   '@snyk/github-codeowners@1.1.0':
     dependencies:
       commander: 4.1.1
-      ignore: 5.3.0
+      ignore: 5.3.1
       p-map: 4.0.0
 
   '@supabase/functions-js@2.1.5':
@@ -10167,9 +10172,9 @@ snapshots:
       debug: 4.3.4(supports-color@8.1.1)
       eslint: 8.38.0
       graphemer: 1.4.0
-      ignore: 5.3.0
+      ignore: 5.3.1
       natural-compare-lite: 1.4.0
-      semver: 7.6.0
+      semver: 7.6.2
       tsutils: 3.21.0(typescript@5.0.4)
     optionalDependencies:
       typescript: 5.0.4
@@ -10236,7 +10241,7 @@ snapshots:
       debug: 4.3.4(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.6.0
+      semver: 7.6.2
       tsutils: 3.21.0(typescript@5.0.4)
     optionalDependencies:
       typescript: 5.0.4
@@ -10250,7 +10255,7 @@ snapshots:
       debug: 4.3.4(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.6.0
+      semver: 7.6.2
       tsutils: 3.21.0(typescript@5.0.4)
     optionalDependencies:
       typescript: 5.0.4
@@ -10264,7 +10269,7 @@ snapshots:
       debug: 4.3.4(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.6.0
+      semver: 7.6.2
       ts-api-utils: 1.0.3(typescript@5.0.4)
     optionalDependencies:
       typescript: 5.0.4
@@ -10281,7 +10286,7 @@ snapshots:
       '@typescript-eslint/typescript-estree': 5.58.0(typescript@5.0.4)
       eslint: 8.38.0
       eslint-scope: 5.1.1
-      semver: 7.6.0
+      semver: 7.6.2
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -10296,7 +10301,7 @@ snapshots:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.0.4)
       eslint: 8.38.0
       eslint-scope: 5.1.1
-      semver: 7.6.0
+      semver: 7.6.2
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -10310,7 +10315,7 @@ snapshots:
       '@typescript-eslint/types': 6.13.1
       '@typescript-eslint/typescript-estree': 6.13.1(typescript@5.0.4)
       eslint: 8.38.0
-      semver: 7.6.0
+      semver: 7.6.2
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -10813,7 +10818,7 @@ snapshots:
 
   builtins@5.0.1:
     dependencies:
-      semver: 7.6.0
+      semver: 7.6.2
 
   bundle-name@3.0.0:
     dependencies:
@@ -11169,7 +11174,7 @@ snapshots:
       handlebars: 4.7.8
       json-stringify-safe: 5.0.1
       meow: 12.1.1
-      semver: 7.6.0
+      semver: 7.6.2
       split2: 4.2.0
 
   conventional-changelog@5.1.0:
@@ -11354,7 +11359,7 @@ snapshots:
       fast-json-stable-stringify: 2.1.0
       file-entry-cache: 7.0.2
       get-stdin: 9.0.0
-      semver: 7.6.0
+      semver: 7.6.2
       strip-ansi: 7.1.0
       vscode-uri: 3.0.8
 
@@ -11424,7 +11429,7 @@ snapshots:
       pretty-bytes: 5.6.0
       proxy-from-env: 1.0.0
       request-progress: 3.0.0
-      semver: 7.6.0
+      semver: 7.6.2
       supports-color: 8.1.1
       tmp: 0.2.1
       untildify: 4.0.0
@@ -11973,7 +11978,7 @@ snapshots:
     dependencies:
       escape-string-regexp: 1.0.5
       eslint: 8.38.0
-      ignore: 5.3.0
+      ignore: 5.3.1
 
   eslint-plugin-flowtype@8.0.3(eslint@8.38.0):
     dependencies:
@@ -12034,7 +12039,7 @@ snapshots:
       escape-string-regexp: 4.0.0
       eslint: 8.38.0
       esquery: 1.5.0
-      semver: 7.6.0
+      semver: 7.6.2
       spdx-expression-parse: 3.0.1
     transitivePeerDependencies:
       - supports-color
@@ -12086,7 +12091,7 @@ snapshots:
       eslint: 8.38.0
       eslint-plugin-es: 3.0.1(eslint@8.38.0)
       eslint-utils: 2.1.0
-      ignore: 5.3.0
+      ignore: 5.3.1
       minimatch: 3.1.2
       resolve: 1.22.8
       semver: 6.3.1
@@ -12186,7 +12191,7 @@ snapshots:
       regexp-tree: 0.1.27
       regjsparser: 0.9.1
       safe-regex: 2.1.1
-      semver: 7.6.0
+      semver: 7.6.2
       strip-indent: 3.0.0
 
   eslint-plugin-vitest@0.0.25(eslint@8.38.0)(typescript@5.0.4):
@@ -12264,7 +12269,7 @@ snapshots:
       glob-parent: 6.0.2
       globals: 13.23.0
       grapheme-splitter: 1.0.4
-      ignore: 5.3.0
+      ignore: 5.3.1
       import-fresh: 3.3.0
       imurmurhash: 0.1.4
       is-glob: 4.0.3
@@ -12689,7 +12694,7 @@ snapshots:
   git-semver-tags@7.0.1:
     dependencies:
       meow: 12.1.1
-      semver: 7.6.0
+      semver: 7.6.2
 
   git-up@7.0.0:
     dependencies:
@@ -12806,7 +12811,7 @@ snapshots:
       array-union: 2.1.0
       dir-glob: 3.0.1
       fast-glob: 3.3.2
-      ignore: 5.3.0
+      ignore: 5.3.1
       merge2: 1.4.1
       slash: 3.0.0
 
@@ -12814,7 +12819,7 @@ snapshots:
     dependencies:
       dir-glob: 3.0.1
       fast-glob: 3.3.2
-      ignore: 5.3.0
+      ignore: 5.3.1
       merge2: 1.4.1
       slash: 4.0.0
 
@@ -12822,7 +12827,7 @@ snapshots:
     dependencies:
       '@sindresorhus/merge-streams': 1.0.0
       fast-glob: 3.3.2
-      ignore: 5.3.0
+      ignore: 5.3.1
       path-type: 5.0.0
       slash: 5.1.0
       unicorn-magic: 0.1.0
@@ -13038,7 +13043,7 @@ snapshots:
 
   ignore@5.2.4: {}
 
-  ignore@5.3.0: {}
+  ignore@5.3.1: {}
 
   image-size@1.0.2:
     dependencies:
@@ -13471,9 +13476,9 @@ snapshots:
       acorn: 8.11.2
       eslint-visitor-keys: 3.4.3
       espree: 9.6.1
-      semver: 7.6.0
+      semver: 7.6.2
 
-  jsonc-parser@3.2.0: {}
+  jsonc-parser@3.2.1: {}
 
   jsonfile@4.0.0:
     optionalDependencies:
@@ -13492,7 +13497,7 @@ snapshots:
       jws: 3.2.2
       lodash: 4.17.21
       ms: 2.1.3
-      semver: 7.6.0
+      semver: 7.6.2
 
   jsprim@2.0.2:
     dependencies:
@@ -13803,7 +13808,7 @@ snapshots:
       glob: 8.0.3
       ignore: 5.2.4
       js-yaml: 4.1.0
-      jsonc-parser: 3.2.0
+      jsonc-parser: 3.2.1
       markdownlint: 0.27.0
       minimatch: 5.1.6
       run-con: 1.2.12
@@ -14026,7 +14031,7 @@ snapshots:
 
   node-abi@3.51.0:
     dependencies:
-      semver: 7.6.0
+      semver: 7.6.2
 
   node-addon-api@5.1.0: {}
 
@@ -14070,14 +14075,14 @@ snapshots:
     dependencies:
       hosted-git-info: 4.1.0
       is-core-module: 2.13.1
-      semver: 7.6.0
+      semver: 7.6.2
       validate-npm-package-license: 3.0.4
 
   normalize-package-data@6.0.0:
     dependencies:
       hosted-git-info: 7.0.1
       is-core-module: 2.13.1
-      semver: 7.6.0
+      semver: 7.6.2
       validate-npm-package-license: 3.0.4
 
   normalize-path@2.1.1:
@@ -14094,7 +14099,7 @@ snapshots:
 
   npm-install-checks@6.3.0:
     dependencies:
-      semver: 7.6.0
+      semver: 7.6.2
 
   npm-normalize-package-bin@3.0.1: {}
 
@@ -14102,14 +14107,14 @@ snapshots:
     dependencies:
       hosted-git-info: 7.0.1
       proc-log: 3.0.0
-      semver: 7.6.0
-      validate-npm-package-name: 5.0.0
+      semver: 7.6.2
+      validate-npm-package-name: 5.0.1
 
-  npm-package-json-lint-config-default@6.0.0(npm-package-json-lint@7.0.0(typescript@5.0.4)):
+  npm-package-json-lint-config-default@6.0.0(npm-package-json-lint@8.0.0(typescript@5.0.4)):
     dependencies:
-      npm-package-json-lint: 7.0.0(typescript@5.0.4)
+      npm-package-json-lint: 8.0.0(typescript@5.0.4)
 
-  npm-package-json-lint@7.0.0(typescript@5.0.4):
+  npm-package-json-lint@8.0.0(typescript@5.0.4):
     dependencies:
       ajv: 6.12.6
       ajv-errors: 1.0.1(ajv@6.12.6)
@@ -14117,17 +14122,17 @@ snapshots:
       cosmiconfig: 8.3.6(typescript@5.0.4)
       debug: 4.3.4(supports-color@8.1.1)
       globby: 11.1.0
-      ignore: 5.3.0
+      ignore: 5.3.1
       is-plain-obj: 3.0.0
-      jsonc-parser: 3.2.0
+      jsonc-parser: 3.2.1
       log-symbols: 4.1.0
       meow: 9.0.0
       plur: 4.0.0
-      semver: 7.6.0
+      semver: 7.6.2
       slash: 3.0.0
       strip-json-comments: 3.1.1
-      type-fest: 3.13.1
-      validate-npm-package-name: 5.0.0
+      type-fest: 4.20.1
+      validate-npm-package-name: 5.0.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -14137,7 +14142,7 @@ snapshots:
       npm-install-checks: 6.3.0
       npm-normalize-package-bin: 3.0.1
       npm-package-arg: 11.0.1
-      semver: 7.6.0
+      semver: 7.6.2
 
   npm-run-path@4.0.1:
     dependencies:
@@ -14359,7 +14364,7 @@ snapshots:
       got: 12.6.1
       registry-auth-token: 5.0.2
       registry-url: 6.0.1
-      semver: 7.6.0
+      semver: 7.6.2
 
   parent-module@1.0.1:
     dependencies:
@@ -14823,7 +14828,7 @@ snapshots:
     dependencies:
       find-up: 6.3.0
       read-pkg: 8.1.0
-      type-fest: 4.8.3
+      type-fest: 4.20.1
 
   read-pkg-up@7.0.1:
     dependencies:
@@ -14856,7 +14861,7 @@ snapshots:
       '@types/normalize-package-data': 2.4.4
       normalize-package-data: 6.0.0
       parse-json: 7.1.1
-      type-fest: 4.8.3
+      type-fest: 4.20.1
 
   readable-stream@3.6.2:
     dependencies:
@@ -15152,7 +15157,7 @@ snapshots:
 
   semver-diff@4.0.0:
     dependencies:
-      semver: 7.6.0
+      semver: 7.6.2
 
   semver@5.7.2: {}
 
@@ -15165,6 +15170,8 @@ snapshots:
   semver@7.6.0:
     dependencies:
       lru-cache: 6.0.0
+
+  semver@7.6.2: {}
 
   set-blocking@2.0.0: {}
 
@@ -15189,7 +15196,7 @@ snapshots:
       detect-libc: 2.0.2
       node-addon-api: 5.1.0
       prebuild-install: 7.1.1
-      semver: 7.6.0
+      semver: 7.6.2
       simple-get: 4.0.1
       tar-fs: 2.1.1
       tunnel-agent: 0.6.0
@@ -15200,7 +15207,7 @@ snapshots:
       detect-libc: 2.0.2
       node-addon-api: 6.1.0
       prebuild-install: 7.1.1
-      semver: 7.6.0
+      semver: 7.6.2
       simple-get: 4.0.1
       tar-fs: 3.0.4
       tunnel-agent: 0.6.0
@@ -15515,7 +15522,7 @@ snapshots:
       globby: 11.1.0
       globjoin: 0.1.4
       html-tags: 3.3.1
-      ignore: 5.3.0
+      ignore: 5.3.1
       imurmurhash: 0.1.4
       is-plain-object: 5.0.0
       known-css-properties: 0.29.0
@@ -15819,7 +15826,7 @@ snapshots:
 
   type-fest@3.13.1: {}
 
-  type-fest@4.8.3: {}
+  type-fest@4.20.1: {}
 
   type@1.2.0: {}
 
@@ -15925,7 +15932,7 @@ snapshots:
       is-yarn-global: 0.3.0
       latest-version: 5.1.0
       pupa: 2.1.1
-      semver: 7.6.0
+      semver: 7.6.2
       semver-diff: 3.1.1
       xdg-basedir: 4.0.0
 
@@ -15940,7 +15947,7 @@ snapshots:
       is-npm: 6.0.0
       latest-version: 7.0.0
       pupa: 3.1.0
-      semver: 7.6.0
+      semver: 7.6.2
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
 
@@ -15996,9 +16003,7 @@ snapshots:
     dependencies:
       builtins: 5.0.1
 
-  validate-npm-package-name@5.0.0:
-    dependencies:
-      builtins: 5.0.1
+  validate-npm-package-name@5.0.1: {}
 
   validator@13.11.0: {}
 
@@ -16014,7 +16019,7 @@ snapshots:
 
   version-selector-type@3.0.0:
     dependencies:
-      semver: 7.6.0
+      semver: 7.6.2
 
   vlq@0.2.3: {}
 
