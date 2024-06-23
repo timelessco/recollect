@@ -6,6 +6,7 @@ import { z } from "zod";
 import {
 	type NextApiRequest,
 	type SingleListData,
+	type twitter_sort_index,
 } from "../../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
@@ -14,7 +15,7 @@ import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 type RequestType = {
 	data: Array<
 		Pick<SingleListData, "description" | "ogImage" | "title" | "type" | "url">
-	>;
+	> & { sort_index: twitter_sort_index };
 };
 
 const getBodySchema = () =>
@@ -30,6 +31,7 @@ const getBodySchema = () =>
 					twitter_avatar_url: z.string(),
 				}),
 				inserted_at: z.string().datetime(),
+				sort_index: z.string(),
 			}),
 		),
 	});
