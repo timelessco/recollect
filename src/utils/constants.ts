@@ -102,6 +102,7 @@ export const UPLOAD_FILE_REMAINING_DATA_API =
 // ai apis
 export const EMBEDDINGS_POST_API = "/v1/ai/embeddings/post";
 export const EMBEDDINGS_DELETE_API = "/v1/ai/embeddings/delete";
+export const AI_SEARCH_API = "/v1/ai/search/get";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
@@ -128,6 +129,7 @@ export const USER_TAGS_KEY = "userTags";
 export const BOOKMARKS_VIEW = "bookmarks_view";
 export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
+export const AI_SEARCH_KEY = "ai_search";
 
 // error msgs
 

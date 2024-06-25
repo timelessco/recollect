@@ -3,7 +3,7 @@ import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase"
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { z } from "zod";
 
-import { createServiceClient } from "../../../../../utils/supabaseClient";
+import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 
 const getBodySchema = () =>
 	z.object({
@@ -31,7 +31,9 @@ export default async function handler(
 		const schema = getBodySchema();
 		const bodyData = schema.parse(request.query);
 
-		const client = createServiceClient();
+		const client = apiSupabaseClient(request, response);
+
+		const userData = await client?.auth?.getUser();
 
 		// get the vector store
 		const embeddings = new GoogleGenerativeAIEmbeddings({
@@ -48,6 +50,7 @@ export default async function handler(
 			const answer = await vectorStore.similaritySearchWithScore(
 				bodyData?.query,
 				4_000,
+				{ user_id: userData?.data?.user?.id },
 			);
 
 			response.status(200).send({ error: false, data: answer });
