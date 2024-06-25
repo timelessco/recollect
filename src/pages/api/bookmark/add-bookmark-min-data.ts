@@ -11,6 +11,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
+import { insertEmbeddings } from "../../../async/apicalls/embeddings";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type NextApiRequest,
@@ -259,6 +260,14 @@ export default async function handler(
 		])
 		.select();
 
+	if (isEmpty(data) || isNull(data)) {
+		response
+			.status(400)
+			.json({ data: null, error: "data is empty after insert", message: null });
+		Sentry.captureException(`Min bookmark data is empty`);
+		return;
+	}
+
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error, message: null });
 		throw new Error("ERROR: add min data error");
@@ -291,6 +300,14 @@ export default async function handler(
 		} catch (remainingUploadError) {
 			console.error(remainingUploadError);
 			Sentry.captureException(`Remaining api error ${remainingUploadError}`);
+		}
+
+		// create embeddings
+		try {
+			await insertEmbeddings([data[0]?.id], request?.cookies);
+		} catch {
+			console.error("Add Embeddings error");
+			Sentry.captureException(`Add Embeddings error`);
 		}
 	}
 }

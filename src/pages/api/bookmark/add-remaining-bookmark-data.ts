@@ -41,6 +41,14 @@ export default async function handler(
 ) {
 	const { url, image: ogImage, favIcon, id } = request.body;
 
+	if (!id) {
+		response
+			.status(500)
+			.json({ data: null, error: "Id in payload is empty", message: null });
+		Sentry.captureException(`Id in payload is empty`);
+		return;
+	}
+
 	const supabase = apiSupabaseClient(request, response);
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 

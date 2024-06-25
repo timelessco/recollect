@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
+import { insertEmbeddings } from "../../../../async/apicalls/embeddings";
 import {
 	type NextApiRequest,
 	type SingleListData,
@@ -122,6 +123,15 @@ export default async function handler(
 		}
 
 		response.status(200).json({ success: true, error: null });
+
+		// creates and embeddings
+		const bookmarkIds = insertDBData?.map((item) => item?.id);
+
+		try {
+			await insertEmbeddings(bookmarkIds, request?.cookies);
+		} catch {
+			Sentry.captureException(`Create embeddings error in twitter sync api`);
+		}
 
 		// get blur hash and upload it to DB
 		const dataWithBlurHash = await Promise.all(
