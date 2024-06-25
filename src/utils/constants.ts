@@ -100,8 +100,8 @@ export const UPLOAD_FILE_REMAINING_DATA_API =
 	"/file/upload-file-remaining-data";
 
 // ai apis
-export const EMBEDDINGS_POST_API = "/v1/ai/post/embeddings";
-export const EMBEDDINGS_DELETE_API = "/v1/ai/delete/embeddings";
+export const EMBEDDINGS_POST_API = "/v1/ai/embeddings/post";
+export const EMBEDDINGS_DELETE_API = "/v1/ai/embeddings/delete";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
