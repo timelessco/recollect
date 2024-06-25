@@ -13,7 +13,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
-import { insertEmbeddings } from "../../../async/apicalls/embeddings";
+import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type FileNameType,
 	type ImgMetadataType,

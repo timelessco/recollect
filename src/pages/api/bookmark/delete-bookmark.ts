@@ -4,7 +4,7 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
 
-import { deleteEmbeddings } from "../../../async/apicalls/embeddings";
+import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type DeleteBookmarkPayload,
 	type NextApiRequest,

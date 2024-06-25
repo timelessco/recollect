@@ -11,7 +11,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
-import { insertEmbeddings } from "../../../async/apicalls/embeddings";
+import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type NextApiRequest,

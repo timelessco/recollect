@@ -1,13 +1,13 @@
 import axios, { type AxiosResponse } from "axios";
 
-import { type CookiesType, type SingleListData } from "../../types/apiTypes";
+import { type CookiesType, type SingleListData } from "../../../types/apiTypes";
 import {
 	EMBEDDINGS_DELETE_API,
 	EMBEDDINGS_POST_API,
 	getBaseUrl,
 	NEXT_API_URL,
-} from "../../utils/constants";
-import { apiCookieParser } from "../../utils/helpers";
+} from "../../../utils/constants";
+import { apiCookieParser } from "../../../utils/helpers";
 
 /**
  * The axios call to create embeddigs

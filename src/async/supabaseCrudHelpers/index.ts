@@ -41,9 +41,9 @@ import {
 	type UploadProfilePicPayload,
 	type UserProfilePicTypes,
 	type UserTagsData,
-} from "../types/apiTypes";
-import { type BookmarksSortByTypes } from "../types/componentStoreTypes";
-import { type CategoryIdUrlTypes } from "../types/componentTypes";
+} from "../../types/apiTypes";
+import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
+import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
 	ADD_BOOKMARK_MIN_DATA,
 	ADD_CATEGORY_TO_BOOKMARK_API,
@@ -78,8 +78,8 @@ import {
 	UPDATE_USERNAME_API,
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
-} from "../utils/constants";
-import { isUserInACategory, parseUploadFileName } from "../utils/helpers";
+} from "../../utils/constants";
+import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
 
 // bookmark
 // gets bookmarks data

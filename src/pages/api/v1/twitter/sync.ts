@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import { insertEmbeddings } from "../../../../async/apicalls/embeddings";
+import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
 	type SingleListData,
@@ -42,6 +42,13 @@ type ResponseType = {
 	success: boolean;
 };
 
+/**
+ * Inserts the twitter data into the DB
+ *
+ * @param {NextApiRequest<RequestType>} request
+ * @param {NextApiResponse<ResponseType>} response
+ * @returns {ResponseType}
+ */
 export default async function handler(
 	request: NextApiRequest<RequestType>,
 	response: NextApiResponse<ResponseType>,

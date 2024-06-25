@@ -12,7 +12,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
-import { deleteEmbeddings } from "../../../async/apicalls/embeddings";
+import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import { type CookiesType, type SingleListData } from "../../../types/apiTypes";
 import {
 	BOOKMAKRS_STORAGE_NAME,
