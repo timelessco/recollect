@@ -47,9 +47,11 @@ export default async function handler(
 		});
 
 		const supabase = apiSupabaseClient(request, response);
+		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("sort_index, url")
+			.eq("user_id", userId)
 			.in("url", queryData?.urls);
 
 		if (error) {
