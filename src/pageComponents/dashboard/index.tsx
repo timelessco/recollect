@@ -195,7 +195,7 @@ const Dashboard = () => {
 
 	const { allBookmarksData, fetchNextPage } = useFetchPaginatedBookmarks();
 
-	useSearchBookmarks();
+	// useSearchBookmarks();
 
 	useAiSearch();
 

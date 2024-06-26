@@ -45,6 +45,7 @@ import {
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import { options } from "../../../utils/commonData";
 import {
+	AI_SEARCH_KEY,
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
@@ -159,14 +160,18 @@ const CardSection = ({
 		return categorySlug;
 	};
 
+	// const searchBookmarksData = queryClient.getQueryData([
+	// 	BOOKMARKS_KEY,
+	// 	userId,
+	// 	searchSlugKey(),
+	// 	searchText,
+	// ]) as {
+	// 	data: SingleListData[];
+	// 	error: PostgrestError;
+	// };
+
 	const searchBookmarksData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		userId,
-		// categorySlug === ALL_BOOKMARKS_URL
-		//   ? null
-		//   : typeof categoryIdFromSlug === "number"
-		//   ? categoryIdFromSlug
-		//   : categorySlug,
+		AI_SEARCH_KEY,
 		searchSlugKey(),
 		searchText,
 	]) as {
@@ -174,13 +179,13 @@ const CardSection = ({
 		error: PostgrestError;
 	};
 
-	useEffect(() => {
-		if (searchBookmarksData?.data === undefined) {
-			toggleIsSearchLoading(true);
-		} else {
-			toggleIsSearchLoading(false);
-		}
-	}, [searchBookmarksData, toggleIsSearchLoading]);
+	// useEffect(() => {
+	// 	if (searchBookmarksData?.data === undefined) {
+	// 		toggleIsSearchLoading(true);
+	// 	} else {
+	// 		toggleIsSearchLoading(false);
+	// 	}
+	// }, [searchBookmarksData, toggleIsSearchLoading]);
 
 	const isAllBookmarksDataFetching = useIsFetching({
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],

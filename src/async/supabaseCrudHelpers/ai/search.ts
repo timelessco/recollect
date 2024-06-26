@@ -1,4 +1,5 @@
 import axios, { type AxiosResponse } from "axios";
+import { isEmpty } from "lodash";
 
 import { AI_SEARCH_API, NEXT_API_URL } from "../../../utils/constants";
 
@@ -10,9 +11,13 @@ import { AI_SEARCH_API, NEXT_API_URL } from "../../../utils/constants";
  */
 export const aiSearch = async (
 	query: string,
-): Promise<AxiosResponse<unknown, unknown>> => {
+): Promise<AxiosResponse<unknown, unknown> | null> => {
+	if (isEmpty(query)) {
+		return null;
+	}
+
 	const response = await axios.get(
 		`${NEXT_API_URL}${AI_SEARCH_API}?query=${query}`,
 	);
-	return response;
+	return response?.data;
 };
