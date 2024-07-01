@@ -57,7 +57,7 @@ export default async function handler(
 		// get the bookmarks
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
-			.select("title, description, type, url, user_id, id")
+			.select("title, description, type, url, user_id, id, meta_data")
 			.in("id", bodyData?.bookmark_ids);
 
 		if (isEmpty(data)) {
@@ -82,6 +82,7 @@ export default async function handler(
 					metadata: {
 						bookmark_id: item?.id,
 						user_id: item?.user_id,
+						image_caption: item?.meta_data?.imageCaption || null,
 					},
 				}),
 		);

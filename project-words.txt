@@ -102,3 +102,5 @@ upstash
 pilcrow
 UMAMI
 genai
+xenova
+Xenova

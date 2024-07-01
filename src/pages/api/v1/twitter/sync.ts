@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
+import imageToText from "../../../../async/ai/imageToText";
 import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
@@ -131,21 +132,19 @@ export default async function handler(
 
 		response.status(200).json({ success: true, error: null });
 
-		// creates and embeddings
-		const bookmarkIds = insertDBData?.map((item) => item?.id);
-
-		try {
-			await insertEmbeddings(bookmarkIds, request?.cookies);
-		} catch {
-			Sentry.captureException(`Create embeddings error in twitter sync api`);
-		}
-
-		// get blur hash and upload it to DB
+		// get blur hash and image caption and upload it to DB
 		const dataWithBlurHash = await Promise.all(
 			insertDBData?.map(async (item) => {
 				const imgData = item?.ogImage
 					? await blurhashFromURL(item?.ogImage)
 					: null;
+
+				let imageCaption = null;
+
+				if (item?.ogImage) {
+					imageCaption = await imageToText(item?.ogImage);
+				}
+
 				return {
 					...item,
 					meta_data: {
@@ -154,6 +153,7 @@ export default async function handler(
 						width: imgData?.width ?? null,
 						ogImgBlurUrl: imgData?.encoded ?? null,
 						favIcon: null,
+						imageCaption,
 					},
 				};
 			}),
@@ -168,7 +168,17 @@ export default async function handler(
 			Sentry.captureException(
 				`blur hash update error: ${blurHashError?.message}`,
 			);
-			return;
+			// return;
+		}
+
+		// creates and add embeddings
+		const bookmarkIds = insertDBData?.map((item) => item?.id);
+
+		try {
+			await insertEmbeddings(bookmarkIds, request?.cookies);
+		} catch {
+			console.error("Create embeddings error in twitter sync api");
+			Sentry.captureException(`Create embeddings error in twitter sync api`);
 		}
 	} catch {
 		response
