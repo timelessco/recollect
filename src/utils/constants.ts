@@ -42,6 +42,9 @@ export const getBaseUrl = () =>
 
 export const NEXT_API_URL = `/api/`;
 
+const RECOLLECT_SERVER_URL = process.env.RECOLLECT_SERVER_API;
+export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
+
 export const PAGINATION_LIMIT = 25;
 
 // auth api

@@ -10,6 +10,8 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
+import { imageToTextHuggingface } from "../../../async/ai/imageToText";
+import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
@@ -123,12 +125,36 @@ export default async function handler(
 		}
 	};
 
+	let imageOcrValue = null;
+	let imageCaption = null;
+
+	if (ogImage) {
+		try {
+			imageOcrValue = await ocr(ogImage);
+		} catch (error) {
+			console.error("OCR error", error);
+			Sentry.captureException(`OCR error ${error}`);
+		}
+
+		try {
+			const imageCaptionApiCall = await imageToTextHuggingface(ogImage);
+			const jsonResponse = (await imageCaptionApiCall?.json()) as Array<{
+				generated_text: string;
+			}>;
+			imageCaption = jsonResponse?.[0]?.generated_text;
+		} catch (error) {
+			console.error("Image caption error", error);
+			Sentry.captureException(`Image caption error ${error}`);
+		}
+	}
+
 	const meta_data = {
-		img_caption: null,
+		img_caption: imageCaption,
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
 		favIcon: favIconLogic(),
+		ocr: imageOcrValue,
 	};
 
 	const {

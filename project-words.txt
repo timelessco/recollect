@@ -104,3 +104,4 @@ UMAMI
 genai
 xenova
 Xenova
+tesseract

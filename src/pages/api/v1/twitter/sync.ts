@@ -3,7 +3,10 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import imageToText from "../../../../async/ai/imageToText";
+import imageToText, {
+	imageToTextHuggingface,
+} from "../../../../async/ai/imageToText";
+import ocr from "../../../../async/ai/ocr";
 import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
@@ -132,17 +135,30 @@ export default async function handler(
 
 		response.status(200).json({ success: true, error: null });
 
-		// get blur hash and image caption and upload it to DB
+		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
 			insertDBData?.map(async (item) => {
 				const imgData = item?.ogImage
 					? await blurhashFromURL(item?.ogImage)
 					: null;
 
-				let imageCaption = null;
+				let image_caption = null;
+				let imageOcrValue = null;
 
 				if (item?.ogImage) {
-					imageCaption = await imageToText(item?.ogImage);
+					try {
+						const imageCaptionApiCall = await imageToTextHuggingface(
+							item?.ogImage,
+						);
+						const jsonResponse = (await imageCaptionApiCall?.json()) as Array<{
+							generated_text: string;
+						}>;
+						image_caption = jsonResponse?.[0]?.generated_text;
+						imageOcrValue = await ocr(item?.ogImage);
+					} catch (error) {
+						console.error("caption or ocr error", error);
+						Sentry.captureException(`caption or ocr error ${error}`);
+					}
 				}
 
 				return {
@@ -153,7 +169,8 @@ export default async function handler(
 						width: imgData?.width ?? null,
 						ogImgBlurUrl: imgData?.encoded ?? null,
 						favIcon: null,
-						imageCaption,
+						image_caption,
+						ocr: imageOcrValue,
 					},
 				};
 			}),

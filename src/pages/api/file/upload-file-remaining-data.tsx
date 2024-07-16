@@ -5,6 +5,8 @@ import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { isNil } from "lodash";
 
+import { imageToTextHuggingface } from "../../../async/ai/imageToText";
+import ocr from "../../../async/ai/ocr";
 import {
 	type ImgMetadataType,
 	type NextApiRequest,
@@ -17,42 +19,18 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = UploadFileApiResponse;
 
-// this func gets the image caption
-const query = async (source: string) => {
-	const isImgCaptionEnvironmentsPresent =
-		process.env.IMAGE_CAPTION_TOKEN && process.env.IMAGE_CAPTION_URL;
-
-	if (isImgCaptionEnvironmentsPresent) {
-		const response = await fetch(source);
-		const arrayBuffer = await response.arrayBuffer();
-		const data = Buffer.from(arrayBuffer);
-
-		try {
-			const imgCaptionResponse = await fetch(
-				process.env.IMAGE_CAPTION_URL as string,
-				{
-					headers: {
-						Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
-					},
-					method: "POST",
-					body: data,
-				},
-			);
-
-			return imgCaptionResponse;
-		} catch (error) {
-			log("Img caption error", error);
-			return null;
-		}
-	} else {
-		log(`ERROR: Img caption failed due to missing tokens in env`);
-		return null;
-	}
-};
-
 const notVideoLogic = async (publicUrl: string) => {
 	const ogImage = publicUrl;
-	const imageCaption = await query(ogImage as string);
+	const imageCaption = await imageToTextHuggingface(ogImage as string);
+
+	let imageOcrValue = null;
+
+	try {
+		imageOcrValue = await ocr(ogImage);
+	} catch (error) {
+		console.error("OCR error", error);
+		Sentry.captureException(`OCR error ${error}`);
+	}
 
 	const jsonResponse = (await imageCaption?.json()) as Array<{
 		generated_text: string;
@@ -77,6 +55,7 @@ const notVideoLogic = async (publicUrl: string) => {
 		ogImgBlurUrl: imgData?.encoded ?? null,
 		favIcon: null,
 		twitter_avatar_url: null,
+		ocr: imageOcrValue ?? null,
 	};
 
 	return { ogImage, meta_data };
@@ -102,6 +81,7 @@ export default async function handler(
 		ogImgBlurUrl: null,
 		favIcon: null,
 		twitter_avatar_url: null,
+		ocr: null,
 	};
 
 	const { meta_data: metaData } = await notVideoLogic(publicUrl);

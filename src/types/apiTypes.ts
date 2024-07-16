@@ -13,6 +13,7 @@ export type ImgMetadataType = {
 	favIcon: string | null;
 	height: number | null;
 	img_caption: string | null;
+	ocr: string | null;
 	ogImgBlurUrl: string | null;
 	twitter_avatar_url: string | null;
 	width: number | null;
