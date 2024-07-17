@@ -132,6 +132,7 @@ const CardSection = ({
 	const setSelectedVideoId = useMiscellaneousStore(
 		(state) => state.setSelectedVideoId,
 	);
+	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
@@ -160,24 +161,30 @@ const CardSection = ({
 		return categorySlug;
 	};
 
-	// const searchBookmarksData = queryClient.getQueryData([
-	// 	BOOKMARKS_KEY,
-	// 	userId,
-	// 	searchSlugKey(),
-	// 	searchText,
-	// ]) as {
-	// 	data: SingleListData[];
-	// 	error: PostgrestError;
-	// };
+	let searchBookmarksData = null;
 
-	const searchBookmarksData = queryClient.getQueryData([
-		AI_SEARCH_KEY,
-		searchSlugKey(),
-		searchText,
-	]) as {
-		data: SingleListData[];
-		error: PostgrestError;
-	};
+	if (aiButtonToggle) {
+		// gets from vector search api
+		searchBookmarksData = queryClient.getQueryData([
+			AI_SEARCH_KEY,
+			searchSlugKey(),
+			searchText,
+		]) as {
+			data: SingleListData[];
+			error: PostgrestError;
+		};
+	} else {
+		// gets from the trigram search api
+		searchBookmarksData = queryClient.getQueryData([
+			BOOKMARKS_KEY,
+			userId,
+			searchSlugKey(),
+			searchText,
+		]) as {
+			data: SingleListData[];
+			error: PostgrestError;
+		};
+	}
 
 	// useEffect(() => {
 	// 	if (searchBookmarksData?.data === undefined) {

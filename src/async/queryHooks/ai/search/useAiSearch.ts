@@ -9,6 +9,7 @@ import { aiSearch } from "../../../supabaseCrudHelpers/ai/search";
 
 const useAiSearch = () => {
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 
 	const debouncedSearch = useDebounce(searchText, 500);
 
@@ -16,7 +17,7 @@ const useAiSearch = () => {
 
 	const { data } = useQuery(
 		[AI_SEARCH_KEY, CATEGORY_ID, debouncedSearch],
-		async () => await aiSearch(debouncedSearch),
+		async () => aiButtonToggle && (await aiSearch(debouncedSearch)),
 	);
 
 	return { data };

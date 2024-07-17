@@ -87,6 +87,14 @@ export default async function handler(
 				}),
 		);
 
+		if (!process.env.GOOGLE_GEMINI_TOKEN) {
+			response
+				.status(400)
+				.send({ error: "Embeddings model token in missing", success: false });
+			Sentry.captureException(`Embeddings model token in missing`);
+			return;
+		}
+
 		// add the doc to supabase vector store
 		const embeddings = new GoogleGenerativeAIEmbeddings({
 			model: "embedding-001",

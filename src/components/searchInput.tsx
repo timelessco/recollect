@@ -5,6 +5,7 @@ import classNames from "classnames";
 import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
+import AiIcon from "../icons/aiIcon";
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
 import {
 	useLoadersStore,
@@ -14,6 +15,7 @@ import { type UserTagsData } from "../types/apiTypes";
 import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
 import Spinner from "./spinner";
+import ToolTip from "./tooltip";
 
 const styles = {
 	input: {
@@ -101,6 +103,10 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
+	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
+	const setAiButtonToggle = useMiscellaneousStore(
+		(state) => state.setAiButtonToggle,
+	);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
@@ -116,9 +122,17 @@ const SearchInput = (props: SearchInputTypes) => {
 		[inputClassName]: true,
 	});
 
+	const aiButtonClassName = classNames(
+		"absolute right-[-30px] top-[3px] cursor-pointer  transition-colors duration-200 xl:hidden",
+		{
+			"text-custom-gray-1": aiButtonToggle,
+			"text-gray-300": !aiButtonToggle,
+		},
+	);
+
 	return (
 		<div className={wrapperClassNameBuilder}>
-			<figure className=" absolute left-[9px] top-[7px]">
+			<figure className=" absolute left-[9px] top-[7px] ">
 				<SearchInputSearchIcon size="14" />
 			</figure>
 			{/* // classname added to remove default focus-visible style */}
@@ -166,10 +180,23 @@ const SearchInput = (props: SearchInputTypes) => {
 				/>
 			</MentionsInput>
 			{isSearchLoading && (
-				<div className=" absolute right-2 top-[3px]">
+				<div className=" absolute right-2 top-[5px]">
 					<Spinner />
 				</div>
 			)}
+			<button
+				className={aiButtonClassName}
+				onClick={() => setAiButtonToggle(!aiButtonToggle)}
+				type="button"
+			>
+				<ToolTip
+					toolTipContent={`${
+						aiButtonToggle ? "disable" : "enable"
+					} vector search`}
+				>
+					<AiIcon selected={aiButtonToggle} />
+				</ToolTip>
+			</button>
 		</div>
 	);
 };

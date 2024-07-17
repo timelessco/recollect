@@ -22,6 +22,7 @@ import { searchBookmarks } from "../../supabaseCrudHelpers";
 export default function useSearchBookmarks() {
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const session = useSupabaseSession((state) => state.session);
+	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 
 	const queryClient = useQueryClient();
 
@@ -43,13 +44,11 @@ export default function useSearchBookmarks() {
 		),
 	);
 
-	const { data } = useQuery<{
-		data: BookmarksPaginatedDataTypes[] | null;
-		error: Error;
-	}>(
+	const { data } = useQuery(
 		[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
 		async () =>
-			await searchBookmarks(searchText, CATEGORY_ID, isSharedCategory),
+			!aiButtonToggle &&
+			(await searchBookmarks(searchText, CATEGORY_ID, isSharedCategory)),
 	);
 
 	return { data };
