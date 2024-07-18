@@ -107,6 +107,7 @@ const videoLogic = async (
 		ogImgBlurUrl: imgData?.encoded ?? null,
 		favIcon: null,
 		twitter_avatar_url: null,
+		ocr: null,
 	};
 
 	return { ogImage, meta_data };
@@ -193,6 +194,7 @@ export default async (
 		ogImgBlurUrl: null,
 		favIcon: null,
 		twitter_avatar_url: null,
+		ocr: null,
 	};
 	const isVideo = fileType?.includes("video");
 
