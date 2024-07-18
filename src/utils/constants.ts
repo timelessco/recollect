@@ -7,6 +7,7 @@ export const BOOKMARK_TAGS_TABLE_NAME = "bookmark_tags";
 export const CATEGORIES_TABLE_NAME = "categories";
 export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
+export const DOCUMENTS_TABLE_NAME = "documents";
 export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
@@ -40,6 +41,9 @@ export const getBaseUrl = () =>
 		: "http://localhost:3000/";
 
 export const NEXT_API_URL = `/api/`;
+
+const RECOLLECT_SERVER_URL = process.env.RECOLLECT_SERVER_API;
+export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
 
 export const PAGINATION_LIMIT = 25;
 
@@ -98,6 +102,11 @@ export const UPLOAD_FILE_API = "/file/upload-file";
 export const UPLOAD_FILE_REMAINING_DATA_API =
 	"/file/upload-file-remaining-data";
 
+// ai apis
+export const EMBEDDINGS_POST_API = "/v1/ai/embeddings/post";
+export const EMBEDDINGS_DELETE_API = "/v1/ai/embeddings/delete";
+export const AI_SEARCH_API = "/v1/ai/search/get";
+
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
 export const UNCATEGORIZED_URL = "uncategorized";
@@ -123,6 +132,7 @@ export const USER_TAGS_KEY = "userTags";
 export const BOOKMARKS_VIEW = "bookmarks_view";
 export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
+export const AI_SEARCH_KEY = "ai_search";
 
 // error msgs
 

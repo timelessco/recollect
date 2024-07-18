@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import {
 	type AuthError,
 	type PostgrestError,
@@ -11,7 +12,8 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
-import { type SingleListData } from "../../../types/apiTypes";
+import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
+import { type CookiesType, type SingleListData } from "../../../types/apiTypes";
 import {
 	BOOKMAKRS_STORAGE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
@@ -254,6 +256,15 @@ const storageDeleteLogic = async (
 	}
 };
 
+const deleteUserEmbeddings = async (cookies: CookiesType) => {
+	try {
+		await deleteEmbeddings([], cookies, true);
+		log("deleted user embeddings");
+	} catch {
+		Sentry.captureException(`Delete user embeddings error`);
+	}
+};
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -356,8 +367,12 @@ export default async function handler(
 
 	// all bookmarks s3 storage deletes
 	await storageDeleteLogic(supabase, userId, response);
-	// deleting user in main auth table
 
+	// deleting all user embeddings
+
+	await deleteUserEmbeddings(request?.cookies);
+
+	// deleting user in main auth table
 	const serviceSupabase = createServiceClient();
 
 	const { data, error } = await serviceSupabase.auth.admin.deleteUser(userId);

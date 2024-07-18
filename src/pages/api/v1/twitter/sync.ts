@@ -3,9 +3,15 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
+import imageToText, {
+	imageToTextHuggingface,
+} from "../../../../async/ai/imageToText";
+import ocr from "../../../../async/ai/ocr";
+import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
 	type SingleListData,
+	type twitter_sort_index,
 } from "../../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
@@ -14,7 +20,7 @@ import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 type RequestType = {
 	data: Array<
 		Pick<SingleListData, "description" | "ogImage" | "title" | "type" | "url">
-	>;
+	> & { sort_index: twitter_sort_index };
 };
 
 const getBodySchema = () =>
@@ -30,6 +36,7 @@ const getBodySchema = () =>
 					twitter_avatar_url: z.string(),
 				}),
 				inserted_at: z.string().datetime(),
+				sort_index: z.string(),
 			}),
 		),
 	});
@@ -39,6 +46,13 @@ type ResponseType = {
 	success: boolean;
 };
 
+/**
+ * Inserts the twitter data into the DB
+ *
+ * @param {NextApiRequest<RequestType>} request
+ * @param {NextApiResponse<ResponseType>} response
+ * @returns {ResponseType}
+ */
 export default async function handler(
 	request: NextApiRequest<RequestType>,
 	response: NextApiResponse<ResponseType>,
@@ -121,12 +135,32 @@ export default async function handler(
 
 		response.status(200).json({ success: true, error: null });
 
-		// get blur hash and upload it to DB
+		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
 			insertDBData?.map(async (item) => {
 				const imgData = item?.ogImage
 					? await blurhashFromURL(item?.ogImage)
 					: null;
+
+				let image_caption = null;
+				let imageOcrValue = null;
+
+				if (item?.ogImage) {
+					try {
+						const imageCaptionApiCall = await imageToTextHuggingface(
+							item?.ogImage,
+						);
+						const jsonResponse = imageCaptionApiCall as Array<{
+							generated_text: string;
+						}>;
+						image_caption = jsonResponse?.[0]?.generated_text;
+						imageOcrValue = await ocr(item?.ogImage);
+					} catch (error) {
+						console.error("caption or ocr error", error);
+						Sentry.captureException(`caption or ocr error ${error}`);
+					}
+				}
+
 				return {
 					...item,
 					meta_data: {
@@ -135,6 +169,8 @@ export default async function handler(
 						width: imgData?.width ?? null,
 						ogImgBlurUrl: imgData?.encoded ?? null,
 						favIcon: null,
+						image_caption,
+						ocr: imageOcrValue,
 					},
 				};
 			}),
@@ -149,7 +185,17 @@ export default async function handler(
 			Sentry.captureException(
 				`blur hash update error: ${blurHashError?.message}`,
 			);
-			return;
+			// return;
+		}
+
+		// creates and add embeddings
+		const bookmarkIds = insertDBData?.map((item) => item?.id);
+
+		try {
+			await insertEmbeddings(bookmarkIds, request?.cookies);
+		} catch {
+			console.error("Create embeddings error in twitter sync api");
+			Sentry.captureException(`Create embeddings error in twitter sync api`);
 		}
 	} catch {
 		response

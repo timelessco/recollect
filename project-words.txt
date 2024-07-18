@@ -101,3 +101,7 @@ plpgsql
 upstash
 pilcrow
 UMAMI
+genai
+xenova
+Xenova
+tesseract

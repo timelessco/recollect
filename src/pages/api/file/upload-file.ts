@@ -13,6 +13,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
+import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type FileNameType,
 	type ImgMetadataType,
@@ -106,6 +107,7 @@ const videoLogic = async (
 		ogImgBlurUrl: imgData?.encoded ?? null,
 		favIcon: null,
 		twitter_avatar_url: null,
+		ocr: null,
 	};
 
 	return { ogImage, meta_data };
@@ -192,6 +194,7 @@ export default async (
 		ogImgBlurUrl: null,
 		favIcon: null,
 		twitter_avatar_url: null,
+		ocr: null,
 	};
 	const isVideo = fileType?.includes("video");
 
@@ -263,6 +266,14 @@ export default async (
 		} catch (remainingerror) {
 			console.error(remainingerror);
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
+		}
+
+		// create embeddings
+		try {
+			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);
+		} catch {
+			console.error("create embeddings error");
+			Sentry.captureException("create embeddings error");
 		}
 	} else {
 		response.status(500).json({
