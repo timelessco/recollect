@@ -32,7 +32,7 @@ const notVideoLogic = async (publicUrl: string) => {
 		Sentry.captureException(`OCR error ${error}`);
 	}
 
-	const jsonResponse = (await imageCaption?.json()) as Array<{
+	const jsonResponse = imageCaption as Array<{
 		generated_text: string;
 	}>;
 

@@ -1,5 +1,8 @@
 import { log } from "console";
 import { pipeline } from "@xenova/transformers";
+import axios from "axios";
+
+type ImageCaptionReturn = Array<{ generated_text: string }> | null;
 
 /**
  * Generates the image description from model that is loaded in local machine
@@ -17,8 +20,13 @@ const imageToText = async (url: string): Promise<string> => {
 	return output?.[0]?.generated_text;
 };
 
-// this func gets the image caption. This uses huggingface serverless api
-export const imageToTextHuggingface = async (source: string) => {
+/**
+ * Gets the image description from VIT model that is running in huggingface serverless endpoint
+ *
+ * @param {string} source the ogimage url
+ * @returns {ImageCaptionReturn} the image description from the VIT model
+ */
+const vitModel = async (source: string): Promise<ImageCaptionReturn> => {
 	const isImgCaptionEnvironmentsPresent =
 		process.env.IMAGE_CAPTION_TOKEN && process.env.IMAGE_CAPTION_URL;
 
@@ -39,7 +47,7 @@ export const imageToTextHuggingface = async (source: string) => {
 				},
 			);
 
-			return imgCaptionResponse;
+			return await imgCaptionResponse?.json();
 		} catch (error) {
 			log("Img caption error", error);
 			return null;
@@ -47,6 +55,62 @@ export const imageToTextHuggingface = async (source: string) => {
 	} else {
 		log(`ERROR: Img caption failed due to missing tokens in env`);
 		return null;
+	}
+};
+
+/**
+ * Gets the image description from Moondream model that is running in huggingface serverless endpoint
+ *
+ * @param  {string} source the ogimage url
+ * @returns {ImageCaptionReturn} the image description from the Moondream model
+ */
+const moondreamModel = async (source: string): Promise<ImageCaptionReturn> => {
+	const isImgCaptionEnvironmentsPresent =
+		process.env.MOONDREAM_TOKEN && process.env.MOONDREAM_URL;
+
+	if (isImgCaptionEnvironmentsPresent) {
+		const response = await axios.post(
+			process.env.MOONDREAM_URL as string,
+			{
+				inputs: {
+					url: source,
+					question: "Describe this image",
+				},
+				parameters: {},
+			},
+			{
+				headers: {
+					Accept: "application/json",
+					Authorization: `Bearer ${process.env.MOONDREAM_TOKEN}`,
+					"Content-Type": "application/json",
+				},
+			},
+		);
+
+		const finalReturnFormat = [
+			{ generated_text: response?.data?.body?.answer },
+		];
+
+		return finalReturnFormat;
+	} else {
+		log(`ERROR: Moondream Img caption failed due to missing tokens in env`);
+		return null;
+	}
+};
+
+/**
+ * Gets the image caption from the Moondream model, if that fails then it gets from the VIT model
+ *
+ * @param {string} source the ogimage url
+ * @returns {ImageCaptionReturn} the image description from the VIT model
+ */
+export const imageToTextHuggingface = async (source: string) => {
+	try {
+		return await moondreamModel(source);
+	} catch {
+		log("Moondream model failed running VIT");
+		const vitResponse = await vitModel(source);
+		return vitResponse;
 	}
 };
 

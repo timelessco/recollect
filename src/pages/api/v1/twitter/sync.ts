@@ -150,7 +150,7 @@ export default async function handler(
 						const imageCaptionApiCall = await imageToTextHuggingface(
 							item?.ogImage,
 						);
-						const jsonResponse = (await imageCaptionApiCall?.json()) as Array<{
+						const jsonResponse = imageCaptionApiCall as Array<{
 							generated_text: string;
 						}>;
 						image_caption = jsonResponse?.[0]?.generated_text;
