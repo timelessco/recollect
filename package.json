@@ -205,7 +205,7 @@
 		"turbo": "1.9.1",
 		"typescript": "5.0.4",
 		"yaml-eslint-parser": "1.2.0",
-		"zod": "3.21.4"
+		"zod": "3.22.3"
 	},
 	"packageManager": "pnpm@9.5.0",
 	"gacp": {
