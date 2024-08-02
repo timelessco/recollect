@@ -93,7 +93,7 @@
 		"@langchain/core": "0.2.8",
 		"@langchain/google-genai": "0.0.17",
 		"@sendgrid/mail": "^8.0.0",
-		"@sentry/nextjs": "^7.73.0",
+		"@sentry/nextjs": "^8.0.0",
 		"@supabase/ssr": "0.3.0",
 		"@supabase/supabase-js": "2.13.1",
 		"@tanstack/react-query": "4.28.0",
