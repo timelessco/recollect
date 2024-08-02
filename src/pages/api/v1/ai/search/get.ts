@@ -128,7 +128,7 @@ export default async function handler(
 			// only have the data where score is greater than a certain number
 			const filteredsSortedDataFromMainTableMappedWithScore =
 				sortedDataFromMainTableMappedWithScore?.filter((item) => {
-					if (item?.score > 0.5) {
+					if (item?.score > 0.59) {
 						return item;
 					}
 
