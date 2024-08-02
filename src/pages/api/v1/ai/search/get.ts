@@ -125,9 +125,20 @@ export default async function handler(
 					(a, b) => b.score - a.score,
 				) as FinalReturnDataType;
 
-			response
-				.status(200)
-				.send({ error: null, data: sortedDataFromMainTableMappedWithScore });
+			// only have the data where score is greater than a certain number
+			const filteredsSortedDataFromMainTableMappedWithScore =
+				sortedDataFromMainTableMappedWithScore?.filter((item) => {
+					if (item?.score > 0.5) {
+						return item;
+					}
+
+					return null;
+				});
+
+			response.status(200).send({
+				error: null,
+				data: filteredsSortedDataFromMainTableMappedWithScore,
+			});
 		} catch (error_) {
 			Sentry.captureException(`Error during vector search: ${error_}`);
 			response.status(400).send({ error: error_ as string, data: null });
