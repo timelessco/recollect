@@ -40,6 +40,8 @@ import useFetchCategories from "../../async/queryHooks/category/useFetchCategori
 import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import useFetchUserTags from "../../async/queryHooks/userTags/useFetchUserTags";
+import { clipboardUpload } from "../../async/uploads/clipboard-upload";
+import { fileUpload } from "../../async/uploads/file-upload";
 import Modal from "../../components/modal";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
@@ -255,6 +257,32 @@ const Dashboard = () => {
 	const { fileUploadOptimisticMutation } = useFileUploadOptimisticMutation();
 
 	// END OF MUTATIONS ---------
+
+	// this is for the clipboard upload
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const listener = (event: ClipboardEvent) => {
+				// setInputText(e.clipboardData.getData("text"));
+				void clipboardUpload(
+					event.clipboardData?.getData("text"),
+					event.clipboardData?.files,
+					CATEGORY_ID,
+					addBookmarkMinDataOptimisticMutation,
+					fileUploadOptimisticMutation,
+				);
+			};
+
+			window.addEventListener("paste", listener);
+
+			return () => window.removeEventListener("paste", listener);
+		}
+
+		return undefined;
+	}, [
+		CATEGORY_ID,
+		addBookmarkMinDataOptimisticMutation,
+		fileUploadOptimisticMutation,
+	]);
 
 	// if the user email as been changed then this updates the email in the profiles table
 	useEffect(() => {
@@ -549,39 +577,11 @@ const Dashboard = () => {
 
 	const onDrop = useCallback(
 		async (acceptedFiles: FileType[]) => {
-			for (let index = 0; index < acceptedFiles?.length; index++) {
-				if (
-					acceptedFiles[index] &&
-					acceptedFileTypes?.includes(acceptedFiles[index]?.type)
-				) {
-					let thumbnailBase64 = null;
-					if (acceptedFiles[index]?.type?.includes("video")) {
-						// if file is a video this gets its first frame as a png base64
-						thumbnailBase64 = (await generateVideoThumbnail(
-							acceptedFiles[0],
-						)) as string;
-					}
-
-					if (uploadFileLimit(acceptedFiles[index]?.size)) {
-						errorToast("File size is larger than 10mb", "fileSizeError");
-					} else {
-						const uploadFileNamePath = uniqid.time(
-							"",
-							`-${parseUploadFileName(acceptedFiles[index]?.name)}`,
-						);
-						mutationApiCall(
-							fileUploadOptimisticMutation.mutateAsync({
-								file: acceptedFiles[index],
-								category_id: CATEGORY_ID,
-								thumbnailBase64,
-								uploadFileNamePath,
-							}),
-						).catch((error) => console.error(error));
-					}
-				} else {
-					errorToast(`File type ${acceptedFiles[index]?.type} is not accepted`);
-				}
-			}
+			await fileUpload(
+				acceptedFiles as unknown as FileList,
+				fileUploadOptimisticMutation,
+				CATEGORY_ID,
+			);
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[fileUploadOptimisticMutation, session],
