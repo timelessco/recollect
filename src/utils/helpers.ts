@@ -1,3 +1,4 @@
+import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
 import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
@@ -274,3 +275,19 @@ export const apiCookieParser = (
 	Object.entries(cookies)
 		.map(([key, value]) => `${key}=${value}`)
 		.join("; ");
+
+/**
+ * Tells if the year is the current year or not
+ *
+ * @param {string} insertedAt the time to compare
+ * @returns {boolean}
+ */
+export const isCurrentYear = (insertedAt: string) => {
+	const date = new Date(insertedAt);
+
+	// Get the current year and the year of the inserted date
+	const currentYear = getYear(new Date());
+	const insertedYear = getYear(date);
+
+	return insertedYear === currentYear;
+};
