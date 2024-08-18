@@ -202,7 +202,7 @@
 		"tilg": "0.1.1",
 		"title-case": "4.1.0",
 		"toml-eslint-parser": "0.5.0",
-		"turbo": "1.9.1",
+		"turbo": "2.0.14",
 		"typescript": "5.0.4",
 		"yaml-eslint-parser": "1.2.0",
 		"zod": "3.22.3"
