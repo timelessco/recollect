@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
