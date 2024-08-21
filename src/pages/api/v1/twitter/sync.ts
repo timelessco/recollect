@@ -137,8 +137,6 @@ export default async function handler(
 
 		console.log("sync done");
 
-		response.status(200).json({ success: true, error: null });
-
 		console.log("starting ocr");
 
 		// get blur hash and image caption and OCR and upload it to DB
@@ -210,6 +208,8 @@ export default async function handler(
 			console.error("Create embeddings error in twitter sync api");
 			Sentry.captureException(`Create embeddings error in twitter sync api`);
 		}
+
+		response.status(200).json({ success: true, error: null });
 	} catch {
 		response
 			.status(400)
