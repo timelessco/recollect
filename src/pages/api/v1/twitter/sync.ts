@@ -134,7 +134,11 @@ export default async function handler(
 			return;
 		}
 
+		console.log("sync done");
+
 		response.status(200).json({ success: true, error: null });
+
+		console.log("starting ocr");
 
 		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
@@ -154,13 +158,20 @@ export default async function handler(
 						const jsonResponse = imageCaptionApiCall as Array<{
 							generated_text: string;
 						}>;
+
+						console.log("generating", jsonResponse);
+
 						image_caption = jsonResponse?.[0]?.generated_text;
 						imageOcrValue = await ocr(item?.ogImage);
+
+						console.log("generating ocr", imageOcrValue);
 					} catch (error) {
 						console.error("caption or ocr error", error);
 						Sentry.captureException(`caption or ocr error ${error}`);
 					}
 				}
+
+				console.log("dddddd", imageOcrValue, image_caption);
 
 				return {
 					...item,
