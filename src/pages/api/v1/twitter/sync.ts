@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
@@ -134,7 +135,9 @@ export default async function handler(
 			return;
 		}
 
-		response.status(200).json({ success: true, error: null });
+		console.log("sync done");
+
+		console.log("starting ocr");
 
 		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
@@ -154,13 +157,20 @@ export default async function handler(
 						const jsonResponse = imageCaptionApiCall as Array<{
 							generated_text: string;
 						}>;
+
+						console.log("generating", jsonResponse);
+
 						image_caption = jsonResponse?.[0]?.generated_text;
 						imageOcrValue = await ocr(item?.ogImage);
+
+						console.log("generating ocr", imageOcrValue);
 					} catch (error) {
 						console.error("caption or ocr error", error);
 						Sentry.captureException(`caption or ocr error ${error}`);
 					}
 				}
+
+				console.log("dddddd", imageOcrValue, image_caption);
 
 				return {
 					...item,
@@ -198,6 +208,8 @@ export default async function handler(
 			console.error("Create embeddings error in twitter sync api");
 			Sentry.captureException(`Create embeddings error in twitter sync api`);
 		}
+
+		response.status(200).json({ success: true, error: null });
 	} catch {
 		response
 			.status(400)
