@@ -105,3 +105,4 @@ genai
 xenova
 Xenova
 tesseract
+nocheck

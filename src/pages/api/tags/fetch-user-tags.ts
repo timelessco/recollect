@@ -30,7 +30,7 @@ export default async function handler(
 
 	if (!userId || isEmpty(userId)) {
 		response.status(500).json({ data: null, error: "User id is missing" });
-		throw new Error("ERROR");
+		return;
 	}
 
 	const { data, error } = (await supabase
@@ -45,6 +45,5 @@ export default async function handler(
 		response.status(200).json({ data, error: null });
 	} else {
 		response.status(500).json({ data: null, error });
-		throw new Error("ERROR");
 	}
 }
