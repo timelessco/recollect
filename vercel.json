@@ -1,0 +1,7 @@
+{
+	"functions": {
+		"src/pages/api/file/upload-file-remaining-data.tsx": {
+			"maxDuration": 300
+		}
+	}
+}
