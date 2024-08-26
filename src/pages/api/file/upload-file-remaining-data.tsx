@@ -22,7 +22,6 @@ type Data = UploadFileApiResponse;
 const notVideoLogic = async (publicUrl: string) => {
 	const ogImage = publicUrl;
 	const imageCaption = await imageToTextHuggingface(ogImage as string);
-
 	let imageOcrValue = null;
 
 	try {

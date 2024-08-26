@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { isProductionEnvironment } from "./src/utils/supabaseServerClient";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -12,4 +13,6 @@ Sentry.init({
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
+
+  enabled: isProductionEnvironment
 });

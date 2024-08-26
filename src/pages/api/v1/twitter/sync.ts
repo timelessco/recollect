@@ -43,6 +43,7 @@ const getBodySchema = () =>
 	});
 
 type ResponseType = {
+	data?: SingleListData[];
 	error: string | null;
 	success: boolean;
 };
@@ -135,9 +136,9 @@ export default async function handler(
 			return;
 		}
 
-		console.log("sync done");
-
-		console.log("starting ocr");
+		response
+			.status(200)
+			.json({ success: true, error: null, data: insertDBData });
 
 		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
