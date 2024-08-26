@@ -25,6 +25,13 @@ const getBodySchema = () =>
 		}),
 	});
 
+/**
+ * This api fetches bookmark by its id
+ *
+ * @param {NextApiRequest<RequestType>} request
+ * @param {NextApiResponse<ResponseType>} response
+ * @returns {ResponseType}
+ */
 export default async function handler(
 	request: NextApiRequest<RequestType>,
 	response: NextApiResponse<ResponseType>,

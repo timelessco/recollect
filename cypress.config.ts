@@ -6,8 +6,7 @@ dotenv.config();
 
 export default defineConfig({
 	e2e: {
-		// baseUrl: process.env.NEXT_PUBLIC_VERCEL_URL,
-		baseUrl: "http://localhost:3000",
+		baseUrl: process.env.NEXT_PUBLIC_VERCEL_URL,
 
 		// on, config
 		setupNodeEvents() {

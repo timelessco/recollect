@@ -43,6 +43,7 @@ const getBodySchema = () =>
 	});
 
 type ResponseType = {
+	data?: SingleListData[];
 	error: string | null;
 	success: boolean;
 };

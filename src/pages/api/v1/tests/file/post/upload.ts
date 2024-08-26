@@ -37,6 +37,10 @@ import {
 import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../../../../bookmark/add-bookmark-min-data";
 
+// NOTE: THIS API IS ONLY USED IN TEST CASES
+// As the upload api needs supabase in the FE and in test cases we cannot use supabase, we use this api which is tailored to be used in test cases
+// This api uploads an existing file in the S3 bucket as a new bookmark and this bookmark can be used for testing needs
+
 type StorageDataType = {
 	publicUrl: string;
 };
@@ -48,7 +52,7 @@ Then it generates the meta_data for the thumbnail, this data has the blurHash th
 Image caption is not generated for the thumbnail 
 */
 const videoLogic = async (
-	data: ParsedFormDataType,
+	data: { fields: ParsedFormDataType["fields"] },
 	userId: SingleListData["user_id"]["id"],
 	fileName: FileNameType,
 	supabase: SupabaseClient,
@@ -108,23 +112,15 @@ const videoLogic = async (
 
 export default async (
 	request: NextApiRequest,
-	response: NextApiResponse<UploadFileApiResponse>,
+	response: NextApiResponse<{
+		data?: Array<{
+			id: SingleListData["id"];
+		}> | null;
+		error: string | null;
+		success: boolean;
+	}>,
 ) => {
 	const supabase = apiSupabaseClient(request, response);
-
-	// // parse form with a Promise wrapper
-	// const data = (await new Promise((resolve, reject) => {
-	// 	const form = new IncomingForm();
-
-	// 	form.parse(request, (error, fields, files) => {
-	// 		if (error) {
-	// 			reject(error);
-	// 			return;
-	// 		}
-
-	// 		resolve({ fields, files });
-	// 	});
-	// })) as ParsedFormDataType;
 
 	const data = {
 		fields: {
@@ -213,7 +209,7 @@ export default async (
 	} else {
 		// if file is a video
 		const { ogImage: image, meta_data: metaData } = await videoLogic(
-			data,
+			data as unknown as { fields: ParsedFormDataType["fields"] },
 			userId as string,
 			uploadPath,
 			supabase,
@@ -222,8 +218,6 @@ export default async (
 		ogImage = image;
 		meta_data = metaData;
 	}
-
-	console.log("og img", ogImage, fileName);
 
 	// we upload the final data in DB
 	const { data: DatabaseData, error: DBerror } = (await supabase
@@ -246,7 +240,9 @@ export default async (
 	};
 
 	if (isNil(publicUrlError) && isNil(DBerror)) {
-		response.status(200).json({ data: DatabaseData, error: null });
+		response
+			.status(200)
+			.json({ data: DatabaseData, error: null, success: true });
 
 		try {
 			if (!isEmpty(DatabaseData) && !isVideo) {
@@ -283,7 +279,7 @@ export default async (
 	} else {
 		response.status(500).json({
 			success: false,
-			error: publicUrlError ?? DBerror,
+			error: (publicUrlError ?? DBerror) as string,
 		});
 	}
 };
