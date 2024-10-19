@@ -165,7 +165,7 @@
 		"cspell": "8.0.0",
 		"cypress": "12.9.0",
 		"dedent": "1.0.1",
-		"del-cli": "5.0.0",
+		"del-cli": "6.0.0",
 		"dotenv": "16.0.3",
 		"eslint": "8.38.0",
 		"eslint-config-canonical": "41.0.1",
