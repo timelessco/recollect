@@ -162,6 +162,7 @@ export type ProfilesTableTypes = {
 	email: string;
 	id: string;
 	profile_pic: string;
+	provider: string | null;
 	user_name: string;
 };
 
@@ -172,6 +173,7 @@ export type ProfilesTableForPayloadTypes = {
 	email?: string;
 	id?: string;
 	profile_pic?: string;
+	provider?: ProfilesTableTypes["provider"];
 	user_name?: string;
 };
 
