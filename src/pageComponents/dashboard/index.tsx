@@ -305,6 +305,21 @@ const Dashboard = () => {
 		userProfileData,
 	]);
 
+	// this updates the provider in the profiles table if its not present
+	useEffect(() => {
+		if (
+			!userProfileData?.data?.[0]?.provider &&
+			session?.user?.app_metadata?.provider
+		) {
+			void mutationApiCall(
+				updateUserProfileOptimisticMutation.mutateAsync({
+					updateData: { provider: session?.user?.app_metadata?.provider },
+				}),
+			);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [userProfileData?.data?.[0]?.provider]);
+
 	const { flattendPaginationBookmarkData } =
 		useGetFlattendPaginationBookmarkData();
 
