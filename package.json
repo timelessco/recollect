@@ -168,7 +168,7 @@
 		"del-cli": "6.0.0",
 		"dotenv": "16.0.3",
 		"eslint": "8.38.0",
-		"eslint-config-canonical": "41.0.1",
+		"eslint-config-canonical": "44.3.0",
 		"eslint-config-prettier": "9.0.0",
 		"eslint-plugin-jsonc": "2.7.0",
 		"eslint-plugin-tailwindcss": "3.11.0",
