@@ -340,8 +340,8 @@ importers:
         specifier: 16.1.0
         version: 16.1.0(typescript@5.0.4)
       stylelint-config-clean-order:
-        specifier: 6.0.0
-        version: 6.0.0(stylelint@16.1.0(typescript@5.0.4))
+        specifier: 7.0.0
+        version: 7.0.0(stylelint@16.1.0(typescript@5.0.4))
       stylelint-config-standard:
         specifier: 36.0.0
         version: 36.0.0(stylelint@16.1.0(typescript@5.0.4))
@@ -7784,8 +7784,8 @@ packages:
       babel-plugin-macros:
         optional: true
 
-  stylelint-config-clean-order@6.0.0:
-    resolution: {integrity: sha512-iY+zJn0nt0V5bTCH4AfG1L4Ds/GR1MrGR77jwJ3pUNFQrdFOXFp6F7zwR05adUZ0g6+7Hsu0R4SlfAYCdqss+w==}
+  stylelint-config-clean-order@7.0.0:
+    resolution: {integrity: sha512-R28w1xNliIbem3o+VIrNjAU8cMgxrGlDoXVqWW7lJ1OvSDsmNGj5aKSW6Xm7i5PK4E99T3Hs19BJFni5IbE56g==}
     peerDependencies:
       stylelint: '>=14'
 
@@ -16871,7 +16871,7 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.23.3
 
-  stylelint-config-clean-order@6.0.0(stylelint@16.1.0(typescript@5.0.4)):
+  stylelint-config-clean-order@7.0.0(stylelint@16.1.0(typescript@5.0.4)):
     dependencies:
       stylelint: 16.1.0(typescript@5.0.4)
       stylelint-order: 6.0.4(stylelint@16.1.0(typescript@5.0.4))
