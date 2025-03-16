@@ -28,7 +28,7 @@ importers:
         version: 1.0.6(react@18.2.0)
       '@langchain/community':
         specifier: 0.3.3
-        version: 0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        version: 0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@langchain/core':
         specifier: 0.2.8
         version: 0.2.8(openai@4.71.1(zod@3.22.3))
@@ -63,8 +63,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       axios:
-        specifier: 1.7.4
-        version: 1.7.4
+        specifier: 1.8.2
+        version: 1.8.2
       base64-arraybuffer:
         specifier: 1.0.2
         version: 1.0.2
@@ -97,7 +97,7 @@ importers:
         version: 3.1.2
       langchain:
         specifier: 0.2.19
-        version: 0.2.19(@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        version: 0.2.19(@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       lodash:
         specifier: 4.17.21
         version: 4.17.21
@@ -3103,8 +3103,8 @@ packages:
     resolution: {integrity: sha512-M0JtH+hlOL5pLQwHOLNYZaXuhqmvS8oExsqB1SBYgA4Dk7u/xx+YdGHXaK5pyUfed5mYXdlYiphWq3G8cRi5JQ==}
     engines: {node: '>=4'}
 
-  axios@1.7.4:
-    resolution: {integrity: sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw==}
+  axios@1.8.2:
+    resolution: {integrity: sha512-ls4GYBm5aig9vWx8AWDSGLpnpDQRtWAfrjU+EuytuODrFBkqesN2RkOQCBzrA1RQNHw1SmRMSDDDSwzNAYQ6Rg==}
 
   axobject-query@3.2.1:
     resolution: {integrity: sha512-jsyHu61e6N4Vbz/v18DHwWYKK0bSWLqn47eeDSKPB7m8tqMHF9YJ+mhIk2lVteyZrY8tnSj/jHOv4YiTCuCJgg==}
@@ -9677,7 +9677,7 @@ snapshots:
 
   '@juggle/resize-observer@3.4.0': {}
 
-  '@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+  '@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
       '@langchain/core': 0.2.8(openai@4.71.1(zod@3.22.3))
       '@langchain/openai': 0.3.13(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))
@@ -9685,7 +9685,7 @@ snapshots:
       expr-eval: 2.0.2
       flat: 5.0.2
       js-yaml: 4.1.0
-      langchain: 0.2.19(@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      langchain: 0.2.19(@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       langsmith: 0.1.68(openai@4.71.1(zod@3.22.3))
       uuid: 10.0.0
       zod: 3.22.3
@@ -11058,7 +11058,7 @@ snapshots:
   '@sendgrid/client@8.1.0':
     dependencies:
       '@sendgrid/helpers': 8.0.0
-      axios: 1.7.4
+      axios: 1.8.2
     transitivePeerDependencies:
       - debug
 
@@ -11890,7 +11890,7 @@ snapshots:
 
   axe-core@4.7.0: {}
 
-  axios@1.7.4:
+  axios@1.8.2:
     dependencies:
       follow-redirects: 1.15.6
       form-data: 4.0.0
@@ -14897,7 +14897,7 @@ snapshots:
 
   ky@1.7.4: {}
 
-  langchain@0.2.19(@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
+  langchain@0.2.19(@langchain/community@0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
     dependencies:
       '@langchain/core': 0.2.36(openai@4.71.1(zod@3.22.3))
       '@langchain/openai': 0.1.3
@@ -14914,10 +14914,10 @@ snapshots:
       zod: 3.23.8
       zod-to-json-schema: 3.23.5(zod@3.23.8)
     optionalDependencies:
-      '@langchain/community': 0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.7.4)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@langchain/community': 0.3.3(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@langchain/google-genai': 0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3)
       '@supabase/supabase-js': 2.13.1
-      axios: 1.7.4
+      axios: 1.8.2
       handlebars: 4.7.8
       ignore: 5.3.1
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
