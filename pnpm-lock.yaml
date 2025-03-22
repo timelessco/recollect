@@ -58,7 +58,7 @@ importers:
         version: 1.20.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       ariakit:
         specifier: 2.0.0-next.43
-        version: 2.0.0-next.43(@types/react@18.0.35)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 2.0.0-next.43(@types/react@19.0.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       array-to-image:
         specifier: ^1.0.0
         version: 1.0.0
@@ -214,11 +214,11 @@ importers:
         specifier: ^7.2.0
         version: 7.2.4
       '@types/react':
-        specifier: 18.0.35
-        version: 18.0.35
+        specifier: 19.0.12
+        version: 19.0.12
       '@types/react-dom':
-        specifier: 18.0.11
-        version: 18.0.11
+        specifier: 19.0.4
+        version: 19.0.4(@types/react@19.0.12)
       '@types/react-mentions':
         specifier: 4.1.8
         version: 4.1.8
@@ -2641,11 +2641,10 @@ packages:
   '@types/probe-image-size@7.2.4':
     resolution: {integrity: sha512-HVqYj3L+D+S/6qpQRv5qMxrD/5pglzZuhP7ZIqgVSZ+Ck4z1TCFkNIRG8WesFueQTqWFTSgkkAl6f8lwxFPQSw==}
 
-  '@types/prop-types@15.7.11':
-    resolution: {integrity: sha512-ga8y9v9uyeiLdpKddhxYQkxNDrfvuPrlFb0N1qnZZByvcElJaXthF1UhvCh9TLWJBEHeNtdnbysW7Y6Uq8CVng==}
-
-  '@types/react-dom@18.0.11':
-    resolution: {integrity: sha512-O38bPbI2CWtgw/OoQoY+BRelw7uysmXbWvw3nLWO21H1HSh+GOlqPuXshJfjmpNlKiiSDG9cc1JZAaMmVdcTlw==}
+  '@types/react-dom@19.0.4':
+    resolution: {integrity: sha512-4fSQ8vWFkg+TGhePfUzVmat3eC14TXYSsiiDSLI0dVLsrm9gZFABjPy/Qu6TKgl1tq1Bu1yDsuQgY3A3DOjCcg==}
+    peerDependencies:
+      '@types/react': ^19.0.0
 
   '@types/react-mentions@4.1.8':
     resolution: {integrity: sha512-Go86ozdnh0FTNbiGiDPAcNqYqtab9iGzLOgZPYUKrnhI4539jGzfJtP6rFHcXgi9Koe58yhkeyKYib6Ucul/sQ==}
@@ -2653,17 +2652,14 @@ packages:
   '@types/react-modal-video@1.2.3':
     resolution: {integrity: sha512-HzaySdWD7sECBHUtLMGx0ddj0a84Xoy6DKxUpLMCXrIhOehcoQLKvFFbfaBUtzoP3rmUaCsYkldFnVCkSZW8tw==}
 
-  '@types/react@18.0.35':
-    resolution: {integrity: sha512-6Laome31HpetaIUGFWl1VQ3mdSImwxtFZ39rh059a1MNnKGqBpC88J6NJ8n/Is3Qx7CefDGLgf/KhN/sYCf7ag==}
+  '@types/react@19.0.12':
+    resolution: {integrity: sha512-V6Ar115dBDrjbtXSrS+/Oruobc+qVbbUxDFC1RSbRqLt5SYvxxyIDrSC85RWml54g+jfNeEMZhEj7wW07ONQhA==}
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
 
   '@types/retry@0.12.0':
     resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
-
-  '@types/scheduler@0.16.8':
-    resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
 
   '@types/semver@7.5.6':
     resolution: {integrity: sha512-dn1l8LaMea/IjDoHNd9J52uBbInB796CDffS6VdIxvqYCPSG0V0DzHp76GpaWnlhg88uYyPbXCDIowa86ybd5A==}
@@ -11312,24 +11308,20 @@ snapshots:
       '@types/needle': 3.2.3
       '@types/node': 18.15.11
 
-  '@types/prop-types@15.7.11': {}
-
-  '@types/react-dom@18.0.11':
+  '@types/react-dom@19.0.4(@types/react@19.0.12)':
     dependencies:
-      '@types/react': 18.0.35
+      '@types/react': 19.0.12
 
   '@types/react-mentions@4.1.8':
     dependencies:
-      '@types/react': 18.0.35
+      '@types/react': 19.0.12
 
   '@types/react-modal-video@1.2.3':
     dependencies:
-      '@types/react': 18.0.35
+      '@types/react': 19.0.12
 
-  '@types/react@18.0.35':
+  '@types/react@19.0.12':
     dependencies:
-      '@types/prop-types': 15.7.11
-      '@types/scheduler': 0.16.8
       csstype: 3.1.2
 
   '@types/responselike@1.0.3':
@@ -11337,8 +11329,6 @@ snapshots:
       '@types/node': 18.15.11
 
   '@types/retry@0.12.0': {}
-
-  '@types/scheduler@0.16.8': {}
 
   '@types/semver@7.5.6': {}
 
@@ -11352,7 +11342,7 @@ snapshots:
 
   '@types/video-react@0.15.4':
     dependencies:
-      '@types/react': 18.0.35
+      '@types/react': 19.0.12
 
   '@types/websocket@1.0.10':
     dependencies:
@@ -11704,9 +11694,9 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  ariakit-react-utils@0.17.0-next.27(@types/react@18.0.35)(react@18.2.0):
+  ariakit-react-utils@0.17.0-next.27(@types/react@19.0.12)(react@18.2.0):
     dependencies:
-      '@types/react': 18.0.35
+      '@types/react': 19.0.12
       ariakit-utils: 0.17.0-next.27
       react: 18.2.0
 
@@ -11723,10 +11713,10 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  ariakit@2.0.0-next.43(@types/react@18.0.35)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+  ariakit@2.0.0-next.43(@types/react@19.0.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       '@floating-ui/dom': 1.5.3
-      ariakit-react-utils: 0.17.0-next.27(@types/react@18.0.35)(react@18.2.0)
+      ariakit-react-utils: 0.17.0-next.27(@types/react@19.0.12)(react@18.2.0)
       ariakit-utils: 0.17.0-next.27
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
