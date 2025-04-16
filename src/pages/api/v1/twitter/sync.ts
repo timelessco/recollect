@@ -4,9 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import imageToText, {
-	imageToTextHuggingface,
-} from "../../../../async/ai/imageToText";
+import imageToText from "../../../../async/ai/imageToText";
 import ocr from "../../../../async/ai/ocr";
 import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
@@ -152,17 +150,11 @@ export default async function handler(
 
 				if (item?.ogImage) {
 					try {
-						const imageCaptionApiCall = await imageToTextHuggingface(
-							item?.ogImage,
-						);
-						const jsonResponse = imageCaptionApiCall as Array<{
-							generated_text: string;
-						}>;
+						// Get OCR using the centralized function
+						imageOcrValue = await ocr(item.ogImage);
 
-						console.log("generating", jsonResponse);
-
-						image_caption = jsonResponse?.[0]?.generated_text;
-						imageOcrValue = await ocr(item?.ogImage);
+						// Get image caption using the centralized function
+						image_caption = await imageToText(item.ogImage);
 
 						console.log("generating ocr", imageOcrValue);
 					} catch (error) {
@@ -170,8 +162,6 @@ export default async function handler(
 						Sentry.captureException(`caption or ocr error ${error}`);
 					}
 				}
-
-				console.log("dddddd", imageOcrValue, image_caption);
 
 				return {
 					...item,

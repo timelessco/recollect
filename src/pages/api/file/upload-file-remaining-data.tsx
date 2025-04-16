@@ -2,10 +2,12 @@
 
 import { log } from "console";
 import { type NextApiResponse } from "next";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Sentry from "@sentry/nextjs";
+import axios from "axios";
 import { isNil } from "lodash";
 
-import { imageToTextHuggingface } from "../../../async/ai/imageToText";
+import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
 import {
 	type ImgMetadataType,
@@ -21,19 +23,21 @@ type Data = UploadFileApiResponse;
 
 const notVideoLogic = async (publicUrl: string) => {
 	const ogImage = publicUrl;
-	const imageCaption = await imageToTextHuggingface(ogImage as string);
+	let imageCaption = null;
 	let imageOcrValue = null;
 
-	try {
-		imageOcrValue = await ocr(ogImage);
-	} catch (error) {
-		console.error("OCR error", error);
-		Sentry.captureException(`OCR error ${error}`);
-	}
+	if (ogImage) {
+		try {
+			// Get OCR using the centralized function
+			imageOcrValue = await ocr(ogImage);
 
-	const jsonResponse = imageCaption as Array<{
-		generated_text: string;
-	}>;
+			// Get image caption using the centralized function
+			imageCaption = await imageToText(ogImage);
+		} catch (error) {
+			console.error("Gemini AI processing error", error);
+			Sentry.captureException(`Gemini AI processing error ${error}`);
+		}
+	}
 
 	let imgData;
 
@@ -48,7 +52,7 @@ const notVideoLogic = async (publicUrl: string) => {
 	}
 
 	const meta_data = {
-		img_caption: jsonResponse?.[0]?.generated_text,
+		img_caption: imageCaption,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
