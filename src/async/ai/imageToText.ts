@@ -1,23 +1,45 @@
 import { log } from "console";
-import { pipeline } from "@xenova/transformers";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
 
 type ImageCaptionReturn = Array<{ generated_text: string }> | null;
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_TOKEN as string);
 
 /**
- * Generates the image description from model that is loaded in local machine
+ * Generates the image description using Gemini AI
  *
  * @param {string} url the image url
- * @returns {string} the description
+ * @returns {Promise<string>} the description
  */
 const imageToText = async (url: string): Promise<string> => {
-	const pipe = await pipeline(
-		"image-to-text",
-		"Xenova/vit-gpt2-image-captioning",
-	);
-	const output = (await pipe(url)) as Array<{ generated_text: string }>;
+	try {
+		// Fetch the image
+		const imageResponse = await axios.get(url, {
+			responseType: "arraybuffer",
+		});
+		const imageBytes = Buffer.from(imageResponse.data).toString("base64");
 
-	return output?.[0]?.generated_text;
+		// Initialize the model
+		const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+
+		// For Image Caption
+		const captionPrompt = "Describe this image in a single, concise sentence.";
+		const captionResult = await model.generateContent([
+			captionPrompt,
+			{
+				inlineData: {
+					mimeType: "image/jpeg",
+					data: imageBytes,
+				},
+			},
+		]);
+
+		return captionResult.response.text();
+	} catch (error) {
+		console.error("Image caption error", error);
+		throw error;
+	}
 };
 
 /**

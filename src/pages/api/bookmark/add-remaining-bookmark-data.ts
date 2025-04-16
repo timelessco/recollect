@@ -10,7 +10,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
-import { imageToTextHuggingface } from "../../../async/ai/imageToText";
+import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
@@ -130,21 +130,14 @@ export default async function handler(
 
 	if (ogImage) {
 		try {
+			// Get OCR using the centralized function
 			imageOcrValue = await ocr(ogImage);
-		} catch (error) {
-			console.error("OCR error", error);
-			Sentry.captureException(`OCR error ${error}`);
-		}
 
-		try {
-			const imageCaptionApiCall = await imageToTextHuggingface(ogImage);
-			const jsonResponse = imageCaptionApiCall as Array<{
-				generated_text: string;
-			}>;
-			imageCaption = jsonResponse?.[0]?.generated_text;
+			// Get image caption using the centralized function
+			imageCaption = await imageToText(ogImage);
 		} catch (error) {
-			console.error("Image caption error", error);
-			Sentry.captureException(`Image caption error ${error}`);
+			console.error("Gemini AI processing error", error);
+			Sentry.captureException(`Gemini AI processing error ${error}`);
 		}
 	}
 
