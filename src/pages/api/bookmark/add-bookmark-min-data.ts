@@ -124,6 +124,7 @@ export default async function handler(
 	const email = userData?.data?.user?.email;
 
 	// when adding a bookmark into a category the same bookmark should not be present in the category
+	// this function checks if the bookmark is already present in the category
 	const checkIfBookmarkAlreadyExists = async () => {
 		const {
 			data: checkBookmarkData,

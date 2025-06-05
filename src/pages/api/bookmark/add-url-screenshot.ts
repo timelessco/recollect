@@ -1,3 +1,4 @@
+import { url } from "inspector";
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
@@ -55,17 +56,12 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
-	// screen shot api call
-	const screenShotResponse = await axios.request({
-		method: "POST",
-		url: process.env.SCREENSHOT_API,
-		headers: {
-			"content-type": "application/json",
-			Authorization: `Bearer ${process.env.SCREENSHOT_TOKEN}`,
-		},
-		data: { url: request.body.url },
-		responseType: "arraybuffer",
-	});
+	const screenShotResponse = await axios.get(
+		`https://headless-try.vercel.app/try?url=${encodeURIComponent(
+			request.body.url,
+		)}`,
+		{ responseType: "arraybuffer" },
+	);
 
 	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
 		"base64",
