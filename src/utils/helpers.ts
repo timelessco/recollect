@@ -32,6 +32,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
+import { errorToast } from "./toastMessages";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 	find(tagsData, (item) => {
@@ -97,15 +98,20 @@ export const getUserNameFromEmail = (email: string) => {
 	return null;
 };
 
-export const getBaseUrl = (href: string) => {
-	if (href && !isEmpty(href)) {
-		const url = new URL(href);
-		const baseUrl = `${url.host}`;
+export const getBaseUrl = (href: string): string => {
+	if (typeof href !== "string" || href.trim() === "") return "";
 
-		return baseUrl;
+	try {
+		const normalizedHref =
+			href.startsWith("http://") || href.startsWith("https://")
+				? href
+				: `https://${href}`;
+
+		const url = new URL(normalizedHref);
+		return url.host;
+	} catch {
+		return "";
 	}
-
-	return "";
 };
 
 export const isUserInACategory = (url: string) => {
