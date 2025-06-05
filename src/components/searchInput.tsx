@@ -184,7 +184,7 @@ const SearchInput = (props: SearchInputTypes) => {
 					<Spinner />
 				</div>
 			)}
-			<button
+			{/* <button
 				className={aiButtonClassName}
 				onClick={() => setAiButtonToggle(!aiButtonToggle)}
 				type="button"
@@ -196,7 +196,7 @@ const SearchInput = (props: SearchInputTypes) => {
 				>
 					<AiIcon selected={aiButtonToggle} />
 				</ToolTip>
-			</button>
+			</button> */}
 		</div>
 	);
 };

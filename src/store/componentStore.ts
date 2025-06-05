@@ -82,7 +82,7 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	currentSliderDropdownSlide: null,
 	setCurrentSliderDropdownSlide: (value: string | null) =>
 		set(() => ({ currentSliderDropdownSlide: value })),
-	aiButtonToggle: true,
+	aiButtonToggle: false,
 	setAiButtonToggle: (value: boolean) => set(() => ({ aiButtonToggle: value })),
 }));
 
