@@ -18,7 +18,6 @@ import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
-import useIsMobileView from "../../../hooks/useIsMobileView";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
@@ -34,6 +33,7 @@ import {
 	useLoadersStore,
 	useMiscellaneousStore,
 	useModalStore,
+	useSelectedStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -68,6 +68,7 @@ import {
 import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
+import { ToggleableCheckbox } from "./ToggleableCheckbox";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -110,6 +111,8 @@ const CardSection = ({
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
+	const selectedIds = useSelectedStore((state) => state.selectedIds);
+	const toggleSelectedId = useSelectedStore((state) => state.toggleSelectedId);
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
@@ -118,7 +121,6 @@ const CardSection = ({
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;
 	const queryClient = useQueryClient();
-	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
@@ -302,6 +304,13 @@ const CardSection = ({
 				</figure>
 			</div>
 		);
+		const checkBox = (
+			<ToggleableCheckbox
+				id={String(post.id)}
+				isSelected={selectedIds.has(String(post.id))}
+				onChange={handleCheckboxChange}
+			/>
+		);
 
 		const trashIcon = (
 			<div
@@ -415,6 +424,7 @@ const CardSection = ({
 						)}
 					</div>
 					<div className=" absolute right-0 top-0">{externalLinkIcon}</div>
+					<div className=" absolute right-1 top-8">{checkBox}</div>
 				</>
 			);
 		}
@@ -596,7 +606,6 @@ const CardSection = ({
 						url,
 						isPublicPage,
 						categorySlug === TRASH_URL,
-						isDesktop,
 					)
 				}
 				onKeyDown={() => {}}
@@ -972,6 +981,10 @@ const CardSection = ({
 				))}
 			</ListBox>
 		);
+	};
+
+	const handleCheckboxChange = (id: string, isSelected: boolean) => {
+		toggleSelectedId(id, isSelected);
 	};
 
 	return (

@@ -199,19 +199,12 @@ export const clickToOpenInNewTabLogic = (
 	event: React.MouseEvent<unknown, MouseEvent>,
 	url: SingleListData["url"],
 	isPublicPage: CardSectionProps["isPublicPage"],
-	isTrashPage: boolean,
 	isDesktop: boolean,
 ) => {
 	event.preventDefault();
 
 	// open on single click
 	if (isPublicPage || !isDesktop) {
-		window.open(url, "_blank");
-		return;
-	}
-
-	// open on double click
-	if (event.detail === 2 && !isPublicPage && !isTrashPage) {
 		window.open(url, "_blank");
 	}
 };

@@ -11,7 +11,6 @@ import {
 } from "react-aria";
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
-import useIsMobileView from "../../../hooks/useIsMobileView";
 import { type SingleListData } from "../../../types/apiTypes";
 import { viewValues } from "../../../utils/constants";
 import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
@@ -38,10 +37,9 @@ const Option = ({
 	type: SingleListData["type"];
 	url: string;
 }) => {
-	const { isDesktop } = useIsMobileView();
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
-	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
+	const { optionProps } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
@@ -66,9 +64,8 @@ const Option = ({
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
 			"hover:bg-custom-gray-8 mb-1":
-				(cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines) &&
-				!isSelected,
+				cardTypeCondition === viewValues.list ||
+				cardTypeCondition === viewValues.headlines,
 
 			"mb-1 list-headlines-wrapper":
 				cardTypeCondition === viewValues.list ||
@@ -87,7 +84,6 @@ const Option = ({
 					? []
 					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
 				disableDndCondition ? [] : focusProps,
-				disableDndCondition ? [] : optionProps,
 			)}
 			className={liClassName}
 			ref={ref}
@@ -99,13 +95,7 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) =>
-					clickToOpenInNewTabLogic(
-						event,
-						url,
-						isPublicPage,
-						isTrashPage,
-						isDesktop,
-					)
+					clickToOpenInNewTabLogic(event, url, isPublicPage, isTrashPage)
 				}
 			/>
 			{item.rendered}
