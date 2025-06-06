@@ -29,6 +29,7 @@ import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
 	useMiscellaneousStore,
+	useSelectedStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
