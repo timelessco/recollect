@@ -60,13 +60,21 @@ export default async function handler(
 	};
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
-
-	const screenShotResponse = await axios.get(
-		`https://headless-try.vercel.app/try?url=${encodeURIComponent(
-			request.body.url,
-		)}`,
-		{ responseType: "arraybuffer" },
-	);
+	let screenShotResponse;
+	try {
+		screenShotResponse = await axios.get(
+			`http://localhost:3000/api/screenshot?url=${encodeURIComponent(
+				request.body.url,
+			)}`,
+			{
+				responseType: "arraybuffer",
+			},
+		);
+	} catch {
+		console.error("Screenshot error");
+		Sentry.captureException(`Screenshot error`);
+		return;
+	}
 
 	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
 		"base64",
@@ -115,6 +123,7 @@ export default async function handler(
 		}
 	} else {
 		response.status(500).json({ data: null, error });
+		Sentry.captureException(`ERROR: update screenshot in DB error`);
 		throw new Error("ERROR: update screenshot in DB error");
 	}
 }
