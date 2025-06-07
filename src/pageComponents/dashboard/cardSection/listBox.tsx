@@ -29,7 +29,6 @@ import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
 	useMiscellaneousStore,
-	useSelectedStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -50,7 +49,7 @@ import {
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
 
-type ListBoxDropTypes = ListProps<object> & {
+export type ListBoxDropTypes = ListProps<object> & {
 	// bookmarksColumns: string | number[] | string[] | undefined;
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];

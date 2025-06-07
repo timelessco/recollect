@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -11,7 +11,7 @@ import { flatten, isNil, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
-import { Item } from "react-stately";
+import { Item, useListState } from "react-stately";
 
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
@@ -33,7 +33,6 @@ import {
 	useLoadersStore,
 	useMiscellaneousStore,
 	useModalStore,
-	useSelectedStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -67,8 +66,8 @@ import {
 } from "../../../utils/helpers";
 import VideoModal from "../modals/videoModal";
 
-import ListBox from "./listBox";
-import { ToggleableCheckbox } from "./ToggleableCheckbox";
+import { CheckboxWithOption } from "./CheckboxWithOption";
+import ListBox, { type ListBoxDropTypes } from "./listBox";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -111,8 +110,7 @@ const CardSection = ({
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
-	const selectedIds = useSelectedStore((state) => state.selectedIds);
-	const toggleSelectedId = useSelectedStore((state) => state.toggleSelectedId);
+	const ref = useRef(null);
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
@@ -267,11 +265,22 @@ const CardSection = ({
 		return name as CategoriesData;
 	};
 
-	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
-	const renderEditAndDeleteIcons = (post: SingleListData) => {
-		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
+	const propertyData: ListBoxDropTypes = {
+		bookmarksColumns,
+		bookmarksList,
+		cardTypeCondition: { cardTypeCondition },
+		isPublicPage,
+		onBulkBookmarkDelete,
+		onCategoryChange,
+		selectionMode: "multiple",
+	};
 
+	const optionState = useListState(propertyData);
+	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
+	const iconBgClassName =
+		"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
+
+	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const externalLinkIcon = (
 			<div
 				onClick={() => window.open(post?.url, "_blank")}
@@ -305,10 +314,10 @@ const CardSection = ({
 			</div>
 		);
 		const checkBox = (
-			<ToggleableCheckbox
-				id={String(post.id)}
-				isSelected={selectedIds.has(String(post.id))}
-				onChange={handleCheckboxChange}
+			<CheckboxWithOption
+				optionState={optionState}
+				postId={post.id}
+				ref={ref}
 			/>
 		);
 
@@ -981,10 +990,6 @@ const CardSection = ({
 				))}
 			</ListBox>
 		);
-	};
-
-	const handleCheckboxChange = (id: string, isSelected: boolean) => {
-		toggleSelectedId(id, isSelected);
 	};
 
 	return (
