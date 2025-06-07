@@ -39,7 +39,6 @@ const Option = ({
 }) => {
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
-	const { optionProps } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
