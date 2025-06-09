@@ -184,34 +184,20 @@ export const addBookmarkMinData = async ({
 	url,
 	category_id,
 	update_access,
-}: AddBookmarkMinDataPayloadTypes): Promise<{
-	data: { data: SingleListData[] };
-}> => {
+}: AddBookmarkMinDataPayloadTypes) => {
 	try {
-		const normalizedUrl =
-			url.startsWith("http://") || url.startsWith("https://")
-				? url
-				: `https://${url}`;
-
-		const urlResponse = await axios.get(normalizedUrl, { timeout: 5_000 });
-
-		if (urlResponse.status < 200 || urlResponse.status >= 400) {
-			throw new Error(`URL responded with status ${urlResponse.status}`);
-		}
-
 		const apiResponse = await axios.post(
 			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
 			{
-				url: normalizedUrl,
-				category_id: category_id ?? 0,
+				url,
+				category_id: isNull(category_id) ? 0 : category_id,
 				update_access,
 			},
 		);
 
 		return apiResponse as { data: { data: SingleListData[] } };
 	} catch (error) {
-		console.error("Error in addBookmarkMinData:", error);
-		throw new Error("URL is invalid or unreachable.");
+		return error;
 	}
 };
 
