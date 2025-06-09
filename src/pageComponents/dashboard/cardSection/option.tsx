@@ -91,21 +91,25 @@ const Option = ({
 			className={liClassName}
 			ref={ref}
 		>
-			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
-			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
-			<a
-				className="group absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
-				draggable={false}
-				href={url}
-				onClick={(event) =>
-					clickToOpenInNewTabLogic(event, url, isPublicPage, isTrashPage)
-				}
-			/>
-			{item.rendered}
-			<ToggleableCheckbox
-				className="absolute right-3.5 top-10 h-3 w-3 cursor-pointer opacity-0 group-hover:opacity-100"
-				{...mergeProps(disableDndCondition ? [] : optionProps)}
-			/>
+			<div className="relative h-full">
+				{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
+				{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+				<a
+					className="absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
+					draggable={false}
+					href={url}
+					onClick={(event) =>
+						clickToOpenInNewTabLogic(event, url, isPublicPage, isTrashPage)
+					}
+				/>
+				<div className="h-full">{item.rendered}</div>
+				<div className="absolute right-3.5 top-10 z-10">
+					<ToggleableCheckbox
+						className="h-4 w-4 cursor-pointer opacity-0 group-hover:opacity-100"
+						{...mergeProps(disableDndCondition ? [] : optionProps)}
+					/>
+				</div>
+			</div>
 		</li>
 	);
 };
