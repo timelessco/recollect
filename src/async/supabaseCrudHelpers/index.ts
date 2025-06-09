@@ -186,6 +186,7 @@ export const addBookmarkMinData = async ({
 	update_access,
 }: AddBookmarkMinDataPayloadTypes) => {
 	try {
+		// append https here
 		const apiResponse = await axios.post(
 			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
 			{

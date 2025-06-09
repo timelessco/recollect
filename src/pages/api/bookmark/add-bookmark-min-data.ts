@@ -107,6 +107,17 @@ export default async function handler(
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
 
+	const isInvalid = true;
+
+	if (isInvalid) {
+		response.status(500).json({
+			data: null,
+			error: "The URL does not exist",
+			message: "The URL does not exist",
+		});
+		return;
+	}
+
 	if (!updateAccess) {
 		response.status(500).json({
 			data: null,
@@ -235,6 +246,51 @@ export default async function handler(
 			});
 			return;
 		}
+	}
+
+	try {
+		const parsedUrl = new URL(url);
+		if (!parsedUrl.protocol.startsWith("http")) {
+			throw new Error("Invalid protocol");
+		}
+	} catch {
+		response.status(400).json({
+			data: null,
+			error: "Invalid URL format",
+			message:
+				"The provided URL is not valid. Please include http:// or https://",
+		});
+		return;
+	}
+
+	// Check if URL is reachable
+	try {
+		// 5 seconds timeout
+		// Only consider 2xx and 3xx status codes as successful
+		const urlCheckResponse = await axios.head(url, {
+			timeout: 5_000,
+			validateStatus: (status) => status >= 200 && status < 400,
+		});
+
+		// This check might be redundant since validateStatus already filters the status codes
+		// But keeping it as an extra safety measure
+		if (urlCheckResponse.status >= 400) {
+			response.status(400).json({
+				data: null,
+				error: "URL is not reachable",
+				message: `Received status code ${urlCheckResponse.status} when trying to access the URL`,
+			});
+			return;
+		}
+	} catch (urlValidationError) {
+		console.error("URL validation failed:", urlValidationError);
+		response.status(400).json({
+			data: null,
+			error: "URL validation failed",
+			message:
+				"Could not verify the URL. Please check if the URL is correct and accessible.",
+		});
+		return;
 	}
 
 	// here we add the scrapper data , in the remainingApi call we add s3 data
