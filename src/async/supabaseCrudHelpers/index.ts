@@ -187,10 +187,16 @@ export const addBookmarkMinData = async ({
 }: AddBookmarkMinDataPayloadTypes) => {
 	try {
 		// append https here
+		let finalUrl = url;
+
+		if (!url.startsWith("http") || !url.startsWith("https")) {
+			finalUrl = `https://${url}`;
+		}
+
 		const apiResponse = await axios.post(
 			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
 			{
-				url,
+				url: finalUrl,
 				category_id: isNull(category_id) ? 0 : category_id,
 				update_access,
 			},
