@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, type ComponentProps } from "react";
 
-export const ToggleableCheckbox = () => {
+type ToggleableCheckboxProps = ComponentProps<"input">;
+
+export const ToggleableCheckbox = (props: ToggleableCheckboxProps) => {
 	const [checked, setChecked] = useState(false);
 
 	const handleClick = () => {
@@ -11,9 +13,9 @@ export const ToggleableCheckbox = () => {
 	return (
 		<input
 			checked={checked}
-			className="h-4 w-4 cursor-pointer"
 			onChange={handleClick}
 			type="checkbox"
+			{...props}
 		/>
 	);
 };
