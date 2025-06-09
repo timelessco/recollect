@@ -66,7 +66,6 @@ import {
 } from "../../../utils/helpers";
 import VideoModal from "../modals/videoModal";
 
-import { CheckboxWithOption } from "./CheckboxWithOption";
 import ListBox, { type ListBoxDropTypes } from "./listBox";
 
 export type onBulkBookmarkDeleteType = (
@@ -313,13 +312,6 @@ const CardSection = ({
 				</figure>
 			</div>
 		);
-		const checkBox = (
-			<CheckboxWithOption
-				optionState={optionState}
-				postId={post.id}
-				ref={ref}
-			/>
-		);
 
 		const trashIcon = (
 			<div
@@ -433,7 +425,6 @@ const CardSection = ({
 						)}
 					</div>
 					<div className=" absolute right-0 top-0">{externalLinkIcon}</div>
-					<div className=" absolute right-1 top-8">{checkBox}</div>
 				</>
 			);
 		}

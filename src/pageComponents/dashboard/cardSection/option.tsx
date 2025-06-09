@@ -15,6 +15,8 @@ import { type SingleListData } from "../../../types/apiTypes";
 import { viewValues } from "../../../utils/constants";
 import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
 
+import { ToggleableCheckbox } from "./ToggleableCheckbox";
+
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
 };
@@ -39,6 +41,7 @@ const Option = ({
 }) => {
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
+	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
@@ -63,8 +66,9 @@ const Option = ({
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
 			"hover:bg-custom-gray-8 mb-1":
-				cardTypeCondition === viewValues.list ||
-				cardTypeCondition === viewValues.headlines,
+				(cardTypeCondition === viewValues.list ||
+					cardTypeCondition === viewValues.headlines) &&
+				!isSelected,
 
 			"mb-1 list-headlines-wrapper":
 				cardTypeCondition === viewValues.list ||
@@ -90,7 +94,7 @@ const Option = ({
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
+				className="group absolute left-0 top-0 h-full w-full cursor-default rounded-lg"
 				draggable={false}
 				href={url}
 				onClick={(event) =>
@@ -98,6 +102,10 @@ const Option = ({
 				}
 			/>
 			{item.rendered}
+			<ToggleableCheckbox
+				className="absolute right-3.5 top-10 h-3 w-3 cursor-pointer opacity-0 group-hover:opacity-100"
+				{...mergeProps(disableDndCondition ? [] : optionProps)}
+			/>
 		</li>
 	);
 };

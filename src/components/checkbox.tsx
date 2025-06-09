@@ -1,18 +1,30 @@
+import { type ComponentProps } from "react";
 import { Checkbox as AriaCheckbox } from "ariakit/checkbox";
 
-type CheckboxPropsTypes = {
+type CheckboxPropsTypes = ComponentProps<typeof AriaCheckbox> & {
 	checked: boolean;
 	disabled?: boolean;
 	label: string;
 	onChange: (value: number | string) => void;
+	showOnFalse?: boolean;
 	value: number | string;
 };
 
 const Checkbox = (props: CheckboxPropsTypes) => {
-	const { label, value, onChange, checked, disabled = false } = props;
+	const {
+		label,
+		value,
+		onChange,
+		checked,
+		disabled = false,
+		showOnFalse = false,
+	} = props;
+
+	const shouldHide = showOnFalse && !checked;
+
+	if (shouldHide) return null;
 
 	return (
-		// disabling this because as per docs htmlFor is not needed
 		// eslint-disable-next-line tailwindcss/no-custom-classname
 		<label className="checkbox-container relative flex cursor-pointer items-center">
 			<AriaCheckbox
