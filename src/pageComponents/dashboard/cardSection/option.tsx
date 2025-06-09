@@ -57,7 +57,11 @@ const Option = ({
 		{
 			"mb-6": cardTypeCondition === viewValues.moodboard,
 			"mb-[18px]": cardTypeCondition === viewValues.card,
-			"hover:shadow-custom-4":
+			// "hover:shadow-custom-4":
+			// 	cardTypeCondition === viewValues.moodboard ||
+			// 	cardTypeCondition === viewValues.card ||
+			// 	cardTypeCondition === viewValues.timeline,
+			"hover:shadow-lg":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
