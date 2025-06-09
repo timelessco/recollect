@@ -97,20 +97,15 @@ export const getUserNameFromEmail = (email: string) => {
 	return null;
 };
 
-export const getBaseUrl = (href: string): string => {
-	if (typeof href !== "string" || href.trim() === "") return "";
+export const getBaseUrl = (href: string) => {
+	if (href && !isEmpty(href)) {
+		const url = new URL(href);
+		const baseUrl = `${url.host}`;
 
-	try {
-		const normalizedHref =
-			href.startsWith("http://") || href.startsWith("https://")
-				? href
-				: `https://${href}`;
-
-		const url = new URL(normalizedHref);
-		return url.host;
-	} catch {
-		return "";
+		return baseUrl;
 	}
+
+	return "";
 };
 
 export const isUserInACategory = (url: string) => {
