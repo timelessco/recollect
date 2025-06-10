@@ -107,6 +107,7 @@ const Option = ({
 			/>
 			{item.rendered}
 			<ToggleableCheckbox
+				checked={isSelected}
 				className={`${
 					isSelected ? "opacity-100" : "opacity-0"
 				} absolute right-3.5 top-10 h-4 w-4 cursor-pointer opacity-0 group-hover:opacity-100 ${
