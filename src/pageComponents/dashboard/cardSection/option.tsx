@@ -82,7 +82,7 @@ const Option = ({
 		<li
 			aria-selected={isSelected}
 			className={classNames(liClassName, {
-				"[&>*:not(a)]:rounded-t-3xl [&>*:not(a)]:rounded-b-lg/ [&>*:not(a)]:bg-black [&>*:not(a)]:text-white":
+				"[&>*:not(a)]:rounded-t-3xl [&>*:not(a)]:rounded-b-lg [&>*:not(a)]:bg-black [&>*:not(a)]:text-white":
 					isSelected,
 			})}
 			ref={ref}
