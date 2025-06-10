@@ -11,7 +11,7 @@ import { flatten, isNil, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
-import { Item, useListState } from "react-stately";
+import { Item } from "react-stately";
 
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
@@ -109,7 +109,6 @@ const CardSection = ({
 }: CardSectionProps) => {
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
-	const ref = useRef(null);
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
@@ -264,17 +263,6 @@ const CardSection = ({
 		return name as CategoriesData;
 	};
 
-	const propertyData: ListBoxDropTypes = {
-		bookmarksColumns,
-		bookmarksList,
-		cardTypeCondition: { cardTypeCondition },
-		isPublicPage,
-		onBulkBookmarkDelete,
-		onCategoryChange,
-		selectionMode: "multiple",
-	};
-
-	const optionState = useListState(propertyData);
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const iconBgClassName =
 		"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
