@@ -107,13 +107,6 @@ export default async function handler(
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
 
-	// const finalUrl = url;
-
-	// if (!url.startsWith("http")) {
-	// 	finalUrl = `https://${url}`;
-	// }
-
-	// Check if URL is reachable
 	try {
 		// 5 seconds timeout
 		// Only consider 2xx and 3xx status codes as successful
