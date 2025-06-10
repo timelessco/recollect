@@ -80,6 +80,12 @@ const Option = ({
 
 	return (
 		<li
+			aria-selected={isSelected}
+			className={classNames(liClassName, {
+				"bg-black text-white": isSelected,
+			})}
+			ref={ref}
+			role="option"
 			{...mergeProps(
 				// NOTE: we are omiting some keys in dragprops because they are causing focus trap issue
 				// the main problem that caused the focus trap issue is onKeyUpCapture
@@ -88,8 +94,6 @@ const Option = ({
 					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
 				disableDndCondition ? [] : focusProps,
 			)}
-			className={liClassName}
-			ref={ref}
 		>
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
