@@ -146,7 +146,7 @@
 		"@next/bundle-analyzer": "14.0.3",
 		"@next/env": "14.0.3",
 		"@next/eslint-plugin-next": "14.0.3",
-		"@octokit/core": "6.0.1",
+		"@octokit/core": "7.0.2",
 		"@release-it/conventional-changelog": "10.0.0",
 		"@tanstack/react-query-devtools": "5.28.6",
 		"@types/formidable": "^3.0.0",
