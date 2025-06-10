@@ -1,21 +1,9 @@
-import React, { useState, type ComponentProps } from "react";
+import React, { type ComponentProps } from "react";
 
-type ToggleableCheckboxProps = ComponentProps<"input">;
-
-export const ToggleableCheckbox = (props: ToggleableCheckboxProps) => {
-	const [checked, setChecked] = useState(false);
-
-	const handleClick = () => {
-		const newChecked = !checked;
-		setChecked(newChecked);
-	};
-
-	return (
-		<input
-			checked={checked}
-			onChange={handleClick}
-			type="checkbox"
-			{...props}
-		/>
-	);
+type ToggleableCheckboxProps = Omit<ComponentProps<"input">, "onChange"> & {
+	checked: boolean;
 };
+
+export const ToggleableCheckbox = ({ ...props }: ToggleableCheckboxProps) => (
+	<input type="checkbox" {...props} />
+);

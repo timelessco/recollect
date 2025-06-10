@@ -66,7 +66,7 @@ import {
 } from "../../../utils/helpers";
 import VideoModal from "../modals/videoModal";
 
-import ListBox, { type ListBoxDropTypes } from "./listBox";
+import ListBox from "./listBox";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
