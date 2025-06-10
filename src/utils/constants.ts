@@ -108,6 +108,9 @@ export const EMBEDDINGS_POST_API = "/v1/ai/embeddings/post";
 export const EMBEDDINGS_DELETE_API = "/v1/ai/embeddings/delete";
 export const AI_SEARCH_API = "/v1/ai/search/get";
 
+// Screenshot api
+export const SCREENSHOT_API = "v1/bookmarks/get/screenshot";
+
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
 export const UNCATEGORIZED_URL = "uncategorized";
@@ -251,3 +254,17 @@ export const infoValues = [
 	singleInfoValues.description,
 	singleInfoValues.tags,
 ];
+// headless browser
+export const localExecutablePath =
+	process.platform === "win32"
+		? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+		: process.platform === "linux"
+		? "/usr/bin/google-chrome"
+		: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+export const remoteExecutablePath =
+	"https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar";
+
+export const isDevelopment = process.env.NODE_ENV === "development";
+
+export const userAgent =
+	"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36";

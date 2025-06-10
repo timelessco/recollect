@@ -1,15 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
+import { type NextApiRequest, type NextApiResponse } from "next";
+import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import chromium from "@sparticuz/chromium-min";
 import puppeteer from "puppeteer-core";
+import { z } from "zod";
 
-import cfCheck from "../../utils/cfCheck";
+import cfCheck from "../../../../../utils/cfCheck";
 import {
-	isDev as isDevelopment,
+	isDevelopment,
 	localExecutablePath,
 	remoteExecutablePath,
 	userAgent,
-} from "../../utils/utils";
+} from "../../../../../utils/constants";
 
 export const config = {
 	api: {
@@ -18,15 +22,41 @@ export const config = {
 	},
 };
 
-export default async function handler(request, res) {
-	const urlString = request.query.url;
+const querySchema = z.object({
+	url: z.string().url(),
+});
+export default async function handler(
+	request: NextApiRequest,
+	response: NextApiResponse,
+) {
+	const result = querySchema.safeParse(request?.query);
+	if (request.method !== "GET") {
+		return NextResponse.json(
+			{ error: "Only GET requests allowed" },
+			{ status: 405 },
+		);
+	}
+
+	if (!result.success) {
+		response.status(400).json({ error: result.error.format() });
+		return "";
+	}
+
+	const { searchParams } = new URL(
+		request.url ?? "",
+		process.env.NEXT_PUBLIC_VERCEL_URL,
+	);
+	const urlString = searchParams.get("url");
 	if (!urlString) {
-		res.status(400).json({ error: "Missing url parameter" });
-		return;
+		return NextResponse.json(
+			{ error: "Missing url parameter" },
+			{ status: 400 },
+		);
 	}
 
 	let browser = null;
 	try {
+		// eslint-disable-next-line import/no-named-as-default-member
 		browser = await puppeteer.launch({
 			ignoreDefaultArgs: ["--enable-automation"],
 			args: isDevelopment
@@ -42,7 +72,7 @@ export default async function handler(request, res) {
 				: await chromium.executablePath(remoteExecutablePath),
 			// isDevelopment ? false : "new",
 			// when its new then its headless
-			headless: "new",
+			headless: true,
 			debuggingPort: isDevelopment ? 9_222 : undefined,
 		});
 
@@ -52,7 +82,7 @@ export default async function handler(request, res) {
 		await page.setViewport({ width: 1_920, height: 1_080 });
 
 		const preloadFile = fs.readFileSync(
-			path.join(process.cwd(), "src/utils/preload.js"),
+			path.join(process.cwd(), "src/utils/preload.ts"),
 			"utf8",
 		);
 		await page.evaluateOnNewDocument(preloadFile);
@@ -66,14 +96,17 @@ export default async function handler(request, res) {
 
 		const blob = await page.screenshot({ type: "png" });
 
-		res.setHeader("Content-Type", "image/png");
-		res.setHeader("Content-Length", blob.length.toString());
-		res.status(200).end(blob);
-		return;
+		response.setHeader("Content-Type", "image/png");
+		response.setHeader("Content-Length", blob.length.toString());
+		response.status(200).end(blob);
+		return "";
 	} catch (error) {
 		console.error("Error:", error);
-		res.status(500).json({ error: "Internal Server Error" });
-		return;
+		Sentry.captureException(`Add Embeddings error`);
+		return NextResponse.json(
+			{ error: "Internal Server Error" },
+			{ status: 500 },
+		);
 	} finally {
 		if (browser) await browser.close();
 	}

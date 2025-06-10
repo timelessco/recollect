@@ -1,4 +1,3 @@
-import { url } from "inspector";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -19,6 +18,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 import { apiCookieParser } from "../../../utils/helpers";
@@ -33,13 +33,6 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	if (!process.env.SCREENSHOT_TOKEN) {
-		response
-			.status(500)
-			.json({ data: null, error: "Screen shot token missing in env" });
-		throw new Error("ERROR: Screen shot token missing in env");
-	}
-
 	const supabase = apiSupabaseClient(request, response);
 
 	const upload = async (base64info: string, uploadUserId: string) => {
@@ -63,7 +56,7 @@ export default async function handler(
 	let screenShotResponse;
 	try {
 		screenShotResponse = await axios.get(
-			`http://localhost:3000/api/screenshot?url=${encodeURIComponent(
+			`${getBaseUrl()}/${NEXT_API_URL}/${SCREENSHOT_API}?url=${encodeURIComponent(
 				request.body.url,
 			)}`,
 			{
