@@ -3,7 +3,7 @@ import { Checkbox as AriaCheckbox } from "ariakit/checkbox";
 
 type CheckboxPropsTypes = ComponentProps<typeof AriaCheckbox> & {
 	checked: boolean;
-	classname?: string | ((props: { isPressed: boolean }) => string);
+	classname?: string;
 	disabled?: boolean;
 	label?: string;
 	onChange?: (value: number | string) => void;
