@@ -82,7 +82,11 @@ const Option = ({
 		<li
 			aria-selected={isSelected}
 			className={classNames(liClassName, {
-				"rounded-t-3xl rounded-b-lg bg-black text-white": isSelected,
+				"rounded-t-3xl rounded-b-lg":
+					isSelected &&
+					(cardTypeCondition === viewValues.moodboard ||
+						cardTypeCondition === viewValues.card),
+				"bg-black text-white": isSelected,
 			})}
 			ref={ref}
 			role="option"
@@ -112,9 +116,9 @@ const Option = ({
 					isSelected ? "opacity-100" : "opacity-0"
 				} absolute right-3.5 top-10 h-4 w-4 cursor-pointer opacity-0 group-hover:opacity-100 ${
 					cardTypeCondition === viewValues.list
-						? "right-28 top-5"
+						? "right-[112px] top-5"
 						: cardTypeCondition === viewValues.headlines
-						? "right-28 top-4"
+						? "right-[112px] top-4"
 						: "top-10"
 				}`}
 				{...mergeProps(disableDndCondition ? [] : optionProps)}
