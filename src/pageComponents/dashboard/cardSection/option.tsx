@@ -109,22 +109,24 @@ const Option = ({
 				}
 			/>
 			{item.rendered}
-			<Checkbox
-				checked={isSelected}
-				classname={`${
-					isSelected ? "opacity-100" : "opacity-0"
-				} absolute right-0 top-10  cursor-pointer opacity-0 group-hover:opacity-100  ${
-					cardTypeCondition === viewValues.list
-						? "top-5"
-						: cardTypeCondition === viewValues.headlines
-						? "top-4"
-						: "top-3"
-				}`}
-				value={isSelected ? "true" : "false"}
-				{...(optionProps.onPointerDown
-					? { onPointerDown: optionProps.onPointerDown }
-					: {})}
-			/>
+			{!isPublicPage && (
+				<Checkbox
+					checked={isSelected}
+					classname={`${
+						isSelected ? "opacity-100" : "opacity-0"
+					} absolute right-0 top-10  cursor-pointer opacity-0 group-hover:opacity-100  ${
+						cardTypeCondition === viewValues.list
+							? "top-5"
+							: cardTypeCondition === viewValues.headlines
+							? "top-4"
+							: "top-3"
+					}`}
+					value={isSelected ? "true" : "false"}
+					{...(optionProps.onPointerDown
+						? { onPointerDown: optionProps.onPointerDown }
+						: {})}
+				/>
+			)}
 		</li>
 	);
 };
