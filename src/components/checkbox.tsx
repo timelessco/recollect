@@ -24,7 +24,6 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 	} = props;
 
 	return (
-		// eslint-disable-next-line tailwindcss/no-custom-classname
 		<label
 			className={`flex cursor-pointer items-center justify-center ${classname}`}
 		>
