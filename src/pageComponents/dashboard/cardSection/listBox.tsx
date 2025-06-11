@@ -49,7 +49,7 @@ import {
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
 
-export type ListBoxDropTypes = ListProps<object> & {
+type ListBoxDropTypes = ListProps<object> & {
 	// bookmarksColumns: string | number[] | string[] | undefined;
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];
