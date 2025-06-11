@@ -18,7 +18,6 @@ import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
-import useIsMobileView from "../../../hooks/useIsMobileView";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
@@ -27,7 +26,6 @@ import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
 import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
-import LinkExternalIcon from "../../../icons/linkExternalIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import VideoIcon from "../../../icons/videoIcon";
 import {
@@ -118,7 +116,6 @@ const CardSection = ({
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;
 	const queryClient = useQueryClient();
-	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
@@ -268,23 +265,10 @@ const CardSection = ({
 	};
 
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
+	const iconBgClassName =
+		"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
+
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
-		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
-
-		const externalLinkIcon = (
-			<div
-				onClick={() => window.open(post?.url, "_blank")}
-				onKeyDown={() => {}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure className={`${iconBgClassName} ml-1`}>
-					<LinkExternalIcon />
-				</figure>
-			</div>
-		);
-
 		const pencilIcon = (
 			<div
 				className={`${iconBgClassName}`}
@@ -329,22 +313,6 @@ const CardSection = ({
 				</figure>
 			</div>
 		);
-
-		if (isPublicPage) {
-			const publicExternalIconClassname = classNames({
-				"absolute  top-0": true,
-				"left-[11px]":
-					cardTypeCondition === viewValues.moodboard ||
-					cardTypeCondition === viewValues.card ||
-					cardTypeCondition === viewValues.timeline,
-				"left-[-34px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
-			});
-			return (
-				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
-			);
-		}
 
 		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
 			//  in trash page
@@ -398,32 +366,27 @@ const CardSection = ({
 			});
 
 			return (
-				<>
-					<div className={editTrashClassname}>
-						{isBookmarkCreatedByLoggedinUser(post) ? (
-							<>
-								{pencilIcon}
-								{isDeleteBookmarkLoading &&
-								deleteBookmarkId?.includes(post?.id) ? (
-									<div>
-										<Spinner size={15} />
-									</div>
-								) : (
-									trashIcon
-								)}
-							</>
-						) : (
-							pencilIcon
-						)}
-					</div>
-					<div className=" absolute right-0 top-0">{externalLinkIcon}</div>
-				</>
+				<div className={editTrashClassname}>
+					{isBookmarkCreatedByLoggedinUser(post) ? (
+						<>
+							{pencilIcon}
+							{isDeleteBookmarkLoading &&
+							deleteBookmarkId?.includes(post?.id) ? (
+								<div>
+									<Spinner size={15} />
+								</div>
+							) : (
+								trashIcon
+							)}
+						</>
+					) : (
+						pencilIcon
+					)}
+				</div>
 			);
 		}
 
-		return (
-			<div className=" absolute left-[10px] top-0">{externalLinkIcon}</div>
-		);
+		return <div />;
 	};
 
 	const renderAvatar = (item: SingleListData) => {
@@ -483,9 +446,6 @@ const CardSection = ({
 			"w-full rounded-lg  moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.timeline,
-			"relative z-[-1]":
-				cardTypeCondition === viewValues.card ||
-				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const loaderClassName = classNames({
@@ -598,7 +558,6 @@ const CardSection = ({
 						url,
 						isPublicPage,
 						categorySlug === TRASH_URL,
-						isDesktop,
 					)
 				}
 				onKeyDown={() => {}}
