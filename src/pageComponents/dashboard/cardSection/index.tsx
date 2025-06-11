@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -26,7 +26,6 @@ import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
 import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
-import LinkExternalIcon from "../../../icons/linkExternalIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import VideoIcon from "../../../icons/videoIcon";
 import {
@@ -268,19 +267,6 @@ const CardSection = ({
 		"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
 
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
-		const externalLinkIcon = (
-			<div
-				onClick={() => window.open(post?.url, "_blank")}
-				onKeyDown={() => {}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure className={`${iconBgClassName} ml-1`}>
-					<LinkExternalIcon />
-				</figure>
-			</div>
-		);
-
 		const pencilIcon = (
 			<div
 				className={`${iconBgClassName}`}
@@ -325,22 +311,6 @@ const CardSection = ({
 				</figure>
 			</div>
 		);
-
-		if (isPublicPage) {
-			const publicExternalIconClassname = classNames({
-				"absolute  top-0": true,
-				"left-[11px]":
-					cardTypeCondition === viewValues.moodboard ||
-					cardTypeCondition === viewValues.card ||
-					cardTypeCondition === viewValues.timeline,
-				"left-[-34px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
-			});
-			return (
-				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
-			);
-		}
 
 		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
 			//  in trash page
@@ -394,32 +364,27 @@ const CardSection = ({
 			});
 
 			return (
-				<>
-					<div className={editTrashClassname}>
-						{isBookmarkCreatedByLoggedinUser(post) ? (
-							<>
-								{pencilIcon}
-								{isDeleteBookmarkLoading &&
-								deleteBookmarkId?.includes(post?.id) ? (
-									<div>
-										<Spinner size={15} />
-									</div>
-								) : (
-									trashIcon
-								)}
-							</>
-						) : (
-							pencilIcon
-						)}
-					</div>
-					<div className=" absolute right-0 top-0">{externalLinkIcon}</div>
-				</>
+				<div className={editTrashClassname}>
+					{isBookmarkCreatedByLoggedinUser(post) ? (
+						<>
+							{pencilIcon}
+							{isDeleteBookmarkLoading &&
+							deleteBookmarkId?.includes(post?.id) ? (
+								<div>
+									<Spinner size={15} />
+								</div>
+							) : (
+								trashIcon
+							)}
+						</>
+					) : (
+						pencilIcon
+					)}
+				</div>
 			);
 		}
 
-		return (
-			<div className=" absolute left-[10px] top-0">{externalLinkIcon}</div>
-		);
+		return <div />;
 	};
 
 	const renderAvatar = (item: SingleListData) => {
