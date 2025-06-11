@@ -3,38 +3,45 @@ import { Checkbox as AriaCheckbox } from "ariakit/checkbox";
 
 type CheckboxPropsTypes = ComponentProps<typeof AriaCheckbox> & {
 	checked: boolean;
+	classname?: string | ((props: { isPressed: boolean }) => string);
 	disabled?: boolean;
-	label: string;
-	onChange: (value: number | string) => void;
+	label?: string;
+	onChange?: (value: number | string) => void;
 	showOnFalse?: boolean;
+	showPlaceholder?: boolean;
 	value: number | string;
 };
 
 const Checkbox = (props: CheckboxPropsTypes) => {
 	const {
-		label,
+		label = "",
 		value,
-		onChange,
+		onChange = () => {},
 		checked,
 		disabled = false,
-		showOnFalse = false,
+		classname,
+		showPlaceholder = false,
+		...rest
 	} = props;
-
-	const shouldHide = showOnFalse && !checked;
-
-	if (shouldHide) return null;
 
 	return (
 		// eslint-disable-next-line tailwindcss/no-custom-classname
-		<label className="checkbox-container relative flex cursor-pointer items-center">
+		<label
+			className={`flex cursor-pointer items-center justify-center ${classname}`}
+		>
 			<AriaCheckbox
 				checked={checked}
-				className="aria-checkbox opacity-0"
+				className={`aria-checkbox h-4 w-4 ${
+					showPlaceholder ? "opacity-0" : ""
+				}`}
 				disabled={disabled}
 				onChange={(event) => onChange(event.target.value)}
 				value={value}
+				{...rest}
 			/>
-			<div className="checkbox-div pointer-events-none absolute h-4 w-4" />
+			{showPlaceholder && (
+				<div className="checkbox-div pointer-events-none absolute left-4 h-4 w-4" />
+			)}
 			<span
 				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className={`checkmark ml-3 text-sm leading-[21px] text-gray-light-12  ${

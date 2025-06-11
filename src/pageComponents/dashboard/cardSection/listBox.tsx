@@ -275,6 +275,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 								?.length}
             bookmarks`}
 							onChange={() => state.selectionManager.clearSelection()}
+							showPlaceholder
 							value="selected-bookmarks"
 						/>
 						{/* <Button
