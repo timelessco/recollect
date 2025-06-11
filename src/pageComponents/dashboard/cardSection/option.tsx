@@ -11,11 +11,10 @@ import {
 } from "react-aria";
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
+import Checkbox from "../../../components/checkbox";
 import { type SingleListData } from "../../../types/apiTypes";
 import { viewValues } from "../../../utils/constants";
 import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
-
-import { ToggleableCheckbox } from "./ToggleableCheckbox";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
@@ -110,18 +109,21 @@ const Option = ({
 				}
 			/>
 			{item.rendered}
-			<ToggleableCheckbox
+			<Checkbox
 				checked={isSelected}
-				className={`${
+				classname={`${
 					isSelected ? "opacity-100" : "opacity-0"
-				} absolute right-3.5 top-10 h-4 w-4 cursor-pointer opacity-0 group-hover:opacity-100 ${
+				} absolute right-0 top-10  cursor-pointer opacity-0 group-hover:opacity-100  ${
 					cardTypeCondition === viewValues.list
 						? "right-[112px] top-5"
 						: cardTypeCondition === viewValues.headlines
 						? "right-[112px] top-4"
 						: "top-10"
 				}`}
-				{...mergeProps(disableDndCondition ? [] : optionProps)}
+				value={isSelected ? "true" : "false"}
+				{...(optionProps.onPointerDown
+					? { onPointerDown: optionProps.onPointerDown }
+					: {})}
 			/>
 		</li>
 	);
