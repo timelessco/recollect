@@ -7,7 +7,6 @@ type CheckboxPropsTypes = ComponentProps<typeof AriaCheckbox> & {
 	disabled?: boolean;
 	label?: string;
 	onChange?: (value: number | string) => void;
-	showOnFalse?: boolean;
 	showPlaceholder?: boolean;
 	value: number | string;
 };
