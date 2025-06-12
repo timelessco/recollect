@@ -102,7 +102,7 @@ export default async function handler(
 		return "";
 	} catch (error) {
 		console.error("Error:", error);
-		Sentry.captureException(`Add Embeddings error`);
+		Sentry.captureException(`headless browser error: ${error}`);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
 			{ status: 500 },

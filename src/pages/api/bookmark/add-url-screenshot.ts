@@ -56,13 +56,14 @@ export default async function handler(
 	let screenShotResponse;
 	try {
 		screenShotResponse = await axios.get(
-			`${getBaseUrl()}/${NEXT_API_URL}/${SCREENSHOT_API}?url=${encodeURIComponent(
-				request.body.url,
-			)}`,
+			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
 			{
 				responseType: "arraybuffer",
 			},
 		);
+		if (screenShotResponse.status === 200) {
+			console.error("***Screenshot success**");
+		}
 	} catch {
 		console.error("Screenshot error");
 		Sentry.captureException(`Screenshot error`);
