@@ -5,6 +5,7 @@ import { find } from "lodash";
 import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
+	useLoadersStore,
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
@@ -23,6 +24,9 @@ export default function useSearchBookmarks() {
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const session = useSupabaseSession((state) => state.session);
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
+	const toggleIsSearchLoading = useLoadersStore(
+		(state) => state.toggleIsSearchLoading,
+	);
 
 	const queryClient = useQueryClient();
 
@@ -36,6 +40,7 @@ export default function useSearchBookmarks() {
 		data: FetchSharedCategoriesData[];
 		error: PostgrestError;
 	};
+
 	// this tells if the collection is a shared collection or not
 	const isSharedCategory = Boolean(
 		find(
@@ -44,12 +49,27 @@ export default function useSearchBookmarks() {
 		),
 	);
 
-	const { data } = useQuery(
-		[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-		async () =>
-			!aiButtonToggle &&
-			(await searchBookmarks(searchText, CATEGORY_ID, isSharedCategory)),
-	);
+	const { data, isLoading } = useQuery({
+		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
+		queryFn: async () => {
+			toggleIsSearchLoading(true);
+			try {
+				if (!aiButtonToggle && searchText) {
+					return await searchBookmarks(
+						searchText,
+						CATEGORY_ID,
+						isSharedCategory,
+					);
+				}
 
-	return { data };
+				return null;
+			} finally {
+				toggleIsSearchLoading(false);
+			}
+		},
+		enabled: Boolean(searchText) && searchText.length > 0,
+		refetchOnWindowFocus: false,
+	});
+
+	return { data, isLoading };
 }
