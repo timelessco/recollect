@@ -172,6 +172,7 @@ const Dashboard = () => {
 	const setShareCategoryId = useMiscellaneousStore(
 		(state) => state.setShareCategoryId,
 	);
+	const searchText = useMiscellaneousStore((state) => state.searchText);
 
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
@@ -633,7 +634,7 @@ const Dashboard = () => {
 											dataLength={flattendPaginationBookmarkData?.length}
 											endMessage={
 												<p className="pb-6 text-center">
-													Life happens, save it.
+													{isEmpty(searchText) && "Life happens, save it."}
 												</p>
 											}
 											hasMore={hasMoreLogic()}
