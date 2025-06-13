@@ -520,6 +520,10 @@ const Dashboard = () => {
 
 	// tells if the latest paginated data is the end for total bookmark data based on current category
 	const hasMoreLogic = (): boolean => {
+		if (!isEmpty(searchText)) {
+			return false;
+		}
+
 		const firstPaginatedData =
 			allBookmarksData?.pages?.length !== 0
 				? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
