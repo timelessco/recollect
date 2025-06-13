@@ -1,3 +1,4 @@
+// currently this endpoint is not used, insted screenshot api is hosted on vercel ****SCREENSHOT_API***
 import fs from "node:fs";
 import path from "node:path";
 import { type NextApiRequest, type NextApiResponse } from "next";
