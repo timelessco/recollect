@@ -172,6 +172,7 @@ const Dashboard = () => {
 	const setShareCategoryId = useMiscellaneousStore(
 		(state) => state.setShareCategoryId,
 	);
+	const searchText = useMiscellaneousStore((state) => state.searchText);
 
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
@@ -519,10 +520,19 @@ const Dashboard = () => {
 
 	// tells if the latest paginated data is the end for total bookmark data based on current category
 	const hasMoreLogic = (): boolean => {
+		if (!isEmpty(searchText)) {
+			return false;
+		}
+
 		const firstPaginatedData =
 			allBookmarksData?.pages?.length !== 0
 				? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
 				: null;
+
+		// if (firstPaginatedData?.count !== undefined) {
+		// 	return false;
+		// }
+		// console.log("data", firstPaginatedData, CATEGORY_ID);
 
 		if (!isNull(firstPaginatedData)) {
 			if (typeof CATEGORY_ID === "number") {
@@ -633,7 +643,7 @@ const Dashboard = () => {
 											dataLength={flattendPaginationBookmarkData?.length}
 											endMessage={
 												<p className="pb-6 text-center">
-													Life happens, save it.
+													{isEmpty(searchText) && "Life happens, save it."}
 												</p>
 											}
 											hasMore={hasMoreLogic()}

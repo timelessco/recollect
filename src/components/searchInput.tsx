@@ -14,7 +14,6 @@ import {
 import { type UserTagsData } from "../types/apiTypes";
 import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
-import Spinner from "./spinner";
 import ToolTip from "./tooltip";
 
 const styles = {
@@ -107,8 +106,6 @@ const SearchInput = (props: SearchInputTypes) => {
 	const setAiButtonToggle = useMiscellaneousStore(
 		(state) => state.setAiButtonToggle,
 	);
-	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-
 	const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
 		data: UserTagsData[];
 		error: PostgrestError;
@@ -179,11 +176,6 @@ const SearchInput = (props: SearchInputTypes) => {
 					trigger="#"
 				/>
 			</MentionsInput>
-			{isSearchLoading && (
-				<div className=" absolute right-2 top-[5px]">
-					<Spinner />
-				</div>
-			)}
 			{/* <button
 				className={aiButtonClassName}
 				onClick={() => setAiButtonToggle(!aiButtonToggle)}

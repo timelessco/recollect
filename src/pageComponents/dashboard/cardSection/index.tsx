@@ -124,9 +124,6 @@ const CardSection = ({
 	const setCurrentBookmarkView = useMiscellaneousStore(
 		(state) => state.setCurrentBookmarkView,
 	);
-	const toggleIsSearchLoading = useLoadersStore(
-		(state) => state.toggleIsSearchLoading,
-	);
 	const toggleShowVideoModal = useModalStore(
 		(state) => state.toggleShowVideoModal,
 	);
@@ -134,6 +131,7 @@ const CardSection = ({
 		(state) => state.setSelectedVideoId,
 	);
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
@@ -940,6 +938,20 @@ const CardSection = ({
 					Please install the Recollect extension to import all your tweets
 				</div>
 			);
+		}
+
+		const renderStatusMessage = (message: string) => (
+			<div className="flex w-full items-center justify-center text-center">
+				<p className="text-lg font-medium text-gray-600">{message}</p>
+			</div>
+		);
+
+		if (isSearchLoading) {
+			return renderStatusMessage("Searching...");
+		}
+
+		if (!isEmpty(searchText) && isEmpty(sortByCondition)) {
+			return renderStatusMessage("No results found");
 		}
 
 		return (
