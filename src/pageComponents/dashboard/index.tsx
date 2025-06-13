@@ -529,9 +529,10 @@ const Dashboard = () => {
 				? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
 				: null;
 
-		if (firstPaginatedData?.count !== undefined) {
-			return false;
-		}
+		// if (firstPaginatedData?.count !== undefined) {
+		// 	return false;
+		// }
+		// console.log("data", firstPaginatedData, CATEGORY_ID);
 
 		if (!isNull(firstPaginatedData)) {
 			if (typeof CATEGORY_ID === "number") {
