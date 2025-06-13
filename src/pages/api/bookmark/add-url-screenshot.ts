@@ -1,4 +1,5 @@
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
@@ -13,7 +14,10 @@ import {
 } from "../../../types/apiTypes";
 import {
 	BOOKMAKRS_STORAGE_NAME,
+	getBaseUrl,
 	MAIN_TABLE_NAME,
+	NEXT_API_URL,
+	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -27,13 +31,6 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	if (!process.env.SCREENSHOT_TOKEN) {
-		response
-			.status(500)
-			.json({ data: null, error: "Screen shot token missing in env" });
-		throw new Error("ERROR: Screen shot token missing in env");
-	}
-
 	const supabase = apiSupabaseClient(request, response);
 
 	const upload = async (base64info: string, uploadUserId: string) => {
@@ -54,18 +51,25 @@ export default async function handler(
 	};
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
-
-	// screen shot api call
-	const screenShotResponse = await axios.request({
-		method: "POST",
-		url: process.env.SCREENSHOT_API,
-		headers: {
-			"content-type": "application/json",
-			Authorization: `Bearer ${process.env.SCREENSHOT_TOKEN}`,
-		},
-		data: { url: request.body.url },
-		responseType: "arraybuffer",
-	});
+	let screenShotResponse;
+	try {
+		console.error(
+			"*************************Screenshot Loading*****************************",
+		);
+		screenShotResponse = await axios.get(
+			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
+			{
+				responseType: "arraybuffer",
+			},
+		);
+		if (screenShotResponse.status === 200) {
+			console.error("***Screenshot success**");
+		}
+	} catch (error) {
+		console.error("Screenshot error" + error.message);
+		Sentry.captureException(`Screenshot error`);
+		return;
+	}
 
 	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
 		"base64",
@@ -89,6 +93,7 @@ export default async function handler(
 		response.status(200).json({ data, error: null });
 	} else {
 		response.status(500).json({ data: null, error });
+		Sentry.captureException(`ERROR: update screenshot in DB error`);
 		throw new Error("ERROR: update screenshot in DB error");
 	}
 }
