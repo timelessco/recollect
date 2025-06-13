@@ -55,6 +55,9 @@ export default async function handler(
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	let screenShotResponse;
 	try {
+		console.error(
+			"*************************Screenshot Loading*****************************",
+		);
 		screenShotResponse = await axios.get(
 			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
 			{
@@ -64,8 +67,8 @@ export default async function handler(
 		if (screenShotResponse.status === 200) {
 			console.error("***Screenshot success**");
 		}
-	} catch {
-		console.error("Screenshot error");
+	} catch (error) {
+		console.error("Screenshot error" + error.message);
 		Sentry.captureException(`Screenshot error`);
 		return;
 	}
