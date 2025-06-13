@@ -529,6 +529,10 @@ const Dashboard = () => {
 				? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
 				: null;
 
+		if (firstPaginatedData?.count !== undefined) {
+			return false;
+		}
+
 		if (!isNull(firstPaginatedData)) {
 			if (typeof CATEGORY_ID === "number") {
 				const totalBookmarkCountInCategory = find(
