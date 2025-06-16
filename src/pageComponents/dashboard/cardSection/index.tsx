@@ -18,6 +18,7 @@ import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
+import useIsMobileView from "../../../hooks/useIsMobileView";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
@@ -26,6 +27,7 @@ import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
 import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
+import LinkExternalIcon from "../../../icons/linkExternalIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import VideoIcon from "../../../icons/videoIcon";
 import {
@@ -116,6 +118,7 @@ const CardSection = ({
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;
 	const queryClient = useQueryClient();
+	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
@@ -183,11 +186,11 @@ const CardSection = ({
 	}
 
 	// useEffect(() => {
-	// 	if (searchBookmarksData?.data === undefined) {
-	// 		toggleIsSearchLoading(true);
-	// 	} else {
-	// 		toggleIsSearchLoading(false);
-	// 	}
+	// if (searchBookmarksData?.data === undefined) {
+	// toggleIsSearchLoading(true);
+	// } else {
+	// toggleIsSearchLoading(false);
+	// }
 	// }, [searchBookmarksData, toggleIsSearchLoading]);
 
 	const isAllBookmarksDataFetching = useIsFetching({
@@ -263,10 +266,23 @@ const CardSection = ({
 	};
 
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
-	const iconBgClassName =
-		"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
-
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
+		const iconBgClassName =
+			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
+
+		const externalLinkIcon = (
+			<div
+				onClick={() => window.open(post?.url, "_blank")}
+				onKeyDown={() => {}}
+				role="button"
+				tabIndex={0}
+			>
+				<figure className={`${iconBgClassName} ml-1`}>
+					<LinkExternalIcon />
+				</figure>
+			</div>
+		);
+
 		const pencilIcon = (
 			<div
 				className={`${iconBgClassName}`}
@@ -312,11 +328,27 @@ const CardSection = ({
 			</div>
 		);
 
+		if (isPublicPage) {
+			const publicExternalIconClassname = classNames({
+				"absolute top-0": true,
+				"left-[11px]":
+					cardTypeCondition === viewValues.moodboard ||
+					cardTypeCondition === viewValues.card ||
+					cardTypeCondition === viewValues.timeline,
+				"left-[-34px]":
+					cardTypeCondition === viewValues.list ||
+					cardTypeCondition === viewValues.headlines,
+			});
+			return (
+				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
+			);
+		}
+
 		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
-			//  in trash page
+			// in trash page
 
 			const trashIconWrapperClassname = classNames({
-				"absolute  top-[2px] flex": true,
+				"absolute top-[2px] flex": true,
 				"left-[17px]":
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
@@ -353,7 +385,7 @@ const CardSection = ({
 		if (renderEditAndDeleteCondition(post)) {
 			// default logged in user
 			const editTrashClassname = classNames({
-				"absolute  top-0 flex": true,
+				"absolute top-0 flex": true,
 				"left-[15px]":
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
@@ -364,27 +396,32 @@ const CardSection = ({
 			});
 
 			return (
-				<div className={editTrashClassname}>
-					{isBookmarkCreatedByLoggedinUser(post) ? (
-						<>
-							{pencilIcon}
-							{isDeleteBookmarkLoading &&
-							deleteBookmarkId?.includes(post?.id) ? (
-								<div>
-									<Spinner size={15} />
-								</div>
-							) : (
-								trashIcon
-							)}
-						</>
-					) : (
-						pencilIcon
-					)}
-				</div>
+				<>
+					<div className={editTrashClassname}>
+						{isBookmarkCreatedByLoggedinUser(post) ? (
+							<>
+								{pencilIcon}
+								{isDeleteBookmarkLoading &&
+								deleteBookmarkId?.includes(post?.id) ? (
+									<div>
+										<Spinner size={15} />
+									</div>
+								) : (
+									trashIcon
+								)}
+							</>
+						) : (
+							pencilIcon
+						)}
+					</div>
+					<div className=" absolute right-8 top-0">{externalLinkIcon}</div>
+				</>
 			);
 		}
 
-		return <div />;
+		return (
+			<div className=" absolute left-[10px] top-0">{externalLinkIcon}</div>
+		);
 	};
 
 	const renderAvatar = (item: SingleListData) => {
@@ -392,7 +429,7 @@ const CardSection = ({
 
 		const avatarClassName = classNames({
 			"absolute h-5 w-5 rounded-full": true,
-			"right-[33px] top-[3px]": isCreatedByLoggedInUser,
+			"right-[65px] top-[3px]": isCreatedByLoggedInUser,
 			"right-0 top-0": !isCreatedByLoggedInUser,
 		});
 
@@ -441,7 +478,7 @@ const CardSection = ({
 				cardTypeCondition === viewValues.list,
 			" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
 				cardTypeCondition === viewValues.card,
-			"w-full rounded-lg  moodboard-card-img min-h-[192px] object-cover":
+			"w-full rounded-lg moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.timeline,
 		});
@@ -449,7 +486,7 @@ const CardSection = ({
 		const loaderClassName = classNames({
 			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover rounded-lg":
 				cardTypeCondition === viewValues.list,
-			"animate-pulse bg-slate-200 w-full  aspect-[1.9047] w-full object-cover rounded-lg":
+			"animate-pulse bg-slate-200 w-full aspect-[1.9047] w-full object-cover rounded-lg":
 				cardTypeCondition === viewValues.card,
 			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
 				cardTypeCondition === viewValues.moodboard,
@@ -465,7 +502,7 @@ const CardSection = ({
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-lg  shadow-custom-8": cardTypeCondition === viewValues.moodboard,
+			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
 		const errorImgAndVideoClassName = classNames({
@@ -538,7 +575,7 @@ const CardSection = ({
 				true,
 			absolute: true,
 			// "bottom-[-1%] left-[7%] transform translate-x-[-50%] translate-y-[-50%]":
-			// 	cardTypeCondition === viewValues.moodboard || cardTypeCondition === viewValues.card,
+			// cardTypeCondition === viewValues.moodboard || cardTypeCondition === viewValues.card,
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
@@ -646,7 +683,7 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-[13px]  font-450 leading-4 text-custom-gray-10">
+						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-custom-gray-10">
 							<p className="mr-1">in</p>
 							<div
 								className="flex h-[14px] w-[14px] items-center justify-center rounded-full"
@@ -663,7 +700,7 @@ const CardSection = ({
 									"9",
 								)}
 							</div>
-							<p className="ml-1 text-[13px]  font-450 leading-4 text-custom-gray-10">
+							<p className="ml-1 text-[13px] font-450 leading-4 text-custom-gray-10">
 								{bookmarkCategoryData?.category_name}
 							</p>
 						</div>
@@ -749,7 +786,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px]  font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-[13px] font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -803,7 +840,7 @@ const CardSection = ({
 					<div className="flex flex-wrap items-center space-x-1 sm:space-x-0 sm:space-y-1">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px]  min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10 sm:mt-[1px]">
+								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10 sm:mt-[1px]">
 									{item?.description}
 								</p>
 							)}
@@ -935,12 +972,7 @@ const CardSection = ({
 
 	return (
 		<>
-			<div
-				className={listWrapperClass}
-				// style={{ height: "calc(100vh - 270px)"}}
-			>
-				{renderItem()}
-			</div>
+			<div className={listWrapperClass}>{renderItem()}</div>
 			<VideoModal listData={listData} />
 		</>
 	);

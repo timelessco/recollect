@@ -29,7 +29,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 		>
 			<AriaCheckbox
 				checked={checked}
-				className={`aria-checkbox h-4 w-4 ${
+				className={`aria-checkbox h-5 w-5 ${
 					showPlaceholder ? "opacity-0" : ""
 				}`}
 				disabled={disabled}
