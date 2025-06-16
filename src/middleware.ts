@@ -8,11 +8,7 @@ export const middleware = (request: NextRequest) => {
 		?.value;
 
 	// If logged in, redirect from /login to /all-bookmarks
-	if (
-		token &&
-		(request.nextUrl.pathname === "/login" ||
-			request.nextUrl.pathname === "/signup")
-	) {
+	if (token) {
 		return NextResponse.redirect(new URL(`/${ALL_BOOKMARKS_URL}`, request.url));
 	}
 
