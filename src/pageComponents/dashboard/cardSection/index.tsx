@@ -430,6 +430,9 @@ const CardSection = ({
 		const avatarClassName = classNames({
 			"absolute h-5 w-5 rounded-full": true,
 			"right-[65px] top-[3px]": isCreatedByLoggedInUser,
+			"right-[100px]":
+				cardTypeCondition === viewValues.list ||
+				cardTypeCondition === viewValues.headlines,
 			"right-0 top-0": !isCreatedByLoggedInUser,
 		});
 
