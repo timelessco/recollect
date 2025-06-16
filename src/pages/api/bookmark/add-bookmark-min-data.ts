@@ -107,33 +107,33 @@ export default async function handler(
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
 
-	try {
-		// 5 seconds timeout
-		// Only consider 2xx and 3xx status codes as successful
-		const urlCheckResponse = await axios.head(url, {
-			timeout: 5_000,
-			validateStatus: (status) => status >= 200 && status < 400,
-		});
+	// try {
+	// 	// 5 seconds timeout
+	// 	// Only consider 2xx and 3xx status codes as successful
+	// 	const urlCheckResponse = await axios.head(url, {
+	// 		timeout: 5_000,
+	// 		validateStatus: (status) => status >= 200 && status < 400,
+	// 	});
 
-		// This check might be redundant since validateStatus already filters the status codes
-		// But keeping it as an extra safety measure
-		if (urlCheckResponse.status >= 400) {
-			response.status(400).json({
-				data: null,
-				error: "This bookmark URL doesn't exist",
-				message: `Received status code ${urlCheckResponse.status} when trying to access the URL`,
-			});
-			return;
-		}
-	} catch {
-		response.status(400).json({
-			data: null,
-			error: "This bookmark URL doesn't exist",
-			message:
-				"Could not verify the URL. Please check if the URL is correct and accessible.",
-		});
-		return;
-	}
+	// 	// This check might be redundant since validateStatus already filters the status codes
+	// 	// But keeping it as an extra safety measure
+	// 	if (urlCheckResponse.status >= 400) {
+	// 		response.status(400).json({
+	// 			data: null,
+	// 			error: "This bookmark URL doesn't exist",
+	// 			message: `Received status code ${urlCheckResponse.status} when trying to access the URL`,
+	// 		});
+	// 		return;
+	// 	}
+	// } catch {
+	// 	response.status(400).json({
+	// 		data: null,
+	// 		error: "This bookmark URL doesn't exist",
+	// 		message:
+	// 			"Could not verify the URL. Please check if the URL is correct and accessible.",
+	// 	});
+	// 	return;
+	// }
 
 	if (!updateAccess) {
 		response.status(500).json({
