@@ -20,7 +20,7 @@ export const STORAGE_SCREENSHOT_IMAGES_PATH = "public/screenshot_imgs";
 // Supports any valid TLD (2+ characters)
 export const URL_PATTERN =
 	// eslint-disable-next-line  unicorn/no-unsafe-regex
-	/^https?:\/\/(?:www\.)?[\da-z]+(?:[.-][\da-z]+)*\.[a-z]{2,}(?::\d{1,5})?(?:\/.*)?$/iu;
+	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =
