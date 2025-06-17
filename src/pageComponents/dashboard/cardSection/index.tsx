@@ -185,14 +185,6 @@ const CardSection = ({
 		};
 	}
 
-	// useEffect(() => {
-	// if (searchBookmarksData?.data === undefined) {
-	// toggleIsSearchLoading(true);
-	// } else {
-	// toggleIsSearchLoading(false);
-	// }
-	// }, [searchBookmarksData, toggleIsSearchLoading]);
-
 	const isAllBookmarksDataFetching = useIsFetching({
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 	});
@@ -577,8 +569,6 @@ const CardSection = ({
 			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
 				true,
 			absolute: true,
-			// "bottom-[-1%] left-[7%] transform translate-x-[-50%] translate-y-[-50%]":
-			// cardTypeCondition === viewValues.moodboard || cardTypeCondition === viewValues.card,
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
