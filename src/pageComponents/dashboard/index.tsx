@@ -260,9 +260,13 @@ const Dashboard = () => {
 	// END OF MUTATIONS ---------
 
 	// this is for the clipboard upload
+
 	useEffect(() => {
 		if (typeof window !== "undefined") {
 			const listener = (event: ClipboardEvent) => {
+				// Skip if current path is trash URL
+				if (window.location.pathname === `/${TRASH_URL}`) return;
+
 				const target = event.target as HTMLElement;
 
 				// Skip if pasting inside input, textarea, or contenteditable
