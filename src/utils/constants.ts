@@ -17,9 +17,10 @@ export const STORAGE_SCREENSHOT_IMAGES_PATH = "public/screenshot_imgs";
 
 // regx
 
+// Supports any valid TLD (2+ characters)
+// eslint-disable-next-line @typescript-eslint/prefer-regexp-exec, regexp/require-unicode-regexp, regexp/no-useless-escape, regexp/optimal-quantifier-concatenation, regexp/no-super-linear-backtracking
 export const URL_PATTERN =
-	// eslint-disable-next-line no-useless-escape, unicorn/no-unsafe-regex
-	/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[\da-z]+([.\-][\da-z]+)*\.[a-z]{2,10}(:\d{1,5})?(\/.*)?$/gu;
+	/^https?:\/\/(?:www\.)?[\da-z]+(?:[.-][\da-z]+)*\.[a-z]{2,}(?::\d{1,5})?(?:\/.*)?$/i;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
 export const EMAIL_CHECK_PATTERN =
