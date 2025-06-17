@@ -1,6 +1,6 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { find } from "lodash";
+import { find, isEmpty } from "lodash";
 
 import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -67,7 +67,7 @@ export default function useSearchBookmarks() {
 				toggleIsSearchLoading(false);
 			}
 		},
-		enabled: Boolean(searchText) && searchText.length > 0,
+		enabled: !isEmpty(searchText),
 		refetchOnWindowFocus: false,
 	});
 
