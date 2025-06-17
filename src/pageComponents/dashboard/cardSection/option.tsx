@@ -149,7 +149,6 @@ const Option = ({
 								}`}
 								onError={() => setIsIframeLoading(false)}
 								onLoad={() => setIsIframeLoading(false)}
-								sandbox="allow-scripts allow-same-origin"
 								src={url}
 								title="Embedded Website"
 							/>
