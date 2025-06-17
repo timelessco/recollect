@@ -16,6 +16,7 @@ SUPABASE_SERVICE_KEY: Supabase project service key got from Supabase dashboard
 NEXT_PUBLIC_SUPABASE_ANON_KEY: Supabase project anon key got from Supabase dashboard
 NEXT_PUBLIC_SUPABASE_URL: Supabase project url got from Supabase dashboard
 NEXT_PUBLIC_VERCEL_URL: the URL where the app is going to be hosted
+AUTH_COOKIE_SECRET: Supabase auth key which the browser stores
 ```
 
 Adding these env variables will deploy your app in Vercel !

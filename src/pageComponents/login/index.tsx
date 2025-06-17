@@ -5,6 +5,8 @@ import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
 
+import { cookies } from "next/headers";
+
 import {
 	signInWithEmailPassword,
 	signInWithOauth,
@@ -13,7 +15,6 @@ import Input from "../../components/atoms/input";
 import Spinner from "../../components/spinner";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogo from "../../icons/laterpadLogo";
-import { useSupabaseSession } from "../../store/componentStore";
 import {
 	bottomBarButton,
 	bottomBarText,
@@ -34,13 +35,6 @@ const LoginPage = () => {
 	const router = useRouter();
 
 	const supabase = createClient();
-
-	const session = useSupabaseSession((state) => state.session);
-
-	useEffect(() => {
-		if (session?.user) void router.push(`/${ALL_BOOKMARKS_URL}`);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [session]);
 
 	const {
 		register,
