@@ -90,7 +90,8 @@ const SettingsModal = () => {
 		<Modal
 			open={showSettingsModal}
 			setOpen={() => toggleShowSettingsModal()}
-			wrapperClassName="w-[65.4%] xl:w-[80%] h-[82%] rounded-2xl outline-none"
+			// adding skip-global-paste to avoid global paste event in the modal
+			wrapperClassName="skip-global-paste w-[65.4%] xl:w-[80%] h-[82%] rounded-2xl outline-none"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="flex h-full">

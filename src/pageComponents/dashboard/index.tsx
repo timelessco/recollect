@@ -260,10 +260,24 @@ const Dashboard = () => {
 	// END OF MUTATIONS ---------
 
 	// this is for the clipboard upload
+
 	useEffect(() => {
 		if (typeof window !== "undefined") {
 			const listener = (event: ClipboardEvent) => {
-				// setInputText(e.clipboardData.getData("text"));
+				// Skip if current path is trash URL
+				if (window.location.pathname === `/${TRASH_URL}`) return;
+
+				const target = event.target as HTMLElement;
+
+				// Skip if pasting inside input, textarea, or contenteditable
+				const isEditable =
+					target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.closest(".skip-global-paste");
+
+				if (isEditable) return;
+
+				// Otherwise handle global paste
 				void clipboardUpload(
 					event.clipboardData?.getData("text"),
 					event.clipboardData?.files,
@@ -274,7 +288,6 @@ const Dashboard = () => {
 			};
 
 			window.addEventListener("paste", listener);
-
 			return () => window.removeEventListener("paste", listener);
 		}
 
