@@ -1,5 +1,5 @@
 import { type CardSectionProps } from ".";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import classNames from "classnames";
 import omit from "lodash/omit";
 import {
@@ -11,6 +11,7 @@ import {
 } from "react-aria";
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
+import Spinner from "../../../components/spinner";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import { type SingleListData } from "../../../types/apiTypes";
 import { viewValues } from "../../../utils/constants";
@@ -41,6 +42,12 @@ const Option = ({
 	url: string;
 }) => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isIframeLoading, setIsIframeLoading] = useState(true);
+
+	useEffect(() => {
+		// Reset loading state when modal is opened
+		setIsIframeLoading(true);
+	}, [isModalOpen]);
 	const { isDesktop } = useIsMobileView();
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
@@ -128,14 +135,25 @@ const Option = ({
 					onClose={() => setIsModalOpen(false)}
 					title="Preview"
 				>
-					<div className="h-[1200px] w-full overflow-hidden rounded">
-						{/* eslint-disable-next-line react/iframe-missing-sandbox */}
-						<iframe
-							className="h-full w-full"
-							sandbox="allow-scripts allow-same-origin"
-							src={url}
-							title="Embedded Website"
-						/>
+					<div className="flex h-[80vh] w-full flex-col">
+						<div className="relative flex-1 overflow-auto">
+							{isIframeLoading && (
+								<div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+									<Spinner />
+								</div>
+							)}
+							{/* eslint-disable-next-line react/iframe-missing-sandbox */}
+							<iframe
+								className={`h-full min-h-[500px] w-full ${
+									isIframeLoading ? "opacity-0" : "opacity-100"
+								}`}
+								onError={() => setIsIframeLoading(false)}
+								onLoad={() => setIsIframeLoading(false)}
+								sandbox="allow-scripts allow-same-origin"
+								src={url}
+								title="Embedded Website"
+							/>
+						</div>
 					</div>
 				</PreviewModal>
 			)}

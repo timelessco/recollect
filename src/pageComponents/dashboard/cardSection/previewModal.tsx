@@ -44,7 +44,7 @@ const PreviewModal = ({
 				tabIndex={-1}
 			>
 				{/* Header */}
-				<div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white p-4">
+				<div className="sticky top-0 z-10 flex items-center justify-between bg-white p-4">
 					<h2
 						className="m-0 text-lg font-medium text-gray-900"
 						id="bottom-sheet-title"
@@ -55,7 +55,7 @@ const PreviewModal = ({
 						{`${title} dialog. Use Escape key to close.`}
 					</p>
 					<button
-						className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+						className=" p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
 						onClick={onClose}
 						type="button"
 					>
@@ -75,7 +75,6 @@ const PreviewModal = ({
 						</svg>
 					</button>
 				</div>
-				{/* Content */}
 				<div className="h-[calc(100%-56px)] overflow-y-auto p-4">
 					{children}
 				</div>
