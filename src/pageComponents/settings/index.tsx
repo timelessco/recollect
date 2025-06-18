@@ -361,7 +361,7 @@ const Settings = () => {
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
 						Account security
 					</p>
-					{session?.user?.app_metadata?.provider === "email" ? (
+					{session?.user?.app_metadata?.provider === "	" ? (
 						<div className="flex items-center justify-between sm:flex-col">
 							<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
 								<p className={settingsSubHeadingClassName}>Email</p>
@@ -384,6 +384,20 @@ const Settings = () => {
 						</div>
 					)}
 				</div>
+				<form
+					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5 sm:flex-col"
+					onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
+				>
+					<div className=" min-w-[250px] max-w-[250px]  sm:mt-5 sm:w-full sm:min-w-0 sm:max-w-full">
+						<Button
+							className={settingsLightButtonClassName}
+							onClick={() => setCurrentSettingsPage("api-key")}
+							type="light"
+						>
+							Bring your own api key
+						</Button>
+					</div>
+				</form>
 				<div className="pt-6">
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
 						Danger zone

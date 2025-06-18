@@ -13,6 +13,7 @@ import {
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
 import Settings from "../../settings";
+import { ApiKey } from "../../settings/apiKey";
 import ChangeEmail from "../../settings/changeEmail";
 import DeleteAccout from "../../settings/deleteAccount";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
@@ -81,6 +82,8 @@ const SettingsModal = () => {
 				return <ChangeEmail />;
 			case "delete":
 				return <DeleteAccout />;
+			case "api-key":
+				return <ApiKey />;
 			default:
 				return null;
 		}
