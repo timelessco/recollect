@@ -31,6 +31,7 @@ const Option = ({
 	url,
 	isPublicPage,
 	isTrashPage,
+	type,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
@@ -43,7 +44,6 @@ const Option = ({
 }) => {
 	const [isIframeLoading, setIsIframeLoading] = useState(true);
 	const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
 	useEffect(() => {
 		// Reset loading state when modal is opened
 		setIsIframeLoading(true);
@@ -132,7 +132,7 @@ const Option = ({
 			{!isPublicPage && !isTrashPage && (
 				<PreviewModal isOpen={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
 					{isIframeLoading && (
-						<div className="absolute inset-0 flex items-center justify-center rounded-t-3xl bg-gray-50">
+						<div className="absolute inset-0 flex items-center justify-center rounded-t-3xl">
 							<Spinner />
 						</div>
 					)}
