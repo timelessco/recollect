@@ -132,13 +132,13 @@ const Option = ({
 			{!isPublicPage && !isTrashPage && (
 				<PreviewModal isOpen={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
 					{isIframeLoading && (
-						<div className="absolute inset-0 flex items-center justify-center rounded-t-[10px] bg-gray-50">
+						<div className="absolute inset-0 flex items-center justify-center rounded-t-3xl bg-gray-50">
 							<Spinner />
 						</div>
 					)}
 					{/* eslint-disable-next-line react/iframe-missing-sandbox */}
 					<iframe
-						className={`h-full min-h-[500px] w-full rounded-t-[10px] ${
+						className={`h-full w-full flex-1 rounded-t-3xl ${
 							isIframeLoading ? "opacity-0" : "opacity-100"
 						}`}
 						onError={() => setIsIframeLoading(false)}
