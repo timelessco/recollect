@@ -41,13 +41,13 @@ const Option = ({
 	type: SingleListData["type"];
 	url: string;
 }) => {
-	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isIframeLoading, setIsIframeLoading] = useState(true);
+	const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
 	useEffect(() => {
 		// Reset loading state when modal is opened
 		setIsIframeLoading(true);
-	}, [isModalOpen]);
+	}, []);
 	const { isDesktop } = useIsMobileView();
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
@@ -73,8 +73,8 @@ const Option = ({
 				isTrashPage,
 				isDesktop,
 			);
-		} else {
-			setIsModalOpen(true);
+		} else if (!isPublicPage && !isTrashPage) {
+			setIsPreviewOpen(true);
 		}
 	};
 
@@ -130,30 +130,22 @@ const Option = ({
 				{item.rendered}
 			</li>
 			{!isPublicPage && !isTrashPage && (
-				<PreviewModal
-					isOpen={isModalOpen}
-					onClose={() => setIsModalOpen(false)}
-					title="Preview"
-				>
-					<div className="flex h-[80vh] w-full flex-col">
-						<div className="relative flex-1 overflow-auto">
-							{isIframeLoading && (
-								<div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-									<Spinner />
-								</div>
-							)}
-							{/* eslint-disable-next-line react/iframe-missing-sandbox */}
-							<iframe
-								className={`h-full min-h-[500px] w-full ${
-									isIframeLoading ? "opacity-0" : "opacity-100"
-								}`}
-								onError={() => setIsIframeLoading(false)}
-								onLoad={() => setIsIframeLoading(false)}
-								src={url}
-								title="Embedded Website"
-							/>
+				<PreviewModal isOpen={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+					{isIframeLoading && (
+						<div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+							<Spinner />
 						</div>
-					</div>
+					)}
+					{/* eslint-disable-next-line react/iframe-missing-sandbox */}
+					<iframe
+						className={`h-full min-h-[500px] w-full rounded-t-[10px] ${
+							isIframeLoading ? "opacity-0" : "opacity-100"
+						}`}
+						onError={() => setIsIframeLoading(false)}
+						onLoad={() => setIsIframeLoading(false)}
+						src={url}
+						title="Embedded Website"
+					/>
 				</PreviewModal>
 			)}
 		</>
