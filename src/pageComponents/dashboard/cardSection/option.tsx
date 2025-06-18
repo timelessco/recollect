@@ -31,7 +31,6 @@ const Option = ({
 	url,
 	isPublicPage,
 	isTrashPage,
-	type,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
@@ -44,15 +43,18 @@ const Option = ({
 }) => {
 	const [isIframeLoading, setIsIframeLoading] = useState(true);
 	const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+	const { isDesktop } = useIsMobileView();
+
 	useEffect(() => {
 		// Reset loading state when modal is opened
 		setIsIframeLoading(true);
-	}, []);
-	const { isDesktop } = useIsMobileView();
+	}, [isPreviewOpen]);
+
 	// Setup listbox option as normal. See useListBox docs for details.
-	const ref = useRef(null);
+	const ref = useRef<HTMLLIElement>(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
+
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -60,7 +62,58 @@ const Option = ({
 		},
 		dragState,
 	);
-	// Merge option props and dnd props, and render the item.
+
+	/**
+	 * Determines the content type based on URL extension
+	 * @returns The content type for the PreviewModal
+	 */
+	const getContentType = (): "file" | "image" | "url" => {
+		const urlLower = url.toLowerCase();
+
+		// Check for image extensions
+		const imageExtensions = [
+			".png",
+			".jpg",
+			".jpeg",
+			".gif",
+			".webp",
+			".svg",
+			".bmp",
+		];
+
+		if (imageExtensions.some((extension) => urlLower.endsWith(extension))) {
+			return "image";
+		}
+
+		// Check for document extensions
+		const documentExtensions = [
+			".pdf",
+			".doc",
+			".docx",
+			".xls",
+			".xlsx",
+			".ppt",
+			".pptx",
+			".txt",
+		];
+
+		if (documentExtensions.some((extension) => urlLower.endsWith(extension))) {
+			return "file";
+		}
+
+		// Check for video extensions
+		const videoExtensions = [".mp4", ".webm", ".mov", ".avi", ".mkv"];
+
+		// Videos will be handled in the iframe
+		if (videoExtensions.some((extension) => urlLower.endsWith(extension))) {
+			return "url";
+		}
+
+		// Default to 'url' for everything else
+		return "url";
+	};
+
+	const contentType = getContentType();
 
 	const handleCardClick = (event: React.MouseEvent, cardUrl: string) => {
 		event.preventDefault();
@@ -83,10 +136,6 @@ const Option = ({
 		{
 			"mb-6": cardTypeCondition === viewValues.moodboard,
 			"mb-[18px]": cardTypeCondition === viewValues.card,
-			// "hover:shadow-custom-4":
-			// 	cardTypeCondition === viewValues.moodboard ||
-			// 	cardTypeCondition === viewValues.card ||
-			// 	cardTypeCondition === viewValues.timeline,
 			"hover:shadow-lg":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
@@ -95,7 +144,6 @@ const Option = ({
 				(cardTypeCondition === viewValues.list ||
 					cardTypeCondition === viewValues.headlines) &&
 				!isSelected,
-
 			"mb-1 list-headlines-wrapper":
 				cardTypeCondition === viewValues.list ||
 				cardTypeCondition === viewValues.headlines,
@@ -130,17 +178,21 @@ const Option = ({
 				{item.rendered}
 			</li>
 			{!isPublicPage && !isTrashPage && (
-				<PreviewModal isOpen={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+				<PreviewModal
+					contentType={contentType}
+					isOpen={isPreviewOpen}
+					onOpenChange={setIsPreviewOpen}
+				>
 					{isIframeLoading && (
-						<div className="absolute inset-0 flex items-center justify-center rounded-t-3xl">
+						<div className="absolute inset-0 flex items-center justify-center">
 							<Spinner />
 						</div>
 					)}
 					{/* eslint-disable-next-line react/iframe-missing-sandbox */}
 					<iframe
-						className={`h-full w-full flex-1 rounded-t-3xl ${
-							isIframeLoading ? "opacity-0" : "opacity-100"
-						}`}
+						className={`h-full w-full flex-1  ${
+							contentType === "url" ? "rounded-t-3xl" : ""
+						} ${isIframeLoading ? "opacity-0" : "opacity-100"}`}
 						onError={() => setIsIframeLoading(false)}
 						onLoad={() => setIsIframeLoading(false)}
 						src={url}
