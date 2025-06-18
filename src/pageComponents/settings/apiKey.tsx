@@ -157,7 +157,7 @@ export const ApiKey = () => {
 						</LabelledComponent>
 					</div>
 				))}
-				<div className="flex justify-end pt-4">
+				<div className="flex justify-start pt-4">
 					<ButtonComponent
 						className="h-10 w-[130px] rounded-lg  px-4 py-2 text-sm font-medium text-white hover:bg-gray-500"
 						isDisabled={isLoading}
