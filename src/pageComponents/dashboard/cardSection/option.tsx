@@ -132,7 +132,7 @@ const Option = ({
 			{!isPublicPage && !isTrashPage && (
 				<PreviewModal isOpen={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
 					{isIframeLoading && (
-						<div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+						<div className="absolute inset-0 flex items-center justify-center rounded-t-[10px] bg-gray-50">
 							<Spinner />
 						</div>
 					)}
