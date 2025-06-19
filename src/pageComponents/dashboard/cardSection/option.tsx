@@ -1,5 +1,5 @@
 import { type CardSectionProps } from ".";
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import classNames from "classnames";
 import omit from "lodash/omit";
 import {
@@ -15,6 +15,10 @@ import Checkbox from "../../../components/checkbox";
 import { type SingleListData } from "../../../types/apiTypes";
 import { viewValues } from "../../../utils/constants";
 import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
+
+import "yet-another-react-lightbox/styles.css";
+
+import { PreviewLightBox } from "./previewLightBox";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
@@ -38,6 +42,7 @@ const Option = ({
 	type: SingleListData["type"];
 	url: string;
 }) => {
+	const [open, setOpen] = useState(false);
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
@@ -98,15 +103,34 @@ const Option = ({
 				disableDndCondition ? [] : focusProps,
 			)}
 		>
+			<PreviewLightBox id={item.key} open={open} setOpen={setOpen} />
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className="absolute left-0 top-0 h-full w-full  rounded-lg"
 				draggable={false}
 				href={url}
-				onClick={(event) =>
-					clickToOpenInNewTabLogic(event, url, isPublicPage, isTrashPage)
-				}
+				onClick={(event) => {
+					event.preventDefault();
+					if (isDesktop) {
+						setOpen(true);
+					} else {
+						// Force open in new tab on mobile
+						clickToOpenInNewTabLogic(
+							event,
+							url,
+							isPublicPage,
+							isTrashPage,
+							true,
+						);
+					}
+				}}
+				onKeyDown={(event) => {
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						setOpen(true);
+					}
+				}}
 			/>
 			{item.rendered}
 			{!isPublicPage && (

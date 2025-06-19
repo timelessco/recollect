@@ -63,6 +63,7 @@ type ListBoxDropTypes = ListProps<object> & {
 	onItemDrop?: (event: any) => void;
 };
 
+// eslint-disable-next-line complexity
 const ListBox = (props: ListBoxDropTypes) => {
 	const {
 		getItems,
@@ -196,26 +197,49 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const isTrashPage = categorySlug === TRASH_URL;
 
-	const renderOption = () =>
-		[...state.collection].map((item) => {
+	// Get the setRenderedBookmarks function from the store
+	const setRenderedBookmarks = useMiscellaneousStore(
+		(store) => store.setRenderedBookmarks,
+	);
+
+	// Get the current category ID from the router
+	const currentCategoryId = categorySlug ?? "uncategorized";
+
+	const renderOption = () => {
+		const bookmarks = [...state.collection].map((item) => {
 			const bookmarkData = find(
 				bookmarksList,
 				(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
 			);
-			return (
-				<Option
-					cardTypeCondition={cardTypeCondition}
-					dragState={dragState}
-					isPublicPage={isPublicPage}
-					isTrashPage={isTrashPage}
-					item={item}
-					key={item.key}
-					state={state}
-					type={bookmarkData?.type ?? ""}
-					url={bookmarkData?.url ?? ""}
-				/>
-			);
+
+			return {
+				item,
+				bookmarkData,
+			};
 		});
+
+		// Update renderedBookmarks in the store with the current list of bookmarks
+		const validBookmarks = bookmarks
+			.filter((b) => b.bookmarkData)
+			.map((b) => b.bookmarkData) as SingleListData[];
+
+		// Update the store with the current bookmarks for this category
+		setRenderedBookmarks(currentCategoryId, validBookmarks);
+
+		return bookmarks.map(({ item, bookmarkData }) => (
+			<Option
+				cardTypeCondition={cardTypeCondition}
+				dragState={dragState}
+				isPublicPage={isPublicPage}
+				isTrashPage={isTrashPage}
+				item={item}
+				key={item.key}
+				state={state}
+				type={bookmarkData?.type ?? ""}
+				url={bookmarkData?.url ?? ""}
+			/>
+		));
+	};
 
 	const categoryDataMapper =
 		categoryData?.data?.map((item) => ({

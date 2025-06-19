@@ -137,6 +137,7 @@
 		"tailwind-merge": "1.12.0",
 		"uniqid": "^5.4.0",
 		"vercel-email": "^0.0.6",
+		"yet-another-react-lightbox": "^3.23.3",
 		"zustand": "4.3.7"
 	},
 	"devDependencies": {

@@ -1,4 +1,6 @@
-import { type Session, type User } from "@supabase/supabase-js";
+import { type User } from "@supabase/supabase-js";
+
+import { type SingleListData } from "./apiTypes";
 
 export type ModalStoreState = {
 	showClearTrashWarningModal: boolean;
@@ -29,6 +31,7 @@ export type MiscellaneousStoreState = {
 	currentSettingsPage: "change-email" | "delete" | "main";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
+	renderedBookmarks: Record<string, SingleListData[]>;
 	searchText: string;
 	selectedVideoId: number | null;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
@@ -39,6 +42,10 @@ export type MiscellaneousStoreState = {
 	) => void;
 	setCurrentSliderDropdownSlide: (value: string | null) => void;
 	setIsCardDragging: (value: boolean) => void;
+	setRenderedBookmarks: (
+		categoryId: string,
+		bookmarks: SingleListData[],
+	) => void;
 	setSearchText: (value: string) => void;
 	setSelectedVideoId: (id: number | null) => void;
 	setShareCategoryId: (id: number | undefined) => void;
