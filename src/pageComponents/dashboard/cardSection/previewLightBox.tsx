@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { type DraggableItemProps } from "react-aria";
 import Lightbox from "yet-another-react-lightbox";
 
-import Spinner from "../../../components/spinner";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
 
@@ -36,7 +35,6 @@ export const PreviewLightBox = ({
 		() =>
 			currentCategoryBookmarks.map((bookmark: SingleListData) => {
 				const isImage = bookmark.type?.startsWith("image");
-
 				return {
 					key: bookmark.id,
 					src: bookmark.url,
@@ -56,39 +54,49 @@ export const PreviewLightBox = ({
 	);
 
 	const [activeIndex, setActiveIndex] = useState(initialIndex);
-	const [isIframeLoading, setIsIframeLoading] = useState(true);
 	const iframeRef = useRef<HTMLIFrameElement>(null);
+	const isResetting = useRef(false);
 
-	useEffect(() => {
-		if (open) {
-			setActiveIndex(initialIndex);
-		}
-	}, [initialIndex, open]);
-
-	// Determine whether to show navigation buttons
-	const showPrevious = activeIndex > 0;
-	const showNext = activeIndex < currentCategoryBookmarks.length - 1;
-
-	const handleIframeLoad = () => {
-		setIsIframeLoading(false);
-	};
-
+	// Reset activeIndex to initialIndex when Lightbox opens
 	useEffect(() => {
 		if (open && initialIndex !== -1) {
+			isResetting.current = true;
 			setActiveIndex(initialIndex);
 		}
-	}, [initialIndex, open]);
-	return (
+	}, [open, initialIndex]);
+
+	// Clear isResetting after activeIndex is set
+	useEffect(() => {
+		if (isResetting.current) {
+			const timeout = setTimeout(() => {
+				isResetting.current = false;
+			}, 0);
+			return () => clearTimeout(timeout);
+		}
+
+		return undefined;
+	}, [activeIndex]);
+
+	const showNext = activeIndex < currentCategoryBookmarks.length - 1;
+	const showPrevious = activeIndex > 0;
+
+	// Debug logs for state transitions
+	// eslint-disable-next-line no-console
+	console.log("PreviewLightBox render", { open, initialIndex, activeIndex });
+
+	return open ? (
 		<Lightbox
 			close={() => setOpen(false)}
 			index={activeIndex}
 			on={{
-				view: ({ index }) => setActiveIndex(index),
+				view: ({ index }) => {
+					if (!isResetting.current && open) setActiveIndex(index);
+				},
 			}}
 			open={open}
 			render={{
-				buttonPrev: showPrevious ? undefined : () => null,
 				buttonNext: showNext ? undefined : () => null,
+				buttonPrev: showPrevious ? undefined : () => null,
 				slide: ({ slide }) => (
 					<div className="flex h-full w-full items-center justify-center">
 						{slide.type?.startsWith("image") ? (
@@ -102,18 +110,10 @@ export const PreviewLightBox = ({
 							</div>
 						) : (
 							<div className="relative h-full w-full max-w-[1200px]">
-								{isIframeLoading && (
-									<div className="absolute inset-0 flex items-center justify-center">
-										<Spinner />
-									</div>
-								)}
 								<iframe
-									className={`h-full w-full ${
-										isIframeLoading ? "invisible" : "visible"
-									}`}
+									className="h-full w-full"
+									key={slide.src}
 									loading="lazy"
-									onError={() => setIsIframeLoading(false)}
-									onLoad={handleIframeLoad}
 									ref={iframeRef}
 									sandbox="allow-forms allow-popups allow-scripts"
 									src={slide.src}
@@ -132,5 +132,5 @@ export const PreviewLightBox = ({
 				},
 			}}
 		/>
-	);
+	) : null;
 };
