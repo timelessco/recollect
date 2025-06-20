@@ -66,7 +66,7 @@ export default async function handler(
 	const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	let query = supabase
-		.rpc("search_bookmarks", {
+		.rpc("search_bookmarks_debugging", {
 			search_text: searchText,
 		})
 		.eq("trash", category_id === TRASH_URL);
