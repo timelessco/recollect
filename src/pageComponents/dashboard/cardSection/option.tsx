@@ -34,7 +34,6 @@ const Option = ({
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
 	isPublicPage: CardSectionProps["isPublicPage"];
-	isTrashPage: boolean;
 	item: OptionDropItemTypes;
 	state: ListState<unknown>;
 	type: SingleListData["type"];
