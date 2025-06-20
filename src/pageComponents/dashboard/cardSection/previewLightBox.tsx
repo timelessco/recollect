@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { type DraggableItemProps } from "react-aria";
 import Lightbox from "yet-another-react-lightbox";
 
+import Spinner from "../../../components/spinner";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
 
@@ -32,10 +34,16 @@ export const PreviewLightBox = ({
 
 	const slides = useMemo(
 		() =>
-			currentCategoryBookmarks.map((bookmark: SingleListData) => ({
-				key: bookmark.id,
-				src: bookmark.url,
-			})),
+			currentCategoryBookmarks.map((bookmark: SingleListData) => {
+				const isImage = bookmark.type?.startsWith("image");
+
+				return {
+					key: bookmark.id,
+					src: bookmark.url,
+					...(isImage ? { type: "image" as const } : {}),
+					contentType: bookmark.type,
+				};
+			}),
 		[currentCategoryBookmarks],
 	);
 
@@ -48,6 +56,8 @@ export const PreviewLightBox = ({
 	);
 
 	const [activeIndex, setActiveIndex] = useState(initialIndex);
+	const [isIframeLoading, setIsIframeLoading] = useState(true);
+	const iframeRef = useRef<HTMLIFrameElement>(null);
 
 	useEffect(() => {
 		if (open) {
@@ -59,6 +69,15 @@ export const PreviewLightBox = ({
 	const showPrevious = activeIndex > 0;
 	const showNext = activeIndex < currentCategoryBookmarks.length - 1;
 
+	const handleIframeLoad = () => {
+		setIsIframeLoading(false);
+	};
+
+	useEffect(() => {
+		if (open && initialIndex !== -1) {
+			setActiveIndex(initialIndex);
+		}
+	}, [initialIndex, open]);
 	return (
 		<Lightbox
 			close={() => setOpen(false)}
@@ -72,13 +91,36 @@ export const PreviewLightBox = ({
 				buttonNext: showNext ? undefined : () => null,
 				slide: ({ slide }) => (
 					<div className="flex h-full w-full items-center justify-center">
-						<iframe
-							className="h-full w-full max-w-[1200px]"
-							loading="lazy"
-							sandbox="allow-forms allow-popups allow-scripts"
-							src={slide.src}
-							title="Website Preview"
-						/>
+						{slide.type?.startsWith("image") ? (
+							<div className="relative h-full w-full max-w-[1200px]">
+								<Image
+									alt="Preview"
+									className="object-contain"
+									fill
+									src={slide.src}
+								/>
+							</div>
+						) : (
+							<div className="relative h-full w-full max-w-[1200px]">
+								{isIframeLoading && (
+									<div className="absolute inset-0 flex items-center justify-center">
+										<Spinner />
+									</div>
+								)}
+								<iframe
+									className={`h-full w-full ${
+										isIframeLoading ? "invisible" : "visible"
+									}`}
+									loading="lazy"
+									onError={() => setIsIframeLoading(false)}
+									onLoad={handleIframeLoad}
+									ref={iframeRef}
+									sandbox="allow-forms allow-popups allow-scripts"
+									src={slide.src}
+									title="Website Preview"
+								/>
+							</div>
+						)}
 					</div>
 				),
 			}}

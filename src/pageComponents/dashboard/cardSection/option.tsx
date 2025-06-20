@@ -32,6 +32,7 @@ const Option = ({
 	url,
 	isPublicPage,
 	isTrashPage,
+	type,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
