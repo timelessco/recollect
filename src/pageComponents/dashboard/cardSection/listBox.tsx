@@ -203,7 +203,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	);
 
 	// Get the current category ID from the router
-	const currentCategoryId = categorySlug ?? "uncategorized";
+	const currentCategoryId = categorySlug ?? UNCATEGORIZED_URL;
 
 	const renderOption = () => {
 		const bookmarks = [...state.collection].map((item) => {
