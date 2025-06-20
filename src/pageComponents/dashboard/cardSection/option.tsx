@@ -14,7 +14,6 @@ import { type DraggableCollectionState, type ListState } from "react-stately";
 import Checkbox from "../../../components/checkbox";
 import { type SingleListData } from "../../../types/apiTypes";
 import { viewValues } from "../../../utils/constants";
-import { clickToOpenInNewTabLogic } from "../../../utils/helpers";
 
 import "yet-another-react-lightbox/styles.css";
 
@@ -31,7 +30,6 @@ const Option = ({
 	cardTypeCondition,
 	url,
 	isPublicPage,
-	isTrashPage,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
@@ -112,18 +110,7 @@ const Option = ({
 				href={url}
 				onClick={(event) => {
 					event.preventDefault();
-					if (isDesktop) {
-						setOpen(true);
-					} else {
-						// Force open in new tab on mobile
-						clickToOpenInNewTabLogic(
-							event,
-							url,
-							isPublicPage,
-							isTrashPage,
-							true,
-						);
-					}
+					setOpen(true);
 				}}
 				onKeyDown={(event) => {
 					if (event.key === "Enter" || event.key === " ") {
