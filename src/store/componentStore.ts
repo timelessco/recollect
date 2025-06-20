@@ -1,5 +1,6 @@
 import create from "zustand";
 
+import { type SingleListData } from "../types/apiTypes";
 import {
 	type BookmarksViewTypes,
 	type LoadersStoreState,
@@ -78,7 +79,14 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	selectedVideoId: null,
 	setSelectedVideoId: (value: number | null) =>
 		set(() => ({ selectedVideoId: value })),
-
+	renderedBookmarks: {},
+	setRenderedBookmarks: (categoryId: string, bookmarks: SingleListData[]) =>
+		set((state) => ({
+			renderedBookmarks: {
+				...state.renderedBookmarks,
+				[categoryId]: bookmarks,
+			},
+		})),
 	currentSliderDropdownSlide: null,
 	setCurrentSliderDropdownSlide: (value: string | null) =>
 		set(() => ({ currentSliderDropdownSlide: value })),
