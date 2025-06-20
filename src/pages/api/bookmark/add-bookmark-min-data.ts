@@ -8,7 +8,7 @@ import {
 } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty, isNil, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
@@ -305,7 +305,11 @@ export default async function handler(
 			.json({ data, error: scraperApiError ?? null, message: null });
 
 		try {
-			if (!isNull(data) && !isEmpty(data)) {
+			if (
+				!isNull(data) &&
+				!isEmpty(data) &&
+				!isNil(scrapperResponse?.data?.OgImage)
+			) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
