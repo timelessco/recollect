@@ -88,6 +88,11 @@ export default async function handler(
 		try {
 			const image = await axios.get(ogImage, {
 				responseType: "arraybuffer",
+				// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
+				headers: {
+					"User-Agent": "Mozilla/5.0",
+					Accept: "image/*,*/*;q=0.8",
+				},
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
