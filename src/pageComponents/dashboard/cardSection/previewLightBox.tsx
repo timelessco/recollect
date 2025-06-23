@@ -77,9 +77,6 @@ export const PreviewLightBox = ({
 		return undefined;
 	}, [activeIndex]);
 
-	const showNext = activeIndex < currentCategoryBookmarks.length - 1;
-	const showPrevious = activeIndex > 0;
-
 	return open ? (
 		<Lightbox
 			close={() => setOpen(false)}
@@ -91,18 +88,23 @@ export const PreviewLightBox = ({
 			}}
 			open={open}
 			render={{
-				buttonNext: showNext ? undefined : () => null,
-				buttonPrev: showPrevious ? undefined : () => null,
+				buttonNext: undefined,
+				buttonPrev: undefined,
 				slide: ({ slide }) => (
 					<div className="flex h-full w-full items-center justify-center">
 						{slide.type?.startsWith("image") ? (
-							<div className="relative h-full w-full max-w-[1200px]">
-								<Image
-									alt="Preview"
-									className="object-contain"
-									fill
-									src={slide.src}
-								/>
+							<div className="flex items-center justify-center">
+								<div className="relative h-auto w-auto max-w-[1200px]">
+									<Image
+										alt="Preview"
+										className="h-auto w-auto"
+										height={0}
+										sizes="100vw"
+										src={slide.src}
+										unoptimized
+										width={0}
+									/>
+								</div>
 							</div>
 						) : (
 							<div className="relative h-full w-full max-w-[1200px]">
