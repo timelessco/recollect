@@ -254,16 +254,23 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
+			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-20";
 
 		const externalLinkIcon = (
 			<div
-				onClick={() => window.open(post?.url, "_blank")}
+				className={`${iconBgClassName}`}
+				onClick={(event) => {
+					event.preventDefault();
+					window.open(post?.url, "_blank");
+				}}
 				onKeyDown={() => {}}
+				onPointerDown={(event) => {
+					event.stopPropagation();
+				}}
 				role="button"
 				tabIndex={0}
 			>
-				<figure className={`${iconBgClassName} ml-1`}>
+				<figure>
 					<LinkExternalIcon />
 				</figure>
 			</div>
@@ -400,7 +407,7 @@ const CardSection = ({
 							pencilIcon
 						)}
 					</div>
-					<div className=" absolute right-8 top-0">{externalLinkIcon}</div>
+					<div className=" absolute right-8 top-0 flex">{externalLinkIcon}</div>
 				</>
 			);
 		}
