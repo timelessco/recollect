@@ -114,7 +114,7 @@ export const PreviewLightBox = ({
 					<div className="flex h-full w-full items-center justify-center">
 						{slide.type?.startsWith("image") ? (
 							<div className="flex items-center justify-center">
-								<div className="relative  max-w-[1200px]">
+								<div className="relative max-w-[1200px]">
 									<Image
 										alt="Preview"
 										className="h-auto w-auto"
@@ -124,6 +124,17 @@ export const PreviewLightBox = ({
 										width={0}
 									/>
 								</div>
+							</div>
+						) : (slide as CustomSlide).contentType?.startsWith(
+								"application",
+						  ) ? (
+							<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
+								<embed
+									className="h-full w-full"
+									key={slide.src}
+									src={slide.src}
+									type={(slide as CustomSlide).contentType}
+								/>
 							</div>
 						) : slide.type?.startsWith("video") ? (
 							<div className="flex h-full w-full items-center justify-center">
