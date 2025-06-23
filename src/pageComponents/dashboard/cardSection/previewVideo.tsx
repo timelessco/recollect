@@ -16,12 +16,12 @@ export const PreviewVideo = ({
 			: 16 / 9;
 	return (
 		<div
-			className="h-[80%] w-[80%] max-w-max rounded-2xl outline-none"
+			className="relative max-w-[1200px]"
 			style={{ aspectRatio: `${ratio}` }}
 		>
 			<video
 				autoPlay
-				className="h-full w-full rounded-2xl bg-black object-contain"
+				className="h-auto w-auto"
 				controls
 				preload="auto"
 				src={slide.src}
