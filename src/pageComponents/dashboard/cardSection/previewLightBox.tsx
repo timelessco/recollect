@@ -99,7 +99,6 @@ export const PreviewLightBox = ({
 										alt="Preview"
 										className="h-auto w-auto"
 										height={0}
-										sizes="100vw"
 										src={slide.src}
 										unoptimized
 										width={0}
