@@ -8,9 +8,12 @@ import Video from "yet-another-react-lightbox/plugins/video";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
 
+import { EmbedWithFallback } from "./objectFallBack";
+
 type CustomSlide = Slide & {
 	contentType: string;
 	key: number;
+	placeholder?: string;
 	src: string;
 	type: "image" | "video" | "website";
 };
@@ -71,6 +74,7 @@ export const PreviewLightBox = ({
 							src: bookmark.url ?? "",
 							type: "website" as const,
 							contentType: bookmark.type ?? "unknown",
+							placeholder: bookmark.ogImage,
 						};
 					}
 				},
@@ -87,7 +91,6 @@ export const PreviewLightBox = ({
 	);
 
 	const [activeIndex, setActiveIndex] = useState(initialIndex);
-	const iframeRef = useRef<HTMLIFrameElement>(null);
 	const isResetting = useRef(false);
 
 	// Reset activeIndex to initialIndex when Lightbox opens
@@ -165,17 +168,10 @@ export const PreviewLightBox = ({
 									</div>
 								</div>
 							) : (
-								<div className="relative h-full w-full max-w-[1200px]">
-									<iframe
-										className="h-full w-full"
-										key={slide.src}
-										loading="lazy"
-										ref={iframeRef}
-										sandbox="allow-forms allow-popups allow-scripts"
-										src={slide.src}
-										title="Website Preview"
-									/>
-								</div>
+								<EmbedWithFallback
+									placeholder={(slide as CustomSlide).placeholder}
+									src={slide.src}
+								/>
 							)}
 						</div>
 					);
