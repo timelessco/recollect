@@ -457,7 +457,6 @@ const CardSection = ({
 		height: SingleListData["meta_data"]["height"],
 		width: SingleListData["meta_data"]["width"],
 		type: SingleListData["type"],
-		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
 		const isAudio = isBookmarkAudio(type);
@@ -727,7 +726,6 @@ const CardSection = ({
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				item?.type,
-				item?.url,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -796,7 +794,6 @@ const CardSection = ({
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 					item?.type,
-					item?.url,
 				)
 			) : (
 				<div className="h-[48px]" />
