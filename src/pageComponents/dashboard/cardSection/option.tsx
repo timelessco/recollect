@@ -30,6 +30,7 @@ const Option = ({
 	cardTypeCondition,
 	url,
 	isPublicPage,
+	type,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
@@ -105,7 +106,7 @@ const Option = ({
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="absolute left-0 top-0 h-full w-full  rounded-lg"
+				className="pointer-events-auto absolute left-0 top-0 z-50 h-full w-full rounded-lg"
 				draggable={false}
 				href={url}
 				onClick={(event) => {
