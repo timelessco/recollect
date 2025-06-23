@@ -94,7 +94,7 @@ export const PreviewLightBox = ({
 					<div className="flex h-full w-full items-center justify-center">
 						{slide.type?.startsWith("image") ? (
 							<div className="flex items-center justify-center">
-								<div className="relative h-auto w-auto max-w-[1200px]">
+								<div className="relative  max-w-[1200px]">
 									<Image
 										alt="Preview"
 										className="h-auto w-auto"
