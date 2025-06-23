@@ -68,6 +68,7 @@ import {
 import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
+import PDFThumbnail from "./PDFThumbnail";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -545,16 +546,22 @@ const CardSection = ({
 				return (
 					<>
 						{img ? (
-							<Image
-								alt="bookmark-img"
-								blurDataURL={blurSource || defaultBlur}
-								className={imgClassName}
-								height={height ?? 200}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
-								placeholder="blur"
-								src={`${img}`}
-								width={width ?? 200}
-							/>
+							img.endsWith(".pdf") ? (
+								<div className="w-25">
+									<PDFThumbnail pdfUrl={img} />
+								</div>
+							) : (
+								<Image
+									alt="bookmark-img"
+									blurDataURL={blurSource || defaultBlur}
+									className={imgClassName}
+									height={height ?? 200}
+									onError={() => setErrorImgs([id as never, ...errorImgs])}
+									placeholder="blur"
+									src={`${img}`}
+									width={width ?? 200}
+								/>
+							)
 						) : (
 							errorImgPlaceholder
 						)}
