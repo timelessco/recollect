@@ -129,12 +129,18 @@ export const PreviewLightBox = ({
 								"application",
 						  ) ? (
 							<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-								<embed
-									className="h-full w-full"
-									key={slide.src}
-									src={slide.src}
-									type={(slide as CustomSlide).contentType}
-								/>
+								<div
+									className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg"
+									style={{ minHeight: 500 }}
+								>
+									<embed
+										className="h-full w-full"
+										key={slide.src}
+										src={slide.src}
+										style={{ border: "none", display: "block", minHeight: 500 }}
+										type="application/pdf"
+									/>
+								</div>
 							</div>
 						) : slide.type?.startsWith("video") ? (
 							<div className="flex h-full w-full items-center justify-center">
