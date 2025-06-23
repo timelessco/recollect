@@ -3,11 +3,10 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { type DraggableItemProps } from "react-aria";
 import Lightbox, { type Slide } from "yet-another-react-lightbox";
+import Video from "yet-another-react-lightbox/plugins/video";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
-
-import { PreviewVideo } from "./previewVideo";
 
 type CustomSlide = Slide & {
 	contentType: string;
@@ -41,25 +40,39 @@ export const PreviewLightBox = ({
 	);
 
 	// Always provide all required fields and use 'index' instead of 'idx' for clarity
-	const slides: CustomSlide[] = useMemo(
+	const slides = useMemo(
 		() =>
 			currentCategoryBookmarks.map(
 				(bookmark: SingleListData, index: number) => {
 					const isImage = bookmark.type?.startsWith("image");
 					const isVideo = bookmark.type?.startsWith("video");
-					// fallback to 'website' if not image or video
-					let type: "image" | "video" | "website";
-					if (isImage) type = "image";
-					else if (isVideo) type = "video";
-					else type = "website";
-
-					// Explicitly cast as CustomSlide
-					return {
-						key: typeof bookmark.id === "number" ? bookmark.id : index,
-						src: bookmark.url ?? "",
-						type,
-						contentType: bookmark.type ?? "unknown",
-					} as CustomSlide;
+					if (isVideo) {
+						return {
+							key: typeof bookmark.id === "number" ? bookmark.id : index,
+							type: "video" as const,
+							sources: [
+								{
+									src: bookmark.url ?? "",
+									type: bookmark.type || "video/mp4",
+								},
+							],
+							contentType: bookmark.type ?? "unknown",
+						};
+					} else if (isImage) {
+						return {
+							key: typeof bookmark.id === "number" ? bookmark.id : index,
+							src: bookmark.url ?? "",
+							type: "image" as const,
+							contentType: bookmark.type ?? "unknown",
+						};
+					} else {
+						return {
+							key: typeof bookmark.id === "number" ? bookmark.id : index,
+							src: bookmark.url ?? "",
+							type: "website" as const,
+							contentType: bookmark.type ?? "unknown",
+						};
+					}
 				},
 			),
 		[currentCategoryBookmarks],
@@ -107,64 +120,66 @@ export const PreviewLightBox = ({
 				},
 			}}
 			open={open}
+			plugins={[Video]}
 			render={{
 				buttonNext: undefined,
 				buttonPrev: undefined,
-				slide: ({ slide }) => (
-					<div className="flex h-full w-full items-center justify-center">
-						{slide.type?.startsWith("image") ? (
-							<div className="flex items-center justify-center">
-								<div className="relative max-w-[1200px]">
-									<Image
-										alt="Preview"
-										className="h-auto w-auto"
-										height={0}
-										src={slide.src}
-										unoptimized
-										width={0}
-									/>
+				slide: ({ slide }) => {
+					// Let the Video plugin handle video slides
+					if (slide.type === "video") return undefined;
+
+					return (
+						<div className="flex h-full w-full items-center justify-center">
+							{slide.type?.startsWith("image") ? (
+								<div className="flex items-center justify-center">
+									<div className="relative max-w-[1200px]">
+										<Image
+											alt="Preview"
+											className="h-auto w-auto"
+											height={0}
+											src={slide.src}
+											unoptimized
+											width={0}
+										/>
+									</div>
 								</div>
-							</div>
-						) : (slide as CustomSlide).contentType?.startsWith(
-								"application",
-						  ) ? (
-							<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-								<div
-									className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg"
-									style={{ minHeight: 500 }}
-								>
-									<embed
+							) : (slide as CustomSlide).contentType?.startsWith(
+									"application",
+							  ) ? (
+								<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
+									<div
+										className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg"
+										style={{ minHeight: 500 }}
+									>
+										<embed
+											className="h-full w-full"
+											key={slide.src}
+											src={slide.src}
+											style={{
+												border: "none",
+												display: "block",
+												minHeight: 500,
+											}}
+											type="application/pdf"
+										/>
+									</div>
+								</div>
+							) : (
+								<div className="relative h-full w-full max-w-[1200px]">
+									<iframe
 										className="h-full w-full"
 										key={slide.src}
+										loading="lazy"
+										ref={iframeRef}
+										sandbox="allow-forms allow-popups allow-scripts"
 										src={slide.src}
-										style={{ border: "none", display: "block", minHeight: 500 }}
-										type="application/pdf"
+										title="Website Preview"
 									/>
 								</div>
-							</div>
-						) : slide.type?.startsWith("video") ? (
-							<div className="flex h-full w-full items-center justify-center">
-								<PreviewVideo
-									key={slide.src}
-									slide={{ src: slide.src, type: slide.type }}
-									videoData={currentCategoryBookmarks[activeIndex]}
-								/>
-							</div>
-						) : (
-							<div className="relative h-full w-full max-w-[1200px]">
-								<iframe
-									className="h-full w-full"
-									key={slide.src}
-									loading="lazy"
-									ref={iframeRef}
-									sandbox="allow-forms allow-popups allow-scripts"
-									src={slide.src}
-									title="Website Preview"
-								/>
-							</div>
-						)}
-					</div>
-				),
+							)}
+						</div>
+					);
+				},
 			}}
 			slides={slides as Slide[]}
 			styles={{
@@ -172,6 +187,18 @@ export const PreviewLightBox = ({
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
 					backdropFilter: "blur(32px)",
 				},
+			}}
+			video={{
+				controls: true,
+				playsInline: true,
+				autoPlay: true,
+				loop: false,
+				muted: false,
+				disablePictureInPicture: true,
+				disableRemotePlayback: true,
+				controlsList: "nodownload",
+				crossOrigin: "anonymous",
+				preload: "auto",
 			}}
 		/>
 	) : null;
