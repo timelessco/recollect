@@ -65,7 +65,6 @@ import {
 	isCurrentYear,
 	isUserInACategory,
 } from "../../../utils/helpers";
-import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
 
@@ -124,12 +123,7 @@ const CardSection = ({
 	const setCurrentBookmarkView = useMiscellaneousStore(
 		(state) => state.setCurrentBookmarkView,
 	);
-	const toggleShowVideoModal = useModalStore(
-		(state) => state.toggleShowVideoModal,
-	);
-	const setSelectedVideoId = useMiscellaneousStore(
-		(state) => state.setSelectedVideoId,
-	);
+
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
@@ -579,26 +573,11 @@ const CardSection = ({
 		return (
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
-			<div
-				onClick={(event) =>
-					clickToOpenInNewTabLogic(
-						event,
-						url,
-						isPublicPage,
-						categorySlug === TRASH_URL,
-					)
-				}
-				onKeyDown={() => {}}
-				role="button"
-			>
+			<div onKeyDown={() => {}} role="button">
 				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
-							onClick={() => {
-								toggleShowVideoModal();
-								setSelectedVideoId(id);
-							}}
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
@@ -963,12 +942,7 @@ const CardSection = ({
 		);
 	};
 
-	return (
-		<>
-			<div className={listWrapperClass}>{renderItem()}</div>
-			<VideoModal listData={listData} />
-		</>
-	);
+	return <div className={listWrapperClass}>{renderItem()}</div>;
 };
 
 export default CardSection;

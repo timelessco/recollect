@@ -2,10 +2,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type DraggableItemProps } from "react-aria";
-import Lightbox from "yet-another-react-lightbox";
+import Lightbox, { type Slide } from "yet-another-react-lightbox";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
+
+import { PreviewVideo } from "./previewVideo";
+
+type CustomSlide = Slide & {
+	contentType: string;
+	key: number;
+	src: string;
+	type: "image" | "video" | "website";
+};
 
 type PreviewLightBoxProps = {
 	id: DraggableItemProps["key"];
@@ -31,17 +40,28 @@ export const PreviewLightBox = ({
 		[renderedBookmarks, categorySlug],
 	);
 
-	const slides = useMemo(
+	// Always provide all required fields and use 'index' instead of 'idx' for clarity
+	const slides: CustomSlide[] = useMemo(
 		() =>
-			currentCategoryBookmarks.map((bookmark: SingleListData) => {
-				const isImage = bookmark.type?.startsWith("image");
-				return {
-					key: bookmark.id,
-					src: bookmark.url,
-					...(isImage ? { type: "image" as const } : {}),
-					contentType: bookmark.type,
-				};
-			}),
+			currentCategoryBookmarks.map(
+				(bookmark: SingleListData, index: number) => {
+					const isImage = bookmark.type?.startsWith("image");
+					const isVideo = bookmark.type?.startsWith("video");
+					// fallback to 'website' if not image or video
+					let type: "image" | "video" | "website";
+					if (isImage) type = "image";
+					else if (isVideo) type = "video";
+					else type = "website";
+
+					// Explicitly cast as CustomSlide
+					return {
+						key: typeof bookmark.id === "number" ? bookmark.id : index,
+						src: bookmark.url ?? "",
+						type,
+						contentType: bookmark.type ?? "unknown",
+					} as CustomSlide;
+				},
+			),
 		[currentCategoryBookmarks],
 	);
 
@@ -105,6 +125,14 @@ export const PreviewLightBox = ({
 									/>
 								</div>
 							</div>
+						) : slide.type?.startsWith("video") ? (
+							<div className="flex h-full w-full items-center justify-center">
+								<PreviewVideo
+									key={slide.src}
+									slide={{ src: slide.src, type: slide.type }}
+									videoData={currentCategoryBookmarks[activeIndex]}
+								/>
+							</div>
 						) : (
 							<div className="relative h-full w-full max-w-[1200px]">
 								<iframe
@@ -121,7 +149,7 @@ export const PreviewLightBox = ({
 					</div>
 				),
 			}}
-			slides={slides}
+			slides={slides as Slide[]}
 			styles={{
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
