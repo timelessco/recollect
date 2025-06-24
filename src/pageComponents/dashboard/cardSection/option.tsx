@@ -91,14 +91,14 @@ const Option = ({
 			})}
 			ref={ref}
 			role="option"
-			{...mergeProps(
-				// NOTE: we are omiting some keys in dragprops because they are causing focus trap issue
-				// the main problem that caused the focus trap issue is onKeyUpCapture
-				disableDndCondition
-					? []
-					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-				disableDndCondition ? [] : focusProps,
-			)}
+			{...(!open
+				? mergeProps(
+						disableDndCondition
+							? []
+							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+						disableDndCondition ? [] : focusProps,
+				  )
+				: {})}
 		>
 			<PreviewLightBox id={item.key} open={open} setOpen={setOpen} />
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
