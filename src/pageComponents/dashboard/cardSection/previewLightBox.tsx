@@ -31,6 +31,13 @@ export const PreviewLightBox = ({
 }: PreviewLightBoxProps) => {
 	const router = useRouter();
 
+	const handleClose = () => {
+		setOpen(false);
+		// Remove the preview parameter from URL
+		const basePath = router.asPath.split("/preview/")[0];
+		window.history.pushState({}, "", basePath);
+	};
+
 	const renderedBookmarks = useMiscellaneousStore(
 		(store) => store.renderedBookmarks,
 	);
@@ -114,11 +121,23 @@ export const PreviewLightBox = ({
 
 	return open ? (
 		<Lightbox
-			close={() => setOpen(false)}
+			close={handleClose}
 			index={activeIndex}
 			on={{
 				view: ({ index }) => {
-					if (!isResetting.current && open) setActiveIndex(index);
+					if (!isResetting.current && open) {
+						setActiveIndex(index);
+						// Update URL with the new bookmark ID when scrolling
+						const currentBookmark = currentCategoryBookmarks[index];
+						if (currentBookmark?.id) {
+							const basePath = router.asPath.split("/preview/")[0];
+							window.history.pushState(
+								{},
+								"",
+								`${basePath}/preview/${currentBookmark.id}`,
+							);
+						}
+					}
 				},
 			}}
 			open={open}
