@@ -26,6 +26,8 @@ const nextConfig = {
 	// Enable the below option only when you are debugging sourceamp
 	productionBrowserSourceMaps: process.env.SOURCEMAP === "true",
 	images: {
+		// Disables Next.js image optimization
+		unoptimized: true,
 		domains: [
 			"lh3.googleusercontent.com",
 			"images.unsplash.com",
