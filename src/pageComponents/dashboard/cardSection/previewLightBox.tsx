@@ -91,27 +91,26 @@ export const PreviewLightBox = ({
 	);
 
 	const [activeIndex, setActiveIndex] = useState(initialIndex);
+	const wasOpen = useRef(open);
+	const lastOpenedId = useRef(id);
 	const isResetting = useRef(false);
 
-	// Reset activeIndex to initialIndex when Lightbox opens
+	// Only reset activeIndex when lightbox is opened or id changes while closed
 	useEffect(() => {
-		if (open && initialIndex !== -1) {
+		if ((!wasOpen.current && open) || (!open && lastOpenedId.current !== id)) {
+			const index = currentCategoryBookmarks.findIndex(
+				(bookmark) => String(bookmark.id) === String(id),
+			);
 			isResetting.current = true;
-			setActiveIndex(initialIndex);
-		}
-	}, [open, initialIndex]);
-
-	// Clear isResetting after activeIndex is set
-	useEffect(() => {
-		if (isResetting.current) {
-			const timeout = setTimeout(() => {
+			setActiveIndex(index);
+			lastOpenedId.current = id;
+			setTimeout(() => {
 				isResetting.current = false;
 			}, 0);
-			return () => clearTimeout(timeout);
 		}
 
-		return undefined;
-	}, [activeIndex]);
+		wasOpen.current = open;
+	}, [open, id, currentCategoryBookmarks]);
 
 	return open ? (
 		<Lightbox
