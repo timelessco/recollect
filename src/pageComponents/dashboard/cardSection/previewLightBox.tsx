@@ -137,7 +137,7 @@ export const PreviewLightBox = ({
 									<div className="relative max-w-[1200px]">
 										<Image
 											alt="Preview"
-											className="h-auto w-auto"
+											className="h-auto max-h-[80vh] w-auto"
 											height={0}
 											src={slide.src}
 											unoptimized
