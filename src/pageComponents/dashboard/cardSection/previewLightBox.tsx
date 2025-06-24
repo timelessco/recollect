@@ -80,10 +80,6 @@ export const PreviewLightBox = ({
 	const showNext = activeIndex < currentCategoryBookmarks.length - 1;
 	const showPrevious = activeIndex > 0;
 
-	// Debug logs for state transitions
-	// eslint-disable-next-line no-console
-	console.log("PreviewLightBox render", { open, initialIndex, activeIndex });
-
 	return open ? (
 		<Lightbox
 			close={() => setOpen(false)}
