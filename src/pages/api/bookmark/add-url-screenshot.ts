@@ -87,7 +87,7 @@ export default async function handler(
 		error: PostgrestError | VerifyErrors | string | null;
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
-		.update({ ogImage: publicURL })
+		.update({ screenshot: publicURL })
 		.match({ id: request.body.id, user_id: userId })
 		.select();
 

@@ -128,10 +128,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// if this is the case then we do not call the screenshot api
 			const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
 
-			if (
-				(!ogImg || isEmpty(ogImg) || !ogImg?.includes("https://")) &&
-				isNull(isUrlOfMimeType)
-			) {
+			if (isNull(isUrlOfMimeType)) {
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,
