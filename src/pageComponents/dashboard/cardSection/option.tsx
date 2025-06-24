@@ -111,11 +111,23 @@ const Option = ({
 				onClick={(event) => {
 					event.preventDefault();
 					setOpen(true);
+					// Update URL with preview parameter
+					window.history.pushState(
+						{},
+						"",
+						`${window.location.pathname}/preview/${item.key}`,
+					);
 				}}
 				onKeyDown={(event) => {
 					if (event.key === "Enter" || event.key === " ") {
 						event.preventDefault();
 						setOpen(true);
+						// Update URL with preview parameter
+						window.history.pushState(
+							{},
+							"",
+							`${window.location.pathname}/preview/${item.key}`,
+						);
 					}
 				}}
 			/>
