@@ -11,11 +11,11 @@ export default function useIsInNotFoundPage() {
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
 
 	if (!isNull(CATEGORY_ID)) {
 		return { isInNotFoundPage: false };
-	} else if (categorySlug === ALL_BOOKMARKS_URL) {
+	} else if (categorySlug?.startsWith(ALL_BOOKMARKS_URL)) {
 		return { isInNotFoundPage: false };
 	} else {
 		return { isInNotFoundPage: true };

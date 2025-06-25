@@ -17,6 +17,8 @@ import { viewValues } from "../../../utils/constants";
 
 import "yet-another-react-lightbox/styles.css";
 
+import { useRouter } from "next/router";
+
 import { PreviewLightBox } from "./previewLightBox";
 
 type OptionDropItemTypes = DraggableItemProps & {
@@ -34,7 +36,6 @@ const Option = ({
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
 	isPublicPage: CardSectionProps["isPublicPage"];
-	isTrashPage: boolean;
 	item: OptionDropItemTypes;
 	state: ListState<unknown>;
 	type: SingleListData["type"];
@@ -45,6 +46,7 @@ const Option = ({
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
+	const router = useRouter();
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -92,31 +94,40 @@ const Option = ({
 			})}
 			ref={ref}
 			role="option"
-			{...mergeProps(
-				// NOTE: we are omiting some keys in dragprops because they are causing focus trap issue
-				// the main problem that caused the focus trap issue is onKeyUpCapture
-				disableDndCondition
-					? []
-					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-				disableDndCondition ? [] : focusProps,
-			)}
+			{...(!open
+				? mergeProps(
+						disableDndCondition
+							? []
+							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+						disableDndCondition ? [] : focusProps,
+				  )
+				: {})}
 		>
 			<PreviewLightBox id={item.key} open={open} setOpen={setOpen} />
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="absolute left-0 top-0 h-full w-full  rounded-lg"
+				className="pointer-events-auto  absolute left-0 top-0 z-10 h-full w-full rounded-lg"
 				draggable={false}
 				href={url}
 				onClick={(event) => {
 					event.preventDefault();
 					setOpen(true);
-				}}
-				onKeyDown={(event) => {
-					if (event.key === "Enter" || event.key === " ") {
-						event.preventDefault();
-						setOpen(true);
-					}
+					void router.push(
+						{
+							// https://github.com/vercel/next.js/discussions/11625
+							// https://github.com/adamwathan/headbangstagram/pull/1/files
+							pathname: `/[category_id]`,
+							query: {
+								category_id: router.asPath.split("/")[1],
+								id: item.key,
+							},
+						},
+						`/${router.asPath.split("/")[1]}/preview/${item.key}`,
+						{
+							shallow: true,
+						},
+					);
 				}}
 			/>
 			{item.rendered}
@@ -125,7 +136,7 @@ const Option = ({
 					checked={isSelected}
 					classname={`${
 						isSelected ? "opacity-100" : "opacity-0"
-					} absolute right-0 cursor-pointer opacity-0 group-hover:opacity-100  ${
+					} absolute right-0 cursor-pointer opacity-0 z-20 group-hover:opacity-100  ${
 						cardTypeCondition === viewValues.list
 							? "top-[18px]"
 							: cardTypeCondition === viewValues.headlines

@@ -138,7 +138,7 @@ const Dashboard = () => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
 	const router = useRouter();
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
 
 	useEffect(() => {
 		if (router?.pathname === "/") {
@@ -1009,9 +1009,9 @@ const Dashboard = () => {
 			}
 		} else if (isLoadingCategories || isFetchingCategories) {
 			return "Loading";
-		} else {
-			return <NotFoundPage />;
 		}
+
+		return <NotFoundPage />;
 	};
 
 	const onAddBookmark = (url: string) => {
