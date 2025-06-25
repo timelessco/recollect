@@ -51,6 +51,7 @@ import {
 	CATEGORIES_KEY,
 	colorPickerColors,
 	defaultBlur,
+	documentFileTypes,
 	SEARCH_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -68,6 +69,7 @@ import {
 import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
+import PDFThumbnail from "./PDFThumbnail";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -545,16 +547,20 @@ const CardSection = ({
 				return (
 					<>
 						{img ? (
-							<Image
-								alt="bookmark-img"
-								blurDataURL={blurSource || defaultBlur}
-								className={imgClassName}
-								height={height ?? 200}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
-								placeholder="blur"
-								src={`${img}`}
-								width={width ?? 200}
-							/>
+							documentFileTypes?.includes(type) ? (
+								<PDFThumbnail className={imgClassName} pdfUrl={img} />
+							) : (
+								<Image
+									alt="bookmark-img"
+									blurDataURL={blurSource || defaultBlur}
+									className={imgClassName}
+									height={height ?? 200}
+									onError={() => setErrorImgs([id as never, ...errorImgs])}
+									placeholder="blur"
+									src={`${img}`}
+									width={width ?? 200}
+								/>
+							)
 						) : (
 							errorImgPlaceholder
 						)}
