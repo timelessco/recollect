@@ -32,7 +32,7 @@ const useGetViewValue = (
 	const queryClient = useQueryClient();
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
 
 	const userData = useSupabaseSession((state) => state.session);
 

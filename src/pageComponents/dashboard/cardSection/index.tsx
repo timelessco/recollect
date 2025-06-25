@@ -66,7 +66,6 @@ import {
 	isCurrentYear,
 	isUserInACategory,
 } from "../../../utils/helpers";
-import VideoModal from "../modals/videoModal";
 
 import ListBox from "./listBox";
 import PDFThumbnail from "./PDFThumbnail";
@@ -118,7 +117,7 @@ const CardSection = ({
 	const session = useSupabaseSession((state) => state.session);
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
 	const queryClient = useQueryClient();
 	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
@@ -126,12 +125,7 @@ const CardSection = ({
 	const setCurrentBookmarkView = useMiscellaneousStore(
 		(state) => state.setCurrentBookmarkView,
 	);
-	const toggleShowVideoModal = useModalStore(
-		(state) => state.toggleShowVideoModal,
-	);
-	const setSelectedVideoId = useMiscellaneousStore(
-		(state) => state.setSelectedVideoId,
-	);
+
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
@@ -262,16 +256,23 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
+			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-20";
 
 		const externalLinkIcon = (
 			<div
-				onClick={() => window.open(post?.url, "_blank")}
+				className={`${iconBgClassName}`}
+				onClick={(event) => {
+					event.preventDefault();
+					window.open(post?.url, "_blank");
+				}}
 				onKeyDown={() => {}}
+				onPointerDown={(event) => {
+					event.stopPropagation();
+				}}
 				role="button"
 				tabIndex={0}
 			>
-				<figure className={`${iconBgClassName} ml-1`}>
+				<figure>
 					<LinkExternalIcon />
 				</figure>
 			</div>
@@ -408,7 +409,7 @@ const CardSection = ({
 							pencilIcon
 						)}
 					</div>
-					<div className=" absolute right-8 top-0">{externalLinkIcon}</div>
+					<div className=" absolute right-8 top-0 flex">{externalLinkIcon}</div>
 				</>
 			);
 		}
@@ -465,7 +466,6 @@ const CardSection = ({
 		height: SingleListData["meta_data"]["height"],
 		width: SingleListData["meta_data"]["width"],
 		type: SingleListData["type"],
-		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
 		const isAudio = isBookmarkAudio(type);
@@ -585,26 +585,11 @@ const CardSection = ({
 		return (
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
-			<div
-				onClick={(event) =>
-					clickToOpenInNewTabLogic(
-						event,
-						url,
-						isPublicPage,
-						categorySlug === TRASH_URL,
-					)
-				}
-				onKeyDown={() => {}}
-				role="button"
-			>
+			<div onKeyDown={() => {}} role="button">
 				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
-							onClick={() => {
-								toggleShowVideoModal();
-								setSelectedVideoId(id);
-							}}
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
@@ -754,7 +739,6 @@ const CardSection = ({
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				item?.type,
-				item?.url,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -823,7 +807,6 @@ const CardSection = ({
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 					item?.type,
-					item?.url,
 				)
 			) : (
 				<div className="h-[48px]" />
@@ -969,12 +952,7 @@ const CardSection = ({
 		);
 	};
 
-	return (
-		<>
-			<div className={listWrapperClass}>{renderItem()}</div>
-			<VideoModal listData={listData} />
-		</>
-	);
+	return <div className={listWrapperClass}>{renderItem()}</div>;
 };
 
 export default CardSection;
