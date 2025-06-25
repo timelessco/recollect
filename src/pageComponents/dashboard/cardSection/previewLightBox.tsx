@@ -13,7 +13,7 @@ import { BOOKMARKS_KEY } from "../../../utils/constants";
 
 import { EmbedWithFallback } from "./objectFallBack";
 
-type CustomSlide = Slide & {
+export type CustomSlide = Slide & {
 	contentType: string;
 	key: number;
 	placeholder?: string;
@@ -60,18 +60,20 @@ export const PreviewLightBox = ({
 		if (isClosing || !open) return;
 		setIsClosing(true);
 		setOpen(false);
+		void router.push(
+			{
+				pathname: `/[category_id]`,
+				query: {
+					category_id: router.query.category_id ?? "all-bookmarks",
+				},
+			},
+			`/${router.asPath.split("/")[1]}`,
+			{
+				shallow: true,
+			},
+		);
 		setTimeout(() => setIsClosing(false), 500);
-	}, [open, setOpen, isClosing]);
-
-	// Cleanup on unmount
-	useEffect(
-		() => () => {
-			if (open) {
-				setOpen(false);
-			}
-		},
-		[open, setOpen],
-	);
+	}, [open, setOpen, isClosing, router]);
 
 	// Always provide all required fields and use 'index' instead of 'idx' for clarity
 	const slides = useMemo(
@@ -120,7 +122,6 @@ export const PreviewLightBox = ({
 	const wasOpen = useRef(open);
 	const lastOpenedId = useRef(id);
 	const isResetting = useRef(false);
-
 	// Only reset activeIndex when lightbox is opened or id changes while closed
 	useEffect(() => {
 		if ((!wasOpen.current && open) || (!open && lastOpenedId.current !== id)) {
@@ -146,6 +147,22 @@ export const PreviewLightBox = ({
 				view: ({ index }) => {
 					if (!isResetting.current && open) {
 						setActiveIndex(index);
+						const currentBookmark = bookmarks[index];
+						if (currentBookmark) {
+							void router.push(
+								{
+									pathname: `/[category_id]`,
+									query: {
+										category_id: router.asPath.split("/")[1],
+										id: currentBookmark.id,
+									},
+								},
+								`/${router.asPath.split("/")[1]}/preview/${currentBookmark.id}`,
+								{
+									shallow: true,
+								},
+							);
+						}
 					}
 				},
 			}}

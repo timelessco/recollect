@@ -119,11 +119,11 @@ const Option = ({
 							// https://github.com/adamwathan/headbangstagram/pull/1/files
 							pathname: `/[category_id]`,
 							query: {
-								category_id: "all-bookmarks",
+								category_id: router.asPath.split("/")[1],
 								id: item.key,
 							},
 						},
-						`/all-bookmarks/preview/${item.key}`,
+						`/${router.asPath.split("/")[1]}/preview/${item.key}`,
 						{
 							shallow: true,
 						},

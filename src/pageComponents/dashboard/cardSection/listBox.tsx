@@ -223,7 +223,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 				cardTypeCondition={cardTypeCondition}
 				dragState={dragState}
 				isPublicPage={isPublicPage}
-				isTrashPage={isTrashPage}
 				item={item}
 				key={item.key}
 				state={state}
