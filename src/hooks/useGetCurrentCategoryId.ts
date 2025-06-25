@@ -22,7 +22,7 @@ export default function useGetCurrentCategoryId() {
 		error: PostgrestError;
 	};
 
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
 	// disabling here as everywhere else is correct case
 	const category_id =
 		getCategoryIdFromSlug(categorySlug, allCategories?.data) ?? null;
