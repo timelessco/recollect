@@ -330,7 +330,7 @@ export default async function handler(
 			.json({ data, error: scraperApiError ?? null, message: null });
 
 		try {
-			if (!isNull(data) && !isEmpty(data)) {
+			if (!isNull(data) && !isEmpty(data) && !isNil(isUrlOfMimeType)) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,

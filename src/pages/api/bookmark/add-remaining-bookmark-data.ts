@@ -124,11 +124,7 @@ export default async function handler(
 		}
 	};
 
-	const imgData = {
-		width: null,
-		height: null,
-		encoded: null,
-	};
+	let imgData;
 
 	let imgUrl;
 
@@ -220,7 +216,7 @@ export default async function handler(
 			? currentData?.screenshot
 			: currentData?.ogImage;
 
-		// imgData = await blurhashFromURL(imgForWhichMetaDataIsGenerated);
+		imgData = await blurhashFromURL(imgForWhichMetaDataIsGenerated);
 
 		try {
 			// Get OCR using the centralized function
