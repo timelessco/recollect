@@ -27,6 +27,7 @@ import {
 	NEXT_API_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
+	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { apiCookieParser } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -279,6 +280,16 @@ export default async function handler(
 		}
 	}
 
+	let ogImageToBeAdded = null;
+
+	const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
+
+	if (!isNil(isUrlOfMimeType)) {
+		ogImageToBeAdded = url;
+	} else {
+		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
+	}
+
 	// here we add the scrapper data , in the remainingApi call we add s3 data
 	const {
 		data,
@@ -294,7 +305,7 @@ export default async function handler(
 				title: scrapperResponse?.data?.title,
 				user_id: userId,
 				description: scrapperResponse?.data?.description,
-				ogImage: scrapperResponse?.data?.OgImage,
+				ogImage: ogImageToBeAdded,
 				category_id: computedCategoryId,
 				meta_data: null,
 				type: bookmarkType,
@@ -319,17 +330,12 @@ export default async function handler(
 			.json({ data, error: scraperApiError ?? null, message: null });
 
 		try {
-			if (
-				!isNull(data) &&
-				!isEmpty(data) &&
-				!isNil(scrapperResponse?.data?.OgImage)
-			) {
+			if (!isNull(data) && !isEmpty(data)) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
-						image: scrapperResponse?.data?.OgImage,
 						favIcon: scrapperResponse?.data?.favIcon,
 						url,
 					},

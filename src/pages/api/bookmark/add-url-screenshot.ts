@@ -101,7 +101,6 @@ export default async function handler(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
-						image: publicURL,
 						favIcon: data?.[0]?.meta_data?.favIcon,
 						url: request.body.url,
 					},

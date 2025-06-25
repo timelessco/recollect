@@ -41,7 +41,7 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const { url, image: ogImage, favIcon, id } = request.body;
+	const { url, favIcon, id } = request.body;
 
 	if (!id) {
 		response
@@ -54,66 +54,116 @@ export default async function handler(
 	const supabase = apiSupabaseClient(request, response);
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
+	if (!userId) {
+		response
+			.status(401)
+			.json({ data: null, error: "User not authenticated", message: null });
+		Sentry.captureException(
+			"User not authenticated in add-remaining-bookmark-data",
+		);
+		return;
+	}
+
+	// get the current ogImage and screenshot from the database
+	const { data: currentData, error: currentDataError } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select("ogImage, screenshot")
+		.match({ id })
+		.single();
+
+	if (currentDataError) {
+		console.error("Error fetching current bookmark data:", currentDataError);
+		response.status(500).json({
+			data: null,
+			error: "Failed to fetch current bookmark data",
+			message: null,
+		});
+		Sentry.captureException(
+			`Failed to fetch current bookmark data: ${currentDataError.message}`,
+		);
+		return;
+	}
+
+	if (!currentData) {
+		response
+			.status(404)
+			.json({ data: null, error: "Bookmark not found", message: null });
+		Sentry.captureException(`Bookmark not found with id: ${id}`);
+		return;
+	}
+
+	// console.log("currentData~~~~~~~~~~~~", currentData);
+
 	const upload = async (
 		base64info: string,
 		userIdForStorage: ProfilesTableTypes["id"],
-	) => {
-		const imgName = `img-${uniqid?.time()}.jpg`;
-		const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
-		await supabase.storage
-			.from(BOOKMAKRS_STORAGE_NAME)
-			.upload(storagePath, decode(base64info), {
-				contentType: "image/jpg",
-			});
+	): Promise<string | null> => {
+		try {
+			const imgName = `img-${uniqid?.time()}.jpg`;
+			const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
 
-		const { data: storageData } = supabase.storage
-			.from(BOOKMAKRS_STORAGE_NAME)
-			.getPublicUrl(storagePath);
+			const { error: uploadError } = await supabase.storage
+				.from(BOOKMAKRS_STORAGE_NAME)
+				.upload(storagePath, decode(base64info), {
+					contentType: "image/jpg",
+				});
 
-		return storageData?.publicUrl;
+			if (uploadError) {
+				console.error("Storage upload failed:", uploadError);
+				return null;
+			}
+
+			const { data: storageData } = supabase.storage
+				.from(BOOKMAKRS_STORAGE_NAME)
+				.getPublicUrl(storagePath);
+
+			return storageData?.publicUrl || null;
+		} catch (error) {
+			console.error("Error in upload function:", error);
+			return null;
+		}
 	};
 
-	let imgData;
+	const imgData = {
+		width: null,
+		height: null,
+		encoded: null,
+	};
 
 	let imgUrl;
 
 	const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
 
-	if (!isNil(isUrlAnImage) && !isEmpty(isUrlAnImage)) {
-		// if the url itself is an img, like something.com/img.jgp, then we are not going to upload it to s3
-		imgUrl = url;
-	}
+	const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
 
-	if (ogImage) {
+	if (isUrlAnImageCondition) {
+		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to s3
 		try {
-			const image = await axios.get(ogImage, {
+			// Download the image from the URL
+			const image = await axios.get(url, {
 				responseType: "arraybuffer",
-				// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
 				headers: {
 					"User-Agent": "Mozilla/5.0",
 					Accept: "image/*,*/*;q=0.8",
 				},
+				timeout: 10_000,
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
-
-			imgData = await blurhashFromURL(ogImage);
-
-			// this code is for the blur hash resize issue, uncomment this after blurhashFromURL supports image resize
-			// let returnedB64;
-			// if (imgData?.height > 600 || imgData?.width > 600) {
-			// 	const compressedImg = await sharp(image.data)
-			// 	.resize({ width: 600, height: 600 })
-			// 	.toBuffer();
-
-			// 	returnedB64 = compressedImg?.toString("base64");
-			// } else {
-			// 	returnedB64 = Buffer.from(image.data).toString("base64");
-			// }
-
 			imgUrl = await upload(returnedB64, userId);
+
+			// If upload failed, log but don't fail the entire request
+			if (imgUrl === null) {
+				console.error(
+					"Failed to upload image URL to S3, continuing without image",
+				);
+				Sentry.captureException("Failed to upload image URL to S3");
+			}
 		} catch (error) {
-			log("Error: ogImage is 404", error);
+			console.error("Error uploading image URL to S3:", error);
+			Sentry.captureException(`Error uploading image URL to S3: ${error}`);
+
+			// Don't fail the entire request, just set imgUrl to null
 			imgUrl = null;
 		}
 	}
@@ -130,21 +180,72 @@ export default async function handler(
 		}
 	};
 
+	// upload scrapper image to s3
+	if (!isNil(currentData?.ogImage)) {
+		try {
+			// 10 second timeout for image download
+			const image = await axios.get(currentData?.ogImage, {
+				responseType: "arraybuffer",
+				// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
+				headers: {
+					"User-Agent": "Mozilla/5.0",
+					Accept: "image/*,*/*;q=0.8",
+				},
+				timeout: 10_000,
+			});
+
+			const returnedB64 = Buffer.from(image.data).toString("base64");
+			imgUrl = await upload(returnedB64, userId);
+
+			// If upload failed, log but don't fail the entire request
+			if (imgUrl === null) {
+				console.error("Failed to upload image to S3, continuing without image");
+				Sentry.captureException("Failed to upload image to S3");
+			}
+		} catch (error) {
+			console.error("Error uploading scrapped image to S3:", error);
+			Sentry.captureException(`Error uploading scrapped image to S3: ${error}`);
+
+			// Don't fail the entire request, just set imgUrl to null
+			imgUrl = null;
+		}
+	}
+
 	let imageOcrValue = null;
 	let imageCaption = null;
 
-	if (ogImage) {
+	// generat meta data (ocr, blurhash data, imgcaption)
+	if (!isNil(currentData?.ogImage) || currentData?.screenshot) {
+		const imgForWhichMetaDataIsGenerated = !isNil(currentData?.screenshot)
+			? currentData?.screenshot
+			: currentData?.ogImage;
+
+		// imgData = await blurhashFromURL(imgForWhichMetaDataIsGenerated);
+
 		try {
 			// Get OCR using the centralized function
-			imageOcrValue = await ocr(ogImage);
+			imageOcrValue = await ocr(imgForWhichMetaDataIsGenerated);
 
 			// Get image caption using the centralized function
-			imageCaption = await imageToText(ogImage);
+			imageCaption = await imageToText(imgForWhichMetaDataIsGenerated);
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
 			Sentry.captureException(`Gemini AI processing error ${error}`);
 		}
 	}
+
+	// if (metaDataImage) {
+	// 	try {
+	// 		// Get OCR using the centralized function
+	// 		imageOcrValue = await ocr(metaDataImage);
+
+	// 		// Get image caption using the centralized function
+	// 		imageCaption = await imageToText(metaDataImage);
+	// 	} catch (error) {
+	// 		console.error("Gemini AI processing error", error);
+	// 		Sentry.captureException(`Gemini AI processing error ${error}`);
+	// 	}
+	// }
 
 	const meta_data = {
 		img_caption: imageCaption,

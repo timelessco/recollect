@@ -121,7 +121,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			}
 
 			const data = response?.data?.data[0];
-			const ogImg = data?.ogImage;
 			const url = data?.url;
 
 			// this is to check if url is not a website like test.pdf

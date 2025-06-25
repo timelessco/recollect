@@ -216,7 +216,6 @@ export type AddBookmarkMinDataPayloadTypes = {
 export type AddBookmarkRemainingDataPayloadTypes = {
 	favIcon: string;
 	id: SingleListData["id"];
-	image: SingleListData["ogImage"];
 	url: SingleListData["url"];
 	user_id: SingleListData["user_id"]["id"];
 };
