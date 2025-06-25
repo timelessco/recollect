@@ -50,8 +50,8 @@ export const PreviewLightBox = ({
 	};
 
 	const bookmarks = useMemo(
-		() => previousData.pages[0]?.data ?? [],
-		[previousData.pages],
+		() => previousData?.pages[0]?.data ?? [],
+		[previousData?.pages],
 	);
 
 	const [isClosing, setIsClosing] = useState(false);
@@ -79,34 +79,34 @@ export const PreviewLightBox = ({
 	const slides = useMemo(
 		() =>
 			bookmarks.map((bookmark: SingleListData, index: number) => {
-				const isImage = bookmark.type?.startsWith("image");
-				const isVideo = bookmark.type?.startsWith("video");
+				const isImage = bookmark?.type?.startsWith("image");
+				const isVideo = bookmark?.type?.startsWith("video");
 				if (isVideo) {
 					return {
-						key: typeof bookmark.id === "number" ? bookmark.id : index,
+						key: typeof bookmark?.id === "number" ? bookmark?.id : index,
 						type: "video" as const,
 						sources: [
 							{
-								src: bookmark.url ?? "",
-								type: bookmark.type || "video/mp4",
+								src: bookmark?.url ?? "",
+								type: bookmark?.type || "video/mp4",
 							},
 						],
-						contentType: bookmark.type ?? "unknown",
+						contentType: bookmark?.type ?? "unknown",
 					};
 				} else if (isImage) {
 					return {
-						key: typeof bookmark.id === "number" ? bookmark.id : index,
-						src: bookmark.url ?? "",
+						key: typeof bookmark?.id === "number" ? bookmark?.id : index,
+						src: bookmark?.url ?? "",
 						type: "image" as const,
-						contentType: bookmark.type ?? "unknown",
+						contentType: bookmark?.type ?? "unknown",
 					};
 				} else {
 					return {
-						key: typeof bookmark.id === "number" ? bookmark.id : index,
-						src: bookmark.url ?? "",
+						key: typeof bookmark?.id === "number" ? bookmark?.id : index,
+						src: bookmark?.url ?? "",
 						type: "website" as const,
-						contentType: bookmark.type ?? "unknown",
-						placeholder: bookmark.ogImage,
+						contentType: bookmark?.type ?? "unknown",
+						placeholder: bookmark?.ogImage,
 					};
 				}
 			}),
