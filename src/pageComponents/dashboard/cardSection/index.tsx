@@ -115,7 +115,7 @@ const CardSection = ({
 	const session = useSupabaseSession((state) => state.session);
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
 	const queryClient = useQueryClient();
 	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;

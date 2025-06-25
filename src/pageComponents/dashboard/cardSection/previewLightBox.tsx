@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
 import Lightbox, { type Slide } from "yet-another-react-lightbox";
 import Video from "yet-another-react-lightbox/plugins/video";
 
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
+import { BOOKMARKS_KEY } from "../../../utils/constants";
 
 import { EmbedWithFallback } from "./objectFallBack";
 
@@ -30,71 +33,87 @@ export const PreviewLightBox = ({
 	setOpen,
 }: PreviewLightBoxProps) => {
 	const router = useRouter();
+	const queryClient = useQueryClient();
 
-	const handleClose = () => {
-		setOpen(false);
-		// Remove the preview parameter from URL
-		const basePath = router.asPath.split("/preview/")[0];
-		window.history.pushState({}, "", basePath);
+	const session = useSupabaseSession((state) => state.session);
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+
+	const previousData = queryClient.getQueryData([
+		BOOKMARKS_KEY,
+		session?.user?.id,
+		CATEGORY_ID,
+		"date-sort-acending",
+	]) as {
+		pages: Array<{
+			data: SingleListData[];
+		}>;
 	};
 
-	const renderedBookmarks = useMiscellaneousStore(
-		(store) => store.renderedBookmarks,
+	const bookmarks = useMemo(
+		() => previousData.pages[0]?.data ?? [],
+		[previousData.pages],
 	);
 
-	const categorySlug = router.asPath.split("/")[1] ?? "uncategorized";
+	const [isClosing, setIsClosing] = useState(false);
 
-	const currentCategoryBookmarks = useMemo(
-		() => renderedBookmarks[categorySlug] ?? [],
-		[renderedBookmarks, categorySlug],
+	const handleClose = useCallback(() => {
+		if (isClosing || !open) return;
+		setIsClosing(true);
+		setOpen(false);
+		setTimeout(() => setIsClosing(false), 500);
+	}, [open, setOpen, isClosing]);
+
+	// Cleanup on unmount
+	useEffect(
+		() => () => {
+			if (open) {
+				setOpen(false);
+			}
+		},
+		[open, setOpen],
 	);
 
 	// Always provide all required fields and use 'index' instead of 'idx' for clarity
 	const slides = useMemo(
 		() =>
-			currentCategoryBookmarks.map(
-				(bookmark: SingleListData, index: number) => {
-					const isImage = bookmark.type?.startsWith("image");
-					const isVideo = bookmark.type?.startsWith("video");
-					if (isVideo) {
-						return {
-							key: typeof bookmark.id === "number" ? bookmark.id : index,
-							type: "video" as const,
-							sources: [
-								{
-									src: bookmark.url ?? "",
-									type: bookmark.type || "video/mp4",
-								},
-							],
-							contentType: bookmark.type ?? "unknown",
-						};
-					} else if (isImage) {
-						return {
-							key: typeof bookmark.id === "number" ? bookmark.id : index,
-							src: bookmark.url ?? "",
-							type: "image" as const,
-							contentType: bookmark.type ?? "unknown",
-						};
-					} else {
-						return {
-							key: typeof bookmark.id === "number" ? bookmark.id : index,
-							src: bookmark.url ?? "",
-							type: "website" as const,
-							contentType: bookmark.type ?? "unknown",
-							placeholder: bookmark.ogImage,
-						};
-					}
-				},
-			),
-		[currentCategoryBookmarks],
+			bookmarks.map((bookmark: SingleListData, index: number) => {
+				const isImage = bookmark.type?.startsWith("image");
+				const isVideo = bookmark.type?.startsWith("video");
+				if (isVideo) {
+					return {
+						key: typeof bookmark.id === "number" ? bookmark.id : index,
+						type: "video" as const,
+						sources: [
+							{
+								src: bookmark.url ?? "",
+								type: bookmark.type || "video/mp4",
+							},
+						],
+						contentType: bookmark.type ?? "unknown",
+					};
+				} else if (isImage) {
+					return {
+						key: typeof bookmark.id === "number" ? bookmark.id : index,
+						src: bookmark.url ?? "",
+						type: "image" as const,
+						contentType: bookmark.type ?? "unknown",
+					};
+				} else {
+					return {
+						key: typeof bookmark.id === "number" ? bookmark.id : index,
+						src: bookmark.url ?? "",
+						type: "website" as const,
+						contentType: bookmark.type ?? "unknown",
+						placeholder: bookmark.ogImage,
+					};
+				}
+			}),
+		[bookmarks],
 	);
 
 	const initialIndex = useMemo(
-		() =>
-			currentCategoryBookmarks.findIndex(
-				(bookmark) => String(bookmark.id) === String(id),
-			),
-		[currentCategoryBookmarks, id],
+		() => bookmarks.findIndex((bookmark) => String(bookmark.id) === String(id)),
+		[bookmarks, id],
 	);
 
 	const [activeIndex, setActiveIndex] = useState(initialIndex);
@@ -105,7 +124,7 @@ export const PreviewLightBox = ({
 	// Only reset activeIndex when lightbox is opened or id changes while closed
 	useEffect(() => {
 		if ((!wasOpen.current && open) || (!open && lastOpenedId.current !== id)) {
-			const index = currentCategoryBookmarks.findIndex(
+			const index = bookmarks.findIndex(
 				(bookmark) => String(bookmark.id) === String(id),
 			);
 			isResetting.current = true;
@@ -117,9 +136,9 @@ export const PreviewLightBox = ({
 		}
 
 		wasOpen.current = open;
-	}, [open, id, currentCategoryBookmarks]);
+	}, [open, id, bookmarks]);
 
-	return open ? (
+	return open && !isClosing ? (
 		<Lightbox
 			close={handleClose}
 			index={activeIndex}
@@ -127,16 +146,6 @@ export const PreviewLightBox = ({
 				view: ({ index }) => {
 					if (!isResetting.current && open) {
 						setActiveIndex(index);
-						// Update URL with the new bookmark ID when scrolling
-						const currentBookmark = currentCategoryBookmarks[index];
-						if (currentBookmark?.id) {
-							const basePath = router.asPath.split("/preview/")[0];
-							window.history.pushState(
-								{},
-								"",
-								`${basePath}/preview/${currentBookmark.id}`,
-							);
-						}
 					}
 				},
 			}}

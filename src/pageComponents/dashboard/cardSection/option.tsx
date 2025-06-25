@@ -17,6 +17,8 @@ import { viewValues } from "../../../utils/constants";
 
 import "yet-another-react-lightbox/styles.css";
 
+import { useRouter } from "next/router";
+
 import { PreviewLightBox } from "./previewLightBox";
 
 type OptionDropItemTypes = DraggableItemProps & {
@@ -44,6 +46,7 @@ const Option = ({
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
+	const router = useRouter();
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -110,24 +113,21 @@ const Option = ({
 				onClick={(event) => {
 					event.preventDefault();
 					setOpen(true);
-					// Update URL with preview parameter
-					window.history.pushState(
-						{},
-						"",
-						`${window.location.pathname}/preview/${item.key}`,
+					void router.push(
+						{
+							// https://github.com/vercel/next.js/discussions/11625
+							// https://github.com/adamwathan/headbangstagram/pull/1/files
+							pathname: `/[category_id]`,
+							query: {
+								category_id: "all-bookmarks",
+								id: item.key,
+							},
+						},
+						`/all-bookmarks/preview/${item.key}`,
+						{
+							shallow: true,
+						},
 					);
-				}}
-				onKeyDown={(event) => {
-					if (event.key === "Enter" || event.key === " ") {
-						event.preventDefault();
-						setOpen(true);
-						// Update URL with preview parameter
-						window.history.pushState(
-							{},
-							"",
-							`${window.location.pathname}/preview/${item.key}`,
-						);
-					}
 				}}
 			/>
 			{item.rendered}
