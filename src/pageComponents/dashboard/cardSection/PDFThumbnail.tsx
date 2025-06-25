@@ -7,10 +7,11 @@ import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 type Props = {
+	className?: string;
 	pdfUrl: string;
 };
 
-const PDFThumbnail = ({ pdfUrl }: Props) => {
+const PDFThumbnail = ({ pdfUrl, className }: Props) => {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
@@ -41,12 +42,7 @@ const PDFThumbnail = ({ pdfUrl }: Props) => {
 		void renderThumbnail();
 	}, [pdfUrl]);
 
-	return (
-		<canvas
-			className="h-fit max-w-full rounded-md border shadow"
-			ref={canvasRef}
-		/>
-	);
+	return <canvas className={className} ref={canvasRef} />;
 };
 
 export default PDFThumbnail;

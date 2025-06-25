@@ -547,9 +547,7 @@ const CardSection = ({
 					<>
 						{img ? (
 							img.endsWith(".pdf") ? (
-								<div className="w-25">
-									<PDFThumbnail pdfUrl={img} />
-								</div>
+								<PDFThumbnail className={imgClassName} pdfUrl={img} />
 							) : (
 								<Image
 									alt="bookmark-img"
