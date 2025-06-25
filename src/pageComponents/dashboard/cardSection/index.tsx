@@ -51,6 +51,7 @@ import {
 	CATEGORIES_KEY,
 	colorPickerColors,
 	defaultBlur,
+	documentFileTypes,
 	SEARCH_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -546,7 +547,7 @@ const CardSection = ({
 				return (
 					<>
 						{img ? (
-							img.endsWith(".pdf") ? (
+							documentFileTypes?.includes(type) ? (
 								<PDFThumbnail className={imgClassName} pdfUrl={img} />
 							) : (
 								<Image

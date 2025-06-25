@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist/build/pdf";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
