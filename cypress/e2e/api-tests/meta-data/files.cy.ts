@@ -42,11 +42,10 @@ describe("Meta data testing", () => {
 
 			cy.wait(2000);
 
-			cy.request(`/api/v1/bookmarks/get/fetch-by-id`, {
-				data: {
-					id: addBookmarkData?.body?.data?.[0]?.id,
-				},
-			}).as("fetchRequest");
+			cy.request(
+				`/api/v1/bookmarks/get/fetch-by-id?id=${addBookmarkData?.body?.data?.[0]?.id}`,
+				{},
+			).as("fetchRequest");
 
 			cy.get("@fetchRequest").then((data) => {
 				cy.wait(1000);
