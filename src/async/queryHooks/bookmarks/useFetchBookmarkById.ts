@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
+import { BOOKMARKS_KEY, NO_BOOKMARKS_ID_ERROR } from "../../../utils/constants";
+
 type Bookmark = {
 	[key: string]: unknown;
 	// Add other bookmark properties as needed
@@ -9,10 +11,10 @@ type Bookmark = {
 
 export const useFetchBookmarkById = (id: string) =>
 	useQuery<Bookmark, Error>({
-		queryKey: ["bookmark", id],
+		queryKey: [BOOKMARKS_KEY, id],
 		queryFn: async () => {
 			if (!id) {
-				throw new Error("Bookmark ID is required");
+				throw new Error(NO_BOOKMARKS_ID_ERROR);
 			}
 
 			const { data } = await axios.get<Bookmark>(
