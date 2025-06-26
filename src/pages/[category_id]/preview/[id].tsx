@@ -12,6 +12,7 @@ import "yet-another-react-lightbox/styles.css";
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import Spinner from "../../../components/spinner";
 import { EmbedWithFallback } from "../../../pageComponents/dashboard/cardSection/objectFallBack";
+import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
 
 type CustomSlide = Slide | (SlideVideo & { type: "video" });
 
@@ -59,7 +60,7 @@ const Preview = () => {
 
 	const handleClose = () => {
 		setIsOpen(false);
-		void router.push("/all-bookmarks");
+		void router.push(ALL_BOOKMARKS_URL);
 	};
 
 	if (isLoading)
