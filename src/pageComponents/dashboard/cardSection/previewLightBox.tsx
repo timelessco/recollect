@@ -202,7 +202,7 @@ export const PreviewLightBox = ({
 										<embed
 											className="block h-full min-h-[500px] w-full border-none bg-white"
 											key={slide.src}
-											src={`${slide.src}#scrollbar=0&view=FitH&statusbar=0&messages=0&zoom=page-width&page=1`}
+											src={`${slide.src}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
 											type="application/pdf"
 										/>
 									</div>
