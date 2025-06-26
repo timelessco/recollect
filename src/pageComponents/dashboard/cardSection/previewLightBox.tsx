@@ -64,7 +64,7 @@ export const PreviewLightBox = ({
 			{
 				pathname: `/[category_id]`,
 				query: {
-					category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
+					category_id: router.query.category_id ?? "all-bookmarks",
 				},
 			},
 			`/${router.asPath.split("/")[1]}`,
