@@ -9,7 +9,7 @@ import Video from "yet-another-react-lightbox/plugins/video";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
-import { BOOKMARKS_KEY } from "../../../utils/constants";
+import { ALL_BOOKMARKS_URL, BOOKMARKS_KEY } from "../../../utils/constants";
 
 import { EmbedWithFallback } from "./objectFallBack";
 
@@ -64,7 +64,7 @@ export const PreviewLightBox = ({
 			{
 				pathname: `/[category_id]`,
 				query: {
-					category_id: router.query.category_id ?? "all-bookmarks",
+					category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
 				},
 			},
 			`/${router.asPath.split("/")[1]}`,
