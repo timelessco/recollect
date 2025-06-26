@@ -66,6 +66,7 @@ import {
 	isCurrentYear,
 	isUserInACategory,
 } from "../../../utils/helpers";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import ListBox from "./listBox";
 import PDFThumbnail from "./PDFThumbnail";
@@ -121,7 +122,7 @@ const CardSection = ({
 	const session = useSupabaseSession((state) => state.session);
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
 	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
