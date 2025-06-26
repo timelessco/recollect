@@ -89,6 +89,7 @@ import {
 } from "../../utils/helpers";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
+import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
@@ -138,7 +139,7 @@ const Dashboard = () => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
 	const router = useRouter();
-	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	useEffect(() => {
 		if (router?.pathname === "/") {

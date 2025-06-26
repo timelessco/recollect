@@ -18,6 +18,7 @@ import {
 	viewValues,
 } from "../utils/constants";
 import { isUserInACategory } from "../utils/helpers";
+import { getCategorySlugFromRouter } from "../utils/url";
 
 import useIsUserInTweetsPage from "./useIsUserInTweetsPage";
 
@@ -31,8 +32,8 @@ const useGetViewValue = (
 	const isInTweetsPage = useIsUserInTweetsPage();
 	const queryClient = useQueryClient();
 	const router = useRouter();
-	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
+	// cat_id refers to cat slug here as it's got from url
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	const userData = useSupabaseSession((state) => state.session);
 

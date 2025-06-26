@@ -45,6 +45,7 @@ import {
 	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
@@ -89,7 +90,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const preview = useRef(null);
