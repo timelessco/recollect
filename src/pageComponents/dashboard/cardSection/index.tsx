@@ -256,7 +256,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-20";
+			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-15";
 
 		const externalLinkIcon = (
 			<div
