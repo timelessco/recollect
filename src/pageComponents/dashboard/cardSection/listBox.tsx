@@ -210,14 +210,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 			};
 		});
 
-		// Update renderedBookmarks in the store with the current list of bookmarks
-		// const validBookmarks = bookmarks
-		// 	.filter((b) => b.bookmarkData)
-		// 	.map((b) => b.bookmarkData) as SingleListData[];
-
-		// Update the store with the current bookmarks for this category
-		// setRenderedBookmarks(currentCategoryId, validBookmarks);
-
 		return bookmarks.map(({ item, bookmarkData }) => (
 			<Option
 				cardTypeCondition={cardTypeCondition}
