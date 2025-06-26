@@ -9,7 +9,7 @@ import Video from "yet-another-react-lightbox/plugins/video";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
-import { BOOKMARKS_KEY } from "../../../utils/constants";
+import { ALL_BOOKMARKS_URL, BOOKMARKS_KEY } from "../../../utils/constants";
 
 import { EmbedWithFallback } from "./objectFallBack";
 
@@ -173,7 +173,7 @@ export const PreviewLightBox = ({
 				buttonPrev: undefined,
 				slide: ({ slide }) => {
 					// Let the Video plugin handle video slides
-					if (slide.type === "video") return undefined;
+					if (slide.type === "video") return null;
 
 					return (
 						<div className="flex h-full w-full items-center justify-center">

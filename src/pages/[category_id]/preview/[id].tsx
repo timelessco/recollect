@@ -1,13 +1,20 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import Lightbox, { type Slide } from "yet-another-react-lightbox";
+import Lightbox, {
+	type Slide,
+	type SlideVideo,
+} from "yet-another-react-lightbox";
 import Video from "yet-another-react-lightbox/plugins/video";
 
 import "yet-another-react-lightbox/styles.css";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
+import Spinner from "../../../components/spinner";
 import { EmbedWithFallback } from "../../../pageComponents/dashboard/cardSection/objectFallBack";
+import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
+
+type CustomSlide = Slide | (SlideVideo & { type: "video" });
 
 const Preview = () => {
 	type BookmarkData = {
@@ -53,10 +60,15 @@ const Preview = () => {
 
 	const handleClose = () => {
 		setIsOpen(false);
-		void router.push("/all-bookmarks");
+		void router.push(`/${ALL_BOOKMARKS_URL}`);
 	};
 
-	if (isLoading) return <div className="p-4">Loading...</div>;
+	if (isLoading)
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<Spinner />
+			</div>
+		);
 	if (error)
 		return <div className="p-4 text-red-500">Error: {error.message}</div>;
 	if (!bookmark) return <div className="p-4">No bookmark found</div>;
@@ -90,19 +102,11 @@ const Preview = () => {
 								</div>
 							) : bookmark.data[0].type?.startsWith("application") ? (
 								<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-									<div
-										className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg"
-										style={{ minHeight: 500 }}
-									>
+									<div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg">
 										<embed
-											className="h-full w-full"
+											className="block h-full w-full border-none"
 											key={bookmark.data[0].url}
 											src={bookmark.data[0].url}
-											style={{
-												border: "none",
-												display: "block",
-												minHeight: 500,
-											}}
 											type="application/pdf"
 										/>
 									</div>
@@ -119,11 +123,19 @@ const Preview = () => {
 			}}
 			slides={[
 				{
-					...bookmark.data[0],
-					...(bookmark.data[0].type === "video/mp4" && {
-						type: "video" as const,
-					}),
-				} as unknown as Slide,
+					src: bookmark.data[0].url,
+					...(bookmark.data[0].type === "video/mp4"
+						? {
+								type: "video" as const,
+								sources: [
+									{
+										src: bookmark.data[0].url,
+										type: "video/mp4",
+									},
+								],
+						  }
+						: {}),
+				} as CustomSlide,
 			]}
 			styles={{
 				container: {
@@ -136,7 +148,7 @@ const Preview = () => {
 				playsInline: true,
 				autoPlay: true,
 				loop: false,
-				muted: false,
+				muted: true,
 				disablePictureInPicture: true,
 				disableRemotePlayback: true,
 				controlsList: "nodownload",

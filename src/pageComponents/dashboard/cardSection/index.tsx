@@ -66,6 +66,7 @@ import {
 	isCurrentYear,
 	isUserInACategory,
 } from "../../../utils/helpers";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import ListBox from "./listBox";
 import PDFThumbnail from "./PDFThumbnail";
@@ -117,7 +118,7 @@ const CardSection = ({
 	const session = useSupabaseSession((state) => state.session);
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1].split("?")[0] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
 	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
@@ -256,7 +257,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-20";
+			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-15";
 
 		const externalLinkIcon = (
 			<div
@@ -490,7 +491,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
-			relative: isVideo || isAudio,
+			relative: isAudio,
 			"mr-3": cardTypeCondition === viewValues.list,
 			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
@@ -572,14 +573,14 @@ const CardSection = ({
 		};
 
 		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
+			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800 ":
 				true,
 			absolute: true,
-			"bottom-[9px] left-[7px] ":
+			"bottom-[70px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
-			"top-[9px] left-[21px]": cardTypeCondition === viewValues.list,
+			"top-[15px] left-[30px]": cardTypeCondition === viewValues.list,
 		});
 
 		return (

@@ -118,7 +118,7 @@ type TagTypes = {
 
 const Tag = ({ children, onClick }: TagTypes) => (
 	<div
-		className="mx-[2px] cursor-pointer  rounded-md bg-custom-gray-1 px-2 py-[2px] text-xs font-450 leading-[15px] tracking-[1%] text-white truncate"
+		className="mx-[2px] cursor-pointer  truncate rounded-md bg-custom-gray-1 px-2 py-[2px] text-xs font-450 leading-[15px] tracking-[1%] text-white"
 		onClick={onClick}
 		onKeyDown={() => {}}
 		role="button"
