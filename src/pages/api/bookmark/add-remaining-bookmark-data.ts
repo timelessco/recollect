@@ -65,6 +65,8 @@ export default async function handler(
 	}
 
 	// get the current ogImage and screenshot from the database
+	// we are got gettin these in query params as that data might not be presnet
+	// this is a better solution as we are only getting one row of data
 	const { data: currentData, error: currentDataError } = await supabase
 		.from(MAIN_TABLE_NAME)
 		.select("ogImage, screenshot")
@@ -91,8 +93,6 @@ export default async function handler(
 		Sentry.captureException(`Bookmark not found with id: ${id}`);
 		return;
 	}
-
-	// console.log("currentData~~~~~~~~~~~~", currentData);
 
 	const upload = async (
 		base64info: string,
@@ -229,19 +229,6 @@ export default async function handler(
 			Sentry.captureException(`Gemini AI processing error ${error}`);
 		}
 	}
-
-	// if (metaDataImage) {
-	// 	try {
-	// 		// Get OCR using the centralized function
-	// 		imageOcrValue = await ocr(metaDataImage);
-
-	// 		// Get image caption using the centralized function
-	// 		imageCaption = await imageToText(metaDataImage);
-	// 	} catch (error) {
-	// 		console.error("Gemini AI processing error", error);
-	// 		Sentry.captureException(`Gemini AI processing error ${error}`);
-	// 	}
-	// }
 
 	const meta_data = {
 		img_caption: imageCaption,
