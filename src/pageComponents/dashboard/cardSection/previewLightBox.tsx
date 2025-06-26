@@ -173,7 +173,7 @@ export const PreviewLightBox = ({
 				buttonPrev: undefined,
 				slide: ({ slide }) => {
 					// Let the Video plugin handle video slides
-					if (slide.type === "video") return undefined;
+					if (slide.type === "video") return null;
 
 					return (
 						<div className="flex h-full w-full items-center justify-center">
