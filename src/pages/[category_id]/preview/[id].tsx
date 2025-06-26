@@ -90,19 +90,11 @@ const Preview = () => {
 								</div>
 							) : bookmark.data[0].type?.startsWith("application") ? (
 								<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-									<div
-										className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg"
-										style={{ minHeight: 500 }}
-									>
+									<div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg">
 										<embed
-											className="h-full w-full"
+											className="block h-full w-full border-none"
 											key={bookmark.data[0].url}
 											src={bookmark.data[0].url}
-											style={{
-												border: "none",
-												display: "block",
-												minHeight: 500,
-											}}
 											type="application/pdf"
 										/>
 									</div>
