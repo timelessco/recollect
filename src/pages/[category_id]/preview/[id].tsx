@@ -1,13 +1,19 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import Lightbox, { type Slide } from "yet-another-react-lightbox";
+import Lightbox, {
+	type Slide,
+	type SlideVideo,
+} from "yet-another-react-lightbox";
 import Video from "yet-another-react-lightbox/plugins/video";
 
 import "yet-another-react-lightbox/styles.css";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
+import Spinner from "../../../components/spinner";
 import { EmbedWithFallback } from "../../../pageComponents/dashboard/cardSection/objectFallBack";
+
+type CustomSlide = Slide | (SlideVideo & { type: "video" });
 
 const Preview = () => {
 	type BookmarkData = {
@@ -56,7 +62,12 @@ const Preview = () => {
 		void router.push("/all-bookmarks");
 	};
 
-	if (isLoading) return <div className="p-4">Loading...</div>;
+	if (isLoading)
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<Spinner />
+			</div>
+		);
 	if (error)
 		return <div className="p-4 text-red-500">Error: {error.message}</div>;
 	if (!bookmark) return <div className="p-4">No bookmark found</div>;
@@ -111,11 +122,19 @@ const Preview = () => {
 			}}
 			slides={[
 				{
-					...bookmark.data[0],
-					...(bookmark.data[0].type === "video/mp4" && {
-						type: "video" as const,
-					}),
-				} as unknown as Slide,
+					src: bookmark.data[0].url,
+					...(bookmark.data[0].type === "video/mp4"
+						? {
+								type: "video" as const,
+								sources: [
+									{
+										src: bookmark.data[0].url,
+										type: "video/mp4",
+									},
+								],
+						  }
+						: {}),
+				} as CustomSlide,
 			]}
 			styles={{
 				container: {
@@ -128,7 +147,7 @@ const Preview = () => {
 				playsInline: true,
 				autoPlay: true,
 				loop: false,
-				muted: false,
+				muted: true,
 				disablePictureInPicture: true,
 				disableRemotePlayback: true,
 				controlsList: "nodownload",
