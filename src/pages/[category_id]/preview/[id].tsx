@@ -106,7 +106,7 @@ const Preview = () => {
 										<embed
 											className="block h-full w-full border-none"
 											key={bookmark.data[0].url}
-											src={bookmark.data[0].url}
+											src={`${bookmark.data[0].url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
 											type="application/pdf"
 										/>
 									</div>
