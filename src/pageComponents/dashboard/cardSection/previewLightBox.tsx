@@ -198,11 +198,11 @@ export const PreviewLightBox = ({
 									"application",
 							  ) ? (
 								<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-									<div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg">
+									<div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200  bg-white shadow-lg">
 										<embed
-											className="block h-full min-h-[500px] w-full border-none"
+											className="block h-full min-h-[500px] w-full border-none bg-white"
 											key={slide.src}
-											src={slide.src}
+											src={`${slide.src}#scrollbar=0&view=FitH&statusbar=0&messages=0&zoom=page-width&page=1`}
 											type="application/pdf"
 										/>
 									</div>
