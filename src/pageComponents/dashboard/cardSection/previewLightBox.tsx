@@ -9,7 +9,11 @@ import Video from "yet-another-react-lightbox/plugins/video";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
-import { ALL_BOOKMARKS_URL, BOOKMARKS_KEY } from "../../../utils/constants";
+import {
+	ALL_BOOKMARKS_URL,
+	BOOKMARKS_KEY,
+	CATEGORY_ID_PATHNAME,
+} from "../../../utils/constants";
 
 import { EmbedWithFallback } from "./objectFallBack";
 
@@ -48,9 +52,8 @@ export const PreviewLightBox = ({
 			data: SingleListData[];
 		}>;
 	};
-
 	const bookmarks = useMemo(
-		() => previousData?.pages[0]?.data ?? [],
+		() => previousData?.pages.flatMap((page) => page?.data ?? []) ?? [],
 		[previousData?.pages],
 	);
 
@@ -62,9 +65,9 @@ export const PreviewLightBox = ({
 		setOpen(false);
 		void router.push(
 			{
-				pathname: `/[category_id]`,
+				pathname: `/${CATEGORY_ID_PATHNAME}`,
 				query: {
-					category_id: router.query.category_id ?? "all-bookmarks",
+					category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
 				},
 			},
 			`/${router.asPath.split("/")[1]}`,
@@ -78,7 +81,7 @@ export const PreviewLightBox = ({
 	// Always provide all required fields and use 'index' instead of 'idx' for clarity
 	const slides = useMemo(
 		() =>
-			bookmarks.map((bookmark: SingleListData, index: number) => {
+			bookmarks?.map((bookmark: SingleListData, index: number) => {
 				const isImage = bookmark?.type?.startsWith("image");
 				const isVideo = bookmark?.type?.startsWith("video");
 				if (isVideo) {
@@ -114,7 +117,8 @@ export const PreviewLightBox = ({
 	);
 
 	const initialIndex = useMemo(
-		() => bookmarks.findIndex((bookmark) => String(bookmark.id) === String(id)),
+		() =>
+			bookmarks?.findIndex((bookmark) => String(bookmark.id) === String(id)),
 		[bookmarks, id],
 	);
 
@@ -125,7 +129,7 @@ export const PreviewLightBox = ({
 	// Only reset activeIndex when lightbox is opened or id changes while closed
 	useEffect(() => {
 		if ((!wasOpen.current && open) || (!open && lastOpenedId.current !== id)) {
-			const index = bookmarks.findIndex(
+			const index = bookmarks?.findIndex(
 				(bookmark) => String(bookmark.id) === String(id),
 			);
 			isResetting.current = true;
@@ -151,7 +155,7 @@ export const PreviewLightBox = ({
 						if (currentBookmark) {
 							void router.push(
 								{
-									pathname: `/[category_id]`,
+									pathname: `/${CATEGORY_ID_PATHNAME}`,
 									query: {
 										category_id: router.asPath.split("/")[1],
 										id: currentBookmark.id,
@@ -194,19 +198,11 @@ export const PreviewLightBox = ({
 									"application",
 							  ) ? (
 								<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-									<div
-										className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg"
-										style={{ minHeight: 500 }}
-									>
+									<div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-lg">
 										<embed
-											className="h-full w-full"
+											className="block h-full min-h-[500px] w-full border-none"
 											key={slide.src}
 											src={slide.src}
-											style={{
-												border: "none",
-												display: "block",
-												minHeight: 500,
-											}}
 											type="application/pdf"
 										/>
 									</div>

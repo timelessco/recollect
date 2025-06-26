@@ -13,7 +13,7 @@ import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import Checkbox from "../../../components/checkbox";
 import { type SingleListData } from "../../../types/apiTypes";
-import { viewValues } from "../../../utils/constants";
+import { CATEGORY_ID_PATHNAME, viewValues } from "../../../utils/constants";
 
 import "yet-another-react-lightbox/styles.css";
 
@@ -107,7 +107,7 @@ const Option = ({
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="  absolute left-0 top-0  h-full w-full rounded-lg"
+				className="absolute left-0 top-0  h-full w-full rounded-lg"
 				draggable={false}
 				href={url}
 				onClick={(event) => {
@@ -117,7 +117,7 @@ const Option = ({
 						{
 							// https://github.com/vercel/next.js/discussions/11625
 							// https://github.com/adamwathan/headbangstagram/pull/1/files
-							pathname: `/[category_id]`,
+							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
 								category_id: router.asPath.split("/")[1],
 								id: item.key,
