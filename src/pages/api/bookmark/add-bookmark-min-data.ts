@@ -151,6 +151,19 @@ export default async function handler(
 	const userId = userData?.data?.user?.id;
 	const email = userData?.data?.user?.email;
 
+	// Check if userId and email are retrieved from Supabase
+	if (!userId || !email) {
+		response.status(500).json({
+			data: null,
+			error: "User ID and email not retrieved from Supabase",
+			message: "User ID and email not retrieved from Supabase",
+		});
+		Sentry.captureException(
+			`User ID and email not retrieved from Supabase. userId: ${userId}, email: ${email}`,
+		);
+		return;
+	}
+
 	// when adding a bookmark into a category the same bookmark should not be present in the category
 	// this function checks if the bookmark is already present in the category
 	const checkIfBookmarkAlreadyExists = async () => {
