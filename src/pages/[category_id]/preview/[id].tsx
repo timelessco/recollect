@@ -60,7 +60,7 @@ const Preview = () => {
 
 	const handleClose = () => {
 		setIsOpen(false);
-		void router.push(ALL_BOOKMARKS_URL);
+		void router.push(`/${ALL_BOOKMARKS_URL}`);
 	};
 
 	if (isLoading)
