@@ -39,7 +39,6 @@ export const PreviewLightBox = ({
 	const [isClosing, setIsClosing] = useState(false);
 	const [activeIndex, setActiveIndex] = useState(-1);
 	const _previousOpenRef = useRef(open);
-	const _previousIdRef = useRef(id);
 
 	// Get bookmarks from query cache
 	const bookmarks = useMemo(() => {
@@ -53,20 +52,23 @@ export const PreviewLightBox = ({
 		return previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
 	}, [queryClient, session?.user?.id, CATEGORY_ID]);
 
-	// Update active index when bookmarks or id changes
+	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {
-		if (!bookmarks.length) {
-			return;
+		if (!bookmarks.length) return;
+		const wasOpen = _previousOpenRef.current;
+
+		// Only set activeIndex when the lightbox is being opened
+		if (open && !wasOpen) {
+			const newIndex = bookmarks.findIndex(
+				(bookmark) => String(bookmark.id) === String(id),
+			);
+			if (newIndex !== -1) {
+				setActiveIndex(newIndex);
+			}
 		}
 
-		const newIndex = bookmarks.findIndex(
-			(bookmark) => String(bookmark.id) === String(id),
-		);
-
-		if (newIndex !== -1) {
-			setActiveIndex(newIndex);
-		}
-	}, [bookmarks, id]);
+		_previousOpenRef.current = open;
+	}, [open, bookmarks, id]);
 
 	// Handle close animation and cleanup
 	const handleClose = useCallback(() => {
