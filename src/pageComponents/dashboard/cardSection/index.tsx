@@ -95,6 +95,10 @@ export type CardSectionProps = {
 	userId: string;
 };
 
+// Helper function to get the image source (screenshot or ogImage)
+const getImageSource = (item: SingleListData) =>
+	item?.ogImage ? item?.ogImage : item?.screenshot;
+
 const CardSection = ({
 	listData = [],
 	onDeleteClick,
@@ -734,7 +738,7 @@ const CardSection = ({
 	const renderMoodboardAndCardType = (item: SingleListData) => (
 		<div className="flex w-full flex-col" id="single-moodboard-card">
 			{renderOgImage(
-				item?.ogImage,
+				getImageSource(item),
 				item?.id,
 				item?.meta_data?.ogImgBlurUrl ?? "",
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
@@ -802,7 +806,7 @@ const CardSection = ({
 		<div className="flex w-full items-center p-2" id="single-moodboard-card">
 			{hasCoverImg ? (
 				renderOgImage(
-					item?.ogImage,
+					getImageSource(item),
 					item?.id,
 					item?.meta_data?.ogImgBlurUrl ?? "",
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
