@@ -79,6 +79,30 @@ export default async function handler(
 
 	const publicURL = await upload(base64data, userId);
 
+	// First, fetch the existing bookmark data to get current meta_data
+	const { data: existingBookmarkData, error: fetchError } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select("meta_data, ogImage")
+		.match({ id: request.body.id, user_id: userId })
+		.single();
+
+	if (fetchError) {
+		console.error("Error fetching existing bookmark data:", fetchError);
+		response.status(500).json({ data: null, error: fetchError });
+		Sentry.captureException(`ERROR: fetch existing bookmark data error`);
+		return;
+	}
+
+	// Get existing meta_data or create empty object if null
+	const existingMetaData = existingBookmarkData?.meta_data || {};
+
+	// Add screenshot URL to meta_data
+	const updatedMetaData = {
+		...existingMetaData,
+		screenshot: null,
+		coverImage: existingBookmarkData?.ogImage,
+	};
+
 	const {
 		data,
 		error,
@@ -87,14 +111,14 @@ export default async function handler(
 		error: PostgrestError | VerifyErrors | string | null;
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
-		.update({ screenshot: publicURL })
+		// since we now have screenshot , we add that in ogImage as this will now be our primary image, and the existing ogImage (which is the scrapper data image) will be our cover image in meta_data
+		.update({ meta_data: updatedMetaData })
 		.match({ id: request.body.id, user_id: userId })
 		.select();
 
 	if (isNull(error)) {
 		response.status(200).json({ data, error: null });
 
-		// Call ADD_REMAINING_BOOKMARK_API after successful update
 		try {
 			if (data && data.length > 0) {
 				await axios.post(

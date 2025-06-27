@@ -37,6 +37,7 @@ type Data = {
 // this uploads all the remaining bookmark data
 // these data are blur hash and s3 uploads
 
+// eslint-disable-next-line complexity
 export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
@@ -64,12 +65,12 @@ export default async function handler(
 		return;
 	}
 
-	// get the current ogImage and screenshot from the database
+	// get the current ogImage and meta_data from the database
 	// we are got gettin these in query params as that data might not be presnet
 	// this is a better solution as we are only getting one row of data
 	const { data: currentData, error: currentDataError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("ogImage, screenshot")
+		.select("ogImage, meta_data")
 		.match({ id })
 		.single();
 
@@ -126,7 +127,8 @@ export default async function handler(
 
 	let imgData;
 
-	let imgUrl;
+	// if a url is an image, then we need to upload it to s3 and store it here
+	let uploadedImageThatIsAUrl = null;
 
 	const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
 
@@ -146,10 +148,10 @@ export default async function handler(
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
-			imgUrl = await upload(returnedB64, userId);
+			uploadedImageThatIsAUrl = await upload(returnedB64, userId);
 
 			// If upload failed, log but don't fail the entire request
-			if (imgUrl === null) {
+			if (uploadedImageThatIsAUrl === null) {
 				console.error(
 					"Failed to upload image URL to S3, continuing without image",
 				);
@@ -160,7 +162,7 @@ export default async function handler(
 			Sentry.captureException(`Error uploading image URL to S3: ${error}`);
 
 			// Don't fail the entire request, just set imgUrl to null
-			imgUrl = null;
+			uploadedImageThatIsAUrl = null;
 		}
 	}
 
@@ -176,11 +178,13 @@ export default async function handler(
 		}
 	};
 
+	let uploadedCoverImageUrl = null;
+
 	// upload scrapper image to s3
-	if (!isNil(currentData?.ogImage)) {
+	if (!isNil(currentData?.meta_data?.coverImage)) {
 		try {
 			// 10 second timeout for image download
-			const image = await axios.get(currentData?.ogImage, {
+			const image = await axios.get(currentData?.meta_data?.coverImage, {
 				responseType: "arraybuffer",
 				// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
 				headers: {
@@ -191,19 +195,18 @@ export default async function handler(
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
-			imgUrl = await upload(returnedB64, userId);
+			uploadedCoverImageUrl = await upload(returnedB64, userId);
 
 			// If upload failed, log but don't fail the entire request
-			if (imgUrl === null) {
+			if (uploadedCoverImageUrl === null) {
+				uploadedCoverImageUrl = currentData?.meta_data?.coverImage;
 				console.error("Failed to upload image to S3, continuing without image");
 				Sentry.captureException("Failed to upload image to S3");
 			}
 		} catch (error) {
+			uploadedCoverImageUrl = currentData?.meta_data?.coverImage;
 			console.error("Error uploading scrapped image to S3:", error);
 			Sentry.captureException(`Error uploading scrapped image to S3: ${error}`);
-
-			// Don't fail the entire request, just set imgUrl to null
-			imgUrl = null;
 		}
 	}
 
@@ -211,24 +214,44 @@ export default async function handler(
 	let imageCaption = null;
 
 	// generat meta data (ocr, blurhash data, imgcaption)
-	if (!isNil(currentData?.ogImage) || currentData?.screenshot) {
-		const imgForWhichMetaDataIsGenerated = !isNil(currentData?.screenshot)
-			? currentData?.screenshot
-			: currentData?.ogImage;
+	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
+		? uploadedImageThatIsAUrl
+		: !isNil(currentData?.meta_data?.screenshot)
+		? currentData?.meta_data?.screenshot
+		: uploadedCoverImageUrl;
 
-		imgData = await blurhashFromURL(imgForWhichMetaDataIsGenerated);
+	if (!isNil(imageUrlForMetaDataGeneration)) {
+		try {
+			// imgData = await blurhashFromURL(imageUrlForMetaDataGeneration);
+			imgData = {
+				encoded: null,
+				width: null,
+				height: null,
+			};
+		} catch (error) {
+			console.error("Error generating blurhash:", error);
+			Sentry.captureException(`Error generating blurhash: ${error}`);
+			imgData = {
+				encoded: null,
+				width: null,
+				height: null,
+			};
+		}
 
 		try {
 			// Get OCR using the centralized function
-			imageOcrValue = await ocr(imgForWhichMetaDataIsGenerated);
+			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
 
 			// Get image caption using the centralized function
-			imageCaption = await imageToText(imgForWhichMetaDataIsGenerated);
+			imageCaption = await imageToText(imageUrlForMetaDataGeneration);
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
 			Sentry.captureException(`Gemini AI processing error ${error}`);
 		}
 	}
+
+	// Get existing meta_data or create empty object if null
+	const existingMetaData = currentData?.meta_data || {};
 
 	const meta_data = {
 		img_caption: imageCaption,
@@ -237,6 +260,8 @@ export default async function handler(
 		ogImgBlurUrl: imgData?.encoded,
 		favIcon: favIconLogic(),
 		ocr: imageOcrValue,
+		screenshot: existingMetaData?.screenshot || null,
+		coverImage: uploadedCoverImageUrl,
 	};
 
 	const {
@@ -247,7 +272,7 @@ export default async function handler(
 		error: PostgrestError | VerifyErrors | string | null;
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
-		.update({ meta_data, ogImage: imgUrl })
+		.update({ meta_data, ogImage: imageUrlForMetaDataGeneration })
 		.match({ id })
 		.select(`id`);
 

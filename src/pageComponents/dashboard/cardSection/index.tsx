@@ -95,7 +95,7 @@ export type CardSectionProps = {
 
 // Helper function to get the image source (screenshot or ogImage)
 const getImageSource = (item: SingleListData) =>
-	item?.screenshot ? item?.screenshot : item?.ogImage;
+	item?.ogImage ? item?.ogImage : item?.screenshot;
 
 const CardSection = ({
 	listData = [],
