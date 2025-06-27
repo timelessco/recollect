@@ -99,7 +99,7 @@ export default async function handler(
 	// Add screenshot URL to meta_data
 	const updatedMetaData = {
 		...existingMetaData,
-		screenshot: null,
+		screenshot: publicURL,
 		coverImage: existingBookmarkData?.ogImage,
 	};
 
