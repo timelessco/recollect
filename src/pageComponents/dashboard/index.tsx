@@ -88,6 +88,7 @@ import {
 } from "../../utils/helpers";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
+import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
@@ -137,7 +138,7 @@ const Dashboard = () => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
 	const router = useRouter();
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	useEffect(() => {
 		if (router?.pathname === "/") {
@@ -1008,9 +1009,9 @@ const Dashboard = () => {
 			}
 		} else if (isLoadingCategories || isFetchingCategories) {
 			return "Loading";
-		} else {
-			return <NotFoundPage />;
 		}
+
+		return <NotFoundPage />;
 	};
 
 	const onAddBookmark = (url: string) => {

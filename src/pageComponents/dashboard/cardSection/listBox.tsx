@@ -45,6 +45,7 @@ import {
 	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
@@ -63,7 +64,6 @@ type ListBoxDropTypes = ListProps<object> & {
 	onItemDrop?: (event: any) => void;
 };
 
-// eslint-disable-next-line complexity
 const ListBox = (props: ListBoxDropTypes) => {
 	const {
 		getItems,
@@ -90,7 +90,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const preview = useRef(null);
@@ -197,14 +197,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const isTrashPage = categorySlug === TRASH_URL;
 
-	// Get the setRenderedBookmarks function from the store
-	const setRenderedBookmarks = useMiscellaneousStore(
-		(store) => store.setRenderedBookmarks,
-	);
-
-	// Get the current category ID from the router
-	const currentCategoryId = categorySlug ?? UNCATEGORIZED_URL;
-
 	const renderOption = () => {
 		const bookmarks = [...state.collection].map((item) => {
 			const bookmarkData = find(
@@ -218,20 +210,11 @@ const ListBox = (props: ListBoxDropTypes) => {
 			};
 		});
 
-		// Update renderedBookmarks in the store with the current list of bookmarks
-		const validBookmarks = bookmarks
-			.filter((b) => b.bookmarkData)
-			.map((b) => b.bookmarkData) as SingleListData[];
-
-		// Update the store with the current bookmarks for this category
-		setRenderedBookmarks(currentCategoryId, validBookmarks);
-
 		return bookmarks.map(({ item, bookmarkData }) => (
 			<Option
 				cardTypeCondition={cardTypeCondition}
 				dragState={dragState}
 				isPublicPage={isPublicPage}
-				isTrashPage={isTrashPage}
 				item={item}
 				key={item.key}
 				state={state}
@@ -261,6 +244,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
+			{/* <PreviewLightBox id={0} open={open} setOpen={setOpen} /> */}
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
 				{cardTypeCondition === viewValues.moodboard ? (
 					<Masonry
