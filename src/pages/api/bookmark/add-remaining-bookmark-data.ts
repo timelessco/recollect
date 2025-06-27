@@ -222,12 +222,7 @@ export default async function handler(
 
 	if (!isNil(imageUrlForMetaDataGeneration)) {
 		try {
-			// imgData = await blurhashFromURL(imageUrlForMetaDataGeneration);
-			imgData = {
-				encoded: null,
-				width: null,
-				height: null,
-			};
+			imgData = await blurhashFromURL(imageUrlForMetaDataGeneration);
 		} catch (error) {
 			console.error("Error generating blurhash:", error);
 			Sentry.captureException(`Error generating blurhash: ${error}`);
