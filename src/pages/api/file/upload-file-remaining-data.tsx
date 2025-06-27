@@ -59,6 +59,8 @@ const notVideoLogic = async (publicUrl: string) => {
 		favIcon: null,
 		twitter_avatar_url: null,
 		ocr: imageOcrValue ?? null,
+		coverImage: null,
+		screenshot: null,
 	};
 
 	return { ogImage, meta_data };
@@ -84,6 +86,8 @@ export default async function handler(
 		ogImgBlurUrl: null,
 		favIcon: null,
 		twitter_avatar_url: null,
+		coverImage: null,
+		screenshot: null,
 		ocr: null,
 	};
 

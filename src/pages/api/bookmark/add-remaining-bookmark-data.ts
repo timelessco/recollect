@@ -257,6 +257,7 @@ export default async function handler(
 		ocr: imageOcrValue,
 		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
+		twitter_avatar_url: null,
 	};
 
 	const {
