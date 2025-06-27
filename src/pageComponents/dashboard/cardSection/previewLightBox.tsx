@@ -79,7 +79,6 @@ export const PreviewLightBox = ({
 
 		// Update URL without page reload
 		// Clean up path by removing leading slashes
-		// eslint-disable-next-line require-unicode-regexp
 		void router.push(
 			{
 				pathname: `/${CATEGORY_ID_PATHNAME}`,
