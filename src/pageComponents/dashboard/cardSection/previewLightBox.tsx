@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
-import Lightbox, { type Slide } from "yet-another-react-lightbox";
-import Video from "yet-another-react-lightbox/plugins/video";
+import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
+import { CustomLightBox } from "../../../components/LightBox";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
@@ -15,14 +14,11 @@ import {
 	CATEGORY_ID_PATHNAME,
 } from "../../../utils/constants";
 
-import { EmbedWithFallback } from "./objectFallBack";
-
-export type CustomSlide = Slide & {
-	contentType: string;
-	key: number;
+export type CustomSlide = BaseSlide & {
+	data?: {
+		type?: string;
+	};
 	placeholder?: string;
-	src: string;
-	type: "image" | "video" | "website";
 };
 
 type PreviewLightBoxProps = {
@@ -38,31 +34,52 @@ export const PreviewLightBox = ({
 }: PreviewLightBoxProps) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-
-	const previousData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		CATEGORY_ID,
-		"date-sort-acending",
-	]) as {
-		pages: Array<{
-			data: SingleListData[];
-		}>;
-	};
-	const bookmarks = useMemo(
-		() => previousData?.pages.flatMap((page) => page?.data ?? []) ?? [],
-		[previousData?.pages],
-	);
-
 	const [isClosing, setIsClosing] = useState(false);
+	const [activeIndex, setActiveIndex] = useState(-1);
+	const _previousOpenRef = useRef(open);
+	const _previousIdRef = useRef(id);
 
+	// Get bookmarks from query cache
+	const bookmarks = useMemo(() => {
+		const previousData = queryClient.getQueryData([
+			BOOKMARKS_KEY,
+			session?.user?.id,
+			CATEGORY_ID,
+			"date-sort-acending",
+		]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
+
+		return previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
+	}, [queryClient, session?.user?.id, CATEGORY_ID]);
+
+	// Update active index when bookmarks or id changes
+	useEffect(() => {
+		if (!bookmarks.length) {
+			return;
+		}
+
+		const newIndex = bookmarks.findIndex(
+			(bookmark) => String(bookmark.id) === String(id),
+		);
+
+		if (newIndex !== -1) {
+			setActiveIndex(newIndex);
+		}
+	}, [bookmarks, id]);
+
+	// Handle close animation and cleanup
 	const handleClose = useCallback(() => {
-		if (isClosing || !open) return;
+		if (isClosing || !open) {
+			return undefined;
+		}
+
 		setIsClosing(true);
 		setOpen(false);
+
+		// Update URL without page reload
+		// Clean up path by removing leading slashes
+		// eslint-disable-next-line require-unicode-regexp
 		void router.push(
 			{
 				pathname: `/${CATEGORY_ID_PATHNAME}`,
@@ -71,171 +88,40 @@ export const PreviewLightBox = ({
 				},
 			},
 			`/${router.asPath.split("/")[1]}`,
-			{
-				shallow: true,
-			},
+			{ shallow: true },
 		);
-		setTimeout(() => setIsClosing(false), 500);
-	}, [open, setOpen, isClosing, router]);
 
-	// Always provide all required fields and use 'index' instead of 'idx' for clarity
-	const slides = useMemo(
-		() =>
-			bookmarks?.map((bookmark: SingleListData, index: number) => {
-				const isImage = bookmark?.type?.startsWith("image");
-				const isVideo = bookmark?.type?.startsWith("video");
-				if (isVideo) {
-					return {
-						key: typeof bookmark?.id === "number" ? bookmark?.id : index,
-						type: "video" as const,
-						sources: [
-							{
-								src: bookmark?.url ?? "",
-								type: bookmark?.type || "video/mp4",
-							},
-						],
-						contentType: bookmark?.type ?? "unknown",
-					};
-				} else if (isImage) {
-					return {
-						key: typeof bookmark?.id === "number" ? bookmark?.id : index,
-						src: bookmark?.url ?? "",
-						type: "image" as const,
-						contentType: bookmark?.type ?? "unknown",
-					};
-				} else {
-					return {
-						key: typeof bookmark?.id === "number" ? bookmark?.id : index,
-						src: bookmark?.url ?? "",
-						type: "website" as const,
-						contentType: bookmark?.type ?? "unknown",
-						placeholder: bookmark?.ogImage,
-					};
-				}
-			}),
-		[bookmarks],
+		// Reset state after animation
+		const timer = setTimeout(() => {
+			setIsClosing(false);
+		}, 300);
+
+		return () => {
+			clearTimeout(timer);
+		};
+	}, [open, isClosing, setOpen, router]);
+
+	// Clean up on unmount
+	useEffect(
+		() => () => {
+			setIsClosing(false);
+		},
+		[],
 	);
 
-	const initialIndex = useMemo(
-		() =>
-			bookmarks?.findIndex((bookmark) => String(bookmark.id) === String(id)),
-		[bookmarks, id],
-	);
+	if (!open || isClosing) {
+		return null;
+	}
 
-	const [activeIndex, setActiveIndex] = useState(initialIndex);
-	const wasOpen = useRef(open);
-	const lastOpenedId = useRef(id);
-	const isResetting = useRef(false);
-	// Only reset activeIndex when lightbox is opened or id changes while closed
-	useEffect(() => {
-		if ((!wasOpen.current && open) || (!open && lastOpenedId.current !== id)) {
-			const index = bookmarks?.findIndex(
-				(bookmark) => String(bookmark.id) === String(id),
-			);
-			isResetting.current = true;
-			setActiveIndex(index);
-			lastOpenedId.current = id;
-			setTimeout(() => {
-				isResetting.current = false;
-			}, 0);
-		}
-
-		wasOpen.current = open;
-	}, [open, id, bookmarks]);
-
-	return open && !isClosing ? (
-		<Lightbox
-			close={handleClose}
-			index={activeIndex}
-			on={{
-				view: ({ index }) => {
-					if (!isResetting.current && open) {
-						setActiveIndex(index);
-						const currentBookmark = bookmarks[index];
-						if (currentBookmark) {
-							void router.push(
-								{
-									pathname: `/${CATEGORY_ID_PATHNAME}`,
-									query: {
-										category_id: router.asPath.split("/")[1],
-										id: currentBookmark.id,
-									},
-								},
-								`/${router.asPath.split("/")[1]}/preview/${currentBookmark.id}`,
-								{
-									shallow: true,
-								},
-							);
-						}
-					}
-				},
-			}}
-			open={open}
-			plugins={[Video]}
-			render={{
-				buttonNext: undefined,
-				buttonPrev: undefined,
-				slide: ({ slide }) => {
-					// Let the Video plugin handle video slides
-					if (slide.type === "video") return null;
-
-					return (
-						<div className="flex h-full w-full items-center justify-center">
-							{slide.type?.startsWith("image") ? (
-								<div className="flex items-center justify-center">
-									<div className="relative max-w-[1200px]">
-										<Image
-											alt="Preview"
-											className="h-auto max-h-[80vh] w-auto"
-											height={0}
-											src={slide.src}
-											unoptimized
-											width={0}
-										/>
-									</div>
-								</div>
-							) : (slide as CustomSlide).contentType?.startsWith(
-									"application",
-							  ) ? (
-								<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-									<div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200  bg-white shadow-lg">
-										<embed
-											className="block h-full min-h-[500px] w-full border-none bg-white"
-											key={slide.src}
-											src={`${slide.src}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
-											type="application/pdf"
-										/>
-									</div>
-								</div>
-							) : (
-								<EmbedWithFallback
-									placeholder={(slide as CustomSlide).placeholder}
-									src={slide.src}
-								/>
-							)}
-						</div>
-					);
-				},
-			}}
-			slides={slides as Slide[]}
-			styles={{
-				container: {
-					backgroundColor: "rgba(255, 255, 255, 0.9)",
-					backdropFilter: "blur(32px)",
-				},
-			}}
-			video={{
-				controls: true,
-				playsInline: true,
-				autoPlay: true,
-				loop: false,
-				muted: false,
-				disablePictureInPicture: true,
-				disableRemotePlayback: true,
-				controlsList: "nodownload",
-				crossOrigin: "anonymous",
-				preload: "auto",
-			}}
+	return (
+		<CustomLightBox
+			activeIndex={activeIndex}
+			bookmarks={bookmarks}
+			handleClose={handleClose}
+			isOpen={open}
+			isPage
+			setActiveIndex={setActiveIndex}
+			showArrow
 		/>
-	) : null;
+	);
 };
