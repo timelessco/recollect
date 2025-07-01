@@ -56,6 +56,7 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
+import { ProgressiveBlur } from "../../components/progressiveBlur";
 import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
@@ -616,10 +617,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		/>
 	);
 
-	const renderMainPaneContent = (
-		<div className="w-full">
+	const renderMainPaneContent = () => (
+		<div className="relative w-full">
 			{renderMainPaneNav()}
-			<main>{renderMainContent()}</main>
+			<div className="relative  overflow-auto">
+				<ProgressiveBlur
+					blurIntensity={2}
+					className="pointer-events-none fixed inset-x-0 top-12 z-40 h-20"
+					direction="top"
+				/>
+				<main className="relative z-10">{renderMainContent()}</main>
+			</div>
 		</div>
 	);
 
@@ -683,7 +691,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					</div>
 				</Allotment.Pane>
 				<Allotment.Pane className="split-right-pane">
-					{renderMainPaneContent}
+					{renderMainPaneContent()}
 				</Allotment.Pane>
 			</Allotment>
 		</div>
@@ -698,7 +706,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				{renderSidePane}
 			</Drawer>
-			<div className="w-[100vw]">{renderMainPaneContent}</div>
+			<div className="w-[100vw]">{renderMainPaneContent()}</div>
 		</div>
 	);
 
