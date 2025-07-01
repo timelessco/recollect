@@ -95,6 +95,7 @@ export const PreviewLightBox = ({
 		// Reset state after animation
 		const timer = setTimeout(() => {
 			setIsClosing(false);
+			setActiveIndex(-1);
 		}, 300);
 
 		return () => {
@@ -110,7 +111,8 @@ export const PreviewLightBox = ({
 		[],
 	);
 
-	if (!open || isClosing) {
+	// Only render CustomLightBox when activeIndex is valid
+	if (!open || isClosing || activeIndex === -1) {
 		return null;
 	}
 
