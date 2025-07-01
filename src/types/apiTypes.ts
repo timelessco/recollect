@@ -10,11 +10,13 @@ import { type CategoryIdUrlTypes, type FileType } from "./componentTypes";
 export type SupabaseSessionType = { user: User | null };
 export type CookiesType = Partial<{ [key: string]: string }>;
 export type ImgMetadataType = {
+	coverImage: string | null;
 	favIcon: string | null;
 	height: number | null;
 	img_caption: string | null;
 	ocr: string | null;
 	ogImgBlurUrl: string | null;
+	screenshot: string | null;
 	twitter_avatar_url: string | null;
 	width: number | null;
 };
@@ -216,7 +218,6 @@ export type AddBookmarkMinDataPayloadTypes = {
 export type AddBookmarkRemainingDataPayloadTypes = {
 	favIcon: string;
 	id: SingleListData["id"];
-	image: SingleListData["ogImage"];
 	url: SingleListData["url"];
 	user_id: SingleListData["user_id"]["id"];
 };

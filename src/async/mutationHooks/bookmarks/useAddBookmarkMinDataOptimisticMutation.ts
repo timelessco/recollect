@@ -121,17 +121,15 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			}
 
 			const data = response?.data?.data[0];
-			const ogImg = data?.ogImage;
 			const url = data?.url;
 
 			// this is to check if url is not a website like test.pdf
 			// if this is the case then we do not call the screenshot api
 			const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
 
-			if (
-				(!ogImg || isEmpty(ogImg) || !ogImg?.includes("https://")) &&
-				isNull(isUrlOfMimeType)
-			) {
+			// only take screenshot if url is not an image like https://test.com/test.jpg
+			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
+			if (isNull(isUrlOfMimeType)) {
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,
