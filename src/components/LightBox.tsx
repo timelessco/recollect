@@ -75,8 +75,20 @@ export const CustomLightBox = ({
 										className="h-auto max-h-[80vh] w-auto"
 										height={bookmark.meta_data?.height ?? 0}
 										src={bookmark?.url}
-										width={bookmark.meta_data?.width ?? 0}
+										width={0}
 									/>
+								</div>
+							</div>
+						) : bookmark?.type?.startsWith("video") ? (
+							<div className="flex h-full w-full items-center justify-center ">
+								<div className="relative w-full max-w-4xl">
+									<video
+										className="h-full max-h-[70vh] w-full object-contain"
+										controls
+										src={bookmark?.url}
+									>
+										<track kind="captions" src="" />
+									</video>
 								</div>
 							</div>
 						) : bookmark?.type?.startsWith("application") ? (
