@@ -56,6 +56,7 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
+import { ProgressiveBlur } from "../../components/progressiveBlur";
 import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
@@ -271,7 +272,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold text-gray-light-12"
+					className="z-10 truncate text-xl font-semibold text-gray-light-12"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -335,7 +336,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const renderSearchBar = showSearchBar ? (
-		<div className="w-[246px] xl:my-[2px] xl:w-full">
+		<div className="z-10 w-[246px] xl:my-[2px] xl:w-full">
 			<SearchInput
 				onBlur={() => !isDesktop && setShowSearchBar(false)}
 				onChange={(value) => {
@@ -539,7 +540,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] bg-custom-white-1 absolute top-0 w-full z-[5]  backdrop-blur-[20.5px]",
+			"flex items-center justify-between py-[6.5px] absolute top-0 w-full ",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -554,7 +555,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		const navOptionsWrapperClass = classNames({
-			"flex w-4/5 items-center justify-between xl:justify-end  sm:mt-0": true,
+			"flex w-4/5 items-center justify-between xl:justify-end z-10  sm:mt-0":
+				true,
 			"xl:w-full": showSearchBar,
 			"xl:w-1/4": !showSearchBar,
 		});
@@ -566,13 +568,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center">
+						<figure className="relative z-10 mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}
 						{/* only show when user is not editing the collection name */}
 						{!showHeadingInput && (
-							<div className="ml-2 flex space-x-2">
+							<div className="ml-2 flex space-x-2 ">
 								{currentCategoryData?.is_public && (
 									<ToolTip toolTipContent="Public collection">
 										<GlobeIcon />
@@ -615,11 +617,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			onIconSelect={(value, id) => onIconSelect(value, id)}
 		/>
 	);
-
-	const renderMainPaneContent = (
-		<div className="w-full">
+	const renderMainPaneContent = () => (
+		<div className="relative w-full">
 			{renderMainPaneNav()}
-			<main>{renderMainContent()}</main>
+			<div className="relative  overflow-auto">
+				<ProgressiveBlur
+					blurIntensity={2}
+					className="pointer-events-none absolute inset-x-0 top-0 z-[6] h-20"
+					direction="top"
+				/>
+				<main className="relative z-[3]">{renderMainContent()}</main>
+			</div>
 		</div>
 	);
 
@@ -683,7 +691,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					</div>
 				</Allotment.Pane>
 				<Allotment.Pane className="split-right-pane">
-					{renderMainPaneContent}
+					{renderMainPaneContent()}
 				</Allotment.Pane>
 			</Allotment>
 		</div>
@@ -698,7 +706,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				{renderSidePane}
 			</Drawer>
-			<div className="w-[100vw]">{renderMainPaneContent}</div>
+			<div className="w-[100vw]">{renderMainPaneContent()}</div>
 		</div>
 	);
 
