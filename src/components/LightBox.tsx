@@ -132,70 +132,70 @@ export const CustomLightBox = ({
 					{/* Sidepane */}
 					<div
 						className={`h-full bg-white shadow-lg transition-all duration-300 ease-in-out ${
-							isSidepaneOpen ? "w-80 border-l border-gray-200" : "w-0 border-0"
+							isSidepaneOpen ? "w-80 border-l border-gray-200" : "w-0"
 						}`}
 					>
-						<div
-							className={`h-full space-y-4 overflow-y-auto p-4 ${
-								!isSidepaneOpen && "opacity-0"
-							}`}
-						>
-							<div>
-								<h4 className="mb-1 text-sm font-medium text-gray-500">
-									Title
-								</h4>
-								<p className="break-words text-gray-900">
-									{bookmark?.title ?? "No title available"}
-								</p>
-							</div>
-							{bookmark?.description && (
+						<div className="h-full overflow-y-auto p-4">
+							<div className="min-w-[288px] space-y-4">
 								<div>
 									<h4 className="mb-1 text-sm font-medium text-gray-500">
-										Description
+										Title
 									</h4>
-									<p className="break-words text-sm text-gray-700">
-										{bookmark?.description}
+									<p className="break-words text-gray-900">
+										{bookmark?.title ?? "No title available"}
 									</p>
 								</div>
-							)}
-							<div>
-								<h4 className="mb-1 text-sm font-medium text-gray-500">Type</h4>
-								<p className="text-sm capitalize text-gray-700">
-									{bookmark?.type?.split("/")[0] ?? "Unknown"}
-								</p>
-							</div>
-							<div>
-								<h4 className="mb-1 text-sm font-medium text-gray-500">
-									Source
-								</h4>
-								<a
-									className="break-all text-sm text-blue-600 hover:underline"
-									href={bookmark?.url}
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									{bookmark?.domain ?? new URL(bookmark?.url).hostname}
-								</a>
-							</div>
-							{bookmark?.createdAt && (
+								{bookmark?.description && (
+									<div>
+										<h4 className="mb-1 text-sm font-medium text-gray-500">
+											Description
+										</h4>
+										<p className="break-words text-sm text-gray-700">
+											{bookmark?.description}
+										</p>
+									</div>
+								)}
 								<div>
 									<h4 className="mb-1 text-sm font-medium text-gray-500">
-										Saved on
+										Type
 									</h4>
-									<p className="text-sm text-gray-700">
-										{format(new Date(bookmark?.createdAt), "MMM d, yyyy")}
+									<p className="text-sm capitalize text-gray-700">
+										{bookmark?.type?.split("/")[0] ?? "Unknown"}
 									</p>
 								</div>
-							)}
-							<div className="border-t border-gray-200 pt-4">
-								<a
-									className="flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-									href={bookmark?.url}
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									Open Original
-								</a>
+								<div>
+									<h4 className="mb-1 text-sm font-medium text-gray-500">
+										Source
+									</h4>
+									<a
+										className="break-all text-sm text-blue-600 hover:underline"
+										href={bookmark?.url}
+										rel="noopener noreferrer"
+										target="_blank"
+									>
+										{bookmark?.domain ?? new URL(bookmark?.url).hostname}
+									</a>
+								</div>
+								{bookmark?.createdAt && (
+									<div>
+										<h4 className="mb-1 text-sm font-medium text-gray-500">
+											Saved on
+										</h4>
+										<p className="text-sm text-gray-700">
+											{format(new Date(bookmark?.createdAt), "MMM d, yyyy")}
+										</p>
+									</div>
+								)}
+								<div className="border-t border-gray-200 pt-4">
+									<a
+										className="flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+										href={bookmark?.url}
+										rel="noopener noreferrer"
+										target="_blank"
+									>
+										Open Original
+									</a>
+								</div>
 							</div>
 						</div>
 					</div>
