@@ -98,7 +98,12 @@ const videoLogic = async (
 	let imgData;
 	if (thumbnailUrl?.publicUrl) {
 		try {
-			imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
+			// imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
+			imgData = {
+				width: null,
+				height: null,
+				encoded: null,
+			};
 		} catch (error) {
 			log("Blur hash error", error);
 			Sentry.captureException(`Blur hash error ${error}`);
