@@ -62,7 +62,7 @@ export const CustomLightBox = ({
 
 			return (
 				<div className="flex h-full w-full">
-					<div className="flex h-full w-full items-center justify-center bg-gray-50">
+					<div className="flex h-full w-full items-center justify-center ">
 						{bookmark?.type?.startsWith("image") ? (
 							<div className="flex items-center justify-center">
 								<div className="relative max-w-[1200px]">
@@ -71,13 +71,12 @@ export const CustomLightBox = ({
 										className="h-auto max-h-[80vh] w-auto"
 										height={0}
 										src={bookmark?.url}
-										unoptimized
 										width={0}
 									/>
 								</div>
 							</div>
 						) : bookmark?.type?.startsWith("video") ? (
-							<div className="flex h-full w-full items-center justify-center p-4">
+							<div className="flex h-full w-full items-center justify-center ">
 								<div className="relative w-full max-w-4xl">
 									<video
 										className="h-full max-h-[70vh] w-full object-contain"
