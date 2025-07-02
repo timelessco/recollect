@@ -618,9 +618,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		/>
 	);
 	const renderMainPaneContent = () => (
-		<div className="relative w-full">
+		<div className="relative h-full w-full">
 			{renderMainPaneNav()}
-			<div className="relative  overflow-auto">
+			<div className="relative h-full overflow-auto">
 				<ProgressiveBlur
 					blurIntensity={2}
 					className="pointer-events-none absolute inset-x-0 top-0 z-[6] h-20"
