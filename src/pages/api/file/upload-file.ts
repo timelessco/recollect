@@ -7,8 +7,6 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 import axios from "axios";
-import { decode } from "base64-arraybuffer";
-import { IncomingForm } from "formidable";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
@@ -17,7 +15,6 @@ import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddin
 import {
 	type FileNameType,
 	type ImgMetadataType,
-	type ParsedFormDataType,
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
@@ -29,6 +26,7 @@ import {
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
+// import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
 	apiCookieParser,
 	isUserInACategory,
@@ -37,48 +35,56 @@ import {
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
 
-// first we need to disable the default body parser
-export const config = {
-	api: {
-		bodyParser: false,
-	},
-};
-
 type StorageDataType = {
 	publicUrl: string;
 };
 
+type BodyDataType = {
+	category_id: string;
+	name: string;
+	thumbnailPath: string | null;
+	type: string;
+	uploadFileNamePath: string;
+};
+
 /* 
 If the uploaded file is a video then this function is called 
-This adds the video thumbnail into S3 
+This gets the public URL from the thumbnail path uploaded by the client
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
 Image caption is not generated for the thumbnail 
 */
 const videoLogic = async (
-	data: ParsedFormDataType,
+	data: BodyDataType,
 	userId: SingleListData["user_id"]["id"],
 	fileName: FileNameType,
 	supabase: SupabaseClient,
 ) => {
-	// if the file is a video, we upload the video thumbnail base64 to s3 and then we get the images blur hash and set the img s3 url as ogImage and blur hash in meta data
-	const base64 = data?.fields?.thumbnailBase64?.[0]?.split("base64,")[1];
+	// Get the thumbnail path from the client-side upload
+	const thumbnailPath = data?.thumbnailPath;
 
-	const videoStoragePath = `public/${userId}/thumbnail-${fileName}`;
-
-	const { error: thumbnailError } = await supabase.storage
-		.from(FILES_STORAGE_NAME)
-		.upload(videoStoragePath, decode(base64 ?? ""), {
-			contentType: "image/png",
-			upsert: true,
-		});
-
-	if (!isNil(thumbnailError)) {
-		throw new Error(`ERROR: thumbnailError ${thumbnailError?.message}`);
+	if (!thumbnailPath) {
+		throw new Error("ERROR: thumbnailPath is missing for video file");
 	}
 
+	// Move thumbnail from temp location to final location
+	const finalThumbnailPath = `public/${userId}/thumbnail-${fileName}.png`;
+
+	// Copy the thumbnail from temp to final location
+	const { error: copyError } = await supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.copy(thumbnailPath, finalThumbnailPath);
+
+	if (!isNil(copyError)) {
+		console.error(`ERROR: copyError ${copyError?.message}`);
+	}
+
+	// Delete the temp thumbnail
+	await supabase.storage.from(FILES_STORAGE_NAME).remove([thumbnailPath]);
+
+	// Get the public URL for the final thumbnail
 	const { data: thumbnailUrl, error: thumbnailUrlError } = supabase.storage
 		.from(FILES_STORAGE_NAME)
-		.getPublicUrl(videoStoragePath) as {
+		.getPublicUrl(finalThumbnailPath) as {
 		data: StorageDataType;
 		error: UploadFileApiResponse["error"];
 	};
@@ -121,21 +127,10 @@ export default async (
 ) => {
 	const supabase = apiSupabaseClient(request, response);
 
-	// parse form with a Promise wrapper
-	const data = (await new Promise((resolve, reject) => {
-		const form = new IncomingForm();
+	// Get data from JSON body
+	const data = request.body as BodyDataType;
 
-		form.parse(request, (error, fields, files) => {
-			if (error) {
-				reject(error);
-				return;
-			}
-
-			resolve({ fields, files });
-		});
-	})) as ParsedFormDataType;
-
-	const categoryId = data?.fields?.category_id?.[0];
+	const categoryId = data?.category_id;
 
 	const categoryIdLogic = categoryId
 		? isUserInACategory(categoryId)
@@ -148,12 +143,10 @@ export default async (
 	const userId = userData?.data?.user?.id;
 	const email = userData?.data?.user?.email;
 
-	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
-	const fileType = data?.fields?.type?.[0];
+	const fileName = parseUploadFileName(data?.name ?? "");
+	const fileType = data?.type;
 
-	const uploadPath = parseUploadFileName(
-		data?.fields?.uploadFileNamePath?.[0] as string,
-	);
+	const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
 	// if the uploaded file is valid this happens
 	const storagePath = `public/${userId}/${uploadPath}`;
 

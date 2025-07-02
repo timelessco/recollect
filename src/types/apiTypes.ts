@@ -320,7 +320,7 @@ export type AddUserTagsApiPayload = {
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
 	file: FileType;
-	thumbnailBase64: string | null;
+	thumbnailPath: string | null;
 	// this is the path where the file in uploaded storage
 	uploadFileNamePath: string;
 };
@@ -359,7 +359,7 @@ export type ParsedFormDataType = {
 	fields: {
 		category_id?: string;
 		name?: string;
-		thumbnailBase64?: UploadFileApiPayload["thumbnailBase64"];
+		thumbnailPath?: UploadFileApiPayload["thumbnailPath"];
 		type?: string;
 		uploadFileNamePath?: string;
 		user_id?: string;
