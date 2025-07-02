@@ -7,7 +7,6 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 import axios from "axios";
-import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
@@ -17,7 +16,6 @@ import { insertEmbeddings } from "../../../../../../async/supabaseCrudHelpers/ai
 import {
 	type FileNameType,
 	type ImgMetadataType,
-	type ParsedFormDataType,
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../../../../types/apiTypes";
@@ -52,30 +50,43 @@ Then it generates the meta_data for the thumbnail, this data has the blurHash th
 Image caption is not generated for the thumbnail 
 */
 const videoLogic = async (
-	data: { fields: ParsedFormDataType["fields"] },
+	data: {
+		category_id: string;
+		name: string;
+		thumbnailPath: string | null;
+		type: string;
+		uploadFileNamePath: string;
+	},
 	userId: SingleListData["user_id"]["id"],
 	fileName: FileNameType,
 	supabase: SupabaseClient,
 ) => {
-	// if the file is a video, we upload the video thumbnail base64 to s3 and then we get the images blur hash and set the img s3 url as ogImage and blur hash in meta data
-	const base64 = data?.fields?.thumbnailBase64?.[0]?.split("base64,")[1];
+	// Get the thumbnail path from the client-side upload
+	const thumbnailPath = data?.thumbnailPath;
 
-	const videoStoragePath = `public/${userId}/thumbnail-${fileName}`;
-
-	const { error: thumbnailError } = await supabase.storage
-		.from(FILES_STORAGE_NAME)
-		.upload(videoStoragePath, decode(base64 ?? ""), {
-			contentType: "image/png",
-			upsert: true,
-		});
-
-	if (!isNil(thumbnailError)) {
-		throw new Error(`ERROR: thumbnailError ${thumbnailError?.message}`);
+	if (!thumbnailPath) {
+		throw new Error("ERROR: thumbnailPath is missing for video file");
 	}
 
+	// Move thumbnail from temp location to final location
+	const finalThumbnailPath = `public/${userId}/thumbnail-${fileName}.png`;
+
+	// Copy the thumbnail from temp to final location
+	const { error: copyError } = await supabase.storage
+		.from(FILES_STORAGE_NAME)
+		.copy(thumbnailPath, finalThumbnailPath);
+
+	if (!isNil(copyError)) {
+		throw new Error(`ERROR: copyError ${copyError?.message}`);
+	}
+
+	// Delete the temp thumbnail
+	await supabase.storage.from(FILES_STORAGE_NAME).remove([thumbnailPath]);
+
+	// Get the public URL for the final thumbnail
 	const { data: thumbnailUrl, error: thumbnailUrlError } = supabase.storage
 		.from(FILES_STORAGE_NAME)
-		.getPublicUrl(videoStoragePath) as {
+		.getPublicUrl(finalThumbnailPath) as {
 		data: StorageDataType;
 		error: UploadFileApiResponse["error"];
 	};
@@ -124,17 +135,15 @@ export default async (
 ) => {
 	const supabase = apiSupabaseClient(request, response);
 
-	const data = {
-		fields: {
-			category_id: request?.body?.category_id,
-			name: [request?.body?.name],
-			thumbnailBase64: request?.body?.thumbnailBase64,
-			type: [request?.body?.type],
-			uploadFileNamePath: [request?.body?.uploadFileNamePath],
-		},
+	const data = request.body as {
+		category_id: string;
+		name: string;
+		thumbnailPath: string | null;
+		type: string;
+		uploadFileNamePath: string;
 	};
 
-	const categoryId = data?.fields?.category_id?.[0];
+	const categoryId = data?.category_id;
 
 	const categoryIdLogic = categoryId
 		? isUserInACategory(categoryId)
@@ -147,12 +156,10 @@ export default async (
 	const userId = userData?.data?.user?.id;
 	const email = userData?.data?.user?.email;
 
-	const fileName = parseUploadFileName(data?.fields?.name?.[0] ?? "");
-	const fileType = data?.fields?.type?.[0];
+	const fileName = parseUploadFileName(data?.name ?? "");
+	const fileType = data?.type;
 
-	const uploadPath = parseUploadFileName(
-		data?.fields?.uploadFileNamePath?.[0] as string,
-	);
+	const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
 	// if the uploaded file is valid this happens
 	const storagePath = `public/${userId}/${uploadPath}`;
 
@@ -213,7 +220,7 @@ export default async (
 	} else {
 		// if file is a video
 		const { ogImage: image, meta_data: metaData } = await videoLogic(
-			data as unknown as { fields: ParsedFormDataType["fields"] },
+			data,
 			userId as string,
 			uploadPath,
 			supabase,

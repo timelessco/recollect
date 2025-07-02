@@ -747,7 +747,7 @@ export const removeUserProfilePic = async ({
 export const uploadFile = async ({
 	file,
 	category_id,
-	thumbnailBase64,
+	thumbnailPath,
 	uploadFileNamePath,
 }: UploadFileApiPayload) => {
 	try {
@@ -756,15 +756,14 @@ export const uploadFile = async ({
 			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
 			{
 				category_id,
-				thumbnailBase64,
-				path: file?.path,
+				thumbnailPath,
 				name: fileName,
 				type: file?.type,
 				uploadFileNamePath,
 			},
 			{
 				headers: {
-					"Content-Type": "multipart/form-data",
+					"Content-Type": "application/json",
 				},
 			},
 		);
