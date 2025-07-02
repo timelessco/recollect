@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
@@ -36,6 +36,29 @@ export const CustomLightBox = ({
 	const router = useRouter();
 	const [isSidepaneOpen, setIsSidepaneOpen] = useState(true);
 
+	const touchStartYRef = useRef<number | null>(null);
+
+	const handleTouchStart = (event: React.TouchEvent) => {
+		touchStartYRef.current = event.touches[0].clientY;
+	};
+
+	const handleTouchMove = useCallback(
+		(event: React.TouchEvent) => {
+			if (touchStartYRef.current !== null) {
+				const deltaY = event.touches[0].clientY - touchStartYRef.current;
+				if (deltaY < -15) {
+					handleClose();
+					touchStartYRef.current = null;
+				}
+			}
+		},
+		[handleClose],
+	);
+
+	const handleTouchEnd = () => {
+		touchStartYRef.current = null;
+	};
+
 	const toggleSidepane = useCallback(() => {
 		setIsSidepaneOpen((previous) => !previous);
 	}, []);
@@ -55,6 +78,15 @@ export const CustomLightBox = ({
 		})) as CustomSlide[];
 	}, [bookmarks]);
 
+	const handleWheel = useCallback(
+		(event: React.WheelEvent) => {
+			if (event.deltaY < -15) {
+				handleClose();
+			}
+		},
+		[handleClose],
+	);
+
 	const renderSlide = useCallback(
 		(slideProps: { slide: CustomSlide }) => {
 			const { slide } = slideProps;
@@ -65,8 +97,14 @@ export const CustomLightBox = ({
 			if (!bookmark) return null;
 
 			return (
-				<div className="flex h-full w-full">
-					<div className="flex h-full w-full items-center justify-center">
+				<div
+					className="flex h-full w-full"
+					onTouchEnd={handleTouchEnd}
+					onTouchMove={handleTouchMove}
+					onTouchStart={handleTouchStart}
+					onWheel={handleWheel}
+				>
+					<div className="flex h-full w-full items-center justify-center ">
 						{bookmark?.type?.startsWith("image") ? (
 							<div className="flex items-center justify-center">
 								<div className="relative max-w-[1200px]">
@@ -202,7 +240,14 @@ export const CustomLightBox = ({
 				</div>
 			);
 		},
-		[bookmarks, isSidepaneOpen, slides, toggleSidepane],
+		[
+			bookmarks,
+			handleTouchMove,
+			handleWheel,
+			isSidepaneOpen,
+			slides,
+			toggleSidepane,
+		],
 	);
 
 	return (
