@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { log } from "console";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -19,13 +18,13 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
-	BOOKMAKRS_STORAGE_NAME,
 	MAIN_TABLE_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { getBaseUrl } from "../../../utils/helpers";
+import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
@@ -36,6 +35,36 @@ type Data = {
 
 // this uploads all the remaining bookmark data
 // these data are blur hash and s3 uploads
+
+const upload = async (
+	base64info: string,
+	userIdForStorage: ProfilesTableTypes["id"],
+): Promise<string | null> => {
+	try {
+		const imgName = `img-${uniqid?.time()}.jpg`;
+		const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
+
+		const { error: uploadError } = await r2Helpers.uploadObject(
+			"recollect",
+			storagePath,
+			new Uint8Array(decode(base64info)),
+			"image/jpg",
+		);
+
+		if (uploadError) {
+			Sentry.captureException(`R2 upload failed`);
+			console.error("R2 upload failed:", uploadError);
+			return null;
+		}
+
+		const { data: storageData } = r2Helpers.getPublicUrl(storagePath);
+
+		return storageData?.publicUrl || null;
+	} catch (error) {
+		console.error("Error in upload function:", error);
+		return null;
+	}
+};
 
 // eslint-disable-next-line complexity
 export default async function handler(
@@ -94,36 +123,6 @@ export default async function handler(
 		Sentry.captureException(`Bookmark not found with id: ${id}`);
 		return;
 	}
-
-	const upload = async (
-		base64info: string,
-		userIdForStorage: ProfilesTableTypes["id"],
-	): Promise<string | null> => {
-		try {
-			const imgName = `img-${uniqid?.time()}.jpg`;
-			const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
-
-			const { error: uploadError } = await supabase.storage
-				.from(BOOKMAKRS_STORAGE_NAME)
-				.upload(storagePath, decode(base64info), {
-					contentType: "image/jpg",
-				});
-
-			if (uploadError) {
-				console.error("Storage upload failed:", uploadError);
-				return null;
-			}
-
-			const { data: storageData } = supabase.storage
-				.from(BOOKMAKRS_STORAGE_NAME)
-				.getPublicUrl(storagePath);
-
-			return storageData?.publicUrl || null;
-		} catch (error) {
-			console.error("Error in upload function:", error);
-			return null;
-		}
-	};
 
 	let imgData;
 

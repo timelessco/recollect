@@ -14,7 +14,6 @@ import {
 } from "../../../types/apiTypes";
 import {
 	ADD_REMAINING_BOOKMARK_API,
-	BOOKMAKRS_STORAGE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
@@ -22,6 +21,7 @@ import {
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 import { apiCookieParser } from "../../../utils/helpers";
+import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
@@ -29,28 +29,33 @@ type Data = {
 	error: PostgrestError | VerifyErrors | string | null;
 };
 
+const upload = async (base64info: string, uploadUserId: string) => {
+	const imgName = `img-${uniqid?.time()}.jpg`;
+	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
+
+	const { error: uploadError } = await r2Helpers.uploadObject(
+		"recollect",
+		storagePath,
+		new Uint8Array(decode(base64info)),
+		"image/jpg",
+	);
+
+	if (uploadError) {
+		Sentry.captureException(`R2 upload failed`);
+		console.error("R2 upload failed:", uploadError);
+		return null;
+	}
+
+	const { data: storageData } = r2Helpers.getPublicUrl(storagePath);
+
+	return storageData?.publicUrl || null;
+};
+
 export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
 	const supabase = apiSupabaseClient(request, response);
-
-	const upload = async (base64info: string, uploadUserId: string) => {
-		const imgName = `img-${uniqid?.time()}.jpg`;
-		const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
-
-		await supabase.storage
-			.from(BOOKMAKRS_STORAGE_NAME)
-			.upload(storagePath, decode(base64info), {
-				contentType: "image/jpg",
-			});
-
-		const { data: storageData } = supabase.storage
-			.from(BOOKMAKRS_STORAGE_NAME)
-			.getPublicUrl(storagePath);
-
-		return storageData?.publicUrl;
-	};
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	let screenShotResponse;
