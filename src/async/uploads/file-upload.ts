@@ -3,12 +3,13 @@ import uniqid from "uniqid";
 
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { acceptedFileTypes, FILES_STORAGE_NAME } from "../../utils/constants";
+import { acceptedFileTypes } from "../../utils/constants";
 import {
 	generateVideoThumbnail,
 	parseUploadFileName,
 	uploadFileLimit,
 } from "../../utils/helpers";
+import { r2Helpers } from "../../utils/r2Client";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 
@@ -40,14 +41,13 @@ export const fileUpload = async (
 			let thumbnailPath: string | null = null;
 
 			if (acceptedFiles[index]?.type?.includes("video")) {
-				// if file is a video, generate thumbnail and upload it to S3
+				// if file is a video, generate thumbnail and upload it to R2
 				try {
 					const thumbnailBase64 = (await generateVideoThumbnail(
 						acceptedFiles[index],
 					)) as string;
 
 					if (thumbnailBase64) {
-						const base64Data = thumbnailBase64?.split("base64,")[1];
 						const uploadFileNamePath = uniqid.time(
 							"",
 							`-${parseUploadFileName(acceptedFiles[index]?.name)}`,
@@ -59,22 +59,44 @@ export const fileUpload = async (
 						const userId = data?.user?.id;
 
 						if (userId) {
-							// Upload thumbnail to S3
-							const { error: thumbnailError } = await supabase.storage
-								.from(FILES_STORAGE_NAME)
-								.upload(
-									`public/${userId}/${thumbnailFileName}`,
-									decode(base64Data),
-									{
-										contentType: "image/png",
-										upsert: true,
-									},
+							// Generate presigned URL for thumbnail upload
+							// we are doing this as we cannot upload directly to R2 from the client side
+							const { data: uploadTokenData, error } =
+								await r2Helpers.createSignedUploadUrl(
+									"recollect",
+									`files/public/${userId}/${thumbnailFileName}`,
 								);
 
-							if (!thumbnailError) {
-								thumbnailPath = `public/${userId}/${thumbnailFileName}`;
-							} else {
-								console.error("Thumbnail upload error:", thumbnailError);
+							if (uploadTokenData?.signedUrl && !error) {
+								try {
+									// Extract base64 data (remove data:image/png;base64, prefix)
+									const base64Data = thumbnailBase64.split(",")[1];
+
+									if (!base64Data) {
+										return;
+									}
+
+									// Convert base64 to binary using Buffer (modern approach)
+									const buffer = Buffer.from(base64Data, "base64");
+
+									// Upload thumbnail using presigned URL
+									const uploadResponse = await fetch(
+										uploadTokenData.signedUrl,
+										{
+											method: "PUT",
+											headers: {
+												"Content-Type": "image/png",
+											},
+											body: buffer,
+										},
+									);
+
+									if (uploadResponse.ok) {
+										thumbnailPath = `files/public/${userId}/${thumbnailFileName}`;
+									}
+								} catch (uploadError) {
+									console.error("Thumbnail upload error:", uploadError);
+								}
 							}
 						}
 					}

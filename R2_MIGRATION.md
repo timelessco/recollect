@@ -39,9 +39,9 @@ Add these environment variables to your `.env.local` file:
 
 ```bash
 # Cloudflare R2 Configuration
-CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
-CLOUDFLARE_ACCESS_KEY_ID=your_cloudflare_access_key_id
-CLOUDFLARE_SECRET_ACCESS_KEY=your_cloudflare_secret_access_key
+NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID=your_NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID
+NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID=your_NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID
+NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY=your_NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY
 
 # R2 Bucket Names (optional - defaults will be used if not set)
 R2_BOOKMARKS_BUCKET=bookmarks

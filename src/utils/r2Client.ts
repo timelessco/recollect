@@ -9,11 +9,11 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // R2 configuration
-const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
-const ACCESS_KEY_ID = process.env.CLOUDFLARE_ACCESS_KEY_ID;
-const SECRET_ACCESS_KEY = process.env.CLOUDFLARE_SECRET_ACCESS_KEY;
+const ACCOUNT_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID;
+const ACCESS_KEY_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID;
+const SECRET_ACCESS_KEY = process.env.NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY;
 
-const PUBLIC_BUCKET_URL = process.env.CLOUDFLARE_PUBLIC_BUCKET_URL;
+const PUBLIC_BUCKET_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL;
 
 if (!ACCOUNT_ID || !ACCESS_KEY_ID || !SECRET_ACCESS_KEY) {
 	throw new Error("Missing Cloudflare R2 environment variables");
