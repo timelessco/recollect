@@ -124,7 +124,6 @@ export const PreviewLightBox = ({
 			isOpen={open}
 			isPage
 			setActiveIndex={setActiveIndex}
-			showArrow
 		/>
 	);
 };
