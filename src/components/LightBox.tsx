@@ -9,6 +9,17 @@ import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previe
 import { CATEGORY_ID_PATHNAME } from "../utils/constants";
 
 // Update the LightBox.tsx component
+export type Bookmark = {
+	createdAt?: string;
+	description?: string;
+	domain?: string;
+	id: number;
+	ogImage?: string | null;
+	title?: string;
+	type?: string;
+	url: string;
+};
+
 export const CustomLightBox = ({
 	bookmarks = [],
 	activeIndex,
@@ -18,12 +29,7 @@ export const CustomLightBox = ({
 	isPage,
 }: {
 	activeIndex: number;
-	bookmarks?: Array<{
-		id: number;
-		ogImage?: string | null;
-		type?: string;
-		url: string;
-	}>;
+	bookmarks?: Bookmark[];
 	handleClose: () => void;
 	isOpen: boolean;
 	isPage?: boolean;
@@ -210,15 +216,13 @@ export const CustomLightBox = ({
 					setActiveIndex(index);
 					void router.push(
 						{
-							// https://github.com/vercel/next.js/discussions/11625
-							// https://github.com/adamwathan/headbangstagram/pull/1/files
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
 								category_id: router.asPath.split("/")[1],
-								id: bookmarks?.[index].id,
+								id: bookmarks[index].id,
 							},
 						},
-						`/${router.asPath.split("/")[1]}/preview/${bookmarks?.[index].id}`,
+						`/${router.asPath.split("/")[1]}/preview/${bookmarks[index].id}`,
 						{
 							shallow: true,
 						},
@@ -237,7 +241,6 @@ export const CustomLightBox = ({
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
 					backdropFilter: "blur(32px)",
-
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "center",
