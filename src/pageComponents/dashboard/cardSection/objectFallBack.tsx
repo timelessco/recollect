@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
+import defaultBlur from "../../../../public/app-svgs/errorImgPlaceholder.svg";
+
 type EmbedWithFallbackProps = {
 	placeholder?: string;
 	src: string;
@@ -38,16 +40,20 @@ export const EmbedWithFallback = ({
 		setTimeout(check, 300);
 	}, [src]);
 
-	if (failed && placeholder) {
+	if (failed) {
 		return (
 			<div className="flex items-center justify-center">
 				<div className="relative max-w-[1200px]">
 					<Image
 						alt="Preview"
-						className="h-auto max-h-[80vh]  w-auto"
+						className={
+							placeholder
+								? "h-auto max-h-[80vh] w-auto"
+								: "h-auto max-h-[286px] w-full max-w-[150px]"
+						}
 						height={0}
-						src={placeholder}
-						unoptimized
+						src={placeholder ? placeholder : defaultBlur}
+						unoptimized={Boolean(placeholder)}
 						width={0}
 					/>
 				</div>
