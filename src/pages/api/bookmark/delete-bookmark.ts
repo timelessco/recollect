@@ -11,13 +11,12 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
-	BOOKMAKRS_STORAGE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
-	FILES_STORAGE_NAME,
 	MAIN_TABLE_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
+import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
@@ -42,26 +41,86 @@ export default async function handler(
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	// screenshots ogImages in bucket
-	const deleteScreenshotImagePaths = apiData?.deleteData?.map((item) => {
-		const ogImageLink = item?.ogImage;
-		const imgName = ogImageLink?.split("/")[ogImageLink.split("/").length - 1];
-		return `${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${imgName}`;
-	});
+	// Using Set to remove duplicates since ogImage and meta_data.screenshot might point to the same file
+	const deleteScreenshotImagePaths = [
+		...new Set(
+			apiData?.deleteData?.flatMap((item) => {
+				const paths = [];
 
-	const { error: storageScreenshotOgImageError } = (await supabase.storage
-		.from(BOOKMAKRS_STORAGE_NAME)
-		.remove(deleteScreenshotImagePaths)) as { error: ErrorResponse };
+				// Add ogImage path if it exists
+				const ogImageLink = item?.ogImage;
+				if (ogImageLink) {
+					const imgName =
+						ogImageLink?.split("/")?.[ogImageLink?.split("/")?.length - 1];
+					if (imgName) {
+						paths.push(
+							`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${imgName}`,
+						);
+					}
+				}
+
+				// Add meta_data.screenshot path if it exists
+				const screenshotLink = item?.meta_data?.screenshot;
+				if (screenshotLink) {
+					const screenshotName =
+						screenshotLink?.split("/")?.[
+							screenshotLink?.split("/")?.length - 1
+						];
+					if (screenshotName) {
+						paths.push(
+							`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${screenshotName}`,
+						);
+					}
+				}
+
+				return paths;
+			}) || [],
+		),
+	];
+
+	const { error: storageScreenshotOgImageError } =
+		await r2Helpers.deleteObjects("recollect", deleteScreenshotImagePaths);
 
 	// delete ogImages in bucket
-	const deleteImagePaths = apiData?.deleteData?.map((item) => {
-		const ogImageLink = item?.ogImage;
-		const imgName = ogImageLink?.split("/")[ogImageLink.split("/").length - 1];
-		return `${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/${imgName}`;
-	});
+	// Using Set to remove duplicates since ogImage and meta_data.coverImage might point to the same file
+	const deleteImagePaths = [
+		...new Set(
+			apiData?.deleteData?.flatMap((item) => {
+				const paths = [];
 
-	const { error: storageOgImageError } = (await supabase.storage
-		.from(BOOKMAKRS_STORAGE_NAME)
-		.remove(deleteImagePaths)) as { error: ErrorResponse };
+				// Add ogImage path if it exists
+				const ogImageLink = item?.ogImage;
+				if (ogImageLink) {
+					const imgName =
+						ogImageLink?.split("/")?.[ogImageLink?.split("/")?.length - 1];
+					if (imgName) {
+						paths.push(`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/${imgName}`);
+					}
+				}
+
+				// Add meta_data.coverImage path if it exists
+				const coverImageLink = item?.meta_data?.coverImage;
+				if (coverImageLink) {
+					const coverImageName =
+						coverImageLink?.split("/")?.[
+							coverImageLink?.split("/")?.length - 1
+						];
+					if (coverImageName) {
+						paths.push(
+							`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/${coverImageName}`,
+						);
+					}
+				}
+
+				return paths;
+			}) || [],
+		),
+	];
+
+	const { error: storageOgImageError } = await r2Helpers.deleteObjects(
+		"recollect",
+		deleteImagePaths,
+	);
 
 	// delete file images in bucket, this will delete the video thumbnail too
 
@@ -70,23 +129,25 @@ export default async function handler(
 			Math.max(0, item?.ogImage.lastIndexOf("/") + 1),
 		);
 
-		return `public/${userId}/${name}`;
+		return `files/public/${userId}/${name}`;
 	});
 
-	const { error: fileStorageError } = (await supabase.storage
-		.from(FILES_STORAGE_NAME)
-		.remove(deleteFileImagesPaths)) as { error: ErrorResponse };
+	const { error: fileStorageError } = await r2Helpers.deleteObjects(
+		"recollect",
+		deleteFileImagesPaths,
+	);
 
 	// deletes the videos
 	// for this we get name from the url as the ogImage will only have the video thumbnail name
 	const deleteFileVideoPaths = apiData?.deleteData?.map((item) => {
 		const name = item?.url?.slice(Math.max(0, item?.url.lastIndexOf("/") + 1));
-		return `public/${userId}/${name}`;
+		return `files/public/${userId}/${name}`;
 	});
 
-	const { error: fileVideoStorageError } = (await supabase.storage
-		.from(FILES_STORAGE_NAME)
-		.remove(deleteFileVideoPaths)) as { error: ErrorResponse };
+	const { error: fileVideoStorageError } = await r2Helpers.deleteObjects(
+		"recollect",
+		deleteFileVideoPaths,
+	);
 
 	// delete tags
 
@@ -128,8 +189,12 @@ export default async function handler(
 		response.status(500).json({
 			data: bookmarksData,
 			error:
-				storageOgImageError ??
-				fileStorageError ??
+				(storageScreenshotOgImageError
+					? String(storageScreenshotOgImageError)
+					: null) ??
+				(storageOgImageError ? String(storageOgImageError) : null) ??
+				(fileStorageError ? String(fileStorageError) : null) ??
+				(fileVideoStorageError ? String(fileVideoStorageError) : null) ??
 				bookmarkTagsError ??
 				bookmarksError,
 		});

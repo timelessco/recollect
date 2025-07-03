@@ -15,18 +15,16 @@ import isNull from "lodash/isNull";
 import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import { type CookiesType, type SingleListData } from "../../../types/apiTypes";
 import {
-	BOOKMAKRS_STORAGE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
-	FILES_STORAGE_NAME,
 	MAIN_TABLE_NAME,
 	PROFILES,
 	SHARED_CATEGORIES_TABLE_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 	TAG_TABLE_NAME,
-	USER_PROFILE_STORAGE_NAME,
 } from "../../../utils/constants";
+import { r2Helpers } from "../../../utils/r2Client";
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -95,43 +93,38 @@ const categoriesDelete = async (
 
 // all deletes related to s3 storage
 const storageDeleteLogic = async (
-	supabase: SupabaseClient,
 	userId: SingleListData["user_id"]["id"],
 	response: NextApiResponse<Data>,
 ) => {
 	// bookmarks storage ogImages delete
 
 	const { data: bookmarksStorageFiles, error: bookmarksStorageError } =
-		await supabase.storage
-			.from(BOOKMAKRS_STORAGE_NAME)
-			.list(`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}`);
-	const filesToRemove = bookmarksStorageFiles?.map(
-		(x) => `${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/${x.name}`,
-	);
+		await r2Helpers.listObjects(
+			"recollect",
+			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/`,
+		);
+
+	const filesToRemove = bookmarksStorageFiles?.map((x) => x?.Key || "");
 
 	if (!isNull(bookmarksStorageError)) {
 		response
 			.status(500)
-			.json({ data: null, error: bookmarksStorageError as unknown as string });
+			.json({ data: null, error: String(bookmarksStorageError) });
 		throw new Error("ERROR: bookmarksStorageError");
 	}
 
 	if (!isEmpty(filesToRemove) && !isNil(filesToRemove)) {
-		const {
-			data: bookmarksStorageDeleteData,
-			error: bookmarksStorageDeleteError,
-		} = await supabase.storage
-			.from(BOOKMAKRS_STORAGE_NAME)
-			.remove(filesToRemove);
+		const { error: bookmarksStorageDeleteError } =
+			await r2Helpers.deleteObjects("recollect", filesToRemove);
 
 		if (!isNull(bookmarksStorageDeleteError)) {
 			response.status(500).json({
 				data: null,
-				error: bookmarksStorageDeleteError as unknown as string,
+				error: String(bookmarksStorageDeleteError),
 			});
 			throw new Error("ERROR: bookmarksStorageDeleteError");
 		} else {
-			log("deleted og images", bookmarksStorageDeleteData?.length);
+			log("deleted og images", filesToRemove?.length);
 		}
 	} else {
 		log("files to delete is empty: ogImages");
@@ -142,40 +135,35 @@ const storageDeleteLogic = async (
 	const {
 		data: bookmarksStorageScreenshotFiles,
 		error: bookmarksStorageScreenshotError,
-	} = await supabase.storage
-		.from(BOOKMAKRS_STORAGE_NAME)
-		.list(`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}`);
+	} = await r2Helpers.listObjects(
+		"recollect",
+		`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/`,
+	);
+
 	const filesToRemoveScreenshot = bookmarksStorageScreenshotFiles?.map(
-		(x) => `${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${x.name}`,
+		(x) => x?.Key || "",
 	);
 
 	if (!isNull(bookmarksStorageScreenshotError)) {
 		response.status(500).json({
 			data: null,
-			error: bookmarksStorageScreenshotError as unknown as string,
+			error: String(bookmarksStorageScreenshotError),
 		});
 		throw new Error("ERROR: bookmarksStorageScreenshotError");
 	}
 
 	if (!isEmpty(filesToRemoveScreenshot) && !isNil(filesToRemoveScreenshot)) {
-		const {
-			data: bookmarksStorageScreenshotDeleteData,
-			error: bookmarksStorageScreenshotDeleteError,
-		} = await supabase.storage
-			.from(BOOKMAKRS_STORAGE_NAME)
-			.remove(filesToRemoveScreenshot);
+		const { error: bookmarksStorageScreenshotDeleteError } =
+			await r2Helpers.deleteObjects("recollect", filesToRemoveScreenshot);
 
 		if (!isNull(bookmarksStorageScreenshotDeleteError)) {
 			response.status(500).json({
 				data: null,
-				error: bookmarksStorageScreenshotDeleteError as unknown as string,
+				error: String(bookmarksStorageScreenshotDeleteError),
 			});
 			throw new Error("ERROR: bookmarksStorageScreenshotDeleteError");
 		} else {
-			log(
-				"deleted screenshot images",
-				bookmarksStorageScreenshotDeleteData?.length,
-			);
+			log("deleted screenshot images", filesToRemoveScreenshot?.length);
 		}
 	} else {
 		log("files to delete is empty: screenshot");
@@ -184,15 +172,14 @@ const storageDeleteLogic = async (
 	// files storage delete
 
 	const { data: filesStorageData, error: filesStorageDataError } =
-		await supabase.storage.from(FILES_STORAGE_NAME).list(`public/${userId}`);
-	const filesStorageFilesToRemove = filesStorageData?.map(
-		(x) => `public/${userId}/${x.name}`,
-	);
+		await r2Helpers.listObjects("recollect", `files/public/${userId}/`);
+
+	const filesStorageFilesToRemove = filesStorageData?.map((x) => x?.Key || "");
 
 	if (!isNull(filesStorageDataError)) {
 		response
 			.status(500)
-			.json({ data: null, error: filesStorageDataError as unknown as string });
+			.json({ data: null, error: String(filesStorageDataError) });
 		throw new Error("ERROR: filesStorageDataError");
 	}
 
@@ -200,18 +187,18 @@ const storageDeleteLogic = async (
 		!isEmpty(filesStorageFilesToRemove) &&
 		!isNil(filesStorageFilesToRemove)
 	) {
-		const { data: filesDeleteData, error: filesDeleteError } =
-			await supabase.storage
-				.from(FILES_STORAGE_NAME)
-				.remove(filesStorageFilesToRemove);
+		const { error: filesDeleteError } = await r2Helpers.deleteObjects(
+			"recollect",
+			filesStorageFilesToRemove,
+		);
 
 		if (!isNull(filesDeleteError)) {
 			response
 				.status(500)
-				.json({ data: null, error: filesDeleteError as unknown as string });
+				.json({ data: null, error: String(filesDeleteError) });
 			throw new Error("ERROR: filesDeleteError");
 		} else {
-			log("deleted files", filesDeleteData?.length);
+			log("deleted files", filesStorageFilesToRemove?.length);
 		}
 	} else {
 		log("files to delete is empty : files");
@@ -220,36 +207,31 @@ const storageDeleteLogic = async (
 	// user profile storage delete
 
 	const { data: userProfileFilesData, error: userProfileFilesError } =
-		await supabase.storage
-			.from(USER_PROFILE_STORAGE_NAME)
-			.list(`public/${userId}`);
+		await r2Helpers.listObjects("recollect", `user_profile/public/${userId}/`);
+
 	const userProfileFilesToRemove = userProfileFilesData?.map(
-		(x) => `public/${userId}/${x.name}`,
+		(x) => x?.Key || "",
 	);
 
 	if (!isNull(userProfileFilesError)) {
 		response
 			.status(500)
-			.json({ data: null, error: userProfileFilesError as unknown as string });
+			.json({ data: null, error: String(userProfileFilesError) });
 		throw new Error("ERROR: userProfileFilesError");
 	}
 
 	if (!isEmpty(userProfileFilesToRemove) && !isNil(userProfileFilesToRemove)) {
-		const {
-			data: userProfileFilesDeleteData,
-			error: userProfileFilesDeleteError,
-		} = await supabase.storage
-			.from(USER_PROFILE_STORAGE_NAME)
-			.remove(userProfileFilesToRemove);
+		const { error: userProfileFilesDeleteError } =
+			await r2Helpers.deleteObjects("recollect", userProfileFilesToRemove);
 
 		if (!isNull(userProfileFilesDeleteError)) {
 			response.status(500).json({
 				data: null,
-				error: userProfileFilesDeleteError as unknown as string,
+				error: String(userProfileFilesDeleteError),
 			});
 			throw new Error("ERROR: userProfileFilesDeleteError");
 		} else {
-			log("deleted user profile files", userProfileFilesDeleteData?.length);
+			log("deleted user profile files", userProfileFilesToRemove?.length);
 		}
 	} else {
 		log("files to delete is empty : user profiles");
@@ -366,7 +348,7 @@ export default async function handler(
 	}
 
 	// all bookmarks s3 storage deletes
-	await storageDeleteLogic(supabase, userId, response);
+	await storageDeleteLogic(userId, response);
 
 	// deleting all user embeddings
 
