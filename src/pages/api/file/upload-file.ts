@@ -12,6 +12,8 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
+import imageToText from "../../../async/ai/imageToText";
+import ocr from "../../../async/ai/ocr";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type FileNameType,
@@ -64,24 +66,60 @@ const videoLogic = async (data: BodyDataType) => {
 	const ogImage = thumbnailUrl?.publicUrl;
 
 	let imgData;
+	let ocrData;
+	let imageCaption;
 	if (thumbnailUrl?.publicUrl) {
+		// Handle blurhash generation
 		try {
 			imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
 		} catch (error) {
-			log("Blur hash error", error);
-			Sentry.captureException(`Blur hash error ${error}`);
+			console.error("Blur hash generation failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "blurhash_generation",
+					thumbnailUrl: thumbnailUrl?.publicUrl,
+				},
+			});
 			imgData = {};
+		}
+
+		// Handle OCR processing
+		try {
+			ocrData = await ocr(thumbnailUrl?.publicUrl);
+		} catch (error) {
+			console.error("OCR processing failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "ocr_processing",
+					thumbnailUrl: thumbnailUrl?.publicUrl,
+				},
+			});
+			ocrData = null;
+		}
+
+		// Handle image caption generation
+		try {
+			imageCaption = await imageToText(thumbnailUrl?.publicUrl);
+		} catch (error) {
+			console.error("Image caption generation failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "image_caption_generation",
+					thumbnailUrl: thumbnailUrl?.publicUrl,
+				},
+			});
+			imageCaption = null;
 		}
 	}
 
 	const meta_data = {
-		img_caption: null,
+		img_caption: imageCaption ?? null,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
 		favIcon: null,
 		twitter_avatar_url: null,
-		ocr: null,
+		ocr: ocrData ?? null,
 		coverImage: null,
 		screenshot: null,
 	};
