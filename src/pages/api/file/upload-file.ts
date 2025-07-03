@@ -1,13 +1,8 @@
 // you might want to use regular 'fs' and not a promise one
-import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import {
-	type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
@@ -16,7 +11,6 @@ import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
-	type FileNameType,
 	type ImgMetadataType,
 	type SingleListData,
 	type UploadFileApiResponse,
