@@ -1,11 +1,25 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
+import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
-import Lightbox from "yet-another-react-lightbox";
+import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import { CustomLightBox } from "../../../components/LightBox";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
+import {
+	ALL_BOOKMARKS_URL,
+	BOOKMARKS_KEY,
+	CATEGORY_ID_PATHNAME,
+} from "../../../utils/constants";
+
+export type CustomSlide = BaseSlide & {
+	data?: {
+		type?: string;
+	};
+	placeholder?: string;
+};
 
 type PreviewLightBoxProps = {
 	id: DraggableItemProps["key"];
@@ -19,114 +33,97 @@ export const PreviewLightBox = ({
 	setOpen,
 }: PreviewLightBoxProps) => {
 	const router = useRouter();
+	const queryClient = useQueryClient();
+	const session = useSupabaseSession((state) => state.session);
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const [isClosing, setIsClosing] = useState(false);
+	const [activeIndex, setActiveIndex] = useState(-1);
+	const _previousOpenRef = useRef(open);
 
-	const renderedBookmarks = useMiscellaneousStore(
-		(store) => store.renderedBookmarks,
-	);
+	// Get bookmarks from query cache
+	const bookmarks = useMemo(() => {
+		const previousData = queryClient.getQueryData([
+			BOOKMARKS_KEY,
+			session?.user?.id,
+			CATEGORY_ID,
+			"date-sort-acending",
+		]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
 
-	const categorySlug = router.asPath.split("/")[1] ?? "uncategorized";
+		return previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
+	}, [queryClient, session?.user?.id, CATEGORY_ID]);
 
-	const currentCategoryBookmarks = useMemo(
-		() => renderedBookmarks[categorySlug] ?? [],
-		[renderedBookmarks, categorySlug],
-	);
+	// Only update activeIndex when the lightbox is being opened
+	useEffect(() => {
+		if (!bookmarks.length) return;
+		const wasOpen = _previousOpenRef.current;
 
-	const slides = useMemo(
-		() =>
-			currentCategoryBookmarks.map((bookmark: SingleListData) => {
-				const isImage = bookmark.type?.startsWith("image");
-				return {
-					key: bookmark.id,
-					src: bookmark.url,
-					...(isImage ? { type: "image" as const } : {}),
-					contentType: bookmark.type,
-				};
-			}),
-		[currentCategoryBookmarks],
-	);
-
-	const initialIndex = useMemo(
-		() =>
-			currentCategoryBookmarks.findIndex(
+		// Only set activeIndex when the lightbox is being opened
+		if (open && !wasOpen) {
+			const newIndex = bookmarks.findIndex(
 				(bookmark) => String(bookmark.id) === String(id),
-			),
-		[currentCategoryBookmarks, id],
+			);
+			if (newIndex !== -1) {
+				setActiveIndex(newIndex);
+			}
+		}
+
+		_previousOpenRef.current = open;
+	}, [open, bookmarks, id]);
+
+	// Handle close animation and cleanup
+	const handleClose = useCallback(() => {
+		if (isClosing || !open) {
+			return undefined;
+		}
+
+		setIsClosing(true);
+		setOpen(false);
+
+		// Update URL without page reload
+		// Clean up path by removing leading slashes
+		void router.push(
+			{
+				pathname: `/${CATEGORY_ID_PATHNAME}`,
+				query: {
+					category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
+				},
+			},
+			`/${router.asPath.split("/")[1]}`,
+			{ shallow: true },
+		);
+
+		// Reset state after animation
+		const timer = setTimeout(() => {
+			setIsClosing(false);
+			setActiveIndex(-1);
+		}, 300);
+
+		return () => {
+			clearTimeout(timer);
+		};
+	}, [open, isClosing, setOpen, router]);
+
+	// Clean up on unmount
+	useEffect(
+		() => () => {
+			setIsClosing(false);
+		},
+		[],
 	);
 
-	const [activeIndex, setActiveIndex] = useState(initialIndex);
-	const iframeRef = useRef<HTMLIFrameElement>(null);
-	const isResetting = useRef(false);
+	// Only render CustomLightBox when activeIndex is valid
+	if (!open || isClosing || activeIndex === -1) {
+		return null;
+	}
 
-	// Reset activeIndex to initialIndex when Lightbox opens
-	useEffect(() => {
-		if (open && initialIndex !== -1) {
-			isResetting.current = true;
-			setActiveIndex(initialIndex);
-		}
-	}, [open, initialIndex]);
-
-	// Clear isResetting after activeIndex is set
-	useEffect(() => {
-		if (isResetting.current) {
-			const timeout = setTimeout(() => {
-				isResetting.current = false;
-			}, 0);
-			return () => clearTimeout(timeout);
-		}
-
-		return undefined;
-	}, [activeIndex]);
-
-	const showNext = activeIndex < currentCategoryBookmarks.length - 1;
-	const showPrevious = activeIndex > 0;
-
-	return open ? (
-		<Lightbox
-			close={() => setOpen(false)}
-			index={activeIndex}
-			on={{
-				view: ({ index }) => {
-					if (!isResetting.current && open) setActiveIndex(index);
-				},
-			}}
-			open={open}
-			render={{
-				buttonNext: showNext ? undefined : () => null,
-				buttonPrev: showPrevious ? undefined : () => null,
-				slide: ({ slide }) => (
-					<div className="flex h-full w-full items-center justify-center">
-						{slide.type?.startsWith("image") ? (
-							<div className="relative h-full w-full max-w-[1200px]">
-								<Image
-									alt="Preview"
-									className="object-contain"
-									fill
-									src={slide.src}
-								/>
-							</div>
-						) : (
-							<div className="relative h-full w-full max-w-[1200px]">
-								<iframe
-									className="h-full w-full"
-									key={slide.src}
-									loading="lazy"
-									ref={iframeRef}
-									sandbox="allow-forms allow-popups allow-scripts"
-									src={slide.src}
-									title="Website Preview"
-								/>
-							</div>
-						)}
-					</div>
-				),
-			}}
-			slides={slides}
-			styles={{
-				container: {
-					backgroundColor: "rgba(255, 255, 255, 0.9)",
-					backdropFilter: "blur(32px)",
-				},
-			}}
+	return (
+		<CustomLightBox
+			activeIndex={activeIndex}
+			bookmarks={bookmarks}
+			handleClose={handleClose}
+			isOpen={open}
+			isPage
+			setActiveIndex={setActiveIndex}
 		/>
-	) : null;
+	);
 };
