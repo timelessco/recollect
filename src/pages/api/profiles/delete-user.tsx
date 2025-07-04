@@ -20,6 +20,7 @@ import {
 	MAIN_TABLE_NAME,
 	PROFILES,
 	SHARED_CATEGORIES_TABLE_NAME,
+	STORAGE_FILES_PATH,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 	TAG_TABLE_NAME,
@@ -104,7 +105,7 @@ const storageDeleteLogic = async (
 			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/`,
 		);
 
-	const filesToRemove = bookmarksStorageFiles?.map((x) => x?.Key || "");
+	const filesToRemove = bookmarksStorageFiles?.map((x) => x?.Key ?? "");
 
 	if (!isNull(bookmarksStorageError)) {
 		response
@@ -141,7 +142,7 @@ const storageDeleteLogic = async (
 	);
 
 	const filesToRemoveScreenshot = bookmarksStorageScreenshotFiles?.map(
-		(x) => x?.Key || "",
+		(x) => x?.Key ?? "",
 	);
 
 	if (!isNull(bookmarksStorageScreenshotError)) {
@@ -172,9 +173,12 @@ const storageDeleteLogic = async (
 	// files storage delete
 
 	const { data: filesStorageData, error: filesStorageDataError } =
-		await r2Helpers.listObjects("recollect", `files/public/${userId}/`);
+		await r2Helpers.listObjects(
+			"recollect",
+			`${STORAGE_FILES_PATH}/${userId}/`,
+		);
 
-	const filesStorageFilesToRemove = filesStorageData?.map((x) => x?.Key || "");
+	const filesStorageFilesToRemove = filesStorageData?.map((x) => x?.Key ?? "");
 
 	if (!isNull(filesStorageDataError)) {
 		response
@@ -210,7 +214,7 @@ const storageDeleteLogic = async (
 		await r2Helpers.listObjects("recollect", `user_profile/public/${userId}/`);
 
 	const userProfileFilesToRemove = userProfileFilesData?.map(
-		(x) => x?.Key || "",
+		(x) => x?.Key ?? "",
 	);
 
 	if (!isNull(userProfileFilesError)) {

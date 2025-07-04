@@ -14,6 +14,7 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
+	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
 	videoFileTypes,
@@ -93,7 +94,7 @@ export default function useFileUploadOptimisticMutation() {
 			const { data: uploadTokenData, error } =
 				await r2Helpers.createSignedUploadUrl(
 					"recollect",
-					`files/public/${session?.user?.id}/${uploadFileNamePath}`,
+					`${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`,
 				);
 
 			// Upload file using presigned URL

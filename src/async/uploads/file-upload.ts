@@ -1,9 +1,8 @@
-import { decode } from "base64-arraybuffer";
 import uniqid from "uniqid";
 
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { acceptedFileTypes } from "../../utils/constants";
+import { acceptedFileTypes, STORAGE_FILES_PATH } from "../../utils/constants";
 import {
 	generateVideoThumbnail,
 	parseUploadFileName,
@@ -64,7 +63,7 @@ export const fileUpload = async (
 							const { data: uploadTokenData, error } =
 								await r2Helpers.createSignedUploadUrl(
 									"recollect",
-									`files/public/${userId}/${thumbnailFileName}`,
+									`${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`,
 								);
 
 							if (uploadTokenData?.signedUrl && !error) {
@@ -92,7 +91,7 @@ export const fileUpload = async (
 									);
 
 									if (uploadResponse.ok) {
-										thumbnailPath = `files/public/${userId}/${thumbnailFileName}`;
+										thumbnailPath = `${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`;
 									}
 								} catch (uploadError) {
 									console.error("Thumbnail upload error:", uploadError);

@@ -44,7 +44,7 @@ export const r2Helpers = {
 
 		try {
 			const response = await r2Client.send(command);
-			return { data: response.Contents || [], error: null };
+			return { data: response.Contents ?? [], error: null };
 		} catch (error) {
 			return { data: null, error };
 		}
@@ -98,7 +98,7 @@ export const r2Helpers = {
 
 		try {
 			const response = await r2Client.send(command);
-			return { data: response.Deleted || [], error: null };
+			return { data: response.Deleted ?? [], error: null };
 		} catch (error) {
 			return { data: null, error };
 		}

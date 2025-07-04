@@ -2,12 +2,8 @@
 import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import {
-	type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { IncomingForm } from "formidable";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
@@ -17,13 +13,12 @@ import {
 	type FileNameType,
 	type ImgMetadataType,
 	type SingleListData,
-	type UploadFileApiResponse,
 } from "../../../../../../types/apiTypes";
 import {
-	FILES_STORAGE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../../../../utils/constants";
 import { blurhashFromURL } from "../../../../../../utils/getBlurHash";
@@ -69,7 +64,7 @@ const videoLogic = async (
 	}
 
 	// Move thumbnail from temp location to final location
-	const finalThumbnailPath = `files/public/${userId}/thumbnail-${fileName}.png`;
+	const finalThumbnailPath = `${STORAGE_FILES_PATH}/${userId}/thumbnail-${fileName}.png`;
 
 	// For R2, we need to copy the object manually by getting and uploading
 	// First get the object from temp location
@@ -160,7 +155,7 @@ export default async (
 
 	const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
 	// if the uploaded file is valid this happens
-	const storagePath = `files/public/${userId}/${uploadPath}`;
+	const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
 
 	if (
 		Number.parseInt(categoryId as string, 10) !== 0 &&

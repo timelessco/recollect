@@ -19,6 +19,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
@@ -148,7 +149,7 @@ export default async (
 
 	const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
 	// if the uploaded file is valid this happens
-	const storagePath = `files/public/${userId}/${uploadPath}`;
+	const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
 
 	if (
 		Number.parseInt(categoryId as string, 10) !== 0 &&

@@ -16,6 +16,7 @@ export const STORAGE_SCRAPPED_IMAGES_PATH =
 	BOOKMAKRS_STORAGE_NAME + "/public/scrapped_imgs";
 export const STORAGE_SCREENSHOT_IMAGES_PATH =
 	BOOKMAKRS_STORAGE_NAME + "/public/screenshot_imgs";
+export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 
 // regx
 

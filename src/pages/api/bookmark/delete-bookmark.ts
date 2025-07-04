@@ -13,6 +13,7 @@ import {
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	MAIN_TABLE_NAME,
+	STORAGE_FILES_PATH,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
@@ -129,7 +130,7 @@ export default async function handler(
 			Math.max(0, item?.ogImage.lastIndexOf("/") + 1),
 		);
 
-		return `files/public/${userId}/${name}`;
+		return `${STORAGE_FILES_PATH}/${userId}/${name}`;
 	});
 
 	const { error: fileStorageError } = await r2Helpers.deleteObjects(
@@ -141,7 +142,7 @@ export default async function handler(
 	// for this we get name from the url as the ogImage will only have the video thumbnail name
 	const deleteFileVideoPaths = apiData?.deleteData?.map((item) => {
 		const name = item?.url?.slice(Math.max(0, item?.url.lastIndexOf("/") + 1));
-		return `files/public/${userId}/${name}`;
+		return `${STORAGE_FILES_PATH}/${userId}/${name}`;
 	});
 
 	const { error: fileVideoStorageError } = await r2Helpers.deleteObjects(

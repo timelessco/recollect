@@ -44,7 +44,7 @@ export default async function handler(
 
 		// remove from bucket
 
-		await deleteLogic(supabase, response, userId);
+		await deleteLogic(response, userId);
 
 		response.status(200).json({ data: removeData, error: null });
 	} else {
