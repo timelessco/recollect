@@ -1,43 +1,36 @@
 // you might want to use regular 'fs' and not a promise one
-import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import {
-	type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
+import imageToText from "../../../async/ai/imageToText";
+import ocr from "../../../async/ai/ocr";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
-	type FileNameType,
 	type ImgMetadataType,
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import {
-	FILES_STORAGE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-// import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
 	apiCookieParser,
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../utils/helpers";
+import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
-
-type StorageDataType = {
-	publicUrl: string;
-};
 
 type BodyDataType = {
 	category_id: string;
@@ -53,67 +46,75 @@ This gets the public URL from the thumbnail path uploaded by the client
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
 Image caption is not generated for the thumbnail 
 */
-const videoLogic = async (
-	data: BodyDataType,
-	userId: SingleListData["user_id"]["id"],
-	fileName: FileNameType,
-	supabase: SupabaseClient,
-) => {
-	// Get the thumbnail path from the client-side upload
+const videoLogic = async (data: BodyDataType) => {
+	// Since thumbnails are now uploaded client-side, we just need to get the thumbnail URL
+	// The thumbnailPath in data should now be the actual path in R2
 	const thumbnailPath = data?.thumbnailPath;
 
 	if (!thumbnailPath) {
 		throw new Error("ERROR: thumbnailPath is missing for video file");
 	}
 
-	// Move thumbnail from temp location to final location
-	const finalThumbnailPath = `public/${userId}/thumbnail-${fileName}.png`;
-
-	// Copy the thumbnail from temp to final location
-	const { error: copyError } = await supabase.storage
-		.from(FILES_STORAGE_NAME)
-		.copy(thumbnailPath, finalThumbnailPath);
-
-	if (!isNil(copyError)) {
-		console.error(`ERROR: copyError ${copyError?.message}`);
-	}
-
-	// Delete the temp thumbnail
-	await supabase.storage.from(FILES_STORAGE_NAME).remove([thumbnailPath]);
-
-	// Get the public URL for the final thumbnail
-	const { data: thumbnailUrl, error: thumbnailUrlError } = supabase.storage
-		.from(FILES_STORAGE_NAME)
-		.getPublicUrl(finalThumbnailPath) as {
-		data: StorageDataType;
-		error: UploadFileApiResponse["error"];
-	};
-
-	if (!isNil(thumbnailUrlError)) {
-		throw new Error(`ERROR: thumbnailUrlError ${thumbnailUrlError?.toString}`);
-	}
+	// Get the public URL for the uploaded thumbnail
+	const { data: thumbnailUrl } = r2Helpers.getPublicUrl(thumbnailPath);
 
 	const ogImage = thumbnailUrl?.publicUrl;
 
 	let imgData;
+	let ocrData;
+	let imageCaption;
 	if (thumbnailUrl?.publicUrl) {
+		// Handle blurhash generation
 		try {
 			imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
 		} catch (error) {
-			log("Blur hash error", error);
-			Sentry.captureException(`Blur hash error ${error}`);
+			console.error("Blur hash generation failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "blurhash_generation",
+					thumbnailUrl: thumbnailUrl?.publicUrl,
+				},
+			});
 			imgData = {};
+		}
+
+		// Handle OCR processing
+		try {
+			ocrData = await ocr(thumbnailUrl?.publicUrl);
+		} catch (error) {
+			console.error("OCR processing failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "ocr_processing",
+					thumbnailUrl: thumbnailUrl?.publicUrl,
+				},
+			});
+			ocrData = null;
+		}
+
+		// Handle image caption generation
+		try {
+			imageCaption = await imageToText(thumbnailUrl?.publicUrl);
+		} catch (error) {
+			console.error("Image caption generation failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "image_caption_generation",
+					thumbnailUrl: thumbnailUrl?.publicUrl,
+				},
+			});
+			imageCaption = null;
 		}
 	}
 
 	const meta_data = {
-		img_caption: null,
+		img_caption: imageCaption ?? null,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
 		favIcon: null,
 		twitter_avatar_url: null,
-		ocr: null,
+		ocr: ocrData ?? null,
 		coverImage: null,
 		screenshot: null,
 	};
@@ -148,7 +149,7 @@ export default async (
 
 	const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
 	// if the uploaded file is valid this happens
-	const storagePath = `public/${userId}/${uploadPath}`;
+	const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
 
 	if (
 		Number.parseInt(categoryId as string, 10) !== 0 &&
@@ -175,12 +176,8 @@ export default async (
 
 	// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
 	// the public url for the uploaded file is got
-	const { data: storageData, error: publicUrlError } = supabase.storage
-		.from(FILES_STORAGE_NAME)
-		.getPublicUrl(storagePath) as {
-		data: StorageDataType;
-		error: UploadFileApiResponse["error"];
-	};
+	const { data: storageData, error: publicUrlError } =
+		r2Helpers.getPublicUrl(storagePath);
 
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
@@ -206,12 +203,7 @@ export default async (
 		// meta_data = metaData;
 	} else {
 		// if file is a video
-		const { ogImage: image, meta_data: metaData } = await videoLogic(
-			data,
-			userId as string,
-			uploadPath,
-			supabase,
-		);
+		const { ogImage: image, meta_data: metaData } = await videoLogic(data);
 
 		ogImage = image;
 		meta_data = metaData;

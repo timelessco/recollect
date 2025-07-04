@@ -2,6 +2,11 @@
 
 import { promises as fileSystem } from "fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
+import {
+	DeleteObjectCommand,
+	ListBucketsCommand,
+	ListObjectsV2Command,
+} from "@aws-sdk/client-s3";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
@@ -16,6 +21,7 @@ import {
 } from "../../../types/apiTypes";
 import { PROFILES, USER_PROFILE_STORAGE_NAME } from "../../../utils/constants";
 import { parseUploadFileName } from "../../../utils/helpers";
+import { r2Client, r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
@@ -27,39 +33,51 @@ export const config = {
 
 // deletes all current profile pic in the users profile pic bucket
 export const deleteLogic = async (
-	supabase: SupabaseClient,
 	response: NextApiResponse,
 	userId: ProfilesTableTypes["id"],
 ) => {
-	const { data: list, error: listError } = await supabase.storage
-		.from(USER_PROFILE_STORAGE_NAME)
-		.list(`public/${userId}`);
+	const { data: list, error: listError } = await r2Helpers.listObjects(
+		"recollect",
+		`user_profile/public/${userId}/`,
+	);
 
 	if (!isNull(listError)) {
 		response.status(500).json({
 			success: false,
-			error: listError,
+			error: String(listError),
 		});
-		throw new Error("ERROR: list error");
+		throw new Error("ERROR: list error!!");
 	}
 
 	const filesToRemove =
-		!isEmpty(list) && list
-			? list?.map((x) => `public/${userId}/${x.name}`)
-			: [];
+		!isEmpty(list) && list ? list?.map((x) => `${x.Key}`) : [];
 
 	if (!isNil(filesToRemove) && !isEmpty(filesToRemove)) {
-		const { error: removeError } = await supabase.storage
-			.from(USER_PROFILE_STORAGE_NAME)
-			.remove(filesToRemove);
+		const { error: deleteError } = await r2Helpers.deleteObjects(
+			"recollect",
+			filesToRemove,
+		);
 
-		if (!isNil(removeError)) {
+		if (!isNil(deleteError)) {
 			response.status(500).json({
 				success: false,
-				error: removeError,
+				error: String(deleteError),
 			});
-			throw new Error("ERROR: remove error");
+			throw new Error("ERROR: delete error");
 		}
+	}
+
+	const { error: folderDeleteError } = await r2Helpers.deleteObjects(
+		"recollect",
+		[`user_profile/public/${userId}/`],
+	);
+
+	if (!isNil(folderDeleteError)) {
+		response.status(500).json({
+			success: false,
+			error: String(folderDeleteError),
+		});
+		throw new Error("ERROR: folder delete error");
 	}
 };
 
@@ -105,34 +123,31 @@ export default async (
 	const fileType = data?.files?.file?.[0]?.mimetype;
 
 	if (contents) {
-		await deleteLogic(supabase, response, userId);
-		const { error: storageError } = await supabase.storage
-			.from(USER_PROFILE_STORAGE_NAME)
-			.upload(`public/${userId}/${fileName}`, decode(contents), {
-				contentType: fileType,
-				upsert: true,
-			});
+		await deleteLogic(response, userId);
+		const { error: storageError } = await r2Helpers.uploadObject(
+			"recollect",
+			`user_profile/public/${userId}/${fileName}`,
+			new Uint8Array(decode(contents)),
+			fileType,
+		);
 
 		if (!isNil(storageError)) {
 			response.status(500).json({
 				success: false,
-				error: storageError,
+				error: String(storageError),
 			});
 
 			throw new Error("ERROR: storage error");
 		}
 
-		const { data: storageData, error: publicUrlError } = supabase.storage
-			.from(USER_PROFILE_STORAGE_NAME)
-			.getPublicUrl(`public/${userId}/${fileName}`) as {
-			data: { publicUrl: string };
-			error: UploadProfilePicApiResponse["error"];
-		};
+		const { data: storageData, error: publicUrlError } = r2Helpers.getPublicUrl(
+			`user_profile/public/${userId}/${fileName}`,
+		);
 
 		if (!isNil(publicUrlError)) {
 			response.status(500).json({
 				success: false,
-				error: publicUrlError as unknown as string,
+				error: String(publicUrlError),
 			});
 
 			throw new Error("ERROR: public url error");

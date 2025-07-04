@@ -328,6 +328,7 @@ export type UploadFileApiPayload = {
 export type DeleteBookmarkPayload = {
 	deleteData: Array<{
 		id: SingleListData["id"];
+		meta_data: SingleListData["meta_data"];
 		ogImage: SingleListData["ogImage"];
 		title: SingleListData["title"];
 		url: SingleListData["url"];

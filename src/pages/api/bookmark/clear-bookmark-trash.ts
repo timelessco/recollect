@@ -69,6 +69,7 @@ export default async function handler(
 		}: {
 			data: Array<{
 				id: SingleListData["id"];
+				meta_data: SingleListData["meta_data"];
 				ogImage: SingleListData["ogImage"];
 				title: SingleListData["title"];
 				url: SingleListData["url"];
@@ -76,7 +77,7 @@ export default async function handler(
 			error: PostgrestError | VerifyErrors | string | null;
 		} = await supabase
 			.from(MAIN_TABLE_NAME)
-			.select(`id, ogImage, title, url`)
+			.select(`id, ogImage, title, url, meta_data`)
 			.eq("user_id", userId)
 			.match({ trash: true });
 

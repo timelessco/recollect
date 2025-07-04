@@ -11,10 +11,10 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
-	FILES_STORAGE_NAME,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
+	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
 	videoFileTypes,
@@ -24,7 +24,7 @@ import {
 	fileTypeIdentifier,
 	parseUploadFileName,
 } from "../../../utils/helpers";
-import { createClient } from "../../../utils/supabaseClient";
+import { r2Helpers } from "../../../utils/r2Client";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
 
@@ -33,7 +33,6 @@ export default function useFileUploadOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const supabase = createClient();
 
 	const { sortBy } = useGetSortBy();
 
@@ -90,41 +89,39 @@ export default function useFileUploadOptimisticMutation() {
 			);
 
 			const uploadFileNamePath = data?.uploadFileNamePath;
-			/* Vercel has a limit where we cannot send files that are more than 4.5mb to 
-				server less functions https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions.
-				Because of this constraint we are uploading the resource in the client side itself
-			*/
 
-			// generate signed url to make the upload more secure as its taking place in client side
-			const { data: uploadTokenData, error } = await supabase.storage
-				.from(FILES_STORAGE_NAME)
-				.createSignedUploadUrl(
-					`public/${session?.user?.id}/${uploadFileNamePath}`,
+			// Generate presigned URL for secure client-side upload
+			const { data: uploadTokenData, error } =
+				await r2Helpers.createSignedUploadUrl(
+					"recollect",
+					`${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`,
 				);
 
-			// if this is true only then upload the file to s3
-			const errorCondition =
-				isNull(error) || error?.message === "The resource already exists";
+			// Upload file using presigned URL
+			const errorCondition = isNull(error);
 
-			if (uploadTokenData?.token && errorCondition) {
-				// the token will not be there if the resource is alredy present in the bucket
-				// if the resource is not there then we upload via the token
-				// we get this uploaded file in the api with the help of file name, thus we are not sending the uploaded response to the api from the client side
-				const { error: uploadError } = await supabase.storage
-					.from(FILES_STORAGE_NAME)
-					.uploadToSignedUrl(
-						`public/${session?.user?.id}/${uploadFileNamePath}`,
-						uploadTokenData?.token,
-						data?.file,
-					);
+			if (uploadTokenData?.signedUrl && errorCondition) {
+				try {
+					const uploadResponse = await fetch(uploadTokenData.signedUrl, {
+						method: "PUT",
+						body: data?.file,
+						headers: {
+							"Content-Type": data?.file?.type || "application/octet-stream",
+						},
+					});
 
-				if (uploadError?.message) {
-					errorToast(uploadError?.message);
+					if (!uploadResponse.ok) {
+						const errorMessage = `Upload failed with status: ${uploadResponse.status}`;
+						errorToast(errorMessage);
+					}
+				} catch (uploadError) {
+					console.error("Upload error:", uploadError);
+					errorToast("Upload failed");
 				}
 			}
 
 			if (!errorCondition) {
-				errorToast(error?.message);
+				errorToast("Failed to create upload URL");
 			}
 
 			// Return a context object with the snapshotted value

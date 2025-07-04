@@ -12,8 +12,11 @@ export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
 
-export const STORAGE_SCRAPPED_IMAGES_PATH = "public/scrapped_imgs";
-export const STORAGE_SCREENSHOT_IMAGES_PATH = "public/screenshot_imgs";
+export const STORAGE_SCRAPPED_IMAGES_PATH =
+	BOOKMAKRS_STORAGE_NAME + "/public/scrapped_imgs";
+export const STORAGE_SCREENSHOT_IMAGES_PATH =
+	BOOKMAKRS_STORAGE_NAME + "/public/screenshot_imgs";
+export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 
 // regx
 

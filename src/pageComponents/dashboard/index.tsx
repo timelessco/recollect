@@ -56,6 +56,7 @@ import {
 	type BookmarksTagData,
 	type BookmarkViewDataTypes,
 	type CategoriesData,
+	type ImgMetadataType,
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
@@ -1225,6 +1226,7 @@ const Dashboard = () => {
 								title: delBookmarkTitle,
 								ogImage: delBookmarkImgLink,
 								url: delBookmarkUrl,
+								meta_data: delBookmarkData?.meta_data as ImgMetadataType,
 							};
 						});
 
