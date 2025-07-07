@@ -74,6 +74,10 @@ export default async function handler(
 ) {
 	const { url, favIcon, id } = request.body;
 
+	const BETTER_OG_IMAGE = PREFER_OG_IMAGES.some(
+		(word) => request.body.url?.includes(word),
+	);
+
 	if (!id) {
 		response
 			.status(500)
@@ -214,7 +218,7 @@ export default async function handler(
 	let imageCaption = null;
 
 	let imageUrlForMetaDataGeneration;
-	if (PREFER_OG_IMAGES.some((word) => request.body.url?.includes(word))) {
+	if (BETTER_OG_IMAGE) {
 		imageUrlForMetaDataGeneration = uploadedCoverImageUrl;
 	} else {
 		// generat meta data (ocr, blurhash data, imgcaption)
@@ -239,7 +243,7 @@ export default async function handler(
 		}
 
 		try {
-			if (PREFER_OG_IMAGES.some((word) => request.body.url?.includes(word))) {
+			if (BETTER_OG_IMAGE) {
 				// Get OCR using the centralized function
 				imageOcrValue = await ocr(currentData?.meta_data?.screenshot);
 
