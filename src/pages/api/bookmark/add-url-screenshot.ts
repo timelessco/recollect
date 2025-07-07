@@ -62,33 +62,30 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	let screenShotResponse;
-	let publicURL: string | null = null;
-	if (!PREFER_OG_IMAGES.some((word) => request.body.url.includes(word))) {
-		try {
-			console.error(
-				"*************************Screenshot Loading*****************************",
-			);
-			screenShotResponse = await axios.get(
-				`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
-				{
-					responseType: "arraybuffer",
-				},
-			);
-			if (screenShotResponse.status === 200) {
-				console.error("***Screenshot success**");
-			}
-		} catch {
-			console.error("Screenshot error");
-			Sentry.captureException(`Screenshot error`);
-			return;
-		}
-
-		const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
-			"base64",
+	try {
+		console.error(
+			"*************************Screenshot Loading*****************************",
 		);
-
-		publicURL = await upload(base64data, userId);
+		screenShotResponse = await axios.get(
+			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
+			{
+				responseType: "arraybuffer",
+			},
+		);
+		if (screenShotResponse.status === 200) {
+			console.error("***Screenshot success**");
+		}
+	} catch {
+		console.error("Screenshot error");
+		Sentry.captureException(`Screenshot error`);
+		return;
 	}
+
+	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
+		"base64",
+	);
+
+	const publicURL = await upload(base64data, userId);
 
 	// First, fetch the existing bookmark data to get current meta_data
 	const { data: existingBookmarkData, error: fetchError } = await supabase

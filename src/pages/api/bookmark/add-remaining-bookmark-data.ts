@@ -19,6 +19,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	MAIN_TABLE_NAME,
+	PREFER_OG_IMAGES,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
@@ -212,12 +213,17 @@ export default async function handler(
 	let imageOcrValue = null;
 	let imageCaption = null;
 
-	// generat meta data (ocr, blurhash data, imgcaption)
-	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
-		? uploadedImageThatIsAUrl
-		: !isNil(currentData?.meta_data?.screenshot)
-		? currentData?.meta_data?.screenshot
-		: uploadedCoverImageUrl;
+	let imageUrlForMetaDataGeneration;
+	if (PREFER_OG_IMAGES.some((word) => request.body.url?.includes(word))) {
+		imageUrlForMetaDataGeneration = uploadedCoverImageUrl;
+	} else {
+		// generat meta data (ocr, blurhash data, imgcaption)
+		imageUrlForMetaDataGeneration = isUrlAnImageCondition
+			? uploadedImageThatIsAUrl
+			: !isNil(currentData?.meta_data?.screenshot)
+			? currentData?.meta_data?.screenshot
+			: uploadedCoverImageUrl;
+	}
 
 	if (!isNil(imageUrlForMetaDataGeneration)) {
 		try {
