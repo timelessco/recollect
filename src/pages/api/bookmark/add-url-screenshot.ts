@@ -63,7 +63,6 @@ export default async function handler(
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	let screenShotResponse;
 	let publicURL: string | null = null;
-	console.log(request.body.url.split("/")[2]);
 	if (!PREFER_OG_IMAGES.some((word) => request.body.url.includes(word))) {
 		try {
 			console.error(
@@ -90,6 +89,7 @@ export default async function handler(
 
 		publicURL = await upload(base64data, userId);
 	}
+
 	// First, fetch the existing bookmark data to get current meta_data
 	const { data: existingBookmarkData, error: fetchError } = await supabase
 		.from(MAIN_TABLE_NAME)

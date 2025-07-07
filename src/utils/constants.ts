@@ -264,7 +264,8 @@ export const infoValues = [
 
 export const CATEGORY_ID_PATHNAME = `/[category_id]`;
 
-//prefer og images
+// prefer og images
+
 export const PREFER_OG_IMAGES = [
 	"cosmos",
 	"pinterest",
