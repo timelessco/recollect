@@ -29,8 +29,8 @@ export const CustomLightBox = ({
 	bookmarks?: Array<{
 		id: number;
 		meta_data?: {
-			height: number;
-			width: number;
+			height: number | null;
+			width: number | null;
 		};
 		ogImage?: string | null;
 		type?: string;
