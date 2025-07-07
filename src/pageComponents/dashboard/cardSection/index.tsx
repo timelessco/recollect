@@ -516,9 +516,9 @@ const CardSection = ({
 			<Image
 				alt="img-error"
 				className={errorImgAndVideoClassName}
-				height={200}
+				height={150}
 				src="/app-svgs/errorImgPlaceholder.svg"
-				width={265}
+				width={286}
 			/>
 		);
 
