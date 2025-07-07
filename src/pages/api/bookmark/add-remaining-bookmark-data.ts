@@ -239,11 +239,19 @@ export default async function handler(
 		}
 
 		try {
-			// Get OCR using the centralized function
-			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
+			if (PREFER_OG_IMAGES.some((word) => request.body.url?.includes(word))) {
+				// Get OCR using the centralized function
+				imageOcrValue = await ocr(currentData?.meta_data?.screenshot);
 
-			// Get image caption using the centralized function
-			imageCaption = await imageToText(imageUrlForMetaDataGeneration);
+				// Get image caption using the centralized function
+				imageCaption = await imageToText(currentData?.meta_data?.screenshot);
+			} else {
+				// Get OCR using the centralized function
+				imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
+
+				// Get image caption using the centralized function
+				imageCaption = await imageToText(imageUrlForMetaDataGeneration);
+			}
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
 			Sentry.captureException(`Gemini AI processing error ${error}`);
