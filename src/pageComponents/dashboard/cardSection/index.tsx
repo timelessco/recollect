@@ -18,7 +18,6 @@ import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
-import useIsMobileView from "../../../hooks/useIsMobileView";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
@@ -33,7 +32,6 @@ import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-	useModalStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -58,7 +56,6 @@ import {
 	viewValues,
 } from "../../../utils/constants";
 import {
-	clickToOpenInNewTabLogic,
 	getBaseUrl,
 	isBookmarkAudio,
 	isBookmarkDocument,
@@ -124,7 +121,6 @@ const CardSection = ({
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
-	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
