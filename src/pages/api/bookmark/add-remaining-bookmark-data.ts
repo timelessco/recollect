@@ -72,7 +72,7 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const { url, favIcon, id } = request.body;
+	let { url, favIcon, id } = request.body;
 
 	const BETTER_OG_IMAGE = PREFER_OG_IMAGES.some(
 		(word) => request.body.url?.includes(word),
@@ -133,8 +133,21 @@ export default async function handler(
 
 	// if a url is an image, then we need to upload it to s3 and store it here
 	let uploadedImageThatIsAUrl = null;
+	const decodeWrappedUrl = (inputUrl: string): string => {
+		try {
+			const parsed = new URL(inputUrl);
+			const maybeEncoded = parsed.searchParams.get("url");
+			return maybeEncoded ? decodeURIComponent(maybeEncoded) : inputUrl;
+		} catch {
+			return inputUrl;
+		}
+	};
 
-	const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
+	const decodedUrl = decodeWrappedUrl(url);
+
+	url = decodedUrl;
+
+	const isUrlAnImage = decodedUrl?.match(URL_IMAGE_CHECK_PATTERN);
 
 	const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
 
