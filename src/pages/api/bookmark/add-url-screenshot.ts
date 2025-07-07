@@ -1,3 +1,5 @@
+import console from "console";
+import { url } from "inspector";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -17,6 +19,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	PREFER_OG_IMAGES,
 	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
@@ -59,31 +62,34 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	let screenShotResponse;
-	try {
-		console.error(
-			"*************************Screenshot Loading*****************************",
-		);
-		screenShotResponse = await axios.get(
-			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
-			{
-				responseType: "arraybuffer",
-			},
-		);
-		if (screenShotResponse.status === 200) {
-			console.error("***Screenshot success**");
+	let publicURL: string | null = null;
+	console.log(request.body.url.split("/")[2]);
+	if (!PREFER_OG_IMAGES.some((word) => request.body.url.includes(word))) {
+		try {
+			console.error(
+				"*************************Screenshot Loading*****************************",
+			);
+			screenShotResponse = await axios.get(
+				`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
+				{
+					responseType: "arraybuffer",
+				},
+			);
+			if (screenShotResponse.status === 200) {
+				console.error("***Screenshot success**");
+			}
+		} catch {
+			console.error("Screenshot error");
+			Sentry.captureException(`Screenshot error`);
+			return;
 		}
-	} catch {
-		console.error("Screenshot error");
-		Sentry.captureException(`Screenshot error`);
-		return;
+
+		const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
+			"base64",
+		);
+
+		publicURL = await upload(base64data, userId);
 	}
-
-	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
-		"base64",
-	);
-
-	const publicURL = await upload(base64data, userId);
-
 	// First, fetch the existing bookmark data to get current meta_data
 	const { data: existingBookmarkData, error: fetchError } = await supabase
 		.from(MAIN_TABLE_NAME)
