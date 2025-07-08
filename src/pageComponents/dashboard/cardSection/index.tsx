@@ -552,19 +552,6 @@ const CardSection = ({
 						{img ? (
 							documentFileTypes?.includes(type) ? (
 								<PDFThumbnail className={imgClassName} pdfUrl={img} />
-							) : cardTypeCondition === viewValues.moodboard ? (
-								<div className="pointer-events-none relative aspect-[4/3] w-full">
-									<Image
-										alt="bookmark-img"
-										className={`${imgClassName} object-cover`}
-										fill
-										{...(blurSource
-											? { placeholder: "blur", blurDataURL: blurSource }
-											: { placeholder: "empty" })}
-										onError={() => setErrorImgs([id as never, ...errorImgs])}
-										src={img}
-									/>
-								</div>
 							) : (
 								<Image
 									alt="bookmark-img"
