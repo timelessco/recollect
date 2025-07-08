@@ -11,6 +11,8 @@ import { flatten, isNil, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
+import { domMax, LazyMotion } from "motion/react";
+import * as motion from "motion/react-m";
 import { Item } from "react-stately";
 
 import ReadMore from "../../../components/readmore";
@@ -509,7 +511,7 @@ const CardSection = ({
 		});
 
 		const errorImgPlaceholder = (
-			<Image
+			<motion.img
 				alt="img-error"
 				className={errorImgAndVideoClassName}
 				height={150}
@@ -521,7 +523,7 @@ const CardSection = ({
 		const imgLogic = () => {
 			if (hasCoverImg) {
 				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
-					return <div className={loaderClassName} />;
+					return <motion.div className={loaderClassName} />;
 				}
 
 				if (errorImgs?.includes(id as never)) {
@@ -600,16 +602,18 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<figure className={figureClassName}>
-					{isVideo && (
-						<PlayIcon
-							className={playSvgClassName}
-							onPointerDown={(event) => event.stopPropagation()}
-						/>
-					)}
-					{isAudio && <AudioIcon className={playSvgClassName} />}
-					{imgLogic()}
-				</figure>
+				<LazyMotion features={domMax}>
+					<motion.figure className={figureClassName} layout>
+						{isVideo && (
+							<PlayIcon
+								className={playSvgClassName}
+								onPointerDown={(event) => event.stopPropagation()}
+							/>
+						)}
+						{isAudio && <AudioIcon className={playSvgClassName} />}
+						{imgLogic()}
+					</motion.figure>
+				</LazyMotion>
 			</div>
 		);
 	};
