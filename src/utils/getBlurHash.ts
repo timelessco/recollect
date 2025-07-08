@@ -45,51 +45,45 @@ export const blurhashFromURL = async (
 	let returnedBuffer;
 	let width;
 
-	// if (offline) {
-	// 	const fs = await import("fs");
-	// 	const { width: localWidth, height: localHeight } = sizeOf(source);
-	// 	width = localWidth;
-	// 	height = localHeight;
-	// 	returnedBuffer = await sharp(fs.readFileSync(source)).toBuffer();
-	// } else {
-	// 	const response = await fetch(source);
-	// 	const arrayBuffer = await response.arrayBuffer();
-	// 	returnedBuffer = Buffer.from(arrayBuffer);
+	if (offline) {
+		const fs = await import("fs");
+		const { width: localWidth, height: localHeight } = sizeOf(source);
+		width = localWidth;
+		height = localHeight;
+		returnedBuffer = await sharp(fs.readFileSync(source)).toBuffer();
+	} else {
+		const response = await fetch(source);
+		const arrayBuffer = await response.arrayBuffer();
+		returnedBuffer = Buffer.from(arrayBuffer);
 
-	// 	const { width: remoteWidth, height: remoteHeight } = sizeOf(returnedBuffer);
-	// 	width = remoteWidth;
-	// 	height = remoteHeight;
-	// }
+		const { width: remoteWidth, height: remoteHeight } = sizeOf(returnedBuffer);
+		width = remoteWidth;
+		height = remoteHeight;
+	}
 
-	// const { info, data } = await sharp(returnedBuffer)
-	// 	.resize(size, size, {
-	// 		fit: "inside",
-	// 	})
-	// 	.ensureAlpha()
-	// 	.raw()
-	// 	.toBuffer({
-	// 		resolveWithObject: true,
-	// 	});
+	const { info, data } = await sharp(returnedBuffer)
+		.resize(size, size, {
+			fit: "inside",
+		})
+		.ensureAlpha()
+		.raw()
+		.toBuffer({
+			resolveWithObject: true,
+		});
 
-	// const encoded = encode(
-	// 	new Uint8ClampedArray(data),
-	// 	info.width,
-	// 	info.height,
-	// 	4,
-	// 	4,
-	// );
+	const encoded = encode(
+		new Uint8ClampedArray(data),
+		info.width,
+		info.height,
+		4,
+		4,
+	);
 
-	// const output: IOutput = {
-	// 	encoded,
-	// 	width,
-	// 	height,
-	// };
-
-	// return output;
-
-	return {
-		encoded: "",
-		height: undefined,
-		width: undefined,
+	const output: IOutput = {
+		encoded,
+		width,
+		height,
 	};
+
+	return output;
 };
