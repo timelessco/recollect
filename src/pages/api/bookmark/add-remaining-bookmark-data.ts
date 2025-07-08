@@ -149,7 +149,11 @@ export default async function handler(
 
 	url = decodedUrl;
 
-	const isUrlAnImage = decodedUrl?.match(URL_IMAGE_CHECK_PATTERN);
+	const headResponse = await axios.head(url, { timeout: 5_000 });
+
+	const contentType = headResponse?.headers?.["content-type"];
+
+	const isUrlAnImage = contentType?.startsWith("image/");
 
 	const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
 

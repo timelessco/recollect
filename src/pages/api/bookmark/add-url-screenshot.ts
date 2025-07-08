@@ -19,7 +19,6 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
-	PREFER_OG_IMAGES,
 	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
