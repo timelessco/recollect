@@ -21,10 +21,9 @@ import {
 	MAIN_TABLE_NAME,
 	PREFER_OG_IMAGES,
 	STORAGE_SCRAPPED_IMAGES_PATH,
-	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { getBaseUrl } from "../../../utils/helpers";
+import { checkIsUrlAnImage, getBaseUrl } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -149,12 +148,9 @@ export default async function handler(
 
 	url = decodedUrl;
 
-	const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
+	const isUrlAnImage = await checkIsUrlAnImage(url);
 
-	const isUrlAnImageCondition =
-		!isNil(isUrlOfMimeType) && !isEmpty(isUrlOfMimeType);
-
-	if (isUrlAnImageCondition) {
+	if (isUrlAnImage) {
 		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to s3
 		try {
 			// Download the image from the URL
@@ -238,7 +234,7 @@ export default async function handler(
 		imageUrlForMetaDataGeneration = uploadedCoverImageUrl;
 	} else {
 		// generat meta data (ocr, blurhash data, imgcaption)
-		imageUrlForMetaDataGeneration = isUrlAnImageCondition
+		imageUrlForMetaDataGeneration = isUrlAnImage
 			? uploadedImageThatIsAUrl
 			: !isNil(currentData?.meta_data?.screenshot)
 			? currentData?.meta_data?.screenshot

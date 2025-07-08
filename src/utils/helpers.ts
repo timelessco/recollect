@@ -1,3 +1,4 @@
+import axios from "axios";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
@@ -291,4 +292,15 @@ export const isCurrentYear = (insertedAt: string) => {
 	const insertedYear = getYear(date);
 
 	return insertedYear === currentYear;
+};
+
+export const checkIsUrlAnImage = async (url: string) => {
+	try {
+		const headResponse = await axios.head(url, { timeout: 5_000 });
+		const contentType = headResponse?.headers?.["content-type"];
+		return contentType?.startsWith("image/") ?? false;
+	} catch (error) {
+		console.error("checkIsUrlAnImage error:", error);
+		return false;
+	}
 };
