@@ -28,10 +28,6 @@ export const CustomLightBox = ({
 	activeIndex: number;
 	bookmarks?: Array<{
 		id: number;
-		meta_data?: {
-			height: number | null;
-			width: number | null;
-		};
 		ogImage?: string | null;
 		type?: string;
 		url: string;
@@ -86,9 +82,10 @@ export const CustomLightBox = ({
 								<Image
 									alt="Preview"
 									className="h-auto max-h-[80vh] w-auto"
-									height={bookmark.meta_data?.height ?? 0}
+									height={0}
 									src={bookmark?.url}
-									width={bookmark.meta_data?.width ?? 0}
+									unoptimized
+									width={0}
 								/>
 							</div>
 						</div>
@@ -105,10 +102,8 @@ export const CustomLightBox = ({
 						</div>
 					) : (
 						<EmbedWithFallback
-							height={bookmark.meta_data?.height ?? 0}
 							placeholder={bookmark?.ogImage ?? ""}
 							src={bookmark?.url}
-							width={bookmark.meta_data?.width ?? 0}
 						/>
 					)}
 				</div>

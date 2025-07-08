@@ -2,17 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 type EmbedWithFallbackProps = {
-	height?: number;
 	placeholder?: string;
 	src: string;
-	width?: number;
 };
 
 export const EmbedWithFallback = ({
 	src,
 	placeholder,
-	height,
-	width,
 }: EmbedWithFallbackProps) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const fallbackRef = useRef<HTMLDivElement>(null);
@@ -27,10 +23,10 @@ export const EmbedWithFallback = ({
 
 			if (!fallback) return;
 
-			const viewHeight = fallback.getBoundingClientRect().height;
+			const height = fallback.getBoundingClientRect().height;
 
 			// If fallback becomes visible, assume failure
-			if (viewHeight > 0) {
+			if (height > 0) {
 				setFailed(true);
 			} else if (attempts < maxAttempts) {
 				attempts++;
@@ -49,9 +45,10 @@ export const EmbedWithFallback = ({
 					<Image
 						alt="Preview"
 						className="h-auto max-h-[80vh]  w-auto"
-						height={height ?? 0}
+						height={0}
 						src={placeholder}
-						width={width ?? 0}
+						unoptimized
+						width={0}
 					/>
 				</div>
 			</div>

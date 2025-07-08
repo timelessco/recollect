@@ -11,8 +11,6 @@ import { flatten, isNil, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
-import { domMax, LazyMotion } from "motion/react";
-import * as motion from "motion/react-m";
 import { Item } from "react-stately";
 
 import ReadMore from "../../../components/readmore";
@@ -20,6 +18,7 @@ import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
+import useIsMobileView from "../../../hooks/useIsMobileView";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
@@ -34,6 +33,7 @@ import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
+	useModalStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -58,6 +58,7 @@ import {
 	viewValues,
 } from "../../../utils/constants";
 import {
+	clickToOpenInNewTabLogic,
 	getBaseUrl,
 	isBookmarkAudio,
 	isBookmarkDocument,
@@ -123,6 +124,7 @@ const CardSection = ({
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
+	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
@@ -511,19 +513,19 @@ const CardSection = ({
 		});
 
 		const errorImgPlaceholder = (
-			<motion.img
+			<Image
 				alt="img-error"
 				className={errorImgAndVideoClassName}
-				height={150}
+				height={200}
 				src="/app-svgs/errorImgPlaceholder.svg"
-				width={286}
+				width={265}
 			/>
 		);
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
 				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
-					return <motion.div className={loaderClassName} />;
+					return <div className={loaderClassName} />;
 				}
 
 				if (errorImgs?.includes(id as never)) {
@@ -552,19 +554,6 @@ const CardSection = ({
 						{img ? (
 							documentFileTypes?.includes(type) ? (
 								<PDFThumbnail className={imgClassName} pdfUrl={img} />
-							) : cardTypeCondition === viewValues.moodboard ? (
-								<div className="pointer-events-none relative aspect-[4/3] w-full">
-									<Image
-										alt="bookmark-img"
-										className={`${imgClassName} object-cover`}
-										fill
-										{...(blurSource
-											? { placeholder: "blur", blurDataURL: blurSource }
-											: { placeholder: "empty" })}
-										onError={() => setErrorImgs([id as never, ...errorImgs])}
-										src={img}
-									/>
-								</div>
 							) : (
 								<Image
 									alt="bookmark-img"
@@ -573,7 +562,7 @@ const CardSection = ({
 									height={height ?? 200}
 									onError={() => setErrorImgs([id as never, ...errorImgs])}
 									placeholder="blur"
-									src={img}
+									src={`${img}`}
 									width={width ?? 200}
 								/>
 							)
@@ -602,18 +591,16 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<LazyMotion features={domMax}>
-					<motion.figure className={figureClassName} layout>
-						{isVideo && (
-							<PlayIcon
-								className={playSvgClassName}
-								onPointerDown={(event) => event.stopPropagation()}
-							/>
-						)}
-						{isAudio && <AudioIcon className={playSvgClassName} />}
-						{imgLogic()}
-					</motion.figure>
-				</LazyMotion>
+				<figure className={figureClassName}>
+					{isVideo && (
+						<PlayIcon
+							className={playSvgClassName}
+							onPointerDown={(event) => event.stopPropagation()}
+						/>
+					)}
+					{isAudio && <AudioIcon className={playSvgClassName} />}
+					{imgLogic()}
+				</figure>
 			</div>
 		);
 	};
