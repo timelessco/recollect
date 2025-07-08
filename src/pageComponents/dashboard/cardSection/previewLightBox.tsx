@@ -103,7 +103,20 @@ export const PreviewLightBox = ({
 		};
 	}, [open, isClosing, setOpen, router]);
 
-	// Clean up on unmount
+	// using window event listener to handle browser back button for now
+	useEffect(() => {
+		const handlePopState = () => {
+			if (open) {
+				handleClose();
+			}
+		};
+
+		window.addEventListener("popstate", handlePopState);
+		return () => {
+			window.removeEventListener("popstate", handlePopState);
+		};
+	}, [open, handleClose]);
+
 	useEffect(
 		() => () => {
 			setIsClosing(false);

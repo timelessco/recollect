@@ -46,6 +46,7 @@ export const CustomLightBox = ({
 }) => {
 	const router = useRouter();
 	const [isSidepaneOpen, setIsSidepaneOpen] = useState(false);
+	const [showControls, setShowControls] = useState(false);
 
 	const toggleSidepane = useCallback(() => {
 		setIsSidepaneOpen((previous) => !previous);
@@ -92,10 +93,15 @@ export const CustomLightBox = ({
 							</div>
 						) : bookmark?.type?.startsWith("video") ? (
 							<div className="flex h-full w-full items-center justify-center ">
-								<div className="relative w-full max-w-4xl">
+								<div
+									className="relative w-full max-w-4xl"
+									onMouseEnter={() => setShowControls(true)}
+									onMouseLeave={() => setShowControls(false)}
+								>
 									<video
+										autoPlay
 										className="h-full max-h-[70vh] w-full object-contain"
-										controls
+										controls={showControls}
 										src={bookmark?.url}
 									>
 										<track kind="captions" src="" />
@@ -213,7 +219,7 @@ export const CustomLightBox = ({
 				</div>
 			);
 		},
-		[bookmarks, isSidepaneOpen, slides, toggleSidepane],
+		[bookmarks, isSidepaneOpen, slides, toggleSidepane, showControls],
 	);
 
 	return (
