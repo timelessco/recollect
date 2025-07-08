@@ -70,6 +70,7 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import ListBox from "./listBox";
+import PDFThumbnail from "./PDFThumbnail";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
