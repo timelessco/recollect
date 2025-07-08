@@ -37,6 +37,16 @@ type Data = {
 // this uploads all the remaining bookmark data
 // these data are blur hash and s3 uploads
 
+const decodeWrappedUrl = (inputUrl: string): string => {
+	try {
+		const parsed = new URL(inputUrl);
+		const maybeEncoded = parsed.searchParams.get("url");
+		return maybeEncoded ? decodeURIComponent(maybeEncoded) : inputUrl;
+	} catch {
+		return inputUrl;
+	}
+};
+
 const upload = async (
 	base64info: string,
 	userIdForStorage: ProfilesTableTypes["id"],
@@ -72,7 +82,8 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	let { url, favIcon, id } = request.body;
+	let { url } = request.body;
+	const { favIcon, id } = request.body;
 
 	const BETTER_OG_IMAGE = PREFER_OG_IMAGES.some(
 		(word) => request.body.url?.includes(word),
@@ -133,15 +144,6 @@ export default async function handler(
 
 	// if a url is an image, then we need to upload it to s3 and store it here
 	let uploadedImageThatIsAUrl = null;
-	const decodeWrappedUrl = (inputUrl: string): string => {
-		try {
-			const parsed = new URL(inputUrl);
-			const maybeEncoded = parsed.searchParams.get("url");
-			return maybeEncoded ? decodeURIComponent(maybeEncoded) : inputUrl;
-		} catch {
-			return inputUrl;
-		}
-	};
 
 	const decodedUrl = decodeWrappedUrl(url);
 
