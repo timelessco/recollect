@@ -149,13 +149,10 @@ export default async function handler(
 
 	url = decodedUrl;
 
-	const headResponse = await axios.head(url, { timeout: 5_000 });
+	const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
 
-	const contentType = headResponse?.headers?.["content-type"];
-
-	const isUrlAnImage = contentType?.startsWith("image/");
-
-	const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
+	const isUrlAnImageCondition =
+		!isNil(isUrlOfMimeType) && !isEmpty(isUrlOfMimeType);
 
 	if (isUrlAnImageCondition) {
 		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to s3
