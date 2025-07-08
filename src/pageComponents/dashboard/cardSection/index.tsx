@@ -536,13 +536,10 @@ const CardSection = ({
 
 				let blurSource = "";
 
-				if (
-					!isNil(img) &&
-					!isNil(blurUrl) &&
-					!isEmpty(blurUrl) &&
-					!isPublicPage
-				) {
-					const pixels = decode(blurUrl, 32, 32);
+				if (!isNil(img)) {
+					const blurHash = blurUrl ?? "";
+					const hashToUse = !isEmpty(blurHash) ? blurHash : defaultBlur;
+					const pixels = decode(hashToUse, 32, 32);
 					const image = getImgFromArr(pixels, 32, 32);
 					blurSource = image.src;
 				}
