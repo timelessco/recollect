@@ -45,7 +45,7 @@ export const CustomLightBox = ({
 	setActiveIndex: (index: number) => void;
 }) => {
 	const router = useRouter();
-	const [isSidepaneOpen, setIsSidepaneOpen] = useState(true);
+	const [isSidepaneOpen, setIsSidepaneOpen] = useState(false);
 
 	const toggleSidepane = useCallback(() => {
 		setIsSidepaneOpen((previous) => !previous);

@@ -96,7 +96,7 @@ export const PreviewLightBox = ({
 		const timer = setTimeout(() => {
 			setIsClosing(false);
 			setActiveIndex(-1);
-		}, 300);
+		}, 50);
 
 		return () => {
 			clearTimeout(timer);
