@@ -73,6 +73,13 @@ const Preview = () => {
 		ogImage: bookmarkData.ogImage,
 		type: bookmarkData.type,
 		url: bookmarkData.url,
+		title: bookmarkData.title,
+		description: bookmarkData.description,
+		domain: new URL(bookmarkData.url).hostname,
+		meta_data: {
+			height: bookmarkData.meta_data.height,
+			width: bookmarkData.meta_data.width,
+		},
 	};
 
 	return (
