@@ -44,17 +44,49 @@ export const EmbedWithFallback = ({
 	}, [src]);
 
 	if (failed && placeholder) {
-		return (
-			<div className="flex items-center justify-center">
-				<div className="relative max-w-[1200px]">
+		const isScreenshot = placeholder.includes("screenshot");
+		const scaledWidth = isScreenshot
+			? (placeholderWidth ?? 0) * 0.5
+			: placeholderWidth ?? 0;
+		const scaledHeight = isScreenshot
+			? (placeholderHeight ?? 0) * 0.5
+			: placeholderHeight ?? 0;
+
+		const exceedsWidth = scaledWidth > 1_200;
+		const underHeight = scaledHeight > window.innerHeight * 0.8;
+
+		// Case 1: Apply constraints if needed
+		if (exceedsWidth || underHeight) {
+			return (
+				<div
+					className={`relative ${exceedsWidth ? "max-w-[1200px]" : ""} ${
+						underHeight ? "max-h-[80vh]" : ""
+					}`}
+				>
 					<Image
 						alt="Preview"
-						className="h-auto max-h-[80vh] w-auto"
-						height={placeholderHeight}
+						height={scaledHeight}
 						src={placeholder}
-						width={placeholderWidth}
+						width={scaledWidth}
 					/>
 				</div>
+			);
+		}
+
+		// Case 2: Render raw image without constraints
+		return (
+			<div
+				className={`flex min-h-screen origin-center items-center justify-center ${
+					isScreenshot ? "scale-50" : ""
+				}`}
+			>
+				<Image
+					alt="Preview"
+					className="h-auto w-auto"
+					height={placeholderHeight}
+					src={placeholder}
+					width={placeholderWidth}
+				/>
 			</div>
 		);
 	}
