@@ -106,6 +106,17 @@ export const PreviewLightBox = ({
 	// using window event listener to handle browser back button for now
 	useEffect(() => {
 		const handlePopState = () => {
+			void router.replace(
+				{
+					pathname: `/${CATEGORY_ID_PATHNAME}`,
+					query: {
+						category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
+					},
+				},
+				`/${router.asPath.split("/")[1]}`,
+				{ shallow: true },
+			);
+
 			if (open) {
 				handleClose();
 			}
@@ -115,7 +126,7 @@ export const PreviewLightBox = ({
 		return () => {
 			window.removeEventListener("popstate", handlePopState);
 		};
-	}, [open, handleClose]);
+	}, [open, handleClose, router]);
 
 	useEffect(
 		() => () => {
