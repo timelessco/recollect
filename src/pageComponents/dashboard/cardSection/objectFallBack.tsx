@@ -2,17 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 type EmbedWithFallbackProps = {
-	height?: number;
 	placeholder?: string;
+	placeholderHeight?: number;
+	placeholderWidth?: number;
 	src: string;
-	width?: number;
 };
 
 export const EmbedWithFallback = ({
 	src,
 	placeholder,
-	height,
-	width,
+
+	placeholderHeight,
+	placeholderWidth,
 }: EmbedWithFallbackProps) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const fallbackRef = useRef<HTMLDivElement>(null);
@@ -48,10 +49,10 @@ export const EmbedWithFallback = ({
 				<div className="relative max-w-[1200px]">
 					<Image
 						alt="Preview"
-						className="h-auto max-h-[80vh]  w-auto"
-						height={height ?? 0}
+						className="h-auto max-h-[80vh] w-auto"
+						height={placeholderHeight}
 						src={placeholder}
-						width={width ?? 0}
+						width={placeholderWidth}
 					/>
 				</div>
 			</div>
@@ -59,11 +60,13 @@ export const EmbedWithFallback = ({
 	}
 
 	return (
-		<div className="relative h-full w-full max-w-[1200px]" ref={containerRef}>
+		<div
+			className="relative h-full min-h-[500px] w-full max-w-[1200px]"
+			ref={containerRef}
+		>
 			<object
 				className="h-full w-full"
 				data={src}
-				style={{ minHeight: 500 }}
 				title="Website Preview"
 				type="text/html"
 			>
