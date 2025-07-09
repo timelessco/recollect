@@ -17,6 +17,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	R2_MAIN_BUCKET_NAME,
 	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
@@ -34,7 +35,7 @@ const upload = async (base64info: string, uploadUserId: string) => {
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
 
 	const { error: uploadError } = await r2Helpers.uploadObject(
-		"recollect",
+		R2_MAIN_BUCKET_NAME,
 		storagePath,
 		new Uint8Array(decode(base64info)),
 		"image/jpg",

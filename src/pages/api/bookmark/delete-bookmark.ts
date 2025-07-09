@@ -13,6 +13,7 @@ import {
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	MAIN_TABLE_NAME,
+	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
@@ -80,7 +81,10 @@ export default async function handler(
 	];
 
 	const { error: storageScreenshotOgImageError } =
-		await r2Helpers.deleteObjects("recollect", deleteScreenshotImagePaths);
+		await r2Helpers.deleteObjects(
+			R2_MAIN_BUCKET_NAME,
+			deleteScreenshotImagePaths,
+		);
 
 	// delete ogImages in bucket
 	// Using Set to remove duplicates since ogImage and meta_data.coverImage might point to the same file
@@ -119,7 +123,7 @@ export default async function handler(
 	];
 
 	const { error: storageOgImageError } = await r2Helpers.deleteObjects(
-		"recollect",
+		R2_MAIN_BUCKET_NAME,
 		deleteImagePaths,
 	);
 
@@ -134,7 +138,7 @@ export default async function handler(
 	});
 
 	const { error: fileStorageError } = await r2Helpers.deleteObjects(
-		"recollect",
+		R2_MAIN_BUCKET_NAME,
 		deleteFileImagesPaths,
 	);
 
@@ -146,7 +150,7 @@ export default async function handler(
 	});
 
 	const { error: fileVideoStorageError } = await r2Helpers.deleteObjects(
-		"recollect",
+		R2_MAIN_BUCKET_NAME,
 		deleteFileVideoPaths,
 	);
 

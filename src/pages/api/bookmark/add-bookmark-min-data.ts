@@ -307,7 +307,9 @@ export default async function handler(
 				description: scrapperResponse?.data?.description,
 				ogImage: ogImageToBeAdded,
 				category_id: computedCategoryId,
-				meta_data: null,
+				meta_data: {
+					favIcon: scrapperResponse?.data?.favIcon,
+				},
 				type: bookmarkType,
 			},
 		])
@@ -332,6 +334,8 @@ export default async function handler(
 		try {
 			if (!isNull(data) && !isEmpty(data) && !isNil(isUrlOfMimeType)) {
 				// this adds the remaining data , like blur hash bucket uploads and all
+				// this is called only if the url is an image url like test.com/image.png.
+				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{

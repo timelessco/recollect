@@ -1074,6 +1074,9 @@ const Dashboard = () => {
 		return <div />;
 	}
 
+	// eslint-disable-next-line no-console
+	console.log("env~~~~~~~~~~~~", process.env.VERCEL_ENV);
+
 	return (
 		<>
 			<DashboardLayout

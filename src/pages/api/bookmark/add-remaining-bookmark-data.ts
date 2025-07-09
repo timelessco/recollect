@@ -19,6 +19,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	MAIN_TABLE_NAME,
+	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
@@ -45,7 +46,7 @@ const upload = async (
 		const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
 
 		const { error: uploadError } = await r2Helpers.uploadObject(
-			"recollect",
+			R2_MAIN_BUCKET_NAME,
 			storagePath,
 			new Uint8Array(decode(base64info)),
 			"image/jpg",
