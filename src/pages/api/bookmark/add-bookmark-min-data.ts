@@ -136,6 +136,9 @@ export default async function handler(
 	// 	return;
 	// }
 
+	// eslint-disable-next-line no-console
+	console.log("env~~~~~~~~~~~~ api", process.env.VERCEL_ENV);
+
 	if (!updateAccess) {
 		response.status(500).json({
 			data: null,
