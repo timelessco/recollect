@@ -34,12 +34,16 @@ export const CustomLightBox = ({
 }: {
 	activeIndex: number;
 	bookmarks?: Array<{
+		createdAt?: string;
+		description: string | null;
+		domain: string;
 		id: number;
 		meta_data?: {
 			height: number | null;
 			width: number | null;
 		};
 		ogImage?: string | null;
+		title: string;
 		type?: string;
 		url: string;
 	}>;
