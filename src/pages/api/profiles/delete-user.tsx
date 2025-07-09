@@ -19,10 +19,12 @@ import {
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
 	PROFILES,
+	R2_MAIN_BUCKET_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
 	STORAGE_FILES_PATH,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
+	STORAGE_USER_PROFILE_PATH,
 	TAG_TABLE_NAME,
 } from "../../../utils/constants";
 import { r2Helpers } from "../../../utils/r2Client";
@@ -101,7 +103,7 @@ const storageDeleteLogic = async (
 
 	const { data: bookmarksStorageFiles, error: bookmarksStorageError } =
 		await r2Helpers.listObjects(
-			"recollect",
+			R2_MAIN_BUCKET_NAME,
 			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/`,
 		);
 
@@ -116,7 +118,7 @@ const storageDeleteLogic = async (
 
 	if (!isEmpty(filesToRemove) && !isNil(filesToRemove)) {
 		const { error: bookmarksStorageDeleteError } =
-			await r2Helpers.deleteObjects("recollect", filesToRemove);
+			await r2Helpers.deleteObjects(R2_MAIN_BUCKET_NAME, filesToRemove);
 
 		if (!isNull(bookmarksStorageDeleteError)) {
 			response.status(500).json({
@@ -137,7 +139,7 @@ const storageDeleteLogic = async (
 		data: bookmarksStorageScreenshotFiles,
 		error: bookmarksStorageScreenshotError,
 	} = await r2Helpers.listObjects(
-		"recollect",
+		R2_MAIN_BUCKET_NAME,
 		`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/`,
 	);
 
@@ -155,7 +157,10 @@ const storageDeleteLogic = async (
 
 	if (!isEmpty(filesToRemoveScreenshot) && !isNil(filesToRemoveScreenshot)) {
 		const { error: bookmarksStorageScreenshotDeleteError } =
-			await r2Helpers.deleteObjects("recollect", filesToRemoveScreenshot);
+			await r2Helpers.deleteObjects(
+				R2_MAIN_BUCKET_NAME,
+				filesToRemoveScreenshot,
+			);
 
 		if (!isNull(bookmarksStorageScreenshotDeleteError)) {
 			response.status(500).json({
@@ -174,7 +179,7 @@ const storageDeleteLogic = async (
 
 	const { data: filesStorageData, error: filesStorageDataError } =
 		await r2Helpers.listObjects(
-			"recollect",
+			R2_MAIN_BUCKET_NAME,
 			`${STORAGE_FILES_PATH}/${userId}/`,
 		);
 
@@ -192,7 +197,7 @@ const storageDeleteLogic = async (
 		!isNil(filesStorageFilesToRemove)
 	) {
 		const { error: filesDeleteError } = await r2Helpers.deleteObjects(
-			"recollect",
+			R2_MAIN_BUCKET_NAME,
 			filesStorageFilesToRemove,
 		);
 
@@ -211,7 +216,10 @@ const storageDeleteLogic = async (
 	// user profile storage delete
 
 	const { data: userProfileFilesData, error: userProfileFilesError } =
-		await r2Helpers.listObjects("recollect", `user_profile/public/${userId}/`);
+		await r2Helpers.listObjects(
+			R2_MAIN_BUCKET_NAME,
+			`${STORAGE_USER_PROFILE_PATH}/${userId}/`,
+		);
 
 	const userProfileFilesToRemove = userProfileFilesData?.map(
 		(x) => x?.Key ?? "",
@@ -226,7 +234,10 @@ const storageDeleteLogic = async (
 
 	if (!isEmpty(userProfileFilesToRemove) && !isNil(userProfileFilesToRemove)) {
 		const { error: userProfileFilesDeleteError } =
-			await r2Helpers.deleteObjects("recollect", userProfileFilesToRemove);
+			await r2Helpers.deleteObjects(
+				R2_MAIN_BUCKET_NAME,
+				userProfileFilesToRemove,
+			);
 
 		if (!isNull(userProfileFilesDeleteError)) {
 			response.status(500).json({
