@@ -14,6 +14,10 @@ export type Bookmark = {
 	description?: string;
 	domain?: string;
 	id: number;
+	meta_data?: {
+		height?: number | null;
+		width?: number | null;
+	};
 	ogImage?: string | null;
 	title?: string;
 	type?: string;
@@ -47,7 +51,6 @@ export const CustomLightBox = ({
 	const router = useRouter();
 	const [isSidepaneOpen, setIsSidepaneOpen] = useState(false);
 	const [showControls, setShowControls] = useState(false);
-
 	const toggleSidepane = useCallback(() => {
 		setIsSidepaneOpen((previous) => !previous);
 	}, []);
@@ -121,10 +124,10 @@ export const CustomLightBox = ({
 							</div>
 						) : (
 							<EmbedWithFallback
-								height={bookmark.meta_data?.height ?? 0}
 								placeholder={bookmark?.ogImage ?? ""}
+								placeholderHeight={bookmark.meta_data?.height ?? 0}
+								placeholderWidth={bookmark.meta_data?.width ?? 0}
 								src={bookmark?.url}
-								width={bookmark.meta_data?.width ?? 0}
 							/>
 						)}
 					</div>
