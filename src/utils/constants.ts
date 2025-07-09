@@ -265,3 +265,14 @@ export const infoValues = [
 // pathnames
 
 export const CATEGORY_ID_PATHNAME = `/[category_id]`;
+
+// OG_IMAGE_PREFERRED_SITES
+export const OG_IMAGE_PREFERRED_SITES = [
+	"cosmos",
+	"pinterest",
+	"savee.it",
+	"are.na",
+	"medium",
+	"spotify",
+	"imdb",
+];

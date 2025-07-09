@@ -19,6 +19,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	MAIN_TABLE_NAME,
+	OG_IMAGE_PREFERRED_SITES,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	URL_IMAGE_CHECK_PATTERN,
@@ -73,7 +74,12 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const { url, favIcon, id } = request.body;
+	const urlHost = new URL(url).hostname.toLowerCase();
+	const urlString = url.toLowerCase();
 
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some(
+		(keyword) => urlHost.includes(keyword) || urlString.includes(keyword),
+	);
 	if (!id) {
 		response
 			.status(500)
@@ -213,6 +219,9 @@ export default async function handler(
 	let imageOcrValue = null;
 	let imageCaption = null;
 
+	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
+	const ogImageMetaDataGeneration = uploadedCoverImageUrl;
+
 	// generat meta data (ocr, blurhash data, imgcaption)
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
 		? uploadedImageThatIsAUrl
@@ -222,7 +231,11 @@ export default async function handler(
 
 	if (!isNil(imageUrlForMetaDataGeneration)) {
 		try {
-			imgData = await blurhashFromURL(imageUrlForMetaDataGeneration);
+			imgData = await blurhashFromURL(
+				isOgImagePreferred
+					? ogImageMetaDataGeneration
+					: imageUrlForMetaDataGeneration,
+			);
 		} catch (error) {
 			console.error("Error generating blurhash:", error);
 			Sentry.captureException(`Error generating blurhash: ${error}`);
@@ -238,7 +251,11 @@ export default async function handler(
 			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
 
 			// Get image caption using the centralized function
-			imageCaption = await imageToText(imageUrlForMetaDataGeneration);
+			imageCaption = await imageToText(
+				isOgImagePreferred
+					? ogImageMetaDataGeneration
+					: imageUrlForMetaDataGeneration,
+			);
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
 			Sentry.captureException(`Gemini AI processing error ${error}`);
@@ -268,7 +285,12 @@ export default async function handler(
 		error: PostgrestError | VerifyErrors | string | null;
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
-		.update({ meta_data, ogImage: imageUrlForMetaDataGeneration })
+		.update({
+			meta_data,
+			ogImage: isOgImagePreferred
+				? ogImageMetaDataGeneration
+				: imageUrlForMetaDataGeneration,
+		})
 		.match({ id })
 		.select(`id`);
 
