@@ -60,11 +60,13 @@ export const EmbedWithFallback = ({
 	}
 
 	return (
-		<div className="relative h-full w-full max-w-[1200px]" ref={containerRef}>
+		<div
+			className="relative h-full min-h-[500px] w-full max-w-[1200px]"
+			ref={containerRef}
+		>
 			<object
 				className="h-full w-full"
 				data={src}
-				style={{ minHeight: 500 }}
 				title="Website Preview"
 				type="text/html"
 			>
