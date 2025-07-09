@@ -40,7 +40,7 @@ export const PreviewLightBox = ({
 	const [activeIndex, setActiveIndex] = useState(-1);
 	const _previousOpenRef = useRef(open);
 
-	// Get bookmarks from query cache
+	// Get and transform bookmarks from query cache
 	const bookmarks = useMemo(() => {
 		const previousData = queryClient.getQueryData([
 			BOOKMARKS_KEY,
@@ -49,7 +49,21 @@ export const PreviewLightBox = ({
 			"date-sort-acending",
 		]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
 
-		return previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
+		const rawBookmarks =
+			previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
+
+		// Transform SingleListData to match the expected type in CustomLightBox
+		return rawBookmarks.map((bookmark) => ({
+			...bookmark,
+			// Use inserted_at as createdAt
+			createdAt: bookmark.inserted_at,
+			// Extract domain from URL
+			domain: new URL(bookmark.url).hostname,
+			meta_data: {
+				height: bookmark.meta_data?.height ?? null,
+				width: bookmark.meta_data?.width ?? null,
+			},
+		}));
 	}, [queryClient, session?.user?.id, CATEGORY_ID]);
 
 	// Only update activeIndex when the lightbox is being opened

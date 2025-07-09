@@ -511,7 +511,7 @@ const CardSection = ({
 		});
 
 		const errorImgPlaceholder = (
-			<motion.img
+			<Image
 				alt="img-error"
 				className={errorImgAndVideoClassName}
 				height={150}
@@ -523,7 +523,7 @@ const CardSection = ({
 		const imgLogic = () => {
 			if (hasCoverImg) {
 				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
-					return <motion.div className={loaderClassName} />;
+					return <div className={loaderClassName} />;
 				}
 
 				if (errorImgs?.includes(id as never)) {
