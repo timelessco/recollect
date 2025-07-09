@@ -108,3 +108,5 @@ tesseract
 nocheck
 eqwhx
 sparticuz
+savee
+imdb
