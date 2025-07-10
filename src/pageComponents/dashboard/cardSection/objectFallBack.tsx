@@ -30,7 +30,6 @@ export const EmbedWithFallback = ({
 
 			const viewHeight = fallback.getBoundingClientRect().height;
 
-			// If fallback becomes visible, assume failure
 			if (viewHeight > 0) {
 				setFailed(true);
 			} else if (attempts < maxAttempts) {
@@ -55,25 +54,26 @@ export const EmbedWithFallback = ({
 		const exceedsWidth = scaledWidth > 1_200;
 		const underHeight = scaledHeight > window.innerHeight * 0.8;
 
-		// Case 1: Apply constraints if needed
 		if (exceedsWidth || underHeight) {
 			return (
-				<div
-					className={`relative ${exceedsWidth ? "max-w-[1200px]" : ""} ${
-						underHeight ? "max-h-[80vh]" : ""
-					}`}
-				>
-					<Image
-						alt="Preview"
-						height={scaledHeight}
-						src={placeholder}
-						width={scaledWidth}
-					/>
+				<div className="flex h-full w-full  items-center justify-center ">
+					<div
+						className={`flex ${exceedsWidth ? "max-w-[1200px]" : ""} ${
+							underHeight ? "max-h-[90vh]" : ""
+						}`}
+					>
+						<Image
+							alt="Preview"
+							className="object-contain"
+							height={scaledHeight}
+							src={placeholder}
+							width={scaledWidth}
+						/>
+					</div>
 				</div>
 			);
 		}
 
-		// Case 2: Render raw image without constraints
 		return (
 			<div
 				className={`flex min-h-screen origin-center items-center justify-center ${
