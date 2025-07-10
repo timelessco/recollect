@@ -22,6 +22,7 @@ import {
 	URL_IMAGE_CHECK_PATTERN,
 	VIDEOS_URL,
 } from "../../../utils/constants";
+import { checkIfUrlAnMedia } from "../../../utils/helpers";
 import { successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData } from "../../supabaseCrudHelpers";
 
@@ -102,7 +103,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			);
 		},
 		// Always refetch after error or success:
-		onSettled: (apiResponse: unknown) => {
+		onSettled: async (apiResponse: unknown) => {
 			const response = apiResponse as { data: { data: SingleListData[] } };
 			void queryClient.invalidateQueries([
 				BOOKMARKS_KEY,
@@ -125,7 +126,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 			// this is to check if url is not a website like test.pdf
 			// if this is the case then we do not call the screenshot api
-			const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
+			const isUrlOfMimeType = await checkIfUrlAnMedia(url);
 
 			// only take screenshot if url is not an image like https://test.com/test.jpg
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image

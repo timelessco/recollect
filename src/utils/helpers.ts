@@ -1,3 +1,4 @@
+import axios from "axios";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
@@ -13,6 +14,7 @@ import {
 import { type UrlInput } from "../types/componentTypes";
 
 import {
+	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
 	bookmarkType,
 	documentFileTypes,
@@ -29,6 +31,7 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
+	URL_IMAGE_CHECK_PATTERN,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
@@ -291,4 +294,23 @@ export const isCurrentYear = (insertedAt: string) => {
 	const insertedYear = getYear(date);
 
 	return insertedYear === currentYear;
+};
+
+export const checkIfUrlAnMedia = async (url: string) => {
+	const realImageUrl = new URL(url)?.searchParams.get("url");
+
+	try {
+		const response = await axios.head(realImageUrl ?? url, {
+			timeout: 5_000,
+			headers: {
+				"User-Agent": "Mozilla/5.0",
+			},
+		});
+		const mediaType = response.headers["content-type"];
+
+		return mediaType.includes("image/");
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 };

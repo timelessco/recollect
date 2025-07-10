@@ -27,7 +27,7 @@ import {
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { getBaseUrl } from "../../../utils/helpers";
+import { checkIfUrlAnMedia, getBaseUrl } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -139,9 +139,10 @@ export default async function handler(
 	// if a url is an image, then we need to upload it to s3 and store it here
 	let uploadedImageThatIsAUrl = null;
 
-	const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
+	const isUrlAnImage = await checkIfUrlAnMedia(url);
 
-	const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
+	// const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
+	const isUrlAnImageCondition = isUrlAnImage;
 
 	if (isUrlAnImageCondition) {
 		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to s3
