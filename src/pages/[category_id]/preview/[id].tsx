@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 import "yet-another-react-lightbox/styles.css";
+
+import { div } from "motion/dist/react-m";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { CustomLightBox } from "../../../components/LightBox";
@@ -50,6 +52,10 @@ const Preview = () => {
 		isLoading: boolean;
 	};
 
+	if ((!isLoading && !bookmark?.data?.[0]) || error) {
+		void router.push(`/${ALL_BOOKMARKS_URL}`);
+	}
+
 	const [isOpen, setIsOpen] = useState(true);
 
 	const handleClose = () => {
@@ -63,9 +69,10 @@ const Preview = () => {
 				<Spinner />
 			</div>
 		);
-	if (error)
-		return <div className="p-4 text-red-500">Error: {error.message}</div>;
-	if (!bookmark) return <div className="p-4">No bookmark found</div>;
+
+	if (!bookmark?.data?.[0] || error) {
+		return <div />;
+	}
 
 	const bookmarkData = bookmark.data[0];
 	const transformedBookmark = {
