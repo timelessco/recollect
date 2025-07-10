@@ -229,6 +229,20 @@ export default async function handler(
 		? currentData?.meta_data?.screenshot
 		: uploadedCoverImageUrl;
 
+	// eslint-disable-next-line no-console
+	console.log(
+		"isOgImagePreferred~~~~~~~~~~~~~~~~",
+		isOgImagePreferred,
+		"ogImageMetaDataGeneration~~~",
+		ogImageMetaDataGeneration,
+		"imageUrlForMetaDataGeneration~~~",
+		imageUrlForMetaDataGeneration,
+		"final condition~~~~~~~~~",
+		isOgImagePreferred
+			? ogImageMetaDataGeneration
+			: imageUrlForMetaDataGeneration,
+	);
+
 	if (!isNil(imageUrlForMetaDataGeneration)) {
 		try {
 			imgData = await blurhashFromURL(
@@ -276,20 +290,6 @@ export default async function handler(
 		coverImage: uploadedCoverImageUrl,
 		twitter_avatar_url: null,
 	};
-
-	// eslint-disable-next-line no-console
-	console.log(
-		"isOgImagePreferred~~~~~~~~~~~~~~~~",
-		isOgImagePreferred,
-		"ogImageMetaDataGeneration~~~",
-		ogImageMetaDataGeneration,
-		"imageUrlForMetaDataGeneration~~~",
-		imageUrlForMetaDataGeneration,
-		"final condition~~~~~~~~~",
-		isOgImagePreferred
-			? ogImageMetaDataGeneration
-			: imageUrlForMetaDataGeneration,
-	);
 
 	const {
 		data,
