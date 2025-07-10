@@ -233,11 +233,6 @@ export default async function handler(
 		? currentData?.meta_data?.screenshot
 		: uploadedCoverImageUrl;
 
-	console.log("isOgImagePreferred", isOgImagePreferred);
-
-	console.log("imageUrlForMetaDataGeneration", imageUrlForMetaDataGeneration);
-	console.log("ogImageMetaDataGeneration", ogImageMetaDataGeneration);
-
 	if (
 		!isNil(imageUrlForMetaDataGeneration) &&
 		!isNil(ogImageMetaDataGeneration)
@@ -288,20 +283,6 @@ export default async function handler(
 		coverImage: uploadedCoverImageUrl,
 		twitter_avatar_url: null,
 	};
-
-	// eslint-disable-next-line no-console
-	console.log(
-		"isOgImagePreferred~~~~~~~~~~~~~~~~",
-		isOgImagePreferred,
-		"ogImageMetaDataGeneration~~~",
-		ogImageMetaDataGeneration,
-		"imageUrlForMetaDataGeneration~~~",
-		imageUrlForMetaDataGeneration,
-		"final condition~~~~~~~~~",
-		isOgImagePreferred
-			? ogImageMetaDataGeneration
-			: imageUrlForMetaDataGeneration,
-	);
 
 	const {
 		data,
