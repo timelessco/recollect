@@ -197,6 +197,7 @@ export default async function handler(
 					"User-Agent": "Mozilla/5.0",
 					Accept: "image/*,*/*;q=0.8",
 				},
+				timeout: 10_000,
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
