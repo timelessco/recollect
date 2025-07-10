@@ -315,7 +315,7 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.update({
 			meta_data,
-			ogImage: ogImageMetaDataGeneration,
+			ogImage: meta_data.coverImage,
 		})
 		.match({ id })
 		.select(`id`);
