@@ -27,8 +27,9 @@ import {
 	NEXT_API_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
+	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
-import { apiCookieParser, checkIsUrlAnImage } from "../../../utils/helpers";
+import { apiCookieParser } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
@@ -281,9 +282,9 @@ export default async function handler(
 
 	let ogImageToBeAdded = null;
 
-	const isUrlAnImage = await checkIsUrlAnImage(url);
+	const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
 
-	if (isUrlAnImage) {
+	if (!isNil(isUrlOfMimeType)) {
 		ogImageToBeAdded = url;
 	} else {
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
@@ -331,7 +332,7 @@ export default async function handler(
 			.json({ data, error: scraperApiError ?? null, message: null });
 
 		try {
-			if (!isNull(data) && !isEmpty(data) && !isNil(isUrlAnImage)) {
+			if (!isNull(data) && !isEmpty(data) && !isNil(isUrlOfMimeType)) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				// this is called only if the url is an image url like test.com/image.png.
 				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
