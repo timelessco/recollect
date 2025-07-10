@@ -111,6 +111,7 @@ export default async function handler(
 		screenshot: publicURL,
 		coverImage: existingBookmarkData?.ogImage,
 	};
+	console.error("updatedMetaData", updatedMetaData);
 
 	const {
 		data,
