@@ -56,12 +56,12 @@ export const PreviewLightBox = ({
 		return rawBookmarks.map((bookmark) => ({
 			...bookmark,
 			// Use inserted_at as createdAt
-			createdAt: bookmark.inserted_at,
+			createdAt: bookmark?.inserted_at,
 			// Extract domain from URL
-			domain: new URL(bookmark.url).hostname,
+			domain: bookmark?.url ? new URL(bookmark.url).hostname : "",
 			meta_data: {
-				height: bookmark.meta_data?.height ?? null,
-				width: bookmark.meta_data?.width ?? null,
+				height: bookmark?.meta_data?.height ?? null,
+				width: bookmark?.meta_data?.width ?? null,
 			},
 		}));
 	}, [queryClient, session?.user?.id, CATEGORY_ID]);
