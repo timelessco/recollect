@@ -346,7 +346,7 @@ export default async function handler(
 			if (!isNull(data) && !isEmpty(data) && !isNil(isUrlOfMimeType)) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+					`https://bookmark-tags-git-fix-ogimgaes-debugging-timelessco.vercel.app${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
 						favIcon: scrapperResponse?.data?.favIcon,
