@@ -9,8 +9,8 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
-import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
+// import imageToText from "../../../async/ai/imageToText";
+// import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
@@ -289,6 +289,20 @@ export default async function handler(
 		coverImage: uploadedCoverImageUrl,
 		twitter_avatar_url: null,
 	};
+
+	// eslint-disable-next-line no-console
+	console.log(
+		"isOgImagePreferred~~~~~~~~~~~~~~~~",
+		isOgImagePreferred,
+		"ogImageMetaDataGeneration~~~",
+		ogImageMetaDataGeneration,
+		"imageUrlForMetaDataGeneration~~~",
+		imageUrlForMetaDataGeneration,
+		"final condition~~~~~~~~~",
+		isOgImagePreferred
+			? ogImageMetaDataGeneration
+			: imageUrlForMetaDataGeneration,
+	);
 
 	const {
 		data,
