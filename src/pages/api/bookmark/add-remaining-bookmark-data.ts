@@ -311,7 +311,7 @@ export default async function handler(
 		.update({
 			meta_data,
 			ogImage: isOgImagePreferred
-				? ogImageMetaDataGeneration
+				? meta_data?.coverImage
 				: imageUrlForMetaDataGeneration,
 		})
 		.match({ id })
