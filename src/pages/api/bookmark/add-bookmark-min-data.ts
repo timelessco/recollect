@@ -350,7 +350,7 @@ export default async function handler(
 				// this is called only if the url is an image url like test.com/image.png.
 				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
 				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+					`https://bookmark-tags-git-fix-ogimgaes-debugging-timelessco.vercel.app${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
 						favIcon: scrapperResponse?.data?.favIcon,
