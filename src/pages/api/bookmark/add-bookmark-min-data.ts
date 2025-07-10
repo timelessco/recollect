@@ -112,9 +112,11 @@ export default async function handler(
 	const urlHost = new URL(url).hostname.toLowerCase();
 	const urlString = url.toLowerCase();
 
-	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some(
-		(keyword) => urlHost.includes(keyword) || urlString.includes(keyword),
-	);
+	// const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some(
+	// 	(keyword) => urlHost.includes(keyword) || urlString.includes(keyword),
+	// );
+
+	const isOgImagePreferred = true;
 
 	console.error(
 		"isOgImagePreferred in min data~~~~~~~~~~~~~~~~",
