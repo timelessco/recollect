@@ -9,8 +9,8 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
-import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
+// import imageToText from "../../../async/ai/imageToText";
+// import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
@@ -230,7 +230,7 @@ export default async function handler(
 		: uploadedCoverImageUrl;
 
 	// eslint-disable-next-line no-console
-	console.log(
+	console.error(
 		"isOgImagePreferred~~~~~~~~~~~~~~~~",
 		isOgImagePreferred,
 		"ogImageMetaDataGeneration~~~",
