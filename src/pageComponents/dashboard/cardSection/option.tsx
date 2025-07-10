@@ -96,11 +96,11 @@ const Option = ({
 			role="option"
 			{...(!open
 				? mergeProps(
-					disableDndCondition
-						? []
-						: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-					disableDndCondition ? [] : focusProps,
-				)
+						disableDndCondition
+							? []
+							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+						disableDndCondition ? [] : focusProps,
+				  )
 				: {})}
 		>
 			<PreviewLightBox id={item.key} open={open} setOpen={setOpen} />
@@ -134,13 +134,15 @@ const Option = ({
 			{!isPublicPage && (
 				<Checkbox
 					checked={isSelected}
-					classname={`${isSelected ? "opacity-100" : "opacity-0"
-						} absolute right-0 cursor-pointer opacity-0 z-15 group-hover:opacity-100  ${cardTypeCondition === viewValues.list
+					classname={`${
+						isSelected ? "opacity-100" : "opacity-0"
+					} absolute right-0 cursor-pointer opacity-0 z-15 group-hover:opacity-100  ${
+						cardTypeCondition === viewValues.list
 							? "top-[18px]"
 							: cardTypeCondition === viewValues.headlines
-								? "top-[14px]"
-								: "top-3"
-						}`}
+							? "top-[14px]"
+							: "top-3"
+					}`}
 					value={isSelected ? "true" : "false"}
 					{...(optionProps.onPointerDown
 						? { onPointerDown: optionProps.onPointerDown }
