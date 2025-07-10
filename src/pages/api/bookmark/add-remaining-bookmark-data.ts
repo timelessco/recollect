@@ -74,6 +74,8 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const { url, favIcon, id } = request.body;
+	console.log("payload", request.body);
+
 	const urlHost = new URL(url).hostname.toLowerCase();
 	const urlString = url.toLowerCase();
 
@@ -109,6 +111,8 @@ export default async function handler(
 		.select("ogImage, meta_data")
 		.match({ id })
 		.single();
+
+	console.log("Data", currentData);
 
 	if (currentDataError) {
 		console.error("Error fetching current bookmark data:", currentDataError);
@@ -186,6 +190,7 @@ export default async function handler(
 
 	let uploadedCoverImageUrl = null;
 
+	console.log(currentData);
 	// upload scrapper image to s3
 	if (!isNil(currentData?.meta_data?.coverImage)) {
 		try {
@@ -230,7 +235,15 @@ export default async function handler(
 		? currentData?.meta_data?.screenshot
 		: uploadedCoverImageUrl;
 
-	if (!isNil(imageUrlForMetaDataGeneration)) {
+	console.log("isOgImagePreferred", isOgImagePreferred);
+
+	console.log("imageUrlForMetaDataGeneration", imageUrlForMetaDataGeneration);
+	console.log("ogImageMetaDataGeneration", ogImageMetaDataGeneration);
+
+	if (
+		!isNil(imageUrlForMetaDataGeneration) &&
+		!isNil(ogImageMetaDataGeneration)
+	) {
 		try {
 			imgData = await blurhashFromURL(
 				isOgImagePreferred
@@ -288,9 +301,7 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.update({
 			meta_data,
-			ogImage: isOgImagePreferred
-				? ogImageMetaDataGeneration
-				: imageUrlForMetaDataGeneration,
+			ogImage: ogImageMetaDataGeneration,
 		})
 		.match({ id })
 		.select(`id`);
