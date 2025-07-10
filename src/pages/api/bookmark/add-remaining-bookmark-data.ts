@@ -290,20 +290,6 @@ export default async function handler(
 		twitter_avatar_url: null,
 	};
 
-	// eslint-disable-next-line no-console
-	console.log(
-		"isOgImagePreferred~~~~~~~~~~~~~~~~",
-		isOgImagePreferred,
-		"ogImageMetaDataGeneration~~~",
-		ogImageMetaDataGeneration,
-		"imageUrlForMetaDataGeneration~~~",
-		imageUrlForMetaDataGeneration,
-		"final condition~~~~~~~~~",
-		isOgImagePreferred
-			? ogImageMetaDataGeneration
-			: imageUrlForMetaDataGeneration,
-	);
-
 	const {
 		data,
 		error: databaseError,
