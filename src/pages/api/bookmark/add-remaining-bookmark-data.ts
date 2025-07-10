@@ -9,8 +9,8 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
-// import imageToText from "../../../async/ai/imageToText";
-// import ocr from "../../../async/ai/ocr";
+import imageToText from "../../../async/ai/imageToText";
+import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
@@ -73,7 +73,6 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	const { url, favIcon, id } = request.body;
-	console.log("payload", request.body);
 
 	const urlHost = new URL(url).hostname.toLowerCase();
 	const urlString = url.toLowerCase();
@@ -110,8 +109,6 @@ export default async function handler(
 		.select("ogImage, meta_data")
 		.match({ id })
 		.single();
-
-	console.log("Data", currentData);
 
 	if (currentDataError) {
 		console.error("Error fetching current bookmark data:", currentDataError);
@@ -189,7 +186,6 @@ export default async function handler(
 
 	let uploadedCoverImageUrl = null;
 
-	console.log(currentData);
 	// upload scrapper image to s3
 	if (!isNil(currentData?.meta_data?.coverImage)) {
 		try {
@@ -220,8 +216,8 @@ export default async function handler(
 		}
 	}
 
-	const imageOcrValue = null;
-	const imageCaption = null;
+	let imageOcrValue = null;
+	let imageCaption = null;
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
 	const ogImageMetaDataGeneration =
@@ -259,20 +255,20 @@ export default async function handler(
 			};
 		}
 
-		// try {
-		// 	// Get OCR using the centralized function
-		// 	imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
+		try {
+			// Get OCR using the centralized function
+			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
 
-		// 	// Get image caption using the centralized function
-		// 	imageCaption = await imageToText(
-		// 		isOgImagePreferred
-		// 			? ogImageMetaDataGeneration
-		// 			: imageUrlForMetaDataGeneration,
-		// 	);
-		// } catch (error) {
-		// 	console.error("Gemini AI processing error", error);
-		// 	Sentry.captureException(`Gemini AI processing error ${error}`);
-		// }
+			// Get image caption using the centralized function
+			imageCaption = await imageToText(
+				isOgImagePreferred
+					? ogImageMetaDataGeneration
+					: imageUrlForMetaDataGeneration,
+			);
+		} catch (error) {
+			console.error("Gemini AI processing error", error);
+			Sentry.captureException(`Gemini AI processing error ${error}`);
+		}
 	}
 
 	// Get existing meta_data or create empty object if null
@@ -314,7 +310,9 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.update({
 			meta_data,
-			ogImage: meta_data.coverImage,
+			ogImage: isOgImagePreferred
+				? ogImageMetaDataGeneration
+				: imageUrlForMetaDataGeneration,
 		})
 		.match({ id })
 		.select(`id`);
