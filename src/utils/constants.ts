@@ -150,6 +150,7 @@ export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
 	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
 	"You already have a category with this name , please add any other name";
+export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
 // accepted file type constants
 export const acceptedFileTypes = [
@@ -260,3 +261,7 @@ export const infoValues = [
 	singleInfoValues.description,
 	singleInfoValues.tags,
 ];
+
+// pathnames
+
+export const CATEGORY_ID_PATHNAME = `/[category_id]`;

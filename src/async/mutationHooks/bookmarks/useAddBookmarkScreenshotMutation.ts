@@ -1,6 +1,10 @@
+// eslint-disable-next-line no-warning-comments
+// todo : proper solution
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { BOOKMARKS_KEY } from "../../../utils/constants";
 import { addBookmarkScreenshot } from "../../supabaseCrudHelpers";
 
@@ -8,15 +12,20 @@ import { addBookmarkScreenshot } from "../../supabaseCrudHelpers";
 export default function useAddBookmarkScreenshotMutation() {
 	const queryClient = useQueryClient();
 
-	const setAddScreenshotBookmarkId = useMiscellaneousStore(
-		(state) => state.setAddScreenshotBookmarkId,
-	);
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const session = useSupabaseSession((state) => state.session);
+	const { sortBy } = useGetSortBy();
 
 	const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
-		onSuccess: () => {
-			// Invalidate and refetch
-			void queryClient.invalidateQueries([BOOKMARKS_KEY]);
-			setAddScreenshotBookmarkId(undefined);
+		onSettled: () => {
+			setTimeout(() => {
+				void queryClient.invalidateQueries([
+					BOOKMARKS_KEY,
+					session?.user?.id,
+					CATEGORY_ID,
+					sortBy,
+				]);
+			}, 10_000);
 		},
 	});
 

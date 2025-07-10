@@ -7,6 +7,7 @@ import { type CategoriesData } from "../types/apiTypes";
 import { type CategoryIdUrlTypes } from "../types/componentTypes";
 import { CATEGORIES_KEY } from "../utils/constants";
 import { getCategoryIdFromSlug } from "../utils/helpers";
+import { getCategorySlugFromRouter } from "../utils/url";
 
 // gets current category ID that user is in
 export default function useGetCurrentCategoryId() {
@@ -22,7 +23,7 @@ export default function useGetCurrentCategoryId() {
 		error: PostgrestError;
 	};
 
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 	// disabling here as everywhere else is correct case
 	const category_id =
 		getCategoryIdFromSlug(categorySlug, allCategories?.data) ?? null;
