@@ -9,8 +9,8 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
-import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
+// import imageToText from "../../../async/ai/imageToText";
+// import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
@@ -220,8 +220,8 @@ export default async function handler(
 		}
 	}
 
-	let imageOcrValue = null;
-	let imageCaption = null;
+	const imageOcrValue = null;
+	const imageCaption = null;
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
 	const ogImageMetaDataGeneration =
@@ -234,15 +234,20 @@ export default async function handler(
 		? currentData?.meta_data?.screenshot
 		: uploadedCoverImageUrl;
 
-	console.log("isOgImagePreferred", isOgImagePreferred);
+	console.error(
+		"isOgImagePreferred~~~~~~~~~~~~~~~~",
+		isOgImagePreferred,
+		"ogImageMetaDataGeneration~~~",
+		ogImageMetaDataGeneration,
+		"imageUrlForMetaDataGeneration~~~",
+		imageUrlForMetaDataGeneration,
+		"final condition~~~~~~~~~",
+		isOgImagePreferred
+			? ogImageMetaDataGeneration
+			: imageUrlForMetaDataGeneration,
+	);
 
-	console.log("imageUrlForMetaDataGeneration", imageUrlForMetaDataGeneration);
-	console.log("ogImageMetaDataGeneration", ogImageMetaDataGeneration);
-
-	if (
-		!isNil(imageUrlForMetaDataGeneration) &&
-		!isNil(ogImageMetaDataGeneration)
-	) {
+	if (!isNil(imageUrlForMetaDataGeneration)) {
 		try {
 			imgData = await blurhashFromURL(
 				isOgImagePreferred
@@ -259,20 +264,20 @@ export default async function handler(
 			};
 		}
 
-		try {
-			// Get OCR using the centralized function
-			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
+		// try {
+		// 	// Get OCR using the centralized function
+		// 	imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
 
-			// Get image caption using the centralized function
-			imageCaption = await imageToText(
-				isOgImagePreferred
-					? ogImageMetaDataGeneration
-					: imageUrlForMetaDataGeneration,
-			);
-		} catch (error) {
-			console.error("Gemini AI processing error", error);
-			Sentry.captureException(`Gemini AI processing error ${error}`);
-		}
+		// 	// Get image caption using the centralized function
+		// 	imageCaption = await imageToText(
+		// 		isOgImagePreferred
+		// 			? ogImageMetaDataGeneration
+		// 			: imageUrlForMetaDataGeneration,
+		// 	);
+		// } catch (error) {
+		// 	console.error("Gemini AI processing error", error);
+		// 	Sentry.captureException(`Gemini AI processing error ${error}`);
+		// }
 	}
 
 	// Get existing meta_data or create empty object if null
