@@ -25,6 +25,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	OG_IMAGE_PREFERRED_SITES,
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
 	URL_IMAGE_CHECK_PATTERN,
@@ -107,6 +108,18 @@ export default async function handler(
 	const { url } = request.body;
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
+
+	const urlHost = new URL(url).hostname.toLowerCase();
+	const urlString = url.toLowerCase();
+
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some(
+		(keyword) => urlHost.includes(keyword) || urlString.includes(keyword),
+	);
+
+	console.error(
+		"isOgImagePreferred in min data~~~~~~~~~~~~~~~~",
+		isOgImagePreferred,
+	);
 
 	// try {
 	// 	// 5 seconds timeout
