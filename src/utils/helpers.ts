@@ -308,7 +308,7 @@ export const checkIfUrlAnMedia = async (url: string) => {
 		});
 		const mediaType = response.headers["content-type"];
 
-		return mediaType.includes("image/");
+		return acceptedFileTypes.includes(mediaType);
 	} catch (error) {
 		console.error(error);
 		return false;
