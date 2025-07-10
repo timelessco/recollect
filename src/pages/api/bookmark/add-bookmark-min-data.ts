@@ -30,7 +30,7 @@ import {
 	uncategorizedPages,
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
-import { apiCookieParser } from "../../../utils/helpers";
+import { apiCookieParser, checkIfUrlAnMedia } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
@@ -295,7 +295,7 @@ export default async function handler(
 
 	let ogImageToBeAdded = null;
 
-	const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
+	const isUrlOfMimeType = await checkIfUrlAnMedia(url);
 
 	if (!isNil(isUrlOfMimeType)) {
 		ogImageToBeAdded = url;
