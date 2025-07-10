@@ -227,9 +227,9 @@ export default async function handler(
 	// generat meta data (ocr, blurhash data, imgcaption)
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
 		? uploadedImageThatIsAUrl
-		: !isNil(uploadedCoverImageUrl)
-		? uploadedCoverImageUrl
-		: currentData?.meta_data?.screenshot;
+		: !isNil(currentData?.meta_data?.screenshot)
+		? currentData?.meta_data?.screenshot
+		: uploadedCoverImageUrl;
 
 	console.log("isOgImagePreferred", isOgImagePreferred);
 
@@ -311,7 +311,9 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.update({
 			meta_data,
-			ogImage: imageUrlForMetaDataGeneration,
+			ogImage: isOgImagePreferred
+				? ogImageMetaDataGeneration
+				: imageUrlForMetaDataGeneration,
 		})
 		.match({ id })
 		.select(`id`);
