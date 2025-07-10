@@ -229,7 +229,6 @@ export default async function handler(
 		? currentData?.meta_data?.screenshot
 		: uploadedCoverImageUrl;
 
-	// eslint-disable-next-line no-console
 	console.error(
 		"isOgImagePreferred~~~~~~~~~~~~~~~~",
 		isOgImagePreferred,
