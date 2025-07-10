@@ -11,6 +11,8 @@ import uniqid from "uniqid";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
+// import imageToText from "../../../async/ai/imageToText";
+// import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
