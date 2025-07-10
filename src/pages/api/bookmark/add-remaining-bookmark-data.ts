@@ -222,7 +222,9 @@ export default async function handler(
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
 	const ogImageMetaDataGeneration =
-		!isNil(uploadedCoverImageUrl) && uploadedCoverImageUrl;
+		(!isNil(uploadedCoverImageUrl) && uploadedCoverImageUrl) ||
+		(!isNil(currentData?.meta_data?.screenshot) &&
+			currentData?.meta_data?.screenshot);
 
 	// generat meta data (ocr, blurhash data, imgcaption)
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
