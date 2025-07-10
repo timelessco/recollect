@@ -220,8 +220,8 @@ export default async function handler(
 		}
 	}
 
-	let imageOcrValue = null;
-	let imageCaption = null;
+	const imageOcrValue = null;
+	const imageCaption = null;
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
 	const ogImageMetaDataGeneration =
@@ -259,20 +259,20 @@ export default async function handler(
 			};
 		}
 
-		try {
-			// Get OCR using the centralized function
-			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
+		// try {
+		// 	// Get OCR using the centralized function
+		// 	imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
 
-			// Get image caption using the centralized function
-			imageCaption = await imageToText(
-				isOgImagePreferred
-					? ogImageMetaDataGeneration
-					: imageUrlForMetaDataGeneration,
-			);
-		} catch (error) {
-			console.error("Gemini AI processing error", error);
-			Sentry.captureException(`Gemini AI processing error ${error}`);
-		}
+		// 	// Get image caption using the centralized function
+		// 	imageCaption = await imageToText(
+		// 		isOgImagePreferred
+		// 			? ogImageMetaDataGeneration
+		// 			: imageUrlForMetaDataGeneration,
+		// 	);
+		// } catch (error) {
+		// 	console.error("Gemini AI processing error", error);
+		// 	Sentry.captureException(`Gemini AI processing error ${error}`);
+		// }
 	}
 
 	// Get existing meta_data or create empty object if null
