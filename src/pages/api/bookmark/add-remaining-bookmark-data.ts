@@ -290,6 +290,18 @@ export default async function handler(
 		twitter_avatar_url: null,
 	};
 
+	console.log(
+		"isOgImagePreferred~~~~~~~~~~~~~~~~",
+		isOgImagePreferred,
+		"ogImageMetaDataGeneration~~~",
+		ogImageMetaDataGeneration,
+		"imageUrlForMetaDataGeneration~~~",
+		"final condition~~~~~~~~~",
+		isOgImagePreferred
+			? ogImageMetaDataGeneration
+			: imageUrlForMetaDataGeneration,
+	);
+
 	const {
 		data,
 		error: databaseError,
