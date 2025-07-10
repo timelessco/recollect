@@ -52,18 +52,16 @@ const Preview = () => {
 		isLoading: boolean;
 	};
 
+	if ((!isLoading && !bookmark?.data?.[0]) || error) {
+		void router.push(`/${ALL_BOOKMARKS_URL}`);
+	}
+
 	const [isOpen, setIsOpen] = useState(true);
 
 	const handleClose = () => {
 		setIsOpen(false);
 		void router.push(`/${ALL_BOOKMARKS_URL}`);
 	};
-
-	useEffect(() => {
-		if ((!isLoading && !bookmark?.data?.[0]) || error) {
-			void router.push(`/${ALL_BOOKMARKS_URL}`);
-		}
-	}, [isLoading, bookmark, error, router]);
 
 	if (isLoading)
 		return (
