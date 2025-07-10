@@ -109,7 +109,6 @@ export default async function handler(
 		screenshot: publicURL,
 		coverImage: existingBookmarkData?.ogImage,
 	};
-	console.error("updatedMetaData", updatedMetaData);
 
 	const {
 		data,
@@ -130,8 +129,7 @@ export default async function handler(
 		try {
 			if (data && data.length > 0) {
 				await axios.post(
-					`https://bookmark-tags-git-fix-ogimgaes-debugging-timelessco.vercel.app/${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
-					// `${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
 						favIcon: data?.[0]?.meta_data?.favIcon,
