@@ -195,6 +195,10 @@ export const CustomLightBox = ({
 		);
 	}, [showSidepane, bookmarks, activeIndex]);
 
+	const iconButton = () => (
+		<div className=" h-[50vh] w-[150px] cursor-pointer" />
+	);
+
 	return (
 		<Lightbox
 			close={handleClose}
@@ -220,10 +224,10 @@ export const CustomLightBox = ({
 			}}
 			open={isOpen}
 			render={{
-				buttonNext: () => null,
-				buttonPrev: () => null,
 				slide: renderSlide,
 				controls: renderSidePane,
+				iconNext: iconButton,
+				iconPrev: iconButton,
 			}}
 			slides={slides}
 			styles={{
