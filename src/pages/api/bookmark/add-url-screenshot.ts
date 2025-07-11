@@ -130,7 +130,7 @@ export default async function handler(
 		try {
 			if (data && data.length > 0) {
 				await axios.post(
-					`https://bookmark-tags-j4m7p1p2l-timelessco.vercel.app/${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+					`https://bookmark-tags-git-fix-image-urls-timelessco.vercel.app/${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
 						favIcon: data?.[0]?.meta_data?.favIcon,
