@@ -220,8 +220,6 @@ export const CustomLightBox = ({
 			}}
 			open={isOpen}
 			render={{
-				buttonNext: () => null,
-				buttonPrev: () => null,
 				slide: renderSlide,
 				controls: renderSidePane,
 			}}
