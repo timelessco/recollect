@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
+import { SCREENSHOT_URL } from "../../../utils/constants";
+
 type EmbedWithFallbackProps = {
 	placeholder?: string;
 	placeholderHeight?: number;
@@ -43,7 +45,7 @@ export const EmbedWithFallback = ({
 	}, [src]);
 
 	if (failed && placeholder) {
-		const isScreenshot = placeholder.includes("screenshot");
+		const isScreenshot = placeholder.startsWith(SCREENSHOT_URL);
 		const scaledWidth = isScreenshot
 			? (placeholderWidth ?? 0) * 0.5
 			: placeholderWidth ?? 0;
