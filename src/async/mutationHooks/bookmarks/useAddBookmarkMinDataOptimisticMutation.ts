@@ -22,6 +22,7 @@ import {
 	URL_IMAGE_CHECK_PATTERN,
 	VIDEOS_URL,
 } from "../../../utils/constants";
+import { checkIfUrlAnImage, checkIfUrlAnMedia } from "../../../utils/helpers";
 import { successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData } from "../../supabaseCrudHelpers";
 
@@ -102,7 +103,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			);
 		},
 		// Always refetch after error or success:
-		onSettled: (apiResponse: unknown) => {
+		onSettled: async (apiResponse: unknown) => {
 			const response = apiResponse as { data: { data: SingleListData[] } };
 			void queryClient.invalidateQueries([
 				BOOKMARKS_KEY,
@@ -125,11 +126,17 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 			// this is to check if url is not a website like test.pdf
 			// if this is the case then we do not call the screenshot api
-			const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
+			const isUrlOfMimeType = await checkIfUrlAnImage(url);
+
+			// **************
+			// here we are checking if the url is an image, we don't check for mime type,
+			// if we check if is an mime type then screenshot api cannot be called
+			// ex: if it is an .mp4(url) the mime type will be video/mp4 so screenshot api cannot be called, we will not have preview image
+			//  **************
 
 			// only take screenshot if url is not an image like https://test.com/test.jpg
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
-			if (isNull(isUrlOfMimeType)) {
+			if (!isUrlOfMimeType) {
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,
