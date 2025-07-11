@@ -116,6 +116,8 @@ export const AI_SEARCH_API = "/v1/ai/search/get";
 // Screenshot api
 export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app/";
+export const SCREENSHOT_URL =
+	"https://media.recollect.so/bookmarks/public/screenshot_imgs";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
