@@ -296,6 +296,25 @@ export const isCurrentYear = (insertedAt: string) => {
 	return insertedYear === currentYear;
 };
 
+export const checkIfUrlAnImage = async (url: string) => {
+	const realImageUrl = new URL(url)?.searchParams.get("url");
+
+	try {
+		const response = await axios.head(realImageUrl ?? url, {
+			timeout: 5_000,
+			headers: {
+				"User-Agent": "Mozilla/5.0",
+			},
+		});
+		const mediaType = response.headers["content-type"];
+
+		return mediaType?.includes("image/");
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
+};
+
 export const checkIfUrlAnMedia = async (url: string) => {
 	const realImageUrl = new URL(url)?.searchParams.get("url");
 
@@ -308,7 +327,7 @@ export const checkIfUrlAnMedia = async (url: string) => {
 		});
 		const mediaType = response.headers["content-type"];
 
-		return acceptedFileTypes.includes(mediaType);
+		return acceptedFileTypes?.includes(mediaType);
 	} catch (error) {
 		console.error(error);
 		return false;
