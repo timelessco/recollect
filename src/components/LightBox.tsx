@@ -53,11 +53,7 @@ export const CustomLightBox = ({
 	setActiveIndex: (index: number) => void;
 }) => {
 	const router = useRouter();
-	const [isSidepaneOpen, setIsSidepaneOpen] = useState(false);
 	const [showControls, setShowControls] = useState(false);
-	const toggleSidepane = useCallback(() => {
-		setIsSidepaneOpen((previous) => !previous);
-	}, []);
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
 		return bookmarks.map((bookmark) => ({
@@ -73,6 +69,7 @@ export const CustomLightBox = ({
 			}),
 		})) as CustomSlide[];
 	}, [bookmarks]);
+	const [showSidepane, setShowSidepane] = useState(false);
 
 	const renderSlide = useCallback(
 		(slideProps: { slide: CustomSlide }) => {
@@ -84,150 +81,119 @@ export const CustomLightBox = ({
 			if (!bookmark) return null;
 
 			return (
-				<div className="flex h-full w-full">
-					<div className="flex h-full w-full items-center justify-center ">
-						{bookmark?.type?.startsWith("image") ? (
-							<div className="flex items-center justify-center">
-								<div className="relative max-w-[1200px]">
-									<Image
-										alt="Preview"
-										className="h-auto max-h-[80vh] w-auto"
-										height={bookmark.meta_data?.height ?? 0}
-										src={bookmark?.url}
-										width={0}
-									/>
-								</div>
-							</div>
-						) : bookmark?.type?.startsWith("video") ? (
-							<div className="flex h-full w-full items-center justify-center ">
-								<div
-									className="relative w-full max-w-4xl"
-									onMouseEnter={() => setShowControls(true)}
-									onMouseLeave={() => setShowControls(false)}
-								>
-									<video
-										autoPlay
-										className="h-full max-h-[70vh] w-full object-contain"
-										controls={showControls}
-										src={bookmark?.url}
-									>
-										<track kind="captions" src="" />
-									</video>
-								</div>
-							</div>
-						) : bookmark?.type?.startsWith("application") ? (
-							<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-								<div className=" relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl shadow-lg">
-									<embed
-										className="block h-full w-full border-none"
-										key={bookmark?.url}
-										src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
-										type="application/pdf"
-									/>
-								</div>
-							</div>
-						) : (
-							<EmbedWithFallback
-								placeholder={bookmark?.ogImage ?? ""}
-								placeholderHeight={bookmark.meta_data?.height ?? 0}
-								placeholderWidth={bookmark.meta_data?.width ?? 0}
-								src={bookmark?.url}
-							/>
-						)}
-					</div>
-					<button
-						className="absolute right-10 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-						onClick={toggleSidepane}
-						type="button"
-					>
-						<svg
-							className="h-5 w-5 text-gray-600"
-							fill="none"
-							stroke="currentColor"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path d={!isSidepaneOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
-						</svg>
-					</button>
-					{/* Sidepane */}
-					<div
-						className={`h-full bg-white shadow-lg transition-all duration-300 ease-in-out ${
-							isSidepaneOpen ? "w-80 border-l border-gray-200" : "w-0"
-						}`}
-					>
-						<div className="h-full overflow-y-auto p-4">
-							<div className="min-w-[288px] space-y-4">
-								<div>
-									<h4 className="mb-1 text-sm font-medium text-gray-500">
-										Title
-									</h4>
-									<p className="break-words text-gray-900">
-										{bookmark?.title ?? "No title available"}
-									</p>
-								</div>
-								{bookmark?.description && (
-									<div>
-										<h4 className="mb-1 text-sm font-medium text-gray-500">
-											Description
-										</h4>
-										<p className="break-words text-sm text-gray-700">
-											{bookmark?.description}
-										</p>
-									</div>
-								)}
-								<div>
-									<h4 className="mb-1 text-sm font-medium text-gray-500">
-										Type
-									</h4>
-									<p className="text-sm capitalize text-gray-700">
-										{bookmark?.type?.split("/")[0] ?? "Unknown"}
-									</p>
-								</div>
-								<div>
-									<h4 className="mb-1 text-sm font-medium text-gray-500">
-										Source
-									</h4>
-									<a
-										className="break-all text-sm text-blue-600 hover:underline"
-										href={bookmark?.url}
-										rel="noopener noreferrer"
-										target="_blank"
-									>
-										{bookmark?.domain ?? new URL(bookmark?.url).hostname}
-									</a>
-								</div>
-								{bookmark?.createdAt && (
-									<div>
-										<h4 className="mb-1 text-sm font-medium text-gray-500">
-											Saved on
-										</h4>
-										<p className="text-sm text-gray-700">
-											{format(new Date(bookmark?.createdAt), "MMM d, yyyy")}
-										</p>
-									</div>
-								)}
-								<div className="border-t border-gray-200 pt-4">
-									<a
-										className="flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-										href={bookmark?.url}
-										rel="noopener noreferrer"
-										target="_blank"
-									>
-										Open Original
-									</a>
-								</div>
+				<div className="flex h-full w-full items-center justify-center ">
+					{bookmark?.type?.startsWith("image") ? (
+						<div className="flex items-center justify-center">
+							<div className="relative max-w-[1200px]">
+								<Image
+									alt="Preview"
+									className="h-auto max-h-[80vh] w-auto"
+									height={bookmark.meta_data?.height ?? 0}
+									src={bookmark?.url}
+									width={0}
+								/>
 							</div>
 						</div>
-					</div>
+					) : bookmark?.type?.startsWith("video") ? (
+						<div className="flex h-full w-full items-center justify-center ">
+							<div
+								className="relative w-full max-w-4xl"
+								onMouseEnter={() => setShowControls(true)}
+								onMouseLeave={() => setShowControls(false)}
+							>
+								<video
+									autoPlay
+									className="h-full max-h-[70vh] w-full object-contain"
+									controls={showControls}
+									src={bookmark?.url}
+								>
+									<track kind="captions" src="" />
+								</video>
+							</div>
+						</div>
+					) : bookmark?.type?.startsWith("application") ? (
+						<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
+							<div className=" relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl shadow-lg">
+								<embed
+									className="block h-full w-full border-none"
+									key={bookmark?.url}
+									src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
+									type="application/pdf"
+								/>
+							</div>
+						</div>
+					) : (
+						<EmbedWithFallback
+							placeholder={bookmark?.ogImage ?? ""}
+							placeholderHeight={bookmark.meta_data?.height ?? 0}
+							placeholderWidth={bookmark.meta_data?.width ?? 0}
+							src={bookmark?.url}
+						/>
+					)}
 				</div>
 			);
 		},
-		[bookmarks, isSidepaneOpen, slides, toggleSidepane, showControls],
+		[bookmarks, showControls, slides],
 	);
+
+	const renderSidePane = useCallback(() => {
+		const bookmark = bookmarks?.[activeIndex];
+		if (!showSidepane || !bookmark) return null;
+
+		return (
+			<div className="absolute right-0 top-0 flex h-full w-80 flex-col border-l border-gray-200 bg-white/90 shadow-xl backdrop-blur-xl">
+				<div className="flex items-center justify-between border-b border-gray-300 px-4 py-3">
+					<span className="font-medium text-gray-700">Meta Data</span>
+					<button
+						className="text-gray-500 transition hover:text-gray-700"
+						onClick={() => setShowSidepane(false)}
+						type="button"
+					>
+						Hide Meta Data
+					</button>
+				</div>
+				<div className="flex-1 space-y-4 overflow-y-auto p-4 text-sm text-gray-800">
+					{bookmark.title && (
+						<div>
+							<p className="text-xs text-gray-500">Title</p>
+							<p className="font-medium">{bookmark.title}</p>
+						</div>
+					)}
+					{bookmark.domain && (
+						<div>
+							<p className="text-xs text-gray-500">Domain</p>
+							<p>{bookmark.domain}</p>
+						</div>
+					)}
+					{bookmark.description && (
+						<div>
+							<p className="text-xs text-gray-500">Description</p>
+							<p className="text-gray-700">{bookmark.description}</p>
+						</div>
+					)}
+					{bookmark.createdAt && (
+						<div>
+							<p className="text-xs text-gray-500">Created At</p>
+							<p>{format(new Date(bookmark.createdAt), "MMM d, yyyy")}</p>
+						</div>
+					)}
+					{bookmark.url && (
+						<div>
+							<p className="text-xs text-gray-500">URL</p>
+							<a
+								className="break-all text-blue-600 underline"
+								href={bookmark.url}
+								rel="noopener noreferrer"
+								target="_blank"
+							>
+								{bookmark.url}
+							</a>
+						</div>
+					)}
+				</div>
+			</div>
+		);
+	}, [showSidepane, bookmarks, activeIndex]);
 
 	return (
 		<Lightbox
@@ -253,11 +219,11 @@ export const CustomLightBox = ({
 				},
 			}}
 			open={isOpen}
-			// Remove Video plugin to handle videos manually in renderSlide
 			render={{
 				buttonNext: () => null,
 				buttonPrev: () => null,
 				slide: renderSlide,
+				controls: renderSidePane,
 			}}
 			slides={slides}
 			styles={{
@@ -268,8 +234,20 @@ export const CustomLightBox = ({
 					alignItems: "center",
 					justifyContent: "center",
 					transition: "padding 0.3s ease",
-					zIndex: 50_000,
 				},
+			}}
+			toolbar={{
+				buttons: [
+					<button
+						className=" text-gray-500 transition hover:text-gray-700"
+						key="show-pane"
+						onClick={() => setShowSidepane(true)}
+						type="button"
+					>
+						Show Meta Data
+					</button>,
+					"close",
+				],
 			}}
 		/>
 	);
