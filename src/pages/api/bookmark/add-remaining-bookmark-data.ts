@@ -27,7 +27,11 @@ import {
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { checkIfUrlAnMedia, getBaseUrl } from "../../../utils/helpers";
+import {
+	checkIfUrlAnImage,
+	checkIfUrlAnMedia,
+	getBaseUrl,
+} from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -139,7 +143,8 @@ export default async function handler(
 	// if a url is an image, then we need to upload it to s3 and store it here
 	let uploadedImageThatIsAUrl = null;
 
-	const isUrlAnImage = await checkIfUrlAnMedia(url);
+	const isUrlAnImage = await checkIfUrlAnImage(url);
+	// ***** here we are checking the url is of an image or not,if it is so we upload the image in bucket and url in ogImage*****
 
 	// const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
 	const isUrlAnImageCondition = isUrlAnImage;
@@ -148,7 +153,9 @@ export default async function handler(
 		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to s3
 		try {
 			// Download the image from the URL
-			const image = await axios.get(url, {
+			const realImageUrl = new URL(url)?.searchParams.get("url");
+
+			const image = await axios.get(realImageUrl ?? url, {
 				responseType: "arraybuffer",
 				headers: {
 					"User-Agent": "Mozilla/5.0",
