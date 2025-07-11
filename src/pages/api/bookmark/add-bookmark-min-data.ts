@@ -30,7 +30,11 @@ import {
 	uncategorizedPages,
 	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
-import { apiCookieParser, checkIfUrlAnMedia } from "../../../utils/helpers";
+import {
+	apiCookieParser,
+	checkIfUrlAnImage,
+	checkIfUrlAnMedia,
+} from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
@@ -296,6 +300,8 @@ export default async function handler(
 	let ogImageToBeAdded = null;
 
 	const isUrlOfMimeType = await checkIfUrlAnMedia(url);
+	// ***** here we are checking the url is of an mime type or not,if it is so we set the url in ogImage *****
+	// ***** if it an  image we upload to s3 and for video we take screenshot *****
 
 	if (!isNil(isUrlOfMimeType)) {
 		ogImageToBeAdded = url;
