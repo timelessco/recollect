@@ -152,7 +152,7 @@
 		"@next/bundle-analyzer": "14.0.3",
 		"@next/env": "14.0.3",
 		"@next/eslint-plugin-next": "14.0.3",
-		"@octokit/core": "6.0.1",
+		"@octokit/core": "7.0.3",
 		"@release-it/conventional-changelog": "10.0.0",
 		"@sendgrid/mail": "^8.0.0",
 		"@sentry/nextjs": "^7.73.0",
