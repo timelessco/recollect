@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
 import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import { EmbedWithFallback } from "../pageComponents/dashboard/cardSection/objectFallBack";
 import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previewLightBox";
@@ -54,21 +55,30 @@ export const CustomLightBox = ({
 }) => {
 	const router = useRouter();
 	const [showControls, setShowControls] = useState(false);
+
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
-		return bookmarks.map((bookmark) => ({
-			src: bookmark.url,
-			type: bookmark.type?.startsWith("video") ? "video" : "image",
-			...(bookmark.type?.startsWith("video") && {
-				sources: [
-					{
-						src: bookmark.url,
-						type: bookmark.type || "video/mp4",
-					},
-				],
-			}),
-		})) as CustomSlide[];
+		return bookmarks.map((bookmark) => {
+			const isImage = bookmark.type?.startsWith("image");
+			const isVideo = bookmark.type?.startsWith("video");
+
+			return {
+				src: bookmark.url,
+				type: isVideo ? "video" : isImage ? "image" : undefined,
+				width: bookmark.meta_data?.width ?? 800,
+				height: bookmark.meta_data?.height ?? 600,
+				...(isVideo && {
+					sources: [
+						{
+							src: bookmark.url,
+							type: bookmark.type ?? "video/mp4",
+						},
+					],
+				}),
+			};
+		}) as CustomSlide[];
 	}, [bookmarks]);
+
 	const [showSidepane, setShowSidepane] = useState(false);
 
 	const renderSlide = useCallback(
@@ -201,6 +211,9 @@ export const CustomLightBox = ({
 
 	return (
 		<Lightbox
+			animation={{
+				zoom: 300,
+			}}
 			close={handleClose}
 			index={activeIndex}
 			on={{
@@ -223,6 +236,7 @@ export const CustomLightBox = ({
 				},
 			}}
 			open={isOpen}
+			plugins={[Zoom]}
 			render={{
 				slide: renderSlide,
 				controls: renderSidePane,
