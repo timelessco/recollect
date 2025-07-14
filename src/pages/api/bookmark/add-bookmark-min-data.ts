@@ -303,7 +303,7 @@ export default async function handler(
 	// ***** here we are checking the url is of an mime type or not,if it is so we set the url in ogImage *****
 	// ***** if it an  image we upload to s3 and for video we take screenshot *****
 
-	if (!isNil(isUrlOfMimeType)) {
+	if (isUrlOfMimeType) {
 		ogImageToBeAdded = url;
 	} else {
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
@@ -351,7 +351,7 @@ export default async function handler(
 			.json({ data, error: scraperApiError ?? null, message: null });
 
 		try {
-			if (!isNull(data) && !isEmpty(data) && !isNil(isUrlOfMimeType)) {
+			if (!isNull(data) && !isEmpty(data) && !isUrlOfMimeType) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				// this is called only if the url is an image url like test.com/image.png.
 				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
