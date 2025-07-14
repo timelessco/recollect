@@ -197,10 +197,10 @@ export default async function handler(
 	let uploadedCoverImageUrl = null;
 
 	// upload scrapper image to s3
-	if (!isNil(currentData?.meta_data?.coverImage)) {
+	if (!isNil(currentData?.ogImage)) {
 		try {
 			// 10 second timeout for image download
-			const image = await axios.get(currentData?.meta_data?.coverImage, {
+			const image = await axios.get(currentData?.ogImage, {
 				responseType: "arraybuffer",
 				// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
 				headers: {
@@ -215,12 +215,12 @@ export default async function handler(
 
 			// If upload failed, log but don't fail the entire request
 			if (uploadedCoverImageUrl === null) {
-				uploadedCoverImageUrl = currentData?.meta_data?.coverImage;
+				uploadedCoverImageUrl = currentData?.ogImage;
 				console.error("Failed to upload image to S3, continuing without image");
 				Sentry.captureException("Failed to upload image to S3");
 			}
 		} catch (error) {
-			uploadedCoverImageUrl = currentData?.meta_data?.coverImage;
+			uploadedCoverImageUrl = currentData?.ogImage;
 			console.error("Error uploading scrapped image to S3:", error);
 			Sentry.captureException(`Error uploading scrapped image to S3: ${error}`);
 		}
