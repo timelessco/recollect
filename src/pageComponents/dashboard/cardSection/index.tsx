@@ -535,11 +535,13 @@ const CardSection = ({
 				}
 
 				let blurSource = "";
-
-				if (!isNil(img)) {
-					const blurHash = blurUrl ?? "";
-					const hashToUse = !isEmpty(blurHash) ? blurHash : defaultBlur;
-					const pixels = decode(hashToUse, 32, 32);
+				if (
+					!isNil(img) &&
+					!isNil(blurUrl) &&
+					!isEmpty(blurUrl) &&
+					!isPublicPage
+				) {
+					const pixels = decode(blurUrl, 32, 32);
 					const image = getImgFromArr(pixels, 32, 32);
 					blurSource = image.src;
 				}
@@ -549,6 +551,19 @@ const CardSection = ({
 						{img ? (
 							documentFileTypes?.includes(type) ? (
 								<PDFThumbnail className={imgClassName} pdfUrl={img} />
+							) : cardTypeCondition === viewValues.moodboard ? (
+								<div className="pointer-events-none relative aspect-[4/3] w-full">
+									<Image
+										alt="bookmark-img"
+										className={`${imgClassName} object-cover`}
+										fill
+										{...(blurSource
+											? { placeholder: "blur", blurDataURL: blurSource }
+											: { placeholder: "empty" })}
+										onError={() => setErrorImgs([id as never, ...errorImgs])}
+										src={img}
+									/>
+								</div>
 							) : (
 								<Image
 									alt="bookmark-img"
