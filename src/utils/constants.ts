@@ -43,7 +43,7 @@ export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 // api constants
 export const getBaseUrl = () =>
 	isProductionEnvironment
-		? process.env.NEXT_PUBLIC_VERCEL_URL
+		? "https://bookmark-tags-git-dev-timelessco.vercel.app"
 		: "http://localhost:3000/";
 
 export const NEXT_API_URL = `/api/`;
