@@ -1,6 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -126,8 +124,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// this is to check if url is not a website like test.pdf
 			// if this is the case then we do not call the screenshot api
 			const isUrlOfMimeType = await checkIfUrlAnImage(url);
-			console.log("isUrlOfMimeType", isUrlOfMimeType);
-
 			// **************
 			// here we are checking if the url is an image, we don't check for mime type,
 			// if we check if is an mime type then screenshot api cannot be called
