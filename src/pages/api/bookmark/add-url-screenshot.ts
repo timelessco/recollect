@@ -74,13 +74,9 @@ export default async function handler(
 		if (screenShotResponse.status === 200) {
 			console.error("***Screenshot success**");
 		}
-	} catch (error_) {
-		if (error_ instanceof Error) {
-			console.error("Screenshot error");
-			Sentry.captureException(`Screenshot error`);
-			throw new Error(error_.message);
-		}
-
+	} catch {
+		console.error("Screenshot error");
+		Sentry.captureException(`Screenshot error`);
 		return;
 	}
 

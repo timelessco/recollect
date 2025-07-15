@@ -6,7 +6,6 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { BOOKMARKS_KEY } from "../../../utils/constants";
-import { successToast } from "../../../utils/toastMessages";
 import { addBookmarkScreenshot } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
@@ -18,12 +17,6 @@ export default function useAddBookmarkScreenshotMutation() {
 	const { sortBy } = useGetSortBy();
 
 	const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
-		onSuccess: () => {
-			successToast("Screenshot  successfully taken");
-		},
-		onError: (error) => {
-			successToast("Screenshot error: " + error);
-		},
 		onSettled: () => {
 			setTimeout(() => {
 				void queryClient.invalidateQueries([

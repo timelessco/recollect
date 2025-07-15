@@ -19,10 +19,11 @@ import {
 	IMAGES_URL,
 	menuListItemName,
 	TWEETS_URL,
+	URL_IMAGE_CHECK_PATTERN,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { checkIfUrlAnImage } from "../../../utils/helpers";
-import { errorToast, successToast } from "../../../utils/toastMessages";
+import { checkIfUrlAnImage, checkIfUrlAnMedia } from "../../../utils/helpers";
+import { successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData } from "../../supabaseCrudHelpers";
 
 import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
@@ -126,7 +127,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// this is to check if url is not a website like test.pdf
 			// if this is the case then we do not call the screenshot api
 			const isUrlOfMimeType = await checkIfUrlAnImage(url);
-			console.log("isUrlOfMimeType", isUrlOfMimeType);
 
 			// **************
 			// here we are checking if the url is an image, we don't check for mime type,
@@ -137,12 +137,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// only take screenshot if url is not an image like https://test.com/test.jpg
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 			if (!isUrlOfMimeType) {
-				errorToast(
-					"screenshot initiated!!!!!!!!" +
-						" isUrlOfMineType: " +
-						isUrlOfMimeType,
-				);
-
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,

@@ -23,6 +23,7 @@ import {
 	MAIN_TABLE_NAME,
 	OG_IMAGE_PREFERRED_SITES,
 	STORAGE_SCRAPPED_IMAGES_PATH,
+	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
@@ -80,9 +81,10 @@ export default async function handler(
 	const { url, favIcon, id } = request.body;
 
 	const urlHost = new URL(url).hostname.toLowerCase();
+	const urlString = url.toLowerCase();
 
-	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some((keyword) =>
-		urlHost.includes(keyword),
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some(
+		(keyword) => urlHost.includes(keyword) || urlString.includes(keyword),
 	);
 	if (!id) {
 		response
@@ -193,9 +195,9 @@ export default async function handler(
 	};
 
 	let uploadedCoverImageUrl = null;
-	const isUrlAnMedia = await checkIfUrlAnMedia(url);
+
 	// upload scrapper image to s3
-	if (currentData?.ogImage && !isUrlAnMedia) {
+	if (!isNil(currentData?.ogImage)) {
 		try {
 			// 10 second timeout for image download
 			const image = await axios.get(currentData?.ogImage, {
@@ -228,14 +230,15 @@ export default async function handler(
 	let imageCaption = null;
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
-	const ogImageMetaDataGeneration = uploadedCoverImageUrl
-		? uploadedCoverImageUrl
-		: currentData?.meta_data?.screenshot;
+	const ogImageMetaDataGeneration =
+		(!isNil(uploadedCoverImageUrl) && uploadedCoverImageUrl) ||
+		(!isNil(currentData?.meta_data?.screenshot) &&
+			currentData?.meta_data?.screenshot);
 
 	// generat meta data (ocr, blurhash data, imgcaption)
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
 		? uploadedImageThatIsAUrl
-		: currentData?.meta_data?.screenshot
+		: !isNil(currentData?.meta_data?.screenshot)
 		? currentData?.meta_data?.screenshot
 		: uploadedCoverImageUrl;
 
