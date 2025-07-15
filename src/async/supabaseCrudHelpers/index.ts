@@ -223,6 +223,11 @@ export const addBookmarkScreenshot = async ({
 
 		return apiResponse;
 	} catch (error) {
+		if (error instanceof Error) {
+			console.error(error.message);
+			throw new Error(error.message);
+		}
+
 		return error;
 	}
 };
