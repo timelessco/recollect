@@ -16,6 +16,7 @@ import { type UrlInput } from "../types/componentTypes";
 import {
 	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
+	getBaseUrl as BASE_URL,
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
@@ -296,40 +297,35 @@ export const isCurrentYear = (insertedAt: string) => {
 	return insertedYear === currentYear;
 };
 
-export const checkIfUrlAnImage = async (url: string) => {
-	const realImageUrl = new URL(url)?.searchParams.get("url");
-
+export const getMediaType = async (url: string): Promise<string | null> => {
 	try {
-		const response = await axios.head(realImageUrl ?? url, {
-			timeout: 5_000,
+		const response = await fetch(`${BASE_URL()}/api/bookmark/get-media-type`, {
+			method: "POST",
 			headers: {
-				"User-Agent": "Mozilla/5.0",
+				"Content-Type": "application/json",
 			},
+			body: JSON.stringify({ url }),
 		});
-		const mediaType = response.headers["content-type"];
 
-		return mediaType?.includes("image/");
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		return data.mediaType || null;
 	} catch (error) {
-		console.error(error);
-		return false;
+		console.error("Error getting media type:", error);
+		return null;
 	}
 };
 
-export const checkIfUrlAnMedia = async (url: string) => {
-	const realImageUrl = new URL(url)?.searchParams.get("url");
+// Helper functions if you still need them
+export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
+	const mediaType = await getMediaType(url);
+	return mediaType?.includes("image/") ?? false;
+};
 
-	try {
-		const response = await axios.head(realImageUrl ?? url, {
-			timeout: 5_000,
-			headers: {
-				"User-Agent": "Mozilla/5.0",
-			},
-		});
-		const mediaType = response.headers["content-type"];
-
-		return acceptedFileTypes?.includes(mediaType);
-	} catch (error) {
-		console.error(error);
-		return false;
-	}
+export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
+	const mediaType = await getMediaType(url);
+	return acceptedFileTypes.includes(mediaType ?? "") ?? false;
 };
