@@ -241,7 +241,7 @@ export default async function handler(
 		: uploadedCoverImageUrl;
 
 	if (
-		!isNil(imageUrlForMetaDataGeneration) &&
+		!isNil(imageUrlForMetaDataGeneration) ||
 		!isNil(ogImageMetaDataGeneration)
 	) {
 		try {
