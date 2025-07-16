@@ -133,11 +133,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// only take screenshot if url is not an image like https://test.com/test.jpg
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 			if (!isUrlOfMimeType) {
-				errorToast(
-					"screenshot initiated!!!!!!!!" +
-						" isUrlOfMineType: " +
-						isUrlOfMimeType,
-				);
+				errorToast("screenshot initiated!!!!!!!!");
 
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
