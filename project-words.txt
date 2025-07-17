@@ -107,6 +107,8 @@ Xenova
 tesseract
 nocheck
 eqwhx
+youtu
+youtube
 sparticuz
 savee
 imdb

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import ReactPlayer from "react-player";
 
 export const VideoPlayer = ({
@@ -9,19 +9,12 @@ export const VideoPlayer = ({
 	src: string;
 }) => {
 	const playerRef = useRef<typeof ReactPlayer | null>(null);
-	const [playing, setPlaying] = useState(isActive);
-
-	useEffect(() => {
-		setPlaying((previous) => (isActive ? true : previous));
-	}, [isActive]);
 
 	return (
 		<ReactPlayer
 			controls
 			height="100%"
-			onPause={() => setPlaying(false)}
-			onPlay={() => setPlaying(true)}
-			playing={playing}
+			playing={isActive}
 			// @ts-expect-error ref type
 			ref={playerRef}
 			src={src}
