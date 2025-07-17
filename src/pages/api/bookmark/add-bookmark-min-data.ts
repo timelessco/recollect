@@ -34,6 +34,7 @@ import {
 	apiCookieParser,
 	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
+	getMediaType,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -316,6 +317,7 @@ export default async function handler(
 				category_id: computedCategoryId,
 				meta_data: {
 					favIcon: scrapperResponse?.data?.favIcon,
+					mediaType: await getMediaType(url),
 				},
 				type: bookmarkType,
 			},
