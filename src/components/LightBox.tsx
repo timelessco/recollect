@@ -95,7 +95,7 @@ export const CustomLightBox = ({
 				<div className="flex h-full w-full items-center justify-center">
 					{bookmark?.type?.startsWith("image") ? (
 						<div className="flex items-center justify-center">
-							<div className="relative max-w-[80vh]">
+							<div className="relative max-w-[80vw]">
 								<Image
 									alt="Preview"
 									className="h-auto max-h-[80vh] w-auto"
@@ -112,7 +112,7 @@ export const CustomLightBox = ({
 							</div>
 						</div>
 					) : bookmark?.type?.startsWith("application") ? (
-						<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
+						<div className="relative flex h-full w-full max-w-[80vw] items-center justify-center">
 							{bookmark?.type === "pdf" ? (
 								<div className="h-full w-full">
 									<div className="flex h-full w-full items-center justify-center bg-gray-50">
@@ -130,7 +130,7 @@ export const CustomLightBox = ({
 						<>
 							{bookmark.url.includes("youtube.com") ||
 							bookmark.url.includes("youtu.be") ? (
-								<div className="flex h-full w-full max-w-[1200px] items-center justify-center">
+								<div className="flex h-full w-full max-w-[80vw] items-center justify-center">
 									<VideoPlayer isActive={isActive} src={bookmark.url} />
 								</div>
 							) : (
