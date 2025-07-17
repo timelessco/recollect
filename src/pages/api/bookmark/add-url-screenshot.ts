@@ -1,5 +1,4 @@
 import console from "console";
-import { url } from "inspector";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
