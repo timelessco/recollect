@@ -11,8 +11,6 @@ import { flatten, isNil, type Many } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
-import { domMax, LazyMotion } from "motion/react";
-import * as motion from "motion/react-m";
 import { Item } from "react-stately";
 
 import ReadMore from "../../../components/readmore";
@@ -536,10 +534,13 @@ const CardSection = ({
 
 				let blurSource = "";
 
-				if (!isNil(img)) {
-					const blurHash = blurUrl ?? "";
-					const hashToUse = !isEmpty(blurHash) ? blurHash : defaultBlur;
-					const pixels = decode(hashToUse, 32, 32);
+				if (
+					!isNil(img) &&
+					!isNil(blurUrl) &&
+					!isEmpty(blurUrl) &&
+					!isPublicPage
+				) {
+					const pixels = decode(blurUrl, 32, 32);
 					const image = getImgFromArr(pixels, 32, 32);
 					blurSource = image.src;
 				}
@@ -586,18 +587,16 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<LazyMotion features={domMax}>
-					<motion.figure className={figureClassName} layout>
-						{isVideo && (
-							<PlayIcon
-								className={playSvgClassName}
-								onPointerDown={(event) => event.stopPropagation()}
-							/>
-						)}
-						{isAudio && <AudioIcon className={playSvgClassName} />}
-						{imgLogic()}
-					</motion.figure>
-				</LazyMotion>
+				<figure className={figureClassName}>
+					{isVideo && (
+						<PlayIcon
+							className={playSvgClassName}
+							onPointerDown={(event) => event.stopPropagation()}
+						/>
+					)}
+					{isAudio && <AudioIcon className={playSvgClassName} />}
+					{imgLogic()}
+				</figure>
 			</div>
 		);
 	};
