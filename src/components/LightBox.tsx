@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
@@ -8,6 +9,9 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import { EmbedWithFallback } from "../pageComponents/dashboard/cardSection/objectFallBack";
 import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previewLightBox";
 import { CATEGORY_ID_PATHNAME } from "../utils/constants";
+
+// Dynamically import ReactPlayer to avoid SSR issues
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
 // Update the LightBox.tsx component
 export type Bookmark = {
@@ -54,7 +58,6 @@ export const CustomLightBox = ({
 	setActiveIndex: (index: number) => void;
 }) => {
 	const router = useRouter();
-	const [showControls, setShowControls] = useState(false);
 
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
@@ -82,13 +85,14 @@ export const CustomLightBox = ({
 	const [showSidepane, setShowSidepane] = useState(false);
 
 	const renderSlide = useCallback(
-		(slideProps: { slide: CustomSlide }) => {
-			const { slide } = slideProps;
+		(slideProps: { offset: number; slide: CustomSlide }) => {
+			const { offset, slide } = slideProps;
 
-			// Find the slide index by matching the slide object reference
 			const slideIndex = slides.indexOf(slide);
 			const bookmark = bookmarks?.[slideIndex];
 			if (!bookmark) return null;
+
+			const isActive = offset === 0;
 
 			return (
 				<div className="flex h-full w-full items-center justify-center">
@@ -105,24 +109,21 @@ export const CustomLightBox = ({
 							</div>
 						</div>
 					) : bookmark?.type?.startsWith("video") ? (
-						<div className="flex h-full w-full items-center justify-center ">
-							<div
-								className="relative w-full max-w-4xl"
-								onMouseEnter={() => setShowControls(true)}
-								onMouseLeave={() => setShowControls(false)}
-							>
-								<video
-									autoPlay
-									className="h-full max-h-[70vh] w-full object-contain"
-									controls={showControls}
+						<div className="flex h-full w-full items-center justify-center">
+							<div className="relative w-full max-w-4xl">
+								<ReactPlayer
+									controls
+									height="100%"
+									onEnded={() => {}}
+									playing={isActive}
 									src={bookmark?.url}
-								>
-									<track kind="captions" src="" />
-								</video>
+									style={{ maxHeight: "80vh" }}
+									width="100%"
+								/>
 							</div>
 						</div>
 					) : bookmark?.type?.startsWith("application") ? (
-						<div className="relative flex h-full w-full max-w-[80vh] items-center justify-center">
+						<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
 							<div className=" relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl shadow-lg">
 								<embed
 									className="block h-full w-full border-none"
@@ -143,7 +144,7 @@ export const CustomLightBox = ({
 				</div>
 			);
 		},
-		[bookmarks, showControls, slides],
+		[bookmarks, slides],
 	);
 
 	const renderSidePane = useCallback(() => {
