@@ -9,7 +9,8 @@ import { EmbedWithFallback } from "../pageComponents/dashboard/cardSection/objec
 import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previewLightBox";
 import { CATEGORY_ID_PATHNAME } from "../utils/constants";
 
-// Update the LightBox.tsx component
+import { VideoPlayer } from "./VideoPlayer";
+
 export type Bookmark = {
 	createdAt?: string;
 	description?: string;
@@ -54,7 +55,6 @@ export const CustomLightBox = ({
 	setActiveIndex: (index: number) => void;
 }) => {
 	const router = useRouter();
-	const [showControls, setShowControls] = useState(false);
 
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
@@ -82,13 +82,14 @@ export const CustomLightBox = ({
 	const [showSidepane, setShowSidepane] = useState(false);
 
 	const renderSlide = useCallback(
-		(slideProps: { slide: CustomSlide }) => {
-			const { slide } = slideProps;
+		(slideProps: { offset: number; slide: CustomSlide }) => {
+			const { offset, slide } = slideProps;
 
-			// Find the slide index by matching the slide object reference
 			const slideIndex = slides.indexOf(slide);
 			const bookmark = bookmarks?.[slideIndex];
 			if (!bookmark) return null;
+
+			const isActive = offset === 0;
 
 			return (
 				<div className="flex h-full w-full items-center justify-center">
@@ -105,45 +106,47 @@ export const CustomLightBox = ({
 							</div>
 						</div>
 					) : bookmark?.type?.startsWith("video") ? (
-						<div className="flex h-full w-full items-center justify-center ">
-							<div
-								className="relative w-full max-w-4xl"
-								onMouseEnter={() => setShowControls(true)}
-								onMouseLeave={() => setShowControls(false)}
-							>
-								<video
-									autoPlay
-									className="h-full max-h-[70vh] w-full object-contain"
-									controls={showControls}
-									src={bookmark?.url}
-								>
-									<track kind="captions" src="" />
-								</video>
+						<div className="flex h-full w-full items-center justify-center">
+							<div className="w-full max-w-4xl">
+								<VideoPlayer isActive={isActive} src={bookmark?.url} />
 							</div>
 						</div>
 					) : bookmark?.type?.startsWith("application") ? (
-						<div className="relative flex h-full w-full max-w-[80vh] items-center justify-center">
-							<div className=" relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl shadow-lg">
-								<embed
-									className="block h-full w-full border-none"
-									key={bookmark?.url}
-									src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
-									type="application/pdf"
-								/>
-							</div>
+						<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
+							{bookmark?.type === "pdf" ? (
+								<div className="h-full w-full">
+									<div className="flex h-full w-full items-center justify-center bg-gray-50">
+										<embed
+											className="block h-full w-full border-none"
+											key={bookmark?.url}
+											src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
+											type="application/pdf"
+										/>
+									</div>
+								</div>
+							) : null}
 						</div>
-					) : (
-						<EmbedWithFallback
-							placeholder={bookmark?.ogImage ?? ""}
-							placeholderHeight={bookmark.meta_data?.height ?? 0}
-							placeholderWidth={bookmark.meta_data?.width ?? 0}
-							src={bookmark?.url}
-						/>
+					) : !bookmark?.url ? null : (
+						<>
+							{bookmark.url.includes("youtube.com") ||
+							bookmark.url.includes("youtu.be") ? (
+								<div className="flex h-full w-full max-w-[1200px] items-center justify-center">
+									<VideoPlayer isActive={isActive} src={bookmark.url} />
+								</div>
+							) : (
+								<EmbedWithFallback
+									placeholder={bookmark.ogImage ?? ""}
+									placeholderHeight={bookmark.meta_data?.height ?? 0}
+									placeholderWidth={bookmark.meta_data?.width ?? 0}
+									src={bookmark.url}
+								/>
+							)}
+						</>
 					)}
 				</div>
 			);
 		},
-		[bookmarks, showControls, slides],
+		[bookmarks, slides],
 	);
 
 	const renderSidePane = useCallback(() => {
