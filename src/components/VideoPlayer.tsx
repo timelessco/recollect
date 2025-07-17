@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 
 export const VideoPlayer = ({
@@ -6,14 +7,26 @@ export const VideoPlayer = ({
 }: {
 	isActive: boolean;
 	src: string;
-}) => (
-	<ReactPlayer
-		controls
-		height="100%"
-		onEnded={() => {}}
-		playing={isActive}
-		src={src}
-		style={{ maxHeight: "80vh" }}
-		width="100%"
-	/>
-);
+}) => {
+	const playerRef = useRef<typeof ReactPlayer | null>(null);
+	const [playing, setPlaying] = useState(isActive);
+
+	useEffect(() => {
+		setPlaying((previous) => (isActive ? true : previous));
+	}, [isActive]);
+
+	return (
+		<ReactPlayer
+			controls
+			height="100%"
+			onPause={() => setPlaying(false)}
+			onPlay={() => setPlaying(true)}
+			playing={playing}
+			// @ts-expect-error ref type
+			ref={playerRef}
+			src={src}
+			style={{ maxHeight: "80vh" }}
+			width="100%"
+		/>
+	);
+};
