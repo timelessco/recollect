@@ -150,54 +150,98 @@ export const CustomLightBox = ({
 		const bookmark = bookmarks?.[activeIndex];
 		if (!bookmark) return null;
 
+		const isHidden = !showSidepane;
+
 		return (
 			<div
+				aria-hidden={isHidden}
 				className={`absolute right-0 top-0 flex h-full w-80 flex-col border-l border-gray-200 bg-white/90 shadow-xl backdrop-blur-xl transition-transform duration-300 ease-in-out ${
 					showSidepane ? "translate-x-0" : "translate-x-full"
 				}`}
 			>
 				<div className="flex items-center justify-between border-b border-gray-300 px-4 py-3">
-					<span className="font-medium text-gray-700">Meta Data</span>
+					<span
+						className="font-medium text-gray-700"
+						tabIndex={isHidden ? -1 : undefined}
+					>
+						Meta Data
+					</span>
 					<button
 						className="text-gray-500 transition hover:text-gray-700"
 						onClick={() => setShowSidepane(false)}
+						tabIndex={isHidden ? -1 : 0}
 						type="button"
 					>
 						Hide Meta Data
 					</button>
 				</div>
-				<div className="flex-1 space-y-4 overflow-y-auto p-4 text-sm text-gray-800">
+				<div
+					aria-hidden={isHidden}
+					className="flex-1 space-y-4 overflow-y-auto p-4 text-sm text-gray-800"
+				>
 					{bookmark.title && (
 						<div>
-							<p className="text-xs text-gray-500">Title</p>
-							<p className="font-medium">{bookmark.title}</p>
+							<p
+								className="text-xs text-gray-500"
+								tabIndex={isHidden ? -1 : undefined}
+							>
+								Title
+							</p>
+							<p className="font-medium" tabIndex={isHidden ? -1 : undefined}>
+								{bookmark.title}
+							</p>
 						</div>
 					)}
 					{bookmark.domain && (
 						<div>
-							<p className="text-xs text-gray-500">Domain</p>
-							<p>{bookmark.domain}</p>
+							<p
+								className="text-xs text-gray-500"
+								tabIndex={isHidden ? -1 : undefined}
+							>
+								Domain
+							</p>
+							<p tabIndex={isHidden ? -1 : undefined}>{bookmark.domain}</p>
 						</div>
 					)}
 					{bookmark.description && (
 						<div>
-							<p className="text-xs text-gray-500">Description</p>
-							<p className="text-gray-700">{bookmark.description}</p>
+							<p
+								className="text-xs text-gray-500"
+								tabIndex={isHidden ? -1 : undefined}
+							>
+								Description
+							</p>
+							<p className="text-gray-700" tabIndex={isHidden ? -1 : undefined}>
+								{bookmark.description}
+							</p>
 						</div>
 					)}
 					{bookmark.createdAt && (
 						<div>
-							<p className="text-xs text-gray-500">Created At</p>
-							<p>{format(new Date(bookmark.createdAt), "MMM d, yyyy")}</p>
+							<p
+								className="text-xs text-gray-500"
+								tabIndex={isHidden ? -1 : undefined}
+							>
+								Created At
+							</p>
+							<p tabIndex={isHidden ? -1 : undefined}>
+								{format(new Date(bookmark.createdAt), "MMM d, yyyy")}
+							</p>
 						</div>
 					)}
 					{bookmark.url && (
 						<div>
-							<p className="text-xs text-gray-500">URL</p>
+							<p
+								className="text-xs text-gray-500"
+								tabIndex={isHidden ? -1 : undefined}
+							>
+								URL
+							</p>
 							<a
 								className="break-all text-blue-600 underline"
 								href={bookmark.url}
 								rel="noopener noreferrer"
+								tabIndex={isHidden ? -1 : 0}
 								target="_blank"
 							>
 								{bookmark.url}
