@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
@@ -10,10 +9,8 @@ import { EmbedWithFallback } from "../pageComponents/dashboard/cardSection/objec
 import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previewLightBox";
 import { CATEGORY_ID_PATHNAME } from "../utils/constants";
 
-// Dynamically import ReactPlayer to avoid SSR issues
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+import { VideoPlayer } from "./VideoPlayer";
 
-// Update the LightBox.tsx component
 export type Bookmark = {
 	createdAt?: string;
 	description?: string;
@@ -110,36 +107,41 @@ export const CustomLightBox = ({
 						</div>
 					) : bookmark?.type?.startsWith("video") ? (
 						<div className="flex h-full w-full items-center justify-center">
-							<div className="relative w-full max-w-4xl">
-								<ReactPlayer
-									controls
-									height="100%"
-									onEnded={() => {}}
-									playing={isActive}
-									src={bookmark?.url}
-									style={{ maxHeight: "80vh" }}
-									width="100%"
-								/>
+							<div className="w-full max-w-4xl">
+								<VideoPlayer isActive={isActive} src={bookmark?.url} />
 							</div>
 						</div>
 					) : bookmark?.type?.startsWith("application") ? (
 						<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-							<div className=" relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl shadow-lg">
-								<embed
-									className="block h-full w-full border-none"
-									key={bookmark?.url}
-									src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
-									type="application/pdf"
-								/>
-							</div>
+							{bookmark?.type === "pdf" ? (
+								<div className="h-full w-full">
+									<div className="flex h-full w-full items-center justify-center bg-gray-50">
+										<embed
+											className="block h-full w-full border-none"
+											key={bookmark?.url}
+											src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
+											type="application/pdf"
+										/>
+									</div>
+								</div>
+							) : null}
 						</div>
-					) : (
-						<EmbedWithFallback
-							placeholder={bookmark?.ogImage ?? ""}
-							placeholderHeight={bookmark.meta_data?.height ?? 0}
-							placeholderWidth={bookmark.meta_data?.width ?? 0}
-							src={bookmark?.url}
-						/>
+					) : !bookmark?.url ? null : (
+						<>
+							{bookmark.url.includes("youtube.com") ||
+							bookmark.url.includes("youtu.be") ? (
+								<div className="flex h-full w-full max-w-[1200px] items-center justify-center">
+									<VideoPlayer isActive={isActive} src={bookmark.url} />
+								</div>
+							) : (
+								<EmbedWithFallback
+									placeholder={bookmark.ogImage ?? ""}
+									placeholderHeight={bookmark.meta_data?.height ?? 0}
+									placeholderWidth={bookmark.meta_data?.width ?? 0}
+									src={bookmark.url}
+								/>
+							)}
+						</>
 					)}
 				</div>
 			);
