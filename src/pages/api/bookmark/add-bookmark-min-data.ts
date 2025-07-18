@@ -316,6 +316,7 @@ export default async function handler(
 				ogImage: ogImageToBeAdded,
 				category_id: computedCategoryId,
 				meta_data: {
+					isOgImagePreferred: false,
 					mediaType: await getMediaType(url),
 				},
 				type: bookmarkType,
