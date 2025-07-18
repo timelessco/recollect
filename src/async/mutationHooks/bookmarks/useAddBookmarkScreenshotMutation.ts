@@ -19,7 +19,7 @@ export default function useAddBookmarkScreenshotMutation() {
 
 	const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
 		onSuccess: () => {
-			successToast("Screenshot  successfully taken");
+			successToast("Screenshot  successfully taken ^_^");
 		},
 		onError: (error) => {
 			successToast("Screenshot error: " + error);
