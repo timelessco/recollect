@@ -130,8 +130,6 @@ export default async function handler(
 		.select();
 
 	if (isNull(error)) {
-		response.status(200).json({ data, error: null });
-
 		try {
 			if (data && data.length > 0) {
 				await axios.post(
@@ -148,6 +146,8 @@ export default async function handler(
 					},
 				);
 			}
+
+			response.status(200).json({ data, error: null });
 		} catch (remainingUploadError) {
 			console.error("Remaining bookmark data API error:", remainingUploadError);
 			Sentry.captureException(
