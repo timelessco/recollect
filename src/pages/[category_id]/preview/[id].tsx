@@ -18,6 +18,7 @@ type BookmarkData = {
 		favIcon: string | null;
 		height: number;
 		img_caption: string | null;
+		isOgImagePreferred: boolean;
 		mediaType: string;
 		ocr: string | null;
 		ogImgBlurUrl: string;
@@ -85,6 +86,7 @@ const Preview = () => {
 		domain: new URL(bookmarkData.url).hostname,
 		meta_data: {
 			height: bookmarkData.meta_data.height,
+			isOgImagePreferred: bookmarkData.meta_data.isOgImagePreferred,
 			width: bookmarkData.meta_data.width,
 			mediaType: bookmarkData.meta_data.mediaType,
 		},

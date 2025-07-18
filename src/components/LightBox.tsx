@@ -18,6 +18,7 @@ export type Bookmark = {
 	id: number;
 	meta_data?: {
 		height?: number | null;
+		isOgImagePreferred: boolean;
 		mediaType?: string;
 		width?: number | null;
 	};
@@ -43,6 +44,7 @@ export const CustomLightBox = ({
 		id: number;
 		meta_data?: {
 			height: number | null;
+			isOgImagePreferred: boolean;
 			mediaType?: string;
 			width: number | null;
 		};
@@ -96,6 +98,7 @@ export const CustomLightBox = ({
 			return (
 				<div className="flex h-full w-full items-center justify-center">
 					{bookmark?.meta_data?.mediaType?.startsWith("image/") ||
+					bookmark?.meta_data?.isOgImagePreferred ||
 					bookmark?.type?.startsWith("image") ? (
 						<div className="flex items-center justify-center">
 							<div className="relative max-w-[80vw]">
@@ -103,7 +106,12 @@ export const CustomLightBox = ({
 									alt="Preview"
 									className="h-auto max-h-[80vh] w-auto"
 									height={bookmark.meta_data?.height ?? 0}
-									src={bookmark?.url}
+									src={
+										bookmark?.meta_data?.mediaType?.startsWith("image/") ||
+										bookmark?.meta_data?.isOgImagePreferred
+											? bookmark?.ogImage ?? ""
+											: bookmark?.url
+									}
 									width={bookmark.meta_data?.width ?? 0}
 								/>
 							</div>
