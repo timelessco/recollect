@@ -32,7 +32,7 @@ export default function useAddBookmarkScreenshotMutation() {
 					CATEGORY_ID,
 					sortBy,
 				]);
-			}, 10_000);
+			});
 		},
 	});
 
