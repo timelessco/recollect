@@ -8,7 +8,7 @@ import {
 } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isEmpty, isNil, isNull } from "lodash";
+import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
@@ -28,11 +28,9 @@ import {
 	OG_IMAGE_PREFERRED_SITES,
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
-	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import {
 	apiCookieParser,
-	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
 	getMediaType,
 } from "../../../utils/helpers";
@@ -113,6 +111,12 @@ export default async function handler(
 	const { url } = request.body;
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
+
+	const urlHost = new URL(url).hostname.toLowerCase();
+
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some((keyword) =>
+		urlHost.includes(keyword),
+	);
 
 	// try {
 	// 	// 5 seconds timeout
@@ -316,8 +320,9 @@ export default async function handler(
 				ogImage: ogImageToBeAdded,
 				category_id: computedCategoryId,
 				meta_data: {
-					favIcon: scrapperResponse?.data?.favIcon,
+					isOgImagePreferred,
 					mediaType: await getMediaType(url),
+					favIcon: scrapperResponse?.data?.favIcon,
 				},
 				type: bookmarkType,
 			},
