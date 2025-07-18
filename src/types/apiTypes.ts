@@ -14,6 +14,7 @@ export type ImgMetadataType = {
 	favIcon: string | null;
 	height: number | null;
 	img_caption: string | null;
+	mediaType: string;
 	ocr: string | null;
 	ogImgBlurUrl: string | null;
 	screenshot: string | null;
