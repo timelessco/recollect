@@ -18,6 +18,7 @@ export type Bookmark = {
 	id: number;
 	meta_data?: {
 		height?: number | null;
+		mediaType?: string;
 		width?: number | null;
 	};
 	ogImage?: string | null;
@@ -42,6 +43,7 @@ export const CustomLightBox = ({
 		id: number;
 		meta_data?: {
 			height: number | null;
+			mediaType?: string;
 			width: number | null;
 		};
 		ogImage?: string | null;
@@ -93,7 +95,8 @@ export const CustomLightBox = ({
 
 			return (
 				<div className="flex h-full w-full items-center justify-center">
-					{bookmark?.type?.startsWith("image") ? (
+					{bookmark?.meta_data?.mediaType?.startsWith("image/") ||
+					bookmark?.type?.startsWith("image") ? (
 						<div className="flex items-center justify-center">
 							<div className="relative max-w-[80vw]">
 								<Image
@@ -101,30 +104,30 @@ export const CustomLightBox = ({
 									className="h-auto max-h-[80vh] w-auto"
 									height={bookmark.meta_data?.height ?? 0}
 									src={bookmark?.url}
-									width={0}
+									width={bookmark.meta_data?.width ?? 0}
 								/>
 							</div>
 						</div>
-					) : bookmark?.type?.startsWith("video") ? (
+					) : bookmark?.meta_data?.mediaType?.startsWith("video/") ||
+					  bookmark?.type?.startsWith("video") ? (
 						<div className="flex h-full w-full items-center justify-center">
 							<div className="w-full max-w-4xl">
 								<VideoPlayer isActive={isActive} src={bookmark?.url} />
 							</div>
 						</div>
-					) : bookmark?.type?.startsWith("application") ? (
+					) : bookmark?.meta_data?.mediaType === "application/pdf" ||
+					  bookmark?.type?.includes("pdf") ? (
 						<div className="relative flex h-full w-full max-w-[80vw] items-center justify-center">
-							{bookmark?.type === "pdf" ? (
-								<div className="h-full w-full">
-									<div className="flex h-full w-full items-center justify-center bg-gray-50">
-										<embed
-											className="block h-full w-full border-none"
-											key={bookmark?.url}
-											src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
-											type="application/pdf"
-										/>
-									</div>
+							<div className="h-full w-full">
+								<div className="flex h-full w-full items-center justify-center bg-gray-50">
+									<embed
+										className="block h-full w-full border-none"
+										key={bookmark?.url}
+										src={`${bookmark?.url}#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH`}
+										type="application/pdf"
+									/>
 								</div>
-							) : null}
+							</div>
 						</div>
 					) : !bookmark?.url ? null : (
 						<>
