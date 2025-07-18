@@ -289,6 +289,7 @@ export default async function handler(
 		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
 		twitter_avatar_url: null,
+		isOgImagePreferred,
 		mediaType: existingMetaData.mediaType,
 	};
 

@@ -317,6 +317,7 @@ export default async function handler(
 				category_id: computedCategoryId,
 				meta_data: {
 					favIcon: scrapperResponse?.data?.favIcon,
+					isOgImagePreferred: false,
 					mediaType: await getMediaType(url),
 				},
 				type: bookmarkType,
