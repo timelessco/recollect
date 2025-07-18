@@ -61,6 +61,8 @@ const notVideoLogic = async (publicUrl: string) => {
 		ocr: imageOcrValue ?? null,
 		coverImage: null,
 		screenshot: null,
+		isOgImagePreferred: false,
+		mediaType: "",
 	};
 
 	return { ogImage, meta_data };
@@ -89,6 +91,8 @@ export default async function handler(
 		coverImage: null,
 		screenshot: null,
 		ocr: null,
+		isOgImagePreferred: false,
+		mediaType: "",
 	};
 
 	const { meta_data: metaData } = await notVideoLogic(publicUrl);

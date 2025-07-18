@@ -62,6 +62,8 @@ export const PreviewLightBox = ({
 			meta_data: {
 				height: bookmark?.meta_data?.height ?? null,
 				width: bookmark?.meta_data?.width ?? null,
+				mediaType: bookmark?.meta_data?.mediaType ?? null,
+				isOgImagePreferred: bookmark?.meta_data?.isOgImagePreferred,
 			},
 		}));
 	}, [queryClient, session?.user?.id, CATEGORY_ID]);

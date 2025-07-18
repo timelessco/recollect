@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 import "yet-another-react-lightbox/styles.css";
 
-import { div } from "motion/dist/react-m";
+import { useState } from "react";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { CustomLightBox } from "../../../components/LightBox";
@@ -19,6 +18,8 @@ type BookmarkData = {
 		favIcon: string | null;
 		height: number;
 		img_caption: string | null;
+		isOgImagePreferred: boolean;
+		mediaType: string;
 		ocr: string | null;
 		ogImgBlurUrl: string;
 		twitter_avatar_url: string | null;
@@ -85,7 +86,9 @@ const Preview = () => {
 		domain: new URL(bookmarkData.url).hostname,
 		meta_data: {
 			height: bookmarkData.meta_data.height,
+			isOgImagePreferred: bookmarkData.meta_data.isOgImagePreferred,
 			width: bookmarkData.meta_data.width,
+			mediaType: bookmarkData.meta_data.mediaType,
 		},
 	};
 
