@@ -6,7 +6,7 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isEmpty, isNil, isNull } from "lodash";
+import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
 import imageToText from "../../../async/ai/imageToText";
@@ -21,7 +21,6 @@ import {
 } from "../../../types/apiTypes";
 import {
 	MAIN_TABLE_NAME,
-	OG_IMAGE_PREFERRED_SITES,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
@@ -79,11 +78,6 @@ export default async function handler(
 ) {
 	const { url, favIcon, id } = request.body;
 
-	const urlHost = new URL(url).hostname.toLowerCase();
-
-	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some((keyword) =>
-		urlHost.includes(keyword),
-	);
 	if (!id) {
 		response
 			.status(500)
@@ -245,7 +239,7 @@ export default async function handler(
 	) {
 		try {
 			imgData = await blurhashFromURL(
-				isOgImagePreferred
+				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
 					: imageUrlForMetaDataGeneration,
 			);
@@ -265,7 +259,7 @@ export default async function handler(
 
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(
-				isOgImagePreferred
+				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
 					: imageUrlForMetaDataGeneration,
 			);
@@ -288,7 +282,7 @@ export default async function handler(
 		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
 		twitter_avatar_url: null,
-		isOgImagePreferred,
+		isOgImagePreferred: existingMetaData.isOgImagePreferred,
 		mediaType: existingMetaData.mediaType,
 	};
 
@@ -302,7 +296,7 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.update({
 			meta_data,
-			ogImage: isOgImagePreferred
+			ogImage: currentData?.meta_data?.isOgImagePreferred
 				? ogImageMetaDataGeneration
 				: imageUrlForMetaDataGeneration,
 		})

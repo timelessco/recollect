@@ -112,3 +112,10 @@ youtube
 sparticuz
 savee
 imdb
+apng
+wordprocessingml
+msvideo
+epub
+presentationml
+abiword
+spreadsheetml
