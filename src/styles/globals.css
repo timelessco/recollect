@@ -299,7 +299,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .search-bar__input:focus {
-	@apply text-gray-light-12;
+	@apply text-gray-light-12 dark:text-[#707070];
 }
 
 .search-wrapper {
@@ -319,7 +319,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 .search-bar__input::placeholder:focus {
 	/* color: ; */
 
-	@apply text-gray-light-12;
+	@apply text-gray-light-12 dark:text-[#707070];
 }
 
 /* for the collections side pane arrow collapse rotate */
