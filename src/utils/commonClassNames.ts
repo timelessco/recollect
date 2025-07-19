@@ -1,6 +1,6 @@
 // LOGIN AND SIGN UP FLOW
 export const grayInputClassName =
-	"leading-4 block w-[300px] bg-custom-gray-8 appearance-none border-none text-sm placeholder:text-sm placeholder:text-grayDark-grayDark-600 text-grayDark-grayDark-600 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-none";
+	"leading-4 block w-[300px] bg-custom-gray-8 dark:bg-black appearance-none border-none text-sm placeholder:text-sm placeholder:text-grayDark-grayDark-600 text-grayDark-grayDark-600 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-none";
 export const buttonDarkClassName =
 	"flex w-full h-[30px] justify-center rounded-lg bg-gray-light-12  text-[13px] py-[7.5px] font-medium leading-[15px] text-white hover:bg-custom-gray-14";
 export const buttonLightClassName =
@@ -12,7 +12,7 @@ export const bottomBarButton =
 // DROPDOWN COMMON CLASS NAMES
 
 export const dropdownMenuClassName =
-	"bg-white rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
+	"bg-white rounded-xl shadow-custom-3 p-[6px] w-48 outline-none dark:bg-[#171717]";
 export const dropdownMenuItemClassName =
 	"text-custom-gray-1 font-450 text-13 leading-4 px-2 py-[5px] hover:bg-gray-light-4 focus:bg-gray-light-4 cursor-pointer rounded-lg aria-select-item";
 

@@ -16,14 +16,14 @@ import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
 import ToolTip from "./tooltip";
 
-const styles = {
+const styles = (isDarkMode: boolean) => ({
 	input: {
 		left: 27,
 		top: 6.5,
 		width: "80%",
 	},
 	control: {
-		backgroundColor: "rgba(0, 0, 0, 0.047)",
+		backgroundColor: isDarkMode ? "#171717" : "rgba(0, 0, 0, 0.047)",
 
 		fontSize: 14,
 		fontWeight: 400,
@@ -74,7 +74,7 @@ const styles = {
 			},
 		},
 	},
-};
+});
 
 type SearchInputTypes = {
 	inputClassName?: string;
@@ -129,13 +129,13 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	return (
 		<div className={wrapperClassNameBuilder}>
-			<figure className=" absolute left-[9px] top-[7px] ">
+			<figure className=" absolute left-[9px] top-[7px]">
 				<SearchInputSearchIcon size="14" />
 			</figure>
 			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
 				autoFocus
-				className={inputClassNamesBuilder}
+				className={`${inputClassNamesBuilder} dark:bg-[#171717]`}
 				onBlur={onBlur}
 				onChange={(event: { target: { value: string } }) => {
 					onChange(event.target.value);
@@ -151,7 +151,6 @@ const SearchInput = (props: SearchInputTypes) => {
 
 					setAddedTags(tagName);
 				}}
-				// onKeyUp={(e) => e.key === "Enter" && onEnterPress(e.target.value)}
 				onKeyUp={(event) => {
 					if (event.key === "Enter") {
 						onEnterPress(searchText);
@@ -160,7 +159,7 @@ const SearchInput = (props: SearchInputTypes) => {
 				}}
 				placeholder={placeholder}
 				singleLine
-				style={styles}
+				style={styles(document.documentElement.classList.contains("dark"))}
 				value={searchText}
 			>
 				<Mention

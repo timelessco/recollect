@@ -73,7 +73,7 @@ const AddBookmarkDropdown = ({
 				isOpen={openDropdown}
 				menuButton={
 					<Button
-						className="rounded-full p-[7px] hover:bg-black"
+						className="rounded-full p-[7px] hover:bg-black dark:bg-[#171717] dark:hover:bg-black"
 						title="create"
 						type="dark"
 					>
