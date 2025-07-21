@@ -106,7 +106,7 @@ export default async function handler(
 	// this is a better solution as we are only getting one row of data
 	const { data: currentData, error: currentDataError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("ogImage, meta_data")
+		.select("ogImage, meta_data, description")
 		.match({ id })
 		.single();
 
@@ -298,6 +298,7 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.update({
 			meta_data,
+			description: currentData?.description || imageCaption,
 			ogImage: currentData?.meta_data?.isOgImagePreferred
 				? ogImageMetaDataGeneration
 				: imageUrlForMetaDataGeneration,
