@@ -13,6 +13,7 @@ import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import { Item } from "react-stately";
 
+import loaderGif from "../../../../public/loader-gif.gif";
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -482,11 +483,12 @@ const CardSection = ({
 		});
 
 		const loaderClassName = classNames({
-			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover rounded-lg":
+			"w-full h-14 w-20 flex items-center justify-center bg-gray-100 rounded-lg":
 				cardTypeCondition === viewValues.list,
-			"animate-pulse bg-slate-200 w-full aspect-[1.9047] w-full object-cover rounded-lg":
-				cardTypeCondition === viewValues.card,
-			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
+			"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg":
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.timeline,
+			"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg":
 				cardTypeCondition === viewValues.moodboard,
 		});
 
@@ -496,7 +498,7 @@ const CardSection = ({
 			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
-			"h-36":
+			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
@@ -521,7 +523,15 @@ const CardSection = ({
 		const imgLogic = () => {
 			if (hasCoverImg) {
 				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
-					return <div className={loaderClassName} />;
+					return (
+						<div className={loaderClassName}>
+							<Image
+								alt="loading-placeholder"
+								className="h-[50px] w-[50px]"
+								src={loaderGif}
+							/>
+						</div>
+					);
 				}
 
 				if (errorImgs?.includes(id as never)) {
