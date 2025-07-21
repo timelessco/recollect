@@ -176,6 +176,8 @@ export default async function handler(
 	}
 
 	const favIconLogic = () => {
+		const url2 = new URL(url);
+
 		if (favIcon) {
 			if (favIcon?.includes("https://")) {
 				return favIcon;
@@ -183,7 +185,7 @@ export default async function handler(
 				return `https://${getBaseUrl(url)}${favIcon}`;
 			}
 		} else {
-			return null;
+			return `https://www.google.com/s2/favicons?sz=64&domain_url=${url2.hostname}`;
 		}
 	};
 
