@@ -486,7 +486,8 @@ const CardSection = ({
 			"w-full h-14 w-20 flex items-center justify-center bg-gray-100 rounded-lg":
 				cardTypeCondition === viewValues.list,
 			"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg":
-				cardTypeCondition === viewValues.card,
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.timeline,
 			"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg":
 				cardTypeCondition === viewValues.moodboard,
 		});
