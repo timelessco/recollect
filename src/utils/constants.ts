@@ -158,6 +158,7 @@ export const acceptedFileTypes = [
 	"image/gif",
 	"image/vnd.microsoft.icon",
 	"image/jpeg",
+	"image/jpg",
 	"image/png",
 	"image/svg+xml",
 	"image/tiff",
