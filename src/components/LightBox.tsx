@@ -280,7 +280,7 @@ export const CustomLightBox = ({
 	return (
 		<Lightbox
 			animation={{
-				fade: 100,
+				fade: 150,
 				zoom: 200,
 			}}
 			close={handleClose}
