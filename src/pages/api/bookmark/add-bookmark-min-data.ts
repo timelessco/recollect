@@ -215,8 +215,12 @@ export default async function handler(
 	let scraperApiError = null;
 
 	try {
+		const userAgent =
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
+
 		const { result: ogScrapperResponse } = await ogs({
 			url,
+			fetchOptions: { headers: { "user-agent": userAgent } },
 		});
 
 		scrapperResponse = {
@@ -301,6 +305,8 @@ export default async function handler(
 	} else {
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
 	}
+
+	console.log(scrapperResponse);
 
 	// here we add the scrapper data , in the remainingApi call we add s3 data
 	const {
