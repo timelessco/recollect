@@ -7,8 +7,8 @@ import {
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
+	type AddBookmarkMinDataPayloadTypes,
 	type BookmarksPaginatedDataTypes,
-	type SingleListData,
 } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
@@ -25,6 +25,15 @@ import { addBookmarkMinData } from "../../supabaseCrudHelpers";
 
 import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
 
+type AddBookmarkMinDataResponse = {
+	data: {
+		data: Array<{
+			id: number;
+			url: string;
+		}>;
+	};
+};
+
 // adds bookmark min data
 export default function useAddBookmarkMinDataOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
@@ -39,125 +48,124 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { sortBy } = useGetSortBy();
 
-	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
-		onMutate: async (data) => {
-			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+	const addBookmarkMinDataOptimisticMutation = useMutation(
+		async (data: AddBookmarkMinDataPayloadTypes) => {
+			const result = (await addBookmarkMinData(
+				data,
+			)) as AddBookmarkMinDataResponse;
 
-			// Snapshot the previous value
-			const previousData = queryClient.getQueryData([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			// If successful and not an image, trigger screenshot
+			if (result?.data?.data?.[0]) {
+				const bookmarkData = result.data.data[0];
+				const isUrlOfMimeType = await checkIfUrlAnImage(bookmarkData.url);
 
-			// Optimistically update to the new value
-			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				(old) => {
-					if (typeof old === "object") {
-						const latestData = {
-							...old,
-							pages: old?.pages?.map((item, index) => {
-								if (index === 0) {
-									return {
-										...item,
-										data: [
-											{
-												url: data?.url,
-												category_id: data?.category_id,
-												inserted_at: new Date(),
-											},
-											...item.data,
-										],
-									};
-								}
-
-								return item;
-							}),
-						};
-						return latestData as BookmarksPaginatedDataTypes;
-					}
-
-					return undefined;
-				},
-			);
-
-			// Return a context object with the snapshotted value
-			return { previousData };
-		},
-		// If the mutation fails, use the context returned from onMutate to roll back
-		onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
-			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				context?.previousData,
-			);
-		},
-		// Always refetch after error or success:
-		onSettled: async (apiResponse: unknown) => {
-			const response = apiResponse as { data: { data: SingleListData[] } };
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_COUNT_KEY,
-				session?.user?.id,
-			]);
-
-			if (!response?.data?.data) {
-				// something went wrong when adding min data so we return
-				return;
+				if (!isUrlOfMimeType) {
+					errorToast("screenshot initiated!!!!!!!!");
+					await addBookmarkScreenshotMutation.mutateAsync({
+						url: bookmarkData.url,
+						id: bookmarkData.id,
+					});
+					setAddScreenshotBookmarkId(bookmarkData.id);
+				}
 			}
 
-			const data = response?.data?.data[0];
-			const url = data?.url;
-
-			// this is to check if url is not a website like test.pdf
-			// if this is the case then we do not call the screenshot api
-			const isUrlOfMimeType = await checkIfUrlAnImage(url);
-			// **************
-			// here we are checking if the url is an image, we don't check for mime type,
-			// if we check if is an mime type then screenshot api cannot be called
-			// ex: if it is an .mp4(url) the mime type will be video/mp4 so screenshot api cannot be called, we will not have preview image
-			//  **************
-
-			// only take screenshot if url is not an image like https://test.com/test.jpg
-			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
-			if (!isUrlOfMimeType) {
-				errorToast("screenshot initiated!!!!!!!!");
-
-				addBookmarkScreenshotMutation.mutate({
-					url: data?.url,
-					id: data?.id,
-				});
-				setAddScreenshotBookmarkId(data?.id);
-			}
+			return result;
 		},
-		onSuccess: (apiResponse) => {
-			const apiResponseTyped = apiResponse as unknown as { status: number };
-			if (
-				(CATEGORY_ID === VIDEOS_URL ||
-					CATEGORY_ID === DOCUMENTS_URL ||
-					CATEGORY_ID === TWEETS_URL ||
-					CATEGORY_ID === IMAGES_URL) &&
-				apiResponseTyped?.status === 200
-			) {
-				// if user is adding a link in any of the Types pages (Videos, Images etc ...) then we get this toast message
-				successToast(
-					`This bookmark will be added to ${menuListItemName?.links}`,
+		{
+			onMutate: async (data) => {
+				// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+				await queryClient.cancelQueries([
+					BOOKMARKS_KEY,
+					session?.user?.id,
+					CATEGORY_ID,
+					sortBy,
+				]);
+
+				// Snapshot the previous value
+				const previousData = queryClient.getQueryData([
+					BOOKMARKS_KEY,
+					session?.user?.id,
+					CATEGORY_ID,
+					sortBy,
+				]);
+
+				// Optimistically update to the new value
+				queryClient.setQueryData<BookmarksPaginatedDataTypes>(
+					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+					(old) => {
+						if (typeof old === "object") {
+							const latestData = {
+								...old,
+								pages: old?.pages?.map((item, index) => {
+									if (index === 0) {
+										return {
+											...item,
+											data: [
+												{
+													url: data?.url,
+													category_id: data?.category_id,
+													inserted_at: new Date(),
+												},
+												...item.data,
+											],
+										};
+									}
+
+									return item;
+								}),
+							};
+							return latestData as BookmarksPaginatedDataTypes;
+						}
+
+						return undefined;
+					},
 				);
-			}
+
+				// Return a context object with the snapshotted value
+				return { previousData };
+			},
+			// If the mutation fails, use the context returned from onMutate to roll back
+			onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
+				queryClient.setQueryData(
+					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+					context?.previousData,
+				);
+			},
+			// Always refetch after error or success:
+			onSettled: async (
+				_apiResponse: AddBookmarkMinDataResponse | undefined,
+			) => {
+				// Invalidate queries to refresh the data
+				await Promise.all([
+					queryClient.invalidateQueries([
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						CATEGORY_ID,
+						sortBy,
+					]),
+					queryClient.invalidateQueries([
+						BOOKMARKS_COUNT_KEY,
+						session?.user?.id,
+					]),
+				]);
+			},
+			onSuccess: (apiResponse) => {
+				const apiResponseTyped = apiResponse as unknown as { status: number };
+				if (
+					(CATEGORY_ID === VIDEOS_URL ||
+						CATEGORY_ID === DOCUMENTS_URL ||
+						CATEGORY_ID === TWEETS_URL ||
+						CATEGORY_ID === IMAGES_URL) &&
+					apiResponseTyped?.status === 200
+				) {
+					// if user is adding a link in any of the Types pages (Videos, Images etc ...) then we get this toast message
+					successToast(
+						`This bookmark will be added to ${menuListItemName?.links}`,
+					);
+				}
+			},
 		},
-	});
+	);
 
 	return { addBookmarkMinDataOptimisticMutation };
 }
