@@ -175,7 +175,7 @@ export default async function handler(
 		}
 	}
 
-	const favIconLogic = () => {
+	const favIconLogic = async () => {
 		const url2 = new URL(url);
 
 		if (favIcon) {
@@ -185,7 +185,14 @@ export default async function handler(
 				return `https://${getBaseUrl(url)}${favIcon}`;
 			}
 		} else {
-			return `https://www.google.com/s2/favicons?sz=64&domain_url=${url2.hostname}`;
+			const response2 = await fetch(
+				`https://www.google.com/s2/favicons?sz=128&domain_url=${url2.hostname}`,
+			);
+			if (!response2.ok) {
+				return null;
+			}
+
+			return response2?.url;
 		}
 	};
 
@@ -280,7 +287,7 @@ export default async function handler(
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
-		favIcon: favIconLogic(),
+		favIcon: await favIconLogic(),
 		ocr: imageOcrValue,
 		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
