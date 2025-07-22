@@ -59,6 +59,14 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				const bookmarkData = result.data.data[0];
 				const isUrlOfMimeType = await checkIfUrlAnImage(bookmarkData.url);
 
+				// Invalidate the query to ensure fresh data is fetched
+				await queryClient.invalidateQueries([
+					BOOKMARKS_KEY,
+					session?.user?.id,
+					CATEGORY_ID,
+					sortBy,
+				]);
+
 				if (!isUrlOfMimeType) {
 					errorToast("screenshot initiated!!!!!!!!");
 					await addBookmarkScreenshotMutation.mutateAsync({
