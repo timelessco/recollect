@@ -77,18 +77,16 @@ export type onBulkBookmarkDeleteType = (
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
-
 	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
-	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
+	isScreenshotLoadingId: number | null;
 	listData: SingleListData[];
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
 	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
-
 	showAvatar: boolean;
 	userId: string;
 };
@@ -104,7 +102,7 @@ const CardSection = ({
 	onEditClick = () => null,
 	userId,
 	showAvatar = false,
-	isOgImgLoading = false,
+	isScreenshotLoadingId = null,
 	isBookmarkLoading = false,
 	deleteBookmarkId,
 	onCategoryChange,
@@ -463,7 +461,7 @@ const CardSection = ({
 
 	const renderOgImage = (
 		img: SingleListData["ogImage"],
-		id: SingleListData["id"],
+		id: SingleListData["id"] | undefined,
 		blurUrl: SingleListData["meta_data"]["ogImgBlurUrl"],
 		height: SingleListData["meta_data"]["height"],
 		width: SingleListData["meta_data"]["width"],
@@ -500,7 +498,7 @@ const CardSection = ({
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
-				(isOgImgLoading || isBookmarkLoading) &&
+				isBookmarkLoading &&
 				img === undefined,
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
@@ -520,11 +518,11 @@ const CardSection = ({
 			/>
 		);
 
-		const imgLogic = () => {
+		const imgLogic = (currentId: number | undefined) => {
 			if (hasCoverImg) {
 				if (
-					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
-					isNil(id)
+					((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) ||
+					currentId === isScreenshotLoadingId
 				) {
 					return (
 						<div className={loaderClassName}>
@@ -608,7 +606,7 @@ const CardSection = ({
 						/>
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
-					{imgLogic()}
+					{imgLogic(id)}
 				</figure>
 			</div>
 		);

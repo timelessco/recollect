@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -38,6 +39,11 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { sortBy } = useGetSortBy();
+
+	// Track which bookmark is having its screenshot taken
+	const [screenshotLoadingId, setScreenshotLoadingId] = useState<number | null>(
+		null,
+	);
 
 	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
 		onMutate: async (data) => {
@@ -135,10 +141,21 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			if (!isUrlOfMimeType) {
 				errorToast("screenshot initiated!!!!!!!!");
 
-				addBookmarkScreenshotMutation.mutate({
-					url: data?.url,
-					id: data?.id,
-				});
+				if (data?.id) {
+					setScreenshotLoadingId(data.id);
+					addBookmarkScreenshotMutation.mutate(
+						{
+							url: data.url,
+							id: data.id,
+						},
+						{
+							onSettled: () => {
+								setScreenshotLoadingId(null);
+							},
+						},
+					);
+				}
+
 				setAddScreenshotBookmarkId(data?.id);
 			}
 		},
@@ -159,5 +176,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 		},
 	});
 
-	return { addBookmarkMinDataOptimisticMutation };
+	return {
+		addBookmarkMinDataOptimisticMutation,
+		screenshotLoadingId,
+	};
 }

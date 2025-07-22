@@ -222,7 +222,7 @@ const Dashboard = () => {
 	const { clearBookmarksInTrashMutation } = useClearBookmarksInTrashMutation();
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 
-	const { addBookmarkMinDataOptimisticMutation } =
+	const { addBookmarkMinDataOptimisticMutation, screenshotLoadingId } =
 		useAddBookmarkMinDataOptimisticMutation();
 
 	// tag mutation
@@ -671,9 +671,7 @@ const Dashboard = () => {
 												isBookmarkLoading={
 													addBookmarkMinDataOptimisticMutation?.isLoading
 												}
-												isOgImgLoading={
-													addBookmarkScreenshotMutation?.isLoading
-												}
+												isScreenshotLoadingId={screenshotLoadingId}
 												listData={flattendPaginationBookmarkData}
 												onBulkBookmarkDelete={(
 													bookmarkIds,
