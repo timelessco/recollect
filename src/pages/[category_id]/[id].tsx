@@ -49,8 +49,8 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 					categoryViewsFromProps={props?.category_views ?? undefined}
 					deleteBookmarkId={undefined}
 					isBookmarkLoading={false}
-					isOgImgLoading={false}
 					isPublicPage
+					isScreenshotLoadingId={null}
 					listData={props?.data as SingleListData[]}
 					onBulkBookmarkDelete={() => {}}
 					onCategoryChange={() => {}}
