@@ -522,7 +522,10 @@ const CardSection = ({
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
-				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
+				if (
+					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
+					isNil(id)
+				) {
 					return (
 						<div className={loaderClassName}>
 							<Image
