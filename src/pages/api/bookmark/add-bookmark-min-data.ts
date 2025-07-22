@@ -306,8 +306,6 @@ export default async function handler(
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
 	}
 
-	console.log(scrapperResponse);
-
 	// here we add the scrapper data , in the remainingApi call we add s3 data
 	const {
 		data,
