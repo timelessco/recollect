@@ -523,7 +523,10 @@ const CardSection = ({
 		const imgLogic = () => {
 			if (hasCoverImg) {
 				if (
-					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
+					(isBookmarkLoading ||
+						isAllBookmarksDataFetching ||
+						isOgImgLoading ||
+						isNil(img)) &&
 					isNil(id)
 				) {
 					return (
