@@ -53,19 +53,7 @@ export const PreviewLightBox = ({
 			previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
 
 		// Transform SingleListData to match the expected type in CustomLightBox
-		return rawBookmarks.map((bookmark) => ({
-			...bookmark,
-			// Use inserted_at as createdAt
-			createdAt: bookmark?.inserted_at,
-			// Extract domain from URL
-			domain: bookmark?.url ? new URL(bookmark.url).hostname : "",
-			meta_data: {
-				height: bookmark?.meta_data?.height ?? null,
-				width: bookmark?.meta_data?.width ?? null,
-				mediaType: bookmark?.meta_data?.mediaType ?? null,
-				isOgImagePreferred: bookmark?.meta_data?.isOgImagePreferred,
-			},
-		}));
+		return rawBookmarks;
 	}, [queryClient, session?.user?.id, CATEGORY_ID]);
 
 	// Only update activeIndex when the lightbox is being opened

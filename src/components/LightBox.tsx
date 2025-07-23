@@ -7,25 +7,18 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import { EmbedWithFallback } from "../pageComponents/dashboard/cardSection/objectFallBack";
 import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previewLightBox";
+import { type ImgMetadataType, type SingleListData } from "../types/apiTypes";
 import { CATEGORY_ID_PATHNAME } from "../utils/constants";
 
 import { VideoPlayer } from "./VideoPlayer";
 
-export type Bookmark = {
+export type Bookmark = Omit<
+	SingleListData,
+	"addedTags" | "inserted_at" | "trash" | "user_id"
+> & {
 	createdAt?: string;
-	description?: string;
 	domain?: string;
-	id: number;
-	meta_data?: {
-		height?: number | null;
-		isOgImagePreferred: boolean;
-		mediaType?: string;
-		width?: number | null;
-	};
-	ogImage?: string | null;
-	title?: string;
-	type?: string;
-	url: string;
+	meta_data?: Partial<ImgMetadataType>;
 };
 
 export const CustomLightBox = ({
@@ -37,29 +30,14 @@ export const CustomLightBox = ({
 	isPage,
 }: {
 	activeIndex: number;
-	bookmarks?: Array<{
-		createdAt?: string;
-		description: string | null;
-		domain: string;
-		id: number;
-		meta_data?: {
-			height: number | null;
-			isOgImagePreferred: boolean;
-			mediaType?: string;
-			width: number | null;
-		};
-		ogImage?: string | null;
-		title: string;
-		type?: string;
-		url: string;
-	}>;
+	bookmarks?: Bookmark[];
 	handleClose: () => void;
 	isOpen: boolean;
 	isPage?: boolean;
 	setActiveIndex: (index: number) => void;
 }) => {
 	const router = useRouter();
-
+	const domain = new URL(bookmarks[activeIndex].url).hostname;
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
 		return bookmarks.map((bookmark) => {
@@ -206,7 +184,7 @@ export const CustomLightBox = ({
 							</p>
 						</div>
 					)}
-					{bookmark.domain && (
+					{domain && (
 						<div>
 							<p
 								className="text-xs text-gray-500"
@@ -214,7 +192,7 @@ export const CustomLightBox = ({
 							>
 								Domain
 							</p>
-							<p tabIndex={isHidden ? -1 : undefined}>{bookmark.domain}</p>
+							<p tabIndex={isHidden ? -1 : undefined}>{domain}</p>
 						</div>
 					)}
 					{bookmark.description && (
@@ -265,7 +243,7 @@ export const CustomLightBox = ({
 				</div>
 			</div>
 		);
-	}, [showSidepane, bookmarks, activeIndex]);
+	}, [showSidepane, bookmarks, activeIndex, domain]);
 
 	const iconLeft = () => <div className=" h-[50vh] w-[150px] cursor-pointer" />;
 
