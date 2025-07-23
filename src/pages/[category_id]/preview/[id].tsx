@@ -7,36 +7,11 @@ import { useState } from "react";
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { CustomLightBox } from "../../../components/LightBox";
 import Spinner from "../../../components/spinner";
+import { type SingleListData } from "../../../types/apiTypes";
 import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
 
-type BookmarkData = {
-	category_id: number;
-	description: string;
-	id: number;
-	inserted_at: string;
-	meta_data: {
-		favIcon: string | null;
-		height: number;
-		img_caption: string | null;
-		isOgImagePreferred: boolean;
-		mediaType: string;
-		ocr: string | null;
-		ogImgBlurUrl: string;
-		twitter_avatar_url: string | null;
-		width: number;
-	};
-	ogImage: string;
-	screenshot: string | null;
-	sort_index: number | null;
-	title: string;
-	trash: boolean;
-	type: string;
-	url: string;
-	user_id: string;
-};
-
 export type BookmarkResponse = {
-	data: BookmarkData[];
+	data: SingleListData[];
 	error: string | null;
 };
 
@@ -76,26 +51,11 @@ const Preview = () => {
 	}
 
 	const bookmarkData = bookmark.data[0];
-	const transformedBookmark = {
-		id: bookmarkData.id,
-		ogImage: bookmarkData.ogImage,
-		type: bookmarkData.type,
-		url: bookmarkData.url,
-		title: bookmarkData.title,
-		description: bookmarkData.description,
-		domain: new URL(bookmarkData.url).hostname,
-		meta_data: {
-			height: bookmarkData.meta_data.height,
-			isOgImagePreferred: bookmarkData.meta_data.isOgImagePreferred,
-			width: bookmarkData.meta_data.width,
-			mediaType: bookmarkData.meta_data.mediaType,
-		},
-	};
 
 	return (
 		<CustomLightBox
 			activeIndex={0}
-			bookmarks={[transformedBookmark]}
+			bookmarks={[bookmarkData]}
 			handleClose={handleClose}
 			isOpen={isOpen}
 			setActiveIndex={() => {}}

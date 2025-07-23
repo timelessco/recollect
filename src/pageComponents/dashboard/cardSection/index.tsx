@@ -526,11 +526,11 @@ const CardSection = ({
 				}
 
 				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder(true);
+					return errorImgPlaceholder(false);
 				}
 
 				if (id && !img) {
-					return errorImgPlaceholder(true);
+					return errorImgPlaceholder(false);
 				}
 
 				let blurSource = "";
@@ -564,7 +564,7 @@ const CardSection = ({
 								/>
 							)
 						) : (
-							errorImgPlaceholder(true)
+							errorImgPlaceholder(false)
 						)}
 					</>
 				);

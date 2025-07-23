@@ -25,14 +25,12 @@ export default function useAddBookmarkScreenshotMutation() {
 			successToast("Screenshot error: " + error);
 		},
 		onSettled: () => {
-			setTimeout(() => {
-				void queryClient.invalidateQueries([
-					BOOKMARKS_KEY,
-					session?.user?.id,
-					CATEGORY_ID,
-					sortBy,
-				]);
-			});
+			void queryClient.invalidateQueries([
+				BOOKMARKS_KEY,
+				session?.user?.id,
+				CATEGORY_ID,
+				sortBy,
+			]);
 		},
 	});
 
