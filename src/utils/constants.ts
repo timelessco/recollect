@@ -243,7 +243,7 @@ export const videoFileTypes = acceptedFileTypes?.filter(
 );
 
 export const documentFileTypes = acceptedFileTypes?.filter(
-	(item) => item === acceptedFileTypes[10],
+	(item) => item?.includes("application"),
 );
 
 // color picker colors
