@@ -6,11 +6,9 @@ import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
-import format from "date-fns/format";
-import { flatten, isNil, type Many } from "lodash";
-import find from "lodash/find";
-import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
+import { format } from "date-fns";
+import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
+import { AnimatePresence, motion } from "motion/react";
 import { Item } from "react-stately";
 
 import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
@@ -547,26 +545,46 @@ const CardSection = ({
 				}
 
 				return (
-					<>
+					<AnimatePresence mode="wait">
 						{img ? (
 							documentFileTypes?.includes(type) ? (
-								<PDFThumbnail className={imgClassName} pdfUrl={img} />
+								<motion.div
+									animate={{ opacity: 1 }}
+									initial={{ opacity: 0 }}
+									key={`pdf-${id}`}
+									transition={{ duration: 0.3 }}
+								>
+									<PDFThumbnail className={imgClassName} pdfUrl={img} />
+								</motion.div>
 							) : (
-								<Image
-									alt="bookmark-img"
-									blurDataURL={blurSource || defaultBlur}
-									className={imgClassName}
-									height={height ?? 200}
-									onError={() => setErrorImgs([id as never, ...errorImgs])}
-									placeholder="blur"
-									src={img}
-									width={width ?? 200}
-								/>
+								<motion.div
+									animate={{ opacity: 1 }}
+									initial={{ opacity: 0 }}
+									key={`img-${id}`}
+									transition={{ duration: 0.3 }}
+								>
+									<Image
+										alt="bookmark-img"
+										blurDataURL={blurSource || defaultBlur}
+										className={imgClassName}
+										height={height ?? 200}
+										onError={() => setErrorImgs([id as never, ...errorImgs])}
+										placeholder="blur"
+										src={img}
+										width={width ?? 200}
+									/>
+								</motion.div>
 							)
 						) : (
-							errorImgPlaceholder(false)
+							<motion.div
+								animate={{ opacity: 1 }}
+								initial={{ opacity: 0 }}
+								transition={{ duration: 0.3 }}
+							>
+								{errorImgPlaceholder(false)}
+							</motion.div>
 						)}
-					</>
+					</AnimatePresence>
 				);
 			}
 
