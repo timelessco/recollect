@@ -13,6 +13,7 @@ import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import { Item } from "react-stately";
 
+import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
 import loaderGif from "../../../../public/loader-gif.gif";
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
@@ -505,47 +506,31 @@ const CardSection = ({
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
-		const errorImgAndVideoClassName = classNames({
-			"h-full w-full rounded-lg object-cover": true,
-			"group-hover:rounded-b-none": cardTypeCondition === viewValues.card,
-		});
-
-		const errorImgPlaceholder = (
-			<Image
-				alt="img-error"
-				className={errorImgAndVideoClassName}
-				height={150}
-				src="/app-svgs/errorImgPlaceholder.svg"
-				width={286}
-			/>
+		const errorImgPlaceholder = (isError: boolean) => (
+			<div className={loaderClassName}>
+				<Image
+					alt="img-error"
+					className="h-[50px] w-[50px] rounded-lg object-cover"
+					src={isError ? logoDiamond : loaderGif}
+				/>
+			</div>
 		);
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
 				if (
-					(isBookmarkLoading ||
-						isAllBookmarksDataFetching ||
-						isOgImgLoading ||
-						isNil(img)) &&
+					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
 					isNil(id)
 				) {
-					return (
-						<div className={loaderClassName}>
-							<Image
-								alt="loading-placeholder"
-								className="h-[50px] w-[50px]"
-								src={loaderGif}
-							/>
-						</div>
-					);
+					return errorImgPlaceholder(false);
 				}
 
 				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder;
+					return errorImgPlaceholder(true);
 				}
 
 				if (id && !img) {
-					return errorImgPlaceholder;
+					return errorImgPlaceholder(true);
 				}
 
 				let blurSource = "";
@@ -579,7 +564,7 @@ const CardSection = ({
 								/>
 							)
 						) : (
-							errorImgPlaceholder
+							errorImgPlaceholder(true)
 						)}
 					</>
 				);
