@@ -91,10 +91,12 @@ export default async function handler(
 
 	const publicURL = await upload(base64data, userId);
 
+	const { title, description } = screenShotResponse?.data.metaData || {};
+
 	// First, fetch the existing bookmark data to get current meta_data
 	const { data: existingBookmarkData, error: fetchError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("meta_data, ogImage")
+		.select("meta_data, ogImage, title, description")
 		.match({ id: request.body.id, user_id: userId })
 		.single();
 
@@ -107,6 +109,9 @@ export default async function handler(
 
 	// Get existing meta_data or create empty object if null
 	const existingMetaData = existingBookmarkData?.meta_data || {};
+
+	const updatedTitle = title || existingBookmarkData?.title;
+	const updatedDescription = description || existingBookmarkData?.description;
 
 	// Add screenshot URL to meta_data
 	const updatedMetaData = {
@@ -125,7 +130,11 @@ export default async function handler(
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
 		// since we now have screenshot , we add that in ogImage as this will now be our primary image, and the existing ogImage (which is the scrapper data image) will be our cover image in meta_data
-		.update({ meta_data: updatedMetaData })
+		.update({
+			title: updatedTitle,
+			description: updatedDescription,
+			meta_data: updatedMetaData,
+		})
 		.match({ id: request.body.id, user_id: userId })
 		.select();
 
