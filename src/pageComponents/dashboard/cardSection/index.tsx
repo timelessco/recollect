@@ -606,7 +606,12 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<figure className={figureClassName}>
+				<motion.figure
+					className={figureClassName}
+					layout={
+						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
+					}
+				>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -615,7 +620,7 @@ const CardSection = ({
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
 					{imgLogic()}
-				</figure>
+				</motion.figure>
 			</div>
 		);
 	};
