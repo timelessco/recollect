@@ -38,17 +38,30 @@ export const CustomLightBox = ({
 }) => {
 	const router = useRouter();
 	const domain = new URL(bookmarks[activeIndex].url).hostname;
+
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
 		return bookmarks.map((bookmark) => {
 			const isImage = bookmark.type?.startsWith("image");
 			const isVideo = bookmark.type?.startsWith("video");
 
+			// For direct images or when an image is rendered in objectFallBack, always provide dimensions for zoom
+			const shouldHaveDimensions =
+				isImage ||
+				bookmark?.meta_data?.mediaType?.startsWith("image/") ||
+				bookmark?.meta_data?.isOgImagePreferred ||
+				(bookmark?.meta_data?.screenshot &&
+					bookmark?.meta_data?.width &&
+					bookmark?.meta_data?.height);
+
 			return {
 				src: bookmark.url,
 				type: isVideo ? "video" : isImage ? "image" : undefined,
-				width: bookmark.meta_data?.width ?? 800,
-				height: bookmark.meta_data?.height ?? 600,
+				// Only provide dimensions for direct images to enable zoom
+				...(shouldHaveDimensions && {
+					width: bookmark.meta_data?.width ?? 800,
+					height: bookmark.meta_data?.height ?? 600,
+				}),
 				...(isVideo && {
 					sources: [
 						{
