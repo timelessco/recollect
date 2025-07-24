@@ -13,7 +13,6 @@ type EmbedWithFallbackProps = {
 export const EmbedWithFallback = ({
 	src,
 	placeholder,
-
 	placeholderHeight,
 	placeholderWidth,
 }: EmbedWithFallbackProps) => {
