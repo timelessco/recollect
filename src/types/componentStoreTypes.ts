@@ -16,8 +16,11 @@ export type ModalStoreState = {
 };
 
 export type LoadersStoreState = {
+	addLoadingBookmarkId: (id: number) => void;
 	isSearchLoading: boolean;
 	isSortByLoading: boolean;
+	loadingBookmarkIds: Set<number>;
+	removeLoadingBookmarkId: (id: number) => void;
 	setSidePaneOptionLoading: (value: number | string | null) => void;
 	sidePaneOptionLoading: number | string | null;
 	toggleIsSearchLoading: (value: boolean) => void;

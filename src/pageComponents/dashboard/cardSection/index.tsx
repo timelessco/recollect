@@ -129,7 +129,7 @@ const CardSection = ({
 
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-
+	const { loadingBookmarkIds } = useLoadersStore();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 
@@ -515,6 +515,7 @@ const CardSection = ({
 		);
 
 		const imgLogic = () => {
+			const isLoading = loadingBookmarkIds.has(id);
 			if (hasCoverImg) {
 				if (
 					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
@@ -523,12 +524,16 @@ const CardSection = ({
 					return errorImgPlaceholder(false);
 				}
 
-				if (errorImgs?.includes(id as never)) {
+				if (isLoading && !img) {
 					return errorImgPlaceholder(false);
 				}
 
+				if (errorImgs?.includes(id as never)) {
+					return errorImgPlaceholder(true);
+				}
+
 				if (id && !img) {
-					return errorImgPlaceholder(false);
+					return errorImgPlaceholder(true);
 				}
 
 				let blurSource = "";
@@ -581,7 +586,7 @@ const CardSection = ({
 								initial={{ opacity: 0 }}
 								transition={{ duration: 0.3 }}
 							>
-								{errorImgPlaceholder(false)}
+								{errorImgPlaceholder(true)}
 							</motion.div>
 						)}
 					</AnimatePresence>
