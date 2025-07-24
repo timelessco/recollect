@@ -837,5 +837,5 @@ export const signUpWithEmailPassword = async (
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
-	await supabase.auth.signOut();
+	await supabase.auth.signOut({ scope: "local" });
 };
