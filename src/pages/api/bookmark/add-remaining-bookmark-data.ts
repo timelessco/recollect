@@ -177,17 +177,19 @@ export default async function handler(
 	}
 
 	const favIconLogic = async () => {
-		const url2 = new URL(url);
+		const { hostname } = new URL(url);
 
 		if (favIcon) {
 			if (favIcon?.includes("https://")) {
 				return favIcon;
 			} else {
-				return `https://${getBaseUrl(url)}${favIcon}`;
+				return hostname === "x.com"
+					? favIcon
+					: `https://${getBaseUrl(url)}${favIcon}`;
 			}
 		} else {
 			const response2 = await fetch(
-				`https://www.google.com/s2/favicons?sz=128&domain_url=${url2.hostname}`,
+				`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
 			);
 			if (!response2.ok) {
 				return null;
