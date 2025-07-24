@@ -10,6 +10,7 @@ import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previe
 import { type ImgMetadataType, type SingleListData } from "../types/apiTypes";
 import { CATEGORY_ID_PATHNAME } from "../utils/constants";
 
+import { Rotate } from "./LightBoxPlugin";
 import { VideoPlayer } from "./VideoPlayer";
 
 export type Bookmark = Omit<
@@ -283,7 +284,7 @@ export const CustomLightBox = ({
 				},
 			}}
 			open={isOpen}
-			plugins={[Zoom]}
+			plugins={[Zoom, Rotate]}
 			render={{
 				slide: renderSlide,
 				controls: renderSidePane,
