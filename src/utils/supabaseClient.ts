@@ -1,6 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-// checking the environment
 import { isProductionEnvironment } from "./supabaseServerClient";
 
 // in case the user did not add the supabase dev keys in env file then even in dev mode the app will point out to the prod keys mentioned in the env file
