@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -36,7 +37,10 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
-	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
+	// We'll initialize the mutation with a default value and update it when we have the actual ID
+	const [screenshotBookmarkId, setScreenshotBookmarkId] = useState<number>();
+	const { addBookmarkScreenshotMutation } =
+		useAddBookmarkScreenshotMutation(screenshotBookmarkId);
 	const { sortBy } = useGetSortBy();
 
 	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
@@ -135,11 +139,12 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			if (!isUrlOfMimeType) {
 				errorToast("screenshot initiated!!!!!!!!");
 
+				setScreenshotBookmarkId(data?.id);
+				setAddScreenshotBookmarkId(data?.id);
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,
 				});
-				setAddScreenshotBookmarkId(data?.id);
 			}
 		},
 		onSuccess: (apiResponse) => {
