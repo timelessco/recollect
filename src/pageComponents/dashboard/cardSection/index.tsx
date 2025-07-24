@@ -513,9 +513,9 @@ const CardSection = ({
 				/>
 			</div>
 		);
+		const isLoading = loadingBookmarkIds.has(id);
 
 		const imgLogic = () => {
-			const isLoading = loadingBookmarkIds.has(id);
 			if (hasCoverImg) {
 				if (
 					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
@@ -614,7 +614,10 @@ const CardSection = ({
 				<motion.figure
 					className={figureClassName}
 					layout={
-						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
+						isBookmarkLoading ||
+						isAllBookmarksDataFetching ||
+						isOgImgLoading ||
+						isLoading
 					}
 				>
 					{isVideo && (
