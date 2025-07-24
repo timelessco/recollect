@@ -29,25 +29,13 @@ export const supabaseServiceKey = !isProductionEnvironment
 	: process.env.SUPABASE_SERVICE_KEY;
 
 export const createClient = () => {
-	const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
-		auth: {
-			persistSession: true,
-			autoRefreshToken: true,
-			detectSessionInUrl: true,
-		},
-	});
+	const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 	return supabase;
 };
 
 export const createServiceClient = () => {
-	const supabase = createBrowserClient(supabaseUrl, supabaseServiceKey, {
-		auth: {
-			persistSession: true,
-			autoRefreshToken: true,
-			detectSessionInUrl: true,
-		},
-	});
+	const supabase = createBrowserClient(supabaseUrl, supabaseServiceKey);
 
 	return supabase;
 };
