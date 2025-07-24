@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
-	useMiscellaneousStore,
+	useLoadersStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -31,17 +30,13 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 
 	const queryClient = useQueryClient();
-	const setAddScreenshotBookmarkId = useMiscellaneousStore(
-		(state) => state.setAddScreenshotBookmarkId,
-	);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	// We'll initialize the mutation with a default value and update it when we have the actual ID
-	const [screenshotBookmarkId, setScreenshotBookmarkId] = useState<number>();
-	const { addBookmarkScreenshotMutation } =
-		useAddBookmarkScreenshotMutation(screenshotBookmarkId);
+	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { sortBy } = useGetSortBy();
+	const { addLoadingBookmarkId } = useLoadersStore();
 
 	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
 		onMutate: async (data) => {
@@ -136,11 +131,14 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 			// only take screenshot if url is not an image like https://test.com/test.jpg
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
+
 			if (!isUrlOfMimeType) {
 				errorToast("screenshot initiated!!!!!!!!");
+				if (data?.id) {
+					addLoadingBookmarkId(data?.id);
+				}
 
-				setScreenshotBookmarkId(data?.id);
-				setAddScreenshotBookmarkId(data?.id);
+				// update to zustand here
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,

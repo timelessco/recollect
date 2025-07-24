@@ -6,34 +6,31 @@ import {
 	useLoadersStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
+import { type SingleListData } from "../../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../../utils/constants";
 import { successToast } from "../../../utils/toastMessages";
 import { addBookmarkScreenshot } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
-export default function useAddBookmarkScreenshotMutation(bookmarkId?: number) {
+export default function useAddBookmarkScreenshotMutation() {
 	const queryClient = useQueryClient();
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const session = useSupabaseSession((state) => state.session);
 	const { sortBy } = useGetSortBy();
-	const { addLoadingBookmarkId, removeLoadingBookmarkId } = useLoadersStore();
+	const { removeLoadingBookmarkId } = useLoadersStore();
 
 	const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
-		onMutate: async () => {
-			if (bookmarkId) {
-				addLoadingBookmarkId(bookmarkId);
-			}
-		},
 		onSuccess: () => {
 			successToast("Screenshot successfully taken ^_^");
 		},
 		onError: (error) => {
 			successToast("Screenshot error: " + error);
 		},
-		onSettled: () => {
-			if (bookmarkId) {
-				removeLoadingBookmarkId(bookmarkId);
+		onSettled: (apiResponse: unknown) => {
+			const response = apiResponse as { data: { data: SingleListData[] } };
+			if (response?.data?.data[0]?.id) {
+				removeLoadingBookmarkId(response?.data?.data[0]?.id);
 			}
 
 			void queryClient.invalidateQueries([
