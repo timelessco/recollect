@@ -32,10 +32,12 @@ const Option = ({
 	cardTypeCondition,
 	url,
 	isPublicPage,
+	isTrashPage,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
 	isPublicPage: CardSectionProps["isPublicPage"];
+	isTrashPage: boolean;
 	item: OptionDropItemTypes;
 	state: ListState<unknown>;
 	type: SingleListData["type"];
@@ -111,6 +113,11 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) => {
+					if (isTrashPage) {
+						event.preventDefault();
+						return;
+					}
+
 					event.preventDefault();
 					setOpen(true);
 					void router.push(

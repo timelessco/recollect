@@ -1,16 +1,18 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { format } from "date-fns";
+import { motion } from "motion/react";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
+import { MetaDataIcon } from "../icons/metaData";
 import { EmbedWithFallback } from "../pageComponents/dashboard/cardSection/objectFallBack";
 import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previewLightBox";
+import { useMiscellaneousStore } from "../store/componentStore";
 import { type ImgMetadataType, type SingleListData } from "../types/apiTypes";
 import { CATEGORY_ID_PATHNAME } from "../utils/constants";
 
-import MyPlugin from "./LightBoxPlugin";
+import MetaButtonPlugin from "./LightBoxPlugin";
 import { VideoPlayer } from "./VideoPlayer";
 
 export type Bookmark = Omit<
@@ -27,7 +29,7 @@ export const CustomLightBox = ({
 	activeIndex,
 	setActiveIndex,
 	isOpen,
-	handleClose,
+	handleClose: originalHandleClose,
 	isPage,
 }: {
 	activeIndex: number;
@@ -38,8 +40,17 @@ export const CustomLightBox = ({
 	setActiveIndex: (index: number) => void;
 }) => {
 	const router = useRouter();
-	const domain = new URL(bookmarks[activeIndex].url).hostname;
+	const setLightboxShowSidepane = useMiscellaneousStore(
+		(state) => state.setLightboxShowSidepane,
+	);
+	const lightboxShowSidepane = useMiscellaneousStore(
+		(state) => state.lightboxShowSidepane,
+	);
 
+	const handleClose = useCallback(() => {
+		originalHandleClose();
+		setLightboxShowSidepane(false);
+	}, [originalHandleClose, setLightboxShowSidepane]);
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
 		return bookmarks.map((bookmark) => {
@@ -75,8 +86,6 @@ export const CustomLightBox = ({
 		}) as CustomSlide[];
 	}, [bookmarks]);
 
-	const [showSidepane, setShowSidepane] = useState(false);
-
 	const renderSlide = useCallback(
 		(slideProps: { offset: number; slide: CustomSlide }) => {
 			const { offset, slide } = slideProps;
@@ -88,7 +97,10 @@ export const CustomLightBox = ({
 			const isActive = offset === 0;
 
 			return (
-				<div className="flex h-full w-full items-center justify-center">
+				<motion.div
+					className="flex h-full w-full items-center justify-center"
+					layout
+				>
 					{bookmark?.meta_data?.mediaType?.startsWith("image/") ||
 					bookmark?.meta_data?.isOgImagePreferred ||
 					bookmark?.type?.startsWith("image") ? (
@@ -146,125 +158,18 @@ export const CustomLightBox = ({
 							)}
 						</>
 					)}
-				</div>
+				</motion.div>
 			);
 		},
 		[bookmarks, slides],
 	);
-
-	const renderSidePane = useCallback(() => {
-		const bookmark = bookmarks?.[activeIndex];
-		if (!bookmark) return null;
-
-		const isHidden = !showSidepane;
-
-		return (
-			<div
-				aria-hidden={isHidden}
-				className={`absolute right-0 top-0 flex h-full w-80 flex-col border-l border-gray-200 bg-white/90 shadow-xl backdrop-blur-xl transition-transform duration-300 ease-in-out ${
-					showSidepane ? "translate-x-0" : "translate-x-full"
-				}`}
-			>
-				<div className="flex items-center justify-between border-b border-gray-300 px-4 py-3">
-					<span
-						className="font-medium text-gray-700"
-						tabIndex={isHidden ? -1 : undefined}
-					>
-						Meta Data
-					</span>
-					<button
-						className="text-gray-500 transition hover:text-gray-700"
-						onClick={() => setShowSidepane(false)}
-						tabIndex={isHidden ? -1 : 0}
-						type="button"
-					>
-						Hide Meta Data
-					</button>
-				</div>
-				<div
-					aria-hidden={isHidden}
-					className="flex-1 space-y-4 overflow-y-auto p-4 text-sm text-gray-800"
-				>
-					{bookmark.title && (
-						<div>
-							<p
-								className="text-xs text-gray-500"
-								tabIndex={isHidden ? -1 : undefined}
-							>
-								Title
-							</p>
-							<p className="font-medium" tabIndex={isHidden ? -1 : undefined}>
-								{bookmark.title}
-							</p>
-						</div>
-					)}
-					{domain && (
-						<div>
-							<p
-								className="text-xs text-gray-500"
-								tabIndex={isHidden ? -1 : undefined}
-							>
-								Domain
-							</p>
-							<p tabIndex={isHidden ? -1 : undefined}>{domain}</p>
-						</div>
-					)}
-					{bookmark.description && (
-						<div>
-							<p
-								className="text-xs text-gray-500"
-								tabIndex={isHidden ? -1 : undefined}
-							>
-								Description
-							</p>
-							<p className="text-gray-700" tabIndex={isHidden ? -1 : undefined}>
-								{bookmark.description}
-							</p>
-						</div>
-					)}
-					{bookmark.createdAt && (
-						<div>
-							<p
-								className="text-xs text-gray-500"
-								tabIndex={isHidden ? -1 : undefined}
-							>
-								Created At
-							</p>
-							<p tabIndex={isHidden ? -1 : undefined}>
-								{format(new Date(bookmark.createdAt), "MMM d, yyyy")}
-							</p>
-						</div>
-					)}
-					{bookmark.url && (
-						<div>
-							<p
-								className="text-xs text-gray-500"
-								tabIndex={isHidden ? -1 : undefined}
-							>
-								URL
-							</p>
-							<a
-								className="break-all text-blue-600 underline"
-								href={bookmark.url}
-								rel="noopener noreferrer"
-								tabIndex={isHidden ? -1 : 0}
-								target="_blank"
-							>
-								{bookmark.url}
-							</a>
-						</div>
-					)}
-				</div>
-			</div>
-		);
-	}, [showSidepane, bookmarks, activeIndex, domain]);
 
 	const iconLeft = () => <div className=" h-[50vh] w-[150px] cursor-pointer" />;
 
 	const iconRight = () => (
 		<div
 			className={`h-[50vh] w-[150px] cursor-pointer  ${
-				showSidepane ? "mr-80" : ""
+				lightboxShowSidepane ? "mr-80" : ""
 			}`}
 		/>
 	);
@@ -297,10 +202,9 @@ export const CustomLightBox = ({
 				},
 			}}
 			open={isOpen}
-			plugins={[Zoom, MyPlugin()]}
+			plugins={[Zoom, MetaButtonPlugin()]}
 			render={{
 				slide: renderSlide,
-				controls: renderSidePane,
 				iconNext: iconRight,
 				iconPrev: iconLeft,
 			}}
@@ -309,8 +213,8 @@ export const CustomLightBox = ({
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
 					backdropFilter: "blur(32px)",
-					transition: "all 0.3s ease",
-					paddingRight: showSidepane ? "20rem" : 0,
+					transition: "all 0.3s ease-in-out",
+					width: lightboxShowSidepane ? "80%" : "100%",
 				},
 				slide: {
 					height: "100%",
@@ -322,12 +226,13 @@ export const CustomLightBox = ({
 			toolbar={{
 				buttons: [
 					<button
-						className=" text-gray-500 transition hover:text-gray-700"
+						className="flex items-center gap-2 text-gray-500 transition hover:text-gray-700"
 						key="show-pane"
-						onClick={() => setShowSidepane(true)}
+						onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
+						title={lightboxShowSidepane ? "Hide Meta Data" : "Show Meta Data"}
 						type="button"
 					>
-						Show Meta Data
+						<MetaDataIcon />
 					</button>,
 					"close",
 				],
