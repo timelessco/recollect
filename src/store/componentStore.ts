@@ -73,6 +73,9 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	shareCategoryId: undefined,
 	setShareCategoryId: (id: number | undefined) =>
 		set(() => ({ shareCategoryId: id })),
+	lightboxShowSidepane: false,
+	setLightboxShowSidepane: (value: boolean) =>
+		set(() => ({ lightboxShowSidepane: value })),
 	searchText: "",
 	setSearchText: (value: string) => set(() => ({ searchText: value })),
 	addScreenshotBookmarkId: undefined,
