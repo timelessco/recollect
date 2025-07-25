@@ -34,6 +34,7 @@ export type MiscellaneousStoreState = {
 	currentSettingsPage: "change-email" | "delete" | "main";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
+	lightboxShowSidepane: boolean;
 	renderedBookmarks: Record<string, SingleListData[]>;
 	searchText: string;
 	selectedVideoId: number | null;
@@ -45,6 +46,7 @@ export type MiscellaneousStoreState = {
 	) => void;
 	setCurrentSliderDropdownSlide: (value: string | null) => void;
 	setIsCardDragging: (value: boolean) => void;
+	setLightboxShowSidepane: (value: boolean) => void;
 	setRenderedBookmarks: (
 		categoryId: string,
 		bookmarks: SingleListData[],
