@@ -12,6 +12,18 @@
 	font-named-instance: "Regular";
 }
 
+@keyframes customFadeScaleIn {
+	0% {
+		transform: scale(0.97);
+		opacity: 0;
+	}
+
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
 /* adding col class becasue tailind dynamic col class are not working for some reason */
 .columns-1 {
 	columns: 1;
