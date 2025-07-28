@@ -49,7 +49,6 @@ import {
 	CATEGORIES_KEY,
 	colorPickerColors,
 	defaultBlur,
-	documentFileTypes,
 	SEARCH_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -66,7 +65,6 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import ListBox from "./listBox";
-import PDFThumbnail from "./PDFThumbnail";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
