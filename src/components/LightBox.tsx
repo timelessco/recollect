@@ -177,7 +177,7 @@ export const CustomLightBox = ({
 	return (
 		<Lightbox
 			animation={{
-				fade: 150,
+				fade: 0,
 				zoom: 200,
 			}}
 			close={handleClose}
@@ -213,8 +213,9 @@ export const CustomLightBox = ({
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
 					backdropFilter: "blur(32px)",
-					transition: "all 0.3s ease-in-out",
+					transition: "all 0.2s ease-in-out",
 					width: lightboxShowSidepane ? "80%" : "100%",
+					animation: "customFadeScaleIn 0.25s ease-in-out",
 				},
 				slide: {
 					height: "100%",
