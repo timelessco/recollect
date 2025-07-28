@@ -72,10 +72,10 @@ export const CustomLightBox = ({
 
 	// Zustand store hooks for managing lightbox side panel state
 	const setLightboxShowSidepane = useMiscellaneousStore(
-		(state) => state.setLightboxShowSidepane,
+		(state) => state?.setLightboxShowSidepane,
 	);
 	const lightboxShowSidepane = useMiscellaneousStore(
-		(state) => state.lightboxShowSidepane,
+		(state) => state?.lightboxShowSidepane,
 	);
 
 	/**
@@ -97,8 +97,8 @@ export const CustomLightBox = ({
 
 		return bookmarks.map((bookmark) => {
 			// Determine media types based on bookmark properties
-			const isImage = bookmark.type?.startsWith(IMAGE_TYPE_PREFIX);
-			const isVideo = bookmark.type?.startsWith(VIDEO_TYPE_PREFIX);
+			const isImage = bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
+			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
 
 			// Determine if slide should have dimensions for zoom functionality
 			// Images need dimensions to enable proper zoom behavior
@@ -111,7 +111,7 @@ export const CustomLightBox = ({
 					bookmark?.meta_data?.height);
 
 			return {
-				src: bookmark.url,
+				src: bookmark?.url,
 				// Set slide type for lightbox to handle appropriately
 				type: isVideo
 					? VIDEO_TYPE_PREFIX
@@ -120,15 +120,15 @@ export const CustomLightBox = ({
 					: undefined,
 				// Conditionally add dimensions for zoom functionality
 				...(shouldHaveDimensions && {
-					width: bookmark.meta_data?.width ?? 800,
-					height: bookmark.meta_data?.height ?? 600,
+					width: bookmark?.meta_data?.width ?? 800,
+					height: bookmark?.meta_data?.height ?? 600,
 				}),
 				// Add video-specific properties
 				...(isVideo && {
 					sources: [
 						{
-							src: bookmark.url,
-							type: bookmark.type ?? VIDEO_TYPE_PREFIX,
+							src: bookmark?.url,
+							type: bookmark?.type ?? VIDEO_TYPE_PREFIX,
 						},
 					],
 				}),
@@ -170,7 +170,7 @@ export const CustomLightBox = ({
 								<Image
 									alt={PREVIEW_ALT_TEXT}
 									className="max-h-[80vh] w-auto"
-									height={bookmark.meta_data?.height ?? 0}
+									height={bookmark?.meta_data?.height ?? 0}
 									src={
 										// Use OG image if preferred, otherwise use direct URL
 										bookmark?.meta_data?.mediaType?.startsWith(
@@ -179,7 +179,7 @@ export const CustomLightBox = ({
 											? bookmark?.ogImage ?? ""
 											: bookmark?.url
 									}
-									width={bookmark.meta_data?.width ?? 0}
+									width={bookmark?.meta_data?.width ?? 0}
 								/>
 							</div>
 						</div>
@@ -211,15 +211,15 @@ export const CustomLightBox = ({
 							{bookmark.url.includes(YOUTUBE_COM) ||
 							bookmark.url.includes(YOUTU_BE) ? (
 								<div className="flex h-full w-full max-w-[80vw] items-center justify-center">
-									<VideoPlayer isActive={isActive} src={bookmark.url} />
+									<VideoPlayer isActive={isActive} src={bookmark?.url} />
 								</div>
 							) : (
 								/* Generic web content with fallback image */
 								<EmbedWithFallback
-									placeholder={bookmark.ogImage ?? ""}
-									placeholderHeight={bookmark.meta_data?.height ?? 0}
-									placeholderWidth={bookmark.meta_data?.width ?? 0}
-									src={bookmark.url}
+									placeholder={bookmark?.ogImage ?? ""}
+									placeholderHeight={bookmark?.meta_data?.height ?? 0}
+									placeholderWidth={bookmark?.meta_data?.width ?? 0}
+									src={bookmark?.url}
 								/>
 							)}
 						</>
@@ -267,11 +267,12 @@ export const CustomLightBox = ({
 						{
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
-								category_id: router.asPath.split("/")[1],
-								id: bookmarks[index].id,
+								category_id: router?.asPath?.split("/")[1],
+								id: bookmarks?.[index]?.id,
 							},
 						},
-						`/${router.asPath.split("/")[1]}/preview/${bookmarks[index].id}`,
+						`/${router?.asPath?.split("/")[1]}/preview/${bookmarks?.[index]
+							?.id}`,
 						{
 							// Don't trigger a full page reload
 							shallow: true,
