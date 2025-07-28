@@ -234,7 +234,11 @@ export default async (
 				`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
 			);
 		} catch (error) {
-			console.error("Error generating PNG from PDF:", error);
+			// console.error("Error generating PNG from PDF:", error);
+			if (error instanceof Error) {
+				throw new TypeError("Failed to generate PNG from PDF" + error.message);
+			}
+
 			// Optional: set a fallback image or rethrow the error
 			ogImage = storageData?.publicUrl;
 			// Or throw error if you want the calling code to handle it
