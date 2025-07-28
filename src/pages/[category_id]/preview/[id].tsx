@@ -50,7 +50,7 @@ const Preview = () => {
 		return <div />;
 	}
 
-	const bookmarkData = bookmark.data[0];
+	const bookmarkData = bookmark?.data?.[0];
 
 	return (
 		<CustomLightBox

@@ -89,10 +89,10 @@ export const PreviewLightBox = ({
 			{
 				pathname: `/${CATEGORY_ID_PATHNAME}`,
 				query: {
-					category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
+					category_id: router?.query.category_id ?? ALL_BOOKMARKS_URL,
 				},
 			},
-			`/${router.asPath.split("/")[1]}`,
+			`/${router?.asPath?.split("/")[1]}`,
 			{ shallow: true },
 		);
 
@@ -114,10 +114,10 @@ export const PreviewLightBox = ({
 				{
 					pathname: `/${CATEGORY_ID_PATHNAME}`,
 					query: {
-						category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
+						category_id: router?.query.category_id ?? ALL_BOOKMARKS_URL,
 					},
 				},
-				`/${router.asPath.split("/")[1]}`,
+				`/${router?.asPath?.split("/")[1]}`,
 				{ shallow: true },
 			);
 
