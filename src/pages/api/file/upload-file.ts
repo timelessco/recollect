@@ -205,35 +205,42 @@ export default async (
 		// if file is not a video
 		// const { ogImage: image, meta_data: metaData } =
 		// 	await notVideoLogic(storageData);
+		try {
+			const responsePdf = await fetch(storageData?.publicUrl, {
+				method: "GET",
+				headers: {
+					"User-Agent":
+						"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+				},
+			});
 
-		// const responsePdf = await fetch(storageData?.publicUrl, {
-		// 	method: "GET",
-		// 	headers: {
-		// 		"User-Agent":
-		// 			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-		// 		Accept: "*/*",
-		// 		Referer:
-		// 			"https://bookmark-tags-git-feat-local-pdf-thumbnail-timelessco.vercel.app",
-		// 	},
-		// });
+			if (!responsePdf.ok) {
+				throw new Error(`Failed to fetch PDF. Status: ${responsePdf.status}`);
+			}
 
-		// if (!responsePdf.ok) throw new Error("Failed to fetch PDF");
+			const arrayBuffer = await responsePdf.arrayBuffer();
+			const buffer = Buffer.from(arrayBuffer);
 
-		// const arrayBuffer = await responsePdf.arrayBuffer();
-		// const buffer = Buffer.from(arrayBuffer);
+			const pngPages = await pdfToPng(buffer, {
+				pagesToProcess: [1],
+				viewportScale: 2,
+			});
 
-		// const pngPages = await pdfToPng(buffer, {
-		// 	pagesToProcess: [1],
-		// 	viewportScale: 2,
-		// });
-		// const base64Image = pngPages[0].content.toString("base64");
+			const base64Image = pngPages[0].content.toString("base64");
 
-		// ogImage = await upload(
-		// 	base64Image,
-		// 	userId ?? "",
-		// 	`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
-		// );
-		ogImage = storageData?.publicUrl;
+			ogImage = await upload(
+				base64Image,
+				userId ?? "",
+				`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
+			);
+		} catch (error) {
+			console.error("Error generating PNG from PDF:", error);
+			// Optional: set a fallback image or rethrow the error
+			ogImage = storageData?.publicUrl;
+			// Or throw error if you want the calling code to handle it
+			// throw error;
+		}
+
 		// meta_data = metaData;
 	} else {
 		// if file is a video
