@@ -259,7 +259,7 @@ export const aspectRatio = (
 
 // this parses the file name when uploading something , it removes all the special charecters
 export const parseUploadFileName = (name: string): string =>
-	slugify(name, {
+	slugify(name || "", {
 		lower: true,
 		remove: FILE_NAME_PARSING_PATTERN,
 	});
