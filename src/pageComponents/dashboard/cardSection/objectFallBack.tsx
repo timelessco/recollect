@@ -66,9 +66,9 @@ export const EmbedWithFallback = ({
 						<Image
 							alt="Preview"
 							className="object-contain"
-							height={scaledHeight}
+							height={placeholderHeight}
 							src={placeholder}
-							width={scaledWidth}
+							width={placeholderWidth}
 						/>
 					</div>
 				</div>
