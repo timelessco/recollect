@@ -206,12 +206,13 @@ export default async (
 		// const { ogImage: image, meta_data: metaData } =
 		// 	await notVideoLogic(storageData);
 		try {
-			const responsePdf = await fetch(storageData?.publicUrl, {
+			// eslint-disable-next-line no-console
+			console.log(
+				storageData?.publicUrl,
+				"storageData?.publicUrl#####################",
+			);
+			const responsePdf = await axios(storageData?.publicUrl, {
 				method: "GET",
-				headers: {
-					"User-Agent":
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-				},
 			});
 
 			if (!responsePdf.ok) {
