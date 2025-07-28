@@ -67,12 +67,12 @@ const MyComponent = () => {
 				<motion.div
 					animate={{
 						x: 0,
-						transition: { type: "tween", duration: 0.3, ease: "easeInOut" },
+						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
 					className="absolute right-0 top-0 flex h-full w-1/5 flex-col border-l border-gray-200 bg-white/90 shadow-xl backdrop-blur-xl"
 					exit={{
 						x: "100%",
-						transition: { type: "tween", duration: 0.32, ease: "easeInOut" },
+						transition: { type: "tween", duration: 0.2, ease: "easeInOut" },
 					}}
 					initial={{ x: "100%" }}
 				>
