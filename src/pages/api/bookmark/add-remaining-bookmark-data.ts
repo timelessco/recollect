@@ -42,17 +42,20 @@ type Data = {
 // this uploads all the remaining bookmark data
 // these data are blur hash and s3 uploads
 
-const upload = async (
+export const upload = async (
 	base64info: string,
 	userIdForStorage: ProfilesTableTypes["id"],
+	storagePath: string | null,
 ): Promise<string | null> => {
 	try {
 		const imgName = `img-${uniqid?.time()}.jpg`;
-		const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
+		const storagePath_ =
+			storagePath ??
+			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
 
 		const { error: uploadError } = await r2Helpers.uploadObject(
 			R2_MAIN_BUCKET_NAME,
-			storagePath,
+			storagePath_,
 			new Uint8Array(decode(base64info)),
 			"image/jpg",
 		);
@@ -63,7 +66,7 @@ const upload = async (
 			return null;
 		}
 
-		const { data: storageData } = r2Helpers.getPublicUrl(storagePath);
+		const { data: storageData } = r2Helpers.getPublicUrl(storagePath_);
 
 		return storageData?.publicUrl || null;
 	} catch (error) {
@@ -157,7 +160,7 @@ export default async function handler(
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
-			uploadedImageThatIsAUrl = await upload(returnedB64, userId);
+			uploadedImageThatIsAUrl = await upload(returnedB64, userId, null);
 
 			// If upload failed, log but don't fail the entire request
 			if (uploadedImageThatIsAUrl === null) {

@@ -548,34 +548,23 @@ const CardSection = ({
 				return (
 					<AnimatePresence mode="wait">
 						{img ? (
-							documentFileTypes?.includes(type) ? (
-								<motion.div
-									animate={{ opacity: 1 }}
-									initial={{ opacity: 0 }}
-									key={`pdf-${id}`}
-									transition={{ duration: 0.3 }}
-								>
-									<PDFThumbnail className={imgClassName} pdfUrl={img} />
-								</motion.div>
-							) : (
-								<motion.div
-									animate={{ opacity: 1 }}
-									initial={{ opacity: 0 }}
-									key={`img-${id}`}
-									transition={{ duration: 0.3 }}
-								>
-									<Image
-										alt="bookmark-img"
-										blurDataURL={blurSource || defaultBlur}
-										className={imgClassName}
-										height={height ?? 200}
-										onError={() => setErrorImgs([id as never, ...errorImgs])}
-										placeholder="blur"
-										src={img}
-										width={width ?? 200}
-									/>
-								</motion.div>
-							)
+							<motion.div
+								animate={{ opacity: 1 }}
+								initial={{ opacity: 0 }}
+								key={`img-${id}`}
+								transition={{ duration: 0.3 }}
+							>
+								<Image
+									alt="bookmark-img"
+									blurDataURL={blurSource || defaultBlur}
+									className={imgClassName}
+									height={height ?? 200}
+									onError={() => setErrorImgs([id as never, ...errorImgs])}
+									placeholder="blur"
+									src={img}
+									width={width ?? 200}
+								/>
+							</motion.div>
 						) : (
 							<motion.div
 								animate={{ opacity: 1 }}
