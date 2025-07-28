@@ -492,7 +492,7 @@ const CardSection = ({
 		});
 
 		const figureClassName = classNames({
-			relative: isAudio,
+			"relative z-[-1]": isAudio || isVideo,
 			"mr-3": cardTypeCondition === viewValues.list,
 			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
@@ -593,14 +593,16 @@ const CardSection = ({
 		};
 
 		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800 ":
+			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
 				true,
 			absolute: true,
-			"bottom-[70px] left-[7px] ":
+			// "bottom-[-1%] left-[7%] transform translate-x-[-50%] translate-y-[-50%]":
+			// 	cardTypeCondition === viewValues.moodboard || cardTypeCondition === viewValues.card,
+			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
-			"top-[15px] left-[30px]": cardTypeCondition === viewValues.list,
+			"top-[9px] left-[21px]": cardTypeCondition === viewValues.list,
 		});
 
 		return (
