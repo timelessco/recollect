@@ -6,6 +6,7 @@ import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
+import { pdfToPng } from "pdf-to-png-converter";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
@@ -20,6 +21,7 @@ import {
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 	STORAGE_FILES_PATH,
+	STORAGE_SCREENSHOT_IMAGES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
@@ -31,6 +33,7 @@ import {
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
+import { upload } from "../bookmark/add-remaining-bookmark-data";
 
 type BodyDataType = {
 	category_id: string;
@@ -203,7 +206,24 @@ export default async (
 		// const { ogImage: image, meta_data: metaData } =
 		// 	await notVideoLogic(storageData);
 
-		ogImage = storageData?.publicUrl;
+		const responsePdf = await fetch(storageData?.publicUrl);
+
+		if (!responsePdf.ok) throw new Error("Failed to fetch PDF");
+
+		const arrayBuffer = await responsePdf.arrayBuffer();
+		const buffer = Buffer.from(arrayBuffer);
+
+		const pngPages = await pdfToPng(buffer, {
+			pagesToProcess: [1],
+			viewportScale: 2,
+		});
+		const base64Image = pngPages[0].content.toString("base64");
+
+		ogImage = await upload(
+			base64Image,
+			userId ?? "",
+			`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
+		);
 		// meta_data = metaData;
 	} else {
 		// if file is a video
@@ -242,7 +262,7 @@ export default async (
 					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
 					{
 						id: DatabaseData[0]?.id,
-						publicUrl: storageData?.publicUrl,
+						publicUrl: ogImage,
 					},
 					{
 						headers: {
@@ -274,4 +294,8 @@ export default async (
 			error: publicUrlError ?? DBerror,
 		});
 	}
+};
+
+export const config = {
+	runtime: "nodejs",
 };
