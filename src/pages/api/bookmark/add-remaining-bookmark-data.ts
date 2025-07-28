@@ -65,7 +65,7 @@ export const upload = async (
 			return null;
 		}
 
-		const { data: storageData } = r2Helpers.getPublicUrl(storagePath);
+		const { data: storageData } = r2Helpers.getPublicUrl(storagePath_);
 
 		return storageData?.publicUrl || null;
 	} catch (error) {
@@ -217,7 +217,7 @@ export default async function handler(
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
-			uploadedCoverImageUrl = await upload(returnedB64, userId);
+			uploadedCoverImageUrl = await upload(returnedB64, userId, null);
 
 			// If upload failed, log but don't fail the entire request
 			if (uploadedCoverImageUrl === null) {
