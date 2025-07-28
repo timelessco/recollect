@@ -131,9 +131,6 @@ importers:
       pdf-to-png-converter:
         specifier: ^3.7.1
         version: 3.7.1
-      pdfjs-dist:
-        specifier: ^3.4.120
-        version: 3.4.120
       puppeteer-core:
         specifier: ^24.10.0
         version: 24.10.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
