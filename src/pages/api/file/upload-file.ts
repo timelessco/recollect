@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 // you might want to use regular 'fs' and not a promise one
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
@@ -211,16 +212,28 @@ export default async (
 				storageData?.publicUrl,
 				"storageData?.publicUrl#####################",
 			);
-			const responsePdf = await axios(storageData?.publicUrl, {
-				method: "GET",
-			});
+			// const responsePdf = await axios(storageData?.publicUrl, {
+			// 	method: "GET",
+			// });
 
-			if (!responsePdf.ok) {
+			const responsePdf = await axios.get(storageData?.publicUrl, {
+				responseType: "arraybuffer",
+				headers: {
+					"User-Agent": "Mozilla/5.0",
+				},
+				timeout: 10_000,
+			});
+			// eslint-disable-next-line no-console
+			console.log(responsePdf, "responsePdf");
+
+			if (!responsePdf?.status || responsePdf.status !== 200) {
 				throw new Error(`Failed to fetch PDF. Status: ${responsePdf.status}`);
 			}
 
-			const arrayBuffer = await responsePdf.arrayBuffer();
-			const buffer = Buffer.from(arrayBuffer);
+			// const arrayBuffer = await responsePdf?.arrayBuffer();
+			// const buffer = Buffer.from(arrayBuffer);
+
+			const buffer = Buffer.from(responsePdf?.data);
 
 			const pngPages = await pdfToPng(buffer, {
 				pagesToProcess: [1],
