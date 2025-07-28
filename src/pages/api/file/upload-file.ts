@@ -206,33 +206,34 @@ export default async (
 		// const { ogImage: image, meta_data: metaData } =
 		// 	await notVideoLogic(storageData);
 
-		const responsePdf = await fetch(storageData?.publicUrl, {
-			method: "GET",
-			headers: {
-				"User-Agent":
-					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-				Accept: "*/*",
-				Referer:
-					"https://bookmark-tags-git-feat-local-pdf-thumbnail-timelessco.vercel.app",
-			},
-		});
+		// const responsePdf = await fetch(storageData?.publicUrl, {
+		// 	method: "GET",
+		// 	headers: {
+		// 		"User-Agent":
+		// 			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+		// 		Accept: "*/*",
+		// 		Referer:
+		// 			"https://bookmark-tags-git-feat-local-pdf-thumbnail-timelessco.vercel.app",
+		// 	},
+		// });
 
-		if (!responsePdf.ok) throw new Error("Failed to fetch PDF");
+		// if (!responsePdf.ok) throw new Error("Failed to fetch PDF");
 
-		const arrayBuffer = await responsePdf.arrayBuffer();
-		const buffer = Buffer.from(arrayBuffer);
+		// const arrayBuffer = await responsePdf.arrayBuffer();
+		// const buffer = Buffer.from(arrayBuffer);
 
-		const pngPages = await pdfToPng(buffer, {
-			pagesToProcess: [1],
-			viewportScale: 2,
-		});
-		const base64Image = pngPages[0].content.toString("base64");
+		// const pngPages = await pdfToPng(buffer, {
+		// 	pagesToProcess: [1],
+		// 	viewportScale: 2,
+		// });
+		// const base64Image = pngPages[0].content.toString("base64");
 
-		ogImage = await upload(
-			base64Image,
-			userId ?? "",
-			`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
-		);
+		// ogImage = await upload(
+		// 	base64Image,
+		// 	userId ?? "",
+		// 	`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
+		// );
+		ogImage = storageData?.publicUrl;
 		// meta_data = metaData;
 	} else {
 		// if file is a video
