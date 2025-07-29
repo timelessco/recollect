@@ -156,77 +156,98 @@ export const CustomLightBox = ({
 			const bookmark = bookmarks?.[slideIndex];
 			if (!bookmark) return null;
 
-			// Determine if this slide is currently active (visible)
+			// Determine if this slide is currently active (visible) for video player
 			const isActive = offset === 0;
+
+			const renderImageSlide = () => (
+				<div className="flex items-center justify-center">
+					<div className="relative max-w-[80vw]">
+						<Image
+							alt={PREVIEW_ALT_TEXT}
+							className="max-h-[80vh] w-auto"
+							height={bookmark?.meta_data?.height ?? 0}
+							src={
+								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
+								bookmark?.meta_data?.isOgImagePreferred
+									? bookmark?.ogImage ?? ""
+									: bookmark?.url
+							}
+							width={bookmark?.meta_data?.width ?? 0}
+						/>
+					</div>
+				</div>
+			);
+
+			const renderVideoSlide = () => (
+				<div className="flex h-full w-full items-center justify-center">
+					<div className="w-full max-w-4xl">
+						<VideoPlayer isActive={isActive} src={bookmark?.url} />
+					</div>
+				</div>
+			);
+
+			const renderPDFSlide = () => (
+				<div className="relative flex h-full w-full max-w-[80vw] items-center justify-center">
+					<div className="h-full w-full">
+						<div className="flex h-full w-full items-center justify-center bg-gray-50">
+							<embed
+								className="block h-full w-full border-none"
+								key={bookmark?.url}
+								src={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+								type={PDF_MIME_TYPE}
+							/>
+						</div>
+					</div>
+				</div>
+			);
+
+			const renderYouTubeSlide = () => (
+				<div className="flex h-full w-full max-w-[80vw] items-center justify-center">
+					<VideoPlayer isActive={isActive} src={bookmark?.url} />
+				</div>
+			);
+
+			const renderWebEmbedSlide = () => (
+				<EmbedWithFallback
+					placeholder={bookmark?.ogImage ?? ""}
+					placeholderHeight={bookmark?.meta_data?.height ?? 0}
+					placeholderWidth={bookmark?.meta_data?.width ?? 0}
+					src={bookmark?.url}
+				/>
+			);
+
+			let content = null;
+			if (
+				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
+				bookmark?.meta_data?.isOgImagePreferred ||
+				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX)
+			) {
+				content = renderImageSlide();
+			} else if (
+				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX)
+			) {
+				content = renderVideoSlide();
+			} else if (
+				bookmark?.meta_data?.mediaType === PDF_MIME_TYPE ||
+				bookmark?.type?.includes(PDF_TYPE)
+			) {
+				content = renderPDFSlide();
+			} else if (
+				bookmark?.url?.includes(YOUTUBE_COM) ||
+				bookmark?.url?.includes(YOUTU_BE)
+			) {
+				content = renderYouTubeSlide();
+			} else if (bookmark?.url) {
+				content = renderWebEmbedSlide();
+			}
 
 			return (
 				<motion.div
 					className="flex h-full w-full items-center justify-center"
 					layout
 				>
-					{/* IMAGE RENDERING */}
-					{bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-					bookmark?.meta_data?.isOgImagePreferred ||
-					bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX) ? (
-						<div className="flex items-center justify-center">
-							<div className="relative max-w-[80vw]">
-								<Image
-									alt={PREVIEW_ALT_TEXT}
-									className="max-h-[80vh] w-auto"
-									height={bookmark?.meta_data?.height ?? 0}
-									src={
-										// Use OG image if preferred, otherwise use direct URL
-										bookmark?.meta_data?.mediaType?.startsWith(
-											IMAGE_TYPE_PREFIX,
-										) || bookmark?.meta_data?.isOgImagePreferred
-											? bookmark?.ogImage ?? ""
-											: bookmark?.url
-									}
-									width={bookmark?.meta_data?.width ?? 0}
-								/>
-							</div>
-						</div>
-					) : bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-					  bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ? (
-						<div className="flex h-full w-full items-center justify-center">
-							<div className="w-full max-w-4xl">
-								<VideoPlayer isActive={isActive} src={bookmark?.url} />
-							</div>
-						</div>
-					) : bookmark?.meta_data?.mediaType === PDF_MIME_TYPE ||
-					  bookmark?.type?.includes(PDF_TYPE) ? (
-						<div className="relative flex h-full w-full max-w-[80vw] items-center justify-center">
-							<div className="h-full w-full">
-								<div className="flex h-full w-full items-center justify-center bg-gray-50">
-									{/* Embedded PDF viewer with custom parameters */}
-									<embed
-										className="block h-full w-full border-none"
-										key={bookmark?.url}
-										src={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-										type={PDF_MIME_TYPE}
-									/>
-								</div>
-							</div>
-						</div>
-					) : !bookmark?.url ? null : (
-						<>
-							{/* Special handling for YouTube URLs */}
-							{bookmark?.url?.includes(YOUTUBE_COM) ||
-							bookmark?.url?.includes(YOUTU_BE) ? (
-								<div className="flex h-full w-full max-w-[80vw] items-center justify-center">
-									<VideoPlayer isActive={isActive} src={bookmark?.url} />
-								</div>
-							) : (
-								/* Generic web content with fallback image */
-								<EmbedWithFallback
-									placeholder={bookmark?.ogImage ?? ""}
-									placeholderHeight={bookmark?.meta_data?.height ?? 0}
-									placeholderWidth={bookmark?.meta_data?.width ?? 0}
-									src={bookmark?.url}
-								/>
-							)}
-						</>
-					)}
+					{content}
 				</motion.div>
 			);
 		},
