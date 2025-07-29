@@ -1,6 +1,10 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import axios from "axios";
+import { z } from "zod";
 
+const schema = z.object({
+	url: z.string().url({ message: "Invalid URL format" }),
+});
 // in this api we get the url from the request body and then we check the media type of the url
 // this is used in checkIfUrlAnMedia and checkIfUrlAnImage functions in the helpers
 // this api returns the media type of the url
@@ -8,18 +12,16 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	response.setHeader("Access-Control-Allow-Origin", "*");
-	response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-	response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+	const parseResult = schema.safeParse(request.body);
 
-	const { url } = request.body;
-
-	if (!url || typeof url !== "string") {
+	if (!parseResult.success) {
 		response.status(400).json({
-			error: "URL parameter is required",
+			error: parseResult.error.errors[0]?.message ?? "Invalid input",
 		});
 		return;
 	}
+
+	const { url } = parseResult.data;
 
 	try {
 		const result = await axios.head(url, {
@@ -31,6 +33,9 @@ export default async function handler(
 		});
 
 		const mediaType = result.headers["content-type"];
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
 		response.status(200).json({
 			mediaType,
