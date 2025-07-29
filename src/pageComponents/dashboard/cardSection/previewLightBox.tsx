@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
 import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
-import { CustomLightBox } from "../../../components/LightBox";
+import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
@@ -50,7 +50,7 @@ export const PreviewLightBox = ({
 		]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
 
 		const rawBookmarks =
-			previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
+			previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
@@ -64,7 +64,7 @@ export const PreviewLightBox = ({
 		// Only set activeIndex when the lightbox is being opened
 		if (open && !wasOpen) {
 			const newIndex = bookmarks.findIndex(
-				(bookmark) => String(bookmark.id) === String(id),
+				(bookmark) => String(bookmark?.id) === String(id),
 			);
 			if (newIndex !== -1) {
 				setActiveIndex(newIndex);
@@ -89,10 +89,10 @@ export const PreviewLightBox = ({
 			{
 				pathname: `/${CATEGORY_ID_PATHNAME}`,
 				query: {
-					category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
+					category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
 				},
 			},
-			`/${router.asPath.split("/")[1]}`,
+			`/${router?.asPath?.split("/")?.[1]}`,
 			{ shallow: true },
 		);
 
@@ -114,10 +114,10 @@ export const PreviewLightBox = ({
 				{
 					pathname: `/${CATEGORY_ID_PATHNAME}`,
 					query: {
-						category_id: router.query.category_id ?? ALL_BOOKMARKS_URL,
+						category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
 					},
 				},
-				`/${router.asPath.split("/")[1]}`,
+				`/${router?.asPath?.split("/")?.[1]}`,
 				{ shallow: true },
 			);
 

@@ -338,3 +338,28 @@ export const OG_IMAGE_PREFERRED_SITES = [
 	"spotify",
 	"imdb",
 ];
+
+// Lightbox Constants
+
+// Media type prefixes
+export const IMAGE_TYPE_PREFIX = "image";
+export const VIDEO_TYPE_PREFIX = "video";
+
+// Media type specific strings
+export const PDF_MIME_TYPE = "application/pdf";
+export const PDF_TYPE = "pdf";
+
+// UI strings
+export const PREVIEW_ALT_TEXT = "Preview";
+
+// URL patterns
+export const YOUTUBE_COM = "youtube.com";
+export const YOUTU_BE = "youtu.be";
+
+// PDF viewer parameters
+export const PDF_VIEWER_PARAMS =
+	"#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH";
+
+// Lightbox button types
+export const LIGHTBOX_CLOSE_BUTTON = "close";
+export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
