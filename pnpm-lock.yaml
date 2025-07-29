@@ -131,9 +131,9 @@ importers:
       open-graph-scraper:
         specifier: 6.5.1
         version: 6.5.1
-      pdf-to-png-converter:
-        specifier: ^3.7.1
-        version: 3.7.1
+      pdfjs-dist:
+        specifier: ^3.4.120
+        version: 3.11.174
       puppeteer-core:
         specifier: ^24.10.0
         version: 24.10.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -1803,70 +1803,6 @@ packages:
   '@mux/playback-core@0.30.1':
     resolution: {integrity: sha512-rnO1NE9xHDyzbAkmE6ygJYcD7cyyMt7xXqWTykxlceaoSXLjUqgp42HDio7Lcidto4x/O4FIa7ztjV2aCBCXgQ==}
 
-  '@napi-rs/canvas-android-arm64@0.1.74':
-    resolution: {integrity: sha512-aq5ode+9Z/ZR0H485dI2jdRdttg/hl9Ob+iPCt0nj+QFiirpxDrbUHKeTZWQWEtkWyC7vI5R2dMTbDINBfl9eg==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [android]
-
-  '@napi-rs/canvas-darwin-arm64@0.1.74':
-    resolution: {integrity: sha512-eO5Miz+ef1dEQyUMWDdcbAb1Wr7yMyxD9/CL9d4frQxO4pTTaCiMBUWup8XDPLr/g7XkSkGCZLP47xiXiyXSpQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@napi-rs/canvas-darwin-x64@0.1.74':
-    resolution: {integrity: sha512-0EkO0IFkps7C3JpKC7lbM3IL+QDUYeUKagHLDbUry4PeQTghxp6JcgccpmU32ZbpFZgPnm7o0tTJO0J1d8S2rA==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [darwin]
-
-  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.74':
-    resolution: {integrity: sha512-qAVJEN2JqGayEI1kSpJy1Xr6ZmCFV9QhRyV35yWsS7e9X1jm+T4DAlCxI4PlKIlqVSzYMYhKrxchST20XBSzHg==}
-    engines: {node: '>= 10'}
-    cpu: [arm]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-arm64-gnu@0.1.74':
-    resolution: {integrity: sha512-lOnop22qy6MYxI94GGunMMjo6D80I//2W/6pqKUfwXaDQtOfvHsTcVVzDu5cFXUTNrb9ZRfMCeol5YEd+9FJvg==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-arm64-musl@0.1.74':
-    resolution: {integrity: sha512-tfFqLHGtSEabBigOnPUfZviSTGmW2xHv5tYZYPBWmgGiTkoNJ7lEWFUxHjwvV5HXGqLs8ok/O7g1enSpxO6lmQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-riscv64-gnu@0.1.74':
-    resolution: {integrity: sha512-j6H9dHTMtr1y3tu/zGm1ythYIL9vTl4EEv9f6CMx0n3Zn2M+OruUUwh9ylCj4afzSNEK9T8cr6zMnmTPzkpBvQ==}
-    engines: {node: '>= 10'}
-    cpu: [riscv64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-x64-gnu@0.1.74':
-    resolution: {integrity: sha512-73DIV4E7Y9CpIJuUXVl9H6+MEQXyRy4VJQoUGA1tOlcKQiStxqhq6UErL4decI28NxjyQXBhtYZKj5q8AJEuOg==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-x64-musl@0.1.74':
-    resolution: {integrity: sha512-FgDMEFdGIJT3I2xejflRJ82/ZgDphyirS43RgtoLaIXI6zihLiZcQ7rczpqeWgAwlJNjR0He2EustsKe1SkUOg==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-
-  '@napi-rs/canvas-win32-x64-msvc@0.1.74':
-    resolution: {integrity: sha512-x6bhwlhn0wU7dfiP46mt5Bi6PowSUH4CJ4PTzGj58LRQ1HVasEIJgoMx7MLC48F738eJpzbfg3WR/D8+e9CeTA==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [win32]
-
-  '@napi-rs/canvas@0.1.74':
-    resolution: {integrity: sha512-pOIyzuS+5Bz1vAhD7tdhaw5/936mMJZUn4aVajojUdjYOGSWmfpDYSgt0nQLZPZVN5GLgWgutqXPOi7Jsm3k+Q==}
-    engines: {node: '>= 10'}
-
   '@next/bundle-analyzer@14.0.3':
     resolution: {integrity: sha512-+UriXNEn2vGR2IxTiiuen45G7lXUbtMh0hgS/UH2o2E4TnScwjEEepqT76pY8fdpa5JEZ+gvBy6aSnrw4G2P2w==}
 
@@ -3475,8 +3411,8 @@ packages:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
 
-  aproba@2.0.0:
-    resolution: {integrity: sha512-lYe4Gx7QT+MKGbDsA+Z+he/Wtef0BiwDOlK/XkBrdfsh9J/jPPXbX0tE9x9cl27Tmu5gg3QUbUrQYa/y+KOHPQ==}
+  aproba@2.1.0:
+    resolution: {integrity: sha512-tLIEcj5GuR2RSTnxNKdkK0dJ/GrC7P38sUkiDmDuHfsHmbagTFAxDVIBltoklXEVIQ/f14IL8IMJ5pn9Hez1Ew==}
 
   arch@2.2.0:
     resolution: {integrity: sha512-Of/R0wqp83cgHozfIYLbBMnej79U/SVGOOyuB3VVFv1NRM/PSFMK12x9KVtiYzJqmnU5WR2qp0Z5rHb7sWGnFQ==}
@@ -7083,8 +7019,8 @@ packages:
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
 
-  nan@2.22.2:
-    resolution: {integrity: sha512-DANghxFkS1plDdRsX0X9pm0Z6SJNN6gBdtXfanwoZ8hooC5gosGFSBGRYHUVPz1asKA/kMRqDRdHrluZ61SpBQ==}
+  nan@2.23.0:
+    resolution: {integrity: sha512-1UxuyYGdoQHcGg87Lkqm3FzefucTa0NAiOcuRsDmysep3c1LVCRK2krrUDafMWtjSG04htvAmvg96+SDknOmgQ==}
 
   nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
@@ -7570,16 +7506,9 @@ packages:
     resolution: {integrity: sha512-ad/3bsalbbWhmBo0D6FZ4RNMwsLsPpL6gnvhuSaU5Vm7b06Kr5ubSltQQ0T7YKsiJQO+g22zJ4dJKNTXIyOXtA==}
     engines: {node: '>=8'}
 
-  pdf-to-png-converter@3.7.1:
-    resolution: {integrity: sha512-bbox+zXQ1FxhXCYwzIRikcfx4tgB6zl9gn3LYx7NyDIjnrtawZVKJ1No4/iz5PnxLTzEK8k6KYSxWFIphxgLbQ==}
-    engines: {node: '>=20'}
-
-  pdfjs-dist@3.4.120:
-    resolution: {integrity: sha512-B1hw9ilLG4m/jNeFA0C2A0PZydjxslP8ylU+I4XM7Bzh/xWETo9EiBV848lh0O0hLut7T6lK1V7cpAXv5BhxWw==}
-
-  pdfjs-dist@5.4.54:
-    resolution: {integrity: sha512-TBAiTfQw89gU/Z4LW98Vahzd2/LoCFprVGvGbTgFt+QCB1F+woyOPmNNVgLa6djX9Z9GGTnj7qE1UzpOVJiINw==}
-    engines: {node: '>=20.16.0 || >=22.3.0'}
+  pdfjs-dist@3.11.174:
+    resolution: {integrity: sha512-TdTZPf1trZ8/UFu5Cx/GXB7GZM30LT+wWUNfsi6Bq8ePLnb+woNKtDymI2mxZYBpMbonNFqKmiz684DIfnd8dA==}
+    engines: {node: '>=18'}
 
   pegjs@0.10.0:
     resolution: {integrity: sha512-qI5+oFNEGi3L5HAxDwN2LA4Gg7irF70Zs25edhjld9QemOgp0CbvMtbFcMvFtEo1OityPrcCzkQFB8JP/hxgow==}
@@ -10332,7 +10261,7 @@ snapshots:
   '@conventional-changelog/git-client@1.0.1(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.0.0)':
     dependencies:
       '@types/semver': 7.5.6
-      semver: 7.7.1
+      semver: 7.7.2
     optionalDependencies:
       conventional-commits-filter: 5.0.0
       conventional-commits-parser: 6.0.0
@@ -11203,49 +11132,6 @@ snapshots:
     dependencies:
       hls.js: 1.6.7
       mux-embed: 5.11.0
-
-  '@napi-rs/canvas-android-arm64@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-darwin-arm64@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-darwin-x64@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-linux-arm64-gnu@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-linux-arm64-musl@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-linux-riscv64-gnu@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-linux-x64-gnu@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-linux-x64-musl@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas-win32-x64-msvc@0.1.74':
-    optional: true
-
-  '@napi-rs/canvas@0.1.74':
-    optionalDependencies:
-      '@napi-rs/canvas-android-arm64': 0.1.74
-      '@napi-rs/canvas-darwin-arm64': 0.1.74
-      '@napi-rs/canvas-darwin-x64': 0.1.74
-      '@napi-rs/canvas-linux-arm-gnueabihf': 0.1.74
-      '@napi-rs/canvas-linux-arm64-gnu': 0.1.74
-      '@napi-rs/canvas-linux-arm64-musl': 0.1.74
-      '@napi-rs/canvas-linux-riscv64-gnu': 0.1.74
-      '@napi-rs/canvas-linux-x64-gnu': 0.1.74
-      '@napi-rs/canvas-linux-x64-musl': 0.1.74
-      '@napi-rs/canvas-win32-x64-msvc': 0.1.74
 
   '@next/bundle-analyzer@14.0.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
@@ -13149,7 +13035,7 @@ snapshots:
 
   '@types/pdfjs-dist@2.10.378':
     dependencies:
-      pdfjs-dist: 3.4.120
+      pdfjs-dist: 3.11.174
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -13278,7 +13164,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.0.4)
       '@typescript-eslint/utils': 5.62.0(eslint@8.38.0)(typescript@5.0.4)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.4.1
       eslint: 8.38.0
       tsutils: 3.21.0(typescript@5.0.4)
     optionalDependencies:
@@ -13310,7 +13196,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.4.1
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.7.2
@@ -13324,7 +13210,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 6.13.1
       '@typescript-eslint/visitor-keys': 6.13.1
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.4.1
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.7.2
@@ -13461,7 +13347,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -13557,7 +13443,7 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  aproba@2.0.0:
+  aproba@2.1.0:
     optional: true
 
   arch@2.2.0: {}
@@ -14003,7 +13889,7 @@ snapshots:
   canvas@2.11.2:
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11
-      nan: 2.22.2
+      nan: 2.23.0
       simple-get: 3.1.1
     transitivePeerDependencies:
       - encoding
@@ -15933,7 +15819,7 @@ snapshots:
 
   gauge@3.0.2:
     dependencies:
-      aproba: 2.0.0
+      aproba: 2.1.0
       color-support: 1.1.3
       console-control-strings: 1.1.0
       has-unicode: 2.0.1
@@ -16321,7 +16207,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -17400,7 +17286,7 @@ snapshots:
       object-assign: 4.1.1
       thenify-all: 1.6.0
 
-  nan@2.22.2:
+  nan@2.23.0:
     optional: true
 
   nanoid@3.3.7: {}
@@ -17949,26 +17835,16 @@ snapshots:
 
   path-type@5.0.0: {}
 
-  path2d-polyfill@2.0.1: {}
+  path2d-polyfill@2.0.1:
+    optional: true
 
-  pdf-to-png-converter@3.7.1:
-    dependencies:
-      '@napi-rs/canvas': 0.1.74
-      pdfjs-dist: 5.4.54
-
-  pdfjs-dist@3.4.120:
-    dependencies:
-      path2d-polyfill: 2.0.1
-      web-streams-polyfill: 3.3.3
+  pdfjs-dist@3.11.174:
     optionalDependencies:
       canvas: 2.11.2
+      path2d-polyfill: 2.0.1
     transitivePeerDependencies:
       - encoding
       - supports-color
-
-  pdfjs-dist@5.4.54:
-    optionalDependencies:
-      '@napi-rs/canvas': 0.1.74
 
   pegjs@0.10.0: {}
 

@@ -2,9 +2,7 @@
 
 import { log } from "console";
 import { type NextApiResponse } from "next";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Sentry from "@sentry/nextjs";
-import axios from "axios";
 import { isNil } from "lodash";
 
 import imageToText from "../../../async/ai/imageToText";
@@ -102,6 +100,7 @@ export default async function handler(
 	const { error: DBerror } = await supabase
 		.from(MAIN_TABLE_NAME)
 		.update({
+			ogImage: publicUrl,
 			meta_data,
 			description: (meta_data?.img_caption as string) || "",
 		})
