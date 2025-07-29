@@ -1,14 +1,10 @@
-/* eslint-disable complexity */
 // you might want to use regular 'fs' and not a promise one
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import DOMMatrix from "@thednp/dommatrix";
-import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
-import { pdfToPng } from "pdf-to-png-converter";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
@@ -18,29 +14,12 @@ import {
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
-import {
-	getBaseUrl,
-	MAIN_TABLE_NAME,
-	NEXT_API_URL,
-	STORAGE_FILES_PATH,
-	STORAGE_SCREENSHOT_IMAGES_PATH,
-	UPLOAD_FILE_REMAINING_DATA_API,
-} from "../../../utils/constants";
+import { MAIN_TABLE_NAME, STORAGE_FILES_PATH } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import {
-	apiCookieParser,
-	isUserInACategory,
-	parseUploadFileName,
-} from "../../../utils/helpers";
+import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
-import { upload } from "../bookmark/add-remaining-bookmark-data";
-
-// Add DOMMatrix polyfill for server-side usage
-if (typeof global.DOMMatrix === "undefined") {
-	global.DOMMatrix = DOMMatrix as never;
-}
 
 type BodyDataType = {
 	category_id: string;
@@ -213,46 +192,7 @@ export default async (
 		// const { ogImage: image, meta_data: metaData } =
 		// 	await notVideoLogic(storageData);
 		try {
-			// eslint-disable-next-line no-console
-			console.log(
-				storageData?.publicUrl,
-				"storageData?.publicUrl#####################",
-			);
-			// const responsePdf = await axios(storageData?.publicUrl, {
-			// 	method: "GET",
-			// });
-
-			const responsePdf = await axios.get(storageData?.publicUrl, {
-				responseType: "arraybuffer",
-				headers: {
-					"User-Agent": "Mozilla/5.0",
-				},
-				timeout: 10_000,
-			});
-			// eslint-disable-next-line no-console
-			console.log(responsePdf, "responsePdf");
-
-			if (!responsePdf?.status || responsePdf.status !== 200) {
-				throw new Error(`Failed to fetch PDF. Status: ${responsePdf.status}`);
-			}
-
-			// const arrayBuffer = await responsePdf?.arrayBuffer();
-			// const buffer = Buffer.from(arrayBuffer);
-
-			const buffer = Buffer.from(responsePdf?.data);
-
-			const pngPages = await pdfToPng(buffer, {
-				pagesToProcess: [1],
-				viewportScale: 2,
-			});
-
-			const base64Image = pngPages[0].content.toString("base64");
-
-			ogImage = await upload(
-				base64Image,
-				userId ?? "",
-				`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
-			);
+			ogImage = storageData?.publicUrl;
 		} catch (error) {
 			// console.error("Error generating PNG from PDF:", error);
 			if (error instanceof Error) {
@@ -295,22 +235,24 @@ export default async (
 	};
 
 	if (isNil(publicUrlError) && isNil(DBerror)) {
-		response.status(200).json({ success: true, error: null });
+		response
+			.status(200)
+			.json({ data: DatabaseData, success: true, error: null });
 
 		try {
 			if (!isEmpty(DatabaseData) && !isVideo) {
-				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-					{
-						id: DatabaseData[0]?.id,
-						publicUrl: ogImage,
-					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
-				);
+				// await axios.post(
+				// 	`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+				// 	{
+				// 		id: DatabaseData[0]?.id,
+				// 		publicUrl: ogImage,
+				// 	},
+				// 	{
+				// 		headers: {
+				// 			Cookie: apiCookieParser(request?.cookies),
+				// 		},
+				// 	},
+				// );
 			} else {
 				console.error("Remaining upload api error: upload data is empty");
 				Sentry.captureException(
@@ -335,8 +277,4 @@ export default async (
 			error: publicUrlError ?? DBerror,
 		});
 	}
-};
-
-export const config = {
-	runtime: "nodejs",
 };

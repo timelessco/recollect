@@ -772,7 +772,6 @@ export const uploadFile = async ({
 				},
 			},
 		);
-
 		return response?.data;
 	} catch (error) {
 		return error;
