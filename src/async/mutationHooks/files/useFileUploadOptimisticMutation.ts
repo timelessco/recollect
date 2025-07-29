@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -11,14 +12,16 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	getBaseUrl,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
-	PDF_MIME_TYPE,
+ 	PDF_MIME_TYPE,
 	R2_MAIN_BUCKET_NAME,
-	STORAGE_FILES_PATH,
+ 	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
+	UPLOAD_FILE_REMAINING_DATA_API,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
@@ -30,6 +33,8 @@ import {
 import { r2Helpers } from "../../../utils/r2Client";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
+
+import { generatePdfThumbnail } from "./utils/pdfThumbail";
 
 // get bookmark screenshot
 export default function useFileUploadOptimisticMutation() {
@@ -167,7 +172,7 @@ export default function useFileUploadOptimisticMutation() {
 					Eg: If user uploads images in documents page then the user will get a toast message 
 				telling "Added to documents page"  */
 
-				if (data?.file?.type === PDF_MIME_TYPE) {
+ 				if (data?.file?.type === PDF_MIME_TYPE) {
 					try {
 						successToast(`generating  thumbnail`);
 						await handlePdfThumbnailAndUpload({
