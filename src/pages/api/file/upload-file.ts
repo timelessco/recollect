@@ -2,7 +2,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
@@ -15,19 +14,9 @@ import {
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
-import {
-	getBaseUrl,
-	MAIN_TABLE_NAME,
-	NEXT_API_URL,
-	STORAGE_FILES_PATH,
-	UPLOAD_FILE_REMAINING_DATA_API,
-} from "../../../utils/constants";
+import { MAIN_TABLE_NAME, STORAGE_FILES_PATH } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import {
-	apiCookieParser,
-	isUserInACategory,
-	parseUploadFileName,
-} from "../../../utils/helpers";
+import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
@@ -202,8 +191,20 @@ export default async (
 		// if file is not a video
 		// const { ogImage: image, meta_data: metaData } =
 		// 	await notVideoLogic(storageData);
+		try {
+			ogImage = storageData?.publicUrl;
+		} catch (error) {
+			// console.error("Error generating PNG from PDF:", error);
+			if (error instanceof Error) {
+				throw new TypeError("Failed to generate PNG from PDF" + error.message);
+			}
 
-		ogImage = storageData?.publicUrl;
+			// Optional: set a fallback image or rethrow the error
+			ogImage = storageData?.publicUrl;
+			// Or throw error if you want the calling code to handle it
+			// throw error;
+		}
+
 		// meta_data = metaData;
 	} else {
 		// if file is a video
@@ -234,33 +235,9 @@ export default async (
 	};
 
 	if (isNil(publicUrlError) && isNil(DBerror)) {
-		response.status(200).json({ success: true, error: null });
-
-		try {
-			if (!isEmpty(DatabaseData) && !isVideo) {
-				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-					{
-						id: DatabaseData[0]?.id,
-						publicUrl: storageData?.publicUrl,
-					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
-				);
-			} else {
-				console.error("Remaining upload api error: upload data is empty");
-				Sentry.captureException(
-					`Remaining upload api error: upload data is empty`,
-				);
-			}
-		} catch (remainingerror) {
-			console.error(remainingerror);
-			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
-		}
-
+		response
+			.status(200)
+			.json({ data: DatabaseData, success: true, error: null });
 		// create embeddings
 		try {
 			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);

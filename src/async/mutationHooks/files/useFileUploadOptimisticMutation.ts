@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -11,12 +12,15 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	getBaseUrl,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
+	NEXT_API_URL,
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
+	UPLOAD_FILE_REMAINING_DATA_API,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
@@ -27,6 +31,8 @@ import {
 import { r2Helpers } from "../../../utils/r2Client";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
+
+import { generatePdfThumbnail } from "./utils/pdfThumbail";
 
 // get bookmark screenshot
 export default function useFileUploadOptimisticMutation() {
@@ -147,10 +153,14 @@ export default function useFileUploadOptimisticMutation() {
 				session?.user?.id,
 			]);
 		},
-		onSuccess: (apiResponse, data) => {
+		onSuccess: async (apiResponse, data) => {
 			const uploadedDataType = data?.file?.type;
 
-			const apiResponseTyped = apiResponse as unknown as { success: boolean };
+			const apiResponseTyped = apiResponse as unknown as {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				data: any;
+				success: boolean;
+			};
 
 			if (apiResponseTyped?.success === true) {
 				const fileTypeName = fileTypeIdentifier(uploadedDataType);
@@ -159,6 +169,51 @@ export default function useFileUploadOptimisticMutation() {
 					is uploading images in videos page then this logic fires and it tells where the item has been uploaded. 
 					Eg: If user uploads images in documents page then the user will get a toast message 
 				telling "Added to documents page"  */
+
+				if (data?.file?.type === "application/pdf") {
+					const thumbnailBlob = await generatePdfThumbnail(data.file);
+
+					if (thumbnailBlob) {
+						const thumbnailFileName = `thumb-${data?.uploadFileNamePath.replace(
+							".pdf",
+							".jpg",
+						)}`;
+
+						const { data: thumbUploadUrl, error: thumbError } =
+							await r2Helpers.createSignedUploadUrl(
+								"recollect",
+								`${STORAGE_FILES_PATH}/${session?.user?.id}/${thumbnailFileName}`,
+							);
+
+						if (thumbUploadUrl?.signedUrl && !thumbError) {
+							try {
+								const uploadResponse = await fetch(thumbUploadUrl.signedUrl, {
+									method: "PUT",
+									body: thumbnailBlob,
+									headers: {
+										"Content-Type": "image/png",
+									},
+								});
+
+								if (!uploadResponse.ok) {
+									console.error("Thumbnail upload failed");
+								} else {
+									const publicUrl = `https://media.recollect.so/${STORAGE_FILES_PATH}/${session?.user?.id}/${thumbnailFileName}`;
+
+									await axios.post(
+										`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+										{
+											id: apiResponseTyped?.data[0].id,
+											publicUrl,
+										},
+									);
+								}
+							} catch (error_) {
+								console.error("Thumbnail upload error:", error_);
+							}
+						}
+					}
+				}
 
 				if (
 					CATEGORY_ID === IMAGES_URL &&
