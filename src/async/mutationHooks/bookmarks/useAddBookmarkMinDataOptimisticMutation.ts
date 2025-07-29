@@ -133,7 +133,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 
 			if (!isUrlOfMimeType) {
-				errorToast("screenshot initiated!!!!!!!!");
 				if (data?.id) {
 					addLoadingBookmarkId(data?.id);
 				}

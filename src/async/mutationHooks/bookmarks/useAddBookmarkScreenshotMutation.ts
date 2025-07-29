@@ -8,7 +8,7 @@ import {
 } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../../utils/constants";
-import { successToast } from "../../../utils/toastMessages";
+import { errorToast, successToast } from "../../../utils/toastMessages";
 import { addBookmarkScreenshot } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
@@ -22,10 +22,10 @@ export default function useAddBookmarkScreenshotMutation() {
 
 	const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
 		onSuccess: () => {
-			successToast("Screenshot successfully taken ^_^");
+			successToast("Screenshot successfully taken");
 		},
 		onError: (error) => {
-			successToast("Screenshot error: " + error);
+			errorToast("Screenshot error: " + error);
 		},
 		onSettled: (apiResponse: unknown) => {
 			const response = apiResponse as { data: { data: SingleListData[] } };
