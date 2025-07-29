@@ -5,7 +5,7 @@ import "yet-another-react-lightbox/styles.css";
 import { useState } from "react";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
-import { CustomLightBox } from "../../../components/LightBox";
+import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import Spinner from "../../../components/spinner";
 import { type SingleListData } from "../../../types/apiTypes";
 import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
