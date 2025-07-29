@@ -7,24 +7,24 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // eslint-disable-next-line func-style
 export async function generatePdfThumbnail(file: File): Promise<Blob | null> {
-	const arrayBuffer = await file.arrayBuffer();
+	const arrayBuffer = await file?.arrayBuffer();
 
 	try {
-		const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-		const page = await pdf.getPage(1);
+		const pdf = await pdfjsLib?.getDocument({ data: arrayBuffer })?.promise;
+		const page = await pdf?.getPage(1);
 		const scale = 1.5;
-		const viewport = page.getViewport({ scale });
+		const viewport = page?.getViewport({ scale });
 
-		const canvas = document.createElement("canvas");
-		canvas.width = viewport.width;
-		canvas.height = viewport.height;
-		const context = canvas.getContext("2d");
+		const canvas = document?.createElement("canvas");
+		canvas.width = viewport?.width;
+		canvas.height = viewport?.height;
+		const context = canvas?.getContext("2d");
 		if (!context) return null;
 
-		await page.render({ canvasContext: context, viewport }).promise;
+		await page?.render({ canvasContext: context, viewport })?.promise;
 
 		return await new Promise((resolve) => {
-			canvas.toBlob((blob) => {
+			canvas?.toBlob((blob) => {
 				resolve(blob);
 			}, "image/jpg");
 		});
