@@ -50,7 +50,7 @@ export const PreviewLightBox = ({
 		]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
 
 		const rawBookmarks =
-			previousData?.pages.flatMap((page) => page?.data ?? []) ?? [];
+			previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
@@ -89,7 +89,7 @@ export const PreviewLightBox = ({
 			{
 				pathname: `/${CATEGORY_ID_PATHNAME}`,
 				query: {
-					category_id: router?.query.category_id ?? ALL_BOOKMARKS_URL,
+					category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
 				},
 			},
 			`/${router?.asPath?.split("/")?.[1]}`,
@@ -114,7 +114,7 @@ export const PreviewLightBox = ({
 				{
 					pathname: `/${CATEGORY_ID_PATHNAME}`,
 					query: {
-						category_id: router?.query.category_id ?? ALL_BOOKMARKS_URL,
+						category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
 					},
 				},
 				`/${router?.asPath?.split("/")?.[1]}`,
