@@ -11,6 +11,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
+import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -29,11 +30,7 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
 } from "../../../utils/constants";
-import {
-	apiCookieParser,
-	checkIfUrlAnMedia,
-	getMediaType,
-} from "../../../utils/helpers";
+import { apiCookieParser, checkIfUrlAnMedia } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB

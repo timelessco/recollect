@@ -41,7 +41,7 @@ export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 // api constants
 export const getBaseUrl = () =>
 	isProductionEnvironment
-		? "https://bookmark-tags-git-dev-timelessco.vercel.app"
+		? "process.env.NEXT_PUBLIC_VERCEL_URL"
 		: "http://localhost:3000/";
 
 export const NEXT_API_URL = `/api/`;
@@ -190,45 +190,7 @@ export const acceptedFileTypes = [
 
 	// Application
 	"application/msword",
-	"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-	"application/vnd.ms-fontobject",
-	"application/epub+zip",
-	"application/gzip",
-	"application/x-gzip",
-	"application/java-archive",
-	"application/json",
-	"application/ld+json",
-	"application/vnd.apple.installer+xml",
-	"application/vnd.oasis.opendocument.presentation",
-	"application/vnd.oasis.opendocument.spreadsheet",
-	"application/vnd.oasis.opendocument.text",
-	"application/ogg",
 	"application/pdf",
-	"application/x-httpd-php",
-	"application/vnd.ms-powerpoint",
-	"application/vnd.openxmlformats-officedocument.presentationml.presentation",
-	"application/vnd.rar",
-	"application/rtf",
-	"application/x-sh",
-	"application/x-tar",
-	"application/manifest+json",
-	"application/xhtml+xml",
-	"application/vnd.ms-excel",
-	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-	"application/xml",
-	"text/xml",
-	"application/vnd.mozilla.xul+xml",
-	"application/zip",
-	"application/x-zip-compressed",
-	"application/x-7z-compressed",
-	"application/x-abiword",
-	"application/x-freearc",
-	"application/vnd.amazon.ebook",
-	"application/octet-stream",
-	"application/x-bzip",
-	"application/x-bzip2",
-	"application/x-cdf",
-	"application/x-csh",
 ];
 
 export const bookmarkType = "bookmark";
