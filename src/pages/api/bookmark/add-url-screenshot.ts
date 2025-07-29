@@ -71,22 +71,21 @@ export default async function handler(
 			},
 		);
 		if (screenShotResponse.status === 200) {
-			console.error("***Screenshot success**");
+			console.log("***Screenshot success**");
 		}
 	} catch (error_) {
 		if (error_ instanceof Error) {
 			console.error("Screenshot error");
 			Sentry.captureException(`Screenshot error`);
-			throw new Error(error_.message);
 		}
 
 		return;
 	}
 
-	const base64data = Buffer.from(
+	const base64data = Buffer?.from(
 		screenShotResponse?.data?.screenshot?.data,
 		"binary",
-	).toString("base64");
+	)?.toString("base64");
 
 	const publicURL = await upload(base64data, userId);
 
@@ -118,7 +117,6 @@ export default async function handler(
 		screenshot: publicURL,
 		coverImage: existingBookmarkData?.ogImage,
 	};
-	console.error("updatedMetaData", updatedMetaData);
 
 	const {
 		data,

@@ -79,6 +79,7 @@ import {
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
 } from "../../utils/constants";
+// eslint-disable-next-line import/no-cycle
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
 
 // bookmark
@@ -837,4 +838,29 @@ export const signUpWithEmailPassword = async (
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
 	await supabase.auth.signOut({ scope: "local" });
+};
+
+export const getMediaType = async (url: string): Promise<string | null> => {
+	try {
+		const response = await fetch(
+			`${getBaseUrl()}/api/bookmark/get-media-type`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ url }),
+			},
+		);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		return data.mediaType || null;
+	} catch (error) {
+		console.error("Error getting media type:", error);
+		return null;
+	}
 };

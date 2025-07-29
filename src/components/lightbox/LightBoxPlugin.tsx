@@ -10,14 +10,14 @@ import {
 	type Plugin,
 } from "yet-another-react-lightbox";
 
-import { useFetchBookmarkById } from "../async/queryHooks/bookmarks/useFetchBookmarkById";
-import useGetCurrentCategoryId from "../hooks/useGetCurrentCategoryId";
+import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
+import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
-} from "../store/componentStore";
-import { type SingleListData } from "../types/apiTypes";
-import { BOOKMARKS_KEY } from "../utils/constants";
+} from "../../store/componentStore";
+import { type SingleListData } from "../../types/apiTypes";
+import { BOOKMARKS_KEY } from "../../utils/constants";
 
 const formatDate = (dateString: string) => {
 	try {
@@ -67,12 +67,12 @@ const MyComponent = () => {
 				<motion.div
 					animate={{
 						x: 0,
-						transition: { type: "tween", duration: 0.3, ease: "easeInOut" },
+						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
 					className="absolute right-0 top-0 flex h-full w-1/5 flex-col border-l border-gray-200 bg-white/90 shadow-xl backdrop-blur-xl"
 					exit={{
 						x: "100%",
-						transition: { type: "tween", duration: 0.32, ease: "easeInOut" },
+						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
 					initial={{ x: "100%" }}
 				>
