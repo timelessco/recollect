@@ -477,6 +477,9 @@ const CardSection = ({
 			"w-full rounded-lg moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.timeline,
+			"relative z-[-1]":
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const loaderClassName = classNames({
