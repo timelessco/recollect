@@ -62,6 +62,9 @@ importers:
       '@tanstack/react-query':
         specifier: 4.28.0
         version: 4.28.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@thednp/dommatrix':
+        specifier: ^2.0.12
+        version: 2.0.12
       '@xenova/transformers':
         specifier: 2.17.2
         version: 2.17.2
@@ -3084,6 +3087,10 @@ packages:
         optional: true
       react-native:
         optional: true
+
+  '@thednp/dommatrix@2.0.12':
+    resolution: {integrity: sha512-eOshhlSShBXLfrMQqqhA450TppJXhKriaQdN43mmniOCMn9sD60QKF1Axsj7bKl339WH058LuGFS6H84njYH5w==}
+    engines: {node: '>=20', pnpm: '>=8.6.0'}
 
   '@tootallnate/quickjs-emscripten@0.23.0':
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
@@ -13084,6 +13091,8 @@ snapshots:
       use-sync-external-store: 1.2.2(react@18.2.0)
     optionalDependencies:
       react-dom: 18.2.0(react@18.2.0)
+
+  '@thednp/dommatrix@2.0.12': {}
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 

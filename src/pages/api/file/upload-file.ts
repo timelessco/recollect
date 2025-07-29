@@ -3,6 +3,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
+import DOMMatrix from "@thednp/dommatrix";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
@@ -35,6 +36,11 @@ import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
+
+// Add DOMMatrix polyfill for server-side usage
+if (typeof global.DOMMatrix === "undefined") {
+	global.DOMMatrix = DOMMatrix as never;
+}
 
 type BodyDataType = {
 	category_id: string;
