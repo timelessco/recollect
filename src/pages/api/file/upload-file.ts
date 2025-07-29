@@ -238,32 +238,6 @@ export default async (
 		response
 			.status(200)
 			.json({ data: DatabaseData, success: true, error: null });
-
-		try {
-			if (!isEmpty(DatabaseData) && !isVideo) {
-				// await axios.post(
-				// 	`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-				// 	{
-				// 		id: DatabaseData[0]?.id,
-				// 		publicUrl: ogImage,
-				// 	},
-				// 	{
-				// 		headers: {
-				// 			Cookie: apiCookieParser(request?.cookies),
-				// 		},
-				// 	},
-				// );
-			} else {
-				console.error("Remaining upload api error: upload data is empty");
-				Sentry.captureException(
-					`Remaining upload api error: upload data is empty`,
-				);
-			}
-		} catch (remainingerror) {
-			console.error(remainingerror);
-			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
-		}
-
 		// create embeddings
 		try {
 			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);
