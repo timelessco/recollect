@@ -211,8 +211,8 @@ export const CustomLightBox = ({
 					) : !bookmark?.url ? null : (
 						<>
 							{/* Special handling for YouTube URLs */}
-							{bookmark.url.includes(YOUTUBE_COM) ||
-							bookmark.url.includes(YOUTU_BE) ? (
+							{bookmark?.url?.includes(YOUTUBE_COM) ||
+							bookmark?.url?.includes(YOUTU_BE) ? (
 								<div className="flex h-full w-full max-w-[80vw] items-center justify-center">
 									<VideoPlayer isActive={isActive} src={bookmark?.url} />
 								</div>
