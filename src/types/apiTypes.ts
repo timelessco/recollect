@@ -193,6 +193,7 @@ export type UserProfilePicTypes = {
 // file upload
 
 export type UploadFileApiResponse = {
+	data?: Array<{ id: SingleListData["id"] } | null> | null;
 	error: Error | PostgrestError | string | null;
 	success: boolean;
 };
