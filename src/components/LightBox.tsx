@@ -267,11 +267,11 @@ export const CustomLightBox = ({
 						{
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
-								category_id: router?.asPath?.split("/")[1],
+								category_id: router?.asPath?.split("/")?.[1],
 								id: bookmarks?.[index]?.id,
 							},
 						},
-						`/${router?.asPath?.split("/")[1]}/preview/${bookmarks?.[index]
+						`/${router?.asPath?.split("/")?.[1]}/preview/${bookmarks?.[index]
 							?.id}`,
 						{
 							// Don't trigger a full page reload

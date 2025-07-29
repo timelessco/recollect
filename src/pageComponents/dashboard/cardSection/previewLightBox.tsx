@@ -64,7 +64,7 @@ export const PreviewLightBox = ({
 		// Only set activeIndex when the lightbox is being opened
 		if (open && !wasOpen) {
 			const newIndex = bookmarks.findIndex(
-				(bookmark) => String(bookmark.id) === String(id),
+				(bookmark) => String(bookmark?.id) === String(id),
 			);
 			if (newIndex !== -1) {
 				setActiveIndex(newIndex);
@@ -92,7 +92,7 @@ export const PreviewLightBox = ({
 					category_id: router?.query.category_id ?? ALL_BOOKMARKS_URL,
 				},
 			},
-			`/${router?.asPath?.split("/")[1]}`,
+			`/${router?.asPath?.split("/")?.[1]}`,
 			{ shallow: true },
 		);
 
@@ -117,7 +117,7 @@ export const PreviewLightBox = ({
 						category_id: router?.query.category_id ?? ALL_BOOKMARKS_URL,
 					},
 				},
-				`/${router?.asPath?.split("/")[1]}`,
+				`/${router?.asPath?.split("/")?.[1]}`,
 				{ shallow: true },
 			);
 
