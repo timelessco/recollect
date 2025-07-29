@@ -1,10 +1,11 @@
-import axios from "axios";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
 import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
 import slugify from "slugify";
 
+// eslint-disable-next-line import/no-cycle
+import { getMediaType } from "../async/supabaseCrudHelpers";
 import { type CardSectionProps } from "../pageComponents/dashboard/cardSection";
 import {
 	type CategoriesData,
@@ -16,7 +17,6 @@ import { type UrlInput } from "../types/componentTypes";
 import {
 	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
-	getBaseUrl as BASE_URL,
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
@@ -32,7 +32,6 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
-	URL_IMAGE_CHECK_PATTERN,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
@@ -297,34 +296,13 @@ export const isCurrentYear = (insertedAt: string) => {
 	return insertedYear === currentYear;
 };
 
-export const getMediaType = async (url: string): Promise<string | null> => {
-	try {
-		const response = await fetch(`${BASE_URL()}/api/bookmark/get-media-type`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ url }),
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		const data = await response.json();
-		return data.mediaType || null;
-	} catch (error) {
-		console.error("Error getting media type:", error);
-		return null;
-	}
-};
-
-// Helper functions if you still need them
+// this function returns true if the media type is of image type else false
 export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
 	return mediaType?.includes("image/") ?? false;
 };
 
+// this function returns true if the media type is in the acceptedFileTypes array else false
 export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
 	return acceptedFileTypes.includes(mediaType ?? "") ?? false;
