@@ -10,14 +10,14 @@ import {
 	type Plugin,
 } from "yet-another-react-lightbox";
 
-import { useFetchBookmarkById } from "../async/queryHooks/bookmarks/useFetchBookmarkById";
-import useGetCurrentCategoryId from "../hooks/useGetCurrentCategoryId";
+import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
+import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
-} from "../store/componentStore";
-import { type SingleListData } from "../types/apiTypes";
-import { BOOKMARKS_KEY } from "../utils/constants";
+} from "../../store/componentStore";
+import { type SingleListData } from "../../types/apiTypes";
+import { BOOKMARKS_KEY } from "../../utils/constants";
 
 const formatDate = (dateString: string) => {
 	try {

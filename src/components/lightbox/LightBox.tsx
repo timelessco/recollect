@@ -5,11 +5,14 @@ import { motion } from "motion/react";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
-import { MetaDataIcon } from "../icons/metaData";
-import { EmbedWithFallback } from "../pageComponents/dashboard/cardSection/objectFallBack";
-import { type CustomSlide } from "../pageComponents/dashboard/cardSection/previewLightBox";
-import { useMiscellaneousStore } from "../store/componentStore";
-import { type ImgMetadataType, type SingleListData } from "../types/apiTypes";
+import { MetaDataIcon } from "../../icons/metaData";
+import { EmbedWithFallback } from "../../pageComponents/dashboard/cardSection/objectFallBack";
+import { type CustomSlide } from "../../pageComponents/dashboard/cardSection/previewLightBox";
+import { useMiscellaneousStore } from "../../store/componentStore";
+import {
+	type ImgMetadataType,
+	type SingleListData,
+} from "../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
@@ -22,10 +25,10 @@ import {
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
-} from "../utils/constants";
+} from "../../utils/constants";
+import { VideoPlayer } from "../VideoPlayer";
 
 import MetaButtonPlugin from "./LightBoxPlugin";
-import { VideoPlayer } from "./VideoPlayer";
 
 /**
  * Bookmark type definition - extends SingleListData but omits certain fields

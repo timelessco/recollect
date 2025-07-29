@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
 import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
-import { CustomLightBox } from "../../../components/LightBox";
+import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
