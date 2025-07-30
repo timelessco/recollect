@@ -6,8 +6,6 @@ import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import { MetaDataIcon } from "../../icons/metaData";
-import { EmbedWithFallback } from "../../pageComponents/dashboard/cardSection/objectFallBack";
-import { type CustomSlide } from "../../pageComponents/dashboard/cardSection/previewLightBox";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type ImgMetadataType,
@@ -22,13 +20,17 @@ import {
 	PDF_TYPE,
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
+	PREVIEW_PATH,
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
 } from "../../utils/constants";
+import { getCategorySlugFromRouter } from "../../utils/url";
 import { VideoPlayer } from "../VideoPlayer";
 
 import MetaButtonPlugin from "./LightBoxPlugin";
+import { EmbedWithFallback } from "./objectFallBack";
+import { type CustomSlide } from "./previewLightBox";
 
 /**
  * Bookmark type definition - extends SingleListData but omits certain fields
@@ -291,12 +293,13 @@ export const CustomLightBox = ({
 						{
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
-								category_id: router?.asPath?.split("/")?.[1],
+								category_id: getCategorySlugFromRouter(router),
 								id: bookmarks?.[index]?.id,
 							},
 						},
-						`/${router?.asPath?.split("/")?.[1]}/preview/${bookmarks?.[index]
-							?.id}`,
+						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${bookmarks?.[
+							index
+						]?.id}`,
 						{
 							// Don't trigger a full page reload
 							shallow: true,

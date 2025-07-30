@@ -13,13 +13,18 @@ import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import Checkbox from "../../../components/checkbox";
 import { type SingleListData } from "../../../types/apiTypes";
-import { CATEGORY_ID_PATHNAME, viewValues } from "../../../utils/constants";
+import {
+	CATEGORY_ID_PATHNAME,
+	PREVIEW_PATH,
+	viewValues,
+} from "../../../utils/constants";
 
 import "yet-another-react-lightbox/styles.css";
 
 import { useRouter } from "next/router";
 
-import { PreviewLightBox } from "./previewLightBox";
+import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
@@ -125,11 +130,11 @@ const Option = ({
 							// https://github.com/adamwathan/headbangstagram/pull/1/files
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
-								category_id: router.asPath.split("/")[1],
+								category_id: getCategorySlugFromRouter(router),
 								id: item.key,
 							},
 						},
-						`/${router.asPath.split("/")[1]}/preview/${item.key}`,
+						`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item.key}`,
 						{
 							shallow: true,
 						},

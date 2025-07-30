@@ -1,4 +1,13 @@
-// plugins/MetaButtonPlugin.tsx
+/**
+ * LightBoxPlugin Component
+ *
+ * A custom plugin for the react-lightbox component that displays metadata in a side pane.
+ * Features:
+ * - Shows bookmark metadata including title, description, and domain
+ * - Displays favicon when available
+ * - Formats dates for better readability
+ * - Integrates with the main lightbox component for a seamless experience
+ */
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,6 +28,11 @@ import {
 import { type SingleListData } from "../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../utils/constants";
 
+/**
+ * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
+ * @param dateString - The date string to format
+ * @returns Formatted date string or empty string if invalid
+ */
 const formatDate = (dateString: string) => {
 	try {
 		return format(new Date(dateString), "MMM d, yyyy");
@@ -27,6 +41,10 @@ const formatDate = (dateString: string) => {
 	}
 };
 
+/**
+ * Main component that renders the metadata panel in the lightbox
+ * Fetches and displays bookmark details including title, domain, description, and URL
+ */
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
 
@@ -44,13 +62,14 @@ const MyComponent = () => {
 	const { id } = router.query;
 	const { data: bookmark } = useFetchBookmarkById(id as string);
 	let currentBookmark;
+	// handling the case where user opens a preview link directly
 	if (!previousData) {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
 	} else {
-		currentBookmark = previousData?.pages.flatMap((page) => page?.data ?? [])?.[
-			currentIndex
-		];
+		currentBookmark = previousData?.pages?.flatMap(
+			(page) => page?.data ?? [],
+		)?.[currentIndex];
 	}
 
 	const metaData = currentBookmark?.meta_data;
@@ -59,7 +78,7 @@ const MyComponent = () => {
 	);
 
 	if (!currentBookmark) return null;
-	const domain = new URL(currentBookmark.url).hostname;
+	const domain = new URL(currentBookmark?.url)?.hostname;
 
 	return (
 		<AnimatePresence>
@@ -97,7 +116,7 @@ const MyComponent = () => {
 						</div>
 					</div>
 					<div className="flex-1 space-y-4 overflow-y-auto p-4 text-sm text-gray-800">
-						{currentBookmark.title && (
+						{currentBookmark?.title && (
 							<div>
 								<p className="text-xs text-gray-500" tabIndex={-1}>
 									Title
@@ -115,7 +134,7 @@ const MyComponent = () => {
 								<p tabIndex={-1}>{domain}</p>
 							</div>
 						)}
-						{currentBookmark.description && (
+						{currentBookmark?.description && (
 							<div>
 								<p className="text-xs text-gray-500" tabIndex={-1}>
 									Description
@@ -125,7 +144,7 @@ const MyComponent = () => {
 								</p>
 							</div>
 						)}
-						{currentBookmark.inserted_at && (
+						{currentBookmark?.inserted_at && (
 							<div>
 								<p className="text-xs text-gray-500" tabIndex={-1}>
 									Saved on
@@ -133,7 +152,7 @@ const MyComponent = () => {
 								<p tabIndex={-1}>{formatDate(currentBookmark.inserted_at)}</p>
 							</div>
 						)}
-						{currentBookmark.url && (
+						{currentBookmark?.url && (
 							<div>
 								<p className="text-xs text-gray-500" tabIndex={-1}>
 									URL
@@ -156,9 +175,16 @@ const MyComponent = () => {
 	);
 };
 
+// https://yet-another-react-lightbox.com/advanced
+// Create a custom lightbox module with our metadata component
 const myModule = createModule("MyModule", MyComponent);
 
+/**
+ * Plugin factory function that adds the metadata panel to the lightbox
+ * @returns Plugin configuration for the lightbox
+ */
 export default function MetaButtonPlugin(): Plugin {
+	// Register our metadata component as a sibling in the lightbox controller, please check the dom to see where it lands
 	return ({ addSibling }) => {
 		addSibling("controller", myModule, false);
 	};
