@@ -159,7 +159,7 @@ export default async function handler(
 				timeout: 10_000,
 			});
 
-			const returnedB64 = Buffer.from(image.data).toString("base64");
+			const returnedB64 = Buffer?.from(image?.data)?.toString("base64");
 			uploadedImageThatIsAUrl = await upload(returnedB64, userId, null);
 
 			// If upload failed, log but don't fail the entire request
@@ -217,7 +217,7 @@ export default async function handler(
 				timeout: 10_000,
 			});
 
-			const returnedB64 = Buffer.from(image.data).toString("base64");
+			const returnedB64 = Buffer.from(image?.data).toString("base64");
 			uploadedCoverImageUrl = await upload(returnedB64, userId, null);
 
 			// If upload failed, log but don't fail the entire request

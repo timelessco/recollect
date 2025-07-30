@@ -17,6 +17,7 @@ import {
 	IMAGES_URL,
 	LINKS_URL,
 	NEXT_API_URL,
+	PDF_MIME_TYPE,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
@@ -171,8 +172,10 @@ export default function useFileUploadOptimisticMutation() {
 					Eg: If user uploads images in documents page then the user will get a toast message 
 				telling "Added to documents page"  */
 
-				if (data?.file?.type === "application/pdf") {
-					const thumbnailBlob = await generatePdfThumbnail(data.file);
+				if (data?.file?.type === PDF_MIME_TYPE) {
+					const thumbnailBlob = await generatePdfThumbnail(
+						`${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
+					);
 
 					if (thumbnailBlob) {
 						const thumbnailFileName = `thumb-${data?.uploadFileNamePath.replace(
@@ -199,7 +202,7 @@ export default function useFileUploadOptimisticMutation() {
 								if (!uploadResponse.ok) {
 									console.error("Thumbnail upload failed");
 								} else {
-									const publicUrl = `https://media.recollect.so/${STORAGE_FILES_PATH}/${session?.user?.id}/${thumbnailFileName}`;
+									const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${thumbnailFileName}`;
 
 									await axios.post(
 										`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
