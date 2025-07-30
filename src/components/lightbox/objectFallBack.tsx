@@ -56,12 +56,12 @@ export const EmbedWithFallback = ({
 		 * the object element has failed to load and we should show the placeholder
 		 */
 		const check = () => {
-			const fallback = fallbackRef.current;
+			const fallback = fallbackRef?.current;
 
 			if (!fallback) return;
 
 			// Get the current height of the fallback div
-			const viewHeight = fallback.getBoundingClientRect().height;
+			const viewHeight = fallback?.getBoundingClientRect()?.height;
 
 			if (viewHeight > 0) {
 				// Fallback div is visible, meaning object failed to load
@@ -87,7 +87,7 @@ export const EmbedWithFallback = ({
 	 */
 	if (failed && placeholder) {
 		// Check if this is a screenshot URL (may need special scaling)
-		const isScreenshot = placeholder.startsWith(SCREENSHOT_URL);
+		const isScreenshot = placeholder?.startsWith(SCREENSHOT_URL);
 
 		// Apply 50% scaling to screenshots to make them more manageable
 		const scaledWidth = isScreenshot
@@ -99,7 +99,7 @@ export const EmbedWithFallback = ({
 
 		// Check if image dimensions exceed reasonable display limits
 		const exceedsWidth = scaledWidth > 1_200;
-		const underHeight = scaledHeight > window.innerHeight * 0.8;
+		const underHeight = scaledHeight > window?.innerHeight * 0.8;
 
 		/**
 		 * Render constrained image when dimensions are too large

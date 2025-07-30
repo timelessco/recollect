@@ -103,7 +103,7 @@ const MyComponent = () => {
 									className="h-5 w-5 rounded"
 									height={16}
 									onError={(error) => {
-										const target = error.target as HTMLImageElement;
+										const target = error?.target as HTMLImageElement;
 										target.style.display = "none";
 									}}
 									src={metaData.favIcon}
