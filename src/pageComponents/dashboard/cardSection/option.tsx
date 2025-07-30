@@ -92,7 +92,6 @@ const Option = ({
 					isSelected &&
 					(cardTypeCondition === viewValues.moodboard ||
 						cardTypeCondition === viewValues.card),
-				"bg-black text-white": isSelected,
 			})}
 			ref={ref}
 			role="option"
