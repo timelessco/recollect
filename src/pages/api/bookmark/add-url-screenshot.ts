@@ -79,8 +79,6 @@ export default async function handler(
 		return;
 	}
 
-	console.log(screenShotResponse, "screenShotResponse");
-
 	const base64data = Buffer?.from(
 		screenShotResponse?.data?.screenshot?.data,
 		"binary",
