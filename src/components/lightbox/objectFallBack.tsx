@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-import { SCREENSHOT_URL } from "../../../utils/constants";
+import { SCREENSHOT_URL } from "../../utils/constants";
 
 type EmbedWithFallbackProps = {
 	placeholder?: string;

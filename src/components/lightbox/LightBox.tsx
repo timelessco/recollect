@@ -6,8 +6,6 @@ import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import { MetaDataIcon } from "../../icons/metaData";
-import { EmbedWithFallback } from "../../pageComponents/dashboard/cardSection/objectFallBack";
-import { type CustomSlide } from "../../pageComponents/dashboard/cardSection/previewLightBox";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type ImgMetadataType,
@@ -29,6 +27,8 @@ import {
 import { VideoPlayer } from "../VideoPlayer";
 
 import MetaButtonPlugin from "./LightBoxPlugin";
+import { EmbedWithFallback } from "./objectFallBack";
+import { type CustomSlide } from "./previewLightBox";
 
 /**
  * Bookmark type definition - extends SingleListData but omits certain fields
