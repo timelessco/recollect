@@ -19,7 +19,7 @@ import "yet-another-react-lightbox/styles.css";
 
 import { useRouter } from "next/router";
 
-import { PreviewLightBox } from "./previewLightBox";
+import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;

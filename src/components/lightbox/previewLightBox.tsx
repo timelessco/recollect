@@ -4,15 +4,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
 import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
-import { CustomLightBox } from "../../../components/lightbox/LightBox";
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import { useSupabaseSession } from "../../../store/componentStore";
-import { type SingleListData } from "../../../types/apiTypes";
+import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import { useSupabaseSession } from "../../store/componentStore";
+import { type SingleListData } from "../../types/apiTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORY_ID_PATHNAME,
-} from "../../../utils/constants";
+} from "../../utils/constants";
+
+import { CustomLightBox } from "./LightBox";
 
 export type CustomSlide = BaseSlide & {
 	data?: {
@@ -97,14 +98,10 @@ export const PreviewLightBox = ({
 		);
 
 		// Reset state after animation
-		const timer = setTimeout(() => {
-			setIsClosing(false);
-			setActiveIndex(-1);
-		}, 50);
+		setIsClosing(false);
+		setActiveIndex(-1);
 
-		return () => {
-			clearTimeout(timer);
-		};
+		return () => {};
 	}, [open, isClosing, setOpen, router]);
 
 	// using window event listener to handle browser back button for now
