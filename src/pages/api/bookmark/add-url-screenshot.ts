@@ -67,7 +67,7 @@ export default async function handler(
 		screenShotResponse = await axios.get(
 			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
 			{
-				responseType: "arraybuffer",
+				responseType: "json",
 			},
 		);
 		if (screenShotResponse.status === 200) {
@@ -79,9 +79,10 @@ export default async function handler(
 		return;
 	}
 
-	const base64data = Buffer.from(screenShotResponse.data, "binary").toString(
-		"base64",
-	);
+	const base64data = Buffer?.from(
+		screenShotResponse?.data?.screenshot?.data,
+		"binary",
+	)?.toString("base64");
 
 	const publicURL = await upload(base64data, userId);
 
