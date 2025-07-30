@@ -16,9 +16,9 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
- 	PDF_MIME_TYPE,
+	PDF_MIME_TYPE,
 	R2_MAIN_BUCKET_NAME,
- 	STORAGE_FILES_PATH,
+	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
 	UPLOAD_FILE_REMAINING_DATA_API,
@@ -172,7 +172,7 @@ export default function useFileUploadOptimisticMutation() {
 					Eg: If user uploads images in documents page then the user will get a toast message 
 				telling "Added to documents page"  */
 
- 				if (data?.file?.type === PDF_MIME_TYPE) {
+				if (data?.file?.type === PDF_MIME_TYPE) {
 					try {
 						successToast(`generating  thumbnail`);
 						await handlePdfThumbnailAndUpload({
