@@ -154,7 +154,7 @@ export const CustomLightBox = ({
 			const { offset, slide } = slideProps;
 
 			// Find the corresponding bookmark for this slide
-			const slideIndex = slides.indexOf(slide);
+			const slideIndex = slides?.indexOf(slide);
 			const bookmark = bookmarks?.[slideIndex];
 			if (!bookmark) return null;
 

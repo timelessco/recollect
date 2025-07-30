@@ -131,10 +131,10 @@ const Option = ({
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
 								category_id: getCategorySlugFromRouter(router),
-								id: item.key,
+								id: item?.key,
 							},
 						},
-						`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item.key}`,
+						`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item?.key}`,
 						{
 							shallow: true,
 						},
