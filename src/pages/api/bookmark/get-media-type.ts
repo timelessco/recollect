@@ -12,6 +12,13 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
+	if (request.method !== "POST") {
+		response.status(405).json({
+			error: "Only POST requests allowed",
+		});
+		return;
+	}
+
 	const parseResult = schema.safeParse(request.body);
 
 	if (!parseResult.success) {

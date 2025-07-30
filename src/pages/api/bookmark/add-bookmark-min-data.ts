@@ -109,10 +109,10 @@ export default async function handler(
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
 
-	const urlHost = new URL(url).hostname.toLowerCase();
+	const urlHost = new URL(url)?.hostname?.toLowerCase();
 
-	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES.some((keyword) =>
-		urlHost.includes(keyword),
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some(
+		(keyword) => urlHost?.includes(keyword),
 	);
 
 	// try {
