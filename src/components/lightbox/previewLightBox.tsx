@@ -60,12 +60,12 @@ export const PreviewLightBox = ({
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {
-		if (!bookmarks.length) return;
-		const wasOpen = _previousOpenRef.current;
+		if (!bookmarks?.length) return;
+		const wasOpen = _previousOpenRef?.current;
 
 		// Only set activeIndex when the lightbox is being opened
 		if (open && !wasOpen) {
-			const newIndex = bookmarks.findIndex(
+			const newIndex = bookmarks?.findIndex(
 				(bookmark) => String(bookmark?.id) === String(id),
 			);
 			if (newIndex !== -1) {
