@@ -23,7 +23,6 @@ type CardImageProps = {
 	width: number | null;
 };
 
-// eslint-disable-next-line complexity
 const CardImage: React.FC<CardImageProps> = ({
 	hasCoverImg,
 	isBookmarkLoading,

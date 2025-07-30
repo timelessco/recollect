@@ -557,6 +557,7 @@ const CardSection = ({
 						isLoading={isLoading}
 						isOgImgLoading={isOgImgLoading}
 						isPublicPage={isPublicPage}
+						// @ts-expect-error ts(2345)
 						setErrorImgs={setErrorImgs}
 						width={width}
 					/>
