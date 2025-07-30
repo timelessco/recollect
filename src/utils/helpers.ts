@@ -305,5 +305,5 @@ export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
 // this function returns true if the media type is in the acceptedFileTypes array else false
 export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
-	return acceptedFileTypes.includes(mediaType ?? "") ?? false;
+	return acceptedFileTypes?.includes(mediaType ?? "") ?? false;
 };
