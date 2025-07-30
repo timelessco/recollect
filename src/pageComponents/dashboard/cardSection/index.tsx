@@ -3,16 +3,15 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
-import { getImgFromArr } from "array-to-image";
-import { decode } from "blurhash";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { Item } from "react-stately";
 
 import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
 import loaderGif from "../../../../public/loader-gif.gif";
+import CardImage from "../../../components/CardImage";
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -499,9 +498,7 @@ const CardSection = ({
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
-				cardTypeCondition === viewValues.moodboard &&
-				(isOgImgLoading || isBookmarkLoading) &&
-				img === undefined,
+				cardTypeCondition === viewValues.moodboard && img === undefined,
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
@@ -515,72 +512,6 @@ const CardSection = ({
 			</div>
 		);
 		const isLoading = loadingBookmarkIds.has(id);
-
-		const imgLogic = () => {
-			if (hasCoverImg) {
-				if (
-					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
-					isNil(id)
-				) {
-					return errorImgPlaceholder(false);
-				}
-
-				if (isLoading && !img) {
-					return errorImgPlaceholder(false);
-				}
-
-				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder(true);
-				}
-
-				let blurSource = "";
-
-				if (
-					!isNil(img) &&
-					!isNil(blurUrl) &&
-					!isEmpty(blurUrl) &&
-					!isPublicPage
-				) {
-					const pixels = decode(blurUrl, 32, 32);
-					const image = getImgFromArr(pixels, 32, 32);
-					blurSource = image.src;
-				}
-
-				return (
-					<AnimatePresence mode="wait">
-						{img ? (
-							<motion.div
-								animate={{ opacity: 1 }}
-								initial={{ opacity: 0 }}
-								key={`img-${id}`}
-								transition={{ duration: 0.3 }}
-							>
-								<Image
-									alt="bookmark-img"
-									blurDataURL={blurSource || defaultBlur}
-									className={imgClassName}
-									height={height ?? 200}
-									onError={() => setErrorImgs([id as never, ...errorImgs])}
-									placeholder="blur"
-									src={img}
-									width={width ?? 200}
-								/>
-							</motion.div>
-						) : (
-							<motion.div
-								animate={{ opacity: 1 }}
-								initial={{ opacity: 0 }}
-								transition={{ duration: 0.3 }}
-							>
-								{errorImgPlaceholder(true)}
-							</motion.div>
-						)}
-					</AnimatePresence>
-				);
-			}
-
-			return null;
-		};
 
 		const playSvgClassName = classNames({
 			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
@@ -601,12 +532,8 @@ const CardSection = ({
 			<div onKeyDown={() => {}} role="button">
 				<motion.figure
 					className={figureClassName}
-					layout={
-						isBookmarkLoading ||
-						isAllBookmarksDataFetching ||
-						isOgImgLoading ||
-						isLoading
-					}
+					layout
+					transition={{ type: "spring", stiffness: 250, damping: 30 }}
 				>
 					{isVideo && (
 						<PlayIcon
@@ -615,7 +542,24 @@ const CardSection = ({
 						/>
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
-					{imgLogic()}
+					<CardImage
+						blurUrl={blurUrl}
+						defaultBlur={defaultBlur}
+						errorImgPlaceholder={errorImgPlaceholder}
+						errorImgs={errorImgs}
+						hasCoverImg={hasCoverImg}
+						height={height}
+						id={id}
+						img={img}
+						imgClassName={imgClassName}
+						isAllBookmarksDataFetching={isAllBookmarksDataFetching}
+						isBookmarkLoading={isBookmarkLoading}
+						isLoading={isLoading}
+						isOgImgLoading={isOgImgLoading}
+						isPublicPage={isPublicPage}
+						setErrorImgs={setErrorImgs}
+						width={width}
+					/>
 				</motion.figure>
 			</div>
 		);
@@ -752,7 +696,12 @@ const CardSection = ({
 	});
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
-		<div className="flex w-full flex-col" id="single-moodboard-card">
+		<motion.div
+			className="flex w-full flex-col"
+			id="single-moodboard-card"
+			layout
+			transition={{ type: "spring", stiffness: 250, damping: 30 }}
+		>
 			{renderOgImage(
 				getImageSource(item),
 				item?.id,
@@ -815,11 +764,16 @@ const CardSection = ({
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>
-		</div>
+		</motion.div>
 	);
 
 	const renderListCard = (item: SingleListData) => (
-		<div className="flex w-full items-center p-2" id="single-moodboard-card">
+		<motion.div
+			className="flex w-full items-center p-2"
+			id="single-moodboard-card"
+			layout
+			transition={{ type: "spring", stiffness: 250, damping: 30 }}
+		>
 			{hasCoverImg ? (
 				renderOgImage(
 					getImageSource(item),
@@ -877,11 +831,16 @@ const CardSection = ({
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>
-		</div>
+		</motion.div>
 	);
 
 	const renderHeadlinesCard = (item: SingleListData) => (
-		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
+		<motion.div
+			className="group flex h-[53px] w-full p-2"
+			key={item?.id}
+			layout
+			transition={{ type: "spring", stiffness: 250, damping: 30 }}
+		>
 			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -914,7 +873,7 @@ const CardSection = ({
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>
-		</div>
+		</motion.div>
 	);
 
 	const listWrapperClass = classNames({
