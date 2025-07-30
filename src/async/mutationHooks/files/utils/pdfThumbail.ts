@@ -6,8 +6,9 @@ import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // eslint-disable-next-line func-style
-export async function generatePdfThumbnail(file: File): Promise<Blob | null> {
-	const arrayBuffer = await file?.arrayBuffer();
+export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
+	const response = await fetch(file);
+	const arrayBuffer = await response?.arrayBuffer();
 
 	try {
 		const pdf = await pdfjsLib?.getDocument({ data: arrayBuffer })?.promise;
