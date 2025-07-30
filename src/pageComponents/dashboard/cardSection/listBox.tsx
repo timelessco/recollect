@@ -247,7 +247,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 		<>
 			{/* <PreviewLightBox id={0} open={open} setOpen={setOpen} /> */}
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === viewValues.moodboard ? (
+				{cardTypeCondition === viewValues?.moodboard ? (
 					<Masonry
 						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
 						className="my-masonry-grid"
