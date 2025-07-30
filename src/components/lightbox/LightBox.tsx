@@ -20,10 +20,12 @@ import {
 	PDF_TYPE,
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
+	PREVIEW_PATH,
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
 } from "../../utils/constants";
+import { getCategorySlugFromRouter } from "../../utils/url";
 import { VideoPlayer } from "../VideoPlayer";
 
 import MetaButtonPlugin from "./LightBoxPlugin";
@@ -291,12 +293,13 @@ export const CustomLightBox = ({
 						{
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
 							query: {
-								category_id: router?.asPath?.split("/")?.[1],
+								category_id: getCategorySlugFromRouter(router),
 								id: bookmarks?.[index]?.id,
 							},
 						},
-						`/${router?.asPath?.split("/")?.[1]}/preview/${bookmarks?.[index]
-							?.id}`,
+						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${bookmarks?.[
+							index
+						]?.id}`,
 						{
 							// Don't trigger a full page reload
 							shallow: true,

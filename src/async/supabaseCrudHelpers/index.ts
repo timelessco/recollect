@@ -56,6 +56,7 @@ import {
 	DELETE_SHARED_CATEGORIES_USER_API,
 	DELETE_USER_API,
 	DELETE_USER_CATEGORIES_API,
+	FETCH_BOOKMARK_BY_ID_API,
 	FETCH_BOOKMARKS_COUNT,
 	FETCH_BOOKMARKS_DATA_API,
 	FETCH_BOOKMARKS_VIEW,
@@ -67,6 +68,7 @@ import {
 	getBaseUrl,
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
+	NO_BOOKMARKS_ID_ERROR,
 	REMOVE_PROFILE_PIC_API,
 	REMOVE_TAG_FROM_BOOKMARK_API,
 	SEARCH_BOOKMARKS,
@@ -81,6 +83,23 @@ import {
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
+
+// bookmark
+// get bookmark by id
+export const fetchBookmarkById = async (id: string) => {
+	try {
+		if (!id) {
+			throw new Error(NO_BOOKMARKS_ID_ERROR);
+		}
+
+		const response = await axios.get<{ data: SingleListData }>(
+			`${NEXT_API_URL}${FETCH_BOOKMARK_BY_ID_API}${id}`,
+		);
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
 
 // bookmark
 // gets bookmarks data
