@@ -1,28 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
-import { BOOKMARKS_KEY, NO_BOOKMARKS_ID_ERROR } from "../../../utils/constants";
+import { BOOKMARKS_KEY } from "../../../utils/constants";
+import { fetchBookmarkById } from "../../supabaseCrudHelpers";
 
 type Bookmark = {
 	[key: string]: unknown;
-	// Add other bookmark properties as needed
 	id: string;
 };
 
 export const useFetchBookmarkById = (id: string) =>
-	useQuery<Bookmark, Error>({
+	useQuery({
 		queryKey: [BOOKMARKS_KEY, id],
-		queryFn: async () => {
-			if (!id) {
-				throw new Error(NO_BOOKMARKS_ID_ERROR);
-			}
-
-			const { data } = await axios.get<Bookmark>(
-				`/api/v1/bookmarks/get/fetch-by-id?id=${id}`,
-			);
-
-			return data;
-		},
-		// Only run the query if id exists
+		queryFn: () => fetchBookmarkById(id) as Promise<Bookmark>,
 		enabled: Boolean(id),
 	});

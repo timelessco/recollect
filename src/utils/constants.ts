@@ -51,12 +51,16 @@ export const NEXT_API_URL = `/api/`;
 const RECOLLECT_SERVER_URL = process.env.RECOLLECT_SERVER_API;
 export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
 
+// URL helper functions
+export const PREVIEW_PATH = "/preview";
+
 export const PAGINATION_LIMIT = 25;
 
 // auth api
 // no auth api yet
 // bookmark api
 export const FETCH_BOOKMARKS_DATA_API = "/bookmark/fetch-bookmarks-data";
+export const FETCH_BOOKMARK_BY_ID_API = "v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";

@@ -16,7 +16,7 @@ export default function useIsInNotFoundPage() {
 
 	if (!isNull(CATEGORY_ID)) {
 		return { isInNotFoundPage: false };
-	} else if (categorySlug?.startsWith(ALL_BOOKMARKS_URL)) {
+	} else if (categorySlug?.split("/")[0] === ALL_BOOKMARKS_URL) {
 		return { isInNotFoundPage: false };
 	} else {
 		return { isInNotFoundPage: true };

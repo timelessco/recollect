@@ -12,6 +12,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORY_ID_PATHNAME,
 } from "../../utils/constants";
+import { getCategorySlugFromRouter } from "../../utils/url";
 
 import { CustomLightBox } from "./LightBox";
 
@@ -93,7 +94,7 @@ export const PreviewLightBox = ({
 					category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
 				},
 			},
-			`/${router?.asPath?.split("/")?.[1]}`,
+			getCategorySlugFromRouter(router) ?? ALL_BOOKMARKS_URL,
 			{ shallow: true },
 		);
 
@@ -114,7 +115,7 @@ export const PreviewLightBox = ({
 						category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
 					},
 				},
-				`/${router?.asPath?.split("/")?.[1]}`,
+				getCategorySlugFromRouter(router) ?? ALL_BOOKMARKS_URL,
 				{ shallow: true },
 			);
 
