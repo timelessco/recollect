@@ -1,28 +1,25 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
+import { handlePdfThumbnailAndUpload } from "../../../utils/apiHelpers";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
-	getBaseUrl,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
-	NEXT_API_URL,
 	PDF_MIME_TYPE,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
-	UPLOAD_FILE_REMAINING_DATA_API,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
@@ -33,8 +30,6 @@ import {
 import { r2Helpers } from "../../../utils/r2Client";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
-
-import { generatePdfThumbnail } from "./utils/pdfThumbail";
 
 // get bookmark screenshot
 export default function useFileUploadOptimisticMutation() {
@@ -173,50 +168,11 @@ export default function useFileUploadOptimisticMutation() {
 				telling "Added to documents page"  */
 
 				if (data?.file?.type === PDF_MIME_TYPE) {
-					const thumbnailBlob = await generatePdfThumbnail(
-						`${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
-					);
-
-					if (thumbnailBlob) {
-						const thumbnailFileName = `thumb-${data?.uploadFileNamePath.replace(
-							".pdf",
-							".jpg",
-						)}`;
-
-						const { data: thumbUploadUrl, error: thumbError } =
-							await r2Helpers.createSignedUploadUrl(
-								"recollect",
-								`${STORAGE_FILES_PATH}/${session?.user?.id}/${thumbnailFileName}`,
-							);
-
-						if (thumbUploadUrl?.signedUrl && !thumbError) {
-							try {
-								const uploadResponse = await fetch(thumbUploadUrl.signedUrl, {
-									method: "PUT",
-									body: thumbnailBlob,
-									headers: {
-										"Content-Type": "image/png",
-									},
-								});
-
-								if (!uploadResponse.ok) {
-									console.error("Thumbnail upload failed");
-								} else {
-									const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${thumbnailFileName}`;
-
-									await axios.post(
-										`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-										{
-											id: apiResponseTyped?.data[0].id,
-											publicUrl,
-										},
-									);
-								}
-							} catch (error_) {
-								console.error("Thumbnail upload error:", error_);
-							}
-						}
-					}
+					await handlePdfThumbnailAndUpload({
+						fileUrl: `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
+						fileId: apiResponseTyped?.data[0].id,
+						sessionUserId: session?.user?.id,
+					});
 				}
 
 				if (
