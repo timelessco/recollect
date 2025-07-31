@@ -1,4 +1,17 @@
+import axios from "axios";
+import * as pdfjsLib from "pdfjs-dist/build/pdf";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
+
+import {
+	getBaseUrl,
+	NEXT_API_URL,
+	STORAGE_FILES_PATH,
+	UPLOAD_FILE_REMAINING_DATA_API,
+} from "./constants";
+import { r2Helpers } from "./r2Client";
 import { errorToast } from "./toastMessages";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // This file has front end api related helpers
 
@@ -17,4 +30,97 @@ export const mutationApiCall = async (apiCall: Promise<any>) => {
 	}
 
 	return response;
+};
+
+// eslint-disable-next-line func-style
+export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
+	const response = await fetch(file, {
+		headers: {
+			"user-agent": "Mozilla/5.0",
+		},
+	});
+	const arrayBuffer = await response?.arrayBuffer();
+
+	try {
+		const pdf = await pdfjsLib?.getDocument({ data: arrayBuffer })?.promise;
+		const page = await pdf?.getPage(1);
+		const scale = 1.5;
+		const viewport = page?.getViewport({ scale });
+
+		const canvas = document?.createElement("canvas");
+		canvas.width = viewport?.width;
+		canvas.height = viewport?.height;
+		const context = canvas?.getContext("2d");
+		if (!context) return null;
+
+		await page?.render({ canvasContext: context, viewport })?.promise;
+
+		return await new Promise((resolve) => {
+			canvas?.toBlob((blob) => {
+				resolve(blob);
+			}, "image/jpg");
+		});
+	} catch (error) {
+		console.error("Thumbnail generation error", error);
+		return null;
+	}
+}
+
+export const handlePdfThumbnailAndUpload = async ({
+	fileUrl,
+	fileId,
+	sessionUserId,
+}: {
+	fileId: number;
+	fileUrl: string;
+	sessionUserId: string | undefined;
+}): Promise<void> => {
+	try {
+		const thumbnailBlob = await generatePdfThumbnail(fileUrl);
+
+		if (!thumbnailBlob) {
+			console.warn("No thumbnail generated.");
+			return;
+		}
+
+		const fileName = fileUrl.split("/")[fileUrl.split("/").length - 1];
+
+		const thumbnailFileName = `thumb-${fileName.replace(".pdf", ".jpg")}`;
+
+		const { data: thumbUploadUrl, error: thumbError } =
+			await r2Helpers.createSignedUploadUrl(
+				"recollect",
+				`${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`,
+			);
+
+		if (!thumbUploadUrl?.signedUrl || thumbError) {
+			console.error("Failed to get signed URL for thumbnail upload.");
+			return;
+		}
+
+		const uploadResponse = await fetch(thumbUploadUrl.signedUrl, {
+			method: "PUT",
+			body: thumbnailBlob,
+			headers: {
+				"Content-Type": "image/png",
+			},
+		});
+
+		if (!uploadResponse.ok) {
+			console.error("Thumbnail upload failed:", await uploadResponse.text());
+			return;
+		}
+
+		const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`;
+
+		await axios.post(
+			`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+			{
+				id: fileId,
+				publicUrl,
+			},
+		);
+	} catch (error) {
+		console.error("Error in handlePdfThumbnailAndUpload:", error);
+	}
 };
