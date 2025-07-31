@@ -34,15 +34,24 @@ export const mutationApiCall = async (apiCall: Promise<any>) => {
 
 // eslint-disable-next-line func-style
 export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
-	const response = await fetch(file, {
-		headers: {
-			"user-agent": "Mozilla/5.0",
+	const response = await fetch(
+		`${getBaseUrl()}${NEXT_API_URL}/file/get-pdf-buffer`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ url: file }),
 		},
-	});
+	);
 	const arrayBuffer = await response?.arrayBuffer();
 
 	try {
-		const pdf = await pdfjsLib?.getDocument({ data: arrayBuffer })?.promise;
+		const pdf = await pdfjsLib?.getDocument({
+			data: arrayBuffer,
+			disableAutoFetch: true,
+		})?.promise;
+
 		const page = await pdf?.getPage(1);
 		const scale = 1.5;
 		const viewport = page?.getViewport({ scale });
@@ -83,9 +92,9 @@ export const handlePdfThumbnailAndUpload = async ({
 			return;
 		}
 
-		const fileName = fileUrl.split("/")[fileUrl.split("/").length - 1];
+		const fileName = fileUrl?.split("/")[fileUrl?.split("/").length - 1];
 
-		const thumbnailFileName = `thumb-${fileName.replace(".pdf", ".jpg")}`;
+		const thumbnailFileName = `thumb-${fileName?.replace(".pdf", ".jpg")}`;
 
 		const { data: thumbUploadUrl, error: thumbError } =
 			await r2Helpers.createSignedUploadUrl(
@@ -98,7 +107,7 @@ export const handlePdfThumbnailAndUpload = async ({
 			return;
 		}
 
-		const uploadResponse = await fetch(thumbUploadUrl.signedUrl, {
+		const uploadResponse = await fetch(thumbUploadUrl?.signedUrl, {
 			method: "PUT",
 			body: thumbnailBlob,
 			headers: {
