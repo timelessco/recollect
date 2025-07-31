@@ -17,12 +17,13 @@ import {
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	menuListItemName,
+	PDF_MIME_TYPE,
 	TWEETS_URL,
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { checkIfUrlAnImage } from "../../../utils/helpers";
 import { successToast } from "../../../utils/toastMessages";
-import { addBookmarkMinData } from "../../supabaseCrudHelpers";
+import { addBookmarkMinData, getMediaType } from "../../supabaseCrudHelpers";
 
 import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
 
@@ -134,7 +135,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 
 			if (!isUrlOfMimeType) {
-				if (url.includes(".pdf")) {
+				const mediaType = await getMediaType(url);
+				if (mediaType === PDF_MIME_TYPE) {
 					await handlePdfThumbnailAndUpload({
 						fileUrl: data?.url,
 						fileId: data?.id,
