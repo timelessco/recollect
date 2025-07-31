@@ -10,6 +10,7 @@ import {
 	type BookmarksPaginatedDataTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
+import { handlePdfThumbnailAndUpload } from "../../../utils/apiHelpers";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -20,7 +21,7 @@ import {
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { checkIfUrlAnImage } from "../../../utils/helpers";
-import { errorToast, successToast } from "../../../utils/toastMessages";
+import { successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData } from "../../supabaseCrudHelpers";
 
 import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
@@ -133,6 +134,16 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 
 			if (!isUrlOfMimeType) {
+				if (url.includes(".pdf")) {
+					await handlePdfThumbnailAndUpload({
+						fileUrl: data?.url,
+						fileId: data?.id,
+						sessionUserId: session?.user?.id,
+					});
+
+					return;
+				}
+
 				if (data?.id) {
 					addLoadingBookmarkId(data?.id);
 				}
