@@ -1,4 +1,9 @@
-export default async function handler(request, response) {
+import { type NextApiRequest, type NextApiResponse } from "next";
+
+export default async function handler(
+	request: NextApiRequest,
+	response: NextApiResponse,
+) {
 	const { url: pdfUrl } = request.body;
 
 	try {
