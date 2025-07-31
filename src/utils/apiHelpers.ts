@@ -113,13 +113,17 @@ export const handlePdfThumbnailAndUpload = async ({
 
 		const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`;
 
-		await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-			{
-				id: fileId,
-				publicUrl,
-			},
-		);
+		try {
+			await axios.post(
+				`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+				{
+					id: fileId,
+					publicUrl,
+				},
+			);
+		} catch {
+			console.error("Error in uploading file remaining data");
+		}
 	} catch (error) {
 		console.error("Error in handlePdfThumbnailAndUpload:", error);
 	}
