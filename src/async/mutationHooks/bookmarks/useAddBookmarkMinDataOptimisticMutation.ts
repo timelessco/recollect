@@ -135,13 +135,32 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 
 			if (!isUrlOfMimeType) {
+				// eslint-disable-next-line unicorn/no-unsafe-regex, regexp/no-unused-capturing-group
+				const regex = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
+
 				const mediaType = await getMediaType(url);
-				if (mediaType === PDF_MIME_TYPE) {
-					await handlePdfThumbnailAndUpload({
-						fileUrl: data?.url,
-						fileId: data?.id,
-						sessionUserId: session?.user?.id,
-					});
+				if (mediaType === PDF_MIME_TYPE || regex.test(url)) {
+					try {
+						await handlePdfThumbnailAndUpload({
+							fileUrl: data?.url,
+							fileId: data?.id,
+							sessionUserId: session?.user?.id,
+						});
+					} catch (error) {
+						console.warn("First attempt failed, retrying...", error);
+						try {
+							await handlePdfThumbnailAndUpload({
+								fileUrl: data?.url,
+								fileId: data?.id,
+								sessionUserId: session?.user?.id,
+							});
+						} catch (retryError) {
+							console.error(
+								"PDF thumbnail upload failed after retry:",
+								retryError,
+							);
+						}
+					}
 
 					return;
 				}
