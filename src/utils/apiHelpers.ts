@@ -71,7 +71,7 @@ export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
 		});
 	} catch (error) {
 		console.error("Thumbnail generation error", error);
-		return null;
+		throw new Error("No thumbnail generated.");
 	}
 }
 
@@ -89,7 +89,7 @@ export const handlePdfThumbnailAndUpload = async ({
 
 		if (!thumbnailBlob) {
 			console.warn("No thumbnail generated.");
-			return;
+			throw new Error("No thumbnail generated.");
 		}
 
 		const fileName = fileUrl?.split("/")[fileUrl?.split("/").length - 1];
@@ -104,7 +104,7 @@ export const handlePdfThumbnailAndUpload = async ({
 
 		if (!thumbUploadUrl?.signedUrl || thumbError) {
 			console.error("Failed to get signed URL for thumbnail upload.");
-			return;
+			throw new Error("Failed to get signed URL for thumbnail upload.");
 		}
 
 		const uploadResponse = await fetch(thumbUploadUrl?.signedUrl, {
@@ -116,8 +116,9 @@ export const handlePdfThumbnailAndUpload = async ({
 		});
 
 		if (!uploadResponse.ok) {
-			console.error("Thumbnail upload failed:", await uploadResponse.text());
-			return;
+			const message = await uploadResponse.text();
+			console.error("Thumbnail upload failed:", message);
+			throw new Error("Thumbnail upload failed: " + message);
 		}
 
 		const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`;
@@ -135,5 +136,6 @@ export const handlePdfThumbnailAndUpload = async ({
 		}
 	} catch (error) {
 		console.error("Error in handlePdfThumbnailAndUpload:", error);
+		throw error;
 	}
 };
