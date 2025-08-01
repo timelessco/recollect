@@ -44,6 +44,11 @@ export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
 			body: JSON.stringify({ url: file }),
 		},
 	);
+
+	if (!response?.ok) {
+		throw new Error("error in arrayBuffer");
+	}
+
 	const arrayBuffer = await response?.arrayBuffer();
 
 	try {
@@ -131,8 +136,9 @@ export const handlePdfThumbnailAndUpload = async ({
 					publicUrl,
 				},
 			);
-		} catch {
+		} catch (error) {
 			console.error("Error in uploading file remaining data");
+			throw error;
 		}
 	} catch (error) {
 		console.error("Error in handlePdfThumbnailAndUpload:", error);
