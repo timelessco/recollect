@@ -97,9 +97,12 @@ export const handlePdfThumbnailAndUpload = async ({
 			throw new Error("No thumbnail generated.");
 		}
 
-		const fileName = fileUrl?.split("/")[fileUrl?.split("/").length - 1];
+		const fileNameWithExtension = decodeURIComponent(
+			fileUrl?.split("/").pop()?.split("?")[0]?.split("#")[0] ?? "",
+		);
 
-		const thumbnailFileName = `thumb-${fileName?.replace(".pdf", ".jpg")}`;
+		const fileName = fileNameWithExtension.replace(/\.pdf$/iu, "");
+		const thumbnailFileName = `thumb-${fileName}.jpg`;
 
 		const { data: thumbUploadUrl, error: thumbError } =
 			await r2Helpers.createSignedUploadUrl(
