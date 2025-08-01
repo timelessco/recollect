@@ -22,7 +22,7 @@ import {
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { checkIfUrlAnImage } from "../../../utils/helpers";
-import { successToast } from "../../../utils/toastMessages";
+import { errorToast, successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData, getMediaType } from "../../supabaseCrudHelpers";
 
 import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
@@ -159,6 +159,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 								"PDF thumbnail upload failed after retry:",
 								retryError,
 							);
+							errorToast("PDF thumbnail upload failed");
 						}
 					}
 
