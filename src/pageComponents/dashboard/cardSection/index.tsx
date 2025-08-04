@@ -559,7 +559,7 @@ const CardSection = ({
 										? {
 												height: height || 500,
 												width: "100%",
-												maxHeight: "1200px",
+												maxHeight: "600px",
 										  }
 										: undefined
 								}
