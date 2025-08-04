@@ -29,7 +29,7 @@ type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
 };
-const MAX_LENGTH = 13_000;
+const MAX_LENGTH = 1_300;
 const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
