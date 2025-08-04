@@ -553,10 +553,15 @@ const CardSection = ({
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
 								src={img}
-								style={{
-									height: height || 500,
-									width: "100%",
-								}}
+								style={
+									cardTypeCondition === viewValues.moodboard
+										? {
+												height: height || 500,
+												width: "100%",
+												maxHeight: "800px",
+										  }
+										: undefined
+								}
 								width={width ?? 200}
 							/>
 						) : (
