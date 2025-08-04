@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -509,7 +510,7 @@ const CardSection = ({
 				/>
 			</div>
 		);
-		const isLoading = loadingBookmarkIds.has(id);
+		const isLoading = loadingBookmarkIds?.has(id);
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
@@ -553,7 +554,7 @@ const CardSection = ({
 								placeholder="blur"
 								src={img}
 								style={{
-									aspectRatio: 1.8,
+									height: height || 500,
 									width: "100%",
 								}}
 								width={width ?? 200}
