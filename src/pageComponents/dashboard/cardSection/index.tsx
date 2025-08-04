@@ -8,7 +8,6 @@ import { decode } from "blurhash";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { AnimatePresence, motion } from "motion/react";
 import { Item } from "react-stately";
 
 import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
@@ -498,10 +497,6 @@ const CardSection = ({
 			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
-			"aspect-[1.8]":
-				cardTypeCondition === viewValues.moodboard &&
-				(isOgImgLoading || isBookmarkLoading) &&
-				img === undefined,
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
@@ -530,7 +525,7 @@ const CardSection = ({
 				}
 
 				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder(true);
+					return errorImgPlaceholder(false);
 				}
 
 				let blurSource = "";
@@ -547,35 +542,26 @@ const CardSection = ({
 				}
 
 				return (
-					<AnimatePresence mode="wait">
+					<>
 						{img ? (
-							<motion.div
-								animate={{ opacity: 1 }}
-								initial={{ opacity: 0 }}
-								key={`img-${id}`}
-								transition={{ duration: 0.3 }}
-							>
-								<Image
-									alt="bookmark-img"
-									blurDataURL={blurSource || defaultBlur}
-									className={imgClassName}
-									height={height ?? 200}
-									onError={() => setErrorImgs([id as never, ...errorImgs])}
-									placeholder="blur"
-									src={img}
-									width={width ?? 200}
-								/>
-							</motion.div>
+							<Image
+								alt="bookmark-img"
+								blurDataURL={blurSource || defaultBlur}
+								className={imgClassName}
+								height={height ?? 200}
+								onError={() => setErrorImgs([id as never, ...errorImgs])}
+								placeholder="blur"
+								src={img}
+								style={{
+									aspectRatio: 1.8,
+									width: "100%",
+								}}
+								width={width ?? 200}
+							/>
 						) : (
-							<motion.div
-								animate={{ opacity: 1 }}
-								initial={{ opacity: 0 }}
-								transition={{ duration: 0.3 }}
-							>
-								{errorImgPlaceholder(true)}
-							</motion.div>
+							errorImgPlaceholder(false)
 						)}
-					</AnimatePresence>
+					</>
 				);
 			}
 
@@ -599,15 +585,7 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<motion.figure
-					className={figureClassName}
-					layout={
-						isBookmarkLoading ||
-						isAllBookmarksDataFetching ||
-						isOgImgLoading ||
-						isLoading
-					}
-				>
+				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -616,7 +594,7 @@ const CardSection = ({
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
 					{imgLogic()}
-				</motion.figure>
+				</figure>
 			</div>
 		);
 	};
