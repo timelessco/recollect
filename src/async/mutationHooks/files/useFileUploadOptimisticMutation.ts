@@ -168,11 +168,16 @@ export default function useFileUploadOptimisticMutation() {
 				telling "Added to documents page"  */
 
 				if (data?.file?.type === PDF_MIME_TYPE) {
-					await handlePdfThumbnailAndUpload({
-						fileUrl: `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
-						fileId: apiResponseTyped?.data[0].id,
-						sessionUserId: session?.user?.id,
-					});
+					try {
+						successToast(`generating  thumbnail`);
+						await handlePdfThumbnailAndUpload({
+							fileUrl: `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
+							fileId: apiResponseTyped?.data[0].id,
+							sessionUserId: session?.user?.id,
+						});
+					} catch {
+						errorToast("Failed to generate thumbnail");
+					}
 				}
 
 				if (
