@@ -141,6 +141,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				const mediaType = await getMediaType(url);
 				if (mediaType === PDF_MIME_TYPE || regex.test(url)) {
 					try {
+						successToast("generating thumbnail");
 						await handlePdfThumbnailAndUpload({
 							fileUrl: data?.url,
 							fileId: data?.id,
@@ -149,6 +150,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 					} catch (error) {
 						console.warn("First attempt failed, retrying...", error);
 						try {
+							errorToast("retry thumbnail generation");
 							await handlePdfThumbnailAndUpload({
 								fileUrl: data?.url,
 								fileId: data?.id,
@@ -159,7 +161,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 								"PDF thumbnail upload failed after retry:",
 								retryError,
 							);
-							errorToast("PDF thumbnail upload failed");
+							errorToast("thumbnail generation failed");
 						}
 					}
 
