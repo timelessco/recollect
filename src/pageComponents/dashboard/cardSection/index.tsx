@@ -9,6 +9,7 @@ import { decode } from "blurhash";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
+import { motion } from "motion/react";
 import { Item } from "react-stately";
 
 import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
@@ -558,7 +559,7 @@ const CardSection = ({
 										? {
 												height: height || 500,
 												width: "100%",
-												maxHeight: "800px",
+												maxHeight: "1200px",
 										  }
 										: undefined
 								}
@@ -591,7 +592,7 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<figure className={figureClassName}>
+				<motion.figure className={figureClassName} layout>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -600,7 +601,7 @@ const CardSection = ({
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
 					{imgLogic()}
-				</figure>
+				</motion.figure>
 			</div>
 		);
 	};
