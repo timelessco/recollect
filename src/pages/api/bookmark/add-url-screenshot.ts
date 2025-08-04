@@ -30,7 +30,7 @@ type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
 };
-
+const MAX_LENGTH = 13_000;
 const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
@@ -109,8 +109,10 @@ export default async function handler(
 	// Get existing meta_data or create empty object if null
 	const existingMetaData = existingBookmarkData?.meta_data || {};
 
-	const updatedTitle = title || existingBookmarkData?.title;
-	const updatedDescription = description || existingBookmarkData?.description;
+	const updatedTitle =
+		title?.slice(0, MAX_LENGTH) || existingBookmarkData?.title;
+	const updatedDescription =
+		description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
 
 	// Add screenshot URL to meta_data
 	const updatedMetaData = {
