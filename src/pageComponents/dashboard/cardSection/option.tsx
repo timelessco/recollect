@@ -117,7 +117,7 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (isTrashPage) {
+					if (isTrashPage || item?.key === "$.0") {
 						event.preventDefault();
 						return;
 					}
