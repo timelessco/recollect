@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { motion } from "motion/react";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
@@ -245,12 +244,9 @@ export const CustomLightBox = ({
 			}
 
 			return (
-				<motion.div
-					className="flex h-full w-full items-center justify-center"
-					layout
-				>
+				<div className="flex h-full w-full items-center justify-center">
 					{content}
-				</motion.div>
+				</div>
 			);
 		},
 		[bookmarks, slides],
