@@ -64,7 +64,7 @@ const Option = ({
 	// Merge option props and dnd props, and render the item.
 
 	const liClassName = classNames(
-		"single-bookmark group relative flex cursor-pointer rounded-lg duration-150 outline-none",
+		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
 		{
 			"mb-6": cardTypeCondition === viewValues.moodboard,
 			"mb-[18px]": cardTypeCondition === viewValues.card,
@@ -113,7 +113,9 @@ const Option = ({
 			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="absolute left-0 top-0  h-full w-full rounded-lg"
+				className={`absolute left-0 top-0  h-full w-full rounded-lg ${
+					isTrashPage ? "cursor-auto" : "cursor-pointer"
+				}`}
 				draggable={false}
 				href={url}
 				onClick={(event) => {
