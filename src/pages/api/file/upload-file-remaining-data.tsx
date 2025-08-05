@@ -19,7 +19,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = UploadFileApiResponse;
 
-const notVideoLogic = async (publicUrl: string) => {
+const notVideoLogic = async (publicUrl: string, mediaType: string) => {
 	const ogImage = publicUrl;
 	let imageCaption = null;
 	let imageOcrValue = null;
@@ -60,7 +60,7 @@ const notVideoLogic = async (publicUrl: string) => {
 		coverImage: null,
 		screenshot: null,
 		isOgImagePreferred: false,
-		mediaType: "",
+		mediaType,
 	};
 
 	return { ogImage, meta_data };
@@ -91,10 +91,10 @@ export default async function handler(
 		screenshot: null,
 		ocr: null,
 		isOgImagePreferred: false,
-		mediaType,
+		mediaType: "",
 	};
 
-	const { meta_data: metaData } = await notVideoLogic(publicUrl);
+	const { meta_data: metaData } = await notVideoLogic(publicUrl, mediaType);
 
 	// Fetch existing metadata
 	const { data: existing, error: fetchError } = await supabase
