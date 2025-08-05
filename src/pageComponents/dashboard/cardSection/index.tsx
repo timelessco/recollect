@@ -530,7 +530,7 @@ const CardSection = ({
 				}
 
 				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder(true);
+					return errorImgPlaceholder(false);
 				}
 
 				let blurSource = "";
@@ -547,35 +547,22 @@ const CardSection = ({
 				}
 
 				return (
-					<AnimatePresence mode="wait">
+					<>
 						{img ? (
-							<motion.div
-								animate={{ opacity: 1 }}
-								initial={{ opacity: 0 }}
-								key={`img-${id}`}
-								transition={{ duration: 0.3 }}
-							>
-								<Image
-									alt="bookmark-img"
-									blurDataURL={blurSource || defaultBlur}
-									className={imgClassName}
-									height={height ?? 200}
-									onError={() => setErrorImgs([id as never, ...errorImgs])}
-									placeholder="blur"
-									src={img}
-									width={width ?? 200}
-								/>
-							</motion.div>
+							<Image
+								alt="bookmark-img"
+								blurDataURL={blurSource || defaultBlur}
+								className={imgClassName}
+								height={height ?? 200}
+								onError={() => setErrorImgs([id as never, ...errorImgs])}
+								placeholder="blur"
+								src={img}
+								width={width ?? 200}
+							/>
 						) : (
-							<motion.div
-								animate={{ opacity: 1 }}
-								initial={{ opacity: 0 }}
-								transition={{ duration: 0.3 }}
-							>
-								{errorImgPlaceholder(true)}
-							</motion.div>
+							errorImgPlaceholder(false)
 						)}
-					</AnimatePresence>
+					</>
 				);
 			}
 
