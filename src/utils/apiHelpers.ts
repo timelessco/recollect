@@ -136,6 +136,7 @@ export const handlePdfThumbnailAndUpload = async ({
 				`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
 				{
 					id: fileId,
+					mediaType: "application/pdf",
 					publicUrl,
 				},
 			);

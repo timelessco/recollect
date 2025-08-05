@@ -69,11 +69,12 @@ const notVideoLogic = async (publicUrl: string) => {
 export default async function handler(
 	request: NextApiRequest<{
 		id: SingleListData["id"];
+		mediaType: ImgMetadataType["mediaType"];
 		publicUrl: SingleListData["ogImage"];
 	}>,
 	response: NextApiResponse<Data>,
 ) {
-	const { publicUrl, id } = request.body;
+	const { publicUrl, id, mediaType } = request.body;
 
 	const supabase = apiSupabaseClient(request, response);
 
@@ -90,7 +91,7 @@ export default async function handler(
 		screenshot: null,
 		ocr: null,
 		isOgImagePreferred: false,
-		mediaType: "",
+		mediaType,
 	};
 
 	const { meta_data: metaData } = await notVideoLogic(publicUrl);
@@ -112,7 +113,8 @@ export default async function handler(
 		...Object.fromEntries(
 			Object.entries(metaData).map(([key, value]) => [
 				key,
-				value ?? existingMeta?.[key],
+				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+				value || existingMeta?.[key],
 			]),
 		),
 	};
