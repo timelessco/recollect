@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import Image from "next/image";
+import { type ZoomRef } from "yet-another-react-lightbox";
 
 import { SCREENSHOT_URL } from "../../utils/constants";
 
 type EmbedWithFallbackProps = {
+	currentZoomRef: RefObject<ZoomRef> | ZoomRef | null;
 	placeholder?: string;
 	placeholderHeight?: number;
 	placeholderWidth?: number;
@@ -29,6 +31,7 @@ export const EmbedWithFallback = ({
 	placeholder,
 	placeholderHeight,
 	placeholderWidth,
+	currentZoomRef,
 }: EmbedWithFallbackProps) => {
 	// Ref for the main container element
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -39,6 +42,14 @@ export const EmbedWithFallback = ({
 
 	// State to track whether the embed has failed and should show fallback
 	const [failed, setFailed] = useState(false);
+
+	// Helper function to safely access the zoom ref value
+	const getZoomRef = () => {
+		if (!currentZoomRef) return null;
+		return "current" in currentZoomRef
+			? currentZoomRef.current
+			: currentZoomRef;
+	};
 
 	/**
 	 * Effect hook that monitors the embed loading status
@@ -77,7 +88,7 @@ export const EmbedWithFallback = ({
 		// Reset failed state and start checking after initial delay
 		setFailed(false);
 		// Initial delay to allow object to start loading
-		setTimeout(check, 300);
+		setTimeout(check);
 		// Re-run when src changes
 	}, [src]);
 
@@ -107,17 +118,28 @@ export const EmbedWithFallback = ({
 		 */
 		if (exceedsWidth || underHeight) {
 			return (
-				<div className="flex h-full w-full  items-center justify-center ">
+				<div className="flex items-center justify-center">
 					<div
 						className={`flex ${exceedsWidth ? "max-w-[1200px]" : ""} ${
-							underHeight ? "max-h-[90vh]" : ""
+							underHeight ? "max-h-[80vh]" : ""
 						}`}
 					>
 						<Image
 							alt="Preview"
-							// Maintain aspect ratio while fitting container
 							className="object-contain"
+							draggable={false}
 							height={placeholderHeight}
+							onDoubleClick={(event) => {
+								event.stopPropagation();
+								const zoom = getZoomRef();
+								if (!zoom) return;
+
+								if (zoom?.zoom > 1) {
+									zoom?.zoomOut();
+								} else {
+									zoom?.zoomIn();
+								}
+							}}
 							src={placeholder}
 							width={placeholderWidth}
 						/>
@@ -139,7 +161,19 @@ export const EmbedWithFallback = ({
 				<Image
 					alt="Preview"
 					className="h-auto w-auto"
+					draggable={false}
 					height={placeholderHeight}
+					onDoubleClick={(event) => {
+						event.stopPropagation();
+						const zoom = getZoomRef();
+						if (!zoom) return;
+
+						if (zoom?.zoom > 1) {
+							zoom?.zoomOut();
+						} else {
+							zoom?.zoomIn();
+						}
+					}}
 					src={placeholder}
 					width={placeholderWidth}
 				/>

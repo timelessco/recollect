@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import Lightbox from "yet-another-react-lightbox";
+import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import { MetaDataIcon } from "../../icons/metaData";
@@ -73,7 +73,7 @@ export const CustomLightBox = ({
 }) => {
 	// Next.js router for URL manipulation
 	const router = useRouter();
-
+	const zoomRef = useRef<ZoomRef>(null);
 	// Zustand store hooks for managing lightbox side panel state
 	const setLightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.setLightboxShowSidepane,
@@ -101,18 +101,11 @@ export const CustomLightBox = ({
 
 		return bookmarks.map((bookmark) => {
 			// Determine media types based on bookmark properties
-			const isImage = bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
-			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
-
-			// Determine if slide should have dimensions for zoom functionality
-			// Images need dimensions to enable proper zoom behavior
-			const shouldHaveDimensions =
-				isImage ||
+			const isImage =
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
-				(bookmark?.meta_data?.screenshot &&
-					bookmark?.meta_data?.width &&
-					bookmark?.meta_data?.height);
+				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
+			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
 
 			return {
 				src: bookmark?.url,
@@ -122,11 +115,15 @@ export const CustomLightBox = ({
 					: isImage
 					? IMAGE_TYPE_PREFIX
 					: undefined,
-				// Conditionally add dimensions for zoom functionality
-				...(shouldHaveDimensions && {
-					width: bookmark?.meta_data?.width ?? 800,
-					height: bookmark?.meta_data?.height ?? 600,
-				}),
+
+				// Only include dimensions if not a PDF
+				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
+					!bookmark?.type?.includes(PDF_TYPE) &&
+					!bookmark?.url?.includes(YOUTUBE_COM) &&
+					!bookmark?.url?.includes(YOUTU_BE) && {
+						width: bookmark?.meta_data?.width ?? 1_200,
+						height: bookmark?.meta_data?.height ?? 800,
+					}),
 				// Add video-specific properties
 				...(isVideo && {
 					sources: [
@@ -161,19 +158,32 @@ export const CustomLightBox = ({
 			const isActive = offset === 0;
 
 			const renderImageSlide = () => (
-				<div className="flex items-center justify-center">
+				<div
+					className="flex items-center justify-center"
+					onDoubleClick={(event) => {
+						event.stopPropagation();
+						if (!zoomRef?.current) return;
+
+						if (zoomRef?.current?.zoom > 1) {
+							zoomRef?.current?.zoomOut();
+						} else {
+							zoomRef?.current?.zoomIn();
+						}
+					}}
+				>
 					<div className="relative max-w-[80vw]">
 						<Image
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
-							height={bookmark?.meta_data?.height ?? 0}
+							draggable={false}
+							height={bookmark?.meta_data?.height ?? 800}
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
 									? bookmark?.ogImage ?? ""
 									: bookmark?.url
 							}
-							width={bookmark?.meta_data?.width ?? 0}
+							width={bookmark?.meta_data?.width ?? 1_200}
 						/>
 					</div>
 				</div>
@@ -210,9 +220,10 @@ export const CustomLightBox = ({
 
 			const renderWebEmbedSlide = () => (
 				<EmbedWithFallback
+					currentZoomRef={zoomRef}
 					placeholder={bookmark?.ogImage ?? ""}
-					placeholderHeight={bookmark?.meta_data?.height ?? 0}
-					placeholderWidth={bookmark?.meta_data?.width ?? 0}
+					placeholderHeight={bookmark?.meta_data?.height ?? 800}
+					placeholderWidth={bookmark?.meta_data?.width ?? 1_200}
 					src={bookmark?.url}
 				/>
 			);
@@ -278,7 +289,6 @@ export const CustomLightBox = ({
 			}}
 			close={handleClose}
 			index={activeIndex}
-			// Event handlers
 			on={{
 				// Handle slide view changes and update URL for shareable links
 				view: ({ index }) => {
@@ -304,16 +314,14 @@ export const CustomLightBox = ({
 				},
 			}}
 			open={isOpen}
-			// Plugins for additional functionality
 			plugins={[Zoom, MetaButtonPlugin()]}
-			// Custom renderers
 			render={{
 				slide: renderSlide,
 				iconNext: iconRight,
 				iconPrev: iconLeft,
+				buttonZoom: () => null,
 			}}
 			slides={slides}
-			// Custom styling
 			styles={{
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -330,7 +338,6 @@ export const CustomLightBox = ({
 					justifyContent: "center",
 				},
 			}}
-			// Custom toolbar with metadata toggle and close buttons
 			toolbar={{
 				buttons: [
 					// Metadata panel toggle button
@@ -346,6 +353,7 @@ export const CustomLightBox = ({
 					LIGHTBOX_CLOSE_BUTTON,
 				],
 			}}
+			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 5 }}
 		/>
 	);
 };
