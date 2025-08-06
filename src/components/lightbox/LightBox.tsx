@@ -118,7 +118,9 @@ export const CustomLightBox = ({
 
 				// Only include dimensions if not a PDF
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
-					!bookmark?.type?.includes(PDF_TYPE) && {
+					!bookmark?.type?.includes(PDF_TYPE) &&
+					!bookmark?.url?.includes(YOUTUBE_COM) &&
+					!bookmark?.url?.includes(YOUTU_BE) && {
 						width: bookmark?.meta_data?.width ?? 1_200,
 						height: bookmark?.meta_data?.height ?? 800,
 					}),
@@ -317,6 +319,7 @@ export const CustomLightBox = ({
 				slide: renderSlide,
 				iconNext: iconRight,
 				iconPrev: iconLeft,
+				buttonZoom: () => null,
 			}}
 			slides={slides}
 			styles={{
