@@ -134,10 +134,10 @@ export const EmbedWithFallback = ({
 								const zoom = getZoomRef();
 								if (!zoom) return;
 
-								if (zoom.zoom > 1) {
-									zoom.zoomOut();
+								if (zoom?.zoom > 1) {
+									zoom?.zoomOut();
 								} else {
-									zoom.zoomIn();
+									zoom?.zoomIn();
 								}
 							}}
 							src={placeholder}
@@ -168,10 +168,10 @@ export const EmbedWithFallback = ({
 						const zoom = getZoomRef();
 						if (!zoom) return;
 
-						if (zoom.zoom > 1) {
-							zoom.zoomOut();
+						if (zoom?.zoom > 1) {
+							zoom?.zoomOut();
 						} else {
-							zoom.zoomIn();
+							zoom?.zoomIn();
 						}
 					}}
 					src={placeholder}
