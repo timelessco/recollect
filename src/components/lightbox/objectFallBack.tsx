@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import Image from "next/image";
+import { type ZoomRef } from "yet-another-react-lightbox";
 
 import { SCREENSHOT_URL } from "../../utils/constants";
 
 type EmbedWithFallbackProps = {
+	currentZoomRef: RefObject<ZoomRef> | ZoomRef | null;
 	placeholder?: string;
 	placeholderHeight?: number;
 	placeholderWidth?: number;
@@ -29,6 +31,7 @@ export const EmbedWithFallback = ({
 	placeholder,
 	placeholderHeight,
 	placeholderWidth,
+	currentZoomRef,
 }: EmbedWithFallbackProps) => {
 	// Ref for the main container element
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -40,6 +43,14 @@ export const EmbedWithFallback = ({
 	// State to track whether the embed has failed and should show fallback
 	const [failed, setFailed] = useState(false);
 
+	// Helper function to safely access the zoom ref value
+	const getZoomRef = () => {
+		if (!currentZoomRef) return null;
+		return "current" in currentZoomRef
+			? currentZoomRef.current
+			: currentZoomRef;
+	};
+
 	/**
 	 * Effect hook that monitors the embed loading status
 	 * Uses a polling mechanism to check if the fallback div becomes visible,
@@ -48,7 +59,7 @@ export const EmbedWithFallback = ({
 	useEffect(() => {
 		let attempts = 0;
 		// Maximum number of checks before giving up
-		const maxAttempts = 10;
+		const maxAttempts = 20;
 
 		/**
 		 * Recursive function that checks if the embed has failed
@@ -107,16 +118,29 @@ export const EmbedWithFallback = ({
 		 */
 		if (exceedsWidth || underHeight) {
 			return (
-				<div className="flex h-full w-full  items-center justify-center ">
+				<div
+					className="flex items-center justify-center"
+					onDoubleClick={(event) => {
+						event.stopPropagation();
+						const zoom = getZoomRef();
+						if (!zoom) return;
+
+						if (zoom.zoom > 1) {
+							zoom.zoomOut();
+						} else {
+							zoom.zoomIn();
+						}
+					}}
+				>
 					<div
-						className={`flex ${exceedsWidth ? "max-w-[1200px]" : ""} ${
-							underHeight ? "max-h-[90vh]" : ""
+						className={`flex ${exceedsWidth ? "max-w-[80vh]" : ""} ${
+							underHeight ? "max-h-[80vh]" : ""
 						}`}
 					>
 						<Image
 							alt="Preview"
-							// Maintain aspect ratio while fitting container
 							className="object-contain"
+							draggable={false}
 							height={placeholderHeight}
 							src={placeholder}
 							width={placeholderWidth}
@@ -135,10 +159,22 @@ export const EmbedWithFallback = ({
 				className={`flex min-h-screen origin-center items-center justify-center ${
 					isScreenshot ? "scale-50" : ""
 				}`}
+				onDoubleClick={(event) => {
+					event.stopPropagation();
+					const zoom = getZoomRef();
+					if (!zoom) return;
+
+					if (zoom.zoom > 1) {
+						zoom.zoomOut();
+					} else {
+						zoom.zoomIn();
+					}
+				}}
 			>
 				<Image
 					alt="Preview"
 					className="h-auto w-auto"
+					draggable={false}
 					height={placeholderHeight}
 					src={placeholder}
 					width={placeholderWidth}
