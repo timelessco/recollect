@@ -59,7 +59,7 @@ export const EmbedWithFallback = ({
 	useEffect(() => {
 		let attempts = 0;
 		// Maximum number of checks before giving up
-		const maxAttempts = 20;
+		const maxAttempts = 10;
 
 		/**
 		 * Recursive function that checks if the embed has failed
@@ -88,7 +88,7 @@ export const EmbedWithFallback = ({
 		// Reset failed state and start checking after initial delay
 		setFailed(false);
 		// Initial delay to allow object to start loading
-		setTimeout(check, 300);
+		setTimeout(check);
 		// Re-run when src changes
 	}, [src]);
 
@@ -133,7 +133,7 @@ export const EmbedWithFallback = ({
 					}}
 				>
 					<div
-						className={`flex ${exceedsWidth ? "max-w-[80vh]" : ""} ${
+						className={`flex ${exceedsWidth ? "max-w-[1200px]" : ""} ${
 							underHeight ? "max-h-[80vh]" : ""
 						}`}
 					>
