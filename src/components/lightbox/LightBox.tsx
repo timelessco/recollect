@@ -101,7 +101,10 @@ export const CustomLightBox = ({
 
 		return bookmarks.map((bookmark) => {
 			// Determine media types based on bookmark properties
-			const isImage = bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
+			const isImage =
+				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
+				bookmark?.meta_data?.isOgImagePreferred ||
+				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
 			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
 
 			return {
@@ -112,8 +115,13 @@ export const CustomLightBox = ({
 					: isImage
 					? IMAGE_TYPE_PREFIX
 					: undefined,
-				width: bookmark?.meta_data?.width ?? 1_200,
-				height: bookmark?.meta_data?.height ?? 800,
+
+				// Only include dimensions if not a PDF
+				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
+					!bookmark?.type?.includes(PDF_TYPE) && {
+						width: bookmark?.meta_data?.width ?? 1_200,
+						height: bookmark?.meta_data?.height ?? 800,
+					}),
 				// Add video-specific properties
 				...(isVideo && {
 					sources: [
