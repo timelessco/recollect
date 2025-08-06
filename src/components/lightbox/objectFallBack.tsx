@@ -118,20 +118,7 @@ export const EmbedWithFallback = ({
 		 */
 		if (exceedsWidth || underHeight) {
 			return (
-				<div
-					className="flex items-center justify-center"
-					onDoubleClick={(event) => {
-						event.stopPropagation();
-						const zoom = getZoomRef();
-						if (!zoom) return;
-
-						if (zoom.zoom > 1) {
-							zoom.zoomOut();
-						} else {
-							zoom.zoomIn();
-						}
-					}}
-				>
+				<div className="flex items-center justify-center">
 					<div
 						className={`flex ${exceedsWidth ? "max-w-[1200px]" : ""} ${
 							underHeight ? "max-h-[80vh]" : ""
@@ -142,6 +129,17 @@ export const EmbedWithFallback = ({
 							className="object-contain"
 							draggable={false}
 							height={placeholderHeight}
+							onDoubleClick={(event) => {
+								event.stopPropagation();
+								const zoom = getZoomRef();
+								if (!zoom) return;
+
+								if (zoom.zoom > 1) {
+									zoom.zoomOut();
+								} else {
+									zoom.zoomIn();
+								}
+							}}
 							src={placeholder}
 							width={placeholderWidth}
 						/>
@@ -159,23 +157,23 @@ export const EmbedWithFallback = ({
 				className={`flex min-h-screen origin-center items-center justify-center ${
 					isScreenshot ? "scale-50" : ""
 				}`}
-				onDoubleClick={(event) => {
-					event.stopPropagation();
-					const zoom = getZoomRef();
-					if (!zoom) return;
-
-					if (zoom.zoom > 1) {
-						zoom.zoomOut();
-					} else {
-						zoom.zoomIn();
-					}
-				}}
 			>
 				<Image
 					alt="Preview"
 					className="h-auto w-auto"
 					draggable={false}
 					height={placeholderHeight}
+					onDoubleClick={(event) => {
+						event.stopPropagation();
+						const zoom = getZoomRef();
+						if (!zoom) return;
+
+						if (zoom.zoom > 1) {
+							zoom.zoomOut();
+						} else {
+							zoom.zoomIn();
+						}
+					}}
 					src={placeholder}
 					width={placeholderWidth}
 				/>
