@@ -104,16 +104,6 @@ export const CustomLightBox = ({
 			const isImage = bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
 			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
 
-			// Determine if slide should have dimensions for zoom functionality
-			// Images need dimensions to enable proper zoom behavior
-			const shouldHaveDimensions =
-				isImage ||
-				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-				bookmark?.meta_data?.isOgImagePreferred ||
-				(bookmark?.meta_data?.screenshot &&
-					bookmark?.meta_data?.width &&
-					bookmark?.meta_data?.height);
-
 			return {
 				src: bookmark?.url,
 				// Set slide type for lightbox to handle appropriately
@@ -122,12 +112,8 @@ export const CustomLightBox = ({
 					: isImage
 					? IMAGE_TYPE_PREFIX
 					: undefined,
-				// Conditionally add dimensions for zoom functionality
-				...(shouldHaveDimensions && {
-					width: bookmark?.meta_data?.width ?? 800,
-					height: bookmark?.meta_data?.height ?? 600,
-					type: IMAGE_TYPE_PREFIX,
-				}),
+				width: bookmark?.meta_data?.width ?? 1_200,
+				height: bookmark?.meta_data?.height ?? 800,
 				// Add video-specific properties
 				...(isVideo && {
 					sources: [
@@ -180,14 +166,14 @@ export const CustomLightBox = ({
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
 							draggable={false}
-							height={bookmark?.meta_data?.height ?? 0}
+							height={bookmark?.meta_data?.height ?? 800}
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
 									? bookmark?.ogImage ?? ""
 									: bookmark?.url
 							}
-							width={bookmark?.meta_data?.width ?? 0}
+							width={bookmark?.meta_data?.width ?? 1_200}
 						/>
 					</div>
 				</div>
@@ -226,8 +212,8 @@ export const CustomLightBox = ({
 				<EmbedWithFallback
 					currentZoomRef={zoomRef}
 					placeholder={bookmark?.ogImage ?? ""}
-					placeholderHeight={bookmark?.meta_data?.height ?? 0}
-					placeholderWidth={bookmark?.meta_data?.width ?? 0}
+					placeholderHeight={bookmark?.meta_data?.height ?? 800}
+					placeholderWidth={bookmark?.meta_data?.width ?? 1_200}
 					src={bookmark?.url}
 				/>
 			);
