@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import Lightbox from "yet-another-react-lightbox";
+import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import { MetaDataIcon } from "../../icons/metaData";
@@ -73,7 +73,7 @@ export const CustomLightBox = ({
 }) => {
 	// Next.js router for URL manipulation
 	const router = useRouter();
-
+	const zoomRef = useRef<ZoomRef>(null);
 	// Zustand store hooks for managing lightbox side panel state
 	const setLightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.setLightboxShowSidepane,
@@ -126,6 +126,7 @@ export const CustomLightBox = ({
 				...(shouldHaveDimensions && {
 					width: bookmark?.meta_data?.width ?? 800,
 					height: bookmark?.meta_data?.height ?? 600,
+					type: IMAGE_TYPE_PREFIX,
 				}),
 				// Add video-specific properties
 				...(isVideo && {
@@ -161,11 +162,24 @@ export const CustomLightBox = ({
 			const isActive = offset === 0;
 
 			const renderImageSlide = () => (
-				<div className="flex items-center justify-center">
+				<div
+					className="flex items-center justify-center"
+					onDoubleClick={(event) => {
+						event.stopPropagation();
+						if (!zoomRef.current) return;
+
+						if (zoomRef.current.zoom > 1) {
+							zoomRef.current.zoomOut();
+						} else {
+							zoomRef.current.zoomIn();
+						}
+					}}
+				>
 					<div className="relative max-w-[80vw]">
 						<Image
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
+							draggable={false}
 							height={bookmark?.meta_data?.height ?? 0}
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
@@ -210,6 +224,7 @@ export const CustomLightBox = ({
 
 			const renderWebEmbedSlide = () => (
 				<EmbedWithFallback
+					currentZoomRef={zoomRef}
 					placeholder={bookmark?.ogImage ?? ""}
 					placeholderHeight={bookmark?.meta_data?.height ?? 0}
 					placeholderWidth={bookmark?.meta_data?.width ?? 0}
@@ -278,7 +293,6 @@ export const CustomLightBox = ({
 			}}
 			close={handleClose}
 			index={activeIndex}
-			// Event handlers
 			on={{
 				// Handle slide view changes and update URL for shareable links
 				view: ({ index }) => {
@@ -304,16 +318,13 @@ export const CustomLightBox = ({
 				},
 			}}
 			open={isOpen}
-			// Plugins for additional functionality
 			plugins={[Zoom, MetaButtonPlugin()]}
-			// Custom renderers
 			render={{
 				slide: renderSlide,
 				iconNext: iconRight,
 				iconPrev: iconLeft,
 			}}
 			slides={slides}
-			// Custom styling
 			styles={{
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -330,7 +341,6 @@ export const CustomLightBox = ({
 					justifyContent: "center",
 				},
 			}}
-			// Custom toolbar with metadata toggle and close buttons
 			toolbar={{
 				buttons: [
 					// Metadata panel toggle button
@@ -346,6 +356,7 @@ export const CustomLightBox = ({
 					LIGHTBOX_CLOSE_BUTTON,
 				],
 			}}
+			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 5 }}
 		/>
 	);
 };
