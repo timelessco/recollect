@@ -152,12 +152,12 @@ export const CustomLightBox = ({
 					className="flex items-center justify-center"
 					onDoubleClick={(event) => {
 						event.stopPropagation();
-						if (!zoomRef.current) return;
+						if (!zoomRef?.current) return;
 
-						if (zoomRef.current.zoom > 1) {
-							zoomRef.current.zoomOut();
+						if (zoomRef?.current?.zoom > 1) {
+							zoomRef?.current?.zoomOut();
 						} else {
-							zoomRef.current.zoomIn();
+							zoomRef?.current?.zoomIn();
 						}
 					}}
 				>
