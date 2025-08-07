@@ -640,6 +640,20 @@ const CardSection = ({
 		}
 
 		if (item?.meta_data?.favIcon) {
+			if (
+				item?.meta_data?.favIcon === null &&
+				item.meta_data.mediaType === "application/pdf"
+			) {
+				return <FolderIcon size="15" />;
+			}
+
+			if (
+				item?.meta_data?.favIcon === null &&
+				item?.meta_data?.mediaType === "video/mp4"
+			) {
+				return <VideoIcon size="15" />;
+			}
+
 			return (
 				<figure className={favIconFigureClassName}>
 					<Image
@@ -656,11 +670,11 @@ const CardSection = ({
 			);
 		}
 
-		if (isVideo) {
+		if (isVideo || item?.meta_data?.mediaType === "video/mp4") {
 			return <VideoIcon size="15" />;
 		}
 
-		if (isDocument) {
+		if (isDocument || item?.meta_data?.mediaType === "application/pdf") {
 			return <FolderIcon size="15" />;
 		}
 
