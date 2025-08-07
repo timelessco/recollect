@@ -198,16 +198,31 @@ export const CustomLightBox = ({
 			);
 
 			const renderPDFSlide = () => (
-				<div className="relative flex h-full w-full max-w-[80vw] items-center justify-center">
+				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
 					{isActive && (
 						<div className="h-full w-full">
 							<div className="flex h-full w-full items-center justify-center bg-gray-50">
-								<embed
+								{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
+								<object
+									aria-label="PDF Viewer"
 									className="block h-full w-full border-none"
-									key={bookmark?.url}
-									src={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+									data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
 									type={PDF_MIME_TYPE}
-								/>
+								>
+									<div className="p-4 text-center">
+										<p className="text-gray-700">
+											This PDF cannot be displayed in your browser.
+										</p>
+										<a
+											className="text-blue-600 underline"
+											href={bookmark?.url}
+											rel="noopener noreferrer"
+											target="_blank"
+										>
+											Click here to download it instead
+										</a>
+									</div>
+								</object>
 							</div>
 						</div>
 					)}
