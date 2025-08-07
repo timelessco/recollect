@@ -199,16 +199,18 @@ export const CustomLightBox = ({
 
 			const renderPDFSlide = () => (
 				<div className="relative flex h-full w-full max-w-[80vw] items-center justify-center">
-					<div className="h-full w-full">
-						<div className="flex h-full w-full items-center justify-center bg-gray-50">
-							<embed
-								className="block h-full w-full border-none"
-								key={bookmark?.url}
-								src={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-								type={PDF_MIME_TYPE}
-							/>
+					{isActive && (
+						<div className="h-full w-full">
+							<div className="flex h-full w-full items-center justify-center bg-gray-50">
+								<embed
+									className="block h-full w-full border-none"
+									key={bookmark?.url}
+									src={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+									type={PDF_MIME_TYPE}
+								/>
+							</div>
 						</div>
-					</div>
+					)}
 				</div>
 			);
 
@@ -274,11 +276,12 @@ export const CustomLightBox = ({
 	 */
 	const iconRight = () => (
 		<div
-			className={`h-[50vh] w-[150px] cursor-pointer  ${
-				lightboxShowSidepane ? "mr-80" : ""
-			}`}
+			className={`h-[50vh] w-[150px] ${lightboxShowSidepane ? "mr-80" : ""}`}
 		/>
 	);
+
+	const isFirstSlide = activeIndex === 0;
+	const isLastSlide = activeIndex === bookmarks.length - 1;
 
 	return (
 		<Lightbox
@@ -317,8 +320,11 @@ export const CustomLightBox = ({
 			plugins={[Zoom, MetaButtonPlugin()]}
 			render={{
 				slide: renderSlide,
-				iconNext: iconRight,
-				iconPrev: iconLeft,
+				iconNext: () => (isLastSlide ? null : iconRight()),
+				iconPrev: () => (isFirstSlide ? null : iconLeft()),
+				buttonPrev: slides.length <= 1 || isFirstSlide ? () => null : undefined,
+				buttonNext: slides.length <= 1 || isLastSlide ? () => null : undefined,
+
 				buttonZoom: () => null,
 			}}
 			slides={slides}
