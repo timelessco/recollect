@@ -199,33 +199,29 @@ export const CustomLightBox = ({
 
 			const renderPDFSlide = () => (
 				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-					{isActive && (
-						<div className="h-full w-full">
-							<div className="flex h-full w-full items-center justify-center bg-gray-50">
-								{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
-								<object
-									aria-label="PDF Viewer"
-									className="block h-full w-full border-none"
-									data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-									type={PDF_MIME_TYPE}
+					<div className="flex h-full w-full items-center justify-center">
+						{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
+						<object
+							aria-label="PDF Viewer"
+							className="block h-full w-full border-none"
+							data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+							type={PDF_MIME_TYPE}
+						>
+							<div className="p-4 text-center">
+								<p className="text-gray-700">
+									This PDF cannot be displayed in your browser.
+								</p>
+								<a
+									className="text-blue-600 underline"
+									href={bookmark?.url}
+									rel="noopener noreferrer"
+									target="_blank"
 								>
-									<div className="p-4 text-center">
-										<p className="text-gray-700">
-											This PDF cannot be displayed in your browser.
-										</p>
-										<a
-											className="text-blue-600 underline"
-											href={bookmark?.url}
-											rel="noopener noreferrer"
-											target="_blank"
-										>
-											Click here to download it instead
-										</a>
-									</div>
-								</object>
+									Click here to download it instead
+								</a>
 							</div>
-						</div>
-					)}
+						</object>
+					</div>
 				</div>
 			);
 
@@ -295,9 +291,6 @@ export const CustomLightBox = ({
 		/>
 	);
 
-	const isFirstSlide = activeIndex === 0;
-	const isLastSlide = activeIndex === bookmarks.length - 1;
-
 	return (
 		<Lightbox
 			// Animation configuration for lightbox transitions
@@ -305,6 +298,7 @@ export const CustomLightBox = ({
 				fade: 0,
 				zoom: 200,
 			}}
+			carousel={{ finite: true }}
 			close={handleClose}
 			index={activeIndex}
 			on={{
@@ -335,11 +329,8 @@ export const CustomLightBox = ({
 			plugins={[Zoom, MetaButtonPlugin()]}
 			render={{
 				slide: renderSlide,
-				iconNext: () => (isLastSlide ? null : iconRight()),
-				iconPrev: () => (isFirstSlide ? null : iconLeft()),
-				buttonPrev: slides.length <= 1 || isFirstSlide ? () => null : undefined,
-				buttonNext: slides.length <= 1 || isLastSlide ? () => null : undefined,
-
+				iconNext: () => iconRight(),
+				iconPrev: () => iconLeft(),
 				buttonZoom: () => null,
 			}}
 			slides={slides}
