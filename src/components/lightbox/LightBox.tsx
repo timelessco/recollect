@@ -291,6 +291,8 @@ export const CustomLightBox = ({
 		/>
 	);
 
+	const isFirstSlide = activeIndex === 0;
+	const isLastSlide = activeIndex === bookmarks.length - 1;
 	return (
 		<Lightbox
 			// Animation configuration for lightbox transitions
@@ -331,6 +333,8 @@ export const CustomLightBox = ({
 				slide: renderSlide,
 				iconNext: () => iconRight(),
 				iconPrev: () => iconLeft(),
+				buttonPrev: slides.length <= 1 || isFirstSlide ? () => null : undefined,
+				buttonNext: slides.length <= 1 || isLastSlide ? () => null : undefined,
 				buttonZoom: () => null,
 			}}
 			slides={slides}
