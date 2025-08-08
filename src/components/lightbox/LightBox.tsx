@@ -116,13 +116,13 @@ export const CustomLightBox = ({
 					? IMAGE_TYPE_PREFIX
 					: undefined,
 
-				// Only include dimensions if not a PDF
+				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!bookmark?.url?.includes(YOUTUBE_COM) &&
 					!bookmark?.url?.includes(YOUTU_BE) && {
 						width: bookmark?.meta_data?.width ?? 1_200,
-						height: bookmark?.meta_data?.height ?? 800,
+						height: bookmark?.meta_data?.height ?? 1_200,
 					}),
 				// Add video-specific properties
 				...(isVideo && {
@@ -404,7 +404,7 @@ export const CustomLightBox = ({
 					LIGHTBOX_CLOSE_BUTTON,
 				],
 			}}
-			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 5 }}
+			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 100 }}
 		/>
 	);
 };
