@@ -116,13 +116,13 @@ export const CustomLightBox = ({
 					? IMAGE_TYPE_PREFIX
 					: undefined,
 
-				// Only include dimensions if not a PDF
+				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!bookmark?.url?.includes(YOUTUBE_COM) &&
 					!bookmark?.url?.includes(YOUTU_BE) && {
 						width: bookmark?.meta_data?.width ?? 1_200,
-						height: bookmark?.meta_data?.height ?? 800,
+						height: bookmark?.meta_data?.height ?? 1_200,
 					}),
 				// Add video-specific properties
 				...(isVideo && {
@@ -242,6 +242,43 @@ export const CustomLightBox = ({
 			);
 
 			let content = null;
+			const isYouTubeVideo = (
+				urlString: string | null | undefined,
+			): boolean => {
+				if (!urlString) return false;
+
+				try {
+					const url = new URL(urlString);
+					const host = url.hostname;
+
+					// Match video URLs only
+					if (host === YOUTU_BE) {
+						return Boolean(url.pathname.slice(1));
+					}
+
+					if (host === `www.${YOUTUBE_COM}` || host === YOUTUBE_COM) {
+						if (url.pathname === "/watch" && url.searchParams.has("v")) {
+							return true;
+						}
+
+						if (url.pathname.startsWith(`/embed/`)) {
+							return true;
+						}
+
+						if (
+							url.pathname.startsWith("/shorts/") &&
+							url.pathname.split("/")[2]
+						) {
+							return true;
+						}
+					}
+
+					return false;
+				} catch {
+					return false;
+				}
+			};
+
 			if (
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
@@ -258,10 +295,7 @@ export const CustomLightBox = ({
 				bookmark?.type?.includes(PDF_TYPE)
 			) {
 				content = renderPDFSlide();
-			} else if (
-				bookmark?.url?.includes(YOUTUBE_COM) ||
-				bookmark?.url?.includes(YOUTU_BE)
-			) {
+			} else if (isYouTubeVideo(bookmark?.url)) {
 				content = renderYouTubeSlide();
 			} else if (bookmark?.url) {
 				content = renderWebEmbedSlide();
@@ -370,7 +404,7 @@ export const CustomLightBox = ({
 					LIGHTBOX_CLOSE_BUTTON,
 				],
 			}}
-			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 5 }}
+			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 100 }}
 		/>
 	);
 };
