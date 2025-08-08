@@ -264,6 +264,13 @@ export const CustomLightBox = ({
 						if (url.pathname.startsWith(`/embed/`)) {
 							return true;
 						}
+
+						if (
+							url.pathname.startsWith("/shorts/") &&
+							url.pathname.split("/")[2]
+						) {
+							return true;
+						}
 					}
 
 					return false;
