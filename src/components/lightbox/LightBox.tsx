@@ -267,6 +267,7 @@ export const CustomLightBox = ({
 				content = renderWebEmbedSlide();
 			}
 
+			// content wrapper
 			return (
 				<div className="flex h-full w-full items-center justify-center">
 					{content}
