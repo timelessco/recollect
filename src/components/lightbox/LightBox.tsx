@@ -198,16 +198,29 @@ export const CustomLightBox = ({
 			);
 
 			const renderPDFSlide = () => (
-				<div className="relative flex h-full w-full max-w-[80vw] items-center justify-center">
-					<div className="h-full w-full">
-						<div className="flex h-full w-full items-center justify-center bg-gray-50">
-							<embed
-								className="block h-full w-full border-none"
-								key={bookmark?.url}
-								src={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-								type={PDF_MIME_TYPE}
-							/>
-						</div>
+				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
+					<div className="flex h-full w-full items-center justify-center">
+						{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
+						<object
+							aria-label="PDF Viewer"
+							className="block h-full w-full border-none"
+							data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+							type={PDF_MIME_TYPE}
+						>
+							<div className="p-4 text-center">
+								<p className="text-gray-700">
+									This PDF cannot be displayed in your browser.
+								</p>
+								<a
+									className="text-blue-600 underline"
+									href={bookmark?.url}
+									rel="noopener noreferrer"
+									target="_blank"
+								>
+									Click here to download it instead
+								</a>
+							</div>
+						</object>
 					</div>
 				</div>
 			);
@@ -254,6 +267,7 @@ export const CustomLightBox = ({
 				content = renderWebEmbedSlide();
 			}
 
+			// content wrapper
 			return (
 				<div className="flex h-full w-full items-center justify-center">
 					{content}
@@ -274,12 +288,12 @@ export const CustomLightBox = ({
 	 */
 	const iconRight = () => (
 		<div
-			className={`h-[50vh] w-[150px] cursor-pointer  ${
-				lightboxShowSidepane ? "mr-80" : ""
-			}`}
+			className={`h-[50vh] w-[150px] ${lightboxShowSidepane ? "mr-80" : ""}`}
 		/>
 	);
 
+	const isFirstSlide = activeIndex === 0;
+	const isLastSlide = activeIndex === bookmarks.length - 1;
 	return (
 		<Lightbox
 			// Animation configuration for lightbox transitions
@@ -287,6 +301,7 @@ export const CustomLightBox = ({
 				fade: 0,
 				zoom: 200,
 			}}
+			carousel={{ finite: true }}
 			close={handleClose}
 			index={activeIndex}
 			on={{
@@ -317,8 +332,10 @@ export const CustomLightBox = ({
 			plugins={[Zoom, MetaButtonPlugin()]}
 			render={{
 				slide: renderSlide,
-				iconNext: iconRight,
-				iconPrev: iconLeft,
+				iconNext: () => iconRight(),
+				iconPrev: () => iconLeft(),
+				buttonPrev: slides.length <= 1 || isFirstSlide ? () => null : undefined,
+				buttonNext: slides.length <= 1 || isLastSlide ? () => null : undefined,
 				buttonZoom: () => null,
 			}}
 			slides={slides}
