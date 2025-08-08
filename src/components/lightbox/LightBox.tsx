@@ -242,6 +242,36 @@ export const CustomLightBox = ({
 			);
 
 			let content = null;
+			const isYouTubeVideo = (
+				urlString: string | null | undefined,
+			): boolean => {
+				if (!urlString) return false;
+
+				try {
+					const url = new URL(urlString);
+					const host = url.hostname;
+
+					// Match video URLs only
+					if (host === YOUTU_BE) {
+						return Boolean(url.pathname.slice(1));
+					}
+
+					if (host === `www.${YOUTUBE_COM}` || host === YOUTUBE_COM) {
+						if (url.pathname === "/watch" && url.searchParams.has("v")) {
+							return true;
+						}
+
+						if (url.pathname.startsWith(`/embed/`)) {
+							return true;
+						}
+					}
+
+					return false;
+				} catch {
+					return false;
+				}
+			};
+
 			if (
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
@@ -258,10 +288,7 @@ export const CustomLightBox = ({
 				bookmark?.type?.includes(PDF_TYPE)
 			) {
 				content = renderPDFSlide();
-			} else if (
-				bookmark?.url?.includes(YOUTUBE_COM) ||
-				bookmark?.url?.includes(YOUTU_BE)
-			) {
+			} else if (isYouTubeVideo(bookmark?.url)) {
 				content = renderYouTubeSlide();
 			} else if (bookmark?.url) {
 				content = renderWebEmbedSlide();
