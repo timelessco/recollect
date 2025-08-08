@@ -130,14 +130,50 @@ export const EmbedWithFallback = ({
 							draggable={false}
 							height={placeholderHeight}
 							onDoubleClick={(event) => {
+								const img = event.currentTarget;
+
+								// Get dimensions of rendered image inside the box
+								const containerWidth = img.clientWidth;
+								const containerHeight = img.clientHeight;
+								const imageAspectRatio = img.naturalWidth / img.naturalHeight;
+								const containerAspectRatio = containerWidth / containerHeight;
+
+								let renderedHeight;
+								let renderedWidth;
+								if (imageAspectRatio > containerAspectRatio) {
+									// image is wider, height is constrained
+									renderedWidth = containerWidth;
+									renderedHeight = containerWidth / imageAspectRatio;
+								} else {
+									// image is taller, width is constrained
+									renderedHeight = containerHeight;
+									renderedWidth = containerHeight * imageAspectRatio;
+								}
+
+								// Calculate bounds of the actual visible image
+								const offsetX = (containerWidth - renderedWidth) / 2;
+								const offsetY = (containerHeight - renderedHeight) / 2;
+
+								const clickX = event.nativeEvent.offsetX;
+								const clickY = event.nativeEvent.offsetY;
+
+								const insideVisibleImage =
+									clickX >= offsetX &&
+									clickX <= offsetX + renderedWidth &&
+									clickY >= offsetY &&
+									clickY <= offsetY + renderedHeight;
+
+								if (!insideVisibleImage) return;
+
+								// Proceed with zoom if clicked inside the visible part
 								event.stopPropagation();
 								const zoom = getZoomRef();
 								if (!zoom) return;
 
-								if (zoom?.zoom > 1) {
-									zoom?.zoomOut();
+								if (zoom.zoom > 1) {
+									zoom.zoomOut();
 								} else {
-									zoom?.zoomIn();
+									zoom.zoomIn();
 								}
 							}}
 							src={placeholder}
