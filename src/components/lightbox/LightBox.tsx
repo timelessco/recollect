@@ -1,6 +1,10 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { getDocument } from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist/build/pdf";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
+import { type PDFPageProxy } from "pdfjs-dist/types/src/display/api";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
@@ -17,7 +21,6 @@ import {
 	LIGHTBOX_SHOW_PANE_BUTTON,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
-	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	PREVIEW_PATH,
 	VIDEO_TYPE_PREFIX,
@@ -31,10 +34,156 @@ import MetaButtonPlugin from "./LightBoxPlugin";
 import { EmbedWithFallback } from "./objectFallBack";
 import { type CustomSlide } from "./previewLightBox";
 
-/**
- * Bookmark type definition - extends SingleListData but omits certain fields
- * and adds optional properties for creation date, domain, and metadata
- */
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+const PDFViewer = ({ url }: { url: string }) => {
+	const [pages, setPages] = useState<PDFPageProxy[]>([]);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const canvasReferences = useRef<Record<number, HTMLCanvasElement | null>>({});
+	const textLayerReferences = useRef<Record<number, HTMLDivElement | null>>({});
+
+	useEffect(() => {
+		let isMounted = true;
+		const loadPdf = async () => {
+			try {
+				const loadingTask = getDocument(url);
+				const pdf = await loadingTask.promise;
+				const numberPages = pdf.numPages;
+				const pagePromises = Array.from({ length: numberPages }, (_, index) =>
+					pdf.getPage(index + 1),
+				);
+				const loadedPages = await Promise.all(pagePromises);
+				if (isMounted) setPages(loadedPages);
+			} catch (error) {
+				console.error("Error loading PDF:", error);
+			}
+		};
+
+		void loadPdf();
+		return () => {
+			isMounted = false;
+		};
+	}, [url]);
+
+	useEffect(() => {
+		const renderPages = async () => {
+			await Promise.all(
+				pages.map(async (page, index) => {
+					const canvas = canvasReferences.current[index];
+					const textLayerDiv = textLayerReferences.current[index];
+					if (!canvas || !textLayerDiv) return;
+
+					// Base viewport
+					const baseViewport = page.getViewport({ scale: 1 });
+					const maxWidth = Math.min(1_200, window.innerWidth * 0.9);
+					const scale = Math.min(maxWidth / baseViewport.width, 3);
+
+					// Render text layer
+					// inside renderPages map loop:
+					const viewport = page.getViewport({ scale });
+
+					canvas.height = viewport.height;
+					canvas.width = viewport.width;
+
+					const context = canvas.getContext("2d");
+					if (!context) return;
+					await page.render({ canvasContext: context, viewport }).promise;
+
+					// Render text layer
+					const textContent = await page.getTextContent();
+					textLayerDiv.innerHTML = "";
+
+					// Set exact size in px like vanilla example
+					textLayerDiv.style.width = `${viewport.width}px`;
+					textLayerDiv.style.height = `${viewport.height}px`;
+
+					pdfjsLib.renderTextLayer({
+						textContent,
+						container: textLayerDiv,
+						viewport,
+						textDivs: [],
+						enhanceTextSelection: true,
+					});
+				}),
+			);
+		};
+
+		if (pages.length > 0) void renderPages();
+
+		return () => {
+			for (const page of pages) page?.cleanup();
+		};
+	}, [pages]);
+
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<div
+				className=" h-full w-full max-w-[1200px] overflow-y-auto rounded"
+				ref={containerRef}
+				style={
+					{
+						// Hide scrollbar for WebKit browsers
+						WebkitScrollbar: { display: "none" },
+						msOverflowStyle: "none",
+						scrollbarWidth: "none",
+					} as React.CSSProperties
+				}
+			>
+				{pages.length === 0 ? (
+					<div className="flex h-full w-full items-center justify-center">
+						<div className="animate-pulse text-gray-500">Loading PDF...</div>
+					</div>
+				) : (
+					pages.map((_, index) => (
+						// eslint-disable-next-line react/no-array-index-key
+						<div className="relative mx-auto my-4 w-fit shadow-md" key={index}>
+							<canvas
+								className="block h-auto w-full max-w-[1200px]"
+								ref={(element) => {
+									if (element) {
+										canvasReferences.current = {
+											...canvasReferences.current,
+											[index]: element,
+										};
+									} else {
+										const { [index]: __, ...rest } = canvasReferences.current;
+										canvasReferences.current = rest;
+									}
+								}}
+							/>
+							<div
+								className="pointer-events-auto absolute left-0 top-0 h-full w-full select-text"
+								ref={(element) => {
+									if (element) {
+										textLayerReferences.current = {
+											...textLayerReferences.current,
+											[index]: element,
+										};
+									} else {
+										const { [index]: __, ...rest } =
+											textLayerReferences.current;
+										textLayerReferences.current = rest;
+									}
+								}}
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: "100%",
+									zIndex: 1,
+									color: "transparent",
+								}}
+							/>
+						</div>
+					))
+				)}
+			</div>
+		</div>
+	);
+};
+
+// Bookmark type
 export type Bookmark = Omit<
 	SingleListData,
 	"addedTags" | "inserted_at" | "trash" | "user_id"
@@ -44,18 +193,7 @@ export type Bookmark = Omit<
 	meta_data?: Partial<ImgMetadataType>;
 };
 
-/**
- * CustomLightBox Component
- *
- * A  lightbox component that displays various types of media content
- * including images, videos, PDFs, and embedded web content. Features include:
- * - Zoom functionality for images
- * - Video playback support (including YouTube)
- * - PDF viewing with embedded viewer
- * - Side panel toggle for metadata
- * - Navigation between bookmarks
- * - URL routing integration for shareable links
- */
+// Custom LightBox
 export const CustomLightBox = ({
 	bookmarks = [],
 	activeIndex,
@@ -71,10 +209,9 @@ export const CustomLightBox = ({
 	isPage?: boolean;
 	setActiveIndex: (index: number) => void;
 }) => {
-	// Next.js router for URL manipulation
 	const router = useRouter();
 	const zoomRef = useRef<ZoomRef>(null);
-	// Zustand store hooks for managing lightbox side panel state
+
 	const setLightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.setLightboxShowSidepane,
 	);
@@ -82,70 +219,44 @@ export const CustomLightBox = ({
 		(state) => state?.lightboxShowSidepane,
 	);
 
-	/**
-	 * Enhanced close handler that also resets the side panel state
-	 * Uses useCallback to prevent unnecessary re-renders
-	 */
 	const handleClose = useCallback(() => {
 		originalHandleClose();
 		setLightboxShowSidepane(false);
 	}, [originalHandleClose, setLightboxShowSidepane]);
 
-	/**
-	 * Transforms bookmark data into lightbox slide format
-	 * Determines media type and sets appropriate properties for each slide
-	 * Memoized to prevent recalculation on every render
-	 */
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
-
 		return bookmarks.map((bookmark) => {
-			// Determine media types based on bookmark properties
 			const isImage =
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
+
 			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
 
 			return {
 				src: bookmark?.url,
-				// Set slide type for lightbox to handle appropriately
 				type: isVideo
 					? VIDEO_TYPE_PREFIX
 					: isImage
 					? IMAGE_TYPE_PREFIX
 					: undefined,
-
-				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
-					!isYouTubeVideo(bookmark?.url) && {
-						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-						width: bookmark?.meta_data?.width || 1_200,
-						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-						height: bookmark?.meta_data?.height || 1_200,
+					!bookmark?.url?.includes(YOUTUBE_COM) &&
+					!bookmark?.url?.includes(YOUTU_BE) && {
+						width: bookmark?.meta_data?.width ?? 1_200,
+						height: bookmark?.meta_data?.height ?? 800,
 					}),
-				// Add video-specific properties
 				...(isVideo && {
 					sources: [
-						{
-							src: bookmark?.url,
-							type: bookmark?.type ?? VIDEO_TYPE_PREFIX,
-						},
+						{ src: bookmark?.url, type: bookmark?.type ?? VIDEO_TYPE_PREFIX },
 					],
 				}),
 			};
 		}) as CustomSlide[];
 	}, [bookmarks]);
 
-	/**
-	 * Custom slide renderer that handles different media types
-	 * - Images: Direct display with Next.js Image component
-	 * - Videos: Custom VideoPlayer component
-	 * - PDFs: Embedded PDF viewer
-	 * - Web content: EmbedWithFallback component
-	 * - YouTube: Special handling for YouTube URLs
-	 */
 	const renderSlide = useCallback(
 		(slideProps: { offset: number; slide: CustomSlide }) => {
 			const { offset, slide } = slideProps;
@@ -155,7 +266,6 @@ export const CustomLightBox = ({
 			const bookmark = bookmarks?.[slideIndex];
 			if (!bookmark) return null;
 
-			// Determine if this slide is currently active (visible) for video player
 			const isActive = offset === 0;
 
 			const renderImageSlide = () => (
@@ -198,33 +308,8 @@ export const CustomLightBox = ({
 				</div>
 			);
 
-			const renderPDFSlide = () => (
-				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-					<div className="flex h-full w-full items-center justify-center">
-						{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
-						<object
-							aria-label="PDF Viewer"
-							className="block h-full w-full border-none"
-							data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-							type={PDF_MIME_TYPE}
-						>
-							<div className="p-4 text-center">
-								<p className="text-gray-700">
-									This PDF cannot be displayed in your browser.
-								</p>
-								<a
-									className="text-blue-600 underline"
-									href={bookmark?.url}
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									Click here to download it instead
-								</a>
-							</div>
-						</object>
-					</div>
-				</div>
-			);
+			const renderPDFSlide = () =>
+				bookmark?.url ? <PDFViewer url={bookmark.url} /> : null;
 
 			const renderYouTubeSlide = () => (
 				<div className="flex h-full w-full max-w-[80vw] items-center justify-center">
@@ -243,7 +328,6 @@ export const CustomLightBox = ({
 			);
 
 			let content = null;
-
 			if (
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
@@ -260,13 +344,15 @@ export const CustomLightBox = ({
 				bookmark?.type?.includes(PDF_TYPE)
 			) {
 				content = renderPDFSlide();
-			} else if (isYouTubeVideo(bookmark?.url)) {
+			} else if (
+				bookmark?.url?.includes(YOUTUBE_COM) ||
+				bookmark?.url?.includes(YOUTU_BE)
+			) {
 				content = renderYouTubeSlide();
 			} else if (bookmark?.url) {
 				content = renderWebEmbedSlide();
 			}
 
-			// content wrapper
 			return (
 				<div className="flex h-full w-full items-center justify-center">
 					{content}
@@ -276,15 +362,7 @@ export const CustomLightBox = ({
 		[bookmarks, slides],
 	);
 
-	/**
-	 * Custom navigation icons
-	 * Left icon: Simple clickable area for previous navigation
-	 */
-	const iconLeft = () => <div className=" h-[50vh] w-[150px] cursor-pointer" />;
-
-	/**
-	 * Right icon: Adjusts margin when side panel is open
-	 */
+	const iconLeft = () => <div className="h-[50vh] w-[150px] cursor-pointer" />;
 	const iconRight = () => (
 		<div
 			className={`h-[50vh] w-[150px] ${lightboxShowSidepane ? "mr-80" : ""}`}
@@ -293,22 +371,17 @@ export const CustomLightBox = ({
 
 	const isFirstSlide = activeIndex === 0;
 	const isLastSlide = activeIndex === bookmarks.length - 1;
+
 	return (
 		<Lightbox
-			// Animation configuration for lightbox transitions
-			animation={{
-				fade: 0,
-				zoom: 200,
-			}}
+			animation={{ fade: 0, zoom: 200 }}
 			carousel={{ finite: true }}
 			close={handleClose}
 			index={activeIndex}
 			on={{
-				// Handle slide view changes and update URL for shareable links
 				view: ({ index }) => {
 					if (!isPage || !bookmarks?.[index]) return;
 					setActiveIndex(index);
-					// Update browser URL to make lightbox state shareable
 					void router.push(
 						{
 							pathname: `/${CATEGORY_ID_PATHNAME}`,
@@ -320,10 +393,7 @@ export const CustomLightBox = ({
 						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${bookmarks?.[
 							index
 						]?.id}`,
-						{
-							// Don't trigger a full page reload
-							shallow: true,
-						},
+						{ shallow: true },
 					);
 				},
 			}}
@@ -343,7 +413,6 @@ export const CustomLightBox = ({
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
-					// Adjust width when side panel is visible
 					width: lightboxShowSidepane ? "80%" : "100%",
 					animation: "customFadeScaleIn 0.25s ease-in-out",
 				},
@@ -356,7 +425,6 @@ export const CustomLightBox = ({
 			}}
 			toolbar={{
 				buttons: [
-					// Metadata panel toggle button
 					<button
 						className="flex items-center gap-2 text-gray-500 transition hover:text-gray-700"
 						key={LIGHTBOX_SHOW_PANE_BUTTON}
@@ -365,43 +433,10 @@ export const CustomLightBox = ({
 					>
 						<MetaDataIcon />
 					</button>,
-					// Standard close button
 					LIGHTBOX_CLOSE_BUTTON,
 				],
 			}}
-			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 100 }}
+			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 5 }}
 		/>
 	);
-};
-
-const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
-	if (!urlString) return false;
-
-	try {
-		const url = new URL(urlString);
-		const host = url.hostname;
-
-		// Match video URLs only
-		if (host === YOUTU_BE) {
-			return Boolean(url.pathname.slice(1));
-		}
-
-		if (host === `www.${YOUTUBE_COM}` || host === YOUTUBE_COM) {
-			if (url.pathname === "/watch" && url.searchParams.has("v")) {
-				return true;
-			}
-
-			if (url.pathname.startsWith(`/embed/`)) {
-				return true;
-			}
-
-			if (url.pathname.startsWith("/shorts/") && url.pathname.split("/")[2]) {
-				return true;
-			}
-		}
-
-		return false;
-	} catch {
-		return false;
-	}
 };
