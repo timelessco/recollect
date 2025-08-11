@@ -3,6 +3,7 @@ import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
 import { SCREENSHOT_URL } from "../../utils/constants";
+import Spinner from "../spinner";
 
 type EmbedWithFallbackProps = {
 	currentZoomRef: RefObject<ZoomRef> | ZoomRef | null;
@@ -42,7 +43,7 @@ export const EmbedWithFallback = ({
 
 	// State to track whether the embed has failed and should show fallback
 	const [failed, setFailed] = useState(false);
-
+	const [loading, setLoading] = useState(true);
 	// Helper function to safely access the zoom ref value
 	const getZoomRef = () => {
 		if (!currentZoomRef) return null;
@@ -77,6 +78,7 @@ export const EmbedWithFallback = ({
 			if (viewHeight > 0) {
 				// Fallback div is visible, meaning object failed to load
 				setFailed(true);
+				setLoading(false);
 			} else if (attempts < maxAttempts) {
 				// Continue checking if we haven't reached max attempts
 				attempts++;
@@ -227,6 +229,11 @@ export const EmbedWithFallback = ({
 			className="relative h-full min-h-[500px] w-full max-w-[1200px]"
 			ref={containerRef}
 		>
+			{loading && (
+				<div className="flex h-full min-h-[500px] w-full max-w-[1200px] items-center justify-center">
+					<Spinner />
+				</div>
+			)}
 			<object
 				className="h-full w-full"
 				data={src}
