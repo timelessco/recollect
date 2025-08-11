@@ -1,8 +1,12 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { pdfjs } from "react-pdf";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
+
+import "react-pdf/dist/Page/TextLayer.css";
 
 import { MetaDataIcon } from "../../icons/metaData";
 import { useMiscellaneousStore } from "../../store/componentStore";
@@ -17,7 +21,6 @@ import {
 	LIGHTBOX_SHOW_PANE_BUTTON,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
-	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	PREVIEW_PATH,
 	VIDEO_TYPE_PREFIX,
@@ -30,6 +33,18 @@ import { VideoPlayer } from "../VideoPlayer";
 import MetaButtonPlugin from "./LightBoxPlugin";
 import { EmbedWithFallback } from "./objectFallBack";
 import { type CustomSlide } from "./previewLightBox";
+
+const PDFDocument = dynamic(
+	() => import("react-pdf").then((module_) => module_.Document),
+	{ ssr: false },
+);
+
+const PDFPage = dynamic(
+	() => import("react-pdf").then((module_) => module_.Page),
+	{ ssr: false },
+);
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 /**
  * Bookmark type definition - extends SingleListData but omits certain fields
@@ -71,6 +86,8 @@ export const CustomLightBox = ({
 	isPage?: boolean;
 	setActiveIndex: (index: number) => void;
 }) => {
+	const [numberPages, setNumberPages] = useState<number>(0);
+
 	// Next.js router for URL manipulation
 	const router = useRouter();
 	const zoomRef = useRef<ZoomRef>(null);
@@ -125,15 +142,6 @@ export const CustomLightBox = ({
 						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						height: bookmark?.meta_data?.height || 1_200,
 					}),
-				// Add video-specific properties
-				...(isVideo && {
-					sources: [
-						{
-							src: bookmark?.url,
-							type: bookmark?.type ?? VIDEO_TYPE_PREFIX,
-						},
-					],
-				}),
 			};
 		}) as CustomSlide[];
 	}, [bookmarks]);
@@ -199,29 +207,58 @@ export const CustomLightBox = ({
 			);
 
 			const renderPDFSlide = () => (
-				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-					<div className="flex h-full w-full items-center justify-center">
-						{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
-						<object
-							aria-label="PDF Viewer"
-							className="block h-full w-full border-none"
-							data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-							type={PDF_MIME_TYPE}
+				<div className="relative flex h-full w-full items-center justify-center">
+					<div className="h-full w-full overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+						<PDFDocument
+							className="flex flex-col items-center"
+							error={
+								<div className="p-4 text-center text-red-500">
+									Failed to load PDF.&nbsp;
+									<a
+										className="text-blue-600 underline"
+										href={bookmark?.url}
+										rel="noopener noreferrer"
+										target="_blank"
+									>
+										Download PDF
+									</a>
+								</div>
+							}
+							file={bookmark?.url}
+							loading={
+								<div className="p-4 text-center text-gray-500">
+									Loading PDF...
+								</div>
+							}
+							onLoadSuccess={({ numPages }) => setNumberPages(numPages)}
 						>
-							<div className="p-4 text-center">
-								<p className="text-gray-700">
-									This PDF cannot be displayed in your browser.
-								</p>
-								<a
-									className="text-blue-600 underline"
-									href={bookmark?.url}
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									Click here to download it instead
-								</a>
-							</div>
-						</object>
+							{numberPages > 0 ? (
+								Array.from({ length: numberPages }, (_, index) => (
+									<div key={`page_${index}`}>
+										<PDFPage
+											error={
+												<div className="text-center text-red-500">
+													Page could not be rendered.
+												</div>
+											}
+											loading={
+												<div className="p-4 text-center text-gray-500">
+													Loading page...
+												</div>
+											}
+											pageNumber={index + 1}
+											renderAnnotationLayer={false}
+											renderTextLayer
+											width={1_200}
+										/>
+									</div>
+								))
+							) : (
+								<div className="p-4 text-center text-gray-500">
+									Preparing pages...
+								</div>
+							)}
+						</PDFDocument>
 					</div>
 				</div>
 			);
@@ -273,7 +310,7 @@ export const CustomLightBox = ({
 				</div>
 			);
 		},
-		[bookmarks, slides],
+		[bookmarks, slides, numberPages],
 	);
 
 	/**

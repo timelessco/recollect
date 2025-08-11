@@ -119,6 +119,7 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) => {
+					// adding this to prevent clicks during upload
 					if (isTrashPage || item?.key === "$.0") {
 						event.preventDefault();
 						return;

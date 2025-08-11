@@ -1,6 +1,8 @@
 import axios from "axios";
-import * as pdfjsLib from "pdfjs-dist/build/pdf";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
+
+// import * as pdfjsLib from "pdfjs-dist/build/pdf";
+
+// import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 
 import {
 	getBaseUrl,
@@ -11,7 +13,7 @@ import {
 import { r2Helpers } from "./r2Client";
 import { errorToast } from "./toastMessages";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // This file has front end api related helpers
 
@@ -49,31 +51,27 @@ export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
 		throw new Error("error in arrayBuffer");
 	}
 
-	const arrayBuffer = await response?.arrayBuffer();
+	// const arrayBuffer = await response?.arrayBuffer();
 
 	try {
-		const pdf = await pdfjsLib?.getDocument({
-			data: arrayBuffer,
-			disableAutoFetch: true,
-		})?.promise;
+		// const pdf = await pdfjsLib?.getDocument({
+		// 	data: arrayBuffer,
+		// 	disableAutoFetch: true,
+		// })?.promise;
 
-		const page = await pdf?.getPage(1);
-		const scale = 1.5;
-		const viewport = page?.getViewport({ scale });
+		// const page = await pdf?.getPage(1);
+		// const scale = 1.5;
+		// const viewport = page?.getViewport({ scale });
 
 		const canvas = document?.createElement("canvas");
-		canvas.width = viewport?.width;
-		canvas.height = viewport?.height;
+		// canvas.width = viewport?.width;
+		// canvas.height = viewport?.height;
 		const context = canvas?.getContext("2d");
 		if (!context) return null;
 
-		await page?.render({ canvasContext: context, viewport })?.promise;
+		// await page?.render({ canvasContext: context, viewport })?.promise;
 
-		return await new Promise((resolve) => {
-			canvas?.toBlob((blob) => {
-				resolve(blob);
-			}, "image/jpg");
-		});
+		return null;
 	} catch (error) {
 		console.error("Thumbnail generation error", error);
 		throw new Error("No thumbnail generated.");
