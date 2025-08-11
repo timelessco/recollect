@@ -119,10 +119,11 @@ export const CustomLightBox = ({
 				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
-					!bookmark?.url?.includes(YOUTUBE_COM) &&
-					!bookmark?.url?.includes(YOUTU_BE) && {
-						width: bookmark?.meta_data?.width ?? 1_200,
-						height: bookmark?.meta_data?.height ?? 1_200,
+					!isYouTubeVideo(bookmark?.url) && {
+						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+						width: bookmark?.meta_data?.width || 1_200,
+						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+						height: bookmark?.meta_data?.height || 1_200,
 					}),
 				// Add video-specific properties
 				...(isVideo && {
@@ -242,42 +243,6 @@ export const CustomLightBox = ({
 			);
 
 			let content = null;
-			const isYouTubeVideo = (
-				urlString: string | null | undefined,
-			): boolean => {
-				if (!urlString) return false;
-
-				try {
-					const url = new URL(urlString);
-					const host = url.hostname;
-
-					// Match video URLs only
-					if (host === YOUTU_BE) {
-						return Boolean(url.pathname.slice(1));
-					}
-
-					if (host === `www.${YOUTUBE_COM}` || host === YOUTUBE_COM) {
-						if (url.pathname === "/watch" && url.searchParams.has("v")) {
-							return true;
-						}
-
-						if (url.pathname.startsWith(`/embed/`)) {
-							return true;
-						}
-
-						if (
-							url.pathname.startsWith("/shorts/") &&
-							url.pathname.split("/")[2]
-						) {
-							return true;
-						}
-					}
-
-					return false;
-				} catch {
-					return false;
-				}
-			};
 
 			if (
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
@@ -407,4 +372,36 @@ export const CustomLightBox = ({
 			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 100 }}
 		/>
 	);
+};
+
+const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
+	if (!urlString) return false;
+
+	try {
+		const url = new URL(urlString);
+		const host = url.hostname;
+
+		// Match video URLs only
+		if (host === YOUTU_BE) {
+			return Boolean(url.pathname.slice(1));
+		}
+
+		if (host === `www.${YOUTUBE_COM}` || host === YOUTUBE_COM) {
+			if (url.pathname === "/watch" && url.searchParams.has("v")) {
+				return true;
+			}
+
+			if (url.pathname.startsWith(`/embed/`)) {
+				return true;
+			}
+
+			if (url.pathname.startsWith("/shorts/") && url.pathname.split("/")[2]) {
+				return true;
+			}
+		}
+
+		return false;
+	} catch {
+		return false;
+	}
 };
