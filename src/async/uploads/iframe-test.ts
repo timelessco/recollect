@@ -46,12 +46,12 @@ const checkIframeHeaders = (
 	const normalizedHeaders: NormalizedHeaders = Object?.keys(
 		headers,
 	)?.reduce<NormalizedHeaders>((accumulator, key) => {
-		accumulator[key?.toLowerCase()] = headers[key] as string[] | string;
+		accumulator[key?.toLowerCase()] = headers?.[key] as string[] | string;
 		return accumulator;
 	}, {});
 
 	// X-Frame-Options check
-	const xFrameOptions = normalizedHeaders["x-frame-options"];
+	const xFrameOptions = normalizedHeaders?.["x-frame-options"];
 	if (typeof xFrameOptions === "string") {
 		const value = xFrameOptions?.toLowerCase();
 		if (
@@ -64,14 +64,14 @@ const checkIframeHeaders = (
 	}
 
 	// CSP frame-ancestors check
-	const csp = normalizedHeaders["content-security-policy"];
+	const csp = normalizedHeaders?.["content-security-policy"];
 	if (csp) {
 		const policies = Array.isArray(csp) ? csp : [csp];
 
 		for (const policy of policies) {
 			const frameAncestorsMatch = /frame-ancestors\s+([^;]+)/iu.exec(policy);
 			if (frameAncestorsMatch) {
-				const directive = frameAncestorsMatch[1]?.trim()?.toLowerCase();
+				const directive = frameAncestorsMatch?.[1]?.trim()?.toLowerCase();
 
 				if (directive === "'none'" || directive === "'self'") {
 					return false;
