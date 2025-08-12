@@ -11,7 +11,10 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
-import { getMediaType } from "../../../async/supabaseCrudHelpers";
+import {
+	canEmbedInIframe,
+	getMediaType,
+} from "../../../async/supabaseCrudHelpers";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -296,11 +299,16 @@ export default async function handler(
 	const isUrlOfMimeType = await checkIfUrlAnMedia(url);
 	// ***** here we are checking the url is of an mime type or not,if it is so we set the url in ogImage *****
 	// ***** if it an  image we upload to s3 and for video we take screenshot *****
-
+	let iframeAllowedValue = null;
 	if (isUrlOfMimeType) {
 		ogImageToBeAdded = url;
 	} else {
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
+		// Iframe check
+		iframeAllowedValue = await canEmbedInIframe(url);
+		if (!iframeAllowedValue) {
+			console.warn(`Iframe embedding not allowed for URL: ${url}`);
+		}
 	}
 
 	// here we add the scrapper data , in the remainingApi call we add s3 data
@@ -324,6 +332,7 @@ export default async function handler(
 					isOgImagePreferred,
 					mediaType: await getMediaType(url),
 					favIcon: scrapperResponse?.data?.favIcon,
+					iframeAllowed: iframeAllowedValue,
 				},
 				type: bookmarkType,
 			},

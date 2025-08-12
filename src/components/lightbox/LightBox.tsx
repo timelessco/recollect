@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
+import loaderGif from "../../../public/loader-gif.gif";
 import { MetaDataIcon } from "../../icons/metaData";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
@@ -20,6 +21,7 @@ import {
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	PREVIEW_PATH,
+	SCREENSHOT_URL,
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
@@ -28,7 +30,6 @@ import { getCategorySlugFromRouter } from "../../utils/url";
 import { VideoPlayer } from "../VideoPlayer";
 
 import MetaButtonPlugin from "./LightBoxPlugin";
-import { EmbedWithFallback } from "./objectFallBack";
 import { type CustomSlide } from "./previewLightBox";
 
 /**
@@ -74,6 +75,7 @@ export const CustomLightBox = ({
 	// Next.js router for URL manipulation
 	const router = useRouter();
 	const zoomRef = useRef<ZoomRef>(null);
+	const [placeholderError, setPlaceholderError] = useState(false);
 	// Zustand store hooks for managing lightbox side panel state
 	const setLightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.setLightboxShowSidepane,
@@ -137,7 +139,6 @@ export const CustomLightBox = ({
 			};
 		}) as CustomSlide[];
 	}, [bookmarks]);
-
 	/**
 	 * Custom slide renderer that handles different media types
 	 * - Images: Direct display with Next.js Image component
@@ -232,15 +233,146 @@ export const CustomLightBox = ({
 				</div>
 			);
 
-			const renderWebEmbedSlide = () => (
-				<EmbedWithFallback
-					currentZoomRef={zoomRef}
-					placeholder={bookmark?.ogImage ?? ""}
-					placeholderHeight={bookmark?.meta_data?.height ?? 800}
-					placeholderWidth={bookmark?.meta_data?.width ?? 1_200}
-					src={bookmark?.url}
-				/>
-			);
+			const renderWebEmbedSlide = () => {
+				if (bookmark?.meta_data?.iframeAllowed) {
+					return (
+						<div className="h-full min-h-[500px] w-full max-w-[1200px]">
+							<object
+								className="h-full w-full"
+								data={bookmark?.url}
+								title="Website Preview"
+								type="text/html"
+							/>
+						</div>
+					);
+				}
+
+				// Check if we have a placeholder to show
+				const placeholder = bookmark?.ogImage;
+				if (placeholder && !placeholderError) {
+					const placeholderHeight = bookmark?.meta_data?.height ?? 800;
+					const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
+
+					// Check if this is a screenshot URL (may need special scaling)
+					const isScreenshot = placeholder?.startsWith(SCREENSHOT_URL);
+
+					// Apply 50% scaling to screenshots to make them more manageable
+					const scaledWidth = isScreenshot
+						? placeholderWidth * 0.5
+						: placeholderWidth;
+					const scaledHeight = isScreenshot
+						? placeholderHeight * 0.5
+						: placeholderHeight;
+
+					// Check if image dimensions exceed reasonable display limits
+					const exceedsWidth = scaledWidth > 1_200;
+					const underHeight =
+						scaledHeight >
+						(typeof window !== "undefined" ? window.innerHeight * 0.8 : 0);
+
+					// Render constrained image when dimensions are too large
+					if (exceedsWidth || underHeight) {
+						return (
+							<div className="flex items-center justify-center">
+								<div
+									className={`flex ${exceedsWidth ? "max-w-[1200px]" : ""} ${
+										underHeight ? "max-h-[80vh]" : ""
+									}`}
+								>
+									<Image
+										alt="Preview"
+										className="object-contain"
+										draggable={false}
+										height={placeholderHeight}
+										onDoubleClick={(event) => {
+											const img = event.currentTarget;
+											const containerWidth = img.clientWidth;
+											const containerHeight = img.clientHeight;
+											const imageAspectRatio =
+												img.naturalWidth / img.naturalHeight;
+											const containerAspectRatio =
+												containerWidth / containerHeight;
+
+											let renderedHeight;
+											let renderedWidth;
+											if (imageAspectRatio > containerAspectRatio) {
+												renderedWidth = containerWidth;
+												renderedHeight = containerWidth / imageAspectRatio;
+											} else {
+												renderedHeight = containerHeight;
+												renderedWidth = containerHeight * imageAspectRatio;
+											}
+
+											const offsetX = (containerWidth - renderedWidth) / 2;
+											const offsetY = (containerHeight - renderedHeight) / 2;
+											const clickX = event.nativeEvent.offsetX;
+											const clickY = event.nativeEvent.offsetY;
+
+											const insideVisibleImage =
+												clickX >= offsetX &&
+												clickX <= offsetX + renderedWidth &&
+												clickY >= offsetY &&
+												clickY <= offsetY + renderedHeight;
+
+											if (!insideVisibleImage) return;
+
+											event.stopPropagation();
+											const zoom = zoomRef?.current;
+											if (!zoom) return;
+
+											if (zoom.zoom > 1) {
+												zoom.zoomOut();
+											} else {
+												zoom.zoomIn();
+											}
+										}}
+										onError={() => setPlaceholderError(true)}
+										src={placeholder}
+										width={placeholderWidth}
+									/>
+								</div>
+							</div>
+						);
+					}
+
+					return (
+						<div
+							className={`flex min-h-screen origin-center items-center justify-center ${
+								isScreenshot ? "scale-50" : ""
+							}`}
+						>
+							<Image
+								alt="Preview"
+								className="h-auto w-auto"
+								draggable={false}
+								height={placeholderHeight}
+								onDoubleClick={(event) => {
+									event.stopPropagation();
+									const zoom = zoomRef?.current;
+									if (!zoom) return;
+
+									if (zoom.zoom > 1) {
+										zoom.zoomOut();
+									} else {
+										zoom.zoomIn();
+									}
+								}}
+								onError={() => setPlaceholderError(true)}
+								src={placeholder}
+								width={placeholderWidth}
+							/>
+						</div>
+					);
+				}
+
+				return (
+					<Image
+						alt="img-error"
+						className="h-[50px] w-[50px] rounded-lg object-cover"
+						src={loaderGif}
+					/>
+				);
+			};
 
 			let content = null;
 
@@ -273,7 +405,7 @@ export const CustomLightBox = ({
 				</div>
 			);
 		},
-		[bookmarks, slides],
+		[bookmarks, slides, placeholderError],
 	);
 
 	/**

@@ -53,7 +53,6 @@ export const PreviewLightBox = ({
 
 		const rawBookmarks =
 			previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
-
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
 	}, [queryClient, session?.user?.id, CATEGORY_ID]);

@@ -298,6 +298,7 @@ export default async function handler(
 		twitter_avatar_url: null,
 		isOgImagePreferred: existingMetaData.isOgImagePreferred,
 		mediaType: existingMetaData.mediaType,
+		iframeAllowed: existingMetaData.iframeAllowed,
 	};
 
 	const {
