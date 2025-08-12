@@ -296,9 +296,9 @@ export default async function handler(
 		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
 		twitter_avatar_url: null,
-		isOgImagePreferred: existingMetaData.isOgImagePreferred,
-		mediaType: existingMetaData.mediaType,
-		iframeAllowed: existingMetaData.iframeAllowed,
+		isOgImagePreferred: existingMetaData?.isOgImagePreferred,
+		mediaType: existingMetaData?.mediaType,
+		iframeAllowed: existingMetaData?.iframeAllowed,
 	};
 
 	const {
