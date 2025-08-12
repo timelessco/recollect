@@ -960,7 +960,9 @@ const checkIframeHeaders = (
 				}
 
 				// More nuanced check for domain restrictions
-				const sources = directive.split(/\s+/u).filter((s) => s.length > 0);
+				const sources = directive
+					.split(/\s+/u)
+					.filter((source) => source.length > 0);
 				const hasWildcard = sources.some(
 					(source) =>
 						source === "*" ||
