@@ -268,7 +268,7 @@ export const CustomLightBox = ({
 					const exceedsWidth = scaledWidth > 1_200;
 					const underHeight =
 						scaledHeight >
-						(typeof window !== "undefined" ? window.innerHeight * 0.8 : 0);
+						(typeof window !== "undefined" ? window?.innerHeight * 0.8 : 0);
 
 					// Render constrained image when dimensions are too large
 					if (exceedsWidth || underHeight) {
@@ -285,11 +285,11 @@ export const CustomLightBox = ({
 										draggable={false}
 										height={placeholderHeight}
 										onDoubleClick={(event) => {
-											const img = event.currentTarget;
-											const containerWidth = img.clientWidth;
-											const containerHeight = img.clientHeight;
+											const img = event?.currentTarget;
+											const containerWidth = img?.clientWidth;
+											const containerHeight = img?.clientHeight;
 											const imageAspectRatio =
-												img.naturalWidth / img.naturalHeight;
+												img?.naturalWidth / img?.naturalHeight;
 											const containerAspectRatio =
 												containerWidth / containerHeight;
 
@@ -305,8 +305,8 @@ export const CustomLightBox = ({
 
 											const offsetX = (containerWidth - renderedWidth) / 2;
 											const offsetY = (containerHeight - renderedHeight) / 2;
-											const clickX = event.nativeEvent.offsetX;
-											const clickY = event.nativeEvent.offsetY;
+											const clickX = event?.nativeEvent?.offsetX;
+											const clickY = event?.nativeEvent?.offsetY;
 
 											const insideVisibleImage =
 												clickX >= offsetX &&
@@ -316,14 +316,14 @@ export const CustomLightBox = ({
 
 											if (!insideVisibleImage) return;
 
-											event.stopPropagation();
+											event?.stopPropagation();
 											const zoom = zoomRef?.current;
 											if (!zoom) return;
 
-											if (zoom.zoom > 1) {
-												zoom.zoomOut();
+											if (zoom?.zoom > 1) {
+												zoom?.zoomOut();
 											} else {
-												zoom.zoomIn();
+												zoom?.zoomIn();
 											}
 										}}
 										onError={() => setPlaceholderError(true)}
@@ -347,14 +347,14 @@ export const CustomLightBox = ({
 								draggable={false}
 								height={placeholderHeight}
 								onDoubleClick={(event) => {
-									event.stopPropagation();
+									event?.stopPropagation();
 									const zoom = zoomRef?.current;
 									if (!zoom) return;
 
-									if (zoom.zoom > 1) {
-										zoom.zoomOut();
+									if (zoom?.zoom > 1) {
+										zoom?.zoomOut();
 									} else {
-										zoom.zoomIn();
+										zoom?.zoomIn();
 									}
 								}}
 								onError={() => setPlaceholderError(true)}
