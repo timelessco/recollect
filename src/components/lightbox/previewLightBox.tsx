@@ -5,6 +5,7 @@ import { type DraggableItemProps } from "react-aria";
 import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../store/componentStore";
 import { type SingleListData } from "../../types/apiTypes";
 import {
@@ -41,21 +42,21 @@ export const PreviewLightBox = ({
 	const [isClosing, setIsClosing] = useState(false);
 	const [activeIndex, setActiveIndex] = useState(-1);
 	const _previousOpenRef = useRef(open);
+	const { sortBy } = useGetSortBy();
+	const previousData = queryClient.getQueryData([
+		BOOKMARKS_KEY,
+		session?.user?.id,
+		CATEGORY_ID,
+		sortBy,
+	]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
 
 	// Get and transform bookmarks from query cache
 	const bookmarks = useMemo(() => {
-		const previousData = queryClient.getQueryData([
-			BOOKMARKS_KEY,
-			session?.user?.id,
-			CATEGORY_ID,
-			"date-sort-acending",
-		]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
-
 		const rawBookmarks =
 			previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
-	}, [queryClient, session?.user?.id, CATEGORY_ID]);
+	}, [previousData?.pages]);
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {
