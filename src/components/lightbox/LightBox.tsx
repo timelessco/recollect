@@ -121,7 +121,8 @@ export const CustomLightBox = ({
 				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
-					!isYouTubeVideo(bookmark?.url) && {
+					!isYouTubeVideo(bookmark?.url) &&
+					!bookmark?.meta_data?.iframeAllowed && {
 						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						width: bookmark?.meta_data?.width || 1_200,
 						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
