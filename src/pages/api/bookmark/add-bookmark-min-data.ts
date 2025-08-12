@@ -11,11 +11,9 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
-import {
-	canEmbedInIframe,
-	getMediaType,
-} from "../../../async/supabaseCrudHelpers";
+import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
+import { canEmbedInIframe } from "../../../async/uploads/iframe-test";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type NextApiRequest,
