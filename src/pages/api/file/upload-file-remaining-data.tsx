@@ -60,6 +60,7 @@ const notVideoLogic = async (publicUrl: string, mediaType: string) => {
 		coverImage: null,
 		screenshot: null,
 		isOgImagePreferred: false,
+		iframeAllowed: false,
 		mediaType,
 	};
 
@@ -91,6 +92,7 @@ export default async function handler(
 		screenshot: null,
 		ocr: null,
 		isOgImagePreferred: false,
+		iframeAllowed: false,
 		mediaType: "",
 	};
 
