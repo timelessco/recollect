@@ -305,7 +305,9 @@ export default async function handler(
 	} else {
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
 		// Iframe check
-		iframeAllowedValue = await canEmbedInIframe(url);
+		iframeAllowedValue = isOgImagePreferred
+			? false
+			: await canEmbedInIframe(url);
 		if (!iframeAllowedValue) {
 			console.warn(`Iframe embedding not allowed for URL: ${url}`);
 		}
