@@ -27,7 +27,6 @@ const Preview = () => {
 		error: Error | null;
 		isLoading: boolean;
 	};
-
 	if ((!isLoading && !bookmark?.data?.[0]) || error) {
 		void router.push(`/${ALL_BOOKMARKS_URL}`);
 	}
