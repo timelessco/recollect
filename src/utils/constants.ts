@@ -316,7 +316,7 @@ export const PDF_MIME_TYPE = "application/pdf";
 export const PDF_TYPE = "pdf";
 
 // UI strings
-export const PREVIEW_ALT_TEXT = "Preview";
+export const PREVIEW_ALT_TEXT = "preview";
 
 // URL patterns
 export const YOUTUBE_COM = "youtube.com";
