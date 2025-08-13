@@ -50,6 +50,7 @@ import {
 	CATEGORIES_KEY,
 	colorPickerColors,
 	defaultBlur,
+	PREVIEW_ALT_TEXT,
 	SEARCH_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -57,6 +58,7 @@ import {
 } from "../../../utils/constants";
 import {
 	getBaseUrl,
+	getPathSegments,
 	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkVideo,
@@ -116,9 +118,9 @@ const CardSection = ({
 
 	// Handle route changes for lightbox
 	useEffect(() => {
-		const pathSegments = router?.asPath?.split("/")?.filter(Boolean);
+		const pathSegments = getPathSegments(router?.asPath);
 		const isPreviewPath =
-			pathSegments?.[pathSegments?.length - 2] === "preview";
+			pathSegments?.[pathSegments?.length - 2] === PREVIEW_ALT_TEXT;
 		const previewId = isPreviewPath
 			? pathSegments?.[pathSegments?.length - 1]
 			: null;

@@ -307,3 +307,12 @@ export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
 	return acceptedFileTypes?.includes(mediaType ?? "") ?? false;
 };
+
+/**
+ * Extracts non-empty path segments from a URL path
+ *
+ * @param path The URL path to process (e.g., from router.asPath)
+ * @returns Array of non-empty path segments
+ */
+export const getPathSegments = (path: string): string[] =>
+	(path || "").split("/").filter(Boolean);
