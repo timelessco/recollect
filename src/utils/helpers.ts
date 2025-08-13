@@ -316,3 +316,27 @@ export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
  */
 export const getPathSegments = (path: string): string[] =>
 	(path || "").split("/").filter(Boolean);
+
+/**
+ * Checks if the given path is a preview path and extracts the preview ID if it exists
+ *
+ * @param path The URL path to check
+ * @param previewText The preview path segment to look for (default: 'preview')
+ * @returns An object containing:
+ *   - isPreviewPath: boolean indicating if the path is a preview path
+ *   - previewId: the ID from the URL if it's a preview path, null otherwise
+ */
+export const getPreviewPathInfo = (
+	path: string,
+	previewText = "preview",
+): { isPreviewPath: boolean; previewId: string | null } => {
+	const pathSegments = getPathSegments(path);
+	const isPreviewPath =
+		pathSegments.length >= 2 &&
+		pathSegments[pathSegments.length - 2] === previewText;
+	const previewId = isPreviewPath
+		? pathSegments[pathSegments.length - 1]
+		: null;
+
+	return { isPreviewPath, previewId };
+};
