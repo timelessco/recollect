@@ -116,10 +116,11 @@ const CardSection = ({
 
 	// Handle route changes for lightbox
 	useEffect(() => {
-		const pathSegments = router.asPath.split("/").filter(Boolean);
-		const isPreviewPath = pathSegments[pathSegments.length - 2] === "preview";
+		const pathSegments = router?.asPath?.split("/")?.filter(Boolean);
+		const isPreviewPath =
+			pathSegments?.[pathSegments?.length - 2] === "preview";
 		const previewId = isPreviewPath
-			? pathSegments[pathSegments.length - 1]
+			? pathSegments?.[pathSegments?.length - 1]
 			: null;
 
 		if (isPreviewPath && previewId) {
@@ -134,7 +135,7 @@ const CardSection = ({
 			setLightboxId(null);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [router.asPath]);
+	}, [router?.asPath]);
 
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
