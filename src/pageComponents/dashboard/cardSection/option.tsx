@@ -23,7 +23,6 @@ import "yet-another-react-lightbox/styles.css";
 
 import { useRouter } from "next/router";
 
-import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 type OptionDropItemTypes = DraggableItemProps & {
@@ -109,8 +108,6 @@ const Option = ({
 				  )
 				: {})}
 		>
-			<PreviewLightBox id={item.key} open={open} setOpen={setOpen} />
-			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute left-0 top-0  h-full w-full rounded-lg ${

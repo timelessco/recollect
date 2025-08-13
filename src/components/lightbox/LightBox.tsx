@@ -174,7 +174,7 @@ export const CustomLightBox = ({
 						}
 					}}
 				>
-					<div className="relative max-w-[80vw]">
+					<div className="relative max-w-[1200px]">
 						<Image
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
@@ -229,7 +229,7 @@ export const CustomLightBox = ({
 			);
 
 			const renderYouTubeSlide = () => (
-				<div className="flex h-full w-full max-w-[80vw] items-center justify-center">
+				<div className="flex h-full w-full max-w-[1200px] items-center justify-center">
 					<VideoPlayer isActive={isActive} src={bookmark?.url} />
 				</div>
 			);
@@ -266,20 +266,16 @@ export const CustomLightBox = ({
 						: placeholderHeight;
 
 					// Check if image dimensions exceed reasonable display limits
-					const exceedsWidth = scaledWidth > 1_200;
+					const exceedsWidth = scaledWidth >= 1_200;
 					const underHeight =
-						scaledHeight >
+						scaledHeight >=
 						(typeof window !== "undefined" ? window?.innerHeight * 0.8 : 0);
 
 					// Render constrained image when dimensions are too large
 					if (exceedsWidth || underHeight) {
 						return (
 							<div className="flex items-center justify-center">
-								<div
-									className={`flex ${exceedsWidth ? "max-w-[1200px]" : ""} ${
-										underHeight ? "max-h-[80vh]" : ""
-									}`}
-								>
+								<div className="flex max-h-[80vh] max-w-[1200px]">
 									<Image
 										alt="Preview"
 										className="object-contain"
