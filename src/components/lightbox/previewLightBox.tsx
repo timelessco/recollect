@@ -25,7 +25,7 @@ export type CustomSlide = BaseSlide & {
 };
 
 type PreviewLightBoxProps = {
-	id: DraggableItemProps["key"];
+	id: DraggableItemProps["key"] | null;
 	open: boolean;
 	setOpen: (value: boolean) => void;
 };
@@ -118,13 +118,6 @@ export const PreviewLightBox = ({
 			window.removeEventListener("popstate", handlePopState);
 		};
 	}, [open, handleClose, router]);
-
-	useEffect(
-		() => () => {
-			setIsClosing(false);
-		},
-		[],
-	);
 
 	// Only render CustomLightBox when activeIndex is valid
 	if (!open || isClosing || activeIndex === -1) {

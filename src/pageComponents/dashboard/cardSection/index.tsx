@@ -13,6 +13,7 @@ import { Item } from "react-stately";
 
 import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
 import loaderGif from "../../../../public/loader-gif.gif";
+import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -49,6 +50,7 @@ import {
 	CATEGORIES_KEY,
 	colorPickerColors,
 	defaultBlur,
+	PREVIEW_ALT_TEXT,
 	SEARCH_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -56,6 +58,7 @@ import {
 } from "../../../utils/constants";
 import {
 	getBaseUrl,
+	getPreviewPathInfo,
 	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkVideo,
@@ -109,13 +112,37 @@ const CardSection = ({
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
+	const router = useRouter();
+	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
+		useMiscellaneousStore();
+
+	// Handle route changes for lightbox
+	useEffect(() => {
+		const { isPreviewPath, previewId } = getPreviewPathInfo(
+			router?.asPath,
+			PREVIEW_ALT_TEXT,
+		);
+
+		if (isPreviewPath && previewId) {
+			// Only update if the ID has changed
+			setLightboxId(previewId);
+
+			if (!lightboxOpen) {
+				setLightboxOpen(true);
+			}
+		} else if (lightboxOpen) {
+			setLightboxOpen(false);
+			setLightboxId(null);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [router?.asPath]);
+
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
 	const session = useSupabaseSession((state) => state.session);
-	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
@@ -960,7 +987,16 @@ const CardSection = ({
 		);
 	};
 
-	return <div className={listWrapperClass}>{renderItem()}</div>;
+	return (
+		<>
+			<div className={listWrapperClass}>{renderItem()}</div>
+			<PreviewLightBox
+				id={lightboxId}
+				open={lightboxOpen}
+				setOpen={setLightboxOpen}
+			/>
+		</>
+	);
 };
 
 export default CardSection;

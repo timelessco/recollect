@@ -1,5 +1,5 @@
 import { type CardSectionProps } from ".";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import classNames from "classnames";
 import omit from "lodash/omit";
 import {
@@ -23,7 +23,7 @@ import "yet-another-react-lightbox/styles.css";
 
 import { useRouter } from "next/router";
 
-import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
+import { useMiscellaneousStore } from "../../../store/componentStore";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 type OptionDropItemTypes = DraggableItemProps & {
@@ -48,12 +48,13 @@ const Option = ({
 	type: SingleListData["type"];
 	url: string;
 }) => {
-	const [open, setOpen] = useState(false);
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	const router = useRouter();
+	const { setLightboxId, setLightboxOpen, lightboxOpen } =
+		useMiscellaneousStore();
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -100,7 +101,7 @@ const Option = ({
 			})}
 			ref={ref}
 			role="option"
-			{...(!open
+			{...(!lightboxOpen
 				? mergeProps(
 						disableDndCondition
 							? []
@@ -109,8 +110,6 @@ const Option = ({
 				  )
 				: {})}
 		>
-			<PreviewLightBox id={item.key} open={open} setOpen={setOpen} />
-			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute left-0 top-0  h-full w-full rounded-lg ${
@@ -125,7 +124,8 @@ const Option = ({
 					}
 
 					event.preventDefault();
-					setOpen(true);
+					setLightboxId(item?.key?.toString());
+					setLightboxOpen(true);
 					void router.push(
 						{
 							// https://github.com/vercel/next.js/discussions/11625
