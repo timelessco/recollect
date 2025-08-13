@@ -111,8 +111,8 @@ const CardSection = ({
 	categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
 	const router = useRouter();
-	const [lightboxOpen, setLightboxOpen] = useState(false);
-	const [lightboxId, setLightboxId] = useState<string | null>(null);
+	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
+		useMiscellaneousStore();
 
 	// Handle route changes for lightbox
 	useEffect(() => {
