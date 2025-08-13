@@ -58,7 +58,7 @@ import {
 } from "../../../utils/constants";
 import {
 	getBaseUrl,
-	getPathSegments,
+	getPreviewPathInfo,
 	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkVideo,
@@ -118,12 +118,10 @@ const CardSection = ({
 
 	// Handle route changes for lightbox
 	useEffect(() => {
-		const pathSegments = getPathSegments(router?.asPath);
-		const isPreviewPath =
-			pathSegments?.[pathSegments?.length - 2] === PREVIEW_ALT_TEXT;
-		const previewId = isPreviewPath
-			? pathSegments?.[pathSegments?.length - 1]
-			: null;
+		const { isPreviewPath, previewId } = getPreviewPathInfo(
+			router?.asPath,
+			PREVIEW_ALT_TEXT,
+		);
 
 		if (isPreviewPath && previewId) {
 			// Only update if the ID has changed
