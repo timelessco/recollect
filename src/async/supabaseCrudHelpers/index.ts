@@ -3,7 +3,10 @@ import {
 	type QueryFunctionContext,
 	type QueryKey,
 } from "@tanstack/react-query";
-import axios from "axios";
+import axios, {
+	type AxiosResponseHeaders,
+	type RawAxiosResponseHeaders,
+} from "axios";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -18,9 +21,7 @@ import {
 	type BookmarksPaginatedDataTypes,
 	type BookmarkViewDataTypes,
 	type CategoriesData,
-	type ClearBookmarksInTrashApiPayloadTypes,
 	type DeleteBookmarkPayload,
-	type DeleteUserApiPayload,
 	type DeleteUserCategoryApiPayload,
 	type FetchDataResponse,
 	type FetchSharedCategoriesData,
@@ -441,7 +442,7 @@ export const fetchBookmarksViews = async ({
 	}
 };
 
-// user catagories
+// user categories
 
 export const fetchCategoriesData = async (): Promise<{
 	data: CategoriesData[] | null;

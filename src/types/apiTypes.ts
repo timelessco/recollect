@@ -13,6 +13,7 @@ export type ImgMetadataType = {
 	coverImage: string | null;
 	favIcon: string | null;
 	height: number | null;
+	iframeAllowed: boolean | null;
 	img_caption: string | null;
 	isOgImagePreferred: boolean;
 	mediaType: string;

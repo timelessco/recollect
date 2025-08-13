@@ -8,7 +8,7 @@ import { decode } from "blurhash";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { Item } from "react-stately";
 
 import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
