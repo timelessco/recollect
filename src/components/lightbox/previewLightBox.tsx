@@ -119,13 +119,6 @@ export const PreviewLightBox = ({
 		};
 	}, [open, handleClose, router]);
 
-	// useEffect(
-	// 	() => () => {
-	// 		setIsClosing(false);
-	// 	},
-	// 	[],
-	// );
-
 	// Only render CustomLightBox when activeIndex is valid
 	if (!open || isClosing || activeIndex === -1) {
 		return null;
