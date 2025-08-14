@@ -130,7 +130,7 @@ const Option = ({
 						{
 							// https://github.com/vercel/next.js/discussions/11625
 							// https://github.com/adamwathan/headbangstagram/pull/1/files
-							pathname: `/${CATEGORY_ID_PATHNAME}`,
+							pathname: `${CATEGORY_ID_PATHNAME}`,
 							query: {
 								category_id: getCategorySlugFromRouter(router),
 								id: item?.key,
