@@ -17,7 +17,7 @@ import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
 // adds cat to bookmark optimistically
 export default function useAddCategoryToBookmarkOptimisticMutation(
-	isLightbox: boolean,
+	isLightbox: boolean = false,
 ) {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
