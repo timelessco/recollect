@@ -1,4 +1,4 @@
-import create from "zustand";
+import { create } from "zustand";
 
 import { type SingleListData } from "../types/apiTypes";
 import {
