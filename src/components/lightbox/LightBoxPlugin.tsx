@@ -21,7 +21,6 @@ import {
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
-import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
 import { GeminiAiIcon } from "../../icons/gemeniAiIcon";
 import ImageIcon from "../../icons/imageIcon";
 import {
@@ -31,6 +30,8 @@ import {
 import { type SingleListData, type UserTagsData } from "../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../utils/constants";
 import { Icon } from "../atoms/icon";
+
+import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -150,12 +151,7 @@ const MyComponent = () => {
 								</p>
 							</div>
 						)}
-						<div className="flex items-center gap-2 pt-[22px] text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
-							<div className="h-[14px] w-[14px]">
-								<AddToCollectionsButton />
-							</div>
-							<span>Add to collection</span>
-						</div>
+						<AddToCollectionDropdown bookmarkId={currentBookmark?.id} />
 					</div>
 					{currentBookmark?.addedTags?.length > 0 && (
 						<div className="px-5 pb-[19px]">
