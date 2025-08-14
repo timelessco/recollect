@@ -5,7 +5,10 @@ import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import loaderGif from "../../../public/loader-gif.gif";
-import { MetaDataIcon } from "../../icons/metaData";
+import { LightboxCloseIcon } from "../../icons/lightboxCloseIcon";
+import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
+import LinkExternalIcon from "../../icons/linkExternalIcon";
+import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type ImgMetadataType,
@@ -14,7 +17,6 @@ import {
 import {
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
-	LIGHTBOX_CLOSE_BUTTON,
 	LIGHTBOX_SHOW_PANE_BUTTON,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
@@ -425,6 +427,12 @@ export const CustomLightBox = ({
 		/>
 	);
 
+	const iconSidePane = () => (
+		<div className="h-5 w-5 cursor-pointer">
+			<ShowSidePaneButton />
+		</div>
+	);
+
 	const isFirstSlide = activeIndex === 0;
 	const isLastSlide = activeIndex === bookmarks.length - 1;
 	return (
@@ -473,6 +481,11 @@ export const CustomLightBox = ({
 			}}
 			slides={slides}
 			styles={{
+				toolbar: {
+					position: "absolute",
+					top: "0",
+					left: "0",
+				},
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
 					backdropFilter: "blur(32px)",
@@ -490,17 +503,49 @@ export const CustomLightBox = ({
 			}}
 			toolbar={{
 				buttons: [
-					// Metadata panel toggle button
-					<button
-						className="flex items-center gap-2 text-gray-500 transition hover:text-gray-700"
-						key={LIGHTBOX_SHOW_PANE_BUTTON}
-						onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
-						type="button"
+					// Left: Close button
+					<div className="flex items-center" key="left-section">
+						<button
+							className="flex items-center justify-center pl-4 pt-3.5"
+							onClick={handleClose}
+							type="button"
+						>
+							<LightboxCloseIcon />
+						</button>
+					</div>,
+
+					// Center: Bookmark URL (flex: 1 ensures centering)
+					<div
+						className="flex flex-1 justify-center  pt-[9px] text-center"
+						key="center-section"
 					>
-						<MetaDataIcon />
-					</button>,
-					// Standard close button
-					LIGHTBOX_CLOSE_BUTTON,
+						<div
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden text-[14px] leading-[115%] tracking-[0]"
+							title={bookmarks?.[activeIndex]?.url}
+						>
+							<span className="truncate text-[#707070]">
+								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//, "")}
+							</span>
+							<a
+								className="h-4 w-4 shrink-0"
+								href={bookmarks?.[activeIndex]?.url}
+								rel="noreferrer"
+								target="_blank"
+							>
+								<LightboxExternalLink />
+							</a>
+						</div>
+					</div>,
+
+					// Right: Side pane toggle button
+					<div className="flex items-center pr-4 pt-[7px]" key="right-section">
+						<button
+							onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
+							type="button"
+						>
+							{iconSidePane()}
+						</button>
+					</div>,
 				],
 			}}
 			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 100 }}

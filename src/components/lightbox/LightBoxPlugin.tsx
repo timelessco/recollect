@@ -21,6 +21,9 @@ import {
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
+import CollectionPlaceholderIcon from "../../icons/collectionPlaceholderIcon";
+import ImageIcon from "../../icons/imageIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -79,7 +82,7 @@ const MyComponent = () => {
 
 	if (!currentBookmark) return null;
 	const domain = new URL(currentBookmark?.url)?.hostname;
-
+	console.log(currentBookmark);
 	return (
 		<AnimatePresence>
 			{lightboxShowSidepane && (
@@ -88,86 +91,69 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 flex-col border-l border-gray-200 bg-white/90 shadow-xl backdrop-blur-xl"
+					className="absolute right-0 top-0 flex h-full w-1/5 flex-col border border-[rgba(0,0,0,0.13)] bg-white"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
 					initial={{ x: "100%" }}
 				>
-					<div className="flex items-center justify-between border-b border-gray-300 px-4 py-3">
-						<div className="flex items-center space-x-2">
-							{metaData?.favIcon && (
-								<Image
-									alt=""
-									className="h-5 w-5 rounded"
-									height={16}
-									onError={(error) => {
-										const target = error?.target as HTMLImageElement;
-										target.style.display = "none";
-									}}
-									src={metaData.favIcon}
-									width={16}
-								/>
-							)}
-							<span className="font-medium text-gray-700" tabIndex={-1}>
-								Meta Data
-							</span>
-						</div>
-					</div>
-					<div className="flex-1 space-y-4 overflow-y-auto p-4 text-sm text-gray-800">
+					<div className="flex flex-1 flex-col  overflow-y-auto p-5 text-left text-sm text-gray-800">
 						{currentBookmark?.title && (
 							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Title
-								</p>
-								<p className="font-medium" tabIndex={-1}>
+								<p
+									className="truncate pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
+									tabIndex={-1}
+								>
 									{currentBookmark.title}
 								</p>
 							</div>
 						)}
 						{domain && (
-							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Domain
-								</p>
-								<p tabIndex={-1}>{domain}</p>
-							</div>
+							<p
+								className="pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]"
+								tabIndex={-1}
+							>
+								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
+									{metaData?.favIcon ? (
+										<Image
+											alt="favicon"
+											className="h-[15px] w-[15px] rounded"
+											height={16}
+											onError={(error) => {
+												const target = error?.target as HTMLImageElement;
+												target.style.display = "none";
+											}}
+											src={metaData?.favIcon}
+											width={16}
+										/>
+									) : (
+										<ImageIcon size="15" />
+									)}
+									<span>{domain}</span>
+									<span>·</span>
+									{currentBookmark?.inserted_at && (
+										<span>{formatDate(currentBookmark?.inserted_at)}</span>
+									)}
+								</div>
+							</p>
 						)}
 						{currentBookmark?.description && (
 							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Description
-								</p>
-								<p className="text-gray-700" tabIndex={-1}>
+								<p
+									className="text-[13px] leading-[138%] tracking-[1%] text-[rgba(55,65,81,1)]"
+									tabIndex={-1}
+								>
 									{currentBookmark.description}
 								</p>
 							</div>
 						)}
-						{currentBookmark?.inserted_at && (
-							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Saved on
-								</p>
-								<p tabIndex={-1}>{formatDate(currentBookmark.inserted_at)}</p>
+						<div className="flex items-center gap-2 pt-[22px] text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
+							<div className="h-[14px] w-[14px]">
+								<AddToCollectionsButton />
 							</div>
-						)}
-						{currentBookmark?.url && (
-							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									URL
-								</p>
-								<a
-									className="break-all text-blue-600 underline"
-									href={currentBookmark.url}
-									rel="noopener noreferrer"
-									tabIndex={-1}
-									target="_blank"
-								>
-									{currentBookmark.url}
-								</a>
-							</div>
-						)}
+							<span>Add to collection</span>
+						</div>
 					</div>
 				</motion.div>
 			)}
