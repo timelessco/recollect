@@ -89,7 +89,7 @@ export const PreviewLightBox = ({
 		// Clean up path by removing leading slashes
 		void router.push(
 			{
-				pathname: `/${CATEGORY_ID_PATHNAME}`,
+				pathname: `${CATEGORY_ID_PATHNAME}`,
 				query: {
 					category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
 				},
