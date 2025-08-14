@@ -180,6 +180,7 @@ export const CustomLightBox = ({
 							className="max-h-[80vh] w-auto"
 							draggable={false}
 							height={bookmark?.meta_data?.height ?? 800}
+							priority
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
@@ -204,26 +205,28 @@ export const CustomLightBox = ({
 				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
 					<div className="flex h-full w-full items-center justify-center">
 						{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
-						<object
-							aria-label="PDF Viewer"
-							className="block h-full w-full border-none"
-							data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-							type={PDF_MIME_TYPE}
-						>
-							<div className="p-4 text-center">
-								<p className="text-gray-700">
-									This PDF cannot be displayed in your browser.
-								</p>
-								<a
-									className="text-blue-600 underline"
-									href={bookmark?.url}
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									Click here to download it instead
-								</a>
-							</div>
-						</object>
+						{typeof window !== "undefined" ? (
+							<object
+								aria-label="PDF Viewer"
+								className="block h-full w-full border-none"
+								data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+								type={PDF_MIME_TYPE}
+							>
+								<div className="p-4 text-center">
+									<p className="text-gray-700">
+										This PDF cannot be displayed in your browser.
+									</p>
+									<a
+										className="text-blue-600 underline"
+										href={bookmark?.url}
+										rel="noopener noreferrer"
+										target="_blank"
+									>
+										Click here to download it instead
+									</a>
+								</div>
+							</object>
+						) : null}
 					</div>
 				</div>
 			);
@@ -238,12 +241,14 @@ export const CustomLightBox = ({
 				if (bookmark?.meta_data?.iframeAllowed) {
 					return (
 						<div className="h-full min-h-[500px] w-full max-w-[1200px]">
-							<object
-								className="h-full w-full"
-								data={bookmark?.url}
-								title="Website Preview"
-								type="text/html"
-							/>
+							{typeof window !== "undefined" ? (
+								<object
+									className="h-full w-full"
+									data={bookmark?.url}
+									title="Website Preview"
+									type="text/html"
+								/>
+							) : null}
 						</div>
 					);
 				}
@@ -274,67 +279,66 @@ export const CustomLightBox = ({
 					// Render constrained image when dimensions are too large
 					if (exceedsWidth || underHeight) {
 						return (
-							<div className="flex items-center justify-center">
-								<div className="flex max-h-[80vh] max-w-[1200px]">
-									<Image
-										alt="Preview"
-										className="object-contain"
-										draggable={false}
-										height={placeholderHeight}
-										onDoubleClick={(event) => {
-											const img = event?.currentTarget;
-											const containerWidth = img?.clientWidth;
-											const containerHeight = img?.clientHeight;
-											const imageAspectRatio =
-												img?.naturalWidth / img?.naturalHeight;
-											const containerAspectRatio =
-												containerWidth / containerHeight;
+							<div className="flex max-h-[80vh] max-w-[1200px] items-center justify-center">
+								<Image
+									alt="Preview"
+									className="object-contain"
+									draggable={false}
+									height={placeholderHeight}
+									onDoubleClick={(event) => {
+										const img = event?.currentTarget;
+										const containerWidth = img?.clientWidth;
+										const containerHeight = img?.clientHeight;
+										const imageAspectRatio =
+											img?.naturalWidth / img?.naturalHeight;
+										const containerAspectRatio =
+											containerWidth / containerHeight;
 
-											let renderedHeight;
-											let renderedWidth;
-											if (imageAspectRatio > containerAspectRatio) {
-												renderedWidth = containerWidth;
-												renderedHeight = containerWidth / imageAspectRatio;
-											} else {
-												renderedHeight = containerHeight;
-												renderedWidth = containerHeight * imageAspectRatio;
-											}
+										let renderedHeight;
+										let renderedWidth;
+										if (imageAspectRatio > containerAspectRatio) {
+											renderedWidth = containerWidth;
+											renderedHeight = containerWidth / imageAspectRatio;
+										} else {
+											renderedHeight = containerHeight;
+											renderedWidth = containerHeight * imageAspectRatio;
+										}
 
-											const offsetX = (containerWidth - renderedWidth) / 2;
-											const offsetY = (containerHeight - renderedHeight) / 2;
-											const clickX = event?.nativeEvent?.offsetX;
-											const clickY = event?.nativeEvent?.offsetY;
+										const offsetX = (containerWidth - renderedWidth) / 2;
+										const offsetY = (containerHeight - renderedHeight) / 2;
+										const clickX = event?.nativeEvent?.offsetX;
+										const clickY = event?.nativeEvent?.offsetY;
 
-											const insideVisibleImage =
-												clickX >= offsetX &&
-												clickX <= offsetX + renderedWidth &&
-												clickY >= offsetY &&
-												clickY <= offsetY + renderedHeight;
+										const insideVisibleImage =
+											clickX >= offsetX &&
+											clickX <= offsetX + renderedWidth &&
+											clickY >= offsetY &&
+											clickY <= offsetY + renderedHeight;
 
-											if (!insideVisibleImage) return;
+										if (!insideVisibleImage) return;
 
-											event?.stopPropagation();
-											const zoom = zoomRef?.current;
-											if (!zoom) return;
+										event?.stopPropagation();
+										const zoom = zoomRef?.current;
+										if (!zoom) return;
 
-											if (zoom?.zoom > 1) {
-												zoom?.zoomOut();
-											} else {
-												zoom?.zoomIn();
-											}
-										}}
-										onError={() => setPlaceholderError(true)}
-										src={placeholder}
-										width={placeholderWidth}
-									/>
-								</div>
+										if (zoom?.zoom > 1) {
+											zoom?.zoomOut();
+										} else {
+											zoom?.zoomIn();
+										}
+									}}
+									onError={() => setPlaceholderError(true)}
+									priority
+									src={placeholder}
+									width={placeholderWidth}
+								/>
 							</div>
 						);
 					}
 
 					return (
 						<div
-							className={`flex min-h-screen origin-center items-center justify-center ${
+							className={`flex   min-h-screen   origin-center items-center justify-center ${
 								isScreenshot ? "scale-50" : ""
 							}`}
 						>
@@ -342,7 +346,7 @@ export const CustomLightBox = ({
 								alt="Preview"
 								className="h-auto w-auto"
 								draggable={false}
-								height={placeholderHeight}
+								height={scaledHeight}
 								onDoubleClick={(event) => {
 									event?.stopPropagation();
 									const zoom = zoomRef?.current;
@@ -355,8 +359,9 @@ export const CustomLightBox = ({
 									}
 								}}
 								onError={() => setPlaceholderError(true)}
+								priority
 								src={placeholder}
-								width={placeholderWidth}
+								width={scaledWidth}
 							/>
 						</div>
 					);
