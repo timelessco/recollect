@@ -282,7 +282,7 @@ export const CustomLightBox = ({
 							<div className="flex max-h-[80vh] max-w-[1200px] items-center justify-center">
 								<Image
 									alt="Preview"
-									className="object-contain"
+									className="h-auto w-auto object-contain"
 									draggable={false}
 									height={placeholderHeight}
 									onDoubleClick={(event) => {
@@ -445,7 +445,7 @@ export const CustomLightBox = ({
 					// Update browser URL to make lightbox state shareable
 					void router.push(
 						{
-							pathname: `/${CATEGORY_ID_PATHNAME}`,
+							pathname: `${CATEGORY_ID_PATHNAME}`,
 							query: {
 								category_id: getCategorySlugFromRouter(router),
 								id: bookmarks?.[index]?.id,
