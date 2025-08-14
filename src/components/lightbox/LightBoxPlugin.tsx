@@ -22,14 +22,15 @@ import {
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
-import CollectionPlaceholderIcon from "../../icons/collectionPlaceholderIcon";
+import { GeminiAiIcon } from "../../icons/gemeniAiIcon";
 import ImageIcon from "../../icons/imageIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import { type SingleListData } from "../../types/apiTypes";
+import { type SingleListData, type UserTagsData } from "../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../utils/constants";
+import { Icon } from "../atoms/icon";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -82,7 +83,6 @@ const MyComponent = () => {
 
 	if (!currentBookmark) return null;
 	const domain = new URL(currentBookmark?.url)?.hostname;
-	console.log(currentBookmark);
 	return (
 		<AnimatePresence>
 			{lightboxShowSidepane && (
@@ -98,7 +98,7 @@ const MyComponent = () => {
 					}}
 					initial={{ x: "100%" }}
 				>
-					<div className="flex flex-1 flex-col  overflow-y-auto p-5 text-left text-sm text-gray-800">
+					<div className="flex flex-1 flex-col p-5 text-left  ">
 						{currentBookmark?.title && (
 							<div>
 								<p
@@ -111,7 +111,7 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<p
-								className="pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]"
+								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
@@ -130,10 +130,12 @@ const MyComponent = () => {
 									) : (
 										<ImageIcon size="15" />
 									)}
-									<span>{domain}</span>
+									<span className="truncate">{domain}</span>
 									<span>·</span>
 									{currentBookmark?.inserted_at && (
-										<span>{formatDate(currentBookmark?.inserted_at)}</span>
+										<span className="truncate">
+											{formatDate(currentBookmark?.inserted_at)}
+										</span>
 									)}
 								</div>
 							</p>
@@ -155,6 +157,45 @@ const MyComponent = () => {
 							<span>Add to collection</span>
 						</div>
 					</div>
+					{currentBookmark?.addedTags?.length > 0 && (
+						<div className="px-5 pb-[19px]">
+							<div className="flex flex-wrap gap-[6px]">
+								{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
+									<span
+										className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+										key={tag.id}
+									>
+										#{tag.name}
+									</span>
+								))}
+							</div>
+						</div>
+					)}
+					{metaData?.img_caption && (
+						<div className="relative w-full">
+							<div className="relative bg-white px-5 text-sm">
+								<div className="mb-2 flex items-center gap-2">
+									<Icon className="h-[15px] w-[15px]">
+										<GeminiAiIcon />
+									</Icon>
+									<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]">
+										AI Summary
+									</p>
+								</div>
+								<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
+									{metaData?.img_caption}
+								</p>
+							</div>
+							{/* Gradient overlay */}
+							<div
+								className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[25px]"
+								style={{
+									background:
+										"linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 100%)",
+								}}
+							/>
+						</div>
+					)}
 				</motion.div>
 			)}
 		</AnimatePresence>

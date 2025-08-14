@@ -7,7 +7,6 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import loaderGif from "../../../public/loader-gif.gif";
 import { LightboxCloseIcon } from "../../icons/lightboxCloseIcon";
 import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
-import LinkExternalIcon from "../../icons/linkExternalIcon";
 import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
@@ -17,7 +16,6 @@ import {
 import {
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
-	LIGHTBOX_SHOW_PANE_BUTTON,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
 	PDF_VIEWER_PARAMS,
@@ -40,7 +38,7 @@ import { type CustomSlide } from "./previewLightBox";
  */
 export type Bookmark = Omit<
 	SingleListData,
-	"addedTags" | "inserted_at" | "trash" | "user_id"
+	"inserted_at" | "trash" | "user_id"
 > & {
 	createdAt?: string;
 	domain?: string;
@@ -524,7 +522,7 @@ export const CustomLightBox = ({
 							title={bookmarks?.[activeIndex]?.url}
 						>
 							<span className="truncate text-[#707070]">
-								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//, "")}
+								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
 							<a
 								className="h-4 w-4 shrink-0"
