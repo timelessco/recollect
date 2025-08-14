@@ -195,44 +195,42 @@ export const CustomLightBox = ({
 
 			const renderVideoSlide = () => (
 				<div className="flex h-full w-full items-center justify-center">
-					<div className="w-full max-w-4xl">
+					<div className="w-full max-w-[1200px]">
 						<VideoPlayer isActive={isActive} src={bookmark?.url} />
 					</div>
 				</div>
 			);
 
 			const renderPDFSlide = () => (
-				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-					<div className="flex h-full w-full items-center justify-center">
-						{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
-						{typeof window !== "undefined" ? (
-							<object
-								aria-label="PDF Viewer"
-								className="block h-full w-full border-none"
-								data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-								type={PDF_MIME_TYPE}
-							>
-								<div className="p-4 text-center">
-									<p className="text-gray-700">
-										This PDF cannot be displayed in your browser.
-									</p>
-									<a
-										className="text-blue-600 underline"
-										href={bookmark?.url}
-										rel="noopener noreferrer"
-										target="_blank"
-									>
-										Click here to download it instead
-									</a>
-								</div>
-							</object>
-						) : null}
-					</div>
+				<div className="flex h-full w-full max-w-[1200px] items-end">
+					{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
+					{typeof window !== "undefined" ? (
+						<object
+							aria-label="PDF Viewer"
+							className="h-full max-h-[90vh] w-full"
+							data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+							type={PDF_MIME_TYPE}
+						>
+							<div className="p-4 text-center">
+								<p className="text-gray-700">
+									This PDF cannot be displayed in your browser.
+								</p>
+								<a
+									className="text-blue-600 underline"
+									href={bookmark?.url}
+									rel="noopener noreferrer"
+									target="_blank"
+								>
+									Click here to download it instead
+								</a>
+							</div>
+						</object>
+					) : null}
 				</div>
 			);
 
 			const renderYouTubeSlide = () => (
-				<div className="flex h-full w-full max-w-[1200px] items-center justify-center">
+				<div className="relative flex h-full max-h-[80vh] w-full max-w-[1200px] items-end justify-center">
 					<VideoPlayer isActive={isActive} src={bookmark?.url} />
 				</div>
 			);
@@ -240,15 +238,13 @@ export const CustomLightBox = ({
 			const renderWebEmbedSlide = () => {
 				if (bookmark?.meta_data?.iframeAllowed) {
 					return (
-						<div className="h-full min-h-[500px] w-full max-w-[1200px]">
-							{typeof window !== "undefined" ? (
-								<object
-									className="h-full w-full"
-									data={bookmark?.url}
-									title="Website Preview"
-									type="text/html"
-								/>
-							) : null}
+						<div className="flex h-full min-h-[500px] w-full max-w-[1200px] items-end">
+							<object
+								className="h-full max-h-[90vh] w-full"
+								data={bookmark?.url}
+								title="Website Preview"
+								type="text/html"
+							/>
 						</div>
 					);
 				}
