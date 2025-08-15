@@ -103,7 +103,7 @@ const MyComponent = () => {
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="truncate pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
+									className=" pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}

@@ -174,7 +174,7 @@ export const CustomLightBox = ({
 						}
 					}}
 				>
-					<div className="relative max-w-[1200px]">
+					<div className=" w-full max-w-[min(1200px,90vw)]">
 						<Image
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
@@ -195,14 +195,14 @@ export const CustomLightBox = ({
 
 			const renderVideoSlide = () => (
 				<div className="flex h-full w-full items-center justify-center">
-					<div className="w-full max-w-[1200px]">
+					<div className="w-full max-w-[min(1200px,90vw)]">
 						<VideoPlayer isActive={isActive} src={bookmark?.url} />
 					</div>
 				</div>
 			);
 
 			const renderPDFSlide = () => (
-				<div className="flex h-full w-full max-w-[1200px] items-end">
+				<div className="flex h-full w-full max-w-[min(1200px,90vw)] items-end">
 					{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
 					{typeof window !== "undefined" ? (
 						<object
@@ -230,7 +230,7 @@ export const CustomLightBox = ({
 			);
 
 			const renderYouTubeSlide = () => (
-				<div className="relative flex h-full max-h-[80vh] w-full max-w-[1200px] items-end justify-center">
+				<div className="relative flex h-full max-h-[80vh] w-full max-w-[min(1200px,90vw)] items-end justify-center">
 					<VideoPlayer isActive={isActive} src={bookmark?.url} />
 				</div>
 			);
@@ -238,7 +238,7 @@ export const CustomLightBox = ({
 			const renderWebEmbedSlide = () => {
 				if (bookmark?.meta_data?.iframeAllowed) {
 					return (
-						<div className="flex h-full min-h-[500px] w-full max-w-[1200px] items-end">
+						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
 								className="h-full max-h-[90vh] w-full"
 								data={bookmark?.url}
@@ -275,10 +275,10 @@ export const CustomLightBox = ({
 					// Render constrained image when dimensions are too large
 					if (exceedsWidth || underHeight) {
 						return (
-							<div className="flex max-h-[80vh] max-w-[1200px] items-center justify-center">
+							<div className=" flex  max-w-[min(1200px,90vw)] items-center justify-center">
 								<Image
 									alt="Preview"
-									className="h-auto w-auto object-contain"
+									className="h-auto max-h-[80vh] w-auto object-contain"
 									draggable={false}
 									height={placeholderHeight}
 									onDoubleClick={(event) => {
@@ -334,13 +334,13 @@ export const CustomLightBox = ({
 
 					return (
 						<div
-							className={`flex   min-h-screen   origin-center items-center justify-center ${
+							className={`flex min-h-screen origin-center items-center justify-center ${
 								isScreenshot ? "scale-50" : ""
 							}`}
 						>
 							<Image
 								alt="Preview"
-								className="h-auto w-auto"
+								className="h-auto max-h-[80vh] w-auto "
 								draggable={false}
 								height={scaledHeight}
 								onDoubleClick={(event) => {
