@@ -8,6 +8,7 @@
  * - Formats dates for better readability
  * - Integrates with the main lightbox component for a seamless experience
  */
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -52,6 +53,9 @@ const formatDate = (dateString: string) => {
  */
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
+	const [showMore, setShowMore] = useState(false);
+	const [isOverflowing, setIsOverflowing] = useState(false);
+	const descriptionRef = useRef<HTMLParagraphElement>(null);
 
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
@@ -81,6 +85,15 @@ const MyComponent = () => {
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state.lightboxShowSidepane,
 	);
+	useEffect(() => {
+		setShowMore(false);
+		setIsOverflowing(false);
+		if (descriptionRef?.current) {
+			// Check if text overflows
+			const element = descriptionRef?.current;
+			setIsOverflowing(element?.scrollHeight > element?.clientHeight);
+		}
+	}, [currentBookmark?.id]);
 
 	if (!currentBookmark) return null;
 	const domain = new URL(currentBookmark?.url)?.hostname;
@@ -103,7 +116,7 @@ const MyComponent = () => {
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className=" pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -144,11 +157,23 @@ const MyComponent = () => {
 						{currentBookmark?.description && (
 							<div>
 								<p
-									className="text-[13px] leading-[138%] tracking-[1%] text-[rgba(55,65,81,1)]"
+									className={`${
+										showMore ? "" : "line-clamp-4"
+									} text-clip text-[13px] leading-[138%] tracking-[1%] text-[rgba(55,65,81,1)]`}
+									ref={descriptionRef}
 									tabIndex={-1}
 								>
 									{currentBookmark.description}
 								</p>
+								{isOverflowing && (
+									<button
+										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+										onClick={() => setShowMore(!showMore)}
+										type="button"
+									>
+										{showMore ? "Show less" : "Show more"}
+									</button>
+								)}
 							</div>
 						)}
 						<AddToCollectionDropdown bookmarkId={currentBookmark?.id} />

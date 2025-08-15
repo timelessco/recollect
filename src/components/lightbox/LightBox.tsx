@@ -410,16 +410,12 @@ export const CustomLightBox = ({
 	 * Custom navigation icons
 	 * Left icon: Simple clickable area for previous navigation
 	 */
-	const iconLeft = () => <div className=" h-[50vh] w-[150px] cursor-pointer" />;
+	const iconLeft = () => <div className=" h-[50vh] w-[5vw]" />;
 
 	/**
 	 * Right icon: Adjusts margin when side panel is open
 	 */
-	const iconRight = () => (
-		<div
-			className={`h-[50vh] w-[150px] ${lightboxShowSidepane ? "mr-80" : ""}`}
-		/>
-	);
+	const iconRight = () => <div className="h-[50vh] w-[5vw]" />;
 
 	const iconSidePane = () => (
 		<div className="h-5 w-5 cursor-pointer">
