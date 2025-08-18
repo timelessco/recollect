@@ -7,40 +7,40 @@ export const PullEffect = () => {
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
-		const maxOffset = slideRect.height;
-		const threshold = 300;
+		const maxOffset = slideRect?.height;
+		const threshold = 200;
 		const opacityStart = threshold * 0.5;
 
 		const animateBack = (element: HTMLElement) => {
-			let current = offsetRef.current;
+			let current = offsetRef?.current;
 
 			const step = () => {
 				if (current > 1) {
 					current *= 0.85;
 					offsetRef.current = current;
 
-					element.style.setProperty("--yarl__pull_offset", `${current}px`);
+					element?.style?.setProperty("--yarl__pull_offset", `${current}px`);
 
 					const opacity =
 						current > opacityStart
-							? Math.min(
+							? Math?.min(
 									1,
 									1 -
 										((current - opacityStart) / (threshold - opacityStart)) *
 											0.5,
 							  )
 							: 1;
-					element.style.setProperty("--yarl__pull_opacity", `${opacity}`);
+					element?.style?.setProperty("--yarl__pull_opacity", `${opacity}`);
 
-					const scale = Math.min(1, 1 - (current / threshold) * 0.2);
-					element.style.setProperty("--yarl__pull_scale", `${scale}`);
+					const scale = Math?.min(1, 1 - (current / threshold) * 0.2);
+					element?.style?.setProperty("--yarl__pull_scale", `${scale}`);
 
 					requestAnimationFrame(step);
 				} else {
 					offsetRef.current = 0;
-					element.style.setProperty("--yarl__pull_offset", "0px");
-					element.style.setProperty("--yarl__pull_opacity", "1");
-					element.style.setProperty("--yarl__pull_scale", "1");
+					element?.style?.setProperty("--yarl__pull_offset", "0px");
+					element?.style?.setProperty("--yarl__pull_opacity", "1");
+					element?.style?.setProperty("--yarl__pull_scale", "1");
 				}
 			};
 
@@ -48,40 +48,40 @@ export const PullEffect = () => {
 		};
 
 		const unsubscribe = subscribeSensors("onWheel", (event) => {
-			const element = event.currentTarget as HTMLElement;
+			const element = event?.currentTarget as HTMLElement;
 
-			offsetRef.current = Math.min(
-				Math.max(offsetRef.current + event.deltaY, 0),
+			offsetRef.current = Math?.min(
+				Math?.max(offsetRef?.current + event?.deltaY, 0),
 				maxOffset,
 			);
 
-			element.style.setProperty(
+			element?.style?.setProperty(
 				"--yarl__pull_offset",
-				`${offsetRef.current}px`,
+				`${offsetRef?.current}px`,
 			);
 
 			// Apply opacity only after 50%
 			const opacity =
-				offsetRef.current > opacityStart
-					? Math.max(
+				offsetRef?.current > opacityStart
+					? Math?.max(
 							0.5,
 							1 -
-								((offsetRef.current - opacityStart) /
+								((offsetRef?.current - opacityStart) /
 									(threshold - opacityStart)) *
 									0.5,
 					  )
 					: 1;
-			element.style.setProperty("--yarl__pull_opacity", `${opacity}`);
+			element?.style?.setProperty("--yarl__pull_opacity", `${opacity}`);
 
-			const scale = Math.max(0.5, 1 - (offsetRef.current / threshold) * 0.2);
-			element.style.setProperty("--yarl__pull_scale", `${scale}`);
+			const scale = Math?.max(0.5, 1 - (offsetRef?.current / threshold) * 0.2);
+			element?.style?.setProperty("--yarl__pull_scale", `${scale}`);
 
-			if (offsetRef.current > threshold) {
+			if (offsetRef?.current > threshold) {
 				close();
 				return;
 			}
 
-			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			if (timeoutRef?.current) clearTimeout(timeoutRef?.current);
 			timeoutRef.current = setTimeout(() => {
 				animateBack(element);
 			}, 200);
@@ -89,7 +89,7 @@ export const PullEffect = () => {
 
 		return () => {
 			unsubscribe();
-			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			if (timeoutRef?.current) clearTimeout(timeoutRef?.current);
 		};
 	}, [subscribeSensors, slideRect, close]);
 

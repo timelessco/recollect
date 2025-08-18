@@ -62,7 +62,7 @@ const MyComponent = () => {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const previousData = queryClient.getQueryData([
+	const previousData = queryClient?.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
 		CATEGORY_ID,
@@ -97,7 +97,14 @@ const MyComponent = () => {
 		}
 	}, [currentBookmark?.id]);
 
-	if (!currentBookmark) return <Spinner />;
+	if (!currentBookmark) {
+		return (
+			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-[0.5px] border-[rgba(0,0,0,0.13)] bg-[rgba(255,255,255,0.98)] backdrop-blur-[41px]">
+				<Spinner />
+			</div>
+		);
+	}
+
 	const domain = new URL(currentBookmark?.url)?.hostname;
 	return (
 		<AnimatePresence>
@@ -202,9 +209,9 @@ const MyComponent = () => {
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
 												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
-												key={tag.id}
+												key={tag?.id}
 											>
-												#{tag.name}
+												#{tag?.name}
 											</span>
 										))}
 									</div>

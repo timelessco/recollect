@@ -30,9 +30,9 @@ export const AddToCollectionDropdown = memo(
 
 		// Memoize collections data
 		const collections = useMemo(() => {
-			const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>(
-				[CATEGORIES_KEY, session?.user?.id],
-			);
+			const categoryData = queryClient?.getQueryData<{
+				data: CategoriesData[];
+			}>([CATEGORIES_KEY, session?.user?.id]);
 			return categoryData?.data ?? [];
 		}, [queryClient, session?.user?.id]);
 
@@ -41,7 +41,7 @@ export const AddToCollectionDropdown = memo(
 		const showMessage = useCallback(
 			(text: string, type: "error" | "success") => {
 				setMessage({ text, type });
-				if (timeoutRef.current) clearTimeout(timeoutRef.current);
+				if (timeoutRef?.current) clearTimeout(timeoutRef.current);
 				timeoutRef.current = setTimeout(() => setMessage(null), 2_500);
 			},
 			[],
@@ -52,12 +52,12 @@ export const AddToCollectionDropdown = memo(
 				if (!bookmarkId || !collection?.id) return;
 
 				try {
-					await addCategoryToBookmarkOptimisticMutation.mutateAsync({
+					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
 						bookmark_id: bookmarkId,
-						category_id: collection.id,
+						category_id: collection?.id,
 						update_access: true,
 					});
-					showMessage(`Added to "${collection.category_name}"`, "success");
+					showMessage(`Added to "${collection?.category_name}"`, "success");
 					setIsOpen(false);
 				} catch (error) {
 					console.error("Error adding to collection:", error);
@@ -70,8 +70,8 @@ export const AddToCollectionDropdown = memo(
 		// Cleanup timeout on unmount
 		useEffect(
 			() => () => {
-				if (timeoutRef.current) {
-					clearTimeout(timeoutRef.current);
+				if (timeoutRef?.current) {
+					clearTimeout(timeoutRef?.current);
 				}
 			},
 			[],
@@ -87,12 +87,12 @@ export const AddToCollectionDropdown = memo(
 				{message && (
 					<div
 						className={`mb-2 rounded-md px-3 py-1 text-xs font-medium ${
-							message.type === "success"
+							message?.type === "success"
 								? "bg-green-100 text-green-800"
 								: "bg-red-100 text-red-800"
 						}`}
 					>
-						{message.text}
+						{message?.text}
 					</div>
 				)}
 				<button
@@ -107,7 +107,7 @@ export const AddToCollectionDropdown = memo(
 				</button>
 				{isOpen && (
 					<div className="absolute left-0 z-50 mt-1 w-[150px] rounded-xl bg-white p-1 shadow-[0_0_1px_0_rgba(0,0,0,0.19),0_1px_2px_0_rgba(0,0,0,0.07),0_6px_15px_-5px_rgba(0,0,0,0.11)]">
-						{collections.map((collection) => {
+						{collections?.map((collection) => {
 							const iconData = find(
 								iconsList,
 								(item) => item?.label === collection?.icon,
@@ -117,7 +117,7 @@ export const AddToCollectionDropdown = memo(
 								<CollectionItem
 									collection={collection}
 									iconData={iconData}
-									key={collection.id}
+									key={collection?.id}
 									onClick={handleCollectionClick}
 								/>
 							);
@@ -164,7 +164,7 @@ const CollectionItem = memo(
 						className="flex h-4 w-4 items-center justify-center rounded-full"
 						style={{ backgroundColor: collection?.icon_color }}
 					>
-						{iconData.icon(
+						{iconData?.icon(
 							collection?.icon_color === colorPickerColors[0]
 								? colorPickerColors[1]
 								: colorPickerColors[0],
@@ -173,16 +173,17 @@ const CollectionItem = memo(
 					</div>
 				)}
 				<span className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(56,56,56,1)]">
-					{collection.category_name}
+					{collection?.category_name}
 				</span>
 			</button>
 		);
 	},
 	(previousProps, nextProps) =>
 		// Only re-render if these props change
-		previousProps.collection.id === nextProps.collection.id &&
-		previousProps.collection.icon === nextProps.collection.icon &&
-		previousProps.collection.icon_color === nextProps.collection.icon_color &&
-		previousProps.collection.category_name ===
-			nextProps.collection.category_name,
+		previousProps?.collection?.id === nextProps?.collection?.id &&
+		previousProps?.collection?.icon === nextProps?.collection?.icon &&
+		previousProps?.collection?.icon_color ===
+			nextProps?.collection?.icon_color &&
+		previousProps?.collection?.category_name ===
+			nextProps?.collection?.category_name,
 );

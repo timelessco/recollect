@@ -102,7 +102,7 @@ export const CustomLightBox = ({
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
 
-		return bookmarks.map((bookmark) => {
+		return bookmarks?.map((bookmark) => {
 			// Determine media types based on bookmark properties
 			const isImage =
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
@@ -424,7 +424,7 @@ export const CustomLightBox = ({
 	);
 
 	const isFirstSlide = activeIndex === 0;
-	const isLastSlide = activeIndex === bookmarks.length - 1;
+	const isLastSlide = activeIndex === bookmarks?.length - 1;
 	return (
 		<Lightbox
 			// Animation configuration for lightbox transitions
@@ -441,7 +441,7 @@ export const CustomLightBox = ({
 					if (!isPage || !bookmarks?.[index]) return;
 					setActiveIndex(index);
 					// Update browser URL to make lightbox state shareable
-					void router.push(
+					void router?.push(
 						{
 							pathname: `${CATEGORY_ID_PATHNAME}`,
 							query: {
@@ -465,8 +465,9 @@ export const CustomLightBox = ({
 				slide: renderSlide,
 				iconNext: () => iconRight(),
 				iconPrev: () => iconLeft(),
-				buttonPrev: slides.length <= 1 || isFirstSlide ? () => null : undefined,
-				buttonNext: slides.length <= 1 || isLastSlide ? () => null : undefined,
+				buttonPrev:
+					slides?.length <= 1 || isFirstSlide ? () => null : undefined,
+				buttonNext: slides?.length <= 1 || isLastSlide ? () => null : undefined,
 				buttonZoom: () => null,
 				controls: () => <PullEffect />,
 			}}
@@ -549,23 +550,26 @@ const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
 
 	try {
 		const url = new URL(urlString);
-		const host = url.hostname;
+		const host = url?.hostname;
 
 		// Match video URLs only
 		if (host === YOUTU_BE) {
-			return Boolean(url.pathname.slice(1));
+			return Boolean(url?.pathname?.slice(1));
 		}
 
 		if (host === `www.${YOUTUBE_COM}` || host === YOUTUBE_COM) {
-			if (url.pathname === "/watch" && url.searchParams.has("v")) {
+			if (url?.pathname === "/watch" && url?.searchParams.has("v")) {
 				return true;
 			}
 
-			if (url.pathname.startsWith(`/embed/`)) {
+			if (url?.pathname?.startsWith(`/embed/`)) {
 				return true;
 			}
 
-			if (url.pathname.startsWith("/shorts/") && url.pathname.split("/")[2]) {
+			if (
+				url?.pathname?.startsWith("/shorts/") &&
+				url?.pathname?.split("/")[2]
+			) {
 				return true;
 			}
 		}
