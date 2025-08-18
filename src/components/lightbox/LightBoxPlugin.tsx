@@ -55,6 +55,7 @@ const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
 	const [showMore, setShowMore] = useState(false);
 	const [isOverflowing, setIsOverflowing] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(false);
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
 
 	const queryClient = useQueryClient();
@@ -178,44 +179,68 @@ const MyComponent = () => {
 						)}
 						<AddToCollectionDropdown bookmarkId={currentBookmark?.id} />
 					</div>
-					{currentBookmark?.addedTags?.length > 0 && (
-						<div className="px-5 pb-[19px]">
-							<div className="flex flex-wrap gap-[6px]">
-								{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
-									<span
-										className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
-										key={tag.id}
-									>
-										#{tag.name}
-									</span>
-								))}
-							</div>
-						</div>
-					)}
-					{metaData?.img_caption && (
-						<div className="relative w-full">
-							<div className="relative bg-white px-5 text-sm">
-								<div className="mb-2 flex items-center gap-2">
-									<Icon className="h-[15px] w-[15px]">
-										<GeminiAiIcon />
-									</Icon>
-									<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]">
-										AI Summary
-									</p>
+					{(currentBookmark?.addedTags?.length > 0 ||
+						metaData?.img_caption) && (
+						<motion.div
+							animate={{
+								y: isExpanded ? 0 : "calc(100% - 70px)",
+								transition: {
+									type: "spring",
+									damping: 25,
+									stiffness: 300,
+									delay: 0,
+									only: ["y"],
+								},
+							}}
+							className="relative overflow-hidden"
+							initial={{ y: "100%" }}
+						>
+							{currentBookmark?.addedTags?.length > 0 && (
+								<div className="px-5 pb-[19px]">
+									<div className="flex flex-wrap gap-[6px]">
+										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
+											<span
+												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+												key={tag.id}
+											>
+												#{tag.name}
+											</span>
+										))}
+									</div>
 								</div>
-								<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
-									{metaData?.img_caption}
-								</p>
-							</div>
+							)}
+							{metaData?.img_caption && (
+								<div className="relative px-5 py-3 text-sm">
+									<motion.div
+										className="mb-2 flex cursor-pointer items-center gap-2"
+										onClick={() => setIsExpanded(!isExpanded)}
+										whileTap={{ scale: 0.98 }}
+									>
+										<Icon className="h-[15px] w-[15px]">
+											<GeminiAiIcon />
+										</Icon>
+										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]">
+											AI Summary
+										</p>
+									</motion.div>
+									<div className="max-h-[200px] overflow-y-auto">
+										<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
+											{metaData?.img_caption}
+										</p>
+									</div>
+								</div>
+							)}
 							{/* Gradient overlay */}
-							<div
-								className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[25px]"
-								style={{
-									background:
-										"linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 100%)",
-								}}
-							/>
-						</div>
+							{!isExpanded && (
+								<div
+									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[200px]"
+									style={{
+										background:
+											"linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 100%)",
+									}}
+								/>
+							)}
+						</motion.div>
 					)}
 				</motion.div>
 			)}
