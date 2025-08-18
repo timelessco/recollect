@@ -9,6 +9,7 @@ export const PullEffect = () => {
 	useEffect(() => {
 		const maxOffset = slideRect.height;
 		const threshold = 300;
+		const opacityStart = threshold * 0.5;
 
 		const animateBack = (element: HTMLElement) => {
 			let current = offsetRef.current;
@@ -20,7 +21,15 @@ export const PullEffect = () => {
 
 					element.style.setProperty("--yarl__pull_offset", `${current}px`);
 
-					const opacity = Math.min(1, 0.5 + (current / threshold) * 0.5);
+					const opacity =
+						current > opacityStart
+							? Math.min(
+									1,
+									1 -
+										((current - opacityStart) / (threshold - opacityStart)) *
+											0.5,
+							  )
+							: 1;
 					element.style.setProperty("--yarl__pull_opacity", `${opacity}`);
 
 					const scale = Math.min(1, 1 - (current / threshold) * 0.2);
@@ -51,7 +60,17 @@ export const PullEffect = () => {
 				`${offsetRef.current}px`,
 			);
 
-			const opacity = Math.max(0.5, 1 - (offsetRef.current / threshold) * 0.5);
+			// Apply opacity only after 50%
+			const opacity =
+				offsetRef.current > opacityStart
+					? Math.max(
+							0.5,
+							1 -
+								((offsetRef.current - opacityStart) /
+									(threshold - opacityStart)) *
+									0.5,
+					  )
+					: 1;
 			element.style.setProperty("--yarl__pull_opacity", `${opacity}`);
 
 			const scale = Math.max(0.5, 1 - (offsetRef.current / threshold) * 0.2);
@@ -65,7 +84,7 @@ export const PullEffect = () => {
 			if (timeoutRef.current) clearTimeout(timeoutRef.current);
 			timeoutRef.current = setTimeout(() => {
 				animateBack(element);
-			}, 50);
+			}, 200);
 		});
 
 		return () => {
