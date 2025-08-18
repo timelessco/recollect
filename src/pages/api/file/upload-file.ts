@@ -2,6 +2,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
+import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
@@ -14,9 +15,19 @@ import {
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
-import { MAIN_TABLE_NAME, STORAGE_FILES_PATH } from "../../../utils/constants";
+import {
+	getBaseUrl,
+	MAIN_TABLE_NAME,
+	NEXT_API_URL,
+	STORAGE_FILES_PATH,
+	UPLOAD_FILE_REMAINING_DATA_API,
+} from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { isUserInACategory, parseUploadFileName } from "../../../utils/helpers";
+import {
+	apiCookieParser,
+	isUserInACategory,
+	parseUploadFileName,
+} from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
@@ -240,6 +251,32 @@ export default async (
 		response
 			.status(200)
 			.json({ data: DatabaseData, success: true, error: null });
+
+		try {
+			if (!isEmpty(DatabaseData) && !isVideo) {
+				await axios.post(
+					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+					{
+						id: DatabaseData[0]?.id,
+						publicUrl: storageData?.publicUrl,
+					},
+					{
+						headers: {
+							Cookie: apiCookieParser(request?.cookies),
+						},
+					},
+				);
+			} else {
+				console.error("Remaining upload api error: upload data is empty");
+				Sentry.captureException(
+					`Remaining upload api error: upload data is empty`,
+				);
+			}
+		} catch (remainingerror) {
+			console.error(remainingerror);
+			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
+		}
+
 		// create embeddings
 		try {
 			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);
