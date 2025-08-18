@@ -50,10 +50,12 @@ import {
 	CATEGORIES_KEY,
 	colorPickerColors,
 	defaultBlur,
+	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	SEARCH_URL,
 	TRASH_URL,
 	TWEETS_URL,
+	VIDEO_TYPE_PREFIX,
 	viewValues,
 } from "../../../utils/constants";
 import {
@@ -683,11 +685,11 @@ const CardSection = ({
 			);
 		}
 
-		if (isVideo || item?.meta_data?.mediaType === "video/mp4") {
+		if (isVideo || item?.meta_data?.mediaType.startsWith(VIDEO_TYPE_PREFIX)) {
 			return <VideoIcon size="15" />;
 		}
 
-		if (isDocument || item?.meta_data?.mediaType === "application/pdf") {
+		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
 			return <FolderIcon size="15" />;
 		}
 
