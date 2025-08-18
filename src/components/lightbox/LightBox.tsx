@@ -418,7 +418,7 @@ export const CustomLightBox = ({
 	const iconRight = () => <div className="h-[50vh] w-[5vw]" />;
 
 	const iconSidePane = () => (
-		<div className="h-5 w-5 cursor-pointer">
+		<div className="group h-5 w-5 cursor-pointer text-[rgba(0,0,0,1)] hover:text-black">
 			<ShowSidePaneButton />
 		</div>
 	);
@@ -434,9 +434,6 @@ export const CustomLightBox = ({
 			}}
 			carousel={{ finite: true }}
 			close={handleClose}
-			controller={{
-				closeOnPullDown: true,
-			}}
 			index={activeIndex}
 			on={{
 				// Handle slide view changes and update URL for shareable links
@@ -502,7 +499,7 @@ export const CustomLightBox = ({
 					// Left: Close button
 					<div className="flex items-center" key="left-section">
 						<button
-							className="flex items-center justify-center pl-4 pt-3.5"
+							className="group ml-4 mt-3.5 flex items-center justify-center rounded-full"
 							onClick={handleClose}
 							type="button"
 						>
@@ -515,22 +512,20 @@ export const CustomLightBox = ({
 						className="flex flex-1 justify-center  pt-[9px] text-center"
 						key="center-section"
 					>
-						<div
-							className="flex max-w-[300px] items-center gap-2 overflow-hidden text-[14px] leading-[115%] tracking-[0]"
-							title={bookmarks?.[activeIndex]?.url}
+						<a
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg  px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-[rgba(0,0,0,0.03)]"
+							href={bookmarks?.[activeIndex]?.url}
+							key="center-section"
+							rel="noreferrer"
+							target="_blank"
 						>
 							<span className="truncate text-[#707070]">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
-							<a
-								className="h-4 w-4 shrink-0"
-								href={bookmarks?.[activeIndex]?.url}
-								rel="noreferrer"
-								target="_blank"
-							>
+							<div className="h-4 w-4 shrink-0">
 								<LightboxExternalLink />
-							</a>
-						</div>
+							</div>
+						</a>
 					</div>,
 
 					// Right: Side pane toggle button
