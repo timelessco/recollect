@@ -31,6 +31,7 @@ import {
 import { type SingleListData, type UserTagsData } from "../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../utils/constants";
 import { Icon } from "../atoms/icon";
+import Spinner from "../spinner";
 
 import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
 
@@ -96,7 +97,7 @@ const MyComponent = () => {
 		}
 	}, [currentBookmark?.id]);
 
-	if (!currentBookmark) return null;
+	if (!currentBookmark) return <Spinner />;
 	const domain = new URL(currentBookmark?.url)?.hostname;
 	return (
 		<AnimatePresence>
@@ -106,7 +107,7 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border border-[rgba(0,0,0,0.13)] bg-white"
+					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-[0.5px] border-[rgba(0,0,0,0.13)] bg-[rgba(255,255,255,0.98)] backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
