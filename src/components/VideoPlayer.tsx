@@ -8,18 +8,16 @@ export const VideoPlayer = ({
 	isActive: boolean;
 	src: string;
 }) => {
-	const playerRef = useRef<typeof ReactPlayer | null>(null);
+	const playerRef = useRef<HTMLVideoElement | null>(null);
 
 	return (
 		<ReactPlayer
 			controls
 			height="100%"
 			playing={isActive}
-			// @ts-expect-error ref type
 			ref={playerRef}
 			src={src}
-			style={{ maxHeight: "80vh" }}
-			width="100%"
+			style={{ maxHeight: "80vh", margin: "auto", width: "auto" }}
 		/>
 	);
 };
