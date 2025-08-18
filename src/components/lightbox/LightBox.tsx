@@ -29,6 +29,7 @@ import {
 import { getCategorySlugFromRouter } from "../../utils/url";
 import { VideoPlayer } from "../VideoPlayer";
 
+import { PullEffect } from "./CloseOnSwipeDown";
 import MetaButtonPlugin from "./LightBoxPlugin";
 import { type CustomSlide } from "./previewLightBox";
 
@@ -48,7 +49,7 @@ export type Bookmark = Omit<
 /**
  * CustomLightBox Component
  *
- * A  lightbox component that displays various types of media content
+ * A lightbox component that displays various types of media content
  * including images, videos, PDFs, and embedded web content. Features include:
  * - Zoom functionality for images
  * - Video playback support (including YouTube)
@@ -396,9 +397,8 @@ export const CustomLightBox = ({
 				content = renderWebEmbedSlide();
 			}
 
-			// content wrapper
 			return (
-				<div className="flex h-full w-full items-center justify-center">
+				<div className="slide-wrapper flex h-full w-full items-center justify-center">
 					{content}
 				</div>
 			);
@@ -434,6 +434,9 @@ export const CustomLightBox = ({
 			}}
 			carousel={{ finite: true }}
 			close={handleClose}
+			controller={{
+				closeOnPullDown: true,
+			}}
 			index={activeIndex}
 			on={{
 				// Handle slide view changes and update URL for shareable links
@@ -468,6 +471,7 @@ export const CustomLightBox = ({
 				buttonPrev: slides.length <= 1 || isFirstSlide ? () => null : undefined,
 				buttonNext: slides.length <= 1 || isLastSlide ? () => null : undefined,
 				buttonZoom: () => null,
+				controls: () => <PullEffect />,
 			}}
 			slides={slides}
 			styles={{
@@ -481,7 +485,9 @@ export const CustomLightBox = ({
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
-					width: lightboxShowSidepane ? "80%" : "100%",
+					width: lightboxShowSidepane
+						? "calc(100% - min(max(320px, 20%), 400px))"
+						: "100%",
 					animation: "customFadeScaleIn 0.25s ease-in-out",
 				},
 				slide: {
