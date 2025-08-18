@@ -3,7 +3,7 @@
 // 	type RawAxiosResponseHeaders,
 // } from "axios";
 
-export const canEmbedInIframe = async (url: string): Promise<boolean> =>
+export const canEmbedInIframe = async (url: string): Promise<boolean> => {
 	// // URL validation
 	// let parsedUrl: URL;
 	// try {
@@ -33,7 +33,10 @@ export const canEmbedInIframe = async (url: string): Promise<boolean> =>
 	// } catch {
 	// 	return false;
 	// }
-	false;
+	// eslint-disable-next-line no-console
+	console.log("url~~~~~~~~~~~~~~~~~~~~~~~~~~~~", url);
+	return false;
+};
 
 // Narrowed header type for axios responses
 // type NormalizedHeaders = Record<string, string[] | string>;
