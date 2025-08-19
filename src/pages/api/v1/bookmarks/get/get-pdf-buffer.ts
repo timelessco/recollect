@@ -1,7 +1,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { z } from "zod";
 
-import { PDF_MIME_TYPE } from "../../../utils/constants";
+import { PDF_MIME_TYPE } from "../../../../../utils/constants";
 
 const requestSchema = z.object({
 	url: z.string().url("Invalid URL format"),
