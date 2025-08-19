@@ -5,21 +5,20 @@ import { z } from "zod";
 const schema = z.object({
 	url: z.string().url({ message: "Invalid URL format" }),
 });
-// in this api we get the url from the request body and then we check the media type of the url
-// this is used in checkIfUrlAnMedia and checkIfUrlAnImage functions in the helpers
-// this api returns the media type of the url
+
+// this api returns the media type of the given url
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	if (request.method !== "POST") {
+	if (request.method !== "GET") {
 		response.status(405).json({
-			error: "Only POST requests allowed",
+			error: "Only GET requests allowed",
 		});
 		return;
 	}
 
-	const parseResult = schema.safeParse(request.body);
+	const parseResult = schema.safeParse(request.query);
 
 	if (!parseResult.success) {
 		response.status(400).json({
@@ -40,13 +39,12 @@ export default async function handler(
 		});
 
 		const mediaType = result.headers["content-type"];
+
 		response.setHeader("Access-Control-Allow-Origin", "*");
-		response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 		response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-		response.status(200).json({
-			mediaType,
-		});
+		response.status(200).json({ mediaType });
 	} catch (error) {
 		console.error("Error checking media type:", error);
 

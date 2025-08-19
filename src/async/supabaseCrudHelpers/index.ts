@@ -863,14 +863,12 @@ export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
 
 export const getMediaType = async (url: string): Promise<string | null> => {
 	try {
+		const encodedUrl = encodeURIComponent(url);
+
 		const response = await fetch(
-			`${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}`,
+			`${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
 			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ url }),
+				method: "GET",
 			},
 		);
 
