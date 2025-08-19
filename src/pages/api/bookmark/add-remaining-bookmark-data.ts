@@ -190,14 +190,14 @@ export default async function handler(
 					: `https://${getBaseUrl(url)}${favIcon}`;
 			}
 		} else {
-			const response2 = await fetch(
+			const result = await fetch(
 				`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
 			);
-			if (!response2.ok) {
+			if (!result.ok) {
 				return null;
 			}
 
-			return response2?.url;
+			return result?.url;
 		}
 	};
 

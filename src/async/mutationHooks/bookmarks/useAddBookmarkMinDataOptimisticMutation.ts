@@ -10,7 +10,6 @@ import {
 	type BookmarksPaginatedDataTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
-import { handlePdfThumbnailAndUpload } from "../../../utils/apiHelpers";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -19,8 +18,10 @@ import {
 	menuListItemName,
 	PDF_MIME_TYPE,
 	TWEETS_URL,
+	URL_PDF_CHECK_PATTERN,
 	VIDEOS_URL,
 } from "../../../utils/constants";
+import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import { checkIfUrlAnImage } from "../../../utils/helpers";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData, getMediaType } from "../../supabaseCrudHelpers";
@@ -135,11 +136,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 
 			if (!isUrlOfMimeType) {
-				// eslint-disable-next-line unicorn/no-unsafe-regex, regexp/no-unused-capturing-group
-				const regex = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
-
 				const mediaType = await getMediaType(url);
-				if (mediaType === PDF_MIME_TYPE || regex.test(url)) {
+				if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
 					try {
 						successToast("generating thumbnail");
 						await handlePdfThumbnailAndUpload({

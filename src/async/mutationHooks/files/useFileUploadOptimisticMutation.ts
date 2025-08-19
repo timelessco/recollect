@@ -5,7 +5,6 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
-import { handlePdfThumbnailAndUpload } from "../../../utils/apiHelpers";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -23,6 +22,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
+import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import {
 	fileTypeIdentifier,
 	parseUploadFileName,

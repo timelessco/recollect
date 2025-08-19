@@ -202,12 +202,9 @@ export default async (
 
 	if (!isVideo) {
 		// if file is not a video
-		// const { ogImage: image, meta_data: metaData } =
-		// 	await notVideoLogic(storageData);
 		try {
 			ogImage = storageData?.publicUrl;
 		} catch (error) {
-			// console.error("Error generating PNG from PDF:", error);
 			if (error instanceof Error) {
 				throw new TypeError("Failed to generate PNG from PDF" + error.message);
 			}
@@ -217,8 +214,6 @@ export default async (
 			// Or throw error if you want the calling code to handle it
 			// throw error;
 		}
-
-		// meta_data = metaData;
 	} else {
 		// if file is a video
 		const { ogImage: image, meta_data: metaData } = await videoLogic(data);

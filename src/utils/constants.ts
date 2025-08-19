@@ -39,6 +39,8 @@ export const URL_IMAGE_CHECK_PATTERN =
 	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
+// eslint-disable-next-line unicorn/no-unsafe-regex
+export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
 
 // api constants
 export const getBaseUrl = () =>
@@ -55,6 +57,11 @@ export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
 export const PREVIEW_PATH = "/preview";
 
 export const PAGINATION_LIMIT = 25;
+
+// this api is to get the media type of the url
+export const GET_MEDIA_TYPE_API = "/api/bookmark/get-media-type";
+// this api is to get the pdf buffer
+export const GET_PDF_BUFFER_API = "/file/get-pdf-buffer";
 
 // auth api
 // no auth api yet
