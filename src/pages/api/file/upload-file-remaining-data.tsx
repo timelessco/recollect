@@ -127,28 +127,6 @@ export default async function handler(
 		),
 	};
 
-	// Fetch existing metadata
-	const { data: existing, error: fetchError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select("meta_data")
-		.match({ id, user_id: userId })
-		.single();
-
-	if (fetchError) throw new Error(fetchError.message);
-
-	const existingMeta = existing?.meta_data || {};
-
-	// Merge: keep existing values if new ones are null/undefined
-	const mergedMeta = {
-		...existingMeta,
-		...Object.fromEntries(
-			Object.entries(metaData).map(([key, value]) => [
-				key,
-				value ?? existingMeta?.[key],
-			]),
-		),
-	};
-
 	meta_data = metaData;
 
 	const { error: DBerror } = await supabase
