@@ -172,7 +172,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 					addLoadingBookmarkId(data?.id);
 				}
 
-				successToast("screenshot initiated!!!");
 				// update to zustand here
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
