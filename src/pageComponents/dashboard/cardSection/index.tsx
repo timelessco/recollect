@@ -685,7 +685,7 @@ const CardSection = ({
 			);
 		}
 
-		if (isVideo || item?.meta_data?.mediaType.startsWith(VIDEO_TYPE_PREFIX)) {
+		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
 			return <VideoIcon size="15" />;
 		}
 
