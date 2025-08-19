@@ -6,6 +6,7 @@ import {
 	GET_PDF_BUFFER_API,
 	getBaseUrl,
 	NEXT_API_URL,
+	PDF_MIME_TYPE,
 	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "./constants";
@@ -115,7 +116,7 @@ export const handlePdfThumbnailAndUpload = async ({
 				`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
 				{
 					id: fileId,
-					mediaType: "application/pdf",
+					mediaType: PDF_MIME_TYPE,
 					publicUrl,
 				},
 			);
