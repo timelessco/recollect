@@ -66,6 +66,7 @@ import {
 	FETCH_USER_PROFILE_API,
 	FETCH_USER_PROFILE_PIC_API,
 	FETCH_USER_TAGS_API,
+	GET_MEDIA_TYPE_API,
 	getBaseUrl,
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
@@ -862,14 +863,12 @@ export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
 
 export const getMediaType = async (url: string): Promise<string | null> => {
 	try {
+		const encodedUrl = encodeURIComponent(url);
+
 		const response = await fetch(
-			`${getBaseUrl()}/api/bookmark/get-media-type`,
+			`${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
 			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ url }),
+				method: "GET",
 			},
 		);
 
