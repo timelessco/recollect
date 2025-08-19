@@ -6,6 +6,7 @@ import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHook
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
 import { useSupabaseSession } from "../../store/componentStore";
 import { type CategoriesData } from "../../types/apiTypes";
+import { type IconData } from "../../types/componentTypes";
 import { options } from "../../utils/commonData";
 import { CATEGORIES_KEY, colorPickerColors } from "../../utils/constants";
 
@@ -41,7 +42,7 @@ export const AddToCollectionDropdown = memo(
 		const showMessage = useCallback(
 			(text: string, type: "error" | "success") => {
 				setMessage({ text, type });
-				if (timeoutRef?.current) clearTimeout(timeoutRef.current);
+				if (timeoutRef?.current) clearTimeout(timeoutRef?.current);
 				timeoutRef.current = setTimeout(() => setMessage(null), 2_500);
 			},
 			[],
@@ -137,16 +138,7 @@ const CollectionItem = memo(
 		onClick,
 	}: {
 		collection: CategoriesData;
-		iconData:
-			| {
-					icon: (
-						iconColor: string,
-						size?: string,
-						className?: string,
-					) => JSX.Element;
-					label: string;
-			  }
-			| undefined;
+		iconData: IconData | undefined;
 		onClick: (collection: CategoriesData) => void;
 	}) => {
 		const handleClick = useCallback(() => {

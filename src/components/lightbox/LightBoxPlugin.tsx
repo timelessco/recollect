@@ -241,7 +241,7 @@ const MyComponent = () => {
 							{/* Gradient overlay */}
 							{!isExpanded && (
 								<div
-									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[200px]"
+									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[50px]"
 									style={{
 										background:
 											"linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 100%)",
