@@ -31,7 +31,6 @@ import {
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
-import console from "console";
 
 type BodyDataType = {
 	category_id: string;
