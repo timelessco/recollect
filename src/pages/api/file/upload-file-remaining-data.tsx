@@ -105,7 +105,13 @@ export default async function handler(
 		.match({ id, user_id: userId })
 		.single();
 
-	if (fetchError) throw new Error(fetchError.message);
+	if (fetchError) {
+		response.status(500).json({
+			success: false,
+			error: fetchError,
+		});
+		Sentry.captureException(fetchError?.message);
+	}
 
 	const existingMeta = existing?.meta_data || {};
 

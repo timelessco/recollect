@@ -209,10 +209,8 @@ export default async (
 				throw new TypeError("Failed to generate PNG from PDF" + error.message);
 			}
 
-			// Optional: set a fallback image or rethrow the error
+			// Optional: set a fallback image
 			ogImage = storageData?.publicUrl;
-			// Or throw error if you want the calling code to handle it
-			// throw error;
 		}
 	} else {
 		// if file is a video
