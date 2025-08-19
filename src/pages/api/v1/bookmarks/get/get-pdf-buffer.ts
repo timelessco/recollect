@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { PDF_MIME_TYPE } from "../../../../../utils/constants";
 
-const requestSchema = z.object({
+const querySchema = z.object({
 	url: z.string().url("Invalid URL format"),
 });
 
@@ -12,12 +12,12 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	if (request.method !== "POST") {
+	if (request.method !== "GET") {
 		response.status(405).json({ error: "Method not allowed" });
 		return;
 	}
 
-	const parseResult = requestSchema.safeParse(request.body);
+	const parseResult = querySchema.safeParse(request.query);
 	if (!parseResult.success) {
 		response.status(400).json({ error: parseResult.error.errors });
 		return;

@@ -15,14 +15,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // eslint-disable-next-line func-style
 export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
+	const encodedUrl = encodeURIComponent(file);
+
 	const response = await fetch(
-		`${getBaseUrl()}${NEXT_API_URL}${GET_PDF_BUFFER_API}`,
+		`${getBaseUrl()}${NEXT_API_URL}${GET_PDF_BUFFER_API}?url=${encodedUrl}`,
 		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ url: file }),
+			method: "GET",
 		},
 	);
 
@@ -82,7 +80,7 @@ export const handlePdfThumbnailAndUpload = async ({
 			fileUrl?.split("/").pop()?.split("?")[0]?.split("#")[0] ?? "",
 		);
 
-		const fileName = fileNameWithExtension.replace(/\.pdf$/iu, "");
+		const fileName = fileNameWithExtension?.replace(/\.pdf$/iu, "");
 		const thumbnailFileName = `thumb-${fileName}.jpg`;
 
 		const { data: thumbUploadUrl, error: thumbError } =
