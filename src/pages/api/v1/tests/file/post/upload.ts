@@ -18,6 +18,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../../../../utils/constants";
@@ -69,7 +70,7 @@ const videoLogic = async (
 	// For R2, we need to copy the object manually by getting and uploading
 	// First get the object from temp location
 	const { data: temporaryObject, error: getError } =
-		await r2Helpers.listObjects("recollect", thumbnailPath);
+		await r2Helpers.listObjects(R2_MAIN_BUCKET_NAME, thumbnailPath);
 
 	if (!isNil(getError)) {
 		throw new Error(`ERROR: getError ${getError}`);
@@ -79,7 +80,7 @@ const videoLogic = async (
 	// or handle this differently in a real implementation
 
 	// Delete the temp thumbnail if it exists
-	await r2Helpers.deleteObject("recollect", thumbnailPath);
+	await r2Helpers.deleteObject(R2_MAIN_BUCKET_NAME, thumbnailPath);
 
 	// Get the public URL for the final thumbnail
 	const { data: thumbnailUrl, error: thumbnailUrlError } =

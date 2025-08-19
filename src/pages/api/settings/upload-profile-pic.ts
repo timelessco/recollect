@@ -19,7 +19,12 @@ import {
 	type ProfilesTableTypes,
 	type UploadProfilePicApiResponse,
 } from "../../../types/apiTypes";
-import { PROFILES, USER_PROFILE_STORAGE_NAME } from "../../../utils/constants";
+import {
+	PROFILES,
+	R2_MAIN_BUCKET_NAME,
+	STORAGE_USER_PROFILE_PATH,
+	USER_PROFILE_STORAGE_NAME,
+} from "../../../utils/constants";
 import { parseUploadFileName } from "../../../utils/helpers";
 import { r2Client, r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -37,8 +42,8 @@ export const deleteLogic = async (
 	userId: ProfilesTableTypes["id"],
 ) => {
 	const { data: list, error: listError } = await r2Helpers.listObjects(
-		"recollect",
-		`user_profile/public/${userId}/`,
+		R2_MAIN_BUCKET_NAME,
+		`${STORAGE_USER_PROFILE_PATH}/${userId}/`,
 	);
 
 	if (!isNull(listError)) {
@@ -54,7 +59,7 @@ export const deleteLogic = async (
 
 	if (!isNil(filesToRemove) && !isEmpty(filesToRemove)) {
 		const { error: deleteError } = await r2Helpers.deleteObjects(
-			"recollect",
+			R2_MAIN_BUCKET_NAME,
 			filesToRemove,
 		);
 
@@ -68,8 +73,8 @@ export const deleteLogic = async (
 	}
 
 	const { error: folderDeleteError } = await r2Helpers.deleteObjects(
-		"recollect",
-		[`user_profile/public/${userId}/`],
+		R2_MAIN_BUCKET_NAME,
+		[`${STORAGE_USER_PROFILE_PATH}/${userId}/`],
 	);
 
 	if (!isNil(folderDeleteError)) {
@@ -125,8 +130,8 @@ export default async (
 	if (contents) {
 		await deleteLogic(response, userId);
 		const { error: storageError } = await r2Helpers.uploadObject(
-			"recollect",
-			`user_profile/public/${userId}/${fileName}`,
+			R2_MAIN_BUCKET_NAME,
+			`${STORAGE_USER_PROFILE_PATH}/${userId}/${fileName}`,
 			new Uint8Array(decode(contents)),
 			fileType,
 		);
@@ -141,7 +146,7 @@ export default async (
 		}
 
 		const { data: storageData, error: publicUrlError } = r2Helpers.getPublicUrl(
-			`user_profile/public/${userId}/${fileName}`,
+			`${STORAGE_USER_PROFILE_PATH}/${userId}/${fileName}`,
 		);
 
 		if (!isNil(publicUrlError)) {

@@ -16,6 +16,7 @@ import {
 	IMAGES_URL,
 	LINKS_URL,
 	PDF_MIME_TYPE,
+	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
@@ -95,7 +96,7 @@ export default function useFileUploadOptimisticMutation() {
 			// Generate presigned URL for secure client-side upload
 			const { data: uploadTokenData, error } =
 				await r2Helpers.createSignedUploadUrl(
-					"recollect",
+					R2_MAIN_BUCKET_NAME,
 					`${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`,
 				);
 

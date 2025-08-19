@@ -2,7 +2,11 @@ import uniqid from "uniqid";
 
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { acceptedFileTypes, STORAGE_FILES_PATH } from "../../utils/constants";
+import {
+	acceptedFileTypes,
+	R2_MAIN_BUCKET_NAME,
+	STORAGE_FILES_PATH,
+} from "../../utils/constants";
 import {
 	generateVideoThumbnail,
 	parseUploadFileName,
@@ -62,7 +66,7 @@ export const fileUpload = async (
 							// we are doing this as we cannot upload directly to R2 from the client side
 							const { data: uploadTokenData, error } =
 								await r2Helpers.createSignedUploadUrl(
-									"recollect",
+									R2_MAIN_BUCKET_NAME,
 									`${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`,
 								);
 
@@ -84,7 +88,7 @@ export const fileUpload = async (
 										{
 											method: "PUT",
 											headers: {
-												"Content-Type": "image/png",
+												"Content-Type": "image/jpg",
 											},
 											body: buffer,
 										},

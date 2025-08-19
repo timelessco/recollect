@@ -359,6 +359,7 @@ export default async function handler(
 			if (!isNull(data) && !isEmpty(data) && isUrlOfMimeType) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				// this is called only if the url is an image url like test.com/image.png.
+				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{

@@ -21,6 +21,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	MAIN_TABLE_NAME,
+	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
@@ -53,7 +54,7 @@ export const upload = async (
 			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
 
 		const { error: uploadError } = await r2Helpers.uploadObject(
-			"recollect",
+			R2_MAIN_BUCKET_NAME,
 			storagePath_,
 			new Uint8Array(decode(base64info)),
 			"image/jpg",
