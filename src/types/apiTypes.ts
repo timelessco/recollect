@@ -16,6 +16,7 @@ export type ImgMetadataType = {
 	iframeAllowed: boolean | null;
 	img_caption: string | null;
 	isOgImagePreferred: boolean;
+	isPageScreenshot: boolean | null;
 	mediaType: string;
 	ocr: string | null;
 	ogImgBlurUrl: string | null;
