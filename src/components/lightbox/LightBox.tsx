@@ -21,7 +21,6 @@ import {
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	PREVIEW_PATH,
-	SCREENSHOT_URL,
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
@@ -85,7 +84,6 @@ export const CustomLightBox = ({
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.lightboxShowSidepane,
 	);
-
 	/**
 	 * Enhanced close handler that also resets the side panel state
 	 * Uses useCallback to prevent unnecessary re-renders
@@ -259,13 +257,13 @@ export const CustomLightBox = ({
 					const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
 
 					// Check if this is a screenshot URL (may need special scaling)
-					const isScreenshot = placeholder?.startsWith(SCREENSHOT_URL);
+					const is2xScreenshot = bookmark?.meta_data?.isPageScreenshot;
 
 					// Apply 50% scaling to screenshots to make them more manageable
-					const scaledWidth = isScreenshot
+					const scaledWidth = is2xScreenshot
 						? placeholderWidth * 0.5
 						: placeholderWidth;
-					const scaledHeight = isScreenshot
+					const scaledHeight = is2xScreenshot
 						? placeholderHeight * 0.5
 						: placeholderHeight;
 
@@ -338,7 +336,7 @@ export const CustomLightBox = ({
 					return (
 						<div
 							className={`flex min-h-screen origin-center items-center justify-center ${
-								isScreenshot ? "scale-50" : ""
+								is2xScreenshot ? "scale-50" : ""
 							}`}
 						>
 							<Image
