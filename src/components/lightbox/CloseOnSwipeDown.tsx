@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useController } from "yet-another-react-lightbox";
 
-export const PullEffect = () => {
+export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	// Lightbox controller hook gives access to sensors, close function, and slide dimensions
 	const { subscribeSensors, close, slideRect } = useController();
 
@@ -12,6 +12,11 @@ export const PullEffect = () => {
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
+		// 🔑 disable effect entirely
+		if (!enabled) {
+			return () => {};
+		}
+
 		// Maximum pull distance (limited by slide height)
 		const maxOffset = slideRect?.height;
 
@@ -124,7 +129,7 @@ export const PullEffect = () => {
 			unsubscribe();
 			if (timeoutRef?.current) clearTimeout(timeoutRef?.current);
 		};
-	}, [subscribeSensors, slideRect, close]);
+	}, [subscribeSensors, slideRect, close, enabled]);
 
 	// Component renders nothing (pure effect-based behavior)
 	return null;

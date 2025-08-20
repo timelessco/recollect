@@ -76,6 +76,7 @@ export const CustomLightBox = ({
 	// Next.js router for URL manipulation
 	const router = useRouter();
 	const zoomRef = useRef<ZoomRef>(null);
+	const [zoomLevel, setZoomLevel] = useState(1);
 	const [placeholderError, setPlaceholderError] = useState(false);
 	// Zustand store hooks for managing lightbox side panel state
 	const setLightboxShowSidepane = useMiscellaneousStore(
@@ -459,6 +460,9 @@ export const CustomLightBox = ({
 						},
 					);
 				},
+				zoom: ({ zoom }) => {
+					setZoomLevel(zoom);
+				},
 			}}
 			open={isOpen}
 			plugins={[Zoom, MetaButtonPlugin()]}
@@ -470,7 +474,7 @@ export const CustomLightBox = ({
 					slides?.length <= 1 || isFirstSlide ? () => null : undefined,
 				buttonNext: slides?.length <= 1 || isLastSlide ? () => null : undefined,
 				buttonZoom: () => null,
-				controls: () => <PullEffect />,
+				controls: () => <PullEffect enabled={zoomLevel === 1} />,
 			}}
 			slides={slides}
 			styles={{
