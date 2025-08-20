@@ -39,7 +39,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	// We'll initialize the mutation with a default value and update it when we have the actual ID
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { sortBy } = useGetSortBy();
-	const { addLoadingBookmarkId } = useLoadersStore();
+	// const { addLoadingBookmarkId } = useLoadersStore();
 
 	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
 		onMutate: async (data) => {
@@ -166,9 +166,9 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 					return;
 				}
 
-				if (data?.id) {
-					addLoadingBookmarkId(data?.id);
-				}
+				// if (data?.id) {
+				// 	addLoadingBookmarkId(data?.id);
+				// }
 
 				successToast("screenshot initiated!!!");
 				// update to zustand here

@@ -14,6 +14,8 @@ import {
 import { type UserTagsData } from "../types/apiTypes";
 import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
+import { SearchLoader } from "./search-loader";
+import Spinner from "./spinner";
 import ToolTip from "./tooltip";
 
 const styles = {
@@ -99,6 +101,7 @@ const SearchInput = (props: SearchInputTypes) => {
 	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 
 	const queryClient = useQueryClient();
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
@@ -175,6 +178,11 @@ const SearchInput = (props: SearchInputTypes) => {
 					trigger="#"
 				/>
 			</MentionsInput>
+			{isSearchLoading && (
+				<div className="absolute right-2 top-1/2 -translate-y-1/2">
+					<SearchLoader className="h-3 w-3 animate-spin" />
+				</div>
+			)}
 			{/* <button
 				className={aiButtonClassName}
 				onClick={() => setAiButtonToggle(!aiButtonToggle)}

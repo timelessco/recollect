@@ -155,8 +155,7 @@ const CardSection = ({
 	);
 
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-	const { loadingBookmarkIds } = useLoadersStore();
+	// const { loadingBookmarkIds } = useLoadersStore();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 
@@ -183,6 +182,8 @@ const CardSection = ({
 
 		return categorySlug;
 	};
+
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	let searchBookmarksData = null;
 
@@ -543,7 +544,7 @@ const CardSection = ({
 				/>
 			</div>
 		);
-		const isLoading = loadingBookmarkIds.has(id);
+		// const isLoading = loadingBookmarkIds.has(id);
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
@@ -554,9 +555,9 @@ const CardSection = ({
 					return errorImgPlaceholder(false);
 				}
 
-				if (isLoading && !img) {
-					return errorImgPlaceholder(false);
-				}
+				// if (isLoading && !img) {
+				// 	return errorImgPlaceholder(false);
+				// }
 
 				if (errorImgs?.includes(id as never)) {
 					return errorImgPlaceholder(false);
@@ -616,10 +617,8 @@ const CardSection = ({
 				<motion.figure
 					className={figureClassName}
 					layout={
-						isBookmarkLoading ||
-						isAllBookmarksDataFetching ||
-						isOgImgLoading ||
-						isLoading
+						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
+						// isLoading
 					}
 				>
 					{isVideo && (
@@ -959,11 +958,13 @@ const CardSection = ({
 			</div>
 		);
 
-		if (isSearchLoading) {
-			return renderStatusMessage("Searching...");
-		}
-
-		if (!isEmpty(searchText) && isEmpty(sortByCondition)) {
+		// Only show "No results found" if we have search text, no results, and we're not loading anything
+		if (
+			!isEmpty(searchText) &&
+			isEmpty(sortByCondition) &&
+			!isSearchLoading &&
+			!isBookmarkLoading
+		) {
 			return renderStatusMessage("No results found");
 		}
 
