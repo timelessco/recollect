@@ -52,6 +52,7 @@ const formatDate = (dateString: string) => {
  * Main component that renders the metadata panel in the lightbox
  * Fetches and displays bookmark details including title, domain, description, and URL
  */
+// eslint-disable-next-line complexity
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
 	const [showMore, setShowMore] = useState(false);
@@ -83,19 +84,27 @@ const MyComponent = () => {
 		)?.[currentIndex];
 	}
 
+	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
+	const expandableRef = useRef<HTMLDivElement>(null);
+
 	const metaData = currentBookmark?.meta_data;
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state.lightboxShowSidepane,
 	);
 	useEffect(() => {
 		setShowMore(false);
-		setIsOverflowing(false);
+		setIsExpanded(false);
+		if (expandableRef.current) {
+			const contentHeight = expandableRef.current.scrollHeight;
+			setHasAIOverflowContent(contentHeight > 100);
+		}
+
 		if (descriptionRef?.current) {
 			// Check if text overflows
 			const element = descriptionRef?.current;
 			setIsOverflowing(element?.scrollHeight > element?.clientHeight);
 		}
-	}, [currentBookmark?.id]);
+	}, [currentBookmark?.id, currentIndex]);
 
 	if (!currentBookmark) {
 		return (
@@ -191,7 +200,7 @@ const MyComponent = () => {
 						metaData?.img_caption) && (
 						<motion.div
 							animate={{
-								y: isExpanded ? 0 : "calc(100% - 70px)",
+								y: isExpanded ? 0 : "calc(100% - 100px)",
 								transition: {
 									type: "spring",
 									damping: 25,
@@ -202,6 +211,7 @@ const MyComponent = () => {
 							}}
 							className="relative overflow-hidden"
 							initial={{ y: "100%" }}
+							ref={expandableRef}
 						>
 							{currentBookmark?.addedTags?.length > 0 && (
 								<div className="px-5 pb-[19px]">
@@ -220,9 +230,13 @@ const MyComponent = () => {
 							{metaData?.img_caption && (
 								<div className="relative px-5 py-3 text-sm">
 									<motion.div
-										className="mb-2 flex cursor-pointer items-center gap-2"
-										onClick={() => setIsExpanded(!isExpanded)}
-										whileTap={{ scale: 0.98 }}
+										className={`mb-2 flex ${
+											hasAIOverflowContent ? "cursor-pointer" : ""
+										} items-center gap-2`}
+										onClick={() =>
+											hasAIOverflowContent && setIsExpanded(!isExpanded)
+										}
+										whileTap={{ scale: hasAIOverflowContent ? 0.98 : 1 }}
 									>
 										<Icon className="h-[15px] w-[15px]">
 											<GeminiAiIcon />
@@ -231,15 +245,21 @@ const MyComponent = () => {
 											AI Summary
 										</p>
 									</motion.div>
-									<div className="max-h-[200px] overflow-y-auto">
+									<div
+										className={`max-h-[200px] ${
+											isExpanded ? "overflow-y-auto" : ""
+										}`}
+									>
 										<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
 											{metaData?.img_caption}
+											{metaData?.img_caption && metaData?.ocr && <br />}
+											{metaData?.ocr}
 										</p>
 									</div>
 								</div>
 							)}
 							{/* Gradient overlay */}
-							{!isExpanded && (
+							{!isExpanded && hasAIOverflowContent && (
 								<div
 									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[50px]"
 									style={{
