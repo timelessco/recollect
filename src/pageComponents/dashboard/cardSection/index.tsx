@@ -185,7 +185,10 @@ const CardSection = ({
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
-	let searchBookmarksData = null;
+	let searchBookmarksData: {
+		data: SingleListData[];
+		error: PostgrestError;
+	} | null = null;
 
 	if (aiButtonToggle) {
 		// gets from vector search api
@@ -963,7 +966,8 @@ const CardSection = ({
 			!isEmpty(searchText) &&
 			isEmpty(sortByCondition) &&
 			!isSearchLoading &&
-			!isBookmarkLoading
+			!isBookmarkLoading &&
+			searchBookmarksData?.data?.length === 0
 		) {
 			return renderStatusMessage("No results found");
 		}
