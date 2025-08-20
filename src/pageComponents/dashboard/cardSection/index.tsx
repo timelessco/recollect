@@ -958,12 +958,12 @@ const CardSection = ({
 			</div>
 		);
 
-		// Only show "No results found" if we have search text, no results, and we're not loading anything
+		// Only show no results if we have search results that are empty and we're not loading
 		if (
 			!isEmpty(searchText) &&
 			isEmpty(sortByCondition) &&
 			!isSearchLoading &&
-			!isBookmarkLoading
+			searchBookmarksData?.data?.length === 0
 		) {
 			return renderStatusMessage("No results found");
 		}
