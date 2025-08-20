@@ -87,7 +87,7 @@ export default async function handler(
 		screenShotResponse?.data?.screenshot?.data,
 		"binary",
 	)?.toString("base64");
-	const { title, description, is2xScreenshot } =
+	const { title, description, isPageScreenshot } =
 		screenShotResponse?.data.metaData || {};
 
 	const publicURL = await upload(base64data, userId);
@@ -118,7 +118,7 @@ export default async function handler(
 	const updatedMetaData = {
 		...existingMetaData,
 		screenshot: publicURL,
-		is2xScreenshot,
+		isPageScreenshot,
 		coverImage: existingBookmarkData?.ogImage,
 	};
 
