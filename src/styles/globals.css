@@ -393,7 +393,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 .slide-wrapper {
 	transform: translateY(var(--yarl__pull_offset)) scale(var(--yarl__pull_scale));
 	opacity: var(--yarl__pull_opacity);
-	transition:
-		transform 0.05s linear,
-		opacity 0.05s linear;
+
+	@apply transition-all duration-[50ms] ease-linear;
 }
