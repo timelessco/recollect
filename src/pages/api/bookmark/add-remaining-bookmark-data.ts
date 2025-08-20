@@ -298,6 +298,7 @@ export default async function handler(
 		isOgImagePreferred: existingMetaData?.isOgImagePreferred,
 		mediaType: existingMetaData?.mediaType,
 		iframeAllowed: existingMetaData?.iframeAllowed,
+		isPageScreenshot: existingMetaData?.isPageScreenshot,
 	};
 
 	const {
