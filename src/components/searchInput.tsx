@@ -178,7 +178,7 @@ const SearchInput = (props: SearchInputTypes) => {
 					trigger="#"
 				/>
 			</MentionsInput>
-			{isSearchLoading && (
+			{isSearchLoading && !isEmpty(searchText) && (
 				<div className="absolute right-2 top-1/2 -translate-y-1/2">
 					<SearchLoader className="h-3 w-3 animate-spin" />
 				</div>

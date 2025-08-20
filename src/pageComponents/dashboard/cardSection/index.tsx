@@ -963,7 +963,8 @@ const CardSection = ({
 			!isEmpty(searchText) &&
 			isEmpty(sortByCondition) &&
 			!isSearchLoading &&
-			!isBookmarkLoading
+			!isBookmarkLoading &&
+			searchBookmarksData?.data?.length === 0
 		) {
 			return renderStatusMessage("No results found");
 		}
