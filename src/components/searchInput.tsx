@@ -134,7 +134,6 @@ const SearchInput = (props: SearchInputTypes) => {
 			</figure>
 			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
-				autoFocus
 				className={inputClassNamesBuilder}
 				onBlur={onBlur}
 				onChange={(event: { target: { value: string } }) => {
