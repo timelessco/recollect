@@ -87,10 +87,10 @@ export default async function handler(
 		screenShotResponse?.data?.screenshot?.data,
 		"binary",
 	)?.toString("base64");
+	const { title, description, is2xScreenshot } =
+		screenShotResponse?.data.metaData || {};
 
 	const publicURL = await upload(base64data, userId);
-
-	const { title, description } = screenShotResponse?.data.metaData || {};
 
 	// First, fetch the existing bookmark data to get current meta_data
 	const { data: existingBookmarkData, error: fetchError } = await supabase
@@ -118,6 +118,7 @@ export default async function handler(
 	const updatedMetaData = {
 		...existingMetaData,
 		screenshot: publicURL,
+		is2xScreenshot,
 		coverImage: existingBookmarkData?.ogImage,
 	};
 
