@@ -1787,8 +1787,8 @@ packages:
   '@mux/mux-data-google-ima@0.2.8':
     resolution: {integrity: sha512-0ZEkHdcZ6bS8QtcjFcoJeZxJTpX7qRIledf4q1trMWPznugvtajCjCM2kieK/pzkZj1JM6liDRFs1PJSfVUs2A==}
 
-  '@mux/mux-player-react@3.5.1':
-    resolution: {integrity: sha512-tm32fSo9IBA/J8AD99bp64CyBkmv8jtsn4RhSHgNufvfWJUMBFJ7cfXgLsxiG/VdegpfBLRatMC5YiuZjoZ6yg==}
+  '@mux/mux-player-react@3.5.3':
+    resolution: {integrity: sha512-f0McZbIXYDkzecFwhhkf0JgEInPnsOClgBqBhkdhRlLRdrAzMATib+D3Di3rPkRHNH7rc/WWORvSxgJz6m6zkA==}
     peerDependencies:
       '@types/react': ^17.0.0 || ^17.0.0-0 || ^18 || ^18.0.0-0 || ^19 || ^19.0.0-0
       '@types/react-dom': '*'
@@ -1800,8 +1800,8 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@mux/mux-player@3.5.1':
-    resolution: {integrity: sha512-PSi3mPb4LrEh4i3xUdodaEvMrbbpKbL2yaewRjsqBr3PFb+hd/Dp1KtyaAnXaBCHl09hDURUSrqYpg1cZvwDiQ==}
+  '@mux/mux-player@3.5.3':
+    resolution: {integrity: sha512-uXKFXbdtioAi+clSVfD60Rw4r7OvA62u2jV6aar9loW9qMsmKv8LU+8uaIaWQjyAORp6E0S37GOVjo72T6O2eQ==}
 
   '@mux/mux-video@0.26.1':
     resolution: {integrity: sha512-gkMdBAgNlB4+krANZHkQFzYWjWeNsJz69y1/hnPtmNQnpvW+O7oc71OffcZrbblyibSxWMQ6MQpYmBVjXlp6sA==}
@@ -3929,8 +3929,8 @@ packages:
   caniuse-lite@1.0.30001565:
     resolution: {integrity: sha512-xrE//a3O7TP0vaJ8ikzkD2c2NgcVUvsEe2IvFTntV4Yd1Z9FVzh+gW+enX96L0psrbaFMcVcH2l90xNuGDWc8w==}
 
-  caniuse-lite@1.0.30001734:
-    resolution: {integrity: sha512-uhE1Ye5vgqju6OI71HTQqcBCZrvHugk0MjLak7Q+HfoBgoq5Bi+5YnwjP4fjDgrtYr/l8MVRBvzz9dPD4KyK0A==}
+  caniuse-lite@1.0.30001735:
+    resolution: {integrity: sha512-EV/laoX7Wq2J9TQlyIXRxTJqIw4sxfXS4OYgudGxBYRuTv0q7AM6yMEpU/Vo1I94thg9U6EZ2NfZx9GJq83u7w==}
 
   canvas@2.11.2:
     resolution: {integrity: sha512-ItanGBMrmRV7Py2Z+Xhs7cT+FNt5K0vPL4p9EZ/UX/Mu7hFbkxSjKF2KVtPwX7UYWp7dRKnrTvReflgrItJbdw==}
@@ -11299,9 +11299,9 @@ snapshots:
     dependencies:
       mux-embed: 5.9.0
 
-  '@mux/mux-player-react@3.5.1(@types/react-dom@18.0.11)(@types/react@18.0.35)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@mux/mux-player-react@3.5.3(@types/react-dom@18.0.11)(@types/react@18.0.35)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
-      '@mux/mux-player': 3.5.1(react@18.2.0)
+      '@mux/mux-player': 3.5.3(react@18.2.0)
       '@mux/playback-core': 0.30.1
       prop-types: 15.8.1
       react: 18.2.0
@@ -11310,7 +11310,7 @@ snapshots:
       '@types/react': 18.0.35
       '@types/react-dom': 18.0.11
 
-  '@mux/mux-player@3.5.1(react@18.2.0)':
+  '@mux/mux-player@3.5.3(react@18.2.0)':
     dependencies:
       '@mux/mux-video': 0.26.1
       '@mux/playback-core': 0.30.1
@@ -14163,7 +14163,7 @@ snapshots:
 
   browserslist@4.25.2:
     dependencies:
-      caniuse-lite: 1.0.30001734
+      caniuse-lite: 1.0.30001735
       electron-to-chromium: 1.5.199
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.2)
@@ -14242,7 +14242,7 @@ snapshots:
 
   caniuse-lite@1.0.30001565: {}
 
-  caniuse-lite@1.0.30001734:
+  caniuse-lite@1.0.30001735:
     optional: true
 
   canvas@2.11.2:
@@ -18600,7 +18600,7 @@ snapshots:
 
   react-player@3.3.1(@types/react-dom@18.0.11)(@types/react@18.0.35)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
-      '@mux/mux-player-react': 3.5.1(@types/react-dom@18.0.11)(@types/react@18.0.35)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@mux/mux-player-react': 3.5.3(@types/react-dom@18.0.11)(@types/react@18.0.35)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@types/react': 18.0.35
       cloudflare-video-element: 1.3.3
       dash-video-element: 0.1.6

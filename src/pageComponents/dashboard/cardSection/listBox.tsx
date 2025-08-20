@@ -245,7 +245,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
-			{/* <PreviewLightBox id={0} open={open} setOpen={setOpen} /> */}
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
 				{cardTypeCondition === viewValues?.moodboard ? (
 					<Masonry

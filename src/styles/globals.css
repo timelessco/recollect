@@ -389,3 +389,10 @@ input[type="checkbox"]:checked + .checkbox-div {
 .split-view-container.split-view-sash-dragging .sash-vertical {
 	transition: none;
 }
+
+.slide-wrapper {
+	transform: translateY(var(--yarl__pull_offset)) scale(var(--yarl__pull_scale));
+	opacity: var(--yarl__pull_opacity);
+
+	@apply transition-all duration-[50ms] ease-linear;
+}

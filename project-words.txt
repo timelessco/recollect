@@ -39,6 +39,7 @@ Knip
 knip
 Kolkata
 Loggedin
+Gemini
 loggedin
 micnncim
 Navin
@@ -120,3 +121,5 @@ presentationml
 abiword
 spreadsheetml
 thednp
+yarl
+gemeni

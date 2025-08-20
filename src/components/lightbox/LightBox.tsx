@@ -5,7 +5,9 @@ import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import loaderGif from "../../../public/loader-gif.gif";
-import { MetaDataIcon } from "../../icons/metaData";
+import { LightboxCloseIcon } from "../../icons/lightboxCloseIcon";
+import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
+import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type ImgMetadataType,
@@ -14,8 +16,6 @@ import {
 import {
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
-	LIGHTBOX_CLOSE_BUTTON,
-	LIGHTBOX_SHOW_PANE_BUTTON,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
 	PDF_VIEWER_PARAMS,
@@ -29,6 +29,7 @@ import {
 import { getCategorySlugFromRouter } from "../../utils/url";
 import { VideoPlayer } from "../VideoPlayer";
 
+import { PullEffect } from "./CloseOnSwipeDown";
 import MetaButtonPlugin from "./LightBoxPlugin";
 import { type CustomSlide } from "./previewLightBox";
 
@@ -38,7 +39,7 @@ import { type CustomSlide } from "./previewLightBox";
  */
 export type Bookmark = Omit<
 	SingleListData,
-	"addedTags" | "inserted_at" | "trash" | "user_id"
+	"inserted_at" | "trash" | "user_id"
 > & {
 	createdAt?: string;
 	domain?: string;
@@ -48,7 +49,7 @@ export type Bookmark = Omit<
 /**
  * CustomLightBox Component
  *
- * A  lightbox component that displays various types of media content
+ * A lightbox component that displays various types of media content
  * including images, videos, PDFs, and embedded web content. Features include:
  * - Zoom functionality for images
  * - Video playback support (including YouTube)
@@ -101,7 +102,7 @@ export const CustomLightBox = ({
 	const slides = useMemo(() => {
 		if (!bookmarks) return [];
 
-		return bookmarks.map((bookmark) => {
+		return bookmarks?.map((bookmark) => {
 			// Determine media types based on bookmark properties
 			const isImage =
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
@@ -123,6 +124,7 @@ export const CustomLightBox = ({
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!isYouTubeVideo(bookmark?.url) &&
 					!bookmark?.meta_data?.iframeAllowed && {
+						// using || instead of ?? to include 0
 						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						width: bookmark?.meta_data?.width || 1_200,
 						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -174,7 +176,7 @@ export const CustomLightBox = ({
 						}
 					}}
 				>
-					<div className="relative max-w-[1200px]">
+					<div className=" w-full max-w-[min(1200px,90vw)]">
 						<Image
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
@@ -195,44 +197,42 @@ export const CustomLightBox = ({
 
 			const renderVideoSlide = () => (
 				<div className="flex h-full w-full items-center justify-center">
-					<div className="w-full max-w-4xl">
+					<div className="w-full max-w-[min(1200px,90vw)]">
 						<VideoPlayer isActive={isActive} src={bookmark?.url} />
 					</div>
 				</div>
 			);
 
 			const renderPDFSlide = () => (
-				<div className="relative flex h-full w-full max-w-[1200px] items-center justify-center">
-					<div className="flex h-full w-full items-center justify-center">
-						{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
-						{typeof window !== "undefined" ? (
-							<object
-								aria-label="PDF Viewer"
-								className="block h-full w-full border-none"
-								data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-								type={PDF_MIME_TYPE}
-							>
-								<div className="p-4 text-center">
-									<p className="text-gray-700">
-										This PDF cannot be displayed in your browser.
-									</p>
-									<a
-										className="text-blue-600 underline"
-										href={bookmark?.url}
-										rel="noopener noreferrer"
-										target="_blank"
-									>
-										Click here to download it instead
-									</a>
-								</div>
-							</object>
-						) : null}
-					</div>
+				<div className="flex h-full w-full max-w-[min(1200px,90vw)] items-end">
+					{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
+					{typeof window !== "undefined" ? (
+						<object
+							aria-label="PDF Viewer"
+							className="h-full max-h-[90vh] w-full"
+							data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+							type={PDF_MIME_TYPE}
+						>
+							<div className="p-4 text-center">
+								<p className="text-gray-700">
+									This PDF cannot be displayed in your browser.
+								</p>
+								<a
+									className="text-blue-600 underline"
+									href={bookmark?.url}
+									rel="noopener noreferrer"
+									target="_blank"
+								>
+									Click here to download it instead
+								</a>
+							</div>
+						</object>
+					) : null}
 				</div>
 			);
 
 			const renderYouTubeSlide = () => (
-				<div className="flex h-full w-full max-w-[1200px] items-center justify-center">
+				<div className="relative flex h-full max-h-[80vh] w-full max-w-[min(1200px,90vw)] items-end justify-center">
 					<VideoPlayer isActive={isActive} src={bookmark?.url} />
 				</div>
 			);
@@ -240,15 +240,13 @@ export const CustomLightBox = ({
 			const renderWebEmbedSlide = () => {
 				if (bookmark?.meta_data?.iframeAllowed) {
 					return (
-						<div className="h-full min-h-[500px] w-full max-w-[1200px]">
-							{typeof window !== "undefined" ? (
-								<object
-									className="h-full w-full"
-									data={bookmark?.url}
-									title="Website Preview"
-									type="text/html"
-								/>
-							) : null}
+						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
+							<object
+								className="h-full max-h-[90vh] w-full"
+								data={bookmark?.url}
+								title="Website Preview"
+								type="text/html"
+							/>
 						</div>
 					);
 				}
@@ -279,10 +277,10 @@ export const CustomLightBox = ({
 					// Render constrained image when dimensions are too large
 					if (exceedsWidth || underHeight) {
 						return (
-							<div className="flex max-h-[80vh] max-w-[1200px] items-center justify-center">
+							<div className=" flex  max-w-[min(1200px,90vw)] items-center justify-center">
 								<Image
 									alt="Preview"
-									className="h-auto w-auto object-contain"
+									className="h-auto max-h-[80vh] w-auto object-contain"
 									draggable={false}
 									height={placeholderHeight}
 									onDoubleClick={(event) => {
@@ -338,13 +336,13 @@ export const CustomLightBox = ({
 
 					return (
 						<div
-							className={`flex   min-h-screen   origin-center items-center justify-center ${
+							className={`flex min-h-screen origin-center items-center justify-center ${
 								isScreenshot ? "scale-50" : ""
 							}`}
 						>
 							<Image
 								alt="Preview"
-								className="h-auto w-auto"
+								className="h-auto max-h-[80vh] w-auto "
 								draggable={false}
 								height={scaledHeight}
 								onDoubleClick={(event) => {
@@ -400,9 +398,8 @@ export const CustomLightBox = ({
 				content = renderWebEmbedSlide();
 			}
 
-			// content wrapper
 			return (
-				<div className="flex h-full w-full items-center justify-center">
+				<div className="slide-wrapper flex h-full w-full items-center justify-center">
 					{content}
 				</div>
 			);
@@ -414,19 +411,21 @@ export const CustomLightBox = ({
 	 * Custom navigation icons
 	 * Left icon: Simple clickable area for previous navigation
 	 */
-	const iconLeft = () => <div className=" h-[50vh] w-[150px] cursor-pointer" />;
+	const iconLeft = () => <div className=" h-[50vh] w-[5vw]" />;
 
 	/**
 	 * Right icon: Adjusts margin when side panel is open
 	 */
-	const iconRight = () => (
-		<div
-			className={`h-[50vh] w-[150px] ${lightboxShowSidepane ? "mr-80" : ""}`}
-		/>
+	const iconRight = () => <div className="h-[50vh] w-[5vw]" />;
+
+	const iconSidePane = () => (
+		<div className="group h-5 w-5 cursor-pointer text-[rgba(0,0,0,1)] hover:text-black">
+			<ShowSidePaneButton />
+		</div>
 	);
 
 	const isFirstSlide = activeIndex === 0;
-	const isLastSlide = activeIndex === bookmarks.length - 1;
+	const isLastSlide = activeIndex === bookmarks?.length - 1;
 	return (
 		<Lightbox
 			// Animation configuration for lightbox transitions
@@ -443,7 +442,7 @@ export const CustomLightBox = ({
 					if (!isPage || !bookmarks?.[index]) return;
 					setActiveIndex(index);
 					// Update browser URL to make lightbox state shareable
-					void router.push(
+					void router?.push(
 						{
 							pathname: `${CATEGORY_ID_PATHNAME}`,
 							query: {
@@ -467,18 +466,27 @@ export const CustomLightBox = ({
 				slide: renderSlide,
 				iconNext: () => iconRight(),
 				iconPrev: () => iconLeft(),
-				buttonPrev: slides.length <= 1 || isFirstSlide ? () => null : undefined,
-				buttonNext: slides.length <= 1 || isLastSlide ? () => null : undefined,
+				buttonPrev:
+					slides?.length <= 1 || isFirstSlide ? () => null : undefined,
+				buttonNext: slides?.length <= 1 || isLastSlide ? () => null : undefined,
 				buttonZoom: () => null,
+				controls: () => <PullEffect />,
 			}}
 			slides={slides}
 			styles={{
+				toolbar: {
+					position: "absolute",
+					top: "0",
+					left: "0",
+				},
 				container: {
 					backgroundColor: "rgba(255, 255, 255, 0.9)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
-					width: lightboxShowSidepane ? "80%" : "100%",
+					width: lightboxShowSidepane
+						? "calc(100% - min(max(320px, 20%), 400px))"
+						: "100%",
 					animation: "customFadeScaleIn 0.25s ease-in-out",
 				},
 				slide: {
@@ -490,17 +498,47 @@ export const CustomLightBox = ({
 			}}
 			toolbar={{
 				buttons: [
-					// Metadata panel toggle button
-					<button
-						className="flex items-center gap-2 text-gray-500 transition hover:text-gray-700"
-						key={LIGHTBOX_SHOW_PANE_BUTTON}
-						onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
-						type="button"
+					// Left: Close button
+					<div className="flex items-center" key="left-section">
+						<button
+							className="group ml-4 mt-3.5 flex items-center justify-center rounded-full"
+							onClick={handleClose}
+							type="button"
+						>
+							<LightboxCloseIcon />
+						</button>
+					</div>,
+
+					// Center: Bookmark URL (flex: 1 ensures centering)
+					<div
+						className="flex flex-1 justify-center  pt-[9px] text-center"
+						key="center-section"
 					>
-						<MetaDataIcon />
-					</button>,
-					// Standard close button
-					LIGHTBOX_CLOSE_BUTTON,
+						<a
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg  px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-[rgba(0,0,0,0.03)]"
+							href={bookmarks?.[activeIndex]?.url}
+							key="center-section"
+							rel="noreferrer"
+							target="_blank"
+						>
+							<span className="truncate text-[#707070]">
+								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
+							</span>
+							<div className="h-4 w-4 shrink-0">
+								<LightboxExternalLink />
+							</div>
+						</a>
+					</div>,
+
+					// Right: Side pane toggle button
+					<div className="flex items-center pr-4 pt-[7px]" key="right-section">
+						<button
+							onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
+							type="button"
+						>
+							{iconSidePane()}
+						</button>
+					</div>,
 				],
 			}}
 			zoom={{ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 100 }}
@@ -513,23 +551,26 @@ const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
 
 	try {
 		const url = new URL(urlString);
-		const host = url.hostname;
+		const host = url?.hostname;
 
 		// Match video URLs only
 		if (host === YOUTU_BE) {
-			return Boolean(url.pathname.slice(1));
+			return Boolean(url?.pathname?.slice(1));
 		}
 
 		if (host === `www.${YOUTUBE_COM}` || host === YOUTUBE_COM) {
-			if (url.pathname === "/watch" && url.searchParams.has("v")) {
+			if (url?.pathname === "/watch" && url?.searchParams.has("v")) {
 				return true;
 			}
 
-			if (url.pathname.startsWith(`/embed/`)) {
+			if (url?.pathname?.startsWith(`/embed/`)) {
 				return true;
 			}
 
-			if (url.pathname.startsWith("/shorts/") && url.pathname.split("/")[2]) {
+			if (
+				url?.pathname?.startsWith("/shorts/") &&
+				url?.pathname?.split("/")[2]
+			) {
 				return true;
 			}
 		}

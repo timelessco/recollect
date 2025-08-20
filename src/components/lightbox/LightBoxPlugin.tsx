@@ -8,6 +8,7 @@
  * - Formats dates for better readability
  * - Integrates with the main lightbox component for a seamless experience
  */
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,12 +22,18 @@ import {
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import { GeminiAiIcon } from "../../icons/gemeniAiIcon";
+import ImageIcon from "../../icons/imageIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import { type SingleListData } from "../../types/apiTypes";
+import { type SingleListData, type UserTagsData } from "../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../utils/constants";
+import { Icon } from "../atoms/icon";
+import Spinner from "../spinner";
+
+import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -47,11 +54,15 @@ const formatDate = (dateString: string) => {
  */
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
+	const [showMore, setShowMore] = useState(false);
+	const [isOverflowing, setIsOverflowing] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(false);
+	const descriptionRef = useRef<HTMLParagraphElement>(null);
 
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const previousData = queryClient.getQueryData([
+	const previousData = queryClient?.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
 		CATEGORY_ID,
@@ -76,10 +87,25 @@ const MyComponent = () => {
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state.lightboxShowSidepane,
 	);
+	useEffect(() => {
+		setShowMore(false);
+		setIsOverflowing(false);
+		if (descriptionRef?.current) {
+			// Check if text overflows
+			const element = descriptionRef?.current;
+			setIsOverflowing(element?.scrollHeight > element?.clientHeight);
+		}
+	}, [currentBookmark?.id]);
 
-	if (!currentBookmark) return null;
+	if (!currentBookmark) {
+		return (
+			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-[0.5px] border-[rgba(0,0,0,0.13)] bg-[rgba(255,255,255,0.98)] backdrop-blur-[41px]">
+				<Spinner />
+			</div>
+		);
+	}
+
 	const domain = new URL(currentBookmark?.url)?.hostname;
-
 	return (
 		<AnimatePresence>
 			{lightboxShowSidepane && (
@@ -88,87 +114,142 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 flex-col border-l border-gray-200 bg-white/90 shadow-xl backdrop-blur-xl"
+					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-[0.5px] border-[rgba(0,0,0,0.13)] bg-[rgba(255,255,255,0.98)] backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
 					initial={{ x: "100%" }}
 				>
-					<div className="flex items-center justify-between border-b border-gray-300 px-4 py-3">
-						<div className="flex items-center space-x-2">
-							{metaData?.favIcon && (
-								<Image
-									alt=""
-									className="h-5 w-5 rounded"
-									height={16}
-									onError={(error) => {
-										const target = error?.target as HTMLImageElement;
-										target.style.display = "none";
-									}}
-									src={metaData.favIcon}
-									width={16}
-								/>
-							)}
-							<span className="font-medium text-gray-700" tabIndex={-1}>
-								Meta Data
-							</span>
-						</div>
-					</div>
-					<div className="flex-1 space-y-4 overflow-y-auto p-4 text-sm text-gray-800">
+					<div className="flex flex-1 flex-col p-5 text-left  ">
 						{currentBookmark?.title && (
 							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Title
-								</p>
-								<p className="font-medium" tabIndex={-1}>
+								<p
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
+									tabIndex={-1}
+								>
 									{currentBookmark.title}
 								</p>
 							</div>
 						)}
 						{domain && (
-							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Domain
-								</p>
-								<p tabIndex={-1}>{domain}</p>
-							</div>
+							<p
+								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]"
+								tabIndex={-1}
+							>
+								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
+									{metaData?.favIcon ? (
+										<Image
+											alt="favicon"
+											className="h-[15px] w-[15px] rounded"
+											height={16}
+											onError={(error) => {
+												const target = error?.target as HTMLImageElement;
+												target.style.display = "none";
+											}}
+											src={metaData?.favIcon}
+											width={16}
+										/>
+									) : (
+										<ImageIcon size="15" />
+									)}
+									<span className="truncate">{domain}</span>
+									<span>·</span>
+									{currentBookmark?.inserted_at && (
+										<span className="truncate">
+											{formatDate(currentBookmark?.inserted_at)}
+										</span>
+									)}
+								</div>
+							</p>
 						)}
 						{currentBookmark?.description && (
 							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Description
-								</p>
-								<p className="text-gray-700" tabIndex={-1}>
+								<p
+									className={`${
+										showMore ? "" : "line-clamp-4"
+									} text-clip text-[13px] leading-[138%] tracking-[1%] text-[rgba(55,65,81,1)]`}
+									ref={descriptionRef}
+									tabIndex={-1}
+								>
 									{currentBookmark.description}
 								</p>
+								{isOverflowing && (
+									<button
+										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+										onClick={() => setShowMore(!showMore)}
+										type="button"
+									>
+										{showMore ? "Show less" : "Show more"}
+									</button>
+								)}
 							</div>
 						)}
-						{currentBookmark?.inserted_at && (
-							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									Saved on
-								</p>
-								<p tabIndex={-1}>{formatDate(currentBookmark.inserted_at)}</p>
-							</div>
-						)}
-						{currentBookmark?.url && (
-							<div>
-								<p className="text-xs text-gray-500" tabIndex={-1}>
-									URL
-								</p>
-								<a
-									className="break-all text-blue-600 underline"
-									href={currentBookmark.url}
-									rel="noopener noreferrer"
-									tabIndex={-1}
-									target="_blank"
-								>
-									{currentBookmark.url}
-								</a>
-							</div>
-						)}
+						<AddToCollectionDropdown bookmarkId={currentBookmark?.id} />
 					</div>
+					{(currentBookmark?.addedTags?.length > 0 ||
+						metaData?.img_caption) && (
+						<motion.div
+							animate={{
+								y: isExpanded ? 0 : "calc(100% - 70px)",
+								transition: {
+									type: "spring",
+									damping: 25,
+									stiffness: 300,
+									delay: 0,
+									only: ["y"],
+								},
+							}}
+							className="relative overflow-hidden"
+							initial={{ y: "100%" }}
+						>
+							{currentBookmark?.addedTags?.length > 0 && (
+								<div className="px-5 pb-[19px]">
+									<div className="flex flex-wrap gap-[6px]">
+										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
+											<span
+												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+												key={tag?.id}
+											>
+												#{tag?.name}
+											</span>
+										))}
+									</div>
+								</div>
+							)}
+							{metaData?.img_caption && (
+								<div className="relative px-5 py-3 text-sm">
+									<motion.div
+										className="mb-2 flex cursor-pointer items-center gap-2"
+										onClick={() => setIsExpanded(!isExpanded)}
+										whileTap={{ scale: 0.98 }}
+									>
+										<Icon className="h-[15px] w-[15px]">
+											<GeminiAiIcon />
+										</Icon>
+										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]">
+											AI Summary
+										</p>
+									</motion.div>
+									<div className="max-h-[200px] overflow-y-auto">
+										<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
+											{metaData?.img_caption}
+										</p>
+									</div>
+								</div>
+							)}
+							{/* Gradient overlay */}
+							{!isExpanded && (
+								<div
+									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[50px]"
+									style={{
+										background:
+											"linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 100%)",
+									}}
+								/>
+							)}
+						</motion.div>
+					)}
 				</motion.div>
 			)}
 		</AnimatePresence>

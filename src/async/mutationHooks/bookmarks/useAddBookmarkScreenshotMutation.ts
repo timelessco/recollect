@@ -18,7 +18,7 @@ export default function useAddBookmarkScreenshotMutation() {
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const session = useSupabaseSession((state) => state.session);
 	const { sortBy } = useGetSortBy();
-	const { removeLoadingBookmarkId } = useLoadersStore();
+	// const { removeLoadingBookmarkId } = useLoadersStore();
 
 	const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
 		onSuccess: () => {
@@ -27,11 +27,11 @@ export default function useAddBookmarkScreenshotMutation() {
 		onError: (error) => {
 			errorToast("Screenshot error: " + error);
 		},
-		onSettled: (apiResponse: unknown) => {
-			const response = apiResponse as { data: { data: SingleListData[] } };
-			if (response?.data?.data[0]?.id) {
-				removeLoadingBookmarkId(response?.data?.data[0]?.id);
-			}
+		onSettled: () => {
+			// const response = apiResponse as { data: { data: SingleListData[] } };
+			// if (response?.data?.data[0]?.id) {
+			// 	removeLoadingBookmarkId(response?.data?.data[0]?.id);
+			// }
 
 			void queryClient.invalidateQueries([
 				BOOKMARKS_KEY,
