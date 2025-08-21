@@ -172,8 +172,7 @@ export const CustomLightBox = ({
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
-									? // @ts-expect-error // disabling because don't know why ogimage is in smallcase
-									  bookmark?.ogImage ?? bookmark?.ogimage
+									? bookmark?.ogImage ?? bookmark?.ogimage
 									: bookmark?.url ?? ""
 							}
 							width={bookmark?.meta_data?.width ?? 1_200}
@@ -239,7 +238,6 @@ export const CustomLightBox = ({
 				}
 
 				// Check if we have a placeholder to show
-				// @ts-expect-error // disabling because don't know why ogimage is in smallcase
 				const placeholder = bookmark?.ogImage || bookmark?.ogimage;
 				if (placeholder) {
 					const placeholderHeight = bookmark?.meta_data?.height ?? 800;

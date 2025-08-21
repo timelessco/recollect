@@ -725,7 +725,6 @@ const CardSection = ({
 	const renderSortByCondition = () =>
 		bookmarksList?.map((item) => ({
 			...item,
-			// @ts-expect-error // disabling because don't know why ogimage is in smallcase
 			ogImage: item?.ogImage || (item?.ogimage as string),
 		}));
 
