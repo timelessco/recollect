@@ -57,6 +57,7 @@ export const PreviewLightBox = ({
 	const _previousOpenRef = useRef(open);
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
 	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
