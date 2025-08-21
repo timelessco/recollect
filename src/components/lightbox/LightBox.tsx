@@ -77,6 +77,10 @@ export const CustomLightBox = ({
 	const zoomRef = useRef<ZoomRef>(null);
 	const [zoomLevel, setZoomLevel] = useState(1);
 	const [placeholderError, setPlaceholderError] = useState(false);
+	const isMobile =
+		typeof window !== "undefined" &&
+		window.matchMedia("(max-width: 768px)").matches;
+
 	// Zustand store hooks for managing lightbox side panel state
 	const setLightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.setLightboxShowSidepane,
@@ -410,12 +414,12 @@ export const CustomLightBox = ({
 	 * Custom navigation icons
 	 * Left icon: Simple clickable area for previous navigation
 	 */
-	const iconLeft = () => <div className=" h-[50vh] w-[5vw]" />;
+	const iconLeft = () => <div className=" h-[100vh] w-[5vw]" />;
 
 	/**
 	 * Right icon: Adjusts margin when side panel is open
 	 */
-	const iconRight = () => <div className="h-[50vh] w-[5vw]" />;
+	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
 
 	const iconSidePane = () => (
 		<div className="group h-5 w-5 cursor-pointer text-[rgba(0,0,0,1)] hover:text-black">
@@ -469,13 +473,20 @@ export const CustomLightBox = ({
 				iconNext: () => iconRight(),
 				iconPrev: () => iconLeft(),
 				buttonPrev:
-					slides?.length <= 1 || isFirstSlide ? () => null : undefined,
-				buttonNext: slides?.length <= 1 || isLastSlide ? () => null : undefined,
+					slides?.length <= 1 || isFirstSlide || isMobile
+						? () => null
+						: undefined,
+				buttonNext:
+					slides?.length <= 1 || isLastSlide || isMobile
+						? () => null
+						: undefined,
 				buttonZoom: () => null,
 				controls: () => <PullEffect enabled={zoomLevel === 1} />,
 			}}
 			slides={slides}
 			styles={{
+				navigationNext: { top: "55.1px", transform: "none", padding: "0" },
+				navigationPrev: { top: "55.1px", transform: "none", padding: "0" },
 				toolbar: {
 					position: "absolute",
 					top: "0",
