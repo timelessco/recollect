@@ -9,10 +9,7 @@ import { LightboxCloseIcon } from "../../icons/lightboxCloseIcon";
 import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
 import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
-import {
-	type ImgMetadataType,
-	type SingleListData,
-} from "../../types/apiTypes";
+import { type SingleListData } from "../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
@@ -31,19 +28,6 @@ import { VideoPlayer } from "../VideoPlayer";
 import { PullEffect } from "./CloseOnSwipeDown";
 import MetaButtonPlugin from "./LightBoxPlugin";
 import { type CustomSlide } from "./previewLightBox";
-
-/**
- * Bookmark type definition - extends SingleListData but omits certain fields
- * and adds optional properties for creation date, domain, and metadata
- */
-export type Bookmark = Omit<
-	SingleListData,
-	"inserted_at" | "trash" | "user_id"
-> & {
-	createdAt?: string;
-	domain?: string;
-	meta_data?: Partial<ImgMetadataType>;
-};
 
 /**
  * CustomLightBox Component
@@ -66,7 +50,7 @@ export const CustomLightBox = ({
 	isPage,
 }: {
 	activeIndex: number;
-	bookmarks?: Bookmark[];
+	bookmarks?: SingleListData[];
 	handleClose: () => void;
 	isOpen: boolean;
 	isPage?: boolean;
@@ -76,7 +60,6 @@ export const CustomLightBox = ({
 	const router = useRouter();
 	const zoomRef = useRef<ZoomRef>(null);
 	const [zoomLevel, setZoomLevel] = useState(1);
-	const [placeholderError, setPlaceholderError] = useState(false);
 	const isMobile =
 		typeof window !== "undefined" &&
 		window.matchMedia("(max-width: 768px)").matches;
@@ -189,8 +172,10 @@ export const CustomLightBox = ({
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
-									? bookmark?.ogImage ?? ""
-									: bookmark?.url
+									? // eslint-disable-next-line line-comment-position
+									  // @ts-expect-error // disabling because don't know why ogimage is in smallcase
+									  bookmark?.ogImage ?? bookmark?.ogimage
+									: bookmark?.url ?? ""
 							}
 							width={bookmark?.meta_data?.width ?? 1_200}
 						/>
@@ -255,8 +240,9 @@ export const CustomLightBox = ({
 				}
 
 				// Check if we have a placeholder to show
-				const placeholder = bookmark?.ogImage;
-				if (placeholder && !placeholderError) {
+				// @ts-expect-error // disabling because don't know why ogimage is in smallcase
+				const placeholder = bookmark?.ogImage || bookmark?.ogimage;
+				if (placeholder) {
 					const placeholderHeight = bookmark?.meta_data?.height ?? 800;
 					const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
 
@@ -328,7 +314,6 @@ export const CustomLightBox = ({
 											zoom?.zoomIn();
 										}
 									}}
-									onError={() => setPlaceholderError(true)}
 									priority
 									src={placeholder}
 									width={placeholderWidth}
@@ -359,7 +344,6 @@ export const CustomLightBox = ({
 										zoom?.zoomIn();
 									}
 								}}
-								onError={() => setPlaceholderError(true)}
 								priority
 								src={placeholder}
 								width={scaledWidth}
@@ -407,7 +391,7 @@ export const CustomLightBox = ({
 				</div>
 			);
 		},
-		[bookmarks, slides, placeholderError],
+		[bookmarks, slides],
 	);
 
 	/**

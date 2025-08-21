@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
 import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
-import { useSupabaseSession } from "../../store/componentStore";
-import { type SingleListData } from "../../types/apiTypes";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
+import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
+	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
 } from "../../utils/constants";
+import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 
 import { CustomLightBox } from "./LightBox";
@@ -39,24 +45,36 @@ export const PreviewLightBox = ({
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const categoryData = queryClient.getQueryData([
+		CATEGORIES_KEY,
+		session?.user?.id,
+	]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
 	const [isClosing, setIsClosing] = useState(false);
 	const [activeIndex, setActiveIndex] = useState(-1);
 	const _previousOpenRef = useRef(open);
 	const { sortBy } = useGetSortBy();
+	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
-		CATEGORY_ID,
-		sortBy,
-	]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
+		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
+		searchText ? searchText : sortBy,
+	]) as {
+		data: SingleListData[];
+		pages: Array<{ data: SingleListData[] }>;
+	};
 
 	// Get and transform bookmarks from query cache
 	const bookmarks = useMemo(() => {
-		const rawBookmarks =
-			previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
+		const rawBookmarks = searchText
+			? previousData?.data
+			: previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
-	}, [previousData?.pages]);
+	}, [previousData?.pages, previousData?.data, searchText]);
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {
