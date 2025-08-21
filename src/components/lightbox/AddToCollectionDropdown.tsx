@@ -9,6 +9,7 @@ import { type CategoriesData } from "../../types/apiTypes";
 import { type IconData } from "../../types/componentTypes";
 import { options } from "../../utils/commonData";
 import { CATEGORIES_KEY, colorPickerColors } from "../../utils/constants";
+import AriaDropDown from "../ariaDropdown/ariaDropdown";
 
 type AddToCollectionDropdownProps = {
 	bookmarkId: number;
@@ -21,7 +22,6 @@ type MessageType = {
 
 export const AddToCollectionDropdown = memo(
 	({ bookmarkId }: AddToCollectionDropdownProps) => {
-		const [isOpen, setIsOpen] = useState(false);
 		const [message, setMessage] = useState<MessageType | null>(null);
 		const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 		const session = useSupabaseSession((state) => state.session);
@@ -59,7 +59,6 @@ export const AddToCollectionDropdown = memo(
 						update_access: true,
 					});
 					showMessage(`Added to "${collection?.category_name}"`, "success");
-					setIsOpen(false);
 				} catch (error) {
 					console.error("Error adding to collection:", error);
 					showMessage("Failed to add to collection", "error");
@@ -78,11 +77,6 @@ export const AddToCollectionDropdown = memo(
 			[],
 		);
 
-		const toggleDropdown = useCallback(
-			() => setIsOpen((previous) => !previous),
-			[],
-		);
-
 		return (
 			<div className="relative pt-[22px]">
 				{message && (
@@ -96,35 +90,33 @@ export const AddToCollectionDropdown = memo(
 						{message?.text}
 					</div>
 				)}
-				<button
-					className="flex items-center gap-2 text-[13px] leading-[138%] tracking-[1%] text-[#858585] hover:text-gray-700"
-					onClick={toggleDropdown}
-					type="button"
-				>
+				<div className="flex items-center gap-2 ">
 					<div className="h-[14px] w-[14px]">
 						<AddToCollectionsButton />
 					</div>
-					<span>Add to collection</span>
-				</button>
-				{isOpen && (
-					<div className="absolute left-0 z-50 mt-1 w-[150px] rounded-xl bg-white p-1 shadow-[0_0_1px_0_rgba(0,0,0,0.19),0_1px_2px_0_rgba(0,0,0,0.07),0_6px_15px_-5px_rgba(0,0,0,0.11)]">
-						{collections?.map((collection) => {
-							const iconData = find(
-								iconsList,
-								(item) => item?.label === collection?.icon,
-							);
+					<AriaDropDown
+						menuButton="Add to collection"
+						menuButtonClassName=" text-[13px] leading-[138%] tracking-[1%] text-[#858585] hover:text-gray-700"
+					>
+						<div className="absolute -left-5 z-50 mt-1 w-[150px] rounded-xl bg-white p-1 shadow-[0_0_1px_0_rgba(0,0,0,0.19),0_1px_2px_0_rgba(0,0,0,0.07),0_6px_15px_-5px_rgba(0,0,0,0.11)]">
+							{collections?.map((collection) => {
+								const iconData = find(
+									iconsList,
+									(item) => item?.label === collection?.icon,
+								);
 
-							return (
-								<CollectionItem
-									collection={collection}
-									iconData={iconData}
-									key={collection?.id}
-									onClick={handleCollectionClick}
-								/>
-							);
-						})}
-					</div>
-				)}
+								return (
+									<CollectionItem
+										collection={collection}
+										iconData={iconData}
+										key={collection?.id}
+										onClick={handleCollectionClick}
+									/>
+								);
+							})}
+						</div>
+					</AriaDropDown>
+				</div>
 			</div>
 		);
 	},
@@ -147,7 +139,7 @@ const CollectionItem = memo(
 
 		return (
 			<button
-				className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-left hover:bg-[rgba(243,243,243,1)]"
+				className="flex w-full items-center gap-2 rounded-lg p-2 text-left hover:bg-[rgba(243,243,243,1)]"
 				onClick={handleClick}
 				type="button"
 			>
