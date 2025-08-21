@@ -410,12 +410,12 @@ export const CustomLightBox = ({
 	 * Custom navigation icons
 	 * Left icon: Simple clickable area for previous navigation
 	 */
-	const iconLeft = () => <div className=" h-[50vh] w-[5vw]" />;
+	const iconLeft = () => <div className=" h-[100vh] w-[5vw]" />;
 
 	/**
 	 * Right icon: Adjusts margin when side panel is open
 	 */
-	const iconRight = () => <div className="h-[50vh] w-[5vw]" />;
+	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
 
 	const iconSidePane = () => (
 		<div className="group h-5 w-5 cursor-pointer text-[rgba(0,0,0,1)] hover:text-black">
@@ -477,6 +477,7 @@ export const CustomLightBox = ({
 			slides={slides}
 			styles={{
 				toolbar: {
+					zIndex: 10,
 					position: "absolute",
 					top: "0",
 					left: "0",
