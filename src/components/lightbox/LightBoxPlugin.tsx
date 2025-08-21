@@ -94,8 +94,8 @@ const MyComponent = () => {
 	useEffect(() => {
 		setShowMore(false);
 		setIsExpanded(false);
-		if (expandableRef.current) {
-			const contentHeight = expandableRef.current.scrollHeight;
+		if (expandableRef?.current) {
+			const contentHeight = expandableRef?.current?.scrollHeight;
 			setHasAIOverflowContent(contentHeight > 120);
 		}
 
