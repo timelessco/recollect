@@ -240,7 +240,7 @@ main {
 }
 
 .aria-checkbox:checked + .checkbox-div::before {
-	@apply absolute z-[2] h-full w-full rounded bg-black bg-[url('/checkbox-tick.svg')] bg-center bg-no-repeat content-[""];
+	@apply absolute z-[2] h-full w-full rounded  bg-[url('/checkbox-tick.svg')] bg-center bg-no-repeat content-[""];
 }
 
 input[type="checkbox"]:checked + .checkbox-div {
