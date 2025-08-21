@@ -96,7 +96,7 @@ const MyComponent = () => {
 		setIsExpanded(false);
 		if (expandableRef.current) {
 			const contentHeight = expandableRef.current.scrollHeight;
-			setHasAIOverflowContent(contentHeight > 100);
+			setHasAIOverflowContent(contentHeight > 120);
 		}
 
 		if (descriptionRef?.current) {
@@ -104,7 +104,13 @@ const MyComponent = () => {
 			const element = descriptionRef?.current;
 			setIsOverflowing(element?.scrollHeight > element?.clientHeight);
 		}
-	}, [currentBookmark?.id, currentIndex]);
+	}, [
+		currentBookmark?.id,
+		currentIndex,
+		expandableRef,
+		descriptionRef,
+		lightboxShowSidepane,
+	]);
 
 	if (!currentBookmark) {
 		return (
@@ -199,19 +205,16 @@ const MyComponent = () => {
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.img_caption) && (
 						<motion.div
-							animate={{
-								y: isExpanded ? 0 : "calc(100% - 100px)",
-								transition: {
-									type: "spring",
-									damping: 25,
-									stiffness: 300,
-									delay: 0,
-									only: ["y"],
-								},
-							}}
+							animate={{ y: isExpanded ? 0 : "calc(100% - 100px)" }}
 							className="relative overflow-hidden"
-							initial={{ y: "100%" }}
+							initial={{ y: "calc(100% - 100px)" }}
+							key={currentBookmark?.id}
 							ref={expandableRef}
+							transition={{
+								type: "spring",
+								damping: 25,
+								stiffness: 300,
+							}}
 						>
 							{currentBookmark?.addedTags?.length > 0 && (
 								<div className="px-5 pb-[19px]">
@@ -228,23 +231,23 @@ const MyComponent = () => {
 								</div>
 							)}
 							{metaData?.img_caption && (
-								<div className="relative px-5 py-3 text-sm">
-									<motion.div
-										className={`mb-2 flex ${
-											hasAIOverflowContent ? "cursor-pointer" : ""
-										} items-center gap-2`}
-										onClick={() =>
-											hasAIOverflowContent && setIsExpanded(!isExpanded)
-										}
-										whileTap={{ scale: hasAIOverflowContent ? 0.98 : 1 }}
-									>
+								<motion.div
+									className={`relative px-5 py-3 text-sm ${
+										hasAIOverflowContent ? "cursor-pointer" : ""
+									}`}
+									onClick={() =>
+										hasAIOverflowContent && setIsExpanded(!isExpanded)
+									}
+									whileTap={hasAIOverflowContent ? { scale: 0.98 } : {}}
+								>
+									<div className="mb-2 flex items-center gap-2">
 										<Icon className="h-[15px] w-[15px]">
 											<GeminiAiIcon />
 										</Icon>
 										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]">
 											AI Summary
 										</p>
-									</motion.div>
+									</div>
 									<div
 										className={`max-h-[200px] ${
 											isExpanded ? "overflow-y-auto" : ""
@@ -256,7 +259,7 @@ const MyComponent = () => {
 											{metaData?.ocr}
 										</p>
 									</div>
-								</div>
+								</motion.div>
 							)}
 							{/* Gradient overlay */}
 							{!isExpanded && hasAIOverflowContent && (
