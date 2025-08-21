@@ -457,11 +457,11 @@ export const CustomLightBox = ({
 				iconNext: () => iconRight(),
 				iconPrev: () => iconLeft(),
 				buttonPrev:
-					slides?.length <= 1 || isFirstSlide || isMobile
+					slides?.length <= 1 || isFirstSlide || isMobile || zoomLevel !== 1
 						? () => null
 						: undefined,
 				buttonNext:
-					slides?.length <= 1 || isLastSlide || isMobile
+					slides?.length <= 1 || isLastSlide || isMobile || zoomLevel !== 1
 						? () => null
 						: undefined,
 				buttonZoom: () => null,
