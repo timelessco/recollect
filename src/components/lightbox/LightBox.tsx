@@ -476,8 +476,9 @@ export const CustomLightBox = ({
 			}}
 			slides={slides}
 			styles={{
+				navigationNext: { top: "55.1px", transform: "" },
+				navigationPrev: { top: "55.1px", transform: "" },
 				toolbar: {
-					zIndex: 10,
 					position: "absolute",
 					top: "0",
 					left: "0",
