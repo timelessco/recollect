@@ -172,8 +172,7 @@ export const CustomLightBox = ({
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
-									? // eslint-disable-next-line line-comment-position
-									  // @ts-expect-error // disabling because don't know why ogimage is in smallcase
+									? // @ts-expect-error // disabling because don't know why ogimage is in smallcase
 									  bookmark?.ogImage ?? bookmark?.ogimage
 									: bookmark?.url ?? ""
 							}
