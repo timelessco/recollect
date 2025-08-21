@@ -52,7 +52,6 @@ import {
 	defaultBlur,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
-	SEARCH_URL,
 	TRASH_URL,
 	TWEETS_URL,
 	VIDEO_TYPE_PREFIX,
@@ -66,6 +65,7 @@ import {
 	isBookmarkVideo,
 	isCurrentYear,
 	isUserInACategory,
+	searchSlugKey,
 } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
@@ -166,23 +166,6 @@ const CardSection = ({
 		error: PostgrestError;
 	};
 
-	const categoryIdFromSlug = find(
-		categoryData?.data,
-		(item) => item?.category_slug === categorySlug,
-	)?.id;
-
-	const searchSlugKey = () => {
-		if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
-			return null;
-		}
-
-		if (typeof categoryIdFromSlug === "number") {
-			return categoryIdFromSlug;
-		}
-
-		return categorySlug;
-	};
-
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	let searchBookmarksData: {
@@ -194,7 +177,7 @@ const CardSection = ({
 		// gets from vector search api
 		searchBookmarksData = queryClient.getQueryData([
 			AI_SEARCH_KEY,
-			searchSlugKey(),
+			searchSlugKey(categoryData),
 			searchText,
 		]) as {
 			data: SingleListData[];
@@ -205,7 +188,7 @@ const CardSection = ({
 		searchBookmarksData = queryClient.getQueryData([
 			BOOKMARKS_KEY,
 			userId,
-			searchSlugKey(),
+			searchSlugKey(categoryData),
 			searchText,
 		]) as {
 			data: SingleListData[];
@@ -742,7 +725,6 @@ const CardSection = ({
 	const renderSortByCondition = () =>
 		bookmarksList?.map((item) => ({
 			...item,
-			// @ts-expect-error // disabling because don't know why ogimage is in smallcase
 			ogImage: item?.ogImage || (item?.ogimage as string),
 		}));
 

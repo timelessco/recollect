@@ -35,6 +35,7 @@ export type SingleListData = {
 	inserted_at: string;
 	meta_data: ImgMetadataType;
 	ogImage: string;
+	ogimage: string;
 	screenshot: string;
 	title: string;
 	trash: boolean;

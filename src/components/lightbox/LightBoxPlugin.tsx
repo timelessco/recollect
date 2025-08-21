@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "motion/react";
@@ -22,14 +23,20 @@ import {
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../hooks/useGetSortBy";
 import { GeminiAiIcon } from "../../icons/gemeniAiIcon";
 import ImageIcon from "../../icons/imageIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import { type SingleListData, type UserTagsData } from "../../types/apiTypes";
-import { BOOKMARKS_KEY } from "../../utils/constants";
+import {
+	type CategoriesData,
+	type SingleListData,
+	type UserTagsData,
+} from "../../types/apiTypes";
+import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../utils/constants";
+import { searchSlugKey } from "../../utils/helpers";
 import { Icon } from "../atoms/icon";
 import Spinner from "../spinner";
 
@@ -63,12 +70,27 @@ const MyComponent = () => {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const previousData = queryClient?.getQueryData([
+
+	const categoryData = queryClient.getQueryData([
+		CATEGORIES_KEY,
+		session?.user?.id,
+	]) as {
+		data: CategoriesData[];
+		error: PostgrestError;
+	};
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const { sortBy } = useGetSortBy();
+
+	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
+	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
-		CATEGORY_ID,
-		"date-sort-acending",
-	]) as { pages: Array<{ data: SingleListData[] }> } | undefined;
+		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
+		searchText ? searchText : sortBy,
+	]) as {
+		data: SingleListData[];
+		pages: Array<{ data: SingleListData[] }>;
+	};
 	const router = useRouter();
 
 	const { id } = router.query;
@@ -79,9 +101,11 @@ const MyComponent = () => {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
 	} else {
-		currentBookmark = previousData?.pages?.flatMap(
-			(page) => page?.data ?? [],
-		)?.[currentIndex];
+		currentBookmark = searchText
+			? previousData?.data?.[currentIndex]
+			: previousData?.pages?.flatMap((page) => page?.data ?? [])?.[
+					currentIndex
+			  ];
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);

@@ -1,3 +1,5 @@
+import router from "next/router";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
@@ -35,6 +37,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
+import { getCategorySlugFromRouter } from "./url";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 	find(tagsData, (item) => {
@@ -339,4 +342,25 @@ export const getPreviewPathInfo = (
 		: null;
 
 	return { isPreviewPath, previewId };
+};
+
+export const searchSlugKey = (categoryData: {
+	data: CategoriesData[];
+	error: PostgrestError;
+}) => {
+	const categorySlug = getCategorySlugFromRouter(router);
+
+	const categoryIdFromSlug = find(
+		categoryData?.data,
+		(item) => item?.category_slug === categorySlug,
+	)?.id;
+	if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
+		return null;
+	}
+
+	if (typeof categoryIdFromSlug === "number") {
+		return categoryIdFromSlug;
+	}
+
+	return categorySlug;
 };
