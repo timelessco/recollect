@@ -14,6 +14,7 @@ import { type CategoryIconsDropdownTypes } from "../../types/componentTypes";
 import { options } from "../../utils/commonData";
 import { colorPickerColors } from "../../utils/constants";
 import Button from "../atoms/button";
+import { CollectionIcon } from "../collectionIcon";
 import ColorPicker from "../colorPicker";
 
 const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
@@ -153,22 +154,14 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	return (
 		<>
 			<MenuButton state={menu}>
-				<div
-					className="relative flex items-center justify-center rounded-full p-0.5"
-					style={{
-						width: buttonIconSize,
-						height: buttonIconSize,
-						backgroundColor: color,
+				<CollectionIcon
+					bookmarkCategoryData={{
+						icon: iconValue,
+						icon_color: color,
 					}}
-				>
-					{find(iconsList, (item) => item?.label === iconValue)?.icon(
-						color === colorPickerColors[0]
-							? colorPickerColors[1]
-							: colorPickerColors[0],
-						"12",
-						// "absolute left-[18%] top-[18%]",
-					)}
-				</div>
+					iconSize="12"
+					size={buttonIconSize.toString()}
+				/>
 			</MenuButton>
 			<Menu
 				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
