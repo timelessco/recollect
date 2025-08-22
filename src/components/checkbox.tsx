@@ -1,6 +1,8 @@
 import { type ComponentProps } from "react";
 import { Checkbox as AriaCheckbox } from "ariakit/checkbox";
 
+import { CheckboxIcon } from "../icons/checkboxIcon";
+
 type CheckboxPropsTypes = ComponentProps<typeof AriaCheckbox> & {
 	BookmarkHoverCheckbox?: boolean;
 	checked: boolean;
@@ -25,7 +27,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 
 	return (
 		<label
-			className={`flex cursor-pointer items-center justify-center ${classname}`}
+			className={`flex cursor-pointer items-center justify-center ${classname} backdrop-blur-[10px] `}
 		>
 			<AriaCheckbox
 				checked={checked}
@@ -36,13 +38,13 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 				{...rest}
 			/>
 			{BookmarkHoverCheckbox ? (
-				<div className="checkbox-div pointer-events-none absolute left-4 h-4 w-4 bg-black" />
+				<div className="checkbox-div pointer-events-none absolute left-4 h-4 w-4 bg-black " />
+			) : checked ? (
+				<div className="checkbox-div pointer-events-none absolute left-0 h-[26px] w-[26px] rounded-lg bg-black/70 backdrop-blur-[10px]" />
 			) : (
-				<div
-					className={`checkbox-div pointer-events-none absolute  left-0 h-[26px] w-[26px] rounded-lg backdrop-blur-[10px] ${
-						checked ? "bg-[rgba(0,0,0.7)]" : "bg-[rgba(255,255,255,0.9)]"
-					}`}
-				/>
+				<div className="pointer-events-none absolute left-0 flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-white/90 backdrop-blur-[10px]">
+					<CheckboxIcon />
+				</div>
 			)}
 			<span
 				// eslint-disable-next-line tailwindcss/no-custom-classname
