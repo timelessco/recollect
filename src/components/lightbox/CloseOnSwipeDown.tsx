@@ -2,135 +2,110 @@ import { useEffect, useRef } from "react";
 import { useController } from "yet-another-react-lightbox";
 
 export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
-	// Lightbox controller hook gives access to sensors, close function, and slide dimensions
+	// Lightbox controller: lets us subscribe to user input sensors,
+	// close the lightbox, and access current slide dimensions
 	const { subscribeSensors, close, slideRect } = useController();
 
-	// Stores how far the slide has been pulled down (Y offset in px)
+	// Tracks how far the user has pulled down (Y offset in px)
 	const offsetRef = useRef(0);
 
-	// Stores a timeout ID so we can reset the animation after the user stops scrolling
+	// Used to debounce/reset animations after inactivity
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
-		// 🔑 disable effect entirely
-		if (!enabled) {
-			return () => {};
-		}
+		if (!enabled) return () => {};
 
-		// Maximum pull distance (limited by slide height)
-		const maxOffset = slideRect?.height;
+		// Maximum pull distance = slide height
+		const maxOffset = slideRect?.height ?? 0;
 
-		// Threshold beyond which the lightbox will close
+		// Threshold at which we actually close the lightbox
 		const threshold = 200;
 
-		// Opacity should start reducing after pulling 50% of threshold
+		// Point at which opacity starts decreasing
 		const opacityStart = threshold * 0.5;
 
-		/**
-		 * Smoothly animate the slide back to its original position (y = 0, scale = 1, opacity = 1)
-		 */
-		const animateBack = (element: HTMLElement) => {
-			let current = offsetRef?.current;
-
-			const step = () => {
-				// Keep reducing offset until it's very close to zero
-				if (current > 1) {
-					// Reduce current offset progressively (ease-out effect)
-					current *= 0.85;
-					offsetRef.current = current;
-
-					// Apply vertical offset
-					element?.style?.setProperty("--yarl__pull_offset", `${current}px`);
-
-					// Apply opacity (fades only after 50% of threshold)
-					const opacity =
-						current > opacityStart
-							? Math?.min(
-									1,
-									1 -
-										((current - opacityStart) / (threshold - opacityStart)) *
-											// fade out gradually
-											0.5,
-							  )
-							: 1;
-					element?.style?.setProperty("--yarl__pull_opacity", `${opacity}`);
-
-					// Apply scaling effect (shrinks slightly as pulled)
-					const scale = Math?.min(1, 1 - (current / threshold) * 0.2);
-					element?.style?.setProperty("--yarl__pull_scale", `${scale}`);
-
-					// Continue animating on the next frame
-					requestAnimationFrame(step);
-				} else {
-					// Reset to defaults when animation finishes
-					offsetRef.current = 0;
-					element?.style?.setProperty("--yarl__pull_offset", "0px");
-					element?.style?.setProperty("--yarl__pull_opacity", "1");
-					element?.style?.setProperty("--yarl__pull_scale", "1");
-				}
-			};
-
-			// Kick off animation
-			requestAnimationFrame(step);
+		// Reset styles back to default (no offset, full opacity, normal scale)
+		const reset = (element: HTMLElement) => {
+			offsetRef.current = 0;
+			element.style.setProperty("--yarl__pull_offset", "0px");
+			element.style.setProperty("--yarl__pull_opacity", "1");
+			element.style.setProperty("--yarl__pull_scale", "1");
 		};
 
-		/**
-		 * Subscribe to wheel events on the slide.
-		 * This lets us detect when the user scrolls/pulls down.
-		 */
+		// Subscribe to wheel events from the lightbox
 		const unsubscribe = subscribeSensors("onWheel", (event) => {
-			const element = event?.currentTarget as HTMLElement;
+			const element = event.currentTarget as HTMLElement;
 
-			// Update offset, clamped between 0 and slide height
-			offsetRef.current = Math?.min(
-				Math?.max(offsetRef?.current + event?.deltaY, 0),
+			// --- Ignore horizontal swipes (left/right) ---
+			// If horizontal movement is stronger than vertical, do nothing
+			if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+				return;
+			}
+
+			// --- Wrong direction (swipe up) ---
+			if (event.deltaY < 0) {
+				// Briefly scale up to indicate "blocked movement"
+				element.style.setProperty("--yarl__pull_scale", "1.05");
+				element.style.setProperty("--yarl__pull_offset", "0px");
+				element.style.setProperty("--yarl__pull_opacity", "1");
+
+				// Reset scale after short delay (bounce-back effect)
+				if (timeoutRef.current) clearTimeout(timeoutRef.current);
+				timeoutRef.current = setTimeout(() => {
+					element.style.setProperty("--yarl__pull_scale", "1");
+				}, 50);
+
+				return;
+			}
+
+			// --- Swipe down (valid pull-to-close direction) ---
+
+			// Update offset: clamp between 0 and maxOffset (slide height)
+			offsetRef.current = Math.min(
+				Math.max(offsetRef.current + event.deltaY, 0),
 				maxOffset,
 			);
 
-			// Apply vertical offset transform
-			element?.style?.setProperty(
+			// Update CSS variables for translation
+			element.style.setProperty(
 				"--yarl__pull_offset",
-				`${offsetRef?.current}px`,
+				`${offsetRef.current}px`,
 			);
 
-			// Apply opacity only after passing opacityStart
+			// Fade out gradually after crossing opacityStart
 			const opacity =
-				offsetRef?.current > opacityStart
-					? Math?.max(
-							// never go below 0.5 while pulling
+				offsetRef.current > opacityStart
+					? Math.max(
 							0.5,
 							1 -
-								((offsetRef?.current - opacityStart) /
+								((offsetRef.current - opacityStart) /
 									(threshold - opacityStart)) *
 									0.5,
 					  )
 					: 1;
-			element?.style?.setProperty("--yarl__pull_opacity", `${opacity}`);
+			element.style.setProperty("--yarl__pull_opacity", `${opacity}`);
 
-			// Apply scale (never shrink below 0.5)
-			const scale = Math?.max(0.5, 1 - (offsetRef?.current / threshold) * 0.2);
-			element?.style?.setProperty("--yarl__pull_scale", `${scale}`);
+			// Scale down slightly as we pull further
+			const scale = Math.max(0.5, 1 - (offsetRef.current / threshold) * 0.2);
+			element.style.setProperty("--yarl__pull_scale", `${scale}`);
 
-			// If pulled beyond threshold, close the lightbox
-			if (offsetRef?.current > threshold) {
+			// Close the lightbox if pull distance exceeds threshold
+			if (offsetRef.current > threshold) {
 				close();
 				return;
 			}
 
-			// If user stops scrolling, animate slide back to normal after 200ms
-			if (timeoutRef?.current) clearTimeout(timeoutRef?.current);
-			timeoutRef.current = setTimeout(() => {
-				animateBack(element);
-			}, 200);
+			// Animate back to neutral if user stops pulling
+			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			timeoutRef.current = setTimeout(() => reset(element), 200);
 		});
 
-		// Cleanup: unsubscribe from wheel events & clear timeout
+		// Cleanup on unmount or dependency change
 		return () => {
 			unsubscribe();
-			if (timeoutRef?.current) clearTimeout(timeoutRef?.current);
+			if (timeoutRef.current) clearTimeout(timeoutRef.current);
 		};
 	}, [subscribeSensors, slideRect, close, enabled]);
 
-	// Component renders nothing (pure effect-based behavior)
 	return null;
 };

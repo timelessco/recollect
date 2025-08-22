@@ -1,35 +1,57 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
+// Custom hooks and utilities
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
 import { useSupabaseSession } from "../../store/componentStore";
 import { type CategoriesData } from "../../types/apiTypes";
 import { CATEGORIES_KEY } from "../../utils/constants";
+// UI Components
 import AriaDropDown from "../ariaDropdown/ariaDropdown";
 import Input from "../atoms/input";
 import { CollectionIcon } from "../collectionIcon";
 
+/**
+ * Props for the AddToCollectionDropdown component
+ * @property {number} bookmarkId - The ID of the bookmark being modified
+ * @property {number} category_id - The current category ID of the bookmark (0 if none)
+ */
 type AddToCollectionDropdownProps = {
 	bookmarkId: number;
 	category_id: number;
 };
 
+/**
+ * Type for displaying status messages to the user
+ * @property {string} text - The message content
+ * @property {"error" | "success"} type - The type of message (determines styling)
+ */
 type MessageType = {
 	text: string;
 	type: "error" | "success";
 };
 
+/**
+ * A dropdown component that allows adding a bookmark to different collections
+ * Uses React.memo for performance optimization
+ */
 export const AddToCollectionDropdown = memo(
 	({ bookmarkId, category_id }: AddToCollectionDropdownProps) => {
+		// State for status messages and search functionality
 		const [message, setMessage] = useState<MessageType | null>(null);
 		const [searchTerm, setSearchTerm] = useState("");
 		const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+		// Get current session and query client
 		const session = useSupabaseSession((state) => state.session);
 		const queryClient = useQueryClient();
+
+		// Mutation hook for adding category to bookmark
 		const { addCategoryToBookmarkOptimisticMutation } =
 			useAddCategoryToBookmarkOptimisticMutation();
 
+		// Get collections from query cache
 		const collections = useMemo(() => {
 			const categoryData = queryClient?.getQueryData<{
 				data: CategoriesData[];
@@ -37,13 +59,13 @@ export const AddToCollectionDropdown = memo(
 			return categoryData?.data ?? [];
 		}, [queryClient, session?.user?.id]);
 
-		// Find current collection if any
+		// Get current collection if bookmark is already in one
 		const currentCollection = useMemo(() => {
 			if (!category_id) return null;
 			return collections.find((collection) => collection.id === category_id);
 		}, [collections, category_id]);
 
-		// Filtered by searchTerm
+		// Filter collections based on search term
 		const filteredCollections = useMemo(() => {
 			if (!searchTerm.trim()) return collections;
 			return collections.filter((collection) =>
@@ -53,24 +75,39 @@ export const AddToCollectionDropdown = memo(
 			);
 		}, [collections, searchTerm]);
 
+		/**
+		 * Displays a temporary status message to the user
+		 * @param {string} text - The message text to display
+		 * @param {"error" | "success"} type - The type of message (determines styling)
+		 */
 		const showMessage = useCallback(
 			(text: string, type: "error" | "success") => {
 				setMessage({ text, type });
+				// Clear any existing timeout to prevent message from disappearing too soon
 				if (timeoutRef.current) clearTimeout(timeoutRef.current);
+				// Auto-hide message after 2.5 seconds
 				timeoutRef.current = setTimeout(() => setMessage(null), 2_500);
 			},
 			[],
 		);
 
+		/**
+		 * Handles adding a bookmark to the selected collection
+		 * @param {CategoriesData} collection - The collection to add the bookmark to
+		 */
 		const handleCollectionClick = useCallback(
 			async (collection: CategoriesData) => {
 				if (!bookmarkId || !collection?.id) return;
+
 				try {
+					// Optimistically update the UI
 					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
 						bookmark_id: bookmarkId,
 						category_id: collection?.id,
 						update_access: true,
 					});
+
+					// Show success message and reset search
 					showMessage(`Added to "${collection?.category_name}"`, "success");
 					setSearchTerm("");
 				} catch (error) {
@@ -151,7 +188,12 @@ export const AddToCollectionDropdown = memo(
 	},
 );
 
-// Item unchanged
+/**
+ * A memoized component that renders a single collection item in the dropdown
+ * @param {Object} props - Component props
+ * @param {CategoriesData} props.collection - The collection data to display
+ * @param {(collection: CategoriesData) => void} props.onClick - Handler for when the collection is clicked
+ */
 const CollectionItem = memo(
 	({
 		collection,

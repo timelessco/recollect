@@ -394,5 +394,5 @@ input[type="checkbox"]:checked + .checkbox-div {
 	transform: translateY(var(--yarl__pull_offset)) scale(var(--yarl__pull_scale));
 	opacity: var(--yarl__pull_opacity);
 
-	@apply transition-all duration-[50ms] ease-linear;
+	@apply transition-opacity transition-transform duration-200 ease-out;
 }
