@@ -224,7 +224,10 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						<AddToCollectionDropdown bookmarkId={currentBookmark?.id} />
+						<AddToCollectionDropdown
+							bookmarkId={currentBookmark?.id}
+							category_id={currentBookmark?.category_id}
+						/>
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.img_caption) && (
