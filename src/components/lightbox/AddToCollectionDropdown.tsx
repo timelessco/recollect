@@ -116,7 +116,7 @@ export const AddToCollectionDropdown = memo(
 							</div>
 						}
 					>
-						<div className="absolute left-0 z-50 mt-1 w-[180px] rounded-xl bg-white p-1 shadow-md">
+						<div className="absolute left-0 z-50 mt-1 max-h-[250px] w-[180px] overflow-y-auto rounded-xl bg-white p-1 shadow-md">
 							{/* Search Input as first item */}
 							<div className="pb-1">
 								<Input

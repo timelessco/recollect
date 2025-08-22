@@ -5,7 +5,6 @@ import classNames from "classnames";
 import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
-import AiIcon from "../icons/aiIcon";
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
 import {
 	useLoadersStore,
@@ -15,8 +14,6 @@ import { type UserTagsData } from "../types/apiTypes";
 import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
 import { SearchLoader } from "./search-loader";
-import Spinner from "./spinner";
-import ToolTip from "./tooltip";
 
 const styles = {
 	input: {
@@ -104,11 +101,6 @@ const SearchInput = (props: SearchInputTypes) => {
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
-	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	const setAiButtonToggle = useMiscellaneousStore(
-		(state) => state.setAiButtonToggle,
-	);
 	const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
 		data: UserTagsData[];
 		error: PostgrestError;
@@ -121,14 +113,6 @@ const SearchInput = (props: SearchInputTypes) => {
 	const inputClassNamesBuilder = classNames("search-bar", {
 		[inputClassName]: true,
 	});
-
-	const aiButtonClassName = classNames(
-		"absolute right-[-30px] top-[3px] cursor-pointer  transition-colors duration-200 xl:hidden",
-		{
-			"text-custom-gray-1": aiButtonToggle,
-			"text-gray-300": !aiButtonToggle,
-		},
-	);
 
 	return (
 		<div className={wrapperClassNameBuilder}>
