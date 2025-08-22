@@ -30,7 +30,7 @@ export const AddToCollectionDropdown = memo(
 		const session = useSupabaseSession((state) => state.session);
 		const queryClient = useQueryClient();
 		const { addCategoryToBookmarkOptimisticMutation } =
-			useAddCategoryToBookmarkOptimisticMutation(true);
+			useAddCategoryToBookmarkOptimisticMutation();
 
 		const collections = useMemo(() => {
 			const categoryData = queryClient?.getQueryData<{
