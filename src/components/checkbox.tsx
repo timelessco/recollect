@@ -38,9 +38,9 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 				{...rest}
 			/>
 			{BookmarkHoverCheckbox ? (
-				<div className="checkbox-div pointer-events-none absolute left-4 h-4 w-4 bg-black " />
+				<div className="checkbox-div pointer-events-none absolute left-[5px] h-4 w-4 rounded-[4px] bg-black " />
 			) : checked ? (
-				<div className="checkbox-div pointer-events-none absolute left-0 h-[26px] w-[26px] rounded-lg bg-black/70 backdrop-blur-[10px]" />
+				<div className="checkbox-div pointer-events-none absolute h-[26px] w-[26px] rounded-lg bg-black/70 backdrop-blur-[10px]" />
 			) : (
 				<div className="pointer-events-none absolute left-0 flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-white/90 backdrop-blur-[10px]">
 					<CheckboxIcon />
@@ -48,7 +48,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 			)}
 			<span
 				// eslint-disable-next-line tailwindcss/no-custom-classname
-				className={`checkmark ml-3 rounded-lg text-sm leading-[21px] text-gray-light-12 ${
+				className={`checkmark ml-3 text-sm leading-[21px] text-gray-light-12 ${
 					disabled ? "opacity-50" : ""
 				}`}
 			>

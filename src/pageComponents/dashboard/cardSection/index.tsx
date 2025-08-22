@@ -13,6 +13,7 @@ import { Item } from "react-stately";
 
 import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
 import loaderGif from "../../../../public/loader-gif.gif";
+import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
@@ -42,13 +43,11 @@ import {
 	type UserTagsData,
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
-import { options } from "../../../utils/commonData";
 import {
 	AI_SEARCH_KEY,
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	colorPickerColors,
 	defaultBlur,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
@@ -689,21 +688,7 @@ const CardSection = ({
 					item?.category_id !== 0 && (
 						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-custom-gray-10">
 							<p className="mr-1">in</p>
-							<div
-								className="flex h-[14px] w-[14px] items-center justify-center rounded-full"
-								style={{ backgroundColor: bookmarkCategoryData?.icon_color }}
-							>
-								{find(
-									options(),
-									(optionItem) =>
-										optionItem?.label === bookmarkCategoryData?.icon,
-								)?.icon(
-									bookmarkCategoryData?.icon_color === "#ffffff"
-										? colorPickerColors[1]
-										: colorPickerColors[0],
-									"9",
-								)}
-							</div>
+							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
 							<p className="ml-1 text-[13px] font-450 leading-4 text-custom-gray-10">
 								{bookmarkCategoryData?.category_name}
 							</p>
