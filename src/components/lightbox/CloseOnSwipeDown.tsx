@@ -42,24 +42,6 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				return;
 			}
 
-			// --- Wrong direction (swipe up) ---
-			if (event.deltaY < 0) {
-				// Briefly scale up to indicate "blocked movement"
-				element.style.setProperty("--yarl__pull_scale", "1.05");
-				element.style.setProperty("--yarl__pull_offset", "0px");
-				element.style.setProperty("--yarl__pull_opacity", "1");
-
-				// Reset scale after short delay (bounce-back effect)
-				if (timeoutRef.current) clearTimeout(timeoutRef.current);
-				timeoutRef.current = setTimeout(() => {
-					element.style.setProperty("--yarl__pull_scale", "1");
-				}, 50);
-
-				return;
-			}
-
-			// --- Swipe down (valid pull-to-close direction) ---
-
 			// Update offset: clamp between 0 and maxOffset (slide height)
 			offsetRef.current = Math.min(
 				Math.max(offsetRef.current + event.deltaY, 0),
