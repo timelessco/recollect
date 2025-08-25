@@ -184,7 +184,7 @@ export default async function handler(
 				return favIcon;
 			} else {
 				return hostname === "x.com"
-					? favIcon
+					? "https:" + favIcon
 					: `https://${getBaseUrl(url)}${favIcon}`;
 			}
 		} else {
