@@ -92,15 +92,15 @@ export const AddToCollectionDropdown = memo(
 
 		// Handle when a collection is selected
 		const handleCollectionClick = useCallback(
-			async (collection: CategoriesData) => {
+			async (collection: CategoriesData | null) => {
 				// Guard clause for missing required data
-				if (!bookmarkId || !collection?.id) return;
+				if (!bookmarkId) return;
 
 				try {
 					// Optimistically update the UI
 					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
 						bookmark_id: bookmarkId,
-						category_id: collection?.id,
+						category_id: collection?.id ?? null,
 						// Allow updating the collection
 						update_access: true,
 					});
@@ -177,7 +177,22 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* List of collections */}
 								<Ariakit.ComboboxList>
-									{/* Show filtered collections if available */}
+									{/* Show Uncategorized option only if current item is in a collection */}
+									{currentCollection && (
+										<Ariakit.ComboboxItem
+											className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-[rgba(243,243,243,1)] aria-selected:bg-[rgba(243,243,243,1)]"
+											onClick={() => handleCollectionClick(null)}
+											onMouseDown={(event) => {
+												event.preventDefault();
+												void handleCollectionClick(null);
+											}}
+											value="Uncategorized"
+										>
+											<span className="text-[13px] font-[450] text-[rgba(56,56,56,1)]">
+												Uncategorized
+											</span>
+										</Ariakit.ComboboxItem>
+									)}
 									{filteredCollections.length ? (
 										filteredCollections.map((collection) => (
 											<Ariakit.ComboboxItem
@@ -203,12 +218,12 @@ export const AddToCollectionDropdown = memo(
 												</span>
 											</Ariakit.ComboboxItem>
 										))
-									) : (
+									) : searchTerm.trim() ? (
 										// Show message when no collections match the search
 										<div className="px-3 py-2 text-sm text-gray-400">
 											No collections found
 										</div>
-									)}
+									) : null}
 								</Ariakit.ComboboxList>
 							</Ariakit.SelectPopover>
 						</div>
