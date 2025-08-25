@@ -71,20 +71,32 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
 				);
 			},
 			// Always refetch after error or success:
-			onSettled: () => {
-				// here if we are not in lightbox we want to refetch the bookmarks to avoid flash in lightbox
-				void queryClient.invalidateQueries([
-					BOOKMARKS_KEY,
-					session?.user?.id,
-					CATEGORY_ID,
-					sortBy,
-				]);
-				void queryClient.invalidateQueries([
-					BOOKMARKS_COUNT_KEY,
-					session?.user?.id,
-				]);
+			onSettled: async (_data, _error, variables) => {
+				const { category_id: targetCategoryId } = variables || {};
 
-				setSidePaneOptionLoading(null);
+				try {
+					// First invalidate source collection (current category)
+					await queryClient.invalidateQueries([
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						CATEGORY_ID,
+						sortBy,
+					]);
+					// Then invalidate target collection (where we're moving the bookmark to)
+					await queryClient.invalidateQueries([
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						targetCategoryId,
+						sortBy,
+					]);
+					// Finally invalidate bookmarks count
+					await queryClient.invalidateQueries([
+						BOOKMARKS_COUNT_KEY,
+						session?.user?.id,
+					]);
+				} finally {
+					setSidePaneOptionLoading(null);
+				}
 			},
 		},
 	);

@@ -25,15 +25,25 @@
  */
 
 import { memo, startTransition, useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import * as Ariakit from "@ariakit/react";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Custom hooks and utilities
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
-import { useSupabaseSession } from "../../store/componentStore";
-import { type CategoriesData } from "../../types/apiTypes";
-import { CATEGORIES_KEY } from "../../utils/constants";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
+import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
+import {
+	ALL_BOOKMARKS_URL,
+	CATEGORIES_KEY,
+	CATEGORY_ID_PATHNAME,
+	PREVIEW_PATH,
+} from "../../utils/constants";
+import { getCategorySlugFromRouter } from "../../utils/url";
 // UI Components
 import { CollectionIcon } from "../collectionIcon";
 
@@ -41,15 +51,14 @@ import { CollectionIcon } from "../collectionIcon";
  * Props for the AddToCollectionDropdown component
  */
 type AddToCollectionDropdownProps = {
+	allbookmarksdata: SingleListData[];
 	bookmarkId: number;
-	category_id: number;
 };
 
 export const AddToCollectionDropdown = memo(
-	({ bookmarkId, category_id }: AddToCollectionDropdownProps) => {
+	({ bookmarkId, allbookmarksdata }: AddToCollectionDropdownProps) => {
 		// State for search functionality
 		const [searchTerm, setSearchTerm] = useState("");
-
 		// Get current session and query client
 		const session = useSupabaseSession((state) => state.session);
 		const queryClient = useQueryClient();
@@ -65,6 +74,10 @@ export const AddToCollectionDropdown = memo(
 			}>([CATEGORIES_KEY, session?.user?.id]);
 			return categoryData?.data ?? [];
 		}, [queryClient, session?.user?.id]);
+
+		const category_id = allbookmarksdata.find(
+			(bookmark) => bookmark?.id === bookmarkId,
+		)?.category_id;
 
 		// Find the current collection based on category_id
 		const currentCollection = useMemo(() => {
@@ -90,28 +103,79 @@ export const AddToCollectionDropdown = memo(
 			);
 		}, [collections, searchTerm, currentCollection?.id]);
 
+		const router = useRouter();
+		const { setLightboxId, setLightboxOpen } = useMiscellaneousStore();
+
+		const shallowRouteTo = useCallback(
+			(item: SingleListData | undefined) => {
+				if (!item) return;
+				setLightboxId(item?.id.toString());
+				setLightboxOpen(true);
+				const categorySlug = getCategorySlugFromRouter(router);
+				void router.push(
+					{
+						pathname: `${CATEGORY_ID_PATHNAME}`,
+						query: {
+							category_id: categorySlug,
+							id: item?.id,
+						},
+					},
+					`/${categorySlug}${PREVIEW_PATH}/${item?.id}`,
+					{ shallow: true },
+				);
+			},
+			[router, setLightboxId, setLightboxOpen],
+		);
+
 		// Handle when a collection is selected
 		const handleCollectionClick = useCallback(
 			async (collection: CategoriesData | null) => {
-				// Guard clause for missing required data
 				if (!bookmarkId) return;
 
 				try {
-					// Optimistically update the UI
 					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
 						bookmark_id: bookmarkId,
 						category_id: collection?.id ?? null,
-						// Allow updating the collection
 						update_access: true,
 					});
-
-					// Clear search term after selection
 					setSearchTerm("");
+
+					const currentIndex = allbookmarksdata.findIndex(
+						(b) => b.id === bookmarkId,
+					);
+					const nextItem = allbookmarksdata[currentIndex + 1];
+
+					if (nextItem) {
+						// If there's a next item, navigate to it
+						shallowRouteTo(nextItem);
+					} else {
+						// If this is the last item, close the lightbox and update URL
+						setLightboxId(null);
+						setLightboxOpen(false);
+						void router.push(
+							{
+								pathname: `${CATEGORY_ID_PATHNAME}`,
+								query: {
+									category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
+								},
+							},
+							getCategorySlugFromRouter(router) ?? ALL_BOOKMARKS_URL,
+							{ shallow: true },
+						);
+					}
 				} catch (error) {
 					console.error("Error adding to collection:", error);
 				}
 			},
-			[bookmarkId, addCategoryToBookmarkOptimisticMutation],
+			[
+				bookmarkId,
+				addCategoryToBookmarkOptimisticMutation,
+				allbookmarksdata,
+				shallowRouteTo,
+				setLightboxId,
+				setLightboxOpen,
+				router,
+			],
 		);
 
 		return (
