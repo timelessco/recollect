@@ -1,3 +1,4 @@
+import { type ControllerRef } from "yet-another-react-lightbox";
 import { create } from "zustand";
 
 import { type SingleListData } from "../types/apiTypes";
@@ -73,6 +74,9 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	lightboxId: null,
 	setLightboxId: (id: string | null) =>
 		set((state) => ({ ...state, lightboxId: id })),
+	lightboxController: null,
+	setLightboxController: (controller: ControllerRef | null) =>
+		set((state) => ({ ...state, lightboxController: controller })),
 	lightboxOpen: false,
 	setLightboxOpen: (open: boolean) =>
 		set((state) => ({ ...state, lightboxOpen: open })),

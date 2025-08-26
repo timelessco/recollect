@@ -41,7 +41,14 @@ import {
 	ALL_BOOKMARKS_URL,
 	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
+	DOCUMENTS_URL,
+	IMAGES_URL,
+	LINKS_URL,
 	PREVIEW_PATH,
+	SETTINGS_URL,
+	TWEETS_URL,
+	UNCATEGORIZED_URL,
+	VIDEOS_URL,
 } from "../../utils/constants";
 import { getCategorySlugFromRouter } from "../../utils/url";
 // UI Components
@@ -62,11 +69,13 @@ export const AddToCollectionDropdown = memo(
 		// Get current session and query client
 		const session = useSupabaseSession((state) => state.session);
 		const queryClient = useQueryClient();
+		const router = useRouter();
+		const categorySlug = getCategorySlugFromRouter(router);
 
 		// Mutation hook for adding a bookmark to a collection
 		const { addCategoryToBookmarkOptimisticMutation } =
 			useAddCategoryToBookmarkOptimisticMutation();
-
+		const { lightboxController } = useMiscellaneousStore();
 		// Get collections from the query cache
 		const collections = useMemo(() => {
 			const categoryData = queryClient?.getQueryData<{
@@ -103,7 +112,6 @@ export const AddToCollectionDropdown = memo(
 			);
 		}, [collections, searchTerm, currentCollection?.id]);
 
-		const router = useRouter();
 		const { setLightboxId, setLightboxOpen } = useMiscellaneousStore();
 
 		const shallowRouteTo = useCallback(
@@ -111,7 +119,6 @@ export const AddToCollectionDropdown = memo(
 				if (!item) return;
 				setLightboxId(item?.id.toString());
 				setLightboxOpen(true);
-				const categorySlug = getCategorySlugFromRouter(router);
 				void router.push(
 					{
 						pathname: `${CATEGORY_ID_PATHNAME}`,
@@ -124,14 +131,12 @@ export const AddToCollectionDropdown = memo(
 					{ shallow: true },
 				);
 			},
-			[router, setLightboxId, setLightboxOpen],
+			[router, setLightboxId, setLightboxOpen, categorySlug],
 		);
 
 		// Handle when a collection is selected
 		const handleCollectionClick = useCallback(
 			async (collection: CategoriesData | null) => {
-				if (!bookmarkId) return;
-
 				try {
 					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
 						bookmark_id: bookmarkId,
@@ -139,29 +144,29 @@ export const AddToCollectionDropdown = memo(
 						update_access: true,
 					});
 					setSearchTerm("");
+					const specialUrls = [
+						ALL_BOOKMARKS_URL,
+						UNCATEGORIZED_URL,
+						DOCUMENTS_URL,
+						TWEETS_URL,
+						SETTINGS_URL,
+						IMAGES_URL,
+						VIDEOS_URL,
+						LINKS_URL,
+					];
 
 					const currentIndex = allbookmarksdata.findIndex(
 						(b) => b.id === bookmarkId,
 					);
 					const nextItem = allbookmarksdata[currentIndex + 1];
-
-					if (nextItem) {
-						// If there's a next item, navigate to it
-						shallowRouteTo(nextItem);
-					} else {
-						// If this is the last item, close the lightbox and update URL
-						setLightboxId(null);
-						setLightboxOpen(false);
-						void router.push(
-							{
-								pathname: `${CATEGORY_ID_PATHNAME}`,
-								query: {
-									category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
-								},
-							},
-							getCategorySlugFromRouter(router) ?? ALL_BOOKMARKS_URL,
-							{ shallow: true },
-						);
+					if (!specialUrls.includes(categorySlug ?? "")) {
+						if (nextItem) {
+							// If there's a next item, navigate to it
+							shallowRouteTo(nextItem);
+						} else {
+							// If this is the last item, close the lightbox and update URL
+							lightboxController?.close();
+						}
 					}
 				} catch (error) {
 					console.error("Error adding to collection:", error);
@@ -172,9 +177,8 @@ export const AddToCollectionDropdown = memo(
 				addCategoryToBookmarkOptimisticMutation,
 				allbookmarksdata,
 				shallowRouteTo,
-				setLightboxId,
-				setLightboxOpen,
-				router,
+				lightboxController,
+				categorySlug,
 			],
 		);
 
