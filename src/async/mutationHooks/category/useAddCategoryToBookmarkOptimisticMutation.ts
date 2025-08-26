@@ -1,3 +1,4 @@
+import { type PostgrestError } from "@supabase/supabase-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
@@ -5,6 +6,7 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	useLoadersStore,
+	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
@@ -13,6 +15,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 } from "../../../utils/constants";
+import { searchSlugKey } from "../../../utils/helpers";
 import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
 // adds cat to bookmark optimistically
@@ -21,6 +24,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const { sortBy } = useGetSortBy();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const searchText = useMiscellaneousStore((state) => state.searchText);
 
 	const setSidePaneOptionLoading = useLoadersStore(
 		(state) => state.setSidePaneOptionLoading,
@@ -76,19 +80,36 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
 
 				try {
 					// First invalidate source collection (current category)
-					await queryClient.invalidateQueries([
-						BOOKMARKS_KEY,
-						session?.user?.id,
-						CATEGORY_ID,
-						sortBy,
-					]);
-					// Then invalidate target collection (where we're moving the bookmark to)
-					await queryClient.invalidateQueries([
-						BOOKMARKS_KEY,
-						session?.user?.id,
-						targetCategoryId,
-						sortBy,
-					]);
+					if (!searchText) {
+						await queryClient.invalidateQueries([
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							CATEGORY_ID,
+							sortBy,
+						]);
+						// Then invalidate target collection (where we're moving the bookmark to)
+						await queryClient.invalidateQueries([
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							targetCategoryId,
+							sortBy,
+						]);
+					} else {
+						const categoryData = queryClient.getQueryData([
+							CATEGORIES_KEY,
+							session?.user?.id,
+						]) as {
+							data: CategoriesData[];
+							error: PostgrestError;
+						};
+						await queryClient.invalidateQueries([
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							searchSlugKey(categoryData) ?? CATEGORY_ID,
+							searchText,
+						]);
+					}
+
 					// Finally invalidate bookmarks count
 					await queryClient.invalidateQueries([
 						BOOKMARKS_COUNT_KEY,
