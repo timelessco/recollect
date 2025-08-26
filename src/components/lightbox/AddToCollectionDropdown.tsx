@@ -138,34 +138,40 @@ export const AddToCollectionDropdown = memo(
 		const handleCollectionClick = useCallback(
 			async (collection: CategoriesData | null) => {
 				try {
-					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
-						bookmark_id: bookmarkId,
-						category_id: collection?.id ?? null,
-						update_access: true,
-					});
-					setSearchTerm("");
-					const specialUrls = [
-						ALL_BOOKMARKS_URL,
-						UNCATEGORIZED_URL,
-						DOCUMENTS_URL,
-						TWEETS_URL,
-						SETTINGS_URL,
-						IMAGES_URL,
-						VIDEOS_URL,
-						LINKS_URL,
-					];
+					const result =
+						await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
+							bookmark_id: bookmarkId,
+							category_id: collection?.id ?? null,
+							update_access: true,
+						});
 
-					const currentIndex = allbookmarksdata.findIndex(
-						(b) => b.id === bookmarkId,
-					);
-					const nextItem = allbookmarksdata[currentIndex + 1];
-					if (!specialUrls.includes(categorySlug ?? "")) {
-						if (nextItem) {
-							// If there's a next item, navigate to it
-							shallowRouteTo(nextItem);
-						} else {
-							// If this is the last item, close the lightbox and update URL
-							lightboxController?.close();
+					// Only proceed with navigation if mutation was successful
+					if (result) {
+						setSearchTerm("");
+						const specialUrls = [
+							ALL_BOOKMARKS_URL,
+							UNCATEGORIZED_URL,
+							DOCUMENTS_URL,
+							TWEETS_URL,
+							SETTINGS_URL,
+							IMAGES_URL,
+							VIDEOS_URL,
+							LINKS_URL,
+						];
+
+						const currentIndex = allbookmarksdata.findIndex(
+							(b) => b.id === bookmarkId,
+						);
+						const nextItem = allbookmarksdata[currentIndex + 1];
+
+						if (!specialUrls.includes(categorySlug ?? "")) {
+							if (nextItem) {
+								// If there's a next item, navigate to it
+								shallowRouteTo(nextItem);
+							} else {
+								// If this is the last item, close the lightbox and update URL
+								lightboxController?.close();
+							}
 						}
 					}
 				} catch (error) {
