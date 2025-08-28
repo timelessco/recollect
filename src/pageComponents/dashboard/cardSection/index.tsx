@@ -12,6 +12,7 @@ import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import { Item } from "react-stately";
+import { width } from "tailwindcss/defaultTheme";
 
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
@@ -487,7 +488,7 @@ const CardSection = ({
 				cardTypeCondition === viewValues.list,
 			"animate-pulse bg-slate-200 w-full aspect-[1.9047] w-full object-cover rounded-lg":
 				cardTypeCondition === viewValues.card,
-			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
+			"animate-pulse h-[500px]  bg-slate-200 w-full rounded-lg w-full":
 				cardTypeCondition === viewValues.moodboard,
 		});
 
@@ -497,10 +498,8 @@ const CardSection = ({
 			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
-			"h-36":
-				cardTypeCondition === viewValues.moodboard &&
-				(isOgImgLoading || isBookmarkLoading) &&
-				img === undefined,
+			[`min-h-[${height || 500}px] min-w-[${width || 500}px]`]:
+				cardTypeCondition === viewValues.moodboard,
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
@@ -521,49 +520,71 @@ const CardSection = ({
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
-				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
+				// if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
+				// 	return <div className={loaderClassName} />;
+				// }
+
+				// if (errorImgs?.includes(id as never)) {
+				// 	return errorImgPlaceholder;
+				// }
+
+				// if (id && !img) {
+				// 	return errorImgPlaceholder;
+				// }
+
+				// let blurSource = "";
+
+				// if (
+				// 	!isNil(img) &&
+				// 	!isNil(blurUrl) &&
+				// 	!isEmpty(blurUrl) &&
+				// 	!isPublicPage
+				// ) {
+				// 	const pixels = decode(blurUrl, 32, 32);
+				// 	const image = getImgFromArr(pixels, 32, 32);
+				// 	blurSource = image.src;
+				// }
+
+				// return (
+				// 	<>
+				// 		{img ? (
+				// 			<Image
+				// 				alt="bookmark-img"
+				// 				blurDataURL={blurSource || defaultBlur}
+				// 				className={imgClassName}
+				// 				height={height ?? 200}
+				// 				onError={() => setErrorImgs([id as never, ...errorImgs])}
+				// 				placeholder="blur"
+				// 				src={`${img}`}
+				// 				width={width ?? 200}
+				// 			/>
+				// 		) : (
+				// 			errorImgPlaceholder
+				// 		)}
+				// 	</>
+				// );
+
+				if (isBookmarkLoading && isNil(img)) {
 					return <div className={loaderClassName} />;
 				}
 
-				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder;
+				if (!isNil(img)) {
+					return (
+						<Image
+							alt="bookmark-img"
+							className={imgClassName}
+							height={height || 500}
+							src={img}
+							style={{
+								width: "100%",
+								height: height || 500,
+							}}
+							width={width}
+						/>
+					);
+				} else {
+					return <div className={loaderClassName} />;
 				}
-
-				if (id && !img) {
-					return errorImgPlaceholder;
-				}
-
-				let blurSource = "";
-
-				if (
-					!isNil(img) &&
-					!isNil(blurUrl) &&
-					!isEmpty(blurUrl) &&
-					!isPublicPage
-				) {
-					const pixels = decode(blurUrl, 32, 32);
-					const image = getImgFromArr(pixels, 32, 32);
-					blurSource = image.src;
-				}
-
-				return (
-					<>
-						{img ? (
-							<Image
-								alt="bookmark-img"
-								blurDataURL={blurSource || defaultBlur}
-								className={imgClassName}
-								height={height ?? 200}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
-								placeholder="blur"
-								src={`${img}`}
-								width={width ?? 200}
-							/>
-						) : (
-							errorImgPlaceholder
-						)}
-					</>
-				);
 			}
 
 			return null;
