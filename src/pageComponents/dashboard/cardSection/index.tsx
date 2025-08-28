@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -221,6 +222,32 @@ const CardSection = ({
 	);
 
 	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
+
+	const imgSizes = useMemo(() => {
+		switch (cardTypeCondition) {
+			case viewValues.moodboard:
+			case viewValues.timeline:
+				return {
+					height: 200,
+					width: 200,
+				};
+			case viewValues.list:
+				return {
+					height: 100,
+					width: 100,
+				};
+			case viewValues.card:
+				return {
+					height: 500,
+					width: 500,
+				};
+			default:
+				return {
+					height: 500,
+					width: 500,
+				};
+		}
+	}, [cardTypeCondition]);
 
 	useEffect(() => {
 		if (!isEmpty(cardTypeCondition)) {
@@ -510,7 +537,9 @@ const CardSection = ({
 		});
 
 		const errorImgPlaceholder = (
-			<Image
+			// next img is not needed here as its an default error img
+			// eslint-disable-next-line @next/next/no-img-element
+			<img
 				alt="img-error"
 				className={errorImgAndVideoClassName}
 				height={200}
@@ -553,11 +582,11 @@ const CardSection = ({
 								alt="bookmark-img"
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
-								height={height ?? 200}
+								height={imgSizes.height}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
 								src={`${img}`}
-								width={width ?? 200}
+								width={imgSizes.width}
 							/>
 						) : (
 							errorImgPlaceholder
