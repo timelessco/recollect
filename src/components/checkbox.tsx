@@ -42,7 +42,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 			) : checked ? (
 				<div className="checkbox-div pointer-events-none absolute h-[26px] w-[26px] rounded-lg bg-black/70 backdrop-blur-[10px]" />
 			) : (
-				<div className="pointer-events-none absolute left-0 flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-white/90 backdrop-blur-[10px]">
+				<div className="pointer-events-none absolute flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-white/90 backdrop-blur-[10px]">
 					<CheckboxIcon />
 				</div>
 			)}

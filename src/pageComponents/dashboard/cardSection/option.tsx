@@ -149,7 +149,7 @@ const Option = ({
 					checked={isSelected}
 					classname={`${
 						isSelected ? "opacity-100" : "opacity-0"
-					} absolute right-0 cursor-pointer opacity-0 z-15 group-hover:opacity-100 top-[13px]  ${
+					} absolute cursor-pointer opacity-0 z-15 group-hover:opacity-100 top-[13px] right-[3px]  ${
 						cardTypeCondition === viewValues.list
 							? "top-[18px]"
 							: cardTypeCondition === viewValues.headlines
