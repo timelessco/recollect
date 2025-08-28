@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -19,7 +18,6 @@ import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
-import useIsMobileView from "../../../hooks/useIsMobileView";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
@@ -123,7 +121,6 @@ const CardSection = ({
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = router?.asPath?.split("/")[1] || null;
 	const queryClient = useQueryClient();
-	const { isDesktop } = useIsMobileView();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
@@ -491,8 +488,8 @@ const CardSection = ({
 		img: SingleListData["ogImage"],
 		id: SingleListData["id"],
 		blurUrl: SingleListData["meta_data"]["ogImgBlurUrl"],
-		height: SingleListData["meta_data"]["height"],
-		width: SingleListData["meta_data"]["width"],
+		_height: SingleListData["meta_data"]["height"],
+		_width: SingleListData["meta_data"]["width"],
 		type: SingleListData["type"],
 		url: SingleListData["url"],
 	) => {
