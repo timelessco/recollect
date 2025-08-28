@@ -8,10 +8,12 @@ import {
 } from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isEmpty, isNil, isNull } from "lodash";
+import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
+import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
+import { canEmbedInIframe } from "../../../async/uploads/iframe-test";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type NextApiRequest,
@@ -25,11 +27,11 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	OG_IMAGE_PREFERRED_SITES,
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
-	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
-import { apiCookieParser } from "../../../utils/helpers";
+import { apiCookieParser, checkIfUrlAnMedia } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
@@ -107,6 +109,12 @@ export default async function handler(
 	const { url } = request.body;
 	const { category_id: categoryId } = request.body;
 	const { update_access: updateAccess } = request.body;
+
+	const urlHost = new URL(url)?.hostname?.toLowerCase();
+
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some(
+		(keyword) => urlHost?.includes(keyword),
+	);
 
 	// try {
 	// 	// 5 seconds timeout
@@ -205,8 +213,12 @@ export default async function handler(
 	let scraperApiError = null;
 
 	try {
+		const userAgent =
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
+
 		const { result: ogScrapperResponse } = await ogs({
 			url,
+			fetchOptions: { headers: { "user-agent": userAgent } },
 		});
 
 		scrapperResponse = {
@@ -282,12 +294,21 @@ export default async function handler(
 
 	let ogImageToBeAdded = null;
 
-	const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
-
-	if (!isNil(isUrlOfMimeType)) {
+	const isUrlOfMimeType = await checkIfUrlAnMedia(url);
+	// ***** here we are checking the url is of an mime type or not,if it is so we set the url in ogImage *****
+	// ***** if it an  image we upload to s3 and for video we take screenshot *****
+	let iframeAllowedValue = null;
+	if (isUrlOfMimeType) {
 		ogImageToBeAdded = url;
 	} else {
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
+		// Iframe check
+		iframeAllowedValue = isOgImagePreferred
+			? false
+			: await canEmbedInIframe(url);
+		if (!iframeAllowedValue) {
+			console.warn(`Iframe embedding not allowed for URL: ${url}`);
+		}
 	}
 
 	// here we add the scrapper data , in the remainingApi call we add s3 data
@@ -308,7 +329,10 @@ export default async function handler(
 				ogImage: ogImageToBeAdded,
 				category_id: computedCategoryId,
 				meta_data: {
+					isOgImagePreferred,
+					mediaType: await getMediaType(url),
 					favIcon: scrapperResponse?.data?.favIcon,
+					iframeAllowed: iframeAllowedValue,
 				},
 				type: bookmarkType,
 			},
@@ -332,7 +356,7 @@ export default async function handler(
 			.json({ data, error: scraperApiError ?? null, message: null });
 
 		try {
-			if (!isNull(data) && !isEmpty(data) && !isNil(isUrlOfMimeType)) {
+			if (!isNull(data) && !isEmpty(data) && isUrlOfMimeType) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				// this is called only if the url is an image url like test.com/image.png.
 				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)

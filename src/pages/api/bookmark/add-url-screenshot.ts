@@ -1,3 +1,4 @@
+import console from "console";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -29,7 +30,7 @@ type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
 };
-
+const MAX_LENGTH = 1_300;
 const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
@@ -71,11 +72,14 @@ export default async function handler(
 			},
 		);
 		if (screenShotResponse.status === 200) {
-			console.error("***Screenshot success**");
+			console.log("***Screenshot success**");
 		}
-	} catch {
-		console.error("Screenshot error");
-		Sentry.captureException(`Screenshot error`);
+	} catch (error_) {
+		if (error_ instanceof Error) {
+			console.error("Screenshot error");
+			Sentry.captureException(`Screenshot error`);
+		}
+
 		return;
 	}
 
@@ -83,13 +87,15 @@ export default async function handler(
 		screenShotResponse?.data?.screenshot?.data,
 		"binary",
 	)?.toString("base64");
+	const { title, description, isPageScreenshot } =
+		screenShotResponse?.data.metaData || {};
 
 	const publicURL = await upload(base64data, userId);
 
 	// First, fetch the existing bookmark data to get current meta_data
 	const { data: existingBookmarkData, error: fetchError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("meta_data, ogImage")
+		.select("meta_data, ogImage, title, description")
 		.match({ id: request.body.id, user_id: userId })
 		.single();
 
@@ -103,10 +109,16 @@ export default async function handler(
 	// Get existing meta_data or create empty object if null
 	const existingMetaData = existingBookmarkData?.meta_data || {};
 
+	const updatedTitle =
+		title?.slice(0, MAX_LENGTH) || existingBookmarkData?.title;
+	const updatedDescription =
+		description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
+
 	// Add screenshot URL to meta_data
 	const updatedMetaData = {
 		...existingMetaData,
 		screenshot: publicURL,
+		isPageScreenshot,
 		coverImage: existingBookmarkData?.ogImage,
 	};
 
@@ -119,13 +131,15 @@ export default async function handler(
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
 		// since we now have screenshot , we add that in ogImage as this will now be our primary image, and the existing ogImage (which is the scrapper data image) will be our cover image in meta_data
-		.update({ meta_data: updatedMetaData })
+		.update({
+			title: updatedTitle,
+			description: updatedDescription,
+			meta_data: updatedMetaData,
+		})
 		.match({ id: request.body.id, user_id: userId })
 		.select();
 
 	if (isNull(error)) {
-		response.status(200).json({ data, error: null });
-
 		try {
 			if (data && data.length > 0) {
 				await axios.post(
@@ -142,6 +156,8 @@ export default async function handler(
 					},
 				);
 			}
+
+			response.status(200).json({ data, error: null });
 		} catch (remainingUploadError) {
 			console.error("Remaining bookmark data API error:", remainingUploadError);
 			Sentry.captureException(

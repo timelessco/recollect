@@ -38,7 +38,10 @@ import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import useIsMobileView from "../../hooks/useIsMobileView";
 import SearchInputSearchIcon from "../../icons/searchInputSearchIcon";
-import { useMiscellaneousStore } from "../../store/componentStore";
+import {
+	useLoadersStore,
+	useMiscellaneousStore,
+} from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
@@ -205,7 +208,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const currentPath = useGetCurrentUrlPath();
 
-	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
+	const { setSearchText } = useMiscellaneousStore();
 	const showSidePane = useMiscellaneousStore((state) => state.showSidePane);
 	const setShowSidePane = useMiscellaneousStore(
 		(state) => state.setShowSidePane,

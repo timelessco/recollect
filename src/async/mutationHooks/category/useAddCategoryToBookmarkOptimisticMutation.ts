@@ -72,7 +72,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
 			},
 			// Always refetch after error or success:
 			onSettled: () => {
-				void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+				// here if we are not in lightbox we want to refetch the bookmarks to avoid flash in lightbox
 				void queryClient.invalidateQueries([
 					BOOKMARKS_KEY,
 					session?.user?.id,

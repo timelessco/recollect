@@ -14,6 +14,7 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
+	PDF_MIME_TYPE,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
@@ -21,6 +22,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
+import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import {
 	fileTypeIdentifier,
 	parseUploadFileName,
@@ -148,10 +150,14 @@ export default function useFileUploadOptimisticMutation() {
 				session?.user?.id,
 			]);
 		},
-		onSuccess: (apiResponse, data) => {
+		onSuccess: async (apiResponse, data) => {
 			const uploadedDataType = data?.file?.type;
 
-			const apiResponseTyped = apiResponse as unknown as { success: boolean };
+			const apiResponseTyped = apiResponse as unknown as {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				data: any;
+				success: boolean;
+			};
 
 			if (apiResponseTyped?.success === true) {
 				const fileTypeName = fileTypeIdentifier(uploadedDataType);
@@ -160,6 +166,19 @@ export default function useFileUploadOptimisticMutation() {
 					is uploading images in videos page then this logic fires and it tells where the item has been uploaded. 
 					Eg: If user uploads images in documents page then the user will get a toast message 
 				telling "Added to documents page"  */
+
+				if (data?.file?.type === PDF_MIME_TYPE) {
+					try {
+						successToast(`generating  thumbnail`);
+						await handlePdfThumbnailAndUpload({
+							fileUrl: `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
+							fileId: apiResponseTyped?.data[0].id,
+							sessionUserId: session?.user?.id,
+						});
+					} catch {
+						errorToast("Failed to generate thumbnail");
+					}
+				}
 
 				if (
 					CATEGORY_ID === IMAGES_URL &&

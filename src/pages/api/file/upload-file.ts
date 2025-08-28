@@ -117,6 +117,10 @@ const videoLogic = async (data: BodyDataType) => {
 		ocr: ocrData ?? null,
 		coverImage: null,
 		screenshot: null,
+		isOgImagePreferred: false,
+		mediaType: "",
+		iframeAllowed: false,
+		isPageScreenshot: null,
 	};
 
 	return { ogImage, meta_data };
@@ -189,6 +193,10 @@ export default async (
 		ocr: null,
 		coverImage: null,
 		screenshot: null,
+		isOgImagePreferred: false,
+		iframeAllowed: false,
+		mediaType: "",
+		isPageScreenshot: null,
 	};
 	const isVideo = fileType?.includes("video");
 
@@ -196,11 +204,16 @@ export default async (
 
 	if (!isVideo) {
 		// if file is not a video
-		// const { ogImage: image, meta_data: metaData } =
-		// 	await notVideoLogic(storageData);
+		try {
+			ogImage = storageData?.publicUrl;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new TypeError("Failed to generate PNG from PDF" + error.message);
+			}
 
-		ogImage = storageData?.publicUrl;
-		// meta_data = metaData;
+			// Optional: set a fallback image
+			ogImage = storageData?.publicUrl;
+		}
 	} else {
 		// if file is a video
 		const { ogImage: image, meta_data: metaData } = await videoLogic(data);
@@ -230,7 +243,9 @@ export default async (
 	};
 
 	if (isNil(publicUrlError) && isNil(DBerror)) {
-		response.status(200).json({ success: true, error: null });
+		response
+			.status(200)
+			.json({ data: DatabaseData, success: true, error: null });
 
 		try {
 			if (!isEmpty(DatabaseData) && !isVideo) {
