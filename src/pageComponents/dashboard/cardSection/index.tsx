@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -118,6 +118,28 @@ const CardSection = ({
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
 
+	const cardTypeCondition = useGetViewValue(
+		"bookmarksView",
+		"",
+		isPublicPage,
+		categoryViewsFromProps,
+	);
+
+	// Memoize the sizes logic
+	const sizesLogic = useMemo(() => {
+		switch (cardTypeCondition) {
+			case viewValues.moodboard:
+			case viewValues.timeline:
+				return "(max-width: 768px) 200px, 400px";
+			case viewValues.list:
+				return "100px";
+			case viewValues.card:
+				return "300px";
+			default:
+				return "500px";
+		}
+	}, [cardTypeCondition]);
+
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -232,13 +254,6 @@ const CardSection = ({
 			categoryViewsFromProps,
 		) as Many<string | undefined>,
 	]) as unknown as number[];
-
-	const cardTypeCondition = useGetViewValue(
-		"bookmarksView",
-		"",
-		isPublicPage,
-		categoryViewsFromProps,
-	);
 
 	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
 
@@ -585,9 +600,7 @@ const CardSection = ({
 								height={height ?? 200}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
-								sizes="(max-width: 768px) 100vw,
-								(max-width: 1200px) 50vw,
-								33vw"
+								sizes={sizesLogic}
 								src={img}
 								width={width ?? 200}
 							/>
