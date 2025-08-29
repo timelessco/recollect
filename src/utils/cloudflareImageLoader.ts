@@ -13,7 +13,7 @@ export default function cloudflareImageLoader({
 	quality,
 }: CloudflareImageLoaderProps): string {
 	// Force WebP format and set optimization level for better compression
-	const parameters = [`width=${width}`, "format=webp", "optimize=medium"];
+	const parameters = [`width=${width}`, "format=auto", "fit=scale-down"];
 
 	if (quality) {
 		parameters.push(`quality=${quality}`);
