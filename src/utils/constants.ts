@@ -260,3 +260,5 @@ export const infoValues = [
 	singleInfoValues.description,
 	singleInfoValues.tags,
 ];
+
+export const CF_IMAGE_LOADER_URL = "https://recollect.so/cdn-cgi/image";

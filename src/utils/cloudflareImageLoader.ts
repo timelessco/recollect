@@ -1,3 +1,5 @@
+import { CF_IMAGE_LOADER_URL } from "./constants";
+
 const normalizeImagePath = (imagePath: string): string =>
 	imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
 
@@ -12,7 +14,10 @@ export default function cloudflareImageLoader({
 	width,
 	quality,
 }: CloudflareImageLoaderProps): string {
-	// Force WebP format and set optimization level for better compression
+	if (process.env.NODE_ENV === "development") {
+		return src;
+	}
+
 	const parameters = [`width=${width}`, "format=auto", "fit=scale-down"];
 
 	if (quality) {
@@ -21,7 +26,7 @@ export default function cloudflareImageLoader({
 
 	const parametersString = parameters?.join(",");
 
-	return `https://recollect.so/cdn-cgi/image/${parametersString}/${normalizeImagePath(
+	return `${CF_IMAGE_LOADER_URL}/${parametersString}/${normalizeImagePath(
 		src,
 	)}`;
 }
