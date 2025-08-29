@@ -45,10 +45,12 @@ undefined
 
 const formatResponse = (responseText: string) => {
 	// Extract summary
+	// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp, regexp/no-super-linear-backtracking
 	const summaryMatch = /summary:\s*([\s\S]*?)\nkey_info:/i.exec(responseText);
 	const summary = summaryMatch ? summaryMatch[1].trim() : "undefined";
 
 	// Extract key_info JSON
+	// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp, regexp/no-super-linear-backtracking
 	const keyInfoMatch = /key_info:\s*(\{[\s\S]*\})/i.exec(responseText);
 	let keyInfo = "undefined";
 	if (keyInfoMatch) {
