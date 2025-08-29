@@ -220,29 +220,17 @@ const CardSection = ({
 
 	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
 
-	const imgSizes = useMemo(() => {
+	const sizesLogic = useMemo(() => {
 		switch (cardTypeCondition) {
 			case viewValues.moodboard:
 			case viewValues.timeline:
-				return {
-					height: 200,
-					width: 200,
-				};
+				return "(max-width: 768px) 200px, 400px";
 			case viewValues.list:
-				return {
-					height: 100,
-					width: 100,
-				};
+				return "100px";
 			case viewValues.card:
-				return {
-					height: 500,
-					width: 500,
-				};
+				return "300px";
 			default:
-				return {
-					height: 500,
-					width: 500,
-				};
+				return "500px";
 		}
 	}, [cardTypeCondition]);
 
@@ -579,11 +567,12 @@ const CardSection = ({
 								alt="bookmark-img"
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
-								height={imgSizes.height}
+								height={_height ?? 200}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
+								sizes={sizesLogic}
 								src={`${img}`}
-								width={imgSizes.width}
+								width={_width ?? 200}
 							/>
 						) : (
 							errorImgPlaceholder
