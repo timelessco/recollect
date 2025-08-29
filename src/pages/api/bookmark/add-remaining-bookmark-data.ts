@@ -292,13 +292,14 @@ export default async function handler(
 		ogImgBlurUrl: imgData?.encoded,
 		favIcon: await favIconLogic(),
 		ocr: imageOcrValue,
-		screenshot: existingMetaData?.screenshot || null,
+		// screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
-		twitter_avatar_url: null,
-		isOgImagePreferred: existingMetaData?.isOgImagePreferred,
-		mediaType: existingMetaData?.mediaType,
-		iframeAllowed: existingMetaData?.iframeAllowed,
-		isPageScreenshot: existingMetaData?.isPageScreenshot,
+		// twitter_avatar_url: null,
+		// isOgImagePreferred: existingMetaData?.isOgImagePreferred,
+		// mediaType: existingMetaData?.mediaType,
+		// iframeAllowed: existingMetaData?.iframeAllowed,
+		// isPageScreenshot: existingMetaData?.isPageScreenshot,
+		...existingMetaData,
 	};
 
 	const {

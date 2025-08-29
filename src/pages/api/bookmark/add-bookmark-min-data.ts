@@ -11,6 +11,7 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
+import { pageSummary } from "../../../async/ai/pageSummary";
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import { canEmbedInIframe } from "../../../async/uploads/iframe-test";
@@ -311,6 +312,12 @@ export default async function handler(
 		}
 	}
 
+	const pageSummaryResponse = await pageSummary(url);
+	console.error(
+		pageSummaryResponse.data.summary,
+		pageSummaryResponse.data.key_info,
+	);
+
 	// here we add the scrapper data , in the remainingApi call we add s3 data
 	const {
 		data,
@@ -333,6 +340,8 @@ export default async function handler(
 					mediaType: await getMediaType(url),
 					favIcon: scrapperResponse?.data?.favIcon,
 					iframeAllowed: iframeAllowedValue,
+					summary: pageSummaryResponse?.data?.summary,
+					key_info: pageSummaryResponse?.data?.key_info,
 				},
 				type: bookmarkType,
 			},

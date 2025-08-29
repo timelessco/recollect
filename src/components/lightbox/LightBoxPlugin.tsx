@@ -228,6 +228,14 @@ const MyComponent = () => {
 							bookmarkId={currentBookmark?.id}
 							category_id={currentBookmark?.category_id}
 						/>
+						{(metaData?.key_info && metaData?.key_info !== "undefined" && (
+							<div>
+								<pre className="text-xs">
+									{JSON.stringify(metaData?.key_info, null, 1)}
+								</pre>
+							</div>
+						)) ||
+							"no key info"}
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.img_caption) && (
@@ -281,9 +289,14 @@ const MyComponent = () => {
 										}`}
 									>
 										<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
-											{metaData?.img_caption}
-											{metaData?.img_caption && metaData?.ocr && <br />}
-											{metaData?.ocr}
+											{(metaData?.summary !== "undefined" &&
+												metaData?.summary &&
+												"Summary: " + metaData?.summary) ||
+												metaData?.img_caption}
+											{!metaData?.summary &&
+												metaData?.img_caption &&
+												metaData?.ocr && <br />}
+											{!metaData?.summary && metaData?.ocr}
 										</p>
 									</div>
 								</motion.div>
