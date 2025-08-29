@@ -50,7 +50,7 @@ const formatResponse = (responseText: string) => {
 	const summary = summaryMatch ? summaryMatch[1].trim() : "undefined";
 
 	// Extract key_info JSON
-	// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp, regexp/no-super-linear-backtracking
+	// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp,
 	const keyInfoMatch = /key_info:\s*(\{[\s\S]*\})/i.exec(responseText);
 	let keyInfo = "undefined";
 	if (keyInfoMatch) {
