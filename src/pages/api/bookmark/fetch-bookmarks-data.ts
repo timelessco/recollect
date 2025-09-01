@@ -122,15 +122,21 @@ user_id (
 	}
 
 	if (category_id === IMAGES_URL) {
-		query = query.in("type", imageFileTypes);
+		query = query.or(
+			`type.in.(${imageFileTypes}),meta_data->>mediaType.in.(${imageFileTypes})`,
+		);
 	}
 
 	if (category_id === VIDEOS_URL) {
-		query = query.in("type", videoFileTypes);
+		query = query.or(
+			`type.in.(${videoFileTypes}),meta_data->>mediaType.in.(${videoFileTypes})`,
+		);
 	}
 
 	if (category_id === DOCUMENTS_URL) {
-		query = query.in("type", documentFileTypes);
+		query = query.or(
+			`type.in.(${documentFileTypes}),meta_data->>mediaType.in.(${documentFileTypes})`,
+		);
 	}
 
 	if (category_id === TWEETS_URL) {

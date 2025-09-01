@@ -2,6 +2,11 @@ import { type FileWithPath } from "react-dropzone";
 
 import { type CategoriesData } from "./apiTypes";
 
+export type IconData = {
+	icon: (iconColor: string, size?: string, className?: string) => JSX.Element;
+	label: string;
+};
+
 export type UrlInput = {
 	urlText: string;
 };

@@ -1,9 +1,13 @@
+import router from "next/router";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
 import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
 import slugify from "slugify";
 
+// eslint-disable-next-line import/no-cycle
+import { getMediaType } from "../async/supabaseCrudHelpers";
 import { type CardSectionProps } from "../pageComponents/dashboard/cardSection";
 import {
 	type CategoriesData,
@@ -13,6 +17,7 @@ import {
 import { type UrlInput } from "../types/componentTypes";
 
 import {
+	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
 	bookmarkType,
 	documentFileTypes,
@@ -32,6 +37,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
+import { getCategorySlugFromRouter } from "./url";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 	find(tagsData, (item) => {
@@ -255,7 +261,7 @@ export const aspectRatio = (
 
 // this parses the file name when uploading something , it removes all the special charecters
 export const parseUploadFileName = (name: string): string =>
-	slugify(name, {
+	slugify(name || "", {
 		lower: true,
 		remove: FILE_NAME_PARSING_PATTERN,
 	});
@@ -291,4 +297,70 @@ export const isCurrentYear = (insertedAt: string) => {
 	const insertedYear = getYear(date);
 
 	return insertedYear === currentYear;
+};
+
+// this function returns true if the media type is of image type else false
+export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
+	const mediaType = await getMediaType(url);
+	return mediaType?.includes("image/") ?? false;
+};
+
+// this function returns true if the media type is in the acceptedFileTypes array else false
+export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
+	const mediaType = await getMediaType(url);
+	return acceptedFileTypes?.includes(mediaType ?? "") ?? false;
+};
+
+/**
+ * Extracts non-empty path segments from a URL path
+ *
+ * @param path The URL path to process (e.g., from router.asPath)
+ * @returns Array of non-empty path segments
+ */
+export const getPathSegments = (path: string): string[] =>
+	(path || "").split("/").filter(Boolean);
+
+/**
+ * Checks if the given path is a preview path and extracts the preview ID if it exists
+ *
+ * @param path The URL path to check
+ * @param previewText The preview path segment to look for (default: 'preview')
+ * @returns An object containing:
+ *   - isPreviewPath: boolean indicating if the path is a preview path
+ *   - previewId: the ID from the URL if it's a preview path, null otherwise
+ */
+export const getPreviewPathInfo = (
+	path: string,
+	previewText = "preview",
+): { isPreviewPath: boolean; previewId: string | null } => {
+	const pathSegments = getPathSegments(path);
+	const isPreviewPath =
+		pathSegments.length >= 2 &&
+		pathSegments[pathSegments.length - 2] === previewText;
+	const previewId = isPreviewPath
+		? pathSegments[pathSegments.length - 1]
+		: null;
+
+	return { isPreviewPath, previewId };
+};
+
+export const searchSlugKey = (categoryData: {
+	data: CategoriesData[];
+	error: PostgrestError;
+}) => {
+	const categorySlug = getCategorySlugFromRouter(router);
+
+	const categoryIdFromSlug = find(
+		categoryData?.data,
+		(item) => item?.category_slug === categorySlug,
+	)?.id;
+	if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
+		return null;
+	}
+
+	if (typeof categoryIdFromSlug === "number") {
+		return categoryIdFromSlug;
+	}
+
+	return categorySlug;
 };

@@ -51,24 +51,19 @@ export default function useSearchBookmarks() {
 
 	const { data, isLoading } = useQuery({
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-		queryFn: async () => {
-			toggleIsSearchLoading(true);
-			try {
-				if (!aiButtonToggle && searchText) {
-					return await searchBookmarks(
-						searchText,
-						CATEGORY_ID,
-						isSharedCategory,
-					);
-				}
-
-				return null;
-			} finally {
-				toggleIsSearchLoading(false);
-			}
-		},
 		enabled: !isEmpty(searchText),
 		refetchOnWindowFocus: false,
+		onSettled: () => {
+			toggleIsSearchLoading(false);
+		},
+		queryFn: async () => {
+			toggleIsSearchLoading(true);
+			if (!aiButtonToggle && searchText) {
+				return await searchBookmarks(searchText, CATEGORY_ID, isSharedCategory);
+			}
+
+			return null;
+		},
 	});
 
 	return { data, isLoading };

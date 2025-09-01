@@ -1,11 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
-	useMiscellaneousStore,
+	useLoadersStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -18,12 +16,15 @@ import {
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	menuListItemName,
+	PDF_MIME_TYPE,
 	TWEETS_URL,
-	URL_IMAGE_CHECK_PATTERN,
+	URL_PDF_CHECK_PATTERN,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { successToast } from "../../../utils/toastMessages";
-import { addBookmarkMinData } from "../../supabaseCrudHelpers";
+import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
+import { checkIfUrlAnImage } from "../../../utils/helpers";
+import { errorToast, successToast } from "../../../utils/toastMessages";
+import { addBookmarkMinData, getMediaType } from "../../supabaseCrudHelpers";
 
 import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
 
@@ -32,14 +33,13 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 
 	const queryClient = useQueryClient();
-	const setAddScreenshotBookmarkId = useMiscellaneousStore(
-		(state) => state.setAddScreenshotBookmarkId,
-	);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
+	// We'll initialize the mutation with a default value and update it when we have the actual ID
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { sortBy } = useGetSortBy();
+	// const { addLoadingBookmarkId } = useLoadersStore();
 
 	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
 		onMutate: async (data) => {
@@ -102,7 +102,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			);
 		},
 		// Always refetch after error or success:
-		onSettled: (apiResponse: unknown) => {
+		onSettled: async (apiResponse: unknown) => {
 			const response = apiResponse as { data: { data: SingleListData[] } };
 			void queryClient.invalidateQueries([
 				BOOKMARKS_KEY,
@@ -125,16 +125,57 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 			// this is to check if url is not a website like test.pdf
 			// if this is the case then we do not call the screenshot api
-			const isUrlOfMimeType = url?.match(URL_IMAGE_CHECK_PATTERN);
+			const isUrlOfMimeType = await checkIfUrlAnImage(url);
+			// **************
+			// here we are checking if the url is an image, we don't check for mime type,
+			// if we check if is an mime type then screenshot api cannot be called
+			// ex: if it is an .mp4(url) the mime type will be video/mp4 so screenshot api cannot be called, we will not have preview image
+			//  **************
 
 			// only take screenshot if url is not an image like https://test.com/test.jpg
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
-			if (isNull(isUrlOfMimeType)) {
+
+			if (!isUrlOfMimeType) {
+				const mediaType = await getMediaType(url);
+				if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
+					try {
+						successToast("generating thumbnail");
+						await handlePdfThumbnailAndUpload({
+							fileUrl: data?.url,
+							fileId: data?.id,
+							sessionUserId: session?.user?.id,
+						});
+					} catch (error) {
+						console.warn("First attempt failed, retrying...", error);
+						try {
+							errorToast("retry thumbnail generation");
+							await handlePdfThumbnailAndUpload({
+								fileUrl: data?.url,
+								fileId: data?.id,
+								sessionUserId: session?.user?.id,
+							});
+						} catch (retryError) {
+							console.error(
+								"PDF thumbnail upload failed after retry:",
+								retryError,
+							);
+							errorToast("thumbnail generation failed");
+						}
+					}
+
+					return;
+				}
+
+				// if (data?.id) {
+				// 	addLoadingBookmarkId(data?.id);
+				// }
+
+				successToast("screenshot initiated!!!");
+				// update to zustand here
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
 					id: data?.id,
 				});
-				setAddScreenshotBookmarkId(data?.id);
 			}
 		},
 		onSuccess: (apiResponse) => {

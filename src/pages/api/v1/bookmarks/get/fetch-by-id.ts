@@ -20,9 +20,7 @@ type ResponseType = {
 
 const getBodySchema = () =>
 	z.object({
-		data: z.object({
-			id: z.number(),
-		}),
+		id: z.string(),
 	});
 
 /**
@@ -31,6 +29,13 @@ const getBodySchema = () =>
  * @param {NextApiRequest<RequestType>} request
  * @param {NextApiResponse<ResponseType>} response
  * @returns {ResponseType}
+ */
+/**
+ * This api fetches bookmark by its id
+ *
+ * @param {NextApiRequest<RequestType>} request - Request object
+ * @param {NextApiResponse<ResponseType>} response - Response object
+ * @returns {Promise<NextApiResponse<ResponseType>>} - Fetched bookmark or error
  */
 export default async function handler(
 	request: NextApiRequest<RequestType>,
@@ -45,7 +50,7 @@ export default async function handler(
 
 	try {
 		const schema = getBodySchema();
-		const bodyData = schema.parse(request.body);
+		const bodyData = schema.parse(request.query);
 		const supabase = apiSupabaseClient(request, response);
 
 		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
@@ -54,7 +59,7 @@ export default async function handler(
 			.from(MAIN_TABLE_NAME)
 			.select("*")
 			.eq("user_id", userId)
-			.eq("id", bodyData?.data?.id);
+			.eq("id", Number.parseInt(bodyData?.id, 10));
 
 		if (error) {
 			response.status(500).send({ error: "fetch error", data: null });
