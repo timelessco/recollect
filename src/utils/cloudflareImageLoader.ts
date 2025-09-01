@@ -15,12 +15,12 @@ export default function cloudflareImageLoader({
 	quality,
 }: CloudflareImageLoaderProps): string {
 	// eslint-disable-next-line no-console
-	console.log("testing log~~~~~", process.env.VERCEL_ENV);
+	console.log("testing log~~~~~", process.env.NEXT_PUBLIC_VERCEL_ENV);
 	// if (process.env.NODE_ENV === "development") {
 	// 	return src;
 	// }
 
-	if (process.env.VERCEL_ENV !== "production") {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
 		return src;
 	}
 
