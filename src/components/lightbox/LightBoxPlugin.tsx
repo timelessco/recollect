@@ -228,6 +228,12 @@ const MyComponent = () => {
 							bookmarkId={currentBookmark?.id}
 							category_id={currentBookmark?.category_id}
 						/>
+						{metaData?.category_name &&
+							metaData?.category_name !== "undefined" && (
+								<div>
+									<p>Category Name: {metaData?.category_name}</p>
+								</div>
+							)}
 						{(metaData?.key_info && metaData?.key_info !== "undefined" && (
 							<div>
 								<pre className="text-xs">
