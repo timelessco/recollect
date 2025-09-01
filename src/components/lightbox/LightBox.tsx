@@ -69,7 +69,12 @@ export const CustomLightBox = ({
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state?.session);
 	const lastInvalidatedIndex = useRef<number | null>(null);
-
+	const isCollectionChanged = useMiscellaneousStore(
+		(state) => state.isCollectionChanged,
+	);
+	const setIsCollectionChanged = useMiscellaneousStore(
+		(state) => state.setIsCollectionChanged,
+	);
 	const router = useRouter();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -444,7 +449,7 @@ export const CustomLightBox = ({
 					setActiveIndex(index);
 
 					// Invalidate queries when slide changes
-					if (index !== lastInvalidatedIndex.current) {
+					if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
 						const currentBookmark = bookmarks?.[index];
 						if (currentBookmark) {
 							const categoryId = currentBookmark.category_id;
@@ -495,6 +500,8 @@ export const CustomLightBox = ({
 									lastInvalidatedIndex.current = index;
 								} catch (error) {
 									console.error("Error invalidating queries:", error);
+								} finally {
+									setIsCollectionChanged(false);
 								}
 							};
 

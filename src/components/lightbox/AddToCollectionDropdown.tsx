@@ -32,7 +32,10 @@ import { useQueryClient } from "@tanstack/react-query";
 // Custom hooks and utilities
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
-import { useSupabaseSession } from "../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import {
 	ALL_BOOKMARKS_URL,
@@ -72,6 +75,9 @@ export const AddToCollectionDropdown = memo(
 			VIDEOS_URL,
 			LINKS_URL,
 		];
+		const setIsCollectionChanged = useMiscellaneousStore(
+			(state) => state.setIsCollectionChanged,
+		);
 		const router = useRouter();
 		const categorySlug = getCategorySlugFromRouter(router);
 
@@ -165,6 +171,7 @@ export const AddToCollectionDropdown = memo(
 						category_id: selectedCollection?.id ?? null,
 						update_access: true,
 					});
+					setIsCollectionChanged(true);
 				} catch (error) {
 					// Revert on error
 					console.error("Error adding to collection:", error);
@@ -183,6 +190,7 @@ export const AddToCollectionDropdown = memo(
 				allbookmarksdata,
 				addCategoryToBookmarkOptimisticMutation,
 				bookmarkId,
+				setIsCollectionChanged,
 			],
 		);
 
