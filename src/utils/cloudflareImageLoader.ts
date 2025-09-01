@@ -14,7 +14,7 @@ export default function cloudflareImageLoader({
 	width,
 	quality,
 }: CloudflareImageLoaderProps): string {
-	if (process.env.NODE_ENV === "development") {
+	if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
 		return src;
 	}
 
