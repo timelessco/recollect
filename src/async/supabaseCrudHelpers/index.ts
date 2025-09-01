@@ -873,7 +873,7 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 		);
 
 		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
+			return null;
 		}
 
 		const data = await response.json();
