@@ -57,8 +57,7 @@ const formatResponse = (responseText: string) => {
 	const keyInfoMatch = /key_info:\s*(\{[\s\S]*\})/i.exec(responseText);
 	let keyInfo = "undefined";
 
-	// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp,
-	const categoryMatch = /category_name:\s*(\w+)/i.exec(responseText);
+	const categoryMatch = /category_name:\s*(\w+)/iu.exec(responseText);
 	const categoryName = categoryMatch ? categoryMatch[1].trim() : "undefined";
 	if (keyInfoMatch) {
 		try {
