@@ -14,15 +14,6 @@ export default function cloudflareImageLoader({
 	width,
 	quality,
 }: CloudflareImageLoaderProps): string {
-	// eslint-disable-next-line no-console
-	console.log("Environment Debug:", {
-		NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
-		NODE_ENV: process.env.NODE_ENV,
-	});
-	// if (process.env.NODE_ENV === "development") {
-	// 	return src;
-	// }
-
 	if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
 		return src;
 	}
