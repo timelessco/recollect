@@ -31,7 +31,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 		>
 			<AriaCheckbox
 				checked={checked}
-				className="aria-checkbox h-5 w-5 opacity-0"
+				className="aria-checkbox absolute right-1 top-[0.5px] h-[26px] w-[26px] opacity-0"
 				disabled={disabled}
 				onChange={(event) => onChange(event.target.value)}
 				value={value}
@@ -40,9 +40,9 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 			{BookmarkHoverCheckbox ? (
 				<div className="checkbox-div pointer-events-none absolute left-[5px] h-4 w-4 rounded-[4px] bg-black " />
 			) : checked ? (
-				<div className="checkbox-div pointer-events-none absolute h-[26px] w-[26px] rounded-lg bg-black/70 backdrop-blur-[10px]" />
+				<div className="checkbox-div pointer-events-none absolute right-1 top-[0.5px] h-[26px] w-[26px] rounded-lg bg-black/70 backdrop-blur-[10px]" />
 			) : (
-				<div className="pointer-events-none absolute flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-white/90 backdrop-blur-[10px]">
+				<div className="pointer-events-none absolute right-1 top-[0.5px] flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-white/90 backdrop-blur-[10px]">
 					<CheckboxIcon />
 				</div>
 			)}

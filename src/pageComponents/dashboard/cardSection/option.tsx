@@ -149,11 +149,11 @@ const Option = ({
 					checked={isSelected}
 					classname={`${
 						isSelected ? "opacity-100" : "opacity-0"
-					} absolute cursor-pointer opacity-0 z-15 group-hover:opacity-100 top-[13px] right-[3px]  ${
+					} absolute cursor-pointer opacity-0 z-15 group-hover:opacity-100 top-[10px] right-[3px]  ${
 						cardTypeCondition === viewValues.list
-							? "top-[18px]"
+							? "top-[15px]"
 							: cardTypeCondition === viewValues.headlines
-							? "top-[14px]"
+							? "top-[11px]"
 							: "top-3"
 					}`}
 					value={isSelected ? "true" : "false"}
