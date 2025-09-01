@@ -112,13 +112,9 @@ export const AddToCollectionDropdown = memo(
 			);
 		}, [collections, searchTerm, currentCollection?.id]);
 
-		const { setLightboxId, setLightboxOpen } = useMiscellaneousStore();
-
 		const shallowRouteTo = useCallback(
 			(item: SingleListData | undefined) => {
 				if (!item) return;
-				setLightboxId(item?.id.toString());
-				setLightboxOpen(true);
 				void router.push(
 					{
 						pathname: `${CATEGORY_ID_PATHNAME}`,
@@ -131,7 +127,7 @@ export const AddToCollectionDropdown = memo(
 					{ shallow: true },
 				);
 			},
-			[router, setLightboxId, setLightboxOpen, categorySlug],
+			[router, categorySlug],
 		);
 
 		// Handle when a collection is selected
