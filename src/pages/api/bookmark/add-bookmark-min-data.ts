@@ -316,6 +316,7 @@ export default async function handler(
 	console.error(
 		pageSummaryResponse.data.summary,
 		pageSummaryResponse.data.key_info,
+		pageSummaryResponse.data.category_name,
 	);
 
 	// here we add the scrapper data , in the remainingApi call we add s3 data
@@ -342,6 +343,7 @@ export default async function handler(
 					iframeAllowed: iframeAllowedValue,
 					summary: pageSummaryResponse?.data?.summary,
 					key_info: pageSummaryResponse?.data?.key_info,
+					category_name: pageSummaryResponse?.data?.category_name,
 				},
 				type: bookmarkType,
 			},

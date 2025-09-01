@@ -10,7 +10,8 @@ export const pageSummary = async (url: string) => {
 	try {
 		const prompt = `
     concise 3 line summary with the key essence of the page.
-plus any other key info in JSON format.
+plus any other key info in JSON format and provide a category name.
+and 'books, products, articles, podcasts, music, videos, recipes, discussions, code, art, videos' here is the list of categories under which one this page belongs to.
 
 Format strictly as:
 summary:
@@ -18,6 +19,9 @@ summary:
 
 key_info:
 <valid JSON or 'undefined'>
+
+category_name:
+<category name or 'undefined'>
 
 If you cannot retrieve or summarize the page, return exactly:
 summary:
@@ -33,7 +37,6 @@ undefined
 		const result = await model.generateContent([prompt, url]);
 		const response = result.response;
 		const text = response.text();
-
 		return {
 			data: formatResponse(text),
 		};
@@ -53,6 +56,10 @@ const formatResponse = (responseText: string) => {
 	// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp,
 	const keyInfoMatch = /key_info:\s*(\{[\s\S]*\})/i.exec(responseText);
 	let keyInfo = "undefined";
+
+	// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp,
+	const categoryMatch = /category_name:\s*(\w+)/i.exec(responseText);
+	const categoryName = categoryMatch ? categoryMatch[1].trim() : "undefined";
 	if (keyInfoMatch) {
 		try {
 			keyInfo = JSON.parse(keyInfoMatch[1]);
@@ -63,6 +70,7 @@ const formatResponse = (responseText: string) => {
 
 	return {
 		summary,
+		category_name: categoryName,
 		key_info: keyInfo,
 	};
 };
