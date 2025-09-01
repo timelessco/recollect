@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -227,6 +227,20 @@ const CardSection = ({
 	);
 
 	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
+
+	const sizesLogic = useMemo(() => {
+		switch (cardTypeCondition) {
+			case viewValues.moodboard:
+			case viewValues.timeline:
+				return "(max-width: 768px) 200px, 400px";
+			case viewValues.list:
+				return "100px";
+			case viewValues.card:
+				return "300px";
+			default:
+				return "500px";
+		}
+	}, [cardTypeCondition]);
 
 	useEffect(() => {
 		if (!isEmpty(cardTypeCondition)) {
@@ -477,8 +491,8 @@ const CardSection = ({
 		img: SingleListData["ogImage"],
 		id: SingleListData["id"],
 		blurUrl: SingleListData["meta_data"]["ogImgBlurUrl"],
-		height: SingleListData["meta_data"]["height"],
-		width: SingleListData["meta_data"]["width"],
+		_height: SingleListData["meta_data"]["height"],
+		_width: SingleListData["meta_data"]["width"],
 		type: SingleListData["type"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
@@ -568,11 +582,12 @@ const CardSection = ({
 								alt="bookmark-img"
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
-								height={height ?? 200}
+								height={_height ?? 200}
 								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
-								src={img}
-								width={width ?? 200}
+								sizes={sizesLogic}
+								src={`${img}`}
+								width={_width ?? 200}
 							/>
 						) : (
 							errorImgPlaceholder(false)

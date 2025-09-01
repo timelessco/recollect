@@ -26,8 +26,10 @@ const nextConfig = {
 	// Enable the below option only when you are debugging sourceamp
 	productionBrowserSourceMaps: process.env.SOURCEMAP === "true",
 	images: {
-		// Disables Next.js image optimization except in production on Vercel
-		unoptimized: process.env.VERCEL_ENV !== "production",
+		loader: "custom",
+		loaderFile: "./src/utils/cloudflareImageLoader.ts",
+		// Disables Next.js image optimization except in production
+		unoptimized: false,
 		formats: ["image/avif", "image/webp"],
 		deviceSizes: [384, 640, 768, 1_024, 1_280, 1_440, 2_560],
 		imageSizes: [128, 256],
