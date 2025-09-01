@@ -1,5 +1,4 @@
 import { type User } from "@supabase/supabase-js";
-import { type ControllerRef } from "yet-another-react-lightbox";
 
 import { type SingleListData } from "./apiTypes";
 
@@ -35,7 +34,6 @@ export type MiscellaneousStoreState = {
 	currentSettingsPage: "change-email" | "delete" | "main";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
-	lightboxControllerRef: React.MutableRefObject<ControllerRef | null>;
 	lightboxId: string | null;
 	lightboxOpen: boolean;
 	lightboxShowSidepane: boolean;

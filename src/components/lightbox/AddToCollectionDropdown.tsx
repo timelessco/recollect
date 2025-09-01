@@ -32,20 +32,14 @@ import { useQueryClient } from "@tanstack/react-query";
 // Custom hooks and utilities
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useSupabaseSession } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import {
 	ALL_BOOKMARKS_URL,
 	CATEGORIES_KEY,
-	CATEGORY_ID_PATHNAME,
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
-	PREVIEW_PATH,
-	SETTINGS_URL,
 	TWEETS_URL,
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
@@ -69,13 +63,23 @@ export const AddToCollectionDropdown = memo(
 		// Get current session and query client
 		const session = useSupabaseSession((state) => state.session);
 		const queryClient = useQueryClient();
+		const specialUrls = [
+			ALL_BOOKMARKS_URL,
+			UNCATEGORIZED_URL,
+			DOCUMENTS_URL,
+			TWEETS_URL,
+			IMAGES_URL,
+			VIDEOS_URL,
+			LINKS_URL,
+		];
 		const router = useRouter();
 		const categorySlug = getCategorySlugFromRouter(router);
 
 		// Mutation hook for adding a bookmark to a collection
 		const { addCategoryToBookmarkOptimisticMutation } =
-			useAddCategoryToBookmarkOptimisticMutation();
-		const { lightboxControllerRef } = useMiscellaneousStore();
+			useAddCategoryToBookmarkOptimisticMutation(
+				!specialUrls.includes(categorySlug ?? ""),
+			);
 		// Get collections from the query cache
 		const collections = useMemo(() => {
 			const categoryData = queryClient?.getQueryData<{
@@ -112,75 +116,73 @@ export const AddToCollectionDropdown = memo(
 			);
 		}, [collections, searchTerm, currentCollection?.id]);
 
-		const shallowRouteTo = useCallback(
-			(item: SingleListData | undefined) => {
-				if (!item) return;
-				void router.push(
-					{
-						pathname: `${CATEGORY_ID_PATHNAME}`,
-						query: {
-							category_id: categorySlug,
-							id: item?.id,
-						},
-					},
-					`/${categorySlug}${PREVIEW_PATH}/${item?.id}`,
-					{ shallow: true },
-				);
-			},
-			[router, categorySlug],
-		);
-
 		// Handle when a collection is selected
 		const handleCollectionClick = useCallback(
-			async (collection: CategoriesData | null) => {
+			async (newCollection: CategoriesData | null) => {
+				// Optimistically update the current collection
+				const previousCollection = currentCollection;
+				const previousCollections = [...collections];
+
 				try {
-					const result =
-						await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
-							bookmark_id: bookmarkId,
-							category_id: collection?.id ?? null,
-							update_access: true,
-						});
+					// Optimistically update the UI
+					const updatedCollections = [...collections];
 
-					// Only proceed with navigation if mutation was successful
-					if (result) {
-						setSearchTerm("");
-						const specialUrls = [
-							ALL_BOOKMARKS_URL,
-							UNCATEGORIZED_URL,
-							DOCUMENTS_URL,
-							TWEETS_URL,
-							SETTINGS_URL,
-							IMAGES_URL,
-							VIDEOS_URL,
-							LINKS_URL,
-						];
+					// Remove the new collection from available collections
+					const newCollections = updatedCollections.filter(
+						(collection) => collection.id !== newCollection?.id,
+					);
 
-						const currentIndex = allbookmarksdata.findIndex(
-							(b) => b.id === bookmarkId,
-						);
-						const nextItem = allbookmarksdata[currentIndex + 1];
-
-						if (!specialUrls.includes(categorySlug ?? "")) {
-							if (nextItem) {
-								// If there's a next item, navigate to it
-								shallowRouteTo(nextItem);
-							} else {
-								// If this is the last item, close the lightbox and update URL
-								lightboxControllerRef?.current?.close();
-							}
-						}
+					// If moving from one collection to another, add the previous collection back
+					if (
+						previousCollection &&
+						previousCollection.id !== newCollection?.id
+					) {
+						newCollections.push(previousCollection);
 					}
+
+					// Update the query cache with new collections
+					queryClient.setQueryData([CATEGORIES_KEY, session?.user?.id], {
+						data: newCollections,
+					});
+
+					// Find the newly selected collection to update currentCollection
+					const selectedCollection = newCollection
+						? updatedCollections.find(
+								(category) => category.id === newCollection.id,
+						  ) ?? newCollection
+						: null;
+
+					// Update the current collection optimistically
+					const currentBookmark = allbookmarksdata.find(
+						(b) => b.id === bookmarkId,
+					);
+					if (currentBookmark && selectedCollection) {
+						currentBookmark.category_id = selectedCollection?.id;
+					}
+
+					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
+						bookmark_id: bookmarkId,
+						category_id: selectedCollection?.id ?? null,
+						update_access: true,
+					});
 				} catch (error) {
+					// Revert on error
 					console.error("Error adding to collection:", error);
+					queryClient.setQueryData([CATEGORIES_KEY, session?.user?.id], {
+						data: previousCollections,
+					});
 				}
+
+				setSearchTerm("");
 			},
 			[
-				bookmarkId,
-				addCategoryToBookmarkOptimisticMutation,
+				currentCollection,
+				collections,
+				queryClient,
+				session?.user?.id,
 				allbookmarksdata,
-				shallowRouteTo,
-				lightboxControllerRef,
-				categorySlug,
+				addCategoryToBookmarkOptimisticMutation,
+				bookmarkId,
 			],
 		);
 
