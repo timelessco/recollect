@@ -75,7 +75,7 @@ export const AddToCollectionDropdown = memo(
 		// Mutation hook for adding a bookmark to a collection
 		const { addCategoryToBookmarkOptimisticMutation } =
 			useAddCategoryToBookmarkOptimisticMutation();
-		const { lightboxController } = useMiscellaneousStore();
+		const { lightboxControllerRef } = useMiscellaneousStore();
 		// Get collections from the query cache
 		const collections = useMemo(() => {
 			const categoryData = queryClient?.getQueryData<{
@@ -166,7 +166,7 @@ export const AddToCollectionDropdown = memo(
 								shallowRouteTo(nextItem);
 							} else {
 								// If this is the last item, close the lightbox and update URL
-								lightboxController?.close();
+								lightboxControllerRef?.current?.close();
 							}
 						}
 					}
@@ -179,7 +179,7 @@ export const AddToCollectionDropdown = memo(
 				addCategoryToBookmarkOptimisticMutation,
 				allbookmarksdata,
 				shallowRouteTo,
-				lightboxController,
+				lightboxControllerRef,
 				categorySlug,
 			],
 		);

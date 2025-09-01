@@ -59,7 +59,7 @@ export const CustomLightBox = ({
 	// Next.js router for URL manipulation
 	const router = useRouter();
 	const zoomRef = useRef<ZoomRef>(null);
-	const { setLightboxController } = useMiscellaneousStore();
+	const { lightboxControllerRef } = useMiscellaneousStore();
 	const [zoomLevel, setZoomLevel] = useState(1);
 	const isMobile =
 		typeof window !== "undefined" &&
@@ -420,7 +420,9 @@ export const CustomLightBox = ({
 			}}
 			carousel={{ finite: true }}
 			close={handleClose}
-			controller={{ ref: setLightboxController }}
+			controller={{
+				ref: (controller) => (lightboxControllerRef.current = controller),
+			}}
 			index={activeIndex}
 			on={{
 				// Handle slide view changes and update URL for shareable links

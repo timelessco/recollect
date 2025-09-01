@@ -35,7 +35,7 @@ export type MiscellaneousStoreState = {
 	currentSettingsPage: "change-email" | "delete" | "main";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
-	lightboxController: ControllerRef | null;
+	lightboxControllerRef: React.MutableRefObject<ControllerRef | null>;
 	lightboxId: string | null;
 	lightboxOpen: boolean;
 	lightboxShowSidepane: boolean;
@@ -50,7 +50,6 @@ export type MiscellaneousStoreState = {
 	) => void;
 	setCurrentSliderDropdownSlide: (value: string | null) => void;
 	setIsCardDragging: (value: boolean) => void;
-	setLightboxController: (controller: ControllerRef | null) => void;
 	setLightboxId: (id: string | null) => void;
 	setLightboxOpen: (open: boolean) => void;
 	setLightboxShowSidepane: (value: boolean) => void;
