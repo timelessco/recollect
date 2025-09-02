@@ -34,7 +34,7 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
-	// check if category name is already there for the user
+	// check if category name is already there for the user, along with the category id
 	const { data: matchedCategoryName, error: matchedCategoryNameError } =
 		await supabase
 			.from(CATEGORIES_TABLE_NAME)
