@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
 import { BOOKMARKS_KEY } from "../../../utils/constants";
 import { fetchBookmarkById } from "../../supabaseCrudHelpers";
@@ -8,9 +8,13 @@ type Bookmark = {
 	id: string;
 };
 
-export const useFetchBookmarkById = (id: string) =>
+export const useFetchBookmarkById = (
+	id: string,
+	options?: UseQueryOptions<Bookmark>,
+) =>
 	useQuery({
 		queryKey: [BOOKMARKS_KEY, id],
 		queryFn: () => fetchBookmarkById(id) as Promise<Bookmark>,
 		enabled: Boolean(id),
+		...options,
 	});

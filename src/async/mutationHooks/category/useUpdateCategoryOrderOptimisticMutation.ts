@@ -56,12 +56,6 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
 				context?.previousData,
 			);
 		},
-		// Always refetch after error or success:
-		onSettled: () => {
-			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-
-			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
-		},
 	});
 
 	return { updateCategoryOrderMutation };

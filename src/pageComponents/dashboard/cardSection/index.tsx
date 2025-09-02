@@ -694,7 +694,9 @@ const CardSection = ({
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
-		const bookmarkCategoryData = singleBookmarkCategoryData(item?.category_id);
+		const bookmarkCategoryData = singleBookmarkCategoryData(
+			item?.category_id ?? 0,
+		);
 
 		return (
 			<>

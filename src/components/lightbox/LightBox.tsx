@@ -1,16 +1,25 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import loaderGif from "../../../public/loader-gif.gif";
+import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import { LightboxCloseIcon } from "../../icons/lightboxCloseIcon";
 import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
 import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
-import { useMiscellaneousStore } from "../../store/componentStore";
-import { type SingleListData } from "../../types/apiTypes";
 import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../store/componentStore";
+import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
+import {
+	BOOKMARKS_COUNT_KEY,
+	BOOKMARKS_KEY,
+	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
@@ -22,6 +31,7 @@ import {
 	YOUTU_BE,
 	YOUTUBE_COM,
 } from "../../utils/constants";
+import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import { VideoPlayer } from "../VideoPlayer";
 
@@ -56,8 +66,20 @@ export const CustomLightBox = ({
 	isPage?: boolean;
 	setActiveIndex: (index: number) => void;
 }) => {
-	// Next.js router for URL manipulation
+	const queryClient = useQueryClient();
+	const session = useSupabaseSession((state) => state?.session);
+	const lastInvalidatedIndex = useRef<number | null>(null);
+	const isCollectionChanged = useMiscellaneousStore(
+		(state) => state.isCollectionChanged,
+	);
+	const setIsCollectionChanged = useMiscellaneousStore(
+		(state) => state.setIsCollectionChanged,
+	);
 	const router = useRouter();
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+
+	// Next.js router for URL manipulation
 	const zoomRef = useRef<ZoomRef>(null);
 	const [zoomLevel, setZoomLevel] = useState(1);
 	const isMobile =
@@ -417,15 +439,70 @@ export const CustomLightBox = ({
 				fade: 0,
 				zoom: 200,
 			}}
-			carousel={{ finite: true }}
+			carousel={{ finite: true, preload: 1 }}
 			close={handleClose}
 			index={activeIndex}
 			on={{
-				// Handle slide view changes and update URL for shareable links
 				view: ({ index }) => {
 					if (!isPage || !bookmarks?.[index]) return;
+
 					setActiveIndex(index);
-					// Update browser URL to make lightbox state shareable
+
+					// Invalidate queries when slide changes
+					if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
+						const currentBookmark = bookmarks?.[index];
+						if (currentBookmark) {
+							const categoryId = currentBookmark.category_id;
+
+							// Create a function to handle the async operations
+							const invalidateQueries = async () => {
+								try {
+									if (categoryId) {
+										await queryClient.invalidateQueries([
+											BOOKMARKS_KEY,
+											session?.user?.id,
+											categoryId,
+										]);
+									}
+
+									if (searchText) {
+										const categoryData = queryClient.getQueryData([
+											CATEGORIES_KEY,
+											session?.user?.id,
+										]) as {
+											data: CategoriesData[];
+											error: PostgrestError;
+										};
+
+										await queryClient.invalidateQueries([
+											BOOKMARKS_KEY,
+											session?.user?.id,
+											searchSlugKey(categoryData) ?? CATEGORY_ID,
+											searchText,
+										]);
+									}
+
+									await Promise.all([
+										queryClient.invalidateQueries([
+											BOOKMARKS_COUNT_KEY,
+											session?.user?.id,
+										]),
+									]);
+
+									lastInvalidatedIndex.current = index;
+								} catch (error) {
+									console.error("Error invalidating queries:", error);
+								} finally {
+									setIsCollectionChanged(false);
+								}
+							};
+
+							// Call the async function without awaiting
+							void invalidateQueries();
+						}
+					}
+
+					// Update browser URL
 					void router?.push(
 						{
 							pathname: `${CATEGORY_ID_PATHNAME}`,
@@ -437,10 +514,7 @@ export const CustomLightBox = ({
 						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${bookmarks?.[
 							index
 						]?.id}`,
-						{
-							// Don't trigger a full page reload
-							shallow: true,
-						},
+						{ shallow: true },
 					);
 				},
 				zoom: ({ zoom }) => {

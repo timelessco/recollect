@@ -94,18 +94,27 @@ const MyComponent = () => {
 	const router = useRouter();
 
 	const { id } = router.query;
-	const { data: bookmark } = useFetchBookmarkById(id as string);
+	const shouldFetch = !previousData && Boolean(id);
+
+	const { data: bookmark } = useFetchBookmarkById(id as string, {
+		enabled: shouldFetch,
+	});
 	let currentBookmark;
+	let allBookmarksData;
 	// handling the case where user opens a preview link directly
 	if (!previousData) {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
+		allBookmarksData = bookmark?.data;
 	} else {
 		currentBookmark = searchText
 			? previousData?.data?.[currentIndex]
 			: previousData?.pages?.flatMap((page) => page?.data ?? [])?.[
 					currentIndex
 			  ];
+		allBookmarksData = searchText
+			? previousData?.data
+			: previousData?.pages?.flatMap((page) => page?.data ?? []);
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
@@ -225,8 +234,8 @@ const MyComponent = () => {
 							</div>
 						)}
 						<AddToCollectionDropdown
+							allbookmarksdata={allBookmarksData as SingleListData[]}
 							bookmarkId={currentBookmark?.id}
-							category_id={currentBookmark?.category_id}
 						/>
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
