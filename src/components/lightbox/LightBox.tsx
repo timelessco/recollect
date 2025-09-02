@@ -484,15 +484,7 @@ export const CustomLightBox = ({
 
 									await Promise.all([
 										queryClient.invalidateQueries([
-											BOOKMARKS_KEY,
-											session?.user?.id,
-										]),
-										queryClient.invalidateQueries([
 											BOOKMARKS_COUNT_KEY,
-											session?.user?.id,
-										]),
-										queryClient.invalidateQueries([
-											CATEGORIES_KEY,
 											session?.user?.id,
 										]),
 									]);
