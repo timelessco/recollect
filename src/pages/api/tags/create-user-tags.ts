@@ -32,7 +32,33 @@ export default async function handler(
 	const supabase = apiSupabaseClient(request, response);
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	console.log(request.body);
+
 	const { name } = request.body;
+
+	// 1. Check if tag already exists for this user
+	const { data: existingTags, error: existingTagsError } = await supabase
+		.from(TAG_TABLE_NAME)
+		.select("id")
+		.eq("user_id", userId)
+		.eq("name", name);
+
+	if (existingTagsError) {
+		Sentry.captureException(existingTagsError);
+		response.status(500).json({
+			data: null,
+			error: "Database error while checking tag",
+		});
+		return;
+	}
+
+	if (existingTags && existingTags.length > 0) {
+		response.status(500).json({
+			data: null,
+			error: "Tag already exists",
+		});
+		return;
+	}
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
