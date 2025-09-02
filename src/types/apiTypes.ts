@@ -29,7 +29,7 @@ export type twitter_sort_index = string;
 
 export type SingleListData = {
 	addedTags: UserTagsData[];
-	category_id: number;
+	category_id: number | null;
 	description: string;
 	id: number;
 	inserted_at: string;

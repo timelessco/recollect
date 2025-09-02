@@ -84,7 +84,7 @@ export const AddToCollectionDropdown = memo(
 		// Mutation hook for adding a bookmark to a collection
 		const { addCategoryToBookmarkOptimisticMutation } =
 			useAddCategoryToBookmarkOptimisticMutation(
-				!specialUrls.includes(categorySlug ?? ""),
+				!specialUrls?.includes(categorySlug ?? ""),
 			);
 		// Get collections from the query cache
 		const collections = useMemo(() => {
@@ -94,31 +94,32 @@ export const AddToCollectionDropdown = memo(
 			return categoryData?.data ?? [];
 		}, [queryClient, session?.user?.id]);
 
-		const category_id = allbookmarksdata.find(
+		const category_id = allbookmarksdata?.find(
 			(bookmark) => bookmark?.id === bookmarkId,
 		)?.category_id;
 
 		// Find the current collection based on category_id
 		const currentCollection = useMemo(() => {
 			if (!category_id) return null;
-			return collections.find((collection) => collection?.id === category_id);
+			return collections?.find((collection) => collection?.id === category_id);
 		}, [collections, category_id]);
 
 		// Filter collections based on search term and exclude current collection
 		const filteredCollections = useMemo(() => {
 			// Filter out current collection
-			const availableCollections = collections.filter(
+			const availableCollections = collections?.filter(
 				(collection) => collection?.id !== currentCollection?.id,
 			);
 
 			// Return filtered collections if no search term
-			if (!searchTerm.trim()) return availableCollections;
+			if (!searchTerm?.trim()) return availableCollections;
 
 			// Filter collections by name (case-insensitive)
-			return availableCollections.filter((collection) =>
-				collection.category_name
-					.toLowerCase()
-					.includes(searchTerm.toLowerCase()),
+			return availableCollections?.filter(
+				(collection) =>
+					collection?.category_name
+						?.toLowerCase()
+						.includes(searchTerm?.toLowerCase()),
 			);
 		}, [collections, searchTerm, currentCollection?.id]);
 
@@ -133,31 +134,31 @@ export const AddToCollectionDropdown = memo(
 					const updatedCollections = [...collections];
 
 					// Remove the new collection from available collections
-					const newCollections = updatedCollections.filter(
+					const newCollections = updatedCollections?.filter(
 						(collection) => collection.id !== newCollection?.id,
 					);
 
 					// If moving from one collection to another, add the previous collection back
 					if (
 						previousCollection &&
-						previousCollection.id !== newCollection?.id
+						previousCollection?.id !== newCollection?.id
 					) {
-						newCollections.push(previousCollection);
+						newCollections?.push(previousCollection);
 					}
 
 					// Find the newly selected collection to update currentCollection
 					const selectedCollection = newCollection
-						? updatedCollections.find(
-								(category) => category.id === newCollection.id,
+						? updatedCollections?.find(
+								(category) => category?.id === newCollection?.id,
 						  ) ?? newCollection
 						: null;
 
 					// Update the current collection optimistically
-					const currentBookmark = allbookmarksdata.find(
-						(b) => b.id === bookmarkId,
+					const currentBookmark = allbookmarksdata?.find(
+						(b) => b?.id === bookmarkId,
 					);
-					if (currentBookmark && selectedCollection) {
-						currentBookmark.category_id = selectedCollection?.id;
+					if (currentBookmark) {
+						currentBookmark.category_id = selectedCollection?.id ?? null;
 					}
 
 					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
@@ -167,7 +168,6 @@ export const AddToCollectionDropdown = memo(
 					});
 					setIsCollectionChanged(true);
 				} catch (error) {
-					// Revert on error
 					console.error("Error adding to collection:", error);
 				}
 
@@ -251,10 +251,6 @@ export const AddToCollectionDropdown = memo(
 										<Ariakit.ComboboxItem
 											className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-[rgba(243,243,243,1)] aria-selected:bg-[rgba(243,243,243,1)]"
 											onClick={() => handleCollectionClick(null)}
-											onMouseDown={(event) => {
-												event.preventDefault();
-												void handleCollectionClick(null);
-											}}
 											value="Uncategorized"
 										>
 											<span className="text-[13px] font-[450] text-[rgba(56,56,56,1)]">
@@ -262,8 +258,8 @@ export const AddToCollectionDropdown = memo(
 											</span>
 										</Ariakit.ComboboxItem>
 									)}
-									{filteredCollections.length ? (
-										filteredCollections.map((collection) => (
+									{filteredCollections?.length ? (
+										filteredCollections?.map((collection) => (
 											<Ariakit.ComboboxItem
 												// Styling for each collection item
 												className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-[rgba(243,243,243,1)] aria-selected:bg-[rgba(243,243,243,1)]"
@@ -287,7 +283,7 @@ export const AddToCollectionDropdown = memo(
 												</span>
 											</Ariakit.ComboboxItem>
 										))
-									) : searchTerm.trim() ? (
+									) : searchTerm?.trim() ? (
 										// Show message when no collections match the search
 										<div className="px-3 py-2 text-sm text-gray-400">
 											No collections found
