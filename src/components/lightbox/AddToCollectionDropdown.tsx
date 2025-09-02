@@ -127,7 +127,6 @@ export const AddToCollectionDropdown = memo(
 			async (newCollection: CategoriesData | null) => {
 				// Optimistically update the current collection
 				const previousCollection = currentCollection;
-				const previousCollections = [...collections];
 
 				try {
 					// Optimistically update the UI
@@ -145,11 +144,6 @@ export const AddToCollectionDropdown = memo(
 					) {
 						newCollections.push(previousCollection);
 					}
-
-					// Update the query cache with new collections
-					queryClient.setQueryData([CATEGORIES_KEY, session?.user?.id], {
-						data: newCollections,
-					});
 
 					// Find the newly selected collection to update currentCollection
 					const selectedCollection = newCollection
@@ -175,9 +169,6 @@ export const AddToCollectionDropdown = memo(
 				} catch (error) {
 					// Revert on error
 					console.error("Error adding to collection:", error);
-					queryClient.setQueryData([CATEGORIES_KEY, session?.user?.id], {
-						data: previousCollections,
-					});
 				}
 
 				setSearchTerm("");
@@ -185,8 +176,6 @@ export const AddToCollectionDropdown = memo(
 			[
 				currentCollection,
 				collections,
-				queryClient,
-				session?.user?.id,
 				allbookmarksdata,
 				addCategoryToBookmarkOptimisticMutation,
 				bookmarkId,

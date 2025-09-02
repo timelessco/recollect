@@ -94,7 +94,11 @@ const MyComponent = () => {
 	const router = useRouter();
 
 	const { id } = router.query;
-	const { data: bookmark } = useFetchBookmarkById(id as string);
+	const shouldFetch = !previousData && Boolean(id);
+
+	const { data: bookmark } = useFetchBookmarkById(id as string, {
+		enabled: shouldFetch,
+	});
 	let currentBookmark;
 	let allBookmarksData;
 	// handling the case where user opens a preview link directly

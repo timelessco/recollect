@@ -439,7 +439,7 @@ export const CustomLightBox = ({
 				fade: 0,
 				zoom: 200,
 			}}
-			carousel={{ finite: true }}
+			carousel={{ finite: true, preload: 1 }}
 			close={handleClose}
 			index={activeIndex}
 			on={{
