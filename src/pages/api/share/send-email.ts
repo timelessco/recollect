@@ -47,7 +47,7 @@ export default async function handler(
 
 		if (emailError) {
 			console.error("Email send error:", emailError);
-			response.status(500).json({ data: `error: ${emailError}` });
+			response.status(500).json({ data: `error: ${emailError.message}` });
 		}
 
 		response.status(200).json({ data: emailResponse });
