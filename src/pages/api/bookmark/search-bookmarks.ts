@@ -54,6 +54,9 @@ export default async function handler(
 	const { category_id, is_shared_category } = request.query;
 	const search = request.query.search as string;
 
+	const offset = Number.parseInt(request.query.offset as string, 10) || 0;
+	const limit = Number.parseInt(request.query.limit as string, 10) || 25;
+
 	const searchText = search?.replace(GET_TEXT_WITH_AT_CHAR, "");
 
 	const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
@@ -69,7 +72,8 @@ export default async function handler(
 		.rpc("search_bookmarks_debugging", {
 			search_text: searchText,
 		})
-		.eq("trash", category_id === TRASH_URL);
+		.eq("trash", category_id === TRASH_URL)
+		.range(offset, offset + limit);
 
 	// TODO: is_shared_category needs to be got in api itself not in payload
 	if (is_shared_category === "false") {
