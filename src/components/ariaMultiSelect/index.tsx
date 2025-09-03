@@ -177,17 +177,19 @@ const AriaMultiSelect = ({
 	const filtertedMatch = matches?.filter((item) => !values?.includes(item));
 	const breakValue = values?.length < 7;
 
-	const mainWrapperClassName = classNames({
-		"py-[7px] px-[10px] rounded-lg  w-full": true,
-		"flex items-center": breakValue,
-		"bg-overlay-black-A/3": true,
-		"h-[30px]": true,
-	});
+	// Always allow wrapping and set a minimum height for single line
+	const mainWrapperClassName = classNames(
+		"py-[7px] px-[10px] rounded-lg w-full bg-overlay-black-A/3 flex",
+		{
+			"items-center": breakValue,
+			"flex-wrap": true,
+			"min-h-[30px]": true,
+		},
+	);
 
-	const tagsWrapperClassName = classNames({
-		"flex items-center": true,
-		"flex-wrap": !breakValue,
-	});
+	const tagsWrapperClassName = classNames(
+		"flex items-center flex-wrap gap-y-2",
+	);
 
 	return (
 		<div className={mainWrapperClassName}>
