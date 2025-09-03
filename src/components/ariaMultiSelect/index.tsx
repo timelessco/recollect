@@ -175,37 +175,25 @@ const AriaMultiSelect = ({
 	}, [defaultList, defaultList.length]);
 
 	const filtertedMatch = matches?.filter((item) => !values?.includes(item));
-	const breakValue = values?.length < 7;
 
 	// Always allow wrapping and set a minimum height for single line
 	const mainWrapperClassName = classNames(
-		"py-[7px] px-[10px] rounded-lg w-full bg-overlay-black-A/3 flex",
-		{
-			"items-center": breakValue,
-			"flex-wrap": true,
-			"min-h-[30px]": true,
-		},
-	);
-
-	const tagsWrapperClassName = classNames(
-		"flex items-center flex-wrap gap-y-2",
+		"py-[3px] px-[10px] rounded-lg w-full bg-overlay-black-A/3 flex items-center flex-wrap min-h-[30px]",
 	);
 
 	return (
 		<div className={mainWrapperClassName}>
-			<div className={tagsWrapperClassName}>
-				{values?.map((item) => (
-					<Tag
-						key={item}
-						onClick={() => {
-							onChange("remove", item);
-						}}
-					>
-						{item}
-					</Tag>
-				))}
-			</div>
-			<div className="w-full">
+			{values?.map((item) => (
+				<Tag
+					key={item}
+					onClick={() => {
+						onChange("remove", item);
+					}}
+				>
+					{item}
+				</Tag>
+			))}
+			<div className="min-w-[120px] flex-1">
 				<Combobox
 					autoComplete="both"
 					autoSelect
