@@ -71,6 +71,7 @@ import {
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
 	NO_BOOKMARKS_ID_ERROR,
+	PAGINATION_LIMIT,
 	REMOVE_PROFILE_PIC_API,
 	REMOVE_TAG_FROM_BOOKMARK_API,
 	SEARCH_BOOKMARKS,
@@ -304,9 +305,11 @@ export const searchBookmarks = async (
 	searchText: string,
 	category_id: CategoryIdUrlTypes,
 	isSharedCategory: boolean,
+	offset = 0,
+	limit = PAGINATION_LIMIT,
 ): Promise<{
 	data: BookmarksPaginatedDataTypes[] | null;
-	error: Error;
+	error: Error | null;
 }> => {
 	if (!isEmpty(searchText) && searchText !== "#") {
 		const categoryId = !isNull(category_id) ? category_id : "null";
@@ -314,9 +317,9 @@ export const searchBookmarks = async (
 		try {
 			const response = await axios.get<{
 				data: BookmarksPaginatedDataTypes[];
-				error: Error;
+				error: Error | null;
 			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
+				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&category_id=${categoryId}&is_shared_category=${isSharedCategory}&offset=${offset}&limit=${limit}`,
 			);
 			return response?.data;
 		} catch (error_) {
@@ -330,7 +333,7 @@ export const searchBookmarks = async (
 
 	return {
 		data: null,
-		error: { name: "error", message: "error" },
+		error: { name: "error", message: "No search text provided" },
 	};
 };
 
