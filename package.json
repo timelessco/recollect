@@ -140,6 +140,7 @@
 		"react-spinners": "0.13.8",
 		"react-stately": "3.21.0",
 		"react-toastify": "11.0.2",
+		"resend": "^6.0.2",
 		"sharp": "0.32.6",
 		"slugify": "1.6.6",
 		"tailwind-merge": "1.12.0",
