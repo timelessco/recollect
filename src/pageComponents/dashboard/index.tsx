@@ -13,7 +13,6 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import isNull from "lodash/isNull";
-import uniqid from "uniqid";
 
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
@@ -70,7 +69,6 @@ import {
 import { type FileType, type TagInputOption } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
-	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
 	DOCUMENTS_URL,
 	IMAGES_URL,
@@ -82,11 +80,6 @@ import {
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "../../utils/constants";
-import {
-	generateVideoThumbnail,
-	parseUploadFileName,
-	uploadFileLimit,
-} from "../../utils/helpers";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -198,11 +191,19 @@ const Dashboard = () => {
 
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
-	const { allBookmarksData, fetchNextPage } = useFetchPaginatedBookmarks();
+	const { allBookmarksData, fetchNextPage: fetchNextBookmarkPage } =
+		useFetchPaginatedBookmarks();
 
 	useAiSearch();
-	useSearchBookmarks();
+	const {
+		flattenedSearchData,
+		fetchNextPage: fetchNextSearchPage,
+		isLoading: isSearchLoading,
+		hasNextPage: searchHasNextPage,
+	} = useSearchBookmarks();
 
+	// Determine if we're currently searching
+	const isSearching = !isEmpty(searchText);
 	const { userTags } = useFetchUserTags();
 
 	const { sharedCategoriesData } = useFetchSharedCategories();
@@ -535,8 +536,9 @@ const Dashboard = () => {
 
 	// tells if the latest paginated data is the end for total bookmark data based on current category
 	const hasMoreLogic = (): boolean => {
-		if (!isEmpty(searchText)) {
-			return false;
+		// If we're searching, use the search pagination logic
+		if (isSearching) {
+			return searchHasNextPage ?? false;
 		}
 
 		const firstPaginatedData =
@@ -650,19 +652,26 @@ const Dashboard = () => {
 										style={{ height: "100vh", overflow: "auto" }}
 									>
 										<InfiniteScroll
-											dataLength={flattendPaginationBookmarkData?.length}
+											dataLength={
+												isSearching
+													? flattenedSearchData?.length ?? 0
+													: flattendPaginationBookmarkData?.length ?? 0
+											}
 											endMessage={
 												<p className="pb-6 text-center">
-													{isEmpty(searchText) && "Life happens, save it."}
+													{!isSearchLoading && "Life happens, save it."}
+													{isSearchLoading &&
+														(flattenedSearchData?.length ?? 0) > 0 &&
+														"End of search results."}
 												</p>
 											}
-											hasMore={hasMoreLogic()}
-											loader={
-												<div className="z-0 pb-6 text-center">
-													{isDragActive ? "" : "Loading..."}
-												</div>
+											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}
+											loader={<div />}
+											next={
+												isSearching
+													? fetchNextSearchPage
+													: fetchNextBookmarkPage
 											}
-											next={fetchNextPage}
 											scrollableTarget="scrollableDiv"
 											style={{ overflow: "unset" }}
 										>
@@ -674,21 +683,28 @@ const Dashboard = () => {
 												isOgImgLoading={
 													addBookmarkScreenshotMutation?.isLoading
 												}
-												listData={flattendPaginationBookmarkData}
+												listData={
+													isSearching
+														? flattenedSearchData
+														: flattendPaginationBookmarkData
+												}
 												onBulkBookmarkDelete={(
 													bookmarkIds,
 													isTrash,
 													deleteForever,
 												) => {
+													const currentBookmarksData = isSearching
+														? flattenedSearchData
+														: flattendPaginationBookmarkData;
+
 													if (!deleteForever) {
-														// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
-														bookmarkIds.forEach((item: any) => {
+														for (const item of bookmarkIds) {
 															const bookmarkId = Number.parseInt(
-																item as string,
+																item.toString(),
 																10,
 															);
 															const delBookmarksData = find(
-																flattendPaginationBookmarkData,
+																currentBookmarksData,
 																(delItem) => delItem?.id === bookmarkId,
 															) as SingleListData;
 
@@ -707,14 +723,17 @@ const Dashboard = () => {
 															} else {
 																errorToast("Cannot delete other users uploads");
 															}
-														});
+														}
 													} else {
 														setDeleteBookmarkId(bookmarkIds);
 														toggleShowDeleteBookmarkWarningModal();
 													}
 												}}
-												onCategoryChange={(value, cat_id) => {
+												onCategoryChange={async (value, cat_id) => {
 													const categoryId = cat_id;
+													const currentBookmarksData = isSearching
+														? flattenedSearchData
+														: flattendPaginationBookmarkData;
 
 													const currentCategory =
 														find(
@@ -726,7 +745,6 @@ const Dashboard = () => {
 															(item) => item?.id === CATEGORY_ID,
 														);
 
-													// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorized
 													const updateAccessCondition =
 														find(
 															currentCategory?.collabData,
@@ -734,23 +752,21 @@ const Dashboard = () => {
 																item?.userEmail === session?.user?.email,
 														)?.edit_access === true ||
 														currentCategory?.user_id?.id === session?.user?.id;
-
-													// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-misused-promises, @typescript-eslint/no-explicit-any
-													value.forEach(async (item: any) => {
-														const bookmarkId = item as string;
+													for (const item of value) {
+														const bookmarkId = item.toString();
 
 														const bookmarkCreatedUserId = find(
-															flattendPaginationBookmarkData,
+															currentBookmarksData,
 															(bookmarkItem) =>
 																Number.parseInt(bookmarkId, 10) ===
 																bookmarkItem?.id,
 														)?.user_id?.id;
+
 														if (bookmarkCreatedUserId === session?.user?.id) {
 															await addCategoryToBookmarkOptimisticMutation.mutateAsync(
 																{
 																	category_id: categoryId,
 																	bookmark_id: Number.parseInt(bookmarkId, 10),
-																	// if user is changing to uncategoried then thay always have access
 																	update_access:
 																		isNull(categoryId) || !categoryId
 																			? true
@@ -762,7 +778,7 @@ const Dashboard = () => {
 																"You cannot move collaborators uploads",
 															);
 														}
-													});
+													}
 												}}
 												onDeleteClick={(item) => {
 													setDeleteBookmarkId(
@@ -802,11 +818,9 @@ const Dashboard = () => {
 													Boolean(
 														CATEGORY_ID &&
 															!isNull(CATEGORY_ID) &&
-															// @ts-expect-error-Need to fix this
-															find(
-																allCategories?.data,
+															(allCategories?.data?.find(
 																(item) => item?.id === CATEGORY_ID,
-															)?.collabData?.length > 1,
+															)?.collabData?.length ?? 0) > 1,
 													)
 												}
 												userId={session?.user?.id ?? ""}

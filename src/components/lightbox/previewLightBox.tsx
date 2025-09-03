@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
 import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
+import useDebounce from "../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import {
@@ -57,25 +58,24 @@ export const PreviewLightBox = ({
 	const _previousOpenRef = useRef(open);
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const debouncedSearch = useDebounce(searchText, 500);
 	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
 	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
 		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-		searchText ? searchText : sortBy,
+		searchText ? debouncedSearch : sortBy,
 	]) as {
 		data: SingleListData[];
 		pages: Array<{ data: SingleListData[] }>;
 	};
-
 	// Get and transform bookmarks from query cache
 	const bookmarks = useMemo(() => {
-		const rawBookmarks = searchText
-			? previousData?.data
-			: previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
+		const rawBookmarks =
+			previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
-	}, [previousData?.pages, previousData?.data, searchText]);
+	}, [previousData?.pages]);
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {

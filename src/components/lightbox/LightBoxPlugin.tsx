@@ -107,14 +107,10 @@ const MyComponent = () => {
 		currentBookmark = bookmark?.data?.[0];
 		allBookmarksData = bookmark?.data;
 	} else {
-		currentBookmark = searchText
-			? previousData?.data?.[currentIndex]
-			: previousData?.pages?.flatMap((page) => page?.data ?? [])?.[
-					currentIndex
-			  ];
-		allBookmarksData = searchText
-			? previousData?.data
-			: previousData?.pages?.flatMap((page) => page?.data ?? []);
+		currentBookmark = previousData?.pages?.flatMap(
+			(page) => page?.data ?? [],
+		)?.[currentIndex];
+		allBookmarksData = previousData?.pages?.flatMap((page) => page?.data ?? []);
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);

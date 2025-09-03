@@ -168,8 +168,8 @@ const CardSection = ({
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	let searchBookmarksData: {
-		data: SingleListData[];
 		error: PostgrestError;
+		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 	} | null = null;
 
 	if (aiButtonToggle) {
@@ -179,8 +179,8 @@ const CardSection = ({
 			searchSlugKey(categoryData),
 			searchText,
 		]) as {
-			data: SingleListData[];
 			error: PostgrestError;
+			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	} else {
 		// gets from the trigram search api
@@ -190,8 +190,8 @@ const CardSection = ({
 			searchSlugKey(categoryData),
 			searchText,
 		]) as {
-			data: SingleListData[];
 			error: PostgrestError;
+			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	}
 
@@ -201,8 +201,7 @@ const CardSection = ({
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
-		: searchBookmarksData?.data;
-
+		: searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],
@@ -951,7 +950,7 @@ const CardSection = ({
 			isEmpty(sortByCondition) &&
 			!isSearchLoading &&
 			!isBookmarkLoading &&
-			searchBookmarksData?.data?.length === 0
+			searchBookmarksData?.pages?.length === 0
 		) {
 			return renderStatusMessage("No results found");
 		}
