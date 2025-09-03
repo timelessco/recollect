@@ -21,6 +21,7 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
+	PAGINATION_LIMIT,
 	TRASH_URL,
 	TWEETS_URL,
 	tweetType,
@@ -55,7 +56,7 @@ export default async function handler(
 	const search = request.query.search as string;
 
 	const offset = Number.parseInt(request.query.offset as string, 10) || 0;
-	const limit = Number.parseInt(request.query.limit as string, 10) || 25;
+	const limit = PAGINATION_LIMIT;
 
 	const searchText = search?.replace(GET_TEXT_WITH_AT_CHAR, "");
 
