@@ -27,7 +27,7 @@ export const URL_PATTERN =
 	// eslint-disable-next-line  unicorn/no-unsafe-regex
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
+export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*@[A-Za-z\d]*/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
 	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
