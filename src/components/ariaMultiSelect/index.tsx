@@ -9,10 +9,28 @@ import {
 } from "react";
 import * as Ariakit from "@ariakit/react";
 import classNames from "classnames";
-import { find, isEmpty } from "lodash";
+import { isEmpty } from "lodash";
 import { matchSorter } from "match-sorter";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
+
+/**
+ * Checks if a tag exists in the provided array (case-insensitive, trimmed).
+ * @param arr - Array of tags (string, undefined, or null)
+ * @param tag - Tag to check
+ * @returns true if tag exists in arr, false otherwise
+ */
+const tagExists = (
+	array: Array<string | null | undefined> | undefined,
+	tag: string,
+): boolean =>
+	Boolean(
+		array?.some(
+			(item) =>
+				typeof item === "string" &&
+				item?.trim()?.toLowerCase() === tag?.trim()?.toLowerCase(),
+		),
+	);
 
 export type ComboboxProps = Omit<
 	ComponentPropsWithoutRef<"input">,
@@ -216,11 +234,16 @@ const AriaMultiSelect = ({
 					{filtertedMatch.map((matchValue, index) => (
 						<ComboboxItem key={`${matchValue + index}`} value={matchValue} />
 					))}
-					{!isEmpty(value) && !find(list, (findItem) => findItem === value) && (
-						<ComboboxItem key="addnew1" value={value}>
-							Create new "{value}" tag
-						</ComboboxItem>
-					)}
+					{/* Only show "Create new tag" if the value does not already exist in
+					either the available list or the currently selected values. Comparison
+					is case-insensitive and ignores whitespace. */}
+					{!isEmpty(value) &&
+						!tagExists(list, value) &&
+						!tagExists(values, value) && (
+							<ComboboxItem key="addnew1" value={value}>
+								{`Create new "${value}" tag`}
+							</ComboboxItem>
+						)}
 					{isEmpty(filtertedMatch) && (
 						<div className={menuItemClassName}>No results</div>
 					)}
