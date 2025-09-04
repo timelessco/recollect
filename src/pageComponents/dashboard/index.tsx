@@ -198,7 +198,6 @@ const Dashboard = () => {
 	const {
 		flattenedSearchData,
 		fetchNextPage: fetchNextSearchPage,
-		isLoading: isSearchLoading,
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
 
@@ -659,10 +658,7 @@ const Dashboard = () => {
 											}
 											endMessage={
 												<p className="pb-6 text-center">
-													{!isSearchLoading && "Life happens, save it."}
-													{isSearchLoading &&
-														(flattenedSearchData?.length ?? 0) > 0 &&
-														"End of search results."}
+													Life happens, save it.
 												</p>
 											}
 											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}
@@ -838,7 +834,7 @@ const Dashboard = () => {
 			<Modal
 				open={showAddBookmarkModal}
 				setOpen={() => setShowAddBookmarkModal(false)}
-				wrapperClassName="w-[30%] xl:w-[80%] p-4 rounded-lg"
+				wrapperClassName="w-[324px] p-4 rounded-lg"
 			>
 				<AddModalContent
 					addExistingTag={async (tag) => {
