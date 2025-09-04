@@ -53,24 +53,26 @@ const AccessUserInfo = (props: {
 			return (
 				<div className=" flex items-center space-x-1">
 					<p className={rightTextStyles}>pending</p>
-					<figure>
-						<TrashIcon
-							className="h-4 w-4 cursor-pointer text-red-400 hover:text-red-600"
-							onClick={() => {
-								if (isLoggedinUserTheOwner) {
-									void mutationApiCall(
-										deleteSharedCategoriesUserMutation.mutateAsync({
-											id: item.share_id as number,
-										}),
-									);
-								} else {
-									errorToast(
-										"You cannot perform this action as you are not the owner of this collection",
-									);
-								}
-							}}
-						/>
-					</figure>
+					{isLoggedinUserTheOwner && (
+						<figure>
+							<TrashIcon
+								className="h-4 w-4 cursor-pointer text-red-400 hover:text-red-600"
+								onClick={() => {
+									if (isLoggedinUserTheOwner) {
+										void mutationApiCall(
+											deleteSharedCategoriesUserMutation.mutateAsync({
+												id: item.share_id as number,
+											}),
+										);
+									} else {
+										errorToast(
+											"You cannot perform this action as you are not the owner of this collection",
+										);
+									}
+								}}
+							/>
+						</figure>
+					)}
 				</div>
 			);
 		}
@@ -300,6 +302,7 @@ const ShareContent = () => {
 						) : (
 							<AriaSelect
 								defaultValue="View"
+								disabled={!isUserTheCategoryOwner}
 								onOptionClick={(value) =>
 									setInviteUserEditAccess(value === "Editor")
 								}

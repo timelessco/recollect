@@ -160,7 +160,7 @@ export const CustomLightBox = ({
 	 */
 	const renderSlide = useCallback(
 		(slideProps: { offset: number; slide: CustomSlide }) => {
-			const { offset, slide } = slideProps;
+			const { slide } = slideProps;
 
 			// Find the corresponding bookmark for this slide
 			const slideIndex = slides?.indexOf(slide);
@@ -168,7 +168,7 @@ export const CustomLightBox = ({
 			if (!bookmark) return null;
 
 			// Determine if this slide is currently active (visible) for video player
-			const isActive = offset === 0;
+			const isActive = slides?.indexOf(slide) === activeIndex;
 
 			const renderImageSlide = () => (
 				<div
@@ -246,15 +246,30 @@ export const CustomLightBox = ({
 			);
 
 			const renderWebEmbedSlide = () => {
-				if (bookmark?.meta_data?.iframeAllowed) {
+				// Only render iframe if this is the active slide and iframe is allowed
+				if (bookmark?.meta_data?.iframeAllowed && isActive) {
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
-								className="h-full max-h-[90vh] w-full"
+								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-white"
 								data={bookmark?.url}
 								title="Website Preview"
 								type="text/html"
-							/>
+							>
+								<div className="p-4 text-center">
+									<p className="text-gray-700">
+										This website cannot be displayed in the lightbox.
+									</p>
+									<a
+										className="text-blue-600 underline"
+										href={bookmark?.url}
+										rel="noopener noreferrer"
+										target="_blank"
+									>
+										Click here to view it in a new tab
+									</a>
+								</div>
+							</object>
 						</div>
 					);
 				}
@@ -410,7 +425,7 @@ export const CustomLightBox = ({
 				</div>
 			);
 		},
-		[bookmarks, slides],
+		[bookmarks, slides, activeIndex],
 	);
 
 	/**
@@ -446,7 +461,10 @@ export const CustomLightBox = ({
 				view: ({ index }) => {
 					if (!isPage || !bookmarks?.[index]) return;
 
-					setActiveIndex(index);
+					const transitionDuration = 200;
+					setTimeout(() => {
+						setActiveIndex(index);
+					}, transitionDuration);
 
 					// Invalidate queries when slide changes
 					if (index !== lastInvalidatedIndex.current && isCollectionChanged) {

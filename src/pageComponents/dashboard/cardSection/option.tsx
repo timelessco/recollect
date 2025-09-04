@@ -113,12 +113,12 @@ const Option = ({
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute left-0 top-0  h-full w-full rounded-lg ${
-					isTrashPage ? "cursor-auto" : "cursor-pointer"
+					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (isTrashPage || item?.key === "$.0") {
+					if (isTrashPage || item?.key === "$.0" || isPublicPage) {
 						event.preventDefault();
 						return;
 					}
