@@ -582,7 +582,6 @@ const CardSection = ({
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
 								height={_height ?? 200}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
 								sizes={sizesLogic}
 								src={`${img}`}

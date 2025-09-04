@@ -31,6 +31,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 // Custom hooks and utilities
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
+import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
 import {
 	useMiscellaneousStore,
@@ -57,10 +58,15 @@ import { CollectionIcon } from "../collectionIcon";
 type AddToCollectionDropdownProps = {
 	allbookmarksdata: SingleListData[];
 	bookmarkId: number;
+	shouldFetch?: boolean;
 };
 
 export const AddToCollectionDropdown = memo(
-	({ bookmarkId, allbookmarksdata }: AddToCollectionDropdownProps) => {
+	({
+		bookmarkId,
+		allbookmarksdata,
+		shouldFetch,
+	}: AddToCollectionDropdownProps) => {
 		// State for search functionality
 		const [searchTerm, setSearchTerm] = useState("");
 		// Get current session and query client
@@ -87,12 +93,14 @@ export const AddToCollectionDropdown = memo(
 				!specialUrls?.includes(categorySlug ?? ""),
 			);
 		// Get collections from the query cache
-		const collections = useMemo(() => {
+		let collections = useMemo(() => {
 			const categoryData = queryClient?.getQueryData<{
 				data: CategoriesData[];
 			}>([CATEGORIES_KEY, session?.user?.id]);
 			return categoryData?.data ?? [];
 		}, [queryClient, session?.user?.id]);
+
+		collections = useFetchCategories(shouldFetch).allCategories?.data ?? [];
 
 		const category_id = allbookmarksdata?.find(
 			(bookmark) => bookmark?.id === bookmarkId,
@@ -268,7 +276,6 @@ export const AddToCollectionDropdown = memo(
 												onMouseDown={(event) => {
 													// Prevent default to avoid losing focus
 													event.preventDefault();
-													void handleCollectionClick(collection);
 												}}
 												value={collection?.category_name}
 											>
