@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { isNull } from "lodash";
 
 import { ALL_BOOKMARKS_URL } from "../utils/constants";
+import { getCategorySlugFromRouter } from "../utils/url";
 
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
@@ -11,11 +12,11 @@ export default function useIsInNotFoundPage() {
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	if (!isNull(CATEGORY_ID)) {
 		return { isInNotFoundPage: false };
-	} else if (categorySlug === ALL_BOOKMARKS_URL) {
+	} else if (categorySlug?.split("/")[0] === ALL_BOOKMARKS_URL) {
 		return { isInNotFoundPage: false };
 	} else {
 		return { isInNotFoundPage: true };

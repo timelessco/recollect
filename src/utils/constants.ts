@@ -27,7 +27,7 @@ export const URL_PATTERN =
 	// eslint-disable-next-line  unicorn/no-unsafe-regex
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z]*@[A-Za-z]*/gu;
+export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*@[A-Za-z\d]*/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
 	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
@@ -39,11 +39,13 @@ export const URL_IMAGE_CHECK_PATTERN =
 	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
+// eslint-disable-next-line unicorn/no-unsafe-regex
+export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
 
 // api constants
 export const getBaseUrl = () =>
 	isProductionEnvironment
-		? process.env.NEXT_PUBLIC_VERCEL_URL
+		? "https://bookmark-tags-git-dev-timelessco.vercel.app/"
 		: "http://localhost:3000/";
 
 export const NEXT_API_URL = `/api/`;
@@ -51,12 +53,21 @@ export const NEXT_API_URL = `/api/`;
 const RECOLLECT_SERVER_URL = process.env.RECOLLECT_SERVER_API;
 export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
 
+// URL helper functions
+export const PREVIEW_PATH = "/preview";
+
 export const PAGINATION_LIMIT = 25;
+
+// this api is to get the media type of the url
+export const GET_MEDIA_TYPE_API = "v1/bookmarks/get/get-media-type";
+// this api is to get the pdf buffer
+export const GET_PDF_BUFFER_API = "v1/bookmarks/get/get-pdf-buffer";
 
 // auth api
 // no auth api yet
 // bookmark api
 export const FETCH_BOOKMARKS_DATA_API = "/bookmark/fetch-bookmarks-data";
+export const FETCH_BOOKMARK_BY_ID_API = "v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
@@ -150,22 +161,47 @@ export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
 	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
 	"You already have a category with this name , please add any other name";
+export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
 // accepted file type constants
 export const acceptedFileTypes = [
-	"image/jpg",
-	"image/jpeg",
-	"image/png",
+	// Image
 	"image/gif",
+	"image/vnd.microsoft.icon",
+	"image/jpeg",
+	"image/jpg",
+	"image/png",
+	"image/svg+xml",
+	"image/tiff",
 	"image/webp",
-	"image/heic",
-	"video/mp4",
-	"video/mov",
-	"video/wmv",
-	"video/webm",
-	"application/pdf",
-	"audio/mp3",
+	"image/apng",
+	"image/avif",
+	"image/bmp",
+
+	// Audio
+	"audio/midi",
+	"audio/x-midi",
 	"audio/mpeg",
+	"audio/ogg",
+	"audio/3gpp",
+	"audio/3gpp2",
+	"audio/webm",
+	"audio/wav",
+	"audio/aac",
+
+	// Video
+	"video/mp4",
+	"video/mpeg",
+	"video/ogg",
+	"video/mp2t",
+	"video/webm",
+	"video/3gpp",
+	"video/3gpp2",
+	"video/x-msvideo",
+
+	// Application
+	"application/msword",
+	"application/pdf",
 ];
 
 export const bookmarkType = "bookmark";
@@ -180,7 +216,7 @@ export const videoFileTypes = acceptedFileTypes?.filter(
 );
 
 export const documentFileTypes = acceptedFileTypes?.filter(
-	(item) => item === acceptedFileTypes[10],
+	(item) => item?.includes("application"),
 );
 
 // color picker colors
@@ -261,4 +297,44 @@ export const infoValues = [
 	singleInfoValues.tags,
 ];
 
+// pathnames
+
+export const CATEGORY_ID_PATHNAME = `/[category_id]`;
+
+// OG_IMAGE_PREFERRED_SITES
+export const OG_IMAGE_PREFERRED_SITES = [
+	"cosmos",
+	"pinterest",
+	"savee.it",
+	"are.na",
+	"medium",
+	"spotify",
+	"imdb",
+];
+
+// Lightbox Constants
+
+// Media type prefixes
+export const IMAGE_TYPE_PREFIX = "image";
+export const VIDEO_TYPE_PREFIX = "video";
+
+// Media type specific strings
+export const PDF_MIME_TYPE = "application/pdf";
+export const PDF_TYPE = "pdf";
+export const IMAGE_JPEG_MIME_TYPE = "image/jpeg";
+
+// UI strings
+export const PREVIEW_ALT_TEXT = "preview";
+
+// URL patterns
+export const YOUTUBE_COM = "youtube.com";
+export const YOUTU_BE = "youtu.be";
+
+// PDF viewer parameters
+export const PDF_VIEWER_PARAMS =
+	"#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH";
+
+// Lightbox button types
+export const LIGHTBOX_CLOSE_BUTTON = "close";
+export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
 export const CF_IMAGE_LOADER_URL = "https://recollect.so/cdn-cgi/image";

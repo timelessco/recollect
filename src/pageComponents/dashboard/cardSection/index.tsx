@@ -6,13 +6,15 @@ import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
-import format from "date-fns/format";
-import { flatten, isNil, type Many } from "lodash";
-import find from "lodash/find";
-import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
+import { format } from "date-fns";
+import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
+import { motion } from "motion/react";
 import { Item } from "react-stately";
 
+import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
+import loaderGif from "../../../../public/loader-gif.gif";
+import { CollectionIcon } from "../../../components/collectionIcon";
+import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -32,7 +34,6 @@ import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-	useModalStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -42,29 +43,30 @@ import {
 	type UserTagsData,
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
-import { options } from "../../../utils/commonData";
 import {
 	AI_SEARCH_KEY,
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	colorPickerColors,
 	defaultBlur,
-	SEARCH_URL,
+	PDF_MIME_TYPE,
+	PREVIEW_ALT_TEXT,
 	TRASH_URL,
 	TWEETS_URL,
+	VIDEO_TYPE_PREFIX,
 	viewValues,
 } from "../../../utils/constants";
 import {
-	clickToOpenInNewTabLogic,
 	getBaseUrl,
+	getPreviewPathInfo,
 	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkVideo,
 	isCurrentYear,
 	isUserInACategory,
+	searchSlugKey,
 } from "../../../utils/helpers";
-import VideoModal from "../modals/videoModal";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import ListBox from "./listBox";
 
@@ -111,30 +113,48 @@ const CardSection = ({
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
+	const router = useRouter();
+	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
+		useMiscellaneousStore();
+
+	// Handle route changes for lightbox
+	useEffect(() => {
+		const { isPreviewPath, previewId } = getPreviewPathInfo(
+			router?.asPath,
+			PREVIEW_ALT_TEXT,
+		);
+
+		if (isPreviewPath && previewId) {
+			// Only update if the ID has changed
+			setLightboxId(previewId);
+
+			if (!lightboxOpen) {
+				setLightboxOpen(true);
+			}
+		} else if (lightboxOpen) {
+			setLightboxOpen(false);
+			setLightboxId(null);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [router?.asPath]);
+
 	const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
 	const session = useSupabaseSession((state) => state.session);
-	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
 	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
 		(state) => state.setCurrentBookmarkView,
 	);
-	const toggleShowVideoModal = useModalStore(
-		(state) => state.toggleShowVideoModal,
-	);
-	const setSelectedVideoId = useMiscellaneousStore(
-		(state) => state.setSelectedVideoId,
-	);
-	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
+	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
+	// const { loadingBookmarkIds } = useLoadersStore();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 
@@ -145,45 +165,33 @@ const CardSection = ({
 		error: PostgrestError;
 	};
 
-	const categoryIdFromSlug = find(
-		categoryData?.data,
-		(item) => item?.category_slug === categorySlug,
-	)?.id;
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
-	const searchSlugKey = () => {
-		if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
-			return null;
-		}
-
-		if (typeof categoryIdFromSlug === "number") {
-			return categoryIdFromSlug;
-		}
-
-		return categorySlug;
-	};
-
-	let searchBookmarksData = null;
+	let searchBookmarksData: {
+		error: PostgrestError;
+		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
+	} | null = null;
 
 	if (aiButtonToggle) {
 		// gets from vector search api
 		searchBookmarksData = queryClient.getQueryData([
 			AI_SEARCH_KEY,
-			searchSlugKey(),
+			searchSlugKey(categoryData),
 			searchText,
 		]) as {
-			data: SingleListData[];
 			error: PostgrestError;
+			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	} else {
 		// gets from the trigram search api
 		searchBookmarksData = queryClient.getQueryData([
 			BOOKMARKS_KEY,
 			userId,
-			searchSlugKey(),
+			searchSlugKey(categoryData),
 			searchText,
 		]) as {
-			data: SingleListData[];
 			error: PostgrestError;
+			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	}
 
@@ -193,8 +201,7 @@ const CardSection = ({
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
-		: searchBookmarksData?.data;
-
+		: searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],
@@ -276,16 +283,23 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm";
+			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-15";
 
 		const externalLinkIcon = (
 			<div
-				onClick={() => window.open(post?.url, "_blank")}
+				className={`${iconBgClassName}`}
+				onClick={(event) => {
+					event.preventDefault();
+					window.open(post?.url, "_blank");
+				}}
 				onKeyDown={() => {}}
+				onPointerDown={(event) => {
+					event.stopPropagation();
+				}}
 				role="button"
 				tabIndex={0}
 			>
-				<figure className={`${iconBgClassName} ml-1`}>
+				<figure>
 					<LinkExternalIcon />
 				</figure>
 			</div>
@@ -422,7 +436,7 @@ const CardSection = ({
 							pencilIcon
 						)}
 					</div>
-					<div className=" absolute right-8 top-0">{externalLinkIcon}</div>
+					<div className=" absolute right-8 top-0 flex">{externalLinkIcon}</div>
 				</>
 			);
 		}
@@ -479,7 +493,6 @@ const CardSection = ({
 		_height: SingleListData["meta_data"]["height"],
 		_width: SingleListData["meta_data"]["width"],
 		type: SingleListData["type"],
-		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
 		const isAudio = isBookmarkAudio(type);
@@ -492,59 +505,60 @@ const CardSection = ({
 			"w-full rounded-lg moodboard-card-img min-h-[192px] object-cover":
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.timeline,
+			"relative z-[-1]":
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const loaderClassName = classNames({
-			"animate-pulse bg-slate-200 w-full h-14 w-20 object-cover rounded-lg":
+			"w-full h-14 w-20 flex items-center justify-center bg-gray-100 rounded-lg":
 				cardTypeCondition === viewValues.list,
-			"animate-pulse bg-slate-200 w-full aspect-[1.9047] w-full object-cover rounded-lg":
-				cardTypeCondition === viewValues.card,
-			"animate-pulse h-36 bg-slate-200 w-full rounded-lg w-full":
+			"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg":
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.timeline,
+			"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg":
 				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const figureClassName = classNames({
-			relative: isVideo || isAudio,
+			"relative z-[-1]": isAudio || isVideo,
 			"mr-3": cardTypeCondition === viewValues.list,
 			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
-			"h-36":
+			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
-		const errorImgAndVideoClassName = classNames({
-			"h-full w-full rounded-lg object-cover": true,
-			"group-hover:rounded-b-none": cardTypeCondition === viewValues.card,
-		});
-
-		const errorImgPlaceholder = (
-			// next img is not needed here as its an default error img
-			// eslint-disable-next-line @next/next/no-img-element
-			<img
-				alt="img-error"
-				className={errorImgAndVideoClassName}
-				height={200}
-				src="/app-svgs/errorImgPlaceholder.svg"
-				width={265}
-			/>
+		const errorImgPlaceholder = (isError: boolean) => (
+			<div className={loaderClassName}>
+				<Image
+					alt="img-error"
+					className="h-[50px] w-[50px] rounded-lg object-cover"
+					src={isError ? logoDiamond : loaderGif}
+				/>
+			</div>
 		);
+		// const isLoading = loadingBookmarkIds.has(id);
 
 		const imgLogic = () => {
 			if (hasCoverImg) {
-				if ((isBookmarkLoading || isAllBookmarksDataFetching) && isNil(id)) {
-					return <div className={loaderClassName} />;
+				if (
+					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
+					isNil(id)
+				) {
+					return errorImgPlaceholder(false);
 				}
+
+				// if (isLoading && !img) {
+				// 	return errorImgPlaceholder(false);
+				// }
 
 				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder;
-				}
-
-				if (id && !img) {
-					return errorImgPlaceholder;
+					return errorImgPlaceholder(false);
 				}
 
 				let blurSource = "";
@@ -575,7 +589,7 @@ const CardSection = ({
 								width={_width ?? 200}
 							/>
 						) : (
-							errorImgPlaceholder
+							errorImgPlaceholder(false)
 						)}
 					</>
 				);
@@ -598,32 +612,23 @@ const CardSection = ({
 		return (
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
-			<div
-				onClick={(event) =>
-					clickToOpenInNewTabLogic(
-						event,
-						url,
-						isPublicPage,
-						categorySlug === TRASH_URL,
-					)
-				}
-				onKeyDown={() => {}}
-				role="button"
-			>
-				<figure className={figureClassName}>
+			<div onKeyDown={() => {}} role="button">
+				<motion.figure
+					className={figureClassName}
+					layout={
+						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
+						// isLoading
+					}
+				>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
-							onClick={() => {
-								toggleShowVideoModal();
-								setSelectedVideoId(id);
-							}}
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
 					{imgLogic()}
-				</figure>
+				</motion.figure>
 			</div>
 		);
 	};
@@ -676,11 +681,11 @@ const CardSection = ({
 			);
 		}
 
-		if (isVideo) {
+		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
 			return <VideoIcon size="15" />;
 		}
 
-		if (isDocument) {
+		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
 			return <FolderIcon size="15" />;
 		}
 
@@ -688,7 +693,9 @@ const CardSection = ({
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
-		const bookmarkCategoryData = singleBookmarkCategoryData(item?.category_id);
+		const bookmarkCategoryData = singleBookmarkCategoryData(
+			item?.category_id ?? 0,
+		);
 
 		return (
 			<>
@@ -697,21 +704,7 @@ const CardSection = ({
 					item?.category_id !== 0 && (
 						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-custom-gray-10">
 							<p className="mr-1">in</p>
-							<div
-								className="flex h-[14px] w-[14px] items-center justify-center rounded-full"
-								style={{ backgroundColor: bookmarkCategoryData?.icon_color }}
-							>
-								{find(
-									options(),
-									(optionItem) =>
-										optionItem?.label === bookmarkCategoryData?.icon,
-								)?.icon(
-									bookmarkCategoryData?.icon_color === "#ffffff"
-										? colorPickerColors[1]
-										: colorPickerColors[0],
-									"9",
-								)}
-							</div>
+							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
 							<p className="ml-1 text-[13px] font-450 leading-4 text-custom-gray-10">
 								{bookmarkCategoryData?.category_name}
 							</p>
@@ -733,7 +726,6 @@ const CardSection = ({
 	const renderSortByCondition = () =>
 		bookmarksList?.map((item) => ({
 			...item,
-			// @ts-expect-error // disabling because don't know why ogimage is in smallcase
 			ogImage: item?.ogImage || (item?.ogimage as string),
 		}));
 
@@ -767,7 +759,6 @@ const CardSection = ({
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				item?.type,
-				item?.url,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -836,7 +827,6 @@ const CardSection = ({
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 					item?.type,
-					item?.url,
 				)
 			) : (
 				<div className="h-[48px]" />
@@ -954,11 +944,14 @@ const CardSection = ({
 			</div>
 		);
 
-		if (isSearchLoading) {
-			return renderStatusMessage("Searching...");
-		}
-
-		if (!isEmpty(searchText) && isEmpty(sortByCondition)) {
+		// Only show "No results found" if we have search text, no results, and we're not loading anything
+		if (
+			!isEmpty(searchText) &&
+			isEmpty(sortByCondition) &&
+			!isSearchLoading &&
+			!isBookmarkLoading &&
+			searchBookmarksData?.pages?.length === 0
+		) {
 			return renderStatusMessage("No results found");
 		}
 
@@ -985,7 +978,11 @@ const CardSection = ({
 	return (
 		<>
 			<div className={listWrapperClass}>{renderItem()}</div>
-			<VideoModal listData={listData} />
+			<PreviewLightBox
+				id={lightboxId}
+				open={lightboxOpen}
+				setOpen={setLightboxOpen}
+			/>
 		</>
 	);
 };

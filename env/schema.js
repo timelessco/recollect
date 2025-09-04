@@ -15,7 +15,6 @@ export const serverSchema = z.object({
 	RECOLLECT_SERVER_API: z.string().optional(),
 	UMAMI_ID: z.string().optional(),
 	SUPABASE_JWT_SECRET_KEY: z.string(),
-	SENDGRID_KEY: z.string().optional(),
 	SENTRY_DSN: z.string().optional(),
 	IMAGE_CAPTION_URL: z.string().optional(),
 	IMAGE_CAPTION_TOKEN: z.string().optional(),
@@ -32,7 +31,6 @@ export const serverSchema = z.object({
  */
 export const serverEnvironment = {
 	NODE_ENV: process.env.NODE_ENV,
-	SENDGRID_KEY: process.env.SENDGRID_KEY,
 	SENTRY_DSN: process.env.SENTRY_DSN,
 	SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
 	UMAMI_SRC: process.env.UMAMI_SRC,

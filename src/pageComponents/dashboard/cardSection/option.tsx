@@ -1,5 +1,5 @@
 import { type CardSectionProps } from ".";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import classNames from "classnames";
 import omit from "lodash/omit";
 import {
@@ -13,11 +13,18 @@ import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import Checkbox from "../../../components/checkbox";
 import { type SingleListData } from "../../../types/apiTypes";
-import { viewValues } from "../../../utils/constants";
+import {
+	CATEGORY_ID_PATHNAME,
+	PREVIEW_PATH,
+	viewValues,
+} from "../../../utils/constants";
 
 import "yet-another-react-lightbox/styles.css";
 
-import { PreviewLightBox } from "./previewLightBox";
+import { useRouter } from "next/router";
+
+import { useMiscellaneousStore } from "../../../store/componentStore";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
@@ -30,6 +37,7 @@ const Option = ({
 	cardTypeCondition,
 	url,
 	isPublicPage,
+	isTrashPage,
 }: {
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
@@ -40,11 +48,13 @@ const Option = ({
 	type: SingleListData["type"];
 	url: string;
 }) => {
-	const [open, setOpen] = useState(false);
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
+	const router = useRouter();
+	const { setLightboxId, setLightboxOpen, lightboxOpen } =
+		useMiscellaneousStore();
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
@@ -55,7 +65,7 @@ const Option = ({
 	// Merge option props and dnd props, and render the item.
 
 	const liClassName = classNames(
-		"single-bookmark group relative flex cursor-pointer rounded-lg duration-150 outline-none",
+		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
 		{
 			"mb-6": cardTypeCondition === viewValues.moodboard,
 			"mb-[18px]": cardTypeCondition === viewValues.card,
@@ -88,35 +98,49 @@ const Option = ({
 					isSelected &&
 					(cardTypeCondition === viewValues.moodboard ||
 						cardTypeCondition === viewValues.card),
-				"bg-black text-white": isSelected,
 			})}
 			ref={ref}
 			role="option"
-			{...mergeProps(
-				// NOTE: we are omiting some keys in dragprops because they are causing focus trap issue
-				// the main problem that caused the focus trap issue is onKeyUpCapture
-				disableDndCondition
-					? []
-					: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-				disableDndCondition ? [] : focusProps,
-			)}
+			{...(!lightboxOpen
+				? mergeProps(
+						disableDndCondition
+							? []
+							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+						disableDndCondition ? [] : focusProps,
+				  )
+				: {})}
 		>
-			<PreviewLightBox id={item.key} open={open} setOpen={setOpen} />
-			{/* we are disabling as this a tag is only to tell card is a link , but its eventually not functional */}
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className="absolute left-0 top-0 h-full w-full  rounded-lg"
+				className={`absolute left-0 top-0  h-full w-full rounded-lg ${
+					isTrashPage ? "cursor-auto" : "cursor-pointer"
+				}`}
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					event.preventDefault();
-					setOpen(true);
-				}}
-				onKeyDown={(event) => {
-					if (event.key === "Enter" || event.key === " ") {
+					if (isTrashPage || item?.key === "$.0") {
 						event.preventDefault();
-						setOpen(true);
+						return;
 					}
+
+					event.preventDefault();
+					setLightboxId(item?.key?.toString());
+					setLightboxOpen(true);
+					void router.push(
+						{
+							// https://github.com/vercel/next.js/discussions/11625
+							// https://github.com/adamwathan/headbangstagram/pull/1/files
+							pathname: `${CATEGORY_ID_PATHNAME}`,
+							query: {
+								category_id: getCategorySlugFromRouter(router),
+								id: item?.key,
+							},
+						},
+						`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item?.key}`,
+						{
+							shallow: true,
+						},
+					);
 				}}
 			/>
 			{item.rendered}
@@ -125,11 +149,11 @@ const Option = ({
 					checked={isSelected}
 					classname={`${
 						isSelected ? "opacity-100" : "opacity-0"
-					} absolute right-0 cursor-pointer opacity-0 group-hover:opacity-100  ${
+					} absolute cursor-pointer opacity-0 z-15 group-hover:opacity-100 top-[10px] right-[3px]  ${
 						cardTypeCondition === viewValues.list
-							? "top-[18px]"
+							? "top-[15px]"
 							: cardTypeCondition === viewValues.headlines
-							? "top-[14px]"
+							? "top-[11px]"
 							: "top-3"
 					}`}
 					value={isSelected ? "true" : "false"}

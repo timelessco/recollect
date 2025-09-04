@@ -1,5 +1,5 @@
 import { type PostgrestError } from "@supabase/supabase-js";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
 import useDebounce from "../../../hooks/useDebounce";
@@ -10,11 +10,12 @@ import {
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
-	type BookmarksPaginatedDataTypes,
 	type FetchSharedCategoriesData,
+	type SingleListData,
 } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_KEY,
+	PAGINATION_LIMIT,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
 import { searchBookmarks } from "../../supabaseCrudHelpers";
@@ -49,27 +50,55 @@ export default function useSearchBookmarks() {
 		),
 	);
 
-	const { data, isLoading } = useQuery({
-		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-		queryFn: async () => {
-			toggleIsSearchLoading(true);
-			try {
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useInfiniteQuery({
+			queryKey: [
+				BOOKMARKS_KEY,
+				session?.user?.id,
+				CATEGORY_ID,
+				debouncedSearch,
+			] as const,
+			enabled: !isEmpty(searchText),
+			refetchOnWindowFocus: false,
+			onSettled: () => {
+				toggleIsSearchLoading(false);
+			},
+			queryFn: async ({ pageParam: pageParameter = 0 }) => {
+				// Set default value here
+				toggleIsSearchLoading(true);
 				if (!aiButtonToggle && searchText) {
-					return await searchBookmarks(
+					const result = await searchBookmarks(
 						searchText,
 						CATEGORY_ID,
 						isSharedCategory,
+						pageParameter,
+						PAGINATION_LIMIT,
 					);
+					return result;
 				}
 
-				return null;
-			} finally {
-				toggleIsSearchLoading(false);
-			}
-		},
-		enabled: !isEmpty(searchText),
-		refetchOnWindowFocus: false,
-	});
+				return { data: [], error: null };
+			},
+			getNextPageParam: (lastPage, pages) => {
+				// If last page has fewer results than limit, no more pages
+				if (!lastPage?.data || lastPage.data.length < PAGINATION_LIMIT) {
+					return undefined;
+				}
 
-	return { data, isLoading };
+				// Return offset for next page
+				return pages.length * PAGINATION_LIMIT;
+			},
+			// Remove initialPageParam completely
+		});
+
+	// Flatten the search results to match the expected data structure
+	return {
+		data,
+		flattenedSearchData: (data?.pages?.flatMap((page) => page?.data ?? []) ??
+			[]) as unknown as SingleListData[],
+		isLoading,
+		fetchNextPage,
+		hasNextPage: hasNextPage ?? false,
+		isFetchingNextPage,
+	};
 }

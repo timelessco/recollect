@@ -45,6 +45,7 @@ import {
 	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
+import { getCategorySlugFromRouter } from "../../../utils/url";
 
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
@@ -63,7 +64,6 @@ type ListBoxDropTypes = ListProps<object> & {
 	onItemDrop?: (event: any) => void;
 };
 
-// eslint-disable-next-line complexity
 const ListBox = (props: ListBoxDropTypes) => {
 	const {
 		getItems,
@@ -90,7 +90,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
-	const categorySlug = router?.asPath?.split("/")[1] || null;
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const preview = useRef(null);
@@ -197,14 +197,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const isTrashPage = categorySlug === TRASH_URL;
 
-	// Get the setRenderedBookmarks function from the store
-	const setRenderedBookmarks = useMiscellaneousStore(
-		(store) => store.setRenderedBookmarks,
-	);
-
-	// Get the current category ID from the router
-	const currentCategoryId = categorySlug ?? UNCATEGORIZED_URL;
-
 	const renderOption = () => {
 		const bookmarks = [...state.collection].map((item) => {
 			const bookmarkData = find(
@@ -217,14 +209,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 				bookmarkData,
 			};
 		});
-
-		// Update renderedBookmarks in the store with the current list of bookmarks
-		const validBookmarks = bookmarks
-			.filter((b) => b.bookmarkData)
-			.map((b) => b.bookmarkData) as SingleListData[];
-
-		// Update the store with the current bookmarks for this category
-		setRenderedBookmarks(currentCategoryId, validBookmarks);
 
 		return bookmarks.map(({ item, bookmarkData }) => (
 			<Option
@@ -262,7 +246,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === viewValues.moodboard ? (
+				{cardTypeCondition === viewValues?.moodboard ? (
 					<Masonry
 						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
 						className="my-masonry-grid"
@@ -291,6 +275,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				<div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
 					<div className="flex items-center gap-1">
 						<Checkbox
+							BookmarkHoverCheckbox
 							checked={
 								Array.from(state.selectionManager.selectedKeys.keys())?.length >
 								0
@@ -299,7 +284,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 								?.length}
             bookmarks`}
 							onChange={() => state.selectionManager.clearSelection()}
-							showPlaceholder
 							value="selected-bookmarks"
 						/>
 						{/* <Button

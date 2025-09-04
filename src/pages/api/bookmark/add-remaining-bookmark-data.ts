@@ -6,7 +6,7 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isEmpty, isNil, isNull } from "lodash";
+import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
 import imageToText from "../../../async/ai/imageToText";
@@ -18,13 +18,17 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	IMAGE_JPEG_MIME_TYPE,
 	MAIN_TABLE_NAME,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
-	URL_IMAGE_CHECK_PATTERN,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { getBaseUrl } from "../../../utils/helpers";
+import {
+	checkIfUrlAnImage,
+	checkIfUrlAnMedia,
+	getBaseUrl,
+} from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -37,19 +41,22 @@ type Data = {
 // this uploads all the remaining bookmark data
 // these data are blur hash and s3 uploads
 
-const upload = async (
+export const upload = async (
 	base64info: string,
 	userIdForStorage: ProfilesTableTypes["id"],
+	storagePath: string | null,
 ): Promise<string | null> => {
 	try {
 		const imgName = `img-${uniqid?.time()}.jpg`;
-		const storagePath = `${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
+		const storagePath_ =
+			storagePath ??
+			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
 
 		const { error: uploadError } = await r2Helpers.uploadObject(
 			R2_MAIN_BUCKET_NAME,
-			storagePath,
+			storagePath_,
 			new Uint8Array(decode(base64info)),
-			"image/jpg",
+			IMAGE_JPEG_MIME_TYPE,
 		);
 
 		if (uploadError) {
@@ -58,7 +65,7 @@ const upload = async (
 			return null;
 		}
 
-		const { data: storageData } = r2Helpers.getPublicUrl(storagePath);
+		const { data: storageData } = r2Helpers.getPublicUrl(storagePath_);
 
 		return storageData?.publicUrl || null;
 	} catch (error) {
@@ -100,7 +107,7 @@ export default async function handler(
 	// this is a better solution as we are only getting one row of data
 	const { data: currentData, error: currentDataError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("ogImage, meta_data")
+		.select("ogImage, meta_data, description")
 		.match({ id })
 		.single();
 
@@ -130,15 +137,19 @@ export default async function handler(
 	// if a url is an image, then we need to upload it to s3 and store it here
 	let uploadedImageThatIsAUrl = null;
 
-	const isUrlAnImage = url?.match(URL_IMAGE_CHECK_PATTERN);
+	const isUrlAnImage = await checkIfUrlAnImage(url);
+	// ***** here we are checking the url is of an image or not,if it is so we upload the image in bucket and url in ogImage*****
 
-	const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
+	// const isUrlAnImageCondition = !isNil(isUrlAnImage) && !isEmpty(isUrlAnImage);
+	const isUrlAnImageCondition = isUrlAnImage;
 
 	if (isUrlAnImageCondition) {
 		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to s3
 		try {
 			// Download the image from the URL
-			const image = await axios.get(url, {
+			const realImageUrl = new URL(url)?.searchParams.get("url");
+
+			const image = await axios.get(realImageUrl ?? url, {
 				responseType: "arraybuffer",
 				headers: {
 					"User-Agent": "Mozilla/5.0",
@@ -147,8 +158,8 @@ export default async function handler(
 				timeout: 10_000,
 			});
 
-			const returnedB64 = Buffer.from(image.data).toString("base64");
-			uploadedImageThatIsAUrl = await upload(returnedB64, userId);
+			const returnedB64 = Buffer?.from(image?.data)?.toString("base64");
+			uploadedImageThatIsAUrl = await upload(returnedB64, userId, null);
 
 			// If upload failed, log but don't fail the entire request
 			if (uploadedImageThatIsAUrl === null) {
@@ -166,25 +177,36 @@ export default async function handler(
 		}
 	}
 
-	const favIconLogic = () => {
+	const favIconLogic = async () => {
+		const { hostname } = new URL(url);
+
 		if (favIcon) {
 			if (favIcon?.includes("https://")) {
 				return favIcon;
 			} else {
-				return `https://${getBaseUrl(url)}${favIcon}`;
+				return hostname === "x.com"
+					? "https:" + favIcon
+					: `https://${getBaseUrl(url)}${favIcon}`;
 			}
 		} else {
-			return null;
+			const result = await fetch(
+				`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
+			);
+			if (!result.ok) {
+				return null;
+			}
+
+			return result?.url;
 		}
 	};
 
 	let uploadedCoverImageUrl = null;
-
+	const isUrlAnMedia = await checkIfUrlAnMedia(url);
 	// upload scrapper image to s3
-	if (!isNil(currentData?.meta_data?.coverImage)) {
+	if (currentData?.ogImage && !isUrlAnMedia) {
 		try {
 			// 10 second timeout for image download
-			const image = await axios.get(currentData?.meta_data?.coverImage, {
+			const image = await axios.get(currentData?.ogImage, {
 				responseType: "arraybuffer",
 				// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
 				headers: {
@@ -194,17 +216,17 @@ export default async function handler(
 				timeout: 10_000,
 			});
 
-			const returnedB64 = Buffer.from(image.data).toString("base64");
-			uploadedCoverImageUrl = await upload(returnedB64, userId);
+			const returnedB64 = Buffer.from(image?.data).toString("base64");
+			uploadedCoverImageUrl = await upload(returnedB64, userId, null);
 
 			// If upload failed, log but don't fail the entire request
 			if (uploadedCoverImageUrl === null) {
-				uploadedCoverImageUrl = currentData?.meta_data?.coverImage;
+				uploadedCoverImageUrl = currentData?.ogImage;
 				console.error("Failed to upload image to S3, continuing without image");
 				Sentry.captureException("Failed to upload image to S3");
 			}
 		} catch (error) {
-			uploadedCoverImageUrl = currentData?.meta_data?.coverImage;
+			uploadedCoverImageUrl = currentData?.ogImage;
 			console.error("Error uploading scrapped image to S3:", error);
 			Sentry.captureException(`Error uploading scrapped image to S3: ${error}`);
 		}
@@ -213,16 +235,28 @@ export default async function handler(
 	let imageOcrValue = null;
 	let imageCaption = null;
 
+	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
+	const ogImageMetaDataGeneration = uploadedCoverImageUrl
+		? uploadedCoverImageUrl
+		: currentData?.meta_data?.screenshot;
+
 	// generat meta data (ocr, blurhash data, imgcaption)
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
 		? uploadedImageThatIsAUrl
-		: !isNil(currentData?.meta_data?.screenshot)
+		: currentData?.meta_data?.screenshot
 		? currentData?.meta_data?.screenshot
 		: uploadedCoverImageUrl;
 
-	if (!isNil(imageUrlForMetaDataGeneration)) {
+	if (
+		!isNil(imageUrlForMetaDataGeneration) ||
+		!isNil(ogImageMetaDataGeneration)
+	) {
 		try {
-			imgData = await blurhashFromURL(imageUrlForMetaDataGeneration);
+			imgData = await blurhashFromURL(
+				currentData?.meta_data?.isOgImagePreferred
+					? ogImageMetaDataGeneration
+					: imageUrlForMetaDataGeneration,
+			);
 		} catch (error) {
 			console.error("Error generating blurhash:", error);
 			Sentry.captureException(`Error generating blurhash: ${error}`);
@@ -238,7 +272,11 @@ export default async function handler(
 			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
 
 			// Get image caption using the centralized function
-			imageCaption = await imageToText(imageUrlForMetaDataGeneration);
+			imageCaption = await imageToText(
+				currentData?.meta_data?.isOgImagePreferred
+					? ogImageMetaDataGeneration
+					: imageUrlForMetaDataGeneration,
+			);
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
 			Sentry.captureException(`Gemini AI processing error ${error}`);
@@ -253,11 +291,15 @@ export default async function handler(
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
-		favIcon: favIconLogic(),
+		favIcon: await favIconLogic(),
 		ocr: imageOcrValue,
 		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
 		twitter_avatar_url: null,
+		isOgImagePreferred: existingMetaData?.isOgImagePreferred,
+		mediaType: existingMetaData?.mediaType,
+		iframeAllowed: existingMetaData?.iframeAllowed,
+		isPageScreenshot: existingMetaData?.isPageScreenshot,
 	};
 
 	const {
@@ -268,7 +310,13 @@ export default async function handler(
 		error: PostgrestError | VerifyErrors | string | null;
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
-		.update({ meta_data, ogImage: imageUrlForMetaDataGeneration })
+		.update({
+			meta_data,
+			description: currentData?.description || imageCaption,
+			ogImage: currentData?.meta_data?.isOgImagePreferred
+				? ogImageMetaDataGeneration
+				: imageUrlForMetaDataGeneration,
+		})
 		.match({ id })
 		.select(`id`);
 

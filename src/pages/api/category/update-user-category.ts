@@ -34,6 +34,32 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
+	// check if category name is already there for the user, along with the category id
+	const { data: matchedCategoryName, error: matchedCategoryNameError } =
+		await supabase
+			.from(CATEGORIES_TABLE_NAME)
+			.select(`category_name`)
+			.eq("user_id", userId)
+			.eq("category_name", request?.body?.updateData?.category_name)
+			.neq("id", request.body.category_id);
+
+	if (!isNull(matchedCategoryNameError)) {
+		Sentry.captureException(matchedCategoryNameError);
+		response.status(500).json({
+			data: null,
+			error: { message: "Database error while checking category name" },
+		});
+		return;
+	}
+
+	if (matchedCategoryName && matchedCategoryName.length > 0) {
+		Sentry.captureException("Category name already exists");
+		response
+			.status(409)
+			.json({ data: null, error: { message: "Category name already exists" } });
+		return;
+	}
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(CATEGORIES_TABLE_NAME)

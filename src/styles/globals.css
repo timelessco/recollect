@@ -12,6 +12,18 @@
 	font-named-instance: "Regular";
 }
 
+@keyframes customFadeScaleIn {
+	0% {
+		transform: scale(0.97);
+		opacity: 0;
+	}
+
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
 /* adding col class becasue tailind dynamic col class are not working for some reason */
 .columns-1 {
 	columns: 1;
@@ -228,7 +240,7 @@ main {
 }
 
 .aria-checkbox:checked + .checkbox-div::before {
-	@apply absolute z-[2] h-full w-full rounded bg-black bg-[url('/checkbox-tick.svg')] bg-center bg-no-repeat content-[""];
+	@apply absolute z-[2] h-full w-full rounded  bg-[url('/checkbox-tick.svg')] bg-center bg-no-repeat content-[""];
 }
 
 input[type="checkbox"]:checked + .checkbox-div {
@@ -376,4 +388,11 @@ input[type="checkbox"]:checked + .checkbox-div {
 /* for the drag handle to be in sync when side pane size is reset */
 .split-view-container.split-view-sash-dragging .sash-vertical {
 	transition: none;
+}
+
+.slide-wrapper {
+	transform: translateY(var(--yarl__pull_offset)) scale(var(--yarl__pull_scale));
+	opacity: var(--yarl__pull_opacity);
+
+	@apply transition-opacity transition-transform duration-200 ease-out;
 }

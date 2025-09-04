@@ -5,7 +5,6 @@ import classNames from "classnames";
 import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
-import AiIcon from "../icons/aiIcon";
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
 import {
 	useLoadersStore,
@@ -14,7 +13,7 @@ import {
 import { type UserTagsData } from "../types/apiTypes";
 import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
-import ToolTip from "./tooltip";
+import { SearchLoader } from "./search-loader";
 
 const styles = {
 	input: {
@@ -99,13 +98,9 @@ const SearchInput = (props: SearchInputTypes) => {
 	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 
 	const queryClient = useQueryClient();
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
-	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	const setAiButtonToggle = useMiscellaneousStore(
-		(state) => state.setAiButtonToggle,
-	);
 	const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
 		data: UserTagsData[];
 		error: PostgrestError;
@@ -119,14 +114,6 @@ const SearchInput = (props: SearchInputTypes) => {
 		[inputClassName]: true,
 	});
 
-	const aiButtonClassName = classNames(
-		"absolute right-[-30px] top-[3px] cursor-pointer  transition-colors duration-200 xl:hidden",
-		{
-			"text-custom-gray-1": aiButtonToggle,
-			"text-gray-300": !aiButtonToggle,
-		},
-	);
-
 	return (
 		<div className={wrapperClassNameBuilder}>
 			<figure className=" absolute left-[9px] top-[7px] ">
@@ -134,7 +121,6 @@ const SearchInput = (props: SearchInputTypes) => {
 			</figure>
 			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
-				autoFocus
 				className={inputClassNamesBuilder}
 				onBlur={onBlur}
 				onChange={(event: { target: { value: string } }) => {
@@ -176,6 +162,11 @@ const SearchInput = (props: SearchInputTypes) => {
 					trigger="#"
 				/>
 			</MentionsInput>
+			{isSearchLoading && !isEmpty(searchText) && (
+				<div className="absolute right-2 top-1/2 -translate-y-1/2">
+					<SearchLoader className="h-3 w-3 animate-spin" />
+				</div>
+			)}
 			{/* <button
 				className={aiButtonClassName}
 				onClick={() => setAiButtonToggle(!aiButtonToggle)}

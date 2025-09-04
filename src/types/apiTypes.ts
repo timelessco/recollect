@@ -13,7 +13,11 @@ export type ImgMetadataType = {
 	coverImage: string | null;
 	favIcon: string | null;
 	height: number | null;
+	iframeAllowed: boolean | null;
 	img_caption: string | null;
+	isOgImagePreferred: boolean;
+	isPageScreenshot: boolean | null;
+	mediaType: string;
 	ocr: string | null;
 	ogImgBlurUrl: string | null;
 	screenshot: string | null;
@@ -25,12 +29,13 @@ export type twitter_sort_index = string;
 
 export type SingleListData = {
 	addedTags: UserTagsData[];
-	category_id: number;
+	category_id: number | null;
 	description: string;
 	id: number;
 	inserted_at: string;
 	meta_data: ImgMetadataType;
 	ogImage: string;
+	ogimage: string;
 	screenshot: string;
 	title: string;
 	trash: boolean;
@@ -191,6 +196,7 @@ export type UserProfilePicTypes = {
 // file upload
 
 export type UploadFileApiResponse = {
+	data?: Array<{ id: SingleListData["id"] } | null> | null;
 	error: Error | PostgrestError | string | null;
 	success: boolean;
 };

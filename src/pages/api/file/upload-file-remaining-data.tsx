@@ -2,9 +2,7 @@
 
 import { log } from "console";
 import { type NextApiResponse } from "next";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Sentry from "@sentry/nextjs";
-import axios from "axios";
 import { isNil } from "lodash";
 
 import imageToText from "../../../async/ai/imageToText";
@@ -21,7 +19,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = UploadFileApiResponse;
 
-const notVideoLogic = async (publicUrl: string) => {
+const notVideoLogic = async (publicUrl: string, mediaType: string) => {
 	const ogImage = publicUrl;
 	let imageCaption = null;
 	let imageOcrValue = null;
@@ -61,6 +59,10 @@ const notVideoLogic = async (publicUrl: string) => {
 		ocr: imageOcrValue ?? null,
 		coverImage: null,
 		screenshot: null,
+		isOgImagePreferred: false,
+		iframeAllowed: false,
+		mediaType,
+		isPageScreenshot: null,
 	};
 
 	return { ogImage, meta_data };
@@ -69,11 +71,12 @@ const notVideoLogic = async (publicUrl: string) => {
 export default async function handler(
 	request: NextApiRequest<{
 		id: SingleListData["id"];
+		mediaType: ImgMetadataType["mediaType"];
 		publicUrl: SingleListData["ogImage"];
 	}>,
 	response: NextApiResponse<Data>,
 ) {
-	const { publicUrl, id } = request.body;
+	const { publicUrl, id, mediaType } = request.body;
 
 	const supabase = apiSupabaseClient(request, response);
 
@@ -89,16 +92,50 @@ export default async function handler(
 		coverImage: null,
 		screenshot: null,
 		ocr: null,
+		isOgImagePreferred: false,
+		iframeAllowed: false,
+		mediaType: "",
+		isPageScreenshot: null,
 	};
 
-	const { meta_data: metaData } = await notVideoLogic(publicUrl);
+	const { meta_data: metaData } = await notVideoLogic(publicUrl, mediaType);
+
+	// Fetch existing metadata
+	const { data: existing, error: fetchError } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select("meta_data")
+		.match({ id, user_id: userId })
+		.single();
+
+	if (fetchError) {
+		response.status(500).json({
+			success: false,
+			error: fetchError,
+		});
+		Sentry.captureException(fetchError?.message);
+	}
+
+	const existingMeta = existing?.meta_data || {};
+
+	// Merge: keep existing values if new ones are null/undefined
+	const mergedMeta = {
+		...existingMeta,
+		...Object.fromEntries(
+			Object.entries(metaData).map(([key, value]) => [
+				key,
+				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+				value || existingMeta?.[key],
+			]),
+		),
+	};
 
 	meta_data = metaData;
 
 	const { error: DBerror } = await supabase
 		.from(MAIN_TABLE_NAME)
 		.update({
-			meta_data,
+			ogImage: publicUrl,
+			meta_data: mergedMeta,
 			description: (meta_data?.img_caption as string) || "",
 		})
 		.match({ id, user_id: userId });

@@ -16,7 +16,9 @@ import {
 import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
 // adds cat to bookmark optimistically
-export default function useAddCategoryToBookmarkOptimisticMutation() {
+export default function useAddCategoryToBookmarkOptimisticMutation(
+	isLightbox = false,
+) {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 	const { sortBy } = useGetSortBy();
@@ -71,20 +73,23 @@ export default function useAddCategoryToBookmarkOptimisticMutation() {
 				);
 			},
 			// Always refetch after error or success:
-			onSettled: () => {
-				void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-				void queryClient.invalidateQueries([
-					BOOKMARKS_KEY,
-					session?.user?.id,
-					CATEGORY_ID,
-					sortBy,
-				]);
-				void queryClient.invalidateQueries([
-					BOOKMARKS_COUNT_KEY,
-					session?.user?.id,
-				]);
-
-				setSidePaneOptionLoading(null);
+			onSettled: async (_data, _error) => {
+				try {
+					if (!isLightbox) {
+						void queryClient.invalidateQueries([
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							CATEGORY_ID,
+							sortBy,
+						]);
+						void queryClient.invalidateQueries([
+							BOOKMARKS_COUNT_KEY,
+							session?.user?.id,
+						]);
+					}
+				} finally {
+					setSidePaneOptionLoading(null);
+				}
 			},
 		},
 	);

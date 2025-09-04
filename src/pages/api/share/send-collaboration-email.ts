@@ -82,7 +82,7 @@ export default async function handler(
 			response.status(500).json({
 				url: null,
 				error: catchError as string,
-				message: "error in vercel email api",
+				message: "error in resend email api",
 			});
 		}
 	} else {

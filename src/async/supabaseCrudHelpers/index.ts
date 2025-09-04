@@ -3,7 +3,10 @@ import {
 	type QueryFunctionContext,
 	type QueryKey,
 } from "@tanstack/react-query";
-import axios from "axios";
+import axios, {
+	type AxiosResponseHeaders,
+	type RawAxiosResponseHeaders,
+} from "axios";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -18,9 +21,7 @@ import {
 	type BookmarksPaginatedDataTypes,
 	type BookmarkViewDataTypes,
 	type CategoriesData,
-	type ClearBookmarksInTrashApiPayloadTypes,
 	type DeleteBookmarkPayload,
-	type DeleteUserApiPayload,
 	type DeleteUserCategoryApiPayload,
 	type FetchDataResponse,
 	type FetchSharedCategoriesData,
@@ -56,6 +57,7 @@ import {
 	DELETE_SHARED_CATEGORIES_USER_API,
 	DELETE_USER_API,
 	DELETE_USER_CATEGORIES_API,
+	FETCH_BOOKMARK_BY_ID_API,
 	FETCH_BOOKMARKS_COUNT,
 	FETCH_BOOKMARKS_DATA_API,
 	FETCH_BOOKMARKS_VIEW,
@@ -64,9 +66,12 @@ import {
 	FETCH_USER_PROFILE_API,
 	FETCH_USER_PROFILE_PIC_API,
 	FETCH_USER_TAGS_API,
+	GET_MEDIA_TYPE_API,
 	getBaseUrl,
 	MOVE_BOOKMARK_TO_TRASH_API,
 	NEXT_API_URL,
+	NO_BOOKMARKS_ID_ERROR,
+	PAGINATION_LIMIT,
 	REMOVE_PROFILE_PIC_API,
 	REMOVE_TAG_FROM_BOOKMARK_API,
 	SEARCH_BOOKMARKS,
@@ -79,7 +84,25 @@ import {
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
 } from "../../utils/constants";
+// eslint-disable-next-line import/no-cycle
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
+
+// bookmark
+// get bookmark by id
+export const fetchBookmarkById = async (id: string) => {
+	try {
+		if (!id) {
+			throw new Error(NO_BOOKMARKS_ID_ERROR);
+		}
+
+		const response = await axios.get<{ data: SingleListData }>(
+			`${NEXT_API_URL}${FETCH_BOOKMARK_BY_ID_API}${id}`,
+		);
+		return response?.data;
+	} catch (error) {
+		return error;
+	}
+};
 
 // bookmark
 // gets bookmarks data
@@ -223,6 +246,11 @@ export const addBookmarkScreenshot = async ({
 
 		return apiResponse;
 	} catch (error) {
+		if (error instanceof Error) {
+			console.error(error.message);
+			throw new Error(error.message);
+		}
+
 		return error;
 	}
 };
@@ -277,9 +305,11 @@ export const searchBookmarks = async (
 	searchText: string,
 	category_id: CategoryIdUrlTypes,
 	isSharedCategory: boolean,
+	offset = 0,
+	limit = PAGINATION_LIMIT,
 ): Promise<{
 	data: BookmarksPaginatedDataTypes[] | null;
-	error: Error;
+	error: Error | null;
 }> => {
 	if (!isEmpty(searchText) && searchText !== "#") {
 		const categoryId = !isNull(category_id) ? category_id : "null";
@@ -287,9 +317,9 @@ export const searchBookmarks = async (
 		try {
 			const response = await axios.get<{
 				data: BookmarksPaginatedDataTypes[];
-				error: Error;
+				error: Error | null;
 			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&category_id=${categoryId}&is_shared_category=${isSharedCategory}`,
+				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&category_id=${categoryId}&is_shared_category=${isSharedCategory}&offset=${offset}&limit=${limit}`,
 			);
 			return response?.data;
 		} catch (error_) {
@@ -303,7 +333,7 @@ export const searchBookmarks = async (
 
 	return {
 		data: null,
-		error: { name: "error", message: "error" },
+		error: { name: "error", message: "No search text provided" },
 	};
 };
 
@@ -416,7 +446,7 @@ export const fetchBookmarksViews = async ({
 	}
 };
 
-// user catagories
+// user categories
 
 export const fetchCategoriesData = async (): Promise<{
 	data: CategoriesData[] | null;
@@ -767,7 +797,6 @@ export const uploadFile = async ({
 				},
 			},
 		);
-
 		return response?.data;
 	} catch (error) {
 		return error;
@@ -832,5 +861,28 @@ export const signUpWithEmailPassword = async (
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
-	await supabase.auth.signOut();
+	await supabase.auth.signOut({ scope: "local" });
+};
+
+export const getMediaType = async (url: string): Promise<string | null> => {
+	try {
+		const encodedUrl = encodeURIComponent(url);
+
+		const response = await fetch(
+			`${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
+			{
+				method: "GET",
+			},
+		);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		return data.mediaType || null;
+	} catch (error) {
+		console.error("Error getting media type:", error);
+		return null;
+	}
 };

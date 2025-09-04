@@ -1,4 +1,4 @@
-import create from "zustand";
+import { create } from "zustand";
 
 import { type SingleListData } from "../types/apiTypes";
 import {
@@ -54,12 +54,37 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
 		set(() => ({
 			isSearchLoading: value,
 		})),
+	// loadingBookmarkIds: new Set<number>(),
+	// addLoadingBookmarkId: (id: number) =>
+	// 	set((state) => {
+	// 		const newSet = new Set(state.loadingBookmarkIds);
+	// 		newSet.add(id);
+	// 		return { loadingBookmarkIds: newSet };
+	// 	}),
+	// removeLoadingBookmarkId: (id: number) =>
+	// 	set((state) => {
+	// 		const newSet = new Set(state.loadingBookmarkIds);
+	// 		newSet.delete(id);
+	// 		return { loadingBookmarkIds: newSet };
+	// 	}),
 }));
 
 export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
+	isCollectionChanged: false,
+	setIsCollectionChanged: (value: boolean) =>
+		set((state) => ({ ...state, isCollectionChanged: value })),
+	lightboxId: null,
+	setLightboxId: (id: string | null) =>
+		set((state) => ({ ...state, lightboxId: id })),
+	lightboxOpen: false,
+	setLightboxOpen: (open: boolean) =>
+		set((state) => ({ ...state, lightboxOpen: open })),
 	shareCategoryId: undefined,
 	setShareCategoryId: (id: number | undefined) =>
 		set(() => ({ shareCategoryId: id })),
+	lightboxShowSidepane: false,
+	setLightboxShowSidepane: (value: boolean) =>
+		set(() => ({ lightboxShowSidepane: value })),
 	searchText: "",
 	setSearchText: (value: string) => set(() => ({ searchText: value })),
 	addScreenshotBookmarkId: undefined,
