@@ -45,7 +45,7 @@ export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
 // api constants
 export const getBaseUrl = () =>
 	isProductionEnvironment
-		? "https://bookmark-tags-git-dev-timelessco.vercel.app/"
+		? process.env.NEXT_PUBLIC_VERCEL_URL
 		: "http://localhost:3000/";
 
 export const NEXT_API_URL = `/api/`;
