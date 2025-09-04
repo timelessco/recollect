@@ -15,6 +15,7 @@ import {
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
+	CATEGORIES_TABLE_NAME,
 	documentFileTypes,
 	DOCUMENTS_URL,
 	imageFileTypes,
@@ -78,6 +79,25 @@ export default async function handler(
 		return !isEmpty(sharedCategoryData);
 	};
 
+	const checkIsUserOwnerOfCategory = async () => {
+		const { data: categoryData, error: categoryDataError } = await supabase
+			.from(CATEGORIES_TABLE_NAME)
+			.select("user_id")
+			.eq("id", category_id);
+
+		if (categoryDataError) {
+			Sentry.captureException(
+				`Get category data error : ${categoryDataError?.message}`,
+			);
+			response
+				.status(500)
+				.json({ data: null, error: categoryDataError?.message, count: null });
+			return false;
+		}
+
+		return categoryData?.[0]?.user_id === userId;
+	};
+
 	// tells if user is in a category or not
 	const categoryCondition = isUserInACategoryInApi(category_id as string);
 	let data;
@@ -103,7 +123,10 @@ user_id (
 		const isUserCollaboratorInCategoryValue =
 			await isUserCollaboratorInCategory();
 
-		if (isUserCollaboratorInCategoryValue) {
+		const isUserOwnerOfCategory = await checkIsUserOwnerOfCategory();
+
+		if (isUserCollaboratorInCategoryValue || isUserOwnerOfCategory) {
+			// **** here we are checking if user is a collaborator for the category_id or user is the owner of the category
 			// user is collaborator
 			// get all the items for the category_id irrespective of the user_is , as user has access to all the items in the category
 			query = query.eq("category_id", category_id);
