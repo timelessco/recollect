@@ -321,6 +321,7 @@ export const VIDEO_TYPE_PREFIX = "video";
 // Media type specific strings
 export const PDF_MIME_TYPE = "application/pdf";
 export const PDF_TYPE = "pdf";
+export const IMAGE_JPEG_MIME_TYPE = "image/jpeg";
 
 // UI strings
 export const PREVIEW_ALT_TEXT = "preview";

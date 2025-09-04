@@ -18,6 +18,7 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	IMAGE_JPEG_MIME_TYPE,
 	MAIN_TABLE_NAME,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
@@ -55,7 +56,7 @@ export const upload = async (
 			R2_MAIN_BUCKET_NAME,
 			storagePath_,
 			new Uint8Array(decode(base64info)),
-			"image/jpg",
+			IMAGE_JPEG_MIME_TYPE,
 		);
 
 		if (uploadError) {

@@ -1,16 +1,34 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
-import sgMail from "@sendgrid/mail";
 import { Resend } from "resend";
+import { z } from "zod";
+
+const EmailRequestSchema = z.object({
+	emailList: z.string().email(),
+	url: z.string().url(),
+});
 
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	const data = request.body;
+	if (request.method !== "POST") {
+		response.status(405).json({ error: "Method not allowed" });
+		return;
+	}
 
-	sgMail.setApiKey(process.env.SENDGRID_KEY as string);
+	const parseResult = EmailRequestSchema.safeParse(request.body);
+
+	if (!parseResult.success) {
+		response.status(400).json({
+			error: "Invalid request body",
+			issues: parseResult.error.format(),
+		});
+		return;
+	}
+
+	const data = parseResult.data;
 
 	const resend = new Resend(process.env.RESEND_KEY);
 
