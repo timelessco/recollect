@@ -344,23 +344,40 @@ export const getPreviewPathInfo = (
 	return { isPreviewPath, previewId };
 };
 
+/**
+ * Determines the appropriate search key based on the current category slug from the URL.
+ *
+ * @param categoryData - Object containing category data
+ * @param categoryData.data - Array of category data to search through
+ * @param categoryData.error - Optional error object from the data fetch
+ * @returns number | string | null - Returns:
+ *   - null if the current route is for all bookmarks or search
+ *   - category ID (number) if a matching category is found
+ *   - the original category slug (string) if no matching category is found
+ */
 export const searchSlugKey = (categoryData: {
 	data: CategoriesData[];
 	error: PostgrestError;
 }) => {
+	// Get the category slug from the current router/URL
 	const categorySlug = getCategorySlugFromRouter(router);
 
+	// Find the category in the provided data that matches the current slug
 	const categoryIdFromSlug = find(
 		categoryData?.data,
 		(item) => item?.category_slug === categorySlug,
 	)?.id;
+
+	// Special case: return null for 'all bookmarks' or 'search' routes
 	if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
 		return null;
 	}
 
+	// If we found a matching category with a numeric ID, return the ID
 	if (typeof categoryIdFromSlug === "number") {
 		return categoryIdFromSlug;
 	}
 
+	// Fallback: return the original slug if no matching category was found
 	return categorySlug;
 };
