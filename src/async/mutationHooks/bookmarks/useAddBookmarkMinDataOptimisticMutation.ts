@@ -39,7 +39,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	// We'll initialize the mutation with a default value and update it when we have the actual ID
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { sortBy } = useGetSortBy();
-	// const { addLoadingBookmarkId } = useLoadersStore();
+	const { addLoadingBookmarkId, removeLoadingBookmarkId } = useLoadersStore();
 
 	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
 		onMutate: async (data) => {
@@ -134,11 +134,12 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 			// only take screenshot if url is not an image like https://test.com/test.jpg
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
-
 			if (!isUrlOfMimeType) {
 				const mediaType = await getMediaType(url);
 				if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
 					try {
+						// adding id into loading state for the case of pdf
+						addLoadingBookmarkId(data?.id);
 						successToast("generating thumbnail");
 						await handlePdfThumbnailAndUpload({
 							fileUrl: data?.url,
@@ -161,16 +162,24 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 							);
 							errorToast("thumbnail generation failed");
 						}
+					} finally {
+						// invalidating and removing id from loading state for the case of pdf
+						void queryClient.invalidateQueries([
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							CATEGORY_ID,
+							sortBy,
+						]);
+						removeLoadingBookmarkId(data?.id);
 					}
 
 					return;
 				}
 
-				// if (data?.id) {
-				// 	addLoadingBookmarkId(data?.id);
-				// }
+				if (data?.id) {
+					addLoadingBookmarkId(data?.id);
+				}
 
-				successToast("screenshot initiated!!!");
 				// update to zustand here
 				addBookmarkScreenshotMutation.mutate({
 					url: data?.url,
