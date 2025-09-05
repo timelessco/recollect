@@ -420,12 +420,20 @@ export const CustomLightBox = ({
 			}
 
 			return (
-				<div className="slide-wrapper flex h-full w-full items-center justify-center">
+				<button
+					className="slide-wrapper flex h-full w-full cursor-default items-center justify-center"
+					onClick={(event) => {
+						if (event.currentTarget === event.target) {
+							handleClose();
+						}
+					}}
+					type="button"
+				>
 					{content}
-				</div>
+				</button>
 			);
 		},
-		[bookmarks, slides, activeIndex],
+		[bookmarks, slides, activeIndex, handleClose],
 	);
 
 	/**
@@ -456,6 +464,7 @@ export const CustomLightBox = ({
 			}}
 			carousel={{ finite: true, preload: 1 }}
 			close={handleClose}
+			controller={{ closeOnBackdropClick: true }}
 			index={activeIndex}
 			on={{
 				view: ({ index }) => {

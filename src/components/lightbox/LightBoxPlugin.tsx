@@ -232,6 +232,7 @@ const MyComponent = () => {
 						<AddToCollectionDropdown
 							allbookmarksdata={allBookmarksData as SingleListData[]}
 							bookmarkId={currentBookmark?.id}
+							shouldFetch={shouldFetch}
 						/>
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||

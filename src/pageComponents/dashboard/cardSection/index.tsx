@@ -11,7 +11,6 @@ import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { motion } from "motion/react";
 import { Item } from "react-stately";
 
-import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
 import loaderGif from "../../../../public/loader-gif.gif";
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
@@ -138,7 +137,7 @@ const CardSection = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router?.asPath]);
 
-	const [errorImgs, setErrorImgs] = useState([]);
+	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
 	const CARD_DEFAULT_HEIGHT = 600;
@@ -154,7 +153,7 @@ const CardSection = ({
 	);
 
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	// const { loadingBookmarkIds } = useLoadersStore();
+	const { loadingBookmarkIds } = useLoadersStore();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 
@@ -533,33 +532,44 @@ const CardSection = ({
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
-		const errorImgPlaceholder = (isError: boolean) => (
-			<div className={loaderClassName}>
-				<Image
-					alt="img-error"
-					className="h-[50px] w-[50px] rounded-lg object-cover"
-					src={isError ? logoDiamond : loaderGif}
-				/>
-			</div>
-		);
-		// const isLoading = loadingBookmarkIds.has(id);
+		const loaderImgPlaceholder = () => {
+			const isLoading = loadingBookmarkIds.has(id);
+
+			return (
+				<div className={`${loaderClassName} flex flex-col items-center gap-2`}>
+					<Image
+						alt="loading"
+						className="h-[50px] w-[50px] rounded-lg object-cover"
+						src={loaderGif}
+					/>
+					<p className="text-sm text-gray-600">
+						{isLoading
+							? "Taking screenshot...."
+							: isBookmarkLoading
+							? "Fetching data..."
+							: "Cannot fetch image for this bookmark"}
+					</p>
+				</div>
+			);
+		};
 
 		const imgLogic = () => {
+			const isLoading = loadingBookmarkIds.has(id);
+
 			if (hasCoverImg) {
 				if (
-					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
+					(isBookmarkLoading ||
+						isAllBookmarksDataFetching ||
+						isOgImgLoading ||
+						isLoading) &&
 					isNil(id)
 				) {
-					return errorImgPlaceholder(false);
+					return loaderImgPlaceholder();
 				}
 
-				// if (isLoading && !img) {
-				// 	return errorImgPlaceholder(false);
+				// if (errorImgs?.includes(id as never)) {
+				// 	return loaderImgPlaceholder();
 				// }
-
-				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder(false);
-				}
 
 				let blurSource = "";
 
@@ -582,14 +592,13 @@ const CardSection = ({
 								blurDataURL={blurSource || defaultBlur}
 								className={imgClassName}
 								height={_height ?? 200}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
 								placeholder="blur"
 								sizes={sizesLogic}
 								src={`${img}`}
 								width={_width ?? 200}
 							/>
 						) : (
-							errorImgPlaceholder(false)
+							loaderImgPlaceholder()
 						)}
 					</>
 				);
