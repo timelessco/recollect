@@ -31,7 +31,11 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
 } from "../../../utils/constants";
-import { apiCookieParser, checkIfUrlAnMedia } from "../../../utils/helpers";
+import {
+	apiCookieParser,
+	checkIfUrlAnImage,
+	checkIfUrlAnMedia,
+} from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
@@ -299,7 +303,13 @@ export default async function handler(
 	// ***** if it an  image we upload to s3 and for video we take screenshot *****
 	let iframeAllowedValue = null;
 	if (isUrlOfMimeType) {
-		ogImageToBeAdded = url;
+		const isUrlAnImage = await checkIfUrlAnImage(url);
+		// this check is to avoid setting the video,pdf urls in the ogImage column because we only render image in frontend
+		if (isUrlAnImage) {
+			ogImageToBeAdded = url;
+		} else {
+			ogImageToBeAdded = null;
+		}
 	} else {
 		ogImageToBeAdded = scrapperResponse?.data?.OgImage;
 		// Iframe check
@@ -356,7 +366,7 @@ export default async function handler(
 			.json({ data, error: scraperApiError ?? null, message: null });
 
 		try {
-			if (!isNull(data) && !isEmpty(data) && isUrlOfMimeType) {
+			if (!isNull(data) && !isEmpty(data) && !isUrlOfMimeType) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				// this is called only if the url is an image url like test.com/image.png.
 				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
