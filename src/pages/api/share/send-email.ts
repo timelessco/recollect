@@ -61,7 +61,7 @@ export default async function handler(
 													<span style="color: #374151; font-weight: 500;">${data.display_name}</span> has invited you to join the 
 													<span style="color: #1f2937; font-weight: 600;">${data.category_name}</span> collection
 											</p>
-											<a href="${data.url}" style="display:flex; flex-direction:row; justify-content:center; align-items:center; padding:7px 10px; gap:6px; background:#000000; color:#ffffff; border-radius:11px; font-size:15px; font-weight:500; text-decoration:none; width:118px; height:36px; margin:0 auto;">Accept Invite</a>
+											<a href="${data.url}" style="padding:7px 10px; background:#000000; color:#ffffff; border-radius:11px; text-decoration:none; width:118px; height:36px; margin:0 auto;">Accept Invite</a>
 
 									</div>
 									
