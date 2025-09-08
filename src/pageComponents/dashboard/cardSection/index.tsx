@@ -3,15 +3,12 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
-import { getImgFromArr } from "array-to-image";
-import { decode } from "blurhash";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { motion } from "motion/react";
 import { Item } from "react-stately";
 
-import loaderGif from "../../../../public/loader-gif.gif";
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
@@ -47,7 +44,6 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	defaultBlur,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
@@ -67,6 +63,7 @@ import {
 } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
+import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 
 export type onBulkBookmarkDeleteType = (
@@ -153,7 +150,6 @@ const CardSection = ({
 	);
 
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	const { loadingBookmarkIds } = useLoadersStore();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 
@@ -532,80 +528,6 @@ const CardSection = ({
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
-		const loaderImgPlaceholder = () => {
-			const isLoading = loadingBookmarkIds.has(id);
-
-			return (
-				<div className={`${loaderClassName} flex flex-col items-center gap-2`}>
-					<Image
-						alt="loading"
-						className="h-[50px] w-[50px] rounded-lg object-cover"
-						src={loaderGif}
-					/>
-					<p className="text-sm text-gray-600">
-						{isLoading
-							? "Taking screenshot...."
-							: isBookmarkLoading || isNil(id)
-							? "Fetching data..."
-							: "Cannot fetch image for this bookmark"}
-					</p>
-				</div>
-			);
-		};
-
-		const imgLogic = () => {
-			const isLoading = loadingBookmarkIds.has(id);
-			if (hasCoverImg) {
-				if (
-					(isBookmarkLoading ||
-						isAllBookmarksDataFetching ||
-						isOgImgLoading ||
-						isLoading) &&
-					isNil(id)
-				) {
-					return loaderImgPlaceholder();
-				}
-
-				// if (errorImgs?.includes(id as never)) {
-				// 	return loaderImgPlaceholder();
-				// }
-
-				let blurSource = "";
-
-				if (
-					!isNil(img) &&
-					!isNil(blurUrl) &&
-					!isEmpty(blurUrl) &&
-					!isPublicPage
-				) {
-					const pixels = decode(blurUrl, 32, 32);
-					const image = getImgFromArr(pixels, 32, 32);
-					blurSource = image.src;
-				}
-
-				return (
-					<>
-						{img ? (
-							<Image
-								alt="bookmark-img"
-								blurDataURL={blurSource || defaultBlur}
-								className={imgClassName}
-								height={_height ?? 200}
-								placeholder="blur"
-								sizes={sizesLogic}
-								src={`${img}`}
-								width={_width ?? 200}
-							/>
-						) : (
-							loaderImgPlaceholder()
-						)}
-					</>
-				);
-			}
-
-			return null;
-		};
-
 		const playSvgClassName = classNames({
 			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
 				true,
@@ -635,7 +557,19 @@ const CardSection = ({
 						/>
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
-					{imgLogic()}
+					<ImgLogic
+						_height={_height ?? 200}
+						_width={_width ?? 200}
+						blurUrl={blurUrl}
+						hasCoverImg={hasCoverImg ?? false}
+						id={id}
+						img={img}
+						imgClassName={imgClassName}
+						isBookmarkLoading={isBookmarkLoading}
+						isPublicPage={isPublicPage}
+						loaderClassName={loaderClassName}
+						sizesLogic={sizesLogic}
+					/>
 				</motion.figure>
 			</div>
 		);
