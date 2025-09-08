@@ -89,23 +89,23 @@ export default async function handler(
 
 	const categoryData = data?.[0];
 
-	// if (process.env.NODE_ENV !== "development") {
-	try {
-		await axios.post(`${getBaseUrl()}${NEXT_API_URL}/share/send-email`, {
-			url,
-			display_name: categoryData?.profiles?.display_name,
-			category_name: categoryData?.category_name,
-			emailList: emailList[0],
-		});
-		response.status(200).json({ url, error });
-	} catch (catchError: unknown) {
-		response.status(500).json({
-			url: null,
-			error: catchError as string,
-			message: "error in resend email api",
-		});
+	if (process.env.NODE_ENV !== "development") {
+		try {
+			await axios.post(`${getBaseUrl()}${NEXT_API_URL}/share/send-email`, {
+				url,
+				display_name: categoryData?.profiles?.display_name,
+				category_name: categoryData?.category_name,
+				emailList: emailList[0],
+			});
+			response.status(200).json({ url, error });
+		} catch (catchError: unknown) {
+			response.status(500).json({
+				url: null,
+				error: catchError as string,
+				message: "error in resend email api",
+			});
+		}
+	} else {
+		response.status(200).json({ url, error: null, message: "in dev mode" });
 	}
-	// } else {
-	// 	response.status(200).json({ url, error: null, message: "in dev mode" });
-	// }
 }

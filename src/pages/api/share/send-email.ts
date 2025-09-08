@@ -1,5 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
+import fs from "fs";
+import path from "path";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { Resend } from "resend";
 import { z } from "zod";
@@ -11,6 +13,8 @@ const EmailRequestSchema = z.object({
 	category_name: z.string(),
 });
 
+const filePath = path.join(process.cwd(), "public", "logo.png");
+const base64Logo = fs.readFileSync(filePath).toString("base64");
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
@@ -44,6 +48,10 @@ export default async function handler(
 				<!DOCTYPE html>
 							<html lang="en">
 							<body style="margin:0; padding:40px 0; background:#f3f4f6; font-family:'SF Pro Display','SF Pro Text','-apple-system',BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif; text-align:center;">
+
+									<div style="margin-bottom: 14px">
+									<img src="cid:logo" width="16" height="20" />
+									</div>
 	
 									<div style="background: white; border-radius: 16px; padding: 48px 40px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); text-align: center; max-width: 600px; width: 100%; margin: 0 auto 14px auto;">
 											<h1 style="font-size: 24px; font-weight: 600; color: #1f2937; margin-bottom: 16px; line-height: 1.3;">
@@ -64,6 +72,14 @@ export default async function handler(
 							</body>
 				</html>
 				`,
+				attachments: [
+					{
+						filename: "logo.png",
+						content: base64Logo,
+						contentType: "image/png",
+						contentId: "logo",
+					},
+				],
 			},
 		);
 
