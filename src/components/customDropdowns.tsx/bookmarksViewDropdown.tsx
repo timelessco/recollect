@@ -8,7 +8,6 @@ import find from "lodash/find";
 import useGetViewValue from "../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../hooks/useIsUserInTweetsPage";
 import CardIcon from "../../icons/viewIcons/cardIcon";
-import HeadlinesIcon from "../../icons/viewIcons/headLinesIcon";
 import ListIcon from "../../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
 import {
@@ -89,11 +88,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			label: "Card",
 			value: viewValues.card,
 			icon: <CardIcon />,
-		},
-		{
-			label: "Headlines",
-			value: viewValues.headlines,
-			icon: <HeadlinesIcon />,
 		},
 		{
 			label: "Timeline",
