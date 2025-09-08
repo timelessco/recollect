@@ -545,7 +545,7 @@ const CardSection = ({
 					<p className="text-sm text-gray-600">
 						{isLoading
 							? "Taking screenshot...."
-							: isBookmarkLoading
+							: isBookmarkLoading || isNil(id)
 							? "Fetching data..."
 							: "Cannot fetch image for this bookmark"}
 					</p>
@@ -555,7 +555,6 @@ const CardSection = ({
 
 		const imgLogic = () => {
 			const isLoading = loadingBookmarkIds.has(id);
-
 			if (hasCoverImg) {
 				if (
 					(isBookmarkLoading ||
