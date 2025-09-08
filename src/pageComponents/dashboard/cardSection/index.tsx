@@ -492,29 +492,6 @@ const CardSection = ({
 		const isVideo = isBookmarkVideo(type);
 		const isAudio = isBookmarkAudio(type);
 
-		const imgClassName = classNames({
-			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
-				cardTypeCondition === viewValues.list,
-			" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
-				cardTypeCondition === viewValues.card,
-			"w-full rounded-lg moodboard-card-img min-h-[192px] object-cover":
-				cardTypeCondition === viewValues.moodboard ||
-				cardTypeCondition === viewValues.timeline,
-			"relative z-[-1]":
-				cardTypeCondition === viewValues.card ||
-				cardTypeCondition === viewValues.moodboard,
-		});
-
-		const loaderClassName = classNames({
-			"w-full h-14 w-20 flex items-center justify-center bg-gray-100 rounded-lg":
-				cardTypeCondition === viewValues.list,
-			"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg":
-				cardTypeCondition === viewValues.card ||
-				cardTypeCondition === viewValues.timeline,
-			"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg":
-				cardTypeCondition === viewValues.moodboard,
-		});
-
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
 			"mr-3": cardTypeCondition === viewValues.list,
@@ -561,13 +538,12 @@ const CardSection = ({
 						_height={_height ?? 200}
 						_width={_width ?? 200}
 						blurUrl={blurUrl}
+						cardTypeCondition={cardTypeCondition}
 						hasCoverImg={hasCoverImg ?? false}
 						id={id}
 						img={img}
-						imgClassName={imgClassName}
 						isBookmarkLoading={isBookmarkLoading}
 						isPublicPage={isPublicPage}
-						loaderClassName={loaderClassName}
 						sizesLogic={sizesLogic}
 					/>
 				</motion.figure>
