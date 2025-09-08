@@ -1,5 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
+import fs from "fs";
+import path from "path";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { Resend } from "resend";
 import { z } from "zod";
@@ -7,8 +9,12 @@ import { z } from "zod";
 const EmailRequestSchema = z.object({
 	emailList: z.string().email(),
 	url: z.string().url(),
+	display_name: z.string(),
+	category_name: z.string(),
 });
 
+const filePath = path.join(process.cwd(), "public", "logo.png");
+const base64Logo = fs.readFileSync(filePath).toString("base64");
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
@@ -39,27 +45,40 @@ export default async function handler(
 				to: data.emailList,
 				subject: "collections from recollect",
 				html: `
-					<html>
-						<body style="font-family:Arial,Helvetica,sans-serif;background:#f9fafb;padding:20px;">
-							<table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:auto;background:#ffffff;border-radius:8px;padding:24px;">
-								<tr>
-									<td>
-										<h2 style="margin:0 0 12px 0;font-size:18px;color:#111827;">Recollect Invite</h2>
-										<p style="margin:0 0 16px 0;font-size:14px;color:#374151;">
-											A user has shared a collection of bookmarks with you.
-										</p>
-										<center style="margin:0 0 20px 0;">
-											<a href="${data.url}" 
-												style="display:inline-block;padding:10px 16px;background:black;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;">
-												View Collection
-											</a>
-										</center>
-									</td>
-								</tr>
-							</table>
-						</body>
-					</html>
+				<!DOCTYPE html>
+							<html lang="en">
+							<body style="margin:0; padding:40px 0; background:#f3f4f6; font-family:'SF Pro Display','SF Pro Text','-apple-system',BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif; text-align:center;">
+
+									<div style="margin-bottom: 14px">
+									<img src="cid:logo" width="16" height="20" />
+									</div>
+	
+									<div style="background: white; border-radius: 16px; padding: 48px 40px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); text-align: center; max-width: 600px; width: 100%; margin: 0 auto 14px auto;">
+											<h1 style="font-size: 24px; font-weight: 600; color: #1f2937; margin-bottom: 16px; line-height: 1.3;">
+													You have been invited to a collection
+											</h1>
+											<p style="color: #6b7280; font-size: 16px; line-height: 1.5; margin-bottom: 32px;">
+													<span style="color: #374151; font-weight: 500;">${data.display_name}</span> has invited you to join the 
+													<span style="color: #1f2937; font-weight: 600;">${data.category_name}</span> collection
+											</p>
+											<a href="${data.url}" style="display:flex;flex-direction:row;justify-content:center;align-items:center;padding:7px 10px;gap:6px;background:#000000;color:#ffffff;border-radius:11px;font-size:15px;font-weight:500;text-decoration:none;width:118px;height:36px;margin:0 auto;">Accept Invite</a>
+
+									</div>
+									
+									<div style="color: #9ca3af; font-size: 14px; font-weight: 500;">
+											recollect.so
+									</div>
+							</body>
+				</html>
 				`,
+				attachments: [
+					{
+						filename: "logo.png",
+						content: base64Logo,
+						contentType: "image/png",
+						contentId: "logo",
+					},
+				],
 			},
 		);
 
