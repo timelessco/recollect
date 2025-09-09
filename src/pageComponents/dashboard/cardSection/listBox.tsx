@@ -3,6 +3,7 @@ import { useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
@@ -51,7 +52,6 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import Option from "./option";
 
 type ListBoxDropTypes = ListProps<object> & {
-	// bookmarksColumns: string | number[] | string[] | undefined;
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];
 	cardTypeCondition: unknown;
@@ -59,11 +59,11 @@ type ListBoxDropTypes = ListProps<object> & {
 	isPublicPage?: boolean;
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
-	// onReorder: (event: DroppableCollectionReorderEvent) => unknown;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onItemDrop?: (event: any) => void;
 };
 
+// eslint-disable-next-line complexity
 const ListBox = (props: ListBoxDropTypes) => {
 	const {
 		getItems,
@@ -74,6 +74,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 		onBulkBookmarkDelete,
 		isPublicPage,
 	} = props;
+
 	const setIsCardDragging = useMiscellaneousStore(
 		(store) => store.setIsCardDragging,
 	);
@@ -88,14 +89,31 @@ const ListBox = (props: ListBoxDropTypes) => {
 		error: PostgrestError;
 	};
 
+	// this ref is for scrolling + virtualization
+	const parentRef = useRef<HTMLUListElement | null>(null);
+	// this ref is for react-aria listbox
+	const ariaRef = useRef<HTMLUListElement | null>(null);
+
+	// ---- Virtualizer Setup ----
+	const rowVirtualizer = useVirtualizer({
+		count: bookmarksList.length,
+		getScrollElement: () =>
+			typeof document !== "undefined"
+				? document.querySelector("#scrollableDiv")
+				: null,
+		estimateSize: () => (cardTypeCondition === viewValues.list ? 250 : 400),
+		overscan: 5,
+		lanes: cardTypeCondition === viewValues.moodboard ? 5 : 1,
+	});
+
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
-
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const preview = useRef(null);
 	const state = useListState(props);
-	const ref = useRef(null);
+
+	// hook up aria listbox
 	const { listBoxProps } = useListBox(
 		{
 			...props,
@@ -104,7 +122,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			autoFocus: false,
 		},
 		state,
-		ref,
+		ariaRef,
 	);
 
 	useEffect(() => {
@@ -116,7 +134,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const dragState = useDraggableCollectionState({
 		// Pass through events from props.
 		...props,
-
 		// Collection and selection manager come from list state.
 		collection: state.collection,
 		selectionManager: state.selectionManager,
@@ -135,14 +152,14 @@ const ListBox = (props: ListBoxDropTypes) => {
 			((keys) =>
 				[...keys].map((key) => {
 					const item = state.collection.getItem(key);
-
 					return {
 						"text/plain": !isNull(item) ? item.textValue : "",
 					};
 				})),
 	});
 
-	useDraggableCollection(props, dragState, ref);
+	// IMPORTANT: ariaRef is passed here so listeners attach properly
+	useDraggableCollection(props, dragState, ariaRef);
 
 	const cardGridClassNames = classNames({
 		"grid gap-6": true,
@@ -178,14 +195,11 @@ const ListBox = (props: ListBoxDropTypes) => {
 					return "1";
 				default:
 					return "1";
-					break;
 			}
 		}
 	};
 
 	const ulClassName = classNames("outline-none focus:outline-none", {
-		// [`columns-${moodboardColsLogic()} gap-6`]:
-		// 	cardTypeCondition === "moodboard",
 		block:
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
@@ -197,20 +211,18 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const isTrashPage = categorySlug === TRASH_URL;
 
-	const renderOption = () => {
-		const bookmarks = [...state.collection].map((item) => {
-			const bookmarkData = find(
-				bookmarksList,
-				(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
-			);
+	const renderOption = (virtualIndex: number) => {
+		const item = [...state.collection].find(
+			(it) =>
+				Number.parseInt(it.key as string, 10) ===
+				bookmarksList[virtualIndex]?.id,
+		);
 
-			return {
-				item,
-				bookmarkData,
-			};
-		});
+		if (!item) return null;
 
-		return bookmarks.map(({ item, bookmarkData }) => (
+		const bookmarkData = bookmarksList[virtualIndex];
+
+		return (
 			<Option
 				cardTypeCondition={cardTypeCondition}
 				dragState={dragState}
@@ -222,7 +234,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				type={bookmarkData?.type ?? ""}
 				url={bookmarkData?.url ?? ""}
 			/>
-		));
+		);
 	};
 
 	const categoryDataMapper =
@@ -234,7 +246,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	let finalCategoryData;
 
 	if (categorySlug !== UNCATEGORIZED_URL) {
-		// is user is in uncategorized page then the bottom bar should not have the uncategorized option
 		finalCategoryData = [
 			{ label: "Uncategorized", value: 0 },
 			...categoryDataMapper,
@@ -245,17 +256,53 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
-			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === viewValues?.moodboard ? (
-					<Masonry
-						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
-						className="my-masonry-grid"
-						columnClassName="my-masonry-grid_column"
-					>
-						{renderOption()}
-					</Masonry>
+			<ul
+				{...listBoxProps}
+				className={ulClassName}
+				ref={(element) => {
+					parentRef.current = element;
+					ariaRef.current = element;
+				}}
+				style={{ position: "relative" }}
+			>
+				{cardTypeCondition === viewValues.card ? (
+					cardTypeCondition === viewValues.moodboard ? (
+						<Masonry
+							breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
+							className="my-masonry-grid"
+							columnClassName="my-masonry-grid_column"
+						>
+							{bookmarksList.map((_, index) => renderOption(index))}
+						</Masonry>
+					) : (
+						<>{bookmarksList.map((_, index) => renderOption(index))}</>
+					)
 				) : (
-					renderOption()
+					<div
+						style={{
+							height: rowVirtualizer.getTotalSize(),
+							position: "relative",
+						}}
+					>
+						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+							<div
+								data-index={virtualRow.index}
+								key={virtualRow.key.toString()}
+								ref={rowVirtualizer.measureElement}
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									transform: `translateY(${virtualRow.start}px)`,
+									paddingTop:
+										cardTypeCondition === viewValues.timeline ? "24px" : "0px",
+								}}
+							>
+								{renderOption(virtualRow.index)}
+							</div>
+						))}
+					</div>
 				)}
 				<DragPreview ref={preview}>
 					{(items) => (
@@ -272,7 +319,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				</DragPreview>
 			</ul>
 			{state.selectionManager.selectedKeys.size > 0 && (
-				<div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
+				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
 					<div className="flex items-center gap-1">
 						<Checkbox
 							BookmarkHoverCheckbox
@@ -281,17 +328,10 @@ const ListBox = (props: ListBoxDropTypes) => {
 								0
 							}
 							label={`${Array.from(state.selectionManager.selectedKeys.keys())
-								?.length}
-            bookmarks`}
+								?.length} bookmarks`}
 							onChange={() => state.selectionManager.clearSelection()}
 							value="selected-bookmarks"
 						/>
-						{/* <Button
-							className="p-1 text-13 font-450 leading-[15px] text-gray-light-12"
-							onClick={() => state.selectionManager.selectAll()}
-						>
-							Select all
-						</Button> */}
 					</div>
 					<div className="flex items-center">
 						<div

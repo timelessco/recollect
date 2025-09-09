@@ -645,7 +645,6 @@ const Dashboard = () => {
 								>
 									<input {...getInputProps()} />
 									<div
-										className=""
 										id="scrollableDiv"
 										ref={infiniteScrollRef}
 										style={{ height: "100vh", overflow: "auto" }}
