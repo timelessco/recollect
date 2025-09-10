@@ -14,7 +14,6 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
-import Masonry from "react-masonry-css";
 import {
 	useDraggableCollectionState,
 	useListState,
@@ -104,7 +103,11 @@ const ListBox = (props: ListBoxDropTypes) => {
 		estimateSize: () => (cardTypeCondition === viewValues.list ? 250 : 400),
 		overscan: 5,
 		lanes: (() => {
-			if (cardTypeCondition !== viewValues.card) return 1;
+			if (
+				cardTypeCondition !== viewValues.card &&
+				cardTypeCondition !== viewValues.moodboard
+			)
+				return 1;
 			if (isMobile || isTablet) return 2;
 
 			switch (bookmarksColumns?.[0]) {
@@ -179,27 +182,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	// IMPORTANT: ariaRef is passed here so listeners attach properly
 	useDraggableCollection(props, dragState, ariaRef);
 
-	const moodboardColsLogic = () => {
-		if (isTablet || isMobile) {
-			return "2";
-		} else {
-			switch (bookmarksColumns && bookmarksColumns[0] / 10) {
-				case 1:
-					return "5";
-				case 2:
-					return "4";
-				case 3:
-					return "3";
-				case 4:
-					return "2";
-				case 5:
-					return "1";
-				default:
-					return "1";
-			}
-		}
-	};
-
 	const ulClassName = classNames("outline-none focus:outline-none", {
 		block: cardTypeCondition === viewValues.list,
 		"max-w-[600px] mx-auto space-y-4":
@@ -262,13 +244,34 @@ const ListBox = (props: ListBoxDropTypes) => {
 				}}
 			>
 				{cardTypeCondition === viewValues.moodboard ? (
-					<Masonry
-						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
-						className="my-masonry-grid"
-						columnClassName="my-masonry-grid_column"
+					<div
+						style={{
+							height: rowVirtualizer.getTotalSize(),
+							position: "relative",
+						}}
 					>
-						{bookmarksList.map((_, index) => renderOption(index))}
-					</Masonry>
+						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+							const lanes = rowVirtualizer.options.lanes || 1;
+							const columnWidth = 100 / lanes;
+							return (
+								<div
+									data-index={virtualRow.index}
+									key={virtualRow.key.toString()}
+									ref={rowVirtualizer.measureElement}
+									style={{
+										position: "absolute",
+										top: 0,
+										left: `${virtualRow.lane * columnWidth}%`,
+										width: `${columnWidth}%`,
+										transform: `translateY(${virtualRow.start}px)`,
+										padding: "0.5rem",
+									}}
+								>
+									{renderOption(virtualRow.index)}
+								</div>
+							);
+						})}
+					</div>
 				) : (
 					<div
 						style={{
@@ -277,7 +280,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 						}}
 					>
 						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
-							// Calculate column width and position for card view
 							const isCardView = cardTypeCondition === viewValues.card;
 							const lanes = rowVirtualizer.options.lanes || 1;
 							const columnIndex = isCardView ? virtualRow.index % lanes : 0;
