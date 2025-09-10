@@ -88,6 +88,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 		data: CategoriesData[];
 		error: PostgrestError;
 	};
+	const { isMobile, isTablet } = useIsMobileView();
 
 	// this ref is for scrolling + virtualization
 	const parentRef = useRef<HTMLUListElement | null>(null);
@@ -103,7 +104,25 @@ const ListBox = (props: ListBoxDropTypes) => {
 				: null,
 		estimateSize: () => (cardTypeCondition === viewValues.list ? 250 : 400),
 		overscan: 5,
-		lanes: cardTypeCondition === viewValues.moodboard ? 5 : 1,
+		lanes: (() => {
+			if (cardTypeCondition !== viewValues.card) return 1;
+			if (isMobile || isTablet) return 2;
+
+			switch (bookmarksColumns?.[0]) {
+				case 10:
+					return 5;
+				case 20:
+					return 4;
+				case 30:
+					return 3;
+				case 40:
+					return 2;
+				case 50:
+					return 1;
+				default:
+					return 1;
+			}
+		})(),
 	});
 
 	const router = useRouter();
@@ -161,23 +180,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	// IMPORTANT: ariaRef is passed here so listeners attach properly
 	useDraggableCollection(props, dragState, ariaRef);
 
-	const cardGridClassNames = classNames({
-		"grid gap-6": true,
-		"grid-cols-5":
-			typeof bookmarksColumns === "object" &&
-			!isNull(bookmarksColumns) &&
-			bookmarksColumns[0] === 10,
-		"grid-cols-4":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 20,
-		"grid-cols-3":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 30,
-		"grid-cols-2":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 40,
-		"grid-cols-1":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
-	});
-
-	const { isMobile, isTablet } = useIsMobileView();
 	const moodboardColsLogic = () => {
 		if (isTablet || isMobile) {
 			return "2";
@@ -200,11 +202,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	};
 
 	const ulClassName = classNames("outline-none focus:outline-none", {
-		block:
-			cardTypeCondition === viewValues.list ||
-			cardTypeCondition === viewValues.headlines,
-		[isMobile || isTablet ? "grid gap-6 grid-cols-2" : cardGridClassNames]:
-			cardTypeCondition === "card",
+		block: cardTypeCondition === viewValues.list,
 		"max-w-[600px] mx-auto space-y-4":
 			cardTypeCondition === viewValues.timeline,
 	});
@@ -263,20 +261,15 @@ const ListBox = (props: ListBoxDropTypes) => {
 					parentRef.current = element;
 					ariaRef.current = element;
 				}}
-				style={{ position: "relative" }}
 			>
-				{cardTypeCondition === viewValues.card ? (
-					cardTypeCondition === viewValues.moodboard ? (
-						<Masonry
-							breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
-							className="my-masonry-grid"
-							columnClassName="my-masonry-grid_column"
-						>
-							{bookmarksList.map((_, index) => renderOption(index))}
-						</Masonry>
-					) : (
-						<>{bookmarksList.map((_, index) => renderOption(index))}</>
-					)
+				{cardTypeCondition === viewValues.moodboard ? (
+					<Masonry
+						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
+						className="my-masonry-grid"
+						columnClassName="my-masonry-grid_column"
+					>
+						{bookmarksList.map((_, index) => renderOption(index))}
+					</Masonry>
 				) : (
 					<div
 						style={{
@@ -284,24 +277,38 @@ const ListBox = (props: ListBoxDropTypes) => {
 							position: "relative",
 						}}
 					>
-						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-							<div
-								data-index={virtualRow.index}
-								key={virtualRow.key.toString()}
-								ref={rowVirtualizer.measureElement}
-								style={{
-									position: "absolute",
-									top: 0,
-									left: 0,
-									width: "100%",
-									transform: `translateY(${virtualRow.start}px)`,
-									paddingTop:
-										cardTypeCondition === viewValues.timeline ? "24px" : "0px",
-								}}
-							>
-								{renderOption(virtualRow.index)}
-							</div>
-						))}
+						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+							// Calculate column width and position for card view
+							const isCardView = cardTypeCondition === viewValues.card;
+							const lanes = rowVirtualizer.options.lanes || 1;
+							const columnIndex = isCardView ? virtualRow.index % lanes : 0;
+							const columnWidth = isCardView ? 100 / lanes : 100;
+							const translateX = isCardView ? columnWidth * columnIndex : 0;
+							const itemWidth = isCardView ? `${columnWidth}%` : "100%";
+
+							return (
+								<div
+									data-index={virtualRow.index}
+									key={virtualRow.key.toString()}
+									ref={rowVirtualizer.measureElement}
+									style={{
+										position: "absolute",
+										top: 0,
+										left: `${translateX}%`,
+										width: itemWidth,
+										transform: `translateY(${virtualRow.start}px)`,
+										paddingTop:
+											cardTypeCondition === viewValues.timeline
+												? "24px"
+												: "0px",
+										paddingLeft: isCardView ? "0.75rem" : "0px",
+										paddingRight: isCardView ? "0.75rem" : "0px",
+									}}
+								>
+									{renderOption(virtualRow.index)}
+								</div>
+							);
+						})}
 					</div>
 				)}
 				<DragPreview ref={preview}>
