@@ -63,7 +63,6 @@ type ListBoxDropTypes = ListProps<object> & {
 	onItemDrop?: (event: any) => void;
 };
 
-// eslint-disable-next-line complexity
 const ListBox = (props: ListBoxDropTypes) => {
 	const {
 		getItems,
