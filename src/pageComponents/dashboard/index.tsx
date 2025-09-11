@@ -7,7 +7,6 @@ import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import omit from "lodash/omit";
 import Dropzone from "react-dropzone";
-import InfiniteScroll from "react-infinite-scroll-component";
 import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
@@ -33,7 +32,6 @@ import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/us
 import useAiSearch from "../../async/queryHooks/ai/search/useAiSearch";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
-import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
@@ -57,7 +55,6 @@ import {
 	type CategoriesData,
 	type ImgMetadataType,
 	type ProfilesTableTypes,
-	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
 	type UserTagsData,
 } from "../../types/apiTypes";
@@ -70,14 +67,11 @@ import { type FileType, type TagInputOption } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	ALL_BOOKMARKS_URL,
-	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
 	LOGIN_URL,
 	SETTINGS_URL,
 	TRASH_URL,
-	TWEETS_URL,
-	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
@@ -191,15 +185,8 @@ const Dashboard = () => {
 
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
-	const { allBookmarksData, fetchNextPage: fetchNextBookmarkPage } =
-		useFetchPaginatedBookmarks();
-
 	useAiSearch();
-	const {
-		flattenedSearchData,
-		fetchNextPage: fetchNextSearchPage,
-		hasNextPage: searchHasNextPage,
-	} = useSearchBookmarks();
+	const { flattenedSearchData } = useSearchBookmarks();
 
 	// Determine if we're currently searching
 	const isSearching = !isEmpty(searchText);
@@ -533,84 +520,6 @@ const Dashboard = () => {
 		}
 	};
 
-	// tells if the latest paginated data is the end for total bookmark data based on current category
-	const hasMoreLogic = (): boolean => {
-		// If we're searching, use the search pagination logic
-		if (isSearching) {
-			return searchHasNextPage ?? false;
-		}
-
-		const firstPaginatedData =
-			allBookmarksData?.pages?.length !== 0
-				? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
-				: null;
-
-		if (!isNull(firstPaginatedData)) {
-			if (typeof CATEGORY_ID === "number") {
-				const totalBookmarkCountInCategory = find(
-					bookmarksCountData?.data?.categoryCount,
-					(item) => item?.category_id === CATEGORY_ID,
-				);
-
-				return (
-					totalBookmarkCountInCategory?.count !==
-					flattendPaginationBookmarkData?.length
-				);
-			}
-
-			if (CATEGORY_ID === null) {
-				const count = bookmarksCountData?.data?.allBookmarks;
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			if (CATEGORY_ID === TRASH_URL) {
-				const count = bookmarksCountData?.data?.trash;
-
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			if (CATEGORY_ID === UNCATEGORIZED_URL) {
-				const count = bookmarksCountData?.data?.uncategorized;
-
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			if ((CATEGORY_ID as unknown) === IMAGES_URL) {
-				const count = bookmarksCountData?.data?.images;
-
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			if ((CATEGORY_ID as unknown) === VIDEOS_URL) {
-				const count = bookmarksCountData?.data?.videos;
-
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			if ((CATEGORY_ID as unknown) === DOCUMENTS_URL) {
-				const count = bookmarksCountData?.data?.documents;
-
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			if ((CATEGORY_ID as unknown) === TWEETS_URL) {
-				const count = bookmarksCountData?.data?.tweets;
-
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			if ((CATEGORY_ID as unknown) === LINKS_URL) {
-				const count = bookmarksCountData?.data?.links;
-
-				return count !== flattendPaginationBookmarkData?.length;
-			}
-
-			return true;
-		}
-
-		return true;
-	};
-
 	const onDrop = useCallback(
 		async (acceptedFiles: FileType[]) => {
 			await fileUpload(
@@ -644,185 +553,146 @@ const Dashboard = () => {
 									}
 								>
 									<input {...getInputProps()} />
-									<div
-										className=""
-										id="scrollableDiv"
-										ref={infiniteScrollRef}
-										style={{ height: "100vh", overflow: "auto" }}
-									>
-										<InfiniteScroll
-											dataLength={
-												isSearching
-													? flattenedSearchData?.length ?? 0
-													: flattendPaginationBookmarkData?.length ?? 0
-											}
-											endMessage={
-												<p className="pb-6 text-center">
-													Life happens, save it.
-												</p>
-											}
-											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}
-											loader={<div />}
-											next={
-												isSearching
-													? fetchNextSearchPage
-													: fetchNextBookmarkPage
-											}
-											scrollableTarget="scrollableDiv"
-											style={{ overflow: "unset" }}
-										>
-											<CardSection
-												deleteBookmarkId={deleteBookmarkId}
-												isBookmarkLoading={
-													addBookmarkMinDataOptimisticMutation?.isLoading
-												}
-												isOgImgLoading={
-													addBookmarkScreenshotMutation?.isLoading
-												}
-												listData={
-													isSearching
-														? flattenedSearchData
-														: flattendPaginationBookmarkData
-												}
-												onBulkBookmarkDelete={(
-													bookmarkIds,
-													isTrash,
-													deleteForever,
-												) => {
-													const currentBookmarksData = isSearching
-														? flattenedSearchData
-														: flattendPaginationBookmarkData;
+									<CardSection
+										deleteBookmarkId={deleteBookmarkId}
+										isBookmarkLoading={
+											addBookmarkMinDataOptimisticMutation?.isLoading
+										}
+										isOgImgLoading={addBookmarkScreenshotMutation?.isLoading}
+										listData={
+											isSearching
+												? flattenedSearchData
+												: flattendPaginationBookmarkData
+										}
+										onBulkBookmarkDelete={(
+											bookmarkIds,
+											isTrash,
+											deleteForever,
+										) => {
+											const currentBookmarksData = isSearching
+												? flattenedSearchData
+												: flattendPaginationBookmarkData;
 
-													if (!deleteForever) {
-														for (const item of bookmarkIds) {
-															const bookmarkId = Number.parseInt(
-																item.toString(),
-																10,
-															);
-															const delBookmarksData = find(
-																currentBookmarksData,
-																(delItem) => delItem?.id === bookmarkId,
-															) as SingleListData;
-
-															if (
-																delBookmarksData?.user_id?.id ===
-																session?.user?.id
-															) {
-																void mutationApiCall(
-																	moveBookmarkToTrashOptimisticMutation.mutateAsync(
-																		{
-																			data: delBookmarksData,
-																			isTrash,
-																		},
-																	),
-																).catch(() => {});
-															} else {
-																errorToast("Cannot delete other users uploads");
-															}
-														}
-													} else {
-														setDeleteBookmarkId(bookmarkIds);
-														toggleShowDeleteBookmarkWarningModal();
-													}
-												}}
-												onCategoryChange={async (value, cat_id) => {
-													const categoryId = cat_id;
-													const currentBookmarksData = isSearching
-														? flattenedSearchData
-														: flattendPaginationBookmarkData;
-
-													const currentCategory =
-														find(
-															allCategories?.data,
-															(item) => item?.id === categoryId,
-														) ??
-														find(
-															allCategories?.data,
-															(item) => item?.id === CATEGORY_ID,
-														);
-
-													const updateAccessCondition =
-														find(
-															currentCategory?.collabData,
-															(item) =>
-																item?.userEmail === session?.user?.email,
-														)?.edit_access === true ||
-														currentCategory?.user_id?.id === session?.user?.id;
-													for (const item of value) {
-														const bookmarkId = item.toString();
-
-														const bookmarkCreatedUserId = find(
-															currentBookmarksData,
-															(bookmarkItem) =>
-																Number.parseInt(bookmarkId, 10) ===
-																bookmarkItem?.id,
-														)?.user_id?.id;
-
-														if (bookmarkCreatedUserId === session?.user?.id) {
-															await addCategoryToBookmarkOptimisticMutation.mutateAsync(
-																{
-																	category_id: categoryId,
-																	bookmark_id: Number.parseInt(bookmarkId, 10),
-																	update_access:
-																		isNull(categoryId) || !categoryId
-																			? true
-																			: updateAccessCondition,
-																},
-															);
-														} else {
-															errorToast(
-																"You cannot move collaborators uploads",
-															);
-														}
-													}
-												}}
-												onDeleteClick={(item) => {
-													setDeleteBookmarkId(
-														item?.map((delItem) => delItem?.id),
+											if (!deleteForever) {
+												for (const item of bookmarkIds) {
+													const bookmarkId = Number.parseInt(
+														item.toString(),
+														10,
 													);
+													const delBookmarksData = find(
+														currentBookmarksData,
+														(delItem) => delItem?.id === bookmarkId,
+													) as SingleListData;
 
-													if (CATEGORY_ID === TRASH_URL) {
-														// delete bookmark if in trash
-														toggleShowDeleteBookmarkWarningModal();
-													} else if (!isEmpty(item) && item?.length > 0) {
-														// if not in trash then move bookmark to trash
+													if (
+														delBookmarksData?.user_id?.id === session?.user?.id
+													) {
 														void mutationApiCall(
 															moveBookmarkToTrashOptimisticMutation.mutateAsync(
 																{
-																	data: item[0],
-																	isTrash: true,
+																	data: delBookmarksData,
+																	isTrash,
 																},
 															),
 														).catch(() => {});
+													} else {
+														errorToast("Cannot delete other users uploads");
 													}
-												}}
-												onEditClick={(item) => {
-													setAddedUrlData(item);
-													setIsEdit(true);
-													setShowAddBookmarkModal(true);
-												}}
-												onMoveOutOfTrashClick={(data) => {
-													void mutationApiCall(
-														moveBookmarkToTrashOptimisticMutation.mutateAsync({
-															data,
-															isTrash: false,
-														}),
-													);
-												}}
-												showAvatar={
-													// only show for a collab category
-													Boolean(
-														CATEGORY_ID &&
-															!isNull(CATEGORY_ID) &&
-															(allCategories?.data?.find(
-																(item) => item?.id === CATEGORY_ID,
-															)?.collabData?.length ?? 0) > 1,
-													)
 												}
-												userId={session?.user?.id ?? ""}
-											/>
-										</InfiniteScroll>
-									</div>
+											} else {
+												setDeleteBookmarkId(bookmarkIds);
+												toggleShowDeleteBookmarkWarningModal();
+											}
+										}}
+										onCategoryChange={async (value, cat_id) => {
+											const categoryId = cat_id;
+											const currentBookmarksData = isSearching
+												? flattenedSearchData
+												: flattendPaginationBookmarkData;
+
+											const currentCategory =
+												find(
+													allCategories?.data,
+													(item) => item?.id === categoryId,
+												) ??
+												find(
+													allCategories?.data,
+													(item) => item?.id === CATEGORY_ID,
+												);
+
+											const updateAccessCondition =
+												find(
+													currentCategory?.collabData,
+													(item) => item?.userEmail === session?.user?.email,
+												)?.edit_access === true ||
+												currentCategory?.user_id?.id === session?.user?.id;
+											for (const item of value) {
+												const bookmarkId = item.toString();
+
+												const bookmarkCreatedUserId = find(
+													currentBookmarksData,
+													(bookmarkItem) =>
+														Number.parseInt(bookmarkId, 10) ===
+														bookmarkItem?.id,
+												)?.user_id?.id;
+
+												if (bookmarkCreatedUserId === session?.user?.id) {
+													await addCategoryToBookmarkOptimisticMutation.mutateAsync(
+														{
+															category_id: categoryId,
+															bookmark_id: Number.parseInt(bookmarkId, 10),
+															update_access:
+																isNull(categoryId) || !categoryId
+																	? true
+																	: updateAccessCondition,
+														},
+													);
+												} else {
+													errorToast("You cannot move collaborators uploads");
+												}
+											}
+										}}
+										onDeleteClick={(item) => {
+											setDeleteBookmarkId(item?.map((delItem) => delItem?.id));
+
+											if (CATEGORY_ID === TRASH_URL) {
+												// delete bookmark if in trash
+												toggleShowDeleteBookmarkWarningModal();
+											} else if (!isEmpty(item) && item?.length > 0) {
+												// if not in trash then move bookmark to trash
+												void mutationApiCall(
+													moveBookmarkToTrashOptimisticMutation.mutateAsync({
+														data: item[0],
+														isTrash: true,
+													}),
+												).catch(() => {});
+											}
+										}}
+										onEditClick={(item) => {
+											setAddedUrlData(item);
+											setIsEdit(true);
+											setShowAddBookmarkModal(true);
+										}}
+										onMoveOutOfTrashClick={(data) => {
+											void mutationApiCall(
+												moveBookmarkToTrashOptimisticMutation.mutateAsync({
+													data,
+													isTrash: false,
+												}),
+											);
+										}}
+										showAvatar={
+											// only show for a collab category
+											Boolean(
+												CATEGORY_ID &&
+													!isNull(CATEGORY_ID) &&
+													(allCategories?.data?.find(
+														(item) => item?.id === CATEGORY_ID,
+													)?.collabData?.length ?? 0) > 1,
+											)
+										}
+										userId={session?.user?.id ?? ""}
+									/>
 								</div>
 							)}
 						</Dropzone>
