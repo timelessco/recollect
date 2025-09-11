@@ -152,7 +152,6 @@ const LoaderImgPlaceholder = ({
 	cardTypeCondition: number[] | string[] | string | undefined;
 	// Bookmark ID
 	id: number;
-	// Whether the bookmark is currently loading
 }) => {
 	const { loadingBookmarkIds } = useLoadersStore();
 	const isLoading = loadingBookmarkIds.has(id);
@@ -176,7 +175,7 @@ const LoaderImgPlaceholder = ({
 				src={loaderGif}
 			/>
 			{!(cardTypeCondition === viewValues.list) && (
-				<p className="text-sm text-gray-600">
+				<p className="text-center text-sm text-gray-600">
 					{isLoading
 						? "Taking screenshot...."
 						: isNil(id)

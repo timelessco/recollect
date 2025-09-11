@@ -100,7 +100,54 @@ const ListBox = (props: ListBoxDropTypes) => {
 			typeof document !== "undefined"
 				? document.querySelector("#scrollableDiv")
 				: null,
-		estimateSize: () => (cardTypeCondition === viewValues.list ? 250 : 400),
+		estimateSize: () => {
+			// Default heights if not grid-based
+			if (cardTypeCondition === viewValues.list) return 250;
+
+			// Figure out lanes
+			let lanes = 1;
+			if (
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.moodboard
+			) {
+				if (isMobile || isTablet) {
+					lanes = 2;
+				} else {
+					switch (bookmarksColumns?.[0]) {
+						case 10:
+							lanes = 5;
+							break;
+						case 20:
+							lanes = 4;
+							break;
+						case 30:
+							lanes = 3;
+							break;
+						case 40:
+							lanes = 2;
+							break;
+						case 50:
+							lanes = 1;
+							break;
+						default:
+							lanes = 1;
+					}
+				}
+			}
+
+			// Get container width (fallback to 1200 if unknown)
+			const containerWidth =
+				typeof document !== "undefined"
+					? document.querySelector("#scrollableDiv")?.clientWidth ?? 1_200
+					: 1_200;
+
+			// Each card width
+			const cardWidth = containerWidth / lanes;
+
+			// Estimate height based on aspect ratio (e.g., 4:3)
+			const aspectRatio = 4 / 3;
+			return cardWidth * aspectRatio;
+		},
 		overscan: 5,
 		lanes: (() => {
 			if (
@@ -189,18 +236,12 @@ const ListBox = (props: ListBoxDropTypes) => {
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
-
 	const renderOption = (virtualIndex: number) => {
-		const item = [...state.collection].find(
-			(it) =>
-				Number.parseInt(it.key as string, 10) ===
-				bookmarksList[virtualIndex]?.id,
-		);
+		const item = [...state.collection][virtualIndex];
 
 		if (!item) return null;
 
 		const bookmarkData = bookmarksList[virtualIndex];
-
 		return (
 			<Option
 				cardTypeCondition={cardTypeCondition}
@@ -246,28 +287,31 @@ const ListBox = (props: ListBoxDropTypes) => {
 				{cardTypeCondition === viewValues.moodboard ? (
 					<div
 						style={{
-							height: rowVirtualizer.getTotalSize(),
+							height: rowVirtualizer?.getTotalSize(),
+							width: "100%",
 							position: "relative",
 						}}
 					>
-						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
-							const lanes = rowVirtualizer.options.lanes || 1;
+						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
+							const lanes = rowVirtualizer?.options?.lanes || 1;
 							const columnWidth = 100 / lanes;
 							return (
 								<div
-									data-index={virtualRow.index}
-									key={virtualRow.key.toString()}
-									ref={rowVirtualizer.measureElement}
+									data-index={virtualRow?.index}
+									key={virtualRow?.key?.toString()}
+									ref={rowVirtualizer?.measureElement}
 									style={{
 										position: "absolute",
 										top: 0,
-										left: `${virtualRow.lane * columnWidth}%`,
+										left: `${virtualRow?.lane * columnWidth}%`,
 										width: `${columnWidth}%`,
-										transform: `translateY(${virtualRow.start}px)`,
-										padding: "0.5rem",
+										transform: `translateY(${virtualRow?.start}px)`,
+										paddingLeft: "0.75rem",
+										paddingRight: "0.75rem",
+										paddingBottom: "1.5rem",
 									}}
 								>
-									{renderOption(virtualRow.index)}
+									{renderOption(virtualRow?.index)}
 								</div>
 							);
 						})}
@@ -275,30 +319,30 @@ const ListBox = (props: ListBoxDropTypes) => {
 				) : (
 					<div
 						style={{
-							height: rowVirtualizer.getTotalSize(),
+							height: rowVirtualizer?.getTotalSize(),
 							position: "relative",
 						}}
 					>
-						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
 							const isCardView = cardTypeCondition === viewValues.card;
-							const lanes = rowVirtualizer.options.lanes || 1;
-							const columnIndex = isCardView ? virtualRow.index % lanes : 0;
+							const lanes = rowVirtualizer?.options?.lanes || 1;
+							const columnIndex = isCardView ? virtualRow?.index % lanes : 0;
 							const columnWidth = isCardView ? 100 / lanes : 100;
 							const translateX = isCardView ? columnWidth * columnIndex : 0;
 							const itemWidth = isCardView ? `${columnWidth}%` : "100%";
 
 							return (
 								<div
-									data-index={virtualRow.index}
-									key={virtualRow.key.toString()}
-									ref={rowVirtualizer.measureElement}
+									data-index={virtualRow?.index}
+									key={virtualRow?.key?.toString()}
+									ref={rowVirtualizer?.measureElement}
 									style={{
 										position: "absolute",
 										top: 0,
 										left: `${translateX}%`,
 										width: itemWidth,
-										transform: `translateY(${virtualRow.start}px)`,
-										paddingTop:
+										transform: `translateY(${virtualRow?.start}px)`,
+										paddingBottom:
 											cardTypeCondition === viewValues.timeline
 												? "24px"
 												: "0px",
@@ -306,7 +350,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 										paddingRight: isCardView ? "0.75rem" : "0px",
 									}}
 								>
-									{renderOption(virtualRow.index)}
+									{renderOption(virtualRow?.index)}
 								</div>
 							);
 						})}

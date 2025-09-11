@@ -112,7 +112,7 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-
+	const { loadingBookmarkIds } = useLoadersStore();
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -515,6 +515,7 @@ const CardSection = ({
 				cardTypeCondition === viewValues.timeline,
 			"top-[9px] left-[21px]": cardTypeCondition === viewValues.list,
 		});
+		const isLoading = loadingBookmarkIds.has(id);
 
 		return (
 			// disabling as we dont need tab focus here
@@ -523,8 +524,10 @@ const CardSection = ({
 				<motion.figure
 					className={figureClassName}
 					layout={
-						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
-						// isLoading
+						isBookmarkLoading ||
+						isAllBookmarksDataFetching ||
+						isOgImgLoading ||
+						isLoading
 					}
 				>
 					{isVideo && (
@@ -839,7 +842,7 @@ const CardSection = ({
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		"py-2 pl-[28px] pr-[19px]":
+		"py-2 pl-4 pr-[7px]":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
 	});
