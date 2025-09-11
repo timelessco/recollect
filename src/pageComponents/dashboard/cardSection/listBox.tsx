@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unstable-nested-components */
 import { type onBulkBookmarkDeleteType } from ".";
 import { useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
@@ -13,19 +14,22 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
-import Masonry from "react-masonry-css";
 import {
 	useDraggableCollectionState,
 	useListState,
+	type DraggableCollectionState,
 	type ListProps,
+	type ListState,
 } from "react-stately";
+import { Virtuoso, VirtuosoGrid } from "react-virtuoso";
 
+import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
+import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import Checkbox from "../../../components/checkbox";
-import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
 	useMiscellaneousStore,
@@ -144,86 +148,18 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	useDraggableCollection(props, dragState, ref);
 
-	const cardGridClassNames = classNames({
-		"grid gap-6": true,
-		"grid-cols-5":
-			typeof bookmarksColumns === "object" &&
-			!isNull(bookmarksColumns) &&
-			bookmarksColumns[0] === 10,
-		"grid-cols-4":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 20,
-		"grid-cols-3":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 30,
-		"grid-cols-2":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 40,
-		"grid-cols-1":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
-	});
-
-	const { isMobile, isTablet } = useIsMobileView();
-	const moodboardColsLogic = () => {
-		if (isTablet || isMobile) {
-			return "2";
-		} else {
-			switch (bookmarksColumns && bookmarksColumns[0] / 10) {
-				case 1:
-					return "5";
-				case 2:
-					return "4";
-				case 3:
-					return "3";
-				case 4:
-					return "2";
-				case 5:
-					return "1";
-				default:
-					return "1";
-					break;
-			}
-		}
-	};
-
 	const ulClassName = classNames("outline-none focus:outline-none", {
 		// [`columns-${moodboardColsLogic()} gap-6`]:
 		// 	cardTypeCondition === "moodboard",
 		block:
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		[isMobile || isTablet ? "grid gap-6 grid-cols-2" : cardGridClassNames]:
-			cardTypeCondition === "card",
+
 		"max-w-[600px] mx-auto space-y-4":
 			cardTypeCondition === viewValues.timeline,
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
-
-	const renderOption = () => {
-		const bookmarks = [...state.collection].map((item) => {
-			const bookmarkData = find(
-				bookmarksList,
-				(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
-			);
-
-			return {
-				item,
-				bookmarkData,
-			};
-		});
-
-		return bookmarks.map(({ item, bookmarkData }) => (
-			<Option
-				cardTypeCondition={cardTypeCondition}
-				dragState={dragState}
-				isPublicPage={isPublicPage}
-				isTrashPage={isTrashPage}
-				item={item}
-				key={item.key}
-				state={state}
-				type={bookmarkData?.type ?? ""}
-				url={bookmarkData?.url ?? ""}
-			/>
-		));
-	};
 
 	const categoryDataMapper =
 		categoryData?.data?.map((item) => ({
@@ -246,17 +182,16 @@ const ListBox = (props: ListBoxDropTypes) => {
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === viewValues?.moodboard ? (
-					<Masonry
-						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
-						className="my-masonry-grid"
-						columnClassName="my-masonry-grid_column"
-					>
-						{renderOption()}
-					</Masonry>
-				) : (
-					renderOption()
-				)}
+				<RenderOption
+					bookmarksColumns={bookmarksColumns}
+					bookmarksList={bookmarksList}
+					cardTypeCondition={cardTypeCondition}
+					dragState={dragState}
+					isCard={cardTypeCondition === viewValues.card}
+					isPublicPage={isPublicPage}
+					isTrashPage={isTrashPage}
+					state={state}
+				/>
 				<DragPreview ref={preview}>
 					{(items) => (
 						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
@@ -374,3 +309,106 @@ const ListBox = (props: ListBoxDropTypes) => {
 };
 
 export default ListBox;
+
+const RenderOption = ({
+	state,
+	bookmarksList,
+	bookmarksColumns,
+	cardTypeCondition,
+	dragState,
+	isPublicPage,
+	isTrashPage,
+	isCard,
+}: {
+	bookmarksColumns: number[];
+	bookmarksList: SingleListData[];
+	cardTypeCondition: unknown;
+	dragState: DraggableCollectionState;
+	isCard: boolean;
+	isPublicPage?: boolean;
+	isTrashPage?: boolean;
+	state: ListState<object>;
+}) => {
+	const bookmarks = [...state.collection].map((item) => {
+		const bookmarkData = find(
+			bookmarksList,
+			(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
+		);
+
+		return {
+			item,
+			bookmarkData,
+		};
+	});
+
+	const searchText = useMiscellaneousStore((states) => states.searchText);
+	const { fetchNextPage: fetchNextSearchPage } = useSearchBookmarks();
+	const { fetchNextPage: fetchNextBookmarkPage } = useFetchPaginatedBookmarks();
+
+	// Determine if we're currently searching
+	const isSearching = !isEmpty(searchText);
+
+	if (isCard) {
+		return (
+			<VirtuosoGrid
+				data={bookmarks}
+				endReached={() => {
+					if (isSearching) {
+						void fetchNextSearchPage();
+					} else {
+						void fetchNextBookmarkPage();
+					}
+				}}
+				itemContent={(_, bookmark) => (
+					<Option
+						cardTypeCondition={cardTypeCondition}
+						dragState={dragState}
+						isPublicPage={isPublicPage}
+						isTrashPage={isTrashPage ?? false}
+						item={bookmark.item}
+						state={state}
+						type={bookmark.bookmarkData?.type ?? ""}
+						url={bookmark.bookmarkData?.url ?? ""}
+					/>
+				)}
+				listClassName={classNames("grid gap-6 auto-rows-min", {
+					"grid-cols-5": bookmarksColumns[0] === 10,
+					"grid-cols-4": bookmarksColumns[0] === 20,
+					"grid-cols-3": bookmarksColumns[0] === 30,
+					"grid-cols-2": bookmarksColumns[0] === 40,
+					"grid-cols-1": bookmarksColumns[0] === 50,
+				})}
+				overscan={200}
+				style={{ height: "100vh", overflow: "auto" }}
+				totalCount={bookmarks.length}
+			/>
+		);
+	}
+
+	return (
+		<Virtuoso
+			data={bookmarks}
+			endReached={() => {
+				if (isSearching) {
+					void fetchNextSearchPage();
+				} else {
+					void fetchNextBookmarkPage();
+				}
+			}}
+			itemContent={(_, bookmark) => (
+				<Option
+					cardTypeCondition={cardTypeCondition}
+					dragState={dragState}
+					isPublicPage={isPublicPage}
+					isTrashPage={isTrashPage ?? false}
+					item={bookmark.item}
+					state={state}
+					type={bookmark.bookmarkData?.type ?? ""}
+					url={bookmark.bookmarkData?.url ?? ""}
+				/>
+			)}
+			overscan={200}
+			style={{ height: "100vh", overflow: "auto" }}
+		/>
+	);
+};
