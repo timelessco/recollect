@@ -647,7 +647,11 @@ const Dashboard = () => {
 									<div
 										id="scrollableDiv"
 										ref={infiniteScrollRef}
-										style={{ height: "100vh", overflow: "auto" }}
+										style={{
+											height: "100vh",
+											overflowY: "auto",
+											overflowX: "hidden",
+										}}
 									>
 										<InfiniteScroll
 											dataLength={
