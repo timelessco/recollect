@@ -34,8 +34,6 @@ type ImgLogicProps = {
 	id: number;
 	// Source URL of the image
 	img: string;
-	// Whether the bookmark data is currently loading
-	isBookmarkLoading: boolean;
 	// Whether the component is rendered on a public page
 	isPublicPage: boolean;
 	// Sizes attribute for responsive images
@@ -47,7 +45,6 @@ type ImgLogicProps = {
  */
 const ImgLogicComponent = ({
 	id,
-	isBookmarkLoading,
 	hasCoverImg,
 	img,
 	blurUrl,
@@ -81,24 +78,16 @@ const ImgLogicComponent = ({
 	// Only render if the bookmark has a cover image
 	if (hasCoverImg) {
 		// Show loading placeholder if data is being fetched
-		if ((isBookmarkLoading || isLoading) && isNil(id)) {
+		if (isLoading && isNil(id)) {
 			return (
-				<LoaderImgPlaceholder
-					cardTypeCondition={cardTypeCondition}
-					id={id}
-					isBookmarkLoading={isBookmarkLoading}
-				/>
+				<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 			);
 		}
 
 		// Show error placeholder if image failed to load
 		if (errorImg === img) {
 			return (
-				<LoaderImgPlaceholder
-					cardTypeCondition={cardTypeCondition}
-					id={id}
-					isBookmarkLoading={isBookmarkLoading}
-				/>
+				<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 			);
 		}
 
@@ -128,11 +117,7 @@ const ImgLogicComponent = ({
 						width={_width ?? 200}
 					/>
 				) : (
-					<LoaderImgPlaceholder
-						cardTypeCondition={cardTypeCondition}
-						id={id}
-						isBookmarkLoading={isBookmarkLoading}
-					/>
+					<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 				)}
 			</>
 		);
@@ -147,7 +132,6 @@ export const ImgLogic = memo(
 	ImgLogicComponent,
 	(previousProps, nextProps) =>
 		previousProps.id === nextProps.id &&
-		previousProps.isBookmarkLoading === nextProps.isBookmarkLoading &&
 		previousProps.hasCoverImg === nextProps.hasCoverImg &&
 		previousProps.img === nextProps.img &&
 		previousProps.blurUrl === nextProps.blurUrl &&
@@ -162,15 +146,12 @@ export const ImgLogic = memo(
  */
 const LoaderImgPlaceholder = ({
 	id,
-	isBookmarkLoading,
 	cardTypeCondition,
 }: {
 	// Type of the bookmark
 	cardTypeCondition: number[] | string[] | string | undefined;
 	// Bookmark ID
 	id: number;
-	// Whether the bookmark is currently loading
-	isBookmarkLoading: boolean;
 }) => {
 	const { loadingBookmarkIds } = useLoadersStore();
 	const isLoading = loadingBookmarkIds.has(id);
@@ -192,10 +173,10 @@ const LoaderImgPlaceholder = ({
 				src={loaderGif}
 			/>
 			{!(cardTypeCondition === viewValues.list) && (
-				<p className="text-sm text-gray-600">
+				<p className="text-center text-sm text-gray-600">
 					{isLoading
 						? "Taking screenshot...."
-						: isBookmarkLoading || isNil(id)
+						: isNil(id)
 						? "Fetching data..."
 						: "Cannot fetch image for this bookmark"}
 				</p>
