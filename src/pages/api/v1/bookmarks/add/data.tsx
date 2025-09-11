@@ -168,11 +168,46 @@ const callScreenshotApi = async (
 };
 
 /**
- * This is the main add bookmark api, we call all the apis in a queue
- *
- * @param {NextApiRequest<RequestType>} request
- * @param {NextApiResponse<ResponseType>} response
- * @returns {ResponseType}
+ * @swagger
+ * /api/v1/bookmarks/add/data:
+ *   post:
+ *     summary: Add a new bookmark
+ *     description: Main endpoint to add a new bookmark. Orchestrates min-data, screenshot and remaining data processing.
+ *     tags:
+ *       - Bookmarks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - url
+ *               - category_id
+ *               - update_access
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 description: URL to bookmark
+ *               category_id:
+ *                 type: number
+ *                 description: Category ID to add bookmark to
+ *               update_access:
+ *                 type: boolean
+ *                 description: Whether user has update access
+ *     responses:
+ *       200:
+ *         description: Bookmark added successfully
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - User does not have update access
+ *       409:
+ *         description: Bookmark already exists in category
+ *       500:
+ *         description: Internal server error
  */
 export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,

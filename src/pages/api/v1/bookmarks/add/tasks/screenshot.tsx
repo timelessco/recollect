@@ -28,17 +28,38 @@ type Data = {
 };
 
 /**
- * API handler for capturing and storing screenshots of bookmarked URLs
- *
- * This endpoint:
- * 1. Validates the request body (bookmark ID and URL)
- * 2. Captures a screenshot of the URL
- * 3. Uploads the screenshot to R2 storage
- * 4. Updates the bookmark with screenshot data and metadata
- * 5. Triggers additional data processing asynchronously
- *
- * @param request - Next.js API request object containing bookmark ID and URL
- * @param response - Next.js API response object
+ * @swagger
+ * /api/v1/bookmarks/add/tasks/screenshot:
+ *   post:
+ *     summary: Add bookmark screenshot
+ *     description: Captures and stores screenshot of the bookmarked URL
+ *     tags:
+ *       - Bookmarks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - url
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Bookmark ID
+ *               url:
+ *                 type: string
+ *                 description: URL to capture screenshot of
+ *     responses:
+ *       200:
+ *         description: Screenshot added successfully
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
  */
 export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,

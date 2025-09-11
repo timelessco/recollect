@@ -46,7 +46,46 @@ const sendErrorResponse = (
 };
 
 /**
- * This api gets the min scrapped data for a bookmark, checks for duplicate bookmarks and then adds it to the DB
+ * @swagger
+ * /api/v1/bookmarks/add/tasks/min-data:
+ *   post:
+ *     summary: Add minimum bookmark data
+ *     description: Adds initial bookmark data with basic metadata and checks for duplicates
+ *     tags:
+ *       - Bookmarks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - url
+ *               - category_id
+ *               - update_access
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 description: URL to bookmark
+ *               category_id:
+ *                 type: number
+ *                 description: Category ID to add bookmark to
+ *               update_access:
+ *                 type: boolean
+ *                 description: Whether user has update access
+ *     responses:
+ *       200:
+ *         description: Minimum bookmark data added successfully
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - User does not have update access
+ *       409:
+ *         description: Bookmark already exists in category
+ *       500:
+ *         description: Internal server error
  */
 export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,

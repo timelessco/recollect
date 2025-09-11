@@ -29,16 +29,44 @@ type Data = {
 };
 
 /**
- * API handler for processing and storing remaining bookmark data
- *
- * This endpoint:
- * 1. Validates the request body
- * 2. Processes and uploads images if present
- * 3. Generates metadata (blurhash, OCR, captions)
- * 4. Updates the bookmark with all remaining data
- *
- * @param request - Next.js API request object
- * @param response - Next.js API response object
+ * @swagger
+ * /api/v1/bookmarks/add/tasks/remaining:
+ *   post:
+ *     summary: Add remaining bookmark data
+ *     description: Processes and stores remaining bookmark data including images and metadata
+ *     tags:
+ *       - Bookmarks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - url
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Bookmark ID
+ *               url:
+ *                 type: string
+ *                 description: Bookmark URL
+ *               favIcon:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Favicon URL
+ *     responses:
+ *       200:
+ *         description: Remaining data added successfully
+ *       400:
+ *         description: Invalid request body
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Bookmark not found
+ *       500:
+ *         description: Internal server error
  */
 export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
