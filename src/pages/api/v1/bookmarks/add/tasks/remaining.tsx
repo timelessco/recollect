@@ -1,0 +1,170 @@
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+
+import { type NextApiResponse } from "next/dist/shared/lib/utils";
+import * as Sentry from "@sentry/nextjs";
+import { type PostgrestError } from "@supabase/supabase-js";
+import { type VerifyErrors } from "jsonwebtoken";
+
+import {
+	type AddBookmarkRemainingDataPayloadTypes,
+	type NextApiRequest,
+	type SingleListData,
+} from "../../../../../../types/apiTypes";
+import {
+	getFavIconUrl,
+	processBookmarkImages,
+	remainingBookmarkSchema,
+	updateBookmarkWithRemainingData,
+} from "../../../../../../utils/api/bookmark/remaining";
+import { MAIN_TABLE_NAME } from "../../../../../../utils/constants";
+import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
+
+/**
+ * Response data type for the remaining data API
+ */
+type Data = {
+	data: SingleListData[] | null;
+	error: PostgrestError | VerifyErrors | string | null;
+	message: string | null;
+};
+
+/**
+ * API handler for processing and storing remaining bookmark data
+ *
+ * This endpoint:
+ * 1. Validates the request body
+ * 2. Processes and uploads images if present
+ * 3. Generates metadata (blurhash, OCR, captions)
+ * 4. Updates the bookmark with all remaining data
+ *
+ * @param request - Next.js API request object
+ * @param response - Next.js API response object
+ */
+export default async function handler(
+	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
+	response: NextApiResponse<Data>,
+) {
+	try {
+		// Validate request body
+		const validationResult = remainingBookmarkSchema.safeParse(request.body);
+		if (!validationResult.success) {
+			response.status(400).json({
+				data: null,
+				error: validationResult.error.errors
+					.map((validationError) => validationError.message)
+					.join(", "),
+				message: null,
+			});
+			return;
+		}
+
+		const { url, favIcon, id } = validationResult.data;
+
+		// Initialize Supabase client and get user data
+		const supabase = apiSupabaseClient(request, response);
+		const userId = (await supabase?.auth?.getUser())?.data?.user?.id;
+
+		if (!userId) {
+			response.status(401).json({
+				data: null,
+				error: "User not authenticated",
+				message: null,
+			});
+			return;
+		}
+
+		// Fetch current bookmark data
+		const { data: currentData, error: currentDataError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("ogImage, meta_data, description")
+			.match({ id })
+			.single();
+
+		if (currentDataError) {
+			Sentry.captureException("Failed to fetch current bookmark data", {
+				extra: { error: currentDataError },
+			});
+			response.status(500).json({
+				data: null,
+				error: "Failed to fetch current bookmark data",
+				message: null,
+			});
+			return;
+		}
+
+		if (!currentData) {
+			response.status(404).json({
+				data: null,
+				error: "Bookmark not found",
+				message: null,
+			});
+			return;
+		}
+
+		// Process images and generate metadata
+		const {
+			uploadedImageThatIsAUrl,
+			uploadedCoverImageUrl,
+			ogImageMetaDataGeneration,
+			imageUrlForMetaDataGeneration,
+			metadata,
+		} = await processBookmarkImages(url, userId, currentData);
+
+		// Get favicon
+		const favIconUrl = await getFavIconUrl(url, favIcon);
+
+		// Prepare metadata for update
+		const existingMetaData = currentData?.meta_data ?? {};
+		const meta_data = {
+			img_caption: metadata?.imageCaption,
+			width: metadata?.imgData?.width,
+			height: metadata?.imgData?.height,
+			ogImgBlurUrl: metadata?.imgData?.encoded,
+			favIcon: favIconUrl,
+			ocr: metadata?.imageOcrValue,
+			screenshot: existingMetaData?.screenshot ?? null,
+			coverImage: uploadedCoverImageUrl,
+			twitter_avatar_url: null,
+			isOgImagePreferred: existingMetaData?.isOgImagePreferred,
+			mediaType: existingMetaData?.mediaType,
+			iframeAllowed: existingMetaData?.iframeAllowed,
+			isPageScreenshot: existingMetaData?.isPageScreenshot,
+		};
+
+		// Update bookmark with remaining data
+		const { data, error } = await updateBookmarkWithRemainingData(supabase, {
+			id,
+			metaData: meta_data,
+			description: currentData?.description ?? metadata?.imageCaption ?? null,
+			ogImage: currentData?.meta_data?.isOgImagePreferred
+				? ogImageMetaDataGeneration
+				: imageUrlForMetaDataGeneration,
+		});
+
+		if (error) {
+			response.status(500).json({
+				data: null,
+				error,
+				message: null,
+			});
+			return;
+		}
+
+		response.status(200).json({
+			data,
+			error: null,
+			message: null,
+		});
+		return;
+	} catch (error) {
+		console.error("Unexpected error in remaining data handler:", error);
+		Sentry.captureException("Unexpected error in remaining data handler", {
+			extra: { error },
+		});
+		response.status(500).json({
+			data: null,
+			error: "An unexpected error occurred",
+			message: null,
+		});
+	}
+}

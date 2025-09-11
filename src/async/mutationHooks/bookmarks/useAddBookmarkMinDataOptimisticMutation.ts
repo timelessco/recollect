@@ -117,75 +117,74 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
 			if (!response?.data?.data) {
 				// something went wrong when adding min data so we return
-				return;
 			}
 
-			const data = response?.data?.data[0];
-			const url = data?.url;
+			// const data = response?.data?.data[0];
+			// const url = data?.url;
 
-			// this is to check if url is not a website like test.pdf
-			// if this is the case then we do not call the screenshot api
-			const isUrlOfMimeType = await checkIfUrlAnImage(url);
-			// **************
-			// here we are checking if the url is an image, we don't check for mime type,
-			// if we check if is an mime type then screenshot api cannot be called
-			// ex: if it is an .mp4(url) the mime type will be video/mp4 so screenshot api cannot be called, we will not have preview image
-			//  **************
+			// // this is to check if url is not a website like test.pdf
+			// // if this is the case then we do not call the screenshot api
+			// const isUrlOfMimeType = await checkIfUrlAnImage(url);
+			// // **************
+			// // here we are checking if the url is an image, we don't check for mime type,
+			// // if we check if is an mime type then screenshot api cannot be called
+			// // ex: if it is an .mp4(url) the mime type will be video/mp4 so screenshot api cannot be called, we will not have preview image
+			// //  **************
 
-			// only take screenshot if url is not an image like https://test.com/test.jpg
-			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
-			if (!isUrlOfMimeType) {
-				const mediaType = await getMediaType(url);
-				if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
-					try {
-						// adding id into loading state for the case of pdf
-						addLoadingBookmarkId(data?.id);
-						successToast("generating thumbnail");
-						await handlePdfThumbnailAndUpload({
-							fileUrl: data?.url,
-							fileId: data?.id,
-							sessionUserId: session?.user?.id,
-						});
-					} catch (error) {
-						console.warn("First attempt failed, retrying...", error);
-						try {
-							errorToast("retry thumbnail generation");
-							await handlePdfThumbnailAndUpload({
-								fileUrl: data?.url,
-								fileId: data?.id,
-								sessionUserId: session?.user?.id,
-							});
-						} catch (retryError) {
-							console.error(
-								"PDF thumbnail upload failed after retry:",
-								retryError,
-							);
-							errorToast("thumbnail generation failed");
-						}
-					} finally {
-						// invalidating and removing id from loading state for the case of pdf
-						void queryClient.invalidateQueries([
-							BOOKMARKS_KEY,
-							session?.user?.id,
-							CATEGORY_ID,
-							sortBy,
-						]);
-						removeLoadingBookmarkId(data?.id);
-					}
+			// // only take screenshot if url is not an image like https://test.com/test.jpg
+			// // then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
+			// if (!isUrlOfMimeType) {
+			// 	const mediaType = await getMediaType(url);
+			// 	if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
+			// 		try {
+			// 			// adding id into loading state for the case of pdf
+			// 			addLoadingBookmarkId(data?.id);
+			// 			successToast("generating thumbnail");
+			// 			await handlePdfThumbnailAndUpload({
+			// 				fileUrl: data?.url,
+			// 				fileId: data?.id,
+			// 				sessionUserId: session?.user?.id,
+			// 			});
+			// 		} catch (error) {
+			// 			console.warn("First attempt failed, retrying...", error);
+			// 			try {
+			// 				errorToast("retry thumbnail generation");
+			// 				await handlePdfThumbnailAndUpload({
+			// 					fileUrl: data?.url,
+			// 					fileId: data?.id,
+			// 					sessionUserId: session?.user?.id,
+			// 				});
+			// 			} catch (retryError) {
+			// 				console.error(
+			// 					"PDF thumbnail upload failed after retry:",
+			// 					retryError,
+			// 				);
+			// 				errorToast("thumbnail generation failed");
+			// 			}
+			// 		} finally {
+			// 			// invalidating and removing id from loading state for the case of pdf
+			// 			void queryClient.invalidateQueries([
+			// 				BOOKMARKS_KEY,
+			// 				session?.user?.id,
+			// 				CATEGORY_ID,
+			// 				sortBy,
+			// 			]);
+			// 			removeLoadingBookmarkId(data?.id);
+			// 		}
 
-					return;
-				}
+			// 		return;
+			// 	}
 
-				if (data?.id) {
-					addLoadingBookmarkId(data?.id);
-				}
+			// 	if (data?.id) {
+			// 		addLoadingBookmarkId(data?.id);
+			// 	}
 
-				// update to zustand here
-				addBookmarkScreenshotMutation.mutate({
-					url: data?.url,
-					id: data?.id,
-				});
-			}
+			// 	// update to zustand here
+			// 	addBookmarkScreenshotMutation.mutate({
+			// 		url: data?.url,
+			// 		id: data?.id,
+			// 	});
+			// }
 		},
 		onSuccess: (apiResponse) => {
 			const apiResponseTyped = apiResponse as unknown as { status: number };

@@ -217,7 +217,8 @@ export const addBookmarkMinData = async ({
 		}
 
 		const apiResponse = await axios.post(
-			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
+			// `${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
+			`${NEXT_API_URL}v1/bookmarks/add/data`,
 			{
 				url: finalUrl,
 				category_id: isNull(category_id) ? 0 : category_id,
