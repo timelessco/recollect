@@ -4,6 +4,7 @@ import { useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { VirtuosoMasonry } from "@virtuoso.dev/masonry";
 import classNames from "classnames";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
@@ -188,6 +189,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 					cardTypeCondition={cardTypeCondition}
 					dragState={dragState}
 					isCard={cardTypeCondition === viewValues.card}
+					isMasonry={cardTypeCondition === viewValues.moodboard}
 					isPublicPage={isPublicPage}
 					isTrashPage={isTrashPage}
 					state={state}
@@ -319,12 +321,14 @@ const RenderOption = ({
 	isPublicPage,
 	isTrashPage,
 	isCard,
+	isMasonry,
 }: {
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];
 	cardTypeCondition: unknown;
 	dragState: DraggableCollectionState;
 	isCard: boolean;
+	isMasonry?: boolean;
 	isPublicPage?: boolean;
 	isTrashPage?: boolean;
 	state: ListState<object>;
@@ -348,6 +352,33 @@ const RenderOption = ({
 	// Determine if we're currently searching
 	const isSearching = !isEmpty(searchText);
 
+	if (isMasonry) {
+		return (
+			<VirtuosoMasonry
+				ItemContent={(index) => {
+					const bookmark = bookmarks[index.index];
+					return (
+						<Option
+							cardTypeCondition={cardTypeCondition}
+							dragState={dragState}
+							isPublicPage={isPublicPage}
+							isTrashPage={isTrashPage ?? false}
+							item={bookmark.item}
+							state={state}
+							type={bookmark.bookmarkData?.type ?? ""}
+							url={bookmark.bookmarkData?.url ?? ""}
+						/>
+					);
+				}}
+				columnCount={3}
+				data={bookmarks}
+				initialItemCount={10}
+				style={{ height: "100vh", overflow: "auto" }}
+			/>
+		);
+	}
+
+	// ✅ Grid view
 	if (isCard) {
 		return (
 			<VirtuosoGrid
@@ -385,6 +416,7 @@ const RenderOption = ({
 		);
 	}
 
+	// ✅ List view
 	return (
 		<Virtuoso
 			data={bookmarks}
