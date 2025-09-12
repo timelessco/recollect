@@ -50,7 +50,7 @@ const Option = ({
 }) => {
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
-	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
+	const { optionProps, isSelected } = useOption({ key: item?.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen } =
@@ -58,7 +58,7 @@ const Option = ({
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
-			key: item.key,
+			key: item?.key,
 		},
 		dragState,
 	);
@@ -67,7 +67,7 @@ const Option = ({
 	const liClassName = classNames(
 		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
 		{
-			"mb-6": cardTypeCondition === viewValues.moodboard,
+			"mb-6 p-3": cardTypeCondition === viewValues.moodboard,
 			"mb-[18px]": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
 			// 	cardTypeCondition === viewValues.moodboard ||
@@ -143,7 +143,7 @@ const Option = ({
 					);
 				}}
 			/>
-			{item.rendered}
+			{item?.rendered}
 			{!isPublicPage && (
 				<Checkbox
 					checked={isSelected}
