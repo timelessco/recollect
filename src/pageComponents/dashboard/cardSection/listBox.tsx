@@ -370,15 +370,24 @@ const RenderOption = ({
 						/>
 					);
 				}}
-				columnCount={3}
+				columnCount={
+					bookmarksColumns[0] === 10
+						? 5
+						: bookmarksColumns[0] === 20
+						? 4
+						: bookmarksColumns[0] === 30
+						? 3
+						: bookmarksColumns[0] === 40
+						? 2
+						: 1
+				}
 				data={bookmarks}
-				initialItemCount={10}
+				initialItemCount={40}
 				style={{ height: "100vh", overflow: "auto" }}
 			/>
 		);
 	}
 
-	// ✅ Grid view
 	if (isCard) {
 		return (
 			<VirtuosoGrid
