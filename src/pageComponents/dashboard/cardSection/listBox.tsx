@@ -15,6 +15,7 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
+import InfiniteScroll from "react-infinite-scroll-component";
 import {
 	useDraggableCollectionState,
 	useListState,
@@ -353,38 +354,58 @@ const RenderOption = ({
 	const isSearching = !isEmpty(searchText);
 
 	if (isMasonry) {
+		const loadMore = () => {
+			if (isSearching) {
+				void fetchNextSearchPage();
+			} else {
+				void fetchNextBookmarkPage();
+			}
+		};
+
 		return (
-			<VirtuosoMasonry
-				ItemContent={(index) => {
-					const bookmark = bookmarks[index.index];
-					return (
-						<Option
-							cardTypeCondition={cardTypeCondition}
-							dragState={dragState}
-							isPublicPage={isPublicPage}
-							isTrashPage={isTrashPage ?? false}
-							item={bookmark.item}
-							state={state}
-							type={bookmark.bookmarkData?.type ?? ""}
-							url={bookmark.bookmarkData?.url ?? ""}
-						/>
-					);
-				}}
-				columnCount={
-					bookmarksColumns[0] === 10
-						? 5
-						: bookmarksColumns[0] === 20
-						? 4
-						: bookmarksColumns[0] === 30
-						? 3
-						: bookmarksColumns[0] === 40
-						? 2
-						: 1
+			<InfiniteScroll
+				dataLength={bookmarks.length}
+				endMessage={
+					<p className="pb-6 text-center text-sm text-gray-500">
+						Life happens, save it.
+					</p>
 				}
-				data={bookmarks}
-				initialItemCount={40}
-				style={{ height: "100vh", overflow: "auto" }}
-			/>
+				hasMore
+				loader={<p className="py-4 text-center">Loading more...</p>}
+				next={loadMore}
+			>
+				<VirtuosoMasonry
+					ItemContent={(index) => {
+						const bookmark = bookmarks[index.index];
+						return (
+							<Option
+								cardTypeCondition={cardTypeCondition}
+								dragState={dragState}
+								isPublicPage={isPublicPage}
+								isTrashPage={isTrashPage ?? false}
+								item={bookmark?.item}
+								state={state}
+								type={bookmark?.bookmarkData?.type ?? ""}
+								url={bookmark?.bookmarkData?.url ?? ""}
+							/>
+						);
+					}}
+					columnCount={
+						bookmarksColumns[0] === 10
+							? 5
+							: bookmarksColumns[0] === 20
+							? 4
+							: bookmarksColumns[0] === 30
+							? 3
+							: bookmarksColumns[0] === 40
+							? 2
+							: 1
+					}
+					data={bookmarks}
+					initialItemCount={40}
+					style={{ height: "100vh", overflow: "scroll" }}
+				/>
+			</InfiniteScroll>
 		);
 	}
 
