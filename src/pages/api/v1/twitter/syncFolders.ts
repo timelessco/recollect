@@ -54,7 +54,10 @@ export default async function handler(
 		.from(CATEGORIES_TABLE_NAME)
 		.select("category_name")
 		.eq("user_id", userId)
-		.in("category_name", categories);
+		.in(
+			"category_name",
+			categories.map((category: { name: string }) => category.name),
+		);
 
 	if (!isNull(existingError)) {
 		response.status(500).json({ data: null, error: existingError });
