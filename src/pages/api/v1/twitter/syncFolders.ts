@@ -75,7 +75,7 @@ export default async function handler(
 		user_id: userId,
 		category_slug: `${slugify(category.name, {
 			lower: true,
-		})}-${uniqid.time()}`,
+		})}-${uniqid.time()}-twitter`,
 		icon: "bookmark",
 		icon_color: "#ffffff",
 	}));
