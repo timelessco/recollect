@@ -9,6 +9,7 @@ import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { motion } from "motion/react";
 import { Item } from "react-stately";
 
+import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
@@ -194,8 +195,10 @@ const CardSection = ({
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 	});
 
+	const { allBookmarksData } = useFetchPaginatedBookmarks();
+
 	const bookmarksList = isEmpty(searchText)
-		? listData
+		? allBookmarksData?.pages.flatMap((page) => page?.data ?? []) ?? listData
 		: searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
@@ -640,8 +643,8 @@ const CardSection = ({
 		</div>
 	);
 
-	const renderSortByCondition = () =>
-		bookmarksList?.map((item) => ({
+	const renderSortByCondition = (): SingleListData[] =>
+		bookmarksList?.map((item: SingleListData) => ({
 			...item,
 			ogImage: item?.ogImage || (item?.ogimage as string),
 		}));
@@ -883,7 +886,7 @@ const CardSection = ({
 				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"
 			>
-				{sortByCondition?.map((item) => (
+				{sortByCondition?.map((item: SingleListData) => (
 					<Item key={item?.id} textValue={item?.id?.toString()}>
 						{renderBookmarkCardTypes(item)}
 					</Item>

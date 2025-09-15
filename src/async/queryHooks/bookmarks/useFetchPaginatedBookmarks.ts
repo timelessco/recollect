@@ -6,7 +6,10 @@ import {
 	useLoadersStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
-import { type SupabaseSessionType } from "../../../types/apiTypes";
+import {
+	type SingleListData,
+	type SupabaseSessionType,
+} from "../../../types/apiTypes";
 import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
 import { BOOKMARKS_KEY, PAGINATION_LIMIT } from "../../../utils/constants";
 import { fetchBookmakrsData } from "../../supabaseCrudHelpers";
@@ -28,15 +31,23 @@ export default function useFetchPaginatedBookmarks() {
 		data: allBookmarksData,
 		fetchNextPage,
 		isLoading: isAllBookmarksDataLoading,
+		hasNextPage,
+		isFetchingNextPage,
 	} = useInfiniteQuery({
+		enabled: Boolean(session?.user?.id),
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-		queryFn: async (data) =>
-			await fetchBookmakrsData(
+		queryFn: async (data) => {
+			const result = await fetchBookmakrsData(
 				data,
 				session as SupabaseSessionType,
 				sortBy as BookmarksSortByTypes,
-			),
-		getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
+			);
+			return result;
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			if (!lastPage?.data?.length) return undefined;
+			return allPages.length * PAGINATION_LIMIT;
+		},
 		onSettled: () => {
 			if (isSortByLoading === true) {
 				toggleIsSortByLoading();
@@ -44,9 +55,15 @@ export default function useFetchPaginatedBookmarks() {
 		},
 	});
 
+	// Flatten the bookmarks data to match the expected data structure
 	return {
 		allBookmarksData,
+		flattenedData: (allBookmarksData?.pages?.flatMap(
+			(page) => page?.data ?? [],
+		) ?? []) as unknown as SingleListData[],
+		isLoading: isAllBookmarksDataLoading,
 		fetchNextPage,
-		isAllBookmarksDataLoading,
+		hasNextPage: hasNextPage ?? false,
+		isFetchingNextPage,
 	};
 }
