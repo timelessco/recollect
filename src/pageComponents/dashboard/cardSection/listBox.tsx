@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { type onBulkBookmarkDeleteType } from ".";
-import { useEffect, useRef, type Key } from "react";
+import { useCallback, useEffect, useMemo, useRef, type Key } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -47,6 +47,7 @@ import {
 } from "../../../utils/commonClassNames";
 import {
 	CATEGORIES_KEY,
+	PAGINATION_LIMIT,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 	viewValues,
@@ -319,10 +320,10 @@ const RenderOption = ({
 	bookmarksColumns,
 	cardTypeCondition,
 	dragState,
-	isPublicPage,
-	isTrashPage,
 	isCard,
 	isMasonry,
+	isPublicPage,
+	isTrashPage,
 }: {
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];
@@ -347,65 +348,120 @@ const RenderOption = ({
 	});
 
 	const searchText = useMiscellaneousStore((states) => states.searchText);
-	const { fetchNextPage: fetchNextSearchPage } = useSearchBookmarks();
-	const { fetchNextPage: fetchNextBookmarkPage } = useFetchPaginatedBookmarks();
+	const {
+		fetchNextPage: fetchNextSearchPage,
+		hasNextPage: hasNextSearchPage = false,
+		isFetchingNextPage: isFetchingNextSearchPage,
+	} = useSearchBookmarks();
 
-	// Determine if we're currently searching
+	const {
+		allBookmarksData,
+		fetchNextPage: fetchNextBookmarkPage,
+		isFetchingNextPage: isFetchingNextBookmarkPage,
+	} = useFetchPaginatedBookmarks();
+
 	const isSearching = !isEmpty(searchText);
+	const isLoading = isSearching
+		? isFetchingNextSearchPage
+		: isFetchingNextBookmarkPage;
 
+	const hasMoreBookmarks = useMemo(() => {
+		if (isSearching) return false;
+
+		if (!allBookmarksData?.pages?.length) return true;
+
+		const lastPage = allBookmarksData.pages[allBookmarksData.pages.length - 1];
+		if (!lastPage?.data || lastPage.data.length === 0) return false;
+		return lastPage.data.length >= PAGINATION_LIMIT;
+	}, [allBookmarksData?.pages, isSearching]);
+
+	const hasNextPage = isSearching ? hasNextSearchPage : hasMoreBookmarks;
+
+	const loadMore = useCallback(() => {
+		if (isLoading || !hasNextPage) return;
+
+		if (isSearching) {
+			void fetchNextSearchPage();
+		} else {
+			void fetchNextBookmarkPage();
+		}
+	}, [
+		isLoading,
+		hasNextPage,
+		isSearching,
+		fetchNextSearchPage,
+		fetchNextBookmarkPage,
+	]);
+
+	// Create a stable key that changes when bookmarks change
+	const masonryKey = useMemo(
+		() => `masonry-${bookmarks.length}-${isSearching ? "search" : "bookmarks"}`,
+		[bookmarks.length, isSearching],
+	);
+	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 	if (isMasonry) {
-		const loadMore = () => {
-			if (isSearching) {
-				void fetchNextSearchPage();
-			} else {
-				void fetchNextBookmarkPage();
-			}
-		};
-
 		return (
-			<InfiniteScroll
-				dataLength={bookmarks.length}
-				endMessage={
-					<p className="pb-6 text-center text-sm text-gray-500">
-						Life happens, save it.
-					</p>
-				}
-				hasMore
-				loader={<p className="py-4 text-center">Loading more...</p>}
-				next={loadMore}
+			<div
+				className=""
+				id="scrollableDiv-masonry"
+				ref={infiniteScrollRef}
+				style={{ height: "100vh", overflow: "auto" }}
 			>
-				<VirtuosoMasonry
-					ItemContent={(index) => {
-						const bookmark = bookmarks[index.index];
-						return (
-							<Option
-								cardTypeCondition={cardTypeCondition}
-								dragState={dragState}
-								isPublicPage={isPublicPage}
-								isTrashPage={isTrashPage ?? false}
-								item={bookmark?.item}
-								state={state}
-								type={bookmark?.bookmarkData?.type ?? ""}
-								url={bookmark?.bookmarkData?.url ?? ""}
-							/>
-						);
-					}}
-					columnCount={
-						bookmarksColumns[0] === 10
-							? 5
-							: bookmarksColumns[0] === 20
-							? 4
-							: bookmarksColumns[0] === 30
-							? 3
-							: bookmarksColumns[0] === 40
-							? 2
-							: 1
+				<InfiniteScroll
+					dataLength={bookmarks.length}
+					endMessage={
+						bookmarks.length > 0 && (
+							<p className="pb-6 text-center text-sm text-gray-500">
+								{isSearching
+									? "No more search results"
+									: "You've reached the end of your bookmarks"}
+							</p>
+						)
 					}
-					data={bookmarks}
-					initialItemCount={40}
-					style={{ height: "100vh", overflow: "scroll" }}
-				/>
-			</InfiniteScroll>
+					hasMore={isSearching ? hasNextSearchPage : hasMoreBookmarks}
+					loader={
+						isLoading && <p className="py-4 text-center">Loading more...</p>
+					}
+					next={loadMore}
+					scrollableTarget="scrollableDiv-masonry"
+					style={{ overflow: "unset" }}
+				>
+					<VirtuosoMasonry
+						ItemContent={(index) => {
+							const bookmark = bookmarks[index.index];
+							if (!bookmark?.bookmarkData) return null;
+
+							return (
+								<Option
+									cardTypeCondition={cardTypeCondition}
+									dragState={dragState}
+									isPublicPage={isPublicPage}
+									isTrashPage={isTrashPage ?? false}
+									item={bookmark.item}
+									state={state}
+									type={bookmark.bookmarkData.type ?? ""}
+									url={bookmark.bookmarkData.url ?? ""}
+								/>
+							);
+						}}
+						columnCount={
+							bookmarksColumns[0] === 10
+								? 5
+								: bookmarksColumns[0] === 20
+								? 4
+								: bookmarksColumns[0] === 30
+								? 3
+								: bookmarksColumns[0] === 40
+								? 2
+								: 1
+						}
+						data={bookmarks}
+						initialItemCount={26}
+						key={masonryKey}
+						target="scrollableDiv-masonry"
+					/>
+				</InfiniteScroll>
+			</div>
 		);
 	}
 
