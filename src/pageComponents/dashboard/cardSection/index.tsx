@@ -542,7 +542,6 @@ const CardSection = ({
 						hasCoverImg={hasCoverImg ?? false}
 						id={id}
 						img={img}
-						isBookmarkLoading={isBookmarkLoading}
 						isPublicPage={isPublicPage}
 						sizesLogic={sizesLogic}
 					/>
