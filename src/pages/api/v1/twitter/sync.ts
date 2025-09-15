@@ -82,44 +82,34 @@ export default async function handler(
 		}));
 
 		for (const item of bodyData.data) {
-			if (item?.category_name) {
-				console.log(
-					`category_name: ${item.category_name}, url: ${item.url}, user_id: ${userId}`,
-				);
+			if (!item?.category_name) continue;
 
-				// 1. Fetch the category
-				const { data: categoryData, error: categoryError } = await supabase
-					.from(CATEGORIES_TABLE_NAME)
-					.select("id")
-					.eq("category_name", item.category_name)
-					.eq("icon", "bookmark");
+			const { data: categoryData, error: categoryError } = await supabase
+				.from(CATEGORIES_TABLE_NAME)
+				.select("id")
+				.eq("category_name", item.category_name)
+				.eq("icon", "bookmark");
 
-				console.log("categoryData", categoryData);
-				if (categoryError || !categoryData) {
-					console.warn(
-						`Category '${item.category_name}' not found with icon 'bookmark'`,
-					);
-					continue;
-				}
-
-				// 2. Update the main table row with the category_id
-				const { data: updateData, error: updateError } = await supabase
-					.from(MAIN_TABLE_NAME)
-					.update({ category_id: categoryData[0].id })
-					.eq("ogImage", item.ogImage)
-					.eq("user_id", userId);
-				console.log("updateData", updateData);
-
-				if (updateError) {
-					console.error(
-						`Error updating category_id for url ${item.url}:`,
-						updateError.message,
-					);
-				}
+			if (categoryError || !categoryData?.length) {
+				console.warn(`Category '${item.category_name}' not found`);
+				continue;
 			}
 
-			response.status(200).json({ success: true, error: null });
+			const { error: updateError } = await supabase
+				.from(MAIN_TABLE_NAME)
+				.update({ category_id: categoryData[0].id })
+				.eq("url", item.url)
+				.eq("user_id", userId);
+
+			if (updateError) {
+				console.error(
+					`Error updating category_id for url ${item.url}:`,
+					updateError.message,
+				);
+			}
 		}
+
+		response.status(200).json({ success: true, error: null });
 
 		// get the urls who are tweets present in table, we fetch only the urls there are there in the insertData for the query optimization
 		const { data: duplicateCheckData, error: duplicateCheckError } =
