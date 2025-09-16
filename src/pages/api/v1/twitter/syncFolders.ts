@@ -52,12 +52,13 @@ export default async function handler(
 	// 1. Check for duplicates
 	const { data: existing, error: existingError } = await supabase
 		.from(CATEGORIES_TABLE_NAME)
-		.select("category_name")
+		.select("category_name, icon")
 		.eq("user_id", userId)
 		.in(
 			"category_name",
 			categories.map((category: { name: string }) => category.name),
-		);
+		)
+		.eq("icon", "bookmark");
 
 	if (!isNull(existingError)) {
 		response.status(500).json({ data: null, error: existingError });
