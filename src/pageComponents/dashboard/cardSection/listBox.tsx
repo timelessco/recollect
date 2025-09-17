@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
 import { type onBulkBookmarkDeleteType } from ".";
 import { useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
