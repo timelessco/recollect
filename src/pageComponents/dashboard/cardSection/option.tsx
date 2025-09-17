@@ -65,7 +65,8 @@ const Option = ({
 	const liClassName = classNames(
 		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
 		{
-			"m-3": cardTypeCondition === viewValues.moodboard,
+			"mx-3 mb-6": cardTypeCondition === viewValues.moodboard,
+			"max-w-[600px] mx-auto mb-4": cardTypeCondition === viewValues.timeline,
 			"mb-[18px]": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
 			// 	cardTypeCondition === viewValues.moodboard ||

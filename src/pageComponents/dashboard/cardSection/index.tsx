@@ -839,10 +839,10 @@ const CardSection = ({
 	const listWrapperClass = classNames({
 		// "p-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.headlines,
 		"mt-[47px]": true,
-		"px-4 py-2":
+		"pl-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		"py-2 pl-[28px] pr-[19px]":
+		"py-2 pl-4":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
 	});

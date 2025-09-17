@@ -254,37 +254,36 @@ export const RenderOption = ({
 					"grid-cols-1": bookmarksColumns[0] === 50,
 				})}
 				overscan={200}
-				style={{ height: "100vh", overflow: "auto" }}
+				style={{ height: "100vh" }}
 				totalCount={bookmarks.length}
 			/>
 		);
 	}
 
 	return (
-		<div style={{ height: "100vh", overflow: "auto" }}>
-			<Virtuoso
-				data={bookmarks}
-				endReached={() => {
-					if (isSearching) {
-						void fetchNextSearchPage();
-					} else {
-						void fetchNextBookmarkPage();
-					}
-				}}
-				itemContent={(_, bookmark) => (
-					<Option
-						cardTypeCondition={cardTypeCondition}
-						dragState={dragState}
-						isPublicPage={isPublicPage}
-						isTrashPage={isTrashPage ?? false}
-						item={bookmark.item}
-						state={state}
-						type={bookmark.bookmarkData?.type ?? ""}
-						url={bookmark.bookmarkData?.url ?? ""}
-					/>
-				)}
-				overscan={200}
-			/>
-		</div>
+		<Virtuoso
+			data={bookmarks}
+			endReached={() => {
+				if (isSearching) {
+					void fetchNextSearchPage();
+				} else {
+					void fetchNextBookmarkPage();
+				}
+			}}
+			itemContent={(_, bookmark) => (
+				<Option
+					cardTypeCondition={cardTypeCondition}
+					dragState={dragState}
+					isPublicPage={isPublicPage}
+					isTrashPage={isTrashPage ?? false}
+					item={bookmark.item}
+					state={state}
+					type={bookmark.bookmarkData?.type ?? ""}
+					url={bookmark.bookmarkData?.url ?? ""}
+				/>
+			)}
+			overscan={200}
+			style={{ height: "100vh" }}
+		/>
 	);
 };
