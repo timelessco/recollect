@@ -2,6 +2,7 @@
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
+import { height } from "tailwindcss/defaultTheme";
 import { z } from "zod";
 
 import imageToText from "../../../../async/ai/imageToText";
@@ -81,36 +82,6 @@ export default async function handler(
 			user_id: userId,
 		}));
 
-		for (const item of bodyData.data) {
-			if (!item?.category_name) continue;
-
-			const { data: categoryData, error: categoryError } = await supabase
-				.from(CATEGORIES_TABLE_NAME)
-				.select("id")
-				.eq("category_name", item.category_name)
-				.eq("icon", "bookmark");
-
-			if (categoryError || !categoryData?.length) {
-				console.warn(`Category '${item.category_name}' not found`);
-				continue;
-			}
-
-			const { error: updateError } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.update({ category_id: categoryData[0].id })
-				.eq("url", item.url)
-				.eq("user_id", userId);
-
-			if (updateError) {
-				console.error(
-					`Error updating category_id for url ${item.url}:`,
-					updateError.message,
-				);
-			}
-		}
-
-		response.status(200).json({ success: true, error: null });
-
 		// get the urls who are tweets present in table, we fetch only the urls there are there in the insertData for the query optimization
 		const { data: duplicateCheckData, error: duplicateCheckError } =
 			await supabase
@@ -149,6 +120,8 @@ export default async function handler(
 			.insert(duplicateFilteredData)
 			.select("*");
 
+		console.log("before category update");
+
 		if (insertDBError) {
 			response
 				.status(400)
@@ -157,6 +130,47 @@ export default async function handler(
 			Sentry.captureException(`DB error: ${insertDBError?.message}`);
 			return;
 		}
+
+		// for (const item of bodyData.data) {
+		// 	console.log(
+		// 		"@#$@#$#$@#$@#$@#$@#$@#$@#$@#$@%@@^@%^#@$%@%@#$%@%@#^@^@%^#@%^@^",
+		// 	);
+
+		// 	if (!item?.category_name) continue;
+
+		// 	const { data: categoryData, error: categoryError } = await supabase
+		// 		.from(CATEGORIES_TABLE_NAME)
+		// 		.select("id")
+		// 		.eq("category_name", item.category_name)
+		// 		.eq("icon", "bookmark");
+
+		// 	console.log("categoryData", categoryData);
+		// 	console.log("categoryError", categoryError);
+
+		// 	if (categoryError || !categoryData?.length) {
+		// 		console.warn(`Category '${item.category_name}' not found`);
+		// 		continue;
+		// 	}
+
+		// 	console.log("item url ", item.url);
+
+		// 	const { data: updateData, error: updateError } = await supabase
+		// 		.from(MAIN_TABLE_NAME)
+		// 		.update({ category_id: categoryData[0].id })
+		// 		.eq("url", item.url)
+		// 		.eq("user_id", userId)
+		// 		.select();
+
+		// 	console.log("updateData", updateData);
+		// 	console.log("updateError", updateError);
+
+		// 	if (updateError) {
+		// 		console.error(
+		// 			`Error updating category_id for url ${item.url}:`,
+		// 			updateError.message,
+		// 		);
+		// 	}
+		// }
 
 		if (isEmpty(insertDBData)) {
 			response
@@ -168,9 +182,9 @@ export default async function handler(
 			return;
 		}
 
-		response
-			.status(200)
-			.json({ success: true, error: null, data: insertDBData });
+		// response
+		// 	.status(200)
+		// 	.json({ success: true, error: null, data: insertDBData });
 
 		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
@@ -185,12 +199,13 @@ export default async function handler(
 				if (item?.ogImage) {
 					try {
 						// Get OCR using the centralized function
+						console.log("*************ocring*************");
 						imageOcrValue = await ocr(item.ogImage);
 
 						// Get image caption using the centralized function
-						image_caption = await imageToText(item.ogImage);
+						console.log("*************image captioning*************");
 
-						console.log("generating ocr", imageOcrValue);
+						image_caption = await imageToText(item.ogImage);
 					} catch (error) {
 						console.error("caption or ocr error", error);
 						Sentry.captureException(`caption or ocr error ${error}`);
