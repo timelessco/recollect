@@ -1,5 +1,5 @@
 import { type CardSectionProps } from ".";
-import { useRef, type ReactNode } from "react";
+import { useRef } from "react";
 import classNames from "classnames";
 import omit from "lodash/omit";
 import {
@@ -7,12 +7,14 @@ import {
 	useDraggableItem,
 	useFocusRing,
 	useOption,
-	type DraggableItemProps,
 } from "react-aria";
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import Checkbox from "../../../components/checkbox";
-import { type SingleListData } from "../../../types/apiTypes";
+import {
+	type OptionDropItemTypes,
+	type SingleListData,
+} from "../../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
 	PREVIEW_PATH,
@@ -25,10 +27,6 @@ import { useRouter } from "next/router";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { getCategorySlugFromRouter } from "../../../utils/url";
-
-type OptionDropItemTypes = DraggableItemProps & {
-	rendered: ReactNode;
-};
 
 const Option = ({
 	item,

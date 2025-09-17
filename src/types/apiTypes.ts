@@ -1,5 +1,7 @@
+import { type ReactNode } from "react";
 import { type NextApiRequest as NextJsApiRequest } from "next";
 import { type PostgrestError, type User } from "@supabase/supabase-js";
+import { type DraggableItemProps } from "react-aria";
 
 import {
 	type BookmarksSortByTypes,
@@ -378,4 +380,8 @@ export type ParsedFormDataType = {
 			originalFilename?: FileNameType;
 		}>;
 	};
+};
+
+export type OptionDropItemTypes = DraggableItemProps & {
+	rendered: ReactNode;
 };
