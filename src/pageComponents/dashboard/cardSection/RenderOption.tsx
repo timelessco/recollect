@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { VirtuosoMasonry } from "@virtuoso.dev/masonry";
 import classNames from "classnames";
 import { isEmpty } from "lodash";
@@ -41,34 +41,35 @@ type ItemContentProps = {
 	index: number;
 };
 
-// ItemContent component that handles infinite scrolling
-const ItemContent = ({ data: bookmark, index, context }: ItemContentProps) => {
-	// Trigger loadMore when near the end
-	useEffect(() => {
-		if (
-			index >= context.totalItems - 5 &&
-			context.hasNextPage &&
-			!context.isLoading
-		) {
-			context.loadMore();
-		}
-	}, [index, context]);
+const ItemContent = memo(
+	({ data: bookmark, index, context }: ItemContentProps) => {
+		// Trigger loadMore when near the end
+		useEffect(() => {
+			if (
+				index >= context.totalItems - 5 &&
+				context.hasNextPage &&
+				!context.isLoading
+			) {
+				context.loadMore();
+			}
+		}, [index, context]);
 
-	if (!bookmark?.bookmarkData) return null;
+		if (!bookmark?.bookmarkData) return null;
 
-	return (
-		<Option
-			cardTypeCondition={context.cardTypeCondition}
-			dragState={context.dragState}
-			isPublicPage={context.isPublicPage}
-			isTrashPage={context.isTrashPage}
-			item={bookmark.item}
-			state={context.state}
-			type={bookmark.bookmarkData.type ?? ""}
-			url={bookmark.bookmarkData.url ?? ""}
-		/>
-	);
-};
+		return (
+			<Option
+				cardTypeCondition={context.cardTypeCondition}
+				dragState={context.dragState}
+				isPublicPage={context.isPublicPage}
+				isTrashPage={context.isTrashPage}
+				item={bookmark.item}
+				state={context.state}
+				type={bookmark.bookmarkData.type ?? ""}
+				url={bookmark.bookmarkData.url ?? ""}
+			/>
+		);
+	},
+);
 
 export const RenderOption = ({
 	state,
@@ -177,7 +178,6 @@ export const RenderOption = ({
 			isPublicPage,
 			isTrashPage: isTrashPage ?? false,
 			state,
-			// Include infinite scroll controls
 			hasNextPage,
 			isLoading,
 			loadMore,
@@ -206,7 +206,6 @@ export const RenderOption = ({
 					data={bookmarks}
 					initialItemCount={26}
 					style={{ height: "100vh" }}
-					useWindowScroll
 				/>
 				{isLoading && (
 					<div className="absolute inset-x-0 bottom-0 bg-white/80 py-4 text-center">
@@ -262,29 +261,30 @@ export const RenderOption = ({
 	}
 
 	return (
-		<Virtuoso
-			data={bookmarks}
-			endReached={() => {
-				if (isSearching) {
-					void fetchNextSearchPage();
-				} else {
-					void fetchNextBookmarkPage();
-				}
-			}}
-			itemContent={(_, bookmark) => (
-				<Option
-					cardTypeCondition={cardTypeCondition}
-					dragState={dragState}
-					isPublicPage={isPublicPage}
-					isTrashPage={isTrashPage ?? false}
-					item={bookmark.item}
-					state={state}
-					type={bookmark.bookmarkData?.type ?? ""}
-					url={bookmark.bookmarkData?.url ?? ""}
-				/>
-			)}
-			overscan={200}
-			style={{ height: "100vh", overflow: "auto" }}
-		/>
+		<div style={{ height: "100vh", overflow: "auto" }}>
+			<Virtuoso
+				data={bookmarks}
+				endReached={() => {
+					if (isSearching) {
+						void fetchNextSearchPage();
+					} else {
+						void fetchNextBookmarkPage();
+					}
+				}}
+				itemContent={(_, bookmark) => (
+					<Option
+						cardTypeCondition={cardTypeCondition}
+						dragState={dragState}
+						isPublicPage={isPublicPage}
+						isTrashPage={isTrashPage ?? false}
+						item={bookmark.item}
+						state={state}
+						type={bookmark.bookmarkData?.type ?? ""}
+						url={bookmark.bookmarkData?.url ?? ""}
+					/>
+				)}
+				overscan={200}
+			/>
+		</div>
 	);
 };
