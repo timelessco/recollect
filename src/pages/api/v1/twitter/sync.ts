@@ -2,7 +2,6 @@
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
-import { height } from "tailwindcss/defaultTheme";
 import { z } from "zod";
 
 import imageToText from "../../../../async/ai/imageToText";
@@ -13,10 +12,7 @@ import {
 	type SingleListData,
 	type twitter_sort_index,
 } from "../../../../types/apiTypes";
-import {
-	CATEGORIES_TABLE_NAME,
-	MAIN_TABLE_NAME,
-} from "../../../../utils/constants";
+import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
@@ -131,47 +127,6 @@ export default async function handler(
 			return;
 		}
 
-		// for (const item of bodyData.data) {
-		// 	console.log(
-		// 		"@#$@#$#$@#$@#$@#$@#$@#$@#$@#$@%@@^@%^#@$%@%@#$%@%@#^@^@%^#@%^@^",
-		// 	);
-
-		// 	if (!item?.category_name) continue;
-
-		// 	const { data: categoryData, error: categoryError } = await supabase
-		// 		.from(CATEGORIES_TABLE_NAME)
-		// 		.select("id")
-		// 		.eq("category_name", item.category_name)
-		// 		.eq("icon", "bookmark");
-
-		// 	console.log("categoryData", categoryData);
-		// 	console.log("categoryError", categoryError);
-
-		// 	if (categoryError || !categoryData?.length) {
-		// 		console.warn(`Category '${item.category_name}' not found`);
-		// 		continue;
-		// 	}
-
-		// 	console.log("item url ", item.url);
-
-		// 	const { data: updateData, error: updateError } = await supabase
-		// 		.from(MAIN_TABLE_NAME)
-		// 		.update({ category_id: categoryData[0].id })
-		// 		.eq("url", item.url)
-		// 		.eq("user_id", userId)
-		// 		.select();
-
-		// 	console.log("updateData", updateData);
-		// 	console.log("updateError", updateError);
-
-		// 	if (updateError) {
-		// 		console.error(
-		// 			`Error updating category_id for url ${item.url}:`,
-		// 			updateError.message,
-		// 		);
-		// 	}
-		// }
-
 		if (isEmpty(insertDBData)) {
 			response
 				.status(400)
@@ -181,10 +136,6 @@ export default async function handler(
 
 			return;
 		}
-
-		// response
-		// 	.status(200)
-		// 	.json({ success: true, error: null, data: insertDBData });
 
 		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
