@@ -1,10 +1,9 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { type onBulkBookmarkDeleteType } from ".";
-import { useCallback, useEffect, useMemo, useRef, type Key } from "react";
+import { useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { VirtuosoMasonry } from "@virtuoso.dev/masonry";
 import classNames from "classnames";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
@@ -15,18 +14,12 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
-import InfiniteScroll from "react-infinite-scroll-component";
 import {
 	useDraggableCollectionState,
 	useListState,
-	type DraggableCollectionState,
 	type ListProps,
-	type ListState,
 } from "react-stately";
-import { Virtuoso, VirtuosoGrid } from "react-virtuoso";
 
-import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
-import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
@@ -47,15 +40,13 @@ import {
 } from "../../../utils/commonClassNames";
 import {
 	CATEGORIES_KEY,
-	PAGINATION_LIMIT,
 	TRASH_URL,
 	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
-// we are disabling this rule as option might get complicated , so we need to have it in a separate file
-import Option from "./option";
+import { RenderOption } from "./RenderOption";
 
 type ListBoxDropTypes = ListProps<object> & {
 	// bookmarksColumns: string | number[] | string[] | undefined;
@@ -313,220 +304,3 @@ const ListBox = (props: ListBoxDropTypes) => {
 };
 
 export default ListBox;
-
-const RenderOption = ({
-	state,
-	bookmarksList,
-	bookmarksColumns,
-	cardTypeCondition,
-	dragState,
-	isCard,
-	isMasonry,
-	isPublicPage,
-	isTrashPage,
-}: {
-	bookmarksColumns: number[];
-	bookmarksList: SingleListData[];
-	cardTypeCondition: unknown;
-	dragState: DraggableCollectionState;
-	isCard: boolean;
-	isMasonry?: boolean;
-	isPublicPage?: boolean;
-	isTrashPage?: boolean;
-	state: ListState<object>;
-}) => {
-	const bookmarks = [...state.collection].map((item) => {
-		const bookmarkData = find(
-			bookmarksList,
-			(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
-		);
-
-		return {
-			item,
-			bookmarkData,
-		};
-	});
-
-	const searchText = useMiscellaneousStore((states) => states.searchText);
-	const {
-		fetchNextPage: fetchNextSearchPage,
-		hasNextPage: hasNextSearchPage = false,
-		isFetchingNextPage: isFetchingNextSearchPage,
-	} = useSearchBookmarks();
-
-	const {
-		allBookmarksData,
-		fetchNextPage: fetchNextBookmarkPage,
-		isFetchingNextPage: isFetchingNextBookmarkPage,
-	} = useFetchPaginatedBookmarks();
-
-	const isSearching = !isEmpty(searchText);
-	const isLoading = isSearching
-		? isFetchingNextSearchPage
-		: isFetchingNextBookmarkPage;
-
-	const hasMoreBookmarks = useMemo(() => {
-		if (isSearching) return false;
-
-		if (!allBookmarksData?.pages?.length) return true;
-
-		const lastPage = allBookmarksData.pages[allBookmarksData.pages.length - 1];
-		if (!lastPage?.data || lastPage.data.length === 0) return false;
-		return lastPage.data.length >= PAGINATION_LIMIT;
-	}, [allBookmarksData?.pages, isSearching]);
-
-	const hasNextPage = isSearching ? hasNextSearchPage : hasMoreBookmarks;
-
-	const loadMore = useCallback(() => {
-		if (isLoading || !hasNextPage) return;
-
-		if (isSearching) {
-			void fetchNextSearchPage();
-		} else {
-			void fetchNextBookmarkPage();
-		}
-	}, [
-		isLoading,
-		hasNextPage,
-		isSearching,
-		fetchNextSearchPage,
-		fetchNextBookmarkPage,
-	]);
-
-	// Create a stable key that changes when bookmarks change
-	const masonryKey = useMemo(
-		() => `masonry-${bookmarks.length}-${isSearching ? "search" : "bookmarks"}`,
-		[bookmarks.length, isSearching],
-	);
-	const infiniteScrollRef = useRef<HTMLDivElement>(null);
-	if (isMasonry) {
-		return (
-			<div
-				className=""
-				id="scrollableDiv-masonry"
-				ref={infiniteScrollRef}
-				style={{ height: "100vh", overflow: "auto" }}
-			>
-				<InfiniteScroll
-					dataLength={bookmarks.length}
-					endMessage={
-						bookmarks.length > 0 && (
-							<p className="pb-6 text-center text-sm text-gray-500">
-								{isSearching
-									? "No more search results"
-									: "You've reached the end of your bookmarks"}
-							</p>
-						)
-					}
-					hasMore={isSearching ? hasNextSearchPage : hasMoreBookmarks}
-					loader={
-						isLoading && <p className="py-4 text-center">Loading more...</p>
-					}
-					next={loadMore}
-					scrollableTarget="scrollableDiv-masonry"
-					style={{ overflow: "unset" }}
-				>
-					<VirtuosoMasonry
-						ItemContent={(index) => {
-							const bookmark = bookmarks[index.index];
-							if (!bookmark?.bookmarkData) return null;
-
-							return (
-								<Option
-									cardTypeCondition={cardTypeCondition}
-									dragState={dragState}
-									isPublicPage={isPublicPage}
-									isTrashPage={isTrashPage ?? false}
-									item={bookmark.item}
-									state={state}
-									type={bookmark.bookmarkData.type ?? ""}
-									url={bookmark.bookmarkData.url ?? ""}
-								/>
-							);
-						}}
-						columnCount={
-							bookmarksColumns[0] === 10
-								? 5
-								: bookmarksColumns[0] === 20
-								? 4
-								: bookmarksColumns[0] === 30
-								? 3
-								: bookmarksColumns[0] === 40
-								? 2
-								: 1
-						}
-						data={bookmarks}
-						initialItemCount={26}
-						key={masonryKey}
-						target="scrollableDiv-masonry"
-					/>
-				</InfiniteScroll>
-			</div>
-		);
-	}
-
-	if (isCard) {
-		return (
-			<VirtuosoGrid
-				data={bookmarks}
-				endReached={() => {
-					if (isSearching) {
-						void fetchNextSearchPage();
-					} else {
-						void fetchNextBookmarkPage();
-					}
-				}}
-				itemContent={(_, bookmark) => (
-					<Option
-						cardTypeCondition={cardTypeCondition}
-						dragState={dragState}
-						isPublicPage={isPublicPage}
-						isTrashPage={isTrashPage ?? false}
-						item={bookmark.item}
-						state={state}
-						type={bookmark.bookmarkData?.type ?? ""}
-						url={bookmark.bookmarkData?.url ?? ""}
-					/>
-				)}
-				listClassName={classNames("grid gap-6 auto-rows-min", {
-					"grid-cols-5": bookmarksColumns[0] === 10,
-					"grid-cols-4": bookmarksColumns[0] === 20,
-					"grid-cols-3": bookmarksColumns[0] === 30,
-					"grid-cols-2": bookmarksColumns[0] === 40,
-					"grid-cols-1": bookmarksColumns[0] === 50,
-				})}
-				overscan={200}
-				style={{ height: "100vh", overflow: "auto" }}
-				totalCount={bookmarks.length}
-			/>
-		);
-	}
-
-	// ✅ List view
-	return (
-		<Virtuoso
-			data={bookmarks}
-			endReached={() => {
-				if (isSearching) {
-					void fetchNextSearchPage();
-				} else {
-					void fetchNextBookmarkPage();
-				}
-			}}
-			itemContent={(_, bookmark) => (
-				<Option
-					cardTypeCondition={cardTypeCondition}
-					dragState={dragState}
-					isPublicPage={isPublicPage}
-					isTrashPage={isTrashPage ?? false}
-					item={bookmark.item}
-					state={state}
-					type={bookmark.bookmarkData?.type ?? ""}
-					url={bookmark.bookmarkData?.url ?? ""}
-				/>
-			)}
-			overscan={200}
-			style={{ height: "100vh", overflow: "auto" }}
-		/>
-	);
-};
