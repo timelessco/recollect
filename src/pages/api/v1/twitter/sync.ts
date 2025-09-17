@@ -150,12 +150,9 @@ export default async function handler(
 				if (item?.ogImage) {
 					try {
 						// Get OCR using the centralized function
-						console.log("*************ocring*************");
 						imageOcrValue = await ocr(item.ogImage);
 
 						// Get image caption using the centralized function
-						console.log("*************image captioning*************");
-
 						image_caption = await imageToText(item.ogImage);
 					} catch (error) {
 						console.error("caption or ocr error", error);
