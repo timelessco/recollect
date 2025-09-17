@@ -147,9 +147,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 		block:
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-
-		"max-w-[600px] mx-auto space-y-4":
-			cardTypeCondition === viewValues.timeline,
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
