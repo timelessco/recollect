@@ -12,10 +12,7 @@ import {
 	type SingleListData,
 	type twitter_sort_index,
 } from "../../../../types/apiTypes";
-import {
-	CATEGORIES_TABLE_NAME,
-	MAIN_TABLE_NAME,
-} from "../../../../utils/constants";
+import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
@@ -81,36 +78,6 @@ export default async function handler(
 			user_id: userId,
 		}));
 
-		for (const item of bodyData.data) {
-			if (!item?.category_name) continue;
-
-			const { data: categoryData, error: categoryError } = await supabase
-				.from(CATEGORIES_TABLE_NAME)
-				.select("id")
-				.eq("category_name", item.category_name)
-				.eq("icon", "bookmark");
-
-			if (categoryError || !categoryData?.length) {
-				console.warn(`Category '${item.category_name}' not found`);
-				continue;
-			}
-
-			const { error: updateError } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.update({ category_id: categoryData[0].id })
-				.eq("url", item.url)
-				.eq("user_id", userId);
-
-			if (updateError) {
-				console.error(
-					`Error updating category_id for url ${item.url}:`,
-					updateError.message,
-				);
-			}
-		}
-
-		response.status(200).json({ success: true, error: null });
-
 		// get the urls who are tweets present in table, we fetch only the urls there are there in the insertData for the query optimization
 		const { data: duplicateCheckData, error: duplicateCheckError } =
 			await supabase
@@ -149,6 +116,8 @@ export default async function handler(
 			.insert(duplicateFilteredData)
 			.select("*");
 
+		console.log("before category update");
+
 		if (insertDBError) {
 			response
 				.status(400)
@@ -168,10 +137,6 @@ export default async function handler(
 			return;
 		}
 
-		response
-			.status(200)
-			.json({ success: true, error: null, data: insertDBData });
-
 		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
 			insertDBData?.map(async (item) => {
@@ -189,8 +154,6 @@ export default async function handler(
 
 						// Get image caption using the centralized function
 						image_caption = await imageToText(item.ogImage);
-
-						console.log("generating ocr", imageOcrValue);
 					} catch (error) {
 						console.error("caption or ocr error", error);
 						Sentry.captureException(`caption or ocr error ${error}`);
