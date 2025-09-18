@@ -76,7 +76,7 @@ const Option = ({
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
-			"hover:bg-custom-gray-8 mb-1":
+			"hover:bg-custom-gray-8 mb-1 mr-4":
 				(cardTypeCondition === viewValues.list ||
 					cardTypeCondition === viewValues.headlines) &&
 				!isSelected,
