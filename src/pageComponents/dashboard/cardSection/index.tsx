@@ -838,13 +838,9 @@ const CardSection = ({
 
 	const listWrapperClass = classNames({
 		// "p-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.headlines,
-		"mt-[47px]": true,
-		"pl-4 py-2":
-			cardTypeCondition === viewValues.list ||
-			cardTypeCondition === viewValues.headlines,
-		"py-2 pl-4":
-			cardTypeCondition === viewValues.moodboard ||
-			cardTypeCondition === viewValues.card,
+		"pl-[28px] py-2": true,
+		"pl-[16px] pr-[7px]": cardTypeCondition === viewValues.moodboard,
+		"pr-[19px]": cardTypeCondition === viewValues.card,
 	});
 
 	const renderItem = () => {

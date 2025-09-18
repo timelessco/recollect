@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { memo, useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { VirtuosoMasonry } from "@virtuoso.dev/masonry";
 import classNames from "classnames";
 import { isEmpty } from "lodash";
@@ -8,7 +8,10 @@ import { Virtuoso, VirtuosoGrid } from "react-virtuoso";
 
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
-import { useMiscellaneousStore } from "../../../store/componentStore";
+import {
+	useLoadersStore,
+	useMiscellaneousStore,
+} from "../../../store/componentStore";
 import {
 	type OptionDropItemTypes,
 	type SingleListData,
@@ -43,30 +46,72 @@ type ItemContentProps = {
 
 const ItemContent = memo(
 	({ data: bookmark, index, context }: ItemContentProps) => {
-		// Trigger loadMore when near the end
+		const observer = useRef<IntersectionObserver | null>(null);
+		const lastItemRef = useRef<HTMLDivElement>(null);
+		const isLastItem = index === context.totalItems - 1;
+
+		// Set up intersection observer for infinite scroll
 		useEffect(() => {
-			if (
-				index >= context.totalItems - 5 &&
-				context.hasNextPage &&
-				!context.isLoading
-			) {
-				context.loadMore();
+			const currentElement = lastItemRef.current;
+			const observerOptions = {
+				root: null,
+				rootMargin: "0px",
+				threshold: 0.1,
+			};
+
+			const handleIntersect = (entries: IntersectionObserverEntry[]) => {
+				const [entry] = entries;
+				if (entry.isIntersecting && context.hasNextPage && !context.isLoading) {
+					context.loadMore();
+				}
+			};
+
+			// Clean up previous observer if it exists
+			if (observer.current) {
+				observer.current.disconnect();
 			}
-		}, [index, context]);
+
+			// Create and start new observer
+			const newObserver = new IntersectionObserver(
+				handleIntersect,
+				observerOptions,
+			);
+
+			if (currentElement) {
+				newObserver.observe(currentElement);
+			}
+
+			observer.current = newObserver;
+
+			// Cleanup function
+			return () => {
+				if (observer.current) {
+					observer.current.disconnect();
+				}
+			};
+		}, [
+			isLastItem,
+			context.hasNextPage,
+			context.isLoading,
+			context.loadMore,
+			context,
+		]);
 
 		if (!bookmark?.bookmarkData) return null;
 
 		return (
-			<Option
-				cardTypeCondition={context.cardTypeCondition}
-				dragState={context.dragState}
-				isPublicPage={context.isPublicPage}
-				isTrashPage={context.isTrashPage}
-				item={bookmark.item}
-				state={context.state}
-				type={bookmark.bookmarkData.type ?? ""}
-				url={bookmark.bookmarkData.url ?? ""}
-			/>
+			<div ref={isLastItem ? lastItemRef : undefined}>
+				<Option
+					cardTypeCondition={context.cardTypeCondition}
+					dragState={context.dragState}
+					isPublicPage={context.isPublicPage}
+					isTrashPage={context.isTrashPage}
+					item={bookmark.item}
+					state={context.state}
+					type={bookmark.bookmarkData.type ?? ""}
+					url={bookmark.bookmarkData.url ?? ""}
+				/>
+			</div>
 		);
 	},
 );
@@ -106,6 +151,8 @@ export const RenderOption = ({
 	} = useFetchPaginatedBookmarks();
 
 	const isSearching = !isEmpty(searchText);
+	const isSearchLoading = useLoadersStore((states) => states.isSearchLoading);
+
 	const isLoading = isSearching
 		? isFetchingNextSearchPage
 		: isFetchingNextBookmarkPage;
@@ -207,18 +254,9 @@ export const RenderOption = ({
 					initialItemCount={26}
 					style={{ height: "100vh" }}
 				/>
-				{isLoading && (
-					<div className="absolute inset-x-0 bottom-0 bg-white/80 py-4 text-center">
-						Loading more...
-					</div>
-				)}
-				{!hasNextPage && bookmarks.length > 0 && (
-					<div className="absolute inset-x-0 bottom-0 bg-white/80 pb-6 text-center text-sm text-gray-500">
-						{isSearching
-							? "No more search results"
-							: "You've reached the end of your bookmarks"}
-					</div>
-				)}
+				{!hasNextPage && !isSearchLoading ? (
+					<div className="pb-6 text-center">Life happens, save it</div>
+				) : null}
 			</div>
 		);
 	}
@@ -226,6 +264,12 @@ export const RenderOption = ({
 	if (isCard) {
 		return (
 			<VirtuosoGrid
+				components={{
+					Footer: () =>
+						!hasNextPage && !isSearchLoading ? (
+							<div className="pb-6 text-center">Life happens, save it</div>
+						) : null,
+				}}
 				data={bookmarks}
 				endReached={() => {
 					if (isSearching) {
@@ -262,6 +306,12 @@ export const RenderOption = ({
 
 	return (
 		<Virtuoso
+			components={{
+				Footer: () =>
+					!hasNextPage ? (
+						<div className="pb-6 text-center">Life happens, save it</div>
+					) : null,
+			}}
 			data={bookmarks}
 			endReached={() => {
 				if (isSearching) {
@@ -284,6 +334,7 @@ export const RenderOption = ({
 			)}
 			overscan={200}
 			style={{ height: "100vh" }}
+			totalCount={bookmarks.length}
 		/>
 	);
 };
