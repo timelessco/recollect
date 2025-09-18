@@ -46,7 +46,7 @@
 }
 
 body {
-	@apply overflow-hidden antialiased outline-none;
+	@apply overflow-hidden bg-main-bg-1 antialiased outline-none;
 
 	font-variation-settings: "opsz" 20;
 }
@@ -395,4 +395,18 @@ input[type="checkbox"]:checked + .checkbox-div {
 	opacity: var(--yarl__pull_opacity);
 
 	@apply transition-opacity transition-transform duration-200 ease-out;
+}
+
+:root {
+	--color-main-bg-1: rgb(255 255 255 / 90%);
+	--color-hover-selected-color-1: rgb(243 243 243 / 100%);
+	--color-main-text-1: rgb(23 23 23 / 100%);
+	--color-main-text-2: rgb(23 23 23 / 100%);
+}
+
+.dark {
+	--color-main-bg-1: rgb(13 13 13 / 100%);
+	--color-hover-selected-color-1: rgb(23 23 23 / 100%);
+	--color-main-text-1: rgb(151 151 151 / 100%);
+	--color-main-text-2: rgb(243 243 243 / 100%);
 }

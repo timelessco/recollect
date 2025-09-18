@@ -2,6 +2,7 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+	darkMode: "class",
 	future: {
 		relativeContentPathsByDefault: true,
 		hoverOnlyWhenSupported: true,
@@ -29,6 +30,16 @@ module.exports = {
 				sans: ["Inter V", ...defaultTheme.fontFamily.sans],
 			},
 			colors: {
+				"main-bg": {
+					1: "var(--color-main-bg-1)",
+				},
+				"hover-selected-color": {
+					1: "var(--color-hover-selected-color-1)",
+				},
+				"main-text": {
+					1: "var(--color-main-text-1)",
+					2: "var(--color-main-text-2)",
+				},
 				"custom-gray": {
 					1: "#383838",
 					2: "rgba(0, 0, 0, 0.04)",
@@ -44,11 +55,6 @@ module.exports = {
 					14: "#2A2B2E",
 					15: "rgba(0, 0, 0, 0.03)",
 					16: "#E3E3E3",
-				},
-				"custom-white": {
-					1: "rgba(255, 255, 255, 0.9)",
-					2: "rgba(255, 255, 255, 0.96)",
-					3: "rgba(255, 255, 255, 0.5)",
 				},
 				"custom-gradient": {
 					1: "linear-gradient(180deg, #2E2E2E 0%, #242424 100%)",

@@ -62,7 +62,7 @@ const SidePaneUserDropdown = () => {
 								}
 								width={24}
 							/>
-							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-custom-gray-1">
+							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-main-text-1">
 								{userProfileData?.display_name || userProfileData?.user_name}
 							</p>
 						</div>
