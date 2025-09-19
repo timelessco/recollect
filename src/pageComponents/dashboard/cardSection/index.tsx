@@ -278,7 +278,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-15";
+			"rounded-lg bg-main-bg-1 p-[5px] backdrop-blur-sm z-15";
 
 		const externalLinkIcon = (
 			<div
@@ -633,7 +633,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="rounded-[5px] bg-gray-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-light-10"
+			className="rounded-[5px] bg-hover-selected-color-1 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-light-10"
 			key={id}
 		>
 			#{name}
@@ -681,14 +681,14 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title truncate text-sm font-medium leading-4 text-main-text-4">
 							{item?.title}
 						</p>
 					)}
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="text-sm leading-4"
+								className="text-sm leading-4 text-main-text-5"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}
@@ -752,7 +752,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-main-text-4">
 							{item?.title}
 						</p>
 					)}

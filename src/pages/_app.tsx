@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type AppProps } from "next/app";
 import Head from "next/head";
 import {
@@ -29,6 +29,9 @@ const MyApp = ({
 				},
 			}),
 	);
+	useEffect(() => {
+		document.documentElement.classList.add("dark");
+	}, []);
 
 	const productionUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
 
