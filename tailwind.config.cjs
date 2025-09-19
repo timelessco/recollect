@@ -39,6 +39,9 @@ module.exports = {
 				"main-text": {
 					1: "var(--color-main-text-1)",
 					2: "var(--color-main-text-2)",
+					3: "var(--color-main-text-3)",
+					4: "var(--color-main-text-4)",
+					5: "var(--color-main-text-5)",
 				},
 				"custom-gray": {
 					1: "#383838",

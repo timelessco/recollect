@@ -402,6 +402,9 @@ input[type="checkbox"]:checked + .checkbox-div {
 	--color-hover-selected-color-1: rgb(243 243 243 / 100%);
 	--color-main-text-1: rgb(23 23 23 / 100%);
 	--color-main-text-2: rgb(23 23 23 / 100%);
+	--color-main-text-3: rgb(23 23 23 / 100%);
+	--color-main-text-4: rgb(23 23 23 / 100%);
+	--color-main-text-5: black;
 }
 
 .dark {
@@ -409,4 +412,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 	--color-hover-selected-color-1: rgb(23 23 23 / 100%);
 	--color-main-text-1: rgb(151 151 151 / 100%);
 	--color-main-text-2: rgb(243 243 243 / 100%);
+	--color-main-text-3: rgb(226 226 226 / 100%);
+	--color-main-text-4: rgb(199 199 199 / 100%);
+	--color-main-text-5: white;
 }

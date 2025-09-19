@@ -44,11 +44,11 @@ const SidePaneUserDropdown = () => {
 	const userProfileData = userProfilesDataQuery?.data?.[0];
 
 	return (
-		<div className="flex justify-between">
+		<div className="group flex justify-between">
 			<AriaDropdown
 				menuButton={
 					<div
-						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-8`}
+						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-hover-selected-color-1 `}
 					>
 						<div className="flex w-4/5 items-center space-x-2">
 							<UserAvatar
@@ -62,7 +62,7 @@ const SidePaneUserDropdown = () => {
 								}
 								width={24}
 							/>
-							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-main-text-1">
+							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-main-text-1 group-hover:dark:text-main-text-2">
 								{userProfileData?.display_name || userProfileData?.user_name}
 							</p>
 						</div>
@@ -71,7 +71,7 @@ const SidePaneUserDropdown = () => {
 						</figure>
 					</div>
 				}
-				menuButtonActiveClassName="bg-custom-gray-8 rounded-lg"
+				menuButtonActiveClassName="bg-hover-selected-color-1 rounded-lg"
 				menuButtonClassName="w-full"
 				menuClassName={dropdownMenuClassName}
 			>

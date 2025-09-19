@@ -681,14 +681,14 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title truncate text-sm font-medium leading-4 text-main-text-4">
 							{item?.title}
 						</p>
 					)}
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="text-sm leading-4"
+								className="text-sm leading-4 text-main-text-5"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}
@@ -752,7 +752,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-main-text-4">
 							{item?.title}
 						</p>
 					)}

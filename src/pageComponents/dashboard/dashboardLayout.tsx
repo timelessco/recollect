@@ -274,7 +274,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold text-gray-light-12"
+					className="truncate text-xl font-semibold text-main-text-3"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {

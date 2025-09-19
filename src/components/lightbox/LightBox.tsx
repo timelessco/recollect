@@ -575,7 +575,7 @@ export const CustomLightBox = ({
 					left: "0",
 				},
 				container: {
-					backgroundColor: "rgba(255, 255, 255, 0.9)",
+					backgroundColor: "var(--color-main-bg-1)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
