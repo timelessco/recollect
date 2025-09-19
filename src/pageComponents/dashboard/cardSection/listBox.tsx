@@ -171,6 +171,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
+			<div className="pb-[47px]" />
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
 				<RenderOption
 					bookmarksColumns={bookmarksColumns}
