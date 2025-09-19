@@ -38,10 +38,7 @@ import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import useIsMobileView from "../../hooks/useIsMobileView";
 import SearchInputSearchIcon from "../../icons/searchInputSearchIcon";
-import {
-	useLoadersStore,
-	useMiscellaneousStore,
-} from "../../store/componentStore";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
@@ -542,7 +539,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] bg-custom-white-1 sticky   w-full z-[5]  backdrop-blur-[20.5px] pl-[13px] ml-1 pr-3",
+			"flex items-center justify-between py-[6.5px] bg-custom-white-1 absolute top-0 w-full z-[5]  backdrop-blur-[20.5px] pl-[13px] ml-1 pr-3",
 		);
 
 		const figureWrapperClass = classNames(
