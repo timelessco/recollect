@@ -1,5 +1,5 @@
 import { type CardSectionProps } from ".";
-import { useRef, type ReactNode } from "react";
+import { useRef } from "react";
 import classNames from "classnames";
 import omit from "lodash/omit";
 import {
@@ -7,12 +7,14 @@ import {
 	useDraggableItem,
 	useFocusRing,
 	useOption,
-	type DraggableItemProps,
 } from "react-aria";
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import Checkbox from "../../../components/checkbox";
-import { type SingleListData } from "../../../types/apiTypes";
+import {
+	type OptionDropItemTypes,
+	type SingleListData,
+} from "../../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
 	PREVIEW_PATH,
@@ -25,10 +27,6 @@ import { useRouter } from "next/router";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { getCategorySlugFromRouter } from "../../../utils/url";
-
-type OptionDropItemTypes = DraggableItemProps & {
-	rendered: ReactNode;
-};
 
 const Option = ({
 	item,
@@ -50,7 +48,7 @@ const Option = ({
 }) => {
 	// Setup listbox option as normal. See useListBox docs for details.
 	const ref = useRef(null);
-	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
+	const { optionProps, isSelected } = useOption({ key: item?.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen } =
@@ -58,7 +56,7 @@ const Option = ({
 	// Register the item as a drag source.
 	const { dragProps } = useDraggableItem(
 		{
-			key: item.key,
+			key: item?.key,
 		},
 		dragState,
 	);
@@ -67,7 +65,8 @@ const Option = ({
 	const liClassName = classNames(
 		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
 		{
-			"mb-6": cardTypeCondition === viewValues.moodboard,
+			"mx-3 mb-6": cardTypeCondition === viewValues.moodboard,
+			"max-w-[600px] mx-auto mb-4": cardTypeCondition === viewValues.timeline,
 			"mb-[18px]": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
 			// 	cardTypeCondition === viewValues.moodboard ||
@@ -77,7 +76,7 @@ const Option = ({
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
-			"hover:bg-custom-gray-8 mb-1":
+			"hover:bg-custom-gray-8 mb-1 mr-4":
 				(cardTypeCondition === viewValues.list ||
 					cardTypeCondition === viewValues.headlines) &&
 				!isSelected,
@@ -143,7 +142,7 @@ const Option = ({
 					);
 				}}
 			/>
-			{item.rendered}
+			{item?.rendered}
 			{!isPublicPage && (
 				<Checkbox
 					checked={isSelected}
