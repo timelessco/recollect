@@ -37,7 +37,7 @@ importers:
         version: 1.0.6(react@18.2.0)
       '@langchain/community':
         specifier: 0.3.3
-        version: 0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        version: 0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@langchain/core':
         specifier: 0.2.8
         version: 0.2.8(openai@4.71.1(zod@3.22.3))
@@ -55,10 +55,10 @@ importers:
         version: 133.0.0
       '@supabase/ssr':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.13.1)
+        version: 0.3.0(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@supabase/supabase-js':
-        specifier: 2.13.1
-        version: 2.13.1
+        specifier: 2.57.4
+        version: 2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@tanstack/react-query':
         specifier: 4.28.0
         version: 4.28.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -112,7 +112,7 @@ importers:
         version: 3.1.2
       langchain:
         specifier: 0.2.19
-        version: 0.2.19(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        version: 0.2.19(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       lodash:
         specifier: 4.17.21
         version: 4.17.21
@@ -2978,32 +2978,32 @@ packages:
     resolution: {integrity: sha512-7obk2CRitrlyxT4AKsCjSfE0QiHjDbi5GeOJirkerAZFV7o4VAsKzqoTQ/6rm3segZwfNFZzy8EdDelfV08aag==}
     engines: {node: '>= 16'}
 
-  '@supabase/functions-js@2.1.5':
-    resolution: {integrity: sha512-BNzC5XhCzzCaggJ8s53DP+WeHHGT/NfTsx2wUSSGKR2/ikLFQTBCDzMvGz/PxYMqRko/LwncQtKXGOYp1PkPaw==}
+  '@supabase/auth-js@2.71.1':
+    resolution: {integrity: sha512-mMIQHBRc+SKpZFRB2qtupuzulaUhFYupNyxqDj5Jp/LyPvcWvjaJzZzObv6URtL/O6lPxkanASnotGtNpS3H2Q==}
 
-  '@supabase/gotrue-js@2.57.0':
-    resolution: {integrity: sha512-/CcAW40aPKgp9/w9WgXVUQFg1AOdvFR687ONOMjASPBuC6FsNbKlcXp4pc+rwKNtxyxDkBbR+x7zj/8g00r/Og==}
+  '@supabase/functions-js@2.4.6':
+    resolution: {integrity: sha512-bhjZ7rmxAibjgmzTmQBxJU6ZIBCCJTc3Uwgvdi4FewueUTAGO5hxZT1Sj6tiD+0dSXf9XI87BDdJrg12z8Uaew==}
 
   '@supabase/node-fetch@2.6.15':
     resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
     engines: {node: 4.x || >=6.0.0}
 
-  '@supabase/postgrest-js@1.9.0':
-    resolution: {integrity: sha512-axP6cU69jDrLbfihJKQ6vU27tklD0gzb9idkMN363MtTXeJVt5DQNT3JnJ58JVNBdL74hgm26rAsFNvHk+tnSw==}
+  '@supabase/postgrest-js@1.21.4':
+    resolution: {integrity: sha512-TxZCIjxk6/dP9abAi89VQbWWMBbybpGWyvmIzTd79OeravM13OjR/YEYeyUOPcM1C3QyvXkvPZhUfItvmhY1IQ==}
 
-  '@supabase/realtime-js@2.8.4':
-    resolution: {integrity: sha512-5C9slLTGikHnYmAnIBOaPogAgbcNY68vnIyE6GpqIKjHElVb6LIi4clwNcjHSj4z6szuvvzj8T/+ePEgGEGekw==}
+  '@supabase/realtime-js@2.15.5':
+    resolution: {integrity: sha512-/Rs5Vqu9jejRD8ZeuaWXebdkH+J7V6VySbCZ/zQM93Ta5y3mAmocjioa/nzlB6qvFmyylUgKVS1KpE212t30OA==}
 
   '@supabase/ssr@0.3.0':
     resolution: {integrity: sha512-lcVyQ7H6eumb2FB1Wa2N+jYWMfq6CFza3KapikT0fgttMQ+QvDgpNogx9jI8bZgKds+XFSMCojxFvFb+gwdbfA==}
     peerDependencies:
       '@supabase/supabase-js': ^2.33.1
 
-  '@supabase/storage-js@2.5.5':
-    resolution: {integrity: sha512-OpLoDRjFwClwc2cjTJZG8XviTiQH4Ik8sCiMK5v7et0MDu2QlXjCAW3ljxJB5+z/KazdMOTnySi+hysxWUPu3w==}
+  '@supabase/storage-js@2.12.1':
+    resolution: {integrity: sha512-QWg3HV6Db2J81VQx0PqLq0JDBn4Q8B1FYn1kYcbla8+d5WDmTdwwMr+EJAxNOSs9W4mhKMv+EYCpCrTFlTj4VQ==}
 
-  '@supabase/supabase-js@2.13.1':
-    resolution: {integrity: sha512-+Q3FMj0TuI6xJBTTREIRxuLW1QreZhtRxlF5+7aprmlVq1+GsMfnpBOpXcdyhcWWL8UcmaoMJD8tJiedXGCXlg==}
+  '@supabase/supabase-js@2.57.4':
+    resolution: {integrity: sha512-LcbTzFhHYdwfQ7TRPfol0z04rLEyHabpGYANME6wkQ/kLtKNmI+Vy+WEM8HxeOZAtByUFxoUTTLwhXmrh+CcVw==}
 
   '@svta/common-media-library@0.12.4':
     resolution: {integrity: sha512-9EuOoaNmz7JrfGwjsrD9SxF9otU5TNMnbLu1yU4BeLK0W5cDxVXXR58Z89q9u2AnHjIctscjMTYdlqQ1gojTuw==}
@@ -3116,8 +3116,8 @@ packages:
     resolution: {integrity: sha512-TRdIPqdsvKmPla44kVy4jv5Nt5vjMfVjbIEke1CRULIrwKNRC4lIiZvNYDJvbUMNCFPNIUcOKhXTyMJrX18IMA==}
     deprecated: This is a stub types definition. pdfjs-dist provides its own type definitions, so you do not need this installed.
 
-  '@types/phoenix@1.6.4':
-    resolution: {integrity: sha512-B34A7uot1Cv0XtaHRYDATltAdKx0BvVKNgYNqE4WjtPUa4VQJM7kxeXcVKaH+KS+kCmZ+6w+QaUdcljiheiBJA==}
+  '@types/phoenix@1.6.6':
+    resolution: {integrity: sha512-PIzZZlEppgrpoT2QgbnDU+MMzuR6BbCjllj0bM70lWoejMeNJAxCchxnv7J3XFkI8MpygtRpzXrIlmWUBclP5A==}
 
   '@types/picomatch@2.3.3':
     resolution: {integrity: sha512-Yll76ZHikRFCyz/pffKGjrCwe/le2CDwOP5F210KQo27kpRE46U2rDnzikNlVn6/ezH3Mhn46bJMTfeVTtcYMg==}
@@ -3170,8 +3170,8 @@ packages:
   '@types/video-react@0.15.4':
     resolution: {integrity: sha512-EbBgFiHRFnKrUK7EMpQdJGf9coEcosTyEf62YTsJlNSGSbfz4ZyGHhKGWD4MfGdGWNAw9CFlP+06rWXw1VDVoQ==}
 
-  '@types/websocket@1.0.10':
-    resolution: {integrity: sha512-svjGZvPB7EzuYS94cI7a+qhwgGU1y89wUgjT6E2wVUfmAGIvRfT7obBvRtnhXCSsoMdlG4gBFGE7MfkIXZLoww==}
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@types/ws@8.5.10':
     resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
@@ -4369,9 +4369,6 @@ packages:
     resolution: {integrity: sha512-nXvJjnfDytOOaPOonX0h0a1ggMoqrhdekGeZkD6hkcWYvlCWhU719tKFVh8eU04CnMwu3uwe1JjwuUF2C3k2qg==}
     engines: {node: '>=4.0.0'}
 
-  cross-fetch@3.1.8:
-    resolution: {integrity: sha512-cvA+JwZoU0Xq+h6WkMvAUqPEYy92Obet6UdKLfW60qn99ftItKjB5T+BkyWOFWe2pUyfQ+IJHmpOTznqk1M6Kg==}
-
   cross-spawn@7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
@@ -4456,9 +4453,6 @@ packages:
     engines: {node: ^14.0.0 || ^16.0.0 || >=18.0.0}
     hasBin: true
 
-  d@1.0.1:
-    resolution: {integrity: sha512-m62ShEObQ39CfralilEQRjH6oAMtNCV1xJyEx5LpRYUVN+EviphDgUc/F3hnYbADmkiNs67Y+3ylmlG7Lnu+FA==}
-
   damerau-levenshtein@1.0.8:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==}
 
@@ -4509,14 +4503,6 @@ packages:
 
   dayjs@1.11.10:
     resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
-
-  debug@2.6.9:
-    resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
 
   debug@3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
@@ -4819,16 +4805,6 @@ packages:
   es-to-primitive@1.2.1:
     resolution: {integrity: sha512-QCOllgZJtaUo9miYBcLChTUaHNjJF3PYs1VidD7AwiEj1kYxKeQTctLAezAOH5ZKRH0g2IgPn6KwB4IT8iRpvA==}
     engines: {node: '>= 0.4'}
-
-  es5-ext@0.10.64:
-    resolution: {integrity: sha512-p2snDhiLaXe6dahss1LddxqEm+SkuDvV8dnIQG0MWjyHpcMNfXKPE+/Cc0y+PhxJX3A4xGNeFCj5oc0BUh6deg==}
-    engines: {node: '>=0.10'}
-
-  es6-iterator@2.0.3:
-    resolution: {integrity: sha512-zw4SRzoUkd+cl+ZoE15A9o1oQd920Bb0iOJMQkQhl3jNc03YqVjAhG7scf9C5KWRU/R13Orf588uCC6525o02g==}
-
-  es6-symbol@3.1.3:
-    resolution: {integrity: sha512-NJ6Yn3FuDinBaBRWl/q5X/s4koRHBrgKAu+yGI6JCBeiu3qrcbJhwT2GeR/EXVfylRk8dpQVJoLEFhK+Mu31NA==}
 
   escalade@3.2.0:
     resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
@@ -5139,10 +5115,6 @@ packages:
     deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
-  esniff@2.0.1:
-    resolution: {integrity: sha512-kTUIGKQ/mDPFoJ0oVfcmyJn4iBDRptjNVIzwIFR7tqWXdVI9xfA2RMwY/gbSpJG3lkdWNEjLap/NqVHZiJsdfg==}
-    engines: {node: '>=0.10'}
-
   espree@9.6.1:
     resolution: {integrity: sha512-oruZaFkjorTpF32kDSI5/75ViwGeZginGGy2NoOSg3Q9bnwlnmDm4HLnkl0RE3n+njDXR037aY1+x58Z/zFdwQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -5177,9 +5149,6 @@ packages:
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
-
-  event-emitter@0.3.5:
-    resolution: {integrity: sha512-D9rRn9y7kLPnJ+hMq7S/nhvoKwwvVJahBi2BPmx3bvbsEdK3W9ii8cBSGjP+72/LnM4n6fo3+dkCX5FeTQruXA==}
 
   event-target-shim@5.0.1:
     resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
@@ -5228,9 +5197,6 @@ packages:
 
   expr-eval@2.0.2:
     resolution: {integrity: sha512-4EMSHGOPSwAfBiibw3ndnP0AvjDWLsMvGOvWEZ2F96IGk0bIVdjQisOHxReSkE13mHcfbuCiXw+G4y0zv6N8Eg==}
-
-  ext@1.7.0:
-    resolution: {integrity: sha512-6hxeJYaL110a9b5TEJSj0gojyHQAmA2ch5Os+ySCiA1QGdS697XWY1pzsrSjqA9LDEEgdB/KypIlR59RcLuHYw==}
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
@@ -7127,9 +7093,6 @@ packages:
     resolution: {integrity: sha512-hzzEagAgDyoU1Q6yg5uI+AorQgdvMCur3FcKf7NhMKWsaYg+RnbTyHRa/9IlLF9rf455MOCtcqqrQQ83pPP7Uw==}
     engines: {node: '>=10'}
 
-  ms@2.0.0:
-    resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
-
   ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
 
@@ -7199,9 +7162,6 @@ packages:
     peerDependencies:
       '@next/env': '*'
       next: '*'
-
-  next-tick@1.1.0:
-    resolution: {integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==}
 
   next@13.2.4:
     resolution: {integrity: sha512-g1I30317cThkEpvzfXujf0O4wtaQHtDCLhlivwlTJ885Ld+eOgcz7r3TGQzeU+cSRoNHtD8tsJgzxVdYojFssw==}
@@ -9051,12 +9011,6 @@ packages:
     resolution: {integrity: sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==}
     engines: {node: '>=16'}
 
-  type@1.2.0:
-    resolution: {integrity: sha512-+5nt5AAniqsCnu2cEQQdpzCAh33kVx8n0VoFidKpB1dVVLAN/F+bgVOqOJqOnEnrhp222clB5p3vUlD+1QAnfg==}
-
-  type@2.7.3:
-    resolution: {integrity: sha512-8j+1QmAbPvLZow5Qpi6NCaN8FB60p/6x8/vfNqOk/hC+HuvFZhL4+WfekuhQLiqFZXOgQdrs3B+XxEmCc6b3FQ==}
-
   typed-array-buffer@1.0.2:
     resolution: {integrity: sha512-gEymJYKZtKXzzBzM4jqa9w6Q1Jjm7x2d+sh19AdsD4wqnMPDYyvwpsIc2Q/835kHuo3BEQ7CjelGhfTsoBb2MQ==}
     engines: {node: '>= 0.4'}
@@ -9309,10 +9263,6 @@ packages:
       webpack-cli:
         optional: true
 
-  websocket@1.0.35:
-    resolution: {integrity: sha512-/REy6amwPZl44DDzvRCkaI1q1bIiQB0mEFQLUrhz3z2EK91cp3n72rAjUlrTP0zV22HJIUOVHQGPxhFRjxjt+Q==}
-    engines: {node: '>=4.0.0'}
-
   whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
 
@@ -9429,18 +9379,6 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.18.0:
-    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
   ws@8.18.2:
     resolution: {integrity: sha512-DMricUmwGZUVr++AEAe2uiVM7UoO9MAVZMDu05UQOaUII0lp+zOzLLU4Xqh/JvTqklB1T4uELaaPBKyjE1r4fQ==}
     engines: {node: '>=10.0.0'}
@@ -9470,11 +9408,6 @@ packages:
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
-
-  yaeti@0.0.6:
-    resolution: {integrity: sha512-MvQa//+KcZCUkBTIC9blM+CU9J2GzuTytsOUwf2lidtvkx/6gnEp1QvJv34t9vdjhFmha/mUiNDbN0D0mJWdug==}
-    engines: {node: '>=0.10.32'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
@@ -10949,10 +10882,10 @@ snapshots:
       '@types/ws': 8.5.10
       '@whatwg-node/fetch': 0.8.8
       graphql: 16.9.0
-      isomorphic-ws: 5.0.0(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      isomorphic-ws: 5.0.0(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       tslib: 2.8.1
       value-or-promise: 1.0.12
-      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
@@ -11181,7 +11114,7 @@ snapshots:
 
   '@juggle/resize-observer@3.4.0': {}
 
-  '@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+  '@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
       '@langchain/core': 0.2.8(openai@4.71.1(zod@3.22.3))
       '@langchain/openai': 0.3.13(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))
@@ -11189,7 +11122,7 @@ snapshots:
       expr-eval: 2.0.2
       flat: 5.0.2
       js-yaml: 4.1.0
-      langchain: 0.2.19(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      langchain: 0.2.19(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       langsmith: 0.1.68(openai@4.71.1(zod@3.22.3))
       uuid: 10.0.0
       zod: 3.22.3
@@ -11199,12 +11132,12 @@ snapshots:
       '@aws-sdk/client-s3': 3.840.0
       '@aws-sdk/credential-provider-node': 3.840.0
       '@smithy/util-utf8': 2.3.0
-      '@supabase/supabase-js': 2.13.1
+      '@supabase/supabase-js': 2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@xenova/transformers': 2.17.2
       ignore: 5.3.1
       jsonwebtoken: 9.0.0
       lodash: 4.17.21
-      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - '@gomomento/sdk-web'
       - '@langchain/anthropic'
@@ -13126,11 +13059,11 @@ snapshots:
       - bare-buffer
       - debug
 
-  '@supabase/functions-js@2.1.5':
+  '@supabase/auth-js@2.71.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/gotrue-js@2.57.0':
+  '@supabase/functions-js@2.4.6':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
@@ -13138,40 +13071,41 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  '@supabase/postgrest-js@1.9.0':
+  '@supabase/postgrest-js@1.21.4':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/realtime-js@2.8.4':
+  '@supabase/realtime-js@2.15.5(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
       '@supabase/node-fetch': 2.6.15
-      '@types/phoenix': 1.6.4
-      '@types/websocket': 1.0.10
-      websocket: 1.0.35
+      '@types/phoenix': 1.6.6
+      '@types/ws': 8.18.1
+      ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
-      - supports-color
+      - bufferutil
+      - utf-8-validate
 
-  '@supabase/ssr@0.3.0(@supabase/supabase-js@2.13.1)':
+  '@supabase/ssr@0.3.0(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
-      '@supabase/supabase-js': 2.13.1
+      '@supabase/supabase-js': 2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       cookie: 0.5.0
       ramda: 0.29.1
 
-  '@supabase/storage-js@2.5.5':
+  '@supabase/storage-js@2.12.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/supabase-js@2.13.1':
+  '@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
-      '@supabase/functions-js': 2.1.5
-      '@supabase/gotrue-js': 2.57.0
-      '@supabase/postgrest-js': 1.9.0
-      '@supabase/realtime-js': 2.8.4
-      '@supabase/storage-js': 2.5.5
-      cross-fetch: 3.1.8
+      '@supabase/auth-js': 2.71.1
+      '@supabase/functions-js': 2.4.6
+      '@supabase/node-fetch': 2.6.15
+      '@supabase/postgrest-js': 1.21.4
+      '@supabase/realtime-js': 2.15.5(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@supabase/storage-js': 2.12.1
     transitivePeerDependencies:
-      - encoding
-      - supports-color
+      - bufferutil
+      - utf-8-validate
 
   '@svta/common-media-library@0.12.4': {}
 
@@ -13284,7 +13218,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@types/phoenix@1.6.4': {}
+  '@types/phoenix@1.6.6': {}
 
   '@types/picomatch@2.3.3': {}
 
@@ -13337,7 +13271,7 @@ snapshots:
     dependencies:
       '@types/react': 18.0.35
 
-  '@types/websocket@1.0.10':
+  '@types/ws@8.18.1':
     dependencies:
       '@types/node': 18.15.11
 
@@ -14197,6 +14131,7 @@ snapshots:
   bufferutil@4.0.8:
     dependencies:
       node-gyp-build: 4.7.1
+    optional: true
 
   builtin-modules@3.3.0: {}
 
@@ -14712,12 +14647,6 @@ snapshots:
     dependencies:
       lodash.get: 4.4.2
 
-  cross-fetch@3.1.8:
-    dependencies:
-      node-fetch: 2.7.0
-    transitivePeerDependencies:
-      - encoding
-
   cross-spawn@7.0.3:
     dependencies:
       path-key: 3.1.1
@@ -14882,11 +14811,6 @@ snapshots:
       untildify: 4.0.0
       yauzl: 2.10.0
 
-  d@1.0.1:
-    dependencies:
-      es5-ext: 0.10.64
-      type: 1.2.0
-
   damerau-levenshtein@1.0.8: {}
 
   dargs@8.1.0: {}
@@ -14942,10 +14866,6 @@ snapshots:
   date-fns@2.29.3: {}
 
   dayjs@1.11.10: {}
-
-  debug@2.6.9:
-    dependencies:
-      ms: 2.0.0
 
   debug@3.2.7(supports-color@8.1.1):
     dependencies:
@@ -15295,24 +15215,6 @@ snapshots:
       is-callable: 1.2.7
       is-date-object: 1.0.5
       is-symbol: 1.0.4
-
-  es5-ext@0.10.64:
-    dependencies:
-      es6-iterator: 2.0.3
-      es6-symbol: 3.1.3
-      esniff: 2.0.1
-      next-tick: 1.1.0
-
-  es6-iterator@2.0.3:
-    dependencies:
-      d: 1.0.1
-      es5-ext: 0.10.64
-      es6-symbol: 3.1.3
-
-  es6-symbol@3.1.3:
-    dependencies:
-      d: 1.0.1
-      ext: 1.7.0
 
   escalade@3.2.0: {}
 
@@ -15805,13 +15707,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  esniff@2.0.1:
-    dependencies:
-      d: 1.0.1
-      es5-ext: 0.10.64
-      event-emitter: 0.3.5
-      type: 2.7.3
-
   espree@9.6.1:
     dependencies:
       acorn: 8.11.2
@@ -15837,11 +15732,6 @@ snapshots:
   estree-walker@2.0.2: {}
 
   esutils@2.0.3: {}
-
-  event-emitter@0.3.5:
-    dependencies:
-      d: 1.0.1
-      es5-ext: 0.10.64
 
   event-target-shim@5.0.1: {}
 
@@ -15924,10 +15814,6 @@ snapshots:
   expand-template@2.0.3: {}
 
   expr-eval@2.0.2: {}
-
-  ext@1.7.0:
-    dependencies:
-      type: 2.7.3
 
   extend@3.0.2: {}
 
@@ -16976,9 +16862,9 @@ snapshots:
     dependencies:
       ws: 8.13.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
 
-  isomorphic-ws@5.0.0(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
+  isomorphic-ws@5.0.0(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
     dependencies:
-      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
 
   isstream@0.1.2: {}
 
@@ -17186,7 +17072,7 @@ snapshots:
 
   ky@1.7.4: {}
 
-  langchain@0.2.19(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.13.1)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
+  langchain@0.2.19(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/community@0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)):
     dependencies:
       '@langchain/core': 0.2.36(openai@4.71.1(zod@3.22.3))
       '@langchain/openai': 0.1.3
@@ -17205,14 +17091,14 @@ snapshots:
     optionalDependencies:
       '@aws-sdk/client-s3': 3.840.0
       '@aws-sdk/credential-provider-node': 3.840.0
-      '@langchain/community': 0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.13.1)(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@langchain/community': 0.3.3(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.840.0)(@aws-sdk/credential-provider-node@3.840.0)(@langchain/core@0.2.8(openai@4.71.1(zod@3.22.3)))(@langchain/google-genai@0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3))(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@xenova/transformers@2.17.2)(axios@1.8.2)(fast-xml-parser@4.4.1)(handlebars@4.7.8)(ignore@5.3.1)(jsonwebtoken@9.0.0)(lodash@4.17.21)(openai@4.71.1(zod@3.22.3))(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@langchain/google-genai': 0.0.17(openai@4.71.1(zod@3.22.3))(zod@3.22.3)
-      '@supabase/supabase-js': 2.13.1
+      '@supabase/supabase-js': 2.57.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       axios: 1.8.2
       fast-xml-parser: 4.4.1
       handlebars: 4.7.8
       ignore: 5.3.1
-      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - encoding
       - openai
@@ -17661,8 +17547,6 @@ snapshots:
 
   mrmime@1.0.1: {}
 
-  ms@2.0.0: {}
-
   ms@2.1.2: {}
 
   ms@2.1.3: {}
@@ -17718,8 +17602,6 @@ snapshots:
       '@next/env': 14.0.3
       minimist: 1.2.8
       next: 13.2.4(@babel/core@7.23.3)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0)
-
-  next-tick@1.1.0: {}
 
   next@13.2.4(@babel/core@7.23.3)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.70.0):
     dependencies:
@@ -17781,7 +17663,8 @@ snapshots:
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
 
-  node-gyp-build@4.7.1: {}
+  node-gyp-build@4.7.1:
+    optional: true
 
   node-releases@2.0.13: {}
 
@@ -19760,10 +19643,6 @@ snapshots:
 
   type-fest@4.26.1: {}
 
-  type@1.2.0: {}
-
-  type@2.7.3: {}
-
   typed-array-buffer@1.0.2:
     dependencies:
       call-bind: 1.0.7
@@ -19931,6 +19810,7 @@ snapshots:
   utf-8-validate@5.0.10:
     dependencies:
       node-gyp-build: 4.7.1
+    optional: true
 
   util-deprecate@1.0.2: {}
 
@@ -20053,17 +19933,6 @@ snapshots:
       - esbuild
       - uglify-js
     optional: true
-
-  websocket@1.0.35:
-    dependencies:
-      bufferutil: 4.0.8
-      debug: 2.6.9
-      es5-ext: 0.10.64
-      typedarray-to-buffer: 3.1.5
-      utf-8-validate: 5.0.10
-      yaeti: 0.0.6
-    transitivePeerDependencies:
-      - supports-color
 
   whatwg-url@5.0.0:
     dependencies:
@@ -20199,11 +20068,6 @@ snapshots:
       bufferutil: 4.0.8
       utf-8-validate: 5.0.10
 
-  ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10):
-    optionalDependencies:
-      bufferutil: 4.0.8
-      utf-8-validate: 5.0.10
-
   ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     optionalDependencies:
       bufferutil: 4.0.8
@@ -20220,8 +20084,6 @@ snapshots:
   y18n@4.0.3: {}
 
   y18n@5.0.8: {}
-
-  yaeti@0.0.6: {}
 
   yallist@3.1.1: {}
 
