@@ -12,6 +12,7 @@ import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 const processImageQueue = async (supabase: any) => {
 	try {
 		let totalMessages = 0;
+		// *** not sure that this is the best way, it empty's the queue in a single api call
 		while (true) {
 			const { data: messages, error: messageError } = await supabase
 				.schema("pgmq_public")
