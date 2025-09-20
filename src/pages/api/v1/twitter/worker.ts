@@ -22,6 +22,7 @@ const processImageQueue = async (supabase: any) => {
 					n: 100,
 				});
 
+			// eslint-disable-next-line no-console
 			console.log(
 				"************************ messages *********************",
 				messages?.length,
@@ -103,6 +104,7 @@ export default async function handler(
 	try {
 		const result = await processImageQueue(supabase);
 
+		// eslint-disable-next-line no-console
 		console.log({
 			message: "Queue processed successfully",
 			count: result?.totalMessages,
