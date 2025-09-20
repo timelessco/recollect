@@ -111,7 +111,6 @@ export default async function handler(
 		response.status(200).json({
 			success: true,
 			message: "Queue processed successfully",
-			count: result?.totalMessages,
 		});
 	} catch {
 		response.status(500).json({
