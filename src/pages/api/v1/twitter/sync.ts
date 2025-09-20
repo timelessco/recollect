@@ -4,8 +4,6 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import imageToText from "../../../../async/ai/imageToText";
-import ocr from "../../../../async/ai/ocr";
 import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
@@ -13,7 +11,6 @@ import {
 	type twitter_sort_index,
 } from "../../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
-import { blurhashFromURL } from "../../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 type RequestType = {
@@ -32,7 +29,8 @@ const getBodySchema = () =>
 				type: z.string(),
 				url: z.string(),
 				meta_data: z.object({
-					twitter_avatar_url: z.string(),
+					twitter_avatar_url: z.string().optional(),
+					favIcon: z.string(),
 				}),
 				inserted_at: z.string().datetime().optional(),
 				sort_index: z.string(),
@@ -116,8 +114,6 @@ export default async function handler(
 			.insert(duplicateFilteredData)
 			.select("*");
 
-		console.log("before category update");
-
 		if (insertDBError) {
 			response
 				.status(400)
@@ -137,57 +133,22 @@ export default async function handler(
 			return;
 		}
 
-		// get blur hash and image caption and OCR and upload it to DB
-		const dataWithBlurHash = await Promise.all(
-			insertDBData?.map(async (item) => {
-				const imgData = item?.ogImage
-					? await blurhashFromURL(item?.ogImage)
-					: null;
-
-				let image_caption = null;
-				let imageOcrValue = null;
-
-				if (item?.ogImage) {
-					try {
-						// Get OCR using the centralized function
-						imageOcrValue = await ocr(item.ogImage);
-
-						// Get image caption using the centralized function
-						image_caption = await imageToText(item.ogImage);
-					} catch (error) {
-						console.error("caption or ocr error", error);
-						Sentry.captureException(`caption or ocr error ${error}`);
-					}
-				}
-
-				return {
-					...item,
-					meta_data: {
-						...item.meta_data,
-						height: imgData?.height ?? null,
-						width: imgData?.width ?? null,
-						ogImgBlurUrl: imgData?.encoded ?? null,
-						favIcon: null,
-						image_caption,
-						ocr: imageOcrValue,
-					},
-				};
-			}),
-		);
-
-		const { error: blurHashError } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.upsert(dataWithBlurHash, { onConflict: "id" })
-			.select("id");
-
-		if (blurHashError) {
-			Sentry.captureException(
-				`blur hash update error: ${blurHashError?.message}`,
-			);
-			// return;
+		try {
+			const { data: queueResults, error: queueResultsError } = await supabase
+				.schema("pgmq_public")
+				.rpc("send_batch", {
+					queue_name: "ai-stuffs",
+					messages: insertDBData,
+					sleep_seconds: 0,
+				});
+			if (!queueResultsError) {
+				console.log("successfully queued ", queueResults.length, "items");
+			}
+		} catch {
+			console.error("Failed to queue item:");
 		}
 
-		// creates and add embeddings
+		// // creates and add embeddings
 		const bookmarkIds = insertDBData?.map((item) => item?.id);
 
 		try {
