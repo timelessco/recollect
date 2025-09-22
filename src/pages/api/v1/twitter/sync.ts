@@ -32,6 +32,7 @@ const getBodySchema = () =>
 					twitter_avatar_url: z.string().optional(),
 					favIcon: z.string(),
 				}),
+				inserted_at: z.string().datetime().optional(),
 				sort_index: z.string(),
 				category_name: z.string().optional(),
 			}),
