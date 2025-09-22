@@ -1,0 +1,178 @@
+/* 
+ * Color System - Recollect
+ * All colors used in the application are defined here as CSS variables.
+ * Organized by category and usage for better maintainability.
+ */
+
+:root {
+	/* ===== Brand Colors ===== */
+	--color-brand-primary: #20c5a0; /* Teal - Primary brand color */
+	--color-brand-secondary: #a130fa; /* Purple - Secondary brand color */
+	--color-brand-tertiary: #46a6ff; /* Light Blue - Tertiary brand color */
+	--color-brand-accent: #f85e9c; /* Pink - Accent color */
+	--color-brand-dark: #00111d; /* Dark Blue - For dark backgrounds/text */
+
+	/* ===== Status Colors ===== */
+	--color-success: #3fa652; /* Green - Success states */
+	--color-success-light: #e8f5e9; /* Light Green - Success backgrounds */
+	--color-warning: #f59b32; /* Orange - Warning states */
+	--color-warning-light: #fff3e0; /* Light Orange - Warning backgrounds */
+	--color-error: #d94f3d; /* Red - Error/Danger states */
+	--color-error-light: #ffebee; /* Light Red - Error backgrounds */
+	--color-info: #46a6ff; /* Blue - Informational states */
+	--color-info-light: #e3f2fd; /* Light Blue - Info backgrounds */
+
+	/* ===== Grayscale ===== */
+	--color-white: #fff;
+	--color-off-white: #fafafa;
+	--color-gray-50: #f8f9fa;
+	--color-gray-100: #f3f4f6;
+	--color-gray-150: #eaeaea;
+	--color-gray-200: #e5e7eb;
+	--color-gray-250: #d1d5db;
+	--color-gray-300: #b7b7b7;
+	--color-gray-350: #9ca3af;
+	--color-gray-400: #8f8f8f;
+	--color-gray-450: #707070;
+	--color-gray-500: #6b7280;
+	--color-gray-550: #5d6679;
+	--color-gray-600: #525252;
+	--color-gray-650: #4b5563;
+	--color-gray-700: #383838;
+	--color-gray-750: #374151;
+	--color-gray-800: #1f2937;
+	--color-gray-850: #1a1a1a;
+	--color-gray-900: #111827;
+	--color-black: #000;
+
+	/* Social Colors */
+	--color-google-blue: #5085ed;
+	--color-google-red: #d94f3d;
+	--color-google-yellow: #f2c042;
+	--color-google-green: #3fa652;
+
+	/* UI Element Colors */
+	--color-border: var(--color-gray-200);
+	--color-border-light: rgb(0 0 0 / 5%);
+	--color-border-medium: rgb(0 0 0 / 13%);
+	--color-overlay: rgb(0 0 0 / 50%);
+
+	/* Text Colors */
+	--color-text: var(--color-gray-900);
+	--color-text-primary: #171717;
+	--color-text-secondary: #374151;
+	--color-text-tertiary: #6b7280;
+	--color-text-muted: #858585;
+	--color-text-light: #f3f4f6;
+
+	/* Background Colors */
+	--color-background: var(--color-white);
+	--color-bg-primary: #fff;
+	--color-bg-secondary: #fafafa;
+	--color-bg-tertiary: #f3f4f6;
+	--color-bg-hover: rgb(0 0 0 / 3%);
+	--color-bg-overlay: rgb(255 255 255 / 98%);
+
+	/* Button Colors */
+	--color-button-primary: var(--color-brand-primary);
+	--color-button-primary-hover: #1ab394;
+	--color-button-text: #fff;
+	--color-button-hover: #333;
+	--color-button-secondary: rgb(0 0 0 / 4.7%);
+	--color-button-secondary-hover: rgb(0 0 0 / 10%);
+
+	/* Card & Surface Colors */
+	--color-card: var(--color-white);
+	--color-card-hover: var(--color-gray-50);
+	--color-card-border: rgb(0 0 0 / 10%);
+
+	/* Input Colors */
+	--color-input-bg: #fff;
+	--color-input-border: #d1d5db;
+	--color-input-placeholder: #9ca3af;
+	--color-input-focus: #46a6ff;
+	--color-input-background: var(--color-white);
+
+	/* Icon Colors */
+	--color-icon: var(--color-gray-600);
+	--color-icon-hover: var(--color-gray-900);
+	--color-icon-active: var(--color-brand-primary);
+
+	/* Category Icons */
+	--color-category-home: var(--color-brand-primary);
+	--color-category-code: #00111d;
+	--color-category-design: var(--color-brand-secondary);
+	--color-category-card: #f85e9c;
+	--color-category-collection: var(--color-warning);
+
+	/* Status Indicators */
+	--color-status-online: var(--color-success);
+	--color-status-offline: var(--color-gray-400);
+	--color-status-away: var(--color-warning);
+	--color-status-busy: var(--color-error);
+
+	/* Badges & Tags */
+	--color-badge-info: var(--color-info);
+	--color-badge-success: var(--color-success);
+	--color-badge-warning: var(--color-warning);
+	--color-badge-error: var(--color-error);
+	--color-badge-neutral: var(--color-gray-200);
+
+	/* Alerts & Notifications */
+	--color-alert-info-bg: #eff6ff;
+	--color-alert-success-bg: #ecfdf5;
+	--color-alert-warning-bg: #fffbeb;
+	--color-alert-error-bg: #fef2f2;
+
+	/* Tooltips & Popovers */
+	--color-tooltip-bg: var(--color-gray-900);
+	--color-tooltip-text: var(--color-white);
+
+	/* Overlays & Backdrops */
+	--color-overlay-light: rgb(255 255 255 / 50%);
+	--color-overlay-dark: rgb(0 0 0 / 50%);
+
+	/* Gradients */
+	--gradient-primary: linear-gradient(
+		135deg,
+		var(--color-brand-primary) 0%,
+		#1ab394 100%
+	);
+	--gradient-secondary: linear-gradient(
+		135deg,
+		var(--color-brand-secondary) 0%,
+		#8b5cf6 100%
+	);
+	--gradient-warning: linear-gradient(
+		135deg,
+		var(--color-warning) 0%,
+		#f97316 100%
+	);
+	--gradient-error: linear-gradient(
+		135deg,
+		var(--color-error) 0%,
+		#dc2626 100%
+	);
+	--gradient-success: linear-gradient(
+		135deg,
+		var(--color-success) 0%,
+		#10b981 100%
+	);
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] {
+	--color-background: #121212;
+	--color-card: #1e1e1e;
+	--color-card-hover: #2a2a2a;
+	--color-text: #f5f5f5;
+	--color-text-secondary: #a3a3a3;
+	--color-text-muted: #6b7280;
+	--color-border: #333;
+	--color-input-border: #444;
+	--color-input-background: #2a2a2a;
+	--color-icon: #a3a3a3;
+	--color-icon-hover: #fff;
+	--color-tooltip-bg: #2d3748;
+	--color-tooltip-text: #f7fafc;
+}
