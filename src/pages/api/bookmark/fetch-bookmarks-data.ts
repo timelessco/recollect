@@ -6,6 +6,7 @@ import {
 } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
+import { order } from "tailwindcss/defaultTheme";
 
 import {
 	type BookmarksCountTypes,
@@ -116,7 +117,8 @@ user_id (
 		)
 		// .eq('user_id', userId) // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
 		.eq("trash", category_id === TRASH_URL)
-		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
+		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT)
+		.order("inserted_at", { ascending: false });
 
 	if (categoryCondition) {
 		// check if user is user is a collaborator for the category_id
