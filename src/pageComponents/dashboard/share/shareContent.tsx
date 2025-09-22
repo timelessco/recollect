@@ -13,7 +13,7 @@ import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutation
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
-import Spinner from "../../../components/spinner";
+import { SearchLoader } from "../../../components/search-loader";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
@@ -298,7 +298,7 @@ const ShareContent = () => {
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isLoading ? (
-							<Spinner />
+							<SearchLoader className="h-3 w-3 animate-spin" />
 						) : (
 							<AriaSelect
 								defaultValue="View"
@@ -332,13 +332,21 @@ const ShareContent = () => {
 					People with access
 				</p>
 				<div className="pb-2">
-					{currentCategory?.collabData?.map((item) => (
-						<AccessUserInfo
-							isLoggedinUserTheOwner={isUserTheCategoryOwner}
-							item={item}
-							key={item.userEmail}
-						/>
-					))}
+					{currentCategory?.collabData
+						?.slice()
+						.sort((a, b) => {
+							// Move owner to the top
+							if (a.isOwner) return -1;
+							if (b.isOwner) return 1;
+							return 0;
+						})
+						.map((item) => (
+							<AccessUserInfo
+								isLoggedinUserTheOwner={isUserTheCategoryOwner}
+								item={item}
+								key={item.userEmail}
+							/>
+						))}
 				</div>
 				<div className="mx-2 flex items-end justify-between border-y-[1px] border-custom-gray-11 py-[15.5px]">
 					<div className=" flex items-center">

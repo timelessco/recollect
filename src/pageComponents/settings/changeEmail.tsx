@@ -7,7 +7,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
-import Spinner from "../../components/spinner";
+import { SearchLoader } from "../../components/search-loader";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
 import {
@@ -149,7 +149,14 @@ const ChangeEmail = () => {
 						onClick={handleSubmit(onSubmit)}
 						type="dark"
 					>
-						{changeEmailLoader ? <Spinner /> : "Change email"}
+						{changeEmailLoader ? (
+							<SearchLoader
+								className="h-5 w-5 animate-spin"
+								style={{ color: "white" }}
+							/>
+						) : (
+							"Change email"
+						)}
 					</Button>
 				</div>
 			</form>

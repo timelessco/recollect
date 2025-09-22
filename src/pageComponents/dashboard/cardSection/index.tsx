@@ -12,6 +12,7 @@ import { Item } from "react-stately";
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
+import { SearchLoader } from "../../../components/search-loader";
 import Spinner from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -421,7 +422,7 @@ const CardSection = ({
 								{isDeleteBookmarkLoading &&
 								deleteBookmarkId?.includes(post?.id) ? (
 									<div>
-										<Spinner size={15} />
+										<SearchLoader className="h-3 w-3 animate-spin" />
 									</div>
 								) : (
 									trashIcon

@@ -10,7 +10,7 @@ import {
 	signInWithOauth,
 } from "../../async/supabaseCrudHelpers";
 import Input from "../../components/atoms/input";
-import Spinner from "../../components/spinner";
+import { SearchLoader } from "../../components/search-loader";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogo from "../../icons/laterpadLogo";
 import { useSupabaseSession } from "../../store/componentStore";
@@ -114,11 +114,18 @@ const LoginPage = () => {
 								type="password"
 							/>
 							<button
-								className={buttonDarkClassName}
+								className={`${buttonDarkClassName} items-center`}
 								id="sign-in-button"
 								type="submit"
 							>
-								{!isLoading ? "Sign in" : <Spinner />}
+								{!isLoading ? (
+									<div className="text-white">Sign in</div>
+								) : (
+									<SearchLoader
+										className="h-3 w-3 animate-spin"
+										style={{ color: "white" }}
+									/>
+								)}
 							</button>
 							<div
 								className={buttonLightClassName}
