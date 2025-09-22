@@ -326,31 +326,42 @@ const ListBox = (props: ListBoxDropTypes) => {
 						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
 							const isCardView = cardTypeCondition === viewValues.card;
 							const lanes = rowVirtualizer?.options?.lanes || 1;
-							const columnIndex = isCardView ? virtualRow?.index % lanes : 0;
+							const columnIndex = isCardView ? virtualRow.index % lanes : 0;
 							const columnWidth = isCardView ? 100 / lanes : 100;
+							// Calculate row index and get the row's top position
+							const rowIndex = Math.floor(virtualRow.index / lanes);
+							const rowStart =
+								rowVirtualizer
+									.getVirtualItems()
+									.find((vItem) => Math.floor(vItem.index / lanes) === rowIndex)
+									?.start ?? 0;
+
 							const translateX = isCardView ? columnWidth * columnIndex : 0;
 							const itemWidth = isCardView ? `${columnWidth}%` : "100%";
 
 							return (
 								<div
-									data-index={virtualRow?.index}
-									key={virtualRow?.key?.toString()}
-									ref={rowVirtualizer?.measureElement}
+									data-index={virtualRow.index}
+									key={virtualRow.key.toString()}
+									ref={rowVirtualizer.measureElement}
 									style={{
 										position: "absolute",
 										top: 0,
 										left: `${translateX}%`,
 										width: itemWidth,
-										transform: `translateY(${virtualRow?.start}px)`,
+										transform: `translateY(${rowStart}px)`,
 										paddingBottom:
 											cardTypeCondition === viewValues.timeline
 												? "24px"
+												: cardTypeCondition === viewValues.card
+												? "42px"
 												: "0px",
+
 										paddingLeft: isCardView ? "0.75rem" : "0px",
 										paddingRight: isCardView ? "0.75rem" : "0px",
 									}}
 								>
-									{renderOption(virtualRow?.index)}
+									{renderOption(virtualRow.index)}
 								</div>
 							);
 						})}
