@@ -168,7 +168,7 @@ const Dashboard = () => {
 		(state) => state.setShareCategoryId,
 	);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
 			setIsEdit(false);
@@ -651,6 +651,7 @@ const Dashboard = () => {
 											height: "100vh",
 											overflowY: "auto",
 											overflowX: "hidden",
+											overflowAnchor: "none",
 										}}
 									>
 										<InfiniteScroll
@@ -661,7 +662,7 @@ const Dashboard = () => {
 											}
 											endMessage={
 												<p className="pb-6 text-center">
-													Life happens, save it.
+													{isSearchLoading ? "" : "Life happens, save it."}
 												</p>
 											}
 											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}

@@ -95,6 +95,18 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	// ---- Virtualizer Setup ----
 	const rowVirtualizer = useVirtualizer({
+		measureElement: (element, _entry, instance) => {
+			const direction = instance.scrollDirection;
+			if (direction === "forward" || direction === null) {
+				// Allow a fresh measurement when scrolling down (or initial)
+				return element.getBoundingClientRect().height;
+			} else {
+				// eslint-disable-next-line unicorn/prefer-dom-node-dataset
+				const indexKey = Number(element.getAttribute("data-index"));
+				const cached = instance.measurementsCache[indexKey]?.size;
+				return cached ?? element.getBoundingClientRect().height;
+			}
+		},
 		count: bookmarksList.length,
 		getScrollElement: () =>
 			typeof document !== "undefined"
@@ -148,7 +160,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			const aspectRatio = 4 / 3;
 			return cardWidth * aspectRatio;
 		},
-		overscan: 5,
+		overscan: 1,
 		lanes: (() => {
 			if (
 				cardTypeCondition !== viewValues.card &&
@@ -249,7 +261,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				isPublicPage={isPublicPage}
 				isTrashPage={isTrashPage}
 				item={item}
-				key={item.key}
+				key={bookmarkData.id}
 				state={state}
 				type={bookmarkData?.type ?? ""}
 				url={bookmarkData?.url ?? ""}
@@ -342,8 +354,10 @@ const ListBox = (props: ListBoxDropTypes) => {
 							return (
 								<div
 									data-index={virtualRow.index}
-									key={virtualRow.key.toString()}
-									ref={rowVirtualizer.measureElement}
+									key={bookmarksList[virtualRow.index].id}
+									ref={(element) => {
+										if (element) rowVirtualizer.measureElement(element);
+									}}
 									style={{
 										position: "absolute",
 										top: 0,
