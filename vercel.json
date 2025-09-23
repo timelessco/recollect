@@ -8,6 +8,9 @@
 		},
 		"src/pages/api/bookmark/add-url-screenshot.ts": {
 			"maxDuration": 300
+		},
+		"src/pages/api/v1/twitter/worker.ts": {
+			"maxDuration": 300
 		}
 	}
 }
