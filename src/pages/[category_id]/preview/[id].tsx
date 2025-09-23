@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/search-loader";
 import { type SingleListData } from "../../../types/apiTypes";
 import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
 
@@ -41,7 +41,7 @@ const Preview = () => {
 	if (isLoading)
 		return (
 			<div className="flex h-screen items-center justify-center">
-				<Spinner />
+				<Spinner className="h-3 w-3 animate-spin" />
 			</div>
 		);
 

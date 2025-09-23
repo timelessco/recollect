@@ -6,13 +6,12 @@ import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { motion } from "motion/react";
 import { Item } from "react-stately";
 
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/search-loader";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
@@ -112,7 +111,6 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -189,10 +187,6 @@ const CardSection = ({
 			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	}
-
-	const isAllBookmarksDataFetching = useIsFetching({
-		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-	});
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
@@ -421,7 +415,7 @@ const CardSection = ({
 								{isDeleteBookmarkLoading &&
 								deleteBookmarkId?.includes(post?.id) ? (
 									<div>
-										<Spinner size={15} />
+										<Spinner className="h-3 w-3 animate-spin" />
 									</div>
 								) : (
 									trashIcon
@@ -520,13 +514,7 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<motion.figure
-					className={figureClassName}
-					layout={
-						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
-						// isLoading
-					}
-				>
+				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -545,7 +533,7 @@ const CardSection = ({
 						isPublicPage={isPublicPage}
 						sizesLogic={sizesLogic}
 					/>
-				</motion.figure>
+				</figure>
 			</div>
 		);
 	};
@@ -839,7 +827,7 @@ const CardSection = ({
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		"py-2 pl-[28px] pr-[19px]":
+		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
 	});
