@@ -11,23 +11,18 @@ import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const processImageQueue = async (supabase: any) => {
 	try {
-		let totalMessages = 0;
 		const { data: messages, error: messageError } = await supabase
 			.schema("pgmq_public")
 			.rpc("read", {
 				queue_name: "ai-stuffs",
-				sleep_seconds: 10,
+				sleep_seconds: 5,
 				// eslint-disable-next-line id-length
-				n: 2,
+				n: 1,
 			});
 
-		// eslint-disable-next-line no-console
-		console.log(
-			"************************ messages *********************",
-			messages?.length,
-		);
-
-		totalMessages = messages?.length;
+		if (!messages?.length) {
+			return;
+		}
 
 		if (messageError) {
 			console.error("Error fetching messages from queue:", messageError);
@@ -77,7 +72,7 @@ const processImageQueue = async (supabase: any) => {
 		}
 
 		// eslint-disable-next-line consistent-return
-		return { totalMessages, messageId: messages?.[0]?.msg_id };
+		return { messageId: messages?.[0]?.msg_id };
 	} catch (error) {
 		console.error("Queue processing error:", error);
 		throw error;
@@ -101,7 +96,6 @@ export default async function handler(
 		// eslint-disable-next-line no-console
 		console.log({
 			message: "Queue processed successfully",
-			count: result?.totalMessages,
 			messageId: result?.messageId,
 		});
 
