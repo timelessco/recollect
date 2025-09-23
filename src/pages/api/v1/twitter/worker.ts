@@ -18,7 +18,7 @@ const processImageQueue = async (supabase: any) => {
 				queue_name: "ai-stuffs",
 				sleep_seconds: 10,
 				// eslint-disable-next-line id-length
-				n: 3,
+				n: 2,
 			});
 
 		// eslint-disable-next-line no-console
