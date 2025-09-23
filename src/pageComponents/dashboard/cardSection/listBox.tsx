@@ -354,10 +354,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 							return (
 								<div
 									data-index={virtualRow.index}
-									key={bookmarksList[virtualRow.index].id}
-									ref={(element) => {
-										if (element) rowVirtualizer.measureElement(element);
-									}}
+									key={virtualRow.key.toString()}
+									ref={rowVirtualizer.measureElement}
 									style={{
 										position: "absolute",
 										top: 0,
