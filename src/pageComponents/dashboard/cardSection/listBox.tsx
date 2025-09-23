@@ -261,7 +261,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				isPublicPage={isPublicPage}
 				isTrashPage={isTrashPage}
 				item={item}
-				key={bookmarkData.id}
+				key={item.key}
 				state={state}
 				type={bookmarkData?.type ?? ""}
 				url={bookmarkData?.url ?? ""}
