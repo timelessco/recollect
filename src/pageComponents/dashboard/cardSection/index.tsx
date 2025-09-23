@@ -6,7 +6,6 @@ import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { motion } from "motion/react";
 import { Item } from "react-stately";
 
 import { CollectionIcon } from "../../../components/collectionIcon";
@@ -112,7 +111,6 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-	const { loadingBookmarkIds } = useLoadersStore();
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -189,10 +187,6 @@ const CardSection = ({
 			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	}
-
-	const isAllBookmarksDataFetching = useIsFetching({
-		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-	});
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
@@ -515,21 +509,12 @@ const CardSection = ({
 				cardTypeCondition === viewValues.timeline,
 			"top-[9px] left-[21px]": cardTypeCondition === viewValues.list,
 		});
-		const isLoading = loadingBookmarkIds.has(id);
 
 		return (
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<motion.figure
-					className={figureClassName}
-					layout={
-						isBookmarkLoading ||
-						isAllBookmarksDataFetching ||
-						isOgImgLoading ||
-						isLoading
-					}
-				>
+				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -548,7 +533,7 @@ const CardSection = ({
 						isPublicPage={isPublicPage}
 						sizesLogic={sizesLogic}
 					/>
-				</motion.figure>
+				</figure>
 			</div>
 		);
 	};

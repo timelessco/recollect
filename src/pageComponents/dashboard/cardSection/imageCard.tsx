@@ -11,6 +11,7 @@ import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
 import { isEmpty, isNil } from "lodash";
+import { motion } from "motion/react";
 
 // Assets and utilities
 import loaderGif from "../../../../public/loader-gif.gif";
@@ -102,7 +103,7 @@ const ImgLogicComponent = ({
 		}
 
 		return (
-			<>
+			<motion.div layout={isLoading || !isNil(img)}>
 				{img ? (
 					<Image
 						alt="bookmark-img"
@@ -119,7 +120,7 @@ const ImgLogicComponent = ({
 				) : (
 					<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 				)}
-			</>
+			</motion.div>
 		);
 	}
 
