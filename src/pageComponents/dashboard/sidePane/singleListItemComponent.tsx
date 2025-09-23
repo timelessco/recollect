@@ -6,7 +6,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
-import { SearchLoader } from "../../../components/search-loader";
+import { Spinner } from "../../../components/search-loader";
 import GlobeIcon from "../../../icons/globeIcon";
 import OptionsIconGray from "../../../icons/optionsIconGray";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
@@ -102,7 +102,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 				</p>
 			</div>
 			<div className="flex items-center space-x-3">
-				{showSpinner && <SearchLoader className="h-3 w-3 animate-spin" />}
+				{showSpinner && <Spinner className="h-3 w-3 animate-spin" />}
 				{item?.isPublic && (
 					<figure className="hidden">
 						<GlobeIcon />

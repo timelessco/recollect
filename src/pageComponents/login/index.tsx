@@ -10,7 +10,7 @@ import {
 	signInWithOauth,
 } from "../../async/supabaseCrudHelpers";
 import Input from "../../components/atoms/input";
-import { SearchLoader } from "../../components/search-loader";
+import { Spinner } from "../../components/search-loader";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogo from "../../icons/laterpadLogo";
 import { useSupabaseSession } from "../../store/componentStore";
@@ -121,7 +121,7 @@ const LoginPage = () => {
 								{!isLoading ? (
 									<div className="text-white">Sign in</div>
 								) : (
-									<SearchLoader
+									<Spinner
 										className="h-3 w-3 animate-spin"
 										style={{ color: "white" }}
 									/>

@@ -10,7 +10,7 @@ import {
 	signUpWithEmailPassword,
 } from "../../async/supabaseCrudHelpers";
 import Input from "../../components/atoms/input";
-import { SearchLoader } from "../../components/search-loader";
+import { Spinner } from "../../components/search-loader";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogoBlack from "../../icons/laterpadLogoBlack";
 import { useSupabaseSession } from "../../store/componentStore";
@@ -124,7 +124,7 @@ const SignUp = () => {
 								type="submit"
 							>
 								{isLoading ? (
-									<SearchLoader
+									<Spinner
 										className="h-3 w-3 animate-spin"
 										style={{ color: "white" }}
 									/>

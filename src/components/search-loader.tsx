@@ -1,6 +1,6 @@
 import React from "react";
 
-export const SearchLoader = ({
+export const Spinner = ({
 	className = "",
 	style = {},
 }: {

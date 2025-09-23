@@ -13,7 +13,7 @@ import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/us
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
-import { SearchLoader } from "../../components/search-loader";
+import { Spinner } from "../../components/search-loader";
 import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
@@ -409,7 +409,7 @@ const Settings = () => {
 								</figure>
 								<p className="flex w-full justify-center sm:w-[105px]">
 									{deleteUserMutation?.isLoading ? (
-										<SearchLoader
+										<Spinner
 											className="h-3 w-3 animate-spin"
 											style={{ color: "red" }}
 										/>

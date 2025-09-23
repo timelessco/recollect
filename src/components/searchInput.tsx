@@ -13,7 +13,7 @@ import {
 import { type UserTagsData } from "../types/apiTypes";
 import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "../utils/constants";
 
-import { SearchLoader } from "./search-loader";
+import { Spinner } from "./search-loader";
 
 const styles = {
 	input: {
@@ -164,7 +164,7 @@ const SearchInput = (props: SearchInputTypes) => {
 			</MentionsInput>
 			{isSearchLoading && !isEmpty(searchText) && (
 				<div className="absolute right-2 top-1/2 -translate-y-1/2">
-					<SearchLoader className="h-3 w-3 animate-spin" />
+					<Spinner className="h-3 w-3 animate-spin" />
 				</div>
 			)}
 			{/* <button
