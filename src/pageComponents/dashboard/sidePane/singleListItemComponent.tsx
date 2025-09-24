@@ -95,7 +95,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					</figure>
 				)}
 				<p
-					className="ml-2 flex-1 overflow-hidden truncate text-sm font-[450] leading-4 text-custom-gray-1"
+					className="ml-2 flex-1 overflow-hidden truncate text-sm font-[450] leading-4"
 					id={listNameId}
 				>
 					{item?.name}
@@ -188,8 +188,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 	);
 
 	const contentWrapperClassNames = `${
-		item?.current ? "bg-gray-gray-100" : "bg-white"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-gray-100`;
+		item?.current ? "bg-hover-color text-hover-text-color" : "text-text-color"
+	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-hover-color hover:text-hover-text-color`;
 
 	if (isLink) {
 		return (

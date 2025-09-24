@@ -103,7 +103,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			<div className="flex w-full items-center justify-between">
 				{find(sortOptions, (item) => item?.label === value)?.label}
 				{value === currentValue?.label ? (
-					<figure className=" h-3 w-3">
+					<figure className="h-3 w-3">
 						<TickIcon />
 					</figure>
 				) : null}
