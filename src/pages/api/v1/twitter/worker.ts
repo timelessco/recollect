@@ -15,9 +15,9 @@ const processImageQueue = async (supabase: any) => {
 			.schema("pgmq_public")
 			.rpc("read", {
 				queue_name: "ai-stuffs",
-				sleep_seconds: 300,
+				sleep_seconds: 10,
 				// eslint-disable-next-line id-length
-				n: 42,
+				n: 2,
 			});
 
 		if (!messages?.length) {
