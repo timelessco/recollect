@@ -48,7 +48,7 @@ const SidePaneUserDropdown = () => {
 			<AriaDropdown
 				menuButton={
 					<div
-						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-custom-gray-8`}
+						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1 py-[3px]  hover:bg-hover-color hover:text-hover-text-color`}
 					>
 						<div className="flex w-4/5 items-center space-x-2">
 							<UserAvatar
@@ -62,7 +62,7 @@ const SidePaneUserDropdown = () => {
 								}
 								width={24}
 							/>
-							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4 text-custom-gray-1">
+							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4">
 								{userProfileData?.display_name || userProfileData?.user_name}
 							</p>
 						</div>
@@ -71,8 +71,8 @@ const SidePaneUserDropdown = () => {
 						</figure>
 					</div>
 				}
-				menuButtonActiveClassName="bg-custom-gray-8 rounded-lg"
-				menuButtonClassName="w-full"
+				menuButtonActiveClassName="!text-hover-text-color bg-hover-color rounded-lg"
+				menuButtonClassName="w-full text-text-color"
 				menuClassName={dropdownMenuClassName}
 			>
 				{[{ label: "Sign Out", value: "sign-out" }]?.map((item) => (

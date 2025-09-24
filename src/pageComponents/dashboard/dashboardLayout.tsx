@@ -271,7 +271,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold text-gray-light-12"
+					className="truncate text-xl font-semibold text-navbar-text-heading-color"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -539,7 +539,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] bg-custom-white-1 absolute top-0 w-full z-[5]  backdrop-blur-[20.5px]",
+			"flex items-center justify-between py-[6.5px] bg-background-color absolute top-0 w-full z-[5]  backdrop-blur-[20.5px]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",

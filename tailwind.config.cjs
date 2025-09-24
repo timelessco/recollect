@@ -57,7 +57,19 @@ module.exports = {
 					100: "#FFF0F0",
 					700: "#B52A2A",
 				},
+				"background-color": "var(--background-color)",
+				"hover-color": "var(--hover-color)",
+				"text-color": "var(--text-color)",
+				"hover-text-color": "var(--hover-text-color)",
+				"dropdown-text-color": "var(--dropdown-text-color)",
+				"dropdown-hover-background-color":
+					"var(--dropdown-hover-background-color)",
+				"dropdown-hover-text-color": "var(--dropdown-hover-text-color)",
+				"interactive-color-enabled": "var(--interactive-color-enabled)",
+				"interactive-color-disabled": "var(--interactive-color-disabled)",
+				"navbar-text-heading-color": "var(--navbar-text-heading-color)",
 				"modal-bg": "#00000045",
+				"secondary-text-color": "var(--secondary-text-color)",
 				overlay: {
 					black: {
 						"A/3": "#0000000C",

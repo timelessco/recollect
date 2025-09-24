@@ -36,7 +36,7 @@ const RadioGroup = (props: RadioGroupProps) => {
 	});
 
 	const radioClassNames = classNames(
-		"flex items-center justify-between rounded-lg px-2 py-[5px] text-sm leading-4 text-custom-gray-1 hover:bg-gray-light-4",
+		"flex items-center justify-between rounded-lg px-2 py-[5px] text-sm leading-4 text-dropdown-text-color hover:bg-dropdown-hover-background-color text-dropdown-text-color hover:text-dropdown-hover-text-color focus:text-dropdown-hover-text-color",
 		{
 			"cursor-not-allowed": disabled,
 			"cursor-pointer": !disabled,
@@ -53,7 +53,7 @@ const RadioGroup = (props: RadioGroupProps) => {
 				const isRadioSelected = value === item?.value;
 				return (
 					<label className={radioClassNames} key={item?.value}>
-						<div className="flex items-center text-[13px] font-450 text-custom-gray-1">
+						<div className="flex items-center text-[13px] font-450">
 							<figure className="mr-2 flex h-4 w-4 items-center justify-center">
 								{item?.icon}
 							</figure>
@@ -68,8 +68,8 @@ const RadioGroup = (props: RadioGroupProps) => {
 							{item?.label}
 						</div>
 						{isRadioSelected && (
-							<figure>
-								<TickIcon />
+							<figure className="text-interactive-color-enabled">
+								<TickIcon color="currentColor" />
 							</figure>
 						)}
 					</label>
