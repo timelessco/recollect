@@ -1,7 +1,9 @@
+// pages/api/process-queue.js (Pages Router)
+
 import { type NextApiRequest, type NextApiResponse } from "next";
 
-import ocr from "../../../../async/ai/ocr";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
+import { blurhashFromURL } from "../../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10,7 +12,7 @@ const processImageQueue = async (supabase: any) => {
 		const { data: messages, error: messageError } = await supabase
 			.schema("pgmq_public")
 			.rpc("read", {
-				queue_name: "ai-stuffs",
+				queue_name: "blurhash",
 				sleep_seconds: 300,
 				// eslint-disable-next-line id-length
 				n: 100,
@@ -29,19 +31,30 @@ const processImageQueue = async (supabase: any) => {
 			try {
 				const { ogImage, url, meta_data } = message.message;
 
+				const { data: existing } = await supabase
+					.from(MAIN_TABLE_NAME)
+					.select("meta_data")
+					.eq("url", url)
+					.single();
+
 				// Process the image (your heavy operations)
 				if (ogImage) {
-					// const imgData = await blurhashFromURL(ogImage);
-					const imageOcrValue = await ocr(ogImage);
+					const imgData = await blurhashFromURL(ogImage);
+					// const imageOcrValue = await ocr(ogImage);
 					// const image_caption = await imageToText(ogImage);
+					const newMeta = {
+						...existing?.meta_data,
+						height: imgData?.height,
+						width: imgData?.width,
+						ogImgBlurUrl: imgData?.encoded,
+					};
 
 					// UPDATE THE MAIN TABLE
 					await supabase
 						.from(MAIN_TABLE_NAME)
 						.update({
 							meta_data: {
-								ocr: imageOcrValue,
-								...meta_data,
+								...newMeta,
 							},
 						})
 						.eq("url", url);
@@ -51,7 +64,7 @@ const processImageQueue = async (supabase: any) => {
 				const { error: deleteError } = await supabase
 					.schema("pgmq_public")
 					.rpc("delete", {
-						queue_name: "ai-stuffs",
+						queue_name: "blurhash",
 						message_id: message.msg_id,
 					});
 

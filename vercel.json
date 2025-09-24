@@ -11,6 +11,12 @@
 		},
 		"src/pages/api/v1/twitter/worker.ts": {
 			"maxDuration": 300
+		},
+		"src/pages/api/v1/twitter/image-caption-worker.ts": {
+			"maxDuration": 300
+		},
+		"src/pages/api/v1/twitter/blurhash-worker.ts": {
+			"maxDuration": 300
 		}
 	}
 }
