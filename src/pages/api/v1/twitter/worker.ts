@@ -3,6 +3,7 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 
 import ocr from "../../../../async/ai/ocr";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
+import { createServiceClient } from "../../../../utils/supabaseClient";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,7 +95,7 @@ export default async function handler(
 		return;
 	}
 
-	const supabase = apiSupabaseClient(request, response);
+	const supabase = createServiceClient();
 	try {
 		const result = await processImageQueue(supabase);
 
