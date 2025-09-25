@@ -278,7 +278,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-background-color p-[5px] backdrop-blur-sm z-15";
+			"rounded-lg bg-[#ffffffe5] p-[5px] backdrop-blur-sm z-15";
 
 		const externalLinkIcon = (
 			<div
@@ -688,7 +688,7 @@ const CardSection = ({
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="text-sm leading-4 dark:text-white"
+								className="text-sm leading-4 text-icon-color"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}

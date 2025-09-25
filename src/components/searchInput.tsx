@@ -22,12 +22,12 @@ const styles = {
 		width: "80%",
 	},
 	control: {
-		backgroundColor: "rgba(0, 0, 0, 0.047)",
+		backgroundColor: "var(--search-bar-background-color)",
 
 		fontSize: 14,
 		fontWeight: 400,
 		lineHeight: "16px",
-		color: "#707070",
+		color: "var(--search-bar-text-color)",
 
 		width: "100%",
 		padding: "6px",
@@ -96,6 +96,7 @@ const SearchInput = (props: SearchInputTypes) => {
 		onEnterPress = () => null,
 	} = props;
 	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
+	const [isFocused, setIsFocused] = useState(false);
 
 	const queryClient = useQueryClient();
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
@@ -116,13 +117,22 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	return (
 		<div className={wrapperClassNameBuilder}>
-			<figure className=" absolute left-[9px] top-[7px] ">
-				<SearchInputSearchIcon size="14" />
+			<figure className="absolute left-[9px] top-[7px] z-[5]">
+				<SearchInputSearchIcon
+					color={
+						isFocused
+							? "var(--dropdown-hover-text-color)"
+							: "var(--search-bar-text-color)"
+					}
+					size="14"
+				/>
 			</figure>
-			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
 				className={inputClassNamesBuilder}
-				onBlur={onBlur}
+				onBlur={() => {
+					setIsFocused(false);
+					onBlur();
+				}}
 				onChange={(event: { target: { value: string } }) => {
 					onChange(event.target.value);
 
@@ -137,11 +147,10 @@ const SearchInput = (props: SearchInputTypes) => {
 
 					setAddedTags(tagName);
 				}}
-				// onKeyUp={(e) => e.key === "Enter" && onEnterPress(e.target.value)}
+				onFocus={() => setIsFocused(true)}
 				onKeyUp={(event) => {
 					if (event.key === "Enter") {
 						onEnterPress(searchText);
-						// setSearchText("");
 					}
 				}}
 				placeholder={placeholder}
