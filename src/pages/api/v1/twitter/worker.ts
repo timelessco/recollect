@@ -87,7 +87,7 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	if (request.method !== "GET") {
+	if (request.method !== "POST") {
 		response.status(405).json({ error: "Method not allowed" });
 		return;
 	}
