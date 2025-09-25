@@ -65,7 +65,7 @@ export const processImageQueue = async (
 					}
 
 					if (processOcr) {
-						newMeta.ocr_text = await ocr(ogImage);
+						newMeta.ocr = await ocr(ogImage);
 					}
 
 					if (processBlurhash) {
