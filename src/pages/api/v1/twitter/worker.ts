@@ -4,7 +4,6 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import ocr from "../../../../async/ai/ocr";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { createServiceClient } from "../../../../utils/supabaseClient";
-import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const processImageQueue = async (supabase: any) => {
@@ -41,15 +40,11 @@ const processImageQueue = async (supabase: any) => {
 					// const imgData = await blurhashFromURL(ogImage);
 					const imageOcrValue = await ocr(ogImage);
 					// const image_caption = await imageToText(ogImage);
-					console.log("existing", existing);
-
-					console.log("imageOcrValue", imageOcrValue);
 
 					const newMeta = {
 						...existing?.meta_data,
 						ocr: imageOcrValue,
 					};
-					console.log("newMeta", newMeta);
 
 					// UPDATE THE MAIN TABLE
 					await supabase

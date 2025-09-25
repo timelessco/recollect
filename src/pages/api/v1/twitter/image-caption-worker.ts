@@ -3,7 +3,7 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 
 import imageToText from "../../../../async/ai/imageToText";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
-import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
+import { createServiceClient } from "../../../../utils/supabaseClient";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const processImageQueue = async (supabase: any) => {
@@ -41,14 +41,11 @@ const processImageQueue = async (supabase: any) => {
 					// const imgData = await blurhashFromURL(ogImage);
 					// const imageOcrValue = await ocr(ogImage);
 					const image_caption = await imageToText(ogImage);
-					console.log("image_caption", image_caption);
 
 					const newMeta = {
 						...existing?.meta_data,
 						image_caption,
 					};
-
-					console.log("newMeta", newMeta);
 
 					// UPDATE THE MAIN TABLE
 					await supabase
@@ -89,12 +86,12 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	if (request.method !== "GET") {
+	if (request.method !== "POST") {
 		response.status(405).json({ error: "Method not allowed" });
 		return;
 	}
 
-	const supabase = apiSupabaseClient(request, response);
+	const supabase = createServiceClient();
 	try {
 		const result = await processImageQueue(supabase);
 
