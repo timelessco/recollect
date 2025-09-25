@@ -15,7 +15,7 @@ const processImageQueue = async (supabase: any) => {
 				queue_name: "image-caption",
 				sleep_seconds: 300,
 				// eslint-disable-next-line id-length
-				n: 100,
+				n: 3,
 			});
 
 		if (!messages?.length) {
