@@ -39,7 +39,7 @@ const ShareDropdown = ({ renderOnlyButton = false }) => {
 				className="z-20 w-[307px] origin-top-left rounded-xl bg-white p-[6px] shadow-custom-1 ring-1 ring-black/5"
 				state={menu}
 			>
-				<ShareContent />
+				{/* <ShareContent /> */}
 			</Menu>
 		</>
 	);

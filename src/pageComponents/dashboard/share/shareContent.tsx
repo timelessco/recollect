@@ -112,7 +112,7 @@ const AccessUserInfo = (props: {
 						]}
 						renderCustomSelectButton={() => (
 							<div className="flex items-center">
-								<p className=" mr-1">
+								<p className=" mr-1 text-dropdown-text-color">
 									{item.edit_access ? "Can Edit" : "Can View"}
 								</p>
 								<figure>
@@ -159,7 +159,7 @@ const AccessUserInfo = (props: {
 				) : (
 					<DefaultUserIcon className="h-5 w-5" />
 				)}
-				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-custom-gray-1">
+				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-dropdown-text-color">
 					{item.userEmail}
 				</p>
 			</div>
@@ -270,7 +270,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none":
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-search-bar-text-color":
 			true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
@@ -311,7 +311,7 @@ const ShareContent = () => {
 								]}
 								// disabled
 								renderCustomSelectButton={() => (
-									<div className="flex items-center">
+									<div className="flex items-center text-dropdown-text-color">
 										<p className=" mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
@@ -323,11 +323,11 @@ const ShareContent = () => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-custom-gray-11 rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-[7px] px-[10px] bg-search-bar-background-color-2 rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
 			<div className=" pt-3">
-				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-custom-gray-10">
+				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-modal-text-color">
 					People with access
 				</p>
 				<div className="pb-2">
@@ -344,7 +344,7 @@ const ShareContent = () => {
 						<figure>
 							<GlobeIcon />
 						</figure>
-						<p className="ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+						<p className="ml-[6px] text-13 font-450 leading-[15px] text-dropdown-text-color">
 							Anyone with link
 						</p>
 					</div>
@@ -370,7 +370,7 @@ const ShareContent = () => {
 							]}
 							renderCustomSelectButton={() => (
 								<div className="flex items-center">
-									<p className=" mr-1">
+									<p className=" mr-1 text-dropdown-text-color">
 										{currentCategory?.is_public ? "View access" : "No access"}
 									</p>
 									<figure>
@@ -404,7 +404,7 @@ const ShareContent = () => {
 					<figure>
 						<LinkIcon />
 					</figure>
-					<p className="ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+					<p className="ml-[6px] text-13 font-450 leading-[15px] text-copy-link-text-color">
 						{linkCopied ? "Link copied" : "Copy link"}
 					</p>
 				</div>

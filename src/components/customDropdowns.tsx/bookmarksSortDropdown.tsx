@@ -104,7 +104,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 				{find(sortOptions, (item) => item?.label === value)?.label}
 				{value === currentValue?.label ? (
 					<figure className="h-3 w-3">
-						<TickIcon />
+						<TickIcon color="var(--copy-link-text-color)" />
 					</figure>
 				) : null}
 			</div>

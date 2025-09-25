@@ -305,7 +305,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .search-bar__input:focus {
-	@apply text-gray-light-12;
+	@apply text-dropdown-hover-text-color;
 }
 
 .search-wrapper {
@@ -313,7 +313,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .search-wrapper:has(:focus) {
-	@apply text-gray-light-12;
+	@apply text-dropdown-hover-text-color;
 }
 
 .search-bar__input::placeholder {
@@ -325,7 +325,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 .search-bar__input::placeholder:focus {
 	/* color: ; */
 
-	@apply text-gray-light-12;
+	@apply text-dropdown-hover-text-color;
 }
 
 /* for the collections side pane arrow collapse rotate */
@@ -740,8 +740,12 @@ body {
 		--custom-interactive-blue: #0080f0;
 		--custom-interactive-color-disabled-light: #00000024;
 		--custom-secondary-gray: #858585;
+		--custom-overlay-black-a3: #0000000c;
+		--custom-searchbar-text-gray: #707070;
 
 		/*CSS variables for light mode*/
+		--plain-color: var(--color-white);
+		--plain-reverse-color: var(--color-black);
 		--background-color: var(--custom-background-white);
 		--hover-color: var(--color-light-gray-100);
 		--text-color: var(--color-light-gray-800);
@@ -753,9 +757,16 @@ body {
 		--interactive-color-disabled: var(--color-light-gray-800);
 		--secondary-text-color: var(--custom-secondary-gray);
 		--navbar-text-heading-color: var(--color-light-gray-900);
+		--search-bar-background-color: var(--custom-overlay-black-a3);
+		--search-bar-background-color-2: var(--custom-overlay-black-a3);
+		--modal-text-color: var(--custom-secondary-gray);
+		--copy-link-text-color: var(--color-light-gray-800);
+		--icon-color: var(--color-black);
 	}
 	.dark {
 		/*CSS variables for dark mode*/
+		--plain-color: var(--color-black);
+		--plain-reverse-color: var(--color-white);
 		--background-color: var(--custom-background-black);
 		--hover-color: var(--color-light-gray-900);
 		--text-color: var(--custom-text-dark);
@@ -766,6 +777,12 @@ body {
 		--interactive-color-enabled: var(--custom-interactive-blue);
 		--interactive-color-disabled: var(--color-light-gray-800);
 		--secondary-text-color: var(--custom-secondary-gray);
+		--modal-text-color: var(--custom-text-dark);
 		--navbar-text-heading-color: var(--color-light-gray-300);
+		--search-bar-background-color: var(--color-light-gray-900);
+		--search-bar-text-color: var(--custom-searchbar-text-gray);
+		--search-bar-background-color-2: var(--color-black);
+		--copy-link-text-color: var(--custom-interactive-blue);
+		--icon-color: var(--custom-text-dark);
 	}
 }
