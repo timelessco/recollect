@@ -1,5 +1,4 @@
-// pages/api/process-queue.js (Pages Router)
-
+/* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
@@ -42,6 +41,8 @@ const processImageQueue = async (supabase: any) => {
 					const imgData = await blurhashFromURL(ogImage);
 					// const imageOcrValue = await ocr(ogImage);
 					// const image_caption = await imageToText(ogImage);
+					console.log("imgData", imgData);
+
 					const newMeta = {
 						...existing?.meta_data,
 						height: imgData?.height,
@@ -49,8 +50,10 @@ const processImageQueue = async (supabase: any) => {
 						ogImgBlurUrl: imgData?.encoded,
 					};
 
+					console.log("newMeta", newMeta);
+
 					// UPDATE THE MAIN TABLE
-					await supabase
+					const { data: updateData, error: updateError } = await supabase
 						.from(MAIN_TABLE_NAME)
 						.update({
 							meta_data: {
@@ -97,7 +100,6 @@ export default async function handler(
 	try {
 		const result = await processImageQueue(supabase);
 
-		// eslint-disable-next-line no-console
 		console.log({
 			message: "Queue processed successfully",
 			messageId: result?.messageId,

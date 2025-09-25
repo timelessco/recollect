@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 import ocr from "../../../../async/ai/ocr";
@@ -29,19 +30,30 @@ const processImageQueue = async (supabase: any) => {
 			try {
 				const { ogImage, url, meta_data } = message.message;
 
+				const { data: existing } = await supabase
+					.from(MAIN_TABLE_NAME)
+					.select("meta_data")
+					.eq("url", url)
+					.single();
 				// Process the image (your heavy operations)
 				if (ogImage) {
 					// const imgData = await blurhashFromURL(ogImage);
 					const imageOcrValue = await ocr(ogImage);
 					// const image_caption = await imageToText(ogImage);
+					console.log("imageOcrValue", imageOcrValue);
+
+					const newMeta = {
+						...existing?.meta_data,
+						ocr: imageOcrValue,
+					};
+					console.log("newMeta", newMeta);
 
 					// UPDATE THE MAIN TABLE
 					await supabase
 						.from(MAIN_TABLE_NAME)
 						.update({
 							meta_data: {
-								ocr: imageOcrValue,
-								...meta_data,
+								...newMeta,
 							},
 						})
 						.eq("url", url);
@@ -84,7 +96,6 @@ export default async function handler(
 	try {
 		const result = await processImageQueue(supabase);
 
-		// eslint-disable-next-line no-console
 		console.log({
 			message: "Queue processed successfully",
 			messageId: result?.messageId,

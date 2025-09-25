@@ -1,5 +1,4 @@
-// pages/api/process-queue.js (Pages Router)
-
+/* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 import imageToText from "../../../../async/ai/imageToText";
@@ -42,10 +41,14 @@ const processImageQueue = async (supabase: any) => {
 					// const imgData = await blurhashFromURL(ogImage);
 					// const imageOcrValue = await ocr(ogImage);
 					const image_caption = await imageToText(ogImage);
+					console.log("image_caption", image_caption);
+
 					const newMeta = {
 						...existing?.meta_data,
 						image_caption,
 					};
+
+					console.log("newMeta", newMeta);
 
 					// UPDATE THE MAIN TABLE
 					await supabase
@@ -95,7 +98,6 @@ export default async function handler(
 	try {
 		const result = await processImageQueue(supabase);
 
-		// eslint-disable-next-line no-console
 		console.log({
 			message: "Queue processed successfully",
 			messageId: result?.messageId,
