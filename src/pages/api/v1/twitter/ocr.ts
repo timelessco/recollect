@@ -21,7 +21,6 @@ export default async function handler(
 			processCaption: false,
 			processBlurhash: false,
 			queueName: "ai-stuffs",
-			batchSize: 50,
 		});
 		console.log({
 			message: `Queue processed successfully from ${result?.messageId} to ${result?.messageEndId}`,
