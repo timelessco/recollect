@@ -40,6 +40,8 @@ const processImageQueue = async (supabase: any) => {
 					// const imgData = await blurhashFromURL(ogImage);
 					const imageOcrValue = await ocr(ogImage);
 					// const image_caption = await imageToText(ogImage);
+					console.log("existing", existing);
+
 					console.log("imageOcrValue", imageOcrValue);
 
 					const newMeta = {
