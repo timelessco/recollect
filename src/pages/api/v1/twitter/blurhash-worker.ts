@@ -14,7 +14,7 @@ const processImageQueue = async (supabase: any) => {
 				queue_name: "blurhash",
 				sleep_seconds: 300,
 				// eslint-disable-next-line id-length
-				n: 1,
+				n: 100,
 			});
 
 		if (!messages?.length) {
