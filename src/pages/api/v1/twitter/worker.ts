@@ -19,6 +19,7 @@ export const processImageQueue = async (
 	parameters: ProcessParameters,
 ) => {
 	const SLEEP_SECONDS = 10;
+	let isFailed = false;
 
 	const { processOcr, processCaption, processBlurhash, queueName, batchSize } =
 		parameters;
@@ -56,18 +57,30 @@ export const processImageQueue = async (
 
 					// Process image based on parameters
 					if (processCaption) {
-						newMeta.image_caption = await imageToText(ogImage);
+						try {
+							newMeta.image_caption = await imageToText(ogImage);
+						} catch {
+							isFailed = true;
+						}
 					}
 
 					if (processOcr) {
-						newMeta.ocr = await ocr(ogImage);
+						try {
+							newMeta.ocr = await ocr(ogImage);
+						} catch {
+							isFailed = true;
+						}
 					}
 
 					if (processBlurhash) {
-						const { width, height, encoded } = await blurhashFromURL(ogImage);
-						newMeta.width = width;
-						newMeta.height = height;
-						newMeta.ogImgBlurUrl = encoded;
+						try {
+							const { width, height, encoded } = await blurhashFromURL(ogImage);
+							newMeta.width = width;
+							newMeta.height = height;
+							newMeta.ogImgBlurUrl = encoded;
+						} catch {
+							isFailed = true;
+						}
 					}
 
 					// Update the main table
@@ -78,14 +91,17 @@ export const processImageQueue = async (
 				}
 
 				// Delete message from queue
-				const { error: deleteError } = await supabase
-					.schema("pgmq_public")
-					.rpc("delete", {
-						queue_name: queueName,
-						message_id: message.msg_id,
-					});
+				if (!isFailed) {
+					const { error: deleteError } = await supabase
+						.schema("pgmq_public")
+						.rpc("delete", {
+							queue_name: queueName,
+							message_id: message.msg_id,
+						});
 
-				if (deleteError) console.error("Error deleting message:", deleteError);
+					if (deleteError)
+						console.error("Error deleting message:", deleteError);
+				}
 			} catch (error) {
 				console.error("Processing failed for message:", message.msg_id, error);
 			}
