@@ -47,7 +47,7 @@
 }
 
 body {
-	@apply overflow-hidden antialiased outline-none;
+	@apply overflow-hidden antialiased outline-none dark:bg-black;
 
 	font-variation-settings: "opsz" 20;
 }
@@ -389,10 +389,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 	opacity: var(--yarl-pull-opacity);
 
 	@apply transition-all duration-200 ease-out;
-}
-
-body {
-	@apply dark:bg-black;
 }
 
 @layer base {
@@ -742,6 +738,15 @@ body {
 		--custom-secondary-gray: #858585;
 		--custom-overlay-black-a3: #0000000c;
 		--custom-searchbar-text-gray: #707070;
+		--custom-sidepane-white: #fffffffa;
+		--custom-sidepane-black: #000000fa;
+		--custom-sidepane-gray-text: #374151;
+		--custom-sidepane-dark-gray-text: #d1d5db;
+		--custom-gradient-white: #ffffff00;
+		--custom-gradient-black: #000000e6;
+		--custom-lightbox-black: #0d0d0dea;
+		--custom-lightbox-hover-black: #00000008;
+		--custom-lightbox-close: #000000ff;
 
 		/*CSS variables for light mode*/
 		--plain-color: var(--color-white);
@@ -762,6 +767,12 @@ body {
 		--modal-text-color: var(--custom-secondary-gray);
 		--copy-link-text-color: var(--color-light-gray-800);
 		--icon-color: var(--color-black);
+		--sidepane-background-color: var(--custom-sidepane-white);
+		--sidepane-gray-text: var(--custom-sidepane-gray-text);
+		--sidepane-gradient: var(--custom-gradient-white);
+		--lightbox-background: var(--custom-background-white);
+		--lightbox-hover-background: var(--custom-lightbox-hover-black);
+		--lightbox-close: var(--custom-lightbox-close);
 	}
 	.dark {
 		/*CSS variables for dark mode*/
@@ -784,5 +795,38 @@ body {
 		--search-bar-background-color-2: var(--color-black);
 		--copy-link-text-color: var(--custom-interactive-blue);
 		--icon-color: var(--custom-text-dark);
+		--sidepane-background-color: var(--custom-sidepane-black);
+		--sidepane-gray-text: var(--custom-sidepane-dark-gray-text);
+		--sidepane-gradient: var(--custom-gradient-black);
+		--lightbox-background: var(--custom-lightbox-black);
+		--lightbox-hover-background: var(--custom-hover-gray);
+		--lightbox-close: var(--plain-reverse-color);
+
+		/* Custom scrollbar for dark theme */
+		scrollbar-color: var(--color-light-gray-800) var(--color-black);
+
+		/* Webkit (Chrome, Safari, newer Edge) */
+		&::-webkit-scrollbar {
+			width: 12px;
+			height: 12px;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: var(--color-black);
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background-color: var(--color-light-gray-800);
+			border-radius: 6px;
+			border: 3px solid var(--color-black);
+		}
+
+		&::-webkit-scrollbar-thumb:hover {
+			background-color: var(--color-light-gray-700);
+		}
+
+		/* Firefox */
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-light-gray-800) var(--color-black);
 	}
 }

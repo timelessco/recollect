@@ -158,7 +158,7 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-[0.5px] border-[rgba(0,0,0,0.13)] bg-[rgba(255,255,255,0.98)] backdrop-blur-[41px]"
+					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-[0.5px] border-[rgba(0,0,0,0.13)] bg-sidepane-background-color backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
@@ -169,7 +169,7 @@ const MyComponent = () => {
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-navbar-text-heading-color"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -178,7 +178,7 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<p
-								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]"
+								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-modal-text-color"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
@@ -212,7 +212,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] leading-[138%] tracking-[1%] text-[rgba(55,65,81,1)]`}
+									} text-clip text-[13px] leading-[138%] tracking-[1%] text-sidepane-gray-text`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
@@ -305,7 +305,7 @@ const MyComponent = () => {
 									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[50px]"
 									style={{
 										background:
-											"linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 100%)",
+											"linear-gradient(180deg, var(--sidepane-gradient) 0%, var(--sidepane-background-color) 100%)",
 									}}
 								/>
 							)}

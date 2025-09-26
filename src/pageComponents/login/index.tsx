@@ -76,7 +76,7 @@ const LoginPage = () => {
 							<figure className="mr-[6px]">
 								<LaterpadLogo />
 							</figure>
-							<p>recollect</p>
+							<p className="text-plain-reverse-color">recollect</p>
 						</div>
 						<form
 							className="flex flex-col items-center justify-center space-y-4"
