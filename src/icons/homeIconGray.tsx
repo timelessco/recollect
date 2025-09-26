@@ -17,7 +17,6 @@ const HomeIconGray = () => (
 		/>
 		<path
 			d="M9.5 9C8.11929 9 7 10.2536 7 11.8V16H12V11.8C12 10.2536 10.8807 9 9.5 9Z"
-			fill="var(--icon-color)"
 			stroke="var(--icon-color)"
 			strokeLinecap="round"
 			strokeLinejoin="round"

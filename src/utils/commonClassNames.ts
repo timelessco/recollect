@@ -5,7 +5,8 @@ export const buttonDarkClassName =
 	"flex w-full h-[30px] justify-center rounded-lg bg-gray-light-12  text-[13px] py-[7.5px] font-medium leading-[15px] text-white hover:bg-custom-gray-14";
 export const buttonLightClassName =
 	"flex cursor-pointer w-full justify-center items-center rounded-lg bg-white text-[13px] font-medium leading-[15px] text-custom-gray-1 py-[7px] hover:bg-custom-gray-8 shadow-custom-2";
-export const bottomBarText = "text-custom-gray-1 font-[450] text-sm leading-4";
+export const bottomBarText =
+	"text-dropdown-text-color font-[450] text-sm leading-4";
 export const bottomBarButton =
 	"font-[450] text-sm leading-4 text-custom-gray-1 py-[7px] px-[10px] bg-custom-gray-8 rounded-lg hover:bg-custom-gray-8 ";
 

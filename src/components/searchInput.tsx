@@ -51,7 +51,7 @@ const styles = {
 
 	suggestions: {
 		list: {
-			// backgroundColor: "#FFFFFF",
+			backgroundColor: "var(--plain-color)",
 			padding: "6px",
 			boxShadow:
 				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
@@ -65,11 +65,13 @@ const styles = {
 			fontWeight: "450",
 			fontSize: "13px",
 			lineHeight: "15px",
-			color: "#383838",
+			color: "var(--modal-text-color)",
+			cursor: "pointer",
+			transition: "background-color 0.2s ease",
 
 			// borderBottom: "1px solid rgba(0,0,0,0.15)",
 			"&focused": {
-				backgroundColor: "#EDEDED",
+				backgroundColor: "var(--dropdown-hover-background-color)",
 			},
 		},
 	},
@@ -162,10 +164,13 @@ const SearchInput = (props: SearchInputTypes) => {
 					appendSpaceOnAdd
 					data={userTagsData?.data
 						?.map((item) => ({
-							id: item?.id,
-							display: item?.name,
+							id: String(item?.id || ""),
+							display: String(item?.name || ""),
 						}))
-						?.filter((filterItem) => !addedTags?.includes(filterItem?.display))}
+						?.filter(
+							(filterItem) =>
+								!addedTags?.includes(String(filterItem?.display || "")),
+						)}
 					displayTransform={(_url, display) => `#${display}`}
 					markup="@__display__"
 					trigger="#"

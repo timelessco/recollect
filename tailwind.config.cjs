@@ -2,6 +2,7 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+	darkMode: "class",
 	future: {
 		relativeContentPathsByDefault: true,
 		hoverOnlyWhenSupported: true,
@@ -77,6 +78,12 @@ module.exports = {
 				"plain-color": "var(--plain-color)",
 				"modal-text-color": "var(--modal-text-color)",
 				"copy-link-text-color": "var(--copy-link-text-color)",
+				"sidepane-background-color": "var(--sidepane-background-color)",
+				"sidepane-gradient": "var(--sidepane-gradient)",
+				"sidepane-gray-text": "var(--sidepane-gray-text)",
+				"lightbox-background": "var(--lightbox-background)",
+				"lightbox-hover-background": "var(--lightbox-hover-background)",
+				"lightbox-close": "var(--lightbox-close)",
 				"icon-color": "var(--icon-color)",
 				overlay: {
 					black: {
