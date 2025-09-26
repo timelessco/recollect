@@ -19,7 +19,6 @@ export const processImageQueue = async (
 	parameters: ProcessParameters,
 ) => {
 	const SLEEP_SECONDS = 10;
-	let isFailed = false;
 
 	const { processOcr, processCaption, processBlurhash, queueName, batchSize } =
 		parameters;
@@ -42,6 +41,8 @@ export const processImageQueue = async (
 		if (!messages?.length) return;
 
 		for (const message of messages) {
+			let isFailed = false;
+
 			try {
 				const { ogImage, url } = message.message;
 
