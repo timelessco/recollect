@@ -21,6 +21,7 @@ export default async function handler(
 			processCaption: false,
 			processBlurhash: true,
 			queueName: "blurhash",
+			batchSize: 10,
 		});
 
 		console.log({

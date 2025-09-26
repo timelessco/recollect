@@ -18,15 +18,10 @@ export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
 ) => {
-	const SLEEP_SECONDS = 300;
+	const SLEEP_SECONDS = 10;
 
-	const {
-		processOcr,
-		processCaption,
-		processBlurhash,
-		queueName,
-		batchSize = 1,
-	} = parameters;
+	const { processOcr, processCaption, processBlurhash, queueName, batchSize } =
+		parameters;
 
 	try {
 		const { data: messages, error: messageError } = await supabase
@@ -49,16 +44,16 @@ export const processImageQueue = async (
 			try {
 				const { ogImage, url } = message.message;
 
-				const { data: existing } = await supabase
-					.from(MAIN_TABLE_NAME)
-					.select("meta_data")
-					.eq("url", url)
-					.single();
-
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const newMeta: any = { ...existing?.meta_data };
-
 				if (ogImage) {
+					const { data: existing } = await supabase
+						.from(MAIN_TABLE_NAME)
+						.select("meta_data")
+						.eq("url", url)
+						.single();
+
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					const newMeta: any = { ...existing?.meta_data };
+
 					// Process image based on parameters
 					if (processCaption) {
 						newMeta.image_caption = await imageToText(ogImage);
@@ -74,13 +69,13 @@ export const processImageQueue = async (
 						newMeta.height = height;
 						newMeta.ogImgBlurUrl = encoded;
 					}
-				}
 
-				// Update the main table
-				await supabase
-					.from(MAIN_TABLE_NAME)
-					.update({ meta_data: newMeta })
-					.eq("url", url);
+					// Update the main table
+					await supabase
+						.from(MAIN_TABLE_NAME)
+						.update({ meta_data: newMeta })
+						.eq("url", url);
+				}
 
 				// Delete message from queue
 				const { error: deleteError } = await supabase

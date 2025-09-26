@@ -21,6 +21,7 @@ export default async function handler(
 			processCaption: true,
 			processBlurhash: false,
 			queueName: "image-caption",
+			batchSize: 3,
 		});
 
 		console.log({
