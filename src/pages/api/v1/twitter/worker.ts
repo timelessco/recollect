@@ -61,6 +61,7 @@ export const processImageQueue = async (
 						try {
 							newMeta.image_caption = await imageToText(ogImage);
 						} catch {
+							console.error("Error processing image caption");
 							isFailed = true;
 						}
 					}
@@ -69,6 +70,7 @@ export const processImageQueue = async (
 						try {
 							newMeta.ocr = await ocr(ogImage);
 						} catch {
+							console.error("Error processing OCR");
 							isFailed = true;
 						}
 					}
@@ -80,6 +82,7 @@ export const processImageQueue = async (
 							newMeta.height = height;
 							newMeta.ogImgBlurUrl = encoded;
 						} catch {
+							console.error("Error processing blurhash");
 							isFailed = true;
 						}
 					}
