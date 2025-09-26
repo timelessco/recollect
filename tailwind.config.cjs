@@ -2,6 +2,7 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+	darkMode: "class",
 	future: {
 		relativeContentPathsByDefault: true,
 		hoverOnlyWhenSupported: true,
@@ -57,7 +58,33 @@ module.exports = {
 					100: "#FFF0F0",
 					700: "#B52A2A",
 				},
+				"background-color": "var(--background-color)",
+				"hover-color": "var(--hover-color)",
+				"text-color": "var(--text-color)",
+				"hover-text-color": "var(--hover-text-color)",
+				"dropdown-text-color": "var(--dropdown-text-color)",
+				"dropdown-hover-background-color":
+					"var(--dropdown-hover-background-color)",
+				"dropdown-hover-text-color": "var(--dropdown-hover-text-color)",
+				"interactive-color-enabled": "var(--interactive-color-enabled)",
+				"interactive-color-disabled": "var(--interactive-color-disabled)",
+				"navbar-text-heading-color": "var(--navbar-text-heading-color)",
 				"modal-bg": "#00000045",
+				"secondary-text-color": "var(--secondary-text-color)",
+				"search-bar-background-color": "var(--search-bar-background-color)",
+				"search-bar-background-color-2": "var(--search-bar-background-color-2)",
+				"search-bar-text-color": "var(--search-bar-text-color)",
+				"plain-reverse-color": "var(--plain-reverse-color)",
+				"plain-color": "var(--plain-color)",
+				"modal-text-color": "var(--modal-text-color)",
+				"copy-link-text-color": "var(--copy-link-text-color)",
+				"sidepane-background-color": "var(--sidepane-background-color)",
+				"sidepane-gradient": "var(--sidepane-gradient)",
+				"sidepane-gray-text": "var(--sidepane-gray-text)",
+				"lightbox-background": "var(--lightbox-background)",
+				"lightbox-hover-background": "var(--lightbox-hover-background)",
+				"lightbox-close": "var(--lightbox-close)",
+				"icon-color": "var(--icon-color)",
 				overlay: {
 					black: {
 						"A/3": "#0000000C",

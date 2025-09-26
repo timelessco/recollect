@@ -170,7 +170,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				className="flex items-center justify-between px-2 py-[5px]"
 				key={item.label}
 			>
-				<p className=" text-13 font-450 leading-[14px] text-custom-gray-1">
+				<p className=" text-13 font-450 leading-[14px] text-dropdown-text-color">
 					{item?.label}
 				</p>
 				<Switch
@@ -226,7 +226,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{bookmarksViewValue === viewValues.card ||
 			bookmarksViewValue === viewValues.moodboard ? (
 				<div className="flex items-center justify-between px-2 py-[4.5px]">
-					<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
+					<p className="text-13 font-450 leading-[14px] text-dropdown-text-color">
 						Cover
 					</p>
 					<div className="w-[90px]">
@@ -262,7 +262,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 					)?.icon
 				}
 			</figure>
-			<span className="ml-[7px] text-custom-gray-1">
+			<span className="ml-[7px]">
 				{
 					find(
 						bookmarksViewOptions,

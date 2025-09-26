@@ -448,7 +448,7 @@ export const CustomLightBox = ({
 	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
 
 	const iconSidePane = () => (
-		<div className="group h-5 w-5 cursor-pointer text-[rgba(0,0,0,1)] hover:text-black">
+		<div className="group h-5 w-5 cursor-pointer text-lightbox-close hover:text-plain-reverse-color">
 			<ShowSidePaneButton />
 		</div>
 	);
@@ -575,7 +575,7 @@ export const CustomLightBox = ({
 					left: "0",
 				},
 				container: {
-					backgroundColor: "rgba(255, 255, 255, 0.9)",
+					backgroundColor: "var(--lightbox-background)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
@@ -610,7 +610,7 @@ export const CustomLightBox = ({
 						key="center-section"
 					>
 						<a
-							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg  px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-[rgba(0,0,0,0.03)]"
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg  px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-[var(--lightbox-hover-background)]"
 							href={bookmarks?.[activeIndex]?.url}
 							key="center-section"
 							rel="noreferrer"
