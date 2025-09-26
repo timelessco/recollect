@@ -69,7 +69,10 @@ export const processImageQueue = async (
 					}
 
 					if (processBlurhash) {
-						newMeta.blurhash = await blurhashFromURL(ogImage);
+						const { width, height, encoded } = await blurhashFromURL(ogImage);
+						newMeta.width = width;
+						newMeta.height = height;
+						newMeta.ogImgBlurUrl = encoded;
 					}
 				}
 
