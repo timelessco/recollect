@@ -85,6 +85,10 @@ module.exports = {
 				"lightbox-hover-background": "var(--lightbox-hover-background)",
 				"lightbox-close": "var(--lightbox-close)",
 				"icon-color": "var(--icon-color)",
+				"settings-modal-text-color": "var(--settings-modal-text-color)",
+				"settings-modal-text-secondary-color":
+					"var(--settings-modal-text-secondary-color)",
+				"settings-modal-hover-bg-color": "var(--settings-modal-hover-bg-color)",
 				overlay: {
 					black: {
 						"A/3": "#0000000C",

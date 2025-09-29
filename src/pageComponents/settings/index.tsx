@@ -219,7 +219,7 @@ const Settings = () => {
 					<div className="sm:mt-2">
 						<div className=" flex text-sm font-semibold leading-[21px] text-black">
 							<Button
-								className="py-0 text-sm font-semibold leading-[21px] text-black"
+								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-hover-text-color hover:bg-dropdown-hover-background-color"
 								onClick={() => {
 									if (inputFile.current) {
 										inputFile.current.click();
@@ -232,7 +232,7 @@ const Settings = () => {
 								<DotIcon />
 							</p>
 							<Button
-								className="py-0 text-sm font-semibold leading-[21px] text-black"
+								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-hover-text-color hover:bg-dropdown-hover-background-color"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -249,7 +249,7 @@ const Settings = () => {
 								Remove
 							</Button>
 						</div>
-						<div className=" ml-2 mt-1 text-13 font-[420] leading-[15px] text-custom-gray-10">
+						<div className="ml-2 mt-1 text-13 font-[420] leading-[15px] text-settings-modal-text-color">
 							<p>Photos help people recognize you</p>
 						</div>
 					</div>
@@ -355,7 +355,7 @@ const Settings = () => {
 					</div>
 				</form>
 				<div className="border-b-[1px] border-b-gray-light-4  pb-6 pt-[25px]">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
+					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-navbar-text-heading-color">
 						Account security
 					</p>
 					{session?.user?.app_metadata?.provider === "	" ? (
@@ -396,7 +396,7 @@ const Settings = () => {
 					</div>
 				</form>
 				<div className="pt-6">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
+					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-navbar-text-heading-color">
 						Danger zone
 					</p>
 					<div className="flex items-center justify-between sm:flex-col">
@@ -411,10 +411,10 @@ const Settings = () => {
 							</p>
 						</div>
 						<Button
-							className={`w-[150px] sm:mt-5 sm:w-full ${settingsDeleteButtonRedClassName}`}
+							className={`w-[150px]  sm:mt-5 sm:w-full ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
-							<div className="flex w-full justify-center">
+							<div className="flex w-full justify-center ">
 								<figure className="mr-2">
 									<TrashIconRed />
 								</figure>

@@ -747,7 +747,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--custom-lightbox-black: #0d0d0dea;
 		--custom-lightbox-hover-black: #00000008;
 		--custom-lightbox-close: #000000ff;
-
+		--custom-slate-300: #cbd5e1;
 		/*CSS variables for light mode*/
 		--plain-color: var(--color-white);
 		--plain-reverse-color: var(--color-black);
@@ -773,6 +773,9 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--lightbox-background: var(--custom-background-white);
 		--lightbox-hover-background: var(--custom-lightbox-hover-black);
 		--lightbox-close: var(--custom-lightbox-close);
+		--settings-modal-text-color: var(--color-light-gray-700);
+		--settings-modal-text-secondary-color: var(--color-light-gray-600);
+		--settings-modal-hover-bg-color: var(--custom-slate-300);
 	}
 	.dark {
 		/*CSS variables for dark mode*/
@@ -801,6 +804,9 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--lightbox-background: var(--custom-lightbox-black);
 		--lightbox-hover-background: var(--custom-hover-gray);
 		--lightbox-close: var(--plain-reverse-color);
+		--settings-modal-text-color: var(--color-light-gray-500);
+		--settings-modal-text-secondary-color: var(--color-light-gray-200);
+		--settings-modal-hover-bg-color: var(--custom-hover-gray);
 
 		/* Custom scrollbar for dark theme */
 		scrollbar-color: var(--color-light-gray-800) var(--color-black);

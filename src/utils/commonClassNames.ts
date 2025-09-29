@@ -23,23 +23,23 @@ export const smoothHoverClassName = "transition ease-in-out delay-50";
 // SETTINGS PAGE CLASS NAMES
 
 export const settingsMainHeadingClassName =
-	"text-base font-semibold leading-[18px] text-black";
+	"text-base font-semibold leading-[18px] text-navbar-text-heading-color";
 export const settingsInputLabelClassName =
-	"text-custom-gray-10 font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]";
+	"text-settings-modal-text-secondary-color font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]";
 export const settingsInputContainerClassName =
-	"relative flex w-[280px] sm:w-full items-center rounded-lg bg-custom-gray-8 px-[10px] py-2";
+	"relative flex w-[280px] sm:w-full items-center rounded-lg bg-hover-color px-[10px] py-2";
 
 export const settingsInputClassName =
-	"rounded-none bg-custom-gray-8 text-sm font-[420] leading-4 tracking-[0.02em] text-custom-gray-1  outline-none";
+	"rounded-none bg-hover-color text-sm font-[420] leading-4 tracking-[0.02em] text-dropdown-text-color  outline-none";
 
 export const settingsSubHeadingClassName =
-	"text-sm font-medium leading-4 sm:leading-none tracking-[1.5%] text-gray-light-12 ";
+	"text-sm font-medium leading-4 sm:leading-none tracking-[1.5%] text-navbar-text-heading-color";
 
 export const settingsParagraphClassName =
-	"text-sm font-[420] leading-[21px]  sm:leading-1 tracking-[2%] text-custom-gray-10";
+	"text-sm font-[420] leading-[21px]  sm:leading-1 tracking-[2%] text-settings-modal-text-color";
 
 export const settingsDeleteButtonRedClassName =
 	"bg-custom-red-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-red-100";
 
 export const settingsLightButtonClassName =
-	"rounded-lg bg-custom-gray-8 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-gray-1 hover:bg-slate-300 sm:w-full sm:justify-center";
+	"rounded-lg bg-hover-color px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-dropdown-text-color hover:bg-settings-modal-hover-bg-color sm:w-full sm:justify-center";
