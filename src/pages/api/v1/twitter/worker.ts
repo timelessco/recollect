@@ -18,7 +18,7 @@ export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
 ) => {
-	const SLEEP_SECONDS = 10;
+	const SLEEP_SECONDS = 30;
 
 	const {
 		processOcr,
