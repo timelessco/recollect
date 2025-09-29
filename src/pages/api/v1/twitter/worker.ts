@@ -20,8 +20,13 @@ export const processImageQueue = async (
 ) => {
 	const SLEEP_SECONDS = 10;
 
-	const { processOcr, processCaption, processBlurhash, queueName, batchSize } =
-		parameters;
+	const {
+		processOcr,
+		processCaption,
+		processBlurhash,
+		queueName,
+		batchSize = 1,
+	} = parameters;
 
 	try {
 		const { data: messages, error: messageError } = await supabase

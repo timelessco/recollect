@@ -237,7 +237,8 @@ const MyComponent = () => {
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.image_caption ||
-						metaData?.img_caption) && (
+						metaData?.img_caption ||
+						metaData?.ocr) && (
 						<motion.div
 							animate={{ y: isExpanded ? 0 : "calc(100% - 100px)" }}
 							className="relative overflow-hidden"
@@ -264,7 +265,9 @@ const MyComponent = () => {
 									</div>
 								</div>
 							)}
-							{(metaData?.img_caption || metaData?.image_caption) && (
+							{(metaData?.img_caption ||
+								metaData?.image_caption ||
+								metaData?.ocr) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
