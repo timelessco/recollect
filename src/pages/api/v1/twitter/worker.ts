@@ -63,33 +63,59 @@ export const processImageQueue = async (
 
 					// Process image based on parameters
 					if (processCaption) {
-						try {
-							newMeta.image_caption = await imageToText(ogImage);
-						} catch {
-							console.error("Error processing image caption");
+						const caption = await imageToText(ogImage);
+
+						if (!caption) {
+							console.error("imageToText returned empty result", url);
 							isFailed = true;
+						} else {
+							newMeta.image_caption = caption;
 						}
+						// try {
+						// 	newMeta.image_caption = await imageToText(ogImage);
+						// } catch {
+						// 	console.error("Error processing image caption");
+						// 	isFailed = true;
+						// }
 					}
 
 					if (processOcr) {
-						try {
-							newMeta.ocr = await ocr(ogImage);
-						} catch {
-							console.error("Error processing OCR");
+						const ocrResult = await ocr(ogImage);
+
+						if (!ocrResult) {
+							console.error("ocr returned empty result", url);
 							isFailed = true;
+						} else {
+							newMeta.ocr = ocrResult;
 						}
+						// try {
+						// 	newMeta.ocr = await ocr(ogImage);
+						// } catch {
+						// 	console.error("Error processing OCR");
+						// 	isFailed = true;
+						// }
 					}
 
 					if (processBlurhash) {
-						try {
-							const { width, height, encoded } = await blurhashFromURL(ogImage);
+						const { width, height, encoded } = await blurhashFromURL(ogImage);
+
+						if (!encoded || !width || !height) {
+							console.error("blurhashFromURL returned empty result", url);
+							isFailed = true;
+						} else {
 							newMeta.width = width;
 							newMeta.height = height;
 							newMeta.ogImgBlurUrl = encoded;
-						} catch {
-							console.error("Error processing blurhash");
-							isFailed = true;
 						}
+						// try {
+						// 	const { width, height, encoded } = await blurhashFromURL(ogImage);
+						// 	newMeta.width = width;
+						// 	newMeta.height = height;
+						// 	newMeta.ogImgBlurUrl = encoded;
+						// } catch {
+						// 	console.error("Error processing blurhash");
+						// 	isFailed = true;
+						// }
 					}
 
 					// Update the main table
