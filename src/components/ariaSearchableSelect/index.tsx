@@ -4,7 +4,7 @@ import classNames from "classnames";
 import { isEmpty } from "lodash";
 import { matchSorter } from "match-sorter";
 
-import Spinner from "../spinner";
+import { Spinner } from "../spinner";
 
 type AriaSearchableSelectTypes = {
 	defaultValue: string;
@@ -69,7 +69,12 @@ const AriaSearchableSelect = ({
 					value={isEmpty(defaultValue) ? "Uncategorized" : defaultValue}
 				>
 					<Ariakit.Select className="aria-multi-select flex w-full items-center justify-between text-13 font-450 leading-[15px] tracking-[1%] text-gray-light-12 outline-none" />
-					{isLoading && <Spinner />}
+					{isLoading && (
+						<Spinner
+							className="h-3 w-3 animate-spin"
+							style={{ color: "var(--plain-reverse-color)" }}
+						/>
+					)}
 					<Ariakit.SelectPopover
 						className="z-10 rounded-xl bg-white p-[6px] shadow-custom-7"
 						gutter={4}

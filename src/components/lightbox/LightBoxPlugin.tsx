@@ -38,7 +38,7 @@ import {
 import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
 import { Icon } from "../atoms/icon";
-import Spinner from "../spinner";
+import { Spinner } from "../spinner";
 
 import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
 
@@ -144,7 +144,10 @@ const MyComponent = () => {
 	if (!currentBookmark) {
 		return (
 			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-[rgba(0,0,0,0.13)] bg-sidepane-background-color backdrop-blur-[41px]">
-				<Spinner />
+				<Spinner
+					className="h-3 w-3 animate-spin"
+					style={{ color: "var(--plain-reverse-color)" }}
+				/>
 			</div>
 		);
 	}

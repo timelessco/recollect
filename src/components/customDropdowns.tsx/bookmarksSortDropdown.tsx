@@ -13,7 +13,6 @@ import {
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { AriaDropdownMenu } from "../ariaDropdown";
 import AriaSelect from "../ariaSelect";
-import Spinner from "../spinner";
 
 type BookmarksSortDropdownTypes = {
 	isDropdown?: boolean;
@@ -84,13 +83,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 
 	const buttonContent = (
 		<>
-			{isSortByLoading ? (
-				<span className="mr-[6px]">
-					<Spinner />
-				</span>
-			) : (
-				<figure className="h-4 w-4">{currentValue?.icon}</figure>
-			)}
+			<figure className="h-4 w-4">{currentValue?.icon}</figure>
 			<p className="ml-[6px]">{currentValue?.label}</p>
 		</>
 	);

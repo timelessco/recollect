@@ -10,7 +10,7 @@ import {
 	signUpWithEmailPassword,
 } from "../../async/supabaseCrudHelpers";
 import Input from "../../components/atoms/input";
-import Spinner from "../../components/spinner";
+import { Spinner } from "../../components/spinner";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogoBlack from "../../icons/laterpadLogoBlack";
 import { useSupabaseSession } from "../../store/componentStore";
@@ -119,8 +119,18 @@ const SignUp = () => {
 								placeholder="Password"
 								type="password"
 							/>
-							<button className={buttonDarkClassName} type="submit">
-								{isLoading ? <Spinner /> : "Sign up"}
+							<button
+								className={`${buttonDarkClassName} flex items-center justify-center`}
+								type="submit"
+							>
+								{isLoading ? (
+									<Spinner
+										className="h-3 w-3 animate-spin"
+										style={{ color: "var(--plain-color)" }}
+									/>
+								) : (
+									"Sign up"
+								)}
 							</button>
 							<div
 								className={buttonLightClassName}

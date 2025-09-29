@@ -7,7 +7,7 @@ import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserM
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
-import Spinner from "../../components/spinner";
+import { Spinner } from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import {
@@ -139,7 +139,14 @@ const DeleteAccout = () => {
 							<TrashIconRed />
 						</figure>
 						<p className="flex w-full justify-center  sm:w-[100px]">
-							{deleteUserMutation?.isLoading ? <Spinner /> : "Confirm delete"}
+							{deleteUserMutation?.isLoading ? (
+								<Spinner
+									className="h-3 w-3 animate-spin"
+									style={{ color: "red" }}
+								/>
+							) : (
+								"Confirm delete"
+							)}{" "}
 						</p>
 					</div>
 				</Button>

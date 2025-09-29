@@ -6,7 +6,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/spinner";
 import GlobeIcon from "../../../icons/globeIcon";
 import OptionsIconGray from "../../../icons/optionsIconGray";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
@@ -102,7 +102,12 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 				</p>
 			</div>
 			<div className="flex items-center space-x-3">
-				{showSpinner && <Spinner />}
+				{showSpinner && (
+					<Spinner
+						className="h-3 w-3 animate-spin"
+						style={{ color: "var(--plain-reverse-color)" }}
+					/>
+				)}
 				{item?.isPublic && (
 					<figure className="hidden">
 						<GlobeIcon />

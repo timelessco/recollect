@@ -13,7 +13,7 @@ import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutation
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
@@ -297,7 +297,10 @@ const ShareContent = () => {
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isLoading ? (
-							<Spinner />
+							<Spinner
+								className="h-3 w-3 animate-spin"
+								style={{ color: "var(--plain-reverse-color)" }}
+							/>
 						) : (
 							<AriaSelect
 								defaultValue="View"

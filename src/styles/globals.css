@@ -357,13 +357,13 @@ input[type="checkbox"]:checked + .checkbox-div {
 
 .split-view .sash-vertical:hover {
 	&::before {
-		@apply w-2 bg-gray-gray-100 !important;
+		@apply w-2 bg-hover-color !important;
 	}
 }
 
 .split-view .sash-vertical:not(:hover) {
 	&::before {
-		@apply w-[0px] bg-gray-gray-100 !important;
+		@apply w-[0px] bg-hover-color !important;
 	}
 }
 
