@@ -64,7 +64,6 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
-	colorPickerColors,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -473,7 +472,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</figure>
 				<input
 					autoFocus
-					className="!focus:outline-none !bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-white !opacity-40"
+					className="!focus:outline-none !bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-plain-reverse-color !opacity-40"
 					id="add-category-input"
 					onBlur={(event) => {
 						if (!isEmpty(event?.target?.value)) {

@@ -764,7 +764,9 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--dropdown-hover-text-color: var(--color-light-gray-900);
 		--dropdown-hover-background-color: var(--color-light-gray-200);
 		--interactive-color-enabled: var(--color-light-gray-900);
-		--interactive-color-disabled: var(--color-light-gray-800);
+		--interactive-color-disabled: var(
+			--custom-interactive-color-disabled-light
+		);
 		--secondary-text-color: var(--custom-secondary-gray);
 		--navbar-text-heading-color: var(--color-light-gray-900);
 		--search-bar-background-color: var(--custom-overlay-black-a3);
