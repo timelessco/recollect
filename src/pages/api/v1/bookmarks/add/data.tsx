@@ -241,7 +241,7 @@ export default async function handler(
 	// Call min-data API and forward the response
 	const { status, data } = await callMinDataApi(
 		bodyData,
-		request?.cookies ?? {},
+		(request?.cookies as { [key: string]: string }) ?? {},
 	);
 
 	// If min-data API failed, return error
@@ -265,7 +265,7 @@ export default async function handler(
 			const screenshotResult = await callScreenshotApi(
 				data,
 				bodyData.url,
-				request?.cookies ?? {},
+				(request?.cookies as { [key: string]: string }) ?? {},
 			);
 
 			if (screenshotResult.status !== 200) {
@@ -279,7 +279,7 @@ export default async function handler(
 		const remainingResult = await callRemainingApi(
 			data,
 			bodyData.url,
-			request?.cookies ?? {},
+			(request?.cookies as { [key: string]: string }) ?? {},
 		);
 
 		// Return the remaining API result

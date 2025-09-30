@@ -139,7 +139,7 @@ tag_id (
 
 		const finalData = data?.map((item) => {
 			const matchedBookmarkWithTag = allUserBookmarksWithTags?.filter(
-				(tagItem) => tagItem?.bookmark_id === item?.id,
+				(tagItem: { bookmark_id: number }) => tagItem?.bookmark_id === item?.id,
 			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
 			if (!isEmpty(matchedBookmarkWithTag)) {
@@ -224,7 +224,7 @@ tag_id (
 
 			const finalResponse = onlyUniqueBookmarkIds?.map((item) => {
 				const matchedBookmarkWithTag = allUserBookmarksWithTags?.filter(
-					(tagItem) => tagItem?.bookmark_id === item,
+					(tagItem: { bookmark_id: number }) => tagItem?.bookmark_id === item,
 				) as unknown as BookmarksWithTagsWithTagForginKeys;
 
 				const bookmarkData = find(
@@ -278,7 +278,8 @@ tag_id (
 			const finalAddedTagsData = finalData?.map((item) => {
 				// get all tags for the bookmark
 				const allBookmarkTags = allUserBookmarksWithTags?.filter(
-					(tagItem) => tagItem?.bookmark_id === item?.id,
+					(tagItem: { bookmark_id: number }) =>
+						tagItem?.bookmark_id === item?.id,
 				) as unknown as BookmarksWithTagsWithTagForginKeys;
 				if (allBookmarkTags) {
 					return {

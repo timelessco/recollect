@@ -107,33 +107,37 @@ export default async function handler(
 				score: item?.[1],
 			}));
 
-			const dataFromMainTableMappedWithScore = data?.map((item) => {
-				const score = find(
-					bookmarkIdsWithScoreFromVectorDatabase,
-					(vectorItem) => vectorItem?.id === item?.id,
-				)?.score;
-				return {
-					// id: item?.id,
-					...item,
-					score,
-				};
-			});
+			const dataFromMainTableMappedWithScore = data?.map(
+				(item: SingleListData) => {
+					const score = find(
+						bookmarkIdsWithScoreFromVectorDatabase,
+						(vectorItem) => vectorItem?.id === item?.id,
+					)?.score;
+					return {
+						// id: item?.id,
+						...item,
+						score,
+					};
+				},
+			);
 
 			// we sort this decending based on score, so that we have the highest relevance first
 			const sortedDataFromMainTableMappedWithScore =
 				dataFromMainTableMappedWithScore?.sort(
-					(a, b) => b.score - a.score,
+					(a: { score: number }, b: { score: number }) => b.score - a.score,
 				) as FinalReturnDataType;
 
 			// only have the data where score is greater than a certain number
 			const filteredsSortedDataFromMainTableMappedWithScore =
-				sortedDataFromMainTableMappedWithScore?.filter((item) => {
-					if (item?.score > 0.59) {
-						return item;
-					}
+				sortedDataFromMainTableMappedWithScore?.filter(
+					(item: { score: number }) => {
+						if (item?.score > 0.59) {
+							return item;
+						}
 
-					return null;
-				});
+						return null;
+					},
+				);
 
 			response.status(200).send({
 				error: null,

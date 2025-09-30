@@ -338,7 +338,7 @@ export default async function handler(
 			.status(500)
 			.json({ data: null, error: databaseError, message: null });
 		Sentry.captureException(
-			`add remaining bookmark data error: ${databaseError?.message}`,
+			`add remaining bookmark data error: ${databaseError}`,
 		);
 	} else {
 		response.status(200).json({ data, error: null, message: null });

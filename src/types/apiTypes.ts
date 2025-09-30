@@ -114,7 +114,7 @@ export type BookmarkViewDataTypes = {
 	sortBy: BookmarksSortByTypes;
 };
 
-// user catagories
+// user categories
 
 export type CategoriesData = {
 	category_name: string;

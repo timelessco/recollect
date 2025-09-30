@@ -215,7 +215,7 @@ user_id (
 
 	const finalData = data?.map((item) => {
 		const matchedBookmarkWithTag = bookmarksWithTags?.filter(
-			(tagItem) => tagItem?.bookmark_id === item?.id,
+			(tagItem: { bookmark_id: number }) => tagItem?.bookmark_id === item?.id,
 		) as unknown as BookmarksWithTagsWithTagForginKeys;
 
 		if (!isEmpty(matchedBookmarkWithTag)) {

@@ -76,13 +76,13 @@ export default async function handler(
 
 		// generate embeddings doc
 		const embeddingsDocument = data?.map(
-			(item) =>
+			(item: SingleListData) =>
 				new Document({
 					pageContent: JSON.stringify(item),
 					metadata: {
 						bookmark_id: item?.id,
 						user_id: item?.user_id,
-						image_caption: item?.meta_data?.imageCaption || null,
+						image_caption: item?.meta_data?.img_caption || null,
 					},
 				}),
 		);

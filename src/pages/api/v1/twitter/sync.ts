@@ -103,7 +103,9 @@ export default async function handler(
 		const duplicateFilteredData = insertData?.filter(
 			(item) =>
 				!duplicateCheckData
-					?.map((duplicateCheckItem) => duplicateCheckItem?.url)
+					?.map(
+						(duplicateCheckItem: { url: string }) => duplicateCheckItem?.url,
+					)
 					?.includes(item?.url),
 		);
 
@@ -140,7 +142,7 @@ export default async function handler(
 
 		// get blur hash and image caption and OCR and upload it to DB
 		const dataWithBlurHash = await Promise.all(
-			insertDBData?.map(async (item) => {
+			insertDBData?.map(async (item: SingleListData) => {
 				const imgData = item?.ogImage
 					? await blurhashFromURL(item?.ogImage)
 					: null;
@@ -191,7 +193,7 @@ export default async function handler(
 		}
 
 		// creates and add embeddings
-		const bookmarkIds = insertDBData?.map((item) => item?.id);
+		const bookmarkIds = insertDBData?.map((item: SingleListData) => item?.id);
 
 		try {
 			await insertEmbeddings(bookmarkIds, request?.cookies);

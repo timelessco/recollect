@@ -66,7 +66,10 @@ const categoriesDelete = async (
 		const { data: updateData, error: updateError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ category_id: 0 })
-			.in("category_id", categoriesData?.map((item) => item?.id))
+			.in(
+				"category_id",
+				categoriesData?.map((item: { id: number }) => item?.id),
+			)
 			.select(`id`);
 
 		if (!isNull(updateError)) {
@@ -75,7 +78,7 @@ const categoriesDelete = async (
 		} else {
 			log(
 				"updated collab bookmarks to uncategoried",
-				updateData?.map((item) => item?.id),
+				updateData?.map((item: { id: number }) => item?.id),
 			);
 		}
 	}

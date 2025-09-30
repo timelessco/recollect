@@ -72,7 +72,7 @@ export default async function handler(
 			data: null,
 			error: isEmpty(error) ? { message: "Something went wrong" } : error,
 		});
-		Sentry.captureException(`ERROR: Update DB error: ${error?.message}`);
+		Sentry.captureException(`ERROR: Update DB error: ${error}`);
 	} else if (isEmpty(data) || isNull(data)) {
 		response
 			.status(500)

@@ -78,7 +78,7 @@ export default async function handler(
 	}
 
 	const flattenedUserCollabCategoryData = userCollabCategoryData?.map(
-		(item) => item.category_id,
+		(item: { category_id: number }) => item.category_id,
 	);
 
 	const userCategoriesDataWithCollabCategoriesData = [
