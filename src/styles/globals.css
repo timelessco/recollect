@@ -812,10 +812,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		scrollbar-color: var(--color-light-gray-800) var(--color-black);
 
 		/* Webkit (Chrome, Safari, newer Edge) */
-		&::-webkit-scrollbar {
-			width: 12px;
-			height: 12px;
-		}
 
 		&::-webkit-scrollbar-track {
 			background: var(--color-black);

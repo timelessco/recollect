@@ -563,7 +563,11 @@ const CardSection = ({
 		});
 
 		if (favIconErrorImgs?.includes(item?.id)) {
-			return <ImageIcon size={`${size}`} />;
+			return (
+				<figure className="rounded p-0.5 text-plain-reverse-color">
+					<ImageIcon size={`${size}`} />
+				</figure>
+			);
 		}
 
 		if (isUserInTweetsPage && item?.meta_data?.twitter_avatar_url) {
@@ -602,14 +606,26 @@ const CardSection = ({
 		}
 
 		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
-			return <VideoIcon size="15" />;
+			return (
+				<figure className="rounded p-0.5 text-plain-reverse-color">
+					<VideoIcon size="15" />
+				</figure>
+			);
 		}
 
 		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
-			return <FolderIcon size="15" />;
+			return (
+				<figure className="rounded p-0.5 text-plain-reverse-color">
+					<FolderIcon size="15" />
+				</figure>
+			);
 		}
 
-		return <ImageIcon size="15" />;
+		return (
+			<figure className="rounded p-0.5 text-plain-reverse-color">
+				<ImageIcon size={`${size}`} />
+			</figure>
+		);
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
@@ -755,7 +771,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-dropdown-hover-text-color">
 							{item?.title}
 						</p>
 					)}
