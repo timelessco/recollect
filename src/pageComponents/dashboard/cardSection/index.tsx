@@ -497,8 +497,7 @@ const CardSection = ({
 
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
-			"mr-3": cardTypeCondition === viewValues.list,
-			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
+			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
@@ -564,7 +563,7 @@ const CardSection = ({
 
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="rounded p-0.5 text-plain-reverse-color">
+				<figure className="rounded p-0.5 text-icon-color">
 					<ImageIcon size={`${size}`} />
 				</figure>
 			);
@@ -607,7 +606,7 @@ const CardSection = ({
 
 		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
 			return (
-				<figure className="rounded p-0.5 text-plain-reverse-color">
+				<figure className="card-icon rounded p-0.5 text-icon-color">
 					<VideoIcon size="15" />
 				</figure>
 			);
@@ -615,14 +614,14 @@ const CardSection = ({
 
 		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
 			return (
-				<figure className="rounded p-0.5 text-plain-reverse-color">
+				<figure className="card-icon rounded p-0.5 text-icon-color">
 					<FolderIcon size="15" />
 				</figure>
 			);
 		}
 
 		return (
-			<figure className="rounded p-0.5 text-plain-reverse-color">
+			<figure className="card-icon rounded p-0.5 text-icon-color">
 				<ImageIcon size={`${size}`} />
 			</figure>
 		);

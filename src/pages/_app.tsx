@@ -29,9 +29,6 @@ const MyApp = ({
 				},
 			}),
 	);
-	useEffect(() => {
-		document.documentElement.classList.add("dark");
-	}, []);
 	const productionUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
 
 	return (

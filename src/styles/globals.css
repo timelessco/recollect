@@ -47,7 +47,7 @@
 }
 
 body {
-	@apply overflow-hidden antialiased outline-none dark:bg-black;
+	@apply overflow-hidden bg-plain-color antialiased outline-none;
 
 	font-variation-settings: "opsz" 20;
 }
@@ -160,12 +160,12 @@ main {
 
 /* for the select card styles on card and moodboard views */
 .single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper {
-	@apply rounded-b-lg rounded-t-none bg-black text-white;
+	@apply rounded-b-lg rounded-t-none bg-selected-bg-color text-white;
 }
 
 /* for the select card styles on list and headlines views */
 .single-bookmark[aria-selected="true"].list-headlines-wrapper {
-	@apply bg-black text-white;
+	@apply bg-selected-bg-color text-white;
 }
 
 .single-bookmark[aria-selected="true"] .card-title {
@@ -174,6 +174,10 @@ main {
 
 .single-bookmark[aria-selected="true"] .moodboard-card-img {
 	@apply rounded-bl-none rounded-br-none;
+}
+
+.single-bookmark[aria-selected="true"] .card-icon {
+	@apply text-plain-color dark:text-white;
 }
 
 .drop-target .side-pane-anchor {
@@ -748,6 +752,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--custom-lightbox-hover-black: #00000008;
 		--custom-lightbox-close: #000000ff;
 		--custom-slate-300: #cbd5e1;
+
 		/*CSS variables for light mode*/
 		--plain-color: var(--color-white);
 		--plain-reverse-color: var(--color-black);
@@ -776,6 +781,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--settings-modal-text-color: var(--color-light-gray-700);
 		--settings-modal-text-secondary-color: var(--color-light-gray-600);
 		--settings-modal-hover-bg-color: var(--custom-slate-300);
+		--selected-bg-color: var(--color-black);
 	}
 	.dark {
 		/*CSS variables for dark mode*/
@@ -807,6 +813,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--settings-modal-text-color: var(--color-light-gray-500);
 		--settings-modal-text-secondary-color: var(--color-light-gray-200);
 		--settings-modal-hover-bg-color: var(--custom-hover-gray);
+		--selected-bg-color: var(--color-dark-gray-300);
 
 		/* Custom scrollbar for dark theme */
 		scrollbar-color: var(--color-light-gray-800) var(--color-black);
@@ -830,5 +837,24 @@ input[type="checkbox"]:checked + .checkbox-div {
 		/* Firefox */
 		scrollbar-width: thin;
 		scrollbar-color: var(--color-light-gray-800) var(--color-black);
+	}
+}
+
+.moon-tilt {
+	animation: tilt 5s linear infinite;
+}
+
+@keyframes tilt {
+	0% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(-10deg);
+	}
+	75% {
+		transform: rotate(10deg);
+	}
+	100% {
+		transform: rotate(0deg);
 	}
 }

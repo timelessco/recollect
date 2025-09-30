@@ -56,6 +56,7 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
+import { Switch } from "../../components/toggledarkmode";
 import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
@@ -566,7 +567,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center">
+						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center text-icon-color">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}
@@ -593,6 +594,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					<div className="h-5 w-[1%] xl:hidden" />
 					{renderSearchBar}
 					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
+						<Switch />
 						{renderViewBasedHeaderOptions()}
 						{currentPath !== TRASH_URL && (
 							<AddBookmarkDropdown
@@ -600,6 +602,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								uploadFile={uploadFileFromAddDropdown}
 							/>
 						)}
+						{/* Dark/Light toggle here */}
 					</div>
 				</div>
 			</header>
