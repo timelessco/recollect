@@ -114,7 +114,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					</figure>
 				)}
 				{item?.isCollab && (
-					<figure>
+					<figure className="hidden">
 						<UsersCollabIcon />
 					</figure>
 				)}

@@ -1,6 +1,6 @@
 // LOGIN AND SIGN UP FLOW
 export const grayInputClassName =
-	"leading-4 block w-[300px] bg-search-bar-background-color-2  appearance-none border-none text-sm placeholder:text-sm placeholder:text-search-bar-text-color text-grayDark-grayDark-600 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-none";
+	"leading-4 block w-[300px] bg-hover-color  appearance-none border-none text-sm placeholder:text-sm placeholder:text-search-bar-text-color text-grayDark-grayDark-600 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-none";
 export const buttonDarkClassName =
 	"flex w-full h-[30px] justify-center rounded-lg bg-gray-light-12  text-[13px] py-[7.5px] font-medium leading-[15px] text-white hover:bg-custom-gray-14";
 export const buttonLightClassName =

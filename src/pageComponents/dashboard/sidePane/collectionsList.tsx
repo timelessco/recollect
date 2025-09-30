@@ -463,7 +463,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
-						fill={colorPickerColors[1]}
+						fill="var(--plain-reverse-color)"
 						height="16"
 						viewBox="0 0 18 18"
 						width="16"
@@ -473,7 +473,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</figure>
 				<input
 					autoFocus
-					className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
+					className="!focus:outline-none !bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-white !opacity-40"
 					id="add-category-input"
 					onBlur={(event) => {
 						if (!isEmpty(event?.target?.value)) {
