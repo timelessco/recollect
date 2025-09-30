@@ -90,6 +90,7 @@ module.exports = {
 					"var(--settings-modal-text-secondary-color)",
 				"settings-modal-hover-bg-color": "var(--settings-modal-hover-bg-color)",
 				"selected-bg-color": "var(--selected-bg-color)",
+				"modal-popup-bg-color": "var(--modal-popup-bg-color)",
 				overlay: {
 					black: {
 						"A/3": "#0000000C",
