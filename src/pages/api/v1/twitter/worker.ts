@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type SupabaseClient } from "@supabase/supabase-js";
 
 import imageToText from "../../../../async/ai/imageToText";
@@ -52,6 +53,10 @@ export const processImageQueue = async (
 				const { ogImage, url } = message.message;
 
 				if (ogImage) {
+					console.time("Processing Time");
+
+					// Your processing steps here
+
 					const { data: existing } = await supabase
 						.from(MAIN_TABLE_NAME)
 						.select("meta_data")
@@ -133,6 +138,8 @@ export const processImageQueue = async (
 							queue_name: "ai-stuffs",
 							message_id: message.msg_id,
 						});
+
+					console.timeEnd("Processing Time");
 
 					if (deleteError)
 						console.error("Error deleting message:", deleteError);

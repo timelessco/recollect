@@ -235,6 +235,11 @@ const MyComponent = () => {
 							shouldFetch={shouldFetch}
 						/>
 					</div>
+					blurhash:{metaData?.ogImgBlurUrl}
+					<br />
+					width:{metaData?.width}
+					<br />
+					height:{metaData?.height}
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.image_caption ||
 						metaData?.img_caption ||
