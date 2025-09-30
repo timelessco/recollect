@@ -62,61 +62,61 @@ export const processImageQueue = async (
 					const newMeta: any = { ...existing?.meta_data };
 
 					// Process image based on parameters
-					if (processCaption) {
-						const caption = await imageToText(ogImage);
+					// if (processCaption) {
+					const caption = await imageToText(ogImage);
 
-						if (!caption) {
-							console.error("imageToText returned empty result", url);
-							isFailed = true;
-						} else {
-							newMeta.image_caption = caption;
-						}
-						// try {
-						// 	newMeta.image_caption = await imageToText(ogImage);
-						// } catch {
-						// 	console.error("Error processing image caption");
-						// 	isFailed = true;
-						// }
+					if (!caption) {
+						console.error("imageToText returned empty result", url);
+						isFailed = true;
+					} else {
+						newMeta.image_caption = caption;
 					}
+					// try {
+					// 	newMeta.image_caption = await imageToText(ogImage);
+					// } catch {
+					// 	console.error("Error processing image caption");
+					// 	isFailed = true;
+					// }
+					// }
 
-					if (processOcr) {
-						const ocrResult = await ocr(ogImage);
+					// if (processOcr) {
+					const ocrResult = await ocr(ogImage);
 
-						if (!ocrResult) {
-							console.error("ocr returned empty result", url);
-							isFailed = true;
-						} else {
-							newMeta.ocr = ocrResult;
-						}
-						// try {
-						// 	newMeta.ocr = await ocr(ogImage);
-						// } catch {
-						// 	console.error("Error processing OCR");
-						// 	isFailed = true;
-						// }
+					if (!ocrResult) {
+						console.error("ocr returned empty result", url);
+						isFailed = true;
+					} else {
+						newMeta.ocr = ocrResult;
 					}
+					// try {
+					// 	newMeta.ocr = await ocr(ogImage);
+					// } catch {
+					// 	console.error("Error processing OCR");
+					// 	isFailed = true;
+					// }
+					// }
 
-					if (processBlurhash) {
-						const { width, height, encoded } = await blurhashFromURL(ogImage);
+					// if (processBlurhash) {
+					const { width, height, encoded } = await blurhashFromURL(ogImage);
 
-						if (!encoded || !width || !height) {
-							console.error("blurhashFromURL returned empty result", url);
-							isFailed = true;
-						} else {
-							newMeta.width = width;
-							newMeta.height = height;
-							newMeta.ogImgBlurUrl = encoded;
-						}
-						// try {
-						// 	const { width, height, encoded } = await blurhashFromURL(ogImage);
-						// 	newMeta.width = width;
-						// 	newMeta.height = height;
-						// 	newMeta.ogImgBlurUrl = encoded;
-						// } catch {
-						// 	console.error("Error processing blurhash");
-						// 	isFailed = true;
-						// }
+					if (!encoded || !width || !height) {
+						console.error("blurhashFromURL returned empty result", url);
+						isFailed = true;
+					} else {
+						newMeta.width = width;
+						newMeta.height = height;
+						newMeta.ogImgBlurUrl = encoded;
 					}
+					// try {
+					// 	const { width, height, encoded } = await blurhashFromURL(ogImage);
+					// 	newMeta.width = width;
+					// 	newMeta.height = height;
+					// 	newMeta.ogImgBlurUrl = encoded;
+					// } catch {
+					// 	console.error("Error processing blurhash");
+					// 	isFailed = true;
+					// }
+					// }
 
 					// Update the main table
 					await supabase
@@ -130,7 +130,7 @@ export const processImageQueue = async (
 					const { error: deleteError } = await supabase
 						.schema("pgmq_public")
 						.rpc("delete", {
-							queue_name: queueName,
+							queue_name: "ai-stuffs",
 							message_id: message.msg_id,
 						});
 
@@ -152,3 +152,17 @@ export const processImageQueue = async (
 		throw error;
 	}
 };
+
+// create or replace function merge_meta_data(row_url text, new_data jsonb)
+// returns void as $$
+// begin
+//   update main_table
+//   set meta_data = coalesce(meta_data, '{}'::jsonb) || new_data
+//   where url = row_url;
+// end;
+// $$ language plpgsql;
+
+// await supabase.rpc("merge_meta_data", {
+//   row_url: url,
+//   new_data: { ocr: ocrResult }
+// });
