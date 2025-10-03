@@ -86,14 +86,14 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
 			<>
 				{label && <label htmlFor={inputId}>{label}</label>}
 				<Ariakit.Combobox
-					className="ml-1 w-full bg-inherit text-sm font-normal leading-4 text-grayDark-grayDark-600 outline-none "
+					className="ml-1 w-full bg-inherit text-sm font-normal leading-4 text-search-bar-text-color outline-none "
 					id={inputId}
 					ref={ref}
 					store={combobox}
 					{...comboboxProps}
 				/>
 				<Ariakit.ComboboxPopover
-					className="z-10 rounded-xl bg-white p-[6px] shadow-custom-7"
+					className="z-10 rounded-xl bg-plain-color p-[6px] shadow-custom-7"
 					gutter={8}
 					render={<Ariakit.SelectList store={select} />}
 					sameWidth
@@ -111,7 +111,7 @@ export type ComboboxItemProps = ComponentPropsWithoutRef<"div"> & {
 };
 
 const menuItemClassName =
-	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[1%] text-gray-light-12 data-[active-item]:bg-gray-light-4 truncate";
+	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[1%] text-navbar-text-heading-color data-[active-item]:bg-dropdown-hover-background-color truncate";
 
 export const ComboboxItem = forwardRef<HTMLDivElement, ComboboxItemProps>(
 	(props, ref) => (
