@@ -15,8 +15,11 @@ export default async function handler(
 	}
 
 	const supabase = createServiceClient();
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
 	try {
 		const result = await processImageQueue(supabase, {
+			userId,
 			processOcr: true,
 			processCaption: false,
 			processBlurhash: false,

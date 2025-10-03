@@ -13,6 +13,7 @@ type ProcessParameters = {
 	processOcr?: boolean;
 	queueName: string;
 	sleepSeconds?: number;
+	userId: string;
 };
 
 export const processImageQueue = async (
@@ -21,13 +22,7 @@ export const processImageQueue = async (
 ) => {
 	const SLEEP_SECONDS = 30;
 
-	const {
-		processOcr,
-		processCaption,
-		processBlurhash,
-		queueName,
-		batchSize = 1,
-	} = parameters;
+	const { userId, queueName, batchSize = 1 } = parameters;
 
 	try {
 		const { data: messages, error: messageError } = await supabase
@@ -61,13 +56,12 @@ export const processImageQueue = async (
 						.from(MAIN_TABLE_NAME)
 						.select("meta_data")
 						.eq("url", url)
+						.eq("user_id", userId)
 						.single();
 
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const newMeta: any = { ...existing?.meta_data };
 
-					// Process image based on parameters
-					// if (processCaption) {
 					const caption = await imageToText(ogImage);
 
 					if (!caption) {
@@ -76,15 +70,7 @@ export const processImageQueue = async (
 					} else {
 						newMeta.image_caption = caption;
 					}
-					// try {
-					// 	newMeta.image_caption = await imageToText(ogImage);
-					// } catch {
-					// 	console.error("Error processing image caption");
-					// 	isFailed = true;
-					// }
-					// }
 
-					// if (processOcr) {
 					const ocrResult = await ocr(ogImage);
 
 					if (!ocrResult) {
@@ -93,15 +79,7 @@ export const processImageQueue = async (
 					} else {
 						newMeta.ocr = ocrResult;
 					}
-					// try {
-					// 	newMeta.ocr = await ocr(ogImage);
-					// } catch {
-					// 	console.error("Error processing OCR");
-					// 	isFailed = true;
-					// }
-					// }
 
-					// if (processBlurhash) {
 					const { width, height, encoded } = await blurhashFromURL(ogImage);
 
 					if (!encoded || !width || !height) {
@@ -112,22 +90,13 @@ export const processImageQueue = async (
 						newMeta.height = height;
 						newMeta.ogImgBlurUrl = encoded;
 					}
-					// try {
-					// 	const { width, height, encoded } = await blurhashFromURL(ogImage);
-					// 	newMeta.width = width;
-					// 	newMeta.height = height;
-					// 	newMeta.ogImgBlurUrl = encoded;
-					// } catch {
-					// 	console.error("Error processing blurhash");
-					// 	isFailed = true;
-					// }
-					// }
 
 					// Update the main table
 					await supabase
 						.from(MAIN_TABLE_NAME)
 						.update({ meta_data: newMeta })
-						.eq("url", url);
+						.eq("url", url)
+						.eq("user_id", userId);
 				}
 
 				// Delete message from queue
@@ -159,17 +128,3 @@ export const processImageQueue = async (
 		throw error;
 	}
 };
-
-// create or replace function merge_meta_data(row_url text, new_data jsonb)
-// returns void as $$
-// begin
-//   update main_table
-//   set meta_data = coalesce(meta_data, '{}'::jsonb) || new_data
-//   where url = row_url;
-// end;
-// $$ language plpgsql;
-
-// await supabase.rpc("merge_meta_data", {
-//   row_url: url,
-//   new_data: { ocr: ocrResult }
-// });
