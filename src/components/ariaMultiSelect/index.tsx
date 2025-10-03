@@ -178,7 +178,7 @@ const AriaMultiSelect = ({
 
 	// Always allow wrapping and set a minimum height for single line
 	const mainWrapperClassName = classNames(
-		"py-[3px] px-[10px] rounded-lg w-full bg-overlay-black-A/3 flex items-center flex-wrap min-h-[30px]",
+		"py-[3px] px-[10px] rounded-lg w-full bg-search-bar-background-color flex items-center flex-wrap min-h-[30px]",
 	);
 
 	return (

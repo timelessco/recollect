@@ -13,7 +13,7 @@ type LabelledComponentProps = {
 const LabelledComponent = (props: LabelledComponentProps) => {
 	const { children, label, labelClassName = "" } = props;
 	const labelClass = classNames({
-		"mb-2 block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2":
+		"mb-2 block text-sm font-medium text-sidepane-gray-text sm:mt-px sm:pt-2":
 			isEmpty(labelClassName),
 		[labelClassName]: !isEmpty(label),
 	});
