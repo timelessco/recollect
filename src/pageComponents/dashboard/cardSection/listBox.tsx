@@ -95,18 +95,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	// ---- Virtualizer Setup ----
 	const rowVirtualizer = useVirtualizer({
-		measureElement: (element, _entry, instance) => {
-			const direction = instance.scrollDirection;
-			if (direction === "forward" || direction === null) {
-				// Allow a fresh measurement when scrolling down (or initial)
-				return element.getBoundingClientRect().height;
-			} else {
-				// eslint-disable-next-line unicorn/prefer-dom-node-dataset
-				const indexKey = Number(element.getAttribute("data-index"));
-				const cached = instance.measurementsCache[indexKey]?.size;
-				return cached ?? element.getBoundingClientRect().height;
-			}
-		},
+		measureElement: (element, _entry) => element.getBoundingClientRect().height,
 		count: bookmarksList.length,
 		getScrollElement: () =>
 			typeof document !== "undefined"
@@ -160,7 +149,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			const aspectRatio = 4 / 3;
 			return cardWidth * aspectRatio;
 		},
-		overscan: 1,
+		overscan: 5,
 		lanes: (() => {
 			if (
 				cardTypeCondition !== viewValues.card &&
@@ -185,6 +174,10 @@ const ListBox = (props: ListBoxDropTypes) => {
 			}
 		})(),
 	});
+
+	useEffect(() => {
+		rowVirtualizer.scrollToIndex(0);
+	}, [rowVirtualizer, cardTypeCondition]);
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
