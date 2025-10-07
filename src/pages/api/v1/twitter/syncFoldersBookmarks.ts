@@ -57,15 +57,21 @@ export default async function handler(
 					.select("id")
 					.eq("category_name", item.category_name)
 					.eq("icon", "bookmark")
+					.eq("user_id", userId)
 					.single();
 
-				if (categoryError || !categoryData) {
+				if (!categoryData) {
 					console.warn(`Category '${item.category_name}' not found`);
 					return {
 						url: item.url,
 						success: false,
 						reason: "Category not found",
 					};
+				}
+
+				if (categoryError) {
+					console.error(`Failed to fetch category id`, categoryError);
+					return { url: item.url, success: false };
 				}
 
 				const categoryId = categoryData.id;
