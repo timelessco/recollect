@@ -4,7 +4,6 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
 	type SingleListData,
@@ -160,16 +159,6 @@ export default async function handler(
 		} catch {
 			console.error("Failed to queue item:");
 		}
-
-		// // creates and add embeddings
-		// const bookmarkIds = insertDBData?.map((item) => item?.id);
-
-		// try {
-		// 	await insertEmbeddings(bookmarkIds, request?.cookies);
-		// } catch {
-		// 	console.error("Create embeddings error in twitter sync api");
-		// 	Sentry.captureException(`Create embeddings error in twitter sync api`);
-		// }
 
 		response.status(200).json({ success: true, error: null });
 	} catch {
