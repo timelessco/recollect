@@ -140,6 +140,19 @@ export default async function handler(
 					messages: insertDBData,
 					sleep_seconds: 0,
 				});
+
+			await supabase.schema("pgmq_public").rpc("send_batch", {
+				queue_name: "blurhash",
+				messages: insertDBData,
+				sleep_seconds: 0,
+			});
+
+			await supabase.schema("pgmq_public").rpc("send_batch", {
+				queue_name: "image-caption",
+				messages: insertDBData,
+				sleep_seconds: 0,
+			});
+
 			if (!queueResultsError) {
 				console.log("successfully queued ", queueResults.length, "items");
 			}

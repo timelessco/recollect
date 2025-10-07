@@ -1,72 +1,106 @@
-// pages/api/process-queue.js (Pages Router)
-
-import { type NextApiRequest, type NextApiResponse } from "next";
+/* eslint-disable no-console */
+import { type SupabaseClient } from "@supabase/supabase-js";
 
 import imageToText from "../../../../async/ai/imageToText";
 import ocr from "../../../../async/ai/ocr";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
-import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const processImageQueue = async (supabase: any) => {
+type ProcessParameters = {
+	batchSize?: number;
+	processBlurhash?: boolean;
+	processCaption?: boolean;
+	processOcr?: boolean;
+	queueName: string;
+	sleepSeconds?: number;
+	userId: string;
+};
+
+export const processImageQueue = async (
+	supabase: SupabaseClient,
+	parameters: ProcessParameters,
+) => {
+	const SLEEP_SECONDS = 30;
+
+	const { userId, queueName, batchSize = 1 } = parameters;
+
 	try {
-		let totalMessages = 0;
-		// *** not sure that this is the best way, it empty's the queue in a single api call
-		while (true) {
-			const { data: messages, error: messageError } = await supabase
-				.schema("pgmq_public")
-				.rpc("read", {
-					queue_name: "ai-stuffs",
-					sleep_seconds: 120,
-					// eslint-disable-next-line id-length
-					n: 200,
-				});
+		const { data: messages, error: messageError } = await supabase
+			.schema("pgmq_public")
+			.rpc("read", {
+				queue_name: queueName,
+				sleep_seconds: SLEEP_SECONDS,
+				// eslint-disable-next-line id-length
+				n: batchSize,
+			});
 
-			// eslint-disable-next-line no-console
-			console.log(
-				"************************ messages *********************",
-				messages?.length,
-			);
+		if (messageError) {
+			console.error("Error fetching messages from queue:", messageError);
+			return;
+		}
 
-			if (messages?.length === 0) {
-				break;
-			}
+		if (!messages?.length) return;
 
-			totalMessages = messages?.length;
+		for (const message of messages) {
+			let isFailed = false;
 
-			if (messageError) {
-				console.error("Error fetching messages from queue:", messageError);
-				return;
-			}
+			try {
+				const { ogImage, url } = message.message;
 
-			for (const message of messages || []) {
-				try {
-					const { ogImage, url, meta_data } = message.message;
+				if (ogImage) {
+					console.time("Processing Time");
 
-					// Process the image (your heavy operations)
-					if (ogImage) {
-						const imgData = await blurhashFromURL(ogImage);
-						const imageOcrValue = await ocr(ogImage);
-						const image_caption = await imageToText(ogImage);
+					// Your processing steps here
 
-						// UPDATE THE MAIN TABLE
-						await supabase
-							.from(MAIN_TABLE_NAME)
-							.update({
-								meta_data: {
-									height: imgData?.height,
-									width: imgData?.width,
-									ogImgBlurUrl: imgData?.encoded,
-									image_caption,
-									ocr: imageOcrValue,
-									...meta_data,
-								},
-							})
-							.eq("url", url);
+					const { data: existing } = await supabase
+						.from(MAIN_TABLE_NAME)
+						.select("meta_data")
+						.eq("url", url)
+						.eq("user_id", userId)
+						.single();
+
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					const newMeta: any = { ...existing?.meta_data };
+
+					const caption = await imageToText(ogImage);
+
+					if (!caption) {
+						console.error("imageToText returned empty result", url);
+						isFailed = true;
+					} else {
+						newMeta.image_caption = caption;
 					}
 
-					// Delete message from queue (mark as processed)
+					const ocrResult = await ocr(ogImage);
+
+					if (!ocrResult) {
+						console.error("ocr returned empty result", url);
+						isFailed = true;
+					} else {
+						newMeta.ocr = ocrResult;
+					}
+
+					const { width, height, encoded } = await blurhashFromURL(ogImage);
+
+					if (!encoded || !width || !height) {
+						console.error("blurhashFromURL returned empty result", url);
+						isFailed = true;
+					} else {
+						newMeta.width = width;
+						newMeta.height = height;
+						newMeta.ogImgBlurUrl = encoded;
+					}
+
+					// Update the main table
+					await supabase
+						.from(MAIN_TABLE_NAME)
+						.update({ meta_data: newMeta })
+						.eq("url", url)
+						.eq("user_id", userId);
+				}
+
+				// Delete message from queue
+				if (!isFailed) {
 					const { error: deleteError } = await supabase
 						.schema("pgmq_public")
 						.rpc("delete", {
@@ -74,51 +108,23 @@ const processImageQueue = async (supabase: any) => {
 							message_id: message.msg_id,
 						});
 
-					if (deleteError) {
-						console.error("Error deleting message from queue:", deleteError);
-					}
-				} catch (error) {
-					console.error("Processing failed:", error);
+					console.timeEnd("Processing Time");
+
+					if (deleteError)
+						console.error("Error deleting message:", deleteError);
 				}
+			} catch (error) {
+				console.error("Processing failed for message:", message.msg_id, error);
 			}
 		}
 
 		// eslint-disable-next-line consistent-return
-		return { totalMessages };
+		return {
+			messageId: messages[0]?.msg_id,
+			messageEndId: messages[messages.length - 1]?.msg_id,
+		};
 	} catch (error) {
 		console.error("Queue processing error:", error);
 		throw error;
 	}
 };
-
-export default async function handler(
-	request: NextApiRequest,
-	response: NextApiResponse,
-) {
-	if (request.method !== "GET") {
-		response.status(405).json({ error: "Method not allowed" });
-		return;
-	}
-
-	const supabase = apiSupabaseClient(request, response);
-
-	try {
-		const result = await processImageQueue(supabase);
-
-		// eslint-disable-next-line no-console
-		console.log({
-			message: "Queue processed successfully",
-			count: result?.totalMessages,
-		});
-
-		response.status(200).json({
-			success: true,
-			message: "Queue processed successfully",
-		});
-	} catch {
-		response.status(500).json({
-			success: false,
-			error: "Error processing queue",
-		});
-	}
-}
