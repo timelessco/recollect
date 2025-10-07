@@ -164,22 +164,22 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				/>
 			</MenuButton>
 			<Menu
-				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-white px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
+				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-plain-color px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
 				composite={false}
 				portal
 				state={menu}
 			>
 				<div className="flex items-center justify-between border-b-[1px] border-b-custom-gray-7 py-3">
-					<span className="text-sm font-medium leading-4 text-custom-gray-1">
+					<span className="text-sm font-medium leading-4 text-dropdown-text-color">
 						Choose an icon
 					</span>
-					<div className="flex w-[139px] items-center rounded-lg bg-custom-gray-6 px-[10px] py-[7px]">
+					<div className="flex w-[139px] items-center rounded-lg bg-search-bar-background-color px-[10px] py-[7px]">
 						<figure className="mr-[6px] h-3 w-3">
 							<SearchIconSmallGray />
 						</figure>
 						<Combobox
 							autoSelect
-							className="w-[101px] bg-custom-gray-6 text-sm font-normal leading-4 text-grayDark-grayDark-600 focus:outline-none"
+							className="w-[101px] bg-search-bar-background-color text-sm font-normal leading-4 text-settings-modal-text-secondary-color focus:outline-none"
 							onChange={(changeEvent) => {
 								if (changeEvent?.target?.value?.length > 1) {
 									setIsSearch(true);
@@ -193,7 +193,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						/>
 					</div>
 				</div>
-				<div className="icon-color-container overflow-x-auto pt-2">
+				<div className="icon-color-container overflow-x-scroll pt-2">
 					<ColorPicker
 						colorsList={colorPickerColors}
 						onChange={(sliderColor) => {
@@ -206,7 +206,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 					/>
 				</div>
 				<ComboboxList
-					className="flex h-[253px] flex-col overflow-y-scroll pb-3 pt-2"
+					className="flex h-[253px] flex-col  pb-3 pt-2"
 					id="icon-selector"
 					state={combobox}
 				>

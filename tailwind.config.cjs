@@ -72,7 +72,6 @@ module.exports = {
 				"modal-bg": "#00000045",
 				"secondary-text-color": "var(--secondary-text-color)",
 				"search-bar-background-color": "var(--search-bar-background-color)",
-				"search-bar-background-color-2": "var(--search-bar-background-color-2)",
 				"search-bar-text-color": "var(--search-bar-text-color)",
 				"plain-reverse-color": "var(--plain-reverse-color)",
 				"plain-color": "var(--plain-color)",

@@ -326,7 +326,7 @@ const ShareContent = () => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-search-bar-background-color-2 rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-[7px] px-[10px] bg-black rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
 			<div className=" pt-3">

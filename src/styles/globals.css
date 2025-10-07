@@ -732,31 +732,10 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-dark-violet-900: #bca9fc;
 		--color-dark-violet-950: #cdbeff;
 
-		/*Custom Colors*/
-		--custom-background-black: #0d0d0d;
-		--custom-background-white: #ffffffe5;
-		--custom-text-dark: #979797;
-		--custom-hover-gray: #323232;
-		--custom-interactive-blue: #0080f0;
-		--custom-interactive-color-disabled-light: #00000024;
-		--custom-secondary-gray: #858585;
-		--custom-overlay-black-a3: #0000000c;
-		--custom-searchbar-text-gray: #707070;
-		--custom-sidepane-white: #fffffffa;
-		--custom-sidepane-black: #000000fa;
-		--custom-sidepane-gray-text: #374151;
-		--custom-sidepane-dark-gray-text: #d1d5db;
-		--custom-gradient-white: #ffffff00;
-		--custom-gradient-black: #000000e6;
-		--custom-lightbox-black: #0d0d0dea;
-		--custom-lightbox-hover-black: #00000008;
-		--custom-lightbox-close: #000000ff;
-		--custom-slate-300: #cbd5e1;
-
 		/*CSS variables for light mode*/
 		--plain-color: var(--color-white);
 		--plain-reverse-color: var(--color-black);
-		--background-color: var(--custom-background-white);
+		--background-color: var(--color-white);
 		--hover-color: var(--color-light-gray-100);
 		--text-color: var(--color-light-gray-800);
 		--hover-text-color: var(--color-light-gray-900);
@@ -764,25 +743,22 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--dropdown-hover-text-color: var(--color-light-gray-900);
 		--dropdown-hover-background-color: var(--color-light-gray-200);
 		--interactive-color-enabled: var(--color-light-gray-900);
-		--interactive-color-disabled: var(
-			--custom-interactive-color-disabled-light
-		);
-		--secondary-text-color: var(--custom-secondary-gray);
+		--interactive-color-disabled: var(--color-light-gray-400);
+		--secondary-text-color: var(--color-light-gray-550);
 		--navbar-text-heading-color: var(--color-light-gray-900);
-		--search-bar-background-color: var(--custom-overlay-black-a3);
-		--search-bar-background-color-2: var(--custom-overlay-black-a3);
-		--modal-text-color: var(--custom-secondary-gray);
+		--search-bar-background-color: var(--color-light-gray-100);
+		--modal-text-color: var(--color-light-gray-550);
 		--copy-link-text-color: var(--color-light-gray-800);
 		--icon-color: var(--color-black);
-		--sidepane-background-color: var(--custom-sidepane-white);
-		--sidepane-gray-text: var(--custom-sidepane-gray-text);
-		--sidepane-gradient: var(--custom-gradient-white);
-		--lightbox-background: var(--custom-background-white);
-		--lightbox-hover-background: var(--custom-lightbox-hover-black);
-		--lightbox-close: var(--custom-lightbox-close);
+		--sidepane-background-color: var(--color-white);
+		--sidepane-gray-text: var(--color-dark-gray-400);
+		--sidepane-gradient: var(--color-white);
+		--lightbox-background: var(--color-white);
+		--lightbox-hover-background: var(--color-black);
+		--lightbox-close: var(--color-black);
 		--settings-modal-text-color: var(--color-light-gray-700);
 		--settings-modal-text-secondary-color: var(--color-light-gray-600);
-		--settings-modal-hover-bg-color: var(--custom-slate-300);
+		--settings-modal-hover-bg-color: var(--color-dark-gray-900);
 		--selected-bg-color: var(--color-black);
 		--modal-popup-bg-color: var(--color-white);
 	}
@@ -790,32 +766,31 @@ input[type="checkbox"]:checked + .checkbox-div {
 		/*CSS variables for dark mode*/
 		--plain-color: var(--color-black);
 		--plain-reverse-color: var(--color-white);
-		--background-color: var(--custom-background-black);
+		--background-color: var(--color-dark-gray-50);
 		--hover-color: var(--color-light-gray-900);
-		--text-color: var(--custom-text-dark);
+		--text-color: var(--color-light-gray-500);
 		--hover-text-color: var(--color-light-gray-100);
 		--dropdown-text-color: var(--color-light-gray-400);
 		--dropdown-hover-text-color: var(--color-light-gray-400);
-		--dropdown-hover-background-color: var(--custom-hover-gray);
-		--interactive-color-enabled: var(--custom-interactive-blue);
+		--dropdown-hover-background-color: var(--color-dark-gray-300);
+		--interactive-color-enabled: var(--color-light-gray-400);
 		--interactive-color-disabled: var(--color-light-gray-800);
-		--secondary-text-color: var(--custom-secondary-gray);
-		--modal-text-color: var(--custom-text-dark);
+		--secondary-text-color: var(--color-light-gray-550);
+		--modal-text-color: var(--color-light-gray-500);
 		--navbar-text-heading-color: var(--color-light-gray-300);
 		--search-bar-background-color: var(--color-light-gray-900);
-		--search-bar-text-color: var(--custom-searchbar-text-gray);
-		--search-bar-background-color-2: var(--color-black);
-		--copy-link-text-color: var(--custom-interactive-blue);
-		--icon-color: var(--custom-text-dark);
-		--sidepane-background-color: var(--custom-sidepane-black);
-		--sidepane-gray-text: var(--custom-sidepane-dark-gray-text);
-		--sidepane-gradient: var(--custom-gradient-black);
-		--lightbox-background: var(--custom-lightbox-black);
-		--lightbox-hover-background: var(--custom-hover-gray);
+		--search-bar-text-color: var(--color-light-gray-600);
+		--copy-link-text-color: var(--color-light-gray-400);
+		--icon-color: var(--color-light-gray-500);
+		--sidepane-background-color: var(--color-black);
+		--sidepane-gray-text: var(--color-dark-gray-900);
+		--sidepane-gradient: var(--color-black);
+		--lightbox-background: var(--color-black);
+		--lightbox-hover-background: var(--color-dark-gray-300);
 		--lightbox-close: var(--plain-reverse-color);
 		--settings-modal-text-color: var(--color-light-gray-500);
 		--settings-modal-text-secondary-color: var(--color-light-gray-200);
-		--settings-modal-hover-bg-color: var(--custom-hover-gray);
+		--settings-modal-hover-bg-color: var(--color-dark-gray-300);
 		--selected-bg-color: var(--color-dark-gray-300);
 		--modal-popup-bg-color: var(--color-light-gray-900);
 

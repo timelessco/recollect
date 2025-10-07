@@ -13,7 +13,7 @@ export const bottomBarButton =
 // DROPDOWN COMMON CLASS NAMES
 
 export const dropdownMenuClassName =
-	"bg-hover-color rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
+	"bg-modal-popup-bg-color rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
 export const dropdownMenuItemClassName =
 	"text-dropdown-text-color font-450 text-13 text-dropdown-text-color leading-4 px-2 py-[5px] hover:bg-dropdown-hover-background-color focus:bg-dropdown-hover-background-color cursor-pointer rounded-lg hover:text-dropdown-hover-text-color focus:text-dropdown-hover-text-color";
 
