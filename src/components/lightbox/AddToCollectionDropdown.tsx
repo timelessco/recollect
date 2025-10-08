@@ -228,7 +228,7 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className="w-[160px] rounded-md border border-transparent py-[2px] text-left text-[13px] text-modal-text-color hover:text-plain-reverse-color focus:outline-none"
+									className="w-[160px] rounded-md border border-transparent py-[2px] text-left text-[13px] text-gray-550 hover:text-plain-reverse-color focus:outline-none"
 									type="button"
 								>
 									{/* Show current collection name or default text */}
@@ -257,11 +257,11 @@ export const AddToCollectionDropdown = memo(
 									{/* Show Uncategorized option only if current item is in a collection */}
 									{currentCollection && (
 										<Ariakit.ComboboxItem
-											className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-hover-color aria-selected:bg-hover-color"
+											className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-gray-100 aria-selected:bg-gray-100"
 											onClick={() => handleCollectionClick(null)}
 											value="Uncategorized"
 										>
-											<span className="text-[13px] font-[450] text-dropdown-text-color">
+											<span className="text-[13px] font-[450] text-gray-800">
 												Uncategorized
 											</span>
 										</Ariakit.ComboboxItem>
@@ -270,7 +270,7 @@ export const AddToCollectionDropdown = memo(
 										filteredCollections?.map((collection) => (
 											<Ariakit.ComboboxItem
 												// Styling for each collection item
-												className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-hover-color aria-selected:bg-hover-color"
+												className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-gray-100 aria-selected:bg-gray-100"
 												key={collection?.id}
 												onClick={() => handleCollectionClick(collection)}
 												onMouseDown={(event) => {
@@ -285,7 +285,7 @@ export const AddToCollectionDropdown = memo(
 													size="16"
 												/>
 												{/* Collection name */}
-												<span className="text-[13px] font-[450] text-dropdown-text-color">
+												<span className="text-[13px] font-[450] text-gray-800">
 													{collection?.category_name}
 												</span>
 											</Ariakit.ComboboxItem>

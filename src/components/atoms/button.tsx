@@ -37,9 +37,9 @@ const Button: FC<ButtonProps> = (props) => {
 			[smoothHoverClassName]: true,
 			"flex items-center rounded-lg py-[5px] px-2 text-[13px] font-medium leading-[14px]":
 				true,
-			"bg-gray-light-12  hover:bg-gray-800 text-white": type === "dark",
-			"bg-white hover:bg-hover-color": type === "light",
-			"bg-hover-color": isActive,
+			"bg-gray-900  hover:bg-gray-800 text-white": type === "dark",
+			"bg-transparent hover:bg-gray-100": type === "light",
+			"bg-gray-100": isActive,
 			"disabled:opacity-5": isDisabled,
 		}),
 		className,

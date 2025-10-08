@@ -22,12 +22,12 @@ const styles = {
 		width: "80%",
 	},
 	control: {
-		backgroundColor: "var(--search-bar-background-color)",
+		backgroundColor: "var(--color-gray-100)",
 
 		fontSize: 14,
 		fontWeight: 400,
 		lineHeight: "16px",
-		color: "var(--search-bar-text-color)",
+		color: "var(--color-gray-600)",
 
 		width: "100%",
 		padding: "6px",
@@ -65,13 +65,13 @@ const styles = {
 			fontWeight: "450",
 			fontSize: "13px",
 			lineHeight: "15px",
-			color: "var(--modal-text-color)",
+			color: "var(--color-gray-550)",
 			cursor: "pointer",
-			transition: "background-color 0.2s ease",
+			transition: "plain-color 0.2s ease",
 
 			// borderBottom: "1px solid rgba(0,0,0,0.15)",
 			"&focused": {
-				backgroundColor: "var(--dropdown-hover-background-color)",
+				backgroundColor: "var(--color-gray-200)",
 			},
 		},
 	},
@@ -121,11 +121,7 @@ const SearchInput = (props: SearchInputTypes) => {
 		<div className={wrapperClassNameBuilder}>
 			<figure className="absolute left-[9px] top-[7px] z-[5]">
 				<SearchInputSearchIcon
-					color={
-						isFocused
-							? "var(--dropdown-hover-text-color)"
-							: "var(--search-bar-text-color)"
-					}
+					color={isFocused ? "var(--color-gray-900)" : "var(--color-gray-600)"}
 					size="14"
 				/>
 			</figure>

@@ -30,27 +30,6 @@ module.exports = {
 				sans: ["Inter V", ...defaultTheme.fontFamily.sans],
 			},
 			colors: {
-				"custom-gray": {
-					1: "#383838",
-					2: "rgba(0, 0, 0, 0.04)",
-					4: "rgba(0, 0, 0, 0.13)",
-					6: "rgba(236, 236, 236, 0.86)",
-					7: "#E8E8E8",
-					8: "#f3f3f3",
-					10: "#858585",
-					11: "rgba(0, 0, 0, 0.047)",
-					12: "rgba(0, 0, 0, 0.071)",
-					13: "rgba(0, 0, 0, 0.141)",
-					// test color for dark button hover
-					14: "#2A2B2E",
-					15: "rgba(0, 0, 0, 0.03)",
-					16: "#E3E3E3",
-				},
-				"custom-white": {
-					1: "rgba(255, 255, 255, 0.9)",
-					2: "rgba(255, 255, 255, 0.96)",
-					3: "rgba(255, 255, 255, 0.5)",
-				},
 				"custom-gradient": {
 					1: "linear-gradient(180deg, #2E2E2E 0%, #242424 100%)",
 				},
@@ -58,59 +37,20 @@ module.exports = {
 					100: "#FFF0F0",
 					700: "#B52A2A",
 				},
-				"background-color": "var(--background-color)",
-				"hover-color": "var(--hover-color)",
-				"text-color": "var(--text-color)",
-				"hover-text-color": "var(--hover-text-color)",
-				"dropdown-text-color": "var(--dropdown-text-color)",
-				"dropdown-hover-background-color":
-					"var(--dropdown-hover-background-color)",
-				"dropdown-hover-text-color": "var(--dropdown-hover-text-color)",
-				"interactive-color-enabled": "var(--interactive-color-enabled)",
-				"interactive-color-disabled": "var(--interactive-color-disabled)",
-				"navbar-text-heading-color": "var(--navbar-text-heading-color)",
+				gray: {
+					50: "var(--color-gray-50)",
+					100: "var(--color-gray-100)",
+					200: "var(--color-gray-200)",
+					400: "var(--color-gray-400)",
+					550: "var(--color-gray-550)",
+					600: "var(--color-gray-600)",
+					700: "var(--color-gray-700)",
+					800: "var(--color-gray-800)",
+					900: "var(--color-gray-900)",
+				},
 				"modal-bg": "#00000045",
-				"secondary-text-color": "var(--secondary-text-color)",
-				"search-bar-background-color": "var(--search-bar-background-color)",
-				"search-bar-text-color": "var(--search-bar-text-color)",
 				"plain-reverse-color": "var(--plain-reverse-color)",
 				"plain-color": "var(--plain-color)",
-				"modal-text-color": "var(--modal-text-color)",
-				"copy-link-text-color": "var(--copy-link-text-color)",
-				"sidepane-background-color": "var(--sidepane-background-color)",
-				"sidepane-gradient": "var(--sidepane-gradient)",
-				"sidepane-gray-text": "var(--sidepane-gray-text)",
-				"lightbox-background": "var(--lightbox-background)",
-				"lightbox-hover-background": "var(--lightbox-hover-background)",
-				"lightbox-close": "var(--lightbox-close)",
-				"icon-color": "var(--icon-color)",
-				"settings-modal-text-color": "var(--settings-modal-text-color)",
-				"settings-modal-text-secondary-color":
-					"var(--settings-modal-text-secondary-color)",
-				"settings-modal-hover-bg-color": "var(--settings-modal-hover-bg-color)",
-				"selected-bg-color": "var(--selected-bg-color)",
-				"modal-popup-bg-color": "var(--modal-popup-bg-color)",
-				overlay: {
-					black: {
-						"A/3": "#0000000C",
-					},
-				},
-				grayDark: {
-					grayDark: {
-						600: "#707070",
-					},
-				},
-				gray: {
-					light: {
-						4: "#EDEDED",
-						12: "#171717",
-						1: "#9C9C9C",
-						10: "#858585",
-					},
-					gray: {
-						100: "#f3f3f3",
-					},
-				},
 			},
 
 			dropShadow: {

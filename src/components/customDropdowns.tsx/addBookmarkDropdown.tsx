@@ -92,7 +92,7 @@ const AddBookmarkDropdown = ({
 			>
 				<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
 					<Button
-						className="p-0 text-grayDark-grayDark-600 hover:text-gray-light-12"
+						className="p-0 text-gray-600 hover:text-gray-900"
 						onClick={() => {
 							if (fileUploadInputRef.current) {
 								fileUploadInputRef.current.click();

@@ -272,7 +272,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold text-navbar-text-heading-color"
+					className="truncate text-xl font-semibold text-gray-900"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -295,7 +295,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[28px] rounded-none border-none  bg-background-color p-0 text-xl font-semibold leading-[16px] text-navbar-text-heading-color  focus:outline-none"
+					className="m-0 h-[28px] rounded-none border-none  bg-plain-color p-0 text-xl font-semibold leading-[16px] text-gray-900  focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -508,7 +508,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const collapseButtonCommonClasses =
-		"absolute left-[11px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
+		"absolute left-[11px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-gray-300 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
@@ -540,13 +540,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] bg-background-color absolute top-0 w-full z-[5]  backdrop-blur-[20.5px]",
+			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
 				// "px-[7px]":
 				// 	currentBookmarkView === "headlines" || currentBookmarkView === "list",
-				"pl-[13px] ml-1 pr-3": true,
+				"pl-[13px]  pr-3": true,
 			},
 		);
 
@@ -563,11 +563,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		const showHeadingCondition = isDesktop ? true : !showSearchBar;
 
 		return (
-			<header className={headerClass}>
+			<header
+				className={headerClass}
+				style={{
+					backgroundColor:
+						"color-mix(in srgb, var(--plain-color) 90%, transparent)",
+				}}
+			>
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center text-icon-color">
+						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center text-plain-color">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}

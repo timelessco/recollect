@@ -83,7 +83,7 @@ const DeleteAccout = () => {
 		<>
 			<div className="relative mb-[34px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-hover-color"
+					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
@@ -94,7 +94,7 @@ const DeleteAccout = () => {
 					Delete account confirmation
 				</div>
 			</div>
-			<div className=" border-b-[1px] border-b-gray-light-4 pb-6 ">
+			<div className=" border-b-[1px] border-b-gray-200 pb-6 ">
 				<p className={settingsSubHeadingClassName}>
 					Are you sure you want to delete your account ?
 				</p>

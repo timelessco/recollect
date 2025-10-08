@@ -32,8 +32,7 @@ import { mutationApiCall } from "../../../utils/apiHelpers";
 import { CATEGORIES_KEY, EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
-const rightTextStyles =
-	"text-13 font-medium leading-[15px] text-custom-gray-10";
+const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
 const AccessUserInfo = (props: {
 	isLoggedinUserTheOwner: boolean;
@@ -112,7 +111,7 @@ const AccessUserInfo = (props: {
 						]}
 						renderCustomSelectButton={() => (
 							<div className="flex items-center">
-								<p className=" mr-1 text-dropdown-text-color">
+								<p className=" mr-1 text-gray-800">
 									{item.edit_access ? "Can Edit" : "Can View"}
 								</p>
 								<figure>
@@ -159,7 +158,7 @@ const AccessUserInfo = (props: {
 				) : (
 					<DefaultUserIcon className="h-5 w-5" />
 				)}
-				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-dropdown-text-color">
+				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-gray-800">
 					{item.userEmail}
 				</p>
 			</div>
@@ -270,7 +269,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-search-bar-text-color":
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-600":
 			true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
@@ -314,7 +313,7 @@ const ShareContent = () => {
 								]}
 								// disabled
 								renderCustomSelectButton={() => (
-									<div className="flex items-center text-dropdown-text-color">
+									<div className="flex items-center text-gray-800">
 										<p className=" mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
@@ -326,11 +325,11 @@ const ShareContent = () => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-black rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-[7px] px-[10px] bg-gray-100 rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
 			<div className=" pt-3">
-				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-modal-text-color">
+				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-550">
 					People with access
 				</p>
 				<div className="pb-2">
@@ -342,12 +341,12 @@ const ShareContent = () => {
 						/>
 					))}
 				</div>
-				<div className="mx-2 flex items-end justify-between border-y-[1px] border-custom-gray-11 py-[15.5px]">
+				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px] [border-color:color-mix(in_srgb,var(--plain-reverse-color)_4.7%,transparent)]">
 					<div className=" flex items-center">
 						<figure>
 							<GlobeIcon />
 						</figure>
-						<p className="ml-[6px] text-13 font-450 leading-[15px] text-dropdown-text-color">
+						<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
 							Anyone with link
 						</p>
 					</div>
@@ -373,7 +372,7 @@ const ShareContent = () => {
 							]}
 							renderCustomSelectButton={() => (
 								<div className="flex items-center">
-									<p className=" mr-1 text-dropdown-text-color">
+									<p className=" mr-1 text-gray-800">
 										{currentCategory?.is_public ? "View access" : "No access"}
 									</p>
 									<figure>
@@ -407,7 +406,7 @@ const ShareContent = () => {
 					<figure>
 						<LinkIcon />
 					</figure>
-					<p className="ml-[6px] text-13 font-450 leading-[15px] text-copy-link-text-color">
+					<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
 						{linkCopied ? "Link copied" : "Copy link"}
 					</p>
 				</div>

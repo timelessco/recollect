@@ -143,7 +143,7 @@ const MyComponent = () => {
 
 	if (!currentBookmark) {
 		return (
-			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-[rgba(0,0,0,0.13)] bg-sidepane-background-color backdrop-blur-[41px]">
+			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-[rgba(0,0,0,0.13)] bg-plain-color backdrop-blur-[41px]">
 				<Spinner
 					className="h-3 w-3 animate-spin"
 					style={{ color: "var(--plain-reverse-color)" }}
@@ -161,18 +161,22 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-l-[0.5px] border-[rgba(0,0,0,0.13)] bg-sidepane-background-color backdrop-blur-[41px]"
+					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-l-[0.5px] border-[rgba(0,0,0,0.13)] backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
 					initial={{ x: "100%" }}
+					style={{
+						backgroundColor:
+							"color-mix(in srgb, var(--plain-color) 98%, transparent)",
+					}}
 				>
 					<div className="flex flex-1 flex-col p-5 text-left  ">
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-navbar-text-heading-color"
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-gray-900"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -181,7 +185,7 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<p
-								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-modal-text-color"
+								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-550"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
@@ -215,7 +219,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] leading-[138%] tracking-[1%] text-sidepane-gray-text`}
+									} text-clip text-[13px] leading-[138%] tracking-[1%] text-gray-400`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
@@ -223,7 +227,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && (
 									<button
-										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-550"
 										onClick={() => setShowMore(!showMore)}
 										type="button"
 									>
@@ -259,7 +263,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-550"
 												key={tag?.id}
 											>
 												#{tag?.name}
@@ -284,7 +288,7 @@ const MyComponent = () => {
 										<Icon className="h-[15px] w-[15px]">
 											<GeminiAiIcon />
 										</Icon>
-										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]">
+										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600">
 											AI Summary
 										</p>
 									</div>
@@ -293,7 +297,7 @@ const MyComponent = () => {
 											isExpanded ? "overflow-y-auto" : ""
 										}`}
 									>
-										<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
+										<p className="text-[13px] leading-[138%] tracking-[1%] text-gray-600">
 											{metaData?.img_caption || metaData?.image_caption}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}
@@ -308,7 +312,7 @@ const MyComponent = () => {
 									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[50px]"
 									style={{
 										background:
-											"linear-gradient(180deg, var(--sidepane-gradient) 0%, var(--sidepane-background-color) 100%)",
+											"linear-gradient(180deg, var(--plain-color) 0%, var(--plain-color) 100%)",
 									}}
 								/>
 							)}

@@ -97,7 +97,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 				{find(sortOptions, (item) => item?.label === value)?.label}
 				{value === currentValue?.label ? (
 					<figure className="h-3 w-3">
-						<TickIcon color="var(--copy-link-text-color)" />
+						<TickIcon color="var(--color-gray-800)" />
 					</figure>
 				) : null}
 			</div>
@@ -120,8 +120,8 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			options={sortOptions}
 			renderCustomSelectButton={(open) => (
 				<div
-					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-8 ${
-						open ? "bg-custom-gray-8" : ""
+					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-gray-100 ${
+						open ? "bg-gray-100" : ""
 					}`}
 					title="sort-by"
 				>

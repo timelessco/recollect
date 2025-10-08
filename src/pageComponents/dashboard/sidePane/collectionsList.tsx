@@ -458,7 +458,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	};
 
 	const renderAddCategoryInput = showAddCategoryInput ? (
-		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
+		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg  px-2 py-[5px] [background-color:color-mix(in_srgb,var(--plain-reverse-color)_4%,transparent)]">
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
@@ -501,7 +501,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const collectionsHeader = (
 		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
-			<div className="flex items-center text-[13px] font-medium leading-[14.95px] text-custom-gray-10">
+			<div className="flex items-center text-[13px] font-medium leading-[14.95px] text-gray-600">
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
 					className="collections-sidepane-down-arrow hidden group-hover:block"
@@ -577,7 +577,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</div>
 				{renderAddCategoryInput}
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-2"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:[background-color:color-mix(in_srgb,var(--plain-reverse-color)_4%,transparent)]"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={() => {}}
@@ -587,7 +587,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					<figure>
 						<AddCategoryIcon />
 					</figure>
-					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-grayDark-grayDark-600">
+					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-gray-600">
 						Add Collection
 					</p>
 				</div>

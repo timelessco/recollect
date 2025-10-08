@@ -265,7 +265,7 @@ export const CustomLightBox = ({
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
-								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-white"
+								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-plain-color"
 								data={bookmark?.url}
 								title="Website Preview"
 								type="text/html"
@@ -466,7 +466,7 @@ export const CustomLightBox = ({
 	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
 
 	const iconSidePane = () => (
-		<div className="group h-5 w-5 cursor-pointer text-lightbox-close hover:text-plain-reverse-color">
+		<div className="group h-5 w-5 cursor-pointer text-plain-reverse-color hover:text-plain-reverse-color">
 			<ShowSidePaneButton />
 		</div>
 	);
@@ -594,7 +594,7 @@ export const CustomLightBox = ({
 				},
 				container: {
 					backgroundColor:
-						"color-mix(in srgb, var(--lightbox-background) 90%, transparent)",
+						"color-mix(in srgb, var(--plain-color) 90%, transparent)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
@@ -629,13 +629,13 @@ export const CustomLightBox = ({
 						key="center-section"
 					>
 						<a
-							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg  px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-[var(--lightbox-hover-background)]"
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:[background-color:color-mix(in_srgb,var(--plain-reverse-color)_3%,transparent)]"
 							href={bookmarks?.[activeIndex]?.url}
 							key="center-section"
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="truncate text-[#707070]">
+							<span className="truncate text-gray-600">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
 							<div className="h-4 w-4 shrink-0">

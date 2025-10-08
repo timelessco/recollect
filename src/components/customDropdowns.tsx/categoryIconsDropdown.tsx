@@ -106,18 +106,17 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 	const renderItem = (value: string) => {
 		const data = find(iconsList, (item) => item?.label === value);
-
+		const icon = "var(--plain-reverse-color)";
 		return (
 			<div className="h-[18px] w-[18px]" title={data?.label}>
-				{data?.icon(colorPickerColors[1])}
+				{data?.icon(icon)}
 			</div>
 		);
 	};
 
 	const renderComboBoxItem = (value: string, index: number) => (
 		<ComboboxItem
-			className="data-active-item:bg-custom-gray-7 custom-select rounded-md p-1 hover:bg-custom-gray-7"
-			focusOnHover
+			className="data-active-item:bg-gray-200 custom-select rounded-md p-1 hover:bg-gray-200"
 			key={value + index}
 			onClick={() => onIconSelect(value)}
 			setValueOnClick={false}
@@ -169,17 +168,17 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				portal
 				state={menu}
 			>
-				<div className="flex items-center justify-between border-b-[1px] border-b-custom-gray-7 py-3">
-					<span className="text-sm font-medium leading-4 text-dropdown-text-color">
+				<div className="flex items-center justify-between border-b-[1px] border-b-gray-200 py-3">
+					<span className="text-sm font-medium leading-4 text-gray-800">
 						Choose an icon
 					</span>
-					<div className="flex w-[139px] items-center rounded-lg bg-search-bar-background-color px-[10px] py-[7px]">
+					<div className="flex w-[139px] items-center rounded-lg bg-gray-100 px-[10px] py-[7px]">
 						<figure className="mr-[6px] h-3 w-3">
 							<SearchIconSmallGray />
 						</figure>
 						<Combobox
 							autoSelect
-							className="w-[101px] bg-search-bar-background-color text-sm font-normal leading-4 text-settings-modal-text-secondary-color focus:outline-none"
+							className="w-[101px] bg-gray-100 text-sm font-normal leading-4 text-gray-600 focus:outline-none"
 							onChange={(changeEvent) => {
 								if (changeEvent?.target?.value?.length > 1) {
 									setIsSearch(true);
@@ -215,6 +214,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 					</div>
 					<div className="absolute bottom-2 left-0 flex w-full justify-between px-2 pt-2 ">
 						<Button
+							className="!text-plain-reverse-color"
 							isDisabled={currentPage === 1 || isSearch}
 							onClick={() => onPaginationClick("prev")}
 						>
@@ -224,6 +224,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 							{currentPage}/{totalPagesValue}
 						</span>
 						<Button
+							className="!text-plain-reverse-color"
 							isDisabled={currentPage === totalPagesValue || isSearch}
 							onClick={() => onPaginationClick("next")}
 						>

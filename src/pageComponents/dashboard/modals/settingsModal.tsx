@@ -97,7 +97,7 @@ const SettingsModal = () => {
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="flex h-full rounded-2xl bg-plain-color">
-				<div className="h-full min-w-[220px] rounded-l-2xl border-r-[0.5px] border-r-custom-gray-4 bg-plain-color px-2 py-4 xl:hidden">
+				<div className="h-full min-w-[220px] rounded-l-2xl border-r-[0.5px] bg-plain-color px-2 py-4 [border-right-color:color-mix(in_srgb,var(--plain-reverse-color)_13%,transparent)] xl:hidden">
 					<div className="px-2 text-base font-semibold leading-[18px] text-plain-reverse-color">
 						Settings
 					</div>

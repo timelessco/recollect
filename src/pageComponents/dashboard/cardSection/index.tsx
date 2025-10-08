@@ -473,7 +473,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-gray-600 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -563,7 +563,7 @@ const CardSection = ({
 
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="rounded p-0.5 text-icon-color">
+				<figure className="rounded p-0.5 text-plain-color">
 					<ImageIcon size={`${size}`} />
 				</figure>
 			);
@@ -606,7 +606,7 @@ const CardSection = ({
 
 		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-icon-color">
+				<figure className="card-icon rounded p-0.5 text-plain-color">
 					<VideoIcon size="15" />
 				</figure>
 			);
@@ -614,14 +614,14 @@ const CardSection = ({
 
 		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-icon-color">
+				<figure className="card-icon rounded p-0.5 text-plain-color">
 					<FolderIcon size="15" />
 				</figure>
 			);
 		}
 
 		return (
-			<figure className="card-icon rounded p-0.5 text-icon-color">
+			<figure className="card-icon rounded p-0.5 text-plain-color">
 				<ImageIcon size={`${size}`} />
 			</figure>
 		);
@@ -637,10 +637,10 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-custom-gray-10">
+						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-gray-600">
 							<p className="mr-1">in</p>
 							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-[13px] font-450 leading-4 text-custom-gray-10">
+							<p className="ml-1 text-[13px] font-450 leading-4 text-gray-600">
 								{bookmarkCategoryData?.category_name}
 							</p>
 						</div>
@@ -651,7 +651,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="rounded-[5px] bg-hover-color px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-secondary-text-color"
+			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-550"
 			key={id}
 		>
 			#{name}
@@ -699,20 +699,20 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-sm font-medium leading-4 text-dropdown-hover-text-color">
+						<p className="card-title truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="text-sm leading-4 text-icon-color"
+								className="card-title text-sm leading-4 text-plain-reverse-color"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}
 							</ReadMore>
 						)}
-					<div className="space-y-[6px] text-secondary-text-color">
+					<div className="space-y-[6px] text-gray-550">
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
 								<div className="flex flex-wrap items-center space-x-1">
@@ -724,7 +724,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px] font-450 leading-4 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-[13px] font-450 leading-4 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -770,14 +770,14 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm font-medium leading-4 text-dropdown-hover-text-color">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					<div className="flex flex-wrap items-center space-x-1 sm:space-x-0 sm:space-y-1">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10 sm:mt-[1px]">
+								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-gray-600 sm:mt-[1px]">
 									{item?.description}
 								</p>
 							)}
@@ -792,7 +792,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -821,7 +821,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className=" ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -830,7 +830,7 @@ const CardSection = ({
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)

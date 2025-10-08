@@ -19,7 +19,7 @@ const ToastBody = ({
 				{message}
 			</p>
 			{description && (
-				<p className="mt-[4px] text-13 font-450 not-italic leading-[14px] tracking-[0.13px] text-gray-light-1">
+				<p className="mt-[4px] text-13 font-450 not-italic leading-[14px] tracking-[0.13px] text-gray-500">
 					{description}
 				</p>
 			)}

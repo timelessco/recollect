@@ -81,7 +81,7 @@ const ChangeEmail = () => {
 		<>
 			<div className="relative mb-[30px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-hover-color"
+					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
@@ -92,7 +92,7 @@ const ChangeEmail = () => {
 					Change email
 				</div>
 			</div>
-			<div className="border-b-[1px] border-b-gray-light-4 pb-[28px] ">
+			<div className="border-b-[1px] border-b-gray-200 pb-[28px] ">
 				<LabelledComponent
 					label="Current email"
 					labelClassName={settingsInputLabelClassName}
@@ -144,7 +144,7 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 				<div className="flex w-1/2 justify-end sm:w-full">
 					<Button
-						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4 hover:bg-settings-modal-hover-bg-color sm:mt-5 sm:w-full"
+						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4 hover:bg-gray-900 sm:mt-5 sm:w-full"
 						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
 						type="dark"
