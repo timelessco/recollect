@@ -41,4 +41,4 @@ export const settingsDeleteButtonRedClassName =
 	"bg-custom-red-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-red-100";
 
 export const settingsLightButtonClassName =
-	"rounded-lg bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-gray-800 hover:bg-gray-900 sm:w-full sm:justify-center";
+	"rounded-lg bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-gray-800 hover:bg-gray-400 sm:w-full sm:justify-center";

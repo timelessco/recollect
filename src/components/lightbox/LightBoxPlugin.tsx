@@ -219,7 +219,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] leading-[138%] tracking-[1%] text-gray-400`}
+									} text-clip text-[13px] leading-[138%] tracking-[1%] text-gray-800`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>

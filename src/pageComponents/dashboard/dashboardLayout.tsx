@@ -573,7 +573,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center text-plain-color">
+						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center text-plain-reverse-color">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}

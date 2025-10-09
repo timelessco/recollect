@@ -144,7 +144,7 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 				<div className="flex w-1/2 justify-end sm:w-full">
 					<Button
-						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4 hover:bg-gray-900 sm:mt-5 sm:w-full"
+						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4 hover:bg-gray-400 sm:mt-5 sm:w-full"
 						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
 						type="dark"

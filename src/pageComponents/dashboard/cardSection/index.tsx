@@ -563,7 +563,7 @@ const CardSection = ({
 
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="rounded p-0.5 text-plain-color">
+				<figure className="rounded p-0.5 text-plain-reverse-color">
 					<ImageIcon size={`${size}`} />
 				</figure>
 			);
@@ -606,7 +606,7 @@ const CardSection = ({
 
 		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-plain-color">
+				<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
 					<VideoIcon size="15" />
 				</figure>
 			);
@@ -614,14 +614,14 @@ const CardSection = ({
 
 		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-plain-color">
+				<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
 					<FolderIcon size="15" />
 				</figure>
 			);
 		}
 
 		return (
-			<figure className="card-icon rounded p-0.5 text-plain-color">
+			<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
 				<ImageIcon size={`${size}`} />
 			</figure>
 		);
