@@ -56,7 +56,7 @@ export const processImageQueue = async (
 						.from(MAIN_TABLE_NAME)
 						.select("meta_data")
 						.eq("url", url)
-						.eq("user_id", userId)
+						// .eq("user_id", userId)
 						.single();
 
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,8 +95,8 @@ export const processImageQueue = async (
 					await supabase
 						.from(MAIN_TABLE_NAME)
 						.update({ meta_data: newMeta })
-						.eq("url", url)
-						.eq("user_id", userId);
+						.eq("url", url);
+					// .eq("user_id", userId);
 				}
 
 				// Delete message from queue
