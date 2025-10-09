@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 
-import { createServiceClient } from "../../../../utils/supabaseClient";
+import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 import { processImageQueue } from "./worker";
 
@@ -14,7 +14,7 @@ export default async function handler(
 		return;
 	}
 
-	const supabase = createServiceClient();
+	const supabase = apiSupabaseClient(request, response);
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	try {
