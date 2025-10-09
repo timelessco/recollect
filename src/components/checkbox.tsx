@@ -38,11 +38,11 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 				{...rest}
 			/>
 			{BookmarkHoverCheckbox ? (
-				<div className="checkbox-div pointer-events-none absolute left-[5px] h-4 w-4 rounded-[4px] bg-black " />
+				<div className="checkbox-div pointer-events-none absolute left-[5px] h-4 w-4 rounded-[4px] bg-plain-reverse-color" />
 			) : checked ? (
-				<div className="checkbox-div pointer-events-none absolute right-1 top-[0.5px] h-[26px] w-[26px] rounded-lg bg-black/70 backdrop-blur-[10px]" />
+				<div className="checkbox-div pointer-events-none absolute right-1 top-[0.5px] h-[26px] w-[26px] rounded-lg bg-[color-mix(in_srgb,var(--plain-reverse-color)_70%,transparent)] backdrop-blur-[10px]" />
 			) : (
-				<div className="pointer-events-none absolute right-1 top-[0.5px] flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-white/90 backdrop-blur-[10px]">
+				<div className="pointer-events-none absolute right-1 top-[0.5px] flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--plain-color)_90%,transparent)] backdrop-blur-[10px]">
 					<CheckboxIcon />
 				</div>
 			)}
