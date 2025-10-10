@@ -9,21 +9,17 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	if (request.method !== "POST") {
+	if (request.method !== "GET") {
 		response.status(405).json({ error: "Method not allowed" });
 		return;
 	}
 
 	const supabase = createServiceClient();
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	try {
 		const result = await processImageQueue(supabase, {
-			userId,
-			processOcr: true,
-			processCaption: false,
-			processBlurhash: false,
-			queueName: "ai-stuffs",
+			queueName: "ai-embeddings",
+			batchSize: 1,
 		});
 
 		console.log({

@@ -136,22 +136,10 @@ export default async function handler(
 			const { data: queueResults, error: queueResultsError } = await supabase
 				.schema("pgmq_public")
 				.rpc("send_batch", {
-					queue_name: "ai-stuffs",
+					queue_name: "ai-embeddings",
 					messages: insertDBData,
 					sleep_seconds: 0,
 				});
-
-			await supabase.schema("pgmq_public").rpc("send_batch", {
-				queue_name: "blurhash",
-				messages: insertDBData,
-				sleep_seconds: 0,
-			});
-
-			await supabase.schema("pgmq_public").rpc("send_batch", {
-				queue_name: "image-caption",
-				messages: insertDBData,
-				sleep_seconds: 0,
-			});
 
 			if (!queueResultsError) {
 				console.log("successfully queued ", queueResults.length, "items");

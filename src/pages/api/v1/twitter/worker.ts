@@ -7,22 +7,16 @@ import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
 
 type ProcessParameters = {
-	batchSize?: number;
-	processBlurhash?: boolean;
-	processCaption?: boolean;
-	processOcr?: boolean;
+	batchSize: number;
 	queueName: string;
-	sleepSeconds?: number;
-	userId: string;
 };
 
+const SLEEP_SECONDS = 30;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
 ) => {
-	const SLEEP_SECONDS = 30;
-
-	const { userId, queueName, batchSize = 1 } = parameters;
+	const { queueName, batchSize } = parameters;
 
 	try {
 		const { data: messages, error: messageError } = await supabase
@@ -45,18 +39,15 @@ export const processImageQueue = async (
 			let isFailed = false;
 
 			try {
-				const { ogImage, url } = message.message;
+				const { user_id, ogImage, url } = message.message;
 
 				if (ogImage) {
-					console.time("Processing Time");
-
 					// Your processing steps here
-
 					const { data: existing } = await supabase
 						.from(MAIN_TABLE_NAME)
 						.select("meta_data")
 						.eq("url", url)
-						// .eq("user_id", userId)
+						.eq("user_id", user_id)
 						.single();
 
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,8 +86,8 @@ export const processImageQueue = async (
 					await supabase
 						.from(MAIN_TABLE_NAME)
 						.update({ meta_data: newMeta })
-						.eq("url", url);
-					// .eq("user_id", userId);
+						.eq("url", url)
+						.eq("user_id", user_id);
 				}
 
 				// Delete message from queue
@@ -104,11 +95,9 @@ export const processImageQueue = async (
 					const { error: deleteError } = await supabase
 						.schema("pgmq_public")
 						.rpc("delete", {
-							queue_name: "ai-stuffs",
+							queue_name: queueName,
 							message_id: message.msg_id,
 						});
-
-					console.timeEnd("Processing Time");
 
 					if (deleteError)
 						console.error("Error deleting message:", deleteError);
