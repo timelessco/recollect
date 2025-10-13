@@ -117,8 +117,7 @@ user_id (
 		)
 		// .eq('user_id', userId) // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
 		.eq("trash", category_id === TRASH_URL)
-		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT)
-		.order("inserted_at", { ascending: false });
+		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
 
 	if (categoryCondition) {
 		// check if user is user is a collaborator for the category_id
@@ -164,38 +163,35 @@ user_id (
 		);
 	}
 
-	if (category_id === TWEETS_URL) {
-		query = query.eq("type", tweetType);
-		// this tells the order in which the tweets was saved in twitter
-		query = query.order("sort_index", { ascending: false });
-	}
-
 	if (category_id === LINKS_URL) {
 		query = query.eq("type", bookmarkType);
 	}
 
 	if (sortVaue === "date-sort-acending") {
-		query = query.order("id", { ascending: false });
-	}
-
-	if (sortVaue === "date-sort-decending") {
-		query = query.order("id", { ascending: true });
-	}
-
-	if (sortVaue === "alphabetical-sort-acending") {
+		// newest first
+		query = query.order("inserted_at", { ascending: false });
+	} else if (sortVaue === "date-sort-decending") {
+		// oldest first
+		query = query.order("inserted_at", { ascending: true });
+	} else if (sortVaue === "alphabetical-sort-acending") {
+		// title A-Z
 		query = query.order("title", { ascending: true });
-	}
-
-	if (sortVaue === "alphabetical-sort-decending") {
+	} else if (sortVaue === "alphabetical-sort-decending") {
+		// title Z-A
 		query = query.order("title", { ascending: false });
-	}
-
-	if (sortVaue === "url-sort-acending") {
+	} else if (sortVaue === "url-sort-acending") {
+		// url A-Z
 		query = query.order("url", { ascending: true });
-	}
-
-	if (sortVaue === "url-sort-decending") {
+	} else if (sortVaue === "url-sort-decending") {
+		// url Z-A
 		query = query.order("url", { ascending: false });
+	} else if (category_id === TWEETS_URL) {
+		query = query
+			.eq("type", tweetType)
+			.order("sort_index", { ascending: false });
+	} else {
+		// Default fallback: newest first
+		query = query.order("inserted_at", { ascending: false });
 	}
 
 	const { data: bookmarkData, error } = await query;
