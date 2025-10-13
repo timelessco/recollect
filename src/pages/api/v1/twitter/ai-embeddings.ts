@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 
-import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
+import { createServiceClient } from "../../../../utils/supabaseClient";
 
 import { processImageQueue } from "./worker";
 
@@ -14,16 +14,12 @@ export default async function handler(
 		return;
 	}
 
-	const supabase = apiSupabaseClient(request, response);
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	const supabase = createServiceClient();
 
 	try {
 		const result = await processImageQueue(supabase, {
-			userId,
-			processOcr: true,
-			processCaption: false,
-			processBlurhash: false,
-			queueName: "ai-stuffs",
+			queueName: "ai-embeddings",
+			batchSize: 1,
 		});
 
 		console.log({
