@@ -314,13 +314,20 @@ export const searchBookmarks = async (
 	if (!isEmpty(searchText) && searchText !== "#") {
 		const categoryId = !isNull(category_id) ? category_id : "null";
 
+		// directly using '#' in the url will break the api
+		const parameters = new URLSearchParams({
+			search: searchText ?? "",
+			category_id: String(categoryId ?? ""),
+			is_shared_category: String(isSharedCategory ?? ""),
+			offset: String(offset ?? 0),
+			limit: String(limit ?? 10),
+		});
+
 		try {
 			const response = await axios.get<{
 				data: BookmarksPaginatedDataTypes[];
 				error: Error | null;
-			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&category_id=${categoryId}&is_shared_category=${isSharedCategory}&offset=${offset}&limit=${limit}`,
-			);
+			}>(`${NEXT_API_URL}${SEARCH_BOOKMARKS}?${parameters.toString()}`);
 			return response?.data;
 		} catch (error_) {
 			const error = error_ as Error;

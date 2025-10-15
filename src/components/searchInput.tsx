@@ -132,7 +132,7 @@ const SearchInput = (props: SearchInputTypes) => {
 
 					const tagName =
 						!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-							? matchedSearchTag?.map((item) => item?.replace("@", ""))
+							? matchedSearchTag?.map((item) => item?.replace("#", ""))
 							: undefined;
 
 					setAddedTags(tagName);
@@ -157,8 +157,8 @@ const SearchInput = (props: SearchInputTypes) => {
 							display: item?.name,
 						}))
 						?.filter((filterItem) => !addedTags?.includes(filterItem?.display))}
-					displayTransform={(_url, display) => `#${display}`}
-					markup="@__display__"
+					displayTransform={(_url, display) => `${display}`}
+					markup="__display__"
 					trigger="#"
 				/>
 			</MentionsInput>
