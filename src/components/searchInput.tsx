@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty, isNull, max, transform } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
@@ -50,6 +50,10 @@ const styles = {
 	},
 
 	suggestions: {
+		top: 11,
+		left: "50%",
+		transform: "translateX(-50%)",
+		borderRadius: "12px",
 		list: {
 			// backgroundColor: "#FFFFFF",
 			padding: "6px",
