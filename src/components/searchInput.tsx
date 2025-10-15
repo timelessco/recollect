@@ -50,9 +50,8 @@ const styles = {
 	},
 
 	suggestions: {
-		position: "fixed",
 		width: "fit-content",
-		top: 18,
+		top: 10,
 		left: "50%",
 		transform: "translateX(-50%)",
 		borderRadius: "12px",
