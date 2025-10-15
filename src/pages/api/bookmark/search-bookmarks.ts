@@ -157,8 +157,6 @@ tag_id (
 
 		response.status(200).json({ data: finalData, error });
 	} else {
-		console.log("tagName", tagName);
-
 		// user searched for tags
 		let tagSearchQuery = supabase
 			.from(BOOKMARK_TAGS_TABLE_NAME)
