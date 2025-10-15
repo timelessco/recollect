@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import { isEmpty, isNull, max, transform } from "lodash";
+import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
 import SearchInputSearchIcon from "../icons/searchInputSearchIcon";
