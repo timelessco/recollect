@@ -14,6 +14,7 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
+import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
@@ -354,6 +355,7 @@ const Settings = () => {
 						</Button>
 					</div>
 				</form>
+				<Switch />
 				<div className="border-b-[1px] border-b-gray-200  pb-6 pt-[25px]">
 					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-gray-900">
 						Account security

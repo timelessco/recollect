@@ -600,7 +600,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					<div className="h-5 w-[1%] xl:hidden" />
 					{renderSearchBar}
 					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
-						<Switch />
 						{renderViewBasedHeaderOptions()}
 						{currentPath !== TRASH_URL && (
 							<AddBookmarkDropdown
