@@ -122,4 +122,8 @@ abiword
 spreadsheetml
 thednp
 yarl
-gemeni
+gemeniPuerkito
+goquery
+webm
+jsfiddle
+GOARCH

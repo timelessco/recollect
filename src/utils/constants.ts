@@ -69,7 +69,8 @@ export const GET_PDF_BUFFER_API = "v1/bookmarks/get/get-pdf-buffer";
 export const FETCH_BOOKMARKS_DATA_API = "/bookmark/fetch-bookmarks-data";
 export const FETCH_BOOKMARK_BY_ID_API = "v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
-export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
+export const ADD_BOOKMARK_MIN_DATA =
+	"https://recollect-go-api.vercel.app/api/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";

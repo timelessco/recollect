@@ -12,11 +12,14 @@ describe("Meta data testing", () => {
 			Cypress.env("test_password") as string,
 		);
 
-		cy.request(`/api/bookmark/add-bookmark-min-data`, {
-			category_id: 0,
-			update_access: true,
-			url: "https://unsplash.com/photos/a-city-street-with-a-lot-of-tall-buildings-badrIRxBqmk",
-		}).as("addRequest");
+		cy.request(
+			`https://recollect-go-api.vercel.app/api/bookmark/add-bookmark-min-data`,
+			{
+				category_id: 0,
+				update_access: true,
+				url: "https://unsplash.com/photos/a-city-street-with-a-lot-of-tall-buildings-badrIRxBqmk",
+			},
+		).as("addRequest");
 
 		let bookmarkId;
 

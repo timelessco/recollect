@@ -1,0 +1,21 @@
+{
+	"version": 2,
+	"builds": [
+		{
+			"src": "add-bookmark-min-data.go",
+			"use": "@vercel/go"
+		}
+	],
+	"routes": [
+		{
+			"src": "/api/bookmark/add-bookmark-min-data",
+			"dest": "/add-bookmark-min-data"
+		}
+	],
+	"env": {
+		"NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
+		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
+		"SUPABASE_SERVICE_KEY": "@supabase_service_key",
+		"SUPABASE_JWT_SECRET_KEY": "@supabase_jwt_secret_key"
+	}
+}
