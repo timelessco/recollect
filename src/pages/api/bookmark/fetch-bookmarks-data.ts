@@ -167,6 +167,12 @@ user_id (
 		query = query.eq("type", bookmarkType);
 	}
 
+	if (category_id === TWEETS_URL) {
+		query = query
+			.eq("type", tweetType)
+			.order("sort_index", { ascending: false });
+	}
+
 	if (sortVaue === "date-sort-acending") {
 		// newest first
 		query = query.order("inserted_at", { ascending: false });
@@ -186,12 +192,10 @@ user_id (
 		// url Z-A
 		query = query.order("url", { ascending: false });
 	} else if (category_id === TWEETS_URL) {
-		query = query
-			.eq("type", tweetType)
-			.order("sort_index", { ascending: false });
+		query = query.order("sort_index", { ascending: false });
 	} else {
 		// Default fallback: newest first
-		query = query.order("inserted_at", { ascending: false });
+		query = query.order("inserted_at", { ascending: true });
 	}
 
 	const { data: bookmarkData, error } = await query;

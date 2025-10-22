@@ -67,7 +67,6 @@ export default async function handler(
 		const schema = getBodySchema();
 		const bodyData = schema.parse(request.body);
 		const supabase = apiSupabaseClient(request, response);
-		console.log(bodyData);
 
 		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
@@ -106,6 +105,17 @@ export default async function handler(
 					?.map((duplicateCheckItem) => duplicateCheckItem?.url)
 					?.includes(item?.url),
 		);
+
+		if (isEmpty(duplicateFilteredData)) {
+			console.log("No data to insert");
+
+			response.status(404).json({
+				success: true,
+				error: "No data to insert",
+				data: [],
+			});
+			return;
+		}
 
 		// NOTE: Upsert does not work here as the url is not unique and cannot be unique
 
