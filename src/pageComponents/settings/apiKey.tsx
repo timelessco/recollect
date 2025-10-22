@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as Ariakit from "@ariakit/react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
+import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
 import ButtonComponent from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -65,10 +66,11 @@ type ApiKeyFormTypes = {
 /* -------------------------------------------------------------------------- */
 
 export const ApiKey = () => {
-	const [isLoading, setIsLoading] = useState(false);
 	const [selectedPlatform, setSelectedPlatform] = useState<
 		(typeof AI_PLATFORMS)[number] | null
 	>(AI_PLATFORMS[0]);
+
+	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
@@ -81,23 +83,31 @@ export const ApiKey = () => {
 		reset,
 	} = useForm<ApiKeyFormTypes>();
 
-	const onSubmit: SubmitHandler<ApiKeyFormTypes> = async () => {
-		try {
-			setIsLoading(true);
-			successToast(
-				`${selectedPlatform?.name ?? "AI Platform"} API key saved successfully`,
-			);
-			reset();
-		} catch (error) {
-			console.error("Error updating API key:", error);
-			errorToast("Failed to update API key. Please try again.");
-		} finally {
-			setIsLoading(false);
+	const onSubmit: SubmitHandler<ApiKeyFormTypes> = (formData) => {
+		if (!selectedPlatform) {
+			errorToast("Please select an AI platform");
+			return;
 		}
+
+		saveApiKey(
+			{ apikey: formData.apiKey },
+			{
+				onSuccess: () => {
+					successToast(`${selectedPlatform.name} API key saved successfully`);
+					reset();
+				},
+				onError: (error) => {
+					console.error("Error updating API key:", error);
+					errorToast(
+						error.message || "Failed to update API key. Please try again.",
+					);
+				},
+			},
+		);
 	};
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)}>
+		<form>
 			{/* Header */}
 			<div className="relative mb-[30px] flex items-center">
 				<Ariakit.Button
@@ -221,10 +231,11 @@ export const ApiKey = () => {
 			<div className="flex justify-start pt-6">
 				<ButtonComponent
 					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-white hover:bg-gray-500"
-					isDisabled={isLoading}
+					isDisabled={isSaving}
+					onClick={handleSubmit(onSubmit)}
 					type="dark"
 				>
-					{isLoading ? <Spinner /> : "Save Changes"}
+					{isSaving ? <Spinner /> : "Save Changes"}
 				</ButtonComponent>
 			</div>
 		</form>
