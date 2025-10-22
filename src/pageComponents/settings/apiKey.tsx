@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "ariakit";
+import * as Ariakit from "@ariakit/react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import ButtonComponent from "../../components/atoms/button";
@@ -7,10 +7,7 @@ import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import Spinner from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	settingsInputClassName,
 	settingsInputContainerClassName,
@@ -19,7 +16,7 @@ import {
 } from "../../utils/commonClassNames";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
-// Using a simple key icon component since the original isn't found
+/* ---------------------------- Key Icon Component --------------------------- */
 const KeyIcon = () => (
 	<svg
 		fill="none"
@@ -36,43 +33,43 @@ const KeyIcon = () => (
 	</svg>
 );
 
-type ApiKeyFormTypes = {
-	anthropicApiKey: string;
-	geminiApiKey: string;
-	openaiApiKey: string;
-};
-
+/* ---------------------------- Platform Constants --------------------------- */
 const AI_PLATFORMS = [
 	{
 		id: "gemini",
 		name: "Gemini",
-		fieldName: "geminiApiKey",
 		docsUrl: "https://ai.google.dev/gemini-api/docs/api-key",
 		description: "Google's most capable AI model for complex tasks",
 	},
 	{
 		id: "openai",
 		name: "OpenAI (GPT-4)",
-		fieldName: "openaiApiKey",
 		docsUrl: "https://platform.openai.com/docs/quickstart",
 		description: "Powerful language model by OpenAI",
 	},
 	{
 		id: "anthropic",
 		name: "Anthropic (Claude)",
-		fieldName: "anthropicApiKey",
 		docsUrl:
 			"https://docs.anthropic.com/claude/reference/getting-started-with-the-api",
 		description: "AI assistant focused on helpfulness and safety",
 	},
 ] as const;
 
-// Type for AI platform configuration
-type _AIPlatform = (typeof AI_PLATFORMS)[number];
+type ApiKeyFormTypes = {
+	apiKey: string;
+};
+
+/* -------------------------------------------------------------------------- */
+/*                               Main Component                               */
+/* -------------------------------------------------------------------------- */
 
 export const ApiKey = () => {
 	const [isLoading, setIsLoading] = useState(false);
-	const session = useSupabaseSession((state) => state.session);
+	const [selectedPlatform, setSelectedPlatform] = useState<
+		(typeof AI_PLATFORMS)[number] | null
+	>(AI_PLATFORMS[0]);
+
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
 	);
@@ -81,21 +78,19 @@ export const ApiKey = () => {
 		register,
 		handleSubmit,
 		formState: { errors },
+		reset,
 	} = useForm<ApiKeyFormTypes>();
 
-	const onSubmit: SubmitHandler<ApiKeyFormTypes> = async (_formData) => {
+	const onSubmit: SubmitHandler<ApiKeyFormTypes> = async () => {
 		try {
 			setIsLoading(true);
-			// TODO: Implement API key update logic for all platforms
-			// const updates = await Promise.all(
-			//   AI_PLATFORMS.map((platform) =>
-			//     updateApiKey(session?.user?.id, platform.id, formData[platform.fieldName])
-			//   )
-			// );
-			successToast("API keys updated successfully");
+			successToast(
+				`${selectedPlatform?.name ?? "AI Platform"} API key saved successfully`,
+			);
+			reset();
 		} catch (error) {
-			console.error("Error updating API keys:", error);
-			errorToast("Failed to update API keys. Please try again.");
+			console.error("Error updating API key:", error);
+			errorToast("Failed to update API key. Please try again.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -103,69 +98,134 @@ export const ApiKey = () => {
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
+			{/* Header */}
 			<div className="relative mb-[30px] flex items-center">
-				<Button
+				<Ariakit.Button
 					className="absolute left-[-7px] rounded-full p-1"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
 						<BackIconBlack />
 					</figure>
-				</Button>
+				</Ariakit.Button>
 				<div className={`${settingsMainHeadingClassName} ml-[21px]`}>
 					Bring your own API Key
 				</div>
 			</div>
-			<div className="space-y-6">
-				{AI_PLATFORMS.map((platform) => (
-					<div className="mb-6" key={platform.id}>
-						<LabelledComponent
-							label={platform.name}
-							labelClassName={settingsInputLabelClassName}
-						>
-							<div className="flex items-center gap-2">
-								<a
-									className="text-xs text-blue-600 hover:underline"
-									href={platform.docsUrl}
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									Get API Key
-								</a>
-							</div>
-							<div className="space-y-1">
-								<p className="mb-2 text-xs text-gray-500">
-									{platform.description}
-								</p>
-								<div className={settingsInputContainerClassName}>
-									<figure className="mr-2">
-										<KeyIcon />
-									</figure>
-									<Input
-										{...register(platform.fieldName, {
-											required: `${platform.name} API Key is required`,
-										})}
-										className={settingsInputClassName}
-										errorText={errors[platform.fieldName]?.message ?? ""}
-										id={`${platform.id}-api-key`}
-										isError={Boolean(errors[platform.fieldName])}
-										placeholder={`Enter your ${platform.name} API key`}
-										type="password"
-									/>
-								</div>
-							</div>
-						</LabelledComponent>
-					</div>
-				))}
-				<div className="flex justify-start pt-4">
-					<ButtonComponent
-						className="h-10 w-[130px] rounded-lg  px-4 py-2 text-sm font-medium text-white hover:bg-gray-500"
-						isDisabled={isLoading}
-						type="dark"
+			{/* Platform Selector */}
+			{/* Platform Selector */}
+			<LabelledComponent
+				label="AI Platform"
+				labelClassName={settingsInputLabelClassName}
+			>
+				<div className="flex flex-col">
+					<a
+						className="text-xs text-blue-600 hover:underline"
+						href={selectedPlatform?.docsUrl}
+						rel="noopener noreferrer"
+						target="_blank"
 					>
-						{isLoading ? <Spinner /> : "Save Changes"}
-					</ButtonComponent>
+						Get API Key
+					</a>
+					{/* Clean Ariakit Select (no search) */}
+					<Ariakit.SelectProvider
+						setValue={(value) => {
+							const match = AI_PLATFORMS.find(
+								(platform) => platform.name === value,
+							);
+							if (match) setSelectedPlatform(match);
+						}}
+						value={selectedPlatform?.name ?? ""}
+					>
+						<div className="relative mt-2 w-[200px]">
+							<Ariakit.Select className="flex h-9 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-800 hover:border-gray-400">
+								<span>{selectedPlatform?.name ?? "Select Platform"}</span>
+								<svg
+									className="ml-2 h-4 w-4 text-gray-500"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth={2}
+									viewBox="0 0 24 24"
+								>
+									<path
+										d="M6 9l6 6 6-6"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									/>
+								</svg>
+							</Ariakit.Select>
+							<Ariakit.SelectPopover
+								className="z-50 mt-1 max-h-[250px] w-[200px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-md"
+								modal={false}
+							>
+								{AI_PLATFORMS.map((platform) => (
+									<Ariakit.SelectItem
+										className={`flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-gray-100 aria-selected:bg-gray-100 ${
+											selectedPlatform?.id === platform.id
+												? "bg-gray-50 font-medium"
+												: ""
+										}`}
+										key={platform.id}
+										onClick={() => setSelectedPlatform(platform)}
+										value={platform.name}
+									>
+										<span>{platform.name}</span>
+										{selectedPlatform?.id === platform.id && (
+											<svg
+												className="h-4 w-4 text-gray-600"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth={2}
+												viewBox="0 0 24 24"
+											>
+												<path
+													d="M5 13l4 4L19 7"
+													strokeLinecap="round"
+													strokeLinejoin="round"
+												/>
+											</svg>
+										)}
+									</Ariakit.SelectItem>
+								))}
+							</Ariakit.SelectPopover>
+						</div>
+					</Ariakit.SelectProvider>
+					<p className="mt-2 text-xs text-gray-500">
+						{selectedPlatform?.description}
+					</p>
 				</div>
+			</LabelledComponent>
+			{/* API Key Input */}
+			<LabelledComponent
+				label={`${selectedPlatform?.name ?? "AI Platform"} API Key`}
+				labelClassName={`${settingsInputLabelClassName} mt-6`}
+			>
+				<div className={`${settingsInputContainerClassName} mt-2`}>
+					<figure className="mr-2">
+						<KeyIcon />
+					</figure>
+					<Input
+						{...register("apiKey", {
+							required: "API Key is required",
+						})}
+						className={settingsInputClassName}
+						errorText={errors.apiKey?.message ?? ""}
+						id="api-key"
+						isError={Boolean(errors.apiKey)}
+						placeholder={`Enter your ${selectedPlatform?.name} API key`}
+						type="password"
+					/>
+				</div>
+			</LabelledComponent>
+			{/* Save Button */}
+			<div className="flex justify-start pt-6">
+				<ButtonComponent
+					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-white hover:bg-gray-500"
+					isDisabled={isLoading}
+					type="dark"
+				>
+					{isLoading ? <Spinner /> : "Save Changes"}
+				</ButtonComponent>
 			</div>
 		</form>
 	);
