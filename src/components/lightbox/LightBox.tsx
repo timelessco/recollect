@@ -216,7 +216,7 @@ export const CustomLightBox = ({
 						<VideoPlayer
 							isActive={isActive}
 							src={
-								bookmark?.type === tweetType
+								bookmark?.type === tweetType && bookmark?.meta_data?.video_url
 									? bookmark?.meta_data?.video_url
 									: bookmark?.url
 							}

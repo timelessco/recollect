@@ -117,6 +117,7 @@ const videoLogic = async (
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
+		video_url: null,
 	};
 
 	return { ogImage, meta_data };
@@ -204,6 +205,7 @@ export default async (
 		iframeAllowed: false,
 		mediaType: "",
 		isPageScreenshot: null,
+		video_url: null,
 	};
 	const isVideo = fileType?.includes("video");
 
