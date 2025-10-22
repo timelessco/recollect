@@ -54,7 +54,7 @@ const RadioGroup = (props: RadioGroupProps) => {
 				return (
 					<label className={radioClassNames} key={item?.value}>
 						<div className="flex items-center text-[13px] font-450">
-							<figure className="mr-2 flex h-4 w-4 items-center justify-center">
+							<figure className="mr-2 flex h-4 w-4 items-center justify-center text-plain-reverse-color">
 								{item?.icon}
 							</figure>
 							<Radio

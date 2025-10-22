@@ -185,7 +185,7 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<p
-								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-550"
+								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-500"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
@@ -227,7 +227,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && (
 									<button
-										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-550"
+										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-500"
 										onClick={() => setShowMore(!showMore)}
 										type="button"
 									>
@@ -263,7 +263,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-550"
+												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-500"
 												key={tag?.id}
 											>
 												#{tag?.name}

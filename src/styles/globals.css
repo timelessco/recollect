@@ -424,18 +424,18 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-light-gray-1000: #c9c9c9e6;
 
 		/* Dark Gray Shades */
-		--color-dark-gray-50: #0f0f0f;
-		--color-dark-gray-100: #1c1c1c;
-		--color-dark-gray-200: #232323;
-		--color-dark-gray-300: #2b2b2b;
-		--color-dark-gray-400: #343434;
-		--color-dark-gray-500: #424242;
-		--color-dark-gray-550: #575757;
-		--color-dark-gray-600: #717171;
-		--color-dark-gray-700: #808080;
-		--color-dark-gray-800: #afafaf;
-		--color-dark-gray-900: #d9d9d9;
 		--color-dark-gray-950: #f8f8f8;
+		--color-dark-gray-900: #d9d9d9;
+		--color-dark-gray-800: #afafaf;
+		--color-dark-gray-700: #808080;
+		--color-dark-gray-600: #717171;
+		--color-dark-gray-550: #575757;
+		--color-dark-gray-500: #424242;
+		--color-dark-gray-450: #343434;
+		--color-dark-gray-400: #2b2b2b;
+		--color-dark-gray-300: #232323;
+		--color-dark-gray-200: #1c1c1c;
+		--color-dark-gray-100: #0f0f0f;
 
 		/* Dark Gray Alpha Shades */
 		--color-dark-gray-alpha-50: rgba(255, 255, 255, 0.97);

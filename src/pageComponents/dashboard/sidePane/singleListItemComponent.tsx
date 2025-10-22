@@ -90,7 +90,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						/>
 					</span>
 				) : (
-					<figure className="flex h-[18px] w-[18px] items-center">
+					<figure className="flex h-[18px] w-[18px] items-center text-plain-reverse-color">
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}

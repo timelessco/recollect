@@ -651,7 +651,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-550"
+			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-500"
 			key={id}
 		>
 			#{name}
@@ -712,7 +712,7 @@ const CardSection = ({
 								{item?.description}
 							</ReadMore>
 						)}
-					<div className="space-y-[6px] text-gray-550">
+					<div className="space-y-[6px] text-gray-500">
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
 								<div className="flex flex-wrap items-center space-x-1">

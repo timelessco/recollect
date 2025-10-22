@@ -329,7 +329,7 @@ const ShareContent = () => {
 				/>
 			</form>
 			<div className=" pt-3">
-				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-550">
+				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-500">
 					People with access
 				</p>
 				<div className="pb-2">

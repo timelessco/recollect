@@ -228,7 +228,7 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className="w-[160px] rounded-md border border-transparent py-[2px] text-left text-[13px] text-gray-550 hover:text-plain-reverse-color focus:outline-none"
+									className="w-[160px] rounded-md border border-transparent py-[2px] text-left text-[13px] text-gray-500 hover:text-plain-reverse-color focus:outline-none"
 									type="button"
 								>
 									{/* Show current collection name or default text */}
