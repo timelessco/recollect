@@ -1,14 +1,31 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
+import Cryptr from "cryptr";
 import { z } from "zod";
 
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+const bodySchema = z.object({
+	apikey: z
+		.string({
+			required_error: "API key is required",
+			invalid_type_error: "API key must be a string",
+		})
+		.optional(),
+});
+
+const cryptr = new Cryptr("my-super-secret-key");
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
+	if (request.method !== "POST") {
+		response.status(405).json({ error: "Method not allowed" });
+		return;
+	}
+
 	const supabase = apiSupabaseClient(request, response);
+
 	const {
 		data: { user },
 		error: userError,
@@ -19,20 +36,27 @@ export default async function handler(
 		return;
 	}
 
+	const parsed = bodySchema.safeParse(request.body);
+
+	if (!parsed.success) {
+		response.status(400).json({
+			error: "Invalid request body",
+			details: parsed.error.errors.map((error) => error.message),
+		});
+		return;
+	}
+
+	const { apikey } = parsed.data;
 	const userId = user.id;
 
-	const { apiKey } = await z
-		.object({
-			apiKey: z.string().nonempty(),
-		})
-		.parseAsync(request.body);
+	const encryptedApiKey = cryptr.encrypt(apikey ?? "");
 
 	try {
 		const { data: DataResponse, error: ErrorResponse } = await supabase
 			.from(PROFILES)
 			.upsert({
 				id: userId,
-				api_key: apiKey,
+				api_key: encryptedApiKey,
 			});
 
 		if (ErrorResponse) {

@@ -95,6 +95,9 @@ importers:
       clsx:
         specifier: 1.2.1
         version: 1.2.1
+      cryptr:
+        specifier: ^6.4.0
+        version: 6.4.0
       date-fns:
         specifier: 2.29.3
         version: 2.29.3
@@ -4380,6 +4383,9 @@ packages:
   crypto-random-string@4.0.0:
     resolution: {integrity: sha512-x8dy3RnvYdlUcPOjkEHqozhiwzKNSq7GcPuXFbnyMOCHxX8V3OgIg/pYuabl2sbUPfIJaeAQB7PMOK8DFIdoRA==}
     engines: {node: '>=12'}
+
+  cryptr@6.4.0:
+    resolution: {integrity: sha512-9jpMU9HMt1vhMUqNO+MPuGEpbh/f7HHZdxrd6L2DMwTuYGyt9pgUJfQyTS1Ei4/sn7qPM4FkjxUoiW79k0x8sA==}
 
   cspell-dictionary@8.0.0:
     resolution: {integrity: sha512-R/AzUj7W7F4O4fAOL8jvIiUqPYGy6jIBlDkxO9SZe/A6D2kOICZZzGSXMZ0M7OKYqxc6cioQUMKOJsLkDXfDXw==}
@@ -14658,6 +14664,8 @@ snapshots:
   crypto-random-string@4.0.0:
     dependencies:
       type-fest: 1.4.0
+
+  cryptr@6.4.0: {}
 
   cspell-dictionary@8.0.0:
     dependencies:
