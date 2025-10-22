@@ -14,7 +14,7 @@ const bodySchema = z.object({
 		.optional(),
 });
 
-const cryptr = new Cryptr("my-super-secret-key");
+const cryptr = new Cryptr(process.env.SECRET_KEY as string);
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
