@@ -220,7 +220,7 @@ const Settings = () => {
 					<div className="sm:mt-2">
 						<div className=" flex text-sm font-semibold leading-[21px] text-black">
 							<Button
-								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-gray-900 hover:bg-gray-200"
+								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-text-gray-8 hover:bg-surface-gray-3"
 								onClick={() => {
 									if (inputFile.current) {
 										inputFile.current.click();
@@ -233,7 +233,7 @@ const Settings = () => {
 								<DotIcon />
 							</p>
 							<Button
-								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-gray-900 hover:bg-gray-200"
+								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-text-gray-8 hover:bg-surface-gray-3"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -357,7 +357,7 @@ const Settings = () => {
 				</form>
 				<Switch />
 				<div className="border-b-[1px] border-b-gray-200  pb-6 pt-[25px]">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-gray-900">
+					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-text-gray-8">
 						Account security
 					</p>
 					{session?.user?.app_metadata?.provider === "	" ? (
@@ -398,7 +398,7 @@ const Settings = () => {
 					</div>
 				</form>
 				<div className="pt-6">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-gray-900">
+					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-text-gray-8">
 						Danger zone
 					</p>
 					<div className="flex items-center justify-between sm:flex-col">

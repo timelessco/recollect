@@ -61,7 +61,7 @@ export const Switch = () => {
 							value={value}
 						/>
 						{/* Card background */}
-						<div className="flex h-full w-full flex-col overflow-hidden rounded-lg bg-gray-100 transition-all duration-200 peer-checked:border-[1px] peer-checked:border-gray-800">
+						<div className="flex h-full w-full flex-col overflow-hidden rounded-lg bg-surface-gray-2 transition-all duration-200 peer-checked:border-[1px] peer-checked:border-gray-800">
 							{/* PREVIEW AREA */}
 							{value === "system" ? (
 								<div className="flex h-[calc(100%-40px)]">

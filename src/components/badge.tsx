@@ -6,7 +6,7 @@ const Badge = (props: BadgeProps) => {
 	const { renderBadgeContent } = props;
 
 	return (
-		<span className="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-gray-800">
+		<span className="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-text-gray-7">
 			{renderBadgeContent()}
 		</span>
 	);

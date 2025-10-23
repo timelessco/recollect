@@ -272,7 +272,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold text-gray-900"
+					className="truncate text-xl font-semibold text-text-gray-8"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -295,7 +295,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[28px] rounded-none border-none  bg-plain-color p-0 text-xl font-semibold leading-[16px] text-gray-900  focus:outline-none"
+					className="m-0 h-[28px] rounded-none border-none  bg-plain-color p-0 text-xl font-semibold leading-[16px] text-text-gray-8  focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -540,7 +540,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px]",
+			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px] bg-surface-gray-alpha-menu-bar",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -563,13 +563,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		const showHeadingCondition = isDesktop ? true : !showSearchBar;
 
 		return (
-			<header
-				className={headerClass}
-				style={{
-					backgroundColor:
-						"color-mix(in srgb, var(--plain-color) 90%, transparent)",
-				}}
-			>
+			<header className={headerClass}>
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}

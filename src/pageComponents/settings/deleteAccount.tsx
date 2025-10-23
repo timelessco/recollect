@@ -83,7 +83,7 @@ const DeleteAccout = () => {
 		<>
 			<div className="relative mb-[34px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-gray-100"
+					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-surface-gray-2"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>

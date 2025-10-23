@@ -168,7 +168,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						</AriaDropdown>
 						{item?.count !== undefined && openedMenuId === null && (
 							<p
-								className={` hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-gray-600 ${
+								className={` hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-text-gray-5 ${
 									showDropdown ? " block group-hover:hidden" : " block"
 								}`}
 							>
@@ -181,7 +181,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					<span
 						className={`${
 							item?.name === "Tweets" ? "block" : "hidden"
-						} text-[11px] font-450 leading-3 text-gray-600 ${
+						} text-[11px] font-450 leading-3 text-text-gray-5 ${
 							showDropdown ? "block group-hover:hidden" : "block"
 						}`}
 					>
@@ -193,8 +193,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 	);
 
 	const contentWrapperClassNames = `${
-		item?.current ? "bg-gray-100 text-gray-900" : "text-gray-800"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-100 hover:text-gray-900`;
+		item?.current ? "bg-surface-gray-2 text-text-gray-8" : "text-text-gray-7"
+	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-surface-gray-2 hover:text-text-gray-8`;
 
 	if (isLink) {
 		return (

@@ -116,7 +116,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 	const renderComboBoxItem = (value: string, index: number) => (
 		<ComboboxItem
-			className="data-active-item:bg-gray-200 custom-select rounded-md p-1 hover:bg-gray-200"
+			className="data-active-item:bg-surface-gray-3 custom-select rounded-md p-1 hover:bg-surface-gray-3"
 			key={value + index}
 			onClick={() => onIconSelect(value)}
 			setValueOnClick={false}
@@ -163,22 +163,22 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				/>
 			</MenuButton>
 			<Menu
-				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-plain-color px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
+				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-surface-gray-cards px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-none"
 				composite={false}
 				portal
 				state={menu}
 			>
 				<div className="flex items-center justify-between border-b-[1px] border-b-gray-200 py-3">
-					<span className="text-sm font-medium leading-4 text-gray-800">
+					<span className="text-sm font-medium leading-4 text-text-gray-7">
 						Choose an icon
 					</span>
-					<div className="flex w-[139px] items-center rounded-lg bg-gray-100 px-[10px] py-[7px]">
+					<div className="flex w-[139px] items-center rounded-lg bg-surface-gray-2 px-[10px] py-[7px]">
 						<figure className="mr-[6px] h-3 w-3">
 							<SearchIconSmallGray />
 						</figure>
 						<Combobox
 							autoSelect
-							className="w-[101px] bg-gray-100 text-sm font-normal leading-4 text-gray-600 focus:outline-none"
+							className="w-[101px] bg-surface-gray-2 text-sm font-normal leading-4 text-text-gray-5 focus:outline-none"
 							onChange={(changeEvent) => {
 								if (changeEvent?.target?.value?.length > 1) {
 									setIsSearch(true);

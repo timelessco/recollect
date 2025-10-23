@@ -99,7 +99,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
-		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-600">
+		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-text-gray-5">
 			{text}
 		</div>
 	);
@@ -170,7 +170,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				className="flex items-center justify-between px-2 py-[5px]"
 				key={item.label}
 			>
-				<p className=" text-13 font-450 leading-[14px] text-gray-800">
+				<p className=" text-13 font-450 leading-[14px] text-text-gray-7">
 					{item?.label}
 				</p>
 				<Switch
@@ -226,7 +226,9 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{bookmarksViewValue === viewValues.card ||
 			bookmarksViewValue === viewValues.moodboard ? (
 				<div className="flex items-center justify-between px-2 py-[4.5px]">
-					<p className="text-13 font-450 leading-[14px] text-gray-800">Cover</p>
+					<p className="text-13 font-450 leading-[14px] text-text-gray-7">
+						Cover
+					</p>
 					<div className="w-[90px]">
 						<Slider
 							defaultValue={bookmarksColumns as unknown as number}

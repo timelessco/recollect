@@ -176,7 +176,7 @@ const MyComponent = () => {
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-gray-900"
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-text-gray-8"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -219,7 +219,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] leading-[138%] tracking-[1%] text-gray-800`}
+									} text-clip text-[13px] leading-[138%] tracking-[1%] text-text-gray-7`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
@@ -288,7 +288,7 @@ const MyComponent = () => {
 										<Icon className="h-[15px] w-[15px]">
 											<GeminiAiIcon />
 										</Icon>
-										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600">
+										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-text-gray-5">
 											AI Summary
 										</p>
 									</div>
@@ -297,7 +297,7 @@ const MyComponent = () => {
 											isExpanded ? "overflow-y-auto" : ""
 										}`}
 									>
-										<p className="text-[13px] leading-[138%] tracking-[1%] text-gray-600">
+										<p className="text-[13px] leading-[138%] tracking-[1%] text-text-gray-5">
 											{metaData?.img_caption || metaData?.image_caption}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}

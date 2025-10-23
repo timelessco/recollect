@@ -48,7 +48,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 			)}
 			<span
 				// eslint-disable-next-line tailwindcss/no-custom-classname
-				className={`checkmark ml-8 text-sm leading-[21px] text-gray-900 ${
+				className={`checkmark ml-8 text-sm leading-[21px] text-text-gray-8 ${
 					disabled ? "opacity-50" : ""
 				}`}
 			>

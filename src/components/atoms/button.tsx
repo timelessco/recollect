@@ -38,8 +38,8 @@ const Button: FC<ButtonProps> = (props) => {
 			"flex items-center rounded-lg py-[5px] px-2 text-[13px] font-medium leading-[14px]":
 				true,
 			"bg-gray-900  hover:bg-gray-800 text-white": type === "dark",
-			"bg-transparent hover:bg-gray-100": type === "light",
-			"bg-gray-100": isActive,
+			"bg-transparent hover:bg-surface-gray-2": type === "light",
+			"bg-surface-gray-2": isActive,
 			"disabled:opacity-5": isDisabled,
 		}),
 		className,

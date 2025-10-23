@@ -158,12 +158,12 @@ const LoaderImgPlaceholder = ({
 	const isLoading = loadingBookmarkIds.has(id);
 	// loader class name for all views
 	const loaderClassName = classNames({
-		"h-[48px] w-[80px] flex items-center justify-center bg-gray-100 rounded-lg":
+		"h-[48px] w-[80px] flex items-center justify-center bg-surface-gray-2 rounded-lg":
 			cardTypeCondition === viewValues.list,
-		"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center":
+		"w-full aspect-[1.9047] flex items-center justify-center bg-surface-gray-2 rounded-lg flex-col gap-2 text-center":
 			cardTypeCondition === viewValues.card ||
 			cardTypeCondition === viewValues.timeline,
-		"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center":
+		"w-full aspect-[1.8] flex items-center justify-center bg-surface-gray-2 rounded-lg flex-col gap-2 text-center":
 			cardTypeCondition === viewValues.moodboard,
 	});
 	return (
@@ -175,7 +175,7 @@ const LoaderImgPlaceholder = ({
 				src={loaderGif}
 			/>
 			{!(cardTypeCondition === viewValues.list) && (
-				<p className="text-sm text-gray-900">
+				<p className="text-sm text-text-gray-8">
 					{isLoading
 						? "Taking screenshot...."
 						: isNil(id)

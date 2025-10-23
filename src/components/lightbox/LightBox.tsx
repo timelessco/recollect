@@ -635,7 +635,7 @@ export const CustomLightBox = ({
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="truncate text-gray-600">
+							<span className="truncate text-text-gray-5">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
 							<div className="h-4 w-4 shrink-0">
