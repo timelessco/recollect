@@ -1,7 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { getBaseUrl } from "../../../utils/constants";
-
 type SaveApiKeyParameters = {
 	apikey: string;
 };
@@ -17,7 +15,7 @@ type ApiKeyResponse = {
 export const useApiKeyMutation = () =>
 	useMutation<ApiKeyResponse, Error, SaveApiKeyParameters>({
 		mutationFn: async ({ apikey }) => {
-			const response = await fetch(getBaseUrl() + "api/v1/api-key", {
+			const response = await fetch("/api/v1/api-key", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
