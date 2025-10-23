@@ -3,6 +3,7 @@
 import { log } from "console";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import { isNil } from "lodash";
 
 import imageToText from "../../../async/ai/imageToText";
@@ -19,7 +20,12 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = UploadFileApiResponse;
 
-const notVideoLogic = async (publicUrl: string, mediaType: string) => {
+const notVideoLogic = async (
+	publicUrl: string,
+	mediaType: string,
+	supabase: SupabaseClient,
+	userId: string,
+) => {
 	const ogImage = publicUrl;
 	let imageCaption = null;
 	let imageOcrValue = null;
@@ -27,10 +33,10 @@ const notVideoLogic = async (publicUrl: string, mediaType: string) => {
 	if (ogImage) {
 		try {
 			// Get OCR using the centralized function
-			imageOcrValue = await ocr(ogImage);
+			imageOcrValue = await ocr(ogImage, supabase, userId);
 
 			// Get image caption using the centralized function
-			imageCaption = await imageToText(ogImage);
+			imageCaption = await imageToText(ogImage, supabase, userId);
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
 			Sentry.captureException(`Gemini AI processing error ${error}`);
@@ -100,7 +106,12 @@ export default async function handler(
 		video_url: null,
 	};
 
-	const { meta_data: metaData } = await notVideoLogic(publicUrl, mediaType);
+	const { meta_data: metaData } = await notVideoLogic(
+		publicUrl,
+		mediaType,
+		supabase,
+		userId,
+	);
 
 	// Fetch existing metadata
 	const { data: existing, error: fetchError } = await supabase

@@ -1,26 +1,47 @@
 import { log } from "console";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
+import { getApikeyAndBookmarkCount } from "./ocr";
+
 type ImageCaptionReturn = Array<{ generated_text: string }> | null;
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_TOKEN as string);
 
 /**
  * Generates the image description using Gemini AI
  *
- * @param {string} url the image url
+ * @param {string}imageUrl the image url
+ * @param {SupabaseClient} supabase supabase client
+ * @param {string} userId the user id
  * @returns {Promise<string>} the description
  */
-const imageToText = async (url: string): Promise<string> => {
+
+export const imageToText = async (
+	imageUrl: string,
+	supabase: SupabaseClient,
+	userId: string,
+): Promise<string | null> => {
 	try {
+		const { userApiKey, isLimitReached } = await getApikeyAndBookmarkCount(
+			supabase,
+			userId,
+		);
+
+		if (!userApiKey && isLimitReached) {
+			console.warn("Monthly free limit reached — skipping caption generation.");
+			return null;
+		}
+
 		// Fetch the image
-		const imageResponse = await axios.get(url, {
+		const imageResponse = await axios.get(imageUrl, {
 			responseType: "arraybuffer",
 		});
 		const imageBytes = Buffer.from(imageResponse.data).toString("base64");
 
 		// Initialize the model
+		const key = userApiKey ?? (process.env.GOOGLE_GEMINI_TOKEN as string);
+
+		const genAI = new GoogleGenerativeAI(key);
 		const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
 		// For Image Caption

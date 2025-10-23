@@ -52,7 +52,7 @@ export const processImageQueue = async (
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const newMeta: any = { ...existing?.meta_data };
 
-					const caption = await imageToText(ogImage);
+					const caption = await imageToText(ogImage, supabase, user_id);
 
 					if (!caption) {
 						console.error("imageToText returned empty result", url);
@@ -61,7 +61,7 @@ export const processImageQueue = async (
 						newMeta.image_caption = caption;
 					}
 
-					const ocrResult = await ocr(ogImage);
+					const ocrResult = await ocr(ogImage, supabase, user_id);
 
 					if (!ocrResult) {
 						console.error("ocr returned empty result", url);
