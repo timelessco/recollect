@@ -22,6 +22,7 @@ export type ImgMetadataType = {
 	ogImgBlurUrl: string | null;
 	screenshot: string | null;
 	twitter_avatar_url: string | null;
+	video_url: string | null;
 	width: number | null;
 };
 

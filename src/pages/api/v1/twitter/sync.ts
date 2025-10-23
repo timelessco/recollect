@@ -30,6 +30,7 @@ const getBodySchema = () =>
 				meta_data: z.object({
 					twitter_avatar_url: z.string().optional(),
 					favIcon: z.string(),
+					video_url: z.string().optional().nullable(),
 				}),
 				inserted_at: z.string().datetime().optional(),
 				sort_index: z.string(),
@@ -104,6 +105,17 @@ export default async function handler(
 					?.map((duplicateCheckItem) => duplicateCheckItem?.url)
 					?.includes(item?.url),
 		);
+
+		if (isEmpty(duplicateFilteredData)) {
+			console.log("No data to insert");
+
+			response.status(404).json({
+				success: true,
+				error: "No data to insert",
+				data: [],
+			});
+			return;
+		}
 
 		// NOTE: Upsert does not work here as the url is not unique and cannot be unique
 

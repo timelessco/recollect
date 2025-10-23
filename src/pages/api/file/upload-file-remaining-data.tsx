@@ -63,6 +63,7 @@ const notVideoLogic = async (publicUrl: string, mediaType: string) => {
 		iframeAllowed: false,
 		mediaType,
 		isPageScreenshot: null,
+		video_url: null,
 	};
 
 	return { ogImage, meta_data };
@@ -96,6 +97,7 @@ export default async function handler(
 		iframeAllowed: false,
 		mediaType: "",
 		isPageScreenshot: null,
+		video_url: null,
 	};
 
 	const { meta_data: metaData } = await notVideoLogic(publicUrl, mediaType);

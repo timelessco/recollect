@@ -121,6 +121,7 @@ const videoLogic = async (data: BodyDataType) => {
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
+		video_url: thumbnailUrl?.publicUrl ?? null,
 	};
 
 	return { ogImage, meta_data };
@@ -197,6 +198,7 @@ export default async (
 		iframeAllowed: false,
 		mediaType: "",
 		isPageScreenshot: null,
+		video_url: null,
 	};
 	const isVideo = fileType?.includes("video");
 

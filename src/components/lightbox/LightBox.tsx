@@ -27,6 +27,7 @@ import {
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	PREVIEW_PATH,
+	tweetType,
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
@@ -116,7 +117,10 @@ export const CustomLightBox = ({
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
-			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
+			const isVideo =
+				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
+				Boolean(bookmark?.meta_data?.video_url);
+			console.error(isVideo, bookmark?.type, bookmark?.meta_data?.video_url);
 
 			return {
 				src: bookmark?.url,
@@ -142,8 +146,11 @@ export const CustomLightBox = ({
 				...(isVideo && {
 					sources: [
 						{
-							src: bookmark?.url,
-							type: bookmark?.type ?? VIDEO_TYPE_PREFIX,
+							src:
+								bookmark?.type === tweetType
+									? bookmark?.meta_data?.video_url
+									: bookmark?.url,
+							type: VIDEO_TYPE_PREFIX,
 						},
 					],
 				}),
@@ -206,7 +213,14 @@ export const CustomLightBox = ({
 			const renderVideoSlide = () => (
 				<div className="flex h-full w-full items-center justify-center">
 					<div className="w-full max-w-[min(1200px,90vw)]">
-						<VideoPlayer isActive={isActive} src={bookmark?.url} />
+						<VideoPlayer
+							isActive={isActive}
+							src={
+								bookmark?.type === tweetType && bookmark?.meta_data?.video_url
+									? bookmark?.meta_data?.video_url
+									: bookmark?.url
+							}
+						/>
 					</div>
 				</div>
 			);
@@ -397,17 +411,21 @@ export const CustomLightBox = ({
 
 			let content = null;
 
+			// Check video FIRST
 			if (
+				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
+				Boolean(bookmark?.meta_data?.video_url)
+			) {
+				content = renderVideoSlide();
+			}
+			// Then check image
+			else if (
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX)
 			) {
 				content = renderImageSlide();
-			} else if (
-				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX)
-			) {
-				content = renderVideoSlide();
 			} else if (
 				bookmark?.meta_data?.mediaType === PDF_MIME_TYPE ||
 				bookmark?.type?.includes(PDF_TYPE)
