@@ -1,4 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
+import CryptoJS from "crypto-js";
+
+const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY;
 
 type SaveApiKeyParameters = {
 	apikey: string;
@@ -15,12 +18,17 @@ type ApiKeyResponse = {
 export const useApiKeyMutation = () =>
 	useMutation<ApiKeyResponse, Error, SaveApiKeyParameters>({
 		mutationFn: async ({ apikey }) => {
+			if (!SECRET_KEY) {
+				throw new Error("NEXT_PUBLIC_SECRET_KEY is not defined");
+			}
+
+			const encrypted = CryptoJS.AES.encrypt(apikey, SECRET_KEY).toString();
 			const response = await fetch("/api/v1/api-key", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ apikey }),
+				body: JSON.stringify({ apikey: encrypted }),
 			});
 
 			if (!response.ok) {

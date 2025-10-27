@@ -1,5 +1,4 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
-import Cryptr from "cryptr";
 import { z } from "zod";
 
 import { PROFILES } from "../../../utils/constants";
@@ -14,7 +13,6 @@ const bodySchema = z.object({
 		.optional(),
 });
 
-const cryptr = new Cryptr(process.env.SECRET_KEY as string);
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
@@ -49,14 +47,12 @@ export default async function handler(
 	const { apikey } = parsed.data;
 	const userId = user.id;
 
-	const encryptedApiKey = cryptr.encrypt(apikey ?? "");
-
 	try {
 		const { data: DataResponse, error: ErrorResponse } = await supabase
 			.from(PROFILES)
 			.upsert({
 				id: userId,
-				api_key: encryptedApiKey,
+				api_key: apikey,
 			});
 
 		if (ErrorResponse) {
