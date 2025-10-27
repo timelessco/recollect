@@ -124,6 +124,9 @@ export const EMBEDDINGS_POST_API = "/v1/ai/embeddings/post";
 export const EMBEDDINGS_DELETE_API = "/v1/ai/embeddings/delete";
 export const AI_SEARCH_API = "/v1/ai/search/get";
 
+// user settings and keys
+export const SAVE_API_KEY_API = "/v1/api-key";
+
 // Screenshot api
 export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app/";

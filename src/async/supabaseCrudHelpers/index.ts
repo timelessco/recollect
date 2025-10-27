@@ -3,10 +3,7 @@ import {
 	type QueryFunctionContext,
 	type QueryKey,
 } from "@tanstack/react-query";
-import axios, {
-	type AxiosResponseHeaders,
-	type RawAxiosResponseHeaders,
-} from "axios";
+import axios from "axios";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -74,6 +71,7 @@ import {
 	PAGINATION_LIMIT,
 	REMOVE_PROFILE_PIC_API,
 	REMOVE_TAG_FROM_BOOKMARK_API,
+	SAVE_API_KEY_API,
 	SEARCH_BOOKMARKS,
 	SEND_COLLABORATION_EMAIL_API,
 	UPDATE_CATEGORY_ORDER_API,
@@ -101,6 +99,29 @@ export const fetchBookmarkById = async (id: string) => {
 		return response?.data;
 	} catch (error) {
 		return error;
+	}
+};
+
+// user settings and keys
+export const saveApiKey = async ({
+	apikey,
+}: {
+	apikey: string;
+}): Promise<{
+	data: unknown;
+	message: string;
+}> => {
+	try {
+		const response = await axios.post<{
+			data: unknown;
+			message: string;
+		}>(`${NEXT_API_URL}${SAVE_API_KEY_API}`, {
+			apikey,
+		});
+
+		return response?.data;
+	} catch (error) {
+		return error as unknown as { data: unknown; message: string };
 	}
 };
 

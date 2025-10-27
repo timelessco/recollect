@@ -1,7 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import CryptoJS from "crypto-js";
 
-const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY;
+import { saveApiKey } from "../../supabaseCrudHelpers";
 
 type SaveApiKeyParameters = {
 	apikey: string;
@@ -18,25 +17,9 @@ type ApiKeyResponse = {
 export const useApiKeyMutation = () =>
 	useMutation<ApiKeyResponse, Error, SaveApiKeyParameters>({
 		mutationFn: async ({ apikey }) => {
-			if (!SECRET_KEY) {
-				throw new Error("NEXT_PUBLIC_SECRET_KEY is not defined");
-			}
-
-			const encrypted = CryptoJS.AES.encrypt(apikey, SECRET_KEY).toString();
-			const response = await fetch("/api/v1/api-key", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ apikey: encrypted }),
-			});
-
-			if (!response.ok) {
-				const error = await response.json().catch(() => ({}));
-				throw new Error(error.error || "Failed to save API key");
-			}
-
-			return await response.json();
+			const response = await saveApiKey({ apikey });
+			// saveApiKey already throws/returns error-like object; let the caller handle toast via mutationApiCall if used
+			return response as unknown as ApiKeyResponse;
 		},
 		onSuccess: () => {
 			// Success handled in the component
