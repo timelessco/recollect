@@ -257,11 +257,11 @@ export const AddToCollectionDropdown = memo(
 									{/* Show Uncategorized option only if current item is in a collection */}
 									{currentCollection && (
 										<Ariakit.ComboboxItem
-											className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-surface-gray-2 aria-selected:bg-surface-gray-2"
+											className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-gray-100 aria-selected:bg-gray-100"
 											onClick={() => handleCollectionClick(null)}
 											value="Uncategorized"
 										>
-											<span className="text-[13px] font-[450] text-text-gray-7">
+											<span className="text-[13px] font-[450] text-gray-800">
 												Uncategorized
 											</span>
 										</Ariakit.ComboboxItem>
@@ -270,7 +270,7 @@ export const AddToCollectionDropdown = memo(
 										filteredCollections?.map((collection) => (
 											<Ariakit.ComboboxItem
 												// Styling for each collection item
-												className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-surface-gray-2 aria-selected:bg-surface-gray-2"
+												className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-gray-100 aria-selected:bg-gray-100"
 												key={collection?.id}
 												onClick={() => handleCollectionClick(collection)}
 												onMouseDown={(event) => {
@@ -285,7 +285,7 @@ export const AddToCollectionDropdown = memo(
 													size="16"
 												/>
 												{/* Collection name */}
-												<span className="text-[13px] font-[450] text-text-gray-7">
+												<span className="text-[13px] font-[450] text-gray-800">
 													{collection?.category_name}
 												</span>
 											</Ariakit.ComboboxItem>

@@ -34,12 +34,12 @@ const AriaSearchableSelect = ({
 	);
 
 	const menuItemClassName =
-		"rounded-lg cursor-pointer px-2 py-[5px] text-13 font-450 leading-[15px] tracking-[1%] text--gray-900 data-[active-item]:bg-surface-gray-3 truncate";
+		"rounded-lg cursor-pointer px-2 py-[5px] text-13 font-450 leading-[15px] tracking-[1%] text--gray-900 data-[active-item]:bg-gray-200 truncate";
 
 	const mainWrapperClassName = classNames({
 		"py-[7px] px-[10px] rounded-lg  w-full": true,
 		"flex items-center": true,
-		"bg-surface-gray-2": true,
+		"bg-gray-100": true,
 	});
 
 	return (
@@ -68,7 +68,7 @@ const AriaSearchableSelect = ({
 					}}
 					value={isEmpty(defaultValue) ? "Uncategorized" : defaultValue}
 				>
-					<Ariakit.Select className="aria-multi-select flex w-full items-center justify-between text-13 font-450 leading-[15px] tracking-[1%] text-text-gray-8 outline-none" />
+					<Ariakit.Select className="aria-multi-select flex w-full items-center justify-between text-13 font-450 leading-[15px] tracking-[1%] text-gray-900 outline-none" />
 					{isLoading && (
 						<Spinner
 							className="h-3 w-3 animate-spin"
@@ -76,14 +76,14 @@ const AriaSearchableSelect = ({
 						/>
 					)}
 					<Ariakit.SelectPopover
-						className="z-10 rounded-xl bg-surface-gray-cards p-[6px] shadow-custom-7"
+						className="z-10 rounded-xl bg-plain-color p-[6px] shadow-custom-7"
 						gutter={4}
 						sameWidth
 					>
 						<div className="px-2 py-[5px]">
 							<Ariakit.Combobox
 								autoSelect
-								className="w-full bg-transparent text-sm font-normal leading-4 text-text-gray-5 outline-none"
+								className="w-full bg-transparent text-sm font-normal leading-4 text-gray-600 outline-none"
 								placeholder="Search..."
 							/>
 						</div>

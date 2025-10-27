@@ -38,7 +38,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 						"14",
 					)}
 				</div>
-				<p className=" text-xl font-semibold leading-[23px] text-text-gray-8 ">
+				<p className=" text-xl font-semibold leading-[23px] text-gray-900 ">
 					{props.category_name}
 				</p>
 			</div>

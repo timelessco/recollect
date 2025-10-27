@@ -120,8 +120,8 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			options={sortOptions}
 			renderCustomSelectButton={(open) => (
 				<div
-					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-surface-gray-2 ${
-						open ? "bg-surface-gray-2" : ""
+					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-gray-100 ${
+						open ? "bg-gray-100" : ""
 					}`}
 					title="sort-by"
 				>

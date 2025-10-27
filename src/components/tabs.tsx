@@ -33,7 +33,7 @@ const Tabs = (props: TabsProps) => {
 								aria-current={tab.current ? "page" : undefined}
 								className={clsx(
 									tab.current
-										? "border-gray-500 text-text-gray-5"
+										? "border-gray-500 text-gray-600"
 										: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
 									" cursor-pointer whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium",
 								)}

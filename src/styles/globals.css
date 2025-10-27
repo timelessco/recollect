@@ -66,7 +66,7 @@ main {
 
 /* Style your items */
 .my-masonry-grid_column > div {
-	@apply mb-[30px] bg-surface-gray-2;
+	@apply mb-[30px] bg-gray-100;
 }
 
 .sash-module_sash__K-9lB::before {
@@ -153,23 +153,31 @@ main {
 
 /* for icon dropdown */
 .custom-select[aria-selected="true"] {
-	@apply bg-surface-gray-3; /* Apply your desired styles here */
+	@apply bg-gray-200; /* Apply your desired styles here */
 }
 
 /* drag and drop */
 
 /* for the select card styles on card and moodboard views */
 .single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper {
-	@apply rounded-b-lg rounded-t-none bg-surface-gray-modal text-white;
+	@apply rounded-b-lg rounded-t-none bg-plain-reverse-color text-plain-color;
 }
 
 /* for the select card styles on list and headlines views */
 .single-bookmark[aria-selected="true"].list-headlines-wrapper {
-	@apply bg-surface-gray-modal text-white;
+	@apply bg-plain-reverse-color text-plain-color;
+}
+
+.single-bookmark[aria-selected="true"] .card-title {
+	@apply text-plain-color;
 }
 
 .single-bookmark[aria-selected="true"] .moodboard-card-img {
 	@apply rounded-bl-none rounded-br-none;
+}
+
+.single-bookmark[aria-selected="true"] .card-icon {
+	@apply text-plain-color;
 }
 
 .drop-target .side-pane-anchor {
@@ -226,7 +234,7 @@ main {
 }
 
 .aria-select-item[data-active-item] {
-	@apply bg-surface-gray-3 text-text-gray-7;
+	@apply bg-gray-200 text-gray-900;
 }
 
 .aria-checkbox:checked + .checkbox-div::before {
@@ -308,27 +316,27 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .search-bar__input:focus {
-	@apply text-text-gray-7;
+	@apply text-gray-900;
 }
 
 .search-wrapper {
-	@apply text-text-gray-5;
+	@apply text-gray-600;
 }
 
 .search-wrapper:has(:focus) {
-	@apply text-text-gray-7;
+	@apply text-gray-900;
 }
 
 .search-bar__input::placeholder {
 	/* color: ; */
 
-	@apply text-text-gray-5;
+	@apply text-gray-600;
 }
 
 .search-bar__input::placeholder:focus {
 	/* color: ; */
 
-	@apply text-text-gray-7;
+	@apply text-gray-900;
 }
 
 /* for the collections side pane arrow collapse rotate */
@@ -360,13 +368,13 @@ input[type="checkbox"]:checked + .checkbox-div {
 
 .split-view .sash-vertical:hover {
 	&::before {
-		@apply w-2 bg-surface-gray-2 !important;
+		@apply w-2 bg-gray-100 !important;
 	}
 }
 
 .split-view .sash-vertical:not(:hover) {
 	&::before {
-		@apply w-[0px] bg-surface-gray-2 !important;
+		@apply w-[0px] bg-gray-100 !important;
 	}
 }
 
@@ -731,54 +739,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-dark-violet-900: #bca9fc;
 		--color-dark-violet-950: #cdbeff;
 
-		--color-light-gray-alpha-50: rgba(0, 0, 0, 0.03);
-		--color-light-gray-alpha-100: rgba(0, 0, 0, 0.05);
-		--color-light-gray-alpha-200: rgba(0, 0, 0, 0.07);
-		--color-light-gray-alpha-300: rgba(0, 0, 0, 0.11);
-		--color-light-gray-alpha-400: rgba(0, 0, 0, 0.22);
-		--color-light-gray-alpha-500: rgba(0, 0, 0, 0.4);
-		--color-light-gray-alpha-600: rgba(0, 0, 0, 0.51);
-		--color-light-gray-alpha-700: rgba(0, 0, 0, 0.68);
-		--color-light-gray-alpha-800: rgba(0, 0, 0, 0.78);
-		--color-light-gray-alpha-900: rgba(0, 0, 0, 0.91);
-
-		--color-dark-gray-alpha-50: rgba(255, 255, 255, 0.97);
-		--color-dark-gray-alpha-100: rgba(255, 255, 255, 0.82);
-		--color-dark-gray-alpha-200: rgba(255, 255, 255, 0.67);
-		--color-dark-gray-alpha-300: rgba(255, 255, 255, 0.47);
-		--color-dark-gray-alpha-400: rgba(255, 255, 255, 0.41);
-		--color-dark-gray-alpha-450: rgba(255, 255, 255, 0.3);
-		--color-dark-gray-alpha-500: rgba(255, 255, 255, 0.21);
-		--color-dark-gray-alpha-600: rgba(255, 255, 255, 0.15);
-		--color-dark-gray-alpha-700: rgba(255, 255, 255, 0.12);
-		--color-dark-gray-alpha-800: rgba(255, 255, 255, 0.08);
-		--color-dark-gray-alpha-900: rgba(255, 255, 255, 0.06);
-		--color-dark-gray-alpha-950: rgba(0, 0, 0, 0.04);
-
-		/* White Overlays */
-		--color-white-overlay-50: rgba(255, 255, 255, 0.1);
-		--color-white-overlay-100: rgba(255, 255, 255, 0.18);
-		--color-white-overlay-200: rgba(255, 255, 255, 0.27);
-		--color-white-overlay-300: rgba(255, 255, 255, 0.36);
-		--color-white-overlay-400: rgba(255, 255, 255, 0.45);
-		--color-white-overlay-500: rgba(255, 255, 255, 0.54);
-		--color-white-overlay-600: rgba(255, 255, 255, 0.63);
-		--color-white-overlay-700: rgba(255, 255, 255, 0.72);
-		--color-white-overlay-800: rgba(255, 255, 255, 0.81);
-		--color-white-overlay-900: rgba(255, 255, 255, 0.9);
-
-		/* Black Overlays */
-		--color-black-overlay-50: rgba(0, 0, 0, 0.09);
-		--color-black-overlay-100: rgba(0, 0, 0, 0.18);
-		--color-black-overlay-200: rgba(0, 0, 0, 0.27);
-		--color-black-overlay-300: rgba(0, 0, 0, 0.36);
-		--color-black-overlay-400: rgba(0, 0, 0, 0.45);
-		--color-black-overlay-500: rgba(0, 0, 0, 0.54);
-		--color-black-overlay-600: rgba(0, 0, 0, 0.63);
-		--color-black-overlay-700: rgba(0, 0, 0, 0.72);
-		--color-black-overlay-800: rgba(0, 0, 0, 0.81);
-		--color-black-overlay-900: rgba(0, 0, 0, 0.9);
-
 		/*CSS variables for light mode*/
 		--plain-color: var(--color-white);
 		--plain-reverse-color: var(--color-black);
@@ -791,43 +751,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-gray-700: var(--color-light-gray-700);
 		--color-gray-800: var(--color-light-gray-800);
 		--color-gray-900: var(--color-light-gray-900);
-
-		--color-text-white: var(--color-white);
-		--color-text-gray-1: var(--color-light-gray-200);
-		--color-text-gray-2: var(--color-light-gray-300);
-		--color-text-gray-3: var(--color-light-gray-400);
-		--color-text-gray-4: var(--color-light-gray-500);
-		--color-text-gray-5: var(--color-light-gray-600);
-		--color-text-gray-6: var(--color-light-gray-700);
-		--color-text-gray-7: var(--color-light-gray-800);
-		--color-text-gray-8: var(--color-light-gray-900);
-
-		--color-surface-white: var(--color-white);
-		--color-surface-gray-1: var(--color-light-gray-50);
-		--color-surface-gray-2: var(--color-light-gray-100);
-		--color-surface-gray-3: var(--color-light-gray-200);
-		--color-surface-gray-4: var(--color-light-gray-300);
-		--color-surface-gray-5: var(--color-light-gray-700);
-		--color-surface-gray-6: var(--color-light-gray-800);
-		--color-surface-gray-7: var(--color-light-gray-900);
-		--color-surface-menu: var(--color-light-gray-50);
-		--color-surface-cards: var(--color-white);
-		--color-surface-modal: var(--color-white);
-		--color-surface-selected: var(--color-white);
-
-		--color-surface-alpha-white: var(--color-white);
-		--color-surface-alpha-gray-1: var(--color-light-gray-alpha-50);
-		--color-surface-alpha-gray-2: var(--color-light-gray-alpha-100);
-		--color-surface-alpha-gray-3: var(--color-light-gray-alpha-200);
-		--color-surface-alpha-gray-4: var(--color-light-gray-alpha-300);
-		--color-surface-alpha-gray-5: var(--color-light-gray-alpha-700);
-		--color-surface-alpha-gray-6: var(--color-light-gray-alpha-800);
-		--color-surface-alpha-gray-7: var(--color-light-gray-alpha-900);
-
-		--color-surface-alpha-menu-bar: var(--color-white-overlay-900);
-		--color-surface-alpha-cards: var(--color-white);
-		--color-surface-alpha-modal: var(--color-white);
-		--color-surface-alpha-overlay: var(--color-white-overlay-800);
 	}
 	.dark {
 		/*CSS variables for dark mode*/
@@ -842,43 +765,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-gray-700: var(--color-dark-gray-700);
 		--color-gray-800: var(--color-dark-gray-800);
 		--color-gray-900: var(--color-dark-gray-900);
-
-		--color-text-white: var(--color-dark-gray-100);
-		--color-text-gray-1: var(--color-dark-gray-200);
-		--color-text-gray-2: var(--color-dark-gray-500);
-		--color-text-gray-3: var(--color-dark-gray-550);
-		--color-text-gray-4: var(--color-dark-gray-600);
-		--color-text-gray-5: var(--color-dark-gray-700);
-		--color-text-gray-6: var(--color-dark-gray-800);
-		--color-text-gray-7: var(--color-dark-gray-900);
-		--color-text-gray-8: var(--color-dark-gray-950);
-
-		--color-surface-white: var(--color-dark-gray-100);
-		--color-surface-gray-1: var(--color-dark-gray-300);
-		--color-surface-gray-2: var(--color-dark-gray-400);
-		--color-surface-gray-3: var(--color-dark-gray-450);
-		--color-surface-gray-4: var(--color-dark-gray-500);
-		--color-surface-gray-5: var(--color-dark-gray-800);
-		--color-surface-gray-6: var(--color-dark-gray-900);
-		--color-surface-gray-7: var(--color-dark-gray-950);
-		--color-surface-menu: var(--color-dark-gray-100);
-		--color-surface-cards: var(--color-dark-gray-200);
-		--color-surface-modal: var(--color-dark-gray-300);
-		--color-surface-selected: var(--color-dark-gray-450);
-
-		--color-surface-alpha-white: var(--color-dark-gray-alpha-950);
-		--color-surface-alpha-gray-1: var(--color-dark-gray-alpha-800);
-		--color-surface-alpha-gray-2: var(--color-dark-gray-alpha-700);
-		--color-surface-alpha-gray-3: var(--color-dark-gray-alpha-600);
-		--color-surface-alpha-gray-4: var(--color-dark-gray-alpha-500);
-		--color-surface-alpha-gray-5: var(--color-dark-gray-alpha-200);
-		--color-surface-alpha-gray-6: var(--color-dark-gray-alpha-100);
-		--color-surface-alpha-gray-7: var(--color-dark-gray-alpha-50);
-
-		--color-surface-alpha-menu-bar: var(--color-black-overlay-900);
-		--color-surface-alpha-cards: var(--color-dark-gray-alpha-900);
-		--color-surface-alpha-modal: var(--color-dark-gray-alpha-800);
-		--color-surface-alpha-overlay: var(--color-black-overlay-600);
 
 		/* Custom scrollbar for dark theme */
 		scrollbar-color: var(--color-light-gray-800) var(--color-black);
