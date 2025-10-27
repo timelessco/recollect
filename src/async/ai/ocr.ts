@@ -1,11 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
-import Cryptr from "cryptr";
+import CryptoJS from "crypto-js";
 
 import { PROFILES } from "../../utils/constants";
 
-const cryptr = new Cryptr(process.env.SECRET_KEY as string);
 /**
  *  Gives the OCR string by calling the Gemini AI OCR function
  *
@@ -55,7 +54,9 @@ export const ocr = async (
 		try {
 			// Increment bookmark count, using the function only here not in imageToText,because here it is 2 different function
 			// but it is a one single feature AI summary,so it should be counted only once
-			await incrementBookmarkCount(supabase, userId);
+			if (!userApiKey && ocrResult.response.text()) {
+				await incrementBookmarkCount(supabase, userId);
+			}
 		} catch {
 			console.error("Error incrementing bookmark count");
 		}
@@ -83,8 +84,12 @@ export const getApikeyAndBookmarkCount = async (
 	try {
 		const enc = (profile as unknown as { api_key?: string })?.api_key ?? "";
 		if (enc) {
-			const dec = cryptr.decrypt(enc);
-			userApiKey = dec?.trim() ? dec : null;
+			const decryptedBytes = CryptoJS.AES.decrypt(
+				enc,
+				process.env.NEXT_PUBLIC_SECRET_KEY as string,
+			);
+			const decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
+			userApiKey = decrypted;
 		}
 	} catch {
 		userApiKey = null;

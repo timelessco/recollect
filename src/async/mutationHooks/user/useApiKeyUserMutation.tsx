@@ -1,6 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
+import CryptoJS from "crypto-js";
 
 import { saveApiKey } from "../../supabaseCrudHelpers";
+
+const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY;
 
 type SaveApiKeyParameters = {
 	apikey: string;
@@ -17,7 +20,12 @@ type ApiKeyResponse = {
 export const useApiKeyMutation = () =>
 	useMutation<ApiKeyResponse, Error, SaveApiKeyParameters>({
 		mutationFn: async ({ apikey }) => {
-			const response = await saveApiKey({ apikey });
+			const encrypted = CryptoJS.AES.encrypt(
+				apikey,
+				SECRET_KEY as string,
+			).toString();
+
+			const response = await saveApiKey({ apikey: encrypted });
 			// saveApiKey already throws/returns error-like object; let the caller handle toast via mutationApiCall if used
 			return response as unknown as ApiKeyResponse;
 		},
