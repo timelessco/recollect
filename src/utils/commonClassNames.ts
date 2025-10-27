@@ -1,6 +1,6 @@
 // LOGIN AND SIGN UP FLOW
 export const grayInputClassName =
-	"leading-4 block w-[300px] bg-gray-100  appearance-none border-none text-sm placeholder:text-sm placeholder:text-gray-600 text-gray-600 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-none";
+	"leading-4 block w-[300px] bg-gray-alpha-100  appearance-none border-none text-sm placeholder:text-sm placeholder:text-gray-600 text-gray-600 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-none";
 export const buttonDarkClassName =
 	"flex w-full h-[30px] justify-center rounded-lg bg-gray-900  text-[13px] py-[7.5px] font-medium leading-[15px] text-white hover:bg-gray-800";
 export const buttonLightClassName =
@@ -12,9 +12,9 @@ export const bottomBarButton =
 // DROPDOWN COMMON CLASS NAMES
 
 export const dropdownMenuClassName =
-	"bg-plain-color rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
+	"bg-gray-50 rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
 export const dropdownMenuItemClassName =
-	"text-gray-800 font-450 text-13 text-gray-800 leading-4 px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
+	"text-gray-800 font-450 text-13 leading-4 px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
 
 // BUTTON TRANSITION CLASS NAMES
 export const smoothHoverClassName = "transition ease-in-out delay-50";

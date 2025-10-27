@@ -239,7 +239,7 @@ export const AddToCollectionDropdown = memo(
 							</Ariakit.Select>
 							{/* Dropdown popover with search and collection list */}
 							<Ariakit.SelectPopover
-								className="z-50 mt-1 max-h-[250px] w-[180px] overflow-y-auto rounded-xl bg-plain-color p-1 shadow-md"
+								className="z-50 mt-1 max-h-[250px] w-[180px] overflow-y-auto rounded-xl bg-gray-50 p-1 shadow-md"
 								// Allow interaction with the rest of the page
 								modal={false}
 							>
@@ -248,7 +248,7 @@ export const AddToCollectionDropdown = memo(
 									<Ariakit.Combobox
 										// Auto-focus the search input when dropdown opens
 										autoFocus
-										className="w-full rounded-lg bg-[rgba(0,0,0,0.047)] px-2 py-[5px] text-[13px] text-[rgba(112,112,112,1)] focus:outline-none"
+										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[13px] text-gray-alpha-600 placeholder:text-gray-alpha-600 focus:outline-none"
 										placeholder="Search"
 									/>
 								</div>

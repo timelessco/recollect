@@ -143,7 +143,7 @@ const MyComponent = () => {
 
 	if (!currentBookmark) {
 		return (
-			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-[rgba(0,0,0,0.13)] bg-plain-color backdrop-blur-[41px]">
+			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 bg-plain-color backdrop-blur-[41px]">
 				<Spinner
 					className="h-3 w-3 animate-spin"
 					style={{ color: "var(--plain-reverse-color)" }}
@@ -161,18 +161,14 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-l-[0.5px] border-[rgba(0,0,0,0.13)] backdrop-blur-[41px]"
+					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
 					initial={{ x: "100%" }}
-					style={{
-						backgroundColor:
-							"color-mix(in srgb, var(--plain-color) 98%, transparent)",
-					}}
 				>
-					<div className="flex flex-1 flex-col p-5 text-left  ">
+					<div className="flex flex-1 flex-col p-5 text-left">
 						{currentBookmark?.title && (
 							<div>
 								<p
@@ -185,7 +181,7 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<p
-								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-500"
+								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-[13px] leading-[138%]">

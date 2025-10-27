@@ -81,7 +81,7 @@ export const Switch = () => {
 												width={12}
 											/>
 											<span className="text-xs font-semibold text-black">
-												CRM
+												Recollect
 											</span>
 										</div>
 									</div>
@@ -103,7 +103,7 @@ export const Switch = () => {
 												width={12}
 											/>
 											<span className="text-xs font-semibold text-white">
-												CRM
+												Recollect
 											</span>
 										</div>
 									</div>
@@ -136,7 +136,7 @@ export const Switch = () => {
 												value === "dark" ? "text-white" : "text-black"
 											}`}
 										>
-											CRM
+											Recollect
 										</span>
 									</div>
 								</div>

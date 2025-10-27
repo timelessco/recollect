@@ -566,8 +566,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			<header
 				className={headerClass}
 				style={{
-					backgroundColor:
-						"color-mix(in srgb, var(--plain-color) 90%, transparent)",
+					backgroundColor: "var(--color-whites-900)",
 				}}
 			>
 				{showHeadingCondition && (

@@ -27,7 +27,7 @@ const Switch = (props: SwitchProps) => {
 	);
 
 	const switcherClass = classNames(
-		"pointer-events-none inline-block  rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out disabled:opacity-40",
+		"pointer-events-none inline-block  rounded-full bg-gray-0 shadow-lg ring-0 transition duration-200 ease-in-out disabled:opacity-40",
 		{
 			"translate-x-9": enabled === true && size === "large",
 			"translate-x-0": enabled === false,

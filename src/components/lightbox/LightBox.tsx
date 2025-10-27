@@ -593,8 +593,7 @@ export const CustomLightBox = ({
 					left: "0",
 				},
 				container: {
-					backgroundColor:
-						"color-mix(in srgb, var(--plain-color) 90%, transparent)",
+					backgroundColor: "var(--color-whites-900)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
