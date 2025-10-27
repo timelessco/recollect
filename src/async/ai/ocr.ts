@@ -1,11 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
-import Cryptr from "cryptr";
+import CryptoJS from "crypto-js";
 
-import { MAIN_TABLE_NAME, PROFILES } from "../../utils/constants";
+import { PROFILES } from "../../utils/constants";
 
-const cryptr = new Cryptr(process.env.SECRET_KEY as string);
 /**
  *  Gives the OCR string by calling the Gemini AI OCR function
  *
@@ -52,6 +51,16 @@ export const ocr = async (
 			},
 		]);
 
+		try {
+			// Increment bookmark count, using the function only here not in imageToText,because here it is 2 different function
+			// but it is a one single feature AI summary,so it should be counted only once
+			if (!userApiKey && ocrResult.response.text()) {
+				await incrementBookmarkCount(supabase, userId);
+			}
+		} catch {
+			console.error("Error incrementing bookmark count");
+		}
+
 		return ocrResult.response.text();
 	} catch (error) {
 		console.error("OCR error", error);
@@ -59,20 +68,13 @@ export const ocr = async (
 	}
 };
 
-const monthRange = () => {
-	const now = new Date();
-	const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-	const next = new Date(
-		Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
-	);
-	return { start: start.toISOString(), end: next.toISOString() };
-};
-
 export const getApikeyAndBookmarkCount = async (
 	supabase: SupabaseClient,
 	userId: string,
 ) => {
+	// monthly limit, in db the bookmark count set to zero at the start of every month using supabase cron job
 	const LIMIT = 1_000;
+
 	const { data: profile } = await supabase
 		.from(PROFILES)
 		.select("api_key")
@@ -82,24 +84,58 @@ export const getApikeyAndBookmarkCount = async (
 	try {
 		const enc = (profile as unknown as { api_key?: string })?.api_key ?? "";
 		if (enc) {
-			const dec = cryptr.decrypt(enc);
-			userApiKey = dec?.trim() ? dec : null;
+			const decryptedBytes = CryptoJS.AES.decrypt(
+				enc,
+				process.env.NEXT_PUBLIC_SECRET_KEY as string,
+			);
+			const decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
+			userApiKey = decrypted;
 		}
 	} catch {
 		userApiKey = null;
 	}
 
-	const { start, end } = monthRange();
-	const { count } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select("id", { count: "exact", head: true })
-		.eq("user_id", userId)
-		.gte("inserted_at", start)
-		.lt("inserted_at", end)
-		.not("ogImage", "is", null);
-	const monthlyCount = count ?? 0;
+	const { data: count, error } = await supabase
+		.from(PROFILES)
+		.select("bookmark_count")
+		.eq("id", userId)
+		.single();
+	if (error) throw error;
 
-	return { userApiKey, isLimitReached: monthlyCount > LIMIT };
+	const bookmarkCount = count?.bookmark_count ?? 0;
+
+	return { userApiKey, isLimitReached: bookmarkCount > LIMIT };
+};
+
+// we are incrementing the bookmark count here for every bookmark added by the user
+const incrementBookmarkCount = async (
+	supabase: SupabaseClient,
+	userId: string,
+): Promise<number | null> => {
+	try {
+		const { data: profile, error: fetchError } = await supabase
+			.from(PROFILES)
+			.select("bookmark_count")
+			.eq("id", userId)
+			.single();
+
+		if (fetchError) throw fetchError;
+
+		const currentCount = profile?.bookmark_count ?? 0;
+		const newCount = currentCount + 1;
+
+		const { error: updateError } = await supabase
+			.from(PROFILES)
+			.update({ bookmark_count: newCount })
+			.eq("id", userId);
+
+		if (updateError) throw updateError;
+
+		return newCount;
+	} catch (error) {
+		console.error("Error incrementing bookmark count:", error);
+		return null;
+	}
 };
 
 export default ocr;
