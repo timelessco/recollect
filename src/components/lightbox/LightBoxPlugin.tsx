@@ -123,23 +123,21 @@ const MyComponent = () => {
 	useEffect(() => {
 		setShowMore(false);
 		setIsExpanded(false);
-		if (expandableRef?.current) {
-			const contentHeight = expandableRef?.current?.scrollHeight;
-			setHasAIOverflowContent(contentHeight > 120);
-		}
 
-		if (descriptionRef?.current) {
-			// Check if text overflows
-			const element = descriptionRef?.current;
-			setIsOverflowing(element?.scrollHeight > element?.clientHeight);
-		}
-	}, [
-		currentBookmark?.id,
-		currentIndex,
-		expandableRef,
-		descriptionRef,
-		lightboxShowSidepane,
-	]);
+		// Use setTimeout to ensure DOM has updated
+		setTimeout(() => {
+			if (expandableRef?.current) {
+				const contentHeight = expandableRef?.current?.scrollHeight;
+				setHasAIOverflowContent(contentHeight > 120);
+			}
+
+			if (descriptionRef?.current) {
+				// Check if text overflows
+				const element = descriptionRef?.current;
+				setIsOverflowing(element?.scrollHeight > element?.clientHeight);
+			}
+		}, 0);
+	}, [currentBookmark?.id, currentIndex, lightboxShowSidepane]);
 
 	if (!currentBookmark) {
 		return (
@@ -211,7 +209,7 @@ const MyComponent = () => {
 							</p>
 						)}
 						{currentBookmark?.description && (
-							<div>
+							<div className="relative">
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
@@ -220,14 +218,23 @@ const MyComponent = () => {
 									tabIndex={-1}
 								>
 									{currentBookmark.description}
+									{showMore && isOverflowing && (
+										<button
+											className="inline text-[13px] leading-[138%] tracking-[1%] text-gray-800"
+											onClick={() => setShowMore(false)}
+											type="button"
+										>
+											Show less
+										</button>
+									)}
 								</p>
-								{isOverflowing && (
+								{isOverflowing && !showMore && (
 									<button
-										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-500"
-										onClick={() => setShowMore(!showMore)}
+										className="absolute bottom-0 right-0 bg-gray-0 pl-1 text-[13px] leading-[138%] tracking-[1%] text-gray-800"
+										onClick={() => setShowMore(true)}
 										type="button"
 									>
-										{showMore ? "Show less" : "Show more"}
+										Show more
 									</button>
 								)}
 							</div>

@@ -17,7 +17,10 @@ import { Spinner } from "../../components/spinner";
 import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
-import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
+import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import ImageIcon from "../../icons/imageIcon";
+import { InfoIcon } from "../../icons/infoIcon";
+import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {
 	useMiscellaneousStore,
@@ -193,9 +196,7 @@ const Settings = () => {
 				type="file"
 			/>
 			<div>
-				<p className={`${settingsMainHeadingClassName} mb-[30px]`}>
-					My Profile
-				</p>
+				<p className={`${settingsMainHeadingClassName} mb-4`}>Account</p>
 				<div className="flex w-full items-center space-x-2 sm:flex-col">
 					<div
 						onClick={() => {
@@ -218,22 +219,22 @@ const Settings = () => {
 						</figure>
 					</div>
 					<div className="sm:mt-2">
-						<div className=" flex text-sm font-semibold leading-[21px] text-black">
+						<div className=" flex gap-2 text-sm font-semibold leading-[21px] text-black">
 							<Button
-								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-gray-900 hover:bg-gray-200"
+								className="bg-gray-50  px-[10px] py-[7px] text-sm font-semibold leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
 								onClick={() => {
 									if (inputFile.current) {
 										inputFile.current.click();
 									}
 								}}
 							>
-								Upload new photo
+								<div className="flex items-center space-x-2">
+									<ImageIcon />
+									<span>Upload Image</span>
+								</div>
 							</Button>
-							<p className="flex items-center">
-								<DotIcon />
-							</p>
 							<Button
-								className="bg-transparent py-0 text-sm font-semibold leading-[21px] text-gray-900 hover:bg-gray-200"
+								className="bg-gray-50  px-[10px] py-[7px] text-sm font-semibold leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -249,9 +250,6 @@ const Settings = () => {
 							>
 								Remove
 							</Button>
-						</div>
-						<div className="ml-2 mt-1 text-13 font-[420] leading-[15px] text-gray-700">
-							<p>Photos help people recognize you</p>
 						</div>
 					</div>
 				</div>
@@ -357,34 +355,44 @@ const Settings = () => {
 				</form>
 				<Switch />
 				<div className="border-b-[1px] border-b-gray-200  pb-6 pt-[25px]">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-gray-900">
-						Account security
+					<p className="pb-4 text-[14px] font-[500] leading-[115%] text-gray-900">
+						Email
 					</p>
-					{session?.user?.app_metadata?.provider === "	" ? (
-						<div className="flex items-center justify-between sm:flex-col">
-							<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
-								<p className={settingsSubHeadingClassName}>Email</p>
-								<p className={`mt-1 sm:mt-0 ${settingsParagraphClassName}`}>
+					<div className="flex items-center justify-between rounded-lg bg-gray-100 sm:flex-col">
+						<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
+							<div className="ml-[19.5px] flex items-center gap-2 rounded-lg">
+								{session?.user?.app_metadata?.provider === "email" ? (
+									<MailIconBlack />
+								) : (
+									<GoogleLoginIcon />
+								)}
+								<p className={`my-2 ml-2  ${settingsParagraphClassName}`}>
 									{userData?.email}
+									<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
+										{session?.user?.app_metadata?.provider === "email"
+											? "Current email"
+											: "Disconnect"}
+									</p>
 								</p>
 							</div>
-							<Button
-								className={`sm:mt-5 ${settingsLightButtonClassName}`}
-								onClick={() => setCurrentSettingsPage("change-email")}
-								type="light"
-							>
-								Change email
-							</Button>
 						</div>
-					) : (
-						<div className={settingsParagraphClassName}>
-							You have logged in using google auth with this email{" "}
-							{userData?.email}
-						</div>
+						<Button
+							className={`mr-[10px] sm:mt-5 ${settingsLightButtonClassName}`}
+							onClick={() => setCurrentSettingsPage("change-email")}
+							type="light"
+						>
+							Change email
+						</Button>
+					</div>
+					{session?.user?.app_metadata?.provider !== "email" && (
+						<p className="mt-2 flex items-center gap-x-2 text-[13px] font-[400] leading-[150%] text-gray-600">
+							<InfoIcon />
+							You have logged in with your Google account.
+						</p>
 					)}
 				</div>
 				<form
-					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5 sm:flex-col"
+					className="border-b-gray-light-4 flex items-end border-b-[1px] pb-[28px] pt-5 sm:flex-col"
 					onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
 				>
 					<div className=" min-w-[250px] max-w-[250px]  sm:mt-5 sm:w-full sm:min-w-0 sm:max-w-full">
@@ -398,39 +406,31 @@ const Settings = () => {
 					</div>
 				</form>
 				<div className="pt-6">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-gray-900">
-						Danger zone
+					<p className=" text-[14px] font-[500] leading-[115%] text-gray-900">
+						Delete Account
 					</p>
-					<div className="flex items-center justify-between sm:flex-col">
-						<div className="w-[70%] sm:w-full">
-							<p className={`sm:mb-2 ${settingsSubHeadingClassName}`}>
-								Delete account
-							</p>
-							<p className={`mt-1 w-[90%] ${settingsParagraphClassName}`}>
-								By deleting your account, you’ll not be able to log in and all
-								the content you have uploaded will be lost and will not be able
-								to be recovered.
-							</p>
-						</div>
+					<div className="flex flex-col  justify-between">
+						<p className={`my-[10px] ${settingsParagraphClassName}`}>
+							If you no longer wish to use recollect, you can permanently delete
+							your account.
+						</p>
 						<Button
-							className={`w-[150px]  sm:mt-5 sm:w-full ${settingsDeleteButtonRedClassName}`}
+							className={`w-full sm:mt-5 ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
-							<div className="flex w-full justify-center ">
+							<p className="flex w-full justify-center bg-gray-100 hover:bg-gray-200 sm:w-[105px]">
 								<figure className="mr-2">
 									<TrashIconRed />
 								</figure>
-								<p className="flex w-full justify-center sm:w-[105px]">
-									{deleteUserMutation?.isLoading ? (
-										<Spinner
-											className="h-3 w-3 animate-spin"
-											style={{ color: "red" }}
-										/>
-									) : (
-										"Delete account"
-									)}
-								</p>
-							</div>
+								{deleteUserMutation?.isLoading ? (
+									<Spinner
+										className="h-3 w-3 animate-spin"
+										style={{ color: "red" }}
+									/>
+								) : (
+									"Delete account"
+								)}
+							</p>
 						</Button>
 					</div>
 				</div>

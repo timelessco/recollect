@@ -239,7 +239,7 @@ export const AddToCollectionDropdown = memo(
 							</Ariakit.Select>
 							{/* Dropdown popover with search and collection list */}
 							<Ariakit.SelectPopover
-								className="z-50 mt-1 max-h-[250px] w-[180px] overflow-y-auto rounded-xl bg-gray-50 p-1 shadow-md"
+								className="z-50 mt-1 max-h-[186px] w-[150px] overflow-y-auto rounded-xl bg-gray-50 p-1 shadow-md"
 								// Allow interaction with the rest of the page
 								modal={false}
 							>
@@ -257,7 +257,7 @@ export const AddToCollectionDropdown = memo(
 									{/* Show Uncategorized option only if current item is in a collection */}
 									{currentCollection && (
 										<Ariakit.ComboboxItem
-											className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-gray-100 aria-selected:bg-gray-100"
+											className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-100 aria-selected:bg-gray-100"
 											onClick={() => handleCollectionClick(null)}
 											value="Uncategorized"
 										>
@@ -270,7 +270,7 @@ export const AddToCollectionDropdown = memo(
 										filteredCollections?.map((collection) => (
 											<Ariakit.ComboboxItem
 												// Styling for each collection item
-												className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left hover:bg-gray-100 aria-selected:bg-gray-100"
+												className="flex w-full cursor-pointer items-center gap-2 rounded-lg  px-2 py-[5.5px] text-left hover:bg-gray-100 aria-selected:bg-gray-100"
 												key={collection?.id}
 												onClick={() => handleCollectionClick(collection)}
 												onMouseDown={(event) => {

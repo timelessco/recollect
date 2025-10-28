@@ -4,6 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import Modal from "../../../components/modal";
 import UserAvatar from "../../../components/userAvatar";
+import { ImportIcon } from "../../../icons/importIcon";
+import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
 import {
 	useMiscellaneousStore,
 	useModalStore,
@@ -71,6 +73,24 @@ const SettingsModal = () => {
 			count: undefined,
 			iconColor: "",
 		},
+		{
+			icon: <SettingsAiIcon />,
+			name: "AI Features",
+			href: ``,
+			current: false,
+			id: 1,
+			count: undefined,
+			iconColor: "",
+		},
+		{
+			icon: <ImportIcon />,
+			name: "Import",
+			href: ``,
+			current: false,
+			id: 2,
+			count: undefined,
+			iconColor: "",
+		},
 	];
 
 	const renderMainContent = () => {
@@ -93,7 +113,7 @@ const SettingsModal = () => {
 			open={showSettingsModal}
 			setOpen={() => toggleShowSettingsModal()}
 			// adding skip-global-paste to avoid global paste event in the modal
-			wrapperClassName="skip-global-paste w-[65.4%] xl:w-[80%] h-[82%] rounded-2xl outline-none"
+			wrapperClassName="skip-global-paste w-[65.4%] w-full max-w-[740px] h-[82%] rounded-2xl outline-none"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="flex h-full rounded-2xl bg-plain-color">
