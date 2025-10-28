@@ -269,7 +269,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-600":
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-600 placeholder:text-gray-600":
 			true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
@@ -341,7 +341,7 @@ const ShareContent = () => {
 						/>
 					))}
 				</div>
-				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px] [border-color:color-mix(in_srgb,var(--plain-reverse-color)_4.7%,transparent)]">
+				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px]">
 					<div className=" flex items-center">
 						<figure>
 							<GlobeIcon />

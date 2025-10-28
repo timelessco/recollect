@@ -21,7 +21,7 @@ type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
 
 const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 	<div>
-		<header className="flex items-center justify-between border-b-[0.5px] border-b-[color-mix(in_srgb,var(--plain-reverse-color)_13%,transparent)] px-6 py-[9px]">
+		<header className="flex items-center justify-between border-b-[0.5px] border-b-gray-alpha-200 px-6 py-[9px]">
 			<div className="flex items-center">
 				<div
 					className="mr-2 flex items-center justify-center rounded-full p-0.5"

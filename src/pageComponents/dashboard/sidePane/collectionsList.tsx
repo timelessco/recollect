@@ -458,7 +458,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	};
 
 	const renderAddCategoryInput = showAddCategoryInput ? (
-		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg  px-2 py-[5px] [background-color:color-mix(in_srgb,var(--plain-reverse-color)_4%,transparent)]">
+		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg  bg-gray-100 px-2 py-[5px]">
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
@@ -472,7 +472,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</figure>
 				<input
 					autoFocus
-					className="!bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-plain-reverse-color !opacity-40 focus:!outline-none focus:!ring-0 focus:!ring-offset-0"
+					className="!bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-plain-reverse-color !opacity-40 placeholder:text-plain-reverse-color focus:!outline-none focus:!ring-0 focus:!ring-offset-0"
 					id="add-category-input"
 					onBlur={(event) => {
 						if (!isEmpty(event?.target?.value)) {
@@ -577,7 +577,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</div>
 				{renderAddCategoryInput}
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:[background-color:color-mix(in_srgb,var(--plain-reverse-color)_4%,transparent)]"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-gray-100"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={() => {}}
