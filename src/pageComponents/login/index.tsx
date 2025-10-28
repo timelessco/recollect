@@ -132,7 +132,7 @@ const LoginPage = () => {
 									id="sign-in-button"
 									type="submit"
 								>
-									{!isLoading ? "Send OTP" : <Spinner />}
+									{!isLoading ? "Sign In" : <Spinner />}
 								</button>
 								<div
 									className={buttonLightClassName}
