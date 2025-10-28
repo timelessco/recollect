@@ -865,7 +865,7 @@ export const signInWithOtp = async (
 		email,
 		options: {
 			shouldCreateUser: false,
-			emailRedirectTo: `${getBaseUrl()}/${ALL_BOOKMARKS_URL}`,
+			emailRedirectTo: `https://bookmark-tags-git-feat-verify-email-timelessco.vercel.app/${ALL_BOOKMARKS_URL}`,
 		},
 	});
 
@@ -881,6 +881,9 @@ export const signUpWithEmailPassword = async (
 	const { data, error } = await supabase.auth.signUp({
 		email,
 		password,
+		options: {
+			emailRedirectTo: `https://bookmark-tags-git-feat-verify-email-timelessco.vercel.app/${ALL_BOOKMARKS_URL}`,
+		},
 	});
 
 	return { data, error };
