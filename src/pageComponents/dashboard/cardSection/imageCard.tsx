@@ -148,8 +148,7 @@ export const ImgLogic = memo(
 		previousProps._height === nextProps._height &&
 		previousProps._width === nextProps._width &&
 		previousProps.sizesLogic === nextProps.sizesLogic &&
-		previousProps.isPublicPage === nextProps.isPublicPage &&
-		previousProps.description === nextProps.description,
+		previousProps.isPublicPage === nextProps.isPublicPage,
 );
 
 /**
