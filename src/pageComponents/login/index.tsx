@@ -6,8 +6,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import {
-	signInWithEmailPassword,
 	signInWithOauth,
+	signInWithOtp,
 } from "../../async/supabaseCrudHelpers";
 import Input from "../../components/atoms/input";
 import Spinner from "../../components/spinner";
@@ -31,6 +31,10 @@ import { errorToast } from "../../utils/toastMessages";
 
 const LoginPage = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isOtpStep, setIsOtpStep] = useState(false);
+	const [email, setEmail] = useState("");
+	const [otp, setOtp] = useState("");
+
 	const router = useRouter();
 
 	const supabase = createClient();
@@ -46,24 +50,43 @@ const LoginPage = () => {
 		register,
 		handleSubmit,
 		formState: { errors },
-		// reset,
-	} = useForm<{ email: string; password: string }>();
+	} = useForm<{ email: string; password?: string }>();
+
 	const onSubmit: SubmitHandler<{
 		email: string;
-		password: string;
+		password?: string;
 	}> = async (data) => {
 		setIsLoading(true);
-		const { error } = await signInWithEmailPassword(
-			data?.email,
-			data?.password,
-			supabase,
-		);
+		const { error } = await signInWithOtp(data?.email, supabase);
 		setIsLoading(false);
 
 		if (error) {
 			errorToast(error?.message);
 		} else {
-			void router?.push(`/${ALL_BOOKMARKS_URL}`);
+			setEmail(data.email);
+			setIsOtpStep(true);
+		}
+	};
+
+	// Step 2: verify OTP (new)
+	const handleVerifyOtp = async () => {
+		if (!otp || !email) {
+			errorToast("Please enter OTP");
+			return;
+		}
+
+		setIsLoading(true);
+		const { error } = await supabase.auth.verifyOtp({
+			email,
+			token: otp,
+			type: "magiclink",
+		});
+		setIsLoading(false);
+
+		if (error) {
+			errorToast(error.message);
+		} else {
+			void router.push(`/${ALL_BOOKMARKS_URL}`);
 		}
 	};
 
@@ -78,73 +101,82 @@ const LoginPage = () => {
 							</figure>
 							<p>recollect</p>
 						</div>
-						<form
-							className="flex flex-col items-center justify-center space-y-4"
-							onSubmit={handleSubmit(onSubmit)}
-						>
-							<Input
-								{...register("email", {
-									required: {
-										value: true,
-										message: "Please enter email",
-									},
-									pattern: {
-										value: EMAIL_CHECK_PATTERN,
-										message: "Please enter valid email",
-									},
-								})}
-								className={grayInputClassName}
-								errorText={errors?.email?.message ?? ""}
-								id="email"
-								isError={Boolean(errors?.email)}
-								placeholder="Email"
-							/>
-							<Input
-								{...register("password", {
-									required: {
-										value: true,
-										message: "Please enter password",
-									},
-								})}
-								className={grayInputClassName}
-								errorText={errors?.password?.message ?? ""}
-								id="password"
-								isError={Boolean(errors?.password)}
-								placeholder="Password"
-								type="password"
-							/>
-							<button
-								className={buttonDarkClassName}
-								id="sign-in-button"
-								type="submit"
+						{!isOtpStep ? (
+							<form
+								className="flex flex-col items-center justify-center space-y-4"
+								onSubmit={handleSubmit(onSubmit)}
 							>
-								{!isLoading ? "Sign in" : <Spinner />}
-							</button>
-							<div
-								className={buttonLightClassName}
-								onClick={() => {
-									(async () => {
-										await signInWithOauth("google", supabase);
-									})();
-								}}
-								onKeyDown={() => {}}
-								role="button"
-								tabIndex={0}
-							>
-								<figure className="mr-[6px]">
-									<GoogleLoginIcon />
-								</figure>
-								<p>Continue with Google</p>
+								<Input
+									{...register("email", {
+										required: {
+											value: true,
+											message: "Please enter email",
+										},
+										pattern: {
+											value: EMAIL_CHECK_PATTERN,
+											message: "Please enter valid email",
+										},
+									})}
+									className={grayInputClassName}
+									errorText={errors?.email?.message ?? ""}
+									id="email"
+									isError={Boolean(errors?.email)}
+									onChange={(e) => setEmail(e.target.value)}
+									placeholder="Email"
+								/>
+								{/* password field removed for OTP flow */}
+								<button
+									className={buttonDarkClassName}
+									id="sign-in-button"
+									type="submit"
+								>
+									{!isLoading ? "Send OTP" : <Spinner />}
+								</button>
+								<div
+									className={buttonLightClassName}
+									onClick={() => {
+										(async () => {
+											await signInWithOauth("google", supabase);
+										})();
+									}}
+									onKeyDown={() => {}}
+									role="button"
+									tabIndex={0}
+								>
+									<figure className="mr-[6px]">
+										<GoogleLoginIcon />
+									</figure>
+									<p>Continue with Google</p>
+								</div>
+							</form>
+						) : (
+							<div className="flex flex-col items-center justify-center space-y-4">
+								<Input
+									className={grayInputClassName}
+									errorText=""
+									isError={false}
+									onChange={(e) => setOtp(e.target.value)}
+									placeholder="Enter OTP"
+									value={otp}
+								/>
+								<button
+									className={buttonDarkClassName}
+									disabled={isLoading}
+									onClick={handleVerifyOtp}
+									type="button"
+								>
+									{isLoading ? <Spinner /> : "Verify OTP"}
+								</button>
 							</div>
-						</form>
-					</div>
-				</div>
-				<div className="fixed bottom-0 flex w-full items-center justify-center py-5">
-					<div className="flex w-[300px] items-center justify-between">
-						<p className={bottomBarText}>Don’t have an account?</p>
-						<a className={bottomBarButton} href={`/${SIGNUP_URL}`}>
-							Sign up
-						</a>
+						)}
+						<div className="fixed bottom-0 flex w-full items-center justify-center py-5">
+							<div className="flex w-[300px] items-center justify-between">
+								<p className={bottomBarText}>Don’t have an account?</p>
+								<a className={bottomBarButton} href={`/${SIGNUP_URL}`}>
+									Sign up
+								</a>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
