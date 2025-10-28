@@ -15,7 +15,7 @@ const ToastBody = ({
 	<div className="flex">
 		{icon && icon}
 		<div className="ml-2">
-			<p className="text-sm font-450 not-italic leading-[18px] tracking-[0.14px] text-white">
+			<p className="text-sm font-450 not-italic leading-[18px] tracking-[0.14px] text-gray-0">
 				{message}
 			</p>
 			{description && (

@@ -143,7 +143,7 @@ const MyComponent = () => {
 
 	if (!currentBookmark) {
 		return (
-			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 bg-plain-color backdrop-blur-[41px]">
+			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]">
 				<Spinner
 					className="h-3 w-3 animate-spin"
 					style={{ color: "var(--plain-reverse-color)" }}
@@ -305,10 +305,10 @@ const MyComponent = () => {
 							{/* Gradient overlay */}
 							{!isExpanded && hasAIOverflowContent && (
 								<div
-									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[50px]"
+									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[159px]"
 									style={{
 										background:
-											"linear-gradient(180deg, var(--plain-color) 0%, var(--plain-color) 100%)",
+											"linear-gradient(180deg, var(--color-whites-50) 0%, var(--color-whites-800) 77%, var(--color-whites-1000) 100%)",
 									}}
 								/>
 							)}

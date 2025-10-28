@@ -29,7 +29,7 @@ export const settingsInputContainerClassName =
 	"relative flex w-[280px] sm:w-full items-center rounded-lg bg-gray-100 px-[10px] py-2";
 
 export const settingsInputClassName =
-	"rounded-none bg-gray-100 text-sm font-[420] leading-4 tracking-[0.02em] text-gray-800  outline-none";
+	"rounded-none bg-gray-100 text-sm font-[420] leading-4 tracking-[0.02em] text-gray-800  outline-none placeholder:text-gray-alpha-600";
 
 export const settingsSubHeadingClassName =
 	"text-sm font-medium leading-4 sm:leading-none tracking-[1.5%] text-gray-900";
