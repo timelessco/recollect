@@ -1,3 +1,5 @@
+/* eslint-disable id-length */
+/* eslint-disable unicorn/prevent-abbreviations */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm, type SubmitHandler } from "react-hook-form";
