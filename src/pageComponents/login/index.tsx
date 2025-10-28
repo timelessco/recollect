@@ -171,8 +171,8 @@ const LoginPage = () => {
 								</button>
 							</div>
 						)}
-						<div className="fixed bottom-0 flex w-full items-center justify-center py-5">
-							<div className="flex w-[300px] items-center justify-between">
+						<div className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-center py-5">
+							<div className="flex items-center justify-center gap-2">
 								<p className={bottomBarText}>Don’t have an account?</p>
 								<a className={bottomBarButton} href={`/${SIGNUP_URL}`}>
 									Sign up
