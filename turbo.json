@@ -5,6 +5,7 @@
 			"env": [
 				"NODE_ENV",
 				"VERCEL_ENV",
+				"GOOGLE_ID",
 				"GOOGLE_SECRET",
 				"SUPABASE_SERVICE_KEY",
 				"SUPABASE_JWT_SECRET_KEY",
