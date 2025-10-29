@@ -13,7 +13,6 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
-import Masonry from "react-masonry-css";
 import {
 	useDraggableCollectionState,
 	useListState,
@@ -25,7 +24,6 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import Checkbox from "../../../components/checkbox";
-import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
 	useMiscellaneousStore,
@@ -47,8 +45,7 @@ import {
 } from "../../../utils/constants";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
-// we are disabling this rule as option might get complicated , so we need to have it in a separate file
-import Option from "./option";
+import { RenderOption } from "./RenderOption";
 
 type ListBoxDropTypes = ListProps<object> & {
 	// bookmarksColumns: string | number[] | string[] | undefined;
@@ -144,86 +141,15 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	useDraggableCollection(props, dragState, ref);
 
-	const cardGridClassNames = classNames({
-		"grid gap-6": true,
-		"grid-cols-5":
-			typeof bookmarksColumns === "object" &&
-			!isNull(bookmarksColumns) &&
-			bookmarksColumns[0] === 10,
-		"grid-cols-4":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 20,
-		"grid-cols-3":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 30,
-		"grid-cols-2":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 40,
-		"grid-cols-1":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
-	});
-
-	const { isMobile, isTablet } = useIsMobileView();
-	const moodboardColsLogic = () => {
-		if (isTablet || isMobile) {
-			return "2";
-		} else {
-			switch (bookmarksColumns && bookmarksColumns[0] / 10) {
-				case 1:
-					return "5";
-				case 2:
-					return "4";
-				case 3:
-					return "3";
-				case 4:
-					return "2";
-				case 5:
-					return "1";
-				default:
-					return "1";
-					break;
-			}
-		}
-	};
-
 	const ulClassName = classNames("outline-none focus:outline-none", {
 		// [`columns-${moodboardColsLogic()} gap-6`]:
 		// 	cardTypeCondition === "moodboard",
 		block:
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		[isMobile || isTablet ? "grid gap-6 grid-cols-2" : cardGridClassNames]:
-			cardTypeCondition === "card",
-		"max-w-[600px] mx-auto space-y-4":
-			cardTypeCondition === viewValues.timeline,
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
-
-	const renderOption = () => {
-		const bookmarks = [...state.collection].map((item) => {
-			const bookmarkData = find(
-				bookmarksList,
-				(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
-			);
-
-			return {
-				item,
-				bookmarkData,
-			};
-		});
-
-		return bookmarks.map(({ item, bookmarkData }) => (
-			<Option
-				cardTypeCondition={cardTypeCondition}
-				dragState={dragState}
-				isPublicPage={isPublicPage}
-				isTrashPage={isTrashPage}
-				item={item}
-				key={item.key}
-				state={state}
-				type={bookmarkData?.type ?? ""}
-				url={bookmarkData?.url ?? ""}
-			/>
-		));
-	};
 
 	const categoryDataMapper =
 		categoryData?.data?.map((item) => ({
@@ -245,18 +171,19 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
+			<div className="pb-[47px]" />
 			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === viewValues?.moodboard ? (
-					<Masonry
-						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
-						className="my-masonry-grid"
-						columnClassName="my-masonry-grid_column"
-					>
-						{renderOption()}
-					</Masonry>
-				) : (
-					renderOption()
-				)}
+				<RenderOption
+					bookmarksColumns={bookmarksColumns}
+					bookmarksList={bookmarksList}
+					cardTypeCondition={cardTypeCondition}
+					dragState={dragState}
+					isCard={cardTypeCondition === viewValues.card}
+					isMasonry={cardTypeCondition === viewValues.moodboard}
+					isPublicPage={isPublicPage}
+					isTrashPage={isTrashPage}
+					state={state}
+				/>
 				<DragPreview ref={preview}>
 					{(items) => (
 						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
