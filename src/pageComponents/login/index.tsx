@@ -63,7 +63,6 @@ const LoginPage = () => {
 		}
 	};
 
-	// Step 2: verify OTP (new)
 	const handleVerifyOtp = async () => {
 		if (!otp || !email) {
 			errorToast("Please enter OTP");
