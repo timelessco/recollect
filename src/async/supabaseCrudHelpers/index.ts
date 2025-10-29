@@ -864,7 +864,7 @@ export const signInWithOtp = async (
 	const { data, error } = await supabase.auth.signInWithOtp({
 		email,
 		options: {
-			shouldCreateUser: false,
+			shouldCreateUser: true,
 			emailRedirectTo: `https://bookmark-tags-git-feat-verify-email-timelessco.vercel.app/${ALL_BOOKMARKS_URL}`,
 		},
 	});
