@@ -4,7 +4,7 @@ import {
 	type QueryKey,
 } from "@tanstack/react-query";
 import axios from "axios";
-import { isNil } from "lodash";
+import { get, isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -872,17 +872,32 @@ export const signInWithOtp = async (
 	return { data, error };
 };
 
+export const verifyOtp = async (
+	email: string,
+	otp: string,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	supabase: SupabaseClient<any, "public", any>,
+) => {
+	const { data, error } = await supabase.auth.verifyOtp({
+		email,
+		token: otp,
+		type: "magiclink",
+	});
+	return { data, error };
+};
+
 export const signUpWithEmailPassword = async (
 	email: string,
 	password: string,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	supabase: SupabaseClient<any, "public", any>,
 ) => {
-	const { data, error } = await supabase.auth.signUp({
+	const { data, error } = await supabase.auth.signInWithOtp({
 		email,
-		password,
+		// password,
 		options: {
-			emailRedirectTo: `https://bookmark-tags-git-feat-verify-email-timelessco.vercel.app/${ALL_BOOKMARKS_URL}`,
+			shouldCreateUser: true,
+			emailRedirectTo: `${getBaseUrl()}/${ALL_BOOKMARKS_URL}`,
 		},
 	});
 

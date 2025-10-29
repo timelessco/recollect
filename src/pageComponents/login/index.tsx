@@ -10,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import {
 	signInWithOauth,
 	signInWithOtp,
+	verifyOtp,
 } from "../../async/supabaseCrudHelpers";
 import Input from "../../components/atoms/input";
 import Spinner from "../../components/spinner";
@@ -78,17 +79,13 @@ const LoginPage = () => {
 		}
 
 		setIsLoading(true);
-		const { error } = await supabase.auth.verifyOtp({
-			email,
-			token: otp,
-			type: "magiclink",
-		});
+		const { error } = await verifyOtp(email, otp, supabase);
 		setIsLoading(false);
 
 		if (error) {
 			errorToast(error.message);
 		} else {
-			void router.push(`/${ALL_BOOKMARKS_URL}`);
+			window.location.pathname = `/${ALL_BOOKMARKS_URL}`;
 		}
 	};
 
@@ -132,7 +129,7 @@ const LoginPage = () => {
 									id="sign-in-button"
 									type="submit"
 								>
-									{!isLoading ? "Sign In" : <Spinner />}
+									{!isLoading ? "Login" : <Spinner />}
 								</button>
 								<div
 									className={buttonLightClassName}
@@ -152,33 +149,35 @@ const LoginPage = () => {
 								</div>
 							</form>
 						) : (
-							<div className="flex flex-col items-center justify-center space-y-4">
-								<Input
-									className={grayInputClassName}
-									errorText=""
-									isError={false}
-									onChange={(e) => setOtp(e.target.value)}
-									placeholder="Enter OTP"
-									value={otp}
-								/>
-								<button
-									className={buttonDarkClassName}
-									disabled={isLoading}
-									onClick={handleVerifyOtp}
-									type="button"
-								>
-									{isLoading ? <Spinner /> : "Verify OTP"}
-								</button>
-							</div>
+							<form>
+								<div className="flex flex-col items-center justify-center space-y-4">
+									<Input
+										className={grayInputClassName}
+										errorText=""
+										isError={false}
+										onChange={(e) => setOtp(e.target.value)}
+										placeholder="Enter OTP"
+										value={otp}
+									/>
+									<button
+										className={buttonDarkClassName}
+										disabled={otp.length !== 6}
+										onClick={handleVerifyOtp}
+										type="submit"
+									>
+										{isLoading ? <Spinner /> : "Verify OTP"}
+									</button>
+								</div>
+							</form>
 						)}
-						<div className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-center py-5">
-							<div className="flex items-center justify-center gap-2">
+						{/* <div className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-center py-5">
+							<div className="flex w-[300px] items-center justify-between">
 								<p className={bottomBarText}>Don’t have an account?</p>
 								<a className={bottomBarButton} href={`/${SIGNUP_URL}`}>
 									Sign up
 								</a>
 							</div>
-						</div>
+						</div> */}
 					</div>
 				</div>
 			</div>
