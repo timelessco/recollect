@@ -56,7 +56,6 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
-import { Switch } from "../../components/toggledarkmode";
 import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";

@@ -113,12 +113,12 @@ const SettingsModal = () => {
 			open={showSettingsModal}
 			setOpen={() => toggleShowSettingsModal()}
 			// adding skip-global-paste to avoid global paste event in the modal
-			wrapperClassName="skip-global-paste w-[65.4%] w-full max-w-[740px] h-[82%] rounded-2xl outline-none"
+			wrapperClassName="skip-global-paste w-[65.4%] w-full max-w-[740px] h-[82%] rounded-[20px] outline-none"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
-			<div className="flex h-full rounded-2xl bg-plain-color">
-				<div className="h-full min-w-[220px] rounded-l-2xl border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4 xl:hidden">
-					<div className="px-2 text-base font-semibold leading-[18px] text-plain-reverse-color">
+			<div className="flex h-full rounded-[20px] bg-plain-color">
+				<div className="h-full min-w-[180px] rounded-l-[20px] border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4 xl:hidden">
+					<div className="px-2 text-[13px] font-[500]  leading-[115%] tracking-[2%] text-gray-600">
 						Settings
 					</div>
 					<div className=" mt-3">
@@ -133,7 +133,7 @@ const SettingsModal = () => {
 						))}
 					</div>
 				</div>
-				<div className=" w-full overflow-y-scroll p-6">
+				<div className=" w-full rounded-[20px] px-12 pt-6">
 					{renderMainContent()}
 				</div>
 			</div>
