@@ -888,7 +888,6 @@ export const verifyOtp = async (
 
 export const signUpWithEmailPassword = async (
 	email: string,
-	password: string,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	supabase: SupabaseClient<any, "public", any>,
 ) => {
