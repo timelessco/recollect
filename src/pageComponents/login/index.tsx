@@ -1,5 +1,3 @@
-/* eslint-disable id-length */
-/* eslint-disable unicorn/prevent-abbreviations */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -18,17 +16,11 @@ import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogo from "../../icons/laterpadLogo";
 import { useSupabaseSession } from "../../store/componentStore";
 import {
-	bottomBarButton,
-	bottomBarText,
 	buttonDarkClassName,
 	buttonLightClassName,
 	grayInputClassName,
 } from "../../utils/commonClassNames";
-import {
-	ALL_BOOKMARKS_URL,
-	EMAIL_CHECK_PATTERN,
-	SIGNUP_URL,
-} from "../../utils/constants";
+import { ALL_BOOKMARKS_URL, EMAIL_CHECK_PATTERN } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 
@@ -120,10 +112,9 @@ const LoginPage = () => {
 									errorText={errors?.email?.message ?? ""}
 									id="email"
 									isError={Boolean(errors?.email)}
-									onChange={(e) => setEmail(e.target.value)}
+									onChange={(event) => setEmail(event.target.value)}
 									placeholder="Email"
 								/>
-								{/* password field removed for OTP flow */}
 								<button
 									className={buttonDarkClassName}
 									id="sign-in-button"
@@ -154,7 +145,7 @@ const LoginPage = () => {
 									className={grayInputClassName}
 									errorText=""
 									isError={false}
-									onChange={(e) => setOtp(e.target.value)}
+									onChange={(event) => setOtp(event.target.value)}
 									placeholder="Enter OTP"
 									value={otp}
 								/>
@@ -168,14 +159,6 @@ const LoginPage = () => {
 								</button>
 							</div>
 						)}
-						{/* <div className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-center py-5">
-							<div className="flex w-[300px] items-center justify-between">
-								<p className={bottomBarText}>Don’t have an account?</p>
-								<a className={bottomBarButton} href={`/${SIGNUP_URL}`}>
-									Sign up
-								</a>
-							</div>
-						</div> */}
 					</div>
 				</div>
 			</div>
