@@ -69,8 +69,8 @@
 	},
 	"lint-staged": {
 		"*": [
-			"pnpm fix:prettier",
-			"pnpm fix:spelling"
+			"prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown",
+			"cspell --dot --gitignore --cache --no-progress --show-context check \"**/*\""
 		]
 	},
 	"dependencies": {

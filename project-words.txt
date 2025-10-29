@@ -1,75 +1,93 @@
-				"DEV_SUPABASE_JWT_SECRET_KEY",
-				"DEV_SUPABASE_SERVICE_KEY",
-				"GOOGLE_GEMINI_TOKEN",
-				"GOOGLE_REFRESH_TOKEN",
-				"GOOGLE_SECRET",
-				"IMAGE_CAPTION_TOKEN",
-				"IMAGE_CAPTION_URL",
-				"MOONDREAM_TOKEN",
-				"MOONDREAM_URL",
-				"NODE_ENV",
-				"PROD_GOOGLE_ID",
-				"PROD_GOOGLE_SECRET",
-				"RECOLLECT_SERVER_API",
-				"RESEND_KEY"
-				"SCREENSHOT_API",
-				"SCREENSHOT_TOKEN",
-				"SENDGRID_KEY",
-				"SENTRY_DSN",
-				"SUPABASE_JWT_SECRET_KEY",
-				"SUPABASE_SERVICE_KEY",
-				"TEST_USER_EMAIL",
-				"TEST_USER_PASSWORD",
-				"UMAMI_ID",
-				"UMAMI_SRC",
-				"VERCEL_ENV",
-			"dependsOn": ["fix:md", "fix:css"],
-			"dependsOn": ["fix:prettier"],
-			"env": [
-			"inputs": ["**/*.{ts,tsx,d.ts,cts,d.cts,mts,d.mts}"],
-			"inputs": ["**/*.css"],
-			"inputs": ["**/*.css"],
-			"inputs": ["**/*.md", ".github/**/*.md"]
-			"inputs": ["**/*.md", ".github/**/*.md"]
-			"inputs": ["$TURBO_DEFAULT$", ".env", ".env.local"],
-			"inputs": ["package.json"]
-			"outputs": [".cspellcache"]
-			"outputs": [".eslintcache"]
-			"outputs": [".eslintcache"]
-			"outputs": [".next/**", "!.next/cache/**"]
-			"outputs": [".prettiercache"]
-			"outputs": [".prettiercache"]
-			"outputs": [".stylelintcache"]
-			"outputs": [".stylelintcache"]
-			"outputs": ["*.tsbuildinfo"]
-			],
-		"build:next": {
-		"fix:css": {
-		"fix:eslint": {
-		"fix:md": {
-		"fix:prettier": {
-		"lint:css": {
-		"lint:eslint": {
-		"lint:md": {
-		"lint:package-json": {
-		"lint:prettier": {
-		"lint:spelling": {
-		"lint:types": {
-		"test": {},
-		}
-		},
-		},
-		},
-		},
-		},
-		},
-		},
-		},
-		},
-		},
-		},
-	"$schema": "https://turbo.build/schema.json",
-	"tasks": {
-	}
-{
-}
+abhishek
+Abhishek
+abhishekmg
+Abishek
+accound
+acending
+adaptui
+adid
+alredy
+amannn
+apng
+appl
+Atleast
+becasue
+bookmakrs
+Bookmakrs
+BOOKMAKRS
+bookmaks
+catagories
+catagory
+categorie
+cateogry
+catrgories
+Cick
+colum
+colums
+creats
+Creats
+cryptr
+dels
+dont
+eqwhx
+fbca
+fetchs
+fkey
+fron
+fuction
+gemeni
+genai
+ianvs
+ILIKE
+imdb
+infile
+loggedin
+Loggedin
+micnncim
+msvideo
+navin
+Navin
+njsproj
+ntvs
+ogimage
+opsz
+Otimistic
+pgmq
+pilcrow
+pkey
+plpgsql
+Postgrest
+Prabhakaran
+reffers
+regx
+sandeepprabhakaran
+savee
+selcted
+sentryclirc
+shhhhh
+signup
+SIGNUP
+sparticuz
+syncer
+thay
+thednp
+tilg
+timelessco
+timestamptz
+Toastify
+trgm
+umami
+UMAMI
+uncategoried
+uncategorised
+uncategorized
+Uncategorized
+UNCATEGORIZED
+uncatogorised
+uniqid
+upadates
+Vaue
+xenova
+yarl
+youtu
+YOUTU
