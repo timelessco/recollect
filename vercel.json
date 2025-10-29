@@ -18,5 +18,6 @@
 		"src/pages/api/v1/twitter/blurhash-worker.ts": {
 			"maxDuration": 300
 		}
-	}
+	},
+	"bunVersion": "1.3"
 }
