@@ -8,11 +8,9 @@
 	font-style: normal;
 	font-display: block;
 	src: url("/fonts/Inter-V.var.woff2") format("woff2");
-
-	font-named-instance: "Regular";
 }
 
-@keyframes customFadeScaleIn {
+@keyframes custom-fade-scale-in {
 	0% {
 		transform: scale(0.97);
 		opacity: 0;
@@ -207,20 +205,13 @@ main {
 }
 
 [data-backdrop] {
-	@apply flex items-center justify-center;
-}
-
-.dark [data-backdrop] {
+	@apply flex items-center justify-center bg-modal-bg;
 }
 
 @media (width >= 768px) {
 	[data-backdrop] {
 		@apply items-start;
 	}
-}
-
-[data-backdrop] {
-	@apply bg-modal-bg;
 }
 
 .dropdown-container input[type="radio"] {
@@ -391,8 +382,8 @@ input[type="checkbox"]:checked + .checkbox-div {
 }
 
 .slide-wrapper {
-	transform: translateY(var(--yarl__pull_offset)) scale(var(--yarl__pull_scale));
-	opacity: var(--yarl__pull_opacity);
+	transform: translateY(var(--yarl-pull-offset)) scale(var(--yarl-pull-scale));
+	opacity: var(--yarl-pull-opacity);
 
-	@apply transition-opacity transition-transform duration-200 ease-out;
+	@apply transition-all duration-200 ease-out;
 }

@@ -600,7 +600,7 @@ export const CustomLightBox = ({
 					width: lightboxShowSidepane
 						? "calc(100% - min(max(320px, 20%), 400px))"
 						: "100%",
-					animation: "customFadeScaleIn 0.25s ease-in-out",
+					animation: "custom-fade-scale-in 0.25s ease-in-out",
 				},
 				slide: {
 					height: "100%",
