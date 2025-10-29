@@ -103,7 +103,7 @@ export const CustomLightBox = ({
 	}, [originalHandleClose, setLightboxShowSidepane]);
 
 	/**
-	 * Transforms bookmark data into lightbox slide format
+	 * Transforms bookmark data into lightbox slide  format
 	 * Determines media type and sets appropriate properties for each slide
 	 * Memoized to prevent recalculation on every render
 	 */
