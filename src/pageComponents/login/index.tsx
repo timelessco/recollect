@@ -149,26 +149,24 @@ const LoginPage = () => {
 								</div>
 							</form>
 						) : (
-							<form>
-								<div className="flex flex-col items-center justify-center space-y-4">
-									<Input
-										className={grayInputClassName}
-										errorText=""
-										isError={false}
-										onChange={(e) => setOtp(e.target.value)}
-										placeholder="Enter OTP"
-										value={otp}
-									/>
-									<button
-										className={buttonDarkClassName}
-										disabled={otp.length !== 6}
-										onClick={handleVerifyOtp}
-										type="submit"
-									>
-										{isLoading ? <Spinner /> : "Verify OTP"}
-									</button>
-								</div>
-							</form>
+							<div className="flex flex-col items-center justify-center space-y-4">
+								<Input
+									className={grayInputClassName}
+									errorText=""
+									isError={false}
+									onChange={(e) => setOtp(e.target.value)}
+									placeholder="Enter OTP"
+									value={otp}
+								/>
+								<button
+									className={buttonDarkClassName}
+									disabled={otp.length !== 6}
+									onClick={handleVerifyOtp}
+									type="submit"
+								>
+									{isLoading ? <Spinner /> : "Verify OTP"}
+								</button>
+							</div>
 						)}
 						{/* <div className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-center py-5">
 							<div className="flex w-[300px] items-center justify-between">
