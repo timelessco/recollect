@@ -178,7 +178,7 @@ const MyComponent = () => {
 							</div>
 						)}
 						{domain && (
-							<p
+							<div
 								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600"
 								tabIndex={-1}
 							>
@@ -206,7 +206,7 @@ const MyComponent = () => {
 										</span>
 									)}
 								</div>
-							</p>
+							</div>
 						)}
 						{currentBookmark?.description && (
 							<div className="relative">
