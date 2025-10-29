@@ -4,7 +4,7 @@ import {
 	type QueryKey,
 } from "@tanstack/react-query";
 import axios from "axios";
-import { get, isNil } from "lodash";
+import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -881,7 +881,7 @@ export const verifyOtp = async (
 	const { data, error } = await supabase.auth.verifyOtp({
 		email,
 		token: otp,
-		type: "magiclink",
+		type: "email",
 	});
 	return { data, error };
 };

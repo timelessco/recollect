@@ -76,7 +76,7 @@ const LoginPage = () => {
 		if (error) {
 			errorToast(error.message);
 		} else {
-			window.location.pathname = `/${ALL_BOOKMARKS_URL}`;
+			void router.push(`/${ALL_BOOKMARKS_URL}`);
 		}
 	};
 
