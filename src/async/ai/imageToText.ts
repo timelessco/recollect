@@ -86,7 +86,7 @@ const vitModel = async (source: string): Promise<ImageCaptionReturn> => {
 						Authorization: `Bearer ${process.env.IMAGE_CAPTION_TOKEN}`,
 					},
 					method: "POST",
-					body: data,
+					body: data.buffer as BodyInit,
 				},
 			);
 

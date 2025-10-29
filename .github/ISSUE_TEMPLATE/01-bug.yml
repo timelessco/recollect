@@ -1,13 +1,6 @@
-name: 🐛 Report a Bug
-description: Report a bug trying to run the code.
-title: "🐛 Bug: <short description of the bug>"
-labels:
-  - "type: bug"
 body:
   - attributes:
-      description:
-        If any of these required steps are not taken, we may not be able to
-        review your issue. Help us to help you!
+      description: If any of these required steps are not taken, we may not be able to review your issue. Help us to help you!
       label: Bug Report Checklist
       options:
         - label: I have tried restarting my IDE and the issue persists.
@@ -15,7 +8,7 @@ body:
         - label: I have pulled the latest `main` branch of the repository.
           required: true
         - label: I have [searched for related
-            issues](https://github.com/timelessco/bookmark-tags/issues?q=is%3Aissue)
+            issues](https://github.com/timelessco/recollect/issues?q=is%3Aissue)
             and found none that matched my issue.
           required: true
     type: checkboxes
@@ -32,6 +25,11 @@ body:
     validations:
       required: true
   - attributes:
-      label: Additional Info
       description: Any additional info you'd like to provide.
+      label: Additional Info
     type: textarea
+description: Report a bug trying to run the code
+labels:
+  - "type: bug"
+name: 🐛 Bug
+title: "🐛 Bug: <short description of the bug>"

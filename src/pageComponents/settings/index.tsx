@@ -22,10 +22,7 @@ import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import {
-	type ProfilesTableTypes,
-	type SupabaseSessionType,
-} from "../../types/apiTypes";
+import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	settingsDeleteButtonRedClassName,

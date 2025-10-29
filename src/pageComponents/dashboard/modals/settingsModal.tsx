@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { isEmpty } from "lodash";
 
 import Modal from "../../../components/modal";
 import UserAvatar from "../../../components/userAvatar";

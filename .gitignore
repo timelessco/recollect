@@ -84,5 +84,6 @@ public/sitemap-0.xml
 # Cspell cache
 .cspellcache
 
-# Release-it
-release-it/remote-commits.json
+# Extras(if any)
+.claude/settings.local.json
+.claude/docs

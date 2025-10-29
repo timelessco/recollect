@@ -1,5 +1,5 @@
 {
-	"name": "bookmark-tags",
+	"name": "recollect",
 	"version": "0.0.0",
 	"private": true,
 	"description": "Bookmarks is an open source url manager built using nextjs and supabase.",
@@ -12,11 +12,11 @@
 		"react-query"
 	],
 	"bugs": {
-		"url": "https://github.com/timelessco/bookmark-tags/issues"
+		"url": "https://github.com/timelessco/recollect/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/timelessco/bookmark-tags.git"
+		"url": "git+https://github.com/timelessco/recollect.git"
 	},
 	"license": "MIT",
 	"author": {
@@ -33,28 +33,30 @@
 		"build:next": "next build",
 		"build:sourcemap": "SOURCEMAP=true pnpm build && source-map-explorer .next/static/**/*.js && pnpm start",
 		"build:start": "pnpm build && pnpm start",
-		"commit": "gacp",
+		"check:engine": "npx installed-check --fix",
+		"check:packages": "pnpm dedupe --check",
+		"check:update": "npx npm-check-updates --interactive --format group --target patch",
 		"contributors:add": "all-contributors add",
 		"contributors:generate": "all-contributors generate",
 		"cypress:open": "cypress open",
 		"dev": "next dev",
 		"dev:sourcemap": "SOURCEMAP=true pnpm dev",
-		"format": "npx turbo run format:eslint format:css format:md format:prettier",
-		"format:css": "stylelint --fix --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
-		"format:eslint": "eslint --cache --report-unused-disable-directives --color . --fix",
-		"format:md": "markdownlint --fix **/*.md \".github/**/*.md\"",
-		"format:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown .",
-		"lint": "npx turbo run lint:eslint lint:types lint:css lint:md lint:knip lint:package-json lint:spelling lint:prettier",
+		"fix": "turbo fix:eslint",
+		"fix:css": "stylelint --fix --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
+		"fix:eslint": "eslint --cache --report-unused-disable-directives --color . --fix",
+		"fix:md": "markdownlint --fix **/*.md \".github/**/*.md\"",
+		"fix:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown .",
+		"fix:spelling": "del-cli project-words.txt && cspell --words-only --unique --gitignore --cache --dot \"**/*\" | sort --ignore-case >> project-words.txt",
+		"lint": "turbo lint:eslint lint:types lint:css lint:md lint:knip lint:package-json lint:spelling lint:prettier",
 		"lint:css": "stylelint --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
 		"lint:eslint": "eslint --cache --report-unused-disable-directives --color .",
 		"lint:knip": "knip --production",
 		"lint:md": "markdownlint **/*.md \".github/**/*.md\"",
 		"lint:package-json": "npmPkgJsonLint .",
 		"lint:prettier": "prettier --check --cache --cache-location=.prettiercache --ignore-unknown .",
-		"lint:spelling": "cspell --dot --gitignore --cache --no-progress check \"**/*\"",
+		"lint:spelling": "cspell --dot --gitignore --cache --no-progress --show-context check \"**/*\"",
 		"lint:types": "tsc --noEmit",
-		"populate:dictionary": "del-cli project-words.txt && cspell --words-only --unique --gitignore --cache --dot \"**/*\" | sort --ignore-case >> project-words.txt",
-		"prepare": "husky install",
+		"prepare": "is-ci || husky",
 		"release": "node release-it/getCommitsSinceLastRelease.js && release-it --ci",
 		"release:dryrun": "release-it --dry-run",
 		"start": "next start",
@@ -67,20 +69,8 @@
 	},
 	"lint-staged": {
 		"*": [
-			"pnpm format:prettier",
-			"pnpm lint:spelling"
-		]
-	},
-	"browserslist": {
-		"production": [
-			">0.2%",
-			"not dead",
-			"not op_mini all"
-		],
-		"development": [
-			"last 1 chrome version",
-			"last 1 firefox version",
-			"last 1 safari version"
+			"pnpm fix:prettier",
+			"pnpm fix:spelling"
 		]
 	},
 	"dependencies": {
@@ -152,8 +142,8 @@
 		"zustand": "4.3.7"
 	},
 	"devDependencies": {
-		"@commitlint/cli": "19.0.3",
-		"@commitlint/config-conventional": "19.0.3",
+		"@commitlint/cli": "20.1.0",
+		"@commitlint/config-conventional": "20.0.0",
 		"@ianvs/prettier-plugin-sort-imports": "4.1.1",
 		"@langchain/google-genai": "0.0.17",
 		"@next/bundle-analyzer": "14.0.3",
@@ -178,9 +168,9 @@
 		"@types/uniqid": "^5.3.2",
 		"@types/video-react": "^0.15.1",
 		"@typescript-eslint/experimental-utils": "5.58.0",
-		"all-contributors-cli": "6.24.0",
+		"all-contributors-cli": "6.26.1",
 		"autoprefixer": "10.4.14",
-		"cspell": "8.0.0",
+		"cspell": "9.2.2",
 		"cypress": "12.9.0",
 		"dedent": "1.0.1",
 		"del-cli": "6.0.0",
@@ -193,13 +183,13 @@
 		"eslint-plugin-toml": "0.4.0",
 		"eslint-plugin-yml": "1.5.0",
 		"execa": "8.0.1",
-		"gacp": "3.0.3",
 		"git-remote-origin-url": "4.0.0",
 		"git-url-parse": "16.0.0",
-		"husky": "9.0.5",
+		"husky": "9.1.7",
+		"is-ci": "4.1.0",
 		"jsonc-eslint-parser": "2.2.0",
-		"knip": "5.0.1",
-		"lint-staged": "15.0.2",
+		"knip": "5.66.4",
+		"lint-staged": "16.2.6",
 		"markdownlint": "0.28.1",
 		"markdownlint-cli": "0.33.0",
 		"next-sitemap": "4.0.7",
@@ -209,27 +199,23 @@
 		"prettier": "3.0.3",
 		"prettier-plugin-packagejson": "2.4.5",
 		"prettier-plugin-tailwindcss": "0.5.7",
-		"release-it": "18.1.1",
+		"release-it": "19.0.5",
 		"sass": "1.70.0",
 		"source-map-explorer": "2.5.3",
 		"stylelint": "16.25.0",
 		"stylelint-config-clean-order": "7.0.0",
 		"stylelint-config-standard": "39.0.1",
 		"tailwindcss": "3.3.1",
-		"tilg": "0.1.1",
 		"title-case": "4.1.0",
 		"toml-eslint-parser": "0.5.0",
-		"turbo": "1.9.1",
-		"typescript": "5.0.4",
+		"turbo": "2.5.8",
+		"typescript": "5.9.3",
 		"yaml-eslint-parser": "1.2.0",
 		"zod": "3.22.3"
 	},
 	"packageManager": "pnpm@10.2.0",
-	"gacp": {
-		"add": false,
-		"push": false,
-		"emoji": "emoji",
-		"editor": false
+	"engines": {
+		"node": "^20.9.0 || >=22.0.0"
 	},
 	"pnpm": {
 		"overrides": {

@@ -39,7 +39,6 @@ const AccessUserInfo = (props: {
 	isLoggedinUserTheOwner: boolean;
 	item: CollabDataInCategory;
 }) => {
-	const session = useSupabaseSession((state) => state.session);
 	const { item, isLoggedinUserTheOwner } = props;
 
 	const { updateSharedCategoriesUserAccessMutation } =

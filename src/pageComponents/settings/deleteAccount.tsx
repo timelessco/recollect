@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
@@ -15,10 +14,7 @@ import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import {
-	type ProfilesTableTypes,
-	type SupabaseSessionType,
-} from "../../types/apiTypes";
+import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	settingsDeleteButtonRedClassName,
@@ -29,7 +25,7 @@ import {
 	settingsParagraphClassName,
 	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
-import { LOGIN_URL, USER_PROFILE } from "../../utils/constants";
+import { USER_PROFILE } from "../../utils/constants";
 import { delete_cookie } from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
@@ -40,7 +36,6 @@ type SettingsFormTypes = {
 const DeleteAccout = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
-	const router = useRouter();
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,

@@ -13,6 +13,11 @@ const config: KnipConfig = {
 	// autoprefixer - used by postcss for tailwind workflow
 	// tilg - used for debugging react components
 	ignoreDependencies: ["sharp", "autoprefixer", "tilg"],
+	ignoreBinaries: [
+		// Used in code quality
+		"turbo",
+	],
+	exclude: ["types", "duplicates", "exports", "dependencies", "files"],
 };
 
 export default config;

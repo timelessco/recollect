@@ -1,5 +1,4 @@
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
-import x from "uniqid";
 
 import ShareIcon from "../../icons/shareIcon";
 import ShareContent from "../../pageComponents/dashboard/share/shareContent";

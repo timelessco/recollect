@@ -38,10 +38,7 @@ import SearchInput from "../../components/searchInput";
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import useIsMobileView from "../../hooks/useIsMobileView";
 import SearchInputSearchIcon from "../../icons/searchInputSearchIcon";
-import {
-	useLoadersStore,
-	useMiscellaneousStore,
-} from "../../store/componentStore";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,

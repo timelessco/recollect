@@ -36,15 +36,11 @@ import { checkIfUserIsCategoryOwnerOrCollaborator } from "../../../../bookmark/a
 // As the upload api needs supabase in the FE and in test cases we cannot use supabase, we use this api which is tailored to be used in test cases
 // This api uploads an existing file in the S3 bucket as a new bookmark and this bookmark can be used for testing needs
 
-type StorageDataType = {
-	publicUrl: string;
-};
-
-/* 
-If the uploaded file is a video then this function is called 
-This adds the video thumbnail into S3 
+/*
+If the uploaded file is a video then this function is called
+This adds the video thumbnail into S3
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
-Image caption is not generated for the thumbnail 
+Image caption is not generated for the thumbnail
 */
 const videoLogic = async (
 	data: {
@@ -69,10 +65,13 @@ const videoLogic = async (
 
 	// For R2, we need to copy the object manually by getting and uploading
 	// First get the object from temp location
-	const { data: temporaryObject, error: getError } =
-		await r2Helpers.listObjects(R2_MAIN_BUCKET_NAME, thumbnailPath);
+	const { error: getError } = await r2Helpers.listObjects(
+		R2_MAIN_BUCKET_NAME,
+		thumbnailPath,
+	);
 
 	if (!isNil(getError)) {
+		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		throw new Error(`ERROR: getError ${getError}`);
 	}
 
