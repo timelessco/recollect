@@ -1,74 +1,39 @@
-# dotenv environment variable files
-.env*
+############################
+# OS X
+############################
 
-# Logs
-*.log*
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-.idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
 
-# Optional tool caches
-.eslintcache
-.stylelintcache
-.prettiercache
-.cspellcache
+############################
+# Environment Variables
+############################
 
-# Dependency directories
+.env
+.env.local
+
+############################
+# Package Manager
+############################
+
+# PNPM
 node_modules
-jspm_packages
 
-# Optional npm cache directory
-.npm
-
-# Yarn 2
-.pnp/
-.pnp.*
-.yarn/*
-!.yarn/cache
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-.yarn-integrity # Yarn Integrity file
-
-# Typescript
-*.tsbuildinfo
-
-# Testing
-/coverage
-
-# Next JS
-/.next/
-/out/
-
-# Vercel folder
-.vercel
-
-# Local Netlify
-.netlify
-.idea
-
-# Sentry
-.sentryclirc
-
-# Storybook Build
-storybook-static
+############################
+# Builders
+############################
 
 # Turbo Repo
 .turbo
 
-# Release-it
-release-it/remote-commits.json
+############################
+# Next.js
+############################
+
+.next/*
+!.next/types/
 
 # Next PWA
 **/public/precache.*.*.js
@@ -83,13 +48,41 @@ release-it/remote-commits.json
 **/public/fallback-*.js
 
 # Next Sitemap
-**/public/robots.txt
-**/public/sitemap.xml
-**/public/sitemap-0.xml
+public/robots.txt
+public/sitemap.xml
+public/sitemap-0.xml
 
-## library folder
-build
-.husky/post-checkout
+############################
+# Extras
+############################
 
-# Sentry Auth Token
+# Sentry
 .sentryclirc
+.env.sentry-build-plugin
+
+# TypeScript cache
+*.tsbuildinfo
+
+############################
+# Locals
+############################
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Prettier cache
+.prettiercache
+
+# Eslint cache
+.eslintcache
+
+# Stylelint cache
+.stylelintcache
+
+# Cspell cache
+.cspellcache
+
+# Release-it
+release-it/remote-commits.json
