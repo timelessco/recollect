@@ -15,6 +15,7 @@ const commonIgnoredRules = {
 	"zod/require-strict": "off",
 	// TODO: Remove this rule
 	"no-negated-condition": "off",
+	"no-warning-comments": "off",
 };
 
 const commonTypescriptIgnoredRules = {

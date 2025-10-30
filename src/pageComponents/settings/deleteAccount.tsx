@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
@@ -8,7 +7,7 @@ import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserM
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
-import { Spinner } from "../../components/search-loader";
+import { Spinner } from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import {
@@ -26,7 +25,7 @@ import {
 	settingsParagraphClassName,
 	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
-import { LOGIN_URL, USER_PROFILE } from "../../utils/constants";
+import { USER_PROFILE } from "../../utils/constants";
 import { delete_cookie } from "../../utils/helpers";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
@@ -37,7 +36,6 @@ type SettingsFormTypes = {
 const DeleteAccout = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
-	const router = useRouter();
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
@@ -85,7 +83,7 @@ const DeleteAccout = () => {
 		<>
 			<div className="relative mb-[34px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full p-1"
+					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
@@ -96,7 +94,7 @@ const DeleteAccout = () => {
 					Delete account confirmation
 				</div>
 			</div>
-			<div className=" border-b-[1px] border-b-gray-light-4 pb-6 ">
+			<div className=" border-b-[1px] border-b-gray-200 pb-6 ">
 				<p className={settingsSubHeadingClassName}>
 					Are you sure you want to delete your account ?
 				</p>
@@ -148,7 +146,7 @@ const DeleteAccout = () => {
 								/>
 							) : (
 								"Confirm delete"
-							)}
+							)}{" "}
 						</p>
 					</div>
 				</Button>

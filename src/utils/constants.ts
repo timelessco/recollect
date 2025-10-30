@@ -50,9 +50,6 @@ export const getBaseUrl = () =>
 
 export const NEXT_API_URL = `/api/`;
 
-const RECOLLECT_SERVER_URL = process.env.RECOLLECT_SERVER_API;
-export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
-
 // URL helper functions
 export const PREVIEW_PATH = "/preview";
 
@@ -123,6 +120,9 @@ export const UPLOAD_FILE_REMAINING_DATA_API =
 export const EMBEDDINGS_POST_API = "/v1/ai/embeddings/post";
 export const EMBEDDINGS_DELETE_API = "/v1/ai/embeddings/delete";
 export const AI_SEARCH_API = "/v1/ai/search/get";
+
+// user settings and keys
+export const SAVE_API_KEY_API = "/v1/api-key";
 
 // Screenshot api
 export const SCREENSHOT_API =
@@ -337,4 +337,4 @@ export const PDF_VIEWER_PARAMS =
 // Lightbox button types
 export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
-export const CF_IMAGE_LOADER_URL = "https://recollect.so/cdn-cgi/image";
+export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";

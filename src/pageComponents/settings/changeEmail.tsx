@@ -7,7 +7,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
-import { Spinner } from "../../components/search-loader";
+import { Spinner } from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
 import {
@@ -81,7 +81,7 @@ const ChangeEmail = () => {
 		<>
 			<div className="relative mb-[30px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full p-1"
+					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
@@ -92,7 +92,7 @@ const ChangeEmail = () => {
 					Change email
 				</div>
 			</div>
-			<div className="border-b-[1px] border-b-gray-light-4 pb-[28px] ">
+			<div className="border-b-[1px] border-b-gray-200 pb-[28px] ">
 				<LabelledComponent
 					label="Current email"
 					labelClassName={settingsInputLabelClassName}
@@ -144,7 +144,7 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 				<div className="flex w-1/2 justify-end sm:w-full">
 					<Button
-						className="flex w-[111px] justify-center px-[9px] py-2 text-sm leading-4 sm:mt-5 sm:w-full"
+						className="flex w-[111px] justify-center bg-gray-300 px-[9px] py-2 text-sm leading-4 hover:bg-gray-700 sm:mt-5 sm:w-full"
 						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
 						type="dark"
@@ -152,7 +152,7 @@ const ChangeEmail = () => {
 						{changeEmailLoader ? (
 							<Spinner
 								className="h-3 w-3 animate-spin"
-								style={{ color: "white" }}
+								style={{ color: "var(--plain-color)" }}
 							/>
 						) : (
 							"Change email"

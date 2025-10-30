@@ -64,7 +64,6 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
-	colorPickerColors,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -459,11 +458,11 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	};
 
 	const renderAddCategoryInput = showAddCategoryInput ? (
-		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
+		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg  bg-gray-100 px-2 py-[5px]">
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
-						fill={colorPickerColors[1]}
+						fill="var(--plain-reverse-color)"
 						height="16"
 						viewBox="0 0 18 18"
 						width="16"
@@ -473,7 +472,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</figure>
 				<input
 					autoFocus
-					className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
+					className="!bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-plain-reverse-color !opacity-40 placeholder:text-plain-reverse-color focus:!outline-none focus:!ring-0 focus:!ring-offset-0"
 					id="add-category-input"
 					onBlur={(event) => {
 						if (!isEmpty(event?.target?.value)) {
@@ -502,7 +501,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const collectionsHeader = (
 		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
-			<div className="flex items-center text-[13px] font-medium leading-[14.95px] text-custom-gray-10">
+			<div className="flex items-center text-[13px] font-medium leading-[14.95px] text-gray-600">
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
 					className="collections-sidepane-down-arrow hidden group-hover:block"
@@ -578,7 +577,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</div>
 				{renderAddCategoryInput}
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-2"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-gray-100"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={() => {}}
@@ -588,7 +587,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					<figure>
 						<AddCategoryIcon />
 					</figure>
-					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-grayDark-grayDark-600">
+					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-gray-600">
 						Add Collection
 					</p>
 				</div>

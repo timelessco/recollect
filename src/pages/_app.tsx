@@ -29,7 +29,6 @@ const MyApp = ({
 				},
 			}),
 	);
-
 	const productionUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
 
 	return (

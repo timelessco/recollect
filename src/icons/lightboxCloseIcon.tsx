@@ -7,7 +7,7 @@ export const LightboxCloseIcon = () => (
 	>
 		<g className="opacity-50 group-hover:opacity-100">
 			<path
-				className="stroke-[rgba(0,0,0,1)] duration-200 group-hover:stroke-black"
+				className="stroke-[var(--plain-reverse-color)] duration-200 group-hover:stroke-[var(--plain-reverse-color)]"
 				d="M16.25 3.75L3.75 16.25M3.75 3.75L16.25 16.25"
 				strokeLinecap="round"
 				strokeLinejoin="round"

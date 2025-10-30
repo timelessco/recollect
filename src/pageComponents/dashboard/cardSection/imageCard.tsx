@@ -158,25 +158,24 @@ const LoaderImgPlaceholder = ({
 	const isLoading = loadingBookmarkIds.has(id);
 	// loader class name for all views
 	const loaderClassName = classNames({
-		"w-full h-14 w-20 flex items-center justify-center bg-gray-100 rounded-lg":
+		"h-[48px] w-[80px] flex items-center justify-center bg-gray-100 rounded-lg":
 			cardTypeCondition === viewValues.list,
-		"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg":
+		"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center":
 			cardTypeCondition === viewValues.card ||
 			cardTypeCondition === viewValues.timeline,
-		"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg":
+		"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center":
 			cardTypeCondition === viewValues.moodboard,
 	});
 	return (
-		<div
-			className={`${loaderClassName} flex flex-col items-center gap-2 text-center`}
-		>
+		<div className={`${loaderClassName}`}>
 			<Image
 				alt="loading"
-				className="h-[50px] w-[50px] rounded-lg object-cover"
+				className="h-[50px] w-[50px] rounded-lg object-cover dark:brightness-0 dark:invert"
+				loader={(source) => source.src}
 				src={loaderGif}
 			/>
 			{!(cardTypeCondition === viewValues.list) && (
-				<p className="text-center text-sm text-gray-600">
+				<p className="text-sm text-gray-900">
 					{isLoading
 						? "Taking screenshot...."
 						: isNil(id)

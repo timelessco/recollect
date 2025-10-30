@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import useDebounce from "../../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../../hooks/useGetCurrentCategoryId";
 import { useMiscellaneousStore } from "../../../../store/componentStore";
-import { AI_SEARCH_KEY, BOOKMARKS_VIEW } from "../../../../utils/constants";
-import { fetchBookmarksViews } from "../../../supabaseCrudHelpers";
+import { AI_SEARCH_KEY } from "../../../../utils/constants";
 import { aiSearch } from "../../../supabaseCrudHelpers/ai/search";
 
 const useAiSearch = () => {

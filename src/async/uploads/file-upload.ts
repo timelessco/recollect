@@ -90,7 +90,7 @@ export const fileUpload = async (
 											headers: {
 												"Content-Type": "image/jpg",
 											},
-											body: buffer,
+											body: buffer.buffer as BodyInit,
 										},
 									);
 

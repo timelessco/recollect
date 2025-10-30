@@ -4,7 +4,6 @@ import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
 	type SingleListData,
@@ -31,6 +30,7 @@ const getBodySchema = () =>
 				meta_data: z.object({
 					twitter_avatar_url: z.string().optional(),
 					favIcon: z.string(),
+					video_url: z.string().optional().nullable(),
 				}),
 				inserted_at: z.string().datetime().optional(),
 				sort_index: z.string(),
@@ -106,6 +106,17 @@ export default async function handler(
 					?.includes(item?.url),
 		);
 
+		if (isEmpty(duplicateFilteredData)) {
+			console.log("No data to insert");
+
+			response.status(404).json({
+				success: true,
+				error: "No data to insert",
+				data: [],
+			});
+			return;
+		}
+
 		// NOTE: Upsert does not work here as the url is not unique and cannot be unique
 
 		// adding the data in DB
@@ -137,25 +148,16 @@ export default async function handler(
 			const { data: queueResults, error: queueResultsError } = await supabase
 				.schema("pgmq_public")
 				.rpc("send_batch", {
-					queue_name: "ai-stuffs",
+					queue_name: "ai-embeddings",
 					messages: insertDBData,
 					sleep_seconds: 0,
 				});
+
 			if (!queueResultsError) {
 				console.log("successfully queued ", queueResults.length, "items");
 			}
 		} catch {
 			console.error("Failed to queue item:");
-		}
-
-		// // creates and add embeddings
-		const bookmarkIds = insertDBData?.map((item) => item?.id);
-
-		try {
-			await insertEmbeddings(bookmarkIds, request?.cookies);
-		} catch {
-			console.error("Create embeddings error in twitter sync api");
-			Sentry.captureException(`Create embeddings error in twitter sync api`);
 		}
 
 		response.status(200).json({ success: true, error: null });

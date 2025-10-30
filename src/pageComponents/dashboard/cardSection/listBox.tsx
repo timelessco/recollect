@@ -389,7 +389,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				</DragPreview>
 			</ul>
 			{state.selectionManager.selectedKeys.size > 0 && (
-				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-white px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
+				<div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
 					<div className="flex items-center gap-1">
 						<Checkbox
 							BookmarkHoverCheckbox
@@ -402,10 +402,16 @@ const ListBox = (props: ListBoxDropTypes) => {
 							onChange={() => state.selectionManager.clearSelection()}
 							value="selected-bookmarks"
 						/>
+						{/* <Button
+							className="p-1 text-13 font-450 leading-[15px] text-gray-900"
+							onClick={() => state.selectionManager.selectAll()}
+						>
+							Select all
+						</Button> */}
 					</div>
 					<div className="flex items-center">
 						<div
-							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
+							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900 "
 							onClick={() => {
 								onBulkBookmarkDelete(
 									Array.from(
@@ -424,7 +430,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</div>
 						{isTrashPage && (
 							<div
-								className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-light-12 "
+								className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900 "
 								onClick={() => {
 									onBulkBookmarkDelete(
 										Array.from(
@@ -445,7 +451,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						{!isEmpty(categoryData?.data) && !isTrashPage && (
 							<AriaDropdown
 								menuButton={
-									<div className="flex items-center rounded-lg bg-custom-gray-6 px-2 py-[5px] text-13 font-450 leading-4 text-gray-light-12 ">
+									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 font-450 leading-4 text-gray-900 ">
 										<figure className="mr-[6px]">
 											<MoveIcon />
 										</figure>

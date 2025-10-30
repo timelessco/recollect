@@ -38,7 +38,7 @@ import {
 import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
 import { Icon } from "../atoms/icon";
-import { Spinner } from "../search-loader";
+import { Spinner } from "../spinner";
 
 import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
 
@@ -123,28 +123,29 @@ const MyComponent = () => {
 	useEffect(() => {
 		setShowMore(false);
 		setIsExpanded(false);
-		if (expandableRef?.current) {
-			const contentHeight = expandableRef?.current?.scrollHeight;
-			setHasAIOverflowContent(contentHeight > 120);
-		}
 
-		if (descriptionRef?.current) {
-			// Check if text overflows
-			const element = descriptionRef?.current;
-			setIsOverflowing(element?.scrollHeight > element?.clientHeight);
-		}
-	}, [
-		currentBookmark?.id,
-		currentIndex,
-		expandableRef,
-		descriptionRef,
-		lightboxShowSidepane,
-	]);
+		// Use setTimeout to ensure DOM has updated
+		setTimeout(() => {
+			if (expandableRef?.current) {
+				const contentHeight = expandableRef?.current?.scrollHeight;
+				setHasAIOverflowContent(contentHeight > 120);
+			}
+
+			if (descriptionRef?.current) {
+				// Check if text overflows
+				const element = descriptionRef?.current;
+				setIsOverflowing(element?.scrollHeight > element?.clientHeight);
+			}
+		}, 0);
+	}, [currentBookmark?.id, currentIndex, lightboxShowSidepane]);
 
 	if (!currentBookmark) {
 		return (
-			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-[0.5px] border-[rgba(0,0,0,0.13)] bg-[rgba(255,255,255,0.98)] backdrop-blur-[41px]">
-				<Spinner className="h-3 w-3 animate-spin" />
+			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]">
+				<Spinner
+					className="h-3 w-3 animate-spin"
+					style={{ color: "var(--plain-reverse-color)" }}
+				/>
 			</div>
 		);
 	}
@@ -158,18 +159,18 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-[0.5px] border-[rgba(0,0,0,0.13)] bg-[rgba(255,255,255,0.98)] backdrop-blur-[41px]"
+					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
 					initial={{ x: "100%" }}
 				>
-					<div className="flex flex-1 flex-col p-5 text-left  ">
+					<div className="flex flex-1 flex-col p-5 text-left">
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-[#171717]"
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-gray-900"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -177,8 +178,8 @@ const MyComponent = () => {
 							</div>
 						)}
 						{domain && (
-							<p
-								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]"
+							<div
+								className=" pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
@@ -205,26 +206,35 @@ const MyComponent = () => {
 										</span>
 									)}
 								</div>
-							</p>
+							</div>
 						)}
 						{currentBookmark?.description && (
-							<div>
+							<div className="relative">
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] leading-[138%] tracking-[1%] text-[rgba(55,65,81,1)]`}
+									} text-clip text-[13px] leading-[138%] tracking-[1%] text-gray-800`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
 									{currentBookmark.description}
+									{showMore && isOverflowing && (
+										<button
+											className="inline text-[13px] leading-[138%] tracking-[1%] text-gray-800"
+											onClick={() => setShowMore(false)}
+											type="button"
+										>
+											Show less
+										</button>
+									)}
 								</p>
-								{isOverflowing && (
+								{isOverflowing && !showMore && (
 									<button
-										className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
-										onClick={() => setShowMore(!showMore)}
+										className="absolute bottom-0 right-0 bg-gray-0 pl-1 text-[13px] leading-[138%] tracking-[1%] text-gray-800"
+										onClick={() => setShowMore(true)}
 										type="button"
 									>
-										{showMore ? "Show less" : "Show more"}
+										Show more
 									</button>
 								)}
 							</div>
@@ -237,7 +247,8 @@ const MyComponent = () => {
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.image_caption ||
-						metaData?.img_caption) && (
+						metaData?.img_caption ||
+						metaData?.ocr) && (
 						<motion.div
 							animate={{ y: isExpanded ? 0 : "calc(100% - 100px)" }}
 							className="relative overflow-hidden"
@@ -255,7 +266,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[rgba(133,133,133,1)]"
+												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-500"
 												key={tag?.id}
 											>
 												#{tag?.name}
@@ -264,7 +275,9 @@ const MyComponent = () => {
 									</div>
 								</div>
 							)}
-							{(metaData?.img_caption || metaData?.image_caption) && (
+							{(metaData?.img_caption ||
+								metaData?.image_caption ||
+								metaData?.ocr) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
@@ -278,7 +291,7 @@ const MyComponent = () => {
 										<Icon className="h-[15px] w-[15px]">
 											<GeminiAiIcon />
 										</Icon>
-										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-[#858585]">
+										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600">
 											AI Summary
 										</p>
 									</div>
@@ -287,7 +300,7 @@ const MyComponent = () => {
 											isExpanded ? "overflow-y-auto" : ""
 										}`}
 									>
-										<p className="text-[13px] leading-[138%] tracking-[1%] text-[#858585]">
+										<p className="text-[13px] leading-[138%] tracking-[1%] text-gray-600">
 											{metaData?.img_caption || metaData?.image_caption}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}
@@ -299,10 +312,10 @@ const MyComponent = () => {
 							{/* Gradient overlay */}
 							{!isExpanded && hasAIOverflowContent && (
 								<div
-									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[50px]"
+									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[159px]"
 									style={{
 										background:
-											"linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 100%)",
+											"linear-gradient(180deg, var(--color-whites-50) 0%, var(--color-whites-800) 77%, var(--color-whites-1000) 100%)",
 									}}
 								/>
 							)}

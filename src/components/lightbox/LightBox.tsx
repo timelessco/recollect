@@ -27,6 +27,7 @@ import {
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	PREVIEW_PATH,
+	tweetType,
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
@@ -116,7 +117,10 @@ export const CustomLightBox = ({
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
-			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
+			const isVideo =
+				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
+				Boolean(bookmark?.meta_data?.video_url);
+			console.error(isVideo, bookmark?.type, bookmark?.meta_data?.video_url);
 
 			return {
 				src: bookmark?.url,
@@ -142,8 +146,11 @@ export const CustomLightBox = ({
 				...(isVideo && {
 					sources: [
 						{
-							src: bookmark?.url,
-							type: bookmark?.type ?? VIDEO_TYPE_PREFIX,
+							src:
+								bookmark?.type === tweetType
+									? bookmark?.meta_data?.video_url
+									: bookmark?.url,
+							type: VIDEO_TYPE_PREFIX,
 						},
 					],
 				}),
@@ -206,7 +213,14 @@ export const CustomLightBox = ({
 			const renderVideoSlide = () => (
 				<div className="flex h-full w-full items-center justify-center">
 					<div className="w-full max-w-[min(1200px,90vw)]">
-						<VideoPlayer isActive={isActive} src={bookmark?.url} />
+						<VideoPlayer
+							isActive={isActive}
+							src={
+								bookmark?.type === tweetType && bookmark?.meta_data?.video_url
+									? bookmark?.meta_data?.video_url
+									: bookmark?.url
+							}
+						/>
 					</div>
 				</div>
 			);
@@ -251,7 +265,7 @@ export const CustomLightBox = ({
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
-								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-white"
+								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-plain-color"
 								data={bookmark?.url}
 								title="Website Preview"
 								type="text/html"
@@ -397,17 +411,21 @@ export const CustomLightBox = ({
 
 			let content = null;
 
+			// Check video FIRST
 			if (
+				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
+				Boolean(bookmark?.meta_data?.video_url)
+			) {
+				content = renderVideoSlide();
+			}
+			// Then check image
+			else if (
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX)
 			) {
 				content = renderImageSlide();
-			} else if (
-				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX)
-			) {
-				content = renderVideoSlide();
 			} else if (
 				bookmark?.meta_data?.mediaType === PDF_MIME_TYPE ||
 				bookmark?.type?.includes(PDF_TYPE)
@@ -448,7 +466,7 @@ export const CustomLightBox = ({
 	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
 
 	const iconSidePane = () => (
-		<div className="group h-5 w-5 cursor-pointer text-[rgba(0,0,0,1)] hover:text-black">
+		<div className="group h-5 w-5 cursor-pointer text-plain-reverse-color hover:text-plain-reverse-color">
 			<ShowSidePaneButton />
 		</div>
 	);
@@ -575,14 +593,14 @@ export const CustomLightBox = ({
 					left: "0",
 				},
 				container: {
-					backgroundColor: "rgba(255, 255, 255, 0.9)",
+					backgroundColor: "var(--color-whites-900)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
 					width: lightboxShowSidepane
 						? "calc(100% - min(max(320px, 20%), 400px))"
 						: "100%",
-					animation: "customFadeScaleIn 0.25s ease-in-out",
+					animation: "custom-fade-scale-in 0.25s ease-in-out",
 				},
 				slide: {
 					height: "100%",
@@ -610,13 +628,13 @@ export const CustomLightBox = ({
 						key="center-section"
 					>
 						<a
-							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg  px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-[rgba(0,0,0,0.03)]"
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-gray-alpha-100"
 							href={bookmarks?.[activeIndex]?.url}
 							key="center-section"
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="truncate text-[#707070]">
+							<span className="truncate text-gray-alpha-600">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
 							<div className="h-4 w-4 shrink-0">

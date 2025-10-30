@@ -1,7 +1,10 @@
 // you might want to use regular 'fs' and not a promise one
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
@@ -46,7 +49,11 @@ This gets the public URL from the thumbnail path uploaded by the client
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
 Image caption is not generated for the thumbnail 
 */
-const videoLogic = async (data: BodyDataType) => {
+const videoLogic = async (
+	data: BodyDataType,
+	supabase: SupabaseClient,
+	userId: string,
+) => {
 	// Since thumbnails are now uploaded client-side, we just need to get the thumbnail URL
 	// The thumbnailPath in data should now be the actual path in R2
 	const thumbnailPath = data?.thumbnailPath;
@@ -80,7 +87,7 @@ const videoLogic = async (data: BodyDataType) => {
 
 		// Handle OCR processing
 		try {
-			ocrData = await ocr(thumbnailUrl?.publicUrl);
+			ocrData = await ocr(thumbnailUrl?.publicUrl, supabase, userId);
 		} catch (error) {
 			console.error("OCR processing failed:", error);
 			Sentry.captureException(error, {
@@ -94,7 +101,11 @@ const videoLogic = async (data: BodyDataType) => {
 
 		// Handle image caption generation
 		try {
-			imageCaption = await imageToText(thumbnailUrl?.publicUrl);
+			imageCaption = await imageToText(
+				thumbnailUrl?.publicUrl,
+				supabase,
+				userId,
+			);
 		} catch (error) {
 			console.error("Image caption generation failed:", error);
 			Sentry.captureException(error, {
@@ -121,6 +132,7 @@ const videoLogic = async (data: BodyDataType) => {
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
+		video_url: thumbnailUrl?.publicUrl ?? null,
 	};
 
 	return { ogImage, meta_data };
@@ -197,6 +209,7 @@ export default async (
 		iframeAllowed: false,
 		mediaType: "",
 		isPageScreenshot: null,
+		video_url: null,
 	};
 	const isVideo = fileType?.includes("video");
 
@@ -216,7 +229,11 @@ export default async (
 		}
 	} else {
 		// if file is a video
-		const { ogImage: image, meta_data: metaData } = await videoLogic(data);
+		const { ogImage: image, meta_data: metaData } = await videoLogic(
+			data,
+			supabase,
+			userId ?? "",
+		);
 
 		ogImage = image;
 		meta_data = metaData;

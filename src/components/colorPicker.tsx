@@ -22,8 +22,8 @@ const colorBlockSelected = ({
 	colorItem: string;
 	selectedColor: string;
 }) =>
-	classNames("rounded-md", "p-1", "hover:bg-custom-gray-7", {
-		"bg-custom-gray-7": colorItem === selectedColor,
+	classNames("rounded-md", "p-1", "hover:bg-gray-200", {
+		"bg-gray-200": colorItem === selectedColor,
 	});
 
 const colorBlockItemBorder = (colorItem: string) =>

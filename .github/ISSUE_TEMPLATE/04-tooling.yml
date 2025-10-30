@@ -1,22 +1,13 @@
-name: 🛠 Tooling
-description: Report a bug or request an enhancement in repository tooling
-title: "🛠 Tooling: <short description of the change>"
-labels:
-  - "area: tooling"
 body:
   - attributes:
-      description:
-        If any of these required steps are not taken, we may not be able to
-        review your issue. Help us to help you!
+      description: If any of these required steps are not taken, we may not be able to review your issue. Help us to help you!
       label: Bug Report Checklist
       options:
         - label: I have tried restarting my IDE and the issue persists.
           required: true
         - label: I have pulled the latest `main` branch of the repository.
           required: true
-        - label: I have [searched for related
-            issues](https://github.com/timelessco/bookmark-tags/issues?q=is%3Aissue)
-            and found none that matched my issue.
+        - label: I have [searched for related issues](https://github.com/timelessco/recollect/issues?q=is%3Aissue) and found none that matched my issue.
           required: true
     type: checkboxes
   - attributes:
@@ -26,6 +17,11 @@ body:
     validations:
       required: true
   - attributes:
-      label: Additional Info
       description: Any additional info you'd like to provide.
+      label: Additional Info
     type: textarea
+description: Report a bug or request an enhancement in repository tooling
+labels:
+  - "area: tooling"
+name: 🛠 Tooling
+title: "🛠 Tooling: <short description of the change>"
