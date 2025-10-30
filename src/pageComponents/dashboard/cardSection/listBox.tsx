@@ -98,10 +98,15 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const rowVirtualizer = useVirtualizer({
 		measureElement: (element, _entry) => element.getBoundingClientRect().height,
 		count: bookmarksList.length,
-		getScrollElement: () =>
-			typeof document !== "undefined"
-				? document.querySelector("#scrollableDiv")
-				: null,
+		getScrollElement: () => {
+			if (typeof document === "undefined") return null;
+			const element = document.querySelector("#scrollableDiv");
+			if (!element) {
+				console.warn("Scroll container #scrollableDiv not found");
+			}
+
+			return element;
+		},
 		estimateSize: () => {
 			// Default heights if not grid-based
 			if (cardTypeCondition === viewValues.list) return 250;
