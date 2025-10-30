@@ -47,6 +47,7 @@ import {
 	ADD_CATEGORY_TO_BOOKMARK_API,
 	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
+	ALL_BOOKMARKS_URL,
 	CLEAR_BOOKMARK_TRASH_API,
 	CREATE_USER_CATEGORIES_API,
 	CREATE_USER_TAGS_API,
@@ -855,15 +856,34 @@ export const signInWithOauth = async (
 	await supabase.auth.signInWithOAuth({ provider });
 };
 
-export const signInWithEmailPassword = async (
+export const signInWithOtp = async (
 	email: string,
-	password: string,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	supabase: SupabaseClient<any, "public", any>,
 ) => {
-	const { error } = await supabase.auth.signInWithPassword({ email, password });
+	const { data, error } = await supabase.auth.signInWithOtp({
+		email,
+		options: {
+			shouldCreateUser: true,
+			emailRedirectTo: `${getBaseUrl()}/${ALL_BOOKMARKS_URL}`,
+		},
+	});
 
-	return { error };
+	return { data, error };
+};
+
+export const verifyOtp = async (
+	email: string,
+	otp: string,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	supabase: SupabaseClient<any, "public", any>,
+) => {
+	const { data, error } = await supabase.auth.verifyOtp({
+		email,
+		token: otp,
+		type: "email",
+	});
+	return { data, error };
 };
 
 export const signUpWithEmailPassword = async (
