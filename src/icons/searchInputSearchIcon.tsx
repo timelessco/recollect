@@ -1,7 +1,16 @@
-const SearchInputSearchIcon = ({ size = "12" }) => (
+type SearchInputSearchIconProps = {
+	color?: string;
+	size?: string;
+};
+
+const SearchInputSearchIcon = ({
+	color,
+	size = "12",
+}: SearchInputSearchIconProps) => (
 	<svg
-		fill="currentColor"
+		fill={color ?? "currentColor"}
 		height={size}
+		style={color ? { color } : undefined}
 		viewBox="0 0 12 12"
 		width={size}
 		xmlns="http://www.w3.org/2000/svg"

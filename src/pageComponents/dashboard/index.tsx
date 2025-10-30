@@ -168,7 +168,7 @@ const Dashboard = () => {
 		(state) => state.setShareCategoryId,
 	);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
 			setIsEdit(false);
@@ -657,8 +657,8 @@ const Dashboard = () => {
 													: flattendPaginationBookmarkData?.length ?? 0
 											}
 											endMessage={
-												<p className="pb-6 text-center">
-													Life happens, save it.
+												<p className="pb-6 text-center text-plain-reverse-color">
+													{isSearchLoading ? "" : "Life happens, save it."}
 												</p>
 											}
 											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}

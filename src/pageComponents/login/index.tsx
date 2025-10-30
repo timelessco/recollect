@@ -11,7 +11,7 @@ import {
 	verifyOtp,
 } from "../../async/supabaseCrudHelpers";
 import Input from "../../components/atoms/input";
-import Spinner from "../../components/spinner";
+import { Spinner } from "../../components/spinner";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogo from "../../icons/laterpadLogo";
 import { useSupabaseSession } from "../../store/componentStore";
@@ -89,7 +89,7 @@ const LoginPage = () => {
 							<figure className="mr-[6px]">
 								<LaterpadLogo />
 							</figure>
-							<p>recollect</p>
+							<p className="text-plain-reverse-color">recollect</p>
 						</div>
 						{!isOtpStep ? (
 							<form

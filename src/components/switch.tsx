@@ -17,17 +17,17 @@ const Switch = (props: SwitchProps) => {
 	} = props;
 
 	const switchClass = classNames(
-		"relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out  focus:outline-none focus-visible:ring-white disabled:opacity-40",
+		"relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-white disabled:opacity-40",
 		{
-			"bg-gray-light-12 ": enabled === true,
-			"bg-custom-gray-13": enabled === false,
+			"bg-gray-900": enabled === true,
+			"bg-gray-400": enabled === false,
 			"h-[28px] w-[64px]": size === "large",
 			"h-[16px] w-[26px]": size === "small",
 		},
 	);
 
 	const switcherClass = classNames(
-		"pointer-events-none inline-block  rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out disabled:opacity-40",
+		"pointer-events-none inline-block  rounded-full bg-gray-0 shadow-lg ring-0 transition duration-200 ease-in-out disabled:opacity-40",
 		{
 			"translate-x-9": enabled === true && size === "large",
 			"translate-x-0": enabled === false,
