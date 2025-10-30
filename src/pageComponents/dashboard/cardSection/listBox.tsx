@@ -25,6 +25,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import Checkbox from "../../../components/checkbox";
+import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
@@ -174,10 +175,11 @@ const ListBox = (props: ListBoxDropTypes) => {
 			}
 		})(),
 	});
+	const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
 
 	useEffect(() => {
 		rowVirtualizer.scrollToIndex(0);
-	}, [rowVirtualizer, cardTypeCondition]);
+	}, [rowVirtualizer, cardTypeCondition, bookmarksInfoValue]);
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
