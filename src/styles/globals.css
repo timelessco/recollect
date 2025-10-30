@@ -1,6 +1,3 @@
-/* stylelint-disable at-rule-descriptor-no-unknown */
-/* stylelint-disable at-rule-descriptor-no-unknown */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,7 +44,7 @@
 }
 
 body {
-	@apply bg-plain-color overflow-hidden antialiased outline-none;
+	@apply overflow-hidden bg-plain-color antialiased outline-none;
 
 	font-variation-settings: "opsz" 20;
 }
@@ -136,7 +133,7 @@ main {
 }
 
 .chakra-slider-group .slider-thumb .slider-thumb-handle {
-	@apply bg-gray-0 flex h-4 w-4 cursor-pointer touch-none select-none items-center justify-center rounded-full shadow-md;
+	@apply flex h-4 w-4 cursor-pointer touch-none select-none items-center justify-center rounded-full bg-gray-0 shadow-md;
 }
 
 .chakra-slider-group .slider-thumb-handle:focus-within {
@@ -160,7 +157,7 @@ main {
 
 /* for the select card styles on card and moodboard views */
 .single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper {
-	@apply bg-plain-reverse-color text-plain-color rounded-b-lg rounded-t-none;
+	@apply rounded-b-lg rounded-t-none bg-plain-reverse-color text-plain-color;
 }
 
 /* for the select card styles on list and headlines views */
@@ -212,17 +209,13 @@ main {
 }
 
 [data-backdrop] {
-	@apply flex items-center justify-center bg-modal-bg;
+	@apply flex items-center justify-center bg-whites-300 backdrop-blur-[8px];
 }
 
 @media (width >= 768px) {
 	[data-backdrop] {
 		@apply items-start;
 	}
-}
-
-[data-backdrop] {
-	@apply bg-whites-300 backdrop-blur-[8px];
 }
 
 .dropdown-container input[type="radio"] {
@@ -243,13 +236,16 @@ main {
 
 .aria-checkbox:checked + .checkbox-div::before {
 	content: "";
+
 	position: absolute;
-	inset: 0;
 	z-index: 2;
+	inset: 0;
+
 	border-radius: 4px;
-	mask: url("/checkbox-tick.svg") center / 10px 9px no-repeat;
-	-webkit-mask: url("/checkbox-tick.svg") center / 10px 9px no-repeat;
+
 	background-color: var(--plain-color);
+
+	mask: url("/checkbox-tick.svg") center / 10px 9px no-repeat;
 }
 
 input[type="checkbox"]:checked + .checkbox-div {
@@ -409,24 +405,24 @@ input[type="checkbox"]:checked + .checkbox-div {
 @layer base {
 	:root {
 		/* colors */
-		--color-white: #ffffff;
+		--color-white: #fff;
 		--color-black: #0f0f0f;
 
 		/* Light Gray Shades (from figma variables) */
-		--color-light-gray-0: #ffffff;
-		--color-light-gray-50: #ffffff;
+		--color-light-gray-0: #fff;
+		--color-light-gray-50: #fff;
 		--color-light-gray-100: #f5f5f5;
 		--color-light-gray-200: #ededed;
 		--color-light-gray-300: #e0e0e0;
 		--color-light-gray-400: #c7c7c7;
-		--color-light-gray-500: #999999;
+		--color-light-gray-500: #999;
 		--color-light-gray-550: #8c8c8c;
 		--color-light-gray-600: #7c7c7c;
 		--color-light-gray-700: #525252;
 		--color-light-gray-800: #2e2e2e;
 		--color-light-gray-900: #212121;
 		--color-light-gray-950: #141414;
-		--color-light-gray-1000: #000000;
+		--color-light-gray-1000: #000;
 
 		/* Dark Gray Shades (from figma variables) */
 		--color-dark-gray-0: #121212;
@@ -442,92 +438,87 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-dark-gray-800: #afafaf;
 		--color-dark-gray-900: #d1d1d1;
 		--color-dark-gray-950: #f8f8f8;
-		--color-dark-gray-1000: #ffffff;
-
-		--color-light-gray-alpha-50: rgba(0, 0, 0, 0.03); /* 3% Black */
-		--color-light-gray-alpha-100: rgba(0, 0, 0, 0.05); /* 5% Black */
-		--color-light-gray-alpha-200: rgba(0, 0, 0, 0.07); /* 7% Black */
-		--color-light-gray-alpha-300: rgba(0, 0, 0, 0.12); /* 12% Black */
-		--color-light-gray-alpha-400: rgba(0, 0, 0, 0.22); /* 22% Black */
-		--color-light-gray-alpha-500: rgba(0, 0, 0, 0.4); /* 40% Black */
-		--color-light-gray-alpha-550: rgba(0, 0, 0, 0.45); /* 45% Black */
-		--color-light-gray-alpha-600: rgba(0, 0, 0, 0.51); /* 51% Black */
-		--color-light-gray-alpha-700: rgba(0, 0, 0, 0.68); /* 68% Black */
-		--color-light-gray-alpha-800: rgba(0, 0, 0, 0.82); /* 82% Black */
-		--color-light-gray-alpha-900: rgba(0, 0, 0, 0.91); /* 91% Black */
-		--color-light-gray-alpha-950: rgba(0, 0, 0, 0.95); /* 95% Black */
-		--color-light-gray-alpha-1000: rgba(0, 0, 0, 1); /* 100% Black */
+		--color-dark-gray-1000: #fff;
+		--color-light-gray-alpha-50: rgb(0 0 0 / 3%); /* 3% Black */
+		--color-light-gray-alpha-100: rgb(0 0 0 / 5%); /* 5% Black */
+		--color-light-gray-alpha-200: rgb(0 0 0 / 7%); /* 7% Black */
+		--color-light-gray-alpha-300: rgb(0 0 0 / 12%); /* 12% Black */
+		--color-light-gray-alpha-400: rgb(0 0 0 / 22%); /* 22% Black */
+		--color-light-gray-alpha-500: rgb(0 0 0 / 40%); /* 40% Black */
+		--color-light-gray-alpha-550: rgb(0 0 0 / 45%); /* 45% Black */
+		--color-light-gray-alpha-600: rgb(0 0 0 / 51%); /* 51% Black */
+		--color-light-gray-alpha-700: rgb(0 0 0 / 68%); /* 68% Black */
+		--color-light-gray-alpha-800: rgb(0 0 0 / 82%); /* 82% Black */
+		--color-light-gray-alpha-900: rgb(0 0 0 / 91%); /* 91% Black */
+		--color-light-gray-alpha-950: rgb(0 0 0 / 95%); /* 95% Black */
+		--color-light-gray-alpha-1000: rgb(0 0 0 / 100%); /* 100% Black */
 
 		/* Dark Gray Alpha Shades */
-		--color-dark-gray-alpha-50: rgba(255, 255, 255, 0.05); /* 5% White */
-		--color-dark-gray-alpha-100: rgba(255, 255, 255, 0.09); /* 9% White */
-		--color-dark-gray-alpha-200: rgba(255, 255, 255, 0.13); /* 13% White */
-		--color-dark-gray-alpha-300: rgba(255, 255, 255, 0.17); /* 17% White */
-		--color-dark-gray-alpha-400: rgba(255, 255, 255, 0.22); /* 22% White */
-		--color-dark-gray-alpha-500: rgba(255, 255, 255, 0.4); /* 40% White */
-		--color-dark-gray-alpha-550: rgba(255, 255, 255, 0.45); /* 45% White */
-		--color-dark-gray-alpha-600: rgba(255, 255, 255, 0.51); /* 51% White */
-		--color-dark-gray-alpha-700: rgba(255, 255, 255, 0.68); /* 68% White */
-		--color-dark-gray-alpha-800: rgba(255, 255, 255, 0.78); /* 78% White */
-		--color-dark-gray-alpha-900: rgba(255, 255, 255, 0.91); /* 91% White */
-		--color-dark-gray-alpha-950: rgba(255, 255, 255, 0.95); /* 95% White */
-		--color-dark-gray-alpha-1000: rgba(255, 255, 255, 1); /* 100% White */
-
-		--color-light-whites-50: rgba(255, 255, 255, 0.1); /* 10% White */
-		--color-light-whites-100: rgba(255, 255, 255, 0.18); /* 18% White */
-		--color-light-whites-200: rgba(255, 255, 255, 0.27); /* 27% White */
-		--color-light-whites-300: rgba(255, 255, 255, 0.36); /* 36% White */
-		--color-light-whites-400: rgba(255, 255, 255, 0.45); /* 45% White */
-		--color-light-whites-500: rgba(255, 255, 255, 0.54); /* 54% White */
-		--color-light-whites-550: rgba(255, 255, 255, 0.59); /* 59% White */
-		--color-light-whites-600: rgba(255, 255, 255, 0.63); /* 63% White */
-		--color-light-whites-700: rgba(255, 255, 255, 0.72); /* 72% White */
-		--color-light-whites-800: rgba(255, 255, 255, 0.81); /* 81% White */
-		--color-light-whites-900: rgba(255, 255, 255, 0.9); /* 90% White */
-		--color-light-whites-950: rgba(255, 255, 255, 0.95); /* 95% White */
-		--color-light-whites-1000: #ffffff;
-
-		--color-dark-whites-50: rgba(0, 0, 0, 0.1); /* 10% Black */
-		--color-dark-whites-100: rgba(0, 0, 0, 0.18); /* 18% Black */
-		--color-dark-whites-200: rgba(0, 0, 0, 0.27); /* 27% Black */
-		--color-dark-whites-300: rgba(0, 0, 0, 0.36); /* 36% Black */
-		--color-dark-whites-400: rgba(0, 0, 0, 0.45); /* 45% Black */
-		--color-dark-whites-500: rgba(0, 0, 0, 0.54); /* 54% Black */
-		--color-dark-whites-550: rgba(0, 0, 0, 0.59); /* 59% Black */
-		--color-dark-whites-600: rgba(0, 0, 0, 0.63); /* 63% Black */
-		--color-dark-whites-700: rgba(0, 0, 0, 0.72); /* 72% Black */
-		--color-dark-whites-800: rgba(0, 0, 0, 0.81); /* 81% Black */
-		--color-dark-whites-900: rgba(0, 0, 0, 0.9); /* 90% Black */
-		--color-dark-whites-950: rgba(0, 0, 0, 0.95); /* 95% Black */
-		--color-dark-whites-1000: #000000;
-
-		--color-light-blacks-50: rgba(0, 0, 0, 0.09); /* 9% Black */
-		--color-light-blacks-100: rgba(0, 0, 0, 0.18); /* 18% Black */
-		--color-light-blacks-200: rgba(0, 0, 0, 0.27); /* 27% Black */
-		--color-light-blacks-300: rgba(0, 0, 0, 0.36); /* 36% Black */
-		--color-light-blacks-400: rgba(0, 0, 0, 0.45); /* 45% Black */
-		--color-light-blacks-500: rgba(0, 0, 0, 0.54); /* 54% Black */
-		--color-light-blacks-550: rgba(0, 0, 0, 0.59); /* 59% Black */
-		--color-light-blacks-600: rgba(0, 0, 0, 0.63); /* 63% Black */
-		--color-light-blacks-700: rgba(0, 0, 0, 0.72); /* 72% Black */
-		--color-light-blacks-800: rgba(0, 0, 0, 0.81); /* 81% Black */
-		--color-light-blacks-900: rgba(0, 0, 0, 0.9); /* 90% Black */
-		--color-light-blacks-950: rgba(0, 0, 0, 0.95); /* 95% Black */
-		--color-light-blacks-1000: #000000; /* 100% Black */
-
-		--color-dark-blacks-50: rgba(255, 255, 255, 0.09); /* 9% White */
-		--color-dark-blacks-100: rgba(255, 255, 255, 0.18); /* 18% White */
-		--color-dark-blacks-200: rgba(255, 255, 255, 0.27); /* 27% White */
-		--color-dark-blacks-300: rgba(255, 255, 255, 0.36); /* 36% White */
-		--color-dark-blacks-400: rgba(255, 255, 255, 0.45); /* 45% White */
-		--color-dark-blacks-500: rgba(255, 255, 255, 0.54); /* 54% White */
-		--color-dark-blacks-550: rgba(255, 255, 255, 0.59); /* 59% White */
-		--color-dark-blacks-600: rgba(255, 255, 255, 0.63); /* 63% White */
-		--color-dark-blacks-700: rgba(255, 255, 255, 0.72); /* 72% White */
-		--color-dark-blacks-800: rgba(255, 255, 255, 0.81); /* 81% White */
-		--color-dark-blacks-900: rgba(255, 255, 255, 0.9); /* 90% White */
-		--color-dark-blacks-950: rgba(255, 255, 255, 0.95); /* 95% White */
-		--color-dark-blacks-1000: #ffffff; /* 100% White */
+		--color-dark-gray-alpha-50: rgb(255 255 255 / 5%); /* 5% White */
+		--color-dark-gray-alpha-100: rgb(255 255 255 / 9%); /* 9% White */
+		--color-dark-gray-alpha-200: rgb(255 255 255 / 13%); /* 13% White */
+		--color-dark-gray-alpha-300: rgb(255 255 255 / 17%); /* 17% White */
+		--color-dark-gray-alpha-400: rgb(255 255 255 / 22%); /* 22% White */
+		--color-dark-gray-alpha-500: rgb(255 255 255 / 40%); /* 40% White */
+		--color-dark-gray-alpha-550: rgb(255 255 255 / 45%); /* 45% White */
+		--color-dark-gray-alpha-600: rgb(255 255 255 / 51%); /* 51% White */
+		--color-dark-gray-alpha-700: rgb(255 255 255 / 68%); /* 68% White */
+		--color-dark-gray-alpha-800: rgb(255 255 255 / 78%); /* 78% White */
+		--color-dark-gray-alpha-900: rgb(255 255 255 / 91%); /* 91% White */
+		--color-dark-gray-alpha-950: rgb(255 255 255 / 95%); /* 95% White */
+		--color-dark-gray-alpha-1000: rgb(255 255 255 / 100%); /* 100% White */
+		--color-light-whites-50: rgb(255 255 255 / 10%); /* 10% White */
+		--color-light-whites-100: rgb(255 255 255 / 18%); /* 18% White */
+		--color-light-whites-200: rgb(255 255 255 / 27%); /* 27% White */
+		--color-light-whites-300: rgb(255 255 255 / 36%); /* 36% White */
+		--color-light-whites-400: rgb(255 255 255 / 45%); /* 45% White */
+		--color-light-whites-500: rgb(255 255 255 / 54%); /* 54% White */
+		--color-light-whites-550: rgb(255 255 255 / 59%); /* 59% White */
+		--color-light-whites-600: rgb(255 255 255 / 63%); /* 63% White */
+		--color-light-whites-700: rgb(255 255 255 / 72%); /* 72% White */
+		--color-light-whites-800: rgb(255 255 255 / 81%); /* 81% White */
+		--color-light-whites-900: rgb(255 255 255 / 90%); /* 90% White */
+		--color-light-whites-950: rgb(255 255 255 / 95%); /* 95% White */
+		--color-light-whites-1000: #fff;
+		--color-dark-whites-50: rgb(0 0 0 / 10%); /* 10% Black */
+		--color-dark-whites-100: rgb(0 0 0 / 18%); /* 18% Black */
+		--color-dark-whites-200: rgb(0 0 0 / 27%); /* 27% Black */
+		--color-dark-whites-300: rgb(0 0 0 / 36%); /* 36% Black */
+		--color-dark-whites-400: rgb(0 0 0 / 45%); /* 45% Black */
+		--color-dark-whites-500: rgb(0 0 0 / 54%); /* 54% Black */
+		--color-dark-whites-550: rgb(0 0 0 / 59%); /* 59% Black */
+		--color-dark-whites-600: rgb(0 0 0 / 63%); /* 63% Black */
+		--color-dark-whites-700: rgb(0 0 0 / 72%); /* 72% Black */
+		--color-dark-whites-800: rgb(0 0 0 / 81%); /* 81% Black */
+		--color-dark-whites-900: rgb(0 0 0 / 90%); /* 90% Black */
+		--color-dark-whites-950: rgb(0 0 0 / 95%); /* 95% Black */
+		--color-dark-whites-1000: #000;
+		--color-light-blacks-50: rgb(0 0 0 / 9%); /* 9% Black */
+		--color-light-blacks-100: rgb(0 0 0 / 18%); /* 18% Black */
+		--color-light-blacks-200: rgb(0 0 0 / 27%); /* 27% Black */
+		--color-light-blacks-300: rgb(0 0 0 / 36%); /* 36% Black */
+		--color-light-blacks-400: rgb(0 0 0 / 45%); /* 45% Black */
+		--color-light-blacks-500: rgb(0 0 0 / 54%); /* 54% Black */
+		--color-light-blacks-550: rgb(0 0 0 / 59%); /* 59% Black */
+		--color-light-blacks-600: rgb(0 0 0 / 63%); /* 63% Black */
+		--color-light-blacks-700: rgb(0 0 0 / 72%); /* 72% Black */
+		--color-light-blacks-800: rgb(0 0 0 / 81%); /* 81% Black */
+		--color-light-blacks-900: rgb(0 0 0 / 90%); /* 90% Black */
+		--color-light-blacks-950: rgb(0 0 0 / 95%); /* 95% Black */
+		--color-light-blacks-1000: #000; /* 100% Black */
+		--color-dark-blacks-50: rgb(255 255 255 / 9%); /* 9% White */
+		--color-dark-blacks-100: rgb(255 255 255 / 18%); /* 18% White */
+		--color-dark-blacks-200: rgb(255 255 255 / 27%); /* 27% White */
+		--color-dark-blacks-300: rgb(255 255 255 / 36%); /* 36% White */
+		--color-dark-blacks-400: rgb(255 255 255 / 45%); /* 45% White */
+		--color-dark-blacks-500: rgb(255 255 255 / 54%); /* 54% White */
+		--color-dark-blacks-550: rgb(255 255 255 / 59%); /* 59% White */
+		--color-dark-blacks-600: rgb(255 255 255 / 63%); /* 63% White */
+		--color-dark-blacks-700: rgb(255 255 255 / 72%); /* 72% White */
+		--color-dark-blacks-800: rgb(255 255 255 / 81%); /* 81% White */
+		--color-dark-blacks-900: rgb(255 255 255 / 90%); /* 90% White */
+		--color-dark-blacks-950: rgb(255 255 255 / 95%); /* 95% White */
+		--color-dark-blacks-1000: #fff; /* 100% White */
 
 		/* Light Red Shades */
 		--color-light-red-50: #fff7f7;
@@ -555,14 +546,14 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-dark-red-950: #ffdede;
 
 		/* Dark Red Alpha Shades */
-		--color-dark-red-alpha-300: rgba(255, 88, 88, 0.94);
-		--color-dark-red-alpha-400: rgba(255, 88, 88, 0.85);
-		--color-dark-red-alpha-500: rgba(255, 88, 88, 0.73);
-		--color-dark-red-alpha-600: rgba(255, 88, 88, 0.56);
-		--color-dark-red-alpha-700: rgba(255, 88, 88, 0.54);
-		--color-dark-red-alpha-800: rgba(255, 88, 88, 0.49);
-		--color-dark-red-alpha-900: rgba(255, 88, 88, 0.4);
-		--color-dark-red-alpha-950: rgba(255, 88, 88, 0.38);
+		--color-dark-red-alpha-300: rgb(255 88 88 / 94%);
+		--color-dark-red-alpha-400: rgb(255 88 88 / 85%);
+		--color-dark-red-alpha-500: rgb(255 88 88 / 73%);
+		--color-dark-red-alpha-600: rgb(255 88 88 / 56%);
+		--color-dark-red-alpha-700: rgb(255 88 88 / 54%);
+		--color-dark-red-alpha-800: rgb(255 88 88 / 49%);
+		--color-dark-red-alpha-900: rgb(255 88 88 / 40%);
+		--color-dark-red-alpha-950: rgb(255 88 88 / 38%);
 
 		/* Light Blue Shades */
 		--color-light-blue-50: #f2f9ff;
@@ -817,7 +808,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-dark-violet-900: #bca9fc;
 		--color-dark-violet-950: #cdbeff;
 
-		/*CSS variables for light mode*/
+		/* CSS variables for light mode */
 		--plain-color: var(--color-white);
 		--plain-reverse-color: var(--color-black);
 		--color-gray-0: var(--color-light-gray-0);
@@ -834,7 +825,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-gray-900: var(--color-light-gray-900);
 		--color-gray-950: var(--color-light-gray-950);
 		--color-gray-1000: var(--color-light-gray-1000);
-
 		--color-gray-alpha-50: var(--color-light-gray-alpha-50);
 		--color-gray-alpha-100: var(--color-light-gray-alpha-100);
 		--color-gray-alpha-200: var(--color-light-gray-alpha-200);
@@ -848,7 +838,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-gray-alpha-900: var(--color-light-gray-alpha-900);
 		--color-gray-alpha-950: var(--color-light-gray-alpha-950);
 		--color-gray-alpha-1000: var(--color-light-gray-alpha-1000);
-
 		--color-whites-50: var(--color-light-whites-50);
 		--color-whites-100: var(--color-light-whites-100);
 		--color-whites-200: var(--color-light-whites-200);
@@ -862,7 +851,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-whites-900: var(--color-light-whites-900);
 		--color-whites-950: var(--color-light-whites-950);
 		--color-whites-1000: var(--color-light-whites-1000);
-
 		--color-blacks-50: var(--color-light-blacks-50);
 		--color-blacks-100: var(--color-light-blacks-100);
 		--color-blacks-200: var(--color-light-blacks-200);
@@ -877,8 +865,9 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-blacks-950: var(--color-light-blacks-950);
 		--color-blacks-1000: var(--color-light-blacks-1000);
 	}
+
 	.dark {
-		/*CSS variables for dark mode*/
+		/* CSS variables for dark mode */
 		--plain-color: var(--color-black);
 		--plain-reverse-color: var(--color-white);
 		--color-gray-0: var(--color-dark-gray-0);
@@ -895,7 +884,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-gray-900: var(--color-dark-gray-900);
 		--color-gray-950: var(--color-dark-gray-950);
 		--color-gray-1000: var(--color-dark-gray-1000);
-
 		--color-gray-alpha-50: var(--color-dark-gray-alpha-50);
 		--color-gray-alpha-100: var(--color-dark-gray-alpha-100);
 		--color-gray-alpha-200: var(--color-dark-gray-alpha-200);
@@ -909,7 +897,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-gray-alpha-900: var(--color-dark-gray-alpha-900);
 		--color-gray-alpha-950: var(--color-dark-gray-alpha-950);
 		--color-gray-alpha-1000: var(--color-dark-gray-alpha-1000);
-
 		--color-whites-50: var(--color-dark-whites-50);
 		--color-whites-100: var(--color-dark-whites-100);
 		--color-whites-200: var(--color-dark-whites-200);
@@ -923,7 +910,6 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-whites-900: var(--color-dark-whites-900);
 		--color-whites-950: var(--color-dark-whites-950);
 		--color-whites-1000: var(--color-dark-whites-1000);
-
 		--color-blacks-50: var(--color-dark-blacks-50);
 		--color-blacks-100: var(--color-dark-blacks-100);
 		--color-blacks-200: var(--color-dark-blacks-200);
@@ -938,8 +924,11 @@ input[type="checkbox"]:checked + .checkbox-div {
 		--color-blacks-950: var(--color-dark-blacks-950);
 		--color-blacks-1000: var(--color-dark-blacks-1000);
 
-		/* Custom scrollbar for dark theme */
+		/* Firefox */
 		scrollbar-color: var(--color-light-gray-800) var(--color-black);
+		scrollbar-width: thin;
+
+		/* Custom scrollbar for dark theme */
 
 		/* Webkit (Chrome, Safari, newer Edge) */
 
@@ -948,17 +937,13 @@ input[type="checkbox"]:checked + .checkbox-div {
 		}
 
 		&::-webkit-scrollbar-thumb {
-			background-color: var(--color-light-gray-800);
-			border-radius: 6px;
 			border: 3px solid var(--color-black);
+			border-radius: 6px;
+			background-color: var(--color-light-gray-800);
 		}
 
 		&::-webkit-scrollbar-thumb:hover {
 			background-color: var(--color-light-gray-700);
 		}
-
-		/* Firefox */
-		scrollbar-width: thin;
-		scrollbar-color: var(--color-light-gray-800) var(--color-black);
 	}
 }
