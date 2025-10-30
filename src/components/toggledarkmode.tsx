@@ -68,7 +68,7 @@ export const Switch = () => {
 								value={value}
 							/>
 							{/* Card background */}
-							<div className="flex h-full w-full flex-col overflow-hidden rounded-lg transition-all duration-200 peer-checked:border-[1px] peer-checked:border-gray-800">
+							<div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-transparent transition-colors duration-200 peer-checked:border-gray-800">
 								{/* PREVIEW AREA */}
 								{value === "system" ? (
 									<div className="flex h-[calc(100%-40px)]">
@@ -154,8 +154,10 @@ export const Switch = () => {
 							{/* Selector circle */}
 							<span className="pointer-events-none absolute bottom-2 right-3 inline-flex h-5 w-5 items-center justify-center">
 								<span
-									className={`h-4 w-4 rounded-full border-2 transition-colors duration-200 ease-out ${
-										selected ? "border-4 border-gray-800" : "border-gray-400"
+									className={`h-4 w-4 rounded-full border-2 transition-all duration-200 ease-out ${
+										selected
+											? "border-gray-800 ring-2 ring-gray-800"
+											: "border-gray-400"
 									}`}
 								/>
 							</span>

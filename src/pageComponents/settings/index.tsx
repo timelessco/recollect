@@ -21,7 +21,6 @@ import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/infoIcon";
 import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
-import { PCLogo } from "../../icons/pcLogo";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {
 	useMiscellaneousStore,
@@ -38,7 +37,6 @@ import {
 	settingsLightButtonClassName,
 	settingsMainHeadingClassName,
 	settingsParagraphClassName,
-	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
 import {
 	DISPLAY_NAME_CHECK_PATTERN,
@@ -131,6 +129,7 @@ const Settings = () => {
 		register,
 		handleSubmit,
 		formState: { errors },
+		watch,
 		reset,
 	} = useForm<SettingsUsernameFormTypes>({
 		defaultValues: {
@@ -138,16 +137,23 @@ const Settings = () => {
 		},
 	});
 
+	const usernameValue = watch("username");
+	const originalUsername = userData?.user_name ?? "";
+
 	const {
 		register: displayNameRegister,
 		handleSubmit: displaynameHandleSubmit,
 		formState: { errors: displaynameError },
 		reset: displaynameReset,
+		watch: displaynameWatch,
 	} = useForm<SettingsDisplaynameFormTypes>({
 		defaultValues: {
 			displayname: "",
 		},
 	});
+
+	const displaynameValue = displaynameWatch("displayname");
+	const originalDisplayname = userData?.display_name ?? "";
 
 	useEffect(() => {
 		reset({ username: userData?.user_name });
@@ -267,7 +273,7 @@ const Settings = () => {
 								</figure>
 								<Input
 									autoFocus={false}
-									errorClassName=" absolute  top-[29px]"
+									errorClassName="absolute  top-[29px]"
 									tabIndex={-1}
 									{...register("username", {
 										required: {
@@ -293,12 +299,15 @@ const Settings = () => {
 									isError={Boolean(errors?.username)}
 									placeholder="Enter username"
 								/>
-								<button
-									className={`px-2 py-[4.5px] ${saveButtonClassName}`}
-									type="submit"
+								<Button
+									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+										usernameValue !== originalUsername
+											? ""
+											: "pointer-events-none invisible"
+									}`}
 								>
 									Save
-								</button>
+								</Button>
 							</div>
 						</LabelledComponent>
 					</form>
@@ -335,12 +344,15 @@ const Settings = () => {
 									isError={Boolean(displaynameError?.displayname)}
 									placeholder="Enter display name"
 								/>
-								<button
-									className={`px-2 py-[4.5px] ${saveButtonClassName}`}
-									type="submit"
+								<Button
+									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+										displaynameValue !== originalDisplayname
+											? ""
+											: "pointer-events-none invisible"
+									}`}
 								>
 									Save
-								</button>
+								</Button>
 							</div>
 						</LabelledComponent>
 					</form>
