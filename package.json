@@ -205,6 +205,7 @@
 		"stylelint": "16.25.0",
 		"stylelint-config-clean-order": "7.0.0",
 		"stylelint-config-standard": "39.0.1",
+		"supabase": "2.54.11",
 		"tailwindcss": "3.3.1",
 		"title-case": "4.1.0",
 		"toml-eslint-parser": "0.5.0",
@@ -213,13 +214,24 @@
 		"yaml-eslint-parser": "1.2.0",
 		"zod": "3.22.3"
 	},
-	"packageManager": "pnpm@10.2.0",
+	"packageManager": "pnpm@10.20.0",
 	"engines": {
 		"node": "^20.9.0 || >=22.0.0"
 	},
 	"pnpm": {
 		"overrides": {
 			"@swc/helpers@~0.4": "0.4.36"
-		}
+		},
+		"onlyBuiltDependencies": [
+			"@sentry/cli",
+			"bufferutil",
+			"canvas",
+			"core-js-pure",
+			"cypress",
+			"protobufjs",
+			"sharp",
+			"supabase",
+			"utf-8-validate"
+		]
 	}
 }
