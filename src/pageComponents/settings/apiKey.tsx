@@ -6,7 +6,7 @@ import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserM
 import ButtonComponent from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
-import Spinner from "../../components/spinner";
+import { Spinner } from "../../components/spinner";
 import BackIconBlack from "../../icons/actionIcons/backIconBlack";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import {

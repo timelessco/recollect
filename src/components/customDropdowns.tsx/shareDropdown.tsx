@@ -1,7 +1,6 @@
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 
 import ShareIcon from "../../icons/shareIcon";
-import ShareContent from "../../pageComponents/dashboard/share/shareContent";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import Button from "../atoms/button";
 

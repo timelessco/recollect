@@ -706,7 +706,7 @@ const CardSection = ({
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="card-title text-sm leading-4 text-plain-reverse-color"
+								className="card-title text-sm leading-4 text-gray-800"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}

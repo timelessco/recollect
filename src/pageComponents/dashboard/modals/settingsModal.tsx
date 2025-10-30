@@ -121,7 +121,7 @@ const SettingsModal = () => {
 					<div className="px-2 text-[13px] font-[500]  leading-[115%] tracking-[2%] text-gray-600">
 						Settings
 					</div>
-					<div className=" mt-3">
+					<div className="mt-3">
 						{optionsList?.map((item) => (
 							<SingleListItemComponent
 								extendedClassname="py-[6px]"

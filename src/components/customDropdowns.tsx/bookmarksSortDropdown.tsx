@@ -5,7 +5,6 @@ import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
 import TickIcon from "../../icons/tickIcon";
-import { useLoadersStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
 	type BookmarkViewCategories,
@@ -29,8 +28,6 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 		isDropdown = true,
 		renderOnlyButton = false,
 	} = props;
-
-	const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
 	const { sortBy: bookmarksSortValue } = useGetSortBy();
 
