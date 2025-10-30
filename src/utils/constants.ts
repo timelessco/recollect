@@ -50,9 +50,6 @@ export const getBaseUrl = () =>
 
 export const NEXT_API_URL = `/api/`;
 
-const RECOLLECT_SERVER_URL = process.env.RECOLLECT_SERVER_API;
-export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
-
 // URL helper functions
 export const PREVIEW_PATH = "/preview";
 
