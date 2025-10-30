@@ -1,6 +1,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { z } from "zod";
 
+import { validateApiKey } from "../../../async/supabaseCrudHelpers";
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -46,6 +47,14 @@ export default async function handler(
 
 	const { apikey } = parsed.data;
 	const userId = user.id;
+
+	try {
+		await validateApiKey(apikey as string);
+	} catch (error) {
+		console.error(error);
+		response.status(400).json({ error: "Invalid API key" });
+		return;
+	}
 
 	try {
 		const { data: DataResponse, error: ErrorResponse } = await supabase

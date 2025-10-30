@@ -1,9 +1,11 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type Provider, type SupabaseClient } from "@supabase/supabase-js";
 import {
 	type QueryFunctionContext,
 	type QueryKey,
 } from "@tanstack/react-query";
 import axios from "axios";
+import CryptoJS from "crypto-js";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -121,8 +123,8 @@ export const saveApiKey = async ({
 		});
 
 		return response?.data;
-	} catch (error) {
-		return error as unknown as { data: unknown; message: string };
+	} catch {
+		throw new Error("Invalid API key");
 	}
 };
 
@@ -925,5 +927,31 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 	} catch (error) {
 		console.error("Error getting media type:", error);
 		return null;
+	}
+};
+
+export const validateApiKey = async (apikey: string) => {
+	try {
+		const decryptedBytes = CryptoJS.AES.decrypt(
+			apikey,
+			process.env.NEXT_PUBLIC_SECRET_KEY as string,
+		);
+		const decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+		const genAI = new GoogleGenerativeAI(decrypted);
+		const model = genAI.getGenerativeModel({
+			model: "gemini-2.0-flash-lite",
+		});
+
+		const prompt = "Hey there!";
+		const result = await model.generateContent([prompt]);
+
+		if (!result.response.text()) {
+			throw new Error("response not generated");
+		}
+
+		return result;
+	} catch {
+		throw new Error("Invalid API key");
 	}
 };
