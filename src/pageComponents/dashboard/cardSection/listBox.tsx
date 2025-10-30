@@ -3,6 +3,7 @@ import { useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
@@ -13,7 +14,6 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
-import Masonry from "react-masonry-css";
 import {
 	useDraggableCollectionState,
 	useListState,
@@ -25,6 +25,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import Checkbox from "../../../components/checkbox";
+import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
@@ -51,7 +52,6 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import Option from "./option";
 
 type ListBoxDropTypes = ListProps<object> & {
-	// bookmarksColumns: string | number[] | string[] | undefined;
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];
 	cardTypeCondition: unknown;
@@ -59,7 +59,6 @@ type ListBoxDropTypes = ListProps<object> & {
 	isPublicPage?: boolean;
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
-	// onReorder: (event: DroppableCollectionReorderEvent) => unknown;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onItemDrop?: (event: any) => void;
 };
@@ -74,6 +73,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 		onBulkBookmarkDelete,
 		isPublicPage,
 	} = props;
+
 	const setIsCardDragging = useMiscellaneousStore(
 		(store) => store.setIsCardDragging,
 	);
@@ -87,15 +87,113 @@ const ListBox = (props: ListBoxDropTypes) => {
 		data: CategoriesData[];
 		error: PostgrestError;
 	};
+	const { isMobile, isTablet } = useIsMobileView();
+
+	// this ref is for scrolling + virtualization
+	const parentRef = useRef<HTMLUListElement | null>(null);
+	// this ref is for react-aria listbox
+	const ariaRef = useRef<HTMLUListElement | null>(null);
+
+	// ---- Virtualizer Setup ----
+	const rowVirtualizer = useVirtualizer({
+		measureElement: (element, _entry) => element.getBoundingClientRect().height,
+		count: bookmarksList.length,
+		getScrollElement: () => {
+			if (typeof document === "undefined") return null;
+			const element = document.querySelector("#scrollableDiv");
+			if (!element) {
+				console.warn("Scroll container #scrollableDiv not found");
+			}
+
+			return element;
+		},
+		estimateSize: () => {
+			// Default heights if not grid-based
+			if (cardTypeCondition === viewValues.list) return 250;
+
+			// Figure out lanes
+			let lanes = 1;
+			if (
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.moodboard
+			) {
+				if (isMobile || isTablet) {
+					lanes = 2;
+				} else {
+					switch (bookmarksColumns?.[0]) {
+						case 10:
+							lanes = 5;
+							break;
+						case 20:
+							lanes = 4;
+							break;
+						case 30:
+							lanes = 3;
+							break;
+						case 40:
+							lanes = 2;
+							break;
+						case 50:
+							lanes = 1;
+							break;
+						default:
+							lanes = 1;
+					}
+				}
+			}
+
+			// Get container width (fallback to 1200 if unknown)
+			const containerWidth =
+				typeof document !== "undefined"
+					? document.querySelector("#scrollableDiv")?.clientWidth ?? 1_200
+					: 1_200;
+
+			// Each card width
+			const cardWidth = containerWidth / lanes;
+
+			// Estimate height based on aspect ratio (e.g., 4:3)
+			const aspectRatio = 4 / 3;
+			return cardWidth * aspectRatio;
+		},
+		overscan: 5,
+		lanes: (() => {
+			if (
+				cardTypeCondition !== viewValues.card &&
+				cardTypeCondition !== viewValues.moodboard
+			)
+				return 1;
+			if (isMobile || isTablet) return 2;
+
+			switch (bookmarksColumns?.[0]) {
+				case 10:
+					return 5;
+				case 20:
+					return 4;
+				case 30:
+					return 3;
+				case 40:
+					return 2;
+				case 50:
+					return 1;
+				default:
+					return 1;
+			}
+		})(),
+	});
+	const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
+
+	useEffect(() => {
+		rowVirtualizer.scrollToIndex(0);
+	}, [rowVirtualizer, cardTypeCondition, bookmarksInfoValue]);
 
 	const router = useRouter();
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
-
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const preview = useRef(null);
 	const state = useListState(props);
-	const ref = useRef(null);
+
+	// hook up aria listbox
 	const { listBoxProps } = useListBox(
 		{
 			...props,
@@ -104,7 +202,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			autoFocus: false,
 		},
 		state,
-		ref,
+		ariaRef,
 	);
 
 	useEffect(() => {
@@ -116,7 +214,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const dragState = useDraggableCollectionState({
 		// Pass through events from props.
 		...props,
-
 		// Collection and selection manager come from list state.
 		collection: state.collection,
 		selectionManager: state.selectionManager,
@@ -135,82 +232,29 @@ const ListBox = (props: ListBoxDropTypes) => {
 			((keys) =>
 				[...keys].map((key) => {
 					const item = state.collection.getItem(key);
-
 					return {
 						"text/plain": !isNull(item) ? item.textValue : "",
 					};
 				})),
 	});
 
-	useDraggableCollection(props, dragState, ref);
-
-	const cardGridClassNames = classNames({
-		"grid gap-6": true,
-		"grid-cols-5":
-			typeof bookmarksColumns === "object" &&
-			!isNull(bookmarksColumns) &&
-			bookmarksColumns[0] === 10,
-		"grid-cols-4":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 20,
-		"grid-cols-3":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 30,
-		"grid-cols-2":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 40,
-		"grid-cols-1":
-			typeof bookmarksColumns === "object" && bookmarksColumns[0] === 50,
-	});
-
-	const { isMobile, isTablet } = useIsMobileView();
-	const moodboardColsLogic = () => {
-		if (isTablet || isMobile) {
-			return "2";
-		} else {
-			switch (bookmarksColumns && bookmarksColumns[0] / 10) {
-				case 1:
-					return "5";
-				case 2:
-					return "4";
-				case 3:
-					return "3";
-				case 4:
-					return "2";
-				case 5:
-					return "1";
-				default:
-					return "1";
-					break;
-			}
-		}
-	};
+	// IMPORTANT: ariaRef is passed here so listeners attach properly
+	useDraggableCollection(props, dragState, ariaRef);
 
 	const ulClassName = classNames("outline-none focus:outline-none", {
-		// [`columns-${moodboardColsLogic()} gap-6`]:
-		// 	cardTypeCondition === "moodboard",
-		block:
-			cardTypeCondition === viewValues.list ||
-			cardTypeCondition === viewValues.headlines,
-		[isMobile || isTablet ? "grid gap-6 grid-cols-2" : cardGridClassNames]:
-			cardTypeCondition === "card",
+		block: cardTypeCondition === viewValues.list,
 		"max-w-[600px] mx-auto space-y-4":
 			cardTypeCondition === viewValues.timeline,
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
+	const renderOption = (virtualIndex: number) => {
+		const item = [...state.collection][virtualIndex];
 
-	const renderOption = () => {
-		const bookmarks = [...state.collection].map((item) => {
-			const bookmarkData = find(
-				bookmarksList,
-				(listItem) => listItem?.id === Number.parseInt(item.key as string, 10),
-			);
+		if (!item) return null;
 
-			return {
-				item,
-				bookmarkData,
-			};
-		});
-
-		return bookmarks.map(({ item, bookmarkData }) => (
+		const bookmarkData = bookmarksList[virtualIndex];
+		return (
 			<Option
 				cardTypeCondition={cardTypeCondition}
 				dragState={dragState}
@@ -222,7 +266,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				type={bookmarkData?.type ?? ""}
 				url={bookmarkData?.url ?? ""}
 			/>
-		));
+		);
 	};
 
 	const categoryDataMapper =
@@ -234,7 +278,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	let finalCategoryData;
 
 	if (categorySlug !== UNCATEGORIZED_URL) {
-		// is user is in uncategorized page then the bottom bar should not have the uncategorized option
 		finalCategoryData = [
 			{ label: "Uncategorized", value: 0 },
 			...categoryDataMapper,
@@ -245,17 +288,96 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
-			<ul {...listBoxProps} className={ulClassName} ref={ref}>
-				{cardTypeCondition === viewValues?.moodboard ? (
-					<Masonry
-						breakpointCols={Number.parseInt(moodboardColsLogic(), 10)}
-						className="my-masonry-grid"
-						columnClassName="my-masonry-grid_column"
+			<ul
+				{...listBoxProps}
+				className={ulClassName}
+				ref={(element) => {
+					parentRef.current = element;
+					ariaRef.current = element;
+				}}
+			>
+				{cardTypeCondition === viewValues.moodboard ? (
+					<div
+						style={{
+							height: rowVirtualizer?.getTotalSize(),
+							width: "100%",
+							position: "relative",
+						}}
 					>
-						{renderOption()}
-					</Masonry>
+						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
+							const lanes = rowVirtualizer?.options?.lanes || 1;
+							const columnWidth = 100 / lanes;
+							return (
+								<div
+									data-index={virtualRow?.index}
+									key={virtualRow?.key?.toString()}
+									ref={rowVirtualizer?.measureElement}
+									style={{
+										position: "absolute",
+										top: 0,
+										left: `${virtualRow?.lane * columnWidth}%`,
+										width: `${columnWidth}%`,
+										transform: `translateY(${virtualRow?.start}px)`,
+										paddingLeft: "0.75rem",
+										paddingRight: "0.75rem",
+										paddingBottom: "1.5rem",
+									}}
+								>
+									{renderOption(virtualRow?.index)}
+								</div>
+							);
+						})}
+					</div>
 				) : (
-					renderOption()
+					<div
+						style={{
+							height: rowVirtualizer?.getTotalSize(),
+							position: "relative",
+						}}
+					>
+						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
+							const isCardView = cardTypeCondition === viewValues.card;
+							const lanes = rowVirtualizer?.options?.lanes || 1;
+							const columnIndex = isCardView ? virtualRow.index % lanes : 0;
+							const columnWidth = isCardView ? 100 / lanes : 100;
+							// Calculate row index and get the row's top position
+							const rowIndex = Math.floor(virtualRow.index / lanes);
+							const rowStart =
+								rowVirtualizer
+									.getVirtualItems()
+									.find((vItem) => Math.floor(vItem.index / lanes) === rowIndex)
+									?.start ?? 0;
+
+							const translateX = isCardView ? columnWidth * columnIndex : 0;
+							const itemWidth = isCardView ? `${columnWidth}%` : "100%";
+
+							return (
+								<div
+									data-index={virtualRow.index}
+									key={virtualRow.key.toString()}
+									ref={rowVirtualizer.measureElement}
+									style={{
+										position: "absolute",
+										top: 0,
+										left: `${translateX}%`,
+										width: itemWidth,
+										transform: `translateY(${rowStart}px)`,
+										paddingBottom:
+											cardTypeCondition === viewValues.timeline
+												? "24px"
+												: cardTypeCondition === viewValues.card
+												? "42px"
+												: "0px",
+
+										paddingLeft: isCardView ? "0.75rem" : "0px",
+										paddingRight: isCardView ? "0.75rem" : "0px",
+									}}
+								>
+									{renderOption(virtualRow.index)}
+								</div>
+							);
+						})}
+					</div>
 				)}
 				<DragPreview ref={preview}>
 					{(items) => (
@@ -281,8 +403,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 								0
 							}
 							label={`${Array.from(state.selectionManager.selectedKeys.keys())
-								?.length}
-            bookmarks`}
+								?.length} bookmarks`}
 							onChange={() => state.selectionManager.clearSelection()}
 							value="selected-bookmarks"
 						/>

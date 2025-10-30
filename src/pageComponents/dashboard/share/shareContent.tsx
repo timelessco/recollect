@@ -333,13 +333,21 @@ const ShareContent = () => {
 					People with access
 				</p>
 				<div className="pb-2">
-					{currentCategory?.collabData?.map((item) => (
-						<AccessUserInfo
-							isLoggedinUserTheOwner={isUserTheCategoryOwner}
-							item={item}
-							key={item.userEmail}
-						/>
-					))}
+					{currentCategory?.collabData
+						?.slice()
+						.sort((a, b) => {
+							// Move owner to the top
+							if (a.isOwner) return -1;
+							if (b.isOwner) return 1;
+							return 0;
+						})
+						.map((item) => (
+							<AccessUserInfo
+								isLoggedinUserTheOwner={isUserTheCategoryOwner}
+								item={item}
+								key={item.userEmail}
+							/>
+						))}
 				</div>
 				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px]">
 					<div className=" flex items-center">
