@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -30,20 +30,19 @@ const SettingsModal = () => {
 		(state) => state.toggleShowSettingsModal,
 	);
 
-	const currentSettingsPage = useMiscellaneousStore(
-		(state) => state.currentSettingsPage,
+	const [currentSettingsPage, setCurrentSettingsPage] = useMiscellaneousStore(
+		(state) => [state.currentSettingsPage, state.setCurrentSettingsPage],
 	);
 
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
+	const [selectedMenuItem, setSelectedMenuItem] = useState(0);
 
 	// reset useeffect
 	useEffect(() => {
 		if (!showSettingsModal) {
 			setCurrentSettingsPage("main");
+			setSelectedMenuItem(0);
 		}
-	}, [setCurrentSettingsPage, showSettingsModal]);
+	}, [setCurrentSettingsPage, showSettingsModal, selectedMenuItem]);
 
 	const userProfilesData = queryClient.getQueryData([
 		USER_PROFILE,
@@ -68,7 +67,7 @@ const SettingsModal = () => {
 			),
 			name: "My Profile",
 			href: ``,
-			current: true,
+			current: selectedMenuItem === 0,
 			id: 0,
 			count: undefined,
 			iconColor: "",
@@ -77,7 +76,7 @@ const SettingsModal = () => {
 			icon: <SettingsAiIcon />,
 			name: "AI Features",
 			href: ``,
-			current: false,
+			current: selectedMenuItem === 1,
 			id: 1,
 			count: undefined,
 			iconColor: "",
@@ -86,7 +85,7 @@ const SettingsModal = () => {
 			icon: <ImportIcon />,
 			name: "Import",
 			href: ``,
-			current: false,
+			current: selectedMenuItem === 2,
 			id: 2,
 			count: undefined,
 			iconColor: "",
@@ -128,6 +127,19 @@ const SettingsModal = () => {
 								isLink={false}
 								item={item}
 								key={item.id}
+								onClick={() => {
+									setSelectedMenuItem(item.id);
+									switch (item.id) {
+										case 0:
+											setCurrentSettingsPage("main");
+											break;
+										case 1:
+											setCurrentSettingsPage("api-key");
+											break;
+										default:
+											break;
+									}
+								}}
 								showIconDropdown={false}
 							/>
 						))}
