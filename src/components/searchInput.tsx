@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -50,6 +50,11 @@ const styles = {
 	},
 
 	suggestions: {
+		width: "fit-content",
+		top: 10,
+		left: "50%",
+		transform: "translateX(-50%)",
+		borderRadius: "12px",
 		list: {
 			// backgroundColor: "#FFFFFF",
 			padding: "6px",
@@ -114,12 +119,25 @@ const SearchInput = (props: SearchInputTypes) => {
 		[inputClassName]: true,
 	});
 
+	// Filter tags based on search - this enables the search functionality
+	const filteredTags = useMemo(() => {
+		const allTags =
+			userTagsData?.data?.map((item) => ({
+				id: item?.id,
+				display: item?.name,
+			})) || [];
+
+		// Filter out already added tags
+		return allTags.filter(
+			(filterItem) => !addedTags?.includes(filterItem?.display),
+		);
+	}, [userTagsData?.data, addedTags]);
+
 	return (
 		<div className={wrapperClassNameBuilder}>
 			<figure className=" absolute left-[9px] top-[7px] ">
 				<SearchInputSearchIcon size="14" />
 			</figure>
-			{/* // classname added to remove default focus-visible style */}
 			<MentionsInput
 				className={inputClassNamesBuilder}
 				onBlur={onBlur}
@@ -132,16 +150,14 @@ const SearchInput = (props: SearchInputTypes) => {
 
 					const tagName =
 						!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-							? matchedSearchTag?.map((item) => item?.replace("@", ""))
+							? matchedSearchTag?.map((item) => item?.replace("#", ""))
 							: undefined;
 
 					setAddedTags(tagName);
 				}}
-				// onKeyUp={(e) => e.key === "Enter" && onEnterPress(e.target.value)}
 				onKeyUp={(event) => {
 					if (event.key === "Enter") {
 						onEnterPress(searchText);
-						// setSearchText("");
 					}
 				}}
 				placeholder={placeholder}
@@ -151,14 +167,9 @@ const SearchInput = (props: SearchInputTypes) => {
 			>
 				<Mention
 					appendSpaceOnAdd
-					data={userTagsData?.data
-						?.map((item) => ({
-							id: item?.id,
-							display: item?.name,
-						}))
-						?.filter((filterItem) => !addedTags?.includes(filterItem?.display))}
+					data={filteredTags}
 					displayTransform={(_url, display) => `#${display}`}
-					markup="@__display__"
+					markup="#__display__"
 					trigger="#"
 				/>
 			</MentionsInput>
@@ -167,19 +178,6 @@ const SearchInput = (props: SearchInputTypes) => {
 					<SearchLoader className="h-3 w-3 animate-spin" />
 				</div>
 			)}
-			{/* <button
-				className={aiButtonClassName}
-				onClick={() => setAiButtonToggle(!aiButtonToggle)}
-				type="button"
-			>
-				<ToolTip
-					toolTipContent={`${
-						aiButtonToggle ? "disable" : "enable"
-					} vector search`}
-				>
-					<AiIcon selected={aiButtonToggle} />
-				</ToolTip>
-			</button> */}
 		</div>
 	);
 };
