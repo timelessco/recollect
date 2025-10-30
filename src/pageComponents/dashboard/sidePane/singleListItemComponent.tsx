@@ -52,6 +52,9 @@ export type listPropsTypes = {
 	showSpinner?: boolean;
 };
 
+const normalizeColor = (color?: string | null) =>
+	(color ?? "").toLowerCase().trim();
+
 const SingleListItemComponent = (listProps: listPropsTypes) => {
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 
@@ -69,6 +72,27 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		isLink = true,
 	} = listProps;
 
+	const isDarkMode =
+		typeof window !== "undefined" &&
+		document?.documentElement?.classList?.contains("dark");
+
+	const iconColorNorm = normalizeColor(item?.iconColor);
+	const isWhite =
+		iconColorNorm === "#fff" ||
+		iconColorNorm === "#ffffff" ||
+		iconColorNorm === "white";
+	const isBlack =
+		iconColorNorm === "#000" ||
+		iconColorNorm === "#000000" ||
+		iconColorNorm === "black";
+	const adjustedIconColor = isDarkMode
+		? isWhite
+			? "#000000"
+			: isBlack
+			? "#ffffff"
+			: (item?.iconColor as unknown as string)
+		: (item?.iconColor as unknown as string);
+
 	const renderContent = () => (
 		<>
 			<div className="flex w-4/5 items-center">
@@ -81,7 +105,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					>
 						<CategoryIconsDropdown
 							buttonIconSize={18}
-							iconColor={item?.iconColor}
+							iconColor={adjustedIconColor}
 							iconValue={item?.iconValue ?? null}
 							onIconColorChange={onIconColorChange}
 							onIconSelect={(value) => {

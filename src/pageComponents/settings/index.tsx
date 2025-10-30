@@ -16,7 +16,7 @@ import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
-import TrashIconRed from "../../icons/actionIcons/trashIconRed";
+import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/infoIcon";
@@ -434,18 +434,20 @@ const Settings = () => {
 							className={`w-full sm:mt-5 ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
-							<p className="flex w-full justify-center  sm:w-[105px]">
-								<figure className="mr-2">
-									<TrashIconRed />
-								</figure>
-								{deleteUserMutation?.isLoading ? (
-									<Spinner
-										className="h-3 w-3 animate-spin"
-										style={{ color: "red" }}
-									/>
-								) : (
-									"Delete my account"
-								)}
+							<p className="flex w-full justify-center pb-5 sm:w-[105px]">
+								<span className="flex items-center justify-center gap-1.5">
+									{deleteUserMutation?.isLoading ? (
+										<Spinner
+											className="h-3 w-3 animate-spin"
+											style={{ color: "#CD2B31" }}
+										/>
+									) : (
+										<>
+											<WarningIconRed className="h-3 w-3 shrink-0" />
+											Delete my account
+										</>
+									)}
+								</span>
 							</p>
 						</Button>
 					</div>

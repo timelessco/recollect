@@ -111,7 +111,6 @@ const LoginPage = () => {
 									errorText={errors?.email?.message ?? ""}
 									id="email"
 									isError={Boolean(errors?.email)}
-									onChange={(event) => setEmail(event.target.value)}
 									placeholder="Email"
 								/>
 								<button

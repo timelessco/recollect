@@ -38,7 +38,7 @@ export const settingsParagraphClassName =
 	"text-[14px] font-[500] leading-[110%]  sm:leading-1  text-gray-900";
 
 export const settingsDeleteButtonRedClassName =
-	"bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-custom-red-700 hover:bg-gray-200";
+	"bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-[#CD2B31] hover:bg-gray-200";
 
 export const settingsLightButtonClassName =
 	"rounded-lg bg-gray-50 px-3 py-[7.5px] text-sm font-[500] leading-[115%]  text-gray-800 hover:bg-gray-400 sm:w-full sm:justify-center [filter:drop-shadow(0_0_1px_rgba(0,0,0,0.2))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))]";
