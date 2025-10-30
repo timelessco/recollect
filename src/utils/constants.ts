@@ -1,5 +1,3 @@
-import { isProductionEnvironment } from "./supabaseServerClient";
-
 // table names
 export const MAIN_TABLE_NAME = "bookmarks_table";
 export const TAG_TABLE_NAME = "tags";
@@ -42,11 +40,26 @@ export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 // eslint-disable-next-line unicorn/no-unsafe-regex
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
 
+const productionUrl =
+	process.env.NEXT_PUBLIC_SITE_URL ??
+	`https://${
+		process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
+		process.env.VERCEL_PROJECT_PRODUCTION_URL
+	}`;
+const vercelEnvironment =
+	process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV;
+const branchUrl =
+	process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL ?? process.env.VERCEL_BRANCH_URL;
+const vercelUrl =
+	vercelEnvironment === "production" ? productionUrl : `https://${branchUrl}`;
+
+export const BASE_URL =
+	process.env.NODE_ENV === "development"
+		? `http://localhost:${process.env.PORT ?? 3_000}`
+		: vercelUrl;
+
 // api constants
-export const getBaseUrl = () =>
-	isProductionEnvironment
-		? "https://bookmark-tags-git-dev-timelessco.vercel.app/"
-		: "http://localhost:3000/";
+export const getBaseUrl = () => BASE_URL;
 
 export const NEXT_API_URL = `/api/`;
 
