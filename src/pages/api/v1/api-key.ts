@@ -1,4 +1,5 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
+import CryptoJS from "crypto-js";
 import { z } from "zod";
 
 import { validateApiKey } from "../../../async/supabaseCrudHelpers";
@@ -6,12 +7,10 @@ import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 const bodySchema = z.object({
-	apikey: z
-		.string({
-			required_error: "API key is required",
-			invalid_type_error: "API key must be a string",
-		})
-		.optional(),
+	apikey: z.string({
+		required_error: "API key is required",
+		invalid_type_error: "API key must be a string",
+	}),
 });
 
 export default async function handler(
@@ -57,11 +56,16 @@ export default async function handler(
 	}
 
 	try {
+		const encryptedApiKey = CryptoJS.AES.encrypt(
+			apikey,
+			process.env.API_KEY_ENCRYPTION_KEY as string,
+		).toString();
+
 		const { data: DataResponse, error: ErrorResponse } = await supabase
 			.from(PROFILES)
 			.upsert({
 				id: userId,
-				api_key: apikey,
+				api_key: encryptedApiKey,
 			});
 
 		if (ErrorResponse) {

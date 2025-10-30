@@ -932,13 +932,7 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 
 export const validateApiKey = async (apikey: string) => {
 	try {
-		const decryptedBytes = CryptoJS.AES.decrypt(
-			apikey,
-			process.env.NEXT_PUBLIC_SECRET_KEY as string,
-		);
-		const decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
-
-		const genAI = new GoogleGenerativeAI(decrypted);
+		const genAI = new GoogleGenerativeAI(apikey);
 		const model = genAI.getGenerativeModel({
 			model: "gemini-2.0-flash-lite",
 		});
