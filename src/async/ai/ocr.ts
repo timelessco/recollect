@@ -86,7 +86,7 @@ export const getApikeyAndBookmarkCount = async (
 		if (enc) {
 			const decryptedBytes = CryptoJS.AES.decrypt(
 				enc,
-				process.env.NEXT_PUBLIC_SECRET_KEY as string,
+				process.env.API_KEY_ENCRYPTION_KEY as string,
 			);
 			const decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
 			userApiKey = decrypted;

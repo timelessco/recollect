@@ -120,7 +120,6 @@ export const CustomLightBox = ({
 			const isVideo =
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
 				Boolean(bookmark?.meta_data?.video_url);
-			console.error(isVideo, bookmark?.type, bookmark?.meta_data?.video_url);
 
 			return {
 				src: bookmark?.url,
