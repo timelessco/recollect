@@ -55,7 +55,6 @@
 	// Must have extensions config
 
 	// Linters & Formatters
-	"eslint.enable": false,
 	"eslint.useESLintClass": true,
 	"eslint.validate": [
 		"javascript",
