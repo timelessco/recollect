@@ -17,6 +17,7 @@ import Settings from "../../settings";
 import { ApiKey } from "../../settings/apiKey";
 import ChangeEmail from "../../settings/changeEmail";
 import DeleteAccout from "../../settings/deleteAccount";
+import { ImportBookmarks } from "../../settings/import";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 // type SettingsModalTypes = {};
@@ -102,6 +103,8 @@ const SettingsModal = () => {
 				return <DeleteAccout />;
 			case "api-key":
 				return <ApiKey />;
+			case "import":
+				return <ImportBookmarks />;
 			default:
 				return null;
 		}
@@ -135,6 +138,9 @@ const SettingsModal = () => {
 											break;
 										case 1:
 											setCurrentSettingsPage("api-key");
+											break;
+										case 2:
+											setCurrentSettingsPage("import");
 											break;
 										default:
 											break;
