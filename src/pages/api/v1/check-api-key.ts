@@ -33,7 +33,7 @@ export default async function handler(
 			.eq("id", userId)
 			.single();
 
-		const hasApiKey = !!DataResponse?.api_key;
+		const hasApiKey = Boolean(DataResponse?.api_key);
 
 		if (ErrorResponse) {
 			console.error(ErrorResponse);

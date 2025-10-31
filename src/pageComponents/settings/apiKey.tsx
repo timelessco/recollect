@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { data } from "tailwindcss/defaultTheme";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
 import useFetchCheckApiKey from "../../async/queryHooks/ai/api-key/useFetchCheckApiKey";
@@ -23,12 +22,12 @@ const KeyIcon = () => (
 	<svg
 		fill="none"
 		height="20"
-		width="20"
 		stroke="currentColor"
 		strokeLinecap="round"
 		strokeLinejoin="round"
 		strokeWidth="2"
 		viewBox="0 0 24 24"
+		width="20"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
@@ -62,7 +61,6 @@ export const ApiKey = () => {
 	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
 	const { data } = useFetchCheckApiKey();
 	const hasApiKey = data?.data?.hasApiKey;
-	console.log("apiKeyData", hasApiKey);
 	const {
 		register,
 		handleSubmit,
@@ -103,14 +101,13 @@ export const ApiKey = () => {
 	 *  RENDER
 	 * ---------------------------------- */
 	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+		<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
 			{/* ---------- HEADER ---------- */}
 			<div className="relative mb-6 flex items-center">
 				<h2 className={`${settingsMainHeadingClassName}`}>
 					Bring Your Own API Key
 				</h2>
 			</div>
-
 			{/* ---------- API KEY INPUT ---------- */}
 			<LabelledComponent
 				label={`${platform.name} API Key`}
@@ -119,10 +116,10 @@ export const ApiKey = () => {
 				{/* ---------- PLATFORM INFO ---------- */}
 				<section className="flex flex-col">
 					<a
-						href={platform.docsUrl}
-						target="_blank"
-						rel="noopener noreferrer"
 						className="text-xs text-[#007bf4e5] hover:underline"
+						href={platform.docsUrl}
+						rel="noopener noreferrer"
+						target="_blank"
 					>
 						Get API Key
 					</a>
@@ -138,9 +135,9 @@ export const ApiKey = () => {
 								••••••••••••••••••••••••••••••••
 							</div>
 							<button
-								type="button"
-								onClick={handleReplaceClick}
 								className="ml-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+								onClick={handleReplaceClick}
+								type="button"
 							>
 								Replace
 							</button>
@@ -148,26 +145,25 @@ export const ApiKey = () => {
 					) : (
 						<Input
 							{...register("apiKey", { required: "API Key is required" })}
-							id="api-key"
-							type="password"
-							className={settingsInputClassName}
-							placeholder={`Enter your ${platform.name} API key`}
-							isError={Boolean(errors.apiKey)}
-							errorText={errors.apiKey?.message ?? ""}
 							autoFocus={isReplacing}
+							className={settingsInputClassName}
 							disabled={!isReplacing && hasApiKey}
+							errorText={errors.apiKey?.message ?? ""}
+							id="api-key"
+							isError={Boolean(errors.apiKey)}
+							placeholder={`Enter your ${platform.name} API key`}
+							type="password"
 						/>
 					)}
 				</div>
 			</LabelledComponent>
-
 			{/* ---------- SAVE BUTTON ---------- */}
 			<div className="pt-2">
 				<ButtonComponent
-					type="dark"
+					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-plain-color hover:bg-gray-900"
 					isDisabled={isSaving || (hasApiKey && !isReplacing)}
 					onClick={handleSubmit(onSubmit)}
-					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-plain-color hover:bg-gray-900"
+					type="dark"
 				>
 					{isSaving ? (
 						<Spinner

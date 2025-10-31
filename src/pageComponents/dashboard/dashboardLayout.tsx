@@ -353,7 +353,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			className="mr-1 bg-transparent hover:bg-transparent"
 			onClick={() => setShowSearchBar(true)}
 		>
-			<SearchInputSearchIcon size="16" color="var(--color-gray-1000)" />
+			<SearchInputSearchIcon color="var(--color-gray-1000)" size="16" />
 		</Button>
 	);
 

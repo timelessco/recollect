@@ -20,7 +20,8 @@ export const Switch = () => {
 
 	// Handle theme changes
 	useEffect(() => {
-		if (!theme) return; // Skip initial render
+		// Skip initial render
+		if (!theme) return;
 
 		if (theme === "system") {
 			localStorage.removeItem("theme");
@@ -36,7 +37,8 @@ export const Switch = () => {
 
 	// Don't render until theme is determined
 	if (theme === null) {
-		return null; // or a loading spinner
+		// or a loading spinner
+		return null;
 	}
 
 	return (

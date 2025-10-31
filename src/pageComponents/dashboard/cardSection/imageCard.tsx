@@ -95,7 +95,8 @@ const ImgLogicComponent = ({
 					(domain) => hostname === domain || hostname.endsWith("." + domain),
 				);
 			} catch {
-				return false; // If URL parsing fails, default to non-sensitive
+				// If URL parsing fails, default to non-sensitive
+				return false;
 			}
 		})();
 
@@ -116,6 +117,7 @@ const ImgLogicComponent = ({
 				<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 			);
 		}
+
 		// Generate blur placeholder if blurhash is available
 		let blurSource = "";
 

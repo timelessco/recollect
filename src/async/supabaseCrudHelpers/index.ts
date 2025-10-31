@@ -5,7 +5,6 @@ import {
 	type QueryKey,
 } from "@tanstack/react-query";
 import axios from "axios";
-import CryptoJS from "crypto-js";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";

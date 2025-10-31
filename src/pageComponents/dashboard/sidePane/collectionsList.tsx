@@ -424,7 +424,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data[0]?.category_order;
-		console.log(apiOrder);
 
 		const listOrder = isNull(apiOrder)
 			? collectionsList?.map((item) => item?.id)
@@ -505,7 +504,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
 					className="collections-sidepane-down-arrow hidden group-hover:block"
-					fill="currentColor"
 					size={10}
 				/>
 			</div>
