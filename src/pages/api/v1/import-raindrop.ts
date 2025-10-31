@@ -27,17 +27,20 @@ export default async function handler(
 			b.url && index === self.findIndex((item: any) => item.url === b.url),
 	);
 
-	const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert(
-		uniqueBookmarks.map((bookmark: any) => ({
-			...bookmark,
-			user_id: user.id,
-		})),
-	);
+	const { data, error } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.insert(
+			uniqueBookmarks.map((bookmark: any) => ({
+				...bookmark,
+				user_id: user.id,
+			})),
+		)
+		.select("*");
 
 	if (error) {
 		response.status(500).json({ error });
 		return;
 	}
 
-	response.status(200).json({ message: "success", count: data?.length ?? 0 });
+	response.status(200).json({ message: "success", count: data.length });
 }
