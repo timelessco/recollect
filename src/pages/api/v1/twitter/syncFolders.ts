@@ -6,6 +6,7 @@ import {
 	type PostgrestResponse,
 } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
+import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 import slugify from "slugify";
 import uniqid from "uniqid";
@@ -14,6 +15,7 @@ import { type CategoriesData } from "../../../../types/apiTypes";
 import {
 	CATEGORIES_TABLE_NAME,
 	DUPLICATE_CATEGORY_NAME_ERROR,
+	PROFILES,
 } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
@@ -88,6 +90,39 @@ export default async function handler(
 		.from(CATEGORIES_TABLE_NAME)
 		.insert(rowsToInsert)
 		.select();
+
+	if (data && !isEmpty(data)) {
+		const { data: profileData, error: profileError } = await supabase
+			.from(PROFILES)
+			.select("category_order")
+			.eq("id", userId)
+			.single();
+
+		if (profileError) {
+			response.status(500).json({ data: null, error: profileError });
+			return;
+		}
+
+		const existingOrder = profileData?.category_order ?? [];
+
+		const newIds = data.map((item) => item.id);
+
+		const updatedOrder = [...existingOrder, ...newIds];
+
+		const { error: orderError } = await supabase
+			.from(PROFILES)
+			.update({
+				category_order: updatedOrder,
+			})
+			.eq("id", userId)
+			.select("id, category_order")
+			.single();
+
+		if (orderError) {
+			response.status(500).json({ data: null, error: orderError });
+			throw new Error("Failed to update category order");
+		}
+	}
 
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error });
