@@ -15,6 +15,7 @@ export const serverSchema = z.object({
 	SENTRY_DSN: z.string().optional(),
 	IMAGE_CAPTION_URL: z.string().optional(),
 	DEV_SUPABASE_JWT_SECRET_KEY: z.string().optional(),
+	RESEND_KEY: z.string().optional(),
 	DEV_SUPABASE_SERVICE_KEY: z.string().optional(),
 	GOOGLE_GEMINI_TOKEN: z.string(),
 });
@@ -36,6 +37,7 @@ export const serverEnvironment = {
 	DEV_SUPABASE_JWT_SECRET_KEY: process.env.DEV_SUPABASE_JWT_SECRET_KEY,
 	DEV_SUPABASE_SERVICE_KEY: process.env.DEV_SUPABASE_SERVICE_KEY,
 	GOOGLE_GEMINI_TOKEN: process.env.GOOGLE_GEMINI_TOKEN,
+	RESEND_KEY: process.env.RESEND_KEY,
 };
 
 /**
@@ -50,7 +52,6 @@ export const clientSchema = z.object({
 	NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
 	NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY: z.string().optional(),
 	NEXT_PUBLIC_DEV_SUPABASE_URL: z.string().optional(),
-	NEXT_PUBLIC_VERCEL_URL: z.string(),
 	NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID: z.string(),
 	NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID: z.string(),
 	NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY: z.string(),
@@ -72,7 +73,6 @@ export const clientEnvironment = {
 	NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY:
 		process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY,
 	NEXT_PUBLIC_DEV_SUPABASE_URL: process.env.NEXT_PUBLIC_DEV_SUPABASE_URL,
-	NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
 	NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID:
 		process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID,
 	NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID:

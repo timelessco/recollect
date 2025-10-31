@@ -7,7 +7,7 @@
   <h3 align="center">Recollect</h3>
 
   <p align="center">
-    Recollect is an open source bookmark, images, documents manager built using nextjs and supabase.
+    Recollect is an open-source bookmark, images, documents manager built using nextjs and supabase.
     <br/>
     <br/>
   </p>

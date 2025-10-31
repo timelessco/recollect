@@ -2,19 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { useIsFetching, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { motion } from "motion/react";
 import { Item } from "react-stately";
 
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import { Spinner } from "../../../components/spinner";
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
@@ -30,7 +27,6 @@ import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
@@ -112,7 +108,6 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -139,7 +134,6 @@ const CardSection = ({
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
-	const session = useSupabaseSession((state) => state.session);
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
@@ -150,10 +144,7 @@ const CardSection = ({
 	);
 
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
-
-	const { sortBy } = useGetSortBy();
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -189,10 +180,6 @@ const CardSection = ({
 			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	}
-
-	const isAllBookmarksDataFetching = useIsFetching({
-		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-	});
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
@@ -420,12 +407,10 @@ const CardSection = ({
 								{pencilIcon}
 								{isDeleteBookmarkLoading &&
 								deleteBookmarkId?.includes(post?.id) ? (
-									<div>
-										<Spinner
-											className="h-3 w-3 animate-spin"
-											style={{ color: "var(--plain-reverse-color)" }}
-										/>
-									</div>
+									<Spinner
+										className="h-3 w-3 animate-spin"
+										style={{ color: "var(--plain-reverse-color)" }}
+									/>
 								) : (
 									trashIcon
 								)}
@@ -523,13 +508,7 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<motion.figure
-					className={figureClassName}
-					layout={
-						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
-						// isLoading
-					}
-				>
+				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -549,7 +528,7 @@ const CardSection = ({
 						sizesLogic={sizesLogic}
 						url={url}
 					/>
-				</motion.figure>
+				</figure>
 			</div>
 		);
 	};
@@ -861,7 +840,7 @@ const CardSection = ({
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		"py-2 pl-[28px] pr-[19px]":
+		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
 	});

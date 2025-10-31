@@ -4,7 +4,7 @@
 
 Go to the following URL
 
-<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftimelessco%2Frecollect&env=SUPABASE_JWT_SECRET_KEY,SUPABASE_SERVICE_KEY,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_VERCEL_URL>
+<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftimelessco%2Frecollect&env=SUPABASE_JWT_SECRET_KEY,SUPABASE_SERVICE_KEY,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL>
 
 This will ask the following env variables
 
@@ -15,7 +15,6 @@ SUPABASE_JWT_SECRET_KEY: Supabase project secret key got from Supabase dashboard
 SUPABASE_SERVICE_KEY: Supabase project service key got from Supabase dashboard
 NEXT_PUBLIC_SUPABASE_ANON_KEY: Supabase project anon key got from Supabase dashboard
 NEXT_PUBLIC_SUPABASE_URL: Supabase project url got from Supabase dashboard
-NEXT_PUBLIC_VERCEL_URL: the URL where the app is going to be hosted
 ```
 
 Adding these env variables will deploy your app in Vercel !
