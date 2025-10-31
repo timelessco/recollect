@@ -67,8 +67,7 @@ const Option = ({
 	const liClassName = classNames(
 		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
 		{
-			"mb-6": cardTypeCondition === viewValues.moodboard,
-			"mb-[18px]": cardTypeCondition === viewValues.card,
+			"": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
 			// 	cardTypeCondition === viewValues.moodboard ||
 			// 	cardTypeCondition === viewValues.card ||
@@ -77,7 +76,7 @@ const Option = ({
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
-			"hover:bg-custom-gray-8 mb-1":
+			"hover:bg-gray-100 mb-1":
 				(cardTypeCondition === viewValues.list ||
 					cardTypeCondition === viewValues.headlines) &&
 				!isSelected,
@@ -113,12 +112,12 @@ const Option = ({
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute left-0 top-0  h-full w-full rounded-lg ${
-					isTrashPage ? "cursor-auto" : "cursor-pointer"
+					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (isTrashPage || item?.key === "$.0") {
+					if (isTrashPage || item?.key === "$.0" || isPublicPage) {
 						event.preventDefault();
 						return;
 					}

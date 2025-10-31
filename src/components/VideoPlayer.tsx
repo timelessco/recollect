@@ -17,7 +17,7 @@ export const VideoPlayer = ({
 			playing={isActive}
 			ref={playerRef}
 			src={src}
-			style={{ maxHeight: "80vh", margin: "auto", width: "auto" }}
+			style={{ maxHeight: "80vh", margin: "auto", width: "100%" }}
 		/>
 	);
 };

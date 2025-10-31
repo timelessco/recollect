@@ -16,11 +16,11 @@ export type ModalStoreState = {
 };
 
 export type LoadersStoreState = {
-	// addLoadingBookmarkId: (id: number) => void;
+	addLoadingBookmarkId: (id: number) => void;
 	isSearchLoading: boolean;
 	isSortByLoading: boolean;
-	// loadingBookmarkIds: Set<number>;
-	// removeLoadingBookmarkId: (id: number) => void;
+	loadingBookmarkIds: Set<number>;
+	removeLoadingBookmarkId: (id: number) => void;
 	setSidePaneOptionLoading: (value: number | string | null) => void;
 	sidePaneOptionLoading: number | string | null;
 	toggleIsSearchLoading: (value: boolean) => void;
@@ -31,7 +31,7 @@ export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	aiButtonToggle: boolean;
 	currentBookmarkView: BookmarksViewTypes;
-	currentSettingsPage: "change-email" | "delete" | "main";
+	currentSettingsPage: "api-key" | "change-email" | "delete" | "main";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;

@@ -13,7 +13,7 @@ import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutation
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
@@ -32,14 +32,12 @@ import { mutationApiCall } from "../../../utils/apiHelpers";
 import { CATEGORIES_KEY, EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
-const rightTextStyles =
-	"text-13 font-medium leading-[15px] text-custom-gray-10";
+const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
 const AccessUserInfo = (props: {
 	isLoggedinUserTheOwner: boolean;
 	item: CollabDataInCategory;
 }) => {
-	const session = useSupabaseSession((state) => state.session);
 	const { item, isLoggedinUserTheOwner } = props;
 
 	const { updateSharedCategoriesUserAccessMutation } =
@@ -53,24 +51,26 @@ const AccessUserInfo = (props: {
 			return (
 				<div className=" flex items-center space-x-1">
 					<p className={rightTextStyles}>pending</p>
-					<figure>
-						<TrashIcon
-							className="h-4 w-4 cursor-pointer text-red-400 hover:text-red-600"
-							onClick={() => {
-								if (isLoggedinUserTheOwner) {
-									void mutationApiCall(
-										deleteSharedCategoriesUserMutation.mutateAsync({
-											id: item.share_id as number,
-										}),
-									);
-								} else {
-									errorToast(
-										"You cannot perform this action as you are not the owner of this collection",
-									);
-								}
-							}}
-						/>
-					</figure>
+					{isLoggedinUserTheOwner && (
+						<figure>
+							<TrashIcon
+								className="h-4 w-4 cursor-pointer text-red-400 hover:text-red-600"
+								onClick={() => {
+									if (isLoggedinUserTheOwner) {
+										void mutationApiCall(
+											deleteSharedCategoriesUserMutation.mutateAsync({
+												id: item.share_id as number,
+											}),
+										);
+									} else {
+										errorToast(
+											"You cannot perform this action as you are not the owner of this collection",
+										);
+									}
+								}}
+							/>
+						</figure>
+					)}
 				</div>
 			);
 		}
@@ -111,7 +111,7 @@ const AccessUserInfo = (props: {
 						]}
 						renderCustomSelectButton={() => (
 							<div className="flex items-center">
-								<p className=" mr-1">
+								<p className=" mr-1 text-gray-800">
 									{item.edit_access ? "Can Edit" : "Can View"}
 								</p>
 								<figure>
@@ -158,7 +158,7 @@ const AccessUserInfo = (props: {
 				) : (
 					<DefaultUserIcon className="h-5 w-5" />
 				)}
-				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-custom-gray-1">
+				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-gray-800">
 					{item.userEmail}
 				</p>
 			</div>
@@ -269,7 +269,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none":
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-600 placeholder:text-gray-600":
 			true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
@@ -296,10 +296,14 @@ const ShareContent = () => {
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isLoading ? (
-							<Spinner />
+							<Spinner
+								className="h-3 w-3 animate-spin"
+								style={{ color: "var(--plain-reverse-color)" }}
+							/>
 						) : (
 							<AriaSelect
 								defaultValue="View"
+								disabled={!isUserTheCategoryOwner}
 								onOptionClick={(value) =>
 									setInviteUserEditAccess(value === "Editor")
 								}
@@ -309,7 +313,7 @@ const ShareContent = () => {
 								]}
 								// disabled
 								renderCustomSelectButton={() => (
-									<div className="flex items-center">
+									<div className="flex items-center text-gray-800">
 										<p className=" mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
@@ -321,28 +325,36 @@ const ShareContent = () => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-custom-gray-11 rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-[7px] px-[10px] bg-gray-100 rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
 			<div className=" pt-3">
-				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-custom-gray-10">
+				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-500">
 					People with access
 				</p>
 				<div className="pb-2">
-					{currentCategory?.collabData?.map((item) => (
-						<AccessUserInfo
-							isLoggedinUserTheOwner={isUserTheCategoryOwner}
-							item={item}
-							key={item.userEmail}
-						/>
-					))}
+					{currentCategory?.collabData
+						?.slice()
+						.sort((a, b) => {
+							// Move owner to the top
+							if (a.isOwner) return -1;
+							if (b.isOwner) return 1;
+							return 0;
+						})
+						.map((item) => (
+							<AccessUserInfo
+								isLoggedinUserTheOwner={isUserTheCategoryOwner}
+								item={item}
+								key={item.userEmail}
+							/>
+						))}
 				</div>
-				<div className="mx-2 flex items-end justify-between border-y-[1px] border-custom-gray-11 py-[15.5px]">
+				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px]">
 					<div className=" flex items-center">
 						<figure>
 							<GlobeIcon />
 						</figure>
-						<p className="ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+						<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
 							Anyone with link
 						</p>
 					</div>
@@ -368,7 +380,7 @@ const ShareContent = () => {
 							]}
 							renderCustomSelectButton={() => (
 								<div className="flex items-center">
-									<p className=" mr-1">
+									<p className=" mr-1 text-gray-800">
 										{currentCategory?.is_public ? "View access" : "No access"}
 									</p>
 									<figure>
@@ -402,7 +414,7 @@ const ShareContent = () => {
 					<figure>
 						<LinkIcon />
 					</figure>
-					<p className="ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+					<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
 						{linkCopied ? "Link copied" : "Copy link"}
 					</p>
 				</div>

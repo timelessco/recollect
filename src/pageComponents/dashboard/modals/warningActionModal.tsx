@@ -2,7 +2,7 @@ import React from "react";
 
 import Button from "../../../components/atoms/button";
 import Modal from "../../../components/modal";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/spinner";
 
 type WarningActionModalTypes = {
 	buttonText: string;
@@ -40,7 +40,10 @@ const WarningActionModal = (props: WarningActionModalTypes) => {
 					</>
 				) : (
 					<div className="flex justify-center">
-						<Spinner />
+						<Spinner
+							className="h-3 w-3 animate-spin"
+							style={{ color: "var(--plain-reverse-color)" }}
+						/>
 					</div>
 				)}
 			</div>

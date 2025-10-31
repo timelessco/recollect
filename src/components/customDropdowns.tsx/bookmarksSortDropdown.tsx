@@ -5,7 +5,6 @@ import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
 import TickIcon from "../../icons/tickIcon";
-import { useLoadersStore } from "../../store/componentStore";
 import {
 	type BookmarksSortByTypes,
 	type BookmarkViewCategories,
@@ -13,7 +12,6 @@ import {
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { AriaDropdownMenu } from "../ariaDropdown";
 import AriaSelect from "../ariaSelect";
-import Spinner from "../spinner";
 
 type BookmarksSortDropdownTypes = {
 	isDropdown?: boolean;
@@ -30,8 +28,6 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 		isDropdown = true,
 		renderOnlyButton = false,
 	} = props;
-
-	const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
 
 	const { sortBy: bookmarksSortValue } = useGetSortBy();
 
@@ -84,13 +80,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 
 	const buttonContent = (
 		<>
-			{isSortByLoading ? (
-				<span className="mr-[6px]">
-					<Spinner />
-				</span>
-			) : (
-				<figure className="h-4 w-4">{currentValue?.icon}</figure>
-			)}
+			<figure className="h-4 w-4">{currentValue?.icon}</figure>
 			<p className="ml-[6px]">{currentValue?.label}</p>
 		</>
 	);
@@ -103,8 +93,8 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			<div className="flex w-full items-center justify-between">
 				{find(sortOptions, (item) => item?.label === value)?.label}
 				{value === currentValue?.label ? (
-					<figure className=" h-3 w-3">
-						<TickIcon />
+					<figure className="h-3 w-3">
+						<TickIcon color="var(--color-gray-800)" />
 					</figure>
 				) : null}
 			</div>
@@ -127,8 +117,8 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			options={sortOptions}
 			renderCustomSelectButton={(open) => (
 				<div
-					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-8 ${
-						open ? "bg-custom-gray-8" : ""
+					className={`flex items-center rounded-lg px-2 py-[5px] hover:bg-gray-100 ${
+						open ? "bg-gray-100" : ""
 					}`}
 					title="sort-by"
 				>

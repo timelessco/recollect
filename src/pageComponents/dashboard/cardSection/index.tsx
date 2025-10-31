@@ -2,23 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { useIsFetching, useQueryClient } from "@tanstack/react-query";
-import { getImgFromArr } from "array-to-image";
-import { decode } from "blurhash";
+import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { motion } from "motion/react";
 import { Item } from "react-stately";
 
-import logoDiamond from "../../../../public/app-svgs/logo-diamond.svg";
-import loaderGif from "../../../../public/loader-gif.gif";
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
-import Spinner from "../../../components/spinner";
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
+import { Spinner } from "../../../components/spinner";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
@@ -34,7 +27,6 @@ import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
@@ -48,7 +40,6 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	defaultBlur,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
@@ -68,6 +59,7 @@ import {
 } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
+import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 
 export type onBulkBookmarkDeleteType = (
@@ -116,7 +108,6 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -138,12 +129,11 @@ const CardSection = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router?.asPath]);
 
-	const [errorImgs, setErrorImgs] = useState([]);
+	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
-	const session = useSupabaseSession((state) => state.session);
 	// cat_id reffers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
@@ -154,11 +144,7 @@ const CardSection = ({
 	);
 
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	// const { loadingBookmarkIds } = useLoadersStore();
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
-
-	const { sortBy } = useGetSortBy();
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -194,10 +180,6 @@ const CardSection = ({
 			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 		};
 	}
-
-	const isAllBookmarksDataFetching = useIsFetching({
-		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-	});
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
@@ -283,7 +265,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-15";
+			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-sm z-15";
 
 		const externalLinkIcon = (
 			<div
@@ -425,9 +407,10 @@ const CardSection = ({
 								{pencilIcon}
 								{isDeleteBookmarkLoading &&
 								deleteBookmarkId?.includes(post?.id) ? (
-									<div>
-										<Spinner size={15} />
-									</div>
+									<Spinner
+										className="h-3 w-3 animate-spin"
+										style={{ color: "var(--plain-reverse-color)" }}
+									/>
 								) : (
 									trashIcon
 								)}
@@ -475,7 +458,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-gray-600 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -497,33 +480,9 @@ const CardSection = ({
 		const isVideo = isBookmarkVideo(type);
 		const isAudio = isBookmarkAudio(type);
 
-		const imgClassName = classNames({
-			"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
-				cardTypeCondition === viewValues.list,
-			" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
-				cardTypeCondition === viewValues.card,
-			"w-full rounded-lg moodboard-card-img min-h-[192px] object-cover":
-				cardTypeCondition === viewValues.moodboard ||
-				cardTypeCondition === viewValues.timeline,
-			"relative z-[-1]":
-				cardTypeCondition === viewValues.card ||
-				cardTypeCondition === viewValues.moodboard,
-		});
-
-		const loaderClassName = classNames({
-			"w-full h-14 w-20 flex items-center justify-center bg-gray-100 rounded-lg":
-				cardTypeCondition === viewValues.list,
-			"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg":
-				cardTypeCondition === viewValues.card ||
-				cardTypeCondition === viewValues.timeline,
-			"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg":
-				cardTypeCondition === viewValues.moodboard,
-		});
-
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
-			"mr-3": cardTypeCondition === viewValues.list,
-			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
+			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
 			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
@@ -532,71 +491,6 @@ const CardSection = ({
 				img === undefined,
 			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
-
-		const errorImgPlaceholder = (isError: boolean) => (
-			<div className={loaderClassName}>
-				<Image
-					alt="img-error"
-					className="h-[50px] w-[50px] rounded-lg object-cover"
-					src={isError ? logoDiamond : loaderGif}
-				/>
-			</div>
-		);
-		// const isLoading = loadingBookmarkIds.has(id);
-
-		const imgLogic = () => {
-			if (hasCoverImg) {
-				if (
-					(isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading) &&
-					isNil(id)
-				) {
-					return errorImgPlaceholder(false);
-				}
-
-				// if (isLoading && !img) {
-				// 	return errorImgPlaceholder(false);
-				// }
-
-				if (errorImgs?.includes(id as never)) {
-					return errorImgPlaceholder(false);
-				}
-
-				let blurSource = "";
-
-				if (
-					!isNil(img) &&
-					!isNil(blurUrl) &&
-					!isEmpty(blurUrl) &&
-					!isPublicPage
-				) {
-					const pixels = decode(blurUrl, 32, 32);
-					const image = getImgFromArr(pixels, 32, 32);
-					blurSource = image.src;
-				}
-
-				return (
-					<>
-						{img ? (
-							<Image
-								alt="bookmark-img"
-								blurDataURL={blurSource || defaultBlur}
-								className={imgClassName}
-								height={_height ?? 200}
-								onError={() => setErrorImgs([id as never, ...errorImgs])}
-								placeholder="blur"
-								sizes={sizesLogic}
-								src={`${img}`}
-								width={_width ?? 200}
-							/>
-						) : (
-							errorImgPlaceholder(false)
-						)}
-					</>
-				);
-			}
-
-			return null;
-		};
 
 		const playSvgClassName = classNames({
 			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
@@ -613,13 +507,7 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<motion.figure
-					className={figureClassName}
-					layout={
-						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
-						// isLoading
-					}
-				>
+				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -627,8 +515,18 @@ const CardSection = ({
 						/>
 					)}
 					{isAudio && <AudioIcon className={playSvgClassName} />}
-					{imgLogic()}
-				</motion.figure>
+					<ImgLogic
+						_height={_height ?? 200}
+						_width={_width ?? 200}
+						blurUrl={blurUrl}
+						cardTypeCondition={cardTypeCondition}
+						hasCoverImg={hasCoverImg ?? false}
+						id={id}
+						img={img}
+						isPublicPage={isPublicPage}
+						sizesLogic={sizesLogic}
+					/>
+				</figure>
 			</div>
 		);
 	};
@@ -643,7 +541,11 @@ const CardSection = ({
 		});
 
 		if (favIconErrorImgs?.includes(item?.id)) {
-			return <ImageIcon size={`${size}`} />;
+			return (
+				<figure className="rounded p-0.5 text-plain-reverse-color">
+					<ImageIcon size={`${size}`} />
+				</figure>
+			);
 		}
 
 		if (isUserInTweetsPage && item?.meta_data?.twitter_avatar_url) {
@@ -682,14 +584,26 @@ const CardSection = ({
 		}
 
 		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
-			return <VideoIcon size="15" />;
+			return (
+				<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
+					<VideoIcon size="15" />
+				</figure>
+			);
 		}
 
 		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
-			return <FolderIcon size="15" />;
+			return (
+				<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
+					<FolderIcon size="15" />
+				</figure>
+			);
 		}
 
-		return <ImageIcon size="15" />;
+		return (
+			<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
+				<ImageIcon size={`${size}`} />
+			</figure>
+		);
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
@@ -702,10 +616,10 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-custom-gray-10">
+						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-gray-600">
 							<p className="mr-1">in</p>
 							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-[13px] font-450 leading-4 text-custom-gray-10">
+							<p className="ml-1 text-[13px] font-450 leading-4 text-gray-600">
 								{bookmarkCategoryData?.category_name}
 							</p>
 						</div>
@@ -716,7 +630,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="rounded-[5px] bg-gray-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-light-10"
+			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-500"
 			key={id}
 		>
 			#{name}
@@ -764,20 +678,20 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="text-sm leading-4"
+								className="card-title text-sm leading-4 text-gray-800"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}
 							</ReadMore>
 						)}
-					<div className="space-y-[6px]">
+					<div className="space-y-[6px] text-gray-500">
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
 								<div className="flex flex-wrap items-center space-x-1">
@@ -789,7 +703,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px] font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-[13px] font-450 leading-4 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -835,14 +749,14 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					<div className="flex flex-wrap items-center space-x-1 sm:space-x-0 sm:space-y-1">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10 sm:mt-[1px]">
+								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-gray-600 sm:mt-[1px]">
 									{item?.description}
 								</p>
 							)}
@@ -857,7 +771,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -886,7 +800,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className=" ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -895,7 +809,7 @@ const CardSection = ({
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -922,7 +836,7 @@ const CardSection = ({
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		"py-2 pl-[28px] pr-[19px]":
+		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
 	});

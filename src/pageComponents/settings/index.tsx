@@ -13,21 +13,23 @@ import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/us
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
-import Spinner from "../../components/spinner";
+import { Spinner } from "../../components/spinner";
+import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
-import DotIcon from "../../icons/miscellaneousIcons/dotIcon";
+import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import ImageIcon from "../../icons/imageIcon";
+import { InfoIcon } from "../../icons/infoIcon";
+import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import {
-	type ProfilesTableTypes,
-	type SupabaseSessionType,
-} from "../../types/apiTypes";
+import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
+	saveButtonClassName,
 	settingsDeleteButtonRedClassName,
 	settingsInputClassName,
 	settingsInputContainerClassName,
@@ -35,7 +37,6 @@ import {
 	settingsLightButtonClassName,
 	settingsMainHeadingClassName,
 	settingsParagraphClassName,
-	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
 import {
 	DISPLAY_NAME_CHECK_PATTERN,
@@ -128,6 +129,7 @@ const Settings = () => {
 		register,
 		handleSubmit,
 		formState: { errors },
+		watch,
 		reset,
 	} = useForm<SettingsUsernameFormTypes>({
 		defaultValues: {
@@ -135,16 +137,23 @@ const Settings = () => {
 		},
 	});
 
+	const usernameValue = watch("username");
+	const originalUsername = userData?.user_name ?? "";
+
 	const {
 		register: displayNameRegister,
 		handleSubmit: displaynameHandleSubmit,
 		formState: { errors: displaynameError },
 		reset: displaynameReset,
+		watch: displaynameWatch,
 	} = useForm<SettingsDisplaynameFormTypes>({
 		defaultValues: {
 			displayname: "",
 		},
 	});
+
+	const displaynameValue = displaynameWatch("displayname");
+	const originalDisplayname = userData?.display_name ?? "";
 
 	useEffect(() => {
 		reset({ username: userData?.user_name });
@@ -195,9 +204,7 @@ const Settings = () => {
 				type="file"
 			/>
 			<div>
-				<p className={`${settingsMainHeadingClassName} mb-[30px]`}>
-					My Profile
-				</p>
+				<p className={`${settingsMainHeadingClassName} mb-4`}>Account</p>
 				<div className="flex w-full items-center space-x-2 sm:flex-col">
 					<div
 						onClick={() => {
@@ -220,22 +227,22 @@ const Settings = () => {
 						</figure>
 					</div>
 					<div className="sm:mt-2">
-						<div className=" flex text-sm font-semibold leading-[21px] text-black">
+						<div className=" flex gap-2 text-sm font-semibold leading-[21px] text-black">
 							<Button
-								className="py-0 text-sm font-semibold leading-[21px] text-black"
+								className={`px-2 py-[6px] ${saveButtonClassName}`}
 								onClick={() => {
 									if (inputFile.current) {
 										inputFile.current.click();
 									}
 								}}
 							>
-								Upload new photo
+								<div className="flex items-center space-x-[6px] ">
+									<ImageIcon />
+									<span>Upload image</span>
+								</div>
 							</Button>
-							<p className="flex items-center">
-								<DotIcon />
-							</p>
 							<Button
-								className="py-0 text-sm font-semibold leading-[21px] text-black"
+								className="bg-gray-100  px-2 py-[6px] text-[13px] font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -252,169 +259,194 @@ const Settings = () => {
 								Remove
 							</Button>
 						</div>
-						<div className=" ml-2 mt-1 text-13 font-[420] leading-[15px] text-custom-gray-10">
-							<p>Photos help people recognize you</p>
-						</div>
 					</div>
 				</div>
-				<form
-					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5 sm:flex-col"
-					onSubmit={handleSubmit(onSubmit)}
-				>
-					<LabelledComponent
-						label="Username"
-						labelClassName={settingsInputLabelClassName}
-					>
-						<div className={settingsInputContainerClassName}>
-							<figure className=" mr-2">
-								<SettingsUserIcon />
-							</figure>
-							<Input
-								autoFocus={false}
-								errorClassName=" absolute w-full top-[29px]"
-								tabIndex={-1}
-								{...register("username", {
-									required: {
-										value: true,
-										message: "Username cannot be empty",
-									},
-									minLength: {
-										value: 4,
-										message: "Username must have a minimum of 4 characters",
-									},
-									maxLength: {
-										value: 100,
-										message: "Username must not exceed 100 characters",
-									},
-									pattern: {
-										value: LETTERS_NUMBERS_CHECK_PATTERN,
-										message: "Only have lowercase and no blank spaces",
-									},
-								})}
-								className={settingsInputClassName}
-								errorText={errors?.username?.message ?? ""}
-								id="username"
-								isError={Boolean(errors?.username)}
-								placeholder="Enter username"
-							/>
-						</div>
-					</LabelledComponent>
-					<div className="flex min-w-[150px] max-w-[150px] justify-end sm:mt-5 sm:w-full sm:min-w-0 sm:max-w-full">
-						<Button
-							className={settingsLightButtonClassName}
-							onClick={handleSubmit(onSubmit)}
-							type="light"
+				<div className="mt-[44px] flex flex-row gap-3">
+					<form onSubmit={handleSubmit(onSubmit)}>
+						<LabelledComponent
+							label="Username"
+							labelClassName={settingsInputLabelClassName}
 						>
-							Change username
-						</Button>
-					</div>
-				</form>
-				<form
-					className="flex items-end border-b-[1px] border-b-gray-light-4 pb-[28px] pt-5 sm:flex-col"
-					onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
-				>
-					<LabelledComponent
-						label="Display name"
-						labelClassName={settingsInputLabelClassName}
-					>
-						<div className={settingsInputContainerClassName}>
-							<figure className=" mr-2">
-								<SettingsUserIcon />
-							</figure>
-							<Input
-								autoFocus={false}
-								errorClassName="absolute w-full top-[29px]"
-								tabIndex={-1}
-								{...displayNameRegister("displayname", {
-									required: {
-										value: true,
-										message: "Name cannot be empty",
-									},
-									maxLength: {
-										value: 100,
-										message: "Name must not exceed 100 characters",
-									},
-									pattern: {
-										value: DISPLAY_NAME_CHECK_PATTERN,
-										message: "Should not have special charecters",
-									},
-								})}
-								className={settingsInputClassName}
-								errorText={displaynameError?.displayname?.message ?? ""}
-								id="displayname"
-								isError={Boolean(displaynameError?.displayname)}
-								placeholder="Enter display name"
-							/>
-						</div>
-					</LabelledComponent>
-					<div className="flex min-w-[150px] max-w-[150px] justify-end sm:mt-5 sm:w-full sm:min-w-0 sm:max-w-full">
-						<Button
-							className={settingsLightButtonClassName}
-							onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
-							type="light"
+							<div className={settingsInputContainerClassName}>
+								<figure className="mr-2">
+									<SettingsUserIcon />
+								</figure>
+								<Input
+									autoFocus={false}
+									errorClassName="absolute  top-[29px]"
+									tabIndex={-1}
+									{...register("username", {
+										required: {
+											value: true,
+											message: "Username cannot be empty",
+										},
+										minLength: {
+											value: 4,
+											message: "Username must have a minimum of 4 characters",
+										},
+										maxLength: {
+											value: 100,
+											message: "Username must not exceed 100 characters",
+										},
+										pattern: {
+											value: LETTERS_NUMBERS_CHECK_PATTERN,
+											message: "Only have lowercase and no blank spaces",
+										},
+									})}
+									className={settingsInputClassName}
+									errorText={errors?.username?.message ?? ""}
+									id="username"
+									isError={Boolean(errors?.username)}
+									placeholder="Enter username"
+								/>
+								<Button
+									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+										usernameValue !== originalUsername
+											? ""
+											: "pointer-events-none invisible"
+									}`}
+								>
+									Save
+								</Button>
+							</div>
+						</LabelledComponent>
+					</form>
+					<form onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}>
+						<LabelledComponent
+							label="Display name"
+							labelClassName={settingsInputLabelClassName}
 						>
-							Change name
-						</Button>
-					</div>
-				</form>
-				<div className="border-b-[1px] border-b-gray-light-4  pb-6 pt-[25px]">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
-						Account security
+							<div className={`${settingsInputContainerClassName} w-full`}>
+								<figure className=" mr-2">
+									<SettingsUserIcon />
+								</figure>
+								<Input
+									autoFocus={false}
+									errorClassName="absolute  top-[29px]"
+									tabIndex={-1}
+									{...displayNameRegister("displayname", {
+										required: {
+											value: true,
+											message: "Name cannot be empty",
+										},
+										maxLength: {
+											value: 100,
+											message: "Name must not exceed 100 characters",
+										},
+										pattern: {
+											value: DISPLAY_NAME_CHECK_PATTERN,
+											message: "Should not have special charecters",
+										},
+									})}
+									className={settingsInputClassName}
+									errorText={displaynameError?.displayname?.message ?? ""}
+									id="displayname"
+									isError={Boolean(displaynameError?.displayname)}
+									placeholder="Enter display name"
+								/>
+								<Button
+									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+										displaynameValue !== originalDisplayname
+											? ""
+											: "pointer-events-none invisible"
+									}`}
+								>
+									Save
+								</Button>
+							</div>
+						</LabelledComponent>
+					</form>
+				</div>
+				{/* <Switch /> */}
+				<div className="pt-10">
+					<p className="pb-[10px] text-[14px] font-[500] leading-[115%] text-gray-900">
+						Email
 					</p>
-					{session?.user?.app_metadata?.provider === "email" ? (
-						<div className="flex items-center justify-between sm:flex-col">
-							<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
-								<p className={settingsSubHeadingClassName}>Email</p>
-								<p className={`mt-1 sm:mt-0 ${settingsParagraphClassName}`}>
+					<div className="flex items-center justify-between rounded-lg bg-gray-100 sm:flex-col">
+						<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
+							<div className="ml-[19.5px] flex items-center gap-2 rounded-lg">
+								{session?.user?.app_metadata?.provider === "email" ? (
+									<MailIconBlack />
+								) : (
+									<GoogleLoginIcon />
+								)}
+								<p
+									className={`my-2 ml-2 text-gray-900  ${settingsParagraphClassName}`}
+								>
 									{userData?.email}
+									<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
+										Current email
+									</p>
 								</p>
 							</div>
-							<Button
-								className={`sm:mt-5 ${settingsLightButtonClassName}`}
-								onClick={() => setCurrentSettingsPage("change-email")}
-								type="light"
-							>
-								Change email
-							</Button>
-						</div>
-					) : (
-						<div className={settingsParagraphClassName}>
-							You have logged in using google auth with this email{" "}
-							{userData?.email}
-						</div>
-					)}
-				</div>
-				<div className="pt-6">
-					<p className="pb-4 text-base font-semibold leading-[18px] tracking-[1.5%] text-black">
-						Danger zone
-					</p>
-					<div className="flex items-center justify-between sm:flex-col">
-						<div className="w-[70%] sm:w-full">
-							<p className={`sm:mb-2 ${settingsSubHeadingClassName}`}>
-								Delete account
-							</p>
-							<p className={`mt-1 w-[90%] ${settingsParagraphClassName}`}>
-								By deleting your account, you’ll not be able to log in and all
-								the content you have uploaded will be lost and will not be able
-								to be recovered.
-							</p>
 						</div>
 						<Button
-							className={`w-[150px] sm:mt-5 sm:w-full ${settingsDeleteButtonRedClassName}`}
+							className={`mr-[10px] sm:mt-5 ${settingsLightButtonClassName}`}
+							onClick={() => setCurrentSettingsPage("change-email")}
+							type="light"
+						>
+							{session?.user?.app_metadata?.provider === "email"
+								? "Change email"
+								: "Disconnect"}
+						</Button>
+					</div>
+					{session?.user?.app_metadata?.provider !== "email" && (
+						<p className="mt-2 flex items-center gap-x-2 text-[13px] font-[400] leading-[150%] text-gray-600">
+							<InfoIcon />
+							You have logged in with your Google account.
+						</p>
+					)}
+				</div>
+				{/* 
+				feature yet to implement
+				<div className="pt-10">
+					<p className="pb-[10px] text-[14px] font-[500] leading-[115%] text-gray-900">
+						Active devices
+					</p>
+					<div className="flex items-center justify-between rounded-lg bg-gray-100 sm:flex-col">
+						<div className="  flex  flex-row sm:w-full">
+							<div className="my-[10px] ml-[19.5px] flex  gap-2 rounded-lg">
+								<PCLogo />
+								<p className={settingsParagraphClassName}>
+									Chrome on macOS
+									<p className="mt-1 text-[14px] font-[400]  text-gray-600">
+										Chennai, India
+									</p>
+								</p>
+							</div>
+							<div className="ml-2 mt-[9px] h-5 rounded-2xl bg-gray-50 px-1.5 py-[3px] text-[12px] font-[500] leading-[115%] text-[#18794E]">
+								This Device
+							</div>
+						</div>
+					</div>
+				</div> */}
+				<Switch />
+				<div className="pt-10">
+					<p className=" text-[14px] font-[500] leading-[115%] text-gray-900">
+						Delete Account
+					</p>
+					<div className="flex flex-col  justify-between">
+						<p className="my-[10px] text-[14px] font-[400] leading-[150%] text-gray-800">
+							If you no longer wish to use recollect, you can permanently delete
+							your account.
+						</p>
+						<Button
+							className={`w-full sm:mt-5 ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
-							<div className="flex w-full justify-center">
+							<p className="flex w-full justify-center  sm:w-[105px]">
 								<figure className="mr-2">
 									<TrashIconRed />
 								</figure>
-								<p className="flex w-full justify-center sm:w-[105px]">
-									{deleteUserMutation?.isLoading ? (
-										<Spinner />
-									) : (
-										"Delete account"
-									)}
-								</p>
-							</div>
+								{deleteUserMutation?.isLoading ? (
+									<Spinner
+										className="h-3 w-3 animate-spin"
+										style={{ color: "red" }}
+									/>
+								) : (
+									"Delete my account"
+								)}
+							</p>
 						</Button>
 					</div>
 				</div>

@@ -168,7 +168,7 @@ const Dashboard = () => {
 		(state) => state.setShareCategoryId,
 	);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
 			setIsEdit(false);
@@ -198,7 +198,6 @@ const Dashboard = () => {
 	const {
 		flattenedSearchData,
 		fetchNextPage: fetchNextSearchPage,
-		isLoading: isSearchLoading,
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
 
@@ -646,10 +645,14 @@ const Dashboard = () => {
 								>
 									<input {...getInputProps()} />
 									<div
-										className=""
 										id="scrollableDiv"
 										ref={infiniteScrollRef}
-										style={{ height: "100vh", overflow: "auto" }}
+										style={{
+											height: "100vh",
+											overflowY: "auto",
+											overflowX: "hidden",
+											overflowAnchor: "none",
+										}}
 									>
 										<InfiniteScroll
 											dataLength={
@@ -658,11 +661,8 @@ const Dashboard = () => {
 													: flattendPaginationBookmarkData?.length ?? 0
 											}
 											endMessage={
-												<p className="pb-6 text-center">
-													{!isSearchLoading && "Life happens, save it."}
-													{isSearchLoading &&
-														(flattenedSearchData?.length ?? 0) > 0 &&
-														"End of search results."}
+												<p className="pb-6 text-center text-plain-reverse-color">
+													{isSearchLoading ? "" : "Life happens, save it."}
 												</p>
 											}
 											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}
@@ -838,7 +838,7 @@ const Dashboard = () => {
 			<Modal
 				open={showAddBookmarkModal}
 				setOpen={() => setShowAddBookmarkModal(false)}
-				wrapperClassName="w-[30%] xl:w-[80%] p-4 rounded-lg"
+				wrapperClassName="w-[324px] p-4 rounded-lg"
 			>
 				<AddModalContent
 					addExistingTag={async (tag) => {

@@ -54,19 +54,19 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
 		set(() => ({
 			isSearchLoading: value,
 		})),
-	// loadingBookmarkIds: new Set<number>(),
-	// addLoadingBookmarkId: (id: number) =>
-	// 	set((state) => {
-	// 		const newSet = new Set(state.loadingBookmarkIds);
-	// 		newSet.add(id);
-	// 		return { loadingBookmarkIds: newSet };
-	// 	}),
-	// removeLoadingBookmarkId: (id: number) =>
-	// 	set((state) => {
-	// 		const newSet = new Set(state.loadingBookmarkIds);
-	// 		newSet.delete(id);
-	// 		return { loadingBookmarkIds: newSet };
-	// 	}),
+	loadingBookmarkIds: new Set<number>(),
+	addLoadingBookmarkId: (id: number) =>
+		set((state) => {
+			const newSet = new Set(state.loadingBookmarkIds);
+			newSet.add(id);
+			return { loadingBookmarkIds: newSet };
+		}),
+	removeLoadingBookmarkId: (id: number) =>
+		set((state) => {
+			const newSet = new Set(state.loadingBookmarkIds);
+			newSet.delete(id);
+			return { loadingBookmarkIds: newSet };
+		}),
 }));
 
 export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({

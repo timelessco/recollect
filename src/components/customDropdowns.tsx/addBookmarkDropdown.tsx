@@ -72,11 +72,7 @@ const AddBookmarkDropdown = ({
 				initialFocusRef={inputRef}
 				isOpen={openDropdown}
 				menuButton={
-					<Button
-						className="rounded-full p-[7px] hover:bg-black"
-						title="create"
-						type="dark"
-					>
+					<Button className="rounded-full p-[7px]" title="create" type="dark">
 						<figure className="h-4 w-4">
 							<PlusIconWhite />
 						</figure>
@@ -92,7 +88,7 @@ const AddBookmarkDropdown = ({
 			>
 				<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
 					<Button
-						className="p-0 text-grayDark-grayDark-600 hover:text-gray-light-12"
+						className="p-0 text-gray-600 hover:text-gray-900"
 						onClick={() => {
 							if (fileUploadInputRef.current) {
 								fileUploadInputRef.current.click();

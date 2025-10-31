@@ -21,11 +21,11 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 <!-- prettier-ignore-end -->
 	</a>
-	<a href="https://github.com/timelessco/bookmark-tags/blob/main/.github/CODE_OF_CONDUCT.md" target="_blank">
+	<a href="https://github.com/timelessco/recollect/blob/main/.github/CODE_OF_CONDUCT.md" target="_blank">
 		<img alt="Contributor Covenant" src="https://img.shields.io/badge/code_of_conduct-enforced-21bb42" />
 	</a>
-	<a href="https://github.com/timelessco/bookmark-tags/blob/main/LICENSE.md" target="_blank">
-		<img alt="License: MIT" src="https://img.shields.io/github/license/timelessco/bookmark-tags?color=21bb42">
+	<a href="https://github.com/timelessco/recollect/blob/main/LICENSE.md" target="_blank">
+		<img alt="License: MIT" src="https://img.shields.io/github/license/timelessco/recollect?color=21bb42">
 	</a>
 	<img alt="Style: Prettier" src="https://img.shields.io/badge/style-prettier-21bb42.svg" />
 	<img alt="TypeScript: Strict" src="https://img.shields.io/badge/typescript-strict-21bb42.svg" />

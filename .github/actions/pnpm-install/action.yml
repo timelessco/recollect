@@ -1,90 +1,42 @@
 # #######################################################################################
-# "pnpm install" composite action for pnpm 7/8+                                        #
+# "pnpm install" composite action                                                       #
 # --------------------------------------------------------------------------------------#
-# Requirement: @setup/node should be run before                                        #
-#                                                                                      #
-# Usage in workflows steps:                                                            #
-#                                                                                      #
-#      - name: 📥 Monorepo install                                                     #
-#        uses: ./.github/actions/pnpm-install                                          #
-#        with:                                                                         #
-#          enable-corepack: false # (default)                                          #
-#          cwd: ${{ github.workspace }}/apps/my-app # (default = '.')                  #
-#                                                                                      #
-# Reference:                                                                           #
-#   - latest: https://gist.github.com/belgattitude/838b2eba30c324f1f0033a797bab2e31    #
-#                                                                                      #
-# Versions:                                                                            #
-#   - 1.1.0 - 15-07-2023 - Add project custom directory support.                       #
+#                                                                                       #
+# Usage in workflows steps:                                                             #
+#                                                                                       #
+#      - name: 📥 PNPM install                                                          #
+#        uses: ./.github/actions/pnpm-install                                           #
+#                                                                                       #
+# Reference:                                                                            #
+#   - latest: https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time#
 # #######################################################################################
 
-name: PNPM install
 description: Run pnpm install with cache enabled
 
-inputs:
-  enable-corepack:
-    description: Enable corepack
-    required: false
-    default: "false"
-  cwd:
-    description:
-      "Changes node's process.cwd() if the project is not located on the root.
-      Default to process.cwd()"
-    required: false
-    default: .
+name: PNPM install
 
 runs:
-  using: composite
-
   steps:
-    - name: ⚙️ Enable Corepack
-      if: ${{ inputs.enable-corepack == 'true' }}
-      shell: bash
-      working-directory: ${{ inputs.cwd }}
-      run: |
-        corepack enable
-        echo "corepack enabled"
+    - name: Configure Git
+      uses: ./.github/actions/git-config
 
-    - uses: pnpm/action-setup@v4.1.0
-      if: ${{ inputs.enable-corepack == 'false' }}
+    - name: Install pnpm
+      uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
       with:
         run_install: false
-        # If you're not setting the packageManager field in package.json, add the version here
-        # version: 8.6.7
 
-    - name: Expose pnpm config(s) through "$GITHUB_OUTPUT"
-      id: pnpm-config
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-    - name: Cache rotation keys
-      id: cache-rotation
-      shell: bash
-      run: |
-        echo "YEAR_MONTH=$(/bin/date -u "+%Y%m")" >> $GITHUB_OUTPUT
-
-    - uses: actions/cache@v4
-      name: Setup pnpm cache
+    - name: Install Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
-        path: ${{ steps.pnpm-config.outputs.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-cache-${{
-          steps.cache-rotation.outputs.YEAR_MONTH }}-${{
-          hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
+        cache: pnpm
+        node-version-file: .nvmrc
 
-    # Prevent store to grow over time (not needed with yarn)
-    # Note: not perfect as it prune too much in monorepos so the idea
-    #       is to use cache-rotation as above. In the future this might work better.
-    # - name: Prune pnpm store
-    #  shell: bash
-    #  run: pnpm prune store
-
-    - name: Install dependencies
-      shell: bash
-      working-directory: ${{ inputs.cwd }}
-      run: pnpm install --frozen-lockfile --prefer-offline
-      env:
+    - env:
         # Other environment variables
         HUSKY: "0" # By default do not run HUSKY install
+      name: Install dependencies
+      run: pnpm install --frozen-lockfile --prefer-offline
+      shell: bash
+      working-directory: ${{ inputs.cwd }}
+
+  using: composite

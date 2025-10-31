@@ -16,6 +16,7 @@ import {
 	type SendCollaborationEmailInviteApiPayload,
 } from "../../../types/apiTypes";
 import {
+	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	NEXT_API_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
@@ -71,10 +72,29 @@ export default async function handler(
 	);
 	const url = `${hostUrl}/api/invite?token=${token}`;
 
+	const { data } = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select(
+			`
+    *,
+    profiles:user_id (
+      id,
+      user_name,
+			display_name,
+      email
+    )
+  `,
+		)
+		.eq("id", categoryId);
+
+	const categoryData = data?.[0];
+
 	if (process.env.NODE_ENV !== "development") {
 		try {
 			await axios.post(`${getBaseUrl()}${NEXT_API_URL}/share/send-email`, {
 				url,
+				display_name: categoryData?.profiles?.display_name,
+				category_name: categoryData?.category_name,
 				emailList: emailList[0],
 			});
 			response.status(200).json({ url, error });

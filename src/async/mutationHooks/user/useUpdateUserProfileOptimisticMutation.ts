@@ -1,23 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
-import {
-	BOOKMARKS_KEY,
-	CATEGORIES_KEY,
-	USER_PROFILE,
-} from "../../../utils/constants";
+import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
 import { updateUserProfile } from "../../supabaseCrudHelpers";
 
 // update user profile date optimistically
 export default function useUpdateUserProfileOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const { sortBy } = useGetSortBy();
 
-	const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();
 	const updateUserProfileOptimisticMutation = useMutation(updateUserProfile, {
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)

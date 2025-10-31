@@ -6,7 +6,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/spinner";
 import GlobeIcon from "../../../icons/globeIcon";
 import OptionsIconGray from "../../../icons/optionsIconGray";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
@@ -90,19 +90,24 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						/>
 					</span>
 				) : (
-					<figure className="flex h-[18px] w-[18px] items-center">
+					<figure className="flex h-[18px] w-[18px] items-center text-plain-reverse-color">
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}
 				<p
-					className="ml-2 flex-1 overflow-hidden truncate text-sm font-[450] leading-4 text-custom-gray-1"
+					className="ml-2 flex-1 overflow-hidden truncate text-sm font-[450] leading-4"
 					id={listNameId}
 				>
 					{item?.name}
 				</p>
 			</div>
 			<div className="flex items-center space-x-3">
-				{showSpinner && <Spinner />}
+				{showSpinner && (
+					<Spinner
+						className="h-3 w-3 animate-spin"
+						style={{ color: "var(--plain-reverse-color)" }}
+					/>
+				)}
 				{item?.isPublic && (
 					<figure className="hidden">
 						<GlobeIcon />
@@ -163,7 +168,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						</AriaDropdown>
 						{item?.count !== undefined && openedMenuId === null && (
 							<p
-								className={` hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-custom-gray-10 ${
+								className={` hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-gray-600 ${
 									showDropdown ? " block group-hover:hidden" : " block"
 								}`}
 							>
@@ -176,7 +181,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					<span
 						className={`${
 							item?.name === "Tweets" ? "block" : "hidden"
-						} text-[11px] font-450 leading-3 text-custom-gray-10 ${
+						} text-[11px] font-450 leading-3 text-gray-600 ${
 							showDropdown ? "block group-hover:hidden" : "block"
 						}`}
 					>
@@ -188,8 +193,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 	);
 
 	const contentWrapperClassNames = `${
-		item?.current ? "bg-gray-gray-100" : "bg-white"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-gray-100`;
+		item?.current ? "bg-gray-100 text-gray-900" : "text-gray-800"
+	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-100 hover:text-gray-900`;
 
 	if (isLink) {
 		return (

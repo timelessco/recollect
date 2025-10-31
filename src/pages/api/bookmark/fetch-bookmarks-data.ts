@@ -1,9 +1,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import {
-	type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 
@@ -15,6 +12,7 @@ import {
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
+	CATEGORIES_TABLE_NAME,
 	documentFileTypes,
 	DOCUMENTS_URL,
 	imageFileTypes,
@@ -78,6 +76,25 @@ export default async function handler(
 		return !isEmpty(sharedCategoryData);
 	};
 
+	const checkIsUserOwnerOfCategory = async () => {
+		const { data: categoryData, error: categoryDataError } = await supabase
+			.from(CATEGORIES_TABLE_NAME)
+			.select("user_id")
+			.eq("id", category_id);
+
+		if (categoryDataError) {
+			Sentry.captureException(
+				`Get category data error : ${categoryDataError?.message}`,
+			);
+			response
+				.status(500)
+				.json({ data: null, error: categoryDataError?.message, count: null });
+			return false;
+		}
+
+		return categoryData?.[0]?.user_id === userId;
+	};
+
 	// tells if user is in a category or not
 	const categoryCondition = isUserInACategoryInApi(category_id as string);
 	let data;
@@ -103,7 +120,10 @@ user_id (
 		const isUserCollaboratorInCategoryValue =
 			await isUserCollaboratorInCategory();
 
-		if (isUserCollaboratorInCategoryValue) {
+		const isUserOwnerOfCategory = await checkIsUserOwnerOfCategory();
+
+		if (isUserCollaboratorInCategoryValue || isUserOwnerOfCategory) {
+			// **** here we are checking if user is a collaborator for the category_id or user is the owner of the category
 			// user is collaborator
 			// get all the items for the category_id irrespective of the user_is , as user has access to all the items in the category
 			query = query.eq("category_id", category_id);
@@ -139,38 +159,39 @@ user_id (
 		);
 	}
 
-	if (category_id === TWEETS_URL) {
-		query = query.eq("type", tweetType);
-		// this tells the order in which the tweets was saved in twitter
-		query = query.order("sort_index", { ascending: false });
-	}
-
 	if (category_id === LINKS_URL) {
 		query = query.eq("type", bookmarkType);
 	}
 
+	if (category_id === TWEETS_URL) {
+		query = query
+			.eq("type", tweetType)
+			.order("sort_index", { ascending: false });
+	}
+
 	if (sortVaue === "date-sort-acending") {
-		query = query.order("id", { ascending: false });
-	}
-
-	if (sortVaue === "date-sort-decending") {
-		query = query.order("id", { ascending: true });
-	}
-
-	if (sortVaue === "alphabetical-sort-acending") {
+		// newest first
+		query = query.order("inserted_at", { ascending: false });
+	} else if (sortVaue === "date-sort-decending") {
+		// oldest first
+		query = query.order("inserted_at", { ascending: true });
+	} else if (sortVaue === "alphabetical-sort-acending") {
+		// title A-Z
 		query = query.order("title", { ascending: true });
-	}
-
-	if (sortVaue === "alphabetical-sort-decending") {
+	} else if (sortVaue === "alphabetical-sort-decending") {
+		// title Z-A
 		query = query.order("title", { ascending: false });
-	}
-
-	if (sortVaue === "url-sort-acending") {
+	} else if (sortVaue === "url-sort-acending") {
+		// url A-Z
 		query = query.order("url", { ascending: true });
-	}
-
-	if (sortVaue === "url-sort-decending") {
+	} else if (sortVaue === "url-sort-decending") {
+		// url Z-A
 		query = query.order("url", { ascending: false });
+	} else if (category_id === TWEETS_URL) {
+		query = query.order("sort_index", { ascending: false });
+	} else {
+		// Default fallback: newest first
+		query = query.order("inserted_at", { ascending: true });
 	}
 
 	const { data: bookmarkData, error } = await query;

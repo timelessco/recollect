@@ -8,7 +8,6 @@ import find from "lodash/find";
 import useGetViewValue from "../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../hooks/useIsUserInTweetsPage";
 import CardIcon from "../../icons/viewIcons/cardIcon";
-import HeadlinesIcon from "../../icons/viewIcons/headLinesIcon";
 import ListIcon from "../../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
 import {
@@ -91,11 +90,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			icon: <CardIcon />,
 		},
 		{
-			label: "Headlines",
-			value: viewValues.headlines,
-			icon: <HeadlinesIcon />,
-		},
-		{
 			label: "Timeline",
 			value: viewValues.timeline,
 			icon: <ViewListIcon className="h-4 w-4" />,
@@ -105,7 +99,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
-		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-custom-gray-10">
+		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-600">
 			{text}
 		</div>
 	);
@@ -176,7 +170,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				className="flex items-center justify-between px-2 py-[5px]"
 				key={item.label}
 			>
-				<p className=" text-13 font-450 leading-[14px] text-custom-gray-1">
+				<p className=" text-13 font-450 leading-[14px] text-gray-800">
 					{item?.label}
 				</p>
 				<Switch
@@ -232,9 +226,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{bookmarksViewValue === viewValues.card ||
 			bookmarksViewValue === viewValues.moodboard ? (
 				<div className="flex items-center justify-between px-2 py-[4.5px]">
-					<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
-						Cover
-					</p>
+					<p className="text-13 font-450 leading-[14px] text-gray-800">Cover</p>
 					<div className="w-[90px]">
 						<Slider
 							defaultValue={bookmarksColumns as unknown as number}
@@ -268,7 +260,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 					)?.icon
 				}
 			</figure>
-			<span className="ml-[7px] text-custom-gray-1">
+			<span className="ml-[7px]">
 				{
 					find(
 						bookmarksViewOptions,
