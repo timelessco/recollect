@@ -144,6 +144,12 @@ const LoginPage = () => {
 									errorText=""
 									isError={false}
 									onChange={(event) => setOtp(event.target.value)}
+									onKeyDown={(event) => {
+										if (event.key === "Enter" && otp.length === 6) {
+											void handleVerifyOtp();
+											event.preventDefault();
+										}
+									}}
 									placeholder="Enter OTP"
 									value={otp}
 								/>

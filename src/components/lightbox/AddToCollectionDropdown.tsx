@@ -33,6 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
+import DownArrowGray from "../../icons/downArrowGray";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -190,6 +191,7 @@ export const AddToCollectionDropdown = memo(
 				setIsCollectionChanged,
 			],
 		);
+		const [isOpen, setIsOpen] = useState(false);
 
 		return (
 			// Main container with relative positioning for dropdown
@@ -206,14 +208,14 @@ export const AddToCollectionDropdown = memo(
 				>
 					{/* Select provider for dropdown selection */}
 					<Ariakit.SelectProvider
-						// Handle collection selection
+						open={isOpen}
+						setOpen={setIsOpen}
 						setValue={(value) => {
 							const collection = collections.find(
 								(coll) => coll?.category_name === value,
 							);
 							if (collection) void handleCollectionClick(collection);
 						}}
-						// Set current collection name or empty string
 						value={currentCollection ? currentCollection?.category_name : ""}
 					>
 						<div className="flex items-center gap-[6px]">
@@ -228,13 +230,27 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className="w-[160px] rounded-md border border-transparent py-[2px] text-left text-[13px] text-gray-500 hover:text-plain-reverse-color focus:outline-none"
+									className={` group rounded-md border border-transparent py-[2px] text-left text-[13px]  ${
+										currentCollection ? "text-gray-800" : "text-gray-500"
+									}  focus:outline-none`}
 									type="button"
 								>
 									{/* Show current collection name or default text */}
-									{currentCollection
-										? currentCollection?.category_name
-										: "Add to collection"}
+									<div className="flex items-center justify-between group-hover:text-plain-reverse-color transition-all duration-100">
+										<span>
+											{currentCollection
+												? currentCollection?.category_name
+												: "Add to collection"}
+										</span>
+										<DownArrowGray
+											className={`
+												ml-2 self-center transition-all duration-200 ease-in-out
+												${isOpen ? "rotate-0" : "-rotate-90"}
+												group-hover:text-plain-reverse-color
+											`}
+											size={10}
+										/>
+									</div>
 								</button>
 							</Ariakit.Select>
 							{/* Dropdown popover with search and collection list */}

@@ -190,7 +190,7 @@ main {
 }
 
 .drop-indicator.drop-target {
-	@apply bg-black;
+	@apply bg-gray-1000;
 }
 
 /* signup-page */

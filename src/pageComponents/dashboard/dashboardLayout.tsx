@@ -150,7 +150,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
-	const { isMobile, isDesktop } = useIsMobileView();
+	const { isTablet, isDesktop } = useIsMobileView();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 
@@ -677,7 +677,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				<Allotment.Pane
 					className="split-left-pane"
-					maxSize={600}
+					maxSize={350}
 					minSize={0}
 					preferredSize={244}
 					ref={paneRef}
@@ -708,7 +708,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		</div>
 	);
 
-	return !isMobile ? renderDeskTopView : renderMobileView;
+	return !isTablet ? renderDeskTopView : renderMobileView;
 };
 
 export default DashboardLayout;

@@ -1,42 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 
 export const Switch = () => {
 	const [theme, setTheme] = useState<"dark" | "light" | "system">("system");
-
-	useEffect(() => {
+	// Use useLayoutEffect to prevent flash of incorrect theme
+	useLayoutEffect(() => {
 		const storedTheme = localStorage.getItem("theme");
-
-		if (storedTheme === "dark") {
-			setTheme("dark");
-			document.documentElement.classList.add("dark");
-		} else if (storedTheme === "light") {
-			setTheme("light");
-			document.documentElement.classList.remove("dark");
+		if (storedTheme === "dark" || storedTheme === "light") {
+			setTheme(storedTheme);
+			document.documentElement.classList.toggle("dark", storedTheme === "dark");
 		} else {
+			setTheme("system");
 			const prefersDark = window.matchMedia(
 				"(prefers-color-scheme: dark)",
 			).matches;
-			setTheme("system");
 			document.documentElement.classList.toggle("dark", prefersDark);
 		}
 	}, []);
 
+	// Handle theme changes
 	useEffect(() => {
-		if (theme === "dark") {
-			localStorage.setItem("theme", "dark");
-			document.documentElement.classList.add("dark");
-		} else if (theme === "light") {
-			localStorage.setItem("theme", "light");
-			document.documentElement.classList.remove("dark");
-		} else {
-			localStorage.setItem("theme", "system");
+		if (!theme) return; // Skip initial render
+
+		if (theme === "system") {
+			localStorage.removeItem("theme");
 			const prefersDark = window.matchMedia(
 				"(prefers-color-scheme: dark)",
 			).matches;
 			document.documentElement.classList.toggle("dark", prefersDark);
+		} else {
+			localStorage.setItem("theme", theme);
+			document.documentElement.classList.toggle("dark", theme === "dark");
 		}
 	}, [theme]);
+
+	// Don't render until theme is determined
+	if (theme === null) {
+		return null; // or a loading spinner
+	}
 
 	return (
 		<div className="pt-10">
