@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
@@ -50,6 +51,9 @@ export default async function handler(
 		// Validate user authentication
 		if (!userId || isEmpty(userId)) {
 			console.error("[fetch-user-tags][auth] User ID is missing");
+			Sentry.captureException(
+				new Error("[fetch-user-tags][auth] User ID is missing"),
+			);
 			response.status(401).json({
 				data: null,
 				error: "Unauthorized: User authentication required",
@@ -79,6 +83,7 @@ export default async function handler(
 				tableName: TAG_TABLE_NAME,
 				errorDetails: error,
 			});
+			Sentry.captureException(error);
 
 			response.status(500).json({
 				data: null,
@@ -100,6 +105,7 @@ export default async function handler(
 				stack: error instanceof Error ? error.stack : undefined,
 			},
 		);
+		Sentry.captureException(error);
 
 		response.status(500).json({
 			data: null,

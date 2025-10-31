@@ -1,4 +1,5 @@
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import {
 	type PostgrestError,
 	type PostgrestResponse,
@@ -36,6 +37,9 @@ export default async function handler(
 		if (!supabase) {
 			const errorMessage = "Failed to initialize Supabase client";
 			console.error(`[fetch-user-categories] ${errorMessage}`);
+			Sentry.captureException(
+				new Error(`[fetch-user-categories] ${errorMessage}`),
+			);
 			response.status(500).json({
 				data: null,
 				error: { message: errorMessage },
@@ -51,6 +55,7 @@ export default async function handler(
 				"[fetch-user-categories][auth] Authentication failed:",
 				userData.error,
 			);
+			Sentry.captureException(userData.error);
 			response.status(401).json({
 				data: null,
 				error: { message: "Authentication failed" },
@@ -69,6 +74,9 @@ export default async function handler(
 					hasUserId: Boolean(userId),
 					hasEmail: Boolean(userEmail),
 				},
+			);
+			Sentry.captureException(
+				new Error(`[fetch-user-categories][user-validation] ${errorMessage}`),
 			);
 			response.status(401).json({
 				data: null,
@@ -96,6 +104,7 @@ export default async function handler(
 					userId,
 				},
 			);
+			Sentry.captureException(error);
 			response.status(500).json({
 				data: null,
 				error: { message: `Failed to fetch categories: ${error.message}` },
@@ -121,6 +130,7 @@ export default async function handler(
 				"[fetch-user-categories][fetch-shared-categories] Failed to fetch shared categories:",
 				sharedCategoryError,
 			);
+			Sentry.captureException(sharedCategoryError);
 		}
 
 		// Fetch categories where user is a collaborator
@@ -139,6 +149,7 @@ export default async function handler(
 					userEmail,
 				},
 			);
+			Sentry.captureException(userCollabError);
 			response.status(500).json({
 				data: null,
 				error: {
@@ -233,6 +244,7 @@ export default async function handler(
 				stack: error instanceof Error ? error.stack : undefined,
 			},
 		);
+		Sentry.captureException(error);
 		response.status(500).json({
 			data: null,
 			error: { message: "Internal server error" },

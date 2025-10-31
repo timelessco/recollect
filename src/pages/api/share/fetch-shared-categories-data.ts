@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 
@@ -49,6 +50,11 @@ export default async function handler(
 				userId: userId ?? "missing",
 				email: email ?? "missing",
 			});
+			Sentry.captureException(
+				new Error(
+					"[fetch-shared-categories-data] Invalid user data: Missing required fields",
+				),
+			);
 			response.status(400).json({
 				data: null,
 				error: "Invalid user data: Missing required fields",
@@ -73,6 +79,7 @@ export default async function handler(
 				userId,
 				email,
 			});
+			Sentry.captureException(error);
 
 			// Determine appropriate status code based on error type
 			const statusCode =
@@ -98,6 +105,7 @@ export default async function handler(
 				url: request.url,
 			},
 		);
+		Sentry.captureException(unexpectedError);
 
 		// Check if response was already sent
 		if (!response.headersSent) {
@@ -113,5 +121,6 @@ export default async function handler(
 			"[fetch-shared-categories-data] Error occurred after response was sent:",
 			unexpectedError,
 		);
+		Sentry.captureException(unexpectedError);
 	}
 }
