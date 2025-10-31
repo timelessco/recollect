@@ -539,7 +539,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px] bg-whites-900 dark:bg-[rgb(16_16_16/90%)]",
+			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px] bg-[rgb(255_255_255/90%)] dark:bg-[rgb(16_16_16/90%)]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
