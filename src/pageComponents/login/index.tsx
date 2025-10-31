@@ -111,7 +111,6 @@ const LoginPage = () => {
 									errorText={errors?.email?.message ?? ""}
 									id="email"
 									isError={Boolean(errors?.email)}
-									onChange={(event) => setEmail(event.target.value)}
 									placeholder="Email"
 								/>
 								<button
@@ -145,6 +144,12 @@ const LoginPage = () => {
 									errorText=""
 									isError={false}
 									onChange={(event) => setOtp(event.target.value)}
+									onKeyDown={(event) => {
+										if (event.key === "Enter" && otp.length === 6) {
+											void handleVerifyOtp();
+											event.preventDefault();
+										}
+									}}
 									placeholder="Enter OTP"
 									value={otp}
 								/>

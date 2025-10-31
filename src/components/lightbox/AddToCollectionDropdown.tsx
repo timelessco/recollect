@@ -33,6 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
+import DownArrowGray from "../../icons/downArrowGray";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -190,6 +191,7 @@ export const AddToCollectionDropdown = memo(
 				setIsCollectionChanged,
 			],
 		);
+		const [isOpen, setIsOpen] = useState(false);
 
 		return (
 			// Main container with relative positioning for dropdown
@@ -206,14 +208,14 @@ export const AddToCollectionDropdown = memo(
 				>
 					{/* Select provider for dropdown selection */}
 					<Ariakit.SelectProvider
-						// Handle collection selection
+						open={isOpen}
+						setOpen={setIsOpen}
 						setValue={(value) => {
 							const collection = collections.find(
 								(coll) => coll?.category_name === value,
 							);
 							if (collection) void handleCollectionClick(collection);
 						}}
-						// Set current collection name or empty string
 						value={currentCollection ? currentCollection?.category_name : ""}
 					>
 						<div className="flex items-center gap-[6px]">
@@ -228,18 +230,32 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className="w-[160px] rounded-md border border-transparent py-[2px] text-left text-[13px] text-gray-500 hover:text-plain-reverse-color focus:outline-none"
+									className={` group rounded-md border border-transparent py-[2px] text-left text-[13px]  ${
+										currentCollection ? "text-gray-800" : "text-gray-500"
+									}  focus:outline-none`}
 									type="button"
 								>
 									{/* Show current collection name or default text */}
-									{currentCollection
-										? currentCollection?.category_name
-										: "Add to collection"}
+									<div className="flex items-center justify-between transition-all duration-100 group-hover:text-plain-reverse-color">
+										<span>
+											{currentCollection
+												? currentCollection?.category_name
+												: "Add to collection"}
+										</span>
+										<DownArrowGray
+											className={`
+												ml-2 self-center transition-all duration-200 ease-in-out
+												${isOpen ? "rotate-0" : "-rotate-90"}
+												group-hover:text-plain-reverse-color
+											`}
+											size={10}
+										/>
+									</div>
 								</button>
 							</Ariakit.Select>
 							{/* Dropdown popover with search and collection list */}
 							<Ariakit.SelectPopover
-								className="z-50 mt-1 max-h-[186px] w-[150px] overflow-y-auto rounded-xl bg-gray-50 p-1 shadow-md"
+								className="hide-scrollbar z-50 mt-1 max-h-[186px] w-[150px] overflow-y-auto rounded-xl bg-gray-50 p-1 shadow-md"
 								// Allow interaction with the rest of the page
 								modal={false}
 							>
@@ -248,7 +264,7 @@ export const AddToCollectionDropdown = memo(
 									<Ariakit.Combobox
 										// Auto-focus the search input when dropdown opens
 										autoFocus
-										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[13px] text-gray-alpha-600 placeholder:text-gray-alpha-600 focus:outline-none"
+										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[14px] font-[400] leading-[115%] tracking-normal text-gray-alpha-600 placeholder:text-gray-alpha-600 focus:outline-none"
 										placeholder="Search"
 									/>
 								</div>
@@ -257,11 +273,11 @@ export const AddToCollectionDropdown = memo(
 									{/* Show Uncategorized option only if current item is in a collection */}
 									{currentCollection && (
 										<Ariakit.ComboboxItem
-											className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-100 aria-selected:bg-gray-100"
+											className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
 											onClick={() => handleCollectionClick(null)}
 											value="Uncategorized"
 										>
-											<span className="text-[13px] font-[450] text-gray-800">
+											<span className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-800">
 												Uncategorized
 											</span>
 										</Ariakit.ComboboxItem>
@@ -270,7 +286,7 @@ export const AddToCollectionDropdown = memo(
 										filteredCollections?.map((collection) => (
 											<Ariakit.ComboboxItem
 												// Styling for each collection item
-												className="flex w-full cursor-pointer items-center gap-2 rounded-lg  px-2 py-[5.5px] text-left hover:bg-gray-100 aria-selected:bg-gray-100"
+												className="flex w-full cursor-pointer items-center gap-2 rounded-lg  px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
 												key={collection?.id}
 												onClick={() => handleCollectionClick(collection)}
 												onMouseDown={(event) => {
@@ -285,7 +301,7 @@ export const AddToCollectionDropdown = memo(
 													size="16"
 												/>
 												{/* Collection name */}
-												<span className="text-[13px] font-[450] text-gray-800">
+												<span className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-800">
 													{collection?.category_name}
 												</span>
 											</Ariakit.ComboboxItem>

@@ -116,7 +116,7 @@ const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
 	const isUserCollectionOwner = singleCategoryData?.user_id?.id === userId;
 
 	if (isUserCollectionOwner) {
-		return <div>{collectionName}</div>;
+		return <div className="text-gray-1000">{collectionName}</div>;
 	}
 
 	return <div>Non Owner collection cannot be sorted</div>;
@@ -378,7 +378,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				iconColor: item?.icon_color,
 		  }))
 		: [];
-
 	const sortedList = () => {
 		let array: CollectionItemTypes[] = [];
 		if (!isEmpty(userProfileData?.data)) {
@@ -425,6 +424,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data[0]?.category_order;
+
 		const listOrder = isNull(apiOrder)
 			? collectionsList?.map((item) => item?.id)
 			: userProfileData?.data[0]?.category_order;
@@ -448,7 +448,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 			// add
 			myArray.splice(index1, 0, movingItem);
-
 			void mutationApiCall(
 				updateCategoryOrderMutation?.mutateAsync({
 					order: myArray,
@@ -505,7 +504,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
 					className="collections-sidepane-down-arrow hidden group-hover:block"
-					fill="currentColor"
 					size={10}
 				/>
 			</div>

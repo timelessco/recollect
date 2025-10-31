@@ -49,8 +49,11 @@
 			"inputs": ["**/*.css"],
 			"outputs": [".stylelintcache"]
 		},
+		"fix:spelling": {
+			"outputs": [".cspellcache"]
+		},
 		"fix:prettier": {
-			"dependsOn": ["fix:md", "fix:css"],
+			"dependsOn": ["fix:md", "fix:css", "fix:spelling"],
 			"outputs": [".prettiercache"]
 		},
 		"fix:eslint": {

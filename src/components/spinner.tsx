@@ -8,7 +8,7 @@ export const Spinner = ({
 	style?: React.CSSProperties;
 }) => (
 	<svg
-		className={className}
+		className={`animate-spin ${className}`}
 		fill="none"
 		style={{ color: "inherit", ...style }}
 		viewBox="0 0 18 19"

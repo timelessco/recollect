@@ -150,7 +150,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
-	const { isMobile, isDesktop } = useIsMobileView();
+	const { isTablet, isDesktop } = useIsMobileView();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 
@@ -353,7 +353,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			className="mr-1 bg-transparent hover:bg-transparent"
 			onClick={() => setShowSearchBar(true)}
 		>
-			<SearchInputSearchIcon size="16" />
+			<SearchInputSearchIcon color="var(--color-gray-1000)" size="16" />
 		</Button>
 	);
 
@@ -539,7 +539,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px]",
+			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px] bg-[rgb(255_255_255/90%)] dark:bg-[rgb(16_16_16/90%)]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -562,12 +562,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		const showHeadingCondition = isDesktop ? true : !showSearchBar;
 
 		return (
-			<header
-				className={headerClass}
-				style={{
-					backgroundColor: "var(--color-whites-900)",
-				}}
-			>
+			<header className={headerClass}>
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
@@ -677,7 +672,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				<Allotment.Pane
 					className="split-left-pane"
-					maxSize={600}
+					maxSize={350}
 					minSize={0}
 					preferredSize={244}
 					ref={paneRef}
@@ -708,7 +703,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		</div>
 	);
 
-	return !isMobile ? renderDeskTopView : renderMobileView;
+	return !isTablet ? renderDeskTopView : renderMobileView;
 };
 
 export default DashboardLayout;

@@ -476,6 +476,7 @@ const CardSection = ({
 		_height: SingleListData["meta_data"]["height"],
 		_width: SingleListData["meta_data"]["width"],
 		type: SingleListData["type"],
+		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
 		const isAudio = isBookmarkAudio(type);
@@ -525,6 +526,7 @@ const CardSection = ({
 						img={img}
 						isPublicPage={isPublicPage}
 						sizesLogic={sizesLogic}
+						url={url}
 					/>
 				</figure>
 			</div>
@@ -673,6 +675,7 @@ const CardSection = ({
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				item?.type,
+				item?.url,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -685,7 +688,7 @@ const CardSection = ({
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="card-title text-sm leading-4 text-gray-800"
+								className="card-title text-sm leading-[135%] text-gray-800"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}
@@ -741,6 +744,7 @@ const CardSection = ({
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 					item?.type,
+					item?.url,
 				)
 			) : (
 				<div className="h-[48px]" />
