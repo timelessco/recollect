@@ -24,11 +24,14 @@ catrgories
 Cick
 colum
 colums
+corrolate
 creats
 Creats
 cryptr
 dels
+dependecnies
 dont
+DONT
 eqwhx
 fbca
 fetchs
@@ -68,6 +71,7 @@ shhhhh
 signup
 SIGNUP
 sparticuz
+svgs
 syncer
 thay
 thednp
