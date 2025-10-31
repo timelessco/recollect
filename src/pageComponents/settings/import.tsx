@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable react/button-has-type */
-/* eslint-disable react/jsx-indent-props */
-/* eslint-disable react/jsx-indent */
+
 "use client";
 
 import { useState } from "react";
@@ -15,9 +13,9 @@ export const ImportBookmarks = () => {
 	const [uploading, setUploading] = useState(false);
 	const [message, setMessage] = useState("");
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const f = e.target.files?.[0];
-		if (f) setFile(f);
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const targetFile = event.target.files?.[0];
+		if (targetFile) setFile(targetFile);
 	};
 
 	const handleImport = async () => {
@@ -33,18 +31,23 @@ export const ImportBookmarks = () => {
 			header: true,
 			skipEmptyLines: true,
 			complete: async (results) => {
-				const records = results.data as any[];
+				const records = results.data as Array<{
+					cover: string;
+					excerpt: string;
+					title: string;
+					url: string;
+				}>;
 				if (!records.length) {
 					setMessage("No data found in CSV.");
 					setUploading(false);
 					return;
 				}
 
-				const rows = records.map((r) => ({
-					title: r.title || null,
-					description: r.excerpt || null,
-					url: r.url || null,
-					ogImage: r.cover || null,
+				const rows = records.map((bookmark) => ({
+					title: bookmark.title || null,
+					description: bookmark.excerpt || null,
+					url: bookmark.url || null,
+					ogImage: bookmark.cover || null,
 				}));
 
 				try {
@@ -54,7 +57,10 @@ export const ImportBookmarks = () => {
 						const response = await axios.post("/api/v1/import-raindrop", {
 							bookmarks: chunk,
 						});
-						console.log("Chunk inserted:", response.data);
+
+						if (response.status !== 200) {
+							throw new Error("Error importing bookmarks.");
+						}
 					}
 
 					setMessage("Import completed successfully!");
@@ -86,7 +92,7 @@ export const ImportBookmarks = () => {
 				className={`w-full rounded-md px-4 py-2 text-white ${
 					uploading ? "bg-gray-400" : "bg-black hover:bg-gray-800"
 				}`}
-				disabled={uploading}
+				isDisabled={uploading}
 				onClick={handleImport}
 			>
 				{uploading ? "Importing..." : "Import CSV"}

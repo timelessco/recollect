@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
@@ -22,13 +23,13 @@ export default async function handler(
 	const { bookmarks } = request.body;
 
 	const uniqueBookmarks = bookmarks.filter(
-		(b, index, self) =>
-			b.url && index === self.findIndex((item) => item.url === b.url),
+		(b: any, index: number, self: any) =>
+			b.url && index === self.findIndex((item: any) => item.url === b.url),
 	);
 
 	const { data, error } = await supabase.from(MAIN_TABLE_NAME).insert(
-		uniqueBookmarks.map((b) => ({
-			...b,
+		uniqueBookmarks.map((bookmark: any) => ({
+			...bookmark,
 			user_id: user.id,
 		})),
 	);
