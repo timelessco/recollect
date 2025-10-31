@@ -16,7 +16,7 @@ import { motion } from "motion/react";
 // Assets and utilities
 import loaderGif from "../../../../public/loader-gif.gif";
 import { useLoadersStore } from "../../../store/componentStore";
-import { defaultBlur, viewValues } from "../../../utils/constants";
+import { defaultBlur, tweetType, viewValues } from "../../../utils/constants";
 
 /**
  * Props for the ImgLogicComponent
@@ -37,8 +37,12 @@ type ImgLogicProps = {
 	img: string;
 	// Whether the component is rendered on a public page
 	isPublicPage: boolean;
+	// display of the bookmark
+	ogImage: string | null;
 	// Sizes attribute for responsive images
 	sizesLogic: string;
+	// bookmark type
+	type: string | null;
 };
 
 /**
@@ -54,6 +58,8 @@ const ImgLogicComponent = ({
 	_width,
 	sizesLogic,
 	isPublicPage,
+	type,
+	ogImage,
 }: ImgLogicProps) => {
 	// image class name for all views
 	const imgClassName = classNames({
@@ -75,6 +81,10 @@ const ImgLogicComponent = ({
 	const [errorImg, setErrorImg] = useState<string | null>(null);
 	// Whether the current bookmark is being loaded
 	const isLoading = loadingBookmarkIds.has(id);
+
+	if (type === tweetType && isEmpty(ogImage)) {
+		return <div />;
+	}
 
 	// Only render if the bookmark has a cover image
 	if (hasCoverImg) {
