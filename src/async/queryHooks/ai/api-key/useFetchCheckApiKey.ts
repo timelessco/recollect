@@ -1,7 +1,15 @@
-// import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-// const useFetchCheckApiKey = () => {
-// 	const { data } = useQuery();
-// };
+import { checkApiKey } from "../../../supabaseCrudHelpers";
 
-// export default useFetchCheckApiKey;
+type CheckApiKeyResponse = Awaited<ReturnType<typeof checkApiKey>>;
+
+const useFetchCheckApiKey = () => {
+	return useQuery<CheckApiKeyResponse>({
+		queryKey: ["checkApiKey"],
+		queryFn: checkApiKey,
+		refetchOnWindowFocus: false,
+	});
+};
+
+export default useFetchCheckApiKey;

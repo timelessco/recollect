@@ -353,7 +353,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			className="mr-1 bg-transparent hover:bg-transparent"
 			onClick={() => setShowSearchBar(true)}
 		>
-			<SearchInputSearchIcon size="16" />
+			<SearchInputSearchIcon size="16" color="var(--color-gray-1000)" />
 		</Button>
 	);
 
@@ -565,7 +565,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			<header
 				className={headerClass}
 				style={{
-					backgroundColor: "var(--color-whites-900)",
+					backgroundColor: "rgb(16 16 16 / 90%)",
 				}}
 			>
 				{showHeadingCondition && (

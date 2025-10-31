@@ -1,6 +1,9 @@
+import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { data } from "tailwindcss/defaultTheme";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
+import useFetchCheckApiKey from "../../async/queryHooks/ai/api-key/useFetchCheckApiKey";
 import ButtonComponent from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -55,14 +58,23 @@ type ApiKeyFormTypes = {
  *  MAIN COMPONENT
  * ---------------------------------- */
 export const ApiKey = () => {
+	const [isReplacing, setIsReplacing] = useState(false);
 	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
-
+	const { data } = useFetchCheckApiKey();
+	const hasApiKey = data?.data?.hasApiKey;
+	console.log("apiKeyData", hasApiKey);
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 		reset,
+		setValue,
 	} = useForm<ApiKeyFormTypes>();
+
+	const handleReplaceClick = () => {
+		setIsReplacing(true);
+		setValue("apiKey", "");
+	};
 
 	/* ----------------------------------
 	 *  HANDLERS
@@ -120,15 +132,32 @@ export const ApiKey = () => {
 					<figure className="mr-2 text-gray-1000">
 						<KeyIcon />
 					</figure>
-					<Input
-						{...register("apiKey", { required: "API Key is required" })}
-						id="api-key"
-						type="password"
-						className={settingsInputClassName}
-						placeholder={`Enter your ${platform.name} API key`}
-						isError={Boolean(errors.apiKey)}
-						errorText={errors.apiKey?.message ?? ""}
-					/>
+					{hasApiKey && !isReplacing ? (
+						<div className="flex items-center">
+							<div className="flex-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">
+								••••••••••••••••••••••••••••••••
+							</div>
+							<button
+								type="button"
+								onClick={handleReplaceClick}
+								className="ml-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+							>
+								Replace
+							</button>
+						</div>
+					) : (
+						<Input
+							{...register("apiKey", { required: "API Key is required" })}
+							id="api-key"
+							type="password"
+							className={settingsInputClassName}
+							placeholder={`Enter your ${platform.name} API key`}
+							isError={Boolean(errors.apiKey)}
+							errorText={errors.apiKey?.message ?? ""}
+							autoFocus={isReplacing}
+							disabled={!isReplacing && hasApiKey}
+						/>
+					)}
 				</div>
 			</LabelledComponent>
 
@@ -136,7 +165,7 @@ export const ApiKey = () => {
 			<div className="pt-2">
 				<ButtonComponent
 					type="dark"
-					isDisabled={isSaving}
+					isDisabled={isSaving || (hasApiKey && !isReplacing)}
 					onClick={handleSubmit(onSubmit)}
 					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-plain-color hover:bg-gray-900"
 				>
@@ -145,6 +174,8 @@ export const ApiKey = () => {
 							className="h-3 w-3 self-center"
 							style={{ color: "var(--color-plain-reverse-color)" }}
 						/>
+					) : hasApiKey && !isReplacing ? (
+						"API Key Saved"
 					) : (
 						"Save Changes"
 					)}
