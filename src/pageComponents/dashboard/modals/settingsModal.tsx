@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 
 import Modal from "../../../components/modal";
-import UserAvatar from "../../../components/userAvatar";
+import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
 import {
 	useMiscellaneousStore,
 	useModalStore,
-	useSupabaseSession,
 } from "../../../store/componentStore";
-import { type ProfilesTableTypes } from "../../../types/apiTypes";
-import { USER_PROFILE } from "../../../utils/constants";
 import Settings from "../../settings";
 import { ApiKey } from "../../settings/apiKey";
 import ChangeEmail from "../../settings/changeEmail";
@@ -23,8 +18,6 @@ import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
-	const session = useSupabaseSession((state) => state.session);
-	const queryClient = useQueryClient();
 
 	const toggleShowSettingsModal = useModalStore(
 		(state) => state.toggleShowSettingsModal,
@@ -44,27 +37,9 @@ const SettingsModal = () => {
 		}
 	}, [setCurrentSettingsPage, showSettingsModal, selectedMenuItem]);
 
-	const userProfilesData = queryClient.getQueryData([
-		USER_PROFILE,
-		session?.user?.id,
-	]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
-
-	const userData = userProfilesData?.data?.[0];
-
 	const optionsList = [
 		{
-			icon: (
-				<UserAvatar
-					alt="profile-pic"
-					className="h-[18px] w-[18px] rounded-full bg-black object-contain"
-					height={18}
-					src={userData?.profile_pic ?? ""}
-					width={18}
-				/>
-			),
+			icon: <AvatarIcon />,
 			name: "My Profile",
 			href: ``,
 			current: selectedMenuItem === 0,
@@ -116,7 +91,7 @@ const SettingsModal = () => {
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="flex h-full rounded-[20px] bg-plain-color">
-				<div className="h-full min-w-[180px] rounded-l-[20px] border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4 xl:hidden">
+				<div className="h-full min-w-[180px] rounded-l-[20px] border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4">
 					<div className="px-2 text-[13px] font-[500]  leading-[115%] tracking-[2%] text-gray-600">
 						Settings
 					</div>
