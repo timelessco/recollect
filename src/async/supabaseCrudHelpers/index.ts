@@ -5,7 +5,6 @@ import {
 	type QueryKey,
 } from "@tanstack/react-query";
 import axios from "axios";
-import CryptoJS from "crypto-js";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -50,6 +49,7 @@ import {
 	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
 	ALL_BOOKMARKS_URL,
+	CHECK_API_KEY_API,
 	CLEAR_BOOKMARK_TRASH_API,
 	CREATE_USER_CATEGORIES_API,
 	CREATE_USER_TAGS_API,
@@ -125,6 +125,27 @@ export const saveApiKey = async ({
 		return response?.data;
 	} catch {
 		throw new Error("Invalid API key");
+	}
+};
+
+type CheckApiKeyResponse = {
+	data: {
+		hasApiKey: boolean;
+	};
+};
+
+export const checkApiKey = async (): Promise<CheckApiKeyResponse> => {
+	try {
+		const response = await axios.get(`${NEXT_API_URL}${CHECK_API_KEY_API}`);
+
+		if (!response.data) {
+			throw new Error("Failed to check API key status");
+		}
+
+		return response.data;
+	} catch (error) {
+		console.error("Error checking API key:", error);
+		throw new Error("Failed to verify API key status");
 	}
 };
 

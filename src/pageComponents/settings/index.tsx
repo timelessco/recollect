@@ -16,7 +16,7 @@ import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
-import TrashIconRed from "../../icons/actionIcons/trashIconRed";
+import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/infoIcon";
@@ -425,7 +425,7 @@ const Settings = () => {
 					<p className=" text-[14px] font-[500] leading-[115%] text-gray-900">
 						Delete Account
 					</p>
-					<div className="flex flex-col  justify-between">
+					<div className="flex flex-col  justify-between pb-5">
 						<p className="my-[10px] text-[14px] font-[400] leading-[150%] text-gray-800">
 							If you no longer wish to use recollect, you can permanently delete
 							your account.
@@ -435,17 +435,19 @@ const Settings = () => {
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
 							<p className="flex w-full justify-center  sm:w-[105px]">
-								<figure className="mr-2">
-									<TrashIconRed />
-								</figure>
-								{deleteUserMutation?.isLoading ? (
-									<Spinner
-										className="h-3 w-3 animate-spin"
-										style={{ color: "red" }}
-									/>
-								) : (
-									"Delete my account"
-								)}
+								<span className="flex items-center justify-center gap-1.5">
+									{deleteUserMutation?.isLoading ? (
+										<Spinner
+											className="h-3 w-3 animate-spin"
+											style={{ color: "#CD2B31" }}
+										/>
+									) : (
+										<>
+											<WarningIconRed className="h-3 w-3 shrink-0" />
+											Delete my account
+										</>
+									)}
+								</span>
 							</p>
 						</Button>
 					</div>

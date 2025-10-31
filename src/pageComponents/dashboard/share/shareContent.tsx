@@ -414,7 +414,7 @@ const ShareContent = () => {
 					<figure>
 						<LinkIcon />
 					</figure>
-					<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
+					<p className="ml-[6px] text-13 font-450 leading-[15px] text-[#007bf4e5]">
 						{linkCopied ? "Link copied" : "Copy link"}
 					</p>
 				</div>

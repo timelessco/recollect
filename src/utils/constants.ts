@@ -137,6 +137,8 @@ export const AI_SEARCH_API = "/v1/ai/search/get";
 // user settings and keys
 export const SAVE_API_KEY_API = "/v1/api-key";
 
+export const CHECK_API_KEY_API = "/v1/check-api-key";
+
 // Screenshot api
 export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app/";
@@ -235,7 +237,7 @@ export const documentFileTypes = acceptedFileTypes?.filter(
 // color picker colors
 export const colorPickerColors = [
 	"#ffffff",
-	"#1a1a1a",
+	"#000000",
 
 	"#ff2d5f",
 	"#ff339b",
@@ -351,3 +353,10 @@ export const PDF_VIEWER_PARAMS =
 export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
 export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
+
+export const LOADING_SENSITIVE_DOMAINS = [
+	"amazon.in",
+	"twitter.com",
+	"x.com",
+	"amazon.com",
+];

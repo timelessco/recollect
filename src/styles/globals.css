@@ -190,7 +190,7 @@ main {
 }
 
 .drop-indicator.drop-target {
-	@apply bg-black;
+	@apply bg-gray-1000;
 }
 
 /* signup-page */
@@ -209,7 +209,7 @@ main {
 }
 
 [data-backdrop] {
-	@apply flex items-center justify-center bg-whites-300 backdrop-blur-[8px];
+	@apply flex items-center justify-center bg-black/[36%] backdrop-blur-[8px];
 }
 
 @media (width >= 768px) {
@@ -946,4 +946,15 @@ input[type="checkbox"]:checked + .checkbox-div {
 			background-color: var(--color-light-gray-700);
 		}
 	}
+}
+
+/* hide scrollbar but keep scroll functionality */
+.hide-scrollbar {
+	scrollbar-width: none; /* Firefox */
+
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+	display: none; /* Chrome, Safari, Opera */
 }

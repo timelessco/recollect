@@ -11,12 +11,15 @@ import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import classNames from "classnames";
 import { isEmpty, isNil } from "lodash";
-import { motion } from "motion/react";
 
 // Assets and utilities
 import loaderGif from "../../../../public/loader-gif.gif";
 import { useLoadersStore } from "../../../store/componentStore";
-import { defaultBlur, viewValues } from "../../../utils/constants";
+import {
+	defaultBlur,
+	LOADING_SENSITIVE_DOMAINS,
+	viewValues,
+} from "../../../utils/constants";
 
 /**
  * Props for the ImgLogicComponent
@@ -39,11 +42,15 @@ type ImgLogicProps = {
 	isPublicPage: boolean;
 	// Sizes attribute for responsive images
 	sizesLogic: string;
+	// URL of the bookmark
+	url: string;
 };
 
 /**
  * Main component for rendering bookmark images with loading and error states
  */
+// Domains that should only show image after loading is complete
+
 const ImgLogicComponent = ({
 	id,
 	hasCoverImg,
@@ -54,6 +61,7 @@ const ImgLogicComponent = ({
 	_width,
 	sizesLogic,
 	isPublicPage,
+	url,
 }: ImgLogicProps) => {
 	// image class name for all views
 	const imgClassName = classNames({
@@ -78,14 +86,32 @@ const ImgLogicComponent = ({
 
 	// Only render if the bookmark has a cover image
 	if (hasCoverImg) {
-		// Show loading placeholder if data is being fetched
+		// Show loading placeholder if data is being fetched or if it's a loading-sensitive domain
+		const isSensitiveDomain = (() => {
+			try {
+				if (!url) return false;
+				const hostname = new URL(url).hostname.replace("www.", "");
+				return LOADING_SENSITIVE_DOMAINS.some(
+					(domain) => hostname === domain || hostname.endsWith("." + domain),
+				);
+			} catch {
+				// If URL parsing fails, default to non-sensitive
+				return false;
+			}
+		})();
+
+		if ((isSensitiveDomain && isLoading) || isNil(id)) {
+			return (
+				<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
+			);
+		}
+
 		if (isLoading && isNil(id)) {
 			return (
 				<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 			);
 		}
 
-		// Show error placeholder if image failed to load
 		if (errorImg === img) {
 			return (
 				<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
@@ -103,7 +129,7 @@ const ImgLogicComponent = ({
 		}
 
 		return (
-			<motion.div layout={isLoading || !isNil(img)}>
+			<>
 				{img ? (
 					<Image
 						alt="bookmark-img"
@@ -120,7 +146,7 @@ const ImgLogicComponent = ({
 				) : (
 					<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 				)}
-			</motion.div>
+			</>
 		);
 	}
 
@@ -153,6 +179,7 @@ const LoaderImgPlaceholder = ({
 	cardTypeCondition: number[] | string[] | string | undefined;
 	// Bookmark ID
 	id: number;
+	// Whether the bookmark is currently loading
 }) => {
 	const { loadingBookmarkIds } = useLoadersStore();
 	const isLoading = loadingBookmarkIds.has(id);

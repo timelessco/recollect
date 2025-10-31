@@ -150,7 +150,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
-	const { isMobile, isDesktop } = useIsMobileView();
+	const { isTablet, isDesktop } = useIsMobileView();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 
@@ -353,7 +353,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			className="mr-1 bg-transparent hover:bg-transparent"
 			onClick={() => setShowSearchBar(true)}
 		>
-			<SearchInputSearchIcon size="16" />
+			<SearchInputSearchIcon color="var(--color-gray-1000)" size="16" />
 		</Button>
 	);
 
@@ -565,7 +565,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			<header
 				className={headerClass}
 				style={{
-					backgroundColor: "var(--color-whites-900)",
+					backgroundColor: "rgb(16 16 16 / 90%)",
 				}}
 			>
 				{showHeadingCondition && (
@@ -677,7 +677,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				<Allotment.Pane
 					className="split-left-pane"
-					maxSize={600}
+					maxSize={350}
 					minSize={0}
 					preferredSize={244}
 					ref={paneRef}
@@ -708,7 +708,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		</div>
 	);
 
-	return !isMobile ? renderDeskTopView : renderMobileView;
+	return !isTablet ? renderDeskTopView : renderMobileView;
 };
 
 export default DashboardLayout;

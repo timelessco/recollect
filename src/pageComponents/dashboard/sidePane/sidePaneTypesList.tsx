@@ -52,7 +52,6 @@ const SidePaneTypesList = () => {
 						<p className="mr-1">Types</p>
 						<DownArrowGray
 							className="collections-sidepane-down-arrow hidden group-hover:block"
-							fill="currentColor"
 							size={10}
 						/>
 					</div>

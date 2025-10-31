@@ -1,14 +1,12 @@
-import { useState } from "react";
-import * as Ariakit from "@ariakit/react";
+import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
+import useFetchCheckApiKey from "../../async/queryHooks/ai/api-key/useFetchCheckApiKey";
 import ButtonComponent from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import BackIconBlack from "../../icons/actionIcons/backIconBlack";
-import { useMiscellaneousStore } from "../../store/componentStore";
 import {
 	settingsInputClassName,
 	settingsInputContainerClassName,
@@ -17,7 +15,9 @@ import {
 } from "../../utils/commonClassNames";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
-/* ---------------------------- Key Icon Component --------------------------- */
+/* ----------------------------------
+ *  SVG ICONS
+ * ---------------------------------- */
 const KeyIcon = () => (
 	<svg
 		fill="none"
@@ -34,7 +34,9 @@ const KeyIcon = () => (
 	</svg>
 );
 
-/* ---------------------------- Platform Constants --------------------------- */
+/* ----------------------------------
+ *  CONSTANTS
+ * ---------------------------------- */
 const AI_PLATFORMS = [
 	{
 		id: "gemini",
@@ -42,58 +44,45 @@ const AI_PLATFORMS = [
 		docsUrl: "https://ai.google.dev/gemini-api/docs/api-key",
 		description: "Google's most capable AI model for complex tasks",
 	},
-	{
-		id: "openai",
-		name: "OpenAI (GPT-4)",
-		docsUrl: "https://platform.openai.com/docs/quickstart",
-		description: "Powerful language model by OpenAI",
-	},
-	{
-		id: "anthropic",
-		name: "Anthropic (Claude)",
-		docsUrl:
-			"https://docs.anthropic.com/claude/reference/getting-started-with-the-api",
-		description: "AI assistant focused on helpfulness and safety",
-	},
 ] as const;
 
+/* ----------------------------------
+ *  TYPES
+ * ---------------------------------- */
 type ApiKeyFormTypes = {
 	apiKey: string;
 };
 
-/* -------------------------------------------------------------------------- */
-/*                               Main Component                               */
-/* -------------------------------------------------------------------------- */
-
+/* ----------------------------------
+ *  MAIN COMPONENT
+ * ---------------------------------- */
 export const ApiKey = () => {
-	const [selectedPlatform, setSelectedPlatform] = useState<
-		(typeof AI_PLATFORMS)[number] | null
-	>(AI_PLATFORMS[0]);
-
+	const [isReplacing, setIsReplacing] = useState(false);
 	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
-
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
-
+	const { data } = useFetchCheckApiKey();
+	const hasApiKey = data?.data?.hasApiKey;
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 		reset,
+		setValue,
 	} = useForm<ApiKeyFormTypes>();
 
-	const onSubmit: SubmitHandler<ApiKeyFormTypes> = (formData) => {
-		if (!selectedPlatform) {
-			errorToast("Please select an AI platform");
-			return;
-		}
+	const handleReplaceClick = () => {
+		setIsReplacing(true);
+		setValue("apiKey", "");
+	};
 
+	/* ----------------------------------
+	 *  HANDLERS
+	 * ---------------------------------- */
+	const onSubmit: SubmitHandler<ApiKeyFormTypes> = (formData) => {
 		saveApiKey(
 			{ apikey: formData.apiKey },
 			{
 				onSuccess: () => {
-					successToast(`${selectedPlatform.name} API key saved successfully`);
+					successToast("API key saved successfully");
 					reset();
 				},
 				onError: (error) => {
@@ -106,136 +95,86 @@ export const ApiKey = () => {
 		);
 	};
 
+	const platform = AI_PLATFORMS[0];
+
+	/* ----------------------------------
+	 *  RENDER
+	 * ---------------------------------- */
 	return (
-		<form>
-			{/* Header */}
-			<div className="relative mb-[30px] flex items-center">
-				<Ariakit.Button
-					className="absolute left-[-7px] rounded-full p-1"
-					onClick={() => setCurrentSettingsPage("main")}
-				>
-					<figure>
-						<BackIconBlack />
-					</figure>
-				</Ariakit.Button>
-				<div className={`${settingsMainHeadingClassName} ml-[21px]`}>
-					Bring your own API Key
-				</div>
+		<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+			{/* ---------- HEADER ---------- */}
+			<div className="relative mb-6 flex items-center">
+				<h2 className={`${settingsMainHeadingClassName}`}>
+					Bring Your Own API Key
+				</h2>
 			</div>
-			{/* Platform Selector */}
-			{/* Platform Selector */}
+			{/* ---------- API KEY INPUT ---------- */}
 			<LabelledComponent
-				label="AI Platform"
-				labelClassName={settingsInputLabelClassName}
+				label={`${platform.name} API Key`}
+				labelClassName={`${settingsInputLabelClassName} mt-4`}
 			>
-				<div className="flex flex-col">
+				{/* ---------- PLATFORM INFO ---------- */}
+				<section className="flex flex-col">
 					<a
-						className="text-xs text-blue-600 hover:underline"
-						href={selectedPlatform?.docsUrl}
+						className="text-xs text-[#007bf4e5] hover:underline"
+						href={platform.docsUrl}
 						rel="noopener noreferrer"
 						target="_blank"
 					>
 						Get API Key
 					</a>
-					{/* Clean Ariakit Select (no search) */}
-					<Ariakit.SelectProvider
-						setValue={(value) => {
-							const match = AI_PLATFORMS.find(
-								(platform) => platform.name === value,
-							);
-							if (match) setSelectedPlatform(match);
-						}}
-						value={selectedPlatform?.name ?? ""}
-					>
-						<div className="relative mt-2 w-[200px]">
-							<Ariakit.Select className="flex h-9 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-800 hover:border-gray-400">
-								<span>{selectedPlatform?.name ?? "Select Platform"}</span>
-								<svg
-									className="ml-2 h-4 w-4 text-gray-500"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth={2}
-									viewBox="0 0 24 24"
-								>
-									<path
-										d="M6 9l6 6 6-6"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									/>
-								</svg>
-							</Ariakit.Select>
-							<Ariakit.SelectPopover
-								className="z-50 mt-1 max-h-[250px] w-[200px] overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-md"
-								modal={false}
-							>
-								{AI_PLATFORMS.map((platform) => (
-									<Ariakit.SelectItem
-										className={`flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-gray-100 aria-selected:bg-gray-100 ${
-											selectedPlatform?.id === platform.id
-												? "bg-gray-50 font-medium"
-												: ""
-										}`}
-										key={platform.id}
-										onClick={() => setSelectedPlatform(platform)}
-										value={platform.name}
-									>
-										<span>{platform.name}</span>
-										{selectedPlatform?.id === platform.id && (
-											<svg
-												className="h-4 w-4 text-gray-600"
-												fill="none"
-												stroke="currentColor"
-												strokeWidth={2}
-												viewBox="0 0 24 24"
-											>
-												<path
-													d="M5 13l4 4L19 7"
-													strokeLinecap="round"
-													strokeLinejoin="round"
-												/>
-											</svg>
-										)}
-									</Ariakit.SelectItem>
-								))}
-							</Ariakit.SelectPopover>
-						</div>
-					</Ariakit.SelectProvider>
-					<p className="mt-2 text-xs text-gray-500">
-						{selectedPlatform?.description}
-					</p>
-				</div>
-			</LabelledComponent>
-			{/* API Key Input */}
-			<LabelledComponent
-				label={`${selectedPlatform?.name ?? "AI Platform"} API Key`}
-				labelClassName={`${settingsInputLabelClassName} mt-6`}
-			>
+					<p className="mt-2 text-xs text-gray-500">{platform.description}</p>
+				</section>
 				<div className={`${settingsInputContainerClassName} mt-2`}>
-					<figure className="mr-2">
+					<figure className="mr-2 text-gray-1000">
 						<KeyIcon />
 					</figure>
-					<Input
-						{...register("apiKey", {
-							required: "API Key is required",
-						})}
-						className={settingsInputClassName}
-						errorText={errors.apiKey?.message ?? ""}
-						id="api-key"
-						isError={Boolean(errors.apiKey)}
-						placeholder={`Enter your ${selectedPlatform?.name} API key`}
-						type="password"
-					/>
+					{hasApiKey && !isReplacing ? (
+						<div className="flex items-center">
+							<div className="flex-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">
+								••••••••••••••••••••••••••••••••
+							</div>
+							<button
+								className="ml-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+								onClick={handleReplaceClick}
+								type="button"
+							>
+								Replace
+							</button>
+						</div>
+					) : (
+						<Input
+							{...register("apiKey", { required: "API Key is required" })}
+							autoFocus={isReplacing}
+							className={settingsInputClassName}
+							disabled={!isReplacing && hasApiKey}
+							errorText={errors.apiKey?.message ?? ""}
+							id="api-key"
+							isError={Boolean(errors.apiKey)}
+							placeholder={`Enter your ${platform.name} API key`}
+							type="password"
+						/>
+					)}
 				</div>
 			</LabelledComponent>
-			{/* Save Button */}
-			<div className="flex justify-start pt-6">
+			{/* ---------- SAVE BUTTON ---------- */}
+			<div className="pt-2">
 				<ButtonComponent
-					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-white hover:bg-gray-500"
-					isDisabled={isSaving}
+					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-plain-color hover:bg-gray-900"
+					isDisabled={isSaving || (hasApiKey && !isReplacing)}
 					onClick={handleSubmit(onSubmit)}
 					type="dark"
 				>
-					{isSaving ? <Spinner /> : "Save Changes"}
+					{isSaving ? (
+						<Spinner
+							className="h-3 w-3 self-center"
+							style={{ color: "var(--color-plain-reverse-color)" }}
+						/>
+					) : hasApiKey && !isReplacing ? (
+						"API Key Saved"
+					) : (
+						"Save Changes"
+					)}
 				</ButtonComponent>
 			</div>
 		</form>
