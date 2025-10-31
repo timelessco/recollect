@@ -169,6 +169,7 @@ export const BOOKMARKS_VIEW = "bookmarks_view";
 export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
 export const AI_SEARCH_KEY = "ai_search";
+export const API_KEY_CHECK_KEY = "api_key_check";
 
 // error msgs
 
@@ -360,3 +361,12 @@ export const LOADING_SENSITIVE_DOMAINS = [
 	"x.com",
 	"amazon.com",
 ];
+
+export const AI_PLATFORMS = [
+	{
+		id: "gemini",
+		name: "Gemini",
+		docsUrl: "https://ai.google.dev/gemini-api/docs/api-key",
+		description: "Google's most capable AI model for complex tasks",
+	},
+] as const;
