@@ -12,6 +12,8 @@ import {
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
+import { processImageQueue } from "./worker";
+
 type RequestType = {
 	data: Array<
 		Pick<SingleListData, "description" | "ogImage" | "title" | "type" | "url">
@@ -159,6 +161,11 @@ export default async function handler(
 		} catch {
 			console.error("Failed to queue item:");
 		}
+
+		processImageQueue(supabase, {
+			queueName: "ai-embeddings",
+			batchSize: 100,
+		}).catch(console.error);
 
 		response.status(200).json({ success: true, error: null });
 	} catch {
