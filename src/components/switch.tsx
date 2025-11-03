@@ -19,8 +19,8 @@ const Switch = (props: SwitchProps) => {
 	const switchClass = classNames(
 		"relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-white disabled:opacity-40",
 		{
-			"bg-gray-900": enabled === true,
-			"bg-gray-400": enabled === false,
+			"bg-gray-950": enabled === true,
+			"bg-gray-300": enabled === false,
 			"h-[28px] w-[64px]": size === "large",
 			"h-[16px] w-[26px]": size === "small",
 		},

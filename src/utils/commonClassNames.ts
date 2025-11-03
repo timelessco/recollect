@@ -14,7 +14,7 @@ export const bottomBarButton =
 export const dropdownMenuClassName =
 	"bg-gray-50 rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
 export const dropdownMenuItemClassName =
-	"text-gray-800 font-450 text-13 leading-4 px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
+	"text-gray-800 font-450 text-13 leading-[115%] tracking-[1%] px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
 
 // BUTTON TRANSITION CLASS NAMES
 export const smoothHoverClassName = "transition ease-in-out delay-50";

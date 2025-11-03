@@ -33,7 +33,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
-import DownArrowGray from "../../icons/downArrowGray";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -236,20 +235,12 @@ export const AddToCollectionDropdown = memo(
 									type="button"
 								>
 									{/* Show current collection name or default text */}
-									<div className="flex items-center justify-between transition-all duration-100 group-hover:text-plain-reverse-color">
+									<div className="flex items-center  transition-all  group-hover:text-plain-reverse-color">
 										<span>
 											{currentCollection
 												? currentCollection?.category_name
 												: "Add to collection"}
 										</span>
-										<DownArrowGray
-											className={`
-												ml-2 self-center transition-all duration-200 ease-in-out
-												${isOpen ? "rotate-0" : "-rotate-90"}
-												group-hover:text-plain-reverse-color
-											`}
-											size={10}
-										/>
 									</div>
 								</button>
 							</Ariakit.Select>

@@ -14,7 +14,7 @@ import {
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
 import Settings from "../../settings";
-import { ApiKey } from "../../settings/apiKey";
+import { AiFeatures } from "../../settings/AiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
 import DeleteAccout from "../../settings/deleteAccount";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
@@ -100,8 +100,8 @@ const SettingsModal = () => {
 				return <ChangeEmail />;
 			case "delete":
 				return <DeleteAccout />;
-			case "api-key":
-				return <ApiKey />;
+			case "ai-features":
+				return <AiFeatures />;
 			default:
 				return null;
 		}
@@ -134,7 +134,7 @@ const SettingsModal = () => {
 											setCurrentSettingsPage("main");
 											break;
 										case 1:
-											setCurrentSettingsPage("api-key");
+											setCurrentSettingsPage("ai-features");
 											break;
 										default:
 											break;
@@ -145,7 +145,7 @@ const SettingsModal = () => {
 						))}
 					</div>
 				</div>
-				<div className="hide-scrollbar h-[700px] w-full overflow-auto rounded-[20px] px-12 pt-6">
+				<div className="hide-scrollbar h-[700px] w-full overflow-auto rounded-[20px] px-12 pt-8">
 					{renderMainContent()}
 				</div>
 			</div>

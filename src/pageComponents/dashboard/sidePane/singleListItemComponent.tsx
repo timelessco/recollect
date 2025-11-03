@@ -8,7 +8,7 @@ import {
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { Spinner } from "../../../components/spinner";
 import GlobeIcon from "../../../icons/globeIcon";
-import OptionsIconGray from "../../../icons/optionsIconGray";
+import OptionsIcon from "../../../icons/optionsIcon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 import {
@@ -95,7 +95,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					</figure>
 				)}
 				<p
-					className="ml-2 flex-1 overflow-hidden truncate text-sm font-[450] leading-4"
+					className="ml-2 flex-1 overflow-hidden truncate text-[14px] font-[450] leading-[115%] tracking-[1%]"
 					id={listNameId}
 				>
 					{item?.name}
@@ -130,11 +130,11 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 								<div
 									className={
 										openedMenuId === item?.id
-											? "flex"
-											: "hidden group-hover:flex"
+											? "flex text-gray-500"
+											: "hidden text-gray-500 group-hover:flex"
 									}
 								>
-									<OptionsIconGray />
+									<OptionsIcon />
 								</div>
 							}
 							menuClassName={`${dropdownMenuClassName} z-10`}
