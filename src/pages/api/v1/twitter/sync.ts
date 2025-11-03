@@ -165,6 +165,7 @@ export default async function handler(
 		processImageQueue(supabase, {
 			queueName: "ai-embeddings",
 			batchSize: 100,
+			// eslint-disable-next-line promise/prefer-await-to-then
 		}).catch(console.error);
 
 		response.status(200).json({ success: true, error: null });
