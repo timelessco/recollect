@@ -9,21 +9,21 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	if (request.method !== "POST") {
-		response.status(405).json({ error: "Method not allowed" });
-		return;
-	}
+	// if (request.method !== "POST") {
+	// 	response.status(405).json({ error: "Method not allowed" });
+	// 	return;
+	// }
 
 	const supabase = createServiceClient();
 
 	try {
-		const result = await processImageQueue(supabase, {
+		const result = processImageQueue(supabase, {
 			queueName: "ai-embeddings",
-			batchSize: 1,
+			batchSize: 100,
 		});
 
 		console.log({
-			message: `Queue processed successfully from ${result?.messageId} to ${result?.messageEndId}`,
+			message: `Queue processed successfully `,
 		});
 
 		response.status(200).json({
