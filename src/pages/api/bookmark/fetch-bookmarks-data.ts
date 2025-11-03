@@ -215,23 +215,25 @@ user_id (
 		)
 		.eq("user_id", userId);
 
-	const finalData = data?.map((item) => {
-		const matchedBookmarkWithTag = bookmarksWithTags?.filter(
-			(tagItem) => tagItem?.bookmark_id === item?.id,
-		) as unknown as BookmarksWithTagsWithTagForginKeys;
+	const finalData = data
+		?.map((item) => {
+			const matchedBookmarkWithTag = bookmarksWithTags?.filter(
+				(tagItem) => tagItem?.bookmark_id === item?.id,
+			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
-		if (!isEmpty(matchedBookmarkWithTag)) {
-			return {
-				...item,
-				addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
-					id: matchedItem?.tag_id?.id,
-					name: matchedItem?.tag_id?.name,
-				})),
-			};
-		}
+			if (!isEmpty(matchedBookmarkWithTag)) {
+				return {
+					...item,
+					addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
+						id: matchedItem?.tag_id?.id,
+						name: matchedItem?.tag_id?.name,
+					})),
+				};
+			}
 
-		return item;
-	}) as SingleListData[];
+			return item;
+		})
+		.filter(Boolean) as SingleListData[];
 
 	response.status(200).json({ data: finalData, error, count: null });
 }
