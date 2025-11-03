@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type SupabaseClient } from "@supabase/supabase-js";
 
 import imageToText from "../../../../async/ai/imageToText";
