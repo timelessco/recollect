@@ -11,10 +11,6 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // fetches shared categories
 
-export const config = {
-	maxDuration: 30,
-};
-
 type DataResponse = FetchSharedCategoriesData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
 type Data = {

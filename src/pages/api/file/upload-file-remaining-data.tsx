@@ -18,10 +18,6 @@ import { MAIN_TABLE_NAME } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-export const config = {
-	maxDuration: 300,
-};
-
 type Data = UploadFileApiResponse;
 
 const notVideoLogic = async (

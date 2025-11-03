@@ -17,10 +17,6 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 // if its not present and in session data some oauth profile pic is there, then we update the oauth profile pic in profiles table
 // we are doing this because in auth triggers we do not get the oauth profile pic
 
-export const config = {
-	maxDuration: 30,
-};
-
 type DataResponse = ProfilesTableTypes[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
 

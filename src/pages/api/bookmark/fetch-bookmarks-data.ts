@@ -33,10 +33,6 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
 
-export const config = {
-	maxDuration: 30,
-};
-
 type Data = {
 	count: BookmarksCountTypes | null;
 	data: SingleListData[] | null;

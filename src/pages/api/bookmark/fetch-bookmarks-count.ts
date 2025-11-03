@@ -15,10 +15,6 @@ import {
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-export const config = {
-	maxDuration: 30,
-};
-
 type Data = {
 	data: BookmarksCountTypes | null;
 	error: string[] | null;
