@@ -34,11 +34,9 @@ export default async function handler(
 	try {
 		// Initialize Supabase client
 		const supabase = apiSupabaseClient(request, response);
-		console.log("🚀 ~ handler ~ supabase:", supabase);
 
 		// Get authenticated user
 		const userData = await supabase?.auth?.getUser();
-		console.log("🚀 ~ handler ~ userData:", userData);
 
 		// Check if user is authenticated
 		if (!userData?.data?.user) {
@@ -51,7 +49,6 @@ export default async function handler(
 		}
 
 		const userId = userData.data.user.id;
-		console.log("🚀 ~ handler ~ userId:", userId);
 		const existingOauthAvatar = request.query?.avatar;
 
 		// Validate userId
