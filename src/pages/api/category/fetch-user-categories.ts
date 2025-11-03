@@ -22,6 +22,10 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
  * Fetches user categories and builds it so that we get all its colaborators data
  */
 
+export const config = {
+	maxDuration: 30,
+};
+
 type Data = {
 	data: CategoriesData[] | null;
 	error: PostgrestError | string | { message: string } | null;
