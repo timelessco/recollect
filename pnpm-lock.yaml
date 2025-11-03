@@ -197,9 +197,6 @@ importers:
       slugify:
         specifier: 1.6.6
         version: 1.6.6
-      supabase:
-        specifier: ^2.40.7
-        version: 2.54.11
       tailwind-merge:
         specifier: 1.12.0
         version: 1.12.0
@@ -396,6 +393,9 @@ importers:
       stylelint-config-standard:
         specifier: 39.0.1
         version: 39.0.1(stylelint@16.25.0(typescript@5.9.3))
+      supabase:
+        specifier: 2.54.11
+        version: 2.54.11
       tailwindcss:
         specifier: 3.3.1
         version: 3.3.1(postcss@8.4.35)

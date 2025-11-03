@@ -26,6 +26,7 @@ type Data = {
 	error: ErrorResponse;
 };
 
+// eslint-disable-next-line consistent-return
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -42,11 +43,11 @@ export default async function handler(
 		// Check if user is authenticated
 		if (!userData?.data?.user) {
 			console.warn("[fetch-user-profile] Unauthorized: User not authenticated");
-			response.status(401).json({
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(401).json({
 				data: null,
 				error: "Unauthorized: Please log in to access your profile",
 			});
-			return;
 		}
 
 		const userId = userData.data.user.id;
@@ -59,11 +60,11 @@ export default async function handler(
 			Sentry.captureException(
 				new Error("[fetch-user-profile] Invalid user data: Missing userId"),
 			);
-			response.status(400).json({
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(400).json({
 				data: null,
 				error: "Invalid user data: Missing user ID",
 			});
-			return;
 		}
 
 		let finalData: DataResponse;
@@ -85,8 +86,8 @@ export default async function handler(
 				table: PROFILES,
 			});
 			Sentry.captureException(error);
-			response.status(500).json({ data: null, error });
-			return;
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(500).json({ data: null, error });
 		}
 
 		finalData = profileData;
@@ -113,8 +114,10 @@ export default async function handler(
 					userId,
 				});
 				Sentry.captureException(updateProfilePicError);
-				response.status(500).json({ data: null, error: updateProfilePicError });
-				return;
+				// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+				return response
+					.status(500)
+					.json({ data: null, error: updateProfilePicError });
 			}
 
 			finalData = updateProfilePicData;
@@ -145,11 +148,11 @@ export default async function handler(
 					},
 				);
 				Sentry.captureException(checkError);
-				response.status(500).json({
+				// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+				return response.status(500).json({
 					data: null,
 					error: "Failed to check username availability",
 				});
-				return;
 			}
 
 			if (isEmpty(checkData)) {
@@ -172,11 +175,11 @@ export default async function handler(
 						userId,
 					});
 					Sentry.captureException(updateUsernameError);
-					response.status(500).json({
+					// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+					return response.status(500).json({
 						data: null,
 						error: "Failed to update username",
 					});
-					return;
 				}
 
 				finalData = userNameNotPresentUpdateData;
@@ -205,11 +208,11 @@ export default async function handler(
 						},
 					);
 					Sentry.captureException(updateUniqueUsernameError);
-					response.status(500).json({
+					// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+					return response.status(500).json({
 						data: null,
 						error: "Failed to create unique username",
 					});
-					return;
 				}
 
 				finalData = updateUniqueUsernameData;
@@ -217,8 +220,8 @@ export default async function handler(
 		}
 
 		// Success - return profile data
-		response.status(200).json({ data: finalData, error: null });
-		return;
+		// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+		return response.status(200).json({ data: finalData, error: null });
 	} catch (unexpectedError) {
 		// Catch any unexpected errors
 		console.error("[fetch-user-profile] Unexpected error:", unexpectedError, {
@@ -229,11 +232,11 @@ export default async function handler(
 
 		// Check if response was already sent
 		if (!response.headersSent) {
-			response.status(500).json({
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(500).json({
 				data: null,
 				error: "An unexpected error occurred while fetching profile",
 			});
-			return;
 		}
 
 		// If response was already sent, just log the error
