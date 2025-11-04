@@ -9,6 +9,8 @@ import {
 } from "../../../../../utils/constants";
 import { r2Helpers } from "../../../../../utils/r2Client";
 
+pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+
 type PdfScreenshotRequest = {
 	url: string;
 };
