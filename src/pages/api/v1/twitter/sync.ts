@@ -82,7 +82,10 @@ export default async function handler(
 				.from(MAIN_TABLE_NAME)
 				.select("url")
 				// get only the urls that are there in the payload
-				.in("url", insertData?.map((item) => item?.url))
+				.in(
+					"url",
+					insertData?.map((item) => item?.url),
+				)
 				.eq("user_id", userId)
 				.eq("type", "tweet");
 

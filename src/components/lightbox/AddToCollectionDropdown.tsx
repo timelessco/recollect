@@ -108,7 +108,10 @@ export const AddToCollectionDropdown = memo(
 
 		// Find the current collection based on category_id
 		const currentCollection = useMemo(() => {
-			if (!category_id) return null;
+			if (!category_id) {
+				return null;
+			}
+
 			return collections?.find((collection) => collection?.id === category_id);
 		}, [collections, category_id]);
 
@@ -120,14 +123,15 @@ export const AddToCollectionDropdown = memo(
 			);
 
 			// Return filtered collections if no search term
-			if (!searchTerm?.trim()) return availableCollections;
+			if (!searchTerm?.trim()) {
+				return availableCollections;
+			}
 
 			// Filter collections by name (case-insensitive)
-			return availableCollections?.filter(
-				(collection) =>
-					collection?.category_name
-						?.toLowerCase()
-						.includes(searchTerm?.toLowerCase()),
+			return availableCollections?.filter((collection) =>
+				collection?.category_name
+					?.toLowerCase()
+					.includes(searchTerm?.toLowerCase()),
 			);
 		}, [collections, searchTerm, currentCollection?.id]);
 
@@ -156,9 +160,9 @@ export const AddToCollectionDropdown = memo(
 
 					// Find the newly selected collection to update currentCollection
 					const selectedCollection = newCollection
-						? updatedCollections?.find(
+						? (updatedCollections?.find(
 								(category) => category?.id === newCollection?.id,
-						  ) ?? newCollection
+							) ?? newCollection)
 						: null;
 
 					// Update the current collection optimistically
@@ -213,7 +217,9 @@ export const AddToCollectionDropdown = memo(
 							const collection = collections.find(
 								(coll) => coll?.category_name === value,
 							);
-							if (collection) void handleCollectionClick(collection);
+							if (collection) {
+								void handleCollectionClick(collection);
+							}
 						}}
 						value={currentCollection ? currentCollection?.category_name : ""}
 					>
@@ -229,13 +235,13 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className={` group rounded-md border border-transparent py-[2px] text-left text-[13px]  ${
+									className={`group rounded-md border border-transparent py-[2px] text-left text-[13px] ${
 										currentCollection ? "text-gray-800" : "text-gray-500"
-									}  focus:outline-none`}
+									} focus:outline-none`}
 									type="button"
 								>
 									{/* Show current collection name or default text */}
-									<div className="flex items-center  transition-all  group-hover:text-plain-reverse-color">
+									<div className="flex items-center transition-all group-hover:text-plain-reverse-color">
 										<span>
 											{currentCollection
 												? currentCollection?.category_name
@@ -246,7 +252,7 @@ export const AddToCollectionDropdown = memo(
 							</Ariakit.Select>
 							{/* Dropdown popover with search and collection list */}
 							<Ariakit.SelectPopover
-								className=" z-50 mt-1 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
+								className="z-50 mt-1 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
 								// Allow interaction with the rest of the page
 								modal={false}
 							>
@@ -277,7 +283,7 @@ export const AddToCollectionDropdown = memo(
 											filteredCollections?.map((collection) => (
 												<Ariakit.ComboboxItem
 													// Styling for each collection item
-													className="flex w-full cursor-pointer items-center gap-2 rounded-lg  px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
+													className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
 													key={collection?.id}
 													onClick={() => handleCollectionClick(collection)}
 													onMouseDown={(event) => {

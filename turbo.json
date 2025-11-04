@@ -40,9 +40,6 @@
 		"lint:spelling": {
 			"outputs": [".cspellcache"]
 		},
-		"lint:package-json": {
-			"inputs": ["package.json"]
-		},
 		"fix:md": {
 			"inputs": ["**/*.md", ".github/**/*.md"]
 		},

@@ -5,20 +5,20 @@
 ### Starting Development
 
 ```bash
-pnpm dev                 # Start Next.js development server (port 3000)
-pnpm dev:sourcemap       # Start with source maps enabled
+pnpm dev           # Start Next.js development server (port 3000)
+pnpm dev:sourcemap # Start with source maps enabled
 ```
 
 ### Building & Production
 
 ```bash
-pnpm build              # Build for production using Turbo
-pnpm build:next         # Build Next.js directly
-pnpm build:ci           # Build with env validation skipped
-pnpm build:start        # Build and start production server
-pnpm build:analyze      # Build with bundle analyzer
-pnpm build:sourcemap    # Build with source maps for debugging
-pnpm start              # Start production server
+pnpm build           # Build for production using Turbo
+pnpm build:next      # Build Next.js directly
+pnpm build:ci        # Build with env validation skipped
+pnpm build:start     # Build and start production server
+pnpm build:analyze   # Build with bundle analyzer
+pnpm build:sourcemap # Build with source maps for debugging
+pnpm start           # Start production server
 ```
 
 ## Quality Assurance Commands
@@ -26,64 +26,63 @@ pnpm start              # Start production server
 ### Linting & Formatting (All-in-One)
 
 ```bash
-pnpm lint               # Run ALL linting checks via Turbo
-pnpm fix                # Fix all auto-fixable ESLint issues
+pnpm lint # Run ALL linting checks via Turbo
+pnpm fix  # Fix all auto-fixable ESLint issues
 ```
 
 ### Individual Linting Commands
 
 ```bash
-pnpm lint:eslint        # Check ESLint rules
-pnpm fix:eslint         # Auto-fix ESLint issues
+pnpm lint:eslint # Check ESLint rules
+pnpm fix:eslint  # Auto-fix ESLint issues
 
-pnpm lint:types         # TypeScript type checking
-                        # No auto-fix available for type errors
+pnpm lint:types # TypeScript type checking
+# No auto-fix available for type errors
 
-pnpm lint:css           # Check CSS with Stylelint
-pnpm fix:css            # Auto-fix CSS issues
+pnpm lint:css # Check CSS with Stylelint
+pnpm fix:css  # Auto-fix CSS issues
 
-pnpm lint:prettier      # Check Prettier formatting
-pnpm fix:prettier       # Auto-fix formatting
+pnpm lint:prettier # Check Prettier formatting
+pnpm fix:prettier  # Auto-fix formatting
 
-pnpm lint:md            # Check Markdown files
-pnpm fix:md             # Auto-fix Markdown issues
+pnpm lint:md # Check Markdown files
+pnpm fix:md  # Auto-fix Markdown issues
 
-pnpm lint:spelling      # Check spelling with cspell
-pnpm fix:spelling       # Add unknown words to dictionary
+pnpm lint:spelling # Check spelling with cspell
+pnpm fix:spelling  # Add unknown words to dictionary
 
-pnpm lint:knip          # Check for unused dependencies/exports
-pnpm lint:package-json  # Validate package.json structure
+pnpm lint:knip # Check for unused dependencies/exports
 ```
 
 ## Testing Commands
 
 ```bash
-pnpm test               # Run tests (currently exits with 0)
-pnpm cypress:open       # Open Cypress test runner
+pnpm test         # Run tests (currently exits with 0)
+pnpm cypress:open # Open Cypress test runner
 ```
 
 ## Dependency Management
 
 ```bash
-pnpm install            # Install dependencies
-pnpm check:engine       # Check Node.js version compatibility
-pnpm check:packages     # Check for duplicate packages
-pnpm check:update       # Interactive dependency updates (patches)
+pnpm install        # Install dependencies
+pnpm check:engine   # Check Node.js version compatibility
+pnpm check:packages # Check for duplicate packages
+pnpm check:update   # Interactive dependency updates (patches)
 ```
 
 ## Git & Release Commands
 
 ```bash
-pnpm prepare            # Set up Husky hooks (auto-runs on install)
-pnpm release            # Create a new release (CI mode)
-pnpm release:dryrun     # Test release without publishing
+pnpm prepare        # Set up Husky hooks (auto-runs on install)
+pnpm release        # Create a new release (CI mode)
+pnpm release:dryrun # Test release without publishing
 ```
 
 ## Utility Commands
 
 ```bash
-pnpm contributors:add       # Add contributor to all-contributors
-pnpm contributors:generate  # Generate contributors list
+pnpm contributors:add      # Add contributor to all-contributors
+pnpm contributors:generate # Generate contributors list
 ```
 
 ## Environment Setup

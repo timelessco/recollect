@@ -66,7 +66,10 @@ const categoriesDelete = async (
 		const { data: updateData, error: updateError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ category_id: 0 })
-			.in("category_id", categoriesData?.map((item) => item?.id))
+			.in(
+				"category_id",
+				categoriesData?.map((item) => item?.id),
+			)
 			.select(`id`);
 
 		if (!isNull(updateError)) {

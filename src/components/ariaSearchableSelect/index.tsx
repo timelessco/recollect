@@ -29,7 +29,7 @@ const AriaSearchableSelect = ({
 				? list
 				: matchSorter(list, searchValue, {
 						baseSort: (a, b) => (a.index < b.index ? -1 : 1),
-				  }),
+					}),
 		[searchValue, list],
 	);
 

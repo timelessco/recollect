@@ -119,7 +119,7 @@ const SettingsModal = () => {
 			<div className="flex h-full rounded-[20px] bg-gray-0">
 				<div className="h-full min-w-[180px] rounded-l-[20px] border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4 lg:min-w-fit">
 					{isDesktop && (
-						<div className="px-2 text-[13px] font-[500]  leading-[115%] tracking-[2%] text-gray-600">
+						<div className="px-2 text-[13px] font-[500] leading-[115%] tracking-[2%] text-gray-600">
 							Settings
 						</div>
 					)}

@@ -25,7 +25,7 @@ const WarningActionModal = (props: WarningActionModalTypes) => {
 
 	return (
 		<Modal open={open} setOpen={setOpen}>
-			<div className=" p-4">
+			<div className="p-4">
 				{!isLoading ? (
 					<>
 						<p className="pb-7">{warningText}</p>

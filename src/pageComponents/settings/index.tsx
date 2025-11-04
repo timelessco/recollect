@@ -164,8 +164,7 @@ const Settings = () => {
 	}, [displaynameReset, userData?.display_name]);
 
 	const profilePicClassName = classNames({
-		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]:
-			true,
+		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]: true,
 		"opacity-50":
 			uploadProfilePicMutation?.isLoading || removeProfilePic?.isLoading,
 	});
@@ -227,7 +226,7 @@ const Settings = () => {
 						</figure>
 					</div>
 					<div className="sm:mt-2">
-						<div className=" flex gap-2 text-sm font-semibold leading-[21px] text-black">
+						<div className="flex gap-2 text-sm font-semibold leading-[21px] text-black">
 							<Button
 								className={`px-2 py-[6px] ${saveButtonClassName}`}
 								onClick={() => {
@@ -236,13 +235,13 @@ const Settings = () => {
 									}
 								}}
 							>
-								<div className="flex items-center space-x-[6px] ">
+								<div className="flex items-center space-x-[6px]">
 									<ImageIcon />
 									<span>Upload image</span>
 								</div>
 							</Button>
 							<Button
-								className="bg-gray-100  px-2 py-[6px] text-[13px] font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
+								className="bg-gray-100 px-2 py-[6px] text-[13px] font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
 								disabledClassName="bg-gray-100 dark:bg-gray-950 dark:hover:bg-gray-950 hover:bg-gray-800 text-gray-400 dark:text-gray-900"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
@@ -322,7 +321,7 @@ const Settings = () => {
 							labelClassName={settingsInputLabelClassName}
 						>
 							<div className={`${settingsInputContainerClassName} w-full`}>
-								<figure className=" mr-2">
+								<figure className="mr-2">
 									<SettingsUserIcon />
 								</figure>
 								<Input
@@ -376,7 +375,7 @@ const Settings = () => {
 								<GoogleLoginIcon />
 							)}
 							<p
-								className={`my-2 ml-2 text-gray-900  ${settingsParagraphClassName}`}
+								className={`my-2 ml-2 text-gray-900 ${settingsParagraphClassName}`}
 							>
 								{userData?.email}
 								<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
@@ -386,7 +385,7 @@ const Settings = () => {
 						</div>
 						{session?.user?.app_metadata?.provider === "email" && (
 							<Button
-								className={`mr-[10px]  ${settingsLightButtonClassName}`}
+								className={`mr-[10px] ${settingsLightButtonClassName}`}
 								onClick={() => setCurrentSettingsPage("change-email")}
 								type="light"
 							>
@@ -428,16 +427,16 @@ const Settings = () => {
 				</div> */}
 				<Switch />
 				<div className="pt-10">
-					<p className=" text-[14px] font-[500] leading-[115%] text-gray-900">
+					<p className="text-[14px] font-[500] leading-[115%] text-gray-900">
 						Delete Account
 					</p>
-					<div className="flex flex-col  justify-between pb-5">
+					<div className="flex flex-col justify-between pb-5">
 						<p className="my-[10px] text-[14px] font-[400] leading-[150%] text-gray-800">
 							If you no longer wish to use recollect, you can permanently delete
 							your account.
 						</p>
 						<Button
-							className={`w-full  ${settingsDeleteButtonRedClassName}`}
+							className={`w-full ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
 							<p className="flex w-full justify-center">

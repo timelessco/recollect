@@ -45,7 +45,9 @@ const SidePaneOptionsMenu = () => {
 			item?.name === menuListItemName.settings
 		) {
 			return item;
-		} else return null;
+		} else {
+			return null;
+		}
 	});
 
 	return (

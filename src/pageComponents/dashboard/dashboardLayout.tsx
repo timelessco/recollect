@@ -294,7 +294,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[28px] rounded-none border-none  bg-gray-0 p-0 text-xl font-semibold leading-[16px] text-gray-900  focus:outline-none"
+					className="m-0 h-[28px] rounded-none border-none bg-gray-0 p-0 text-xl font-semibold leading-[16px] text-gray-900 focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -514,7 +514,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<div className="relative">
 					<div className="">
 						<button
-							className="group absolute left-[-25px] top-[-25px]  px-3 py-5"
+							className="group absolute left-[-25px] top-[-25px] px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
 							onClick={() => {
 								setShowSidePane(true);
@@ -528,7 +528,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								className={`${collapseButtonCommonClasses} top-[16px] group-hover:rotate-[-25deg]`}
 							/>
 							<div
-								className={`${collapseButtonCommonClasses}  top-[26px]  group-hover:rotate-[25deg]`}
+								className={`${collapseButtonCommonClasses} top-[26px] group-hover:rotate-[25deg]`}
 							/>
 						</button>
 					</div>

@@ -170,7 +170,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				className="flex items-center justify-between px-2 py-[5.5px]"
 				key={item.label}
 			>
-				<p className=" text-[13px] font-450 leading-[115%] tracking-[1%] text-gray-800">
+				<p className="text-[13px] font-450 leading-[115%] tracking-[1%] text-gray-800">
 					{item?.label}
 				</p>
 				<Switch

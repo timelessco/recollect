@@ -2,6 +2,7 @@ import { defineConfig } from "cypress";
 import dotenv from "dotenv";
 
 // Load environment variables from .env file
+// eslint-disable-next-line import/no-named-as-default-member
 dotenv.config();
 
 export default defineConfig({

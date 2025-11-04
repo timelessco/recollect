@@ -67,36 +67,30 @@
 ### Source Code (`src/`)
 
 - **`async/`** - Asynchronous operations, API calls, and data fetching
-
   - AI integrations (Google Generative AI, LangChain)
   - React Query hooks for mutations and queries
   - Supabase CRUD operations
   - File upload handlers
 
 - **`components/`** - Reusable UI components
-
   - Aria-prefixed components for accessibility
   - Atomic design components
   - Common UI elements (modals, dropdowns, tooltips)
 
 - **`hooks/`** - Custom React hooks for shared logic
-
   - Debouncing, mobile detection, routing helpers
   - Data transformation hooks
 
 - **`icons/`** - SVG icon components organized by type
-
   - Action icons, category icons, social icons
   - Consistent icon component structure
 
 - **`pageComponents/`** - Page-specific components
-
   - Dashboard layout and functionality
   - Login/authentication components
   - Settings page components
 
 - **`pages/`** - Next.js routing
-
   - API routes for server-side operations
   - Dynamic routing with `[category_id]`
   - Main entry point (`_app.tsx`)

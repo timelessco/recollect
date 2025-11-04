@@ -376,7 +376,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					(catItem) => catItem?.category_id === item?.id,
 				)?.count,
 				iconColor: item?.icon_color,
-		  }))
+			}))
 		: [];
 	const sortedList = () => {
 		let array: CollectionItemTypes[] = [];
@@ -384,7 +384,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 			const apiCategoryOrder = userProfileData?.data[0]?.category_order;
 
 			if (!isNull(apiCategoryOrder)) {
-				if (apiCategoryOrder)
+				if (apiCategoryOrder) {
 					for (const item of apiCategoryOrder) {
 						const data = find(
 							collectionsList,
@@ -395,10 +395,11 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							array = [...array, data];
 						}
 					}
+				}
 
 				let categoriesNotThereInApiCategoryOrder: CollectionItemTypes[] = [];
 
-				if (collectionsList)
+				if (collectionsList) {
 					for (const item of collectionsList) {
 						const data = find(
 							apiCategoryOrder,
@@ -412,6 +413,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							];
 						}
 					}
+				}
 
 				return [...array, ...categoriesNotThereInApiCategoryOrder];
 			}
@@ -457,7 +459,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	};
 
 	const renderAddCategoryInput = showAddCategoryInput ? (
-		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg  bg-gray-100 px-2 py-[6px]">
+		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-2 py-[6px]">
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
@@ -535,7 +537,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							}
 						}}
 					>
-						<div className={` text-justify ${dropdownMenuItemClassName}`}>
+						<div className={`text-justify ${dropdownMenuItemClassName}`}>
 							{item?.label}
 						</div>
 					</AriaDropdownMenu>

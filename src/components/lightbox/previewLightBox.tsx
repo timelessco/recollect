@@ -79,7 +79,10 @@ export const PreviewLightBox = ({
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {
-		if (!bookmarks?.length) return;
+		if (!bookmarks?.length) {
+			return;
+		}
+
 		const wasOpen = _previousOpenRef?.current;
 
 		// Only set activeIndex when the lightbox is being opened

@@ -205,14 +205,14 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 					/>
 				</div>
 				<ComboboxList
-					className="flex h-[253px] flex-col  pb-3 pt-2"
+					className="flex h-[253px] flex-col pb-3 pt-2"
 					id="icon-selector"
 					state={combobox}
 				>
-					<div className=" overflow-hidden overflow-y-scroll">
+					<div className="overflow-hidden overflow-y-scroll">
 						{renderList()}
 					</div>
-					<div className="absolute bottom-2 left-0 flex w-full justify-between px-2 pt-2 ">
+					<div className="absolute bottom-2 left-0 flex w-full justify-between px-2 pt-2">
 						<Button
 							className="!text-plain-reverse-color"
 							isDisabled={currentPage === 1 || isSearch}
@@ -220,7 +220,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						>
 							prev
 						</Button>
-						<span className=" text-[13px] font-medium">
+						<span className="text-[13px] font-medium">
 							{currentPage}/{totalPagesValue}
 						</span>
 						<Button
