@@ -44,7 +44,7 @@
 }
 
 body {
-	@apply overflow-hidden bg-plain-color antialiased outline-none;
+	@apply overflow-hidden bg-gray-0 antialiased outline-none;
 
 	font-variation-settings: "opsz" 20;
 }
@@ -178,7 +178,7 @@ main {
 }
 
 .drop-target .side-pane-anchor {
-	@apply bg-gray-50;
+	@apply bg-gray-100;
 }
 
 .drop-indicator {

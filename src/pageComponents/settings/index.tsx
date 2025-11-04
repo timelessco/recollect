@@ -205,7 +205,7 @@ const Settings = () => {
 			/>
 			<div>
 				<p className={`${settingsMainHeadingClassName} mb-4`}>Account</p>
-				<div className="flex w-full items-center space-x-2 sm:flex-col">
+				<div className="flex w-full items-center space-x-2">
 					<div
 						onClick={() => {
 							if (inputFile.current) {
@@ -243,6 +243,7 @@ const Settings = () => {
 							</Button>
 							<Button
 								className="bg-gray-100  px-2 py-[6px] text-[13px] font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
+								disabledClassName="bg-gray-100 dark:bg-gray-950 dark:hover:bg-gray-950 hover:bg-gray-800 text-gray-400 dark:text-gray-900"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -261,8 +262,8 @@ const Settings = () => {
 						</div>
 					</div>
 				</div>
-				<div className="mt-[44px] flex flex-row gap-3">
-					<form onSubmit={handleSubmit(onSubmit)}>
+				<div className="mt-[44px] flex flex-row space-x-3">
+					<form className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
 						<LabelledComponent
 							label="Username"
 							labelClassName={settingsInputLabelClassName}
@@ -305,13 +306,17 @@ const Settings = () => {
 											? ""
 											: "pointer-events-none invisible"
 									}`}
+									onClick={handleSubmit(onSubmit)}
 								>
 									Save
 								</Button>
 							</div>
 						</LabelledComponent>
 					</form>
-					<form onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}>
+					<form
+						className="w-1/2"
+						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
+					>
 						<LabelledComponent
 							label="Display name"
 							labelClassName={settingsInputLabelClassName}
@@ -350,6 +355,7 @@ const Settings = () => {
 											? ""
 											: "pointer-events-none invisible"
 									}`}
+									onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
 								>
 									Save
 								</Button>
@@ -362,37 +368,37 @@ const Settings = () => {
 					<p className="pb-[10px] text-[14px] font-[500] leading-[115%] text-gray-900">
 						Email
 					</p>
-					<div className="flex items-center justify-between rounded-lg bg-gray-100 sm:flex-col">
-						<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
-							<div className="ml-[19.5px] flex items-center gap-2 rounded-lg">
-								{session?.user?.app_metadata?.provider === "email" ? (
-									<MailIconBlack />
-								) : (
-									<GoogleLoginIcon />
-								)}
-								<p
-									className={`my-2 ml-2 text-gray-900  ${settingsParagraphClassName}`}
-								>
-									{userData?.email}
-									<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
-										Current email
-									</p>
+					<div className="flex items-center justify-between rounded-lg bg-gray-100">
+						<div className="ml-[19.5px] flex items-center gap-2 rounded-lg">
+							{session?.user?.app_metadata?.provider === "email" ? (
+								<MailIconBlack />
+							) : (
+								<GoogleLoginIcon />
+							)}
+							<p
+								className={`my-2 ml-2 text-gray-900  ${settingsParagraphClassName}`}
+							>
+								{userData?.email}
+								<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
+									Current email
 								</p>
-							</div>
+							</p>
 						</div>
-						<Button
-							className={`mr-[10px] sm:mt-5 ${settingsLightButtonClassName}`}
-							onClick={() => setCurrentSettingsPage("change-email")}
-							type="light"
-						>
-							{session?.user?.app_metadata?.provider === "email"
-								? "Change email"
-								: "Disconnect"}
-						</Button>
+						{session?.user?.app_metadata?.provider === "email" && (
+							<Button
+								className={`mr-[10px]  ${settingsLightButtonClassName}`}
+								onClick={() => setCurrentSettingsPage("change-email")}
+								type="light"
+							>
+								Change email
+							</Button>
+						)}
 					</div>
-					{session?.user?.app_metadata?.provider !== "email" && (
+					{session?.user?.app_metadata?.provider === "email" && (
 						<p className="mt-2 flex items-center gap-x-2 text-[13px] font-[400] leading-[150%] text-gray-600">
-							<InfoIcon />
+							<figure className="text-gray-900">
+								<InfoIcon />
+							</figure>
 							You have logged in with your Google account.
 						</p>
 					)}
@@ -403,7 +409,7 @@ const Settings = () => {
 					<p className="pb-[10px] text-[14px] font-[500] leading-[115%] text-gray-900">
 						Active devices
 					</p>
-					<div className="flex items-center justify-between rounded-lg bg-gray-100 sm:flex-col">
+					<div className="flex items-center justify-between rounded-lg bg>
 						<div className="  flex  flex-row sm:w-full">
 							<div className="my-[10px] ml-[19.5px] flex  gap-2 rounded-lg">
 								<PCLogo />
@@ -431,10 +437,10 @@ const Settings = () => {
 							your account.
 						</p>
 						<Button
-							className={`w-full sm:mt-5 ${settingsDeleteButtonRedClassName}`}
+							className={`w-full  ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
-							<p className="flex w-full justify-center  sm:w-[105px]">
+							<p className="flex w-full justify-center">
 								<span className="flex items-center justify-center gap-1.5">
 									{deleteUserMutation?.isLoading ? (
 										<Spinner

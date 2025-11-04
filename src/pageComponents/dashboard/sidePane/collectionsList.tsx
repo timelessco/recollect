@@ -43,7 +43,7 @@ import {
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
-import OptionsIconGray from "../../../icons/optionsIconGray";
+import OptionsIcon from "../../../icons/optionsIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -457,7 +457,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	};
 
 	const renderAddCategoryInput = showAddCategoryInput ? (
-		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg  bg-gray-100 px-2 py-[5px]">
+		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg  bg-gray-100 px-2 py-[6px]">
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
@@ -500,10 +500,10 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const collectionsHeader = (
 		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
-			<div className="flex items-center text-[13px] font-medium leading-[14.95px] text-gray-600">
+			<div className="flex items-center text-[13px] font-medium leading-[14.95px] tracking-[2%] text-gray-600">
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
-					className="collections-sidepane-down-arrow hidden group-hover:block"
+					className="collections-sidepane-down-arrow hidden pt-[1px] text-gray-500 group-hover:block"
 					size={10}
 				/>
 			</div>
@@ -511,10 +511,12 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				menuButton={
 					<div
 						className={
-							isCollectionHeaderMenuOpen ? "block" : " hidden group-hover:block"
+							isCollectionHeaderMenuOpen
+								? "block text-gray-500"
+								: "hidden text-gray-500 group-hover:block"
 						}
 					>
-						<OptionsIconGray />
+						<OptionsIcon />
 					</div>
 				}
 				menuButtonClassName="h-4 w-4"
@@ -558,7 +560,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 						{sortedList()?.map((item) => (
 							<Item key={item?.id} textValue={item?.name}>
 								<SingleListItemComponent
-									extendedClassname="pb-[6px] pt-[4px] mt-[2px]"
+									extendedClassname="py-[6px]"
 									item={item}
 									listNameId="collection-name"
 									onCategoryOptionClick={onCategoryOptionClick}
@@ -575,7 +577,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</div>
 				{renderAddCategoryInput}
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-gray-100"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={() => {}}

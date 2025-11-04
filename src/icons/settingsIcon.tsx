@@ -15,7 +15,7 @@ const SettingsIcon = () => (
 		/>
 		<path
 			d="M7 9C7 10.3808 8.11917 11.5 9.5 11.5C10.8808 11.5 12 10.3808 12 9C12 7.61917 10.8808 6.5 9.5 6.5C8.11917 6.5 7 7.61917 7 9Z"
-			fill="white"
+			fill="var(--plain-color)"
 			stroke="currentColor"
 			strokeOpacity="0.91"
 		/>

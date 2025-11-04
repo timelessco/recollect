@@ -76,7 +76,7 @@ const AriaSearchableSelect = ({
 						/>
 					)}
 					<Ariakit.SelectPopover
-						className="z-10 rounded-xl bg-plain-color p-[6px] shadow-custom-7"
+						className="z-10 rounded-xl bg-gray-0 p-[6px] shadow-custom-7"
 						gutter={4}
 						sameWidth
 					>

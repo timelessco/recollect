@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useForm, type SubmitHandler } from "react-hook-form";
 import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
@@ -15,25 +14,19 @@ import { Spinner } from "../../components/spinner";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import LaterpadLogo from "../../icons/laterpadLogo";
 import { useSupabaseSession } from "../../store/componentStore";
-import {
-	buttonDarkClassName,
-	buttonLightClassName,
-	grayInputClassName,
-} from "../../utils/commonClassNames";
+import { grayInputClassName } from "../../utils/commonClassNames";
 import { ALL_BOOKMARKS_URL, EMAIL_CHECK_PATTERN } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 
 const LoginPage = () => {
 	const [isLoading, setIsLoading] = useState(false);
-	const [isOtpStep, setIsOtpStep] = useState(false);
+	const [step, setStep] = useState<"email" | "initial" | "otp">("initial");
 	const [email, setEmail] = useState("");
 	const [otp, setOtp] = useState("");
 
 	const router = useRouter();
-
 	const supabase = createClient();
-
 	const session = useSupabaseSession((state) => state.session);
 
 	useEffect(() => {
@@ -41,31 +34,26 @@ const LoginPage = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [session]);
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<{ email: string; password?: string }>();
+	const handleSendOtp = async () => {
+		if (!EMAIL_CHECK_PATTERN.test(email)) {
+			errorToast("Please enter a valid email");
+			return;
+		}
 
-	const onSubmit: SubmitHandler<{
-		email: string;
-		password?: string;
-	}> = async (data) => {
 		setIsLoading(true);
-		const { error } = await signInWithOtp(data?.email, supabase);
+		const { error } = await signInWithOtp(email, supabase);
 		setIsLoading(false);
 
 		if (error) {
-			errorToast(error?.message);
+			errorToast(error.message);
 		} else {
-			setEmail(data.email);
-			setIsOtpStep(true);
+			setStep("otp");
 		}
 	};
 
 	const handleVerifyOtp = async () => {
-		if (!otp || !email) {
-			errorToast("Please enter OTP");
+		if (!otp || otp.length !== 6) {
+			errorToast("Please enter a valid 6-digit OTP");
 			return;
 		}
 
@@ -80,89 +68,115 @@ const LoginPage = () => {
 		}
 	};
 
+	const renderPrimaryButton = () => {
+		switch (step) {
+			case "initial":
+				return (
+					<button
+						className="flex h-[30px] w-full justify-center rounded-lg bg-gray-alpha-100 py-[7.5px] text-[13px] font-medium leading-[15px] text-gray-950 hover:bg-gray-300"
+						onClick={() => setStep("email")}
+						type="button"
+					>
+						Continue with Email
+					</button>
+				);
+			case "email":
+				return (
+					<Input
+						className="block w-[300px] appearance-none rounded-lg  border-none border-transparent bg-gray-alpha-100 px-[10px] py-[7px] text-sm font-normal leading-4 text-gray-900 outline-none placeholder:text-sm placeholder:font-normal placeholder:text-gray-600 focus:border-transparent focus:ring-0"
+						errorText=""
+						isError={false}
+						onChange={(event) => setEmail(event.target.value)}
+						onKeyDown={(event) => {
+							if (event.key === "Enter") void handleSendOtp();
+						}}
+						placeholder="Enter your email"
+						type="email"
+						value={email}
+					/>
+				);
+			case "otp":
+				return (
+					<Input
+						className={grayInputClassName}
+						errorText=""
+						isError={false}
+						onChange={(event) => setOtp(event.target.value)}
+						onKeyDown={(event) => {
+							if (event.key === "Enter") void handleVerifyOtp();
+						}}
+						placeholder="Enter OTP"
+						value={otp}
+					/>
+				);
+			default:
+				return null;
+		}
+	};
+
+	const renderSecondaryButton = () => {
+		switch (step) {
+			case "initial":
+				return (
+					<button
+						className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+						onClick={() => signInWithOauth("google", supabase)}
+						tabIndex={0}
+						type="button"
+					>
+						<figure className="mr-[6px]">
+							<GoogleLoginIcon />
+						</figure>
+						<p>Continue with Google</p>
+					</button>
+				);
+			case "email":
+				return (
+					<button
+						className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+						onClick={handleSendOtp}
+						type="button"
+					>
+						{isLoading ? (
+							<Spinner className="h-3 w-3" />
+						) : (
+							"Continue with Email"
+						)}
+					</button>
+				);
+			case "otp":
+				return (
+					<button
+						className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+						disabled={isLoading || otp.length !== 6}
+						onClick={handleVerifyOtp}
+						type="button"
+					>
+						{isLoading ? <Spinner className="h-3 w-3" /> : "Verify Email"}
+					</button>
+				);
+			default:
+				return null;
+		}
+	};
+
 	return (
 		<>
 			<div>
 				<div className="flex h-[calc(100vh-95px)] items-center justify-center sm:mx-auto sm:w-full sm:max-w-md">
 					<div className="w-[300px]">
+						{/* Header */}
 						<div className="mb-[21px] flex w-full items-center justify-center text-2xl font-semibold leading-[28px] tracking-[0.24px]">
 							<figure className="mr-[6px]">
 								<LaterpadLogo />
 							</figure>
 							<p className="text-plain-reverse-color">recollect</p>
 						</div>
-						{!isOtpStep ? (
-							<form
-								className="flex flex-col items-center justify-center space-y-4"
-								onSubmit={handleSubmit(onSubmit)}
-							>
-								<Input
-									{...register("email", {
-										required: {
-											value: true,
-											message: "Please enter email",
-										},
-										pattern: {
-											value: EMAIL_CHECK_PATTERN,
-											message: "Please enter valid email",
-										},
-									})}
-									className={grayInputClassName}
-									errorText={errors?.email?.message ?? ""}
-									id="email"
-									isError={Boolean(errors?.email)}
-									placeholder="Email"
-								/>
-								<button
-									className={buttonDarkClassName}
-									id="sign-in-button"
-									type="submit"
-								>
-									{!isLoading ? "Login" : <Spinner />}
-								</button>
-								<div
-									className={buttonLightClassName}
-									onClick={() => {
-										(async () => {
-											await signInWithOauth("google", supabase);
-										})();
-									}}
-									onKeyDown={() => {}}
-									role="button"
-									tabIndex={0}
-								>
-									<figure className="mr-[6px]">
-										<GoogleLoginIcon />
-									</figure>
-									<p>Continue with Google</p>
-								</div>
-							</form>
-						) : (
-							<div className="flex flex-col items-center justify-center space-y-4">
-								<Input
-									className={grayInputClassName}
-									errorText=""
-									isError={false}
-									onChange={(event) => setOtp(event.target.value)}
-									onKeyDown={(event) => {
-										if (event.key === "Enter" && otp.length === 6) {
-											void handleVerifyOtp();
-											event.preventDefault();
-										}
-									}}
-									placeholder="Enter OTP"
-									value={otp}
-								/>
-								<button
-									className={buttonDarkClassName}
-									disabled={otp.length !== 6}
-									onClick={handleVerifyOtp}
-									type="submit"
-								>
-									{isLoading ? <Spinner /> : "Verify OTP"}
-								</button>
-							</div>
-						)}
+						{/* Core Interaction */}
+						<div className="flex flex-col items-center justify-center space-y-4">
+							{renderPrimaryButton()}
+							{renderSecondaryButton()}
+						</div>
 					</div>
 				</div>
 			</div>
