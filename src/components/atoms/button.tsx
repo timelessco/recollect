@@ -42,9 +42,9 @@ const Button: FC<ButtonProps> = (props) => {
 			"bg-gray-950  hover:bg-gray-800 text-white": type === "dark",
 			"bg-transparent hover:bg-gray-100": type === "light",
 			"bg-gray-100": isActive,
-			disabledClassName,
 		}),
-		disabledClassName ?? className,
+		className,
+		isDisabled ? disabledClassName : "",
 	);
 
 	return (

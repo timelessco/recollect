@@ -141,7 +141,7 @@ export const AiFeatures = () => {
 								isReplacing ? (
 									"Save"
 								) : (
-									"replace"
+									"Replace"
 								)
 							) : (
 								"Save"
