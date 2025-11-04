@@ -23,6 +23,7 @@ export default async function handler(
 				queueName: "ai-embeddings",
 				batchSize: 50,
 			},
+			request.cookies,
 			true,
 		);
 

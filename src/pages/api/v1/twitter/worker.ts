@@ -4,8 +4,14 @@ import axios from "axios";
 
 import imageToText from "../../../../async/ai/imageToText";
 import ocr from "../../../../async/ai/ocr";
-import { getBaseUrl, MAIN_TABLE_NAME } from "../../../../utils/constants";
+import {
+	ADD_URL_SCREENSHOT_API,
+	getBaseUrl,
+	MAIN_TABLE_NAME,
+	NEXT_API_URL,
+} from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
+import { apiCookieParser } from "../../../../utils/helpers";
 
 type ProcessParameters = {
 	batchSize: number;
@@ -16,6 +22,7 @@ const SLEEP_SECONDS = 30;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
+	cookies: Partial<{ [key: string]: string }>,
 	processUntilEmpty = false,
 ) => {
 	const { queueName, batchSize } = parameters;
@@ -58,16 +65,17 @@ export const processImageQueue = async (
 			let isFailed = false;
 
 			try {
-				const { user_id, ogImage, url } = message.message;
+				const { user_id, ogImage, url, id } = message.message;
+
+				const { data: existing } = await supabase
+					.from(MAIN_TABLE_NAME)
+					.select("meta_data")
+					.eq("url", url)
+					.eq("user_id", user_id)
+					.single();
 
 				if (ogImage) {
 					// Your processing steps here
-					const { data: existing } = await supabase
-						.from(MAIN_TABLE_NAME)
-						.select("meta_data")
-						.eq("url", url)
-						.eq("user_id", user_id)
-						.single();
 
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const newMeta: any = { ...existing?.meta_data };
@@ -107,6 +115,22 @@ export const processImageQueue = async (
 						.update({ meta_data: newMeta })
 						.eq("url", url)
 						.eq("user_id", user_id);
+				} else {
+					console.log(message);
+
+					const response_ = axios.post(
+						`${getBaseUrl()}${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
+						{
+							id,
+							url,
+						},
+						{
+							headers: {
+								Cookie: apiCookieParser(cookies),
+								"Content-Type": "application/json",
+							},
+						},
+					);
 				}
 
 				// Delete message from queue
@@ -140,11 +164,4 @@ export const processImageQueue = async (
 		console.error("Queue processing error:", error);
 		throw error;
 	}
-
-	console.log("calling ai-embeddings in worker");
-
-	const apiUrl = `${getBaseUrl()}/api/v1/twitter/ai-embeddings`;
-
-	const response_ = axios.get(apiUrl);
-	// }
 };
