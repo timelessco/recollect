@@ -223,16 +223,16 @@ export const acceptedFileTypes = [
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
 
-export const imageFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("image"),
+export const imageFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("image"),
 );
 
-export const videoFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("video"),
+export const videoFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("video"),
 );
 
-export const documentFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("application"),
+export const documentFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("application"),
 );
 
 // color picker colors

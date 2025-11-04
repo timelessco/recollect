@@ -75,7 +75,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 	const { isDesktop } = useIsMobileView();
 	const renderContent = () => (
 		<>
-			<div className="flex  items-center">
+			<div className="flex items-center">
 				{showIconDropdown ? (
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -174,8 +174,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						</AriaDropdown>
 						{item?.count !== undefined && openedMenuId === null && (
 							<p
-								className={` hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-gray-600 ${
-									showDropdown ? " block group-hover:hidden" : " block"
+								className={`hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-gray-600 ${
+									showDropdown ? "block group-hover:hidden" : "block"
 								}`}
 							>
 								{item?.count}

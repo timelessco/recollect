@@ -178,8 +178,8 @@ const LoaderImgPlaceholder = ({
 					{isLoading
 						? "Taking screenshot...."
 						: isNil(id)
-						? "Fetching data..."
-						: "Cannot fetch image for this bookmark"}
+							? "Fetching data..."
+							: "Cannot fetch image for this bookmark"}
 				</p>
 			)}
 		</div>

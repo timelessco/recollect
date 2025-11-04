@@ -30,7 +30,9 @@ const LoginPage = () => {
 	const session = useSupabaseSession((state) => state.session);
 
 	useEffect(() => {
-		if (session?.user) void router.push(`/${ALL_BOOKMARKS_URL}`);
+		if (session?.user) {
+			void router.push(`/${ALL_BOOKMARKS_URL}`);
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [session]);
 
@@ -83,12 +85,14 @@ const LoginPage = () => {
 			case "email":
 				return (
 					<Input
-						className="block w-[300px] appearance-none rounded-lg  border-none border-transparent bg-gray-alpha-100 px-[10px] py-[7px] text-sm font-normal leading-4 text-gray-900 outline-none placeholder:text-sm placeholder:font-normal placeholder:text-gray-600 focus:border-transparent focus:ring-0"
+						className="block w-[300px] appearance-none rounded-lg border-none border-transparent bg-gray-alpha-100 px-[10px] py-[7px] text-sm font-normal leading-4 text-gray-900 outline-none placeholder:text-sm placeholder:font-normal placeholder:text-gray-600 focus:border-transparent focus:ring-0"
 						errorText=""
 						isError={false}
 						onChange={(event) => setEmail(event.target.value)}
 						onKeyDown={(event) => {
-							if (event.key === "Enter") void handleSendOtp();
+							if (event.key === "Enter") {
+								void handleSendOtp();
+							}
 						}}
 						placeholder="Enter your email"
 						type="email"
@@ -103,7 +107,9 @@ const LoginPage = () => {
 						isError={false}
 						onChange={(event) => setOtp(event.target.value)}
 						onKeyDown={(event) => {
-							if (event.key === "Enter") void handleVerifyOtp();
+							if (event.key === "Enter") {
+								void handleVerifyOtp();
+							}
 						}}
 						placeholder="Enter OTP"
 						value={otp}

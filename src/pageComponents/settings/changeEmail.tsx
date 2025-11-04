@@ -92,13 +92,13 @@ const ChangeEmail = () => {
 					Change email
 				</div>
 			</div>
-			<div className="border-b-[1px] border-b-gray-200 pb-[28px] ">
+			<div className="border-b-[1px] border-b-gray-200 pb-[28px]">
 				<LabelledComponent
 					label="Current email"
 					labelClassName={settingsInputLabelClassName}
 				>
 					<div className={settingsInputContainerClassName}>
-						<figure className=" mr-2">
+						<figure className="mr-2">
 							<MailIconBlack />
 						</figure>
 						<Input

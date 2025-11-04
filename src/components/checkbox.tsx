@@ -27,7 +27,7 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 
 	return (
 		<label
-			className={`flex cursor-pointer items-center justify-center ${classname} backdrop-blur-[10px] `}
+			className={`flex cursor-pointer items-center justify-center ${classname} backdrop-blur-[10px]`}
 		>
 			<AriaCheckbox
 				checked={checked}
