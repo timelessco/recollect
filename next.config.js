@@ -43,6 +43,14 @@ const nextConfig = {
 			},
 		],
 	},
+	experimental: {
+		legacyBrowsers: false,
+		outputFileTracingExcludes: ["**canvas**"],
+	},
+	webpack: (config) => {
+		config.externals = [...config.externals, "canvas", "jsdom"];
+		return config;
+	},
 };
 
 // Make sure adding Sentry options is the last code to run before exporting, to
