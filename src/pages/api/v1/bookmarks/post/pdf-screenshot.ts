@@ -52,11 +52,14 @@ export default async function handler(
 		const pdfData = new Uint8Array(arrayBuffer);
 
 		// Render first page using pdfjs + @napi-rs/canvas
-		const loadingTask = pdfjsLib.getDocument({
+		const getDocumentOptions = {
 			data: pdfData,
 			disableAutoFetch: true,
 			isEvalSupported: false,
-		});
+			disableWorker: true,
+		} as unknown as Parameters<typeof pdfjsLib.getDocument>[0];
+
+		const loadingTask = pdfjsLib.getDocument(getDocumentOptions);
 		const pdf = await loadingTask.promise;
 		const firstPage = await pdf.getPage(1);
 		const scale = 1.5;
@@ -64,7 +67,10 @@ export default async function handler(
 
 		const canvas = createCanvas(viewport.width, viewport.height);
 		const context = canvas.getContext("2d");
-		await firstPage.render({ canvasContext: context as any, viewport }).promise;
+		await firstPage.render({
+			canvasContext: context,
+			viewport,
+		}).promise;
 
 		const imageBuffer = canvas.toBuffer("image/png");
 
