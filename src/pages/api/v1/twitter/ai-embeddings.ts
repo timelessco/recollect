@@ -21,7 +21,7 @@ export default async function handler(
 			supabase,
 			{
 				queueName: "ai-embeddings",
-				batchSize: 5,
+				batchSize: 50,
 			},
 			true,
 		);
