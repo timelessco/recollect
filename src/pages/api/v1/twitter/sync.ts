@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
+import axios from "axios";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
@@ -9,7 +10,7 @@ import {
 	type SingleListData,
 	type twitter_sort_index,
 } from "../../../../types/apiTypes";
-import { MAIN_TABLE_NAME } from "../../../../utils/constants";
+import { getBaseUrl, MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 import { processImageQueue } from "./worker";
@@ -162,11 +163,15 @@ export default async function handler(
 			console.error("Failed to queue item:");
 		}
 
-		processImageQueue(supabase, {
-			queueName: "ai-embeddings",
-			batchSize: 100,
-			// eslint-disable-next-line promise/prefer-await-to-then
-		}).catch(console.error);
+		// processImageQueue(supabase, {
+		// 	queueName: "ai-embeddings",
+		// 	batchSize: 100,
+		// 	// eslint-disable-next-line promise/prefer-await-to-then
+		// }).catch(console.error);
+
+		const apiUrl = `${getBaseUrl()}/api/v1/twitter/ai-embeddings`;
+
+		const response_ = axios.get(apiUrl);
 
 		response.status(200).json({ success: true, error: null });
 	} catch {

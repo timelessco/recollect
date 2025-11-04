@@ -17,11 +17,11 @@ export default async function handler(
 	const supabase = createServiceClient();
 
 	try {
-		const result = await processImageQueue(
+		const result = processImageQueue(
 			supabase,
 			{
 				queueName: "ai-embeddings",
-				batchSize: 100,
+				batchSize: 10,
 			},
 			true,
 		);
