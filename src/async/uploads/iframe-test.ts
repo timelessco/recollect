@@ -114,14 +114,20 @@ const checkIframeHeaders = (
 				// Check if any source explicitly allows all domains or our specific domain
 				const allowsEmbedding = sources.some((source) => {
 					// Match any domain (completely open)
-					if (source === "*") return true;
+					if (source === "*") {
+						return true;
+					}
 
 					// These are all restrictive cases that would prevent embedding
-					if (["'self'", "'none'"].includes(source)) return false;
+					if (["'self'", "'none'"].includes(source)) {
+						return false;
+					}
 
 					// If it's a wildcard domain (like *.example.com), it's restrictive
 					// and we can't be sure our domain is allowed
-					if (source.includes("*")) return false;
+					if (source.includes("*")) {
+						return false;
+					}
 
 					// Only allow if it's a specific URL that starts with http(s) and has no wildcards
 					return source.startsWith("http") && !source.includes("*");

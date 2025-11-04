@@ -13,7 +13,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
-		if (!enabled) return () => {};
+		if (!enabled) {
+			return () => {};
+		}
 
 		// Maximum pull distance = slide height
 		const maxOffset = slideRect?.height ?? 0;
@@ -60,7 +62,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 								((offsetRef.current - opacityStart) /
 									(threshold - opacityStart)) *
 									0.5,
-					  )
+						)
 					: 1;
 			element.style.setProperty("--yarl-pull-opacity", `${opacity}`);
 
@@ -75,14 +77,18 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			}
 
 			// Animate back to neutral if user stops pulling
-			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
 			timeoutRef.current = setTimeout(() => reset(element), 200);
 		});
 
 		// Cleanup on unmount or dependency change
 		return () => {
 			unsubscribe();
-			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
 		};
 	}, [subscribeSensors, slideRect, close, enabled]);
 

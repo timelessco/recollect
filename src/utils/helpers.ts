@@ -104,7 +104,9 @@ export const getUserNameFromEmail = (email: string) => {
 };
 
 export const getBaseUrl = (href: string): string => {
-	if (typeof href !== "string" || href.trim() === "") return "";
+	if (typeof href !== "string" || href.trim() === "") {
+		return "";
+	}
 
 	try {
 		const normalizedHref =

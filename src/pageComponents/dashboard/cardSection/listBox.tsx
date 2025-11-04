@@ -99,7 +99,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 		measureElement: (element, _entry) => element.getBoundingClientRect().height,
 		count: bookmarksList.length,
 		getScrollElement: () => {
-			if (typeof document === "undefined") return null;
+			if (typeof document === "undefined") {
+				return null;
+			}
 			const element = document.querySelector("#scrollableDiv");
 			if (!element) {
 				console.warn("Scroll container #scrollableDiv not found");
@@ -109,7 +111,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 		},
 		estimateSize: () => {
 			// Default heights if not grid-based
-			if (cardTypeCondition === viewValues.list) return 250;
+			if (cardTypeCondition === viewValues.list) {
+				return 250;
+			}
 
 			// Figure out lanes
 			let lanes = 1;
@@ -145,7 +149,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			// Get container width (fallback to 1200 if unknown)
 			const containerWidth =
 				typeof document !== "undefined"
-					? document.querySelector("#scrollableDiv")?.clientWidth ?? 1_200
+					? (document.querySelector("#scrollableDiv")?.clientWidth ?? 1_200)
 					: 1_200;
 
 			// Each card width
@@ -160,9 +164,12 @@ const ListBox = (props: ListBoxDropTypes) => {
 			if (
 				cardTypeCondition !== viewValues.card &&
 				cardTypeCondition !== viewValues.moodboard
-			)
+			) {
 				return 1;
-			if (isMobile || isTablet) return 2;
+			}
+			if (isMobile || isTablet) {
+				return 2;
+			}
 
 			switch (bookmarksColumns?.[0]) {
 				case 10:
@@ -251,7 +258,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const renderOption = (virtualIndex: number) => {
 		const item = [...state.collection][virtualIndex];
 
-		if (!item) return null;
+		if (!item) {
+			return null;
+		}
 
 		const bookmarkData = bookmarksList[virtualIndex];
 		return (
@@ -366,8 +375,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 											cardTypeCondition === viewValues.timeline
 												? "24px"
 												: cardTypeCondition === viewValues.card
-												? "42px"
-												: "0px",
+													? "42px"
+													: "0px",
 
 										paddingLeft: isCardView ? "0.75rem" : "0px",
 										paddingRight: isCardView ? "0.75rem" : "0px",
@@ -388,13 +397,13 @@ const ListBox = (props: ListBoxDropTypes) => {
 										bookmarksList,
 										(item) =>
 											item?.id === Number.parseInt(items[0]["text/plain"], 10),
-								  )?.title}
+									)?.title}
 						</div>
 					)}
 				</DragPreview>
 			</ul>
 			{state.selectionManager.selectedKeys.size > 0 && (
-				<div className="fixed  bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
+				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
 					<div className="flex items-center gap-1">
 						<Checkbox
 							BookmarkHoverCheckbox
@@ -402,8 +411,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 								Array.from(state.selectionManager.selectedKeys.keys())?.length >
 								0
 							}
-							label={`${Array.from(state.selectionManager.selectedKeys.keys())
-								?.length} bookmarks`}
+							label={`${
+								Array.from(state.selectionManager.selectedKeys.keys())?.length
+							} bookmarks`}
 							onChange={() => state.selectionManager.clearSelection()}
 							value="selected-bookmarks"
 						/>
@@ -416,7 +426,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 					</div>
 					<div className="flex items-center">
 						<div
-							className=" mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900 "
+							className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900"
 							onClick={() => {
 								onBulkBookmarkDelete(
 									Array.from(
@@ -435,7 +445,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</div>
 						{isTrashPage && (
 							<div
-								className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900 "
+								className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900"
 								onClick={() => {
 									onBulkBookmarkDelete(
 										Array.from(
@@ -456,7 +466,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						{!isEmpty(categoryData?.data) && !isTrashPage && (
 							<AriaDropdown
 								menuButton={
-									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 font-450 leading-4 text-gray-900 ">
+									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 font-450 leading-4 text-gray-900">
 										<figure className="mr-[6px]">
 											<MoveIcon />
 										</figure>

@@ -32,7 +32,9 @@ export const processImageQueue = async (
 			return;
 		}
 
-		if (!messages?.length) return;
+		if (!messages?.length) {
+			return;
+		}
 
 		for (const message of messages) {
 			let isFailed = false;
@@ -98,8 +100,9 @@ export const processImageQueue = async (
 							message_id: message.msg_id,
 						});
 
-					if (deleteError)
+					if (deleteError) {
 						console.error("Error deleting message:", deleteError);
+					}
 				}
 			} catch (error) {
 				console.error("Processing failed for message:", message.msg_id, error);

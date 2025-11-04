@@ -100,7 +100,9 @@ export const getApikeyAndBookmarkCount = async (
 		.select("bookmark_count")
 		.eq("id", userId)
 		.single();
-	if (error) throw error;
+	if (error) {
+		throw error;
+	}
 
 	const bookmarkCount = count?.bookmark_count ?? 0;
 
@@ -119,7 +121,9 @@ const incrementBookmarkCount = async (
 			.eq("id", userId)
 			.single();
 
-		if (fetchError) throw fetchError;
+		if (fetchError) {
+			throw fetchError;
+		}
 
 		const currentCount = profile?.bookmark_count ?? 0;
 		const newCount = currentCount + 1;
@@ -129,7 +133,9 @@ const incrementBookmarkCount = async (
 			.update({ bookmark_count: newCount })
 			.eq("id", userId);
 
-		if (updateError) throw updateError;
+		if (updateError) {
+			throw updateError;
+		}
 
 		return newCount;
 	} catch (error) {

@@ -117,11 +117,11 @@ export default async function handler(
 
 	const urlHost = new URL(url)?.hostname?.toLowerCase();
 
-	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some(
-		(keyword) => urlHost?.includes(keyword),
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some((keyword) =>
+		urlHost?.includes(keyword),
 	);
-	const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some(
-		(keyword) => urlHost?.includes(keyword),
+	const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some((keyword) =>
+		urlHost?.includes(keyword),
 	);
 
 	// try {
@@ -235,7 +235,7 @@ export default async function handler(
 				description: ogScrapperResponse?.ogDescription ?? null,
 				OgImage: shouldSkipOgImage
 					? null
-					: ogScrapperResponse?.ogImage?.[0]?.url ?? null,
+					: (ogScrapperResponse?.ogImage?.[0]?.url ?? null),
 				favIcon: ogScrapperResponse?.favicon ?? null,
 			},
 		};
