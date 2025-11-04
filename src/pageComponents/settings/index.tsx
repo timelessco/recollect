@@ -380,15 +380,15 @@ const Settings = () => {
 								</p>
 							</div>
 						</div>
-						<Button
-							className={`mr-[10px] sm:mt-5 ${settingsLightButtonClassName}`}
-							onClick={() => setCurrentSettingsPage("change-email")}
-							type="light"
-						>
-							{session?.user?.app_metadata?.provider === "email"
-								? "Change email"
-								: "Disconnect"}
-						</Button>
+						{session?.user?.app_metadata?.provider === "email" && (
+							<Button
+								className={`mr-[10px] sm:mt-5 ${settingsLightButtonClassName}`}
+								onClick={() => setCurrentSettingsPage("change-email")}
+								type="light"
+							>
+								Change email
+							</Button>
+						)}
 					</div>
 					{session?.user?.app_metadata?.provider !== "email" && (
 						<p className="mt-2 flex items-center gap-x-2 text-[13px] font-[400] leading-[150%] text-gray-600">
