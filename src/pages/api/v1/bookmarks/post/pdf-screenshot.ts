@@ -9,7 +9,10 @@ import {
 } from "../../../../../utils/constants";
 import { r2Helpers } from "../../../../../utils/r2Client";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+	"pdfjs-dist/build/pdf.worker.min.mjs",
+	import.meta.url,
+).toString();
 type PdfScreenshotRequest = {
 	url: string;
 };
