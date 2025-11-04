@@ -141,7 +141,7 @@ export const processImageQueue = async (
 		throw error;
 	}
 
-	const apiUrl = `${getBaseUrl()}/api/v1/twitter/ai-embeddings`;
+	const apiUrl = `${getBaseUrl()}/api/v1/twitter/process-queue`;
 
 	const response_ = axios.get(apiUrl);
 	// }
