@@ -196,7 +196,7 @@
 		"tailwindcss": "3.3.1",
 		"title-case": "4.1.0",
 		"toml-eslint-parser": "0.5.0",
-		"turbo": "2.5.8",
+		"turbo": "2.6.0",
 		"typescript": "5.9.3",
 		"yaml-eslint-parser": "1.2.0",
 		"zod": "3.22.3"
