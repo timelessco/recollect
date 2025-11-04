@@ -63,6 +63,7 @@ export default withSentryConfig(
 		project: "javascript-nextjs",
 	},
 	{
+		swcMinify: false,
 		// For all available options, see:
 		// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
