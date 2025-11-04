@@ -20,7 +20,6 @@ const bundleAnalyzer = withBundleAnalyzer({
 const nextConfig = {
 	// https://nextjs.org/docs/api-reference/next.config.js/react-strict-mode
 	// reactStrictMode: true,
-	swcMinify: false,
 	eslint: {
 		ignoreDuringBuilds: true,
 	},
@@ -63,7 +62,6 @@ export default withSentryConfig(
 		project: "javascript-nextjs",
 	},
 	{
-		swcMinify: false,
 		// For all available options, see:
 		// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 

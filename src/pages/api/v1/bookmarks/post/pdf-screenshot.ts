@@ -9,10 +9,6 @@ import {
 } from "../../../../../utils/constants";
 import { r2Helpers } from "../../../../../utils/r2Client";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-	"pdfjs-dist/build/pdf.worker.min.mjs",
-	import.meta.url,
-).toString();
 type PdfScreenshotRequest = {
 	url: string;
 };
@@ -55,20 +51,25 @@ export default async function handler(
 		const arrayBuffer = await pdfResponse.arrayBuffer();
 		const pdfData = new Uint8Array(arrayBuffer);
 
-		// Render first page using pdfjs + @napi-rs/canvas
-		const loadingTask = pdfjsLib.getDocument({
+		// Render first page using pdfjs + @napi-rs/canvas (no worker in server env)
+		const getDocumentOptions = {
 			data: pdfData,
 			disableAutoFetch: true,
 			isEvalSupported: false,
-		});
+			disableWorker: true,
+		} as unknown as Parameters<typeof pdfjsLib.getDocument>[0];
+
+		const loadingTask = pdfjsLib.getDocument(getDocumentOptions);
 		const pdf = await loadingTask.promise;
 		const firstPage = await pdf.getPage(1);
 		const scale = 1.5;
 		const viewport = firstPage.getViewport({ scale });
 
 		const canvas = createCanvas(viewport.width, viewport.height);
-		const context = canvas.getContext("2d");
-		await firstPage.render({ canvasContext: context as any, viewport }).promise;
+		const context = canvas.getContext(
+			"2d",
+		) as unknown as CanvasRenderingContext2D;
+		await firstPage.render({ canvasContext: context, viewport }).promise;
 
 		const imageBuffer = canvas.toBuffer("image/png");
 
