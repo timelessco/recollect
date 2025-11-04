@@ -18,7 +18,7 @@ const AddBoomarkInputIcon = ({ className = "" }) => (
 				y="3.55971"
 			/>
 			<rect
-				fill="#FAFAFA"
+				fill="var(--color-gray-100)"
 				height="11.1327"
 				rx="2.5"
 				stroke="currentColor"

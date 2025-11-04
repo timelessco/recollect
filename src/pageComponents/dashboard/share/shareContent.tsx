@@ -269,7 +269,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-600 placeholder:text-gray-600":
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-alpha-600 placeholder:text-gray-alpha-600":
 			true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
@@ -313,7 +313,7 @@ const ShareContent = () => {
 								]}
 								// disabled
 								renderCustomSelectButton={() => (
-									<div className="flex items-center text-gray-800">
+									<div className="flex items-center text-gray-alpha-600">
 										<p className=" mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
@@ -325,7 +325,7 @@ const ShareContent = () => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-gray-100 rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-[7px] px-[10px] bg-gray-alpha-100 rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
 			<div className=" pt-3">
@@ -383,7 +383,7 @@ const ShareContent = () => {
 									<p className=" mr-1 text-gray-800">
 										{currentCategory?.is_public ? "View access" : "No access"}
 									</p>
-									<figure>
+									<figure className="text-gray-500">
 										<DownArrowGray />
 									</figure>
 								</div>
