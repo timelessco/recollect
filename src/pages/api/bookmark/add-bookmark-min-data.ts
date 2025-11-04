@@ -25,6 +25,7 @@ import {
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
+	LOADING_SENSITIVE_DOMAINS,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 	OG_IMAGE_PREFERRED_SITES,
@@ -117,6 +118,9 @@ export default async function handler(
 	const urlHost = new URL(url)?.hostname?.toLowerCase();
 
 	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some(
+		(keyword) => urlHost?.includes(keyword),
+	);
+	const shouldSkipOgImage = LOADING_SENSITIVE_DOMAINS?.some(
 		(keyword) => urlHost?.includes(keyword),
 	);
 
@@ -229,7 +233,9 @@ export default async function handler(
 			data: {
 				title: ogScrapperResponse?.ogTitle ?? null,
 				description: ogScrapperResponse?.ogDescription ?? null,
-				OgImage: ogScrapperResponse?.ogImage?.[0]?.url ?? null,
+				OgImage: shouldSkipOgImage
+					? null
+					: ogScrapperResponse?.ogImage?.[0]?.url ?? null,
 				favIcon: ogScrapperResponse?.favicon ?? null,
 			},
 		};
