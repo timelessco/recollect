@@ -168,8 +168,8 @@ export default async function handler(
 		// 	batchSize: 100,
 		// 	// eslint-disable-next-line promise/prefer-await-to-then
 		// }).catch(console.error);
-
-		const apiUrl = `${getBaseUrl()}/api/v1/twitter/process-queue`;
+		console.log("calling ai-embeddings in sync");
+		const apiUrl = `${getBaseUrl()}/api/v1/twitter/ai-embeddings`;
 
 		const response_ = axios.get(apiUrl);
 
