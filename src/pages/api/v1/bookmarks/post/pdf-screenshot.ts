@@ -51,22 +51,56 @@ export default async function handler(
 		const arrayBuffer = await pdfResponse.arrayBuffer();
 		const pdfData = new Uint8Array(arrayBuffer);
 
-		// Render first page using pdfjs + node-canvas
-		const loadingTask = pdfjsLib.getDocument({
-			data: pdfData,
-			disableAutoFetch: true,
-			isEvalSupported: false,
-		});
-		const pdf = await loadingTask.promise;
-		const firstPage = await pdf.getPage(1);
-		const scale = 1.5;
-		const viewport = firstPage.getViewport({ scale });
+		// Use Puppeteer on Vercel (serverless), fall back to canvas locally
+		const isServerless =
+			Boolean(process.env.VERCEL) || Boolean(process.env.AWS_REGION);
 
-		const canvas = createCanvas(viewport.width, viewport.height);
-		const context = canvas.getContext("2d");
-		await firstPage.render({ canvasContext: context as any, viewport }).promise;
+		let imageBuffer: Buffer;
+		if (isServerless) {
+			const { default: chromium } = await import("@sparticuz/chromium-min");
+			const { default: puppeteer } = await import("puppeteer-core");
 
-		const imageBuffer = canvas.toBuffer("image/png");
+			let executablePath = await chromium.executablePath();
+			const browser = await puppeteer.launch({
+				args: chromium.args,
+				defaultViewport: { width: 1_280, height: 960, deviceScaleFactor: 2 },
+				executablePath: executablePath || undefined,
+				headless: (chromium as any).headless,
+			});
+
+			const page = await browser.newPage();
+			// Use the PDF URL directly with viewer params to ensure first page is visible
+			const viewerUrl = `${url}${"#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH"}`;
+			await page.goto(viewerUrl, {
+				waitUntil: "networkidle2",
+				timeout: 60_000,
+			});
+			await new Promise((resolve) => setTimeout(resolve, 1_000));
+			const screenshotData = (await page.screenshot({
+				fullPage: false,
+				type: "png",
+			})) as Uint8Array;
+			imageBuffer = Buffer.from(screenshotData);
+			await browser.close();
+		} else {
+			// Render first page using pdfjs + node-canvas (local dev / Node runtime)
+			const loadingTask = pdfjsLib.getDocument({
+				data: pdfData,
+				disableAutoFetch: true,
+				isEvalSupported: false,
+			});
+			const pdf = await loadingTask.promise;
+			const firstPage = await pdf.getPage(1);
+			const scale = 1.5;
+			const viewport = firstPage.getViewport({ scale });
+
+			const canvas = createCanvas(viewport.width, viewport.height);
+			const context = canvas.getContext("2d");
+			await firstPage.render({ canvasContext: context as any, viewport })
+				.promise;
+
+			imageBuffer = canvas.toBuffer("image/png");
+		}
 
 		// Derive a stable file name
 		const decodedName = decodeURIComponent(
