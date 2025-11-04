@@ -155,3 +155,4 @@ on:
   push:
     branches:
       - main
+      - dev
