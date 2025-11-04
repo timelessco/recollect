@@ -1,9 +1,8 @@
 /* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
+import axios from "axios";
 
-import { createServiceClient } from "../../../../utils/supabaseClient";
-
-import { processImageQueue } from "./worker";
+import { getBaseUrl } from "../../../../utils/constants";
 
 export default async function handler(
 	request: NextApiRequest,
@@ -14,30 +13,22 @@ export default async function handler(
 		return;
 	}
 
-	const supabase = createServiceClient();
-
 	try {
-		const result = await processImageQueue(
-			supabase,
-			{
-				queueName: "ai-embeddings",
-				batchSize: 100,
-			},
-			true,
-		);
+		const apiUrl = `${getBaseUrl()}/api/v1/twitter/ai-embeddings`;
 
-		console.log({
-			message: `Queue processed successfully `,
-		});
+		const response_ = axios.get(apiUrl);
+
+		console.log("Queue Trigger Response:");
 
 		response.status(200).json({
 			success: true,
-			message: "Queue processed successfully",
+			message: "Queue processing triggered successfully",
 		});
 	} catch {
+		console.error("Failed to trigger queue:");
 		response.status(500).json({
 			success: false,
-			error: "Error processing queue",
+			error: "Failed to trigger queue",
 		});
 	}
 }
