@@ -80,6 +80,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}
+
 			timeoutRef.current = setTimeout(() => reset(element), 200);
 		});
 

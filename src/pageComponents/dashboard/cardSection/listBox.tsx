@@ -102,6 +102,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			if (typeof document === "undefined") {
 				return null;
 			}
+
 			const element = document.querySelector("#scrollableDiv");
 			if (!element) {
 				console.warn("Scroll container #scrollableDiv not found");
@@ -167,6 +168,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 			) {
 				return 1;
 			}
+
 			if (isMobile || isTablet) {
 				return 2;
 			}

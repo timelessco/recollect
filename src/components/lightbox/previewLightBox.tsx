@@ -82,6 +82,7 @@ export const PreviewLightBox = ({
 		if (!bookmarks?.length) {
 			return;
 		}
+
 		const wasOpen = _previousOpenRef?.current;
 
 		// Only set activeIndex when the lightbox is being opened

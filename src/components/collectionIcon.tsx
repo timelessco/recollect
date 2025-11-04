@@ -9,6 +9,7 @@ const normalizeColor = (color?: string) => {
 	if (!color) {
 		return "";
 	}
+
 	return color.trim().toLowerCase();
 };
 
@@ -30,6 +31,7 @@ const getAdjustedColor = (color?: string) => {
 		if (isWhite) {
 			return "#000000";
 		}
+
 		if (isBlack) {
 			return "#ffffff";
 		}
