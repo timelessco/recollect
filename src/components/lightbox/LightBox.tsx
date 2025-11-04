@@ -264,7 +264,7 @@ export const CustomLightBox = ({
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
-								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-plain-color"
+								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-gray-0"
 								data={bookmark?.url}
 								title="Website Preview"
 								type="text/html"

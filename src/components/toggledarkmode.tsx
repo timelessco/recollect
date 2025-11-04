@@ -87,6 +87,7 @@ export const Switch = () => {
 													alt="Logo"
 													className="h-3 w-3"
 													height={12}
+													loader={(source) => source.src}
 													src="logo.png"
 													width={12}
 												/>
@@ -106,6 +107,7 @@ export const Switch = () => {
 													alt="Logo"
 													className="h-3 w-3 invert"
 													height={12}
+													loader={(source) => source.src}
 													src="logo.png"
 													width={12}
 												/>
@@ -134,6 +136,7 @@ export const Switch = () => {
 													value === "dark" ? "invert" : ""
 												}`}
 												height={12}
+												loader={(source) => source.src}
 												src="logo.png"
 												width={12}
 											/>

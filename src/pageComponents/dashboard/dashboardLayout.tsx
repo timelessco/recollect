@@ -294,7 +294,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[28px] rounded-none border-none  bg-plain-color p-0 text-xl font-semibold leading-[16px] text-gray-900  focus:outline-none"
+					className="m-0 h-[28px] rounded-none border-none  bg-gray-0 p-0 text-xl font-semibold leading-[16px] text-gray-900  focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}

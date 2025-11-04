@@ -41,7 +41,7 @@ export const settingsDeleteButtonRedClassName =
 	"bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-[#CD2B31] hover:bg-gray-200";
 
 export const settingsLightButtonClassName =
-	"rounded-lg bg-gray-50 px-3 py-[7.5px] text-sm font-[500] leading-[115%]  text-gray-800 hover:bg-gray-400 sm:w-full sm:justify-center [filter:drop-shadow(0_0_1px_rgba(0,0,0,0.2))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))]";
+	"rounded-lg bg-gray-50 px-3 py-[7.5px] text-sm font-[500] leading-[115%]  text-gray-800 hover:bg-gray-400  [filter:drop-shadow(0_0_1px_rgba(0,0,0,0.2))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))]";
 
 export const saveButtonClassName =
 	"rounded-lg bg-gray-50 text-[13px] font-[500] leading-[115%] text-gray-800 [filter:drop-shadow(0_0_1px_rgba(0,0,0,0.2))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))] hover:bg-gray-200";

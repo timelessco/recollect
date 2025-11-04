@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import Modal from "../../../components/modal";
 import UserAvatar from "../../../components/userAvatar";
+import useIsMobileView from "../../../hooks/useIsMobileView";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
 import {
@@ -25,7 +26,7 @@ const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
-
+	const { isDesktop } = useIsMobileView();
 	const toggleShowSettingsModal = useModalStore(
 		(state) => state.toggleShowSettingsModal,
 	);
@@ -115,11 +116,13 @@ const SettingsModal = () => {
 			wrapperClassName="skip-global-paste w-full max-w-[740px] rounded-[20px] outline-none self-center"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
-			<div className="flex h-full rounded-[20px] bg-plain-color">
-				<div className="h-full min-w-[180px] rounded-l-[20px] border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4 xl:hidden">
-					<div className="px-2 text-[13px] font-[500]  leading-[115%] tracking-[2%] text-gray-600">
-						Settings
-					</div>
+			<div className="flex h-full rounded-[20px] bg-gray-0">
+				<div className="h-full min-w-[180px] rounded-l-[20px] border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4 lg:min-w-fit">
+					{isDesktop && (
+						<div className="px-2 text-[13px] font-[500]  leading-[115%] tracking-[2%] text-gray-600">
+							Settings
+						</div>
+					)}
 					<div className="mt-3">
 						{optionsList?.map((item) => (
 							<SingleListItemComponent
@@ -140,6 +143,7 @@ const SettingsModal = () => {
 											break;
 									}
 								}}
+								responsiveIcon
 								showIconDropdown={false}
 							/>
 						))}

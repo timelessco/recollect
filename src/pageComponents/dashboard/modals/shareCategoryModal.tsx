@@ -29,7 +29,7 @@ const ShareCategoryModal = () => {
 		<Modal
 			open={showShareCategoryModal}
 			setOpen={toggleShareCategoryModal}
-			wrapperClassName="w-[30%] p-[6px] rounded-[12px]"
+			wrapperClassName="w-[30%] p-[6px] rounded-[12px] self-center"
 		>
 			<ShareContent />
 		</Modal>

@@ -3,15 +3,19 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
 import useFetchCheckApiKey from "../../async/queryHooks/ai/api-key/useFetchCheckApiKey";
-import ButtonComponent from "../../components/atoms/button";
+import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
+// import Switch from "../../components/switch";
+// import { EyeIcon } from "../../icons/eyeIcon";
+import { InfoIcon } from "../../icons/infoIcon";
 import {
 	settingsInputClassName,
 	settingsInputContainerClassName,
+	settingsLightButtonClassName,
+	// settingsParagraphClassName,
 } from "../../utils/commonClassNames";
-import { AI_PLATFORMS } from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 /* ----------------------------------
@@ -82,8 +86,6 @@ export const AiFeatures = () => {
 		);
 	};
 
-	const platform = AI_PLATFORMS[0];
-
 	/* ----------------------------------
 	 *  RENDER
 	 * ---------------------------------- */
@@ -92,64 +94,104 @@ export const AiFeatures = () => {
 	}
 
 	return (
-		<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-			{/* ---------- HEADER ---------- */}
-			<div className="relative mb-6 flex items-center">
-				<h2 className="text-[18px] font-[600] leading-[115%] tracking-normal text-gray-900">
-					AI Features
-				</h2>
-			</div>
-			{/* ---------- API KEY INPUT ---------- */}
-			<LabelledComponent
-				label={`${platform.name} API Key`}
-				labelClassName="text-gray-800 font-[420] text-[14px] leading-[115%] tracking-[2%] mb-2"
-			>
-				<div className={`${settingsInputContainerClassName} mt-2`}>
-					{hasApiKey && !isReplacing ? (
-						<div className="flex items-center">
-							••••••••••••••••••••••••••••••••
-							<button
-								className="ml-2 text-sm font-medium text-blue-600 hover:text-blue-800"
-								onClick={handleReplaceClick}
-								type="button"
-							>
-								Replace
-							</button>
-						</div>
-					) : (
+		<>
+			<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+				{/* ---------- HEADER ---------- */}
+				<div className="relative mb-6 flex items-center">
+					<h2 className="text-[18px] font-[600] leading-[115%] tracking-normal text-gray-900">
+						AI Features
+					</h2>
+				</div>
+				{/* ---------- API KEY INPUT ---------- */}
+				<LabelledComponent
+					label="Gemini API Key"
+					labelClassName="text-gray-800 font-[420] text-[14px] leading-[115%] tracking-[2%] mb-2"
+				>
+					<div
+						className={`${settingsInputContainerClassName} mt-2 flex items-center justify-between`}
+					>
 						<Input
 							{...register("apiKey", { required: "API Key is required" })}
 							autoFocus={isReplacing}
 							className={settingsInputClassName}
-							disabled={!isReplacing && hasApiKey}
 							errorText={errors.apiKey?.message ?? ""}
 							id="api-key"
+							isDisabled={hasApiKey ? !isReplacing : false}
 							isError={Boolean(errors.apiKey)}
-							placeholder={`Enter your ${platform.name} API key`}
+							placeholder={
+								hasApiKey || isSaving
+									? "••••••••••••••••••••••••••••••••"
+									: `Enter your  API key`
+							}
 							type="password"
 						/>
-					)}
-				</div>
-			</LabelledComponent>
-			{/* ---------- SAVE BUTTON ---------- */}
-			<div className="pt-2">
-				<ButtonComponent
-					className="h-10 w-[130px] rounded-lg px-4 py-2 text-sm font-medium text-plain-color hover:bg-gray-900"
-					isDisabled={isSaving || (hasApiKey && !isReplacing)}
-					type="dark"
-				>
-					{isSaving ? (
-						<Spinner
-							className="h-3 w-3 self-center"
-							style={{ color: "var(--color-plain-reverse-color)" }}
+						<Button
+							className={`my-[3px] ml-2 ${settingsLightButtonClassName}`}
+							onClick={() => {
+								if (hasApiKey && !isReplacing) {
+									handleReplaceClick();
+								} else {
+									void handleSubmit(onSubmit)();
+								}
+							}}
+						>
+							{isSaving ? (
+								<Spinner className="h-3 w-3" />
+							) : hasApiKey ? (
+								isReplacing ? (
+									"Save"
+								) : (
+									"replace"
+								)
+							) : (
+								"Save"
+							)}
+						</Button>
+					</div>
+					<p className="mt-2 flex flex-wrap items-center text-[13px] leading-[150%] tracking-normal text-gray-600">
+						<figure className="mr-2 shrink-0">
+							<InfoIcon />
+						</figure>
+						<span className="flex flex-wrap items-center">
+							Add your API key to enable AI features, get a free key from{" "}
+							<a
+								className="relative ml-1 inline-flex items-center after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-0 after:bg-gray-600 after:transition-all after:duration-150 hover:after:w-full"
+								href="https://makersuite.google.com/app/apikey"
+								rel="noopener noreferrer"
+								target="_blank"
+							>
+								Google AI
+							</a>
+						</span>
+					</p>
+				</LabelledComponent>
+			</form>
+			{/* <div className="pt-10">
+				<p className="pb-2.5 text-[14px] font-medium leading-[115%] tracking-[0%] text-gray-900">
+					Features
+				</p>
+				<div className="flex items-center justify-between rounded-lg bg-gray-100">
+					<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
+ 							<EyeIcon />
+							<p
+								className={`my-2 ml-2 text-gray-900  ${settingsParagraphClassName}`}
+							>
+								Auto generate image descriptions
+								<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
+									So you can search all your memes by text
+								</p>
+							</p>
+ 					</div>
+					<div className="mr-[10px]">
+						<Switch
+							disabled
+							enabled={false}
+							setEnabled={() => {}}
+							size="medium"
 						/>
-					) : hasApiKey && !isReplacing ? (
-						"API Key Saved"
-					) : (
-						"Save Changes"
-					)}
-				</ButtonComponent>
-			</div>
-		</form>
+					</div>
+				</div>
+			</div> */}
+		</>
 	);
 };

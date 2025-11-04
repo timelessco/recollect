@@ -44,7 +44,7 @@
 }
 
 body {
-	@apply overflow-hidden bg-plain-color antialiased outline-none;
+	@apply overflow-hidden bg-gray-0 antialiased outline-none;
 
 	font-variation-settings: "opsz" 20;
 }

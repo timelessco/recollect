@@ -5,7 +5,7 @@ type SwitchProps = {
 	disabled: boolean;
 	enabled: boolean;
 	setEnabled: () => void;
-	size: "large" | "small";
+	size: "large" | "medium" | "small";
 };
 
 const Switch = (props: SwitchProps) => {
@@ -22,6 +22,7 @@ const Switch = (props: SwitchProps) => {
 			"bg-gray-950": enabled === true,
 			"bg-gray-300": enabled === false,
 			"h-[28px] w-[64px]": size === "large",
+			"h-[20px] w-[32px]": size === "medium",
 			"h-[16px] w-[26px]": size === "small",
 		},
 	);
@@ -33,6 +34,7 @@ const Switch = (props: SwitchProps) => {
 			"translate-x-0": enabled === false,
 			"translate-x-2.5": enabled === true && size === "small",
 			"h-[24px] w-[24px]": size === "large",
+			"h-[16px] w-[16px]": size === "medium",
 			"h-[12px] w-[12px]": size === "small",
 		},
 	);
