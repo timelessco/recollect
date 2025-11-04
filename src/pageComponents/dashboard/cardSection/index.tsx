@@ -718,7 +718,6 @@ const CardSection = ({
 			<div
 				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className={`w-full items-center space-x-1 ${
-					// @ts-expect-error // this is cypress env, TS check not needed
 					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
 				} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
 			>
