@@ -25,11 +25,11 @@ import {
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
-	LOADING_SENSITIVE_DOMAINS,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 	OG_IMAGE_PREFERRED_SITES,
 	SHARED_CATEGORIES_TABLE_NAME,
+	SKIP_OG_IMAGE_DOMAINS,
 	uncategorizedPages,
 } from "../../../utils/constants";
 import {
@@ -120,7 +120,7 @@ export default async function handler(
 	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some(
 		(keyword) => urlHost?.includes(keyword),
 	);
-	const shouldSkipOgImage = LOADING_SENSITIVE_DOMAINS?.some(
+	const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some(
 		(keyword) => urlHost?.includes(keyword),
 	);
 

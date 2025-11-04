@@ -17,7 +17,7 @@ import loaderGif from "../../../../public/loader-gif.gif";
 import { useLoadersStore } from "../../../store/componentStore";
 import {
 	defaultBlur,
-	LOADING_SENSITIVE_DOMAINS,
+	SKIP_OG_IMAGE_DOMAINS,
 	viewValues,
 } from "../../../utils/constants";
 
@@ -87,11 +87,11 @@ const ImgLogicComponent = ({
 	// Only render if the bookmark has a cover image
 	if (hasCoverImg) {
 		// Show loading placeholder if data is being fetched or if it's a loading-sensitive domain
-		const isSensitiveDomain = (() => {
+		const isSkipOgImageDomain = (() => {
 			try {
 				if (!url) return false;
 				const hostname = new URL(url).hostname.replace("www.", "");
-				return LOADING_SENSITIVE_DOMAINS.some(
+				return SKIP_OG_IMAGE_DOMAINS.some(
 					(domain) => hostname === domain || hostname.endsWith("." + domain),
 				);
 			} catch {
@@ -100,7 +100,7 @@ const ImgLogicComponent = ({
 			}
 		})();
 
-		if ((isSensitiveDomain && isLoading) || isNil(id)) {
+		if ((isSkipOgImageDomain && isLoading) || isNil(id)) {
 			return (
 				<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
 			);

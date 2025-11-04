@@ -355,7 +355,7 @@ export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
 export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
 
-export const LOADING_SENSITIVE_DOMAINS = [
+export const SKIP_OG_IMAGE_DOMAINS = [
 	"amazon.in",
 	"twitter.com",
 	"x.com",
