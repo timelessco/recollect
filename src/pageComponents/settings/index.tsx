@@ -438,7 +438,7 @@ const Settings = () => {
 							className={`w-full  ${settingsDeleteButtonRedClassName}`}
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
-							<p className="flex w-full justify-center  sm:w-[105px]">
+							<p className="flex w-full justify-center">
 								<span className="flex items-center justify-center gap-1.5">
 									{deleteUserMutation?.isLoading ? (
 										<Spinner
