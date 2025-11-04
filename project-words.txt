@@ -96,3 +96,4 @@ xenova
 yarl
 youtu
 YOUTU
+napi
