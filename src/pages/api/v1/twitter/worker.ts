@@ -20,7 +20,6 @@ export const processImageQueue = async (
 ) => {
 	const { queueName, batchSize } = parameters;
 
-	// while (true) {
 	try {
 		const { data: messages, error: messageError } = await supabase
 			.schema("pgmq_public")
@@ -58,8 +57,6 @@ export const processImageQueue = async (
 					.single();
 
 				if (ogImage) {
-					// Your processing steps here
-
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const newMeta: any = { ...existing?.meta_data };
 
