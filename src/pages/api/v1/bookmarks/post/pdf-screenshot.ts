@@ -10,7 +10,8 @@ import {
 import { r2Helpers } from "../../../../../utils/r2Client";
 
 // pdfjsLib.GlobalWorkerOptions.workerSrc = "";
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+	"https://recollect-git-feat-pdf-screenshot-api-timelessco.vercel.app/pdf.worker.js";
 
 type PdfScreenshotRequest = {
 	url: string;
