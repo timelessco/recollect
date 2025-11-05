@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
@@ -30,8 +29,6 @@ export const processImageQueue = async (
 				// eslint-disable-next-line id-length
 				n: batchSize,
 			});
-
-		console.log(messages.length, "messages fetched");
 
 		if (messages.length === 0) {
 			return;
@@ -125,12 +122,8 @@ export const processImageQueue = async (
 			}
 		}
 
-		// If not processing until empty, exit after first batch
 		// eslint-disable-next-line consistent-return
-		return {
-			messageId: messages[0]?.msg_id,
-			messageEndId: messages[messages.length - 1]?.msg_id,
-		};
+		return { messageId: messages[0]?.msg_id };
 	} catch (error) {
 		console.error("Queue processing error:", error);
 		throw error;

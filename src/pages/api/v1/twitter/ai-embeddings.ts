@@ -22,11 +22,12 @@ export default async function handler(
 			batchSize: 1,
 		});
 
-		console.log({ message: `Queue processed successfully ` });
+		console.log(`Queue Id: ${result?.messageId} processed successfully`);
 
-		response
-			.status(200)
-			.json({ success: true, message: "Queue processed successfully" });
+		response.status(200).json({
+			success: true,
+			message: `Queue Id: ${result?.messageId} processed successfully`,
+		});
 	} catch {
 		response
 			.status(500)

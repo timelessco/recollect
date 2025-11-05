@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import axios from "axios";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
@@ -10,10 +9,8 @@ import {
 	type SingleListData,
 	type twitter_sort_index,
 } from "../../../../types/apiTypes";
-import { getBaseUrl, MAIN_TABLE_NAME } from "../../../../utils/constants";
+import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
-
-import { processImageQueue } from "./worker";
 
 type RequestType = {
 	data: Array<
@@ -115,11 +112,9 @@ export default async function handler(
 		if (isEmpty(duplicateFilteredData)) {
 			console.log("No data to insert");
 
-			response.status(404).json({
-				success: true,
-				error: "No data to insert",
-				data: [],
-			});
+			response
+				.status(404)
+				.json({ success: true, error: "No data to insert", data: [] });
 			return;
 		}
 
@@ -165,16 +160,6 @@ export default async function handler(
 		} catch {
 			console.error("Failed to queue item:");
 		}
-
-		// processImageQueue(supabase, {
-		// 	queueName: "ai-embeddings",
-		// 	batchSize: 100,
-		// 	// eslint-disable-next-line promise/prefer-await-to-then
-		// }).catch(console.error);
-		// console.log("calling ai-embeddings in sync");
-		// const apiUrl = `${getBaseUrl()}/api/v1/twitter/ai-embeddings`;
-
-		// const response_ = axios.get(apiUrl);
 
 		response.status(200).json({ success: true, error: null });
 	} catch {
