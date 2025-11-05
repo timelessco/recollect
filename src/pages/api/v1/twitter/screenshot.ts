@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
@@ -38,7 +39,7 @@ export default async function handler(
 	const supabase = createServiceClient();
 
 	try {
-		console.error(
+		console.log(
 			"######################## Screenshot Loading ########################",
 		);
 
@@ -120,7 +121,7 @@ export default async function handler(
 			.eq("url", url)
 			.eq("user_id", user_id);
 
-		console.error(
+		console.log(
 			"######################## Screenshot Success ########################",
 		);
 
