@@ -159,10 +159,10 @@ const LoaderImgPlaceholder = ({
 	const loaderClassName = classNames({
 		"h-[48px] w-[80px] flex items-center justify-center bg-gray-100 rounded-lg":
 			cardTypeCondition === viewValues.list,
-		"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center":
+		"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-t-lg flex-col gap-2 text-center":
 			cardTypeCondition === viewValues.card ||
 			cardTypeCondition === viewValues.timeline,
-		"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center":
+		"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-t-lg flex-col gap-2 text-center":
 			cardTypeCondition === viewValues.moodboard,
 	});
 	return (

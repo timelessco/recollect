@@ -83,6 +83,8 @@ export const AiFeatures = () => {
 		return <AiFeaturesSkeleton />;
 	}
 
+	const label = hasApiKey ? (isReplacing ? "Save" : "Replace") : "Save";
+
 	return (
 		<>
 			<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -104,19 +106,24 @@ export const AiFeatures = () => {
 							{...register("apiKey", { required: "API Key is required" })}
 							autoFocus={isReplacing}
 							className={settingsInputClassName}
-							errorText={errors.apiKey?.message ?? ""}
+							errorText=""
 							id="api-key"
 							isDisabled={hasApiKey ? !isReplacing : false}
 							isError={Boolean(errors.apiKey)}
 							placeholder={
-								hasApiKey || isSaving
+								isSaving
 									? "••••••••••••••••••••••••••••••••"
-									: `Enter your  API key`
+									: isReplacing
+										? "Enter your new API key"
+										: hasApiKey
+											? "••••••••••••••••••••••••••••••••"
+											: "Enter your API key"
 							}
+							showError
 							type="password"
 						/>
 						<Button
-							className={`my-[3px] ml-2 ${settingsLightButtonClassName}`}
+							className={`relative my-[3px] ml-2 ${settingsLightButtonClassName}`}
 							onClick={() => {
 								if (hasApiKey && !isReplacing) {
 									handleReplaceClick();
@@ -125,19 +132,27 @@ export const AiFeatures = () => {
 								}
 							}}
 						>
+							<span
+								className={`transition-opacity duration-150 ${
+									isSaving ? "opacity-0" : "opacity-100"
+								}`}
+							>
+								{label}
+							</span>
 							{isSaving ? (
-								<Spinner className="h-3 w-3" />
-							) : hasApiKey ? (
-								isReplacing ? (
-									"Save"
-								) : (
-									"Replace"
-								)
-							) : (
-								"Save"
-							)}
+								<span className="absolute inset-0 flex items-center justify-center">
+									<Spinner className="h-3 w-3" />
+								</span>
+							) : null}
 						</Button>
 					</div>
+					{errors.apiKey && (
+						<div className="pointer-events-none flex items-center pr-3">
+							<p className="mt-1 text-xs text-red-600">
+								{errors.apiKey.message}
+							</p>
+						</div>
+					)}
 					<p className="mt-2 flex flex-wrap items-center text-[13px] leading-[150%] tracking-normal text-gray-600">
 						<figure className="mr-2 shrink-0">
 							<InfoIcon />
@@ -145,7 +160,7 @@ export const AiFeatures = () => {
 						<span className="flex flex-wrap items-center">
 							Add your API key to enable AI features, get a free key from{" "}
 							<a
-								className="relative ml-1 inline-flex items-center after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-0 after:bg-gray-600 after:transition-all after:duration-150 hover:after:w-full"
+								className="relative ml-1 inline-flex items-center underline"
 								href="https://makersuite.google.com/app/apikey"
 								rel="noopener noreferrer"
 								target="_blank"

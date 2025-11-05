@@ -18,6 +18,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 	placeholder: string;
 	rendedRightSideElement?: ChildrenTypes;
 	selectTextOnFocus?: boolean;
+	showError?: boolean;
 	tabIndex?: number;
 	type?: string;
 	wrapperClassName?: string;
@@ -44,6 +45,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		type = "text",
 		selectTextOnFocus = false,
 		tabIndex = 0,
+		showError = true,
 	} = props;
 
 	const inputClass = classNames(className, {
@@ -81,7 +83,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 					placeholder={placeholder}
 					tabIndex={tabIndex}
 				/>
-				{isError && (
+				{showError && isError && (
 					<div className={errorIconClass}>
 						<ExclamationCircleIcon
 							aria-hidden="true"
@@ -91,7 +93,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 				)}
 				{rendedRightSideElement && rendedRightSideElement}
 			</div>
-			{isError && (
+			{showError && isError && (
 				<p className={errorClass} id="email-error">
 					{errorText}
 				</p>

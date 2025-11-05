@@ -242,7 +242,7 @@ const Settings = () => {
 							</Button>
 							<Button
 								className="bg-gray-100 px-2 py-[6px] text-[13px] font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
-								disabledClassName="bg-gray-100 dark:bg-gray-950 dark:hover:bg-gray-950 hover:bg-gray-800 text-gray-400 dark:text-gray-900"
+								disabledClassName="bg-gray-100  hover:bg-gray-800 text-gray-400 "
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
