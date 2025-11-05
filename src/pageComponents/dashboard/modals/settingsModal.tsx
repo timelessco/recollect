@@ -10,7 +10,7 @@ import {
 	useModalStore,
 } from "../../../store/componentStore";
 import Settings from "../../settings";
-import { AiFeatures } from "../../settings/AiFeatures";
+import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
 import DeleteAccout from "../../settings/deleteAccount";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";

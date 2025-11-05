@@ -119,7 +119,9 @@ const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
 		return <div className="text-gray-1000">{collectionName}</div>;
 	}
 
-	return <div>Non Owner collection cannot be sorted</div>;
+	return (
+		<div className="text-gray-1000">Non Owner collection cannot be sorted</div>
+	);
 };
 
 const ListBoxDrop = (props: ListBoxDropTypes) => {

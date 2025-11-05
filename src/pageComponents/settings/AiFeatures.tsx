@@ -18,16 +18,12 @@ import {
 } from "../../utils/commonClassNames";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
-/* ----------------------------------
- *  TYPES
- * ---------------------------------- */
+/*  TYPES  */
 type AiFeaturesFormTypes = {
 	apiKey: string;
 };
 
-/* ----------------------------------
- *  SKELETON COMPONENT
- * ---------------------------------- */
+/*  SKELETON COMPONENT  */
 const AiFeaturesSkeleton = () => (
 	<div className="animate-pulse space-y-6">
 		{/* Header Skeleton */}
@@ -42,9 +38,7 @@ const AiFeaturesSkeleton = () => (
 	</div>
 );
 
-/* ----------------------------------
- *  MAIN COMPONENT
- * ---------------------------------- */
+/*  MAIN COMPONENT  */
 export const AiFeatures = () => {
 	const [isReplacing, setIsReplacing] = useState(false);
 	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
@@ -65,9 +59,7 @@ export const AiFeatures = () => {
 		setValue("apiKey", "");
 	};
 
-	/* ----------------------------------
-	 *  HANDLERS
-	 * ---------------------------------- */
+	/*  HANDLERS  */
 	const onSubmit: SubmitHandler<AiFeaturesFormTypes> = (formData) => {
 		saveApiKey(
 			{ apikey: formData.apiKey },
@@ -86,9 +78,7 @@ export const AiFeatures = () => {
 		);
 	};
 
-	/* ----------------------------------
-	 *  RENDER
-	 * ---------------------------------- */
+	/*  RENDER  */
 	if (isChecking) {
 		return <AiFeaturesSkeleton />;
 	}
