@@ -17,28 +17,19 @@ export default async function handler(
 	const supabase = createServiceClient();
 
 	try {
-		const result = await processImageQueue(
-			supabase,
-			{
-				queueName: "ai-embeddings",
-				batchSize: 50,
-			},
-			request.cookies,
-			true,
-		);
-
-		console.log({
-			message: `Queue processed successfully `,
+		const result = await processImageQueue(supabase, {
+			queueName: "ai-embeddings",
+			batchSize: 1,
 		});
 
-		response.status(200).json({
-			success: true,
-			message: "Queue processed successfully",
-		});
+		console.log({ message: `Queue processed successfully ` });
+
+		response
+			.status(200)
+			.json({ success: true, message: "Queue processed successfully" });
 	} catch {
-		response.status(500).json({
-			success: false,
-			error: "Error processing queue",
-		});
+		response
+			.status(500)
+			.json({ success: false, error: "Error processing queue" });
 	}
 }

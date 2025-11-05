@@ -5,13 +5,11 @@ import axios from "axios";
 import imageToText from "../../../../async/ai/imageToText";
 import ocr from "../../../../async/ai/ocr";
 import {
-	ADD_URL_SCREENSHOT_API,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
-import { apiCookieParser } from "../../../../utils/helpers";
 
 type ProcessParameters = { batchSize: number; queueName: string };
 
@@ -19,11 +17,8 @@ const SLEEP_SECONDS = 30;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
-	cookies: Partial<{ [key: string]: string }>,
-	processUntilEmpty = false,
 ) => {
 	const { queueName, batchSize } = parameters;
-	let totalBatches = 0;
 
 	// while (true) {
 	try {
@@ -52,8 +47,6 @@ export const processImageQueue = async (
 		}
 
 		for (const message of messages) {
-			console.log("Processing message:");
-
 			let isFailed = false;
 
 			try {
@@ -108,17 +101,9 @@ export const processImageQueue = async (
 						.eq("url", url)
 						.eq("user_id", user_id);
 				} else {
-					console.log(message);
-
 					const response_ = axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
-						{ id, url },
-						{
-							headers: {
-								Cookie: apiCookieParser(cookies),
-								"Content-Type": "application/json",
-							},
-						},
+						`${getBaseUrl()}${NEXT_API_URL}/v1/twitter/screenshot`,
+						{ id, url, user_id },
 					);
 				}
 
@@ -140,16 +125,12 @@ export const processImageQueue = async (
 			}
 		}
 
-		totalBatches++;
-
 		// If not processing until empty, exit after first batch
-		if (!processUntilEmpty) {
-			// eslint-disable-next-line consistent-return
-			return {
-				messageId: messages[0]?.msg_id,
-				messageEndId: messages[messages.length - 1]?.msg_id,
-			};
-		}
+		// eslint-disable-next-line consistent-return
+		return {
+			messageId: messages[0]?.msg_id,
+			messageEndId: messages[messages.length - 1]?.msg_id,
+		};
 	} catch (error) {
 		console.error("Queue processing error:", error);
 		throw error;
