@@ -112,11 +112,9 @@ export default async function handler(
 		if (isEmpty(duplicateFilteredData)) {
 			console.log("No data to insert");
 
-			response.status(404).json({
-				success: true,
-				error: "No data to insert",
-				data: [],
-			});
+			response
+				.status(404)
+				.json({ success: true, error: "No data to insert", data: [] });
 			return;
 		}
 

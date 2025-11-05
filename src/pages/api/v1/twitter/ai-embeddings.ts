@@ -22,18 +22,15 @@ export default async function handler(
 			batchSize: 1,
 		});
 
-		console.log({
-			message: `Queue processed successfully from ${result?.messageId} to ${result?.messageEndId}`,
-		});
+		console.log(`Queue Id: ${result?.messageId} processed successfully`);
 
 		response.status(200).json({
 			success: true,
-			message: "Queue processed successfully",
+			message: `Queue Id: ${result?.messageId} processed successfully`,
 		});
 	} catch {
-		response.status(500).json({
-			success: false,
-			error: "Error processing queue",
-		});
+		response
+			.status(500)
+			.json({ success: false, error: "Error processing queue" });
 	}
 }

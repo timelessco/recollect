@@ -1,14 +1,17 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
+import axios from "axios";
 
 import imageToText from "../../../../async/ai/imageToText";
 import ocr from "../../../../async/ai/ocr";
-import { MAIN_TABLE_NAME } from "../../../../utils/constants";
+import {
+	getBaseUrl,
+	MAIN_TABLE_NAME,
+	NEXT_API_URL,
+	WORKER_SCREENSHOT_API,
+} from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
 
-type ProcessParameters = {
-	batchSize: number;
-	queueName: string;
-};
+type ProcessParameters = { batchSize: number; queueName: string };
 
 const SLEEP_SECONDS = 30;
 export const processImageQueue = async (
@@ -27,6 +30,10 @@ export const processImageQueue = async (
 				n: batchSize,
 			});
 
+		if (messages.length === 0) {
+			return;
+		}
+
 		if (messageError) {
 			console.error("Error fetching messages from queue:", messageError);
 			return;
@@ -40,17 +47,16 @@ export const processImageQueue = async (
 			let isFailed = false;
 
 			try {
-				const { user_id, ogImage, url } = message.message;
+				const { user_id, ogImage, url, id } = message.message;
+
+				const { data: existing } = await supabase
+					.from(MAIN_TABLE_NAME)
+					.select("meta_data")
+					.eq("url", url)
+					.eq("user_id", user_id)
+					.single();
 
 				if (ogImage) {
-					// Your processing steps here
-					const { data: existing } = await supabase
-						.from(MAIN_TABLE_NAME)
-						.select("meta_data")
-						.eq("url", url)
-						.eq("user_id", user_id)
-						.single();
-
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const newMeta: any = { ...existing?.meta_data };
 
@@ -89,6 +95,11 @@ export const processImageQueue = async (
 						.update({ meta_data: newMeta })
 						.eq("url", url)
 						.eq("user_id", user_id);
+				} else {
+					const response_ = axios.post(
+						`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`,
+						{ id, url, user_id },
+					);
 				}
 
 				// Delete message from queue
@@ -110,10 +121,7 @@ export const processImageQueue = async (
 		}
 
 		// eslint-disable-next-line consistent-return
-		return {
-			messageId: messages[0]?.msg_id,
-			messageEndId: messages[messages.length - 1]?.msg_id,
-		};
+		return { messageId: messages[0]?.msg_id };
 	} catch (error) {
 		console.error("Queue processing error:", error);
 		throw error;
