@@ -111,7 +111,7 @@ export type ComboboxItemProps = ComponentPropsWithoutRef<"div"> & {
 };
 
 const menuItemClassName =
-	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[1%] text--gray-900 data-[active-item]:bg-gray-200 truncate";
+	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[0.01em] text-gray-900 data-[active-item]:bg-gray-200 truncate";
 
 export const ComboboxItem = forwardRef<HTMLDivElement, ComboboxItemProps>(
 	(props, ref) => (
@@ -136,7 +136,7 @@ type TagTypes = {
 
 const Tag = ({ children, onClick }: TagTypes) => (
 	<div
-		className="mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs font-450 leading-[15px] tracking-[1%] text-white"
+		className="mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs font-450 leading-[15px] tracking-[0.01em] text-white"
 		onClick={onClick}
 		onKeyDown={() => {}}
 		role="button"

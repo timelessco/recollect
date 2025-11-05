@@ -8,9 +8,7 @@ import {
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { Spinner } from "../../../components/spinner";
 import useIsMobileView from "../../../hooks/useIsMobileView";
-import GlobeIcon from "../../../icons/globeIcon";
 import OptionsIcon from "../../../icons/optionsIcon";
-import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 import {
 	type CategoryIconsDropdownTypes,
@@ -100,7 +98,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 				)}
 				{(!responsiveIcon || isDesktop) && (
 					<p
-						className="ml-2 flex-1 overflow-hidden truncate text-[14px] font-[450] leading-[115%] tracking-[1%]"
+						className="ml-2 flex-1 overflow-hidden truncate text-[14px] font-[450] leading-[115%] tracking-[0.01em]"
 						id={listNameId}
 					>
 						{item?.name}
@@ -108,75 +106,66 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 				)}
 			</div>
 			<div className="flex items-center space-x-3">
-				{showSpinner && (
-					<Spinner
-						className="h-3 w-3 animate-spin"
-						style={{ color: "var(--plain-reverse-color)" }}
-					/>
-				)}
-				{item?.isPublic && (
-					<figure className="hidden">
-						<GlobeIcon />
-					</figure>
-				)}
-				{item?.isCollab && (
-					<figure className="hidden">
-						<UsersCollabIcon />
-					</figure>
-				)}
 				{showDropdown && (
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 					<div
-						className="flex h-4 w-4"
+						className="flex h-4 w-4 items-center justify-center"
 						onClick={(event) => event.preventDefault()}
 					>
-						<AriaDropdown
-							menuButton={
-								<div
-									className={
-										openedMenuId === item?.id
-											? "flex text-gray-500"
-											: "hidden text-gray-500 group-hover:flex"
-									}
-								>
-									<OptionsIcon />
-								</div>
-							}
-							menuClassName={`${dropdownMenuClassName} z-10`}
-							menuOpenToggle={(value) => {
-								if (value === true) {
-									setOpenedMenuId(item?.id);
-								} else {
-									setOpenedMenuId(null);
-								}
-							}}
-						>
-							{[
-								{ label: "Share", value: "share" },
-								{ label: "Delete", value: "delete" },
-							]?.map((dropdownItem) => (
-								<AriaDropdownMenu
-									key={dropdownItem?.value}
-									onClick={() =>
-										onCategoryOptionClick(
-											dropdownItem?.value,
-											item.current,
-											item.id,
-										)
-									}
-								>
-									<div className={dropdownMenuItemClassName}>
-										{dropdownItem?.label}
+						{showSpinner ? (
+							<Spinner
+								className="h-3 w-3 animate-spin"
+								style={{ color: "var(--plain-reverse-color)" }}
+							/>
+						) : (
+							<AriaDropdown
+								menuButton={
+									<div
+										className={
+											openedMenuId === item?.id
+												? "flex text-gray-500"
+												: "hidden text-gray-500 group-hover:flex"
+										}
+									>
+										<OptionsIcon />
 									</div>
-								</AriaDropdownMenu>
-							))}
-						</AriaDropdown>
-						{item?.count !== undefined && openedMenuId === null && (
+								}
+								menuClassName={`${dropdownMenuClassName} z-10`}
+								menuOpenToggle={(value) => {
+									if (value === true) {
+										setOpenedMenuId(item?.id);
+									} else {
+										setOpenedMenuId(null);
+									}
+								}}
+							>
+								{[
+									{ label: "Share", value: "share" },
+									{ label: "Delete", value: "delete" },
+								]?.map((dropdownItem) => (
+									<AriaDropdownMenu
+										key={dropdownItem?.value}
+										onClick={() =>
+											onCategoryOptionClick(
+												dropdownItem?.value,
+												item.current,
+												item.id,
+											)
+										}
+									>
+										<div className={dropdownMenuItemClassName}>
+											{dropdownItem?.label}
+										</div>
+									</AriaDropdownMenu>
+								))}
+							</AriaDropdown>
+						)}
+						{item?.count !== undefined && !showSpinner && (
 							<p
-								className={`hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-gray-600 ${
+								className={`h-3 w-3 items-center justify-end text-right align-middle text-[11px] font-450 leading-[115%] tracking-[0.03em] text-gray-600 ${
 									showDropdown ? "block group-hover:hidden" : "block"
-								}`}
+								} ${openedMenuId === item?.id ? "hidden" : ""}`}
 							>
 								{item?.count}
 							</p>

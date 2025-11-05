@@ -170,7 +170,7 @@ const MyComponent = () => {
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[1%] text-gray-900"
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -179,7 +179,7 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<div
-								className="pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600"
+								className="pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
@@ -213,14 +213,14 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] leading-[138%] tracking-[1%] text-gray-800`}
+									} text-clip text-[13px] font-normal leading-[139%] tracking-[0.01em] text-gray-800`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
 									{currentBookmark.description}
 									{showMore && isOverflowing && (
 										<button
-											className="inline text-[13px] leading-[138%] tracking-[1%] text-gray-800"
+											className="inline text-[13px] leading-[138%] tracking-[0.01em] text-gray-800"
 											onClick={() => setShowMore(false)}
 											type="button"
 										>
@@ -230,7 +230,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && !showMore && (
 									<button
-										className="absolute bottom-0 right-0 bg-gray-0 pl-1 text-[13px] leading-[138%] tracking-[1%] text-gray-800"
+										className="absolute bottom-0 right-0 bg-gray-0 pl-1 text-[13px] leading-[138%] tracking-[0.01em] text-gray-800"
 										onClick={() => setShowMore(true)}
 										type="button"
 									>
@@ -266,7 +266,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-500"
+												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
 												#{tag?.name}
@@ -291,7 +291,7 @@ const MyComponent = () => {
 										<Icon className="h-[15px] w-[15px]">
 											<GeminiAiIcon />
 										</Icon>
-										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-600">
+										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600">
 											AI Summary
 										</p>
 									</div>
@@ -300,7 +300,7 @@ const MyComponent = () => {
 											isExpanded ? "overflow-y-auto" : ""
 										}`}
 									>
-										<p className="text-[13px] leading-[138%] tracking-[1%] text-gray-600">
+										<p className="text-[13px] leading-[138%] tracking-[0.01em] text-gray-600">
 											{metaData?.img_caption || metaData?.image_caption}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}

@@ -415,6 +415,7 @@ export const CustomLightBox = ({
 					<Image
 						alt="img-error"
 						className="h-[50px] w-[50px] rounded-lg object-cover"
+						loader={(source) => source.src}
 						src={loaderGif}
 					/>
 				);
@@ -641,13 +642,13 @@ export const CustomLightBox = ({
 						key="center-section"
 					>
 						<a
-							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-gray-alpha-100"
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px] hover:bg-gray-alpha-100"
 							href={bookmarks?.[activeIndex]?.url}
 							key="center-section"
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="truncate text-gray-alpha-600">
+							<span className="truncate text-[14px] font-normal leading-[115%] tracking-normal text-gray-alpha-600">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
 							<div className="h-4 w-4 shrink-0">

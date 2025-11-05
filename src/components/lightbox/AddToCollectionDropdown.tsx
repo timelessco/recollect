@@ -274,7 +274,7 @@ export const AddToCollectionDropdown = memo(
 												onClick={() => handleCollectionClick(null)}
 												value="Uncategorized"
 											>
-												<span className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-800">
+												<span className="text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
 													Uncategorized
 												</span>
 											</Ariakit.ComboboxItem>
@@ -298,7 +298,7 @@ export const AddToCollectionDropdown = memo(
 														size="16"
 													/>
 													{/* Collection name */}
-													<span className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-800">
+													<span className="text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
 														{collection?.category_name}
 													</span>
 												</Ariakit.ComboboxItem>

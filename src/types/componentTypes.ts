@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { type FileWithPath } from "react-dropzone";
 
 import { type CategoriesData } from "./apiTypes";
@@ -11,7 +12,12 @@ export type UrlInput = {
 	urlText: string;
 };
 
-export type ChildrenTypes = JSX.Element | JSX.Element[] | string[] | string;
+export type ChildrenTypes =
+	| JSX.Element
+	| JSX.Element[]
+	| ReactNode
+	| string[]
+	| string;
 
 export type TagInputOption = {
 	color?: string;

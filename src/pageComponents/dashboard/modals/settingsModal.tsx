@@ -1,21 +1,16 @@
 import { useEffect, useState } from "react";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 
 import Modal from "../../../components/modal";
-import UserAvatar from "../../../components/userAvatar";
 import useIsMobileView from "../../../hooks/useIsMobileView";
+import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
 import {
 	useMiscellaneousStore,
 	useModalStore,
-	useSupabaseSession,
 } from "../../../store/componentStore";
-import { type ProfilesTableTypes } from "../../../types/apiTypes";
-import { USER_PROFILE } from "../../../utils/constants";
 import Settings from "../../settings";
-import { AiFeatures } from "../../settings/AiFeatures";
+import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
 import DeleteAccout from "../../settings/deleteAccount";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
@@ -24,8 +19,6 @@ import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
-	const session = useSupabaseSession((state) => state.session);
-	const queryClient = useQueryClient();
 	const { isDesktop } = useIsMobileView();
 	const toggleShowSettingsModal = useModalStore(
 		(state) => state.toggleShowSettingsModal,
@@ -45,26 +38,12 @@ const SettingsModal = () => {
 		}
 	}, [setCurrentSettingsPage, showSettingsModal, selectedMenuItem]);
 
-	const userProfilesData = queryClient.getQueryData([
-		USER_PROFILE,
-		session?.user?.id,
-	]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
-
-	const userData = userProfilesData?.data?.[0];
-
 	const optionsList = [
 		{
 			icon: (
-				<UserAvatar
-					alt="profile-pic"
-					className="h-[18px] w-[18px] rounded-full bg-black object-contain"
-					height={18}
-					src={userData?.profile_pic ?? ""}
-					width={18}
-				/>
+				<figure className="text-gray-900">
+					<AvatarIcon />
+				</figure>
 			),
 			name: "My Profile",
 			href: ``,
@@ -116,10 +95,10 @@ const SettingsModal = () => {
 			wrapperClassName="skip-global-paste w-full max-w-[740px] rounded-[20px] outline-none self-center"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
-			<div className="flex h-full rounded-[20px] bg-gray-0">
-				<div className="h-full min-w-[180px] rounded-l-[20px] border-r-[0.5px] border-r-gray-alpha-200 bg-plain-color px-2 py-4 lg:min-w-fit">
+			<div className="flex h-[700px] rounded-[20px] bg-gray-0">
+				<div className="flex h-full min-w-[180px] flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-fit">
 					{isDesktop && (
-						<div className="px-2 text-[13px] font-[500] leading-[115%] tracking-[2%] text-gray-600">
+						<div className="px-2 text-[13px] font-[500] leading-[115%] tracking-[0.02em] text-gray-600">
 							Settings
 						</div>
 					)}
@@ -149,7 +128,7 @@ const SettingsModal = () => {
 						))}
 					</div>
 				</div>
-				<div className="hide-scrollbar h-[700px] w-full overflow-auto rounded-[20px] px-12 pt-8">
+				<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
 					{renderMainContent()}
 				</div>
 			</div>

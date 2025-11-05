@@ -29,7 +29,7 @@ const Modal = (props: ModalProps) => {
 	});
 
 	const modalClassName = classNames({
-		"bg-gray-0": true,
+		"bg-gray-0 self-center": true,
 		[wrapperClassName]: true,
 		"p-4 rounded-lg": isEmpty(wrapperClassName),
 	});

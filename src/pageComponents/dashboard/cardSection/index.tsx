@@ -456,7 +456,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate text-[13px] leading-4 text-gray-600 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate align-middle text-[13px] leading-[115%] tracking-[0.01em] text-gray-600 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -481,13 +481,14 @@ const CardSection = ({
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
 			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
-			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
+			"w-full shadow-custom-8 rounded-t-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
+			"rounded-t-lg shadow-custom-8":
+				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const playSvgClassName = classNames({
@@ -657,7 +658,7 @@ const CardSection = ({
 	};
 
 	const moodboardAndCardInfoWrapperClass = classNames({
-		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
+		"card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 dark:group-hover:bg-gray-alpha-100 duration-150 transition-all": true,
 		"flex-grow": cardTypeCondition === viewValues.card,
 	});
 
@@ -675,14 +676,14 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-sm font-medium leading-4 text-gray-900">
+						<p className="card-title truncate text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="card-title text-sm leading-[135%] text-gray-800"
+								className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}
@@ -700,7 +701,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px] font-450 leading-4 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="relative text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
