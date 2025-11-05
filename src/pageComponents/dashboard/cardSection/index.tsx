@@ -675,7 +675,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-sm font-medium leading-4 text-gray-900">
+						<p className="card-title truncate text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -700,7 +700,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px] font-450 leading-4 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="relative text-[13px] font-[450] leading-[115%] tracking-[0.01em] before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)

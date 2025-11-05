@@ -213,7 +213,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] leading-[138%] tracking-[0.01em] text-gray-800`}
+									} text-clip text-[13px] font-normal leading-[139%] tracking-[0.01em] text-gray-800`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
@@ -266,7 +266,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-500"
+												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
 												#{tag?.name}
