@@ -3,5 +3,12 @@
 	"enabled": false,
 	"extends": ["config:best-practices", "config:semverAllMonthly"],
 	"updateNotScheduled": false,
-	"postUpdateOptions": ["pnpmDedupe"]
+	"postUpdateOptions": ["pnpmDedupe"],
+	"packageRules": [
+		{
+			"matchPackageNames": ["prettier-plugin-sh"],
+			"allowedVersions": "< 0.18.0",
+			"description": "Block v0.18.0 due to VSCode formatter regression - https://github.com/prettier/prettier-vscode/issues/3796 and https://github.com/un-ts/prettier/issues/489"
+		}
+	]
 }
