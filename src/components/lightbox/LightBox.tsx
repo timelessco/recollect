@@ -415,6 +415,7 @@ export const CustomLightBox = ({
 					<Image
 						alt="img-error"
 						className="h-[50px] w-[50px] rounded-lg object-cover"
+						loader={(source) => source.src}
 						src={loaderGif}
 					/>
 				);
