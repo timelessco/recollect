@@ -47,19 +47,12 @@ export default async function handler(
 			{ responseType: "json" },
 		);
 
-		if (screenshotData.status !== 200) {
-			console.error("Screenshot error");
-			Sentry.captureException(`Screenshot error`);
-			response.status(500).json({ error: "Screenshot error" });
-			return;
-		}
-
 		const base64data = Buffer.from(
 			screenshotData?.screenshot?.data,
 			"binary",
 		).toString("base64");
 
-		const { isPageScreenshot } = screenshotData?.data?.metaData || {};
+		const { isPageScreenshot } = screenshotData?.metaData || {};
 
 		// Upload to R2
 		const publicURL = await upload(base64data, user_id);
