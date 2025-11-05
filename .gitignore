@@ -88,3 +88,4 @@ public/sitemap-0.xml
 .claude/settings.local.json
 .claude/docs
 .vercel
+.worktrees/
