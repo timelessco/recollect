@@ -69,7 +69,7 @@ export default async function handler(
 		if (updateError) {
 			console.error("Error updating bookmark:", updateError);
 			Sentry.captureException(updateError);
-			response.status(500).json({ error: updateError });
+			response.status(500).json({ error: "Error updating bookmark" });
 			return;
 		}
 
