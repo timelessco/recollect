@@ -65,7 +65,7 @@ const Option = ({
 	// Merge option props and dnd props, and render the item.
 
 	const liClassName = classNames(
-		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
+		"single-bookmark dark:group relative flex group rounded-lg duration-150 outline-none",
 		{
 			"": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":

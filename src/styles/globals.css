@@ -160,6 +160,12 @@ main {
 	@apply rounded-b-lg rounded-t-none bg-plain-reverse-color text-plain-color;
 }
 
+/* Remove hover effect for selected cards */
+.single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper:hover,
+.single-bookmark[aria-selected="true"]:hover .card-moodboard-info-wrapper {
+	@apply !bg-plain-reverse-color;
+}
+
 /* for the select card styles on list and headlines views */
 .single-bookmark[aria-selected="true"].list-headlines-wrapper {
 	@apply bg-plain-reverse-color text-plain-color;

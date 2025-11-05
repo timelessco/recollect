@@ -657,7 +657,7 @@ const CardSection = ({
 	};
 
 	const moodboardAndCardInfoWrapperClass = classNames({
-		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
+		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3 dark:group-hover:bg-gray-alpha-100 duration-150 transition-all": true,
 		"flex-grow": cardTypeCondition === viewValues.card,
 	});
 
