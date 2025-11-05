@@ -129,7 +129,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 		/>
 	) : (
 		<div>
-			<div className="px-2 py-[6px] text-[12px] font-450 leading-[115%] tracking-[2%] text-gray-600">
+			<div className="px-2 py-[6px] text-[12px] font-450 leading-[115%] tracking-[0.02em] text-gray-600">
 				Sort by
 			</div>
 			{sortOptions?.map((item) => {

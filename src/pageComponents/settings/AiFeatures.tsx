@@ -105,7 +105,7 @@ export const AiFeatures = () => {
 				{/* ---------- API KEY INPUT ---------- */}
 				<LabelledComponent
 					label="Gemini API Key"
-					labelClassName="text-gray-800 font-[420] text-[14px] leading-[115%] tracking-[2%] mb-2"
+					labelClassName="text-gray-800 font-[420] text-[14px] leading-[115%] tracking-[0.02em] mb-2"
 				>
 					<div
 						className={`${settingsInputContainerClassName} mt-2 flex items-center justify-between`}
@@ -167,7 +167,7 @@ export const AiFeatures = () => {
 				</LabelledComponent>
 			</form>
 			{/* <div className="pt-10">
-				<p className="pb-2.5 text-[14px] font-medium leading-[115%] tracking-[0%] text-gray-900">
+				<p className="pb-2.5 text-[14px] font-medium leading-[115%] tracking-normal text-gray-900">
 					Features
 				</p>
 				<div className="flex items-center justify-between rounded-lg bg-gray-100">

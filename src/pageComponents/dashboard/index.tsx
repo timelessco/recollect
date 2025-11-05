@@ -845,7 +845,7 @@ const Dashboard = () => {
 			<Modal
 				open={showAddBookmarkModal}
 				setOpen={() => setShowAddBookmarkModal(false)}
-				wrapperClassName="w-[324px] p-4 rounded-lg"
+				wrapperClassName="w-[324px] p-4 rounded-lg self-center"
 			>
 				<AddModalContent
 					addExistingTag={async (tag) => {

@@ -14,7 +14,7 @@ export const bottomBarButton =
 export const dropdownMenuClassName =
 	"bg-gray-50 rounded-xl shadow-custom-3 p-[6px] w-48 outline-none";
 export const dropdownMenuItemClassName =
-	"text-gray-800 font-450 text-13 leading-[115%] tracking-[1%] px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
+	"text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
 
 // BUTTON TRANSITION CLASS NAMES
 export const smoothHoverClassName = "transition ease-in-out delay-50";
@@ -38,7 +38,7 @@ export const settingsParagraphClassName =
 	"text-[14px] font-[500] leading-[110%]  sm:leading-1  text-gray-900";
 
 export const settingsDeleteButtonRedClassName =
-	"bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[2%] text-[#CD2B31] hover:bg-gray-200";
+	"bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[0.02em] text-[#CD2B31] hover:bg-gray-200";
 
 export const settingsLightButtonClassName =
 	"rounded-lg bg-gray-50 px-3 py-[7.5px] text-sm font-[500] leading-[115%]  text-gray-800 hover:bg-gray-400  [filter:drop-shadow(0_0_1px_rgba(0,0,0,0.2))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))]";
