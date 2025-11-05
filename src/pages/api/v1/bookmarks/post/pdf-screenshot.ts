@@ -9,36 +9,37 @@ import {
 } from "../../../../../utils/constants";
 import { r2Helpers } from "../../../../../utils/r2Client";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+// pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
 
 type PdfScreenshotRequest = {
 	url: string;
 };
 
 type PdfScreenshotResponse = {
-	publicUrl?: string;
-	path?: string;
-	success: boolean;
 	error?: string;
+	path?: string;
+	publicUrl?: string;
+	success: boolean;
 };
 
 export default async function handler(
-	req: NextApiRequest<PdfScreenshotRequest>,
+	request: NextApiRequest<PdfScreenshotRequest>,
 	res: NextApiResponse<PdfScreenshotResponse>,
 ) {
-	if (req.method !== "POST") {
-		return res
-			.status(405)
-			.json({ success: false, error: "Method Not Allowed" });
+	if (request.method !== "POST") {
+		res.status(405).json({ success: false, error: "Method Not Allowed" });
+		return;
 	}
 
 	try {
-		const { url } = req.body ?? {};
+		const { url } = request.body ?? {};
 
 		if (!url || !URL_PDF_CHECK_PATTERN.test(url)) {
-			return res
+			res
 				.status(400)
 				.json({ success: false, error: "Invalid or missing PDF url" });
+			return;
 		}
 
 		// Auth not required for this utility endpoint; using a test namespace for now
@@ -46,10 +47,12 @@ export default async function handler(
 		// Fetch PDF bytes
 		const pdfResponse = await fetch(url);
 		if (!pdfResponse.ok) {
-			return res
+			res
 				.status(400)
 				.json({ success: false, error: "Failed to fetch PDF from url" });
+			return;
 		}
+
 		const arrayBuffer = await pdfResponse.arrayBuffer();
 		const pdfData = new Uint8Array(arrayBuffer);
 
@@ -87,19 +90,19 @@ export default async function handler(
 		);
 
 		if (uploadError) {
-			return res
+			res
 				.status(500)
 				.json({ success: false, error: "Failed to upload thumbnail to R2" });
+			return;
 		}
 
 		const { data } = r2Helpers.getPublicUrl(key);
-		return res
+		res
 			.status(200)
 			.json({ success: true, path: key, publicUrl: data.publicUrl });
+		return;
 	} catch (error) {
 		console.error("pdf-screenshot api error", error);
-		return res
-			.status(500)
-			.json({ success: false, error: "Internal Server Error" });
+		res.status(500).json({ success: false, error: "Internal Server Error" });
 	}
 }
