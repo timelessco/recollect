@@ -72,7 +72,11 @@ const AddBookmarkDropdown = ({
 				initialFocusRef={inputRef}
 				isOpen={openDropdown}
 				menuButton={
-					<Button className="rounded-full p-[7px]" title="create" type="dark">
+					<Button
+						className="rounded-full p-[7px] [filter:drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))]"
+						title="create"
+						type="dark"
+					>
 						<figure className="h-4 w-4">
 							<PlusIconWhite />
 						</figure>

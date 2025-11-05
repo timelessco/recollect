@@ -456,7 +456,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate text-[13px] leading-4 text-gray-600 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate align-middle text-[13px] leading-[115%] tracking-[0.01em] text-gray-600 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -701,7 +701,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px] font-[450] leading-[115%] tracking-[0.01em] before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="relative text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)

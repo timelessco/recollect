@@ -22,7 +22,7 @@ const styles = {
 		width: "80%",
 	},
 	control: {
-		backgroundColor: "var(--color-gray-100)",
+		backgroundColor: "var(--color-gray-alpha-100)",
 
 		fontSize: 14,
 		fontWeight: 400,
