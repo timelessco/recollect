@@ -139,14 +139,17 @@ const LoginPage = () => {
 			case "email":
 				return (
 					<button
-						className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+						className="relative flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
 						onClick={handleSendOtp}
 						type="button"
 					>
-						{isLoading ? (
-							<Spinner className="h-3 w-3" />
-						) : (
-							"Continue with Email"
+						<span className={`${isLoading ? "opacity-0" : "opacity-100"}`}>
+							Continue with Email
+						</span>
+						{isLoading && (
+							<span className="absolute inset-0 flex items-center justify-center">
+								<Spinner className="h-3 w-3" />
+							</span>
 						)}
 					</button>
 				);
@@ -158,7 +161,14 @@ const LoginPage = () => {
 						onClick={handleVerifyOtp}
 						type="button"
 					>
-						{isLoading ? <Spinner className="h-3 w-3" /> : "Verify Email"}
+						<span className={`${isLoading ? "opacity-0" : "opacity-100"}`}>
+							Verify Email
+						</span>
+						{isLoading && (
+							<span className="absolute inset-0 flex items-center justify-center">
+								<Spinner className="h-3 w-3" />
+							</span>
+						)}
 					</button>
 				);
 			default:

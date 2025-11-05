@@ -34,7 +34,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		errorText = "",
 		isDisabled = false,
 		id = "",
-		wrapperClassName = "relative rounded-md",
+		wrapperClassName = "relative",
 		rendedRightSideElement,
 		errorClassName = "",
 		errorIconClassName = "",
@@ -47,9 +47,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 	} = props;
 
 	const inputClass = classNames(className, {
-		"block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md":
+		"block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500":
 			isError,
-		"block w-full border-gray-300 rounded-md": !isError,
+		"block w-full border-gray-300": !isError,
 		// "disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none":
 		// 	isDisabled,
 	});
