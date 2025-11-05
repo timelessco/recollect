@@ -1,6 +1,8 @@
 import { type NextApiResponse } from "next";
 import { createCanvas } from "canvas";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+// eslint-disable-next-line import/extensions
+import pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.js";
 
 import { type NextApiRequest } from "../../../../../types/apiTypes";
 import {
@@ -9,9 +11,8 @@ import {
 } from "../../../../../utils/constants";
 import { r2Helpers } from "../../../../../utils/r2Client";
 
-// pdfjsLib.GlobalWorkerOptions.workerSrc = "";
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-	"https://recollect-git-feat-pdf-screenshot-api-timelessco.vercel.app/pdf.worker.js";
+// Use bundled worker script for fake-worker mode in Node.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker as unknown as string;
 
 type PdfScreenshotRequest = {
 	url: string;
@@ -26,10 +27,10 @@ type PdfScreenshotResponse = {
 
 export default async function handler(
 	request: NextApiRequest<PdfScreenshotRequest>,
-	res: NextApiResponse<PdfScreenshotResponse>,
+	response: NextApiResponse<PdfScreenshotResponse>,
 ) {
 	if (request.method !== "POST") {
-		res.status(405).json({ success: false, error: "Method Not Allowed" });
+		response.status(405).json({ success: false, error: "Method Not Allowed" });
 		return;
 	}
 
@@ -37,7 +38,7 @@ export default async function handler(
 		const { url } = request.body ?? {};
 
 		if (!url || !URL_PDF_CHECK_PATTERN.test(url)) {
-			res
+			response
 				.status(400)
 				.json({ success: false, error: "Invalid or missing PDF url" });
 			return;
@@ -48,7 +49,7 @@ export default async function handler(
 		// Fetch PDF bytes
 		const pdfResponse = await fetch(url);
 		if (!pdfResponse.ok) {
-			res
+			response
 				.status(400)
 				.json({ success: false, error: "Failed to fetch PDF from url" });
 			return;
@@ -69,8 +70,10 @@ export default async function handler(
 		const viewport = firstPage.getViewport({ scale });
 
 		const canvas = createCanvas(viewport.width, viewport.height);
-		const context = canvas.getContext("2d");
-		await firstPage.render({ canvasContext: context as any, viewport }).promise;
+		const context = canvas.getContext(
+			"2d",
+		) as unknown as CanvasRenderingContext2D;
+		await firstPage.render({ canvasContext: context, viewport }).promise;
 
 		const imageBuffer = canvas.toBuffer("image/png");
 
@@ -91,19 +94,21 @@ export default async function handler(
 		);
 
 		if (uploadError) {
-			res
+			response
 				.status(500)
 				.json({ success: false, error: "Failed to upload thumbnail to R2" });
 			return;
 		}
 
 		const { data } = r2Helpers.getPublicUrl(key);
-		res
+		response
 			.status(200)
 			.json({ success: true, path: key, publicUrl: data.publicUrl });
 		return;
 	} catch (error) {
 		console.error("pdf-screenshot api error", error);
-		res.status(500).json({ success: false, error: "Internal Server Error" });
+		response
+			.status(500)
+			.json({ success: false, error: "Internal Server Error" });
 	}
 }
