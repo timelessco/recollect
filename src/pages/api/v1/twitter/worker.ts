@@ -7,6 +7,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	WORKER_SCREENSHOT_API,
 } from "../../../../utils/constants";
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
 
@@ -99,7 +100,7 @@ export const processImageQueue = async (
 						.eq("user_id", user_id);
 				} else {
 					const response_ = axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}/v1/twitter/screenshot`,
+						`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`,
 						{ id, url, user_id },
 					);
 				}
