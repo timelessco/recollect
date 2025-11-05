@@ -9,7 +9,7 @@ const {
 module.exports = {
 	hooks: {
 		"before:init": [
-			"npx turbo run lint:eslint lint:types lint:css lint:md lint:knip lint:package-json lint:spelling lint:prettier test",
+			"npx turbo run lint:eslint lint:types lint:css lint:md lint:knip lint:spelling lint:prettier test",
 		],
 	},
 	git: {

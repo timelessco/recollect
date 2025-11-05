@@ -83,7 +83,7 @@ const DeleteAccout = () => {
 		<>
 			<div className="relative mb-[34px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-gray-100"
+					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
@@ -94,7 +94,7 @@ const DeleteAccout = () => {
 					Delete account confirmation
 				</div>
 			</div>
-			<div className=" border-b-[1px] border-b-gray-200 pb-6 ">
+			<div className="border-b-[1px] border-b-gray-200 pb-6">
 				<p className={settingsSubHeadingClassName}>
 					Are you sure you want to delete your account ?
 				</p>
@@ -104,7 +104,7 @@ const DeleteAccout = () => {
 				</p>
 			</div>
 			<form
-				className="mt-6 flex items-end justify-between sm:flex-col"
+				className="mt-6 flex items-end justify-between"
 				onSubmit={handleSubmit(onSubmit)}
 			>
 				<div className="w-[70%] sm:w-full">
@@ -131,14 +131,14 @@ const DeleteAccout = () => {
 					</LabelledComponent>
 				</div>
 				<Button
-					className={`w-[150px] sm:mt-5 sm:w-full ${settingsDeleteButtonRedClassName}`}
+					className={`w-[150px] sm:w-full ${settingsDeleteButtonRedClassName}`}
 					onClick={handleSubmit(onSubmit)}
 				>
 					<div className="flex w-full items-center justify-center">
 						<figure className="mr-2">
 							<TrashIconRed />
 						</figure>
-						<p className="flex w-full justify-center  sm:w-[100px]">
+						<p className="flex w-full justify-center sm:w-[100px]">
 							{deleteUserMutation?.isLoading ? (
 								<Spinner
 									className="h-3 w-3 animate-spin"

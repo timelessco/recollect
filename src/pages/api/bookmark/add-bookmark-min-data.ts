@@ -29,6 +29,7 @@ import {
 	NEXT_API_URL,
 	OG_IMAGE_PREFERRED_SITES,
 	SHARED_CATEGORIES_TABLE_NAME,
+	SKIP_OG_IMAGE_DOMAINS,
 	uncategorizedPages,
 } from "../../../utils/constants";
 import {
@@ -116,8 +117,11 @@ export default async function handler(
 
 	const urlHost = new URL(url)?.hostname?.toLowerCase();
 
-	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some(
-		(keyword) => urlHost?.includes(keyword),
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some((keyword) =>
+		urlHost?.includes(keyword),
+	);
+	const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some((keyword) =>
+		urlHost?.includes(keyword),
 	);
 
 	// try {
@@ -229,7 +233,9 @@ export default async function handler(
 			data: {
 				title: ogScrapperResponse?.ogTitle ?? null,
 				description: ogScrapperResponse?.ogDescription ?? null,
-				OgImage: ogScrapperResponse?.ogImage?.[0]?.url ?? null,
+				OgImage: shouldSkipOgImage
+					? null
+					: (ogScrapperResponse?.ogImage?.[0]?.url ?? null),
 				favIcon: ogScrapperResponse?.favicon ?? null,
 			},
 		};

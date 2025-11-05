@@ -223,16 +223,16 @@ export const acceptedFileTypes = [
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
 
-export const imageFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("image"),
+export const imageFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("image"),
 );
 
-export const videoFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("video"),
+export const videoFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("video"),
 );
 
-export const documentFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("application"),
+export const documentFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("application"),
 );
 
 // color picker colors
@@ -355,18 +355,9 @@ export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
 export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
 
-export const LOADING_SENSITIVE_DOMAINS = [
+export const SKIP_OG_IMAGE_DOMAINS = [
 	"amazon.in",
 	"twitter.com",
 	"x.com",
 	"amazon.com",
 ];
-
-export const AI_PLATFORMS = [
-	{
-		id: "gemini",
-		name: "Gemini",
-		docsUrl: "https://ai.google.dev/gemini-api/docs/api-key",
-		description: "Google's most capable AI model for complex tasks",
-	},
-] as const;

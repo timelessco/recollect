@@ -173,7 +173,7 @@ export default async function handler(
 		const finalDataWithCollab = userCategoriesDataWithCollabCategoriesData?.map(
 			(item) => {
 				let collabData = [] as CollabDataInCategory[];
-				if (sharedCategoryData)
+				if (sharedCategoryData) {
 					for (const catItem of sharedCategoryData) {
 						if (catItem?.category_id === item?.id) {
 							collabData = [
@@ -189,6 +189,7 @@ export default async function handler(
 							];
 						}
 					}
+				}
 
 				const collabDataWithOwnerData = [
 					...collabData,

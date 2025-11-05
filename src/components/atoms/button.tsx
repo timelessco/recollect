@@ -8,6 +8,7 @@ import { tcm } from "../../utils/tailwindMerge";
 type ButtonProps = {
 	children: ChildrenTypes;
 	className?: string;
+	disabledClassName?: string;
 	id?: string;
 	isActive?: boolean;
 	isDisabled?: boolean;
@@ -23,6 +24,7 @@ const Button: FC<ButtonProps> = (props) => {
 		children,
 		onClick,
 		className,
+		disabledClassName,
 		isDisabled = false,
 		type = "light",
 		id = "",
@@ -35,14 +37,13 @@ const Button: FC<ButtonProps> = (props) => {
 	const buttonClassNames = tcm(
 		classNames({
 			[smoothHoverClassName]: true,
-			"flex items-center rounded-lg py-[5px] px-2 text-[13px] font-medium leading-[14px]":
-				true,
+			"flex items-center rounded-lg py-[5px] px-2 text-[13px] font-medium leading-[14px]": true,
 			"bg-gray-950  hover:bg-gray-800 text-white": type === "dark",
 			"bg-transparent hover:bg-gray-100": type === "light",
 			"bg-gray-100": isActive,
-			"disabled:opacity-5": isDisabled,
 		}),
 		className,
+		isDisabled ? disabledClassName : "",
 	);
 
 	return (

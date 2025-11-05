@@ -44,7 +44,7 @@
 }
 
 body {
-	@apply overflow-hidden bg-plain-color antialiased outline-none;
+	@apply overflow-hidden bg-gray-0 antialiased outline-none;
 
 	font-variation-settings: "opsz" 20;
 }
@@ -178,7 +178,7 @@ main {
 }
 
 .drop-target .side-pane-anchor {
-	@apply bg-gray-50;
+	@apply bg-gray-100;
 }
 
 .drop-indicator {
@@ -354,7 +354,7 @@ input[type="checkbox"]:checked + .checkbox-div {
 /* for side pane resizer animation */
 .split-view .sash-vertical {
 	/* adding important as some styles get getting overridden by lib */
-	@apply z-10 ml-[5px] w-[20px] -translate-x-2/4  hover:cursor-grab active:cursor-grabbing !important;
+	@apply z-10 ml-[5px] w-[20px] -translate-x-2/4 hover:cursor-grab active:cursor-grabbing !important;
 
 	/* for the drag handle to be in sync when side pane size when resizing */
 	transition: all 0.15s ease-in-out;

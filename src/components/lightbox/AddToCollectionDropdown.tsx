@@ -33,7 +33,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
-import DownArrowGray from "../../icons/downArrowGray";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -109,7 +108,10 @@ export const AddToCollectionDropdown = memo(
 
 		// Find the current collection based on category_id
 		const currentCollection = useMemo(() => {
-			if (!category_id) return null;
+			if (!category_id) {
+				return null;
+			}
+
 			return collections?.find((collection) => collection?.id === category_id);
 		}, [collections, category_id]);
 
@@ -121,14 +123,15 @@ export const AddToCollectionDropdown = memo(
 			);
 
 			// Return filtered collections if no search term
-			if (!searchTerm?.trim()) return availableCollections;
+			if (!searchTerm?.trim()) {
+				return availableCollections;
+			}
 
 			// Filter collections by name (case-insensitive)
-			return availableCollections?.filter(
-				(collection) =>
-					collection?.category_name
-						?.toLowerCase()
-						.includes(searchTerm?.toLowerCase()),
+			return availableCollections?.filter((collection) =>
+				collection?.category_name
+					?.toLowerCase()
+					.includes(searchTerm?.toLowerCase()),
 			);
 		}, [collections, searchTerm, currentCollection?.id]);
 
@@ -157,9 +160,9 @@ export const AddToCollectionDropdown = memo(
 
 					// Find the newly selected collection to update currentCollection
 					const selectedCollection = newCollection
-						? updatedCollections?.find(
+						? (updatedCollections?.find(
 								(category) => category?.id === newCollection?.id,
-						  ) ?? newCollection
+							) ?? newCollection)
 						: null;
 
 					// Update the current collection optimistically
@@ -195,7 +198,7 @@ export const AddToCollectionDropdown = memo(
 
 		return (
 			// Main container with relative positioning for dropdown
-			<div className="relative pt-[22px]">
+			<div className="relative pt-6">
 				{/* Combobox provider for search functionality */}
 				<Ariakit.ComboboxProvider
 					// Update search term with debouncing using startTransition
@@ -214,7 +217,9 @@ export const AddToCollectionDropdown = memo(
 							const collection = collections.find(
 								(coll) => coll?.category_name === value,
 							);
-							if (collection) void handleCollectionClick(collection);
+							if (collection) {
+								void handleCollectionClick(collection);
+							}
 						}}
 						value={currentCollection ? currentCollection?.category_name : ""}
 					>
@@ -230,89 +235,82 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className={` group rounded-md border border-transparent py-[2px] text-left text-[13px]  ${
+									className={`group rounded-md border border-transparent py-[2px] text-left text-[13px] ${
 										currentCollection ? "text-gray-800" : "text-gray-500"
-									}  focus:outline-none`}
+									} focus:outline-none`}
 									type="button"
 								>
 									{/* Show current collection name or default text */}
-									<div className="flex items-center justify-between transition-all duration-100 group-hover:text-plain-reverse-color">
+									<div className="flex items-center transition-all group-hover:text-plain-reverse-color">
 										<span>
 											{currentCollection
 												? currentCollection?.category_name
 												: "Add to collection"}
 										</span>
-										<DownArrowGray
-											className={`
-												ml-2 self-center transition-all duration-200 ease-in-out
-												${isOpen ? "rotate-0" : "-rotate-90"}
-												group-hover:text-plain-reverse-color
-											`}
-											size={10}
-										/>
 									</div>
 								</button>
 							</Ariakit.Select>
 							{/* Dropdown popover with search and collection list */}
 							<Ariakit.SelectPopover
-								className="hide-scrollbar z-50 mt-1 max-h-[186px] w-[150px] overflow-y-auto rounded-xl bg-gray-50 p-1 shadow-md"
+								className="z-50 mt-1 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
 								// Allow interaction with the rest of the page
 								modal={false}
 							>
-								{/* Search input for filtering collections */}
-								<div className="pb-1">
+								{/* Fixed search bar */}
+								<div className="sticky top-0 z-10 bg-gray-50 p-1 pb-0">
 									<Ariakit.Combobox
-										// Auto-focus the search input when dropdown opens
 										autoFocus
 										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[14px] font-[400] leading-[115%] tracking-normal text-gray-alpha-600 placeholder:text-gray-alpha-600 focus:outline-none"
 										placeholder="Search"
 									/>
 								</div>
-								{/* List of collections */}
-								<Ariakit.ComboboxList>
-									{/* Show Uncategorized option only if current item is in a collection */}
-									{currentCollection && (
-										<Ariakit.ComboboxItem
-											className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
-											onClick={() => handleCollectionClick(null)}
-											value="Uncategorized"
-										>
-											<span className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-800">
-												Uncategorized
-											</span>
-										</Ariakit.ComboboxItem>
-									)}
-									{filteredCollections?.length ? (
-										filteredCollections?.map((collection) => (
+								{/* Scrollable list of collections */}
+								<div className="hide-scrollbar overflow-y-auto">
+									<Ariakit.ComboboxList className="p-1">
+										{/* Show Uncategorized option only if current item is in a collection */}
+										{currentCollection && (
 											<Ariakit.ComboboxItem
-												// Styling for each collection item
-												className="flex w-full cursor-pointer items-center gap-2 rounded-lg  px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
-												key={collection?.id}
-												onClick={() => handleCollectionClick(collection)}
-												onMouseDown={(event) => {
-													// Prevent default to avoid losing focus
-													event.preventDefault();
-												}}
-												value={collection?.category_name}
+												className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
+												onClick={() => handleCollectionClick(null)}
+												value="Uncategorized"
 											>
-												<CollectionIcon
-													bookmarkCategoryData={collection}
-													iconSize="12"
-													size="16"
-												/>
-												{/* Collection name */}
 												<span className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-800">
-													{collection?.category_name}
+													Uncategorized
 												</span>
 											</Ariakit.ComboboxItem>
-										))
-									) : searchTerm?.trim() ? (
-										// Show message when no collections match the search
-										<div className="px-3 py-2 text-sm text-gray-400">
-											No collections found
-										</div>
-									) : null}
-								</Ariakit.ComboboxList>
+										)}
+										{filteredCollections?.length ? (
+											filteredCollections?.map((collection) => (
+												<Ariakit.ComboboxItem
+													// Styling for each collection item
+													className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
+													key={collection?.id}
+													onClick={() => handleCollectionClick(collection)}
+													onMouseDown={(event) => {
+														// Prevent default to avoid losing focus
+														event.preventDefault();
+													}}
+													value={collection?.category_name}
+												>
+													<CollectionIcon
+														bookmarkCategoryData={collection}
+														iconSize="12"
+														size="16"
+													/>
+													{/* Collection name */}
+													<span className="text-[13px] font-[450] leading-[115%] tracking-[1%] text-gray-800">
+														{collection?.category_name}
+													</span>
+												</Ariakit.ComboboxItem>
+											))
+										) : searchTerm?.trim() ? (
+											// Show message when no collections match the search
+											<div className="px-3 py-2 text-sm text-gray-400">
+												No collections found
+											</div>
+										) : null}
+									</Ariakit.ComboboxList>
+								</div>
 							</Ariakit.SelectPopover>
 						</div>
 					</Ariakit.SelectProvider>

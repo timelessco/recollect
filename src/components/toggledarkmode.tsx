@@ -21,7 +21,9 @@ export const Switch = () => {
 	// Handle theme changes
 	useEffect(() => {
 		// Skip initial render
-		if (!theme) return;
+		if (!theme) {
+			return;
+		}
 
 		if (theme === "system") {
 			localStorage.removeItem("theme");
@@ -43,13 +45,13 @@ export const Switch = () => {
 
 	return (
 		<div className="pt-10">
-			<p className=" pb-2 text-[14px] font-[500] leading-[115%] text-gray-900">
+			<p className="pb-2 text-[14px] font-[500] leading-[115%] text-gray-900">
 				Appearance
 			</p>
-			<p className=" pb-4 text-[14px] font-[400] leading-[150%] text-gray-800">
+			<p className="pb-4 text-[14px] font-[400] leading-[150%] text-gray-800">
 				Switch between light, dark, or system theme.
 			</p>
-			<div className="grid max-w-[700px] grid-cols-3 gap-[10px] ">
+			<div className="grid max-w-[700px] grid-cols-3 gap-[10px]">
 				{[
 					{ value: "light" as const, label: "Light" },
 					{ value: "system" as const, label: "System" },
@@ -87,6 +89,7 @@ export const Switch = () => {
 													alt="Logo"
 													className="h-3 w-3"
 													height={12}
+													loader={(source) => source.src}
 													src="logo.png"
 													width={12}
 												/>
@@ -106,6 +109,7 @@ export const Switch = () => {
 													alt="Logo"
 													className="h-3 w-3 invert"
 													height={12}
+													loader={(source) => source.src}
 													src="logo.png"
 													width={12}
 												/>
@@ -134,6 +138,7 @@ export const Switch = () => {
 													value === "dark" ? "invert" : ""
 												}`}
 												height={12}
+												loader={(source) => source.src}
 												src="logo.png"
 												width={12}
 											/>
@@ -148,7 +153,7 @@ export const Switch = () => {
 									</div>
 								)}
 								{/* Label bar */}
-								<div className="mt-auto flex items-center justify-between rounded-b-lg bg-gray-100  px-3 py-2 peer-checked:bg-gray-800 peer-checked:text-plain-color">
+								<div className="mt-auto flex items-center justify-between rounded-b-lg bg-gray-100 px-3 py-2 peer-checked:bg-gray-800 peer-checked:text-plain-color">
 									<span className="text-sm font-medium text-plain-reverse-color">
 										{label}
 									</span>

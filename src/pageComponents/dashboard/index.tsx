@@ -178,7 +178,9 @@ const Dashboard = () => {
 	}, [showAddBookmarkModal]);
 
 	useEffect(() => {
-		if (isNull(session?.user)) void router.push(`/${LOGIN_URL}`);
+		if (isNull(session?.user)) {
+			void router.push(`/${LOGIN_URL}`);
+		}
 	}, [router, session]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -267,7 +269,9 @@ const Dashboard = () => {
 		if (typeof window !== "undefined") {
 			const listener = (event: ClipboardEvent) => {
 				// Skip if current path is trash URL
-				if (window.location.pathname === `/${TRASH_URL}`) return;
+				if (window.location.pathname === `/${TRASH_URL}`) {
+					return;
+				}
 
 				const target = event.target as HTMLElement;
 
@@ -277,7 +281,9 @@ const Dashboard = () => {
 					target.tagName === "TEXTAREA" ||
 					target.closest(".skip-global-paste");
 
-				if (isEditable) return;
+				if (isEditable) {
+					return;
+				}
 
 				// Otherwise handle global paste
 				void clipboardUpload(
@@ -352,8 +358,8 @@ const Dashboard = () => {
 				? find(
 						currentCategory?.collabData,
 						(item) => item?.userEmail === session?.user?.email,
-				  )?.edit_access === true ||
-				  currentCategory?.user_id?.id === session?.user?.id
+					)?.edit_access === true ||
+					currentCategory?.user_id?.id === session?.user?.id
 				: true;
 
 		if (typeof CATEGORY_ID === "number") {
@@ -381,12 +387,13 @@ const Dashboard = () => {
 	// any new tags created need not come in tag dropdown , this filter implements this
 	let filteredUserTags = userTags?.data ? userTags?.data : [];
 
-	if (selectedTag)
+	if (selectedTag) {
 		for (const selectedItem of selectedTag) {
 			filteredUserTags = filteredUserTags.filter(
 				(index) => index?.id !== selectedItem?.value,
 			);
 		}
+	}
 
 	const bookmarksViewApiLogic = (
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
@@ -657,8 +664,8 @@ const Dashboard = () => {
 										<InfiniteScroll
 											dataLength={
 												isSearching
-													? flattenedSearchData?.length ?? 0
-													: flattendPaginationBookmarkData?.length ?? 0
+													? (flattenedSearchData?.length ?? 0)
+													: (flattendPaginationBookmarkData?.length ?? 0)
 											}
 											endMessage={
 												<p className="pb-6 text-center text-plain-reverse-color">

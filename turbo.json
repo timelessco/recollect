@@ -1,5 +1,6 @@
 {
 	"$schema": "https://turbo.build/schema.json",
+	"ui": "tui",
 	"tasks": {
 		"build:next": {
 			"env": [
@@ -38,9 +39,6 @@
 		},
 		"lint:spelling": {
 			"outputs": [".cspellcache"]
-		},
-		"lint:package-json": {
-			"inputs": ["package.json"]
 		},
 		"fix:md": {
 			"inputs": ["**/*.md", ".github/**/*.md"]

@@ -48,7 +48,7 @@ const SidePaneUserDropdown = () => {
 			<AriaDropdown
 				menuButton={
 					<div
-						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1 py-[3px]  hover:bg-gray-100 hover:text-gray-900`}
+						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1 py-[3px] hover:bg-gray-100 hover:text-gray-900`}
 					>
 						<div className="flex w-4/5 items-center space-x-2">
 							<UserAvatar
@@ -57,7 +57,7 @@ const SidePaneUserDropdown = () => {
 								height={24}
 								src={
 									!isNull(userProfilePicData?.data)
-										? userProfilePicData?.data[0]?.profile_pic ?? ""
+										? (userProfilePicData?.data[0]?.profile_pic ?? "")
 										: ""
 								}
 								width={24}
@@ -66,7 +66,7 @@ const SidePaneUserDropdown = () => {
 								{userProfileData?.display_name || userProfileData?.user_name}
 							</p>
 						</div>
-						<figure>
+						<figure className="mt-[1px]">
 							<DownArrowGray />
 						</figure>
 					</div>

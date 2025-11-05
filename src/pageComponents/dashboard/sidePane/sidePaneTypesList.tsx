@@ -37,7 +37,9 @@ const SidePaneTypesList = () => {
 				item.name === menuListItemName.tweets
 			) {
 				return item;
-			} else return null;
+			} else {
+				return null;
+			}
 		})
 		.map((item, index) => ({
 			...item,
@@ -48,10 +50,10 @@ const SidePaneTypesList = () => {
 		<div className="pt-4">
 			<AriaDisclosure
 				renderDisclosureButton={
-					<div className="group flex items-center px-1 py-[7.5px] text-[13px] font-medium leading-[15px]  text-gray-600">
+					<div className="group flex items-center px-1 py-[7.5px] text-[13px] font-medium leading-[15px] tracking-[1%] text-gray-600">
 						<p className="mr-1">Types</p>
 						<DownArrowGray
-							className="collections-sidepane-down-arrow hidden group-hover:block"
+							className="collections-sidepane-down-arrow mt-[1px] hidden group-hover:block"
 							size={10}
 						/>
 					</div>

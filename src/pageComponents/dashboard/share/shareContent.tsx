@@ -49,7 +49,7 @@ const AccessUserInfo = (props: {
 	const renderRightContent = () => {
 		if (item.is_accept_pending) {
 			return (
-				<div className=" flex items-center space-x-1">
+				<div className="flex items-center space-x-1">
 					<p className={rightTextStyles}>pending</p>
 					{isLoggedinUserTheOwner && (
 						<figure>
@@ -111,7 +111,7 @@ const AccessUserInfo = (props: {
 						]}
 						renderCustomSelectButton={() => (
 							<div className="flex items-center">
-								<p className=" mr-1 text-gray-800">
+								<p className="mr-1 text-gray-800">
 									{item.edit_access ? "Can Edit" : "Can View"}
 								</p>
 								<figure>
@@ -158,7 +158,7 @@ const AccessUserInfo = (props: {
 				) : (
 					<DefaultUserIcon className="h-5 w-5" />
 				)}
-				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-gray-800">
+				<p className="ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-gray-800">
 					{item.userEmail}
 				</p>
 			</div>
@@ -269,8 +269,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-600 placeholder:text-gray-600":
-			true,
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-alpha-600 placeholder:text-gray-alpha-600": true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
 
@@ -313,8 +312,8 @@ const ShareContent = () => {
 								]}
 								// disabled
 								renderCustomSelectButton={() => (
-									<div className="flex items-center text-gray-800">
-										<p className=" mr-1">
+									<div className="flex items-center text-gray-alpha-600">
+										<p className="mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
 										<figure>
@@ -325,11 +324,11 @@ const ShareContent = () => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-gray-100 rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-[7px] px-[10px] bg-gray-alpha-100 rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
-			<div className=" pt-3">
-				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-500">
+			<div className="pt-3">
+				<p className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-500">
 					People with access
 				</p>
 				<div className="pb-2">
@@ -337,8 +336,14 @@ const ShareContent = () => {
 						?.slice()
 						.sort((a, b) => {
 							// Move owner to the top
-							if (a.isOwner) return -1;
-							if (b.isOwner) return 1;
+							if (a.isOwner) {
+								return -1;
+							}
+
+							if (b.isOwner) {
+								return 1;
+							}
+
 							return 0;
 						})
 						.map((item) => (
@@ -350,7 +355,7 @@ const ShareContent = () => {
 						))}
 				</div>
 				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px]">
-					<div className=" flex items-center">
+					<div className="flex items-center">
 						<figure>
 							<GlobeIcon />
 						</figure>
@@ -380,10 +385,10 @@ const ShareContent = () => {
 							]}
 							renderCustomSelectButton={() => (
 								<div className="flex items-center">
-									<p className=" mr-1 text-gray-800">
+									<p className="mr-1 text-gray-800">
 										{currentCategory?.is_public ? "View access" : "No access"}
 									</p>
-									<figure>
+									<figure className="text-gray-500">
 										<DownArrowGray />
 									</figure>
 								</div>
@@ -398,8 +403,8 @@ const ShareContent = () => {
 				<div
 					className={`flex items-center p-2 ${
 						currentCategory?.is_public
-							? " cursor-pointer"
-							: " cursor-not-allowed opacity-50"
+							? "cursor-pointer"
+							: "cursor-not-allowed opacity-50"
 					}`}
 					onClick={() => {
 						if (currentCategory?.is_public) {

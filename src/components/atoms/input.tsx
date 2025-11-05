@@ -59,19 +59,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 	});
 
 	const errorIconClass = classNames(errorIconClassName, {
-		"pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3":
-			true,
+		"pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3": true,
 	});
 
 	return (
-		<div className={isFullWidth ? "w-full " : ""}>
+		<div className={isFullWidth ? "w-full" : ""}>
 			<div className={wrapperClassName}>
 				<input
 					id={id}
 					ref={ref}
 					type={type}
 					value={value}
-					{...omit(props, ["isError", "errorText", "isDisabled"])}
+					{...omit(props, ["isError", "errorText"])}
 					autoFocus={autoFocus}
 					className={inputClass}
 					disabled={isDisabled}

@@ -6,13 +6,18 @@ import { colorPickerColors } from "../utils/constants";
 
 // --- Utility: normalize color ---
 const normalizeColor = (color?: string) => {
-	if (!color) return "";
+	if (!color) {
+		return "";
+	}
+
 	return color.trim().toLowerCase();
 };
 
 // --- Utility: adjust color based on dark mode ---
 const getAdjustedColor = (color?: string) => {
-	if (typeof window === "undefined") return color;
+	if (typeof window === "undefined") {
+		return color;
+	}
 
 	const isDarkMode = document?.documentElement?.classList?.contains("dark");
 	const colorNorm = normalizeColor(color);
@@ -23,8 +28,13 @@ const getAdjustedColor = (color?: string) => {
 		colorNorm === "#000" || colorNorm === "#000000" || colorNorm === "black";
 
 	if (isDarkMode) {
-		if (isWhite) return "#000000";
-		if (isBlack) return "#ffffff";
+		if (isWhite) {
+			return "#000000";
+		}
+
+		if (isBlack) {
+			return "#ffffff";
+		}
 	}
 
 	return color;

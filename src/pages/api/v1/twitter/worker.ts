@@ -13,10 +13,7 @@ import {
 import { blurhashFromURL } from "../../../../utils/getBlurHash";
 import { apiCookieParser } from "../../../../utils/helpers";
 
-type ProcessParameters = {
-	batchSize: number;
-	queueName: string;
-};
+type ProcessParameters = { batchSize: number; queueName: string };
 
 const SLEEP_SECONDS = 30;
 export const processImageQueue = async (
@@ -50,12 +47,7 @@ export const processImageQueue = async (
 			return;
 		}
 
-		// If no messages, queue is empty - exit loop
 		if (!messages?.length) {
-			if (processUntilEmpty && totalBatches > 0) {
-				console.log(`Queue empty after processing ${totalBatches} batches`);
-			}
-
 			return;
 		}
 
@@ -120,10 +112,7 @@ export const processImageQueue = async (
 
 					const response_ = axios.post(
 						`${getBaseUrl()}${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
-						{
-							id,
-							url,
-						},
+						{ id, url },
 						{
 							headers: {
 								Cookie: apiCookieParser(cookies),
@@ -142,8 +131,9 @@ export const processImageQueue = async (
 							message_id: message.msg_id,
 						});
 
-					if (deleteError)
+					if (deleteError) {
 						console.error("Error deleting message:", deleteError);
+					}
 				}
 			} catch (error) {
 				console.error("Processing failed for message:", message.msg_id, error);

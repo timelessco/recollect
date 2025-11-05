@@ -7,8 +7,9 @@ import {
 } from "../../../components/ariaDropdown";
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { Spinner } from "../../../components/spinner";
+import useIsMobileView from "../../../hooks/useIsMobileView";
 import GlobeIcon from "../../../icons/globeIcon";
-import OptionsIconGray from "../../../icons/optionsIconGray";
+import OptionsIcon from "../../../icons/optionsIcon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 import {
@@ -32,6 +33,7 @@ export type CollectionItemTypes = {
 	isCollab?: boolean;
 	isPublic?: boolean;
 	name: string;
+	responsiveIcon?: boolean;
 };
 
 export type listPropsTypes = {
@@ -47,6 +49,7 @@ export type listPropsTypes = {
 	onClick?: () => void;
 	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect?: (value: string, id: number) => void;
+	responsiveIcon?: boolean;
 	showDropdown?: boolean;
 	showIconDropdown?: boolean;
 	showSpinner?: boolean;
@@ -67,11 +70,12 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		onIconColorChange = () => null,
 		onClick = () => null,
 		isLink = true,
+		responsiveIcon = false,
 	} = listProps;
-
+	const { isDesktop } = useIsMobileView();
 	const renderContent = () => (
 		<>
-			<div className="flex w-4/5 items-center">
+			<div className="flex items-center">
 				{showIconDropdown ? (
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -94,12 +98,14 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}
-				<p
-					className="ml-2 flex-1 overflow-hidden truncate text-sm font-[450] leading-4"
-					id={listNameId}
-				>
-					{item?.name}
-				</p>
+				{(!responsiveIcon || isDesktop) && (
+					<p
+						className="ml-2 flex-1 overflow-hidden truncate text-[14px] font-[450] leading-[115%] tracking-[1%]"
+						id={listNameId}
+					>
+						{item?.name}
+					</p>
+				)}
 			</div>
 			<div className="flex items-center space-x-3">
 				{showSpinner && (
@@ -130,11 +136,11 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 								<div
 									className={
 										openedMenuId === item?.id
-											? "flex"
-											: "hidden group-hover:flex"
+											? "flex text-gray-500"
+											: "hidden text-gray-500 group-hover:flex"
 									}
 								>
-									<OptionsIconGray />
+									<OptionsIcon />
 								</div>
 							}
 							menuClassName={`${dropdownMenuClassName} z-10`}
@@ -168,8 +174,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						</AriaDropdown>
 						{item?.count !== undefined && openedMenuId === null && (
 							<p
-								className={` hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-gray-600 ${
-									showDropdown ? " block group-hover:hidden" : " block"
+								className={`hidden h-4 w-4 items-center justify-end text-right text-[11px] font-450 leading-3 text-gray-600 ${
+									showDropdown ? "block group-hover:hidden" : "block"
 								}`}
 							>
 								{item?.count}

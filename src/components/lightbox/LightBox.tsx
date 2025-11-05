@@ -109,7 +109,9 @@ export const CustomLightBox = ({
 	 * Memoized to prevent recalculation on every render
 	 */
 	const slides = useMemo(() => {
-		if (!bookmarks) return [];
+		if (!bookmarks) {
+			return [];
+		}
 
 		return bookmarks?.map((bookmark) => {
 			// Determine media types based on bookmark properties
@@ -127,8 +129,8 @@ export const CustomLightBox = ({
 				type: isVideo
 					? VIDEO_TYPE_PREFIX
 					: isImage
-					? IMAGE_TYPE_PREFIX
-					: undefined,
+						? IMAGE_TYPE_PREFIX
+						: undefined,
 
 				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
@@ -171,7 +173,9 @@ export const CustomLightBox = ({
 			// Find the corresponding bookmark for this slide
 			const slideIndex = slides?.indexOf(slide);
 			const bookmark = bookmarks?.[slideIndex];
-			if (!bookmark) return null;
+			if (!bookmark) {
+				return null;
+			}
 
 			// Determine if this slide is currently active (visible) for video player
 			const isActive = slides?.indexOf(slide) === activeIndex;
@@ -181,7 +185,9 @@ export const CustomLightBox = ({
 					className="flex items-center justify-center"
 					onDoubleClick={(event) => {
 						event.stopPropagation();
-						if (!zoomRef?.current) return;
+						if (!zoomRef?.current) {
+							return;
+						}
 
 						if (zoomRef?.current?.zoom > 1) {
 							zoomRef?.current?.zoomOut();
@@ -190,7 +196,7 @@ export const CustomLightBox = ({
 						}
 					}}
 				>
-					<div className=" w-full max-w-[min(1200px,90vw)]">
+					<div className="w-full max-w-[min(1200px,90vw)]">
 						<Image
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
@@ -200,8 +206,8 @@ export const CustomLightBox = ({
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
-									? bookmark?.ogImage ?? bookmark?.ogimage
-									: bookmark?.url ?? ""
+									? (bookmark?.ogImage ?? bookmark?.ogimage)
+									: (bookmark?.url ?? "")
 							}
 							width={bookmark?.meta_data?.width ?? 1_200}
 						/>
@@ -264,7 +270,7 @@ export const CustomLightBox = ({
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
-								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-plain-color"
+								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-gray-0"
 								data={bookmark?.url}
 								title="Website Preview"
 								type="text/html"
@@ -313,7 +319,7 @@ export const CustomLightBox = ({
 					// Render constrained image when dimensions are too large
 					if (exceedsWidth || underHeight) {
 						return (
-							<div className=" flex  max-w-[min(1200px,90vw)] items-center justify-center">
+							<div className="flex max-w-[min(1200px,90vw)] items-center justify-center">
 								<Image
 									alt="Preview"
 									className="h-auto max-h-[80vh] w-auto object-contain"
@@ -349,11 +355,15 @@ export const CustomLightBox = ({
 											clickY >= offsetY &&
 											clickY <= offsetY + renderedHeight;
 
-										if (!insideVisibleImage) return;
+										if (!insideVisibleImage) {
+											return;
+										}
 
 										event?.stopPropagation();
 										const zoom = zoomRef?.current;
-										if (!zoom) return;
+										if (!zoom) {
+											return;
+										}
 
 										if (zoom?.zoom > 1) {
 											zoom?.zoomOut();
@@ -377,13 +387,15 @@ export const CustomLightBox = ({
 						>
 							<Image
 								alt="Preview"
-								className="h-auto max-h-[80vh] w-auto "
+								className="h-auto max-h-[80vh] w-auto"
 								draggable={false}
 								height={scaledHeight}
 								onDoubleClick={(event) => {
 									event?.stopPropagation();
 									const zoom = zoomRef?.current;
-									if (!zoom) return;
+									if (!zoom) {
+										return;
+									}
 
 									if (zoom?.zoom > 1) {
 										zoom?.zoomOut();
@@ -457,7 +469,7 @@ export const CustomLightBox = ({
 	 * Custom navigation icons
 	 * Left icon: Simple clickable area for previous navigation
 	 */
-	const iconLeft = () => <div className=" h-[100vh] w-[5vw]" />;
+	const iconLeft = () => <div className="h-[100vh] w-[5vw]" />;
 
 	/**
 	 * Right icon: Adjusts margin when side panel is open
@@ -485,7 +497,9 @@ export const CustomLightBox = ({
 			index={activeIndex}
 			on={{
 				view: ({ index }) => {
-					if (!isPage || !bookmarks?.[index]) return;
+					if (!isPage || !bookmarks?.[index]) {
+						return;
+					}
 
 					const transitionDuration = 200;
 					setTimeout(() => {
@@ -555,9 +569,9 @@ export const CustomLightBox = ({
 								id: bookmarks?.[index]?.id,
 							},
 						},
-						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${bookmarks?.[
-							index
-						]?.id}`,
+						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
+							bookmarks?.[index]?.id
+						}`,
 						{ shallow: true },
 					);
 				},
@@ -623,7 +637,7 @@ export const CustomLightBox = ({
 
 					// Center: Bookmark URL (flex: 1 ensures centering)
 					<div
-						className="flex flex-1 justify-center  pt-[9px] text-center"
+						className="flex flex-1 justify-center pt-[9px] text-center"
 						key="center-section"
 					>
 						<a
@@ -659,7 +673,9 @@ export const CustomLightBox = ({
 };
 
 const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
-	if (!urlString) return false;
+	if (!urlString) {
+		return false;
+	}
 
 	try {
 		const url = new URL(urlString);

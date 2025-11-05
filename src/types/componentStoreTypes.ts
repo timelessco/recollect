@@ -31,7 +31,7 @@ export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	aiButtonToggle: boolean;
 	currentBookmarkView: BookmarksViewTypes;
-	currentSettingsPage: "api-key" | "change-email" | "delete" | "main";
+	currentSettingsPage: "ai-features" | "change-email" | "delete" | "main";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;

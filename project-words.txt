@@ -27,7 +27,6 @@ colums
 corrolate
 creats
 Creats
-cryptr
 dels
 dependecnies
 dont
@@ -71,12 +70,9 @@ sentryclirc
 shhhhh
 signup
 SIGNUP
-sparticuz
 svgs
 syncer
 thay
-thednp
-tilg
 timelessco
 timestamptz
 Toastify

@@ -81,7 +81,7 @@ const ChangeEmail = () => {
 		<>
 			<div className="relative mb-[30px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full bg-plain-color p-1 hover:bg-gray-100"
+					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
@@ -92,13 +92,13 @@ const ChangeEmail = () => {
 					Change email
 				</div>
 			</div>
-			<div className="border-b-[1px] border-b-gray-200 pb-[28px] ">
+			<div className="border-b-[1px] border-b-gray-200 pb-[28px]">
 				<LabelledComponent
 					label="Current email"
 					labelClassName={settingsInputLabelClassName}
 				>
 					<div className={settingsInputContainerClassName}>
-						<figure className=" mr-2">
+						<figure className="mr-2">
 							<MailIconBlack />
 						</figure>
 						<Input
@@ -114,7 +114,7 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 			</div>
 			<form
-				className="flex items-end justify-between pt-[28px] sm:flex-col"
+				className="flex items-end justify-between pt-[28px]"
 				onSubmit={handleSubmit(onSubmit)}
 			>
 				<LabelledComponent
@@ -144,7 +144,7 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 				<div className="flex w-1/2 justify-end sm:w-full">
 					<Button
-						className="flex w-[111px] justify-center bg-gray-300 px-[9px] py-2 text-sm leading-4 hover:bg-gray-700 sm:mt-5 sm:w-full"
+						className="flex w-[111px] justify-center bg-gray-300 px-[9px] py-2 text-sm leading-4 hover:bg-gray-700 sm:w-full"
 						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
 						type="dark"

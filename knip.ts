@@ -2,22 +2,18 @@ import { type KnipConfig } from "knip";
 
 const config: KnipConfig = {
 	project: ["src/**/*.{ts,tsx}!"],
-	entry: [
-		"src/pages/**/*.{js,jsx,ts,tsx}!",
-		"next.config.js",
-		"tailwind.config.cjs",
-		"env/**/*",
-		"release-it/**/*",
+	entry: ["src/pages/**/*.{js,jsx,ts,tsx}!", "env/**/*", "release-it/**/*"],
+	ignoreDependencies: [
+		// Used by Ariakit React
+		"@ariakit/react-core",
+		// Used by other langchain @ packages
+		"langchain",
 	],
-	// sharp - used by next/image
-	// autoprefixer - used by postcss for tailwind workflow
-	// tilg - used for debugging react components
-	ignoreDependencies: ["sharp", "autoprefixer", "tilg"],
 	ignoreBinaries: [
 		// Used in code quality
 		"turbo",
 	],
-	exclude: ["types", "duplicates", "exports", "dependencies", "files"],
+	exclude: ["types", "duplicates", "exports", "files"],
 };
 
 export default config;

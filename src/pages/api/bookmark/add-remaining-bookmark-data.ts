@@ -244,8 +244,8 @@ export default async function handler(
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
 		? uploadedImageThatIsAUrl
 		: currentData?.meta_data?.screenshot
-		? currentData?.meta_data?.screenshot
-		: uploadedCoverImageUrl;
+			? currentData?.meta_data?.screenshot
+			: uploadedCoverImageUrl;
 
 	if (
 		!isNil(imageUrlForMetaDataGeneration) ||

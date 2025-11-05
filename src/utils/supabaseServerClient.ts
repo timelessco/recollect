@@ -34,6 +34,17 @@ export const apiSupabaseClient = (
 			: developmentSupbaseUrl,
 		supabaseAnonKey,
 		{
+			// This is for Recollect Mobile - Auth context from mobile app is passed to the server via Authorization header
+			// Fix for - https://supabase.com/docs/guides/functions/auth#:~:text=Row%20Level%20Security%23,Security%20will%20be%20enforced.
+			...(request.headers.authorization
+				? {
+						global: {
+							headers: {
+								Authorization: request.headers.authorization,
+							},
+						},
+					}
+				: {}),
 			cookies: {
 				get(name: string) {
 					return request.cookies[name];
@@ -51,9 +62,6 @@ export const apiSupabaseClient = (
 					);
 				},
 			},
-			// cookieOptions: {
-			// 	name: "no-cookie-for-you",
-			// },
 		},
 	);
 

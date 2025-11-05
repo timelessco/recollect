@@ -183,7 +183,7 @@ const CardSection = ({
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
-		: searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
+		: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],
@@ -419,14 +419,12 @@ const CardSection = ({
 							pencilIcon
 						)}
 					</div>
-					<div className=" absolute right-8 top-0 flex">{externalLinkIcon}</div>
+					<div className="absolute right-8 top-0 flex">{externalLinkIcon}</div>
 				</>
 			);
 		}
 
-		return (
-			<div className=" absolute left-[10px] top-0">{externalLinkIcon}</div>
-		);
+		return <div className="absolute left-[10px] top-0">{externalLinkIcon}</div>;
 	};
 
 	const renderAvatar = (item: SingleListData) => {
@@ -458,7 +456,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-gray-600 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate text-[13px] leading-4 text-gray-600 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -476,7 +474,6 @@ const CardSection = ({
 		_height: SingleListData["meta_data"]["height"],
 		_width: SingleListData["meta_data"]["width"],
 		type: SingleListData["type"],
-		url: SingleListData["url"],
 	) => {
 		const isVideo = isBookmarkVideo(type);
 		const isAudio = isBookmarkAudio(type);
@@ -494,8 +491,7 @@ const CardSection = ({
 		});
 
 		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
-				true,
+			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800": true,
 			absolute: true,
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||
@@ -526,7 +522,6 @@ const CardSection = ({
 						img={img}
 						isPublicPage={isPublicPage}
 						sizesLogic={sizesLogic}
-						url={url}
 					/>
 				</figure>
 			</div>
@@ -675,7 +670,6 @@ const CardSection = ({
 				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 				item?.type,
-				item?.url,
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
@@ -724,7 +718,6 @@ const CardSection = ({
 			<div
 				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className={`w-full items-center space-x-1 ${
-					// @ts-expect-error // this is cypress env, TS check not needed
 					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
 				} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
 			>
@@ -744,7 +737,6 @@ const CardSection = ({
 					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
 					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
 					item?.type,
-					item?.url,
 				)
 			) : (
 				<div className="h-[48px]" />
@@ -802,7 +794,7 @@ const CardSection = ({
 			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-[10px] w-full overflow-hidden">
+				<div className="ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
 						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}

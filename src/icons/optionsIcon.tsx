@@ -2,7 +2,7 @@ import React from "react";
 
 import { Icon } from "../components/atoms/icon";
 
-const OptionsIconGray = () => (
+const OptionsIcon = () => (
 	<Icon
 		fill="none"
 		height="16"
@@ -13,10 +13,10 @@ const OptionsIconGray = () => (
 		<path
 			clipRule="evenodd"
 			d="M1.99992 10C2.92039 10 3.66659 9.25383 3.66659 8.33335C3.66659 7.41288 2.92039 6.66669 1.99992 6.66669C1.07944 6.66669 0.333252 7.41288 0.333252 8.33335C0.333252 9.25383 1.07944 10 1.99992 10ZM7.99992 10C8.92039 10 9.66659 9.25383 9.66659 8.33335C9.66659 7.41288 8.92039 6.66669 7.99992 6.66669C7.07944 6.66669 6.33325 7.41288 6.33325 8.33335C6.33325 9.25383 7.07944 10 7.99992 10ZM15.6666 8.33335C15.6666 9.25383 14.9204 10 13.9999 10C13.0794 10 12.3333 9.25383 12.3333 8.33335C12.3333 7.41288 13.0794 6.66669 13.9999 6.66669C14.9204 6.66669 15.6666 7.41288 15.6666 8.33335Z"
-			fill="#8F8F8F"
+			fill="currentColor"
 			fillRule="evenodd"
 		/>
 	</Icon>
 );
 
-export default OptionsIconGray;
+export default OptionsIcon;

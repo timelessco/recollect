@@ -38,12 +38,12 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 						"14",
 					)}
 				</div>
-				<p className=" text-xl font-semibold leading-[23px] text-gray-900 ">
+				<p className="text-xl font-semibold leading-[23px] text-gray-900">
 					{props.category_name}
 				</p>
 			</div>
 		</header>
-		<main className=" overflow-y-scroll">
+		<main className="overflow-y-scroll">
 			{!isEmpty(props?.data) ? (
 				<CardSection
 					categoryViewsFromProps={props?.category_views ?? undefined}
@@ -61,7 +61,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 					userId=""
 				/>
 			) : (
-				<div className=" flex items-center justify-center pt-[15%] text-2xl font-semibold">
+				<div className="flex items-center justify-center pt-[15%] text-2xl font-semibold">
 					There is no data in this collection
 				</div>
 			)}

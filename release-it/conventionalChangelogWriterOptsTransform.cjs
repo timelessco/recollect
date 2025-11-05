@@ -135,7 +135,9 @@ const transform = (commit, context) => {
 		context.hasNotableChanges = false;
 	}
 
-	if (entry) commit.type = entry.section;
+	if (entry) {
+		commit.type = entry.section;
+	}
 
 	if (commit.scope === "*") {
 		commit.scope = "";

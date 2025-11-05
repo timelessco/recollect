@@ -20,7 +20,6 @@
     - [Check Types](#check-types)
     - [Check unused dependencies, exports \& types](#check-unused-dependencies-exports--types)
     - [Check Spelling](#check-spelling)
-    - [Check package.json](#check-packagejson)
     - [Test](#test)
   - [Add google login](#add-google-login)
   - [Things to do in supabase](#things-to-do-in-supabase)
@@ -195,14 +194,6 @@ Next.js project that lints JavaScript and TypeScript source files
 > Check the spelling errors
 
 `pnpm lint:spelling`
-
-### Check package.json
-
-([npm-package-json-lint][16]): Lints the `package.json` file
-
-> Check the package.json linting errors
-
-`pnpm lint:package-json`
 
 ### Test
 
@@ -430,4 +421,3 @@ create trigger on_auth_user_created
 [13]: https://www.typescriptlang.org/
 [14]: https://github.com/webpro/knip
 [15]: https://cspell.org
-[16]: https://npmpackagejsonlint.org/

@@ -38,7 +38,7 @@ const Preview = () => {
 		void router.push(`/${ALL_BOOKMARKS_URL}`);
 	};
 
-	if (isLoading)
+	if (isLoading) {
 		return (
 			<div className="flex h-screen items-center justify-center">
 				<Spinner
@@ -47,6 +47,7 @@ const Preview = () => {
 				/>
 			</div>
 		);
+	}
 
 	if (!bookmark?.data?.[0] || error) {
 		return <div />;

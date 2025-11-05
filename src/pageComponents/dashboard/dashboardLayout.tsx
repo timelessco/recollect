@@ -60,7 +60,7 @@ import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import GlobeIcon from "../../icons/globeIcon";
-import OptionsIconBlack from "../../icons/optionsIconBlack";
+import OptionsIcon from "../../icons/optionsIcon";
 import UsersCollabIcon from "../../icons/usersCollabIcon";
 import {
 	dropdownMenuClassName,
@@ -150,7 +150,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
-	const { isTablet, isDesktop } = useIsMobileView();
+	const { isDesktop } = useIsMobileView();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 
@@ -271,7 +271,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold text-gray-900"
+					className="truncate text-xl font-semibold text-gray-950"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -294,7 +294,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[28px] rounded-none border-none  bg-plain-color p-0 text-xl font-semibold leading-[16px] text-gray-900  focus:outline-none"
+					className="m-0 h-[28px] rounded-none border-none bg-gray-0 p-0 text-xl font-semibold leading-[16px] text-gray-900 focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -490,8 +490,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return (
 			<AriaDropdown
 				menuButton={
-					<Button className="bg-transparent p-[7px]">
-						<OptionsIconBlack />
+					<Button className="bg-transparent p-[7px] text-gray-600 hover:text-plain-reverse-color">
+						<OptionsIcon />
 					</Button>
 				}
 				menuClassName={dropdownClassNames}
@@ -514,7 +514,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<div className="relative">
 					<div className="">
 						<button
-							className="group absolute left-[-25px] top-[-25px]  px-3 py-5"
+							className="group absolute left-[-25px] top-[-25px] px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
 							onClick={() => {
 								setShowSidePane(true);
@@ -528,7 +528,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								className={`${collapseButtonCommonClasses} top-[16px] group-hover:rotate-[-25deg]`}
 							/>
 							<div
-								className={`${collapseButtonCommonClasses}  top-[26px]  group-hover:rotate-[25deg]`}
+								className={`${collapseButtonCommonClasses} top-[26px] group-hover:rotate-[25deg]`}
 							/>
 						</button>
 					</div>
@@ -703,7 +703,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		</div>
 	);
 
-	return !isTablet ? renderDeskTopView : renderMobileView;
+	return isDesktop ? renderDeskTopView : renderMobileView;
 };
 
 export default DashboardLayout;
