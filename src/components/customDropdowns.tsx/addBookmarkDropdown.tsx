@@ -99,7 +99,7 @@ const AddBookmarkDropdown = ({
 							}
 						}}
 					>
-						<AddBoomarkInputIcon className="absolute left-[14px] top-[13px] z-[1]" />
+						<AddBoomarkInputIcon className="absolute left-[14px] top-[11px] z-[1]" />
 					</Button>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<Input

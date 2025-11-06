@@ -34,7 +34,7 @@ const AriaSearchableSelect = ({
 	);
 
 	const menuItemClassName =
-		"rounded-lg cursor-pointer px-2 py-[5px] text-13 font-450 leading-[15px] tracking-[0.01em] text--gray-900 data-[active-item]:bg-gray-200 truncate";
+		"rounded-lg cursor-pointer px-2 py-[5px] text-13 font-450 leading-[15px] tracking-[0.01em] text-gray-900 data-[active-item]:bg-gray-200 truncate";
 
 	const mainWrapperClassName = classNames({
 		"py-[7px] px-[10px] rounded-lg  w-full": true,
