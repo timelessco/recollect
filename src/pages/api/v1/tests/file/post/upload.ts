@@ -8,7 +8,6 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
-import { insertEmbeddings } from "../../../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type FileNameType,
 	type ImgMetadataType,
@@ -273,14 +272,6 @@ export default async (
 		} catch (remainingerror) {
 			console.error(remainingerror);
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
-		}
-
-		// create embeddings
-		try {
-			await insertEmbeddings([DatabaseData[0]?.id], request);
-		} catch {
-			console.error("create embeddings error");
-			Sentry.captureException("create embeddings error");
 		}
 	} else {
 		response.status(500).json({

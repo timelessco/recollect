@@ -28,7 +28,6 @@ Recollect is an open-source bookmark, images, and documents manager designed to 
   - Supabase SSR for server-side auth
 - **AI/ML Integration**:
   - Google Generative AI
-  - LangChain for AI workflows
   - Transformers.js for local ML models
 - **Build Tools**:
   - pnpm (package manager)

@@ -24,7 +24,6 @@ import { searchBookmarks } from "../../supabaseCrudHelpers";
 export default function useSearchBookmarks() {
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const session = useSupabaseSession((state) => state.session);
-	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 	const toggleIsSearchLoading = useLoadersStore(
 		(state) => state.toggleIsSearchLoading,
 	);
@@ -66,7 +65,7 @@ export default function useSearchBookmarks() {
 			queryFn: async ({ pageParam: pageParameter = 0 }) => {
 				// Set default value here
 				toggleIsSearchLoading(true);
-				if (!aiButtonToggle && searchText) {
+				if (searchText) {
 					const result = await searchBookmarks(
 						searchText,
 						CATEGORY_ID,

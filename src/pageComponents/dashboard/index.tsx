@@ -30,7 +30,6 @@ import useAddTagToBookmarkMutation from "../../async/mutationHooks/tags/useAddTa
 import useAddUserTagsMutation from "../../async/mutationHooks/tags/useAddUserTagsMutation";
 import useRemoveTagFromBookmarkMutation from "../../async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useAiSearch from "../../async/queryHooks/ai/search/useAiSearch";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
@@ -196,7 +195,6 @@ const Dashboard = () => {
 	const { allBookmarksData, fetchNextPage: fetchNextBookmarkPage } =
 		useFetchPaginatedBookmarks();
 
-	useAiSearch();
 	const {
 		flattenedSearchData,
 		fetchNextPage: fetchNextSearchPage,

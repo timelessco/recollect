@@ -37,7 +37,6 @@ import {
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
-	AI_SEARCH_KEY,
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
@@ -147,7 +146,6 @@ const CardSection = ({
 		(state) => state.setCurrentBookmarkView,
 	);
 
-	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 	const currentPath = useGetCurrentUrlPath();
 
@@ -158,33 +156,16 @@ const CardSection = ({
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
-	let searchBookmarksData: {
+	// gets from the trigram search api
+	const searchBookmarksData = queryClient.getQueryData([
+		BOOKMARKS_KEY,
+		userId,
+		searchSlugKey(categoryData),
+		searchText,
+	]) as {
 		error: PostgrestError;
 		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
-	} | null = null;
-
-	if (aiButtonToggle) {
-		// gets from vector search api
-		searchBookmarksData = queryClient.getQueryData([
-			AI_SEARCH_KEY,
-			searchSlugKey(categoryData),
-			searchText,
-		]) as {
-			error: PostgrestError;
-			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
-		};
-	} else {
-		// gets from the trigram search api
-		searchBookmarksData = queryClient.getQueryData([
-			BOOKMARKS_KEY,
-			userId,
-			searchSlugKey(categoryData),
-			searchText,
-		]) as {
-			error: PostgrestError;
-			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
-		};
-	}
+	};
 
 	const bookmarksList = isEmpty(searchText)
 		? listData

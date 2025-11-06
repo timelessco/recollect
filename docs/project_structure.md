@@ -67,7 +67,7 @@
 ### Source Code (`src/`)
 
 - **`async/`** - Asynchronous operations, API calls, and data fetching
-  - AI integrations (Google Generative AI, LangChain)
+  - AI integrations (Google Generative AI)
   - React Query hooks for mutations and queries
   - Supabase CRUD operations
   - File upload handlers

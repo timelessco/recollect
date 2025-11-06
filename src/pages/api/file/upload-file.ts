@@ -12,7 +12,6 @@ import isNil from "lodash/isNil";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
-import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type ImgMetadataType,
 	type SingleListData,
@@ -283,14 +282,6 @@ export default async (
 		} catch (remainingerror) {
 			console.error(remainingerror);
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
-		}
-
-		// create embeddings
-		try {
-			await insertEmbeddings([DatabaseData[0]?.id], request);
-		} catch {
-			console.error("create embeddings error");
-			Sentry.captureException("create embeddings error");
 		}
 	} else {
 		response.status(500).json({

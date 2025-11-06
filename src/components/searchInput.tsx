@@ -180,19 +180,6 @@ const SearchInput = (props: SearchInputTypes) => {
 					/>
 				</div>
 			)}
-			{/* <button
-				className={aiButtonClassName}
-				onClick={() => setAiButtonToggle(!aiButtonToggle)}
-				type="button"
-			>
-				<ToolTip
-					toolTipContent={`${
-						aiButtonToggle ? "disable" : "enable"
-					} vector search`}
-				>
-					<AiIcon selected={aiButtonToggle} />
-				</ToolTip>
-			</button> */}
 		</div>
 	);
 };
