@@ -47,6 +47,7 @@
 		"fix:md": "markdownlint --fix **/*.md \".github/**/*.md\"",
 		"fix:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown .",
 		"fix:spelling": "del-cli project-words.txt && cspell --words-only --unique --gitignore --cache --dot \"**/*\" | sort --ignore-case >> project-words.txt",
+		"postinstall": "cd node_modules/canvas && node-gyp rebuild",
 		"lint": "turbo lint:eslint lint:types lint:css lint:md lint:knip lint:package-json lint:spelling lint:prettier",
 		"lint:css": "stylelint --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
 		"lint:eslint": "eslint --cache --report-unused-disable-directives --color .",
