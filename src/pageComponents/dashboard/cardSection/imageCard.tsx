@@ -110,7 +110,7 @@ const ImgLogicComponent = ({
 						className={imgClassName}
 						height={_height ?? 200}
 						key={img}
-						// onError={() => setErrorImg(img)}
+						onError={() => setErrorImg(img)}
 						placeholder="blur"
 						sizes={sizesLogic}
 						src={`${img}`}
