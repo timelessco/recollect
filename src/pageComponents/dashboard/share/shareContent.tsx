@@ -356,7 +356,7 @@ const ShareContent = () => {
 				</div>
 				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px]">
 					<div className="flex items-center">
-						<figure>
+						<figure className="text-gray-1000">
 							<GlobeIcon />
 						</figure>
 						<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
@@ -416,7 +416,7 @@ const ShareContent = () => {
 					role="button"
 					tabIndex={0}
 				>
-					<figure>
+					<figure className="text-gray-1000">
 						<LinkIcon />
 					</figure>
 					<p className="ml-[6px] text-13 font-450 leading-[15px] text-[#007bf4e5]">

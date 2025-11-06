@@ -588,7 +588,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					role="button"
 					tabIndex={0}
 				>
-					<figure>
+					<figure className="text-gray-500">
 						<AddCategoryIcon />
 					</figure>
 					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-gray-600">

@@ -288,7 +288,7 @@ const MyComponent = () => {
 									whileTap={hasAIOverflowContent ? { scale: 0.98 } : {}}
 								>
 									<div className="mb-2 flex items-center gap-2">
-										<Icon className="h-[15px] w-[15px]">
+										<Icon className="h-[15px] w-[15px] text-gray-600">
 											<GeminiAiIcon />
 										</Icon>
 										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600">
@@ -300,7 +300,7 @@ const MyComponent = () => {
 											isExpanded ? "overflow-y-auto" : ""
 										}`}
 									>
-										<p className="text-[13px] leading-[138%] tracking-[0.01em] text-gray-600">
+										<p className="text-[13px] leading-[138%] tracking-[0.01em] text-gray-500">
 											{metaData?.img_caption || metaData?.image_caption}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}

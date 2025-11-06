@@ -11,9 +11,9 @@ import { Spinner } from "../../components/spinner";
 // import { EyeIcon } from "../../icons/eyeIcon";
 import { InfoIcon } from "../../icons/infoIcon";
 import {
+	saveButtonClassName,
 	settingsInputClassName,
 	settingsInputContainerClassName,
-	settingsLightButtonClassName,
 	// settingsParagraphClassName,
 } from "../../utils/commonClassNames";
 import { errorToast, successToast } from "../../utils/toastMessages";
@@ -123,7 +123,7 @@ export const AiFeatures = () => {
 							type="password"
 						/>
 						<Button
-							className={`relative my-[3px] ml-2 ${settingsLightButtonClassName}`}
+							className={`relative my-[3px] ${saveButtonClassName} px-2 py-[4.5px]`}
 							onClick={() => {
 								if (hasApiKey && !isReplacing) {
 									handleReplaceClick();

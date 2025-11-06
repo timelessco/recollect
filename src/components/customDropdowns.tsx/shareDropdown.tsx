@@ -9,7 +9,7 @@ const ShareDropdown = ({ renderOnlyButton = false }) => {
 
 	const buttonContent = (
 		<div className={`flex ${dropdownMenuItemClassName}`}>
-			<figure className="h-4 w-4">
+			<figure className="h-4 w-4 text-gray-1000">
 				<ShareIcon />
 			</figure>
 			<span className="ml-[7px]">Share</span>

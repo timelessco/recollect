@@ -281,7 +281,7 @@ const CardSection = ({
 				role="button"
 				tabIndex={0}
 			>
-				<figure>
+				<figure className="text-blacks-800">
 					<LinkExternalIcon />
 				</figure>
 			</div>
@@ -301,7 +301,7 @@ const CardSection = ({
 				role="button"
 				tabIndex={0}
 			>
-				<figure>
+				<figure className="text-gray-1000">
 					<EditIcon />
 				</figure>
 			</div>
@@ -535,7 +535,7 @@ const CardSection = ({
 		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
-			"h-[14] w-[14px]": cardTypeCondition !== viewValues.headlines,
+			"h-[14] w-[14px] mt-[1px]": cardTypeCondition !== viewValues.headlines,
 		});
 
 		if (favIconErrorImgs?.includes(item?.id)) {

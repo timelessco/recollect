@@ -104,8 +104,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 			}
 
 			const element = document.querySelector("#scrollableDiv");
+
 			if (!element) {
-				console.warn("Scroll container #scrollableDiv not found");
+				return document.documentElement;
 			}
 
 			return element;
@@ -469,7 +470,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 							<AriaDropdown
 								menuButton={
 									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 font-450 leading-4 text-gray-900">
-										<figure className="mr-[6px]">
+										<figure className="mr-[6px] text-gray-1000">
 											<MoveIcon />
 										</figure>
 										<p>Move to</p>

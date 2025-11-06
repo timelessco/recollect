@@ -575,13 +575,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							<div className="ml-2 flex space-x-2">
 								{currentCategoryData?.is_public && (
 									<ToolTip toolTipContent="Public collection">
-										<GlobeIcon />
+										<figure className="text-gray-1000">
+											<GlobeIcon />
+										</figure>
 									</ToolTip>
 								)}
 								{currentCategoryData?.collabData &&
 									currentCategoryData?.collabData?.length > 1 && (
 										<ToolTip toolTipContent="Shared collection">
-											<UsersCollabIcon />
+											<figure className="text-gray-1000">
+												<UsersCollabIcon />
+											</figure>
 										</ToolTip>
 									)}
 							</div>

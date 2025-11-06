@@ -226,7 +226,7 @@ export const AddToCollectionDropdown = memo(
 						<div className="flex items-center gap-[6px]">
 							<Ariakit.Select className="flex items-center gap-[6px]">
 								{/* Collection icon or add icon */}
-								<div className="h-[14px] w-[14px]">
+								<div className="h-[14px] w-[14px] text-gray-600">
 									{currentCollection ? (
 										<CollectionIcon bookmarkCategoryData={currentCollection} />
 									) : (
