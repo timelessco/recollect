@@ -1,5 +1,5 @@
 import { type NextApiResponse } from "next";
-import { createCanvas } from "canvas";
+import { createCanvas } from "@napi-rs/canvas";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
 // eslint-disable-next-line import/extensions
 import pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.js";

@@ -43,12 +43,23 @@ const nextConfig = {
 			},
 		],
 	},
+	transpilePackages: ["pdfjs-dist"],
 	experimental: {
 		legacyBrowsers: false,
 		outputFileTracingExcludes: ["**canvas**"],
+		serverComponentsExternalPackages: ["@napi-rs/canvas", "pdfjs-dist"],
 	},
 	webpack: (config) => {
-		config.externals = [...config.externals, "canvas", "jsdom"];
+		config.resolve = config.resolve || {};
+		config.resolve.alias = {
+			...(config.resolve.alias || {}),
+			canvas: "@napi-rs/canvas",
+		};
+		// Do not externalize canvas so that @napi-rs/canvas is bundled for Vercel
+		config.externals = (config.externals || []).filter(
+			(ext) => !(typeof ext === "string" && ext === "canvas"),
+		);
+		config.externals = [...config.externals, "jsdom"];
 		return config;
 	},
 };
