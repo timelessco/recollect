@@ -29,7 +29,6 @@ export type LoadersStoreState = {
 
 export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
-	aiButtonToggle: boolean;
 	currentBookmarkView: BookmarksViewTypes;
 	currentSettingsPage: "ai-features" | "change-email" | "delete" | "main";
 	currentSliderDropdownSlide: string | null;
@@ -42,7 +41,6 @@ export type MiscellaneousStoreState = {
 	searchText: string;
 	selectedVideoId: number | null;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
-	setAiButtonToggle: (value: boolean) => void;
 	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
 	setCurrentSettingsPage: (
 		value: MiscellaneousStoreState["currentSettingsPage"],

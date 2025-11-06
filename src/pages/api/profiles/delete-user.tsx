@@ -1,7 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import * as Sentry from "@sentry/nextjs";
 import {
 	type AuthError,
 	type PostgrestError,
@@ -12,7 +11,6 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
-import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import { type SingleListData } from "../../../types/apiTypes";
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
@@ -256,15 +254,6 @@ const storageDeleteLogic = async (
 	}
 };
 
-const deleteUserEmbeddings = async (request: NextApiRequest) => {
-	try {
-		await deleteEmbeddings([], request, true);
-		log("deleted user embeddings");
-	} catch {
-		Sentry.captureException(`Delete user embeddings error`);
-	}
-};
-
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -367,10 +356,6 @@ export default async function handler(
 
 	// all bookmarks s3 storage deletes
 	await storageDeleteLogic(userId, response);
-
-	// deleting all user embeddings
-
-	await deleteUserEmbeddings(request);
 
 	// deleting user in main auth table
 	const serviceSupabase = createServiceClient();

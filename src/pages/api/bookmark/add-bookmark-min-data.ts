@@ -12,7 +12,6 @@ import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
-import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import { canEmbedInIframe } from "../../../async/uploads/iframe-test";
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -392,14 +391,6 @@ export default async function handler(
 		} catch (remainingUploadError) {
 			console.error(remainingUploadError);
 			Sentry.captureException(`Remaining api error ${remainingUploadError}`);
-		}
-
-		// create embeddings
-		try {
-			await insertEmbeddings([data[0]?.id], request);
-		} catch {
-			console.error("Add Embeddings error");
-			Sentry.captureException(`Add Embeddings error`);
 		}
 	}
 }

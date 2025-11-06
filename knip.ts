@@ -6,8 +6,6 @@ const config: KnipConfig = {
 	ignoreDependencies: [
 		// Used by Ariakit React
 		"@ariakit/react-core",
-		// Used by other langchain @ packages
-		"langchain",
 	],
 	ignoreBinaries: [
 		// Used in code quality

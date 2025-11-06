@@ -4,7 +4,6 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
 
-import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type DeleteBookmarkPayload,
 	type NextApiRequest,
@@ -203,15 +202,5 @@ export default async function handler(
 				bookmarkTagsError ??
 				bookmarksError,
 		});
-	}
-
-	// delete embeddings
-	try {
-		await deleteEmbeddings(deleteBookmarkIds, request, false);
-	} catch (error_) {
-		console.error("Delete embeddings error in delete bookmarks api", error_);
-		Sentry.captureException(
-			`Delete embeddings error in delete bookmarks api: ${error_}`,
-		);
 	}
 }
