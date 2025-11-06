@@ -24,7 +24,7 @@ import {
 } from "../../../../../../utils/constants";
 import { blurhashFromURL } from "../../../../../../utils/getBlurHash";
 import {
-	apiCookieParser,
+	getAxiosConfigWithAuth,
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../../../../utils/helpers";
@@ -262,11 +262,7 @@ export default async (
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
 					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
+					getAxiosConfigWithAuth(request),
 				);
 			} else {
 				console.error("Remaining upload api error: upload data is empty");
@@ -281,7 +277,7 @@ export default async (
 
 		// create embeddings
 		try {
-			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);
+			await insertEmbeddings([DatabaseData[0]?.id], request);
 		} catch {
 			console.error("create embeddings error");
 			Sentry.captureException("create embeddings error");

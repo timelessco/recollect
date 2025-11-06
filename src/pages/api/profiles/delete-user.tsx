@@ -13,7 +13,7 @@ import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
 import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
-import { type CookiesType, type SingleListData } from "../../../types/apiTypes";
+import { type SingleListData } from "../../../types/apiTypes";
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
@@ -256,9 +256,9 @@ const storageDeleteLogic = async (
 	}
 };
 
-const deleteUserEmbeddings = async (cookies: CookiesType) => {
+const deleteUserEmbeddings = async (request: NextApiRequest) => {
 	try {
-		await deleteEmbeddings([], cookies, true);
+		await deleteEmbeddings([], request, true);
 		log("deleted user embeddings");
 	} catch {
 		Sentry.captureException(`Delete user embeddings error`);
@@ -370,7 +370,7 @@ export default async function handler(
 
 	// deleting all user embeddings
 
-	await deleteUserEmbeddings(request?.cookies);
+	await deleteUserEmbeddings(request);
 
 	// deleting user in main auth table
 	const serviceSupabase = createServiceClient();

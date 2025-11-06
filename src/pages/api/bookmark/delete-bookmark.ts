@@ -207,7 +207,7 @@ export default async function handler(
 
 	// delete embeddings
 	try {
-		await deleteEmbeddings(deleteBookmarkIds, request?.cookies, false);
+		await deleteEmbeddings(deleteBookmarkIds, request, false);
 	} catch (error_) {
 		console.error("Delete embeddings error in delete bookmarks api", error_);
 		Sentry.captureException(

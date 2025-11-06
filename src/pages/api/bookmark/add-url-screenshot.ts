@@ -22,7 +22,7 @@ import {
 	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
-import { apiCookieParser } from "../../../utils/helpers";
+import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -147,7 +147,7 @@ export default async function handler(
 						favIcon: data?.[0]?.meta_data?.favIcon,
 						url: request.body.url,
 					},
-					{ headers: { Cookie: apiCookieParser(request?.cookies) } },
+					getAxiosConfigWithAuth(request),
 				);
 			}
 
