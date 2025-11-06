@@ -140,6 +140,8 @@ export const SAVE_API_KEY_API = "/v1/api-key";
 
 export const CHECK_API_KEY_API = "/v1/check-api-key";
 
+export const DELETE_API_KEY_API = "/v1/delete-api-key";
+
 // Screenshot api
 export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app/";

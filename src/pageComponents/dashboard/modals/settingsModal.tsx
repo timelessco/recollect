@@ -41,7 +41,7 @@ const SettingsModal = () => {
 	const optionsList = [
 		{
 			icon: (
-				<figure className="text-gray-900">
+				<figure className="flex h-6 w-6 items-center justify-center text-gray-900">
 					<AvatarIcon />
 				</figure>
 			),
@@ -53,7 +53,11 @@ const SettingsModal = () => {
 			iconColor: "",
 		},
 		{
-			icon: <SettingsAiIcon />,
+			icon: (
+				<figure className="flex h-6 w-6 items-center justify-center text-gray-900">
+					<SettingsAiIcon />
+				</figure>
+			),
 			name: "AI Features",
 			href: ``,
 			current: selectedMenuItem === 1,
@@ -62,7 +66,11 @@ const SettingsModal = () => {
 			iconColor: "",
 		},
 		{
-			icon: <ImportIcon />,
+			icon: (
+				<figure className="flex h-6 w-6 items-center justify-center text-gray-900">
+					<ImportIcon />
+				</figure>
+			),
 			name: "Import",
 			href: ``,
 			current: selectedMenuItem === 2,

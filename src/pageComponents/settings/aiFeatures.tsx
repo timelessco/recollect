@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
+import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/useDeleteApiKeyMutation";
 import useFetchCheckApiKey from "../../async/queryHooks/ai/api-key/useFetchCheckApiKey";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -11,12 +12,11 @@ import { Spinner } from "../../components/spinner";
 // import { EyeIcon } from "../../icons/eyeIcon";
 import { InfoIcon } from "../../icons/infoIcon";
 import {
+	saveButtonClassName,
 	settingsInputClassName,
 	settingsInputContainerClassName,
-	settingsLightButtonClassName,
 	// settingsParagraphClassName,
 } from "../../utils/commonClassNames";
-import { errorToast, successToast } from "../../utils/toastMessages";
 
 /*  TYPES  */
 type AiFeaturesFormTypes = {
@@ -40,8 +40,9 @@ const AiFeaturesSkeleton = () => (
 
 /*  MAIN COMPONENT  */
 export const AiFeatures = () => {
-	const [isReplacing, setIsReplacing] = useState(false);
 	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
+	const { mutate: deleteApiKey, isLoading: isDeleting } =
+		useDeleteApiKeyMutation();
 	const { data, isLoading: isChecking } = useFetchCheckApiKey();
 
 	const hasApiKey = data?.data?.hasApiKey ?? false;
@@ -51,31 +52,12 @@ export const AiFeatures = () => {
 		handleSubmit,
 		formState: { errors },
 		reset,
-		setValue,
 	} = useForm<AiFeaturesFormTypes>();
-
-	const handleReplaceClick = () => {
-		setIsReplacing(true);
-		setValue("apiKey", "");
-	};
 
 	/*  HANDLERS  */
 	const onSubmit: SubmitHandler<AiFeaturesFormTypes> = (formData) => {
-		saveApiKey(
-			{ apikey: formData.apiKey },
-			{
-				onSuccess: () => {
-					successToast("API key saved successfully");
-					reset();
-				},
-				onError: (error) => {
-					console.error("Error updating API key:", error);
-					errorToast(
-						error.message || "Failed to update API key. Please try again.",
-					);
-				},
-			},
-		);
+		saveApiKey({ apikey: formData.apiKey });
+		reset();
 	};
 
 	/*  RENDER  */
@@ -83,7 +65,7 @@ export const AiFeatures = () => {
 		return <AiFeaturesSkeleton />;
 	}
 
-	const label = hasApiKey ? (isReplacing ? "Save" : "Replace") : "Save";
+	const label = hasApiKey ? "Delete" : "Save";
 
 	return (
 		<>
@@ -104,29 +86,28 @@ export const AiFeatures = () => {
 					>
 						<Input
 							{...register("apiKey", { required: "API Key is required" })}
-							autoFocus={isReplacing}
+							autoFocus={isDeleting}
 							className={settingsInputClassName}
 							errorText=""
 							id="api-key"
-							isDisabled={hasApiKey ? !isReplacing : false}
+							isDisabled={hasApiKey ? !isDeleting : false}
 							isError={Boolean(errors.apiKey)}
 							placeholder={
 								isSaving
 									? "••••••••••••••••••••••••••••••••"
-									: isReplacing
-										? "Enter your new API key"
-										: hasApiKey
-											? "••••••••••••••••••••••••••••••••"
-											: "Enter your API key"
+									: hasApiKey
+										? "••••••••••••••••••••••••••••••••"
+										: "Enter your API key"
 							}
-							showError
+							showError={false}
 							type="password"
 						/>
 						<Button
-							className={`relative my-[3px] ml-2 ${settingsLightButtonClassName}`}
+							className={`relative my-[3px] ${saveButtonClassName} px-2 py-[4.5px]`}
 							onClick={() => {
-								if (hasApiKey && !isReplacing) {
-									handleReplaceClick();
+								if (hasApiKey && !isDeleting) {
+									deleteApiKey();
+									reset();
 								} else {
 									void handleSubmit(onSubmit)();
 								}

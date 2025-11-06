@@ -173,7 +173,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						Choose an icon
 					</span>
 					<div className="flex w-[139px] items-center rounded-lg bg-gray-100 px-[10px] py-[7px]">
-						<figure className="mr-[6px] h-3 w-3">
+						<figure className="mr-[6px] h-3 w-3 text-gray-600">
 							<SearchIconSmallGray />
 						</figure>
 						<Combobox

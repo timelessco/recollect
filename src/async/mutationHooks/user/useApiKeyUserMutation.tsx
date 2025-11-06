@@ -1,5 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { API_KEY_CHECK_KEY } from "../../../utils/constants";
+import { errorToast, successToast } from "../../../utils/toastMessages";
 import { saveApiKey } from "../../supabaseCrudHelpers";
 
 type SaveApiKeyParameters = {
@@ -14,17 +16,25 @@ type ApiKeyResponse = {
 	message: string;
 };
 
-export const useApiKeyMutation = () =>
-	useMutation<ApiKeyResponse, Error, SaveApiKeyParameters>({
+export const useApiKeyMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation<ApiKeyResponse, Error, SaveApiKeyParameters>({
 		mutationFn: async ({ apikey }) => {
 			const response = await saveApiKey({ apikey });
 			// saveApiKey already throws/returns error-like object; let the caller handle toast via mutationApiCall if used
 			return response as unknown as ApiKeyResponse;
 		},
-		onSuccess: () => {
-			// Success handled in the component
+		onSuccess: async () => {
+			successToast("API key saved successfully");
+			// Invalidate the API key check query to refetch the latest status
+			await queryClient.invalidateQueries({ queryKey: [API_KEY_CHECK_KEY] });
 		},
-		onError: () => {
-			// Error handled in the component
+		onError: (error) => {
+			console.error("Error updating API key:", error);
+			errorToast(
+				error.message || "Failed to update API key. Please try again.",
+			);
 		},
 	});
+};

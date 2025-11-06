@@ -77,7 +77,7 @@ const AddBookmarkDropdown = ({
 						title="create"
 						type="dark"
 					>
-						<figure className="h-4 w-4">
+						<figure className="h-4 w-4 text-gray-0">
 							<PlusIconWhite />
 						</figure>
 					</Button>
@@ -99,7 +99,7 @@ const AddBookmarkDropdown = ({
 							}
 						}}
 					>
-						<AddBoomarkInputIcon className="absolute left-[14px] top-[13px] z-[1]" />
+						<AddBoomarkInputIcon className="absolute left-[14px] top-[11px] z-[1]" />
 					</Button>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<Input

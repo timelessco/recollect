@@ -477,12 +477,6 @@ export const CustomLightBox = ({
 	 */
 	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
 
-	const iconSidePane = () => (
-		<div className="group h-5 w-5 cursor-pointer text-plain-reverse-color hover:text-plain-reverse-color">
-			<ShowSidePaneButton />
-		</div>
-	);
-
 	const isFirstSlide = activeIndex === 0;
 	const isLastSlide = activeIndex === bookmarks?.length - 1;
 	return (
@@ -628,11 +622,11 @@ export const CustomLightBox = ({
 					// Left: Close button
 					<div className="flex items-center" key="left-section">
 						<button
-							className="group ml-4 mt-3.5 flex items-center justify-center rounded-full"
+							className="group ml-4 mt-1.5 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
 							onClick={handleClose}
 							type="button"
 						>
-							<LightboxCloseIcon />
+							<LightboxCloseIcon className="h-5 w-5" />
 						</button>
 					</div>,
 
@@ -651,19 +645,22 @@ export const CustomLightBox = ({
 							<span className="truncate text-[14px] font-normal leading-[115%] tracking-normal text-gray-alpha-600">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
-							<div className="h-4 w-4 shrink-0">
+							<figure className="h-4 w-4 shrink-0 text-gray-alpha-600">
 								<LightboxExternalLink />
-							</div>
+							</figure>
 						</a>
 					</div>,
 
 					// Right: Side pane toggle button
-					<div className="flex items-center pr-4 pt-[7px]" key="right-section">
+					<div
+						className="group flex h-7 w-7 items-center justify-center pr-4 pt-[7px]"
+						key="right-section"
+					>
 						<button
 							onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
 							type="button"
 						>
-							{iconSidePane()}
+							<ShowSidePaneButton className="h-5 w-5 stroke-current text-gray-alpha-600 opacity-50 transition-colors duration-200 group-hover:opacity-100" />
 						</button>
 					</div>,
 				],

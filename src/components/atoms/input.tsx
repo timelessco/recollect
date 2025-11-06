@@ -57,7 +57,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 	});
 
 	const errorClass = classNames(errorClassName, {
-		"mt-2 text-xs text-red-600": true,
+		"text-xs text-red-600": true,
 	});
 
 	const errorIconClass = classNames(errorIconClassName, {

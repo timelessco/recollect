@@ -53,6 +53,7 @@ import {
 	CLEAR_BOOKMARK_TRASH_API,
 	CREATE_USER_CATEGORIES_API,
 	CREATE_USER_TAGS_API,
+	DELETE_API_KEY_API,
 	DELETE_BOOKMARK_DATA_API,
 	DELETE_SHARED_CATEGORIES_USER_API,
 	DELETE_USER_API,
@@ -125,6 +126,22 @@ export const saveApiKey = async ({
 		return response?.data;
 	} catch {
 		throw new Error("Invalid API key");
+	}
+};
+
+export const deleteApiKey = async (): Promise<{
+	data: unknown;
+	message: string;
+}> => {
+	try {
+		const response = await axios.delete<{
+			data: unknown;
+			message: string;
+		}>(`${NEXT_API_URL}${DELETE_API_KEY_API}`);
+
+		return response?.data;
+	} catch {
+		throw new Error("Failed to delete API key");
 	}
 };
 

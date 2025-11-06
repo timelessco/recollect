@@ -12,6 +12,7 @@ import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import { Spinner } from "../../../components/spinner";
+import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
@@ -40,11 +41,14 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	DOCUMENTS_URL,
+	IMAGES_URL,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
 	TWEETS_URL,
 	VIDEO_TYPE_PREFIX,
+	VIDEOS_URL,
 	viewValues,
 } from "../../../utils/constants";
 import {
@@ -145,6 +149,7 @@ const CardSection = ({
 
 	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
 	const isUserInTweetsPage = useIsUserInTweetsPage();
+	const currentPath = useGetCurrentUrlPath();
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -281,7 +286,7 @@ const CardSection = ({
 				role="button"
 				tabIndex={0}
 			>
-				<figure>
+				<figure className="text-blacks-800">
 					<LinkExternalIcon />
 				</figure>
 			</div>
@@ -301,7 +306,7 @@ const CardSection = ({
 				role="button"
 				tabIndex={0}
 			>
-				<figure>
+				<figure className="text-gray-1000">
 					<EditIcon />
 				</figure>
 			</div>
@@ -431,8 +436,8 @@ const CardSection = ({
 		const isCreatedByLoggedInUser = isBookmarkCreatedByLoggedinUser(item);
 
 		const avatarClassName = classNames({
-			"absolute h-5 w-5 rounded-full": true,
-			"right-[65px] top-[3px]": isCreatedByLoggedInUser,
+			"absolute h-[26px] w-[26px] rounded-full": true,
+			"right-[65px] top-0": isCreatedByLoggedInUser,
 			"right-[100px]":
 				cardTypeCondition === viewValues.list ||
 				cardTypeCondition === viewValues.headlines,
@@ -444,9 +449,9 @@ const CardSection = ({
 				<Image
 					alt="user_img"
 					className={avatarClassName}
-					height={20}
+					height={21}
 					src={item?.user_id?.profile_pic}
-					width={20}
+					width={21}
 				/>
 			);
 		}
@@ -535,12 +540,11 @@ const CardSection = ({
 		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
-			"h-[14] w-[14px]": cardTypeCondition !== viewValues.headlines,
+			"h-[14] w-[14px] mt-[1px]": cardTypeCondition !== viewValues.headlines,
 		});
-
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="rounded p-0.5 text-plain-reverse-color">
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
 					<ImageIcon size={`${size}`} />
 				</figure>
 			);
@@ -564,7 +568,7 @@ const CardSection = ({
 			);
 		}
 
-		if (item?.meta_data?.favIcon) {
+		if (item?.meta_data?.favIcon || currentPath === IMAGES_URL) {
 			return (
 				<figure className={favIconFigureClassName}>
 					<Image
@@ -574,31 +578,39 @@ const CardSection = ({
 						onError={() =>
 							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
 						}
-						src={item?.meta_data?.favIcon}
+						src={item?.meta_data?.favIcon ?? ""}
 						width={size}
 					/>
 				</figure>
 			);
 		}
 
-		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
+		if (
+			isVideo ||
+			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+			currentPath === VIDEOS_URL
+		) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
 					<VideoIcon size="15" />
 				</figure>
 			);
 		}
 
-		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
+		if (
+			isDocument ||
+			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
+			currentPath === DOCUMENTS_URL
+		) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
 					<FolderIcon size="15" />
 				</figure>
 			);
 		}
 
 		return (
-			<figure className="card-icon rounded p-0.5 text-plain-reverse-color">
+			<figure className="card-icon rounded p-0.5 text-gray-1000">
 				<ImageIcon size={`${size}`} />
 			</figure>
 		);
