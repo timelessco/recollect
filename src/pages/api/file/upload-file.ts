@@ -27,7 +27,7 @@ import {
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
-	apiCookieParser,
+	getAxiosConfigWithAuth,
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../utils/helpers";
@@ -43,11 +43,11 @@ type BodyDataType = {
 	uploadFileNamePath: string;
 };
 
-/* 
-If the uploaded file is a video then this function is called 
+/*
+If the uploaded file is a video then this function is called
 This gets the public URL from the thumbnail path uploaded by the client
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
-Image caption is not generated for the thumbnail 
+Image caption is not generated for the thumbnail
 */
 const videoLogic = async (
 	data: BodyDataType,
@@ -272,11 +272,7 @@ export default async (
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
 					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
+					getAxiosConfigWithAuth(request),
 				);
 			} else {
 				console.error("Remaining upload api error: upload data is empty");
@@ -291,7 +287,7 @@ export default async (
 
 		// create embeddings
 		try {
-			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);
+			await insertEmbeddings([DatabaseData[0]?.id], request);
 		} catch {
 			console.error("create embeddings error");
 			Sentry.captureException("create embeddings error");

@@ -17,7 +17,7 @@ import {
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 } from "../../../utils/constants";
-import { apiCookieParser } from "../../../utils/helpers";
+import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api clears trash for a single user and also takes care of CRON job to clear trash every 30 days
@@ -94,11 +94,7 @@ export default async function handler(
 							data: { deleteData: trashBookmarkIds },
 							user_id: userId,
 						},
-						{
-							headers: {
-								Cookie: apiCookieParser(request?.cookies),
-							},
-						},
+						getAxiosConfigWithAuth(request),
 					);
 
 					response

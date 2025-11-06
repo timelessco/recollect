@@ -1,3 +1,4 @@
+import { type NextApiRequest } from "next";
 import router from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { getYear } from "date-fns";
@@ -284,6 +285,31 @@ export const apiCookieParser = (
 	Object.entries(cookies)
 		.map(([key, value]) => `${key}=${value}`)
 		.join("; ");
+
+/**
+ * Creates axios config with authorization headers and cookies if available
+ * Includes both Authorization header (for token-based auth) and Cookie header (for cookie-based auth)
+ * when they are present in the request. Returns undefined if neither is available.
+ *
+ * @param {NextApiRequest} request request object
+ * @returns {{ headers: Record<string, string> } | undefined} axios config with headers or undefined
+ */
+export const getAxiosConfigWithAuth = (
+	request: NextApiRequest,
+): { headers: Record<string, string> } | undefined => {
+	if (!request?.headers?.authorization && !request?.cookies) {
+		return undefined;
+	}
+
+	return {
+		headers: {
+			...(request?.headers?.authorization
+				? { Authorization: request.headers.authorization }
+				: {}),
+			...(request?.cookies ? { Cookie: apiCookieParser(request.cookies) } : {}),
+		},
+	};
+};
 
 /**
  * Tells if the year is the current year or not

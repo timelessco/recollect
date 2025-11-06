@@ -33,9 +33,9 @@ import {
 	uncategorizedPages,
 } from "../../../utils/constants";
 import {
-	apiCookieParser,
 	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
+	getAxiosConfigWithAuth,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -383,11 +383,7 @@ export default async function handler(
 						favIcon: scrapperResponse?.data?.favIcon,
 						url,
 					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
+					getAxiosConfigWithAuth(request),
 				);
 			} else {
 				console.error("Data is empty");
@@ -400,7 +396,7 @@ export default async function handler(
 
 		// create embeddings
 		try {
-			await insertEmbeddings([data[0]?.id], request?.cookies);
+			await insertEmbeddings([data[0]?.id], request);
 		} catch {
 			console.error("Add Embeddings error");
 			Sentry.captureException(`Add Embeddings error`);
