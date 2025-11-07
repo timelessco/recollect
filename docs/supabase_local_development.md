@@ -26,7 +26,7 @@ For developers joining the project:
 3. **Ensure Docker is running** (Docker Desktop, OrbStack, Rancher Desktop, or Podman)
 4. **Start local Supabase**: `npx supabase start`
 5. **Configure environment**: Copy `.env.example` to `.env.local` and fill in local Supabase values
-6. **Run dev server**: `npm run dev`
+6. **Run dev server**: `pnpm run dev`
 
 ### Getting Local Supabase Credentials
 
@@ -80,7 +80,7 @@ npx supabase start
 npx supabase status
 
 # Start dev server
-npm run dev
+pnpm run dev
 ```
 
 ### Making Schema Changes
@@ -412,7 +412,6 @@ If none of these solutions work:
    # ✅ Good
    npx supabase migration new add_user_avatar_column
    npx supabase migration new create_notifications_table
-   
    # ❌ Avoid
    npx supabase migration new update
    npx supabase migration new fix
