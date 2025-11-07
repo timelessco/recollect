@@ -1,10 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { log } from "console";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
-import { isNil } from "lodash";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
@@ -22,7 +20,7 @@ type Data = UploadFileApiResponse;
 
 const notVideoLogic = async (
 	publicUrl: string,
-	mediaType: string,
+	mediaType: string | null,
 	supabase: SupabaseClient,
 	userId: string,
 ) => {
@@ -38,8 +36,7 @@ const notVideoLogic = async (
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(ogImage, supabase, userId);
 		} catch (error) {
-			console.error("Gemini AI processing error", error);
-			Sentry.captureException(`Gemini AI processing error ${error}`);
+			console.warn("Gemini AI processing error", error);
 		}
 	}
 
@@ -49,8 +46,7 @@ const notVideoLogic = async (
 		try {
 			imgData = await blurhashFromURL(publicUrl);
 		} catch (error) {
-			log("Blur hash error", error);
-			Sentry.captureException(`Blur hash error ${error}`);
+			console.warn("blurhashFromURL error", error);
 			imgData = {};
 		}
 	}
@@ -83,6 +79,13 @@ export default async function handler(
 	}>,
 	response: NextApiResponse<Data>,
 ) {
+	if (request.method !== "POST") {
+		response
+			.status(405)
+			.json({ data: null, success: false, error: "Method Not Allowed" });
+		return;
+	}
+
 	const { publicUrl, id, mediaType } = request.body;
 
 	const supabase = apiSupabaseClient(request, response);
@@ -121,11 +124,15 @@ export default async function handler(
 		.single();
 
 	if (fetchError) {
+		console.error("Error fetching existing metadata", fetchError);
+		Sentry.captureException(
+			`Error fetching existing metadata ${fetchError.message}`,
+		);
 		response.status(500).json({
+			data: null,
 			success: false,
-			error: fetchError,
+			error: "Error fetching existing metadata",
 		});
-		Sentry.captureException(fetchError?.message);
 	}
 
 	const existingMeta = existing?.meta_data || {};
@@ -153,13 +160,13 @@ export default async function handler(
 		})
 		.match({ id, user_id: userId });
 
-	if (isNil(DBerror)) {
-		response.status(200).json({ success: true, error: null });
-	} else {
-		response.status(500).json({
-			success: false,
-			error: DBerror,
-		});
-		Sentry.captureException(`DB error ${DBerror?.message}`);
+	if (DBerror) {
+		console.error("error updating db", DBerror);
+		Sentry.captureException(`error updating db ${DBerror.message}`);
+		response
+			.status(500)
+			.json({ data: null, success: false, error: "error updating db" });
 	}
+
+	response.status(200).json({ data: null, success: true, error: null });
 }

@@ -116,8 +116,8 @@ export const CustomLightBox = ({
 		return bookmarks?.map((bookmark) => {
 			// Determine media types based on bookmark properties
 			const isImage =
-				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-				bookmark?.meta_data?.isOgImagePreferred ||
+				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ??
+				bookmark?.meta_data?.isOgImagePreferred ??
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
 			const isVideo =
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||

@@ -38,17 +38,28 @@ export default async function handler(
 			},
 		});
 
+		if (result.status !== 200) {
+			response.status(200).json({
+				success: false,
+				mediaType: null,
+				error: "Failed to check media type",
+			});
+			return;
+		}
+
 		const mediaType = result.headers["content-type"];
 
 		response.setHeader("Access-Control-Allow-Origin", "*");
 		response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 		response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-		response.status(200).json({ mediaType });
-	} catch (error) {
-		console.error("Error checking media type:", error);
-
-		response.status(500).json({
+		response.status(200).json({ success: true, mediaType, error: null });
+	} catch {
+		// eslint-disable-next-line no-console
+		console.log("Error checking media type:");
+		response.status(200).json({
+			success: false,
+			mediaType: null,
 			error: "Failed to check media type",
 		});
 	}

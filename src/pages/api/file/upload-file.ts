@@ -12,6 +12,7 @@ import isNil from "lodash/isNil";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
+import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import {
 	type ImgMetadataType,
 	type SingleListData,
@@ -21,6 +22,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	PDF_MIME_TYPE,
 	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
@@ -194,6 +196,8 @@ export default async (
 	const { data: storageData, error: publicUrlError } =
 		r2Helpers.getPublicUrl(storagePath);
 
+	const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
+
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
 		width: null,
@@ -206,7 +210,7 @@ export default async (
 		screenshot: null,
 		isOgImagePreferred: false,
 		iframeAllowed: false,
-		mediaType: "",
+		mediaType,
 		isPageScreenshot: null,
 		video_url: null,
 	};
@@ -264,29 +268,32 @@ export default async (
 			.json({ data: DatabaseData, success: true, error: null });
 
 		try {
-			if (!isEmpty(DatabaseData) && !isVideo) {
-				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-					{
-						id: DatabaseData[0]?.id,
-						publicUrl: storageData?.publicUrl,
-					},
-					getAxiosConfigWithAuth(request),
-				);
-			} else {
-				console.error("Remaining upload api error: upload data is empty");
-				Sentry.captureException(
-					`Remaining upload api error: upload data is empty`,
-				);
+			if (fileType !== PDF_MIME_TYPE) {
+				if (!isEmpty(DatabaseData) && !isVideo) {
+					await axios.post(
+						`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+						{
+							id: DatabaseData[0]?.id,
+							publicUrl: storageData?.publicUrl,
+							mediaType: meta_data?.mediaType,
+						},
+						getAxiosConfigWithAuth(request),
+					);
+				} else {
+					console.error("Remaining upload api error: upload data is empty");
+					Sentry.captureException(
+						`Remaining upload api error: upload data is empty`,
+					);
+				}
 			}
 		} catch (remainingerror) {
 			console.error(remainingerror);
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
 		}
 	} else {
-		response.status(500).json({
-			success: false,
-			error: publicUrlError ?? DBerror,
-		});
+		console.error("Error uploading file:", publicUrlError, DBerror);
+		response
+			.status(500)
+			.json({ success: false, error: "Error uploading file" });
 	}
 };
