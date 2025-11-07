@@ -187,7 +187,7 @@ Look for:
 
 ### Step 8: Test Local Environment
 
-1. Start your Next.js app with local env: `npm run dev`
+1. Start your Next.js app with local env: `pnpm run dev`
 2. Login with existing dev account
 3. Verify bookmarks are visible
 4. Test search functionality
