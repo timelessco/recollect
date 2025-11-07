@@ -1,10 +1,10 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 
-import ArticleIcon from "../icons/articleIcon";
 import FolderIcon from "../icons/folderIcon";
 import HomeIconGray from "../icons/homeIconGray";
 import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inboxIconGray";
+import LinkIcon from "../icons/linkIcon";
 import SettingsIcon from "../icons/settingsIcon";
 import XIcon from "../icons/social/x";
 import TrashIconGray from "../icons/trashIconGray";
@@ -3636,7 +3636,7 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <ArticleIcon />,
+		icon: <LinkIcon />,
 		name: menuListItemName.links,
 		href: `/${LINKS_URL}`,
 		current: currentPath === LINKS_URL,

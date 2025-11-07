@@ -23,6 +23,7 @@ import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
+import LinkIcon from "../../../icons/linkIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import VideoIcon from "../../../icons/videoIcon";
 import {
@@ -42,6 +43,8 @@ import {
 	CATEGORIES_KEY,
 	DOCUMENTS_URL,
 	IMAGES_URL,
+	LINK_TYPE_PREFIX,
+	LINKS_URL,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
@@ -323,7 +326,7 @@ const CardSection = ({
 		if (isPublicPage) {
 			const publicExternalIconClassname = classNames({
 				"absolute top-0": true,
-				"left-[11px]":
+				"right-[8px]":
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
 					cardTypeCondition === viewValues.timeline,
@@ -527,8 +530,8 @@ const CardSection = ({
 		});
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-gray-1000">
-					<ImageIcon size={`${size}`} />
+				<figure className="card-icon p-0.5 text-gray-1000">
+					<LinkIcon />
 				</figure>
 			);
 		}
@@ -588,6 +591,18 @@ const CardSection = ({
 			return (
 				<figure className="card-icon rounded p-0.5 text-gray-1000">
 					<FolderIcon size="15" />
+				</figure>
+			);
+		}
+
+		if (
+			currentPath === LINKS_URL ||
+			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX) ||
+			!item?.meta_data?.mediaType
+		) {
+			return (
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
+					<LinkIcon />
 				</figure>
 			);
 		}

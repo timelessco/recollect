@@ -161,7 +161,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 								))}
 							</AriaDropdown>
 						)}
-						{item?.count !== undefined && !showSpinner && (
+						{item?.count !== undefined && !showSpinner && item?.current && (
 							<p
 								className={`h-3 w-3 items-center justify-end text-right align-middle text-[11px] font-450 leading-[115%] tracking-[0.03em] text-gray-600 ${
 									showDropdown ? "block group-hover:hidden" : "block"

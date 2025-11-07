@@ -240,8 +240,8 @@ const Settings = () => {
 								</div>
 							</Button>
 							<Button
-								className="bg-gray-100 px-2 py-[6px] text-13 font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
-								disabledClassName="bg-gray-100  hover:bg-gray-800 text-gray-400 "
+								className="bg-gray-100 px-2 py-[6px] text-[13px] font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
+								disabledClassName="bg-gray-100 text-gray-400 hover:bg-gray-800"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -366,8 +366,8 @@ const Settings = () => {
 					<p className="pb-[10px] text-[14px] font-[500] leading-[115%] text-gray-900">
 						Email
 					</p>
-					<div className="flex items-center justify-between rounded-lg bg-gray-100">
-						<div className="ml-[19.5px] flex items-center gap-2 rounded-lg">
+					<div className="flex items-center justify-between rounded-xl bg-gray-100">
+						<div className="ml-[19.5px] flex items-center gap-2">
 							{session?.user?.app_metadata?.provider === "email" ? (
 								<MailIconBlack />
 							) : (

@@ -269,7 +269,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-alpha-600 placeholder:text-gray-alpha-600": true,
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-800 placeholder:text-gray-alpha-600": true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
 

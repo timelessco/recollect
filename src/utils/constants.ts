@@ -327,6 +327,8 @@ export const OG_IMAGE_PREFERRED_SITES = [
 export const IMAGE_TYPE_PREFIX = "image";
 export const VIDEO_TYPE_PREFIX = "video";
 
+export const LINK_TYPE_PREFIX = "text";
+
 // Media type specific strings
 export const PDF_MIME_TYPE = "application/pdf";
 export const PDF_TYPE = "pdf";
@@ -354,3 +356,13 @@ export const SKIP_OG_IMAGE_DOMAINS = [
 	"x.com",
 	"amazon.com",
 ];
+
+export const springConfig = {
+	mass: 1,
+	damping: 17,
+	stiffness: 250,
+	overshootClamping: false,
+	restSpeedThreshold: 0.001,
+	restDisplacementThreshold: 0.001,
+	type: "spring",
+} as const;

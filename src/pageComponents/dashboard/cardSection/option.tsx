@@ -16,12 +16,14 @@ import { type SingleListData } from "../../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
 	PREVIEW_PATH,
+	springConfig,
 	viewValues,
 } from "../../../utils/constants";
 
 import "yet-another-react-lightbox/styles.css";
 
 import { useRouter } from "next/router";
+import { motion } from "motion/react";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { getCategorySlugFromRouter } from "../../../utils/url";
@@ -88,9 +90,11 @@ const Option = ({
 	);
 
 	const disableDndCondition = isPublicPage;
-
 	return (
-		<li
+		<motion.li
+			animate={{
+				scale: 1,
+			}}
 			aria-selected={isSelected}
 			className={classNames(liClassName, {
 				"rounded-b-lg rounded-t-3xl":
@@ -100,14 +104,19 @@ const Option = ({
 			})}
 			ref={ref}
 			role="option"
-			{...(!lightboxOpen
-				? mergeProps(
-						disableDndCondition
-							? []
-							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-						disableDndCondition ? [] : focusProps,
-					)
-				: {})}
+			transition={springConfig}
+			whileTap={{ scale: 0.95 }}
+			{...omit(
+				!lightboxOpen
+					? mergeProps(
+							disableDndCondition
+								? []
+								: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+							disableDndCondition ? [] : focusProps,
+						)
+					: {},
+				["values"],
+			)}
 		>
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
@@ -117,7 +126,11 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (isTrashPage || item?.key === "$.0" || isPublicPage) {
+					if (
+						isTrashPage ||
+						item?.key?.toString().startsWith("$") ||
+						isPublicPage
+					) {
 						event.preventDefault();
 						return;
 					}
@@ -161,7 +174,7 @@ const Option = ({
 						: {})}
 				/>
 			)}
-		</li>
+		</motion.li>
 	);
 };
 

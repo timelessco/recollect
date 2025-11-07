@@ -258,7 +258,7 @@ export const AddToCollectionDropdown = memo(
 								<div className="sticky top-0 z-10 bg-gray-50 p-1 pb-0">
 									<Ariakit.Combobox
 										autoFocus
-										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[14px] font-[400] leading-[115%] tracking-normal text-gray-alpha-600 placeholder:text-gray-alpha-600 focus:outline-none"
+										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[14px] font-[400] leading-[115%] tracking-normal text-gray-800 placeholder:text-gray-alpha-600 focus:outline-none"
 										placeholder="Search"
 									/>
 								</div>
