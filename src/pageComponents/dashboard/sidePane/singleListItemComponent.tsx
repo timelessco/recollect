@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
 
 import {
 	AriaDropdown,
@@ -19,6 +20,7 @@ import {
 	dropdownMenuItemClassName,
 	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
+import { springConfig } from "../../../utils/constants";
 
 export type CollectionItemTypes = {
 	count?: number;
@@ -189,24 +191,34 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
 	const contentWrapperClassNames = `${
 		item?.current ? "bg-gray-100 text-gray-900" : "text-gray-800"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-100 hover:text-gray-900`;
+	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-gray-100 hover:text-gray-900 will-change-transform`;
 
 	if (isLink) {
 		return (
 			<Link href={item?.href} legacyBehavior passHref>
 				{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-				<a className={contentWrapperClassNames} draggable={false}>
+				<motion.a
+					className={contentWrapperClassNames}
+					draggable={false}
+					transition={springConfig}
+					whileTap={{ scale: 0.95 }}
+				>
 					{renderContent()}
-				</a>
+				</motion.a>
 			</Link>
 		);
 	}
 
 	return (
 		// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-		<div className={contentWrapperClassNames} onClick={onClick}>
+		<motion.div
+			className={contentWrapperClassNames}
+			onClick={onClick}
+			transition={springConfig}
+			whileTap={{ scale: 0.95 }}
+		>
 			{renderContent()}
-		</div>
+		</motion.div>
 	);
 };
 
