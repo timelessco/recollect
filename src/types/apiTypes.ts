@@ -17,7 +17,7 @@ export type ImgMetadataType = {
 	img_caption: string | null;
 	isOgImagePreferred: boolean;
 	isPageScreenshot: boolean | null;
-	mediaType: string;
+	mediaType: string | null;
 	ocr: string | null;
 	ogImgBlurUrl: string | null;
 	screenshot: string | null;
@@ -190,9 +190,7 @@ export type BookmarksWithTagsWithTagForginKeys = Array<{
 	tag_id: { id: number; name: string };
 }>;
 
-export type UserProfilePicTypes = {
-	profile_pic: string | null;
-};
+export type UserProfilePicTypes = { profile_pic: string | null };
 
 // file upload
 
@@ -229,17 +227,11 @@ export type AddBookmarkRemainingDataPayloadTypes = {
 	user_id: SingleListData["user_id"]["id"];
 };
 
-export type AddBookmarkScreenshotPayloadTypes = {
-	id: number;
-	url: string;
-};
+export type AddBookmarkScreenshotPayloadTypes = { id: number; url: string };
 
 export type ClearBookmarksInTrashApiPayloadTypes = {};
 
-export type DeleteDataApiPayload = {
-	id: number;
-	session: SupabaseSessionType;
-};
+export type DeleteDataApiPayload = { id: number; session: SupabaseSessionType };
 
 export type MoveBookmarkToTrashApiPayload = {
 	data: SingleListData;
@@ -263,9 +255,7 @@ export type DeleteUserCategoryApiPayload = {
 	category_order: number[];
 };
 
-export type UpdateCategoryOrderApiPayload = {
-	order: number[];
-};
+export type UpdateCategoryOrderApiPayload = { order: number[] };
 
 export type UpdateCategoryApiPayload = {
 	category_id: number | string | null;
@@ -289,13 +279,9 @@ export type UpdateUsernameApiPayload = {
 
 export type DeleteUserApiPayload = {};
 
-export type RemoveUserProfilePicPayload = {
-	id: string;
-};
+export type RemoveUserProfilePicPayload = { id: string };
 
-export type GetUserProfilePicPayload = {
-	email: string;
-};
+export type GetUserProfilePicPayload = { email: string };
 
 export type DeleteSharedCategoriesUserApiPayload = {
 	id: number;
@@ -320,9 +306,7 @@ export type AddTagToBookmarkApiPayload = {
 	selectedData: BookmarksTagData | BookmarksTagData[];
 };
 
-export type AddUserTagsApiPayload = {
-	tagsData: { name: string };
-};
+export type AddUserTagsApiPayload = { tagsData: { name: string } };
 
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
@@ -342,9 +326,7 @@ export type DeleteBookmarkPayload = {
 	}>;
 };
 
-export type UploadProfilePicPayload = {
-	file: FileType;
-};
+export type UploadProfilePicPayload = { file: FileType };
 
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | string | null;

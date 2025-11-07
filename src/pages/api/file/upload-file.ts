@@ -12,6 +12,7 @@ import isNil from "lodash/isNil";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
+import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import {
 	type ImgMetadataType,
 	type SingleListData,
@@ -206,7 +207,7 @@ export default async (
 		screenshot: null,
 		isOgImagePreferred: false,
 		iframeAllowed: false,
-		mediaType: "",
+		mediaType: (await getMediaType(storageData?.publicUrl)) as string,
 		isPageScreenshot: null,
 		video_url: null,
 	};
@@ -270,6 +271,7 @@ export default async (
 					{
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
+						mediaType: meta_data?.mediaType,
 					},
 					getAxiosConfigWithAuth(request),
 				);
@@ -284,9 +286,8 @@ export default async (
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
 		}
 	} else {
-		response.status(500).json({
-			success: false,
-			error: publicUrlError ?? DBerror,
-		});
+		response
+			.status(500)
+			.json({ success: false, error: publicUrlError ?? DBerror });
 	}
 };
