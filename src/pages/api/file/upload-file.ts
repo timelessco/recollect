@@ -22,6 +22,7 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	PDF_MIME_TYPE,
 	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
@@ -265,21 +266,23 @@ export default async (
 			.json({ data: DatabaseData, success: true, error: null });
 
 		try {
-			if (!isEmpty(DatabaseData) && !isVideo) {
-				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-					{
-						id: DatabaseData[0]?.id,
-						publicUrl: storageData?.publicUrl,
-						mediaType: meta_data?.mediaType,
-					},
-					getAxiosConfigWithAuth(request),
-				);
-			} else {
-				console.error("Remaining upload api error: upload data is empty");
-				Sentry.captureException(
-					`Remaining upload api error: upload data is empty`,
-				);
+			if (fileType !== PDF_MIME_TYPE) {
+				if (!isEmpty(DatabaseData) && !isVideo) {
+					await axios.post(
+						`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+						{
+							id: DatabaseData[0]?.id,
+							publicUrl: storageData?.publicUrl,
+							mediaType: meta_data?.mediaType,
+						},
+						getAxiosConfigWithAuth(request),
+					);
+				} else {
+					console.error("Remaining upload api error: upload data is empty");
+					Sentry.captureException(
+						`Remaining upload api error: upload data is empty`,
+					);
+				}
 			}
 		} catch (remainingerror) {
 			console.error(remainingerror);

@@ -1,4 +1,3 @@
-import { log } from "node:console";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type Provider, type SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -858,12 +857,11 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 		);
 
 		if (!response.ok) {
-			console.log("Error in getting media type");
+			console.error("Error in getting media type");
 			return null;
 		}
 
 		const data = await response.json();
-		console.log(data);
 
 		return data.mediaType || null;
 	} catch (error) {

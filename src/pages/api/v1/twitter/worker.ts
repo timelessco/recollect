@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 

@@ -54,7 +54,7 @@ export default async function handler(
 		response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
 		response.status(200).json({ success: true, mediaType, error: null });
-	} catch (error) {
+	} catch {
 		console.error("Error checking media type:");
 		response.status(200).json({
 			success: false,
