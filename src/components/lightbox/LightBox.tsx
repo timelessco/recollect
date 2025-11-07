@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -117,8 +116,8 @@ export const CustomLightBox = ({
 		return bookmarks?.map((bookmark) => {
 			// Determine media types based on bookmark properties
 			const isImage =
-				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-				bookmark?.meta_data?.isOgImagePreferred ||
+				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ??
+				bookmark?.meta_data?.isOgImagePreferred ??
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
 			const isVideo =
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
@@ -139,9 +138,9 @@ export const CustomLightBox = ({
 					!isYouTubeVideo(bookmark?.url) &&
 					!bookmark?.meta_data?.iframeAllowed && {
 						// using || instead of ?? to include 0
-
+						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						width: bookmark?.meta_data?.width || 1_200,
-
+						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						height: bookmark?.meta_data?.height || 1_200,
 					}),
 				// Add video-specific properties

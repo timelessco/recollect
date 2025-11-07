@@ -196,6 +196,8 @@ export default async (
 	const { data: storageData, error: publicUrlError } =
 		r2Helpers.getPublicUrl(storagePath);
 
+	const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
+
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
 		width: null,
@@ -208,7 +210,7 @@ export default async (
 		screenshot: null,
 		isOgImagePreferred: false,
 		iframeAllowed: false,
-		mediaType: (await getMediaType(storageData?.publicUrl)) as string,
+		mediaType,
 		isPageScreenshot: null,
 		video_url: null,
 	};
@@ -289,8 +291,9 @@ export default async (
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
 		}
 	} else {
+		console.error("Error uploading file:", publicUrlError, DBerror);
 		response
 			.status(500)
-			.json({ success: false, error: publicUrlError ?? DBerror });
+			.json({ success: false, error: "Error uploading file" });
 	}
 };

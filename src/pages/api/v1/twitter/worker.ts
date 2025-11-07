@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
@@ -97,7 +96,7 @@ export const processImageQueue = async (
 						.eq("url", url)
 						.eq("user_id", user_id);
 				} else {
-					const response_ = axios.post(
+					const _response = axios.post(
 						`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`,
 						{ id, url, user_id },
 					);

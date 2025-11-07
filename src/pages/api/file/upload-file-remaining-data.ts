@@ -36,7 +36,7 @@ const notVideoLogic = async (
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(ogImage, supabase, userId);
 		} catch (error) {
-			console.error("Gemini AI processing error", error);
+			console.warn("Gemini AI processing error", error);
 		}
 	}
 
@@ -46,7 +46,7 @@ const notVideoLogic = async (
 		try {
 			imgData = await blurhashFromURL(publicUrl);
 		} catch (error) {
-			console.error("blurhashFromURL error", error);
+			console.warn("blurhashFromURL error", error);
 			imgData = {};
 		}
 	}
@@ -125,6 +125,14 @@ export default async function handler(
 
 	if (fetchError) {
 		console.error("Error fetching existing metadata", fetchError);
+		Sentry.captureException(
+			`Error fetching existing metadata ${fetchError.message}`,
+		);
+		response.status(500).json({
+			data: null,
+			success: false,
+			error: "Error fetching existing metadata",
+		});
 	}
 
 	const existingMeta = existing?.meta_data || {};
@@ -155,7 +163,9 @@ export default async function handler(
 	if (DBerror) {
 		console.error("error updating db", DBerror);
 		Sentry.captureException(`error updating db ${DBerror.message}`);
-		response.status(500).json({ data: null, success: false, error: DBerror });
+		response
+			.status(500)
+			.json({ data: null, success: false, error: "error updating db" });
 	}
 
 	response.status(200).json({ data: null, success: true, error: null });
