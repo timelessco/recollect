@@ -127,6 +127,20 @@ There are two recommended approaches for making schema changes:
 
 **Note:** The `db reset` command recreates your database from scratch, applies all migrations, and seeds data.
 
+**Database Webhooks Setup**: After running migrations, enable the **Database Webhooks** integration in Supabase Studio under **Database → Integrations → Postgres Modules** to configure webhook triggers. When setting webhook URLs, use your local machine IP instead of `localhost`:
+
+```text
+http://<YOUR_LOCAL_IP>:3000/api/your-endpoint
+```
+
+Example (if your local IP is `192.168.1.100`):
+
+```text
+http://192.168.1.100:3000/api/v1/endpoint
+```
+
+See [Supabase GitHub Issue #13005](https://github.com/supabase/supabase/issues/13005#issuecomment-1624423896) - Docker localhost limitation with webhooks
+
 ### Useful Commands
 
 #### Database Operations
