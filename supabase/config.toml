@@ -12,12 +12,14 @@ port = 54321
 # endpoints. `public` and `graphql_public` schemas are included by default.
 schemas = [
   "public",
-  "graphql_public" 
+  "graphql_public",
+  "pgmq_public"
 ]
 # Extra schemas to add to the search_path of every request.
 extra_search_path = [
   "public",
-  "extensions" 
+  "extensions",
+  "pgmq_public"
 ]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
 # for accidental or malicious requests.
@@ -132,7 +134,7 @@ additional_redirect_urls = [
   "https://127.0.0.1:3000/**",
   "http://localhost:3000/**",
   "http://127.0.0.1:54321/auth/v1/callback",
-  "http://localhost:3000/auth/callback" 
+  "http://localhost:3000/auth/callback"
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

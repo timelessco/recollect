@@ -926,17 +926,6 @@ BEGIN
       GRANT INSERT, SELECT ON TABLE "pgmq"."a_ai-embeddings" TO "authenticated";
       GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "pgmq"."a_ai-embeddings" TO "service_role";
     END IF;
-
-    -- Create webhook trigger for queue
-    -- SECURITY WARNING: URL is hardcoded to dev environment
-    -- TODO: Use environment-based URL or move to seed.sql
-    DROP TRIGGER IF EXISTS "ai-embeddings" ON "pgmq"."q_ai-embeddings";
-    CREATE TRIGGER "ai-embeddings"
-      AFTER DELETE ON "pgmq"."q_ai-embeddings"
-      FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request(
-        'https://recollect-git-dev-timelessco.vercel.app/api/v1/twitter/ai-embeddings',
-        'POST', '{}', '{}', '10000'
-      );
   END IF;
 END $$;
 
