@@ -25,14 +25,12 @@ const getBodySchema = () =>
 
 /**
  * This api fetches bookmark by its id
- *
  * @param {NextApiRequest<RequestType>} request
  * @param {NextApiResponse<ResponseType>} response
  * @returns {ResponseType}
  */
 /**
  * This api fetches bookmark by its id
- *
  * @param {NextApiRequest<RequestType>} request - Request object
  * @param {NextApiResponse<ResponseType>} response - Response object
  * @returns {Promise<NextApiResponse<ResponseType>>} - Fetched bookmark or error

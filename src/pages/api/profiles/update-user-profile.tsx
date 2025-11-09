@@ -132,7 +132,6 @@ export default async function handler(
 
 		// Success - return updated data
 		response.status(200).json({ data, error: null });
-		return;
 	} catch (unexpectedError) {
 		// Catch any unexpected errors
 		console.error("[update-user-profile] Unexpected error:", unexpectedError, {

@@ -96,6 +96,7 @@ export const processImageQueue = async (
 						.eq("url", url)
 						.eq("user_id", user_id);
 				} else {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					const _response = axios.post(
 						`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`,
 						{ id, url, user_id },

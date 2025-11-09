@@ -1,4 +1,7 @@
-/* eslint-disable @typescript-eslint/no-namespace */
+// @ts-nocheck
+
+/* eslint-disable @typescript-eslint/method-signature-style */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference types="cypress" />
 // ***********************************************
 // This example commands.ts shows you how to
@@ -37,8 +40,10 @@
 //   }
 // }
 
+// @ts-expect-error - This is a valid global declaration
 declare global {
 	namespace Cypress {
+		// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 		interface Chainable {
 			/**
 			 * Custom command to select DOM element by data-cy attribute.
@@ -77,4 +82,5 @@ Cypress.Commands.add("checkNotFistBookmarkUrl", (url) => {
 	).should("not.have.text", url);
 });
 
+// eslint-disable-next-line unicorn/require-module-specifiers
 export {};

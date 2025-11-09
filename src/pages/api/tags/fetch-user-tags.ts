@@ -23,7 +23,6 @@ type Data = {
 
 /**
  * Fetches all tags for the authenticated user
- *
  * @param {NextApiRequest} request - Request object
  * @param {NextApiResponse<Data>} response - Response object
  * @returns {Promise<NextApiResponse<Data>>} - User tags or error

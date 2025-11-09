@@ -1,5 +1,7 @@
+// ! TODO: Fix this in priority
+/* eslint-disable @typescript-eslint/no-base-to-string */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { log } from "console";
+
 import { type NextApiRequest, type NextApiResponse } from "next";
 import {
 	type AuthError,
@@ -74,7 +76,7 @@ const categoriesDelete = async (
 			response.status(500).json({ data: null, error: updateError });
 			throw new Error("ERROR: updateError");
 		} else {
-			log(
+			console.log(
 				"updated collab bookmarks to uncategoried",
 				updateData?.map((item) => item?.id),
 			);
@@ -91,7 +93,7 @@ const categoriesDelete = async (
 		response.status(500).json({ data: null, error: categoriesError });
 		throw new Error("ERROR: categoriesError");
 	} else {
-		log("deleted categories table data", userId);
+		console.log("deleted categories table data", userId);
 	}
 };
 
@@ -128,10 +130,10 @@ const storageDeleteLogic = async (
 			});
 			throw new Error("ERROR: bookmarksStorageDeleteError");
 		} else {
-			log("deleted og images", filesToRemove?.length);
+			console.log("deleted og images", filesToRemove?.length);
 		}
 	} else {
-		log("files to delete is empty: ogImages");
+		console.log("files to delete is empty: ogImages");
 	}
 
 	// bookmarks storage screenshot delete
@@ -170,10 +172,10 @@ const storageDeleteLogic = async (
 			});
 			throw new Error("ERROR: bookmarksStorageScreenshotDeleteError");
 		} else {
-			log("deleted screenshot images", filesToRemoveScreenshot?.length);
+			console.log("deleted screenshot images", filesToRemoveScreenshot?.length);
 		}
 	} else {
-		log("files to delete is empty: screenshot");
+		console.log("files to delete is empty: screenshot");
 	}
 
 	// files storage delete
@@ -208,10 +210,10 @@ const storageDeleteLogic = async (
 				.json({ data: null, error: String(filesDeleteError) });
 			throw new Error("ERROR: filesDeleteError");
 		} else {
-			log("deleted files", filesStorageFilesToRemove?.length);
+			console.log("deleted files", filesStorageFilesToRemove?.length);
 		}
 	} else {
-		log("files to delete is empty : files");
+		console.log("files to delete is empty : files");
 	}
 
 	// user profile storage delete
@@ -247,10 +249,13 @@ const storageDeleteLogic = async (
 			});
 			throw new Error("ERROR: userProfileFilesDeleteError");
 		} else {
-			log("deleted user profile files", userProfileFilesToRemove?.length);
+			console.log(
+				"deleted user profile files",
+				userProfileFilesToRemove?.length,
+			);
 		}
 	} else {
-		log("files to delete is empty : user profiles");
+		console.log("files to delete is empty : user profiles");
 	}
 };
 
@@ -275,7 +280,7 @@ export default async function handler(
 		response.status(500).json({ data: null, error: bookmarkTagsError });
 		throw new Error("ERROR: bookmarkTagsError");
 	} else {
-		log("deleted bookmark_tags table data", userId);
+		console.log("deleted bookmark_tags table data", userId);
 	}
 	// bookmarks_table delete
 
@@ -288,7 +293,7 @@ export default async function handler(
 		response.status(500).json({ data: null, error: bookmarksTableError });
 		throw new Error("ERROR: bookmarksTableError");
 	} else {
-		log("deleted bookmarks table data", userId);
+		console.log("deleted bookmarks table data", userId);
 	}
 	// tags delete
 
@@ -301,7 +306,7 @@ export default async function handler(
 		response.status(500).json({ data: null, error: tagsError });
 		throw new Error("ERROR: tagsError");
 	} else {
-		log("deleted tags table data", userId);
+		console.log("deleted tags table data", userId);
 	}
 	// shared_categories delete (user delete , deletes all categories that the user has created)
 
@@ -314,7 +319,12 @@ export default async function handler(
 		response.status(500).json({ data: null, error: sharedCategoriesError });
 		throw new Error("ERROR: sharedCategoriesError");
 	} else {
-		log("deleted shared categories table data", userId, "and emails ", email);
+		console.log(
+			"deleted shared categories table data",
+			userId,
+			"and emails ",
+			email,
+		);
 	}
 
 	// shared_categories delete (email delete , deletes all categories connections user is part of)
@@ -330,7 +340,7 @@ export default async function handler(
 			.json({ data: null, error: sharedCategoriesEmailError });
 		throw new Error("ERROR: sharedCategoriesEmailError");
 	} else {
-		log(
+		console.log(
 			"deleted shared categories email table data",
 			userId,
 			"and emails ",
@@ -351,7 +361,7 @@ export default async function handler(
 		response.status(500).json({ data: null, error: profileError });
 		throw new Error("ERROR: profileError");
 	} else {
-		log("deleted profiles table data", userId);
+		console.log("deleted profiles table data", userId);
 	}
 
 	// all bookmarks s3 storage deletes

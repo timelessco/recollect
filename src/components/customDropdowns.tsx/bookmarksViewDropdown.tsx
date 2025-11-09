@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { useCallback, useRef } from "react";
 import { ViewListIcon } from "@heroicons/react/solid";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
@@ -170,7 +169,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				className="flex items-center justify-between px-2 py-[5.5px]"
 				key={item.label}
 			>
-				<p className="text-[13px] font-450 leading-[115%] tracking-[0.01em] text-gray-800">
+				<p className="text-13 font-450 leading-[115%] tracking-[0.01em] text-gray-800">
 					{item?.label}
 				</p>
 				<Switch
@@ -226,10 +225,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{bookmarksViewValue === viewValues.card ||
 			bookmarksViewValue === viewValues.moodboard ? (
 				<div className="flex items-center justify-between px-2 py-[5.5px]">
-					<p className="text-[13px] font-450 leading-[14px] text-gray-800">
+					<p className="text-13 font-450 leading-[14px] text-gray-800">
 						Columns
 					</p>
-					<div className="mt-[1px] w-[90px]">
+					<div className="mt-px w-[90px]">
 						<Slider
 							defaultValue={bookmarksColumns as unknown as number}
 							label="moodboard-cols-slider"

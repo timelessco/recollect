@@ -19,6 +19,7 @@ const MyApp = ({
 	dehydratedState: unknown;
 }>) => {
 	// Create a client
+	// eslint-disable-next-line react/hook-use-state
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({

@@ -181,7 +181,6 @@ const Settings = () => {
 					const size = uploadedFile?.size as number;
 
 					if (!isNull(uploadedFile)) {
-						// eslint-disable-next-line unicorn/numeric-separators-style
 						if (size < 1000000) {
 							// file size is less than 1mb
 							const response = await mutationApiCall(
@@ -241,7 +240,7 @@ const Settings = () => {
 								</div>
 							</Button>
 							<Button
-								className="bg-gray-100 px-2 py-[6px] text-[13px] font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
+								className="bg-gray-100 px-2 py-[6px] text-13 font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
 								disabledClassName="bg-gray-100  hover:bg-gray-800 text-gray-400 "
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
@@ -394,7 +393,7 @@ const Settings = () => {
 						)}
 					</div>
 					{session?.user?.app_metadata?.provider === "email" && (
-						<p className="mt-2 flex items-center gap-x-2 text-[13px] font-[400] leading-[150%] text-gray-600">
+						<p className="mt-2 flex items-center gap-x-2 text-13 font-[400] leading-[150%] text-gray-600">
 							<figure className="text-gray-900">
 								<InfoIcon />
 							</figure>

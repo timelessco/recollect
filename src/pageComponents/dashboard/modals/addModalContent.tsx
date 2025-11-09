@@ -172,7 +172,9 @@ const AddModalContent = (props: AddModalContentProps) => {
 								console.error("Payload data is empty");
 							}
 						}}
-						onCreate={(value) => onCreateCategory({ label: value, value })}
+						onCreate={async (value) =>
+							await onCreateCategory({ label: value, value })
+						}
 					/>
 				</LabelledComponent>
 			</div>

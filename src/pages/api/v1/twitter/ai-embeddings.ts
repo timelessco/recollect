@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 import { createServiceClient } from "../../../../utils/supabaseClient";

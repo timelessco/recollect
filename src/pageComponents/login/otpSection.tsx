@@ -25,7 +25,7 @@ const OtpSection = () => {
 	}, [email, router]);
 
 	const handleVerifyOtp = async () => {
-		if (!otp || otp.length !== 6) {
+		if (otp?.length !== 6) {
 			errorToast("Please enter a valid 6-digit OTP");
 			return;
 		}
@@ -82,7 +82,7 @@ const OtpSection = () => {
 							value={otp}
 						/>
 						<button
-							className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-center text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+							className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-center text-13 font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
 							disabled={isLoading || otp.length !== 6}
 							onClick={handleVerifyOtp}
 							type="button"

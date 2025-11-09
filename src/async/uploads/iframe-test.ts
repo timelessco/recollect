@@ -6,7 +6,6 @@ import axios, {
 /**
  * Checks if a URL can be embedded in an iframe.
  * Performs a HEAD request and examines X-Frame-Options and CSP headers.
- *
  * @param url - The URL to check
  * @returns boolean indicating if the URL can be embedded
  */
@@ -55,7 +54,6 @@ type NormalizedHeaders = Record<string, string[] | string>;
 
 /**
  * Examines response headers to determine if iframe embedding is allowed.
- *
  * @param headers - Axios response headers
  * @returns boolean indicating if embedding is allowed
  */

@@ -1,5 +1,3 @@
-// disabling as we need complexity of 21 for this task
-/* eslint-disable complexity  */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import {

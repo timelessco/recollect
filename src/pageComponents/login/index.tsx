@@ -37,15 +37,15 @@ const LoginPage = () => {
 						{/* Core Interaction */}
 						<div className="flex flex-col items-center justify-center space-y-4">
 							<button
-								className="flex h-[30px] w-full justify-center rounded-lg bg-gray-alpha-100 py-[7.5px] text-[13px] font-medium leading-[15px] text-gray-950 hover:bg-gray-300"
-								onClick={() => router.push("/email")}
+								className="flex h-[30px] w-full justify-center rounded-lg bg-gray-alpha-100 py-[7.5px] text-13 font-medium leading-[15px] text-gray-950 hover:bg-gray-300"
+								onClick={async () => await router.push("/email")}
 								type="button"
 							>
 								Continue with Email
 							</button>
 							<button
-								className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
-								onClick={() => signInWithOauth("google", supabase)}
+								className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-13 font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+								onClick={async () => await signInWithOauth("google", supabase)}
 								type="button"
 							>
 								<figure className="mr-[6px]">

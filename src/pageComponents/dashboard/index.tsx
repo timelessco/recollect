@@ -92,11 +92,11 @@ import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
 
 // import CardSection from "./cardSection";
-const CardSection = dynamic(() => import("./cardSection"), {
+const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
 });
 
-const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
+const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
 	ssr: false,
 });
 
@@ -135,6 +135,7 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		if (router?.pathname === "/") {
+			// eslint-disable-next-line promise/prefer-await-to-then
 			void router.push(`/${ALL_BOOKMARKS_URL}`).catch(() => {});
 		}
 	}, [router, router?.pathname]);
@@ -413,7 +414,6 @@ const Dashboard = () => {
 			const cardContentViewLogic = (
 				existingViewData: BookmarkViewDataTypes["cardContentViewArray"],
 				// TS disabled because we need to have the function here as its under the scope of the parent function
-				// eslint-disable-next-line unicorn/consistent-function-scoping
 			) => {
 				// this function sets the always on values for different views
 				// like if in moodboard then the cover img should always be present, even if its turned off in another view like list view
@@ -724,6 +724,7 @@ const Dashboard = () => {
 																			isTrash,
 																		},
 																	),
+																	// eslint-disable-next-line promise/prefer-await-to-then
 																).catch(() => {});
 															} else {
 																errorToast("Cannot delete other users uploads");
@@ -802,6 +803,7 @@ const Dashboard = () => {
 																	isTrash: true,
 																},
 															),
+															// eslint-disable-next-line promise/prefer-await-to-then
 														).catch(() => {});
 													}
 												}}
@@ -1015,6 +1017,7 @@ const Dashboard = () => {
 
 	const renderMainPaneContent = () => {
 		if (!isInNotFoundPage) {
+			// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 			switch (categorySlug) {
 				case SETTINGS_URL:
 					return <Settings />;
@@ -1024,6 +1027,7 @@ const Dashboard = () => {
 					return renderAllBookmarkCards();
 				case LINKS_URL:
 					return renderAllBookmarkCards();
+
 				default:
 					return renderAllBookmarkCards();
 			}

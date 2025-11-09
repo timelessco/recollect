@@ -62,7 +62,7 @@ const EmailSection = () => {
 							value={email}
 						/>
 						<button
-							className="relative flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-[13px] font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+							className="relative flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-13 font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
 							disabled={isLoading}
 							onClick={handleSendOtp}
 							type="button"

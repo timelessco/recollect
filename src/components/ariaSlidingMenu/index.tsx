@@ -1,5 +1,5 @@
 // this code is got from the aria kit doc, we are not going to override this for this eslint issues
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+
 import * as React from "react";
 import { flushSync } from "react-dom";
 import * as Ariakit from "@ariakit/react";

@@ -29,7 +29,9 @@ export default function useFetchPaginatedBookmarks() {
 		fetchNextPage,
 		isLoading: isAllBookmarksDataLoading,
 	} = useInfiniteQuery({
+		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+		// eslint-disable-next-line @tanstack/query/no-void-query-fn
 		queryFn: async (data) =>
 			await fetchBookmakrsData(
 				data,

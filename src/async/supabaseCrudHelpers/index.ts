@@ -86,7 +86,6 @@ import {
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
 } from "../../utils/constants";
-// eslint-disable-next-line import/no-cycle
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
 
 // bookmark

@@ -6,7 +6,6 @@ import { getApikeyAndBookmarkCount } from "./ocr";
 
 /**
  * Generates the image description using Gemini AI
- *
  * @param {string}imageUrl the image url
  * @param {SupabaseClient} supabase supabase client
  * @param {string} userId the user id

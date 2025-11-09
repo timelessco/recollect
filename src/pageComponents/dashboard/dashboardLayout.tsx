@@ -452,6 +452,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 		let content = <div />;
 
+		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (headerOptionsCurrentTab) {
 			case "view":
 				content = (
@@ -703,7 +704,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				{renderSidePane}
 			</Drawer>
-			<div className="w-[100vw]">{renderMainPaneContent}</div>
+			<div className="w-screen">{renderMainPaneContent}</div>
 		</div>
 	);
 

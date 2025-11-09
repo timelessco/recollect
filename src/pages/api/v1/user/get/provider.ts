@@ -23,7 +23,6 @@ const getBodySchema = () =>
 /**
  * This api fetches the user provider
  * This api does is used outside auth flow
- *
  * @param {NextApiRequest<RequestType>} request
  * @param {NextApiResponse<ResponseType>} response
  * @returns {ResponseType}

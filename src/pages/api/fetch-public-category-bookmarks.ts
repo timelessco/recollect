@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
@@ -36,7 +35,7 @@ export default async function handler(
 			category_views,
 			icon,
 			icon_color,
-			category_name, 
+			category_name,
 			is_public
     `,
 		)
@@ -68,7 +67,7 @@ export default async function handler(
 			is_public: null,
 		});
 
-		log("username mismatch from url query");
+		console.log("username mismatch from url query");
 	} else {
 		const sortBy = categoryData[0]?.category_views?.sortBy;
 

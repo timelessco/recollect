@@ -1,6 +1,7 @@
-// you might want to use regular 'fs' and not a promise one
+// ! TODO: Fix this in priority
+/* eslint-disable @typescript-eslint/no-base-to-string */
 
-import { promises as fileSystem } from "fs";
+import { promises as fileSystem } from "node:fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
@@ -109,7 +110,7 @@ export default async (
 
 	let contents;
 
-	if (data?.files?.file && data?.files?.file[0]?.filepath) {
+	if (data?.files?.file?.[0]?.filepath) {
 		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
 			encoding: "base64",
 		});

@@ -14,7 +14,7 @@ export const useFetchBookmarkById = (
 ) =>
 	useQuery({
 		queryKey: [BOOKMARKS_KEY, id],
-		queryFn: () => fetchBookmarkById(id) as Promise<Bookmark>,
+		queryFn: async () => await (fetchBookmarkById(id) as Promise<Bookmark>),
 		enabled: Boolean(id),
 		...options,
 	});

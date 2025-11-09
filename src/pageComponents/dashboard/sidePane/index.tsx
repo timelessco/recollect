@@ -6,7 +6,7 @@ import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
 import SidePaneTypesList from "./sidePaneTypesList";
 import SidePaneUserDropdown from "./sidePaneUserDropdown";
 
-const CollectionsList = dynamic(() => import("./collectionsList"), {
+const CollectionsList = dynamic(async () => await import("./collectionsList"), {
 	ssr: false,
 });
 
@@ -33,7 +33,7 @@ const SidePane = (props: SidePaneTypes) => {
 	} = props;
 
 	return (
-		<nav className="h-full overflow-y-auto border-r-[1px] border-solid border-gray-alpha-50 bg-gray-0 p-2">
+		<nav className="h-full overflow-y-auto border-r border-solid border-gray-alpha-50 bg-gray-0 p-2">
 			<SidePaneUserDropdown />
 			<SidePaneOptionsMenu />
 			<CollectionsList

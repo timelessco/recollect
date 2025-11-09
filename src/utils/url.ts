@@ -4,12 +4,11 @@ import { type NextRouter } from "next/router";
  * Extracts the category slug from the current Next.js router path.
  *
  * Example:
- *   - URL: /technology?sort=latest
- *   - Returns: "technology"
+ * - URL: /technology?sort=latest
+ * - Returns: "technology"
  *
- *   - URL: /
- *   - Returns: null
- *
+ * - URL: /
+ * - Returns: null
  * @param router The Next.js router instance
  * @returns The category slug (string) or null if not found
  */

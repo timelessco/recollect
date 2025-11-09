@@ -96,7 +96,7 @@ export const Switch = () => {
 											</div>
 										</div>
 										{/* Divider */}
-										<div className="w-[1px] bg-gray-300" />
+										<div className="w-px bg-gray-300" />
 										{/* Dark half */}
 										<div className="flex-1 bg-black p-3">
 											<div className="mb-3 flex items-center gap-1 opacity-40">

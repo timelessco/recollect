@@ -234,7 +234,6 @@ export default async function handler(
 			data: finalPublicFilteredData,
 			error: null,
 		});
-		return;
 	} catch (error) {
 		console.error(
 			"[fetch-user-categories][unexpected-error] Internal server error:",

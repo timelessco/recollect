@@ -11,6 +11,7 @@
 		".env.*": "dotenv",
 		"*.json": "jsonc",
 		"package.json": "json",
+		".all-contributorsrc": "json",
 		"*.tsx": "typescriptreact",
 		"*.jsx": "javascriptreact"
 	},

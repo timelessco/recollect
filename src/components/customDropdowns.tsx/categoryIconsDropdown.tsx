@@ -168,7 +168,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				portal
 				state={menu}
 			>
-				<div className="flex items-center justify-between border-b-[1px] border-b-gray-200 py-3">
+				<div className="flex items-center justify-between border-b border-b-gray-200 py-3">
 					<span className="text-sm font-medium leading-4 text-gray-800">
 						Choose an icon
 					</span>
@@ -220,7 +220,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						>
 							prev
 						</Button>
-						<span className="text-[13px] font-medium">
+						<span className="text-13 font-medium">
 							{currentPage}/{totalPagesValue}
 						</span>
 						<Button

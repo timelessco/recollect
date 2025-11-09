@@ -66,7 +66,7 @@ const SidePaneUserDropdown = () => {
 								{userProfileData?.display_name || userProfileData?.user_name}
 							</p>
 						</div>
-						<figure className="mt-[1px]">
+						<figure className="mt-px">
 							<DownArrowGray />
 						</figure>
 					</div>

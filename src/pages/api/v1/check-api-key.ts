@@ -45,7 +45,6 @@ export default async function handler(
 			message: "API key checked successfully",
 			data: { hasApiKey },
 		});
-		return;
 	} catch (error) {
 		console.error(error);
 		response.status(500).json({ error: "Internal server error" });

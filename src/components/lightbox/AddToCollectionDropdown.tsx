@@ -13,8 +13,6 @@
  * - Keyboard navigation support via Ariakit
  * - Responsive design
  * - Visual feedback for the current collection
- *
- * @component
  * @example
  * ```tsx
  * <AddToCollectionDropdown
@@ -235,7 +233,7 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className={`group rounded-md border border-transparent py-[2px] text-left text-[13px] ${
+									className={`group rounded-md border border-transparent py-[2px] text-left text-13 ${
 										currentCollection ? "text-gray-800" : "text-gray-500"
 									} focus:outline-none`}
 									type="button"
@@ -271,10 +269,10 @@ export const AddToCollectionDropdown = memo(
 										{currentCollection && (
 											<Ariakit.ComboboxItem
 												className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
-												onClick={() => handleCollectionClick(null)}
+												onClick={async () => await handleCollectionClick(null)}
 												value="Uncategorized"
 											>
-												<span className="text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
+												<span className="text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
 													Uncategorized
 												</span>
 											</Ariakit.ComboboxItem>
@@ -285,7 +283,9 @@ export const AddToCollectionDropdown = memo(
 													// Styling for each collection item
 													className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
 													key={collection?.id}
-													onClick={() => handleCollectionClick(collection)}
+													onClick={async () =>
+														await handleCollectionClick(collection)
+													}
 													onMouseDown={(event) => {
 														// Prevent default to avoid losing focus
 														event.preventDefault();
@@ -298,7 +298,7 @@ export const AddToCollectionDropdown = memo(
 														size="16"
 													/>
 													{/* Collection name */}
-													<span className="text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
+													<span className="text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
 														{collection?.category_name}
 													</span>
 												</Ariakit.ComboboxItem>

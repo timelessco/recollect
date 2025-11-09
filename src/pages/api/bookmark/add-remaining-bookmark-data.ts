@@ -74,7 +74,6 @@ export const upload = async (
 	}
 };
 
-// eslint-disable-next-line complexity
 export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,

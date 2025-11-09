@@ -96,7 +96,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	// ---- Virtualizer Setup ----
 	const rowVirtualizer = useVirtualizer({
-		measureElement: (element, _entry) => element.getBoundingClientRect().height,
+		measureElement: (element) => element.getBoundingClientRect().height,
 		count: bookmarksList.length,
 		getScrollElement: () => {
 			if (typeof document === "undefined") {
@@ -406,7 +406,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				</DragPreview>
 			</ul>
 			{state.selectionManager.selectedKeys.size > 0 && (
-				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 xl:left-[50%] xl:-translate-x-1/2 md:hidden">
+				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 xl:left-1/2 xl:-translate-x-1/2 md:hidden">
 					<div className="flex items-center gap-1">
 						<Checkbox
 							BookmarkHoverCheckbox

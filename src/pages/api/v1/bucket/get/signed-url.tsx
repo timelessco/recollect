@@ -7,8 +7,9 @@ import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 
 /**
  * Schema for validating query parameters
- * @param contentType - MIME type of the file to be uploaded (e.g., 'image/jpeg', 'application/pdf')
- * @param filePath - The full path where the file will be stored in R2 (e.g., 'users/123/avatar.jpg')
+ * Validates query parameters with:
+ * - contentType: MIME type of the file to be uploaded (e.g., 'image/jpeg', 'application/pdf')
+ * - filePath: The full path where the file will be stored in R2 (e.g., 'users/123/avatar.jpg')
  */
 const getQuerySchema = () =>
 	z.object({
@@ -18,15 +19,12 @@ const getQuerySchema = () =>
 
 /**
  * API endpoint to generate a signed URL for uploading files to R2
- *
- * @route GET /api/v1/bucket/get/signed-url
- * @security Requires authentication
- * @param {string} contentType - MIME type of the file
- * @param {string} filePath - Target path in R2 bucket
- * @returns {Object} Response object
- * @returns {Object} Response.data - Contains the signed URL if successful
- * @returns {string} Response.error - Error message if request fails
- *
+ * GET /api/v1/bucket/get/signed-url
+ * Requires authentication
+ * Query parameters: contentType (MIME type of the file), filePath (target path in R2 bucket)
+ * @param request - Next.js API request object
+ * @param response - Next.js API response object
+ * @returns Response object with signed URL or error
  * @example
  * // Success Response
  * {
@@ -106,7 +104,6 @@ export default async function handler(
 			data: result.data,
 			error: null,
 		});
-		return;
 	} catch {
 		// Handle any unexpected errors
 		response.status(500).json({

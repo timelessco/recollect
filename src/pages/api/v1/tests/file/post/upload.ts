@@ -1,5 +1,4 @@
 // you might want to use regular 'fs' and not a promise one
-import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -95,7 +94,7 @@ const videoLogic = async (
 		try {
 			imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
 		} catch (error) {
-			log("Blur hash error", error);
+			console.log("Blur hash error", error);
 			Sentry.captureException(`Blur hash error ${error}`);
 			imgData = {};
 		}

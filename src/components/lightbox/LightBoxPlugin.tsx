@@ -59,7 +59,7 @@ const formatDate = (dateString: string) => {
  * Main component that renders the metadata panel in the lightbox
  * Fetches and displays bookmark details including title, domain, description, and URL
  */
-// eslint-disable-next-line complexity
+
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
 	const [showMore, setShowMore] = useState(false);
@@ -179,10 +179,10 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<div
-								className="pb-4 align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
+								className="pb-4 align-middle text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
 								tabIndex={-1}
 							>
-								<div className="flex items-center gap-1 text-[13px] leading-[138%]">
+								<div className="flex items-center gap-1 text-13 leading-[138%]">
 									{metaData?.favIcon ? (
 										<Image
 											alt="favicon"
@@ -213,14 +213,14 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-[13px] font-normal leading-[139%] tracking-[0.01em] text-gray-800`}
+									} text-clip text-13 font-normal leading-[139%] tracking-[0.01em] text-gray-800`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
 									{currentBookmark.description}
 									{showMore && isOverflowing && (
 										<button
-											className="inline text-[13px] leading-[138%] tracking-[0.01em] text-gray-800"
+											className="inline text-13 leading-[138%] tracking-[0.01em] text-gray-800"
 											onClick={() => setShowMore(false)}
 											type="button"
 										>
@@ -230,7 +230,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && !showMore && (
 									<button
-										className="absolute bottom-0 right-0 bg-gray-0 pl-1 text-[13px] leading-[138%] tracking-[0.01em] text-gray-800"
+										className="absolute bottom-0 right-0 bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-800"
 										onClick={() => setShowMore(true)}
 										type="button"
 									>
@@ -266,7 +266,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
+												className="align-middle text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
 												#{tag?.name}
@@ -291,7 +291,7 @@ const MyComponent = () => {
 										<Icon className="h-[15px] w-[15px] text-gray-600">
 											<GeminiAiIcon />
 										</Icon>
-										<p className="align-middle text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600">
+										<p className="align-middle text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600">
 											AI Summary
 										</p>
 									</div>
@@ -300,7 +300,7 @@ const MyComponent = () => {
 											isExpanded ? "overflow-y-auto" : ""
 										}`}
 									>
-										<p className="text-[13px] leading-[138%] tracking-[0.01em] text-gray-500">
+										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
 											{metaData?.img_caption || metaData?.image_caption}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}

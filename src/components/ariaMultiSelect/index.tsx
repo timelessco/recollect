@@ -16,7 +16,7 @@ import { type ChildrenTypes } from "../../types/componentTypes";
 
 /**
  * Checks if a tag exists in the provided array (case-insensitive, trimmed).
- * @param arr - Array of tags (string, undefined, or null)
+ * @param array - Array of tags (string, undefined, or null)
  * @param tag - Tag to check
  * @returns true if tag exists in arr, false otherwise
  */

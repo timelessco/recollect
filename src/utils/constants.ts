@@ -21,22 +21,19 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
 // Supports any valid TLD (2+ characters)
 export const URL_PATTERN =
-	// eslint-disable-next-line  unicorn/no-unsafe-regex
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*@[A-Za-z\d]*/gu;
 export const EMAIL_CHECK_PATTERN =
-	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
-	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
+	/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
 // eslint-disable-next-line unicorn/better-regex, require-unicode-regexp
 export const LETTERS_NUMBERS_CHECK_PATTERN = /^[a-z\d]+$/;
 export const DISPLAY_NAME_CHECK_PATTERN = /^[\d\sA-Za-z]+$/u;
 export const URL_IMAGE_CHECK_PATTERN =
-	// eslint-disable-next-line unicorn/no-unsafe-regex
 	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
-// eslint-disable-next-line unicorn/no-unsafe-regex
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
 
 const productionUrl =

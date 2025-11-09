@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { log } from "console";
 import { type NextApiResponse } from "next";
 import {
 	type PostgrestError,
@@ -36,7 +35,6 @@ type Data = {
  * Deletes catagory for a user
  */
 
-// eslint-disable-next-line complexity
 export default async function handler(
 	request: NextApiRequest<DeleteUserCategoryApiPayload>,
 	response: NextApiResponse<Data>,
@@ -110,7 +108,7 @@ export default async function handler(
 		!isEmpty(sharedCategoryData) &&
 		!isNull(sharedCategoryData)
 	) {
-		log(
+		console.log(
 			`have deleted this category_id in shared_category table: `,
 			request.body.category_id,
 		);
@@ -139,7 +137,7 @@ export default async function handler(
 	}
 
 	if (!isEmpty(trashData)) {
-		log(`Updated trash bookmarks to uncategorized`, trashData);
+		console.log(`Updated trash bookmarks to uncategorized`, trashData);
 	}
 
 	const { data, error }: PostgrestResponse<CategoriesData> = await supabase

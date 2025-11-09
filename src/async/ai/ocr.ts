@@ -7,7 +7,6 @@ import { PROFILES } from "../../utils/constants";
 
 /**
  *  Gives the OCR string by calling the Gemini AI OCR function
- *
  * @param {string} imageUrl - the image url for the OCR to take place
  * @param {SupabaseClient} supabase - the supabase client
  * @param {string} userId - the user id

@@ -27,7 +27,6 @@ const getBodySchema = () =>
 
 /**
  * This api only deletes the bookmark and not all the forgin keys data or s3 bucket data. This is used on test cases
- *
  * @param {NextApiRequest<RequestType>} request
  * @param {NextApiResponse<ResponseType>} response
  * @returns {ResponseType}

@@ -196,6 +196,7 @@ const CardSection = ({
 	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
 
 	const sizesLogic = useMemo(() => {
+		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (cardTypeCondition) {
 			case viewValues.moodboard:
 			case viewValues.timeline:
@@ -204,6 +205,7 @@ const CardSection = ({
 				return "100px";
 			case viewValues.card:
 				return "300px";
+
 			default:
 				return "500px";
 		}
@@ -442,7 +444,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate align-middle text-[13px] leading-[115%] tracking-[0.01em] text-gray-600 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -607,10 +609,10 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-gray-600">
+						<div className="ml-1 flex items-center text-13 font-450 leading-4 text-gray-600">
 							<p className="mr-1">in</p>
 							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-[13px] font-450 leading-4 text-gray-600">
+							<p className="ml-1 text-13 font-450 leading-4 text-gray-600">
 								{bookmarkCategoryData?.category_name}
 							</p>
 						</div>
@@ -636,6 +638,7 @@ const CardSection = ({
 
 	const renderBookmarkCardTypes = (item: SingleListData) => {
 		// NOTE: this is no separate view for timeline, only change is a style update in the listBox component
+		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (cardTypeCondition) {
 			case viewValues.moodboard:
 				return renderMoodboardAndCardType(item);
@@ -645,6 +648,7 @@ const CardSection = ({
 				return renderHeadlinesCard(item);
 			case viewValues.list:
 				return renderListCard(item);
+
 			default:
 				return renderMoodboardAndCardType(item);
 		}
@@ -694,7 +698,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px] font-[450] leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="relative text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -746,18 +750,18 @@ const CardSection = ({
 					<div className="flex flex-wrap items-center space-x-1 sm:space-x-0 sm:space-y-1">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-gray-600 sm:mt-[1px]">
+								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-gray-600 sm:mt-px">
 									{item?.description}
 								</p>
 							)}
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center space-x-[1px] sm:mt-[1px]">
+								<div className="mt-[6px] flex items-center space-x-px sm:mt-px">
 									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
 						{bookmarksInfoValue?.includes("info" as never) && (
-							<div className="mt-[6px] flex flex-wrap items-center sm:mt-[1px] sm:space-x-1">
+							<div className="mt-[6px] flex flex-wrap items-center sm:mt-px sm:space-x-1">
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (

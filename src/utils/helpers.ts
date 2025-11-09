@@ -7,7 +7,6 @@ import find from "lodash/find";
 import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
 import slugify from "slugify";
 
-// eslint-disable-next-line import/no-cycle
 import { getMediaType } from "../async/supabaseCrudHelpers";
 import { type CardSectionProps } from "../pageComponents/dashboard/cardSection";
 import {
@@ -249,7 +248,6 @@ export const aspectRatio = (
 	height: number,
 ): { height: number; width: number } => {
 	const gcd = (...array: number[]): number => {
-		// eslint-disable-next-line unicorn/consistent-function-scoping
 		const _gcd = (x: number, y: number) => (!y ? x : gcd(y, x % y));
 		return [...array].reduce((a, b) => _gcd(a, b));
 	};
@@ -290,7 +288,6 @@ export const apiCookieParser = (
  * Creates axios config with authorization headers and cookies if available
  * Includes both Authorization header (for token-based auth) and Cookie header (for cookie-based auth)
  * when they are present in the request. Returns undefined if neither is available.
- *
  * @param {NextApiRequest} request request object
  * @returns {{ headers: Record<string, string> } | undefined} axios config with headers or undefined
  */
@@ -313,7 +310,6 @@ export const getAxiosConfigWithAuth = (
 
 /**
  * Tells if the year is the current year or not
- *
  * @param {string} insertedAt the time to compare
  * @returns {boolean}
  */
@@ -341,7 +337,6 @@ export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 
 /**
  * Extracts non-empty path segments from a URL path
- *
  * @param path The URL path to process (e.g., from router.asPath)
  * @returns Array of non-empty path segments
  */
@@ -350,7 +345,6 @@ export const getPathSegments = (path: string): string[] =>
 
 /**
  * Checks if the given path is a preview path and extracts the preview ID if it exists
- *
  * @param path The URL path to check
  * @param previewText The preview path segment to look for (default: 'preview')
  * @returns An object containing:
@@ -374,7 +368,6 @@ export const getPreviewPathInfo = (
 
 /**
  * Determines the appropriate search key based on the current category slug from the URL.
- *
  * @param categoryData - Object containing category data
  * @param categoryData.data - Array of category data to search through
  * @param categoryData.error - Optional error object from the data fetch

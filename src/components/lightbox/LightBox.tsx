@@ -138,9 +138,7 @@ export const CustomLightBox = ({
 					!isYouTubeVideo(bookmark?.url) &&
 					!bookmark?.meta_data?.iframeAllowed && {
 						// using || instead of ?? to include 0
-						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						width: bookmark?.meta_data?.width || 1_200,
-						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						height: bookmark?.meta_data?.height || 1_200,
 					}),
 				// Add video-specific properties
@@ -470,12 +468,12 @@ export const CustomLightBox = ({
 	 * Custom navigation icons
 	 * Left icon: Simple clickable area for previous navigation
 	 */
-	const iconLeft = () => <div className="h-[100vh] w-[5vw]" />;
+	const iconLeft = () => <div className="h-screen w-[5vw]" />;
 
 	/**
 	 * Right icon: Adjusts margin when side panel is open
 	 */
-	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
+	const iconRight = () => <div className="h-screen w-[5vw]" />;
 
 	const isFirstSlide = activeIndex === 0;
 	const isLastSlide = activeIndex === bookmarks?.length - 1;

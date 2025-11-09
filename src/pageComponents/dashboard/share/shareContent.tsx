@@ -334,7 +334,7 @@ const ShareContent = () => {
 				<div className="pb-2">
 					{currentCategory?.collabData
 						?.slice()
-						.sort((a, b) => {
+						.toSorted((a, b) => {
 							// Move owner to the top
 							if (a.isOwner) {
 								return -1;
@@ -354,7 +354,7 @@ const ShareContent = () => {
 							/>
 						))}
 				</div>
-				<div className="mx-2 flex items-end justify-between border-y-[1px] py-[15.5px]">
+				<div className="mx-2 flex items-end justify-between border-y py-[15.5px]">
 					<div className="flex items-center">
 						<figure className="text-gray-1000">
 							<GlobeIcon />

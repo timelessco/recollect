@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -20,7 +19,6 @@ const SidePaneOptionsMenu = () => {
 	const currentPath = useGetCurrentUrlPath();
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const SingleListItem = useCallback(SingleListItemComponent, []);
 
 	const bookmarksCountData = queryClient.getQueryData([
 		BOOKMARKS_COUNT_KEY,
@@ -53,7 +51,7 @@ const SidePaneOptionsMenu = () => {
 	return (
 		<div className="pt-[10px]">
 			{optionsMenuList?.map((item) => (
-				<SingleListItem
+				<SingleListItemComponent
 					extendedClassname="py-[7px]"
 					isLink={item?.id !== 3}
 					item={item}

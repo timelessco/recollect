@@ -86,7 +86,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 	);
 
 	const selectItemContent = (value: string) => (
-		<div className="flex items-center py-[1px]">
+		<div className="flex items-center py-px">
 			<figure className="mr-[6px] h-4 w-4">
 				{find(sortOptions, (item) => item?.label === value)?.icon}
 			</figure>

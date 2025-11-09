@@ -1,4 +1,5 @@
-//@ts-nocheck
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+// @ts-nocheck
 
 describe("Meta data testing", () => {
 	beforeEach(() => {
@@ -20,13 +21,14 @@ describe("Meta data testing", () => {
 		};
 		cy.request({
 			method: "POST",
-			url: "/api/v1/tests/file/post/upload", // Ensure this URL is correct
+			// Ensure this URL is correct
+			url: "/api/v1/tests/file/post/upload",
 			body: {
 				name: "image.png",
 				type: "image/png",
 				uploadFileNamePath: "m05eqwhx-image.png",
 			},
-			headers: headers,
+			headers,
 		}).as("uploadRequest");
 
 		cy.get("@uploadRequest")?.then((addBookmarkData) => {

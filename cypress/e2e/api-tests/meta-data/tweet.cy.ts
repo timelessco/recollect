@@ -1,4 +1,5 @@
-//@ts-nocheck
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+// @ts-nocheck
 
 describe("Meta data testing", () => {
 	beforeEach(() => {
@@ -22,9 +23,10 @@ describe("Meta data testing", () => {
 					ogImage: "https://pbs.twimg.com/media/GVRv2bGWcAA--aC.jpg",
 					title: "test title",
 					type: "tweet",
+					// we are generating random number , as the duplicates are removed in the sync api
 					url: `https://x.com/passportprofit/status/${Math.floor(
 						Math.random() * 1000000000,
-					)}`, // we are generating random number , as the duplicates are removed in the sync api
+					)}`,
 					meta_data: {
 						twitter_avatar_url: "test url",
 					},
@@ -34,6 +36,7 @@ describe("Meta data testing", () => {
 			],
 		}).as("addRequest");
 
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		let bookmarkId;
 
 		cy.get("@addRequest")?.then((addBookmarkData) => {

@@ -143,7 +143,6 @@ export default async function handler(
 		...Object.fromEntries(
 			Object.entries(metaData).map(([key, value]) => [
 				key,
-				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 				value || existingMeta?.[key],
 			]),
 		),

@@ -78,7 +78,6 @@ export default async function handler(
 			message: "API key saved successfully",
 			data: DataResponse,
 		});
-		return;
 	} catch (error) {
 		console.error(error);
 		response.status(500).json({ error: "Internal server error" });

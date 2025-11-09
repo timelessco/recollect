@@ -26,7 +26,6 @@ const getBodySchema = () =>
 
 /**
  * Gets sort index based on urls
- *
  * @param {RequestType} request
  * @returns {ResponseType}
  */

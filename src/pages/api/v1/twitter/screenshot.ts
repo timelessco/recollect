@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
@@ -130,7 +129,6 @@ export default async function handler(
 			image: publicURL,
 			data: updatedData,
 		});
-		return;
 	} catch (error) {
 		console.error("Error in screenshot handler:", error);
 		Sentry.captureException(error);

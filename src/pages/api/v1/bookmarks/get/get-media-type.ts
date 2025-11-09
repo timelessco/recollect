@@ -55,7 +55,6 @@ export default async function handler(
 
 		response.status(200).json({ success: true, mediaType, error: null });
 	} catch {
-		// eslint-disable-next-line no-console
 		console.log("Error checking media type:");
 		response.status(200).json({
 			success: false,
