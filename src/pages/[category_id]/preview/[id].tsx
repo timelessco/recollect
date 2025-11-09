@@ -43,7 +43,7 @@ const Preview = () => {
 			<div className="flex h-screen items-center justify-center">
 				<Spinner
 					className="h-3 w-3 animate-spin"
-					style={{ color: "var(--plain-reverse-color)" }}
+					style={{ color: "var(--color-plain-reverse)" }}
 				/>
 			</div>
 		);

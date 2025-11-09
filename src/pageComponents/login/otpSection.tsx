@@ -62,7 +62,7 @@ const OtpSection = () => {
 						<figure className="mr-[6px]">
 							<LaterpadLogo />
 						</figure>
-						<p className="text-plain-reverse-color">recollect</p>
+						<p className="text-plain-reverse">recollect</p>
 					</div>
 					{/* OTP Input */}
 					<div className="space-y-4">

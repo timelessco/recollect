@@ -491,7 +491,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return (
 			<AriaDropdown
 				menuButton={
-					<Button className="hover:text-plain-reverse-color bg-transparent p-[7px] text-gray-600">
+					<Button className="hover:text-plain-reverse bg-transparent p-[7px] text-gray-600">
 						<OptionsIcon />
 					</Button>
 				}
@@ -567,7 +567,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="text-plain-reverse-color mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center">
+						<figure className="text-plain-reverse mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}

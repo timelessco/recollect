@@ -239,7 +239,7 @@ export const AddToCollectionDropdown = memo(
 									type="button"
 								>
 									{/* Show current collection name or default text */}
-									<div className="group-hover:text-plain-reverse-color flex items-center transition-all">
+									<div className="group-hover:text-plain-reverse flex items-center transition-all">
 										<span>
 											{currentCollection
 												? currentCollection?.category_name

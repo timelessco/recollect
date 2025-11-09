@@ -42,7 +42,7 @@ const EmailSection = () => {
 						<figure className="mr-[6px]">
 							<LaterpadLogo />
 						</figure>
-						<p className="text-plain-reverse-color">recollect</p>
+						<p className="text-plain-reverse">recollect</p>
 					</div>
 					{/* Email Input */}
 					<div className="space-y-4">

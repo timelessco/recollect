@@ -32,7 +32,7 @@ const LoginPage = () => {
 							<figure className="mr-[6px]">
 								<LaterpadLogo />
 							</figure>
-							<p className="text-plain-reverse-color">recollect</p>
+							<p className="text-plain-reverse">recollect</p>
 						</div>
 						{/* Core Interaction */}
 						<div className="flex flex-col items-center justify-center space-y-4">

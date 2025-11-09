@@ -144,7 +144,7 @@ const MyComponent = () => {
 			<div className="bg-gray-0 absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 backdrop-blur-[41px]">
 				<Spinner
 					className="h-3 w-3 animate-spin"
-					style={{ color: "var(--plain-reverse-color)" }}
+					style={{ color: "var(--color-plain-reverse)" }}
 				/>
 			</div>
 		);

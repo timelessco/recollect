@@ -666,7 +666,7 @@ const Dashboard = () => {
 													: (flattendPaginationBookmarkData?.length ?? 0)
 											}
 											endMessage={
-												<p className="text-plain-reverse-color pb-6 text-center">
+												<p className="text-plain-reverse pb-6 text-center">
 													{isSearchLoading ? "" : "Life happens, save it."}
 												</p>
 											}

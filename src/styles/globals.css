@@ -12,8 +12,8 @@
 
 :root {
 	/* colors */
-	--color-white: #fff;
-	--color-black: #0f0f0f;
+	--color-plain: #fff;
+	--color-plain-reverse: #0f0f0f;
 
 	/* Light Gray Shades (from figma variables) */
 	--color-gray-0: #fff;
@@ -87,6 +87,16 @@
 	--color-red-700: #b52a2a;
 	--color-red-800: #941f1f;
 	--color-red-900: #6b1515;
+
+	/* Dark Red Alpha Shades */
+	--color-red-alpha-300: rgb(255 88 88 / 94%);
+	--color-red-alpha-400: rgb(255 88 88 / 85%);
+	--color-red-alpha-500: rgb(255 88 88 / 73%);
+	--color-red-alpha-600: rgb(255 88 88 / 56%);
+	--color-red-alpha-700: rgb(255 88 88 / 54%);
+	--color-red-alpha-800: rgb(255 88 88 / 49%);
+	--color-red-alpha-900: rgb(255 88 88 / 40%);
+	--color-red-alpha-950: rgb(255 88 88 / 38%);
 
 	/* Light Blue Shades */
 	--color-blue-50: #f2f9ff;
@@ -211,6 +221,9 @@
 }
 
 .dark {
+	--color-plain: #0f0f0f;
+	--color-plain-reverse: #fff;
+
 	/* Dark Gray Shades (from figma variables) */
 	--color-gray-0: #121212;
 	--color-gray-50: #1c1c1c;
@@ -226,6 +239,21 @@
 	--color-gray-900: #d1d1d1;
 	--color-gray-950: #f8f8f8;
 	--color-gray-1000: #fff;
+
+	/* Dark Gray Alpha Shades */
+	--color-gray-alpha-50: rgb(255 255 255 / 5%); /* 5% White */
+	--color-gray-alpha-100: rgb(255 255 255 / 9%); /* 9% White */
+	--color-gray-alpha-200: rgb(255 255 255 / 13%); /* 13% White */
+	--color-gray-alpha-300: rgb(255 255 255 / 17%); /* 17% White */
+	--color-gray-alpha-400: rgb(255 255 255 / 22%); /* 22% White */
+	--color-gray-alpha-500: rgb(255 255 255 / 40%); /* 40% White */
+	--color-gray-alpha-550: rgb(255 255 255 / 45%); /* 45% White */
+	--color-gray-alpha-600: rgb(255 255 255 / 51%); /* 51% White */
+	--color-gray-alpha-700: rgb(255 255 255 / 68%); /* 68% White */
+	--color-gray-alpha-800: rgb(255 255 255 / 78%); /* 78% White */
+	--color-gray-alpha-900: rgb(255 255 255 / 91%); /* 91% White */
+	--color-gray-alpha-950: rgb(255 255 255 / 95%); /* 95% White */
+	--color-gray-alpha-1000: rgb(255 255 255 / 100%); /* 100% White */
 
 	/* Dark Whites Shades */
 	--color-whites-50: rgb(0 0 0 / 10%); /* 10% Black */
@@ -444,8 +472,8 @@
 		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
 	/* Plain colors */
-	--plain-color: var(--color-white);
-	--plain-reverse-color: var(--color-black);
+	--color-plain: var(--color-plain);
+	--color-plain-reverse: var(--color-plain-reverse);
 
 	/* Gray colors */
 	--color-gray-0: var(--color-gray-0);
@@ -515,8 +543,6 @@
 
 	/* Special colors */
 	--color-modal-bg: #00000045;
-	--color-plain-reverse-color: var(--plain-reverse-color);
-	--color-plain-color: var(--plain-color);
 
 	/* Drop Shadows */
 	--shadow-drop-custom-1: 0px 0px 2.5px rgb(0 0 0 / 11%);
@@ -737,22 +763,22 @@
 
 	/* for the select card styles on card and moodboard views */
 	.single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper {
-		@apply bg-plain-reverse-color text-plain-color rounded-t-none rounded-b-lg;
+		@apply bg-plain-reverse text-plain rounded-t-none rounded-b-lg;
 	}
 
 	/* Remove hover effect for selected cards */
 	.single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper:hover,
 	.single-bookmark[aria-selected="true"]:hover .card-moodboard-info-wrapper {
-		@apply bg-plain-reverse-color!;
+		@apply bg-plain-reverse!;
 	}
 
 	/* for the select card styles on list and headlines views */
 	.single-bookmark[aria-selected="true"].list-headlines-wrapper {
-		@apply bg-plain-reverse-color text-plain-color;
+		@apply bg-plain-reverse text-plain;
 	}
 
 	.single-bookmark[aria-selected="true"] .card-title {
-		@apply text-plain-color;
+		@apply text-plain;
 	}
 
 	.single-bookmark[aria-selected="true"] .moodboard-card-img {
@@ -760,7 +786,7 @@
 	}
 
 	.single-bookmark[aria-selected="true"] .card-icon {
-		@apply text-plain-color;
+		@apply text-plain;
 	}
 
 	.drop-target .side-pane-anchor {
@@ -795,7 +821,7 @@
 	}
 
 	[data-backdrop] {
-		@apply flex items-center justify-center bg-black/36 backdrop-blur-sm md:items-start;
+		@apply bg-plain/36 flex items-center justify-center backdrop-blur-sm md:items-start;
 	}
 
 	.dropdown-container input[type="radio"] {
@@ -823,7 +849,7 @@
 
 		border-radius: 4px;
 
-		background-color: var(--plain-color);
+		background-color: var(--color-plain);
 
 		mask: url("/checkbox-tick.svg") center / 10px 9px no-repeat;
 	}

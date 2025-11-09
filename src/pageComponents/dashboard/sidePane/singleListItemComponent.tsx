@@ -92,7 +92,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						/>
 					</span>
 				) : (
-					<figure className="text-plain-reverse-color flex h-[18px] w-[18px] items-center">
+					<figure className="text-plain-reverse flex h-[18px] w-[18px] items-center">
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}
@@ -116,7 +116,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						{showSpinner ? (
 							<Spinner
 								className="h-3 w-3 animate-spin"
-								style={{ color: "var(--plain-reverse-color)" }}
+								style={{ color: "var(--color-plain-reverse)" }}
 							/>
 						) : (
 							<AriaDropdown

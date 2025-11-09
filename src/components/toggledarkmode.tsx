@@ -153,8 +153,8 @@ export const Switch = () => {
 									</div>
 								)}
 								{/* Label bar */}
-								<div className="peer-checked:text-plain-color mt-auto flex items-center justify-between rounded-b-lg bg-gray-100 px-3 py-2 peer-checked:bg-gray-800">
-									<span className="text-plain-reverse-color text-sm font-medium">
+								<div className="peer-checked:text-plain mt-auto flex items-center justify-between rounded-b-lg bg-gray-100 px-3 py-2 peer-checked:bg-gray-800">
+									<span className="text-plain-reverse text-sm font-medium">
 										{label}
 									</span>
 								</div>

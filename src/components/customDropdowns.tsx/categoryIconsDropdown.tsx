@@ -106,7 +106,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 	const renderItem = (value: string) => {
 		const data = find(iconsList, (item) => item?.label === value);
-		const icon = "var(--plain-reverse-color)";
+		const icon = "var(--color-plain-reverse)";
 		return (
 			<div className="h-[18px] w-[18px]" title={data?.label}>
 				{data?.icon(icon)}
@@ -214,7 +214,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 					</div>
 					<div className="absolute bottom-2 left-0 flex w-full justify-between px-2 pt-2">
 						<Button
-							className="text-plain-reverse-color!"
+							className="text-plain-reverse!"
 							isDisabled={currentPage === 1 || isSearch}
 							onClick={() => onPaginationClick("prev")}
 						>
@@ -224,7 +224,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 							{currentPage}/{totalPagesValue}
 						</span>
 						<Button
-							className="text-plain-reverse-color!"
+							className="text-plain-reverse!"
 							isDisabled={currentPage === totalPagesValue || isSearch}
 							onClick={() => onPaginationClick("next")}
 						>

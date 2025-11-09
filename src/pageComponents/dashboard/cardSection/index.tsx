@@ -397,7 +397,7 @@ const CardSection = ({
 								deleteBookmarkId?.includes(post?.id) ? (
 									<Spinner
 										className="h-3 w-3 animate-spin"
-										style={{ color: "var(--plain-reverse-color)" }}
+										style={{ color: "var(--color-plain-reverse)" }}
 									/>
 								) : (
 									trashIcon

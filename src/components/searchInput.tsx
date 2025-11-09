@@ -51,7 +51,7 @@ const styles = {
 
 	suggestions: {
 		list: {
-			backgroundColor: "var(--plain-color)",
+			backgroundColor: "var(--color-plain)",
 			padding: "6px",
 			boxShadow:
 				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
@@ -176,7 +176,7 @@ const SearchInput = (props: SearchInputTypes) => {
 				<div className="absolute top-1/2 right-2 -translate-y-1/2">
 					<Spinner
 						className="h-3 w-3 animate-spin"
-						style={{ color: "var(--plain-reverse-color)" }}
+						style={{ color: "var(--color-plain-reverse)" }}
 					/>
 				</div>
 			)}
