@@ -56,16 +56,14 @@ export default async function handler(
 	try {
 		// Authenticate user using Supabase session
 		const supabase = apiSupabaseClient(request, response);
-		const {
-			data: { session },
-			error: authError,
-		} = await supabase.auth.getSession();
 
-		if (authError || !session) {
-			response.status(401).json({
-				error: "Unauthorized - Please login to access this endpoint",
-				data: null,
-			});
+		const {
+			data: { user },
+			error: userError,
+		} = await supabase.auth.getUser();
+
+		if (userError || !user) {
+			response.status(401).json({ error: "Unauthorized user", data: null });
 			return;
 		}
 
