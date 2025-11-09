@@ -344,7 +344,7 @@ In supabase storage create the following buckets `bookmarks`, `user_profile` and
 ## Make search api work
 
 For search to work we need to first enable the `pg_trgm` extensions under you
-supabase projects extensions. After this you need to create a fuction with the
+supabase projects extensions. After this you need to create a function with the
 following query
 
 ```sql
@@ -352,7 +352,7 @@ CREATE OR REPLACE FUNCTION public.search_bookmarks("search_text" varchar)
 RETURNS TABLE (
     id int8,
     user_id uuid,
-    inserted_at timestamptz,
+    inserted_at timestamp,
     title citext,
     url text,
     description text,

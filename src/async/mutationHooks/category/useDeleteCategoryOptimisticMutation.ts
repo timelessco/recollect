@@ -6,11 +6,11 @@ import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
 import { deleteUserCategory } from "../../supabaseCrudHelpers";
 
 // deletes a category optimistically
-export default function useDeleteCategoryOtimisticMutation() {
+export default function useDeleteCategoryOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const deleteCategoryOtimisticMutation = useMutation(deleteUserCategory, {
+	const deleteCategoryOptimisticMutation = useMutation(deleteUserCategory, {
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
 			await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
@@ -48,5 +48,5 @@ export default function useDeleteCategoryOtimisticMutation() {
 		},
 	});
 
-	return { deleteCategoryOtimisticMutation };
+	return { deleteCategoryOptimisticMutation };
 }

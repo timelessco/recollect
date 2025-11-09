@@ -22,7 +22,7 @@
 	}
 }
 
-/* adding col class becasue tailind dynamic col class are not working for some reason */
+/* adding col class because tailind dynamic col class are not working for some reason */
 .columns-1 {
 	columns: 1;
 }

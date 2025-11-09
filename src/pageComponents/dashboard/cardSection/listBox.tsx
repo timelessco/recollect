@@ -197,7 +197,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	}, [rowVirtualizer, cardTypeCondition, bookmarksInfoValue]);
 
 	const router = useRouter();
-	// cat_id reffers to cat slug here as its got from url
+	// cat_id refers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const preview = useRef(null);

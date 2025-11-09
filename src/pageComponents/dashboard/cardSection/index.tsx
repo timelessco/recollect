@@ -137,7 +137,7 @@ const CardSection = ({
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
-	// cat_id reffers to cat slug here as its got from url
+	// cat_id refers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
 	const isDeleteBookmarkLoading = false;

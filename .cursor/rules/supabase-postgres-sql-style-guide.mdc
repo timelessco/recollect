@@ -12,7 +12,7 @@ alwaysApply: false
 - Employ consistent, descriptive identifiers for tables, columns, and other database objects.
 - Use white space and indentation to enhance the readability of your code.
 - Store dates in ISO 8601 format (`yyyy-mm-ddThh:mm:ss.sssss`).
-- Include comments for complex logic, using '/_ ... _/' for block comments and '--' for line comments.
+- Include comments for complex logic, using '/_..._/' for block comments and '--' for line comments.
 
 ## Naming Conventions
 
@@ -35,7 +35,7 @@ alwaysApply: false
 - For references to foreign tables, use the singular of the table name with the `_id` suffix. For example `user_id` to reference the `users` table
 - Always use lowercase except in cases involving acronyms or when readability would be enhanced by an exception.
 
-#### Examples:
+#### Examples
 
 ```sql
 create table books (

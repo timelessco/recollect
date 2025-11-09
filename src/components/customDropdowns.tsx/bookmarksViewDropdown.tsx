@@ -185,7 +185,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 									singleInfoValues.info as BookmarkViewCategories,
 								);
 							} else {
-								errorToast("Atleast one view option needs to be selcted");
+								errorToast("Atleast one view option needs to be selected");
 							}
 						} else {
 							setBookmarksView(

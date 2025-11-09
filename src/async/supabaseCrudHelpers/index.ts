@@ -157,7 +157,7 @@ export const checkApiKey = async (): Promise<CheckApiKeyResponse> => {
 
 // bookmark
 // gets bookmarks data
-export const fetchBookmakrsData = async (
+export const fetchBookmarksData = async (
 	{
 		pageParam: pageParameter = 0,
 		queryKey,

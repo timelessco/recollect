@@ -29,7 +29,7 @@ type Data = {
 };
 
 /**
- * Creats catagory for a user
+ * Creates category for a user
  */
 
 export default async function handler(

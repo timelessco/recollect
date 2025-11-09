@@ -75,7 +75,7 @@ export default async function handler(
 			.from(MAIN_TABLE_NAME)
 			.select("*, category_id!inner(*), user_id!inner(*)")
 			.eq("category_id.category_slug", request.query.category_slug)
-			// .eq('user_id.user_name', req.query.user_name) // if this is there then collabs bookmakrs are not coming
+			// .eq('user_id.user_name', req.query.user_name) // if this is there then collabs bookmarks are not coming
 			.eq("category_id.is_public", true)
 			.eq("trash", false);
 

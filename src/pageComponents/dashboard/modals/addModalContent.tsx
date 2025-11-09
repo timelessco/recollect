@@ -78,7 +78,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 		error: PostgrestError;
 	};
 
-	// if the bookmaks is not created by logged in user , then only show the option in else case
+	// if the bookmarks is not created by logged in user , then only show the option in else case
 	const categoryOptions = () => {
 		if (userId === urlData?.user_id?.id) {
 			return [

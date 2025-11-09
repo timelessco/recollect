@@ -48,7 +48,7 @@ const categoriesDelete = async (
 	supabase: SupabaseClient,
 ) => {
 	// the collab categories created by the user might have bookmarks added by other user that are collaborators
-	// these bookmakrs added by other users need to be set as uncategorised (id : 0)
+	// these bookmarks added by other users need to be set as uncategorised (id : 0)
 	// get all category ids for the user
 	const { data: categoriesData, error: categoriesDataError } = await supabase
 		.from(CATEGORIES_TABLE_NAME)

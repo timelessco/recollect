@@ -46,14 +46,14 @@
 		"fix:eslint": "eslint --cache --color --fix .",
 		"fix:md": "markdownlint-cli2 --fix --rules sentences-per-line",
 		"fix:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown .",
-		"fix:spelling": "del-cli project-words.txt && cspell --words-only --unique --gitignore --cache --dot \"**/*\" | sort --ignore-case >> project-words.txt",
+		"fix:spelling": "tsx scripts/update-cspell-words.ts",
 		"lint": "turbo lint:eslint lint:types lint:css lint:md lint:knip lint:spelling lint:prettier",
 		"lint:css": "stylelint --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
 		"lint:eslint": "eslint --cache --color .",
 		"lint:knip": "knip --production",
 		"lint:md": "markdownlint-cli2 --rules sentences-per-line",
 		"lint:prettier": "prettier --check --cache --cache-location=.prettiercache --ignore-unknown .",
-		"lint:spelling": "cspell --dot --gitignore --cache --no-progress --show-context check \"**/*\"",
+		"lint:spelling": "cspell --gitignore --cache --no-progress --no-summary --show-context --dot .",
 		"lint:types": "tsc --noEmit",
 		"prepare": "is-ci || husky",
 		"release": "node release-it/getCommitsSinceLastRelease.js && release-it --ci",
@@ -68,8 +68,8 @@
 	},
 	"lint-staged": {
 		"*": [
-			"prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown",
-			"cspell --dot --gitignore --cache --no-progress --show-context check \"**/*\""
+			"tsx scripts/update-cspell-words.ts",
+			"prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown"
 		]
 	},
 	"dependencies": {
@@ -142,6 +142,7 @@
 		"@tanstack/react-query-devtools": "5.90.2",
 		"@types/crypto-js": "4.2.2",
 		"@types/formidable": "3.4.6",
+		"@types/fs-extra": "11.0.4",
 		"@types/jsonwebtoken": "9.0.10",
 		"@types/lodash": "4.17.20",
 		"@types/node": "24.10.0",
@@ -166,6 +167,7 @@
 		"eslint-plugin-tailwindcss": "3.18.2",
 		"eslint-plugin-yml": "1.19.0",
 		"execa": "9.6.0",
+		"fs-extra": "11.3.2",
 		"git-remote-origin-url": "4.0.0",
 		"git-url-parse": "16.1.0",
 		"husky": "9.1.7",
@@ -191,6 +193,7 @@
 		"supabase": "2.54.11",
 		"tailwindcss": "3.3.7",
 		"title-case": "4.3.2",
+		"tsx": "4.20.6",
 		"turbo": "2.6.0",
 		"typescript": "5.9.3",
 		"yaml-eslint-parser": "1.3.0"
@@ -206,6 +209,7 @@
 			"canvas",
 			"core-js-pure",
 			"cypress",
+			"esbuild",
 			"protobufjs",
 			"sharp",
 			"supabase",

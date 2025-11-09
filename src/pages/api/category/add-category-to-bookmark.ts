@@ -25,8 +25,8 @@ type Data = {
 	message: string | null;
 };
 
-// this api adds catagory to a bookmark
-// it upadates cateogry based on the user's access role for the category
+// this api adds category to a bookmark
+// it updates category based on the user's access role for the category
 export default async function handler(
 	request: NextApiRequest<AddCategoryToBookmarkApiPayload>,
 	response: NextApiResponse<Data>,
@@ -92,16 +92,16 @@ export default async function handler(
 	}
 
 	// get category data
-	const { data: categoryData, error: catagoryError } = await supabase
+	const { data: categoryData, error: categoryError } = await supabase
 		.from(CATEGORIES_TABLE_NAME)
 		.select(`user_id`)
 		.eq("id", categoryId);
 
-	if (catagoryError) {
+	if (categoryError) {
 		response.status(500).json({
 			data: null,
 			error: "error fetching user category data",
-			message: catagoryError?.message,
+			message: categoryError?.message,
 		});
 		throw new Error("ERROR: error fetching user category data");
 	}

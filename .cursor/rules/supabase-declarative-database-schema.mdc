@@ -19,13 +19,17 @@ Mandatory Instructions for Supabase Declarative Schema Management
 ## 3. **Migration Generation**
 
 - Before generating migrations, **stop the local Supabase development environment**
+
   ```bash
   supabase stop
   ```
+
 - Generate migration files by diffing the declared schema against the current database state
+
   ```bash
   supabase db diff -f <migration_name>
   ```
+
   Replace `<migration_name>` with a descriptive name for the migration
 
 ## 4. **Schema File Organization**
@@ -38,9 +42,11 @@ Mandatory Instructions for Supabase Declarative Schema Management
 - To revert changes
   - Manually update the relevant `.sql` files in `supabase/schemas/` to reflect the desired state
   - Generate a new migration file capturing the rollback
+
     ```bash
     supabase db diff -f <rollback_migration_name>
     ```
+
   - Review the generated migration file carefully to avoid unintentional data loss
 
 ## 6. **Known caveats**

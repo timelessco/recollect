@@ -32,7 +32,7 @@ type Data = {
 };
 
 /**
- * Deletes catagory for a user
+ * Deletes category for a user
  */
 
 export default async function handler(

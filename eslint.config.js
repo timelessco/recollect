@@ -89,6 +89,7 @@ export default defineConfig(
 			// Eslint
 			"no-console": "off",
 			"arrow-body-style": ["error", "as-needed"],
+			"func-style": "off",
 
 			// Unicorn
 			"unicorn/prevent-abbreviations": "off",

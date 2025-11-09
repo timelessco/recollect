@@ -24,7 +24,7 @@ import {
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
-import { GeminiAiIcon } from "../../icons/gemeniAiIcon";
+import { GeminiAiIcon } from "../../icons/geminiAiIcon";
 import ImageIcon from "../../icons/imageIcon";
 import {
 	useMiscellaneousStore,

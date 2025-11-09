@@ -5,15 +5,15 @@ export const BOOKMARK_TAGS_TABLE_NAME = "bookmark_tags";
 export const CATEGORIES_TABLE_NAME = "categories";
 export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
-export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
+export const BOOKMARKS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
 export const R2_MAIN_BUCKET_NAME = "recollect";
 
 export const STORAGE_SCRAPPED_IMAGES_PATH =
-	BOOKMAKRS_STORAGE_NAME + "/public/scrapped_imgs";
+	BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
 export const STORAGE_SCREENSHOT_IMAGES_PATH =
-	BOOKMAKRS_STORAGE_NAME + "/public/screenshot_imgs";
+	BOOKMARKS_STORAGE_NAME + "/public/screenshot_imgs";
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 

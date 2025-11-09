@@ -14,7 +14,6 @@ import { r2Helpers } from "./r2Client";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-// eslint-disable-next-line func-style
 export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
 	const encodedUrl = encodeURIComponent(file);
 

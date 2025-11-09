@@ -22,7 +22,7 @@ import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/
 import useAddCategoryOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
 import useAddCategoryToBookmarkMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
-import useDeleteCategoryOtimisticMutation from "../../async/mutationHooks/category/useDeleteCategoryOtimisticMutation";
+import useDeleteCategoryOptimisticMutation from "../../async/mutationHooks/category/useDeleteCategoryOptimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
@@ -236,8 +236,8 @@ const Dashboard = () => {
 	// category mutation
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 
-	const { deleteCategoryOtimisticMutation } =
-		useDeleteCategoryOtimisticMutation();
+	const { deleteCategoryOptimisticMutation } =
+		useDeleteCategoryOptimisticMutation();
 
 	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 
@@ -1063,7 +1063,7 @@ const Dashboard = () => {
 				if (currentCategory?.user_id?.id === session?.user?.id) {
 					if (isDataPresentCheck) {
 						await mutationApiCall(
-							deleteCategoryOtimisticMutation.mutateAsync({
+							deleteCategoryOptimisticMutation.mutateAsync({
 								category_id: categoryId,
 								category_order: userProfileData?.data?.[0]?.category_order,
 							}),
@@ -1087,7 +1087,7 @@ const Dashboard = () => {
 		[
 			allCategories?.data,
 			bookmarksCountData?.data?.categoryCount,
-			deleteCategoryOtimisticMutation,
+			deleteCategoryOptimisticMutation,
 			router,
 			session,
 			userProfileData?.data,
