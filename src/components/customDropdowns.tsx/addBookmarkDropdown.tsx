@@ -73,11 +73,11 @@ const AddBookmarkDropdown = ({
 				isOpen={openDropdown}
 				menuButton={
 					<Button
-						className="rounded-full p-[7px] [filter:drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))]"
+						className="rounded-full p-[7px] filter-[drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))]"
 						title="create"
 						type="dark"
 					>
-						<figure className="h-4 w-4 text-gray-0">
+						<figure className="text-gray-0 h-4 w-4">
 							<PlusIconWhite />
 						</figure>
 					</Button>
@@ -99,7 +99,7 @@ const AddBookmarkDropdown = ({
 							}
 						}}
 					>
-						<AddBoomarkInputIcon className="absolute left-[14px] top-[11px] z-[1]" />
+						<AddBoomarkInputIcon className="absolute top-[11px] left-[14px] z-1" />
 					</Button>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<Input

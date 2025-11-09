@@ -53,8 +53,8 @@ const RadioGroup = (props: RadioGroupProps) => {
 				const isRadioSelected = value === item?.value;
 				return (
 					<label className={radioClassNames} key={item?.value}>
-						<div className="flex items-center text-13 font-450 leading-[115%] tracking-[0.01em]">
-							<figure className="mr-2 flex h-4 w-4 items-center justify-center text-plain-reverse-color">
+						<div className="text-13 font-450 flex items-center leading-[115%] tracking-[0.01em]">
+							<figure className="text-plain-reverse-color mr-2 flex h-4 w-4 items-center justify-center">
 								{item?.icon}
 							</figure>
 							<Radio

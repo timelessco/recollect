@@ -17,7 +17,7 @@ const Switch = (props: SwitchProps) => {
 	} = props;
 
 	const switchClass = classNames(
-		"relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-white disabled:opacity-40",
+		"relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus-visible:ring-white disabled:opacity-40",
 		{
 			"bg-gray-950": enabled === true,
 			"bg-gray-300": enabled === false,
@@ -46,7 +46,7 @@ const Switch = (props: SwitchProps) => {
 			disabled={disabled}
 			onChange={setEnabled}
 			// className={`${enabled ? "bg-gray-900" : "bg-gray-100"}
-			//      relative inline-flex h-[28px] w-[64px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out  focus:outline-none focus-visible:ring-white disabled:opacity-40`}
+			//      relative inline-flex h-[28px] w-[64px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out  focus:outline-hidden focus-visible:ring-white disabled:opacity-40`}
 		>
 			<span className="sr-only">Use setting</span>
 			<span

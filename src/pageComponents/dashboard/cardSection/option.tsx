@@ -65,7 +65,7 @@ const Option = ({
 	// Merge option props and dnd props, and render the item.
 
 	const liClassName = classNames(
-		"single-bookmark dark:group relative flex group rounded-lg duration-150 outline-none",
+		"single-bookmark dark:group relative flex group rounded-lg duration-150 outline-hidden",
 		{
 			"": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
@@ -93,7 +93,7 @@ const Option = ({
 		<li
 			aria-selected={isSelected}
 			className={classNames(liClassName, {
-				"rounded-b-lg rounded-t-3xl":
+				"rounded-t-3xl rounded-b-lg":
 					isSelected &&
 					(cardTypeCondition === viewValues.moodboard ||
 						cardTypeCondition === viewValues.card),
@@ -111,7 +111,7 @@ const Option = ({
 		>
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className={`absolute left-0 top-0 h-full w-full rounded-lg ${
+				className={`absolute top-0 left-0 h-full w-full rounded-lg ${
 					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}

@@ -31,7 +31,7 @@ const colorBlockItemBorder = (colorItem: string) =>
 		"h-4",
 		"w-4",
 		"rounded-full",
-		"border-[1px]",
+		"border",
 		"p-1",
 		{ "border-gray-900": colorItem === colorPickerColors[0] },
 		{ "border-transparent": colorItem !== colorPickerColors[0] },

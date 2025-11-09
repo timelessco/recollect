@@ -119,7 +119,7 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	return (
 		<div className={wrapperClassNameBuilder}>
-			<figure className="absolute left-[9px] top-[7px] z-[5]">
+			<figure className="absolute top-[7px] left-[9px] z-5">
 				<SearchInputSearchIcon
 					color={isFocused ? "var(--color-gray-900)" : "var(--color-gray-600)"}
 					size="14"
@@ -173,7 +173,7 @@ const SearchInput = (props: SearchInputTypes) => {
 				/>
 			</MentionsInput>
 			{isSearchLoading && !isEmpty(searchText) && (
-				<div className="absolute right-2 top-1/2 -translate-y-1/2">
+				<div className="absolute top-1/2 right-2 -translate-y-1/2">
 					<Spinner
 						className="h-3 w-3 animate-spin"
 						style={{ color: "var(--plain-reverse-color)" }}

@@ -86,14 +86,14 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
 			<>
 				{label && <label htmlFor={inputId}>{label}</label>}
 				<Ariakit.Combobox
-					className="ml-1 w-full bg-inherit text-sm font-normal leading-4 text-gray-600 outline-none"
+					className="ml-1 w-full bg-inherit text-sm leading-4 font-normal text-gray-600 outline-hidden"
 					id={inputId}
 					ref={ref}
 					store={combobox}
 					{...comboboxProps}
 				/>
 				<Ariakit.ComboboxPopover
-					className="z-10 rounded-xl bg-gray-0 p-[6px] shadow-custom-7"
+					className="bg-gray-0 shadow-custom-7 z-10 rounded-xl p-[6px]"
 					gutter={8}
 					render={<Ariakit.SelectList store={select} />}
 					sameWidth
@@ -111,7 +111,7 @@ export type ComboboxItemProps = ComponentPropsWithoutRef<"div"> & {
 };
 
 const menuItemClassName =
-	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[0.01em] text-gray-900 data-[active-item]:bg-gray-200 truncate";
+	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[0.01em] text-gray-900 data-active-item:bg-gray-200 truncate";
 
 export const ComboboxItem = forwardRef<HTMLDivElement, ComboboxItemProps>(
 	(props, ref) => (
@@ -136,7 +136,7 @@ type TagTypes = {
 
 const Tag = ({ children, onClick }: TagTypes) => (
 	<div
-		className="mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs font-450 leading-[15px] tracking-[0.01em] text-white"
+		className="font-450 mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs leading-[15px] tracking-[0.01em] text-white"
 		onClick={onClick}
 		onKeyDown={() => {}}
 		role="button"

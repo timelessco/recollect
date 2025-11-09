@@ -98,7 +98,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
-		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-600">
+		<div className="font-450 px-2 py-[6px] text-xs leading-[14px] text-gray-600">
 			{text}
 		</div>
 	);
@@ -282,13 +282,13 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
 	return isDropdown ? (
 		<>
-			<MenuButton as="div" className="outline-none" state={menu}>
+			<MenuButton as="div" className="outline-hidden" state={menu}>
 				<Button isActive={menu.open} title="views" type="light">
 					{dropdownButtonContent}
 				</Button>
 			</MenuButton>
 			<Menu
-				className="z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pb-3 pt-[6px] shadow-custom-1 ring-1 ring-black/5"
+				className="shadow-custom-1 z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 ring-1 ring-black/5"
 				initialFocusRef={radio0ref}
 				state={menu}
 			>

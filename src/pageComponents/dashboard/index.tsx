@@ -633,7 +633,7 @@ const Dashboard = () => {
 			<div>
 				{session ? (
 					<>
-						<div className="mx-auto w-full xl:w-1/2" />
+						<div className="mx-auto w-full max-xl:w-1/2" />
 						<Dropzone
 							disabled={CATEGORY_ID === TRASH_URL}
 							noClick
@@ -645,7 +645,7 @@ const Dashboard = () => {
 									className={
 										isDragActive
 											? "absolute z-10 h-full w-full bg-gray-800 opacity-50"
-											: "outline-none"
+											: "outline-hidden"
 									}
 								>
 									<input {...getInputProps()} />
@@ -666,7 +666,7 @@ const Dashboard = () => {
 													: (flattendPaginationBookmarkData?.length ?? 0)
 											}
 											endMessage={
-												<p className="pb-6 text-center text-plain-reverse-color">
+												<p className="text-plain-reverse-color pb-6 text-center">
 													{isSearchLoading ? "" : "Life happens, save it."}
 												</p>
 											}

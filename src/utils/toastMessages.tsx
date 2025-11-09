@@ -15,11 +15,11 @@ const ToastBody = ({
 	<div className="flex">
 		{icon && icon}
 		<div className="ml-2">
-			<p className="text-sm font-450 not-italic leading-[18px] tracking-[0.14px] text-gray-0">
+			<p className="font-450 text-gray-0 text-sm leading-[18px] tracking-[0.14px] not-italic">
 				{message}
 			</p>
 			{description && (
-				<p className="mt-[4px] text-13 font-450 not-italic leading-[14px] tracking-[0.13px] text-gray-500">
+				<p className="text-13 font-450 mt-[4px] leading-[14px] tracking-[0.13px] text-gray-500 not-italic">
 					{description}
 				</p>
 			)}
