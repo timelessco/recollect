@@ -216,7 +216,7 @@ const MyComponent = () => {
 											alt="favicon"
 											className="h-[15px] w-[15px] rounded-sm"
 											height={16}
-											onError={(error: any) => {
+											onError={() => {
 												const target = error?.target as HTMLImageElement;
 												target.style.display = "none";
 											}}
