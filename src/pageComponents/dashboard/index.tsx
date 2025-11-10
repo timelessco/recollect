@@ -1103,6 +1103,7 @@ const Dashboard = () => {
 			<DashboardLayout
 				categoryId={CATEGORY_ID}
 				onAddBookmark={onAddBookmark}
+				isLoadingCategories={isLoadingCategories}
 				onAddNewCategory={async (newCategoryName) => {
 					if (!isNull(userProfileData?.data)) {
 						const response = (await mutationApiCall(

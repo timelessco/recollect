@@ -574,19 +574,6 @@
 	/* Font Weights */
 	--font-weight-450: 450;
 
-	/* Keyframes */
-	@keyframes custom-fade-scale-in {
-		0% {
-			transform: scale(0.97);
-			opacity: 0;
-		}
-
-		100% {
-			transform: scale(1);
-			opacity: 1;
-		}
-	}
-
 	/* https://tailwindcss.com/docs/upgrade-guide#default-ring-width-and-color */
 	--default-ring-width: 3px;
 	--default-ring-color: var(--color-blue-500);
@@ -819,7 +806,7 @@
 	}
 
 	[data-backdrop] {
-		@apply bg-plain/36 flex items-center justify-center backdrop-blur-sm md:items-start;
+		@apply flex items-center justify-center bg-black/36 backdrop-blur-sm md:items-start;
 	}
 
 	.dropdown-container input[type="radio"] {
@@ -1005,5 +992,17 @@
 		opacity: var(--yarl-pull-opacity);
 
 		@apply transition-all duration-200 ease-out;
+	}
+
+	@keyframes custom-fade-scale-in {
+		0% {
+			transform: scale(0.97);
+			opacity: 0;
+		}
+
+		100% {
+			transform: scale(1);
+			opacity: 1;
+		}
 	}
 }

@@ -99,6 +99,7 @@ export const CustomLightBox = ({
 		if (typeof window === "undefined") {
 			return;
 		}
+
 		const storedState = localStorage.getItem("lightboxSidepaneOpen");
 		if (storedState !== null) {
 			setLightboxShowSidepane(storedState === "true");

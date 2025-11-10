@@ -25,16 +25,18 @@ type AiFeaturesFormTypes = {
 
 /*  SKELETON COMPONENT  */
 const AiFeaturesSkeleton = () => (
-	<div className="animate-pulse space-y-6">
-		{/* Header Skeleton */}
-		<div className="h-6 w-40 rounded-sm bg-gray-200" />
-		{/* Input Section Skeleton */}
-		<div className="space-y-3">
-			<div className="h-3 w-24 rounded-sm bg-gray-200" />
+	<div className="space-y-6">
+		{/* Header */}
+		<div className="relative mb-6 flex items-center">
+			<h2 className="text-[18px] leading-[115%] font-semibold tracking-normal text-gray-900">
+				AI Features
+			</h2>
+		</div>
+		{/* Skeleton for Input Section */}
+		<div className="animate-pulse">
+			<div className="mb-2 h-3 w-24 rounded-sm bg-gray-200" />
 			<div className="h-10 rounded-md bg-gray-100" />
 		</div>
-		{/* Button Skeleton */}
-		<div className="h-10 w-[130px] rounded-lg bg-gray-200" />
 	</div>
 );
 

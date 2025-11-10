@@ -1,14 +1,11 @@
-import dynamic from "next/dynamic";
+import { memo } from "react";
 
 import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
 
+import SidePaneCollectionsList from "./sidePaneCollectionsList";
 import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
 import SidePaneTypesList from "./sidePaneTypesList";
 import SidePaneUserDropdown from "./sidePaneUserDropdown";
-
-const CollectionsList = dynamic(async () => await import("./collectionsList"), {
-	ssr: false,
-});
 
 type SidePaneTypes = {
 	onAddNewCategory: (value: string) => Promise<void>;
@@ -21,6 +18,7 @@ type SidePaneTypes = {
 	) => Promise<void>;
 	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
+	isLoadingCategories?: boolean;
 };
 
 const SidePane = (props: SidePaneTypes) => {
@@ -30,22 +28,25 @@ const SidePane = (props: SidePaneTypes) => {
 		onIconSelect,
 		onAddNewCategory,
 		onIconColorChange,
+		isLoadingCategories = false,
 	} = props;
 
 	return (
 		<nav className="border-gray-alpha-50 bg-gray-0 h-full overflow-y-auto border-r border-solid p-2">
 			<SidePaneUserDropdown />
 			<SidePaneOptionsMenu />
-			<CollectionsList
+			<SidePaneCollectionsList
 				onAddNewCategory={onAddNewCategory}
 				onBookmarksDrop={onBookmarksDrop}
 				onCategoryOptionClick={onCategoryOptionClick}
 				onIconColorChange={onIconColorChange}
 				onIconSelect={(value, id) => onIconSelect(value, id)}
+				isLoadingCategories={isLoadingCategories}
 			/>
 			<SidePaneTypesList />
 		</nav>
 	);
 };
 
-export default SidePane;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(SidePane);

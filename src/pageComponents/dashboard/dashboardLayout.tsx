@@ -96,6 +96,7 @@ type DashboardLayoutProps = {
 	) => void;
 	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 	userId: string;
+	isLoadingCategories?: boolean;
 };
 
 const interpolateScaleValue = (angle: number) => {
@@ -619,6 +620,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			onCategoryOptionClick={onCategoryOptionClick}
 			onIconColorChange={onIconColorChange}
 			onIconSelect={(value, id) => onIconSelect(value, id)}
+			isLoadingCategories={props.isLoadingCategories}
 		/>
 	);
 
