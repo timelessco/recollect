@@ -105,7 +105,7 @@ const SettingsModal = () => {
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="bg-gray-0 flex h-[700px] rounded-[20px]">
-				<div className="bg-gray-0 flex h-full min-w-[180px] flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 px-2 py-4 max-lg:min-w-fit">
+				<div className="bg-gray-0 flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 px-2 py-4 lg:min-w-[180px]">
 					{isDesktop && (
 						<div className="text-13 px-2 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
 							Settings
