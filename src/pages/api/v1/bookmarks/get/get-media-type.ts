@@ -21,8 +21,9 @@ export default async function handler(
 	const parseResult = schema.safeParse(request.query);
 
 	if (!parseResult.success) {
+		console.warn(`Unable to parse query params:`, parseResult.error);
 		response.status(400).json({
-			error: parseResult.error.errors[0]?.message ?? "Invalid input",
+			error: "Unable to parse query params",
 		});
 		return;
 	}
@@ -39,6 +40,7 @@ export default async function handler(
 		});
 
 		if (result.status !== 200) {
+			console.log(`Failed to check media type for url: ${url}`);
 			response.status(200).json({
 				success: false,
 				mediaType: null,
@@ -55,7 +57,7 @@ export default async function handler(
 
 		response.status(200).json({ success: true, mediaType, error: null });
 	} catch {
-		console.log("Error checking media type:");
+		console.log(`Failed to check media type for url: ${url}`);
 		response.status(200).json({
 			success: false,
 			mediaType: null,

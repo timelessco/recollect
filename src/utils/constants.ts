@@ -319,6 +319,7 @@ export const OG_IMAGE_PREFERRED_SITES = [
 	"medium",
 	"spotify",
 	"imdb",
+	"pin.it",
 ];
 
 // Lightbox Constants
