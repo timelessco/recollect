@@ -53,7 +53,7 @@ const SidePaneUserDropdown = () => {
 						<div className="flex w-4/5 items-center space-x-2">
 							<UserAvatar
 								alt="user-avatar"
-								className="h-6 w-6 rounded-full bg-gray-1000 object-contain"
+								className="bg-gray-1000 h-6 w-6 rounded-full object-contain"
 								height={24}
 								src={
 									!isNull(userProfilePicData?.data)
@@ -62,7 +62,7 @@ const SidePaneUserDropdown = () => {
 								}
 								width={24}
 							/>
-							<p className="flex-1 overflow-hidden truncate text-left text-sm font-medium leading-4">
+							<p className="flex-1 truncate overflow-hidden text-left text-sm leading-4 font-medium text-gray-800">
 								{userProfileData?.display_name || userProfileData?.user_name}
 							</p>
 						</div>
@@ -71,7 +71,7 @@ const SidePaneUserDropdown = () => {
 						</figure>
 					</div>
 				}
-				menuButtonActiveClassName="!text-gray-900 bg-gray-100 rounded-lg"
+				menuButtonActiveClassName="text-gray-900! bg-gray-100 rounded-lg"
 				menuButtonClassName="w-full text-text-color"
 				menuClassName={dropdownMenuClassName}
 			>

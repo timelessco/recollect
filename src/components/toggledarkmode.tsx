@@ -45,10 +45,10 @@ export const Switch = () => {
 
 	return (
 		<div className="pt-10">
-			<p className="pb-2 text-[14px] font-[500] leading-[115%] text-gray-900">
+			<p className="pb-2 text-[14px] leading-[115%] font-medium text-gray-900">
 				Appearance
 			</p>
-			<p className="pb-4 text-[14px] font-[400] leading-[150%] text-gray-800">
+			<p className="pb-4 text-[14px] leading-[150%] font-normal text-gray-800">
 				Switch between light, dark, or system theme.
 			</p>
 			<div className="grid max-w-[700px] grid-cols-3 gap-[10px]">
@@ -61,7 +61,7 @@ export const Switch = () => {
 
 					return (
 						<label
-							className="relative h-[108px] cursor-pointer rounded-lg shadow-sm transition-all hover:shadow-md"
+							className="relative h-[108px] cursor-pointer rounded-lg shadow-xs transition-all hover:shadow-md"
 							key={value}
 						>
 							<input
@@ -153,14 +153,14 @@ export const Switch = () => {
 									</div>
 								)}
 								{/* Label bar */}
-								<div className="mt-auto flex items-center justify-between rounded-b-lg bg-gray-100 px-3 py-2 peer-checked:bg-gray-800 peer-checked:text-plain-color">
-									<span className="text-sm font-medium text-plain-reverse-color">
+								<div className="peer-checked:text-plain mt-auto flex items-center justify-between rounded-b-lg bg-gray-100 px-3 py-2 peer-checked:bg-gray-800">
+									<span className="text-plain-reverse text-sm font-medium">
 										{label}
 									</span>
 								</div>
 							</div>
 							{/* Selector circle */}
-							<span className="pointer-events-none absolute bottom-2 right-3 inline-flex h-5 w-5 items-center justify-center">
+							<span className="pointer-events-none absolute right-3 bottom-2 inline-flex h-5 w-5 items-center justify-center">
 								<span
 									className={`h-4 w-4 rounded-full border-2 transition-all duration-200 ease-out ${
 										selected

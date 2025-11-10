@@ -279,7 +279,7 @@ export const CustomLightBox = ({
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
-								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-gray-0"
+								className="bg-gray-0 flex h-full max-h-[90vh] w-full items-center justify-center"
 								data={bookmark?.url}
 								title="Website Preview"
 								type="text/html"
@@ -631,7 +631,7 @@ export const CustomLightBox = ({
 					// Left: Close button
 					<div className="flex items-center" key="left-section">
 						<button
-							className="group ml-4 mt-1.5 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
+							className="group text-gray-alpha-600 mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full opacity-50 hover:opacity-100"
 							onClick={handleClose}
 							type="button"
 						>
@@ -645,16 +645,16 @@ export const CustomLightBox = ({
 						key="center-section"
 					>
 						<a
-							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px] hover:bg-gray-alpha-100"
+							className="hover:bg-gray-alpha-100 flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px]"
 							href={bookmarks?.[activeIndex]?.url}
 							key="center-section"
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="truncate text-[14px] font-normal leading-[115%] tracking-normal text-gray-alpha-600">
+							<span className="text-gray-alpha-600 truncate text-[14px] leading-[115%] font-normal tracking-normal">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
-							<figure className="h-4 w-4 shrink-0 text-gray-alpha-600">
+							<figure className="text-gray-alpha-600 h-4 w-4 shrink-0">
 								<LightboxExternalLink />
 							</figure>
 						</a>
@@ -662,7 +662,7 @@ export const CustomLightBox = ({
 
 					// Right: Side pane toggle button
 					<div
-						className="group flex h-7 w-7 items-center justify-center pr-4 pt-[7px]"
+						className="group flex h-7 w-7 items-center justify-center pt-[7px] pr-4"
 						key="right-section"
 					>
 						<button
@@ -673,7 +673,7 @@ export const CustomLightBox = ({
 							}}
 							type="button"
 						>
-							<ShowSidePaneButton className="h-5 w-5 stroke-current text-gray-alpha-600 opacity-50 transition-colors duration-200 group-hover:opacity-100" />
+							<ShowSidePaneButton className="text-gray-alpha-600 h-5 w-5 stroke-current opacity-50 transition-colors duration-200 group-hover:opacity-100" />
 						</button>
 					</div>,
 				],

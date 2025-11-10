@@ -92,13 +92,13 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						/>
 					</span>
 				) : (
-					<figure className="flex h-[18px] w-[18px] items-center text-plain-reverse-color">
+					<figure className="text-plain-reverse flex h-[18px] w-[18px] items-center">
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}
 				{(!responsiveIcon || isDesktop) && (
 					<p
-						className="ml-2 flex-1 overflow-hidden truncate text-[14px] font-[450] leading-[115%] tracking-[0.01em]"
+						className="font-450 ml-2 flex-1 truncate overflow-hidden text-[14px] leading-[115%] tracking-[0.01em]"
 						id={listNameId}
 					>
 						{item?.name}
@@ -116,7 +116,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						{showSpinner ? (
 							<Spinner
 								className="h-3 w-3 animate-spin"
-								style={{ color: "var(--plain-reverse-color)" }}
+								style={{ color: "var(--color-plain-reverse)" }}
 							/>
 						) : (
 							<AriaDropdown
@@ -163,7 +163,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						)}
 						{item?.count !== undefined && !showSpinner && item?.current && (
 							<p
-								className={`h-3 w-3 items-center justify-end text-right align-middle text-[11px] font-450 leading-[115%] tracking-[0.03em] text-gray-600 ${
+								className={`font-450 h-3 w-3 items-center justify-end text-right align-middle text-[11px] leading-[115%] tracking-[0.03em] text-gray-600 ${
 									showDropdown ? "block group-hover:hidden" : "block"
 								} ${openedMenuId === item?.id ? "hidden" : ""}`}
 							>
@@ -176,7 +176,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					<span
 						className={`${
 							item?.name === "Tweets" ? "block" : "hidden"
-						} text-[11px] font-450 leading-3 text-gray-600 ${
+						} font-450 text-[11px] leading-3 text-gray-600 ${
 							showDropdown ? "block group-hover:hidden" : "block"
 						}`}
 					>

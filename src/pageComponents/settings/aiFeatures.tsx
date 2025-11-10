@@ -27,10 +27,10 @@ type AiFeaturesFormTypes = {
 const AiFeaturesSkeleton = () => (
 	<div className="animate-pulse space-y-6">
 		{/* Header Skeleton */}
-		<div className="h-6 w-40 rounded bg-gray-200" />
+		<div className="h-6 w-40 rounded-sm bg-gray-200" />
 		{/* Input Section Skeleton */}
 		<div className="space-y-3">
-			<div className="h-3 w-24 rounded bg-gray-200" />
+			<div className="h-3 w-24 rounded-sm bg-gray-200" />
 			<div className="h-10 rounded-md bg-gray-100" />
 		</div>
 		{/* Button Skeleton */}
@@ -72,7 +72,7 @@ export const AiFeatures = () => {
 			<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
 				{/* ---------- HEADER ---------- */}
 				<div className="relative mb-6 flex items-center">
-					<h2 className="text-[18px] font-[600] leading-[115%] tracking-normal text-gray-900">
+					<h2 className="text-[18px] leading-[115%] font-semibold tracking-normal text-gray-900">
 						AI Features
 					</h2>
 				</div>
@@ -134,7 +134,7 @@ export const AiFeatures = () => {
 							</p>
 						</div>
 					)}
-					<p className="mt-2 flex flex-wrap items-center text-13 leading-[150%] tracking-normal text-gray-600">
+					<p className="text-13 mt-2 flex flex-wrap items-center leading-[150%] tracking-normal text-gray-600">
 						<figure className="mr-2 shrink-0">
 							<InfoIcon />
 						</figure>
@@ -157,13 +157,13 @@ export const AiFeatures = () => {
 					Features
 				</p>
 				<div className="flex items-center justify-between rounded-lg bg-gray-100">
-					<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
+					<div className="max-sm:flex max-sm:w-full max-sm:items-center max-sm:justify-between">
  							<EyeIcon />
 							<p
 								className={`my-2 ml-2 text-gray-900  ${settingsParagraphClassName}`}
 							>
 								Auto generate image descriptions
-								<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
+								<p className="mt-1 text-[14px] font-normal leading-[115%] text-gray-600">
 									So you can search all your memes by text
 								</p>
 							</p>

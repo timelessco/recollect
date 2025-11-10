@@ -39,14 +39,14 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 			<MenuButton
 				className={`${menuButtonClassName ?? ""} ${
 					(menu.open && menuButtonActiveClassName) ?? ""
-				} focus-visible:outline-none`}
+				} focus-visible:outline-hidden`}
 				onClick={onButtonClick}
 				state={menu}
 			>
 				{menuButton}
 			</MenuButton>
 			<Menu
-				className={`${menuClassName ?? ""} focus-visible:outline-none`}
+				className={`${menuClassName ?? ""} leading-[20px] focus-visible:outline-hidden`}
 				initialFocusRef={props.initialFocusRef}
 				state={menu}
 			>

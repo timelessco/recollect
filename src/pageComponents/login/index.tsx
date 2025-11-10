@@ -25,26 +25,26 @@ const LoginPage = () => {
 	return (
 		<>
 			<div>
-				<div className="flex h-[calc(100vh-95px)] items-center justify-center sm:mx-auto sm:w-full sm:max-w-md">
+				<div className="flex h-[calc(100vh-95px)] items-center justify-center max-sm:mx-auto max-sm:w-full max-sm:max-w-md">
 					<div className="w-[300px]">
 						{/* Header */}
-						<div className="mb-[21px] flex w-full items-center justify-center text-2xl font-semibold leading-[28px] tracking-[0.24px]">
+						<div className="mb-[21px] flex w-full items-center justify-center text-2xl leading-[28px] font-semibold tracking-[0.24px]">
 							<figure className="mr-[6px]">
 								<LaterpadLogo />
 							</figure>
-							<p className="text-plain-reverse-color">recollect</p>
+							<p className="text-plain-reverse">recollect</p>
 						</div>
 						{/* Core Interaction */}
 						<div className="flex flex-col items-center justify-center space-y-4">
 							<button
-								className="flex h-[30px] w-full justify-center rounded-lg bg-gray-alpha-100 py-[7.5px] text-13 font-medium leading-[15px] text-gray-950 hover:bg-gray-300"
+								className="bg-gray-alpha-100 text-13 flex h-[30px] w-full justify-center rounded-lg py-[7.5px] leading-[15px] font-medium text-gray-950 hover:bg-gray-300"
 								onClick={async () => await router.push("/email")}
 								type="button"
 							>
 								Continue with Email
 							</button>
 							<button
-								className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-13 font-medium leading-[15px] text-gray-0 shadow-custom-2 hover:bg-gray-700"
+								className="text-13 text-gray-0 shadow-custom-2 flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] leading-[15px] font-medium hover:bg-gray-700"
 								onClick={async () => await signInWithOauth("google", supabase)}
 								type="button"
 							>

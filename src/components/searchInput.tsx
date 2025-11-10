@@ -51,7 +51,7 @@ const styles = {
 
 	suggestions: {
 		list: {
-			backgroundColor: "var(--plain-color)",
+			backgroundColor: "var(--color-plain)",
 			padding: "6px",
 			boxShadow:
 				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
@@ -119,7 +119,7 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	return (
 		<div className={wrapperClassNameBuilder}>
-			<figure className="absolute left-[9px] top-[7px] z-[5]">
+			<figure className="absolute top-[7px] left-[9px] z-5">
 				<SearchInputSearchIcon
 					color={isFocused ? "var(--color-gray-900)" : "var(--color-gray-600)"}
 					size="14"
@@ -173,10 +173,10 @@ const SearchInput = (props: SearchInputTypes) => {
 				/>
 			</MentionsInput>
 			{isSearchLoading && !isEmpty(searchText) && (
-				<div className="absolute right-2 top-1/2 -translate-y-1/2">
+				<div className="absolute top-1/2 right-2 -translate-y-1/2">
 					<Spinner
 						className="h-3 w-3 animate-spin"
-						style={{ color: "var(--plain-reverse-color)" }}
+						style={{ color: "var(--color-plain-reverse)" }}
 					/>
 				</div>
 			)}

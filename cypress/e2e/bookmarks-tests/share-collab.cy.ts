@@ -133,7 +133,7 @@ describe("share test", () => {
 		// del the added bookmark and clear trash
 		// click del icon for 1st bookmark in list
 		cy.get(
-			".my-masonry-grid_column:first-child .single-bookmark:first-child .helper-icons figure:nth-child(2)",
+			".my-masonry-grid_column:first-child .single-bookmark:first-child figure:nth-child(2)",
 		).click();
 
 		// go to trash page

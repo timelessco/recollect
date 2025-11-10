@@ -233,13 +233,13 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className={`group rounded-md border border-transparent py-[2px] text-left text-13 ${
+									className={`group text-13 rounded-md border border-transparent py-[2px] text-left ${
 										currentCollection ? "text-gray-800" : "text-gray-500"
-									} focus:outline-none`}
+									} focus:outline-hidden`}
 									type="button"
 								>
 									{/* Show current collection name or default text */}
-									<div className="flex items-center transition-all group-hover:text-plain-reverse-color">
+									<div className="group-hover:text-plain-reverse flex items-center transition-all">
 										<span>
 											{currentCollection
 												? currentCollection?.category_name
@@ -258,7 +258,7 @@ export const AddToCollectionDropdown = memo(
 								<div className="sticky top-0 z-10 bg-gray-50 p-1 pb-0">
 									<Ariakit.Combobox
 										autoFocus
-										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[14px] font-[400] leading-[115%] tracking-normal text-gray-800 placeholder:text-gray-alpha-600 focus:outline-none"
+										className="bg-gray-alpha-100 placeholder:text-gray-alpha-600 w-full rounded-lg px-2 py-[5px] text-[14px] leading-[115%] font-normal tracking-normal text-gray-800 focus:outline-hidden"
 										placeholder="Search"
 									/>
 								</div>
@@ -272,7 +272,7 @@ export const AddToCollectionDropdown = memo(
 												onClick={async () => await handleCollectionClick(null)}
 												value="Uncategorized"
 											>
-												<span className="text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
+												<span className="text-13 font-450 leading-[115%] tracking-[0.01em] text-gray-800">
 													Uncategorized
 												</span>
 											</Ariakit.ComboboxItem>
@@ -298,7 +298,7 @@ export const AddToCollectionDropdown = memo(
 														size="16"
 													/>
 													{/* Collection name */}
-													<span className="text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-800">
+													<span className="text-13 font-450 leading-[115%] tracking-[0.01em] text-gray-800">
 														{collection?.category_name}
 													</span>
 												</Ariakit.ComboboxItem>

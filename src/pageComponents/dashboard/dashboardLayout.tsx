@@ -294,7 +294,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[28px] rounded-none border-none bg-gray-0 p-0 text-xl font-semibold leading-[16px] text-gray-900 focus:outline-none"
+					className="bg-gray-0 m-0 h-[28px] rounded-none border-none p-0 text-xl leading-[16px] font-semibold text-gray-900 focus:outline-hidden"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -335,7 +335,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const renderSearchBar = showSearchBar ? (
-		<div className="w-[246px] xl:my-[2px] xl:w-full">
+		<div className="w-[246px] max-xl:my-[2px] max-xl:w-full">
 			<SearchInput
 				onBlur={() => !isDesktop && setShowSearchBar(false)}
 				onChange={(value) => {
@@ -491,7 +491,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return (
 			<AriaDropdown
 				menuButton={
-					<Button className="bg-transparent p-[7px] text-gray-600 hover:text-plain-reverse-color">
+					<Button className="hover:text-plain-reverse bg-transparent p-[7px] text-gray-600">
 						<OptionsIcon />
 					</Button>
 				}
@@ -515,7 +515,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<div className="relative">
 					<div className="">
 						<button
-							className="group absolute left-[-25px] top-[-25px] px-3 py-5"
+							className="group absolute top-[-25px] left-[-25px] px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
 							onClick={() => {
 								setShowSidePane(true);
@@ -529,7 +529,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								className={`${collapseButtonCommonClasses} top-[16px] group-hover:rotate-[-25deg]`}
 							/>
 							<div
-								className={`${collapseButtonCommonClasses} top-[26px] group-hover:rotate-[25deg]`}
+								className={`${collapseButtonCommonClasses} top-[26px] group-hover:rotate-25`}
 							/>
 						</button>
 					</div>
@@ -540,7 +540,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px] bg-[rgb(255_255_255/90%)] dark:bg-[rgb(16_16_16/90%)] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)]",
+			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-5 backdrop-blur-[20.5px] bg-[rgb(255_255_255/90%)] dark:bg-[rgb(16_16_16/90%)] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
@@ -551,13 +551,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 
 		const figureWrapperClass = classNames(
-			"flex items-center px-2 py-[3px] w-1/5 xl:w-3/4",
+			"flex items-center px-2 py-[3px] w-1/5 max-xl:w-3/4",
 		);
 
 		const navOptionsWrapperClass = classNames({
-			"flex w-4/5 items-center justify-between xl:justify-end  sm:mt-0": true,
-			"xl:w-full": showSearchBar,
-			"xl:w-1/4": !showSearchBar,
+			"flex w-4/5 items-center justify-between max-xl:justify-end  max-sm:mt-0": true,
+			"max-xl:w-full": showSearchBar,
+			"max-xl:w-1/4": !showSearchBar,
 		});
 
 		const showHeadingCondition = isDesktop ? true : !showSearchBar;
@@ -567,7 +567,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center text-plain-reverse-color">
+						<figure className="text-plain-reverse mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}
@@ -595,9 +595,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				)}
 				<div className={navOptionsWrapperClass}>
 					{/* this div is there for centering needs */}
-					<div className="h-5 w-[1%] xl:hidden" />
+					<div className="h-5 w-[1%] max-xl:hidden" />
 					{renderSearchBar}
-					<div className="flex w-[27%] items-center justify-end space-x-3 xl:w-max xl:space-x-2">
+					<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
 						{renderViewBasedHeaderOptions()}
 						{currentPath !== TRASH_URL && (
 							<AddBookmarkDropdown

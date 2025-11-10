@@ -9,7 +9,7 @@ const ShareDropdown = ({ renderOnlyButton = false }) => {
 
 	const buttonContent = (
 		<div className={`flex ${dropdownMenuItemClassName}`}>
-			<figure className="h-4 w-4 text-gray-1000">
+			<figure className="text-gray-1000 h-4 w-4">
 				<ShareIcon />
 			</figure>
 			<span className="ml-[7px]">Share</span>
@@ -22,7 +22,7 @@ const ShareDropdown = ({ renderOnlyButton = false }) => {
 
 	return (
 		<>
-			<MenuButton as="div" className="outline-none" state={menu}>
+			<MenuButton as="div" className="outline-hidden" state={menu}>
 				<Button
 					id="share-button"
 					isActive={menu.open}
@@ -35,7 +35,7 @@ const ShareDropdown = ({ renderOnlyButton = false }) => {
 			</MenuButton>
 			<Menu
 				// initialFocusRef={radioFocusRef}
-				className="z-20 w-[307px] origin-top-left rounded-xl bg-white p-[6px] shadow-custom-1 ring-1 ring-black/5"
+				className="shadow-custom-1 z-20 w-[307px] origin-top-left rounded-xl bg-white p-[6px] ring-1 ring-black/5"
 				state={menu}
 			>
 				{/* <ShareContent /> */}
