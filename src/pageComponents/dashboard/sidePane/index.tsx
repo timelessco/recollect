@@ -19,6 +19,7 @@ type SidePaneTypes = {
 	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 	isLoadingCategories?: boolean;
+	isFetchingCategories?: boolean;
 };
 
 const SidePane = (props: SidePaneTypes) => {
@@ -29,6 +30,7 @@ const SidePane = (props: SidePaneTypes) => {
 		onAddNewCategory,
 		onIconColorChange,
 		isLoadingCategories = false,
+		isFetchingCategories = false,
 	} = props;
 
 	return (
@@ -42,6 +44,7 @@ const SidePane = (props: SidePaneTypes) => {
 				onIconColorChange={onIconColorChange}
 				onIconSelect={(value, id) => onIconSelect(value, id)}
 				isLoadingCategories={isLoadingCategories}
+				isFetchingCategories={isFetchingCategories}
 			/>
 			<SidePaneTypesList />
 		</nav>

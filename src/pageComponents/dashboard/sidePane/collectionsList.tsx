@@ -85,6 +85,7 @@ type CollectionsListPropertyTypes = {
 	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
 	isLoadingCategories?: boolean;
+	isFetchingCategories?: boolean;
 };
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
@@ -313,6 +314,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		onAddNewCategory,
 		onIconColorChange,
 		isLoadingCategories = false,
+		isFetchingCategories = false,
 	} = listProps;
 
 	const queryClient = useQueryClient();
@@ -553,7 +555,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		<div className="pt-4">
 			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
 				<div id="collections-wrapper">
-					{isLoadingCategories ? (
+					{isLoadingCategories || isFetchingCategories ? (
 						<CollectionsListSkeleton />
 					) : (
 						<ListBoxDrop

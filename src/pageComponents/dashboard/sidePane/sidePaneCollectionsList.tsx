@@ -13,6 +13,7 @@ type SidePaneCollectionsListTypes = {
 	) => Promise<void>;
 	onIconSelect: (value: string, id: number) => void;
 	isLoadingCategories?: boolean;
+	isFetchingCategories?: boolean;
 	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 };
 
@@ -23,6 +24,7 @@ const SidePaneCollectionsList = (props: SidePaneCollectionsListTypes) => {
 		onIconSelect,
 		onAddNewCategory,
 		isLoadingCategories,
+		isFetchingCategories,
 		onIconColorChange,
 	} = props;
 	return (
@@ -32,6 +34,7 @@ const SidePaneCollectionsList = (props: SidePaneCollectionsListTypes) => {
 			onCategoryOptionClick={onCategoryOptionClick}
 			onIconSelect={(value, id) => onIconSelect(value, id)}
 			isLoadingCategories={isLoadingCategories}
+			isFetchingCategories={isFetchingCategories}
 			onIconColorChange={onIconColorChange}
 		/>
 	);
