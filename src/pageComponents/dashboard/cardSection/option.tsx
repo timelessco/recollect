@@ -16,14 +16,12 @@ import { type SingleListData } from "../../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
 	PREVIEW_PATH,
-	springConfig,
 	viewValues,
 } from "../../../utils/constants";
 
 import "yet-another-react-lightbox/styles.css";
 
 import { useRouter } from "next/router";
-import { motion } from "motion/react";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { getCategorySlugFromRouter } from "../../../utils/url";
@@ -91,10 +89,7 @@ const Option = ({
 
 	const disableDndCondition = isPublicPage;
 	return (
-		<motion.li
-			animate={{
-				scale: 1,
-			}}
+		<li
 			aria-selected={isSelected}
 			className={classNames(liClassName, {
 				"rounded-b-lg rounded-t-3xl":
@@ -104,8 +99,6 @@ const Option = ({
 			})}
 			ref={ref}
 			role="option"
-			transition={springConfig}
-			whileTap={{ scale: 0.95 }}
 			{...omit(
 				!lightboxOpen
 					? mergeProps(
@@ -174,7 +167,7 @@ const Option = ({
 						: {})}
 				/>
 			)}
-		</motion.li>
+		</li>
 	);
 };
 

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "motion/react";
 
 import {
 	AriaDropdown,
@@ -20,7 +19,6 @@ import {
 	dropdownMenuItemClassName,
 	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
-import { springConfig } from "../../../utils/constants";
 
 export type CollectionItemTypes = {
 	count?: number;
@@ -197,28 +195,18 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		return (
 			<Link href={item?.href} legacyBehavior passHref>
 				{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-				<motion.a
-					className={contentWrapperClassNames}
-					draggable={false}
-					transition={springConfig}
-					whileTap={{ scale: 0.95 }}
-				>
+				<a className={contentWrapperClassNames} draggable={false}>
 					{renderContent()}
-				</motion.a>
+				</a>
 			</Link>
 		);
 	}
 
 	return (
 		// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-		<motion.div
-			className={contentWrapperClassNames}
-			onClick={onClick}
-			transition={springConfig}
-			whileTap={{ scale: 0.95 }}
-		>
+		<div className={contentWrapperClassNames} onClick={onClick}>
 			{renderContent()}
-		</motion.div>
+		</div>
 	);
 };
 
