@@ -5,9 +5,9 @@ export const cx = (...classNames: any[]) =>
 
 export const tcm = extendTailwindMerge({
 	classGroups: {
-		"drop-shadow": [
+		"drop-shadow-sm": [
 			{
-				"drop-shadow": ["custom-1"],
+				"drop-shadow-sm": ["custom-1"],
 			},
 		],
 	},

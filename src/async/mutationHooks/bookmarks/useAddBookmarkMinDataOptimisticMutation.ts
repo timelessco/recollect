@@ -140,7 +140,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 					try {
 						// adding id into loading state for the case of pdf
 						addLoadingBookmarkId(data?.id);
-						successToast("generating thumbnail");
+						successToast("Generating thumbnail");
 						await handlePdfThumbnailAndUpload({
 							fileUrl: data?.url,
 							fileId: data?.id,

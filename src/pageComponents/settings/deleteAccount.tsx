@@ -83,7 +83,7 @@ const DeleteAccout = () => {
 		<>
 			<div className="relative mb-[34px] flex items-center">
 				<Button
-					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
+					className="bg-gray-0 absolute left-[-7px] rounded-full p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure>
@@ -107,7 +107,7 @@ const DeleteAccout = () => {
 				className="mt-6 flex items-end justify-between"
 				onSubmit={handleSubmit(onSubmit)}
 			>
-				<div className="w-[70%] sm:w-full">
+				<div className="w-[70%] max-sm:w-full">
 					<LabelledComponent
 						label={`Please type your username ${userData?.user_name} to continue`}
 						labelClassName={settingsInputLabelClassName}
@@ -131,14 +131,14 @@ const DeleteAccout = () => {
 					</LabelledComponent>
 				</div>
 				<Button
-					className={`w-[150px] sm:w-full ${settingsDeleteButtonRedClassName}`}
+					className={`w-[150px] max-sm:w-full ${settingsDeleteButtonRedClassName}`}
 					onClick={handleSubmit(onSubmit)}
 				>
 					<div className="flex w-full items-center justify-center">
 						<figure className="mr-2">
 							<TrashIconRed />
 						</figure>
-						<p className="flex w-full justify-center sm:w-[100px]">
+						<p className="flex w-full justify-center max-sm:w-[100px]">
 							{deleteUserMutation?.isLoading ? (
 								<Spinner
 									className="h-3 w-3 animate-spin"

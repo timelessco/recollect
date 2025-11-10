@@ -21,7 +21,6 @@ import prettier from "eslint-config-prettier/flat";
 import jsonc from "eslint-plugin-jsonc";
 import packageJson from "eslint-plugin-package-json";
 import reactRefresh from "eslint-plugin-react-refresh";
-import tailwind from "eslint-plugin-tailwindcss";
 import yml from "eslint-plugin-yml";
 import { defineConfig, globalIgnores } from "eslint/config";
 
@@ -83,7 +82,6 @@ export default defineConfig(
 	zod.recommended,
 	// TODO: Add lodash recommended later
 	// lodash.recommended,
-	...tailwind.configs["flat/recommended"],
 	{
 		rules: {
 			// Eslint
@@ -170,135 +168,3 @@ export default defineConfig(
 	},
 	prettier,
 );
-
-// /**
-//  * @type {import('@typescript-eslint/experimental-utils').TSESLint.Linter.Config}
-//  */
-// module.exports = {
-// 	ignorePatterns: ["!**/.*"],
-// 	overrides: [
-// 		{
-// 			files: ["*.js", "*.cjs"],
-// 			extends: [
-// 				"canonical",
-// 				"canonical/node",
-// 				"canonical/regexp",
-// 				"canonical/jsdoc",
-// 				"canonical/zod",
-// 				"prettier",
-// 			],
-// 			settings: {
-// 				jsdoc: {
-// 					mode: "typescript",
-// 				},
-// 			},
-// 			rules: {
-// 				...commonNodeIgnoredRules,
-// 				"import/extensions": [
-// 					"error",
-// 					"always",
-// 					{
-// 						ignorePackages: true,
-// 					},
-// 				],
-// 			},
-// 			overrides: [
-// 				{
-// 					files: ["*.js"],
-// 					extends: ["canonical/module"],
-// 				},
-// 			],
-// 		},
-// 		{
-// 			files: ["./*.ts", "env/*.ts"],
-// 			excludedFiles: ["next-env.d.ts", "sentry.client.config.ts"],
-// 			extends: [
-// 				"canonical",
-// 				"canonical/node",
-// 				"canonical/module",
-// 				"canonical/typescript",
-// 				"canonical/typescript-type-checking",
-// 				"canonical/jsdoc",
-// 				"canonical/regexp",
-// 				"canonical/zod",
-// 				"prettier",
-// 			],
-// 			parserOptions: {
-// 				project: "./tsconfig.json",
-// 			},
-// 			settings: {
-// 				jsdoc: {
-// 					mode: "typescript",
-// 				},
-// 			},
-// 			rules: {
-// 				...commonNodeIgnoredRules,
-// 				...commonTypescriptIgnoredRules,
-// 			},
-// 		},
-// 		{
-// 			files: ["src/**/*.{ts,tsx}"],
-// 			extends: [
-// 				"canonical",
-// 				"canonical/browser",
-// 				"canonical/module",
-// 				"canonical/typescript",
-// 				"canonical/typescript-type-checking",
-// 				"canonical/zod",
-// 				"canonical/regexp",
-// 				"plugin:@next/next/core-web-vitals",
-// 				"prettier",
-// 			],
-// 			parserOptions: {
-// 				project: "./tsconfig.json",
-// 			},
-// 			rules: {
-// 				...commonIgnoredRules,
-// 				...commonTypescriptIgnoredRules,
-// 			},
-// 			overrides: [
-// 				{
-// 					files: ["*.ts"],
-// 					extends: ["canonical/jsdoc"],
-// 					settings: {
-// 						jsdoc: {
-// 							mode: "typescript",
-// 						},
-// 					},
-// 				},
-// 				{
-// 					files: ["*.tsx", "use*.ts"],
-// 					extends: [
-// 						"canonical/react",
-// 						"canonical/jsx-a11y",
-// 						"plugin:tailwindcss/recommended",
-// 					],
-// 					parserOptions: {
-// 						ecmaFeatures: {
-// 							jsx: true,
-// 						},
-// 					},
-// 					rules: {
-// 						// To support dynamic import
-// 						"promise/prefer-await-to-then": "off",
-// 						"@typescript-eslint/promise-function-async": "off",
-// 						// Other react rules
-// 						"react/hook-use-state": "off",
-// 						"react/jsx-indent": ["error", "tab"],
-// 						"react/jsx-indent-props": ["error", "tab"],
-// 						"react/forbid-component-props": "off",
-// 						"react/prop-types": "off",
-// 						"react/jsx-handler-names": "off",
-// 						"react/jsx-curly-newline": "off",
-// 						"react/prefer-read-only-props": "off",
-// 					},
-// 					settings: {
-// 						tailwindcss: {
-// 							config: "tailwind.config.cjs",
-// 						},
-// 					},
-// 				},
-// 			],
-// 		},
-// 	],
-// };

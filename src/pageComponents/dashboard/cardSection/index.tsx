@@ -253,7 +253,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-sm z-15";
+			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs z-15";
 
 		const externalLinkIcon = (
 			<div
@@ -397,7 +397,7 @@ const CardSection = ({
 								deleteBookmarkId?.includes(post?.id) ? (
 									<Spinner
 										className="h-3 w-3 animate-spin"
-										style={{ color: "var(--plain-reverse-color)" }}
+										style={{ color: "var(--color-plain-reverse)" }}
 									/>
 								) : (
 									trashIcon
@@ -407,12 +407,12 @@ const CardSection = ({
 							pencilIcon
 						)}
 					</div>
-					<div className="absolute right-8 top-0 flex">{externalLinkIcon}</div>
+					<div className="absolute top-0 right-8 flex">{externalLinkIcon}</div>
 				</>
 			);
 		}
 
-		return <div className="absolute left-[10px] top-0">{externalLinkIcon}</div>;
+		return <div className="absolute top-0 left-[10px]">{externalLinkIcon}</div>;
 	};
 
 	const renderAvatar = (item: SingleListData) => {
@@ -444,9 +444,9 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 sm:max-w-[60%] ${
+			className={`text-13 relative mr-2 ml-1 truncate align-middle leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
-					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
+					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
 			}`}
 			id="base-url"
@@ -523,11 +523,11 @@ const CardSection = ({
 		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
-			"h-[14] w-[14px] mt-[1px]": cardTypeCondition !== viewValues.headlines,
+			"h-[14] w-[14px] mt-px": cardTypeCondition !== viewValues.headlines,
 		});
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-gray-1000">
+				<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
 					<ImageIcon size={`${size}`} />
 				</figure>
 			);
@@ -539,7 +539,7 @@ const CardSection = ({
 				<figure className={favIconFigureClassName}>
 					<Image
 						alt="fav-icon"
-						className="rounded"
+						className="rounded-sm"
 						height={size}
 						onError={() =>
 							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
@@ -556,7 +556,7 @@ const CardSection = ({
 				<figure className={favIconFigureClassName}>
 					<Image
 						alt="fav-icon"
-						className="rounded"
+						className="rounded-sm"
 						height={size}
 						onError={() =>
 							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
@@ -574,7 +574,7 @@ const CardSection = ({
 			currentPath === VIDEOS_URL
 		) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-gray-1000">
+				<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
 					<VideoIcon size="15" />
 				</figure>
 			);
@@ -586,14 +586,14 @@ const CardSection = ({
 			currentPath === DOCUMENTS_URL
 		) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-gray-1000">
+				<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
 					<FolderIcon size="15" />
 				</figure>
 			);
 		}
 
 		return (
-			<figure className="card-icon rounded p-0.5 text-gray-1000">
+			<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
 				<ImageIcon size={`${size}`} />
 			</figure>
 		);
@@ -609,10 +609,10 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-13 font-450 leading-4 text-gray-600">
+						<div className="text-13 font-450 ml-1 flex items-center leading-4 text-gray-600">
 							<p className="mr-1">in</p>
 							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-13 font-450 leading-4 text-gray-600">
+							<p className="text-13 font-450 ml-1 leading-4 text-gray-600">
 								{bookmarkCategoryData?.category_name}
 							</p>
 						</div>
@@ -623,7 +623,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-500"
+			className="text-13 font-450 rounded-[5px] bg-gray-100 px-1 py-[1.5px] leading-[14.9px] tracking-[0.13px] text-gray-500 not-italic"
 			key={id}
 		>
 			#{name}
@@ -656,7 +656,7 @@ const CardSection = ({
 
 	const moodboardAndCardInfoWrapperClass = classNames({
 		"card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 dark:group-hover:bg-gray-alpha-100 duration-150 transition-all": true,
-		"flex-grow": cardTypeCondition === viewValues.card,
+		grow: cardTypeCondition === viewValues.card,
 	});
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
@@ -673,7 +673,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900">
+						<p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -698,7 +698,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="text-13 font-450 relative leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -714,10 +714,9 @@ const CardSection = ({
 				</div>
 			)}
 			<div
-				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className={`w-full items-center space-x-1 ${
 					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
-				} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
+				} absolute top-[10px] right-[8px] group-hover:flex`}
 			>
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
@@ -741,31 +740,31 @@ const CardSection = ({
 			)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="overflow-hidden sm:space-y-1">
+				<div className="overflow-hidden max-sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-900">
+						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
 							{item?.title}
 						</p>
 					)}
-					<div className="flex flex-wrap items-center space-x-1 sm:space-x-0 sm:space-y-1">
+					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-gray-600 sm:mt-px">
+								<p className="text-13 font-450 mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden leading-4 break-all text-gray-600 max-sm:mt-px">
 									{item?.description}
 								</p>
 							)}
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center space-x-px sm:mt-px">
+								<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
 									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
 						{bookmarksInfoValue?.includes("info" as never) && (
-							<div className="mt-[6px] flex flex-wrap items-center sm:mt-px sm:space-x-1">
+							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -780,7 +779,7 @@ const CardSection = ({
 					</div>
 				</div>
 			)}
-			<div className="absolute right-[8px] top-[15px] hidden items-center space-x-1 group-hover:flex">
+			<div className="absolute top-[15px] right-[8px] hidden items-center space-x-1 group-hover:flex">
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>
@@ -794,7 +793,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-900">
+						<p className="card-title w-[98%] truncate text-sm leading-4 font-medium text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -803,7 +802,7 @@ const CardSection = ({
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -817,7 +816,7 @@ const CardSection = ({
 					</div>
 				</div>
 			)}
-			<div className="absolute right-[8px] top-[11px] hidden items-center space-x-1 group-hover:flex">
+			<div className="absolute top-[11px] right-[8px] hidden items-center space-x-1 group-hover:flex">
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>

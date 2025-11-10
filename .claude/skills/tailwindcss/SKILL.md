@@ -292,10 +292,10 @@ Use the `@theme` directive in CSS:
 
 ```html
 <div class="relative">
-	<div class="absolute right-0 top-0">Positioned</div>
+	<div class="absolute top-0 right-0">Positioned</div>
 </div>
 
-<div class="fixed bottom-4 right-4">Fixed</div>
+<div class="fixed right-4 bottom-4">Fixed</div>
 <div class="sticky top-0">Sticky header</div>
 ```
 
@@ -306,7 +306,7 @@ Use the `@theme` directive in CSS:
 ```html
 <div class="p-4">Padding all sides</div>
 <div class="px-6 py-3">Padding X and Y</div>
-<div class="pb-4 pt-8">Padding top/bottom</div>
+<div class="pt-8 pb-4">Padding top/bottom</div>
 <div class="m-4">Margin all sides</div>
 <div class="mx-auto">Center horizontally</div>
 <div class="-mt-4">Negative margin</div>
@@ -391,8 +391,8 @@ Use the `@theme` directive in CSS:
 ```html
 <div class="border">Default border</div>
 <div class="border-2 border-gray-300">2px border</div>
-<div class="border-b-2 border-t">Top and bottom borders</div>
-<div class="rounded">Rounded corners</div>
+<div class="border-t border-b-2">Top and bottom borders</div>
+<div class="rounded-sm">Rounded corners</div>
 <div class="rounded-lg">Large rounded</div>
 <div class="rounded-full">Fully rounded</div>
 <div class="rounded-md border border-red-500">Combined</div>
@@ -401,7 +401,7 @@ Use the `@theme` directive in CSS:
 ### Shadows
 
 ```html
-<div class="shadow">Small shadow</div>
+<div class="shadow-sm">Small shadow</div>
 <div class="shadow-md">Medium shadow</div>
 <div class="shadow-lg">Large shadow</div>
 <div class="shadow-xl">Extra large shadow</div>
@@ -426,7 +426,7 @@ Tailwind uses a mobile-first approach. Base styles apply to all screen sizes, th
 
 ```html
 <!-- Mobile: 1 column, Tablet: 2 columns, Desktop: 4 columns -->
-<div class="grid grid-cols-1 gap-4 lg:grid-cols-4 sm:grid-cols-2">
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 	<div>Item 1</div>
 	<div>Item 2</div>
 	<div>Item 3</div>
@@ -440,7 +440,7 @@ Tailwind uses a mobile-first approach. Base styles apply to all screen sizes, th
 <div class="block lg:hidden">Mobile only content</div>
 
 <!-- Responsive text sizes -->
-<h1 class="text-2xl lg:text-6xl md:text-4xl">Responsive heading</h1>
+<h1 class="text-2xl md:text-4xl lg:text-6xl">Responsive heading</h1>
 ```
 
 ### Custom Breakpoints
@@ -460,10 +460,10 @@ Tailwind uses a mobile-first approach. Base styles apply to all screen sizes, th
 
 ```html
 <!-- Only apply styles below 768px -->
-<div class="max-md:hidden flex">Hidden on mobile</div>
+<div class="flex max-md:hidden">Hidden on mobile</div>
 
 <!-- Between breakpoints -->
-<div class="lg:hidden md:block">Only visible on tablets</div>
+<div class="md:block lg:hidden">Only visible on tablets</div>
 ```
 
 ### Container Queries
@@ -493,7 +493,9 @@ Style elements based on parent container width:
 ```html
 <input class="border focus:border-blue-500 focus:ring-2 focus:ring-blue-200" />
 
-<button class="bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300">
+<button
+	class="bg-blue-500 focus:ring-4 focus:ring-blue-300 focus:outline-hidden"
+>
 	Accessible button
 </button>
 ```
@@ -523,7 +525,7 @@ Style elements based on parent container width:
 <input class="invalid:border-red-500 focus:invalid:ring-red-200" required />
 
 <input
-	class="placeholder:italic placeholder:text-gray-400"
+	class="placeholder:text-gray-400 placeholder:italic"
 	placeholder="Search..."
 />
 
@@ -683,7 +685,7 @@ Use square brackets for one-off custom values:
 <div class="skew-x-12">Skew</div>
 
 <!-- Combined -->
-<div class="translate-x-2 rotate-3 scale-110 transform">
+<div class="translate-x-2 scale-110 rotate-3 transform">
 	Multiple transforms
 </div>
 ```
@@ -784,7 +786,7 @@ Extract repeated utilities into CSS classes:
 }
 
 .input-field {
-	@apply rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
+	@apply rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-hidden;
 }
 ```
 
@@ -795,7 +797,7 @@ Extract repeated utilities into CSS classes:
 ```html
 <!-- Primary button -->
 <button
-	class="transform rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:scale-105 hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+	class="transform rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:scale-105 hover:bg-blue-700 hover:shadow-lg focus:ring-4 focus:ring-blue-300 focus:outline-hidden active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
 >
 	Click me
 </button>
@@ -852,7 +854,7 @@ Extract repeated utilities into CSS classes:
 		<input
 			type="email"
 			id="email"
-			class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+			class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 			placeholder="you@example.com"
 		/>
 	</div>
@@ -867,7 +869,7 @@ Extract repeated utilities into CSS classes:
 		<input
 			type="password"
 			id="password"
-			class="w-full rounded-lg border border-gray-300 px-4 py-2 invalid:border-red-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+			class="w-full rounded-lg border border-gray-300 px-4 py-2 invalid:border-red-500 focus:ring-2 focus:ring-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 		/>
 	</div>
 
@@ -907,7 +909,7 @@ Extract repeated utilities into CSS classes:
 				</div>
 			</div>
 			<button
-				class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800 md:hidden"
+				class="rounded-sm p-2 hover:bg-gray-100 md:hidden dark:hover:bg-gray-800"
 			>
 				<svg class="h-6 w-6">...</svg>
 			</button>
@@ -921,7 +923,7 @@ Extract repeated utilities into CSS classes:
 ```html
 <div class="container mx-auto px-4 py-8">
 	<div
-		class="grid grid-cols-1 gap-6 xl:grid-cols-4 lg:grid-cols-3 sm:grid-cols-2"
+		class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
 	>
 		<div class="rounded-lg bg-white p-6 shadow-md">Item 1</div>
 		<div class="rounded-lg bg-white p-6 shadow-md">Item 2</div>
@@ -957,7 +959,7 @@ Extract repeated utilities into CSS classes:
 
 ```html
 <!-- Good: Mobile first, then scale up -->
-<div class="text-base lg:text-xl md:text-lg">
+<div class="text-base md:text-lg lg:text-xl">
 	<!-- Avoid: Desktop first -->
 	<div class="text-xl lg:text-base"></div>
 </div>
@@ -996,7 +998,7 @@ function Button({ children, variant = "primary" }) {
 ### 6. Accessibility First
 
 ```html
-<button class="focus:outline-none focus:ring-4 focus:ring-blue-300">
+<button class="focus:ring-4 focus:ring-blue-300 focus:outline-hidden">
 	Accessible button
 </button>
 
