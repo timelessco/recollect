@@ -197,7 +197,6 @@ const Dashboard = () => {
 		allBookmarksData,
 		fetchNextPage: fetchNextBookmarkPage,
 		isAllBookmarksDataLoading,
-		isFetchingAllBookmarksData,
 	} = useFetchPaginatedBookmarks();
 
 	const {
@@ -689,6 +688,12 @@ const Dashboard = () => {
 												isBookmarkLoading={
 													addBookmarkMinDataOptimisticMutation?.isLoading
 												}
+												isLoading={
+													isLoadingCategories ||
+													isFetchingCategories ||
+													isAllBookmarksDataLoading ||
+													(isSearchLoading && flattenedSearchData.length === 0)
+												}
 												isOgImgLoading={
 													addBookmarkScreenshotMutation?.isLoading
 												}
@@ -835,8 +840,6 @@ const Dashboard = () => {
 													)
 												}
 												userId={session?.user?.id ?? ""}
-												isBookmarksLoading={isAllBookmarksDataLoading}
-												isBookmarksFetching={isFetchingAllBookmarksData}
 											/>
 										</InfiniteScroll>
 									</div>

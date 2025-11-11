@@ -65,9 +65,9 @@ import {
 } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
+import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
-import { MoodboardSkeletonLoader } from "./moodboardSkeleton";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -80,6 +80,7 @@ export type CardSectionProps = {
 
 	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
+	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
@@ -88,10 +89,8 @@ export type CardSectionProps = {
 	onDeleteClick: (post: SingleListData[]) => void;
 	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
-	isBookmarksLoading: boolean;
 	showAvatar: boolean;
 	userId: string;
-	isBookmarksFetching: boolean;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -100,6 +99,7 @@ const getImageSource = (item: SingleListData) =>
 
 const CardSection = ({
 	listData = [],
+	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
 	onEditClick = () => null,
@@ -112,8 +112,6 @@ const CardSection = ({
 	onBulkBookmarkDelete,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
-	isBookmarksLoading = false,
-	isBookmarksFetching = false,
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
@@ -856,6 +854,16 @@ const CardSection = ({
 	const renderItem = () => {
 		const sortByCondition = renderSortByCondition();
 
+		if (isLoading) {
+			return (
+				<BookmarksSkeletonLoader
+					count={26}
+					type={cardTypeCondition}
+					colCount={bookmarksColumns?.[0]}
+				/>
+			);
+		}
+
 		if (isEmpty(sortByCondition) && categorySlug === TWEETS_URL) {
 			return (
 				<div className="p-6 text-center">
@@ -869,15 +877,6 @@ const CardSection = ({
 				<p className="text-lg font-medium text-gray-600">{message}</p>
 			</div>
 		);
-		if (isBookmarksLoading || isBookmarksFetching || isSearchLoading) {
-			return (
-				<MoodboardSkeletonLoader
-					count={26}
-					type={cardTypeCondition}
-					colCount={bookmarksColumns?.[0]}
-				/>
-			);
-		}
 
 		// Only show "No results found" if we have search text, no results, and we're not loading anything
 		if (

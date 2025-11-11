@@ -404,13 +404,7 @@ export const searchSlugKey = (categoryData: {
 };
 
 export const getColumnCount = (isDesktop: boolean, colCount?: number) => {
-	console.log("getColumnCount called with:", {
-		isDesktop,
-		colCount,
-	});
-
 	if (!isDesktop) {
-		console.log("Not in desktop view, returning 2 columns");
 		return 2;
 	}
 

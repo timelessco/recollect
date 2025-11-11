@@ -4,7 +4,7 @@ import { getColumnCount } from "../../../utils/helpers";
 
 const precomputedHeights = generateRandomHeights(26);
 
-export const MoodboardSkeletonLoader = ({
+export const BookmarksSkeletonLoader = ({
 	count = 26,
 	type,
 	colCount,
