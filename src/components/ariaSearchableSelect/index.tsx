@@ -68,7 +68,7 @@ const AriaSearchableSelect = ({
 					}}
 					value={isEmpty(defaultValue) ? "Uncategorized" : defaultValue}
 				>
-					<Ariakit.Select className="aria-multi-select text-13 font-450 flex w-full items-center justify-between leading-[15px] tracking-[0.01em] text-gray-900 outline-hidden" />
+					<Ariakit.Select className="aria-multi-select text-13 font-450 outline-hidden flex w-full items-center justify-between leading-[15px] tracking-[0.01em] text-gray-900" />
 					{isLoading && (
 						<Spinner
 							className="h-3 w-3 animate-spin"
@@ -83,7 +83,7 @@ const AriaSearchableSelect = ({
 						<div className="px-2 py-[5px]">
 							<Ariakit.Combobox
 								autoSelect
-								className="w-full bg-transparent text-sm leading-4 font-normal text-gray-600 outline-hidden"
+								className="outline-hidden w-full bg-transparent text-sm font-normal leading-4 text-gray-600"
 								placeholder="Search..."
 							/>
 						</div>

@@ -288,7 +288,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				</Button>
 			</MenuButton>
 			<Menu
-				className="shadow-custom-1 z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 ring-1 ring-black/5"
+				className="shadow-custom-1 z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pb-3 pt-[6px] ring-1 ring-black/5"
 				initialFocusRef={radio0ref}
 				state={menu}
 			>

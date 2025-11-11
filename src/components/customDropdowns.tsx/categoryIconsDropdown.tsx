@@ -116,7 +116,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 	const renderComboBoxItem = (value: string, index: number) => (
 		<ComboboxItem
-			className="custom-select rounded-md p-1 hover:bg-gray-200 data-active-item:bg-gray-200"
+			className="custom-select data-active-item:bg-gray-200 rounded-md p-1 hover:bg-gray-200"
 			key={value + index}
 			onClick={() => onIconSelect(value)}
 			setValueOnClick={false}
@@ -163,13 +163,13 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				/>
 			</MenuButton>
 			<Menu
-				className="shadow-custom-1 absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-gray-50 px-3 ring-1 ring-black/5 focus:outline-hidden"
+				className="shadow-custom-1 focus:outline-hidden absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-gray-50 px-3 ring-1 ring-black/5"
 				composite={false}
 				portal
 				state={menu}
 			>
 				<div className="flex items-center justify-between border-b border-b-gray-200 py-3">
-					<span className="text-sm leading-4 font-medium text-gray-800">
+					<span className="text-sm font-medium leading-4 text-gray-800">
 						Choose an icon
 					</span>
 					<div className="flex w-[139px] items-center rounded-lg bg-gray-100 px-[10px] py-[7px]">
@@ -178,7 +178,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						</figure>
 						<Combobox
 							autoSelect
-							className="w-[101px] bg-gray-100 text-sm leading-4 font-normal text-gray-600 focus:outline-hidden"
+							className="focus:outline-hidden w-[101px] bg-gray-100 text-sm font-normal leading-4 text-gray-600"
 							onChange={(changeEvent) => {
 								if (changeEvent?.target?.value?.length > 1) {
 									setIsSearch(true);
@@ -205,7 +205,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 					/>
 				</div>
 				<ComboboxList
-					className="flex h-[253px] flex-col pt-2 pb-3"
+					className="flex h-[253px] flex-col pb-3 pt-2"
 					id="icon-selector"
 					state={combobox}
 				>

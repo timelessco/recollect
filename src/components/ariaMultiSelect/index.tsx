@@ -86,7 +86,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
 			<>
 				{label && <label htmlFor={inputId}>{label}</label>}
 				<Ariakit.Combobox
-					className="ml-1 w-full bg-inherit text-sm leading-4 font-normal text-gray-600 outline-hidden"
+					className="outline-hidden ml-1 w-full bg-inherit text-sm font-normal leading-4 text-gray-600"
 					id={inputId}
 					ref={ref}
 					store={combobox}

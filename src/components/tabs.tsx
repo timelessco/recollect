@@ -14,7 +14,7 @@ const Tabs = (props: TabsProps) => {
 				<label className="sr-only" htmlFor="tabs">
 					Select a tab
 					<select
-						className="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-gray-500 focus:ring-gray-500 focus:outline-hidden max-sm:text-sm"
+						className="focus:outline-hidden block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-gray-500 focus:ring-gray-500 max-sm:text-sm"
 						defaultValue={tabs.find((tab) => tab.current)?.name}
 						id="tabs"
 						name="tabs"
@@ -35,7 +35,7 @@ const Tabs = (props: TabsProps) => {
 									tab.current
 										? "border-gray-500 text-gray-600"
 										: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
-									"cursor-pointer border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap",
+									"cursor-pointer whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium",
 								)}
 								id={`${tab?.name}-tab`}
 								key={tab.name}

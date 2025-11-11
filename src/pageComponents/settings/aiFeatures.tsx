@@ -72,7 +72,7 @@ export const AiFeatures = () => {
 			<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
 				{/* ---------- HEADER ---------- */}
 				<div className="relative mb-6 flex items-center">
-					<h2 className="text-[18px] leading-[115%] font-semibold tracking-normal text-gray-900">
+					<h2 className="text-[18px] font-semibold leading-[115%] tracking-normal text-gray-900">
 						AI Features
 					</h2>
 				</div>

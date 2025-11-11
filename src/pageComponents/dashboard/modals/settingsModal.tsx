@@ -13,6 +13,7 @@ import Settings from "../../settings";
 import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
 import DeleteAccout from "../../settings/deleteAccount";
+import { ImportBookmarks } from "../../settings/import";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 // type SettingsModalTypes = {};
@@ -91,6 +92,8 @@ const SettingsModal = () => {
 				return <DeleteAccout />;
 			case "ai-features":
 				return <AiFeatures />;
+			case "import":
+				return <ImportBookmarks />;
 			default:
 				return null;
 		}
@@ -126,6 +129,9 @@ const SettingsModal = () => {
 											break;
 										case 1:
 											setCurrentSettingsPage("ai-features");
+											break;
+										case 2:
+											setCurrentSettingsPage("import");
 											break;
 										default:
 											break;

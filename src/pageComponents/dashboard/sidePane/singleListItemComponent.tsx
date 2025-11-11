@@ -98,7 +98,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 				)}
 				{(!responsiveIcon || isDesktop) && (
 					<p
-						className="font-450 ml-2 flex-1 truncate overflow-hidden text-[14px] leading-[115%] tracking-[0.01em]"
+						className="font-450 ml-2 flex-1 overflow-hidden truncate text-[14px] leading-[115%] tracking-[0.01em]"
 						id={listNameId}
 					>
 						{item?.name}

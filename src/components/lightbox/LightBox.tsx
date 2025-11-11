@@ -620,7 +620,7 @@ export const CustomLightBox = ({
 					// Left: Close button
 					<div className="flex items-center" key="left-section">
 						<button
-							className="group text-gray-alpha-600 mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full opacity-50 hover:opacity-100"
+							className="text-gray-alpha-600 group ml-4 mt-1.5 flex h-7 w-7 items-center justify-center rounded-full opacity-50 hover:opacity-100"
 							onClick={handleClose}
 							type="button"
 						>
@@ -640,7 +640,7 @@ export const CustomLightBox = ({
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="text-gray-alpha-600 truncate text-[14px] leading-[115%] font-normal tracking-normal">
+							<span className="text-gray-alpha-600 truncate text-[14px] font-normal leading-[115%] tracking-normal">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
 							<figure className="text-gray-alpha-600 h-4 w-4 shrink-0">
@@ -651,7 +651,7 @@ export const CustomLightBox = ({
 
 					// Right: Side pane toggle button
 					<div
-						className="group flex h-7 w-7 items-center justify-center pt-[7px] pr-4"
+						className="group flex h-7 w-7 items-center justify-center pr-4 pt-[7px]"
 						key="right-section"
 					>
 						<button

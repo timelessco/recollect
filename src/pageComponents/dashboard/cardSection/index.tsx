@@ -407,12 +407,12 @@ const CardSection = ({
 							pencilIcon
 						)}
 					</div>
-					<div className="absolute top-0 right-8 flex">{externalLinkIcon}</div>
+					<div className="absolute right-8 top-0 flex">{externalLinkIcon}</div>
 				</>
 			);
 		}
 
-		return <div className="absolute top-0 left-[10px]">{externalLinkIcon}</div>;
+		return <div className="absolute left-[10px] top-0">{externalLinkIcon}</div>;
 	};
 
 	const renderAvatar = (item: SingleListData) => {
@@ -444,9 +444,9 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`text-13 relative mr-2 ml-1 truncate align-middle leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
+			className={`text-13 relative ml-1 mr-2 truncate align-middle leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
-					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
+					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
 			}`}
 			id="base-url"
@@ -623,7 +623,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="text-13 font-450 rounded-[5px] bg-gray-100 px-1 py-[1.5px] leading-[14.9px] tracking-[0.13px] text-gray-500 not-italic"
+			className="text-13 font-450 rounded-[5px] bg-gray-100 px-1 py-[1.5px] not-italic leading-[14.9px] tracking-[0.13px] text-gray-500"
 			key={id}
 		>
 			#{name}
@@ -673,7 +673,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900">
+						<p className="card-title truncate text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -698,7 +698,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="text-13 font-450 relative leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="text-13 font-450 relative leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -716,7 +716,7 @@ const CardSection = ({
 			<div
 				className={`w-full items-center space-x-1 ${
 					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
-				} absolute top-[10px] right-[8px] group-hover:flex`}
+				} absolute right-[8px] top-[10px] group-hover:flex`}
 			>
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
@@ -742,14 +742,14 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden max-sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
-					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+					<div className="flex flex-wrap items-center space-x-1 max-sm:space-x-0 max-sm:space-y-1">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="text-13 font-450 mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden leading-4 break-all text-gray-600 max-sm:mt-px">
+								<p className="text-13 font-450 mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all leading-4 text-gray-600 max-sm:mt-px">
 									{item?.description}
 								</p>
 							)}
@@ -764,7 +764,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -779,7 +779,7 @@ const CardSection = ({
 					</div>
 				</div>
 			)}
-			<div className="absolute top-[15px] right-[8px] hidden items-center space-x-1 group-hover:flex">
+			<div className="absolute right-[8px] top-[15px] hidden items-center space-x-1 group-hover:flex">
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>
@@ -793,7 +793,7 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-[98%] truncate text-sm leading-4 font-medium text-gray-900">
+						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -802,7 +802,7 @@ const CardSection = ({
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -816,7 +816,7 @@ const CardSection = ({
 					</div>
 				</div>
 			)}
-			<div className="absolute top-[11px] right-[8px] hidden items-center space-x-1 group-hover:flex">
+			<div className="absolute right-[8px] top-[11px] hidden items-center space-x-1 group-hover:flex">
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>

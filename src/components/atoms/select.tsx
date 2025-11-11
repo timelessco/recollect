@@ -11,7 +11,7 @@ const Select = (props: SelectProps) => {
 	const { options, onChange, defaultValue, id } = props;
 	return (
 		<select
-			className="mt-1 block rounded-md border-gray-300 py-1 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-hidden max-sm:text-sm"
+			className="focus:outline-hidden mt-1 block rounded-md border-gray-300 py-1 pl-3 pr-10 text-base focus:border-indigo-500 focus:ring-indigo-500 max-sm:text-sm"
 			defaultValue={defaultValue}
 			id={id}
 			onChange={onChange}

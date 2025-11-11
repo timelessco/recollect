@@ -294,7 +294,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="bg-gray-0 m-0 h-[28px] rounded-none border-none p-0 text-xl leading-[16px] font-semibold text-gray-900 focus:outline-hidden"
+					className="bg-gray-0 focus:outline-hidden m-0 h-[28px] rounded-none border-none p-0 text-xl font-semibold leading-[16px] text-gray-900"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -515,7 +515,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<div className="relative">
 					<div className="">
 						<button
-							className="group absolute top-[-25px] left-[-25px] px-3 py-5"
+							className="group absolute left-[-25px] top-[-25px] px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
 							onClick={() => {
 								setShowSidePane(true);
@@ -529,7 +529,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								className={`${collapseButtonCommonClasses} top-[16px] group-hover:rotate-[-25deg]`}
 							/>
 							<div
-								className={`${collapseButtonCommonClasses} top-[26px] group-hover:rotate-25`}
+								className={`${collapseButtonCommonClasses} group-hover:rotate-25 top-[26px]`}
 							/>
 						</button>
 					</div>
@@ -567,7 +567,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="text-plain-reverse mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center">
+						<figure className="text-plain-reverse mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}

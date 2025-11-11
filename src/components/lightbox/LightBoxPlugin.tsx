@@ -141,7 +141,7 @@ const MyComponent = () => {
 
 	if (!currentBookmark) {
 		return (
-			<div className="bg-gray-0 absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 backdrop-blur-[41px]">
+			<div className="bg-gray-0 absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 backdrop-blur-[41px]">
 				<Spinner
 					className="h-3 w-3 animate-spin"
 					style={{ color: "var(--color-plain-reverse)" }}
@@ -159,7 +159,7 @@ const MyComponent = () => {
 						x: 0,
 						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
 					}}
-					className="bg-gray-0 absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 backdrop-blur-[41px]"
+					className="bg-gray-0 absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-l-[0.5px] border-gray-100 backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
@@ -170,7 +170,7 @@ const MyComponent = () => {
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="pb-2 align-middle text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900"
+									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -213,7 +213,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-13 leading-[139%] font-normal tracking-[0.01em] text-clip text-gray-800`}
+									} text-13 text-clip font-normal leading-[139%] tracking-[0.01em] text-gray-800`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
@@ -230,7 +230,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && !showMore && (
 									<button
-										className="bg-gray-0 text-13 absolute right-0 bottom-0 pl-1 leading-[138%] tracking-[0.01em] text-gray-800"
+										className="bg-gray-0 text-13 absolute bottom-0 right-0 pl-1 leading-[138%] tracking-[0.01em] text-gray-800"
 										onClick={() => setShowMore(true)}
 										type="button"
 									>

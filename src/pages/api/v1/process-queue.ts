@@ -1,6 +1,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 
-import { createServiceClient } from "../../../../utils/supabaseClient";
+import { createServiceClient } from "../../../utils/supabaseClient";
 
 import { processImageQueue } from "./worker";
 
@@ -17,7 +17,7 @@ export default async function handler(
 
 	try {
 		const result = await processImageQueue(supabase, {
-			queueName: "ai-embeddings",
+			queue_name: "ai-embeddings",
 			batchSize: 1,
 		});
 

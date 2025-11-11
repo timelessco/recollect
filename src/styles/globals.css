@@ -631,7 +631,7 @@
 	}
 
 	body {
-		@apply bg-gray-0 overflow-hidden antialiased outline-hidden;
+		@apply bg-gray-0 outline-hidden overflow-hidden antialiased;
 
 		font-variation-settings: "opsz" 20;
 		text-rendering: optimizelegibility;
@@ -693,7 +693,7 @@
 	}
 
 	.chakra-slider-group .slider {
-		@apply relative inline-block w-full touch-none outline-0 select-none;
+		@apply relative inline-block w-full touch-none select-none outline-0;
 	}
 
 	.chakra-slider-group .slider.vertical {
@@ -709,7 +709,7 @@
 	}
 
 	.chakra-slider-group .slider-track {
-		@apply h-1 w-full rounded-xs bg-gray-300;
+		@apply rounded-xs h-1 w-full bg-gray-300;
 	}
 
 	.chakra-slider-group .vertical .slider-track {
@@ -717,7 +717,7 @@
 	}
 
 	.chakra-slider-group .slider-filled-track {
-		@apply absolute top-[50%] h-1 -translate-y-2/4 rounded-xs bg-gray-950;
+		@apply rounded-xs absolute top-[50%] h-1 -translate-y-2/4 bg-gray-950;
 	}
 
 	.chakra-slider-group .vertical .slider-filled-track {
@@ -725,7 +725,7 @@
 	}
 
 	.chakra-slider-group .slider-thumb {
-		@apply absolute top-[50%] z-1 flex flex-col items-center;
+		@apply z-1 absolute top-[50%] flex flex-col items-center;
 	}
 
 	.chakra-slider-group .vertical .slider-thumb {
@@ -737,7 +737,7 @@
 	}
 
 	.chakra-slider-group .slider-thumb .slider-thumb-handle {
-		@apply bg-gray-0 flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full shadow-md select-none;
+		@apply bg-gray-0 flex h-4 w-4 cursor-pointer touch-none select-none items-center justify-center rounded-full shadow-md;
 	}
 
 	.chakra-slider-group .slider-thumb-handle:focus-within {
@@ -761,7 +761,7 @@
 
 	/* for the select card styles on card and moodboard views */
 	.single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper {
-		@apply bg-plain-reverse text-plain rounded-t-none rounded-b-lg;
+		@apply bg-plain-reverse text-plain rounded-b-lg rounded-t-none;
 	}
 
 	/* Remove hover effect for selected cards */
@@ -780,7 +780,7 @@
 	}
 
 	.single-bookmark[aria-selected="true"] .moodboard-card-img {
-		@apply rounded-br-none rounded-bl-none;
+		@apply rounded-bl-none rounded-br-none;
 	}
 
 	.single-bookmark[aria-selected="true"] .card-icon {
@@ -792,7 +792,7 @@
 	}
 
 	.drop-indicator {
-		@apply -mb-[2px] ml-0 h-[2px] w-full bg-transparent outline-hidden;
+		@apply outline-hidden -mb-[2px] ml-0 h-[2px] w-full bg-transparent;
 	}
 
 	.drop-indicator:last-child {
@@ -810,7 +810,7 @@
 	}
 
 	.sign-up-parent::before {
-		@apply absolute top-0 left-0 -z-10 h-full w-full bg-[url('/Group1.png')] bg-contain bg-no-repeat content-[""];
+		@apply absolute left-0 top-0 -z-10 h-full w-full bg-[url('/Group1.png')] bg-contain bg-no-repeat content-[""];
 	}
 
 	/* aria modal */
@@ -827,7 +827,7 @@
 	}
 
 	.dropdown-container input[aria-checked="true"] + input::after {
-		@apply absolute top-[50%] right-2 h-3 w-3 -translate-y-2/4 bg-[url('/public/tickIcon.svg')] content-[""];
+		@apply absolute right-2 top-[50%] h-3 w-3 -translate-y-2/4 bg-[url('/public/tickIcon.svg')] content-[""];
 	}
 
 	.search-bar__input:focus-visible {

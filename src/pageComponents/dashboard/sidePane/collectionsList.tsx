@@ -503,7 +503,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const collectionsHeader = (
 		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
-			<div className="text-13 flex items-center leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
+			<div className="text-13 flex items-center font-medium leading-[14.95px] tracking-[0.02em] text-gray-600">
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
 					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"

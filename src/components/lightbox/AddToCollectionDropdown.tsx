@@ -233,7 +233,7 @@ export const AddToCollectionDropdown = memo(
 								</div>
 								{/* Dropdown button */}
 								<button
-									className={`group text-13 rounded-md border border-transparent py-[2px] text-left ${
+									className={`text-13 group rounded-md border border-transparent py-[2px] text-left ${
 										currentCollection ? "text-gray-800" : "text-gray-500"
 									} focus:outline-hidden`}
 									type="button"
@@ -258,7 +258,7 @@ export const AddToCollectionDropdown = memo(
 								<div className="sticky top-0 z-10 bg-gray-50 p-1 pb-0">
 									<Ariakit.Combobox
 										autoFocus
-										className="bg-gray-alpha-100 text-gray-alpha-600 placeholder:text-gray-alpha-600 w-full rounded-lg px-2 py-[5px] text-[14px] leading-[115%] font-normal tracking-normal focus:outline-hidden"
+										className="bg-gray-alpha-100 text-gray-alpha-600 placeholder:text-gray-alpha-600 focus:outline-hidden w-full rounded-lg px-2 py-[5px] text-[14px] font-normal leading-[115%] tracking-normal"
 										placeholder="Search"
 									/>
 								</div>
