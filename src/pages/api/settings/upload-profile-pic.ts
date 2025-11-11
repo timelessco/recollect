@@ -1,4 +1,4 @@
-// ! TODO: Fix this in priority
+// TODO: Fix this in priority
 /* eslint-disable @typescript-eslint/no-base-to-string */
 
 import { promises as fileSystem } from "node:fs";

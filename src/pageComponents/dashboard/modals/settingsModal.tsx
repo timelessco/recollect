@@ -34,7 +34,7 @@ const SettingsModal = () => {
 	useEffect(() => {
 		if (!showSettingsModal) {
 			setCurrentSettingsPage("main");
-			// ! TODO: Fix this in priority
+			// TODO: Fix this in priority
 			setSelectedMenuItem(0);
 		}
 	}, [setCurrentSettingsPage, showSettingsModal, selectedMenuItem]);
