@@ -70,7 +70,6 @@ export default defineConfig(
 		extends: [typescriptTypeChecking.recommended],
 		languageOptions: {
 			parser: typescriptParser,
-			parserOptions: { projectService: true },
 		},
 	},
 	jsxA11y.recommended,
@@ -133,7 +132,7 @@ export default defineConfig(
 			"canonical/sort-react-dependencies": "off",
 			"react-refresh/only-export-components": "off",
 			"react-hooks/preserve-manual-memoization": "off",
-			// ! TODO: fix this in priority
+			// TODO: fix this in priority
 			"react/prop-types": "off",
 			"react-hooks/set-state-in-effect": "off",
 		},

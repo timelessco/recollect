@@ -167,44 +167,16 @@ export default async function handler(
 
 	// Check if userId and email are retrieved from Supabase
 	if (!userId || !email) {
+		console.warn(
+			`User ID and email not retrieved from Supabase for url: ${url}`,
+		);
 		response.status(500).json({
 			data: null,
 			error: "User ID and email not retrieved from Supabase",
 			message: "User ID and email not retrieved from Supabase",
 		});
-		Sentry.captureException(
-			`User ID and email not retrieved from Supabase. userId: ${userId}, email: ${email}`,
-		);
 		return;
 	}
-
-	// when adding a bookmark into a category the same bookmark should not be present in the category
-	// this function checks if the bookmark is already present in the category
-	const checkIfBookmarkAlreadyExists = async () => {
-		const {
-			data: checkBookmarkData,
-			error: checkBookmarkError,
-		}: {
-			data: Array<{ id: SingleListData["id"] }> | null;
-			error: PostgrestError | VerifyErrors | string | null;
-		} = await supabase
-			.from(MAIN_TABLE_NAME)
-			.select(`id`)
-			.eq("url", url)
-			.eq("category_id", categoryId)
-			.eq("trash", false);
-
-		if (!isNull(checkBookmarkError)) {
-			response.status(500).json({
-				data: null,
-				error: checkBookmarkError,
-				message: "Something went wrong in duplicate bookmark category check",
-			});
-			throw new Error("Duplicate check error");
-		}
-
-		return !isEmpty(checkBookmarkData);
-	};
 
 	let scrapperResponse: ScrapperTypes = {
 		data: {
@@ -214,8 +186,6 @@ export default async function handler(
 			favIcon: null,
 		},
 	};
-
-	let scraperApiError = null;
 
 	try {
 		const userAgent =
@@ -237,20 +207,17 @@ export default async function handler(
 			},
 		};
 	} catch (scrapperError) {
-		if (scrapperError) {
-			scraperApiError = scrapperError as string;
-			Sentry.captureException(`Scrapper error: ${url}`);
+		console.warn(`Scrapper error for url: ${url}`, scrapperError);
 
-			// if scrapper error is there then we just add the url host name as the title and proceed
-			scrapperResponse = {
-				data: {
-					title: new URL(url)?.hostname,
-					description: null,
-					OgImage: null,
-					favIcon: null,
-				},
-			};
-		}
+		// if scrapper error is there then we just add the url host name as the title and proceed
+		scrapperResponse = {
+			data: {
+				title: new URL(url)?.hostname,
+				description: null,
+				OgImage: null,
+				favIcon: null,
+			},
+		};
 	}
 
 	// this will either be 0 (uncategorized) or any number
@@ -276,6 +243,9 @@ export default async function handler(
 			);
 
 		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
+			console.warn(
+				`User is neither owner or collaborator for the collection ${categoryId} or does not have edit access for url: ${url}`,
+			);
 			response.status(500).json({
 				data: null,
 				error:
@@ -286,14 +256,47 @@ export default async function handler(
 			return;
 		}
 
-		const isBookmarkAlreadyPresentInCategory =
-			await checkIfBookmarkAlreadyExists();
+		// when adding a bookmark into a category the same bookmark should not be present in the category
+		// this function checks if the bookmark is already present in the category
+		const {
+			data: checkBookmarkData,
+			error: checkBookmarkError,
+		}: {
+			data: Array<{ id: SingleListData["id"] }> | null;
+			error: PostgrestError | VerifyErrors | string | null;
+		} = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select(`id`)
+			.eq("url", url)
+			.eq("category_id", categoryId)
+			.eq("trash", false);
 
-		if (isBookmarkAlreadyPresentInCategory) {
+		if (!isNull(checkBookmarkError)) {
+			console.error(
+				`Something went wrong in duplicate bookmark category check for url: ${url}`,
+				checkBookmarkError,
+			);
+			Sentry.captureException(checkBookmarkError, {
+				extra: {
+					message: `Something went wrong in duplicate bookmark category check for url: ${url}`,
+				},
+			});
 			response.status(500).json({
 				data: null,
-				error: "Bookmark already present in this category",
-				message: "Bookmark already present in this category",
+				error: "Something went wrong in duplicate bookmark category check",
+				message: "Something went wrong in duplicate bookmark category check",
+			});
+			return;
+		}
+
+		if (!isEmpty(checkBookmarkData)) {
+			console.warn(
+				`Bookmark already present in category ${categoryId} for url: ${url}`,
+			);
+			response.status(500).json({
+				data: null,
+				error: "Bookmark already present in category",
+				message: "Bookmark already present in category",
 			});
 			return;
 		}
@@ -353,23 +356,36 @@ export default async function handler(
 		.select();
 
 	if (isEmpty(data) || isNull(data)) {
-		response
-			.status(400)
-			.json({ data: null, error: "data is empty after insert", message: null });
-		Sentry.captureException(`Min bookmark data is empty`);
+		console.warn(`Min bookmark data is empty for url: ${url}`);
+		response.status(400).json({
+			data: null,
+			error: "Bookmark data is empty after adding",
+			message: null,
+		});
 		return;
 	}
 
 	if (!isNull(error)) {
-		response.status(500).json({ data: null, error, message: null });
-		throw new Error("ERROR: add min data error");
+		console.error(`Min bookmark data insert error for url: ${url}`, error);
+		Sentry.captureException(error, {
+			extra: {
+				message: `Min bookmark data insert error for url: ${url}`,
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: "Min bookmark data insert error",
+			message: "Min bookmark data insert error",
+		});
 	} else {
-		response
-			.status(200)
-			.json({ data, error: scraperApiError ?? null, message: null });
+		response.status(200).json({
+			data,
+			error: null,
+			message: "Min bookmark data inserted successfully",
+		});
 
 		try {
-			if (!isNull(data) && !isEmpty(data) && isUrlOfMimeType) {
+			if (isUrlOfMimeType) {
 				// this adds the remaining data , like blur hash bucket uploads and all
 				// this is called only if the url is an image url like test.com/image.png.
 				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
@@ -383,12 +399,20 @@ export default async function handler(
 					getAxiosConfigWithAuth(request),
 				);
 			} else {
-				console.error("Data is empty");
-				Sentry.captureException(`Min bookmark data is empty`);
+				console.log(
+					"Not a image(or similar mimetype) url, so not calling the add-remaining-bookmark-data api",
+				);
 			}
 		} catch (remainingUploadError) {
-			console.error(remainingUploadError);
-			Sentry.captureException(`Remaining api error ${remainingUploadError}`);
+			console.error(
+				`Remaining api error for url: ${url}`,
+				remainingUploadError,
+			);
+			Sentry.captureException(remainingUploadError, {
+				extra: {
+					message: `Remaining api error for url: ${url}`,
+				},
+			});
 		}
 	}
 }
