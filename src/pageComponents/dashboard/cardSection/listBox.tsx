@@ -46,6 +46,7 @@ import {
 	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
+import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 // we are disabling this rule as option might get complicated , so we need to have it in a separate file
@@ -77,6 +78,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const setIsCardDragging = useMiscellaneousStore(
 		(store) => store.setIsCardDragging,
 	);
+
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((storeState) => storeState.session);
 
@@ -123,29 +125,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.moodboard
 			) {
-				if (isMobile || isTablet) {
-					lanes = 2;
-				} else {
-					switch (bookmarksColumns?.[0]) {
-						case 10:
-							lanes = 5;
-							break;
-						case 20:
-							lanes = 4;
-							break;
-						case 30:
-							lanes = 3;
-							break;
-						case 40:
-							lanes = 2;
-							break;
-						case 50:
-							lanes = 1;
-							break;
-						default:
-							lanes = 1;
-					}
-				}
+				lanes = getColumnCount(!isMobile && !isTablet, bookmarksColumns[0]);
 			}
 
 			// Get container width (fallback to 1200 if unknown)

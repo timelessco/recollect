@@ -193,8 +193,12 @@ const Dashboard = () => {
 
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
-	const { allBookmarksData, fetchNextPage: fetchNextBookmarkPage } =
-		useFetchPaginatedBookmarks();
+	const {
+		allBookmarksData,
+		fetchNextPage: fetchNextBookmarkPage,
+		isAllBookmarksDataLoading,
+		isFetchingAllBookmarksData,
+	} = useFetchPaginatedBookmarks();
 
 	const {
 		flattenedSearchData,
@@ -831,6 +835,8 @@ const Dashboard = () => {
 													)
 												}
 												userId={session?.user?.id ?? ""}
+												isBookmarksLoading={isAllBookmarksDataLoading}
+												isBookmarksFetching={isFetchingAllBookmarksData}
 											/>
 										</InfiniteScroll>
 									</div>

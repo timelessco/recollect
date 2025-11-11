@@ -12,7 +12,7 @@ export const CollectionsListSkeleton = () => {
 				>
 					<div className="flex items-center">
 						<div className="h-[18px] w-[18px] animate-pulse rounded-full bg-gray-100" />
-						<div className="ml-2 h-4 w-24 animate-pulse rounded bg-gray-100" />
+						<div className="ml-2 h-4 w-30 animate-pulse rounded bg-gray-100" />
 					</div>
 				</div>
 			))}
