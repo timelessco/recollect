@@ -99,7 +99,7 @@ export const ImportBookmarks = () => {
 					return;
 				}
 
-				const bookmarks = records.slice(0, 1).map((b) => ({
+				const bookmarks = records.map((b) => ({
 					title: b.title || null,
 					description: b.excerpt || null,
 					url: b.url || null,
