@@ -1,5 +1,5 @@
 // this code is got from the aria kit doc, we are not going to override this for this eslint issues
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+
 import * as React from "react";
 import { flushSync } from "react-dom";
 import * as Ariakit from "@ariakit/react";
@@ -81,9 +81,15 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 
 		// Hide the submenu when it's not visible on scroll.
 		React.useEffect(() => {
-			if (!parent) return;
+			if (!parent) {
+				return;
+			}
+
 			const parentWrapper = parent.getWrapper();
-			if (!parentWrapper) return;
+			if (!parentWrapper) {
+				return;
+			}
+
 			let timeout = 0;
 			const onScroll = () => {
 				clearTimeout(timeout);
@@ -130,7 +136,10 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 		};
 
 		const autoFocus = (element: HTMLElement) => {
-			if (!isSubmenu) return true;
+			if (!isSubmenu) {
+				return true;
+			}
+
 			element.focus({ preventScroll: true });
 			element.scrollIntoView({ block: "nearest", inline: "start" });
 			return false;
@@ -172,6 +181,7 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 						focusOnHover={false}
 						ref={ref}
 						{...props}
+						// @ts-expect-error - TODO: fix this
 						render={renderMenuButton}
 					/>
 				) : (
@@ -201,7 +211,7 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 							<>
 								<div
 									// className="header"
-									className=" flex items-center justify-between p-1"
+									className="flex items-center justify-between p-1"
 								>
 									<Ariakit.MenuItem
 										aria-label="Back to parent menu"

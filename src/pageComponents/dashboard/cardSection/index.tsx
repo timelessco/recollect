@@ -2,19 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { useIsFetching, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
-import { motion } from "motion/react";
 import { Item } from "react-stately";
 
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
-import Spinner from "../../../components/spinner";
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
+import { Spinner } from "../../../components/spinner";
+import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
@@ -30,7 +28,6 @@ import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
@@ -40,15 +37,17 @@ import {
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
-	AI_SEARCH_KEY,
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	DOCUMENTS_URL,
+	IMAGES_URL,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
 	TWEETS_URL,
 	VIDEO_TYPE_PREFIX,
+	VIDEOS_URL,
 	viewValues,
 } from "../../../utils/constants";
 import {
@@ -112,7 +111,6 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -139,8 +137,7 @@ const CardSection = ({
 
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
-	const session = useSupabaseSession((state) => state.session);
-	// cat_id reffers to cat slug here as its got from url
+	// cat_id refers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
 	const isDeleteBookmarkLoading = false;
@@ -149,11 +146,8 @@ const CardSection = ({
 		(state) => state.setCurrentBookmarkView,
 	);
 
-	const aiButtonToggle = useMiscellaneousStore((state) => state.aiButtonToggle);
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const isUserInTweetsPage = useIsUserInTweetsPage();
-
-	const { sortBy } = useGetSortBy();
+	const currentPath = useGetCurrentUrlPath();
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -162,41 +156,20 @@ const CardSection = ({
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
-	let searchBookmarksData: {
+	// gets from the trigram search api
+	const searchBookmarksData = queryClient.getQueryData([
+		BOOKMARKS_KEY,
+		userId,
+		searchSlugKey(categoryData),
+		searchText,
+	]) as {
 		error: PostgrestError;
 		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
-	} | null = null;
-
-	if (aiButtonToggle) {
-		// gets from vector search api
-		searchBookmarksData = queryClient.getQueryData([
-			AI_SEARCH_KEY,
-			searchSlugKey(categoryData),
-			searchText,
-		]) as {
-			error: PostgrestError;
-			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
-		};
-	} else {
-		// gets from the trigram search api
-		searchBookmarksData = queryClient.getQueryData([
-			BOOKMARKS_KEY,
-			userId,
-			searchSlugKey(categoryData),
-			searchText,
-		]) as {
-			error: PostgrestError;
-			pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
-		};
-	}
-
-	const isAllBookmarksDataFetching = useIsFetching({
-		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-	});
+	};
 
 	const bookmarksList = isEmpty(searchText)
 		? listData
-		: searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
+		: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],
@@ -223,6 +196,7 @@ const CardSection = ({
 	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
 
 	const sizesLogic = useMemo(() => {
+		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (cardTypeCondition) {
 			case viewValues.moodboard:
 			case viewValues.timeline:
@@ -231,6 +205,7 @@ const CardSection = ({
 				return "100px";
 			case viewValues.card:
 				return "300px";
+
 			default:
 				return "500px";
 		}
@@ -278,7 +253,7 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-custom-white-1 p-[5px] backdrop-blur-sm z-15";
+			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-sm z-15";
 
 		const externalLinkIcon = (
 			<div
@@ -294,7 +269,7 @@ const CardSection = ({
 				role="button"
 				tabIndex={0}
 			>
-				<figure>
+				<figure className="text-blacks-800">
 					<LinkExternalIcon />
 				</figure>
 			</div>
@@ -314,7 +289,7 @@ const CardSection = ({
 				role="button"
 				tabIndex={0}
 			>
-				<figure>
+				<figure className="text-gray-1000">
 					<EditIcon />
 				</figure>
 			</div>
@@ -420,9 +395,10 @@ const CardSection = ({
 								{pencilIcon}
 								{isDeleteBookmarkLoading &&
 								deleteBookmarkId?.includes(post?.id) ? (
-									<div>
-										<Spinner size={15} />
-									</div>
+									<Spinner
+										className="h-3 w-3 animate-spin"
+										style={{ color: "var(--plain-reverse-color)" }}
+									/>
 								) : (
 									trashIcon
 								)}
@@ -431,22 +407,20 @@ const CardSection = ({
 							pencilIcon
 						)}
 					</div>
-					<div className=" absolute right-8 top-0 flex">{externalLinkIcon}</div>
+					<div className="absolute right-8 top-0 flex">{externalLinkIcon}</div>
 				</>
 			);
 		}
 
-		return (
-			<div className=" absolute left-[10px] top-0">{externalLinkIcon}</div>
-		);
+		return <div className="absolute left-[10px] top-0">{externalLinkIcon}</div>;
 	};
 
 	const renderAvatar = (item: SingleListData) => {
 		const isCreatedByLoggedInUser = isBookmarkCreatedByLoggedinUser(item);
 
 		const avatarClassName = classNames({
-			"absolute h-5 w-5 rounded-full": true,
-			"right-[65px] top-[3px]": isCreatedByLoggedInUser,
+			"absolute h-[26px] w-[26px] rounded-full": true,
+			"right-[65px] top-0": isCreatedByLoggedInUser,
 			"right-[100px]":
 				cardTypeCondition === viewValues.list ||
 				cardTypeCondition === viewValues.headlines,
@@ -458,9 +432,9 @@ const CardSection = ({
 				<Image
 					alt="user_img"
 					className={avatarClassName}
-					height={20}
+					height={21}
 					src={item?.user_id?.profile_pic}
-					width={20}
+					width={21}
 				/>
 			);
 		}
@@ -470,7 +444,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative ml-1 mr-2 truncate text-[13px] leading-4  text-custom-gray-10 sm:max-w-[60%] ${
+			className={`relative ml-1 mr-2 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 sm:max-w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:left-0 before:top-1.5 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -494,20 +468,19 @@ const CardSection = ({
 
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
-			"mr-3": cardTypeCondition === viewValues.list,
-			"h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
-			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
+			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
+			"w-full shadow-custom-8 rounded-t-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
+			"rounded-t-lg shadow-custom-8":
+				cardTypeCondition === viewValues.moodboard,
 		});
 
 		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800":
-				true,
+			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800": true,
 			absolute: true,
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||
@@ -520,13 +493,7 @@ const CardSection = ({
 			// disabling as we dont need tab focus here
 			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
 			<div onKeyDown={() => {}} role="button">
-				<motion.figure
-					className={figureClassName}
-					layout={
-						isBookmarkLoading || isAllBookmarksDataFetching || isOgImgLoading
-						// isLoading
-					}
-				>
+				<figure className={figureClassName}>
 					{isVideo && (
 						<PlayIcon
 							className={playSvgClassName}
@@ -542,11 +509,10 @@ const CardSection = ({
 						hasCoverImg={hasCoverImg ?? false}
 						id={id}
 						img={img}
-						isBookmarkLoading={isBookmarkLoading}
 						isPublicPage={isPublicPage}
 						sizesLogic={sizesLogic}
 					/>
-				</motion.figure>
+				</figure>
 			</div>
 		);
 	};
@@ -557,11 +523,14 @@ const CardSection = ({
 		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
-			"h-[14] w-[14px]": cardTypeCondition !== viewValues.headlines,
+			"h-[14] w-[14px] mt-[1px]": cardTypeCondition !== viewValues.headlines,
 		});
-
 		if (favIconErrorImgs?.includes(item?.id)) {
-			return <ImageIcon size={`${size}`} />;
+			return (
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
+					<ImageIcon size={`${size}`} />
+				</figure>
+			);
 		}
 
 		if (isUserInTweetsPage && item?.meta_data?.twitter_avatar_url) {
@@ -582,7 +551,7 @@ const CardSection = ({
 			);
 		}
 
-		if (item?.meta_data?.favIcon) {
+		if (item?.meta_data?.favIcon || currentPath === IMAGES_URL) {
 			return (
 				<figure className={favIconFigureClassName}>
 					<Image
@@ -592,22 +561,42 @@ const CardSection = ({
 						onError={() =>
 							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
 						}
-						src={item?.meta_data?.favIcon}
+						src={item?.meta_data?.favIcon ?? ""}
 						width={size}
 					/>
 				</figure>
 			);
 		}
 
-		if (isVideo || item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX)) {
-			return <VideoIcon size="15" />;
+		if (
+			isVideo ||
+			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+			currentPath === VIDEOS_URL
+		) {
+			return (
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
+					<VideoIcon size="15" />
+				</figure>
+			);
 		}
 
-		if (isDocument || item?.meta_data?.mediaType === PDF_MIME_TYPE) {
-			return <FolderIcon size="15" />;
+		if (
+			isDocument ||
+			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
+			currentPath === DOCUMENTS_URL
+		) {
+			return (
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
+					<FolderIcon size="15" />
+				</figure>
+			);
 		}
 
-		return <ImageIcon size="15" />;
+		return (
+			<figure className="card-icon rounded p-0.5 text-gray-1000">
+				<ImageIcon size={`${size}`} />
+			</figure>
+		);
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
@@ -620,10 +609,10 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-[13px] font-450 leading-4 text-custom-gray-10">
+						<div className="ml-1 flex items-center text-13 font-450 leading-4 text-gray-600">
 							<p className="mr-1">in</p>
 							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-[13px] font-450 leading-4 text-custom-gray-10">
+							<p className="ml-1 text-13 font-450 leading-4 text-gray-600">
 								{bookmarkCategoryData?.category_name}
 							</p>
 						</div>
@@ -634,7 +623,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="rounded-[5px] bg-gray-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-light-10"
+			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 font-450 not-italic leading-[14.9px] tracking-[0.13px] text-gray-500"
 			key={id}
 		>
 			#{name}
@@ -649,6 +638,7 @@ const CardSection = ({
 
 	const renderBookmarkCardTypes = (item: SingleListData) => {
 		// NOTE: this is no separate view for timeline, only change is a style update in the listBox component
+		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (cardTypeCondition) {
 			case viewValues.moodboard:
 				return renderMoodboardAndCardType(item);
@@ -658,13 +648,14 @@ const CardSection = ({
 				return renderHeadlinesCard(item);
 			case viewValues.list:
 				return renderListCard(item);
+
 			default:
 				return renderMoodboardAndCardType(item);
 		}
 	};
 
 	const moodboardAndCardInfoWrapperClass = classNames({
-		"card-moodboard-info-wrapper space-y-[6px] rounded-lg px-2 py-3": true,
+		"card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 dark:group-hover:bg-gray-alpha-100 duration-150 transition-all": true,
 		"flex-grow": cardTypeCondition === viewValues.card,
 	});
 
@@ -682,20 +673,20 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title truncate text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					{bookmarksInfoValue?.includes("description" as never) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
-								className="text-sm leading-4"
+								className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
 								enable={isUserInTweetsPage}
 							>
 								{item?.description}
 							</ReadMore>
 						)}
-					<div className="space-y-[6px]">
+					<div className="space-y-[6px] text-gray-500">
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
 								<div className="flex flex-wrap items-center space-x-1">
@@ -707,7 +698,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-[13px] font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:left-[-5px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -725,7 +716,6 @@ const CardSection = ({
 			<div
 				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className={`w-full items-center space-x-1 ${
-					// @ts-expect-error // this is cypress env, TS check not needed
 					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
 				} helper-icons absolute right-[8px] top-[10px] group-hover:flex`}
 			>
@@ -753,29 +743,29 @@ const CardSection = ({
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden sm:space-y-1">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-full truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					<div className="flex flex-wrap items-center space-x-1 sm:space-x-0 sm:space-y-1">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-custom-gray-10 sm:mt-[1px]">
+								<p className="mt-[6px] min-w-[200px] max-w-[400px] overflow-hidden truncate break-all text-13 font-450 leading-4 text-gray-600 sm:mt-px">
 									{item?.description}
 								</p>
 							)}
 						{bookmarksInfoValue?.includes("tags" as never) &&
 							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center space-x-[1px] sm:mt-[1px]">
+								<div className="mt-[6px] flex items-center space-x-px sm:mt-px">
 									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
 						{bookmarksInfoValue?.includes("info" as never) && (
-							<div className="mt-[6px] flex flex-wrap items-center sm:mt-[1px] sm:space-x-1">
+							<div className="mt-[6px] flex flex-wrap items-center sm:mt-px sm:space-x-1">
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -802,9 +792,9 @@ const CardSection = ({
 			{renderFavIcon(item)}
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className=" ml-[10px] w-full overflow-hidden">
+				<div className="ml-[10px] w-full overflow-hidden">
 					{bookmarksInfoValue?.includes("title" as never) && (
-						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-light-12">
+						<p className="card-title w-[98%] truncate text-sm font-medium leading-4 text-gray-900">
 							{item?.title}
 						</p>
 					)}
@@ -813,7 +803,7 @@ const CardSection = ({
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="relative text-13 font-450 leading-4 text-custom-gray-10 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-custom-gray-10 before:content-['']">
+									<p className="relative text-13 font-450 leading-4 text-gray-600 before:absolute before:left-[-4px] before:top-[8px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -840,7 +830,7 @@ const CardSection = ({
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.headlines,
-		"py-2 pl-[28px] pr-[19px]":
+		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
 	});

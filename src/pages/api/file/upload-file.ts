@@ -1,7 +1,10 @@
 // you might want to use regular 'fs' and not a promise one
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
@@ -9,7 +12,7 @@ import isNil from "lodash/isNil";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
-import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
+import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import {
 	type ImgMetadataType,
 	type SingleListData,
@@ -19,12 +22,13 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
+	PDF_MIME_TYPE,
 	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
-	apiCookieParser,
+	getAxiosConfigWithAuth,
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../utils/helpers";
@@ -40,13 +44,17 @@ type BodyDataType = {
 	uploadFileNamePath: string;
 };
 
-/* 
-If the uploaded file is a video then this function is called 
+/*
+If the uploaded file is a video then this function is called
 This gets the public URL from the thumbnail path uploaded by the client
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
-Image caption is not generated for the thumbnail 
+Image caption is not generated for the thumbnail
 */
-const videoLogic = async (data: BodyDataType) => {
+const videoLogic = async (
+	data: BodyDataType,
+	supabase: SupabaseClient,
+	userId: string,
+) => {
 	// Since thumbnails are now uploaded client-side, we just need to get the thumbnail URL
 	// The thumbnailPath in data should now be the actual path in R2
 	const thumbnailPath = data?.thumbnailPath;
@@ -80,7 +88,7 @@ const videoLogic = async (data: BodyDataType) => {
 
 		// Handle OCR processing
 		try {
-			ocrData = await ocr(thumbnailUrl?.publicUrl);
+			ocrData = await ocr(thumbnailUrl?.publicUrl, supabase, userId);
 		} catch (error) {
 			console.error("OCR processing failed:", error);
 			Sentry.captureException(error, {
@@ -94,7 +102,11 @@ const videoLogic = async (data: BodyDataType) => {
 
 		// Handle image caption generation
 		try {
-			imageCaption = await imageToText(thumbnailUrl?.publicUrl);
+			imageCaption = await imageToText(
+				thumbnailUrl?.publicUrl,
+				supabase,
+				userId,
+			);
 		} catch (error) {
 			console.error("Image caption generation failed:", error);
 			Sentry.captureException(error, {
@@ -121,6 +133,7 @@ const videoLogic = async (data: BodyDataType) => {
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
+		video_url: thumbnailUrl?.publicUrl ?? null,
 	};
 
 	return { ogImage, meta_data };
@@ -183,6 +196,8 @@ export default async (
 	const { data: storageData, error: publicUrlError } =
 		r2Helpers.getPublicUrl(storagePath);
 
+	const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
+
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
 		width: null,
@@ -195,8 +210,9 @@ export default async (
 		screenshot: null,
 		isOgImagePreferred: false,
 		iframeAllowed: false,
-		mediaType: "",
+		mediaType,
 		isPageScreenshot: null,
+		video_url: null,
 	};
 	const isVideo = fileType?.includes("video");
 
@@ -216,7 +232,11 @@ export default async (
 		}
 	} else {
 		// if file is a video
-		const { ogImage: image, meta_data: metaData } = await videoLogic(data);
+		const { ogImage: image, meta_data: metaData } = await videoLogic(
+			data,
+			supabase,
+			userId ?? "",
+		);
 
 		ogImage = image;
 		meta_data = metaData;
@@ -248,41 +268,32 @@ export default async (
 			.json({ data: DatabaseData, success: true, error: null });
 
 		try {
-			if (!isEmpty(DatabaseData) && !isVideo) {
-				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-					{
-						id: DatabaseData[0]?.id,
-						publicUrl: storageData?.publicUrl,
-					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
+			if (fileType !== PDF_MIME_TYPE) {
+				if (!isEmpty(DatabaseData) && !isVideo) {
+					await axios.post(
+						`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+						{
+							id: DatabaseData[0]?.id,
+							publicUrl: storageData?.publicUrl,
+							mediaType: meta_data?.mediaType,
 						},
-					},
-				);
-			} else {
-				console.error("Remaining upload api error: upload data is empty");
-				Sentry.captureException(
-					`Remaining upload api error: upload data is empty`,
-				);
+						getAxiosConfigWithAuth(request),
+					);
+				} else {
+					console.error("Remaining upload api error: upload data is empty");
+					Sentry.captureException(
+						`Remaining upload api error: upload data is empty`,
+					);
+				}
 			}
 		} catch (remainingerror) {
 			console.error(remainingerror);
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
 		}
-
-		// create embeddings
-		try {
-			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);
-		} catch {
-			console.error("create embeddings error");
-			Sentry.captureException("create embeddings error");
-		}
 	} else {
-		response.status(500).json({
-			success: false,
-			error: publicUrlError ?? DBerror,
-		});
+		console.error("Error uploading file:", publicUrlError, DBerror);
+		response
+			.status(500)
+			.json({ success: false, error: "Error uploading file" });
 	}
 };

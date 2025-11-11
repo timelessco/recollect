@@ -113,12 +113,12 @@ export default async function handler(
 			response.status(500).json({
 				success: null,
 				error: isNull(error)
-					? "The user is alredy a colaborator of this category"
+					? "The user is already a colaborator of this category"
 					: error,
 			});
 			Sentry.captureException(
 				isNull(error)
-					? "The user is alredy a colaborator of this category"
+					? "The user is already a colaborator of this category"
 					: error,
 			);
 		}

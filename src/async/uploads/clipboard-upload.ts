@@ -28,7 +28,6 @@ export type FileUploadMutationType = UseMutationResult<
 
 /**
  * This has the logic to upload url or file during copy and paste
- *
  * @param {string | undefined} text the url to be uploaded
  * @param {FileList | undefined} files the files to be uploaded
  * @param {CategoryIdUrlTypes} category_id the category_id of where to be uploaded

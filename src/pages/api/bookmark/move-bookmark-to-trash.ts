@@ -11,7 +11,7 @@ import {
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-// this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
+// this is a cascading delete, deletes bookmarks from main table and all its respective joint tables
 
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;

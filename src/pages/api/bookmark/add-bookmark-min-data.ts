@@ -1,5 +1,3 @@
-// disabling as we need complexity of 21 for this task
-/* eslint-disable complexity  */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import {
@@ -12,7 +10,6 @@ import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
-import { insertEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import { canEmbedInIframe } from "../../../async/uploads/iframe-test";
 import {
 	type AddBookmarkMinDataPayloadTypes,
@@ -29,12 +26,13 @@ import {
 	NEXT_API_URL,
 	OG_IMAGE_PREFERRED_SITES,
 	SHARED_CATEGORIES_TABLE_NAME,
+	SKIP_OG_IMAGE_DOMAINS,
 	uncategorizedPages,
 } from "../../../utils/constants";
 import {
-	apiCookieParser,
 	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
+	getAxiosConfigWithAuth,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -116,8 +114,11 @@ export default async function handler(
 
 	const urlHost = new URL(url)?.hostname?.toLowerCase();
 
-	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some(
-		(keyword) => urlHost?.includes(keyword),
+	const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some((keyword) =>
+		urlHost?.includes(keyword),
+	);
+	const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some((keyword) =>
+		urlHost?.includes(keyword),
 	);
 
 	// try {
@@ -229,7 +230,9 @@ export default async function handler(
 			data: {
 				title: ogScrapperResponse?.ogTitle ?? null,
 				description: ogScrapperResponse?.ogDescription ?? null,
-				OgImage: ogScrapperResponse?.ogImage?.[0]?.url ?? null,
+				OgImage: shouldSkipOgImage
+					? null
+					: (ogScrapperResponse?.ogImage?.[0]?.url ?? null),
 				favIcon: ogScrapperResponse?.favicon ?? null,
 			},
 		};
@@ -377,11 +380,7 @@ export default async function handler(
 						favIcon: scrapperResponse?.data?.favIcon,
 						url,
 					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
+					getAxiosConfigWithAuth(request),
 				);
 			} else {
 				console.error("Data is empty");
@@ -390,14 +389,6 @@ export default async function handler(
 		} catch (remainingUploadError) {
 			console.error(remainingUploadError);
 			Sentry.captureException(`Remaining api error ${remainingUploadError}`);
-		}
-
-		// create embeddings
-		try {
-			await insertEmbeddings([data[0]?.id], request?.cookies);
-		} catch {
-			console.error("Add Embeddings error");
-			Sentry.captureException(`Add Embeddings error`);
 		}
 	}
 }

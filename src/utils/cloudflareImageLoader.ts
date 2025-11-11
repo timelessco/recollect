@@ -18,7 +18,12 @@ export default function cloudflareImageLoader({
 		return src;
 	}
 
-	const parameters = [`width=${width}`, "format=auto", "fit=scale-down"];
+	const parameters = [
+		`width=${width}`,
+		"format=auto",
+		"fit=scale-down",
+		"onerror=redirect",
+	];
 
 	if (quality) {
 		parameters.push(`quality=${quality}`);

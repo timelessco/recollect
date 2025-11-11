@@ -13,7 +13,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
-		if (!enabled) return () => {};
+		if (!enabled) {
+			return () => {};
+		}
 
 		// Maximum pull distance = slide height
 		const maxOffset = slideRect?.height ?? 0;
@@ -27,9 +29,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 		// Reset styles back to default (no offset, full opacity, normal scale)
 		const reset = (element: HTMLElement) => {
 			offsetRef.current = 0;
-			element.style.setProperty("--yarl__pull_offset", "0px");
-			element.style.setProperty("--yarl__pull_opacity", "1");
-			element.style.setProperty("--yarl__pull_scale", "1");
+			element.style.setProperty("--yarl-pull-offset", "0px");
+			element.style.setProperty("--yarl-pull-opacity", "1");
+			element.style.setProperty("--yarl-pull-scale", "1");
 		};
 
 		// Subscribe to wheel events from the lightbox
@@ -49,10 +51,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			);
 
 			// Update CSS variables for translation
-			element.style.setProperty(
-				"--yarl__pull_offset",
-				`${offsetRef.current}px`,
-			);
+			element.style.setProperty("--yarl-pull-offset", `${offsetRef.current}px`);
 
 			// Fade out gradually after crossing opacityStart
 			const opacity =
@@ -63,13 +62,13 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 								((offsetRef.current - opacityStart) /
 									(threshold - opacityStart)) *
 									0.5,
-					  )
+						)
 					: 1;
-			element.style.setProperty("--yarl__pull_opacity", `${opacity}`);
+			element.style.setProperty("--yarl-pull-opacity", `${opacity}`);
 
 			// Scale down slightly as we pull further
 			const scale = Math.max(0.5, 1 - (offsetRef.current / threshold) * 0.2);
-			element.style.setProperty("--yarl__pull_scale", `${scale}`);
+			element.style.setProperty("--yarl-pull-scale", `${scale}`);
 
 			// Close the lightbox if pull distance exceeds threshold
 			if (offsetRef.current > threshold) {
@@ -78,14 +77,19 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			}
 
 			// Animate back to neutral if user stops pulling
-			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
+
 			timeoutRef.current = setTimeout(() => reset(element), 200);
 		});
 
 		// Cleanup on unmount or dependency change
 		return () => {
 			unsubscribe();
-			if (timeoutRef.current) clearTimeout(timeoutRef.current);
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
 		};
 	}, [subscribeSensors, slideRect, close, enabled]);
 

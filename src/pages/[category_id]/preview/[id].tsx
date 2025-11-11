@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/spinner";
 import { type SingleListData } from "../../../types/apiTypes";
 import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
 
@@ -38,12 +38,16 @@ const Preview = () => {
 		void router.push(`/${ALL_BOOKMARKS_URL}`);
 	};
 
-	if (isLoading)
+	if (isLoading) {
 		return (
 			<div className="flex h-screen items-center justify-center">
-				<Spinner />
+				<Spinner
+					className="h-3 w-3 animate-spin"
+					style={{ color: "var(--plain-reverse-color)" }}
+				/>
 			</div>
 		);
+	}
 
 	if (!bookmark?.data?.[0] || error) {
 		return <div />;

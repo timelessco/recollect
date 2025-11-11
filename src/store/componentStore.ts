@@ -115,8 +115,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	currentSliderDropdownSlide: null,
 	setCurrentSliderDropdownSlide: (value: string | null) =>
 		set(() => ({ currentSliderDropdownSlide: value })),
-	aiButtonToggle: false,
-	setAiButtonToggle: (value: boolean) => set(() => ({ aiButtonToggle: value })),
 }));
 
 export const useSupabaseSession = create<SupabaseSessionStore>((set) => ({

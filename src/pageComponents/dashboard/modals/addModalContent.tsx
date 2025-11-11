@@ -78,7 +78,7 @@ const AddModalContent = (props: AddModalContentProps) => {
 		error: PostgrestError;
 	};
 
-	// if the bookmaks is not created by logged in user , then only show the option in else case
+	// if the bookmarks is not created by logged in user , then only show the option in else case
 	const categoryOptions = () => {
 		if (userId === urlData?.user_id?.id) {
 			return [
@@ -172,7 +172,9 @@ const AddModalContent = (props: AddModalContentProps) => {
 								console.error("Payload data is empty");
 							}
 						}}
-						onCreate={(value) => onCreateCategory({ label: value, value })}
+						onCreate={async (value) =>
+							await onCreateCategory({ label: value, value })
+						}
 					/>
 				</LabelledComponent>
 			</div>

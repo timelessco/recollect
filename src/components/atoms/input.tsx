@@ -18,6 +18,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 	placeholder: string;
 	rendedRightSideElement?: ChildrenTypes;
 	selectTextOnFocus?: boolean;
+	showError?: boolean;
 	tabIndex?: number;
 	type?: string;
 	wrapperClassName?: string;
@@ -34,7 +35,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		errorText = "",
 		isDisabled = false,
 		id = "",
-		wrapperClassName = "relative rounded-md",
+		wrapperClassName = "relative",
 		rendedRightSideElement,
 		errorClassName = "",
 		errorIconClassName = "",
@@ -44,34 +45,34 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		type = "text",
 		selectTextOnFocus = false,
 		tabIndex = 0,
+		showError = true,
 	} = props;
 
 	const inputClass = classNames(className, {
-		"block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md":
+		"block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500":
 			isError,
-		"block w-full border-gray-300 rounded-md": !isError,
+		"block w-full border-gray-300": !isError,
 		// "disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none":
 		// 	isDisabled,
 	});
 
 	const errorClass = classNames(errorClassName, {
-		"mt-2 text-xs text-red-600": true,
+		"text-xs text-red-600": true,
 	});
 
 	const errorIconClass = classNames(errorIconClassName, {
-		"pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3":
-			true,
+		"pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3": true,
 	});
 
 	return (
-		<div className={isFullWidth ? "w-full " : ""}>
+		<div className={isFullWidth ? "w-full" : ""}>
 			<div className={wrapperClassName}>
 				<input
 					id={id}
 					ref={ref}
 					type={type}
 					value={value}
-					{...omit(props, ["isError", "errorText", "isDisabled"])}
+					{...omit(props, ["isError", "errorText"])}
 					autoFocus={autoFocus}
 					className={inputClass}
 					disabled={isDisabled}
@@ -82,7 +83,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 					placeholder={placeholder}
 					tabIndex={tabIndex}
 				/>
-				{isError && (
+				{showError && isError && (
 					<div className={errorIconClass}>
 						<ExclamationCircleIcon
 							aria-hidden="true"
@@ -92,7 +93,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 				)}
 				{rendedRightSideElement && rendedRightSideElement}
 			</div>
-			{isError && (
+			{showError && isError && (
 				<p className={errorClass} id="email-error">
 					{errorText}
 				</p>

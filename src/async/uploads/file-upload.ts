@@ -20,7 +20,6 @@ import { type FileUploadMutationType } from "./clipboard-upload";
 
 /**
  * Upload file logic
- *
  * @param {FileList | undefined} acceptedFiles the files to upload
  * @param {FileUploadMutationType} fileUploadOptimisticMutation the mutation for the file upload
  * @param {CategoryIdUrlTypes} category_id the category_id of where to upload
@@ -90,7 +89,7 @@ export const fileUpload = async (
 											headers: {
 												"Content-Type": "image/jpg",
 											},
-											body: buffer,
+											body: buffer.buffer as BodyInit,
 										},
 									);
 

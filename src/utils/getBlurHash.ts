@@ -16,7 +16,6 @@ export type IOutput = {
 
 /**
  * Generate a Blurhash string from a given image URL or local path.
- *
  * @param {string} source - The image URL or local path to the image file.
  * @param {IOptions} [options] - The optional configuration options.
  * @param {number} [options.size] - The desired size of the image for encoding the Blurhash.
@@ -46,7 +45,7 @@ export const blurhashFromURL = async (
 	let width;
 
 	if (offline) {
-		const fs = await import("fs");
+		const fs = await import("node:fs");
 		const { width: localWidth, height: localHeight } = sizeOf(source);
 		width = localWidth;
 		height = localHeight;

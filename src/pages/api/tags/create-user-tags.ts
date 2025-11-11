@@ -21,7 +21,7 @@ type Data = {
 	error: ErrorResponse;
 };
 
-// creats tags for a specific user
+// Creates tags for a specific user
 
 export default async function handler(
 	request: NextApiRequest<{

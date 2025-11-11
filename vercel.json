@@ -1,5 +1,21 @@
 {
+	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"functions": {
+		"src/pages/api/profiles/fetch-user-profile.tsx": {
+			"maxDuration": 30
+		},
+		"src/pages/api/share/fetch-shared-categories-data.ts": {
+			"maxDuration": 30
+		},
+		"src/pages/api/category/fetch-user-categories.ts": {
+			"maxDuration": 30
+		},
+		"src/pages/api/bookmark/fetch-bookmarks-data.ts": {
+			"maxDuration": 30
+		},
+		"src/pages/api/bookmark/fetch-bookmarks-count.ts": {
+			"maxDuration": 30
+		},
 		"src/pages/api/file/upload-file-remaining-data.tsx": {
 			"maxDuration": 300
 		},

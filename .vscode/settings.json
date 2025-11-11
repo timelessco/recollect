@@ -1,46 +1,24 @@
 {
+	// Quality of life improvements
+	// Git
 	"git.branchProtection": ["main"],
+	"githubPullRequests.ignoredPullRequestBranches": ["main"],
 	"typescript.tsdk": "node_modules/typescript/lib",
 
+	// Files Customization
 	"files.associations": {
 		"*.svg": "html",
 		".env.*": "dotenv",
-		"*.json": "jsonc"
-	},
-
-	// Recommended Extensions
-
-	// Linters & Formatters
-	"prettier.enable": true,
-	"eslint.enable": true,
-	"eslint.useESLintClass": true,
-	"eslint.workingDirectories": [{ "mode": "auto" }],
-	"eslint.validate": [
-		"javascript",
-		"javascriptreact",
-		"typescript",
-		"typescriptreact",
-		"json",
-		"jsonc",
-		"json5",
-		"yaml",
-		"toml"
-	],
-	"stylelint.enable": true,
-
-	// Tailwind CSS
-	// Enable features in languages that are not supported by default. Add a mapping here between the new language and an already supported language.
-	"tailwindCSS.includeLanguages": {
-		"plaintext": "html",
-		"typescript": "javascript",
-		"typescriptreact": "javascript",
-		"javascriptreact": "javascript"
+		"*.json": "jsonc",
+		"package.json": "json",
+		".all-contributorsrc": "json",
+		"*.tsx": "typescriptreact",
+		"*.jsx": "javascriptreact"
 	},
 
 	// Editor Formatters & Linters.
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.formatOnSave": true,
-	"editor.formatOnPaste": false,
 	"editor.codeActionsOnSave": {
 		"source.addMissingImports": "explicit",
 		"source.formatDocument": "explicit",
@@ -51,6 +29,10 @@
 
 	// Language based settings
 
+	// CSS
+	"css.validate": false,
+	"css.lint.unknownAtRules": "ignore",
+
 	// JavaScript
 	"javascript.updateImportsOnFileMove.enabled": "always",
 	"javascript.referencesCodeLens.enabled": true,
@@ -58,19 +40,11 @@
 
 	// TypeScript
 	"typescript.updateImportsOnFileMove.enabled": "always",
-	"typescript.validate.enable": true,
-	"typescript.surveys.enabled": false,
-
-	// CSS
-	"css.validate": false,
-	"css.lint.unknownAtRules": "ignore",
-	"less.validate": false,
-	"scss.validate": false,
-	"stylelint.validate": ["css", "scss"],
+	"typescript.referencesCodeLens.enabled": true,
+	"typescript.tsserver.experimental.useVsCodeWatcher": true,
+	"typescript.referencesCodeLens.showOnAllFunctions": true,
 
 	// Markdown
-	"markdown.validate.enabled": true,
-	"markdown.experimental.editor.pasteLinks.enabled": true,
 	"[markdown]": {
 		"editor.quickSuggestions": {
 			"comments": "on",
@@ -79,45 +53,36 @@
 		}
 	},
 
-	// Other Installed Extensions
+	// Must have extensions config
 
-	// Error Translator for TypeScript
-	"totalTypeScript.hideAllTips": true,
-	"totalTypeScript.hideBasicTips": true,
-	"totalTypeScript.showFullTranslation": true,
-
-	// Conventional Commit
-	"conventionalCommits.emojiFormat": "emoji",
-	"conventionalCommits.showEditor": true,
-	"conventionalCommits.lineBreak": "\\n",
-	"conventionalCommits.promptFooter": false,
-	"conventionalCommits.promptBody": false,
-
-	// AutoClosing Tag
-	"html.autoClosingTags": true,
-	"javascript.autoClosingTags": true,
-	"typescript.autoClosingTags": true,
-
-	// Auto close tag
-	"auto-close-tag.SublimeText3Mode": true,
-	"auto-close-tag.activationOnLanguage": [
-		"xml",
-		"php",
-		"blade",
-		"ejs",
-		"jinja",
+	// Linters & Formatters
+	"eslint.useESLintClass": true,
+	"eslint.validate": [
 		"javascript",
 		"javascriptreact",
 		"typescript",
 		"typescriptreact",
-		"plaintext",
-		"markdown",
-		"vue",
-		"liquid",
-		"erb",
-		"lang-cfml",
-		"cfml",
-		"HTML (Eex)",
-		"mdx"
-	]
+		"json",
+		"jsonc",
+		"json5",
+		"yaml",
+		"yml"
+	],
+
+	// Tailwind CSS
+	// Detect additional class regex
+	"tailwindCSS.experimental.classRegex": [
+		// https://regex-vis.com/?r=%5C%5Cs*class%3A%5C%5Cs*%3F%5B%60%27%5C%22%5D%28.*%29%5B%60%27%5C%22%5D%5C%5Cs*%28%3F%3D%5B%3B%2C.%5D%29
+		// Selection visualizer at https://www.debuggex.com/
+		"\\s*class:\\s*?[`'\"](.*)[`'\"]\\s*(?=[;,.])",
+		["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+	],
+	// Enable features in languages that are not supported by default. Add a mapping here between the new language and an already supported language.
+	"tailwindCSS.includeLanguages": {
+		"plaintext": "html",
+		"typescript": "javascript",
+		"typescriptreact": "javascript",
+		"javascriptreact": "javascript"
+	},
+	"tailwindCSS.classFunctions": ["cva"]
 }

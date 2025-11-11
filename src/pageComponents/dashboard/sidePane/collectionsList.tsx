@@ -43,7 +43,7 @@ import {
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
-import OptionsIconGray from "../../../icons/optionsIconGray";
+import OptionsIcon from "../../../icons/optionsIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -64,7 +64,6 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
-	colorPickerColors,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -117,10 +116,12 @@ const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
 	const isUserCollectionOwner = singleCategoryData?.user_id?.id === userId;
 
 	if (isUserCollectionOwner) {
-		return <div>{collectionName}</div>;
+		return <div className="text-gray-1000">{collectionName}</div>;
 	}
 
-	return <div>Non Owner collection cannot be sorted</div>;
+	return (
+		<div className="text-gray-1000">Non Owner collection cannot be sorted</div>
+	);
 };
 
 const ListBoxDrop = (props: ListBoxDropTypes) => {
@@ -377,16 +378,15 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					(catItem) => catItem?.category_id === item?.id,
 				)?.count,
 				iconColor: item?.icon_color,
-		  }))
+			}))
 		: [];
-
 	const sortedList = () => {
 		let array: CollectionItemTypes[] = [];
 		if (!isEmpty(userProfileData?.data)) {
 			const apiCategoryOrder = userProfileData?.data[0]?.category_order;
 
 			if (!isNull(apiCategoryOrder)) {
-				if (apiCategoryOrder)
+				if (apiCategoryOrder) {
 					for (const item of apiCategoryOrder) {
 						const data = find(
 							collectionsList,
@@ -397,10 +397,11 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							array = [...array, data];
 						}
 					}
+				}
 
 				let categoriesNotThereInApiCategoryOrder: CollectionItemTypes[] = [];
 
-				if (collectionsList)
+				if (collectionsList) {
 					for (const item of collectionsList) {
 						const data = find(
 							apiCategoryOrder,
@@ -414,6 +415,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							];
 						}
 					}
+				}
 
 				return [...array, ...categoriesNotThereInApiCategoryOrder];
 			}
@@ -426,6 +428,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data[0]?.category_order;
+
 		const listOrder = isNull(apiOrder)
 			? collectionsList?.map((item) => item?.id)
 			: userProfileData?.data[0]?.category_order;
@@ -449,7 +452,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 			// add
 			myArray.splice(index1, 0, movingItem);
-
 			void mutationApiCall(
 				updateCategoryOrderMutation?.mutateAsync({
 					order: myArray,
@@ -459,11 +461,11 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	};
 
 	const renderAddCategoryInput = showAddCategoryInput ? (
-		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-custom-gray-2 px-2 py-[5px]">
+		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-2 py-[6px]">
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
-						fill={colorPickerColors[1]}
+						fill="var(--plain-reverse-color)"
 						height="16"
 						viewBox="0 0 18 18"
 						width="16"
@@ -473,7 +475,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</figure>
 				<input
 					autoFocus
-					className="bg-black/[0.004] text-sm font-[450] leading-4 text-custom-gray-1 opacity-40 focus:outline-none"
+					className="!bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-plain-reverse-color !opacity-40 placeholder:text-plain-reverse-color focus:!outline-none focus:!ring-0 focus:!ring-offset-0"
 					id="add-category-input"
 					onBlur={(event) => {
 						if (!isEmpty(event?.target?.value)) {
@@ -502,11 +504,10 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const collectionsHeader = (
 		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
-			<div className="flex items-center text-[13px] font-medium leading-[14.95px] text-custom-gray-10">
+			<div className="flex items-center text-13 font-medium leading-[14.95px] tracking-[0.02em] text-gray-600">
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
-					className="collections-sidepane-down-arrow hidden group-hover:block"
-					fill="currentColor"
+					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
 					size={10}
 				/>
 			</div>
@@ -514,10 +515,12 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				menuButton={
 					<div
 						className={
-							isCollectionHeaderMenuOpen ? "block" : " hidden group-hover:block"
+							isCollectionHeaderMenuOpen
+								? "block text-gray-500"
+								: "hidden text-gray-500 group-hover:block"
 						}
 					>
-						<OptionsIconGray />
+						<OptionsIcon />
 					</div>
 				}
 				menuButtonClassName="h-4 w-4"
@@ -536,7 +539,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							}
 						}}
 					>
-						<div className={` text-justify ${dropdownMenuItemClassName}`}>
+						<div className={`text-justify ${dropdownMenuItemClassName}`}>
 							{item?.label}
 						</div>
 					</AriaDropdownMenu>
@@ -561,7 +564,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 						{sortedList()?.map((item) => (
 							<Item key={item?.id} textValue={item?.name}>
 								<SingleListItemComponent
-									extendedClassname="pb-[6px] pt-[4px] mt-[2px]"
+									extendedClassname="py-[6px]"
 									item={item}
 									listNameId="collection-name"
 									onCategoryOptionClick={onCategoryOptionClick}
@@ -578,17 +581,17 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</div>
 				{renderAddCategoryInput}
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[5px] hover:bg-custom-gray-2"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={() => {}}
 					role="button"
 					tabIndex={0}
 				>
-					<figure>
+					<figure className="text-gray-500">
 						<AddCategoryIcon />
 					</figure>
-					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-grayDark-grayDark-600">
+					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-gray-600">
 						Add Collection
 					</p>
 				</div>

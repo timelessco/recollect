@@ -40,7 +40,6 @@ describe("share test", () => {
 		cy.wait("@invite").then((intercept) => {
 			// you can now access the request body, response body, status, ...
 
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 			cy.request("GET", intercept?.response?.body?.url).then((response) => {
 				expect(response).property("status").to.equal(200);
 				expect(response).property("body").to.contain({
@@ -102,7 +101,7 @@ describe("share test", () => {
 		cy.get("#collab-access-select").select("Edit");
 		cy.get("body").type("{esc}");
 
-		// log out of admin accound , then log into collab user account , then add new bookmark in shared category when collab user does have access to it
+		// log out of admin account , then log into collab user account , then add new bookmark in shared category when collab user does have access to it
 		cy.wait(500);
 		cy.get(".user-menu-btn").click();
 		cy.wait(1000);

@@ -1,30 +1,158 @@
+jobs:
+  find_duplicated_packages:
+    name: Find Duplicated Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Check for duplicated packages
+        run: pnpm turbo check:packages
+
+    timeout-minutes: 15
+
+  lint-css:
+    # env:
+    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    name: 🔬 Lint CSS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Lint CSS
+        run: pnpm turbo lint:css
+
+    timeout-minutes: 15
+
+  lint-eslint:
+    # env:
+    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    name: 🔬 Lint ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Lint ESLint
+        run: pnpm turbo lint:eslint
+
+    timeout-minutes: 15
+
+  lint-knip:
+    # env:
+    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    name: 🔬 Lint Knip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Lint Knip
+        run: pnpm turbo lint:knip
+
+    timeout-minutes: 15
+
+  lint-md:
+    # env:
+    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    name: 🔬 Lint MD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Lint MD
+        run: pnpm turbo lint:md
+
+    timeout-minutes: 15
+
+  lint-prettier:
+    # env:
+    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    name: 🔬 Lint Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Lint Prettier
+        run: pnpm turbo lint:prettier
+
+    timeout-minutes: 15
+
+  lint-spelling:
+    # env:
+    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    name: 🔬 Lint Spelling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Lint Spelling
+        run: pnpm turbo lint:spelling
+
+    timeout-minutes: 15
+
+  lint-types:
+    # env:
+    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    name: 🔬 Lint Types
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/pnpm-install
+
+      - name: Lint Types
+        run: pnpm turbo lint:types
+
+    timeout-minutes: 15
+
 name: CI
 
 on:
   pull_request: ~
-
   push:
     branches:
+      - dev
       - main
-
-jobs:
-  ci:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure Git
-        uses: ./.github/actions/git-config
-
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-
-      - name: 📥 Monorepo install
-        uses: ./.github/actions/pnpm-install
-
-      - name: 🔬 Linter
-      - run: npx turbo run lint:eslint lint:types lint:css lint:md lint:knip
-          lint:package-json lint:spelling lint:prettier test

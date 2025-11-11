@@ -22,7 +22,7 @@ import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/
 import useAddCategoryOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
 import useAddCategoryToBookmarkMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
-import useDeleteCategoryOtimisticMutation from "../../async/mutationHooks/category/useDeleteCategoryOtimisticMutation";
+import useDeleteCategoryOptimisticMutation from "../../async/mutationHooks/category/useDeleteCategoryOptimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
@@ -30,7 +30,6 @@ import useAddTagToBookmarkMutation from "../../async/mutationHooks/tags/useAddTa
 import useAddUserTagsMutation from "../../async/mutationHooks/tags/useAddUserTagsMutation";
 import useRemoveTagFromBookmarkMutation from "../../async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useAiSearch from "../../async/queryHooks/ai/search/useAiSearch";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
@@ -93,11 +92,11 @@ import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
 
 // import CardSection from "./cardSection";
-const CardSection = dynamic(() => import("./cardSection"), {
+const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
 });
 
-const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
+const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
 	ssr: false,
 });
 
@@ -136,6 +135,7 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		if (router?.pathname === "/") {
+			// eslint-disable-next-line promise/prefer-await-to-then
 			void router.push(`/${ALL_BOOKMARKS_URL}`).catch(() => {});
 		}
 	}, [router, router?.pathname]);
@@ -168,7 +168,7 @@ const Dashboard = () => {
 		(state) => state.setShareCategoryId,
 	);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
 		if (!showAddBookmarkModal) {
 			setIsEdit(false);
@@ -178,7 +178,9 @@ const Dashboard = () => {
 	}, [showAddBookmarkModal]);
 
 	useEffect(() => {
-		if (isNull(session?.user)) void router.push(`/${LOGIN_URL}`);
+		if (isNull(session?.user)) {
+			void router.push(`/${LOGIN_URL}`);
+		}
 	}, [router, session]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -194,7 +196,6 @@ const Dashboard = () => {
 	const { allBookmarksData, fetchNextPage: fetchNextBookmarkPage } =
 		useFetchPaginatedBookmarks();
 
-	useAiSearch();
 	const {
 		flattenedSearchData,
 		fetchNextPage: fetchNextSearchPage,
@@ -235,8 +236,8 @@ const Dashboard = () => {
 	// category mutation
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 
-	const { deleteCategoryOtimisticMutation } =
-		useDeleteCategoryOtimisticMutation();
+	const { deleteCategoryOptimisticMutation } =
+		useDeleteCategoryOptimisticMutation();
 
 	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 
@@ -267,7 +268,9 @@ const Dashboard = () => {
 		if (typeof window !== "undefined") {
 			const listener = (event: ClipboardEvent) => {
 				// Skip if current path is trash URL
-				if (window.location.pathname === `/${TRASH_URL}`) return;
+				if (window.location.pathname === `/${TRASH_URL}`) {
+					return;
+				}
 
 				const target = event.target as HTMLElement;
 
@@ -277,7 +280,9 @@ const Dashboard = () => {
 					target.tagName === "TEXTAREA" ||
 					target.closest(".skip-global-paste");
 
-				if (isEditable) return;
+				if (isEditable) {
+					return;
+				}
 
 				// Otherwise handle global paste
 				void clipboardUpload(
@@ -352,8 +357,8 @@ const Dashboard = () => {
 				? find(
 						currentCategory?.collabData,
 						(item) => item?.userEmail === session?.user?.email,
-				  )?.edit_access === true ||
-				  currentCategory?.user_id?.id === session?.user?.id
+					)?.edit_access === true ||
+					currentCategory?.user_id?.id === session?.user?.id
 				: true;
 
 		if (typeof CATEGORY_ID === "number") {
@@ -381,12 +386,13 @@ const Dashboard = () => {
 	// any new tags created need not come in tag dropdown , this filter implements this
 	let filteredUserTags = userTags?.data ? userTags?.data : [];
 
-	if (selectedTag)
+	if (selectedTag) {
 		for (const selectedItem of selectedTag) {
 			filteredUserTags = filteredUserTags.filter(
 				(index) => index?.id !== selectedItem?.value,
 			);
 		}
+	}
 
 	const bookmarksViewApiLogic = (
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
@@ -408,7 +414,6 @@ const Dashboard = () => {
 			const cardContentViewLogic = (
 				existingViewData: BookmarkViewDataTypes["cardContentViewArray"],
 				// TS disabled because we need to have the function here as its under the scope of the parent function
-				// eslint-disable-next-line unicorn/consistent-function-scoping
 			) => {
 				// this function sets the always on values for different views
 				// like if in moodboard then the cover img should always be present, even if its turned off in another view like list view
@@ -645,20 +650,24 @@ const Dashboard = () => {
 								>
 									<input {...getInputProps()} />
 									<div
-										className=""
 										id="scrollableDiv"
 										ref={infiniteScrollRef}
-										style={{ height: "100vh", overflow: "auto" }}
+										style={{
+											height: "100vh",
+											overflowY: "auto",
+											overflowX: "hidden",
+											overflowAnchor: "none",
+										}}
 									>
 										<InfiniteScroll
 											dataLength={
 												isSearching
-													? flattenedSearchData?.length ?? 0
-													: flattendPaginationBookmarkData?.length ?? 0
+													? (flattenedSearchData?.length ?? 0)
+													: (flattendPaginationBookmarkData?.length ?? 0)
 											}
 											endMessage={
-												<p className="pb-6 text-center">
-													Life happens, save it.
+												<p className="pb-6 text-center text-plain-reverse-color">
+													{isSearchLoading ? "" : "Life happens, save it."}
 												</p>
 											}
 											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}
@@ -715,6 +724,7 @@ const Dashboard = () => {
 																			isTrash,
 																		},
 																	),
+																	// eslint-disable-next-line promise/prefer-await-to-then
 																).catch(() => {});
 															} else {
 																errorToast("Cannot delete other users uploads");
@@ -793,6 +803,7 @@ const Dashboard = () => {
 																	isTrash: true,
 																},
 															),
+															// eslint-disable-next-line promise/prefer-await-to-then
 														).catch(() => {});
 													}
 												}}
@@ -834,7 +845,7 @@ const Dashboard = () => {
 			<Modal
 				open={showAddBookmarkModal}
 				setOpen={() => setShowAddBookmarkModal(false)}
-				wrapperClassName="w-[324px] p-4 rounded-lg"
+				wrapperClassName="w-[324px] p-4 rounded-lg self-center"
 			>
 				<AddModalContent
 					addExistingTag={async (tag) => {
@@ -1006,6 +1017,7 @@ const Dashboard = () => {
 
 	const renderMainPaneContent = () => {
 		if (!isInNotFoundPage) {
+			// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 			switch (categorySlug) {
 				case SETTINGS_URL:
 					return <Settings />;
@@ -1015,6 +1027,7 @@ const Dashboard = () => {
 					return renderAllBookmarkCards();
 				case LINKS_URL:
 					return renderAllBookmarkCards();
+
 				default:
 					return renderAllBookmarkCards();
 			}
@@ -1050,7 +1063,7 @@ const Dashboard = () => {
 				if (currentCategory?.user_id?.id === session?.user?.id) {
 					if (isDataPresentCheck) {
 						await mutationApiCall(
-							deleteCategoryOtimisticMutation.mutateAsync({
+							deleteCategoryOptimisticMutation.mutateAsync({
 								category_id: categoryId,
 								category_order: userProfileData?.data?.[0]?.category_order,
 							}),
@@ -1074,7 +1087,7 @@ const Dashboard = () => {
 		[
 			allCategories?.data,
 			bookmarksCountData?.data?.categoryCount,
-			deleteCategoryOtimisticMutation,
+			deleteCategoryOptimisticMutation,
 			router,
 			session,
 			userProfileData?.data,

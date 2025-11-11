@@ -1,9 +1,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import {
-	type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 
@@ -34,7 +31,7 @@ import {
 import { isUserInACategoryInApi } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-// gets all bookmarks data mapped with the data related to other tables , like tags , catrgories etc...
+// gets all bookmarks data mapped with the data related to other tables , like tags , categories etc...
 
 type Data = {
 	count: BookmarksCountTypes | null;
@@ -47,7 +44,7 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	// disabling as this is not that big of an issue
-	const { category_id, sort_by: sortVaue } = request.query;
+	const { category_id, sort_by: sortValue } = request.query;
 	const from = Number.parseInt(request.query.from as string, 10);
 
 	const supabase = apiSupabaseClient(request, response);
@@ -68,7 +65,7 @@ export default async function handler(
 
 		if (sharedCategoryError) {
 			Sentry.captureException(
-				`Get shared catagory data error : ${sharedCategoryError?.message}`,
+				`Get shared category data error : ${sharedCategoryError?.message}`,
 			);
 			response
 				.status(500)
@@ -114,7 +111,7 @@ user_id (
 )
 `,
 		)
-		// .eq('user_id', userId) // this is for '/' (root-page) route , we need bookmakrs by user_id // TODO: check and remove
+		// .eq('user_id', userId) // this is for '/' (root-page) route , we need bookmarks by user_id // TODO: check and remove
 		.eq("trash", category_id === TRASH_URL)
 		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
 
@@ -162,38 +159,39 @@ user_id (
 		);
 	}
 
-	if (category_id === TWEETS_URL) {
-		query = query.eq("type", tweetType);
-		// this tells the order in which the tweets was saved in twitter
-		query = query.order("sort_index", { ascending: false });
-	}
-
 	if (category_id === LINKS_URL) {
 		query = query.eq("type", bookmarkType);
 	}
 
-	if (sortVaue === "date-sort-acending") {
-		query = query.order("id", { ascending: false });
+	if (category_id === TWEETS_URL) {
+		query = query
+			.eq("type", tweetType)
+			.order("sort_index", { ascending: false });
 	}
 
-	if (sortVaue === "date-sort-decending") {
-		query = query.order("id", { ascending: true });
-	}
-
-	if (sortVaue === "alphabetical-sort-acending") {
+	if (sortValue === "date-sort-acending") {
+		// newest first
+		query = query.order("inserted_at", { ascending: false });
+	} else if (sortValue === "date-sort-decending") {
+		// oldest first
+		query = query.order("inserted_at", { ascending: true });
+	} else if (sortValue === "alphabetical-sort-acending") {
+		// title A-Z
 		query = query.order("title", { ascending: true });
-	}
-
-	if (sortVaue === "alphabetical-sort-decending") {
+	} else if (sortValue === "alphabetical-sort-decending") {
+		// title Z-A
 		query = query.order("title", { ascending: false });
-	}
-
-	if (sortVaue === "url-sort-acending") {
+	} else if (sortValue === "url-sort-acending") {
+		// url A-Z
 		query = query.order("url", { ascending: true });
-	}
-
-	if (sortVaue === "url-sort-decending") {
+	} else if (sortValue === "url-sort-decending") {
+		// url Z-A
 		query = query.order("url", { ascending: false });
+	} else if (category_id === TWEETS_URL) {
+		query = query.order("sort_index", { ascending: false });
+	} else {
+		// Default fallback: newest first
+		query = query.order("inserted_at", { ascending: true });
 	}
 
 	const { data: bookmarkData, error } = await query;
@@ -213,23 +211,25 @@ user_id (
 		)
 		.eq("user_id", userId);
 
-	const finalData = data?.map((item) => {
-		const matchedBookmarkWithTag = bookmarksWithTags?.filter(
-			(tagItem: { bookmark_id: number }) => tagItem?.bookmark_id === item?.id,
-		) as unknown as BookmarksWithTagsWithTagForginKeys;
+	const finalData = data
+		?.map((item) => {
+			const matchedBookmarkWithTag = bookmarksWithTags?.filter(
+				(tagItem) => tagItem?.bookmark_id === item?.id,
+			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
-		if (!isEmpty(matchedBookmarkWithTag)) {
-			return {
-				...item,
-				addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
-					id: matchedItem?.tag_id?.id,
-					name: matchedItem?.tag_id?.name,
-				})),
-			};
-		}
+			if (!isEmpty(matchedBookmarkWithTag)) {
+				return {
+					...item,
+					addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
+						id: matchedItem?.tag_id?.id,
+						name: matchedItem?.tag_id?.name,
+					})),
+				};
+			}
 
-		return item;
-	}) as SingleListData[];
+			return item;
+		})
+		.filter(Boolean) as SingleListData[];
 
 	response.status(200).json({ data: finalData, error, count: null });
 }

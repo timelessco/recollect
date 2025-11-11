@@ -1,4 +1,5 @@
-//@ts-nocheck
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+// @ts-nocheck
 
 describe("Meta data testing", () => {
 	beforeEach(() => {
@@ -18,6 +19,7 @@ describe("Meta data testing", () => {
 			url: "https://unsplash.com/photos/a-city-street-with-a-lot-of-tall-buildings-badrIRxBqmk",
 		}).as("addRequest");
 
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		let bookmarkId;
 
 		cy.get("@addRequest")?.then((addBookmarkData) => {

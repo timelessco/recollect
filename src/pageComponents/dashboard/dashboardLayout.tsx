@@ -63,7 +63,7 @@ import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import GlobeIcon from "../../icons/globeIcon";
-import OptionsIconBlack from "../../icons/optionsIconBlack";
+import OptionsIcon from "../../icons/optionsIcon";
 import UsersCollabIcon from "../../icons/usersCollabIcon";
 import {
 	dropdownMenuClassName,
@@ -153,7 +153,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
 	const [headingInputValue, setHeadingInputValue] = useState("");
 
-	const { isMobile, isDesktop } = useIsMobileView();
+	const { isDesktop } = useIsMobileView();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 
@@ -274,7 +274,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		if (!showHeadingInput) {
 			return (
 				<div
-					className="truncate text-xl font-semibold text-gray-light-12"
+					className="truncate text-xl font-semibold text-gray-950"
 					onClick={(event) => {
 						event.preventDefault();
 						if (event.detail === 2) {
@@ -297,7 +297,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="m-0 h-[28px] rounded-none  border-none p-0 text-xl font-semibold leading-[16px] text-gray-light-12  focus:outline-none"
+					className="m-0 h-[28px] rounded-none border-none bg-gray-0 p-0 text-xl font-semibold leading-[16px] text-gray-900 focus:outline-none"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -356,7 +356,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			className="mr-1 bg-transparent hover:bg-transparent"
 			onClick={() => setShowSearchBar(true)}
 		>
-			<SearchInputSearchIcon size="16" />
+			<SearchInputSearchIcon color="var(--color-gray-1000)" size="16" />
 		</Button>
 	);
 
@@ -455,6 +455,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 		let content = <div />;
 
+		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (headerOptionsCurrentTab) {
 			case "view":
 				content = (
@@ -493,8 +494,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return (
 			<AriaDropdown
 				menuButton={
-					<Button className="bg-transparent p-[7px]">
-						<OptionsIconBlack />
+					<Button className="bg-transparent p-[7px] text-gray-600 hover:text-plain-reverse-color">
+						<OptionsIcon />
 					</Button>
 				}
 				menuClassName={dropdownClassNames}
@@ -510,14 +511,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	};
 
 	const collapseButtonCommonClasses =
-		"absolute left-[11px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-custom-gray-16 transition-transform duration-300 ease-in";
+		"absolute left-[11px] mt-[-2px] h-[14px] w-[5px] rounded-md bg-gray-300 transition-transform duration-300 ease-in";
 	const renderSidePaneCollapseButton = (
 		<>
 			{!showSidePane && (
 				<div className="relative">
 					<div className="">
 						<button
-							className="group absolute left-[-25px] top-[-25px]  px-3 py-5"
+							className="group absolute left-[-25px] top-[-25px] px-3 py-5"
 							data-am-linearrow="tooltip tooltip-bottom"
 							onClick={() => {
 								setShowSidePane(true);
@@ -531,7 +532,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								className={`${collapseButtonCommonClasses} top-[16px] group-hover:rotate-[-25deg]`}
 							/>
 							<div
-								className={`${collapseButtonCommonClasses}  top-[26px]  group-hover:rotate-[25deg]`}
+								className={`${collapseButtonCommonClasses} top-[26px] group-hover:rotate-[25deg]`}
 							/>
 						</button>
 					</div>
@@ -542,13 +543,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const renderMainPaneNav = () => {
 		const headerClass = classNames(
-			"flex items-center justify-between py-[6.5px] bg-custom-white-1 absolute top-0 w-full z-[5]  backdrop-blur-[20.5px]",
+			"flex items-center justify-between py-[6.5px] absolute top-0 w-full z-[5] backdrop-blur-[20.5px] bg-[rgb(255_255_255/90%)] dark:bg-[rgb(16_16_16/90%)] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)]",
 			{
 				// "pl-[15px] pr-3":
 				// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
 				// "px-[7px]":
 				// 	currentBookmarkView === "headlines" || currentBookmarkView === "list",
-				"pl-[13px] ml-1 pr-3": true,
+				"pl-[13px]  pr-3": true,
 			},
 		);
 
@@ -569,7 +570,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center">
+						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full min-w-[20px] max-w-[20px] items-center text-plain-reverse-color">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}
@@ -578,13 +579,17 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							<div className="ml-2 flex space-x-2">
 								{currentCategoryData?.is_public && (
 									<ToolTip toolTipContent="Public collection">
-										<GlobeIcon />
+										<figure className="text-gray-1000">
+											<GlobeIcon />
+										</figure>
 									</ToolTip>
 								)}
 								{currentCategoryData?.collabData &&
 									currentCategoryData?.collabData?.length > 1 && (
 										<ToolTip toolTipContent="Shared collection">
-											<UsersCollabIcon />
+											<figure className="text-gray-1000">
+												<UsersCollabIcon />
+											</figure>
 										</ToolTip>
 									)}
 							</div>
@@ -603,6 +608,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								uploadFile={uploadFileFromAddDropdown}
 							/>
 						)}
+						{/* Dark/Light toggle here */}
 					</div>
 				</div>
 			</header>
@@ -674,7 +680,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				<Allotment.Pane
 					className="split-left-pane"
-					maxSize={600}
+					maxSize={350}
 					minSize={0}
 					preferredSize={244}
 					ref={paneRef}
@@ -701,11 +707,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			>
 				{renderSidePane}
 			</Drawer>
-			<div className="w-[100vw]">{renderMainPaneContent}</div>
+			<div className="w-screen">{renderMainPaneContent}</div>
 		</div>
 	);
 
-	return !isMobile ? renderDeskTopView : renderMobileView;
+	return isDesktop ? renderDeskTopView : renderMobileView;
 };
 
 export default DashboardLayout;

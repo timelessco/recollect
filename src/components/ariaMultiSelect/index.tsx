@@ -16,7 +16,7 @@ import { type ChildrenTypes } from "../../types/componentTypes";
 
 /**
  * Checks if a tag exists in the provided array (case-insensitive, trimmed).
- * @param arr - Array of tags (string, undefined, or null)
+ * @param array - Array of tags (string, undefined, or null)
  * @param tag - Tag to check
  * @returns true if tag exists in arr, false otherwise
  */
@@ -86,14 +86,14 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
 			<>
 				{label && <label htmlFor={inputId}>{label}</label>}
 				<Ariakit.Combobox
-					className="ml-1 w-full bg-inherit text-sm font-normal leading-4 text-grayDark-grayDark-600 outline-none "
+					className="ml-1 w-full bg-inherit text-sm font-normal leading-4 text-gray-600 outline-none"
 					id={inputId}
 					ref={ref}
 					store={combobox}
 					{...comboboxProps}
 				/>
 				<Ariakit.ComboboxPopover
-					className="z-10 rounded-xl bg-white p-[6px] shadow-custom-7"
+					className="z-10 rounded-xl bg-gray-0 p-[6px] shadow-custom-7"
 					gutter={8}
 					render={<Ariakit.SelectList store={select} />}
 					sameWidth
@@ -111,7 +111,7 @@ export type ComboboxItemProps = ComponentPropsWithoutRef<"div"> & {
 };
 
 const menuItemClassName =
-	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[1%] text-gray-light-12 data-[active-item]:bg-gray-light-4 truncate";
+	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[0.01em] text-gray-900 data-[active-item]:bg-gray-200 truncate";
 
 export const ComboboxItem = forwardRef<HTMLDivElement, ComboboxItemProps>(
 	(props, ref) => (
@@ -136,7 +136,7 @@ type TagTypes = {
 
 const Tag = ({ children, onClick }: TagTypes) => (
 	<div
-		className="mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-custom-gray-1 px-2 py-[2px] text-xs font-450 leading-[15px] tracking-[1%] text-white"
+		className="mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs font-450 leading-[15px] tracking-[0.01em] text-white"
 		onClick={onClick}
 		onKeyDown={() => {}}
 		role="button"
@@ -178,7 +178,7 @@ const AriaMultiSelect = ({
 
 	// Always allow wrapping and set a minimum height for single line
 	const mainWrapperClassName = classNames(
-		"py-[3px] px-[10px] rounded-lg w-full bg-overlay-black-A/3 flex items-center flex-wrap min-h-[30px]",
+		"py-[3px] px-[10px] rounded-lg w-full bg-gray-100 flex items-center flex-wrap min-h-[30px]",
 	);
 
 	return (

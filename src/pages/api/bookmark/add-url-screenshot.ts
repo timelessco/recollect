@@ -22,7 +22,7 @@ import {
 	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
-import { apiCookieParser } from "../../../utils/helpers";
+import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -31,7 +31,7 @@ type Data = {
 	error: PostgrestError | VerifyErrors | string | null;
 };
 const MAX_LENGTH = 1_300;
-const upload = async (base64info: string, uploadUserId: string) => {
+export const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
 
@@ -67,9 +67,7 @@ export default async function handler(
 		);
 		screenShotResponse = await axios.get(
 			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
-			{
-				responseType: "json",
-			},
+			{ responseType: "json" },
 		);
 		if (screenShotResponse.status === 200) {
 			console.log("***Screenshot success**");
@@ -149,11 +147,7 @@ export default async function handler(
 						favIcon: data?.[0]?.meta_data?.favIcon,
 						url: request.body.url,
 					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
+					getAxiosConfigWithAuth(request),
 				);
 			}
 

@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
@@ -36,7 +35,7 @@ export default async function handler(
 			category_views,
 			icon,
 			icon_color,
-			category_name, 
+			category_name,
 			is_public
     `,
 		)
@@ -68,7 +67,7 @@ export default async function handler(
 			is_public: null,
 		});
 
-		log("username mismatch from url query");
+		console.log("username mismatch from url query");
 	} else {
 		const sortBy = categoryData[0]?.category_views?.sortBy;
 
@@ -76,7 +75,7 @@ export default async function handler(
 			.from(MAIN_TABLE_NAME)
 			.select("*, category_id!inner(*), user_id!inner(*)")
 			.eq("category_id.category_slug", request.query.category_slug)
-			// .eq('user_id.user_name', req.query.user_name) // if this is there then collabs bookmakrs are not coming
+			// .eq('user_id.user_name', req.query.user_name) // if this is there then collabs bookmarks are not coming
 			.eq("category_id.is_public", true)
 			.eq("trash", false);
 

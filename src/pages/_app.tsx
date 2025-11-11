@@ -10,6 +10,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
 
+import { getBaseUrl } from "../utils/constants";
+
 const MyApp = ({
 	Component,
 	pageProps: { ...pageProps },
@@ -17,7 +19,7 @@ const MyApp = ({
 	dehydratedState: unknown;
 }>) => {
 	// Create a client
-
+	// eslint-disable-next-line react/hook-use-state
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({
@@ -29,8 +31,7 @@ const MyApp = ({
 				},
 			}),
 	);
-
-	const productionUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+	const baseUrl = getBaseUrl();
 
 	return (
 		<QueryClientProvider client={queryClient}>
@@ -38,11 +39,11 @@ const MyApp = ({
 				<Head>
 					<title>Recollect</title>
 					<meta
-						content={`${productionUrl}/bookmarks-signup-1.png`}
+						content={`${baseUrl}/bookmarks-signup-1.png`}
 						property="og:image"
 					/>
 					<meta content="product" property="og:type" />
-					<meta content={productionUrl} property="og:url" />
+					<meta content={baseUrl} property="og:url" />
 					<meta content="Recollect" property="og:title" />
 					<meta
 						content="Open source bookmark manager built using Next js and Supabase"
@@ -54,14 +55,14 @@ const MyApp = ({
 					/>
 					{/* Twitter */}
 					<meta content="summary" name="twitter:card" />
-					<meta content={productionUrl} name="twitter:site" />
+					<meta content={baseUrl} name="twitter:site" />
 					<meta content="Recollect" name="twitter:title" />
 					<meta
 						content="Open source bookmark manager built using Next js and Supabase"
 						name="twitter:description"
 					/>
 					<meta
-						content={`${productionUrl}/bookmarks-signup-1.png`}
+						content={`${baseUrl}/bookmarks-signup-1.png`}
 						name="twitter:image"
 					/>
 					{/* analytics script */}

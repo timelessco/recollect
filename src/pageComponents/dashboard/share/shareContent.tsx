@@ -13,7 +13,7 @@ import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutation
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
-import Spinner from "../../../components/spinner";
+import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
 import GlobeIcon from "../../../icons/globeIcon";
@@ -32,14 +32,12 @@ import { mutationApiCall } from "../../../utils/apiHelpers";
 import { CATEGORIES_KEY, EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
-const rightTextStyles =
-	"text-13 font-medium leading-[15px] text-custom-gray-10";
+const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
 const AccessUserInfo = (props: {
 	isLoggedinUserTheOwner: boolean;
 	item: CollabDataInCategory;
 }) => {
-	const session = useSupabaseSession((state) => state.session);
 	const { item, isLoggedinUserTheOwner } = props;
 
 	const { updateSharedCategoriesUserAccessMutation } =
@@ -51,7 +49,7 @@ const AccessUserInfo = (props: {
 	const renderRightContent = () => {
 		if (item.is_accept_pending) {
 			return (
-				<div className=" flex items-center space-x-1">
+				<div className="flex items-center space-x-1">
 					<p className={rightTextStyles}>pending</p>
 					{isLoggedinUserTheOwner && (
 						<figure>
@@ -113,7 +111,7 @@ const AccessUserInfo = (props: {
 						]}
 						renderCustomSelectButton={() => (
 							<div className="flex items-center">
-								<p className=" mr-1">
+								<p className="mr-1 text-gray-800">
 									{item.edit_access ? "Can Edit" : "Can View"}
 								</p>
 								<figure>
@@ -160,7 +158,7 @@ const AccessUserInfo = (props: {
 				) : (
 					<DefaultUserIcon className="h-5 w-5" />
 				)}
-				<p className=" ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-custom-gray-1">
+				<p className="ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-gray-800">
 					{item.userEmail}
 				</p>
 			</div>
@@ -271,8 +269,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none":
-			true,
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-alpha-600 placeholder:text-gray-alpha-600": true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
 
@@ -298,7 +295,10 @@ const ShareContent = () => {
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isLoading ? (
-							<Spinner />
+							<Spinner
+								className="h-3 w-3 animate-spin"
+								style={{ color: "var(--plain-reverse-color)" }}
+							/>
 						) : (
 							<AriaSelect
 								defaultValue="View"
@@ -312,8 +312,8 @@ const ShareContent = () => {
 								]}
 								// disabled
 								renderCustomSelectButton={() => (
-									<div className="flex items-center">
-										<p className=" mr-1">
+									<div className="flex items-center text-gray-alpha-600">
+										<p className="mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
 										<figure>
@@ -324,28 +324,42 @@ const ShareContent = () => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-custom-gray-11 rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-[7px] px-[10px] bg-gray-alpha-100 rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
-			<div className=" pt-3">
-				<p className=" px-2 py-[6px] text-xs font-450 leading-[14px] text-custom-gray-10">
+			<div className="pt-3">
+				<p className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-500">
 					People with access
 				</p>
 				<div className="pb-2">
-					{currentCategory?.collabData?.map((item) => (
-						<AccessUserInfo
-							isLoggedinUserTheOwner={isUserTheCategoryOwner}
-							item={item}
-							key={item.userEmail}
-						/>
-					))}
+					{currentCategory?.collabData
+						?.slice()
+						.toSorted((a, b) => {
+							// Move owner to the top
+							if (a.isOwner) {
+								return -1;
+							}
+
+							if (b.isOwner) {
+								return 1;
+							}
+
+							return 0;
+						})
+						.map((item) => (
+							<AccessUserInfo
+								isLoggedinUserTheOwner={isUserTheCategoryOwner}
+								item={item}
+								key={item.userEmail}
+							/>
+						))}
 				</div>
-				<div className="mx-2 flex items-end justify-between border-y-[1px] border-custom-gray-11 py-[15.5px]">
-					<div className=" flex items-center">
-						<figure>
+				<div className="mx-2 flex items-end justify-between border-y py-[15.5px]">
+					<div className="flex items-center">
+						<figure className="text-gray-1000">
 							<GlobeIcon />
 						</figure>
-						<p className="ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+						<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
 							Anyone with link
 						</p>
 					</div>
@@ -371,10 +385,10 @@ const ShareContent = () => {
 							]}
 							renderCustomSelectButton={() => (
 								<div className="flex items-center">
-									<p className=" mr-1">
+									<p className="mr-1 text-gray-800">
 										{currentCategory?.is_public ? "View access" : "No access"}
 									</p>
-									<figure>
+									<figure className="text-gray-500">
 										<DownArrowGray />
 									</figure>
 								</div>
@@ -389,8 +403,8 @@ const ShareContent = () => {
 				<div
 					className={`flex items-center p-2 ${
 						currentCategory?.is_public
-							? " cursor-pointer"
-							: " cursor-not-allowed opacity-50"
+							? "cursor-pointer"
+							: "cursor-not-allowed opacity-50"
 					}`}
 					onClick={() => {
 						if (currentCategory?.is_public) {
@@ -402,10 +416,10 @@ const ShareContent = () => {
 					role="button"
 					tabIndex={0}
 				>
-					<figure>
+					<figure className="text-gray-1000">
 						<LinkIcon />
 					</figure>
-					<p className="ml-[6px] text-13 font-450 leading-[15px] text-custom-gray-1">
+					<p className="ml-[6px] text-13 font-450 leading-[15px] text-[#007bf4e5]">
 						{linkCopied ? "Link copied" : "Copy link"}
 					</p>
 				</div>

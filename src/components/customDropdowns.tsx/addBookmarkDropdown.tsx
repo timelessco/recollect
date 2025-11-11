@@ -73,11 +73,11 @@ const AddBookmarkDropdown = ({
 				isOpen={openDropdown}
 				menuButton={
 					<Button
-						className="rounded-full p-[7px] hover:bg-black"
+						className="rounded-full p-[7px] [filter:drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))]"
 						title="create"
 						type="dark"
 					>
-						<figure className="h-4 w-4">
+						<figure className="h-4 w-4 text-gray-0">
 							<PlusIconWhite />
 						</figure>
 					</Button>
@@ -92,14 +92,14 @@ const AddBookmarkDropdown = ({
 			>
 				<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
 					<Button
-						className="p-0 text-grayDark-grayDark-600 hover:text-gray-light-12"
+						className="p-0 text-gray-600 hover:text-gray-900"
 						onClick={() => {
 							if (fileUploadInputRef.current) {
 								fileUploadInputRef.current.click();
 							}
 						}}
 					>
-						<AddBoomarkInputIcon className="absolute left-[14px] top-[13px] z-[1]" />
+						<AddBoomarkInputIcon className="absolute left-[14px] top-[11px] z-[1]" />
 					</Button>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<Input

@@ -74,7 +74,6 @@ export const upload = async (
 	}
 };
 
-// eslint-disable-next-line complexity
 export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
@@ -244,8 +243,8 @@ export default async function handler(
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
 		? uploadedImageThatIsAUrl
 		: currentData?.meta_data?.screenshot
-		? currentData?.meta_data?.screenshot
-		: uploadedCoverImageUrl;
+			? currentData?.meta_data?.screenshot
+			: uploadedCoverImageUrl;
 
 	if (
 		!isNil(imageUrlForMetaDataGeneration) ||
@@ -269,13 +268,19 @@ export default async function handler(
 
 		try {
 			// Get OCR using the centralized function
-			imageOcrValue = await ocr(imageUrlForMetaDataGeneration);
+			imageOcrValue = await ocr(
+				imageUrlForMetaDataGeneration,
+				supabase,
+				userId,
+			);
 
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
 					: imageUrlForMetaDataGeneration,
+				supabase,
+				userId,
 			);
 		} catch (error) {
 			console.error("Gemini AI processing error", error);

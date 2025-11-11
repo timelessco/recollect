@@ -1,0 +1,18 @@
+{
+	"config": {
+		"first-line-h1": false,
+		"no-multiple-blanks": false,
+		"no-inline-html": false,
+		"line-length": false,
+		"no-hard-tabs": false
+	},
+
+	// Define glob expressions to use (only valid at root)
+	"globs": ["**/*.md", ".github/**/*.md"],
+
+	// Ignore files referenced by .gitignore (only valid at root)
+	"gitignore": true,
+
+	// Define glob expressions to ignore
+	"ignores": [".github/CODE_OF_CONDUCT.md", "CHANGELOG.md", ".claude/**/*.md"]
+}

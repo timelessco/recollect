@@ -23,7 +23,7 @@ type Data = {
 };
 
 /**
- * Updates catagory order for a user
+ * Updates category order for a user
  */
 
 export default async function handler(

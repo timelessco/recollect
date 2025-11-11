@@ -44,8 +44,6 @@ type Data = {
 	error: ErrorResponse;
 };
 
-// disabling as complexity is only 21
-// eslint-disable-next-line complexity
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,

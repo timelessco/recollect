@@ -1,5 +1,3 @@
-import { isProductionEnvironment } from "./supabaseServerClient";
-
 // table names
 export const MAIN_TABLE_NAME = "bookmarks_table";
 export const TAG_TABLE_NAME = "tags";
@@ -7,16 +5,15 @@ export const BOOKMARK_TAGS_TABLE_NAME = "bookmark_tags";
 export const CATEGORIES_TABLE_NAME = "categories";
 export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
-export const DOCUMENTS_TABLE_NAME = "documents";
-export const BOOKMAKRS_STORAGE_NAME = "bookmarks";
+export const BOOKMARKS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
 export const R2_MAIN_BUCKET_NAME = "recollect";
 
 export const STORAGE_SCRAPPED_IMAGES_PATH =
-	BOOKMAKRS_STORAGE_NAME + "/public/scrapped_imgs";
+	BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
 export const STORAGE_SCREENSHOT_IMAGES_PATH =
-	BOOKMAKRS_STORAGE_NAME + "/public/screenshot_imgs";
+	BOOKMARKS_STORAGE_NAME + "/public/screenshot_imgs";
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
@@ -24,34 +21,46 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
 // Supports any valid TLD (2+ characters)
 export const URL_PATTERN =
-	// eslint-disable-next-line  unicorn/no-unsafe-regex
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*@[A-Za-z\d]*/gu;
 export const EMAIL_CHECK_PATTERN =
-	// eslint-disable-next-line unicorn/no-unsafe-regex, unicorn/better-regex, require-unicode-regexp, regexp/strict, regexp/no-useless-escape, no-useless-escape
-	/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
+	/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
 // eslint-disable-next-line unicorn/better-regex, require-unicode-regexp
 export const LETTERS_NUMBERS_CHECK_PATTERN = /^[a-z\d]+$/;
 export const DISPLAY_NAME_CHECK_PATTERN = /^[\d\sA-Za-z]+$/u;
 export const URL_IMAGE_CHECK_PATTERN =
-	// eslint-disable-next-line unicorn/no-unsafe-regex
 	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
-// eslint-disable-next-line unicorn/no-unsafe-regex
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
 
+const productionUrl =
+	process.env.NEXT_PUBLIC_SITE_URL ??
+	`https://${
+		process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
+		process.env.VERCEL_PROJECT_PRODUCTION_URL
+	}`;
+const vercelEnvironment =
+	process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV;
+const branchUrl =
+	process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL ?? process.env.VERCEL_BRANCH_URL;
+const vercelUrl =
+	vercelEnvironment === "production" ? productionUrl : `https://${branchUrl}`;
+
+export const BASE_URL =
+	process.env.NODE_ENV === "development"
+		? `http://localhost:${process.env.PORT ?? 3_000}`
+		: vercelUrl;
+
 // api constants
-export const getBaseUrl = () =>
-	isProductionEnvironment
-		? "https://bookmark-tags-git-dev-timelessco.vercel.app/"
-		: "http://localhost:3000/";
+export const getBaseUrl = () => BASE_URL;
 
-export const NEXT_API_URL = `/api/`;
+export const NEXT_API_URL = `/api`;
 
-const RECOLLECT_SERVER_URL = process.env.RECOLLECT_SERVER_API;
-export const OCR_URL = `${RECOLLECT_SERVER_URL}/ocr`;
+// URL helper functions
+export const PREVIEW_PATH = "/preview";
 
 // URL helper functions
 export const PREVIEW_PATH = "/preview";
@@ -59,9 +68,9 @@ export const PREVIEW_PATH = "/preview";
 export const PAGINATION_LIMIT = 25;
 
 // this api is to get the media type of the url
-export const GET_MEDIA_TYPE_API = "v1/bookmarks/get/get-media-type";
+export const GET_MEDIA_TYPE_API = "/v1/bookmarks/get/get-media-type";
 // this api is to get the pdf buffer
-export const GET_PDF_BUFFER_API = "v1/bookmarks/get/get-pdf-buffer";
+export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
 
 // auth api
 // no auth api yet
@@ -71,6 +80,7 @@ export const FETCH_BOOKMARK_BY_ID_API = "v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
+export const WORKER_SCREENSHOT_API = "/v1/twitter/screenshot";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
@@ -119,10 +129,12 @@ export const UPLOAD_FILE_API = "/file/upload-file";
 export const UPLOAD_FILE_REMAINING_DATA_API =
 	"/file/upload-file-remaining-data";
 
-// ai apis
-export const EMBEDDINGS_POST_API = "/v1/ai/embeddings/post";
-export const EMBEDDINGS_DELETE_API = "/v1/ai/embeddings/delete";
-export const AI_SEARCH_API = "/v1/ai/search/get";
+// user settings and keys
+export const SAVE_API_KEY_API = "/v1/api-key";
+
+export const CHECK_API_KEY_API = "/v1/check-api-key";
+
+export const DELETE_API_KEY_API = "/v1/delete-api-key";
 
 // Screenshot api
 export const SCREENSHOT_API =
@@ -153,7 +165,7 @@ export const USER_TAGS_KEY = "userTags";
 export const BOOKMARKS_VIEW = "bookmarks_view";
 export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
-export const AI_SEARCH_KEY = "ai_search";
+export const API_KEY_CHECK_KEY = "api_key_check";
 
 // error msgs
 
@@ -207,22 +219,22 @@ export const acceptedFileTypes = [
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
 
-export const imageFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("image"),
+export const imageFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("image"),
 );
 
-export const videoFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("video"),
+export const videoFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("video"),
 );
 
-export const documentFileTypes = acceptedFileTypes?.filter(
-	(item) => item?.includes("application"),
+export const documentFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("application"),
 );
 
 // color picker colors
 export const colorPickerColors = [
 	"#ffffff",
-	"#1a1a1a",
+	"#000000",
 
 	"#ff2d5f",
 	"#ff339b",
@@ -337,4 +349,11 @@ export const PDF_VIEWER_PARAMS =
 // Lightbox button types
 export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
-export const CF_IMAGE_LOADER_URL = "https://recollect.so/cdn-cgi/image";
+export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
+
+export const SKIP_OG_IMAGE_DOMAINS = [
+	"amazon.in",
+	"twitter.com",
+	"x.com",
+	"amazon.com",
+];

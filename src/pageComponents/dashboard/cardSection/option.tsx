@@ -65,10 +65,9 @@ const Option = ({
 	// Merge option props and dnd props, and render the item.
 
 	const liClassName = classNames(
-		"single-bookmark group relative flex  rounded-lg duration-150 outline-none",
+		"single-bookmark dark:group relative flex group rounded-lg duration-150 outline-none",
 		{
-			"mb-6": cardTypeCondition === viewValues.moodboard,
-			"mb-[18px]": cardTypeCondition === viewValues.card,
+			"": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
 			// 	cardTypeCondition === viewValues.moodboard ||
 			// 	cardTypeCondition === viewValues.card ||
@@ -77,7 +76,7 @@ const Option = ({
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
-			"hover:bg-custom-gray-8 mb-1":
+			"hover:bg-gray-100 mb-1":
 				(cardTypeCondition === viewValues.list ||
 					cardTypeCondition === viewValues.headlines) &&
 				!isSelected,
@@ -94,7 +93,7 @@ const Option = ({
 		<li
 			aria-selected={isSelected}
 			className={classNames(liClassName, {
-				"rounded-t-3xl rounded-b-lg":
+				"rounded-b-lg rounded-t-3xl":
 					isSelected &&
 					(cardTypeCondition === viewValues.moodboard ||
 						cardTypeCondition === viewValues.card),
@@ -107,12 +106,12 @@ const Option = ({
 							? []
 							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
 						disableDndCondition ? [] : focusProps,
-				  )
+					)
 				: {})}
 		>
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className={`absolute left-0 top-0  h-full w-full rounded-lg ${
+				className={`absolute left-0 top-0 h-full w-full rounded-lg ${
 					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}
@@ -153,8 +152,8 @@ const Option = ({
 						cardTypeCondition === viewValues.list
 							? "top-[15px]"
 							: cardTypeCondition === viewValues.headlines
-							? "top-[11px]"
-							: "top-3"
+								? "top-[11px]"
+								: "top-3"
 					}`}
 					value={isSelected ? "true" : "false"}
 					{...(optionProps.onPointerDown

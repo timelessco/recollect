@@ -72,7 +72,7 @@ export default async function handler(
 	);
 	const url = `${hostUrl}/api/invite?token=${token}`;
 
-	const { data, error: er } = await supabase
+	const { data } = await supabase
 		.from(CATEGORIES_TABLE_NAME)
 		.select(
 			`

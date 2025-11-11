@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { useCallback, useRef } from "react";
 import { ViewListIcon } from "@heroicons/react/solid";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
@@ -99,7 +98,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
-		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-custom-gray-10">
+		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-600">
 			{text}
 		</div>
 	);
@@ -167,10 +166,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
 		return (
 			<div
-				className="flex items-center justify-between px-2 py-[5px]"
+				className="flex items-center justify-between px-2 py-[5.5px]"
 				key={item.label}
 			>
-				<p className=" text-13 font-450 leading-[14px] text-custom-gray-1">
+				<p className="text-13 font-450 leading-[115%] tracking-[0.01em] text-gray-800">
 					{item?.label}
 				</p>
 				<Switch
@@ -186,7 +185,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 									singleInfoValues.info as BookmarkViewCategories,
 								);
 							} else {
-								errorToast("Atleast one view option needs to be selcted");
+								errorToast("Atleast one view option needs to be selected");
 							}
 						} else {
 							setBookmarksView(
@@ -225,11 +224,11 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
 			{bookmarksViewValue === viewValues.card ||
 			bookmarksViewValue === viewValues.moodboard ? (
-				<div className="flex items-center justify-between px-2 py-[4.5px]">
-					<p className="text-13 font-450 leading-[14px] text-custom-gray-1">
-						Cover
+				<div className="flex items-center justify-between px-2 py-[5.5px]">
+					<p className="text-13 font-450 leading-[14px] text-gray-800">
+						Columns
 					</p>
-					<div className="w-[90px]">
+					<div className="mt-px w-[90px]">
 						<Slider
 							defaultValue={bookmarksColumns as unknown as number}
 							label="moodboard-cols-slider"
@@ -262,7 +261,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 					)?.icon
 				}
 			</figure>
-			<span className="ml-[7px] text-custom-gray-1">
+			<span className="ml-[7px]">
 				{
 					find(
 						bookmarksViewOptions,

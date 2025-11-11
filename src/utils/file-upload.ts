@@ -14,7 +14,6 @@ import { r2Helpers } from "./r2Client";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-// eslint-disable-next-line func-style
 export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
 	const encodedUrl = encodeURIComponent(file);
 
@@ -45,7 +44,9 @@ export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
 		canvas.width = viewport?.width;
 		canvas.height = viewport?.height;
 		const context = canvas?.getContext("2d");
-		if (!context) return null;
+		if (!context) {
+			return null;
+		}
 
 		await page?.render({ canvasContext: context, viewport })?.promise;
 

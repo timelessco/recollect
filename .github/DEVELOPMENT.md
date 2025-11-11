@@ -8,6 +8,7 @@
   - [Getting Started](#getting-started)
   - [Configuration](#configuration)
   - [Installing the dependencies](#installing-the-dependencies)
+  - [Add the env file](#add-the-env-file)
   - [Running the project locally](#running-the-project-locally)
   - [Building the project](#building-the-project)
   - [Deploying the project](#deploying-the-project)
@@ -19,14 +20,13 @@
     - [Check Types](#check-types)
     - [Check unused dependencies, exports \& types](#check-unused-dependencies-exports--types)
     - [Check Spelling](#check-spelling)
-    - [Check package.json](#check-packagejson)
     - [Test](#test)
   - [Add google login](#add-google-login)
   - [Things to do in supabase](#things-to-do-in-supabase)
     - [Create tables](#create-tables)
-    - [Create buckets](#create-buckets)
-    - [Make search api work](#make-search-api-work)
-    - [Add triggers](#add-triggers)
+  - [Create buckets](#create-buckets)
+  - [Make search api work](#make-search-api-work)
+  - [Add triggers](#add-triggers)
 
 ## Prerequisites
 
@@ -49,7 +49,7 @@ your machine:
 The project uses environmental variables for configuration. You can set the
 environmental variables in a **`.env`** file in the root directory of the
 project. The **`.env`** file should contain key-value pairs in the following
-format:
+fix:
 
 - **`NEXT_PUBLIC_SITE_URL`** (required): The URL of the frontend App of the
   project.
@@ -63,8 +63,8 @@ format:
 You can run the project locally by
 
 ```shell
-https://github.com/timelessco/bookmark-tags.git
-cd bookmark-tags
+https://github.com/timelessco/recollect.git
+cd recollect
 pnpm install
 ```
 
@@ -128,7 +128,7 @@ you save files in VS Code or make a Git commit.
 
 > AutoFix the formatting errors
 
-`pnpm format:prettier`
+`pnpm fix:prettier`
 
 > This package includes several forms of linting to enforce consistent code
 > quality and styling. Each should be shown in VS Code, and can be run manually
@@ -145,7 +145,7 @@ Next.js project that lints JavaScript and TypeScript source files
 
 > AutoFix the linting errors
 
-`pnpm format:eslint`
+`pnpm fix:eslint`
 
 ### Stylelint
 
@@ -157,7 +157,7 @@ Next.js project that lints JavaScript and TypeScript source files
 
 > AutoFix the css linting errors
 
-`pnpm format:csslint`
+`pnpm fix:csslint`
 
 ### Markdown
 
@@ -169,7 +169,7 @@ Next.js project that lints JavaScript and TypeScript source files
 
 > AutoFix the markdown linting errors
 
-`pnpm format:csslint`
+`pnpm fix:csslint`
 
 ### Check Types
 
@@ -194,14 +194,6 @@ Next.js project that lints JavaScript and TypeScript source files
 > Check the spelling errors
 
 `pnpm lint:spelling`
-
-### Check package.json
-
-([npm-package-json-lint][16]): Lints the `package.json` file
-
-> Check the package.json linting errors
-
-`pnpm lint:package-json`
 
 ### Test
 
@@ -352,7 +344,7 @@ In supabase storage create the following buckets `bookmarks`, `user_profile` and
 ## Make search api work
 
 For search to work we need to first enable the `pg_trgm` extensions under you
-supabase projects extensions. After this you need to create a fuction with the
+supabase projects extensions. After this you need to create a function with the
 following query
 
 ```sql
@@ -360,7 +352,7 @@ CREATE OR REPLACE FUNCTION public.search_bookmarks("search_text" varchar)
 RETURNS TABLE (
     id int8,
     user_id uuid,
-    inserted_at timestamptz,
+    inserted_at timestamp,
     title citext,
     url text,
     description text,
@@ -429,4 +421,3 @@ create trigger on_auth_user_created
 [13]: https://www.typescriptlang.org/
 [14]: https://github.com/webpro/knip
 [15]: https://cspell.org
-[16]: https://npmpackagejsonlint.org/

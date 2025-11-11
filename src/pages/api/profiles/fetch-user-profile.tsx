@@ -1,10 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
-import isNull from "lodash/isNull";
 import uniqid from "uniqid";
 
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
@@ -12,7 +12,7 @@ import { PROFILES } from "../../../utils/constants";
 import { getUserNameFromEmail } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-// fetches profiles data for a perticular user
+// fetches profiles data for a particular user
 // checks if profile pic is present
 // if its not present and in session data some oauth profile pic is there, then we update the oauth profile pic in profiles table
 // we are doing this because in auth triggers we do not get the oauth profile pic
@@ -25,79 +25,138 @@ type Data = {
 	error: ErrorResponse;
 };
 
+// eslint-disable-next-line consistent-return
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
-) {
-	const supabase = apiSupabaseClient(request, response);
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
-	const existingOauthAvatar = request.query?.avatar;
+): Promise<void> {
+	try {
+		// Initialize Supabase client
+		const supabase = apiSupabaseClient(request, response);
 
-	if (!userId || isEmpty(userId)) {
-		response.status(500).json({ data: null, error: "User id is missing" });
-		throw new Error("ERROR");
-	}
+		// Get authenticated user
+		const userData = await supabase?.auth?.getUser();
 
-	let finalData;
+		// Check if user is authenticated
+		if (!userData?.data?.user) {
+			console.warn("[fetch-user-profile] Unauthorized: User not authenticated");
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(401).json({
+				data: null,
+				error: "Unauthorized: Please log in to access your profile",
+			});
+		}
 
-	const { data: profileData, error } = (await supabase
-		.from(PROFILES)
-		.select(`*`)
-		.eq("id", userId)) as unknown as {
-		data: DataResponse;
-		error: ErrorResponse;
-	};
+		const userId = userData.data.user.id;
+		const existingOauthAvatar = request.query?.avatar;
 
-	finalData = profileData;
+		// Validate userId
+		if (!userId || isEmpty(userId)) {
+			console.error("[fetch-user-profile] Invalid user data: Missing userId");
+			Sentry.captureException(
+				new Error("[fetch-user-profile] Invalid user data: Missing userId"),
+			);
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(400).json({
+				data: null,
+				error: "Invalid user data: Missing user ID",
+			});
+		}
 
-	if (
-		!isEmpty(profileData) &&
-		!isNull(profileData) &&
-		isNull(profileData[0]?.profile_pic) &&
-		!isNil(existingOauthAvatar)
-	) {
-		// updates profile pic if its not there in DB and oAuth profile pic is there
-		const { data: updateProfilePicData, error: updateProfilePicError } =
-			await supabase
-				.from(PROFILES)
-				.update({
-					profile_pic: existingOauthAvatar,
-				})
-				.match({ id: userId })
-				.select(`*`);
+		let finalData: DataResponse;
 
-		if (!isNull(updateProfilePicError)) {
-			response.status(500).json({ data: null, error: updateProfilePicError });
-			throw new Error("UPDATE PROFILE_PIC ERROR");
-		} else {
+		// Fetch user profile
+		const { data: profileData, error } = (await supabase
+			.from(PROFILES)
+			.select(`*`)
+			.eq("id", userId)) as unknown as {
+			data: DataResponse;
+			error: ErrorResponse;
+		};
+
+		// Handle database error
+		if (error) {
+			console.error("[fetch-user-profile] Database error fetching profile:", {
+				error,
+				userId,
+				table: PROFILES,
+			});
+			Sentry.captureException(error);
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(500).json({ data: null, error });
+		}
+
+		finalData = profileData;
+
+		// Update profile pic if needed
+		if (
+			!isEmpty(profileData) &&
+			profileData &&
+			!profileData[0]?.profile_pic &&
+			!isNil(existingOauthAvatar)
+		) {
+			const { data: updateProfilePicData, error: updateProfilePicError } =
+				await supabase
+					.from(PROFILES)
+					.update({
+						profile_pic: existingOauthAvatar,
+					})
+					.match({ id: userId })
+					.select(`*`);
+
+			if (updateProfilePicError) {
+				console.error("[fetch-user-profile] Error updating profile picture:", {
+					error: updateProfilePicError,
+					userId,
+				});
+				Sentry.captureException(updateProfilePicError);
+				// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+				return response
+					.status(500)
+					.json({ data: null, error: updateProfilePicError });
+			}
+
 			finalData = updateProfilePicData;
 		}
-	}
 
-	// updates username if its not present
-	if (
-		!isEmpty(profileData) &&
-		!isNull(profileData) &&
-		isNil(profileData[0]?.user_name)
-	) {
-		const newUsername = getUserNameFromEmail(
-			profileData[0].email as unknown as string,
-		);
+		// Update username if not present
+		if (
+			!isEmpty(profileData) &&
+			profileData &&
+			isNil(profileData[0]?.user_name)
+		) {
+			const newUsername = getUserNameFromEmail(
+				profileData[0].email as unknown as string,
+			);
 
-		// check if username is already present
-		const { data: checkData, error: checkError } = await supabase
-			.from(PROFILES)
-			.select(`user_name`)
-			.eq("user_name", newUsername);
+			// Check if username is already present
+			const { data: checkData, error: checkError } = await supabase
+				.from(PROFILES)
+				.select(`user_name`)
+				.eq("user_name", newUsername);
 
-		if (!isNull(checkError)) {
-			throw new Error("ERROR: Check if username is there error");
-		}
+			if (checkError) {
+				console.error(
+					"[fetch-user-profile] Error checking username availability:",
+					{
+						error: checkError,
+						username: newUsername,
+					},
+				);
+				Sentry.captureException(checkError);
+				// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+				return response.status(500).json({
+					data: null,
+					error: "Failed to check username availability",
+				});
+			}
 
-		if (isEmpty(checkData)) {
-			// the username is not present
-			const { data: userNameNotPresentUpdateData, error: updateUsernameError } =
-				await supabase
+			if (isEmpty(checkData)) {
+				// Username is not present - use the generated one
+				const {
+					data: userNameNotPresentUpdateData,
+					error: updateUsernameError,
+				} = await supabase
 					.from(PROFILES)
 					.update({
 						user_name: newUsername,
@@ -105,37 +164,82 @@ export default async function handler(
 					.match({ id: userId })
 					.select(`*`);
 
-			if (!isNull(updateUsernameError)) {
-				throw new Error("ERROR: Update username when its not present error");
-			} else {
-				finalData = userNameNotPresentUpdateData;
-			}
-		} else {
-			// the user name is already present
-			const uniqueUsername = `${newUsername}-${uniqid.time()}`;
-			const {
-				data: updateUniqueUsernameData,
-				error: updateUniqueUsernameError,
-			} = await supabase
-				.from(PROFILES)
-				.update({
-					user_name: uniqueUsername,
-				})
-				.match({ id: userId })
-				.select(`*`);
+				if (updateUsernameError) {
+					console.error("[fetch-user-profile] Error updating username:", {
+						error: updateUsernameError,
+						username: newUsername,
+						userId,
+					});
+					Sentry.captureException(updateUsernameError);
+					// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+					return response.status(500).json({
+						data: null,
+						error: "Failed to update username",
+					});
+				}
 
-			if (!isNull(updateUniqueUsernameError)) {
-				throw new Error("ERROR: Update unique username error");
+				finalData = userNameNotPresentUpdateData;
 			} else {
+				// Username already exists - create a unique one
+				const uniqueUsername = `${newUsername}-${uniqid.time()}`;
+
+				const {
+					data: updateUniqueUsernameData,
+					error: updateUniqueUsernameError,
+				} = await supabase
+					.from(PROFILES)
+					.update({
+						user_name: uniqueUsername,
+					})
+					.match({ id: userId })
+					.select(`*`);
+
+				if (updateUniqueUsernameError) {
+					console.error(
+						"[fetch-user-profile] Error updating unique username:",
+						{
+							error: updateUniqueUsernameError,
+							username: uniqueUsername,
+							userId,
+						},
+					);
+					Sentry.captureException(updateUniqueUsernameError);
+					// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+					return response.status(500).json({
+						data: null,
+						error: "Failed to create unique username",
+					});
+				}
+
 				finalData = updateUniqueUsernameData;
 			}
 		}
-	}
 
-	if (isNull(error)) {
-		response.status(200).json({ data: finalData, error: null });
-	} else {
-		response.status(500).json({ data: null, error });
-		throw new Error("ERROR");
+		// Success - return profile data
+		// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+		return response.status(200).json({ data: finalData, error: null });
+	} catch (unexpectedError) {
+		// Catch any unexpected errors
+		console.error("[fetch-user-profile] Unexpected error:", unexpectedError, {
+			method: request.method,
+			url: request.url,
+		});
+		Sentry.captureException(unexpectedError);
+
+		// Check if response was already sent
+		if (!response.headersSent) {
+			// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+			return response.status(500).json({
+				data: null,
+				error: "An unexpected error occurred while fetching profile",
+			});
+		}
+
+		// If response was already sent, just log the error
+		console.error(
+			"[fetch-user-profile] Error occurred after response was sent:",
+			unexpectedError,
+		);
+		Sentry.captureException(unexpectedError);
 	}
 }

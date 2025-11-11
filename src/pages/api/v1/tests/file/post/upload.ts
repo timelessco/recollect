@@ -1,5 +1,4 @@
 // you might want to use regular 'fs' and not a promise one
-import { log } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -8,7 +7,6 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
-import { insertEmbeddings } from "../../../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type FileNameType,
 	type ImgMetadataType,
@@ -24,7 +22,7 @@ import {
 } from "../../../../../../utils/constants";
 import { blurhashFromURL } from "../../../../../../utils/getBlurHash";
 import {
-	apiCookieParser,
+	getAxiosConfigWithAuth,
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../../../../utils/helpers";
@@ -36,15 +34,11 @@ import { checkIfUserIsCategoryOwnerOrCollaborator } from "../../../../bookmark/a
 // As the upload api needs supabase in the FE and in test cases we cannot use supabase, we use this api which is tailored to be used in test cases
 // This api uploads an existing file in the S3 bucket as a new bookmark and this bookmark can be used for testing needs
 
-type StorageDataType = {
-	publicUrl: string;
-};
-
-/* 
-If the uploaded file is a video then this function is called 
-This adds the video thumbnail into S3 
+/*
+If the uploaded file is a video then this function is called
+This adds the video thumbnail into S3
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
-Image caption is not generated for the thumbnail 
+Image caption is not generated for the thumbnail
 */
 const videoLogic = async (
 	data: {
@@ -69,10 +63,13 @@ const videoLogic = async (
 
 	// For R2, we need to copy the object manually by getting and uploading
 	// First get the object from temp location
-	const { data: temporaryObject, error: getError } =
-		await r2Helpers.listObjects(R2_MAIN_BUCKET_NAME, thumbnailPath);
+	const { error: getError } = await r2Helpers.listObjects(
+		R2_MAIN_BUCKET_NAME,
+		thumbnailPath,
+	);
 
 	if (!isNil(getError)) {
+		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		throw new Error(`ERROR: getError ${getError}`);
 	}
 
@@ -97,7 +94,7 @@ const videoLogic = async (
 		try {
 			imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
 		} catch (error) {
-			log("Blur hash error", error);
+			console.log("Blur hash error", error);
 			Sentry.captureException(`Blur hash error ${error}`);
 			imgData = {};
 		}
@@ -117,6 +114,7 @@ const videoLogic = async (
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
+		video_url: null,
 	};
 
 	return { ogImage, meta_data };
@@ -204,6 +202,7 @@ export default async (
 		iframeAllowed: false,
 		mediaType: "",
 		isPageScreenshot: null,
+		video_url: null,
 	};
 	const isVideo = fileType?.includes("video");
 
@@ -261,11 +260,7 @@ export default async (
 						id: DatabaseData[0]?.id,
 						publicUrl: storageData?.publicUrl,
 					},
-					{
-						headers: {
-							Cookie: apiCookieParser(request?.cookies),
-						},
-					},
+					getAxiosConfigWithAuth(request),
 				);
 			} else {
 				console.error("Remaining upload api error: upload data is empty");
@@ -276,14 +271,6 @@ export default async (
 		} catch (remainingerror) {
 			console.error(remainingerror);
 			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
-		}
-
-		// create embeddings
-		try {
-			await insertEmbeddings([DatabaseData[0]?.id], request?.cookies);
-		} catch {
-			console.error("create embeddings error");
-			Sentry.captureException("create embeddings error");
 		}
 	} else {
 		response.status(500).json({

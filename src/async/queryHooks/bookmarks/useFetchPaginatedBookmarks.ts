@@ -9,7 +9,7 @@ import {
 import { type SupabaseSessionType } from "../../../types/apiTypes";
 import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
 import { BOOKMARKS_KEY, PAGINATION_LIMIT } from "../../../utils/constants";
-import { fetchBookmakrsData } from "../../supabaseCrudHelpers";
+import { fetchBookmarksData } from "../../supabaseCrudHelpers";
 
 // fetches paginated bookmarks pages on user location like all-bookmarks or categories etc...
 export default function useFetchPaginatedBookmarks() {
@@ -29,9 +29,11 @@ export default function useFetchPaginatedBookmarks() {
 		fetchNextPage,
 		isLoading: isAllBookmarksDataLoading,
 	} = useInfiniteQuery({
+		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+		// eslint-disable-next-line @tanstack/query/no-void-query-fn
 		queryFn: async (data) =>
-			await fetchBookmakrsData(
+			await fetchBookmarksData(
 				data,
 				session as SupabaseSessionType,
 				sortBy as BookmarksSortByTypes,

@@ -1,19 +1,14 @@
-/* eslint-disable no-console */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import imageToText from "../../../../async/ai/imageToText";
-import ocr from "../../../../async/ai/ocr";
-import { insertEmbeddings } from "../../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type NextApiRequest,
 	type SingleListData,
 	type twitter_sort_index,
 } from "../../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
-import { blurhashFromURL } from "../../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 type RequestType = {
@@ -32,10 +27,13 @@ const getBodySchema = () =>
 				type: z.string(),
 				url: z.string(),
 				meta_data: z.object({
-					twitter_avatar_url: z.string(),
+					twitter_avatar_url: z.string().optional(),
+					favIcon: z.string(),
+					video_url: z.string().optional().nullable(),
 				}),
-				inserted_at: z.string().datetime(),
+				inserted_at: z.string().datetime().optional(),
 				sort_index: z.string(),
+				category_name: z.string().optional(),
 			}),
 		),
 	});
@@ -48,7 +46,6 @@ type ResponseType = {
 
 /**
  * Inserts the twitter data into the DB
- *
  * @param {NextApiRequest<RequestType>} request
  * @param {NextApiResponse<ResponseType>} response
  * @returns {ResponseType}
@@ -83,7 +80,10 @@ export default async function handler(
 				.from(MAIN_TABLE_NAME)
 				.select("url")
 				// get only the urls that are there in the payload
-				.in("url", insertData?.map((item) => item?.url))
+				.in(
+					"url",
+					insertData?.map((item) => item?.url),
+				)
 				.eq("user_id", userId)
 				.eq("type", "tweet");
 
@@ -108,6 +108,15 @@ export default async function handler(
 					)
 					?.includes(item?.url),
 		);
+
+		if (isEmpty(duplicateFilteredData)) {
+			console.log("No data to insert");
+
+			response
+				.status(404)
+				.json({ success: true, error: "No data to insert", data: [] });
+			return;
+		}
 
 		// NOTE: Upsert does not work here as the url is not unique and cannot be unique
 
@@ -136,70 +145,20 @@ export default async function handler(
 			return;
 		}
 
-		response
-			.status(200)
-			.json({ success: true, error: null, data: insertDBData });
-
-		// get blur hash and image caption and OCR and upload it to DB
-		const dataWithBlurHash = await Promise.all(
-			insertDBData?.map(async (item: SingleListData) => {
-				const imgData = item?.ogImage
-					? await blurhashFromURL(item?.ogImage)
-					: null;
-
-				let image_caption = null;
-				let imageOcrValue = null;
-
-				if (item?.ogImage) {
-					try {
-						// Get OCR using the centralized function
-						imageOcrValue = await ocr(item.ogImage);
-
-						// Get image caption using the centralized function
-						image_caption = await imageToText(item.ogImage);
-
-						console.log("generating ocr", imageOcrValue);
-					} catch (error) {
-						console.error("caption or ocr error", error);
-						Sentry.captureException(`caption or ocr error ${error}`);
-					}
-				}
-
-				return {
-					...item,
-					meta_data: {
-						...item.meta_data,
-						height: imgData?.height ?? null,
-						width: imgData?.width ?? null,
-						ogImgBlurUrl: imgData?.encoded ?? null,
-						favIcon: null,
-						image_caption,
-						ocr: imageOcrValue,
-					},
-				};
-			}),
-		);
-
-		const { error: blurHashError } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.upsert(dataWithBlurHash, { onConflict: "id" })
-			.select("id");
-
-		if (blurHashError) {
-			Sentry.captureException(
-				`blur hash update error: ${blurHashError?.message}`,
-			);
-			// return;
-		}
-
-		// creates and add embeddings
-		const bookmarkIds = insertDBData?.map((item: SingleListData) => item?.id);
-
 		try {
-			await insertEmbeddings(bookmarkIds, request?.cookies);
+			const { data: queueResults, error: queueResultsError } = await supabase
+				.schema("pgmq_public")
+				.rpc("send_batch", {
+					queue_name: "ai-embeddings",
+					messages: insertDBData,
+					sleep_seconds: 0,
+				});
+
+			if (!queueResultsError) {
+				console.log("successfully queued ", queueResults.length, "items");
+			}
 		} catch {
-			console.error("Create embeddings error in twitter sync api");
-			Sentry.captureException(`Create embeddings error in twitter sync api`);
+			console.error("Failed to queue item:");
 		}
 
 		response.status(200).json({ success: true, error: null });

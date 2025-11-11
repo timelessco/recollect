@@ -73,7 +73,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 				);
 			},
 			// Always refetch after error or success:
-			onSettled: async (_data, _error) => {
+			onSettled: async () => {
 				try {
 					if (!isLightbox) {
 						void queryClient.invalidateQueries([

@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type Provider, type SupabaseClient } from "@supabase/supabase-js";
 import {
 	type QueryFunctionContext,
@@ -50,9 +51,12 @@ import {
 	ADD_CATEGORY_TO_BOOKMARK_API,
 	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
+	ALL_BOOKMARKS_URL,
+	CHECK_API_KEY_API,
 	CLEAR_BOOKMARK_TRASH_API,
 	CREATE_USER_CATEGORIES_API,
 	CREATE_USER_TAGS_API,
+	DELETE_API_KEY_API,
 	DELETE_BOOKMARK_DATA_API,
 	DELETE_SHARED_CATEGORIES_USER_API,
 	DELETE_USER_API,
@@ -74,6 +78,7 @@ import {
 	PAGINATION_LIMIT,
 	REMOVE_PROFILE_PIC_API,
 	REMOVE_TAG_FROM_BOOKMARK_API,
+	SAVE_API_KEY_API,
 	SEARCH_BOOKMARKS,
 	SEND_COLLABORATION_EMAIL_API,
 	UPDATE_CATEGORY_ORDER_API,
@@ -104,9 +109,59 @@ export const fetchBookmarkById = async (id: string) => {
 	}
 };
 
+// user settings and keys
+export const saveApiKey = async ({
+	apikey,
+}: {
+	apikey: string;
+}): Promise<{ data: unknown; message: string }> => {
+	try {
+		const response = await axios.post<{ data: unknown; message: string }>(
+			`${NEXT_API_URL}${SAVE_API_KEY_API}`,
+			{ apikey },
+		);
+
+		return response?.data;
+	} catch {
+		throw new Error("Invalid API key");
+	}
+};
+
+export const deleteApiKey = async (): Promise<{
+	data: unknown;
+	message: string;
+}> => {
+	try {
+		const response = await axios.delete<{ data: unknown; message: string }>(
+			`${NEXT_API_URL}${DELETE_API_KEY_API}`,
+		);
+
+		return response?.data;
+	} catch {
+		throw new Error("Failed to delete API key");
+	}
+};
+
+type CheckApiKeyResponse = { data: { hasApiKey: boolean } };
+
+export const checkApiKey = async (): Promise<CheckApiKeyResponse> => {
+	try {
+		const response = await axios.get(`${NEXT_API_URL}${CHECK_API_KEY_API}`);
+
+		if (!response.data) {
+			throw new Error("Failed to check API key status");
+		}
+
+		return response.data;
+	} catch (error) {
+		console.error("Error checking API key:", error);
+		throw new Error("Failed to verify API key status");
+	}
+};
+
 // bookmark
 // gets bookmarks data
-export const fetchBookmakrsData = async (
+export const fetchBookmarksData = async (
 	{
 		pageParam: pageParameter = 0,
 		queryKey,
@@ -122,11 +177,7 @@ export const fetchBookmakrsData = async (
 		!isEmpty(queryKey) && queryKey?.length <= 5 ? queryKey[1] : null;
 
 	if (!userId) {
-		return {
-			data: [],
-			error: null,
-			count: {},
-		} as unknown as FetchDataResponse;
+		return { data: [], error: null, count: {} } as unknown as FetchDataResponse;
 	}
 
 	if (!session?.user) {
@@ -140,9 +191,7 @@ export const fetchBookmakrsData = async (
 	try {
 		const bookmarksData = await axios.get<{
 			count: BookmarksCountTypes;
-			data: {
-				data: SingleListData[];
-			};
+			data: { data: SingleListData[] };
 		}>(
 			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?category_id=${
 				isNull(categoryId) ? "null" : categoryId
@@ -163,10 +212,7 @@ export const getBookmarksCount = async (
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	queryData: QueryFunctionContext<QueryKey, any>,
 	session: SupabaseSessionType,
-): Promise<{
-	data: BookmarksCountTypes | null;
-	error: Error;
-}> => {
+): Promise<{ data: BookmarksCountTypes | null; error: Error }> => {
 	const userId =
 		!isEmpty(queryData?.queryKey) && queryData?.queryKey?.length < 4
 			? queryData?.queryKey[1]
@@ -189,17 +235,11 @@ export const getBookmarksCount = async (
 			return bookmarksData?.data;
 		} catch (error_) {
 			const error = error_ as Error;
-			return {
-				data: null,
-				error,
-			};
+			return { data: null, error };
 		}
 	} else {
 		// return undefined;
-		return {
-			data: null,
-			error: { name: "NO user id", message: "NO user id" },
-		};
+		return { data: null, error: { name: "NO user id", message: "NO user id" } };
 	}
 };
 
@@ -239,10 +279,7 @@ export const addBookmarkScreenshot = async ({
 	try {
 		const apiResponse = await axios.post(
 			`${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
-			{
-				url,
-				id,
-			},
+			{ url, id },
 		);
 
 		return apiResponse;
@@ -260,9 +297,7 @@ export const deleteData = async (item: DeleteBookmarkPayload) => {
 	try {
 		const response = await axios.post(
 			`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
-			{
-				data: { deleteData: item?.deleteData },
-			},
+			{ data: { deleteData: item?.deleteData } },
 		);
 
 		return response;
@@ -278,10 +313,7 @@ export const moveBookmarkToTrash = async ({
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
-			{
-				data,
-				isTrash,
-			},
+			{ data, isTrash },
 		);
 
 		return response;
@@ -325,10 +357,7 @@ export const searchBookmarks = async (
 			return response?.data;
 		} catch (error_) {
 			const error = error_ as Error;
-			return {
-				data: null,
-				error,
-			};
+			return { data: null, error };
 		}
 	}
 
@@ -350,10 +379,7 @@ export const fetchUserTags = async (): Promise<{
 		return response?.data;
 	} catch (error_) {
 		const error = error_ as Error;
-		return {
-			data: null,
-			error,
-		};
+		return { data: null, error };
 	}
 };
 
@@ -361,9 +387,7 @@ export const addUserTags = async ({ tagsData }: AddUserTagsApiPayload) => {
 	try {
 		const response = await axios.post<{ data: UserTagsData }>(
 			`${NEXT_API_URL}${CREATE_USER_TAGS_API}`,
-			{
-				name: tagsData?.name,
-			},
+			{ name: tagsData?.name },
 		);
 		return response?.data;
 	} catch (error) {
@@ -375,11 +399,10 @@ export const addTagToBookmark = async ({
 	selectedData,
 }: AddTagToBookmarkApiPayload) => {
 	try {
-		const response = await axios.post<{
-			data: SingleListData;
-		}>(`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`, {
-			data: selectedData,
-		});
+		const response = await axios.post<{ data: SingleListData }>(
+			`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`,
+			{ data: selectedData },
+		);
 		return response?.data;
 	} catch (error) {
 		return error;
@@ -392,13 +415,10 @@ export const removeTagFromBookmark = async ({
 	selectedData: { bookmark_id: number; tag_id: number };
 }) => {
 	try {
-		const response = await axios.post<{
-			data: UserTagsData;
-			error: Error;
-		}>(`${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`, {
-			tag_id: selectedData?.tag_id,
-			bookmark_id: selectedData?.bookmark_id,
-		});
+		const response = await axios.post<{ data: UserTagsData; error: Error }>(
+			`${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
+			{ tag_id: selectedData?.tag_id, bookmark_id: selectedData?.bookmark_id },
+		);
 		return response?.data;
 	} catch (error) {
 		return error;
@@ -409,10 +429,7 @@ export const fetchBookmarksViews = async ({
 	category_id,
 }: {
 	category_id: number | string | null;
-}): Promise<{
-	data: BookmarkViewDataTypes | null;
-	error: Error;
-}> => {
+}): Promise<{ data: BookmarkViewDataTypes | null; error: Error }> => {
 	if (!isUserInACategory(category_id as string)) {
 		return {
 			data: null,
@@ -440,10 +457,7 @@ export const fetchBookmarksViews = async ({
 		return response?.data;
 	} catch (error_) {
 		const error = error_ as Error;
-		return {
-			data: null,
-			error,
-		};
+		return { data: null, error };
 	}
 };
 
@@ -462,10 +476,7 @@ export const fetchCategoriesData = async (): Promise<{
 		return response.data;
 	} catch (error_) {
 		const error = error_ as Error;
-		return {
-			data: null,
-			error,
-		};
+		return { data: null, error };
 	}
 };
 
@@ -536,10 +547,7 @@ export const updateCategory = async ({
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${UPDATE_USER_CATEGORIES_API}`,
-			{
-				category_id,
-				updateData,
-			},
+			{ category_id, updateData },
 		);
 
 		return response;
@@ -554,9 +562,7 @@ export const updateCategoryOrder = async ({
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`,
-			{
-				category_order: order,
-			},
+			{ category_order: order },
 		);
 
 		return response;
@@ -579,12 +585,7 @@ export const sendCollaborationEmailInvite = async ({
 }) => {
 	const response = await axios.post(
 		`${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`,
-		{
-			emailList,
-			category_id,
-			edit_access,
-			hostUrl,
-		},
+		{ emailList, category_id, edit_access, hostUrl },
 	);
 
 	return response;
@@ -603,10 +604,7 @@ export const fetchSharedCategoriesData = async (): Promise<{
 		return response?.data;
 	} catch (error) {
 		const catchError = error as Error;
-		return {
-			data: null,
-			error: catchError,
-		};
+		return { data: null, error: catchError };
 	}
 };
 
@@ -615,9 +613,7 @@ export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
 		const response = await axios.post<{
 			data: FetchSharedCategoriesData[] | null;
 			error: Error;
-		}>(`${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`, {
-			id,
-		});
+		}>(`${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`, { id });
 
 		return response?.data;
 	} catch (error) {
@@ -651,10 +647,7 @@ export const fetchUserProfiles = async ({
 }: {
 	session: SupabaseSessionType;
 	userId: string;
-}): Promise<{
-	data: ProfilesTableTypes[] | null;
-	error: Error;
-}> => {
+}): Promise<{ data: ProfilesTableTypes[] | null; error: Error }> => {
 	const existingOauthAvatarUrl = session?.user?.user_metadata?.avatar_url;
 
 	try {
@@ -672,16 +665,10 @@ export const fetchUserProfiles = async ({
 			return response?.data;
 		}
 
-		return {
-			data: null,
-			error: { name: "No user id", message: "No user id" },
-		};
+		return { data: null, error: { name: "No user id", message: "No user id" } };
 	} catch (error_) {
 		const error = error_ as Error;
-		return {
-			data: null,
-			error,
-		};
+		return { data: null, error };
 	}
 };
 
@@ -692,9 +679,7 @@ export const updateUserProfile = async ({
 		const response = await axios.post<{
 			data: ProfilesTableTypes[] | null;
 			error: Error;
-		}>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
-			updateData,
-		});
+		}>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, { updateData });
 
 		return response?.data;
 	} catch (error) {
@@ -710,10 +695,7 @@ export const updateUsername = async ({
 		const response = await axios.post<{
 			data: ProfilesTableTypes[] | null;
 			error: Error;
-		}>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, {
-			id,
-			username,
-		});
+		}>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, { id, username });
 
 		return response?.data;
 	} catch (error) {
@@ -763,9 +745,7 @@ export const removeUserProfilePic = async ({
 		const response = await axios.post<{
 			data: ProfilesTableTypes[] | null;
 			error: Error;
-		}>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, {
-			id,
-		});
+		}>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, { id });
 
 		return response?.data;
 	} catch (error) {
@@ -792,11 +772,7 @@ export const uploadFile = async ({
 				type: file?.type,
 				uploadFileNamePath,
 			},
-			{
-				headers: {
-					"Content-Type": "application/json",
-				},
-			},
+			{ headers: { "Content-Type": "application/json" } },
 		);
 		return response?.data;
 	} catch (error) {
@@ -809,14 +785,8 @@ export const uploadProfilePic = async ({ file }: UploadProfilePicPayload) => {
 	try {
 		const response = await axios.post<UploadProfilePicApiResponse>(
 			`${NEXT_API_URL}${UPLOAD_PROFILE_PIC_API}`,
-			{
-				file,
-			},
-			{
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			},
+			{ file },
+			{ headers: { "Content-Type": "multipart/form-data" } },
 		);
 
 		return response?.data;
@@ -835,15 +805,34 @@ export const signInWithOauth = async (
 	await supabase.auth.signInWithOAuth({ provider });
 };
 
-export const signInWithEmailPassword = async (
+export const signInWithOtp = async (
 	email: string,
-	password: string,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	supabase: SupabaseClient<any, "public", any>,
 ) => {
-	const { error } = await supabase.auth.signInWithPassword({ email, password });
+	const { data, error } = await supabase.auth.signInWithOtp({
+		email,
+		options: {
+			shouldCreateUser: true,
+			emailRedirectTo: `${getBaseUrl()}/${ALL_BOOKMARKS_URL}`,
+		},
+	});
 
-	return { error };
+	return { data, error };
+};
+
+export const verifyOtp = async (
+	email: string,
+	otp: string,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	supabase: SupabaseClient<any, "public", any>,
+) => {
+	const { data, error } = await supabase.auth.verifyOtp({
+		email,
+		token: otp,
+		type: "email",
+	});
+	return { data, error };
 };
 
 export const signUpWithEmailPassword = async (
@@ -852,10 +841,7 @@ export const signUpWithEmailPassword = async (
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	supabase: SupabaseClient<any, "public", any>,
 ) => {
-	const { error } = await supabase.auth.signUp({
-		email,
-		password,
-	});
+	const { error } = await supabase.auth.signUp({ email, password });
 
 	return { error };
 };
@@ -871,19 +857,37 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 
 		const response = await fetch(
 			`${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
-			{
-				method: "GET",
-			},
+			{ method: "GET" },
 		);
 
 		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
+			console.error("Error in getting media type");
+			return null;
 		}
 
 		const data = await response.json();
+
 		return data.mediaType || null;
 	} catch (error) {
 		console.error("Error getting media type:", error);
 		return null;
+	}
+};
+
+export const validateApiKey = async (apikey: string) => {
+	try {
+		const genAI = new GoogleGenerativeAI(apikey);
+		const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+
+		const prompt = "Hey there!";
+		const result = await model.generateContent([prompt]);
+
+		if (!result.response.text()) {
+			throw new Error("response not generated");
+		}
+
+		return result;
+	} catch {
+		throw new Error("Invalid API key");
 	}
 };

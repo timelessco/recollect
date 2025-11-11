@@ -1,10 +1,11 @@
+// ! TODO: Fix this in priority
+/* eslint-disable @typescript-eslint/no-base-to-string */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
 
-import { deleteEmbeddings } from "../../../async/supabaseCrudHelpers/ai/embeddings";
 import {
 	type DeleteBookmarkPayload,
 	type NextApiRequest,
@@ -21,7 +22,7 @@ import {
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-// this is a cascading delete, deletes bookmaks from main table and all its respective joint tables
+// this is a cascading delete, deletes bookmarks from main table and all its respective joint tables
 
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
@@ -203,15 +204,5 @@ export default async function handler(
 				bookmarkTagsError ??
 				bookmarksError,
 		});
-	}
-
-	// delete embeddings
-	try {
-		await deleteEmbeddings(deleteBookmarkIds, request?.cookies, false);
-	} catch (error_) {
-		console.error("Delete embeddings error in delete bookmarks api", error_);
-		Sentry.captureException(
-			`Delete embeddings error in delete bookmarks api: ${error_}`,
-		);
 	}
 }

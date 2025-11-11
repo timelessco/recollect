@@ -27,6 +27,7 @@ import {
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	PREVIEW_PATH,
+	tweetType,
 	VIDEO_TYPE_PREFIX,
 	YOUTU_BE,
 	YOUTUBE_COM,
@@ -108,15 +109,19 @@ export const CustomLightBox = ({
 	 * Memoized to prevent recalculation on every render
 	 */
 	const slides = useMemo(() => {
-		if (!bookmarks) return [];
+		if (!bookmarks) {
+			return [];
+		}
 
 		return bookmarks?.map((bookmark) => {
 			// Determine media types based on bookmark properties
 			const isImage =
-				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-				bookmark?.meta_data?.isOgImagePreferred ||
+				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ??
+				bookmark?.meta_data?.isOgImagePreferred ??
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
-			const isVideo = bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX);
+			const isVideo =
+				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
+				Boolean(bookmark?.meta_data?.video_url);
 
 			return {
 				src: bookmark?.url,
@@ -124,8 +129,8 @@ export const CustomLightBox = ({
 				type: isVideo
 					? VIDEO_TYPE_PREFIX
 					: isImage
-					? IMAGE_TYPE_PREFIX
-					: undefined,
+						? IMAGE_TYPE_PREFIX
+						: undefined,
 
 				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
@@ -133,17 +138,18 @@ export const CustomLightBox = ({
 					!isYouTubeVideo(bookmark?.url) &&
 					!bookmark?.meta_data?.iframeAllowed && {
 						// using || instead of ?? to include 0
-						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						width: bookmark?.meta_data?.width || 1_200,
-						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						height: bookmark?.meta_data?.height || 1_200,
 					}),
 				// Add video-specific properties
 				...(isVideo && {
 					sources: [
 						{
-							src: bookmark?.url,
-							type: bookmark?.type ?? VIDEO_TYPE_PREFIX,
+							src:
+								bookmark?.type === tweetType
+									? bookmark?.meta_data?.video_url
+									: bookmark?.url,
+							type: VIDEO_TYPE_PREFIX,
 						},
 					],
 				}),
@@ -165,7 +171,9 @@ export const CustomLightBox = ({
 			// Find the corresponding bookmark for this slide
 			const slideIndex = slides?.indexOf(slide);
 			const bookmark = bookmarks?.[slideIndex];
-			if (!bookmark) return null;
+			if (!bookmark) {
+				return null;
+			}
 
 			// Determine if this slide is currently active (visible) for video player
 			const isActive = slides?.indexOf(slide) === activeIndex;
@@ -175,7 +183,9 @@ export const CustomLightBox = ({
 					className="flex items-center justify-center"
 					onDoubleClick={(event) => {
 						event.stopPropagation();
-						if (!zoomRef?.current) return;
+						if (!zoomRef?.current) {
+							return;
+						}
 
 						if (zoomRef?.current?.zoom > 1) {
 							zoomRef?.current?.zoomOut();
@@ -184,7 +194,7 @@ export const CustomLightBox = ({
 						}
 					}}
 				>
-					<div className=" w-full max-w-[min(1200px,90vw)]">
+					<div className="w-full max-w-[min(1200px,90vw)]">
 						<Image
 							alt={PREVIEW_ALT_TEXT}
 							className="max-h-[80vh] w-auto"
@@ -194,8 +204,8 @@ export const CustomLightBox = ({
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
-									? bookmark?.ogImage ?? bookmark?.ogimage
-									: bookmark?.url ?? ""
+									? (bookmark?.ogImage ?? bookmark?.ogimage)
+									: (bookmark?.url ?? "")
 							}
 							width={bookmark?.meta_data?.width ?? 1_200}
 						/>
@@ -206,7 +216,14 @@ export const CustomLightBox = ({
 			const renderVideoSlide = () => (
 				<div className="flex h-full w-full items-center justify-center">
 					<div className="w-full max-w-[min(1200px,90vw)]">
-						<VideoPlayer isActive={isActive} src={bookmark?.url} />
+						<VideoPlayer
+							isActive={isActive}
+							src={
+								bookmark?.type === tweetType && bookmark?.meta_data?.video_url
+									? bookmark?.meta_data?.video_url
+									: bookmark?.url
+							}
+						/>
 					</div>
 				</div>
 			);
@@ -251,7 +268,7 @@ export const CustomLightBox = ({
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
-								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-white"
+								className="flex h-full max-h-[90vh] w-full items-center justify-center bg-gray-0"
 								data={bookmark?.url}
 								title="Website Preview"
 								type="text/html"
@@ -300,7 +317,7 @@ export const CustomLightBox = ({
 					// Render constrained image when dimensions are too large
 					if (exceedsWidth || underHeight) {
 						return (
-							<div className=" flex  max-w-[min(1200px,90vw)] items-center justify-center">
+							<div className="flex max-w-[min(1200px,90vw)] items-center justify-center">
 								<Image
 									alt="Preview"
 									className="h-auto max-h-[80vh] w-auto object-contain"
@@ -336,11 +353,15 @@ export const CustomLightBox = ({
 											clickY >= offsetY &&
 											clickY <= offsetY + renderedHeight;
 
-										if (!insideVisibleImage) return;
+										if (!insideVisibleImage) {
+											return;
+										}
 
 										event?.stopPropagation();
 										const zoom = zoomRef?.current;
-										if (!zoom) return;
+										if (!zoom) {
+											return;
+										}
 
 										if (zoom?.zoom > 1) {
 											zoom?.zoomOut();
@@ -364,13 +385,15 @@ export const CustomLightBox = ({
 						>
 							<Image
 								alt="Preview"
-								className="h-auto max-h-[80vh] w-auto "
+								className="h-auto max-h-[80vh] w-auto"
 								draggable={false}
 								height={scaledHeight}
 								onDoubleClick={(event) => {
 									event?.stopPropagation();
 									const zoom = zoomRef?.current;
-									if (!zoom) return;
+									if (!zoom) {
+										return;
+									}
 
 									if (zoom?.zoom > 1) {
 										zoom?.zoomOut();
@@ -390,6 +413,7 @@ export const CustomLightBox = ({
 					<Image
 						alt="img-error"
 						className="h-[50px] w-[50px] rounded-lg object-cover"
+						loader={(source) => source.src}
 						src={loaderGif}
 					/>
 				);
@@ -397,17 +421,21 @@ export const CustomLightBox = ({
 
 			let content = null;
 
+			// Check video FIRST
 			if (
+				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
+				Boolean(bookmark?.meta_data?.video_url)
+			) {
+				content = renderVideoSlide();
+			}
+			// Then check image
+			else if (
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 				bookmark?.meta_data?.isOgImagePreferred ||
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX)
 			) {
 				content = renderImageSlide();
-			} else if (
-				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX)
-			) {
-				content = renderVideoSlide();
 			} else if (
 				bookmark?.meta_data?.mediaType === PDF_MIME_TYPE ||
 				bookmark?.type?.includes(PDF_TYPE)
@@ -440,18 +468,12 @@ export const CustomLightBox = ({
 	 * Custom navigation icons
 	 * Left icon: Simple clickable area for previous navigation
 	 */
-	const iconLeft = () => <div className=" h-[100vh] w-[5vw]" />;
+	const iconLeft = () => <div className="h-screen w-[5vw]" />;
 
 	/**
 	 * Right icon: Adjusts margin when side panel is open
 	 */
-	const iconRight = () => <div className="h-[100vh] w-[5vw]" />;
-
-	const iconSidePane = () => (
-		<div className="group h-5 w-5 cursor-pointer text-[rgba(0,0,0,1)] hover:text-black">
-			<ShowSidePaneButton />
-		</div>
-	);
+	const iconRight = () => <div className="h-screen w-[5vw]" />;
 
 	const isFirstSlide = activeIndex === 0;
 	const isLastSlide = activeIndex === bookmarks?.length - 1;
@@ -468,7 +490,9 @@ export const CustomLightBox = ({
 			index={activeIndex}
 			on={{
 				view: ({ index }) => {
-					if (!isPage || !bookmarks?.[index]) return;
+					if (!isPage || !bookmarks?.[index]) {
+						return;
+					}
 
 					const transitionDuration = 200;
 					setTimeout(() => {
@@ -538,9 +562,9 @@ export const CustomLightBox = ({
 								id: bookmarks?.[index]?.id,
 							},
 						},
-						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${bookmarks?.[
-							index
-						]?.id}`,
+						`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
+							bookmarks?.[index]?.id
+						}`,
 						{ shallow: true },
 					);
 				},
@@ -575,14 +599,14 @@ export const CustomLightBox = ({
 					left: "0",
 				},
 				container: {
-					backgroundColor: "rgba(255, 255, 255, 0.9)",
+					backgroundColor: "var(--color-whites-900)",
 					backdropFilter: "blur(32px)",
 					transition: "all 0.2s ease-in-out",
 					// Adjust width when side panel is visible
 					width: lightboxShowSidepane
 						? "calc(100% - min(max(320px, 20%), 400px))"
 						: "100%",
-					animation: "customFadeScaleIn 0.25s ease-in-out",
+					animation: "custom-fade-scale-in 0.25s ease-in-out",
 				},
 				slide: {
 					height: "100%",
@@ -596,42 +620,45 @@ export const CustomLightBox = ({
 					// Left: Close button
 					<div className="flex items-center" key="left-section">
 						<button
-							className="group ml-4 mt-3.5 flex items-center justify-center rounded-full"
+							className="group ml-4 mt-1.5 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
 							onClick={handleClose}
 							type="button"
 						>
-							<LightboxCloseIcon />
+							<LightboxCloseIcon className="h-5 w-5" />
 						</button>
 					</div>,
 
 					// Center: Bookmark URL (flex: 1 ensures centering)
 					<div
-						className="flex flex-1 justify-center  pt-[9px] text-center"
+						className="flex flex-1 justify-center pt-[9px] text-center"
 						key="center-section"
 					>
 						<a
-							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg  px-[13px] py-[7px] text-[14px] leading-[115%] tracking-[0] hover:bg-[rgba(0,0,0,0.03)]"
+							className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px] hover:bg-gray-alpha-100"
 							href={bookmarks?.[activeIndex]?.url}
 							key="center-section"
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="truncate text-[#707070]">
+							<span className="truncate text-[14px] font-normal leading-[115%] tracking-normal text-gray-alpha-600">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
-							<div className="h-4 w-4 shrink-0">
+							<figure className="h-4 w-4 shrink-0 text-gray-alpha-600">
 								<LightboxExternalLink />
-							</div>
+							</figure>
 						</a>
 					</div>,
 
 					// Right: Side pane toggle button
-					<div className="flex items-center pr-4 pt-[7px]" key="right-section">
+					<div
+						className="group flex h-7 w-7 items-center justify-center pr-4 pt-[7px]"
+						key="right-section"
+					>
 						<button
 							onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
 							type="button"
 						>
-							{iconSidePane()}
+							<ShowSidePaneButton className="h-5 w-5 stroke-current text-gray-alpha-600 opacity-50 transition-colors duration-200 group-hover:opacity-100" />
 						</button>
 					</div>,
 				],
@@ -642,7 +669,9 @@ export const CustomLightBox = ({
 };
 
 const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
-	if (!urlString) return false;
+	if (!urlString) {
+		return false;
+	}
 
 	try {
 		const url = new URL(urlString);

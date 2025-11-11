@@ -1,13 +1,8 @@
-// you might want to use regular 'fs' and not a promise one
+// ! TODO: Fix this in priority
+/* eslint-disable @typescript-eslint/no-base-to-string */
 
-import { promises as fileSystem } from "fs";
+import { promises as fileSystem } from "node:fs";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import {
-	DeleteObjectCommand,
-	ListBucketsCommand,
-	ListObjectsV2Command,
-} from "@aws-sdk/client-s3";
-import { type SupabaseClient } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import { IncomingForm } from "formidable";
 import { isEmpty, isNull } from "lodash";
@@ -23,10 +18,9 @@ import {
 	PROFILES,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_USER_PROFILE_PATH,
-	USER_PROFILE_STORAGE_NAME,
 } from "../../../utils/constants";
 import { parseUploadFileName } from "../../../utils/helpers";
-import { r2Client, r2Helpers } from "../../../utils/r2Client";
+import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
@@ -116,7 +110,7 @@ export default async (
 
 	let contents;
 
-	if (data?.files?.file && data?.files?.file[0]?.filepath) {
+	if (data?.files?.file?.[0]?.filepath) {
 		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
 			encoding: "base64",
 		});
