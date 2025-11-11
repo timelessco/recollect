@@ -11,6 +11,7 @@
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"module": "ESNext",
 		"moduleResolution": "node",
+		"strictNullChecks": true,
 		"noEmit": true,
 		"noUnusedParameters": true,
 		"resolveJsonModule": true,
