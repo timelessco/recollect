@@ -1,4 +1,3 @@
-import { error } from "console";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestResponse } from "@supabase/supabase-js";
