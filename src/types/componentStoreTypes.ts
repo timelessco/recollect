@@ -30,7 +30,12 @@ export type LoadersStoreState = {
 export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	currentBookmarkView: BookmarksViewTypes;
-	currentSettingsPage: "ai-features" | "change-email" | "delete" | "main";
+	currentSettingsPage:
+		| "ai-features"
+		| "change-email"
+		| "delete"
+		| "main"
+		| "import";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;

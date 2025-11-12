@@ -3,17 +3,26 @@ import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { z } from "zod";
 
-import imageToText from "../../../../async/ai/imageToText";
-import ocr from "../../../../async/ai/ocr";
-import { MAIN_TABLE_NAME, SCREENSHOT_API } from "../../../../utils/constants";
-import { blurhashFromURL } from "../../../../utils/getBlurHash";
-import { createServiceClient } from "../../../../utils/supabaseClient";
-import { upload } from "../../bookmark/add-url-screenshot";
+import imageToText from "../../../async/ai/imageToText";
+import ocr from "../../../async/ai/ocr";
+import {
+	MAIN_TABLE_NAME,
+	PDF_MIME_TYPE,
+	SCREENSHOT_API,
+} from "../../../utils/constants";
+import { blurhashFromURL } from "../../../utils/getBlurHash";
+import { createServiceClient } from "../../../utils/supabaseClient";
+import { upload } from "../bookmark/add-url-screenshot";
 
 const ScreenshotPayloadSchema = z.object({
 	id: z.union([z.string(), z.number()]),
 	url: z.string().url("Invalid URL format"),
 	user_id: z.string().min(1, "user_id is required"),
+	mediaType: z.string().nullable().optional(),
+	queue_name: z.string(),
+	message: z.object({
+		msg_id: z.number(),
+	}),
 });
 
 type ScreenshotPayload = z.infer<typeof ScreenshotPayloadSchema>;
@@ -34,28 +43,69 @@ export default async function handler(
 		return;
 	}
 
-	const { id, url, user_id }: ScreenshotPayload = parsed.data;
+	const {
+		id,
+		url,
+		user_id,
+		mediaType,
+		queue_name,
+		message,
+	}: ScreenshotPayload = parsed.data;
+
 	const supabase = createServiceClient();
 
 	try {
-		console.log(
-			"######################## Screenshot Loading ########################",
-		);
+		let publicURL;
 
-		const { data: screenshotData } = await axios.get(
-			`${SCREENSHOT_API}try?url=${encodeURIComponent(url)}`,
-			{ responseType: "json" },
-		);
+		let isPageScreenshot = false;
 
-		const base64data = Buffer.from(
-			screenshotData?.screenshot?.data,
-			"binary",
-		).toString("base64");
+		let isFailed = false;
 
-		const { isPageScreenshot } = screenshotData?.metaData || {};
+		if (mediaType && mediaType === PDF_MIME_TYPE) {
+			console.log(
+				"######################## Generating PDF Thumbnail ########################",
+			);
+			try {
+				const { data } = await axios.post(
+					process.env.PDF_URL_SCREENSHOT_API as string,
+					{ url },
+					{
+						headers: {
+							Authorization: `Bearer ${process.env.PDF_SECRET_KEY}`,
+							"Content-Type": "application/json",
+						},
+					},
+				);
 
-		// Upload to R2
-		const publicURL = await upload(base64data, user_id);
+				publicURL = data?.publicUrl;
+			} catch {
+				isFailed = true;
+				throw new Error("Failed to generate PDF thumbnail in worker");
+			}
+		} else {
+			console.log(
+				"######################## Screenshot Loading ########################",
+			);
+			try {
+				const { data: screenshotData } = await axios.get(
+					`${SCREENSHOT_API}try?url=${encodeURIComponent(url)}`,
+					{ responseType: "json" },
+				);
+
+				const base64data = Buffer.from(
+					screenshotData?.screenshot?.data,
+					"binary",
+				).toString("base64");
+
+				isPageScreenshot = screenshotData?.metaData?.isPageScreenshot || {};
+
+				// Upload to R2
+				publicURL = await upload(base64data, user_id);
+			} catch {
+				isFailed = true;
+				throw new Error("Failed to take screenshot in worker");
+			}
+		}
 
 		// Update DB with ogImage
 		const { data: updatedData, error: updateError } = await supabase
@@ -84,6 +134,7 @@ export default async function handler(
 
 		const newMeta: Record<string, unknown> = {
 			...existing?.meta_data,
+			mediaType,
 			isPageScreenshot,
 		};
 
@@ -121,8 +172,22 @@ export default async function handler(
 			.eq("user_id", user_id);
 
 		console.log(
-			"######################## Screenshot Success ########################",
+			`######################## ${mediaType && mediaType === PDF_MIME_TYPE ? "PDF Thumbnail Generated" : "Screenshot Success"} ########################`,
 		);
+
+		// Delete message from queue
+		if (!isFailed) {
+			const { error: deleteError } = await supabase
+				.schema("pgmq_public")
+				.rpc("delete", {
+					queue_name,
+					message_id: message.msg_id,
+				});
+
+			if (deleteError) {
+				console.error("Error deleting message from queue");
+			}
+		}
 
 		response.status(200).json({
 			message: "Screenshot captured and uploaded successfully",

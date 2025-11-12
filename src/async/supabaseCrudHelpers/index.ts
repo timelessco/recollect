@@ -86,7 +86,11 @@ import {
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
 } from "../../utils/constants";
-import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
+import {
+	checkIfUrlAnImage,
+	isUserInACategory,
+	parseUploadFileName,
+} from "../../utils/helpers";
 
 // bookmark
 // get bookmark by id
@@ -885,4 +889,62 @@ export const validateApiKey = async (apikey: string) => {
 	} catch {
 		throw new Error("Invalid API key");
 	}
+};
+
+export const sanitizeBookmarks = async (
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	bookmarks: any[],
+	userId: string,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	categories: any[],
+): Promise<SingleListData[]> => {
+	const results = await Promise.allSettled(
+		bookmarks.map(async (bookmark) => {
+			const { hostname } = new URL(bookmark.url);
+
+			// validate ogImage
+			const isImageValid =
+				bookmark.ogImage && (await checkIfUrlAnImage(bookmark.ogImage));
+
+			const mediaType = await getMediaType(bookmark.url);
+
+			let favIcon: string | null = null;
+
+			try {
+				const res = await fetch(
+					`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
+				);
+				favIcon = res.ok ? res.url : null;
+			} catch {
+				favIcon = null;
+			}
+
+			const category_id =
+				categories.find(
+					(category) => category.category_name === bookmark?.folder,
+				)?.id || 0;
+
+			return {
+				title: bookmark.title || null,
+				description: bookmark.description || null,
+				url: bookmark.url || null,
+				user_id: userId,
+				ogImage: bookmark.ogImage && isImageValid ? bookmark.ogImage : null,
+				type: "bookmark",
+				category_id,
+				meta_data: {
+					favIcon,
+					is_raindrop_bookmark: true,
+					mediaType,
+				},
+			};
+		}),
+	);
+
+	return (
+		results
+			.filter((resolve) => resolve.status === "fulfilled")
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			.map((resolve) => (resolve as PromiseFulfilledResult<any>).value)
+	);
 };

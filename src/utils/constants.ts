@@ -77,7 +77,8 @@ export const FETCH_BOOKMARK_BY_ID_API = "v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
-export const WORKER_SCREENSHOT_API = "/v1/twitter/screenshot";
+export const WORKER_SCREENSHOT_API = "/v1/screenshot";
+export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
@@ -136,6 +137,8 @@ export const DELETE_API_KEY_API = "/v1/delete-api-key";
 // Screenshot api
 export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app/";
+
+export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
