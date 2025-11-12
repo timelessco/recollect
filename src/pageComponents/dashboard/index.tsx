@@ -350,7 +350,7 @@ const Dashboard = () => {
 			(item) => item?.id === CATEGORY_ID,
 		) as unknown as CategoriesData;
 
-		// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+		// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
 		// if cat_id not number then user is not updated in a category , so access will always be true
 		const updateAccessCondition =
 			typeof CATEGORY_ID === "number"
@@ -917,7 +917,7 @@ const Dashboard = () => {
 									(item) => item?.id === value?.value,
 								) ??
 								find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-							// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+							// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
 
 							const updateAccessCondition =
 								find(
@@ -932,7 +932,7 @@ const Dashboard = () => {
 										category_id: value?.value ? (value?.value as number) : null,
 										bookmark_id: addedUrlData?.id as number,
 										update_access:
-											// if user is changing to uncategoried then thay always have access
+											// if user is changing to uncategorised then thay always have access
 											isNull(value?.value) || !value?.value
 												? true
 												: updateAccessCondition,
@@ -1127,7 +1127,7 @@ const Dashboard = () => {
 						const currentCategory =
 							find(allCategories?.data, (item) => item?.id === categoryId) ??
 							find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-						// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+						// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
 
 						const updateAccessCondition =
 							find(
@@ -1156,7 +1156,7 @@ const Dashboard = () => {
 								await addCategoryToBookmarkOptimisticMutation.mutateAsync({
 									category_id: categoryId,
 									bookmark_id: Number.parseInt(bookmarkId, 10),
-									// if user is changing to uncategoried then thay always have access
+									// if user is changing to uncategorised then thay always have access
 									update_access: updateAccessCondition,
 								});
 							} else {
