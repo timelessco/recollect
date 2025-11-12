@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
 
@@ -22,6 +22,11 @@ const EmailSection = () => {
 			return;
 		}
 
+		await router.replace({
+			pathname: "/email",
+			query: { email },
+		});
+
 		setIsLoading(true);
 		const { error } = await signInWithOtp(email, supabase);
 		setIsLoading(false);
@@ -32,6 +37,12 @@ const EmailSection = () => {
 			await router.push(`/otp?email=${encodeURIComponent(email)}`);
 		}
 	};
+
+	useEffect(() => {
+		if (router.query.email && typeof router.query.email === "string") {
+			setEmail(router.query.email);
+		}
+	}, [router.query.email]);
 
 	return (
 		<>

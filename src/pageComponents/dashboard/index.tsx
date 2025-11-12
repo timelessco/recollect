@@ -193,8 +193,11 @@ const Dashboard = () => {
 
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
-	const { allBookmarksData, fetchNextPage: fetchNextBookmarkPage } =
-		useFetchPaginatedBookmarks();
+	const {
+		allBookmarksData,
+		fetchNextPage: fetchNextBookmarkPage,
+		isAllBookmarksDataLoading,
+	} = useFetchPaginatedBookmarks();
 
 	const {
 		flattenedSearchData,
@@ -685,6 +688,12 @@ const Dashboard = () => {
 												isBookmarkLoading={
 													addBookmarkMinDataOptimisticMutation?.isLoading
 												}
+												isLoading={
+													isLoadingCategories ||
+													isFetchingCategories ||
+													isAllBookmarksDataLoading ||
+													(isSearchLoading && flattenedSearchData.length === 0)
+												}
 												isOgImgLoading={
 													addBookmarkScreenshotMutation?.isLoading
 												}
@@ -1103,6 +1112,7 @@ const Dashboard = () => {
 			<DashboardLayout
 				categoryId={CATEGORY_ID}
 				onAddBookmark={onAddBookmark}
+				isLoadingCategories={isLoadingCategories}
 				onAddNewCategory={async (newCategoryName) => {
 					if (!isNull(userProfileData?.data)) {
 						const response = (await mutationApiCall(

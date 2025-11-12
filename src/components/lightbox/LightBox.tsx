@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -94,6 +94,18 @@ export const CustomLightBox = ({
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.lightboxShowSidepane,
 	);
+
+	useEffect(() => {
+		if (typeof window === "undefined") {
+			return;
+		}
+
+		const storedState = localStorage.getItem("lightboxSidepaneOpen");
+		if (storedState !== null) {
+			setLightboxShowSidepane(storedState === "true");
+		}
+	}, [setLightboxShowSidepane]);
+
 	/**
 	 * Enhanced close handler that also resets the side panel state
 	 * Uses useCallback to prevent unnecessary re-renders
@@ -655,7 +667,11 @@ export const CustomLightBox = ({
 						key="right-section"
 					>
 						<button
-							onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
+							onClick={() => {
+								const newState = !lightboxShowSidepane;
+								setLightboxShowSidepane(newState);
+								localStorage.setItem("lightboxSidepaneOpen", String(newState));
+							}}
 							type="button"
 						>
 							<ShowSidePaneButton className="text-gray-alpha-600 h-5 w-5 stroke-current opacity-50 transition-colors duration-200 group-hover:opacity-100" />

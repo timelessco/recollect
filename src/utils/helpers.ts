@@ -402,3 +402,29 @@ export const searchSlugKey = (categoryData: {
 	// Fallback: return the original slug if no matching category was found
 	return categorySlug;
 };
+
+export const getColumnCount = (isDesktop: boolean, colCount?: number) => {
+	if (!isDesktop) {
+		return 2;
+	}
+
+	// If bookmarksColumns is provided, use its first value to determine column count
+	const firstColumn = colCount;
+
+	switch (firstColumn) {
+		case 10:
+			return 5;
+		case 20:
+			return 4;
+		case 30:
+			return 3;
+		case 40:
+			return 2;
+		case 50:
+			return 1;
+		case undefined:
+			return 2;
+		default:
+			return 1;
+	}
+};

@@ -62,6 +62,12 @@ const formatDate = (dateString: string) => {
 
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
+	const [isInitialMount, setIsInitialMount] = useState(true);
+
+	useEffect(() => {
+		// Mark as not initial after first mount
+		setIsInitialMount(false);
+	}, []);
 	const [showMore, setShowMore] = useState(false);
 	const [isOverflowing, setIsOverflowing] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -155,16 +161,38 @@ const MyComponent = () => {
 		<AnimatePresence>
 			{lightboxShowSidepane && (
 				<motion.div
+					initial={
+						isInitialMount && lightboxShowSidepane
+							? { x: 0, opacity: 0, scale: 0.97 }
+							: { x: "100%" }
+					}
 					animate={{
 						x: 0,
-						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
+						opacity: 1,
+						scale: 1,
+						transition:
+							isInitialMount && lightboxShowSidepane
+								? {
+										duration: 0.25,
+										ease: "easeInOut",
+										opacity: { duration: 0.25, ease: "easeInOut" },
+										scale: {
+											from: 0.97,
+											duration: 0.25,
+											ease: "easeInOut",
+										},
+									}
+								: {
+										type: "tween",
+										duration: 0.15,
+										ease: "easeInOut",
+									},
 					}}
-					className="bg-gray-0 absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
-					initial={{ x: "100%" }}
+					className="bg-gray-0 absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 backdrop-blur-[41px]"
 				>
 					<div className="flex flex-1 flex-col p-5 text-left">
 						{currentBookmark?.title && (

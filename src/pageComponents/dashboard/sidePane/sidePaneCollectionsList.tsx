@@ -1,3 +1,5 @@
+import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
+
 import CollectionsList from "./collectionsList";
 
 type SidePaneCollectionsListTypes = {
@@ -10,6 +12,9 @@ type SidePaneCollectionsListTypes = {
 		id: number,
 	) => Promise<void>;
 	onIconSelect: (value: string, id: number) => void;
+	isLoadingCategories?: boolean;
+	isFetchingCategories?: boolean;
+	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
 };
 
 const SidePaneCollectionsList = (props: SidePaneCollectionsListTypes) => {
@@ -18,6 +23,9 @@ const SidePaneCollectionsList = (props: SidePaneCollectionsListTypes) => {
 		onCategoryOptionClick,
 		onIconSelect,
 		onAddNewCategory,
+		isLoadingCategories,
+		isFetchingCategories,
+		onIconColorChange,
 	} = props;
 	return (
 		<CollectionsList
@@ -25,6 +33,9 @@ const SidePaneCollectionsList = (props: SidePaneCollectionsListTypes) => {
 			onBookmarksDrop={onBookmarksDrop}
 			onCategoryOptionClick={onCategoryOptionClick}
 			onIconSelect={(value, id) => onIconSelect(value, id)}
+			isLoadingCategories={isLoadingCategories}
+			isFetchingCategories={isFetchingCategories}
+			onIconColorChange={onIconColorChange}
 		/>
 	);
 };

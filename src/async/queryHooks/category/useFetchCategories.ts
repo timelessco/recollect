@@ -6,7 +6,7 @@ import { CATEGORIES_KEY } from "../../../utils/constants";
 import { fetchCategoriesData } from "../../supabaseCrudHelpers";
 
 // fetchs user categories
-export default function useFetchCategories(shouldFetch?: boolean) {
+export default function useFetchCategories(shouldFetch = true) {
 	const session = useSupabaseSession((state) => state.session);
 
 	const {

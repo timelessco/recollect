@@ -161,7 +161,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 								))}
 							</AriaDropdown>
 						)}
-						{item?.count !== undefined && !showSpinner && (
+						{item?.count !== undefined && !showSpinner && item?.current && (
 							<p
 								className={`font-450 h-3 w-3 items-center justify-end text-right align-middle text-[11px] leading-[115%] tracking-[0.03em] text-gray-600 ${
 									showDropdown ? "block group-hover:hidden" : "block"
@@ -189,7 +189,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
 	const contentWrapperClassNames = `${
 		item?.current ? "bg-gray-100 text-gray-900" : "text-gray-800"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-100 hover:text-gray-900`;
+	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-gray-100 hover:text-gray-900`;
 
 	if (isLink) {
 		return (

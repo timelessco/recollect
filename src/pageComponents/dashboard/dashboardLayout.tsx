@@ -96,6 +96,7 @@ type DashboardLayoutProps = {
 	) => void;
 	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 	userId: string;
+	isLoadingCategories?: boolean;
 };
 
 const interpolateScaleValue = (angle: number) => {
@@ -157,9 +158,18 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const allotmentRef = useRef<AllotmentHandle>(null);
 	const paneRef = useRef<HTMLDivElement>(null);
 
+	const showSidePane = useMiscellaneousStore((state) => state.showSidePane);
+	const setShowSidePane = useMiscellaneousStore(
+		(state) => state.setShowSidePane,
+	);
+
 	// this is the resize pane animation logic
 	useEffect(() => {
 		const resizePaneRef = paneRef?.current;
+		const savedState = localStorage.getItem("sidePaneOpen");
+		if (savedState !== null) {
+			setShowSidePane(savedState === "true");
+		}
 
 		const observer = new ResizeObserver((entries) => {
 			const elementWidth = entries[0]?.contentRect?.width;
@@ -191,7 +201,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		}
 
 		return undefined;
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
+
+	useEffect(() => {
+		localStorage.setItem("sidePaneOpen", String(showSidePane));
+	}, [showSidePane]);
 
 	useEffect(() => {
 		if (isDesktop) {
@@ -206,10 +221,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const currentPath = useGetCurrentUrlPath();
 
 	const { setSearchText } = useMiscellaneousStore();
-	const showSidePane = useMiscellaneousStore((state) => state.showSidePane);
-	const setShowSidePane = useMiscellaneousStore(
-		(state) => state.setShowSidePane,
-	);
 
 	useEffect(() => {
 		setSearchText("");
@@ -619,6 +630,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			onCategoryOptionClick={onCategoryOptionClick}
 			onIconColorChange={onIconColorChange}
 			onIconSelect={(value, id) => onIconSelect(value, id)}
+			isLoadingCategories={props.isLoadingCategories}
 		/>
 	);
 
