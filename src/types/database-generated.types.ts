@@ -36,7 +36,7 @@ export type Database = {
 						foreignKeyName: "bookmark_tags_bookmark_id_fkey";
 						columns: ["bookmark_id"];
 						isOneToOne: false;
-						referencedRelation: "bookmarks_table";
+						referencedRelation: "everything";
 						referencedColumns: ["id"];
 					},
 					{
@@ -44,69 +44,6 @@ export type Database = {
 						columns: ["tag_id"];
 						isOneToOne: false;
 						referencedRelation: "tags";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			bookmarks_table: {
-				Row: {
-					category_id: number;
-					description: string | null;
-					id: number;
-					inserted_at: string;
-					meta_data: Json | null;
-					ogImage: string | null;
-					screenshot: string | null;
-					sort_index: string | null;
-					title: string | null;
-					trash: boolean;
-					type: string | null;
-					url: string | null;
-					user_id: string;
-				};
-				Insert: {
-					category_id?: number;
-					description?: string | null;
-					id?: number;
-					inserted_at?: string;
-					meta_data?: Json | null;
-					ogImage?: string | null;
-					screenshot?: string | null;
-					sort_index?: string | null;
-					title?: string | null;
-					trash?: boolean;
-					type?: string | null;
-					url?: string | null;
-					user_id: string;
-				};
-				Update: {
-					category_id?: number;
-					description?: string | null;
-					id?: number;
-					inserted_at?: string;
-					meta_data?: Json | null;
-					ogImage?: string | null;
-					screenshot?: string | null;
-					sort_index?: string | null;
-					title?: string | null;
-					trash?: boolean;
-					type?: string | null;
-					url?: string | null;
-					user_id?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "bookmarks_table_category_id_fkey";
-						columns: ["category_id"];
-						isOneToOne: false;
-						referencedRelation: "categories";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "bookmarks_table_user_id_fkey";
-						columns: ["user_id"];
-						isOneToOne: false;
-						referencedRelation: "profiles";
 						referencedColumns: ["id"];
 					},
 				];
@@ -178,6 +115,69 @@ export type Database = {
 					metadata?: Json | null;
 				};
 				Relationships: [];
+			};
+			everything: {
+				Row: {
+					category_id: number;
+					description: string | null;
+					id: number;
+					inserted_at: string;
+					meta_data: Json | null;
+					ogImage: string | null;
+					screenshot: string | null;
+					sort_index: string | null;
+					title: string | null;
+					trash: boolean;
+					type: string | null;
+					url: string | null;
+					user_id: string;
+				};
+				Insert: {
+					category_id?: number;
+					description?: string | null;
+					id?: number;
+					inserted_at?: string;
+					meta_data?: Json | null;
+					ogImage?: string | null;
+					screenshot?: string | null;
+					sort_index?: string | null;
+					title?: string | null;
+					trash?: boolean;
+					type?: string | null;
+					url?: string | null;
+					user_id: string;
+				};
+				Update: {
+					category_id?: number;
+					description?: string | null;
+					id?: number;
+					inserted_at?: string;
+					meta_data?: Json | null;
+					ogImage?: string | null;
+					screenshot?: string | null;
+					sort_index?: string | null;
+					title?: string | null;
+					trash?: boolean;
+					type?: string | null;
+					url?: string | null;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "everything_category_id_fkey";
+						columns: ["category_id"];
+						isOneToOne: false;
+						referencedRelation: "categories";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "everything_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "profiles";
+						referencedColumns: ["id"];
+					},
+				];
 			};
 			profiles: {
 				Row: {
