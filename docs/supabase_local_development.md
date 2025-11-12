@@ -293,7 +293,7 @@ LIMIT 5;
 
 ```sql
 -- Reset sequences to match current max IDs
-SELECT setval('bookmarks_table_id_seq', (SELECT MAX(id) FROM bookmarks_table));
+SELECT setval('everything_id_seq', (SELECT MAX(id) FROM everything));
 SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));
 SELECT setval('tags_id_seq', (SELECT MAX(id) FROM tags));
 SELECT setval('bookmark_tags_id_seq', (SELECT MAX(id) FROM bookmark_tags));
@@ -548,7 +548,7 @@ INSERT INTO auth.users (email) VALUES
   ('demo@example.com');
 
 -- Add test data for your tables
-INSERT INTO bookmarks_table (title, url, user_id) VALUES
+INSERT INTO everything (title, url, user_id) VALUES
   ('Test Bookmark', 'https://example.com', (SELECT id FROM auth.users WHERE email = 'test@example.com'));
 ```
 

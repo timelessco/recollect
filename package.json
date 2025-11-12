@@ -39,6 +39,7 @@
 		"contributors:add": "all-contributors add",
 		"contributors:generate": "all-contributors generate",
 		"cypress:open": "cypress open",
+		"db:types": "npx supabase gen types typescript --local --schema public > src/types/database-generated.types.ts",
 		"dev": "next dev",
 		"dev:sourcemap": "SOURCEMAP=true pnpm dev",
 		"fix": "turbo fix:eslint",
@@ -68,8 +69,8 @@
 	},
 	"lint-staged": {
 		"*": [
-			"tsx scripts/update-cspell-words.ts",
-			"prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown"
+			"prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown",
+			"tsx scripts/update-cspell-words.ts"
 		]
 	},
 	"dependencies": {
@@ -191,11 +192,12 @@
 		"stylelint": "16.25.0",
 		"stylelint-config-clean-order": "7.0.0",
 		"stylelint-config-standard": "39.0.1",
-		"supabase": "2.54.11",
+		"supabase": "2.58.5",
 		"tailwindcss": "4.1.17",
 		"title-case": "4.3.2",
 		"tsx": "4.20.6",
 		"turbo": "2.6.0",
+		"type-fest": "5.2.0",
 		"typescript": "5.9.3",
 		"yaml-eslint-parser": "1.3.0"
 	},
