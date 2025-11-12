@@ -214,7 +214,7 @@ export const ImportBookmarks = () => {
 						min={1}
 						max={bookmarkCount}
 						value={importLimit}
-						onChange={(e) => setImportLimit(Number(e.target.value))}
+						onChange={(event) => setImportLimit(Number(event.target.value))}
 						className="w-full cursor-pointer accent-black"
 					/>
 					<p className="mt-1 text-xs text-gray-500">
