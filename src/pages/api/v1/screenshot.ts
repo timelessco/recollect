@@ -79,6 +79,7 @@ export default async function handler(
 
 				publicURL = data?.publicUrl;
 			} catch {
+				isFailed = true;
 				throw new Error("Failed to generate PDF thumbnail in worker");
 			}
 		} else {
@@ -100,7 +101,8 @@ export default async function handler(
 
 				// Upload to R2
 				publicURL = await upload(base64data, user_id);
-			} catch (error) {
+			} catch {
+				isFailed = true;
 				throw new Error("Failed to take screenshot in worker");
 			}
 		}

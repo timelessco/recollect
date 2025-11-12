@@ -83,6 +83,8 @@ export const ImportBookmarks = () => {
 		parse(selectedFile, {
 			header: true,
 			skipEmptyLines: true,
+
+			// eslint-disable-next-line @typescript-eslint/no-misused-promises
 			complete: async (results) => {
 				const records = results.data as Array<{
 					title: string;
@@ -98,15 +100,13 @@ export const ImportBookmarks = () => {
 					return;
 				}
 
-				const bookmarks = records
-					.map((b) => ({
-						title: b.title || null,
-						description: b.excerpt || null,
-						url: b.url || null,
-						ogImage: b.cover || null,
-						folder: b.folder || null,
-					}))
-					.slice(0, 1);
+				const bookmarks = records.map((b) => ({
+					title: b.title || null,
+					description: b.excerpt || null,
+					url: b.url || null,
+					ogImage: b.cover || null,
+					folder: b.folder || null,
+				}));
 
 				try {
 					const response = await axios.post(
