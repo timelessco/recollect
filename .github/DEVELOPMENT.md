@@ -153,11 +153,11 @@ Next.js project that lints JavaScript and TypeScript source files
 
 > Check the css linting errors
 
-`pnpm lint:csslint`
+`pnpm lint:css`
 
 > AutoFix the css linting errors
 
-`pnpm fix:csslint`
+`pnpm fix:css`
 
 ### Markdown
 

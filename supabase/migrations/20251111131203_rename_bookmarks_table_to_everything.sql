@@ -155,11 +155,4 @@ AS $function$BEGIN
             );
 END;$function$;
 
--- ============================================================================
--- STEP 8: Verify migration (optional - uncomment to use)
--- ============================================================================
-SELECT COUNT(*) as total_records FROM public.everything;
-SELECT * FROM pg_sequences WHERE schemaname = 'public' AND sequencename = 'everything_id_seq';
-SELECT conname FROM pg_constraint WHERE conrelid = 'public.everything'::regclass;
-
 COMMIT;
