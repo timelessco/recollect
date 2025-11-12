@@ -65,7 +65,7 @@ NEXT_PUBLIC_SITE_URL=https://dev.yourdomain.com
 ```bash
 # Check data counts
 psql "<DEV_BRANCH_CONNECTION_STRING>" -c "SELECT COUNT(*) FROM profiles;"
-psql "<DEV_BRANCH_CONNECTION_STRING>" -c "SELECT COUNT(*) FROM bookmarks_table;"
+psql "<DEV_BRANCH_CONNECTION_STRING>" -c "SELECT COUNT(*) FROM everything;"
 
 # Or use Supabase SQL Editor in Dashboard
 ```

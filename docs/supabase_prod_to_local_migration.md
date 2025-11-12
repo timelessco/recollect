@@ -20,7 +20,7 @@ This was a one-time migration to establish:
 
 ### Database Structure
 
-- **6 Main Tables**: bookmarks_table, categories, profiles, tags, bookmark_tags, shared_categories
+- **6 Main Tables**: everything, categories, profiles, tags, bookmark_tags, shared_categories
 - **0 Storage Buckets**: No storage buckets (removed from production)
 - **1 Cron Job**: Monthly bookmark_count reset
 - **9 RLS Policies**: Simple authenticated access policies
@@ -150,7 +150,7 @@ npx supabase migration list --local
 psql "postgresql://postgres:postgres@localhost:54322/postgres" -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;"
 ```
 
-You should see all your tables: `bookmark_tags`, `bookmarks_table`, `categories`, `documents`, `profiles`, `shared_categories`, `tags`.
+You should see all your tables: `bookmark_tags`, `everything`, `categories`, `documents`, `profiles`, `shared_categories`, `tags`.
 
 **Note**: `npx supabase db reset` automatically loaded the seed.sql data, so no separate data loading step is needed.
 
@@ -211,7 +211,7 @@ This applies the migration to production and enables the Supabase migration trac
 
 ```bash
 # Check bookmark counts
-psql "postgresql://postgres:postgres@localhost:54322/postgres" -c "SELECT COUNT(*) FROM bookmarks_table;"
+psql "postgresql://postgres:postgres@localhost:54322/postgres" -c "SELECT COUNT(*) FROM everything;"
 
 # Check categories
 psql "postgresql://postgres:postgres@localhost:54322/postgres" -c "SELECT COUNT(*) FROM categories;"
@@ -256,7 +256,7 @@ If you get ID conflicts when inserting new data:
 
 ```sql
 -- Reset sequences
-SELECT setval('bookmarks_table_id_seq', (SELECT MAX(id) FROM bookmarks_table));
+SELECT setval('everything_id_seq', (SELECT MAX(id) FROM everything));
 SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));
 SELECT setval('tags_id_seq', (SELECT MAX(id) FROM tags));
 SELECT setval('bookmark_tags_id_seq', (SELECT MAX(id) FROM bookmark_tags));
