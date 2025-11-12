@@ -68,6 +68,7 @@ import {
 	USER_PROFILE,
 } from "../../../utils/constants";
 
+import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
@@ -83,6 +84,8 @@ type CollectionsListPropertyTypes = {
 	) => Promise<void>;
 	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
 	onIconSelect: (value: string, id: number) => void;
+	isLoadingCategories?: boolean;
+	isFetchingCategories?: boolean;
 };
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
@@ -310,6 +313,8 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		onIconSelect,
 		onAddNewCategory,
 		onIconColorChange,
+		isLoadingCategories = false,
+		isFetchingCategories = false,
 	} = listProps;
 
 	const queryClient = useQueryClient();
@@ -550,33 +555,37 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		<div className="pt-4">
 			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
 				<div id="collections-wrapper">
-					<ListBoxDrop
-						aria-label="Categories-drop"
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						onItemDrop={(event: any) => {
-							void onBookmarksDrop(event);
-						}}
-						onReorder={onReorder}
-						selectionBehavior="replace"
-						selectionMode="multiple"
-					>
-						{sortedList()?.map((item) => (
-							<Item key={item?.id} textValue={item?.name}>
-								<SingleListItemComponent
-									extendedClassname="py-[6px]"
-									item={item}
-									listNameId="collection-name"
-									onCategoryOptionClick={onCategoryOptionClick}
-									onIconColorChange={(color) =>
-										onIconColorChange?.(color, item?.id)
-									}
-									onIconSelect={onIconSelect}
-									showDropdown
-									showSpinner={item?.id === sidePaneOptionLoading}
-								/>
-							</Item>
-						))}
-					</ListBoxDrop>
+					{isLoadingCategories || isFetchingCategories ? (
+						<CollectionsListSkeleton />
+					) : (
+						<ListBoxDrop
+							aria-label="Categories-drop"
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							onItemDrop={(event: any) => {
+								void onBookmarksDrop(event);
+							}}
+							onReorder={onReorder}
+							selectionBehavior="replace"
+							selectionMode="multiple"
+						>
+							{sortedList()?.map((item) => (
+								<Item key={item?.id} textValue={item?.name}>
+									<SingleListItemComponent
+										extendedClassname="py-[6px]"
+										item={item}
+										listNameId="collection-name"
+										onCategoryOptionClick={onCategoryOptionClick}
+										onIconColorChange={(color) =>
+											onIconColorChange?.(color, item?.id)
+										}
+										onIconSelect={onIconSelect}
+										showDropdown
+										showSpinner={item?.id === sidePaneOptionLoading}
+									/>
+								</Item>
+							))}
+						</ListBoxDrop>
+					)}
 				</div>
 				{renderAddCategoryInput}
 				<div

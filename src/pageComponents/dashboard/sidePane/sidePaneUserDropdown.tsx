@@ -48,7 +48,7 @@ const SidePaneUserDropdown = () => {
 			<AriaDropdown
 				menuButton={
 					<div
-						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1.5 py-[3px] hover:bg-gray-100 hover:text-gray-900`}
+						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1.5 py-[3px] text-gray-800 hover:bg-gray-100 hover:text-gray-900`}
 					>
 						<div className="flex w-4/5 items-center space-x-2">
 							<UserAvatar

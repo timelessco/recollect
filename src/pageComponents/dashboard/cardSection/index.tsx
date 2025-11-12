@@ -23,6 +23,7 @@ import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
+import LinkIcon from "../../../icons/linkIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import VideoIcon from "../../../icons/videoIcon";
 import {
@@ -42,6 +43,8 @@ import {
 	CATEGORIES_KEY,
 	DOCUMENTS_URL,
 	IMAGES_URL,
+	LINK_TYPE_PREFIX,
+	LINKS_URL,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
@@ -62,6 +65,7 @@ import {
 } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
+import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 
@@ -76,6 +80,7 @@ export type CardSectionProps = {
 
 	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
+	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
@@ -84,7 +89,6 @@ export type CardSectionProps = {
 	onDeleteClick: (post: SingleListData[]) => void;
 	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
-
 	showAvatar: boolean;
 	userId: string;
 };
@@ -95,6 +99,7 @@ const getImageSource = (item: SingleListData) =>
 
 const CardSection = ({
 	listData = [],
+	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
 	onEditClick = () => null,
@@ -323,7 +328,7 @@ const CardSection = ({
 		if (isPublicPage) {
 			const publicExternalIconClassname = classNames({
 				"absolute top-0": true,
-				"left-[11px]":
+				"right-[8px]":
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
 					cardTypeCondition === viewValues.timeline,
@@ -527,8 +532,8 @@ const CardSection = ({
 		});
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
-					<ImageIcon size={`${size}`} />
+				<figure className="card-icon text-gray-1000 p-0.5">
+					<LinkIcon />
 				</figure>
 			);
 		}
@@ -588,6 +593,18 @@ const CardSection = ({
 			return (
 				<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
 					<FolderIcon size="15" />
+				</figure>
+			);
+		}
+
+		if (
+			currentPath === LINKS_URL ||
+			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX) ||
+			!item?.meta_data?.mediaType
+		) {
+			return (
+				<figure className="card-icon text-gray-1000 rounded p-0.5">
+					<LinkIcon />
 				</figure>
 			);
 		}
@@ -836,6 +853,16 @@ const CardSection = ({
 
 	const renderItem = () => {
 		const sortByCondition = renderSortByCondition();
+
+		if (isLoading) {
+			return (
+				<BookmarksSkeletonLoader
+					count={26}
+					type={cardTypeCondition}
+					colCount={bookmarksColumns?.[0]}
+				/>
+			);
+		}
 
 		if (isEmpty(sortByCondition) && categorySlug === TWEETS_URL) {
 			return (

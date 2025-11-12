@@ -12,7 +12,6 @@ export const VideoPlayer = ({
 
 	return (
 		<ReactPlayer
-			controls
 			height="100%"
 			playing={isActive}
 			ref={playerRef}

@@ -366,8 +366,8 @@ const Settings = () => {
 					<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
 						Email
 					</p>
-					<div className="flex items-center justify-between rounded-lg bg-gray-100">
-						<div className="ml-[19.5px] flex items-center gap-2 rounded-lg">
+					<div className="flex items-center justify-between rounded-xl bg-gray-100">
+						<div className="ml-[19.5px] flex items-center gap-2">
 							{session?.user?.app_metadata?.provider === "email" ? (
 								<MailIconBlack />
 							) : (

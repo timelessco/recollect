@@ -88,7 +88,6 @@ const Option = ({
 	);
 
 	const disableDndCondition = isPublicPage;
-
 	return (
 		<li
 			aria-selected={isSelected}
@@ -100,14 +99,17 @@ const Option = ({
 			})}
 			ref={ref}
 			role="option"
-			{...(!lightboxOpen
-				? mergeProps(
-						disableDndCondition
-							? []
-							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-						disableDndCondition ? [] : focusProps,
-					)
-				: {})}
+			{...omit(
+				!lightboxOpen
+					? mergeProps(
+							disableDndCondition
+								? []
+								: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+							disableDndCondition ? [] : focusProps,
+						)
+					: {},
+				["values"],
+			)}
 		>
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
@@ -117,7 +119,11 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (isTrashPage || item?.key === "$.0" || isPublicPage) {
+					if (
+						isTrashPage ||
+						item?.key?.toString().startsWith("$") ||
+						isPublicPage
+					) {
 						event.preventDefault();
 						return;
 					}
