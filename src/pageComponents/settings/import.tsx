@@ -19,7 +19,7 @@ export const ImportBookmarks = () => {
 	const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
 	const [progress, setProgress] = useState(0);
 	const [dragActive, setDragActive] = useState(false);
-	const [importLimit, setImportLimit] = useState(50); // Default 50 bookmarks
+	const [importLimit, setImportLimit] = useState(50);
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const handleFile = (fileToProcess: File) => {
@@ -84,6 +84,8 @@ export const ImportBookmarks = () => {
 		parse(selectedFile, {
 			header: true,
 			skipEmptyLines: true,
+
+			// eslint-disable-next-line @typescript-eslint/no-misused-promises
 			complete: async (results) => {
 				let records = results.data as Array<{
 					title: string;
@@ -158,16 +160,16 @@ export const ImportBookmarks = () => {
 					dragActive ? "border-black bg-gray-100" : "border-gray-300"
 				}`}
 				onDrop={handleDrop}
-				onDragOver={(e) => {
-					e.preventDefault();
+				onDragOver={(event) => {
+					event.preventDefault();
 					setDragActive(true);
 				}}
 				onDragLeave={() => setDragActive(false)}
 				onClick={() => inputRef.current?.click()}
 				role="button"
 				tabIndex={0}
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") {
+				onKeyDown={(event) => {
+					if (event.key === "Enter" || event.key === " ") {
 						inputRef.current?.click();
 					}
 				}}
