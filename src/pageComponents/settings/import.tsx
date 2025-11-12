@@ -15,12 +15,11 @@ export const ImportBookmarks = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [uploading, setUploading] = useState(false);
 	const [imported, setImported] = useState(false);
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [statusMessage, setStatusMessage] = useState("");
 	const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
 	const [progress, setProgress] = useState(0);
 	const [dragActive, setDragActive] = useState(false);
+	const [importLimit, setImportLimit] = useState(50); // Default 50 bookmarks
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const handleFile = (fileToProcess: File) => {
@@ -46,6 +45,8 @@ export const ImportBookmarks = () => {
 						? `Found ${records.length} bookmarks, ready to import.`
 						: "No valid bookmarks found in CSV.",
 				);
+				// Auto-adjust slider max
+				setImportLimit(Math.min(50, records.length));
 			},
 			error: (err) => {
 				console.error(err);
@@ -83,10 +84,8 @@ export const ImportBookmarks = () => {
 		parse(selectedFile, {
 			header: true,
 			skipEmptyLines: true,
-
-			// eslint-disable-next-line @typescript-eslint/no-misused-promises
 			complete: async (results) => {
-				const records = results.data as Array<{
+				let records = results.data as Array<{
 					title: string;
 					excerpt: string;
 					url: string;
@@ -99,6 +98,9 @@ export const ImportBookmarks = () => {
 					setUploading(false);
 					return;
 				}
+
+				// Apply import limit
+				records = records.slice(0, importLimit);
 
 				const bookmarks = records.map((b) => ({
 					title: b.title || null,
@@ -131,7 +133,9 @@ export const ImportBookmarks = () => {
 
 					setProgress(100);
 					setImported(true);
-					setStatusMessage("Import completed successfully!");
+					setStatusMessage(
+						`Import completed successfully! Imported ${records.length} bookmarks.`,
+					);
 				} catch (error) {
 					console.error(error);
 					setStatusMessage("Error importing bookmarks.");
@@ -148,21 +152,22 @@ export const ImportBookmarks = () => {
 				Import Bookmarks
 			</h2>
 
+			{/* File Upload Box */}
 			<div
 				className={`relative mb-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 transition-colors ${
 					dragActive ? "border-black bg-gray-100" : "border-gray-300"
 				}`}
 				onDrop={handleDrop}
-				onDragOver={(event) => {
-					event.preventDefault();
+				onDragOver={(e) => {
+					e.preventDefault();
 					setDragActive(true);
 				}}
 				onDragLeave={() => setDragActive(false)}
 				onClick={() => inputRef.current?.click()}
 				role="button"
 				tabIndex={0}
-				onKeyDown={(event) => {
-					if (event.key === "Enter" || event.key === " ") {
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
 						inputRef.current?.click();
 					}
 				}}
@@ -195,6 +200,28 @@ export const ImportBookmarks = () => {
 				/>
 			</div>
 
+			{/* Slider for limit */}
+			{bookmarkCount && bookmarkCount > 0 && (
+				<div className="mb-4">
+					<label className="mb-1 block text-sm font-medium text-gray-700">
+						Number of bookmarks to import:{" "}
+						<span className="font-semibold text-black">{importLimit}</span>
+					</label>
+					<input
+						type="range"
+						min={1}
+						max={bookmarkCount}
+						value={importLimit}
+						onChange={(e) => setImportLimit(Number(e.target.value))}
+						className="w-full cursor-pointer accent-black"
+					/>
+					<p className="mt-1 text-xs text-gray-500">
+						You can import up to {bookmarkCount} bookmarks.
+					</p>
+				</div>
+			)}
+
+			{/* Import Button */}
 			<div className="relative w-full overflow-hidden rounded-md">
 				<Button
 					className={`relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-md px-4 py-2 font-medium text-white transition-all duration-300 ${
@@ -217,7 +244,6 @@ export const ImportBookmarks = () => {
 							}}
 						/>
 					)}
-
 					<span className="relative z-10 text-center">
 						{imported
 							? "Imported Successfully!"
@@ -227,6 +253,13 @@ export const ImportBookmarks = () => {
 					</span>
 				</Button>
 			</div>
+
+			{/* Status message */}
+			{statusMessage && (
+				<p className="mt-3 text-center text-sm text-gray-600">
+					{statusMessage}
+				</p>
+			)}
 		</div>
 	);
 };
