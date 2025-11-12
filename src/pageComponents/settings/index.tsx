@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -18,9 +18,10 @@ import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import { IframeIcon } from "../../icons/iframeIcon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/infoIcon";
-import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
+import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {
 	useMiscellaneousStore,
@@ -44,6 +45,8 @@ import {
 	USER_PROFILE,
 } from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
+
+import { SettingsToggleCard } from "./settingsToggleCard";
 
 type SettingsUsernameFormTypes = {
 	username: string;
@@ -77,6 +80,13 @@ const Settings = () => {
 		data: ProfilesTableTypes[];
 		error: PostgrestError;
 	};
+	const [enabled, setEnabled] = useState<boolean>(() => {
+		if (typeof window !== "undefined") {
+			const savedValue = localStorage.getItem("iframeEnabled");
+			return savedValue ? JSON.parse(savedValue) : true;
+		}
+		return true;
+	});
 
 	const userData = userProfilesData?.data?.[0];
 
@@ -366,32 +376,27 @@ const Settings = () => {
 					<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
 						Email
 					</p>
-					<div className="flex items-center justify-between rounded-xl bg-gray-100">
-						<div className="ml-[19.5px] flex items-center gap-2">
-							{session?.user?.app_metadata?.provider === "email" ? (
+					<SettingsToggleCard
+						icon={
+							session?.user?.app_metadata?.provider === "email" ? (
 								<MailIconBlack />
 							) : (
 								<GoogleLoginIcon />
-							)}
-							<p
-								className={`my-2 ml-2 text-gray-900 ${settingsParagraphClassName}`}
-							>
-								{userData?.email}
-								<p className="mt-1 text-[14px] leading-[115%] font-normal text-gray-600">
-									Current email
-								</p>
-							</p>
-						</div>
-						{session?.user?.app_metadata?.provider === "email" && (
-							<Button
-								className={`mr-[10px] ${settingsLightButtonClassName}`}
-								onClick={() => setCurrentSettingsPage("change-email")}
-								type="light"
-							>
-								Change email
-							</Button>
-						)}
-					</div>
+							)
+						}
+						title={userData?.email}
+						description="Current email"
+						buttonLabel={
+							session?.user?.app_metadata?.provider === "email"
+								? "Change email"
+								: undefined
+						}
+						onClick={
+							session?.user?.app_metadata?.provider === "email"
+								? () => setCurrentSettingsPage("change-email")
+								: undefined
+						}
+					/>
 					{session?.user?.app_metadata?.provider === "email" && (
 						<p className="text-13 mt-2 flex items-center gap-x-2 leading-[150%] font-normal text-gray-600">
 							<figure className="text-gray-900">
@@ -400,6 +405,24 @@ const Settings = () => {
 							You have logged in with your Google account.
 						</p>
 					)}
+				</div>
+				<div className="pt-10">
+					<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
+						Iframe
+					</p>
+					<SettingsToggleCard
+						icon={<IframeIcon />}
+						title="Enable iframe in lightbox"
+						description="Allow embedding external content in lightbox view"
+						isSwitch={true}
+						enabled={enabled}
+						onToggle={() => {
+							setEnabled(!enabled);
+							if (typeof window !== "undefined") {
+								localStorage.setItem("iframeEnabled", String(!enabled));
+							}
+						}}
+					/>
 				</div>
 				{/*
 				feature yet to implement

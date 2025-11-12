@@ -94,12 +94,18 @@ export const CustomLightBox = ({
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.lightboxShowSidepane,
 	);
-
+	// Read iframe enabled state from localStorage once during initial render
+	const isIframeEnabled = () => {
+		if (typeof window !== "undefined") {
+			const savedValue = localStorage.getItem("iframeEnabled");
+			return savedValue ? JSON.parse(savedValue) : true;
+		}
+		return true;
+	};
 	useEffect(() => {
 		if (typeof window === "undefined") {
 			return;
 		}
-
 		const storedState = localStorage.getItem("lightboxSidepaneOpen");
 		if (storedState !== null) {
 			setLightboxShowSidepane(storedState === "true");
@@ -275,8 +281,14 @@ export const CustomLightBox = ({
 			);
 
 			const renderWebEmbedSlide = () => {
+				console.log("isIframeEnabled", isIframeEnabled);
+
 				// Only render iframe if this is the active slide and iframe is allowed
-				if (bookmark?.meta_data?.iframeAllowed && isActive) {
+				if (
+					bookmark?.meta_data?.iframeAllowed &&
+					isActive &&
+					isIframeEnabled()
+				) {
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
