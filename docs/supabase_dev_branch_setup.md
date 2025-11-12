@@ -103,6 +103,18 @@ psql "<DEV_BRANCH_CONNECTION_STRING>" -c "SELECT COUNT(*) FROM everything;"
 2. Enable "Database Webhooks"
 3. Retry `npx supabase db push`
 
+### Issue: PGRST106 - Schema not exposed via PostgREST
+
+**Error**: `The schema must be one of the following: public, graphql_public`
+
+**Solution**: Add the schema to exposed schemas:
+
+1. Go to Settings → API → Exposed schemas in Supabase Dashboard
+2. Add `pgmq_public` (or your custom schema) to the list
+3. PostgREST will automatically restart with the new configuration
+
+**Note**: The "Expose Queues via PostgREST" toggle alone may not be sufficient.
+
 ### Issue: Forgot to push seed data
 
 **Solution**: Run seed separately:
