@@ -57,26 +57,7 @@ export type listPropsTypes = {
 const SingleListItemComponent = (listProps: listPropsTypes) => {
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 	const [activeMenu, setActiveMenu] = useState<string | null>(null);
-	const buttonRef = useRef<HTMLDivElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				activeMenu === "share" &&
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setActiveMenu(null);
-				setOpenedMenuId(null);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [activeMenu]);
 
 	const {
 		item,
@@ -127,7 +108,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					</p>
 				)}
 			</div>
-			<div className="relative flex items-center space-x-3">
+			<div className="flex items-center space-x-3">
 				{showDropdown && (
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -153,73 +134,69 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										<OptionsIcon />
 									</div>
 								}
-								menuClassName={`${dropdownMenuClassName} z-10`}
+								menuClassName={`${activeMenu ? "w-auto" : ""} ${dropdownMenuClassName} z-10`}
 								menuOpenToggle={(value) => {
 									if (value) {
 										setOpenedMenuId(item?.id);
 										setActiveMenu(null);
-									} else if (activeMenu !== "share") {
+									} else {
 										setOpenedMenuId(null);
 										setActiveMenu(null);
 									}
 								}}
 							>
-								{[
-									{ label: "Share", value: "share" },
-									{ label: "Delete", value: "delete" },
-								]?.map((dropdownItem) => (
-									<AriaDropdownMenu
-										key={dropdownItem?.value}
-										onClick={async (e) => {
-											e.preventDefault();
-											e.stopPropagation();
+								{!activeMenu ? (
+									<>
+										{[
+											{ label: "Share", value: "share" },
+											{ label: "Delete", value: "delete" },
+										].map((dropdownItem) => (
+											<AriaDropdownMenu
+												key={dropdownItem?.value}
+												onClick={async (e) => {
+													e.preventDefault();
+													e.stopPropagation();
 
-											if (dropdownItem?.value === "share") {
-												setActiveMenu("share");
-												return;
-											}
+													if (dropdownItem?.value === "share") {
+														setActiveMenu("share");
+														return;
+													}
 
-											onCategoryOptionClick(
-												dropdownItem?.value,
-												item.current,
-												item.id,
-											);
-											setOpenedMenuId(null);
-										}}
-									>
-										<div className={dropdownMenuItemClassName}>
-											{dropdownItem?.label}
-										</div>
-									</AriaDropdownMenu>
-								))}
-
-								{/* 👇 NEW: Inline ShareContent within same dropdown */}
-								{activeMenu === "share" && (
-									<div className="px-2 py-1">
+													onCategoryOptionClick(
+														dropdownItem?.value,
+														item.current,
+														item.id,
+													);
+													setOpenedMenuId(null);
+												}}
+											>
+												<div className={dropdownMenuItemClassName}>
+													{dropdownItem?.label}
+												</div>
+											</AriaDropdownMenu>
+										))}
+									</>
+								) : (
+									<div className="rounded-lg bg-gray-50 p-1 shadow-lg">
 										<ShareContent />
 									</div>
 								)}
 							</AriaDropdown>
 						)}
-						{openedMenuId === item?.id && activeMenu === "share" && (
-							<div
-								ref={dropdownRef}
-								className="absolute top-full right-0 z-50 mt-1 rounded-lg bg-gray-50 p-1 shadow-lg"
-							>
-								<ShareContent />
-							</div>
-						)}
+
 						{item?.count !== undefined &&
 							!showSpinner &&
-							item?.current &&
-							activeMenu !== "share" && (
-								<p
-									className={`font-450 h-3 w-3 items-center justify-end text-right align-middle text-[11px] leading-[115%] tracking-[0.03em] text-gray-600 ${
-										showDropdown ? "block group-hover:hidden" : "block"
-									} ${openedMenuId === item?.id ? "hidden" : ""}`}
-								>
-									{item?.count}
-								</p>
+							activeMenu !== "share" &&
+							item?.current && (
+								<div className="flex w-full justify-end">
+									<p
+										className={`font-450 min-w-[16px] text-right text-[11px] leading-[115%] tracking-[0.03em] text-gray-600 ${
+											showDropdown ? "block group-hover:hidden" : "block"
+										} ${openedMenuId === item?.id ? "hidden" : ""}`}
+									>
+										{item?.count}
+									</p>
+								</div>
 							)}
 					</div>
 				)}

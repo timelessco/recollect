@@ -154,7 +154,7 @@ export const CustomLightBox = ({
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!isYouTubeVideo(bookmark?.url) &&
-					!bookmark?.meta_data?.iframeAllowed && {
+					(!bookmark?.meta_data?.iframeAllowed || !isIframeEnabled()) && {
 						// using || instead of ?? to include 0
 						width: bookmark?.meta_data?.width || 1_200,
 						height: bookmark?.meta_data?.height || 1_200,
@@ -281,8 +281,6 @@ export const CustomLightBox = ({
 			);
 
 			const renderWebEmbedSlide = () => {
-				console.log("isIframeEnabled", isIframeEnabled);
-
 				// Only render iframe if this is the active slide and iframe is allowed
 				if (
 					bookmark?.meta_data?.iframeAllowed &&
