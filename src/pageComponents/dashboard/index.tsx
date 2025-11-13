@@ -87,7 +87,6 @@ import Settings from "../settings";
 
 import AddModalContent from "./modals/addModalContent";
 import SettingsModal from "./modals/settingsModal";
-import ShareCategoryModal from "./modals/shareCategoryModal";
 import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
 import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
@@ -145,10 +144,6 @@ const Dashboard = () => {
 		(state) => state.toggleIsSortByLoading,
 	);
 
-	const toggleShareCategoryModal = useModalStore(
-		(state) => state.toggleShareCategoryModal,
-	);
-
 	const showDeleteBookmarkWarningModal = useModalStore(
 		(state) => state.showDeleteBookmarkWarningModal,
 	);
@@ -165,9 +160,6 @@ const Dashboard = () => {
 		(state) => state.toggleShowClearTrashWarningModal,
 	);
 
-	const setShareCategoryId = useMiscellaneousStore(
-		(state) => state.setShareCategoryId,
-	);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
@@ -1186,8 +1178,6 @@ const Dashboard = () => {
 							await onDeleteCollection(current, categoryId);
 							break;
 						case "share":
-							toggleShareCategoryModal();
-							setShareCategoryId(categoryId);
 							// code block
 							break;
 						default:
@@ -1237,7 +1227,6 @@ const Dashboard = () => {
 				uploadFileFromAddDropdown={onDrop}
 				userId={session?.user?.id ?? ""}
 			/>
-			<ShareCategoryModal />
 			<SettingsModal />
 			<WarningActionModal
 				buttonText="Delete"

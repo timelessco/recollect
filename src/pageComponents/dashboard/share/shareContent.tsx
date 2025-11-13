@@ -21,7 +21,6 @@ import LinkIcon from "../../../icons/linkIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
-	useModalStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -180,10 +179,6 @@ const ShareContent = (props: ShareContentProps) => {
 	const [linkCopied, setLinkCopied] = useState(false);
 	const [inviteUserEditAccess, setInviteUserEditAccess] = useState(false);
 
-	const showShareCategoryModal = useModalStore(
-		(state) => state.showShareCategoryModal,
-	);
-
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: currentCategoryId } = useGetCurrentCategoryId();
@@ -220,12 +215,10 @@ const ShareContent = (props: ShareContentProps) => {
 
 	// this resets all the state
 	useEffect(() => {
-		if (!showShareCategoryModal) {
-			setInviteUserEditAccess(false);
-			setLinkCopied(false);
-			reset({ email: "" });
-		}
-	}, [reset, showShareCategoryModal]);
+		setInviteUserEditAccess(false);
+		setLinkCopied(false);
+		reset({ email: "" });
+	}, [reset]);
 
 	const onSubmit: SubmitHandler<EmailInput> = async (data) => {
 		const emailList = data?.email?.split(",");

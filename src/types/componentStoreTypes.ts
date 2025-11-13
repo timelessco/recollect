@@ -6,9 +6,7 @@ export type ModalStoreState = {
 	showClearTrashWarningModal: boolean;
 	showDeleteBookmarkWarningModal: boolean;
 	showSettingsModal: boolean;
-	showShareCategoryModal: boolean;
 	showVideoModal: boolean;
-	toggleShareCategoryModal: () => void;
 	toggleShowClearTrashWarningModal: () => void;
 	toggleShowDeleteBookmarkWarningModal: () => void;
 	toggleShowSettingsModal: () => void;

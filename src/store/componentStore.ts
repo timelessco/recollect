@@ -10,11 +10,6 @@ import {
 } from "../types/componentStoreTypes";
 
 export const useModalStore = create<ModalStoreState>((set) => ({
-	showShareCategoryModal: false,
-	toggleShareCategoryModal: () =>
-		set((state) => ({
-			showShareCategoryModal: !state.showShareCategoryModal,
-		})),
 	showDeleteBookmarkWarningModal: false,
 	toggleShowDeleteBookmarkWarningModal: () =>
 		set((state) => ({
