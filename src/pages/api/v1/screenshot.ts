@@ -68,7 +68,10 @@ export default async function handler(
 			try {
 				const { data } = await axios.post(
 					process.env.PDF_URL_SCREENSHOT_API as string,
-					{ url },
+					{
+						url,
+						userId: user_id,
+					},
 					{
 						headers: {
 							Authorization: `Bearer ${process.env.PDF_SECRET_KEY}`,
