@@ -59,7 +59,7 @@
 		"lint:md": "markdownlint-cli2 --rules sentences-per-line",
 		"lint:prettier": "prettier --check --cache --cache-location=.prettiercache --ignore-unknown .",
 		"lint:spelling": "cspell --gitignore --cache --no-progress --no-summary --show-context --dot .",
-		"lint:types": "tsc --noEmit",
+		"lint:types": "pnpm next:typegen && tsc --noEmit",
 		"next:typegen": "pnpm next typegen",
 		"prepare": "is-ci || husky",
 		"release": "release-it --ci",

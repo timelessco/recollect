@@ -41,8 +41,8 @@
 	"exclude": ["node_modules", ".next", "cypress", "public/sw.js"],
 	"include": [
 		"./**/*",
-		"next-env.d.ts",
 		".release-it.ts",
+		"next-env.d.ts",
 		".next/types/**/*.ts",
 		".next/dev/types/**/*.ts"
 	]
