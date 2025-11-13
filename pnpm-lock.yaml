@@ -50,11 +50,10 @@ importers:
         version: 5.90.8(react@19.2.0)
       '@tanstack/react-virtual':
         specifier: 3.13.12
-        version: 3.13.12(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 3.13.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@types/papaparse':
         specifier: 5.5.0
         version: 5.5.0
-        version: 3.13.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       allotment:
         specifier: 1.20.4
         version: 1.20.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -113,13 +112,11 @@ importers:
         specifier: 3.3.2
         version: 3.3.2
       open-graph-scraper:
-        specifier: 6.5.1
-        version: 6.5.1
+        specifier: 6.10.0
+        version: 6.10.0
       papaparse:
         specifier: 5.5.3
         version: 5.5.3
-        specifier: 6.10.0
-        version: 6.10.0
       pdfjs-dist:
         specifier: 3.4.120
         version: 3.4.120
