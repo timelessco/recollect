@@ -22,11 +22,14 @@ export const ImportBookmarks = () => {
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	//  Dynamically import papaparse
+
 	const parseCSV = async (file: File) => {
 		console.log("importing papaparse");
 
 		const Papa = await import("papaparse");
-		return new Promise<any>((resolve, reject) => {
+
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return await new Promise<any>((resolve, reject) => {
 			Papa.parse(file, {
 				header: true,
 				skipEmptyLines: true,
@@ -58,8 +61,8 @@ export const ImportBookmarks = () => {
 					: "No valid bookmarks found in CSV.",
 			);
 			setImportLimit(Math.min(50, records.length));
-		} catch (err) {
-			console.error(err);
+		} catch (error) {
+			console.error(error);
 			setStatusMessage("Error parsing CSV file.");
 		}
 	};
@@ -67,6 +70,7 @@ export const ImportBookmarks = () => {
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const chosenFile = event.target.files?.[0];
 		if (chosenFile) {
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
 			handleFile(chosenFile);
 		}
 	};
@@ -76,6 +80,7 @@ export const ImportBookmarks = () => {
 		setDragActive(false);
 		const droppedFile = event.dataTransfer.files?.[0];
 		if (droppedFile) {
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
 			handleFile(droppedFile);
 		}
 	};
