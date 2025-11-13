@@ -87,10 +87,14 @@ export default async function handler(
 	}
 
 	const { publicUrl, id, mediaType } = request.body;
+	console.log("🚀 ~ handler ~ publicUrl:", publicUrl);
+	console.log("🚀 ~ handler ~ mediaType:", mediaType);
+	console.log("🚀 ~ handler ~ id:", id);
 
 	const supabase = apiSupabaseClient(request, response);
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	console.log("🚀 ~ handler ~ userId:", userId);
 
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
@@ -115,6 +119,7 @@ export default async function handler(
 		supabase,
 		userId,
 	);
+	console.log("🚀 ~ handler ~ metaData:", metaData);
 
 	// Fetch existing metadata
 	const { data: existing, error: fetchError } = await supabase
