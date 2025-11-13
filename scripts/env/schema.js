@@ -11,7 +11,6 @@ export const serverSchema = z.object({
 	SUPABASE_SERVICE_KEY: z.string(),
 	UMAMI_SRC: z.string().optional(),
 	UMAMI_ID: z.string().optional(),
-	SENTRY_DSN: z.string().optional(),
 	IMAGE_CAPTION_URL: z.string().optional(),
 	RESEND_KEY: z.string().optional(),
 	DEV_SUPABASE_SERVICE_KEY: z.string().optional(),
@@ -25,7 +24,6 @@ export const serverSchema = z.object({
  */
 export const serverEnvironment = {
 	NODE_ENV: process.env.NODE_ENV,
-	SENTRY_DSN: process.env.SENTRY_DSN,
 	SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
 	UMAMI_SRC: process.env.UMAMI_SRC,
 	UMAMI_ID: process.env.UMAMI_ID,
@@ -42,8 +40,8 @@ export const serverEnvironment = {
  */
 export const clientSchema = z.object({
 	// Needed for sitemap generation
-	NEXT_PUBLIC_SITE_URL: z.string().url()?.optional(),
-	NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+	NEXT_PUBLIC_SITE_URL: z.url()?.optional(),
+	NEXT_PUBLIC_SUPABASE_URL: z.url(),
 	NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
 	NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY: z.string().optional(),
 	NEXT_PUBLIC_DEV_SUPABASE_URL: z.string().optional(),
@@ -51,6 +49,7 @@ export const clientSchema = z.object({
 	NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID: z.string(),
 	NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY: z.string(),
 	NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL: z.string(),
+	NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
 });
 
 /**
@@ -75,4 +74,5 @@ export const clientEnvironment = {
 		process.env.NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY,
 	NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL:
 		process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL,
+	NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
 };

@@ -33,7 +33,7 @@ node_modules
 ############################
 
 .next/*
-!.next/types/
+next-env.d.ts
 
 # Next PWA
 **/public/precache.*.*.js

@@ -12,7 +12,7 @@ import { type ChildrenTypes } from "../types/componentTypes";
 type RadioGroupProps = {
 	disabled?: boolean;
 	initialRadioRef?:
-		| RefObject<HTMLInputElement>
+		| RefObject<HTMLInputElement | null>
 		| ((instance: HTMLInputElement | null) => void)
 		| null
 		| undefined;

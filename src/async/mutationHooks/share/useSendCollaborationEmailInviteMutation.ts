@@ -12,15 +12,17 @@ export default function useSendCollaborationEmailInviteMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const sendCollaborationEmailInviteMutation = useMutation(
-		sendCollaborationEmailInvite,
-		{
-			onSuccess: () => {
-				// Invalidate and refetch
-				void queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-				void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-			},
+	const sendCollaborationEmailInviteMutation = useMutation({
+		mutationFn: sendCollaborationEmailInvite,
+		onSuccess: () => {
+			// Invalidate and refetch
+			void queryClient.invalidateQueries({
+				queryKey: [SHARED_CATEGORIES_TABLE_NAME],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 		},
-	);
+	});
 	return { sendCollaborationEmailInviteMutation };
 }

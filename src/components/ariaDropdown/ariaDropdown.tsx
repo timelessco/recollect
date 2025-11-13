@@ -6,7 +6,7 @@ import { type ChildrenTypes } from "../../types/componentTypes";
 type AriaDropDownPropertyTypes = {
 	children: ChildrenTypes;
 	// the element you want to focus when the menu opens
-	initialFocusRef?: RefObject<HTMLElement> | undefined;
+	initialFocusRef?: RefObject<HTMLElement | null> | undefined;
 	isOpen?: boolean;
 	menuButton: ChildrenTypes;
 	menuButtonActiveClassName?: string;
@@ -47,6 +47,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 			</MenuButton>
 			<Menu
 				className={`${menuClassName ?? ""} leading-[20px] focus-visible:outline-hidden`}
+				// @ts-expect-error - TODO: fix this
 				initialFocusRef={props.initialFocusRef}
 				state={menu}
 			>

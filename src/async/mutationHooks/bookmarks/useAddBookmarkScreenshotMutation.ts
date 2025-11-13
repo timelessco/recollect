@@ -20,9 +20,10 @@ export default function useAddBookmarkScreenshotMutation() {
 	const { sortBy } = useGetSortBy();
 	const { removeLoadingBookmarkId } = useLoadersStore();
 
-	const addBookmarkScreenshotMutation = useMutation(addBookmarkScreenshot, {
+	const addBookmarkScreenshotMutation = useMutation({
+		mutationFn: addBookmarkScreenshot,
 		onError: (error) => {
-			errorToast("Screenshot error: " + error);
+			errorToast(`Screenshot error: ${error.message}`);
 		},
 		onSettled: (apiResponse) => {
 			const response = apiResponse as { data: { data: SingleListData[] } };
@@ -30,12 +31,9 @@ export default function useAddBookmarkScreenshotMutation() {
 				removeLoadingBookmarkId(response?.data?.data[0]?.id);
 			}
 
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 		},
 	});
 

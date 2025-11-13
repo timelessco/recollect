@@ -16,13 +16,11 @@ export default function useFetchCategories(shouldFetch = true) {
 	} = useQuery<{
 		data: CategoriesData[] | null;
 		error: Error;
-	}>(
-		[CATEGORIES_KEY, session?.user?.id],
-		async () => await fetchCategoriesData(),
-		{
-			enabled: shouldFetch,
-		},
-	);
+	}>({
+		queryKey: [CATEGORIES_KEY, session?.user?.id],
+		queryFn: async () => await fetchCategoriesData(),
+		enabled: shouldFetch,
+	});
 
 	return {
 		allCategories,
