@@ -113,8 +113,6 @@ const AddBookmarkDropdown = ({
 							ref={(event) => {
 								ref(event);
 								if (!isNull(inputRef)) {
-									// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-									// @ts-expect-error
 									inputRef.current = event;
 								}
 							}}

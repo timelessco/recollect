@@ -2,7 +2,7 @@ import { type KnipConfig } from "knip";
 
 const config: KnipConfig = {
 	project: ["src/**/*.{ts,tsx}!"],
-	entry: ["src/pages/**/*.{js,jsx,ts,tsx}!", "env/**/*", "release-it/**/*"],
+	entry: ["src/pages/**/*.{js,jsx,ts,tsx}!"],
 	ignoreDependencies: [
 		// Used by Ariakit React
 		"@ariakit/react-core",

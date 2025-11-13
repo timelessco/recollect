@@ -3,7 +3,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -39,7 +39,7 @@ export default async function handler(
 	const supabase = createServiceClient();
 
 	if (request?.query?.token) {
-		const tokenData: InviteTokenData = jwt_decode(
+		const tokenData: InviteTokenData = jwtDecode(
 			request?.query?.token as string,
 		);
 

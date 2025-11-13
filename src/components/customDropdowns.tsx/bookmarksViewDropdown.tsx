@@ -289,6 +289,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			</MenuButton>
 			<Menu
 				className="shadow-custom-1 z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 ring-1 ring-black/5"
+				// @ts-expect-error - TODO: fix this
 				initialFocusRef={radio0ref}
 				state={menu}
 			>
