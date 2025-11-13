@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 
 import "yet-another-react-lightbox/styles.css";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
@@ -27,9 +27,6 @@ const Preview = () => {
 		error: Error | null;
 		isLoading: boolean;
 	};
-	if ((!isLoading && !bookmark?.data?.[0]) || error) {
-		void router.push(`/${ALL_BOOKMARKS_URL}`);
-	}
 
 	const [isOpen, setIsOpen] = useState(true);
 
@@ -38,7 +35,15 @@ const Preview = () => {
 		void router.push(`/${ALL_BOOKMARKS_URL}`);
 	};
 
-	if (isLoading) {
+	// Handle redirects in useEffect to prevent SSR issues
+	useEffect(() => {
+		if (router.isReady && ((!isLoading && !bookmark?.data?.[0]) || error)) {
+			void router.push(`/${ALL_BOOKMARKS_URL}`);
+		}
+	}, [router, isLoading, bookmark, error]);
+
+	// Wait for router to be ready before rendering
+	if (!router.isReady || isLoading) {
 		return (
 			<div className="flex h-screen items-center justify-center">
 				<Spinner

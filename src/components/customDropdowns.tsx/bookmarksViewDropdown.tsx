@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { ViewListIcon } from "@heroicons/react/solid";
+import { Bars4Icon } from "@heroicons/react/20/solid";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import { debounce } from "lodash";
 import find from "lodash/find";
@@ -91,7 +91,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		{
 			label: "Timeline",
 			value: viewValues.timeline,
-			icon: <ViewListIcon className="h-4 w-4" />,
+			icon: <Bars4Icon className="h-4 w-4" />,
 		},
 	];
 	const menu = useMenuState({ gutter: 8 });
@@ -289,6 +289,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			</MenuButton>
 			<Menu
 				className="shadow-custom-1 z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 ring-1 ring-black/5"
+				// @ts-expect-error - TODO: fix this
 				initialFocusRef={radio0ref}
 				state={menu}
 			>

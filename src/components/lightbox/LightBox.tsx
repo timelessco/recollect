@@ -534,11 +534,9 @@ export const CustomLightBox = ({
 							const invalidateQueries = async () => {
 								try {
 									if (categoryId) {
-										await queryClient.invalidateQueries([
-											BOOKMARKS_KEY,
-											session?.user?.id,
-											categoryId,
-										]);
+										await queryClient.invalidateQueries({
+											queryKey: [BOOKMARKS_KEY, session?.user?.id, categoryId],
+										});
 									}
 
 									if (searchText) {
@@ -550,19 +548,20 @@ export const CustomLightBox = ({
 											error: PostgrestError;
 										};
 
-										await queryClient.invalidateQueries([
-											BOOKMARKS_KEY,
-											session?.user?.id,
-											searchSlugKey(categoryData) ?? CATEGORY_ID,
-											searchText,
-										]);
+										await queryClient.invalidateQueries({
+											queryKey: [
+												BOOKMARKS_KEY,
+												session?.user?.id,
+												searchSlugKey(categoryData) ?? CATEGORY_ID,
+												searchText,
+											],
+										});
 									}
 
 									await Promise.all([
-										queryClient.invalidateQueries([
-											BOOKMARKS_COUNT_KEY,
-											session?.user?.id,
-										]),
+										queryClient.invalidateQueries({
+											queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+										}),
 									]);
 
 									lastInvalidatedIndex.current = index;

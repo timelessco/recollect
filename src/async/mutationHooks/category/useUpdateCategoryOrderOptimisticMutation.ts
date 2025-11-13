@@ -13,11 +13,16 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const updateCategoryOrderMutation = useMutation(updateCategoryOrder, {
+	const updateCategoryOrderMutation = useMutation({
+		mutationFn: updateCategoryOrder,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([USER_PROFILE, session?.user?.id]);
-			await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
+			await queryClient.cancelQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
+			await queryClient.cancelQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -33,6 +38,7 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
 				(old: { data: ProfilesTableTypes[] } | undefined) =>
 					({
 						...old,
+
 						data: old?.data?.map((item) => {
 							if (item.id === session?.user?.id) {
 								return {

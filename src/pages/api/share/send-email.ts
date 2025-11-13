@@ -7,8 +7,8 @@ import { Resend } from "resend";
 import { z } from "zod";
 
 const EmailRequestSchema = z.object({
-	emailList: z.string().email(),
-	url: z.string().url(),
+	emailList: z.email(),
+	url: z.url(),
 	display_name: z.string(),
 	category_name: z.string(),
 });
@@ -52,19 +52,19 @@ export default async function handler(
 									<div style="margin-bottom: 14px">
 									<img src="cid:logo" width="16" height="20" />
 									</div>
-	
+
 									<div style="background: white; border-radius: 16px; padding: 48px 40px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); text-align: center; max-width: 600px; width: 100%; margin: 0 auto 14px auto;">
 											<h1 style="font-size: 24px; font-weight: 600; color: #1f2937; margin-bottom: 16px; line-height: 1.3;">
 													You have been invited to a collection
 											</h1>
 											<p style="color: #6b7280; font-size: 16px; line-height: 1.5; margin-bottom: 32px;">
-													<span style="color: #374151; font-weight: 500;">${data.display_name}</span> has invited you to join the 
+													<span style="color: #374151; font-weight: 500;">${data.display_name}</span> has invited you to join the
 													<span style="color: #1f2937; font-weight: 600;">${data.category_name}</span> collection
 											</p>
 											<a href="${data.url}" style="padding:7px 10px; background:#000000; color:#ffffff; border-radius:11px; text-decoration:none; width:118px; height:36px; margin:0 auto;">Accept Invite</a>
 
 									</div>
-									
+
 									<div style="color: #9ca3af; font-size: 14px; font-weight: 500;">
 											recollect.so
 									</div>

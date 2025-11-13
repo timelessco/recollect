@@ -4,4 +4,4 @@
 /public
 /.next
 /next-env.d.ts
-/release-it/templates/**/*.hbs
+**/*.hbs

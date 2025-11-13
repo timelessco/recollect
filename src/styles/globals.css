@@ -544,9 +544,6 @@
 	/* Special colors */
 	--color-modal-bg: #00000045;
 
-	/* Drop Shadows */
-	--shadow-drop-custom-1: 0px 0px 2.5px rgb(0 0 0 / 11%);
-
 	/* Box Shadows */
 	--shadow-custom-1:
 		0px 10px 15px -3px rgb(0 0 0 / 10%), 0px 4px 6px -4px rgb(0 0 0 / 10%);

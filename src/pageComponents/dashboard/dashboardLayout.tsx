@@ -26,7 +26,6 @@ import {
 import "allotment/dist/style.css";
 
 import isEmpty from "lodash/isEmpty";
-// import component 👇
 import Drawer from "react-modern-drawer";
 
 import Input from "../../components/atoms/input";

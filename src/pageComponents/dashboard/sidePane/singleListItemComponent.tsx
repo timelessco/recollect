@@ -220,11 +220,13 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
 	if (isLink) {
 		return (
-			<Link href={item?.href} legacyBehavior passHref>
-				{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-				<a className={contentWrapperClassNames} draggable={false}>
-					{renderContent()}
-				</a>
+			<Link
+				href={item?.href}
+				passHref
+				className={contentWrapperClassNames}
+				draggable={false}
+			>
+				{renderContent()}
 			</Link>
 		);
 	}

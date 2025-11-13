@@ -273,7 +273,7 @@ export type Database = {
 		Functions: {
 			search_bookmarks: {
 				Args: { search_text: string };
-				Returns: {
+				Returns: Array<{
 					category_id: number;
 					description: string;
 					id: number;
@@ -287,20 +287,20 @@ export type Database = {
 					type: string;
 					url: string;
 					user_id: string;
-				}[];
+				}>;
 			};
 			search_bookmarks_debug: {
 				Args: { search_text: string };
-				Returns: {
+				Returns: Array<{
 					caption: string;
 					has_meta: boolean;
 					id: number;
 					title: string;
-				}[];
+				}>;
 			};
 			search_bookmarks_debugging: {
 				Args: { search_text: string };
-				Returns: {
+				Returns: Array<{
 					category_id: number;
 					description: string;
 					id: number;
@@ -314,7 +314,7 @@ export type Database = {
 					type: string;
 					url: string;
 					user_id: string;
-				}[];
+				}>;
 			};
 		};
 		Enums: {

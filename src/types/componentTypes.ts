@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type JSX, type ReactNode } from "react";
 import { type FileWithPath } from "react-dropzone";
 
 import { type CategoriesData } from "./apiTypes";

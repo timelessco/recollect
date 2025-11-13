@@ -12,15 +12,17 @@ export default function useUpdateSharedCategoriesUserAccessMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 
-	const updateSharedCategoriesUserAccessMutation = useMutation(
-		updateSharedCategoriesUserAccess,
-		{
-			onSuccess: () => {
-				// Invalidate and refetch
-				void queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-				void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-			},
+	const updateSharedCategoriesUserAccessMutation = useMutation({
+		mutationFn: updateSharedCategoriesUserAccess,
+		onSuccess: () => {
+			// Invalidate and refetch
+			void queryClient.invalidateQueries({
+				queryKey: [SHARED_CATEGORIES_TABLE_NAME],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 		},
-	);
+	});
 	return { updateSharedCategoriesUserAccessMutation };
 }

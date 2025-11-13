@@ -139,7 +139,7 @@ const DeleteAccout = () => {
 							<TrashIconRed />
 						</figure>
 						<p className="flex w-full justify-center max-sm:w-[100px]">
-							{deleteUserMutation?.isLoading ? (
+							{deleteUserMutation.isPending ? (
 								<Spinner
 									className="h-3 w-3 animate-spin"
 									style={{ color: "red" }}

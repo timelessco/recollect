@@ -33,7 +33,7 @@ export default defineConfig(
 		"public/",
 		".next/",
 		"next-env.d.ts",
-		"release-it/",
+		"scripts/release-it/",
 	]),
 	{
 		linterOptions: {

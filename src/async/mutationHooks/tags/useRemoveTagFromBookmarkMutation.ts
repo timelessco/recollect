@@ -18,15 +18,13 @@ export default function useRemoveTagFromBookmarkMutation() {
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
 
-	const removeTagFromBookmarkMutation = useMutation(removeTagFromBookmark, {
+	const removeTagFromBookmarkMutation = useMutation({
+		mutationFn: removeTagFromBookmark,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			await queryClient.cancelQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -101,12 +99,9 @@ export default function useRemoveTagFromBookmarkMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 		},
 	});
 

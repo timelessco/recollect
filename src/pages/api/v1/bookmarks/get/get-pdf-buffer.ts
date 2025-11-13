@@ -19,7 +19,7 @@ export default async function handler(
 
 	const parseResult = querySchema.safeParse(request.query);
 	if (!parseResult.success) {
-		response.status(400).json({ error: parseResult.error.errors });
+		response.status(400).json({ error: parseResult.error.issues });
 		return;
 	}
 

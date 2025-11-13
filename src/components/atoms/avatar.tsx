@@ -16,6 +16,4 @@ const Avatar = (props: AvatarProps) => {
 	);
 };
 
-Avatar.propTypes = {};
-
 export default Avatar;
