@@ -111,6 +111,9 @@ importers:
       open-graph-scraper:
         specifier: 6.10.0
         version: 6.10.0
+      papaparse:
+        specifier: 5.5.3
+        version: 5.5.3
       pdfjs-dist:
         specifier: 3.4.120
         version: 3.4.120
@@ -229,6 +232,9 @@ importers:
       '@types/node':
         specifier: 24.10.0
         version: 24.10.0
+      '@types/papaparse':
+        specifier: 5.5.0
+        version: 5.5.0
       '@types/react':
         specifier: 19.2.4
         version: 19.2.4
@@ -3626,6 +3632,9 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
+
+  '@types/papaparse@5.5.0':
+    resolution: {integrity: sha512-GVs5iMQmUr54BAZYYkByv8zPofFxmyxUpISPb2oh8sayR3+1zbxasrOvoKiHJ/nnoq/uULuPsu1Lze1EkagVFg==}
 
   '@types/parse-path@7.1.0':
     resolution: {integrity: sha512-EULJ8LApcVEPbrfND0cRQqutIOdiIgJ1Mgrhpy755r14xMohPTEpkV/k28SJvuOs9bHRFW8x+KeDAEPiGQPB9Q==}
@@ -7563,6 +7572,9 @@ packages:
     resolution: {integrity: sha512-A3SkUv6QWUrjFpKjcckgUJIrBMoPPlsyQG74qNBYwCo2fjPQA9Ydph/KKvBJAUdSEXiSPT0kY/7w2xyMouSsNQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
+
+  papaparse@5.5.3:
+    resolution: {integrity: sha512-5QvjGxYVjxO59MGU2lHVYpRWBBtKHnlIAcSe1uNFCkkptUh63NFRj0FJQm7nR67puEruUci/ZkjmEFrjCAyP4A==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -11744,12 +11756,12 @@ snapshots:
   '@react-aria/calendar@3.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@babel/runtime': 7.28.4
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.0
       '@react-aria/i18n': 3.12.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-aria/interactions': 3.25.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-aria/live-announcer': 3.4.4
       '@react-aria/utils': 3.31.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@react-stately/calendar': 3.0.0(react@19.2.0)
+      '@react-stately/calendar': 3.9.0(react@19.2.0)
       '@react-types/button': 3.14.1(react@19.2.0)
       '@react-types/calendar': 3.8.0(react@19.2.0)
       '@react-types/shared': 3.32.1(react@19.2.0)
@@ -11829,7 +11841,7 @@ snapshots:
   '@react-aria/datepicker@3.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@babel/runtime': 7.28.4
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.0
       '@internationalized/message': 3.1.8
       '@internationalized/number': 3.6.5
       '@react-aria/focus': 3.21.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -11838,7 +11850,7 @@ snapshots:
       '@react-aria/label': 3.7.22(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-aria/spinbutton': 3.6.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-aria/utils': 3.31.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@react-stately/datepicker': 3.0.0(react@19.2.0)
+      '@react-stately/datepicker': 3.15.2(react@19.2.0)
       '@react-types/button': 3.14.1(react@19.2.0)
       '@react-types/calendar': 3.8.0(react@19.2.0)
       '@react-types/datepicker': 3.13.2(react@19.2.0)
@@ -12348,7 +12360,7 @@ snapshots:
   '@react-stately/calendar@3.0.0(react@19.2.0)':
     dependencies:
       '@babel/runtime': 7.28.4
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.0
       '@react-stately/utils': 3.10.8(react@19.2.0)
       '@react-types/calendar': 3.8.0(react@19.2.0)
       '@react-types/datepicker': 3.13.2(react@19.2.0)
@@ -12413,7 +12425,7 @@ snapshots:
   '@react-stately/datepicker@3.0.0(react@19.2.0)':
     dependencies:
       '@babel/runtime': 7.28.4
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.0
       '@internationalized/message': 3.1.8
       '@react-stately/overlays': 3.6.20(react@19.2.0)
       '@react-stately/utils': 3.10.8(react@19.2.0)
@@ -13644,6 +13656,10 @@ snapshots:
       undici-types: 7.16.0
 
   '@types/normalize-package-data@2.4.4': {}
+
+  '@types/papaparse@5.5.0':
+    dependencies:
+      '@types/node': 24.10.0
 
   '@types/parse-path@7.1.0':
     dependencies:
@@ -18195,6 +18211,8 @@ snapshots:
       validate-npm-package-license: 3.0.4
       yargs: 18.0.0
 
+  papaparse@5.5.3: {}
+
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -18787,7 +18805,7 @@ snapshots:
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       module-details-from-path: 1.0.4
-      resolve: 1.22.8
+      resolve: 1.22.11
     transitivePeerDependencies:
       - supports-color
 
@@ -19415,7 +19433,7 @@ snapshots:
 
   substyle@9.4.1(react@19.2.0):
     dependencies:
-      '@babel/runtime': 7.4.5
+      '@babel/runtime': 7.28.4
       invariant: 2.2.4
       react: 19.2.0
 
