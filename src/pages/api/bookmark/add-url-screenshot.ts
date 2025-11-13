@@ -61,7 +61,7 @@ export default async function handler(
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	let screenShotResponse;
 	try {
-		console.error(
+		console.log(
 			"*************************Screenshot Loading*****************************",
 		);
 		screenShotResponse = await axios.get(
