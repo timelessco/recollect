@@ -90,6 +90,7 @@ import SettingsModal from "./modals/settingsModal";
 import ShareCategoryModal from "./modals/shareCategoryModal";
 import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
+import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 // import CardSection from "./cardSection";
 const CardSection = dynamic(async () => await import("./cardSection"), {
@@ -685,6 +686,10 @@ const Dashboard = () => {
 											style={{ overflow: "unset" }}
 										>
 											<CardSection
+												bookmarksCountData={getBookmarkCountForCurrentPage(
+													bookmarksCountData?.data ?? undefined,
+													CATEGORY_ID as unknown as string | number | null,
+												)}
 												deleteBookmarkId={deleteBookmarkId}
 												isBookmarkLoading={
 													addBookmarkMinDataOptimisticMutation?.isPending

@@ -171,7 +171,11 @@ type EmailInput = {
 	email: string;
 };
 
-const ShareContent = () => {
+type ShareContentProps = {
+	categoryId?: string | number | null;
+};
+
+const ShareContent = (props: ShareContentProps) => {
 	const [publicUrl, setPublicUrl] = useState("");
 	const [linkCopied, setLinkCopied] = useState(false);
 	const [inviteUserEditAccess, setInviteUserEditAccess] = useState(false);
@@ -182,13 +186,14 @@ const ShareContent = () => {
 
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { category_id: currentCategoryId } = useGetCurrentCategoryId();
 
 	const shareCategoryId = useMiscellaneousStore(
 		(state) => state.shareCategoryId,
 	);
-	// categoryId will only be there for nav bar share and shareCategoryId will be there for side pane share
-	const dynamicCategoryId = shareCategoryId ?? categoryId;
+	// Priority: props.categoryId > shareCategoryId > currentCategoryId
+	const dynamicCategoryId =
+		props.categoryId ?? shareCategoryId ?? currentCategoryId;
 
 	const { updateCategoryOptimisticMutation } =
 		useUpdateCategoryOptimisticMutation();

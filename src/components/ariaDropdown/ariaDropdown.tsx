@@ -50,6 +50,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 				// @ts-expect-error - TODO: fix this
 				initialFocusRef={props.initialFocusRef}
 				state={menu}
+				portal
 			>
 				{children}
 			</Menu>

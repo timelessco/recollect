@@ -428,3 +428,55 @@ export const getColumnCount = (isDesktop: boolean, colCount?: number) => {
 			return 1;
 	}
 };
+
+export const getBookmarkCountForCurrentPage = (
+	bookmarkCounts:
+		| {
+				categoryCount?: Array<{ category_id: number; count: number }>;
+				allBookmarks?: number;
+				trash?: number;
+				uncategorized?: number;
+				images?: number;
+				videos?: number;
+				documents?: number;
+				tweets?: number;
+				links?: number;
+		  }
+		| undefined,
+	categoryId: string | number | null,
+): number => {
+	if (!bookmarkCounts) {
+		return 0;
+	}
+
+	// Handle numeric category IDs
+	if (typeof categoryId === "number") {
+		const category = find(
+			bookmarkCounts.categoryCount,
+			(item) => item?.category_id === categoryId,
+		);
+		return category?.count ?? 0;
+	}
+
+	// Handle special category strings
+	switch (categoryId) {
+		case null:
+			return bookmarkCounts.allBookmarks ?? 0;
+		case TRASH_URL:
+			return bookmarkCounts.trash ?? 0;
+		case UNCATEGORIZED_URL:
+			return bookmarkCounts.uncategorized ?? 0;
+		case IMAGES_URL as unknown as string:
+			return bookmarkCounts.images ?? 0;
+		case VIDEOS_URL as unknown as string:
+			return bookmarkCounts.videos ?? 0;
+		case DOCUMENTS_URL as unknown as string:
+			return bookmarkCounts.documents ?? 0;
+		case TWEETS_URL as unknown as string:
+			return bookmarkCounts.tweets ?? 0;
+		case LINKS_URL as unknown as string:
+			return bookmarkCounts.links ?? 0;
+		default:
+			return 0;
+	}
+};

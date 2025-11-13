@@ -177,7 +177,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 									</>
 								) : (
 									<div className="rounded-lg bg-gray-50 p-1 shadow-lg">
-										<ShareContent />
+										<ShareContent categoryId={item?.id} />
 									</div>
 								)}
 							</AriaDropdown>
