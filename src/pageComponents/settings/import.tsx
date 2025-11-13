@@ -104,12 +104,12 @@ export const ImportBookmarks = () => {
 				// Apply import limit
 				records = records.slice(0, importLimit);
 
-				const bookmarks = records.map((b) => ({
-					title: b.title || null,
-					description: b.excerpt || null,
-					url: b.url || null,
-					ogImage: b.cover || null,
-					folder: b.folder || null,
+				const bookmarks = records.map((bookmark) => ({
+					title: bookmark.title || null,
+					description: bookmark.excerpt || null,
+					url: bookmark.url,
+					ogImage: bookmark.cover || null,
+					category_name: bookmark.folder || null,
 				}));
 
 				try {

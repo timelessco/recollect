@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { type PostgrestResponse } from "@supabase/supabase-js";
 import { isEmpty } from "lodash";
 import slugify from "slugify";
+import { z } from "zod";
 
 import { sanitizeBookmarks } from "../../../../async/supabaseCrudHelpers";
 import { type CategoriesData } from "../../../../types/apiTypes";
@@ -12,6 +13,20 @@ import {
 	PROFILES,
 } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
+
+import user from "@/icons/toastIcons/user";
+
+const bookmarkSchema = z.object({
+	title: z.string().nullable(),
+	description: z.string().nullable(),
+	url: z.string().url(),
+	ogImage: z.string().nullable(),
+	category_name: z.string().nullable(),
+});
+
+const requestBodySchema = z.object({
+	bookmarks: z.array(bookmarkSchema).min(1, "No bookmarks found in request"),
+});
 
 export default async function handler(
 	request: NextApiRequest,
@@ -30,21 +45,30 @@ export default async function handler(
 	}
 
 	try {
-		const { bookmarks } = request.body;
+		const parseResult = requestBodySchema.safeParse(request.body);
+
+		if (!parseResult.success) {
+			console.warn("Invalid request body", parseResult.error);
+			response.status(400).json({
+				error: "Invalid request body",
+			});
+			return;
+		}
+
+		const { bookmarks } = parseResult.data;
 
 		const categories = [
 			...new Set(
 				bookmarks
 					.filter(
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						(bookmark: any) =>
-							bookmark.folder && bookmark.folder !== "Unsorted",
+						(bookmark) =>
+							bookmark.category_name && bookmark.category_name !== "Unsorted",
 					)
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					.map((bookmark: any) => bookmark.folder),
+					.map((bookmark) => bookmark.category_name as string),
 			),
 		];
 
+		// get existing categories
 		const { data: existingCategories, error: existingCategoriesError } =
 			await supabase
 				.from(CATEGORIES_TABLE_NAME)
@@ -65,22 +89,19 @@ export default async function handler(
 			return;
 		}
 
-		// Get names of folders that already exist
 		const existingCategoryNames = new Set(
 			existingCategories?.map((category) => category.category_name),
 		);
 
+		// this is the list of categories that need to be inserted
 		const newCategories = categories.filter(
 			(category) => !existingCategoryNames.has(category),
 		);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const categoriesToInsert = newCategories.map((folder: any) => ({
-			category_name: folder,
+		const categoriesToInsert = newCategories.map((category_name) => ({
+			category_name,
 			user_id: user.id,
-			category_slug: `${slugify(folder, {
-				lower: true,
-			})}-${Date.now()}-rain_drop`,
+			category_slug: `${slugify(category_name, { lower: true })}-${Date.now()}-rain_drop`,
 			icon: "droplets-02",
 			icon_color: "#ffffff",
 		}));
@@ -101,15 +122,16 @@ export default async function handler(
 			return;
 		}
 
-		const collections = [
+		const categoriesData = [
 			...(insertedcategories || []),
 			...(existingCategories || []),
 		];
 
+		//** here we get all other fields required for the bookmark to be inserted in the main table*/
 		const sanitizedBookmarks = await sanitizeBookmarks(
 			bookmarks,
 			user.id,
-			collections || [],
+			categoriesData || [],
 		);
 
 		const { data, error } = await supabase
@@ -118,16 +140,14 @@ export default async function handler(
 			.select("*");
 
 		if (error) {
-			console.warn(
-				"Error in inserting bookmarks to main table",
-				error?.message,
-			);
+			console.warn("Error in inserting bookmarks to main table", error);
 			response.status(500).json({
 				error: "Error in inserting bookmarks",
 			});
 			return;
 		}
 
+		// here the order of the categories is updated
 		if (insertedcategories && !isEmpty(insertedcategories)) {
 			const { data: profileData, error: profileError } = await supabase
 				.from(PROFILES)
@@ -167,6 +187,7 @@ export default async function handler(
 			}
 		}
 
+		// after the bookmarks are inserted, we need to add them to the queue for ai-enrichment,screenshot,PDF thumbnail generation
 		const { error: queueResultsError } = await supabase
 			.schema("pgmq_public")
 			.rpc("send_batch", {
@@ -181,7 +202,7 @@ export default async function handler(
 			return;
 		}
 
-		response.status(200).json({ message: "success", count: data?.length });
+		response.status(200).json({ message: "success", count: "data?.length" });
 	} catch (error) {
 		console.error("Error importing bookmarks", error);
 		Sentry.captureException(error);

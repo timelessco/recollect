@@ -919,9 +919,10 @@ export const sanitizeBookmarks = async (
 				favIcon = null;
 			}
 
+			// if the bookmark have a category_name we get the category_id of it from the categories[]
 			const category_id =
 				categories.find(
-					(category) => category.category_name === bookmark?.folder,
+					(category) => category.category_name === bookmark?.category_name,
 				)?.id || 0;
 
 			return {
