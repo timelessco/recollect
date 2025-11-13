@@ -213,7 +213,8 @@ const Dashboard = () => {
 
 	useFetchBookmarksView();
 
-	const { userProfileData } = useFetchUserProfile();
+	const { userProfileData, isLoading: isUserProfileLoading } =
+		useFetchUserProfile();
 
 	// Mutations
 
@@ -689,11 +690,10 @@ const Dashboard = () => {
 													addBookmarkMinDataOptimisticMutation?.isLoading
 												}
 												isLoading={
-													isLoadingCategories ||
-													isFetchingCategories ||
 													isAllBookmarksDataLoading ||
 													(isSearchLoading && flattenedSearchData.length === 0)
 												}
+												isLoadingProfile={isUserProfileLoading}
 												isOgImgLoading={
 													addBookmarkScreenshotMutation?.isLoading
 												}

@@ -12,7 +12,7 @@ import { fetchUserProfiles } from "../../supabaseCrudHelpers";
 export default function useFetchUserProfile() {
 	const session = useSupabaseSession((state) => state.session);
 
-	const { data: userProfileData } = useQuery<{
+	const { data: userProfileData, isLoading } = useQuery<{
 		data: ProfilesTableTypes[] | null;
 		error: Error;
 	}>(
@@ -26,5 +26,6 @@ export default function useFetchUserProfile() {
 
 	return {
 		userProfileData,
+		isLoading,
 	};
 }
