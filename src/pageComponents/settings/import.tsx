@@ -22,10 +22,7 @@ export const ImportBookmarks = () => {
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	//  Dynamically import papaparse
-
 	const parseCSV = async (file: File) => {
-		console.log("importing papaparse");
-
 		const Papa = await import("papaparse");
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
