@@ -59,7 +59,7 @@ const nextConfig: NextConfig = {
 		],
 	},
 
-	serverExternalPackages: ["@sentry/nextjs"],
+	serverExternalPackages: ["@sentry/nextjs", "image-size"],
 
 	// https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/tree-shaking/#tree-shaking-with-nextjs
 	// Only include webpack config when Sentry is enabled
