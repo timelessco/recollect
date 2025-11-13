@@ -1,5 +1,5 @@
 import { encode } from "blurhash";
-import sizeOf from "image-size";
+import { imageSize } from "image-size";
 import fetch from "node-fetch";
 import sharp from "sharp";
 
@@ -46,16 +46,18 @@ export const blurhashFromURL = async (
 
 	if (offline) {
 		const fs = await import("node:fs");
-		const { width: localWidth, height: localHeight } = sizeOf(source);
+		const fileBuffer = fs.readFileSync(source);
+		const { width: localWidth, height: localHeight } = imageSize(fileBuffer);
 		width = localWidth;
 		height = localHeight;
-		returnedBuffer = await sharp(fs.readFileSync(source)).toBuffer();
+		returnedBuffer = await sharp(fileBuffer).toBuffer();
 	} else {
 		const response = await fetch(source);
 		const arrayBuffer = await response.arrayBuffer();
 		returnedBuffer = Buffer.from(arrayBuffer);
 
-		const { width: remoteWidth, height: remoteHeight } = sizeOf(returnedBuffer);
+		const { width: remoteWidth, height: remoteHeight } =
+			imageSize(returnedBuffer);
 		width = remoteWidth;
 		height = remoteHeight;
 	}
