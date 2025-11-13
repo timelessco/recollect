@@ -37,6 +37,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 	return (
 		<>
 			<MenuButton
+				as="div"
 				className={`${menuButtonClassName ?? ""} ${
 					(menu.open && menuButtonActiveClassName) ?? ""
 				} focus-visible:outline-hidden`}

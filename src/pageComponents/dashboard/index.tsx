@@ -152,10 +152,6 @@ const Dashboard = () => {
 		(state) => state.toggleShowDeleteBookmarkWarningModal,
 	);
 
-	const showClearTrashWarningModal = useModalStore(
-		(state) => state.showClearTrashWarningModal,
-	);
-
 	const toggleShowClearTrashWarningModal = useModalStore(
 		(state) => state.toggleShowClearTrashWarningModal,
 	);
@@ -217,7 +213,8 @@ const Dashboard = () => {
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
 
-	const { clearBookmarksInTrashMutation } = useClearBookmarksInTrashMutation();
+	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
+		useClearBookmarksInTrashMutation();
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 
 	const { addBookmarkMinDataOptimisticMutation } =
@@ -1185,8 +1182,9 @@ const Dashboard = () => {
 					}
 				}}
 				onClearTrash={() => {
-					toggleShowClearTrashWarningModal();
+					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 				}}
+				isClearingTrash={isClearingTrash}
 				onDeleteCollectionClick={async () =>
 					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
@@ -1271,17 +1269,6 @@ const Dashboard = () => {
 				setOpen={toggleShowDeleteBookmarkWarningModal}
 				warningText="Are you sure you want to delete ?"
 				// isLoading={deleteBookmarkMutation?.isLoading}
-			/>
-			<WarningActionModal
-				buttonText="Clear trash"
-				isLoading={clearBookmarksInTrashMutation?.isPending}
-				onContinueCick={() => {
-					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
-					toggleShowClearTrashWarningModal();
-				}}
-				open={showClearTrashWarningModal}
-				setOpen={toggleShowClearTrashWarningModal}
-				warningText="Are you sure you want to delete ?"
 			/>
 			<ToastContainer />
 		</>

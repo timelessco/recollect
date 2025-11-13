@@ -31,12 +31,12 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
 	<div className="flex items-center justify-between rounded-xl bg-gray-100">
 		<div className="ml-[19.5px] flex items-center gap-2">
 			{icon}
-			<p className={`my-2 ml-2 text-gray-900 ${settingsParagraphClassName}`}>
+			<div className={`my-2 ml-2 text-gray-900 ${settingsParagraphClassName}`}>
 				{title}
 				<p className="mt-1 text-[14px] leading-[115%] font-normal text-gray-600">
 					{description}
 				</p>
-			</p>
+			</div>
 		</div>
 		{isSwitch ? (
 			<div className="mr-[10px]">
