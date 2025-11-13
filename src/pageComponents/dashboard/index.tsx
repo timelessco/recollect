@@ -152,10 +152,6 @@ const Dashboard = () => {
 		(state) => state.toggleShowDeleteBookmarkWarningModal,
 	);
 
-	const toggleShowClearTrashWarningModal = useModalStore(
-		(state) => state.toggleShowClearTrashWarningModal,
-	);
-
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
