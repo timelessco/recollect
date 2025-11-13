@@ -42,8 +42,8 @@ const AiFeaturesSkeleton = () => (
 
 /*  MAIN COMPONENT  */
 export const AiFeatures = () => {
-	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
-	const { mutate: deleteApiKey, isLoading: isDeleting } =
+	const { mutate: saveApiKey, isPending: isSaving } = useApiKeyMutation();
+	const { mutate: deleteApiKey, isPending: isDeleting } =
 		useDeleteApiKeyMutation();
 	const { data, isLoading: isChecking } = useFetchCheckApiKey();
 

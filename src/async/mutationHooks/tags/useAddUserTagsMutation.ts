@@ -8,10 +8,13 @@ import { addUserTags } from "../../supabaseCrudHelpers";
 export default function useAddUserTagsMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
-	const addUserTagsMutation = useMutation(addUserTags, {
+	const addUserTagsMutation = useMutation({
+		mutationFn: addUserTags,
 		onSuccess: () => {
 			// Invalidate and refetch
-			void queryClient.invalidateQueries([USER_TAGS_KEY, session?.user?.id]);
+			void queryClient.invalidateQueries({
+				queryKey: [USER_TAGS_KEY, session?.user?.id],
+			});
 		},
 	});
 

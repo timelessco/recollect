@@ -213,7 +213,8 @@ const Dashboard = () => {
 
 	useFetchBookmarksView();
 
-	const { userProfileData } = useFetchUserProfile();
+	const { userProfileData, isLoading: isUserProfileLoading } =
+		useFetchUserProfile();
 
 	// Mutations
 
@@ -686,16 +687,15 @@ const Dashboard = () => {
 											<CardSection
 												deleteBookmarkId={deleteBookmarkId}
 												isBookmarkLoading={
-													addBookmarkMinDataOptimisticMutation?.isLoading
+													addBookmarkMinDataOptimisticMutation?.isPending
 												}
 												isLoading={
-													isLoadingCategories ||
-													isFetchingCategories ||
 													isAllBookmarksDataLoading ||
 													(isSearchLoading && flattenedSearchData.length === 0)
 												}
+												isLoadingProfile={isUserProfileLoading}
 												isOgImgLoading={
-													addBookmarkScreenshotMutation?.isLoading
+													addBookmarkScreenshotMutation?.isPending
 												}
 												listData={
 													isSearching
@@ -914,8 +914,8 @@ const Dashboard = () => {
 						}
 					}}
 					isCategoryChangeLoading={
-						addCategoryToBookmarkMutation?.isLoading ||
-						addCategoryToBookmarkOptimisticMutation?.isLoading
+						addCategoryToBookmarkMutation?.isPending ||
+						addCategoryToBookmarkOptimisticMutation?.isPending
 					}
 					mainButtonText={isEdit ? "Update Bookmark" : "Add Bookmark"}
 					onCategoryChange={async (value) => {
@@ -1280,7 +1280,7 @@ const Dashboard = () => {
 			/>
 			<WarningActionModal
 				buttonText="Clear trash"
-				isLoading={clearBookmarksInTrashMutation?.isLoading}
+				isLoading={clearBookmarksInTrashMutation?.isPending}
 				onContinueCick={() => {
 					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 					toggleShowClearTrashWarningModal();

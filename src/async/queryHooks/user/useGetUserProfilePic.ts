@@ -9,7 +9,10 @@ export default function useGetUserProfilePic(email: string) {
 	const { data: userProfilePicData } = useQuery<{
 		data: UserProfilePicTypes[] | null;
 		error: Error;
-	}>([USER_PROFILE_PIC, email], async () => await getUserProfilePic({ email }));
+	}>({
+		queryKey: [USER_PROFILE_PIC, email],
+		queryFn: async () => await getUserProfilePic({ email }),
+	});
 
 	return {
 		userProfilePicData,

@@ -1,4 +1,4 @@
-const MailIconBlack = () => (
+export const MailIconBlack = () => (
 	<svg
 		fill="none"
 		height="16"
@@ -14,5 +14,3 @@ const MailIconBlack = () => (
 		/>
 	</svg>
 );
-
-export default MailIconBlack;

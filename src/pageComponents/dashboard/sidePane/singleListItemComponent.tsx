@@ -19,6 +19,7 @@ import {
 	dropdownMenuItemClassName,
 	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
+import ShareContent from "../share/shareContent";
 
 export type CollectionItemTypes = {
 	count?: number;
@@ -55,6 +56,7 @@ export type listPropsTypes = {
 
 const SingleListItemComponent = (listProps: listPropsTypes) => {
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
+	const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
 	const {
 		item,
@@ -123,7 +125,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 								menuButton={
 									<div
 										className={
-											openedMenuId === item?.id
+											openedMenuId === item?.id || activeMenu
 												? "flex text-gray-500"
 												: "hidden text-gray-500 group-hover:flex"
 										}
@@ -131,45 +133,70 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										<OptionsIcon />
 									</div>
 								}
-								menuClassName={`${dropdownMenuClassName} z-10`}
+								menuClassName={`${activeMenu ? "w-auto" : ""} ${dropdownMenuClassName} z-10`}
 								menuOpenToggle={(value) => {
-									if (value === true) {
+									if (value) {
 										setOpenedMenuId(item?.id);
+										setActiveMenu(null);
 									} else {
 										setOpenedMenuId(null);
+										setActiveMenu(null);
 									}
 								}}
 							>
-								{[
-									{ label: "Share", value: "share" },
-									{ label: "Delete", value: "delete" },
-								]?.map((dropdownItem) => (
-									<AriaDropdownMenu
-										key={dropdownItem?.value}
-										onClick={() =>
-											onCategoryOptionClick(
-												dropdownItem?.value,
-												item.current,
-												item.id,
-											)
-										}
-									>
-										<div className={dropdownMenuItemClassName}>
-											{dropdownItem?.label}
-										</div>
-									</AriaDropdownMenu>
-								))}
+								{!activeMenu ? (
+									<>
+										{[
+											{ label: "Share", value: "share" },
+											{ label: "Delete", value: "delete" },
+										].map((dropdownItem) => (
+											<AriaDropdownMenu
+												key={dropdownItem?.value}
+												onClick={async (event) => {
+													event.preventDefault();
+													event.stopPropagation();
+
+													if (dropdownItem?.value === "share") {
+														setActiveMenu("share");
+														return;
+													}
+
+													onCategoryOptionClick(
+														dropdownItem?.value,
+														item.current,
+														item.id,
+													);
+													setOpenedMenuId(null);
+												}}
+											>
+												<div className={dropdownMenuItemClassName}>
+													{dropdownItem?.label}
+												</div>
+											</AriaDropdownMenu>
+										))}
+									</>
+								) : (
+									<div className="rounded-lg bg-gray-50 p-1 shadow-lg">
+										<ShareContent />
+									</div>
+								)}
 							</AriaDropdown>
 						)}
-						{item?.count !== undefined && !showSpinner && item?.current && (
-							<p
-								className={`font-450 h-3 w-3 items-center justify-end text-right align-middle text-[11px] leading-[115%] tracking-[0.03em] text-gray-600 ${
-									showDropdown ? "block group-hover:hidden" : "block"
-								} ${openedMenuId === item?.id ? "hidden" : ""}`}
-							>
-								{item?.count}
-							</p>
-						)}
+
+						{item?.count !== undefined &&
+							!showSpinner &&
+							activeMenu !== "share" &&
+							item?.current && (
+								<div className="flex w-full justify-end">
+									<p
+										className={`font-450 min-w-[16px] text-right text-[11px] leading-[115%] tracking-[0.03em] text-gray-600 ${
+											showDropdown ? "block group-hover:hidden" : "block"
+										} ${openedMenuId === item?.id ? "hidden" : ""}`}
+									>
+										{item?.count}
+									</p>
+								</div>
+							)}
 					</div>
 				)}
 				{item?.count !== undefined && !showDropdown && (
@@ -193,11 +220,13 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
 	if (isLink) {
 		return (
-			<Link href={item?.href} legacyBehavior passHref>
-				{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-				<a className={contentWrapperClassNames} draggable={false}>
-					{renderContent()}
-				</a>
+			<Link
+				href={item?.href}
+				passHref
+				className={contentWrapperClassNames}
+				draggable={false}
+			>
+				{renderContent()}
 			</Link>
 		);
 	}

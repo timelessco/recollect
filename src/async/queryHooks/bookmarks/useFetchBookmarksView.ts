@@ -12,10 +12,11 @@ export default function useFetchBookmarksView() {
 	const { data } = useQuery<{
 		data: BookmarkViewDataTypes | null;
 		error: Error;
-	}>(
-		[BOOKMARKS_VIEW, CATEGORY_ID],
-		async () => await fetchBookmarksViews({ category_id: CATEGORY_ID }),
-	);
+	}>({
+		queryKey: [BOOKMARKS_VIEW, CATEGORY_ID],
+		queryFn: async () =>
+			await fetchBookmarksViews({ category_id: CATEGORY_ID }),
+	});
 
 	return { data };
 }

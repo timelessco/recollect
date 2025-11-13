@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { Item } from "react-stately";
 
+import loaderGif from "../../../../public/loader-gif.gif";
 import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
@@ -91,6 +92,7 @@ export type CardSectionProps = {
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
+	isLoadingProfile?: boolean;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -112,6 +114,7 @@ const CardSection = ({
 	onBulkBookmarkDelete,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
+	isLoadingProfile = false,
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
@@ -853,6 +856,14 @@ const CardSection = ({
 
 	const renderItem = () => {
 		const sortByCondition = renderSortByCondition();
+
+		if (isLoadingProfile) {
+			return (
+				<div className="absolute inset-0 flex items-center justify-center">
+					<Image src={loaderGif} alt="loader" className="h-12 w-12" />
+				</div>
+			);
+		}
 
 		if (isLoading) {
 			return (

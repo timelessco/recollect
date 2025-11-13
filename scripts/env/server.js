@@ -1,9 +1,6 @@
 // Thanks to https://github.com/t3-oss/create-t3-app/
-// @ts-check
-/**
- * This file is included in `/next.config.js` which ensures the app isn't built with invalid env vars.
- * It has to be a `.js`-file to be imported there.
- */
+
+import { z } from "zod";
 
 import { clientEnvironmentParsedData } from "./client.js";
 import { serverEnvironment, serverSchema } from "./schema.js";
@@ -14,7 +11,7 @@ const parsedServerEnvironment = serverSchema.safeParse(serverEnvironment);
 if (!parsedServerEnvironment.success) {
 	console.error(
 		"❌ Invalid environment variables:\n",
-		...formatErrors(parsedServerEnvironment.error.format()),
+		...formatErrors(z.treeifyError(parsedServerEnvironment.error)),
 	);
 	throw new Error("Invalid environment variables");
 }

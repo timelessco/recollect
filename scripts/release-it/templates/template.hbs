@@ -1,0 +1,82 @@
+{{> header}}
+
+{{~#if hasBreakingChanges}}
+
+### {{breakingChangesTitle}}
+
+{{#each breakingChanges}}
+
+{{#if scope}}#### `{{scope}}`{{/if}}{{#if subject}}- {{subject}} {{/if}}
+
+{{#if body}}
+{{body}}
+{{~/if}}
+
+{{#raw}}{{/raw}}
+
+Introduced in: [`{{shortHash}}`]({{hashUrl}})
+
+{{#raw}}{{/raw}}
+
+{{/each}}
+
+{{/if}}
+
+{{~#if hasNotableChanges}}
+
+### {{notableChangesTitle}}
+
+
+{{#each notableChanges}}
+
+{{#if scope}}#### `{{scope}}`{{/if}}{{#if subject}}- {{subject}} {{/if}}
+
+{{#if body}}
+{{body}}
+{{~/if}}
+
+{{#raw}}{{/raw}}
+
+Introduced in: [`{{shortHash}}`]({{hashUrl}})
+
+{{#raw}}{{/raw}}
+
+{{/each}}
+
+{{/if}}
+
+{{~#if hasOtherNotableChanges}}
+
+### {{otherNotableChangesTitle}}
+
+{{#each otherNotableChanges}}
+
+{{#if scope}}#### `{{scope}}`{{/if}}{{#if subject}}- {{subject}} {{/if}}
+
+{{#if body}}
+{{body}}
+{{~/if}}
+
+{{#raw}}{{/raw}}
+
+Introduced in: [`{{shortHash}}`]({{hashUrl}})
+
+{{#raw}}{{/raw}}
+
+{{/each}}
+
+{{/if}}
+
+### 🗃️ Commits
+
+{{#each commitGroups}}
+
+{{#if title}}
+#### {{title}}
+{{/if}}
+
+{{#each commits}}
+{{> commit root=@root}}
+{{/each}}
+
+{{/each}}

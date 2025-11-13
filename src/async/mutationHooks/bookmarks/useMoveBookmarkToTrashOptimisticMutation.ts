@@ -15,71 +15,62 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 
 	const { sortBy } = useGetSortBy();
 
-	const moveBookmarkToTrashOptimisticMutation = useMutation(
-		moveBookmarkToTrash,
-		{
-			onMutate: async (data) => {
-				// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-				await queryClient.cancelQueries([
-					BOOKMARKS_KEY,
-					session?.user?.id,
-					CATEGORY_ID,
-					sortBy,
-				]);
+	const moveBookmarkToTrashOptimisticMutation = useMutation({
+		mutationFn: moveBookmarkToTrash,
+		onMutate: async (data) => {
+			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+			await queryClient.cancelQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 
-				// Snapshot the previous value
-				const previousData = queryClient.getQueryData([
-					BOOKMARKS_KEY,
-					session?.user?.id,
-					CATEGORY_ID,
-					sortBy,
-				]);
+			// Snapshot the previous value
+			const previousData = queryClient.getQueryData([
+				BOOKMARKS_KEY,
+				session?.user?.id,
+				CATEGORY_ID,
+				sortBy,
+			]);
 
-				// Optimistically update to the new value
-				queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-					(old) => {
-						if (typeof old === "object") {
-							return {
-								...old,
-								pages: old?.pages?.map((item) => ({
-									...item,
-									data: item.data?.filter(
-										(dataItem) => dataItem?.id !== data?.data?.id,
-									),
-								})),
-							};
-						}
+			// Optimistically update to the new value
+			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+				(old) => {
+					if (typeof old === "object") {
+						return {
+							...old,
+							pages: old?.pages?.map((item) => ({
+								...item,
+								data: item.data?.filter(
+									(dataItem) => dataItem?.id !== data?.data?.id,
+								),
+							})),
+						};
+					}
 
-						return undefined;
-					},
-				);
+					return undefined;
+				},
+			);
 
-				// Return a context object with the snapshotted value
-				return { previousData };
-			},
-			// If the mutation fails, use the context returned from onMutate to roll back
-			onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
-				queryClient.setQueryData(
-					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-					context?.previousData,
-				);
-			},
-			// Always refetch after error or success:
-			onSettled: () => {
-				void queryClient.invalidateQueries([
-					BOOKMARKS_KEY,
-					session?.user?.id,
-					CATEGORY_ID,
-					sortBy,
-				]);
-				void queryClient.invalidateQueries([
-					BOOKMARKS_COUNT_KEY,
-					session?.user?.id,
-				]);
-			},
+			// Return a context object with the snapshotted value
+			return { previousData };
 		},
-	);
+		// If the mutation fails, use the context returned from onMutate to roll back
+		onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
+			queryClient.setQueryData(
+				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+				context?.previousData,
+			);
+		},
+		// Always refetch after error or success:
+		onSettled: () => {
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
+		},
+	});
 
 	return { moveBookmarkToTrashOptimisticMutation };
 }

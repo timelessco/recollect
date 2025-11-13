@@ -17,7 +17,7 @@ type ResponseType = {
 
 const getBodySchema = () =>
 	z.object({
-		email: z.string().email(),
+		email: z.email(),
 	});
 
 /**

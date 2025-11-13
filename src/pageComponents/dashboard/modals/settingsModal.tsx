@@ -16,8 +16,6 @@ import DeleteAccout from "../../settings/deleteAccount";
 import { ImportBookmarks } from "../../settings/import";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
-// type SettingsModalTypes = {};
-
 const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
 	const { isDesktop } = useIsMobileView();
@@ -25,8 +23,11 @@ const SettingsModal = () => {
 		(state) => state.toggleShowSettingsModal,
 	);
 
-	const [currentSettingsPage, setCurrentSettingsPage] = useMiscellaneousStore(
-		(state) => [state.currentSettingsPage, state.setCurrentSettingsPage],
+	const currentSettingsPage = useMiscellaneousStore(
+		(state) => state.currentSettingsPage,
+	);
+	const setCurrentSettingsPage = useMiscellaneousStore(
+		(state) => state.setCurrentSettingsPage,
 	);
 
 	const [selectedMenuItem, setSelectedMenuItem] = useState(0);

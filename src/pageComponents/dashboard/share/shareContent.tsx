@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TrashIcon } from "@heroicons/react/solid";
+import { TrashIcon } from "@heroicons/react/20/solid";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -294,7 +294,7 @@ const ShareContent = () => {
 					isError={!isEmpty(errors)}
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
-						sendCollaborationEmailInviteMutation?.isLoading ? (
+						sendCollaborationEmailInviteMutation?.isPending ? (
 							<Spinner
 								className="h-3 w-3 animate-spin"
 								style={{ color: "var(--color-plain-reverse)" }}

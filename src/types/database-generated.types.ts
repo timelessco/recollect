@@ -95,27 +95,6 @@ export type Database = {
 					},
 				];
 			};
-			documents: {
-				Row: {
-					content: string | null;
-					embedding: string | null;
-					id: number;
-					metadata: Json | null;
-				};
-				Insert: {
-					content?: string | null;
-					embedding?: string | null;
-					id?: number;
-					metadata?: Json | null;
-				};
-				Update: {
-					content?: string | null;
-					embedding?: string | null;
-					id?: number;
-					metadata?: Json | null;
-				};
-				Relationships: [];
-			};
 			everything: {
 				Row: {
 					category_id: number;
@@ -292,16 +271,6 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
-			match_documents: {
-				Args: { filter?: Json; match_count?: number; query_embedding: string };
-				Returns: Array<{
-					content: string;
-					embedding: Json;
-					id: number;
-					metadata: Json;
-					similarity: number;
-				}>;
-			};
 			search_bookmarks: {
 				Args: { search_text: string };
 				Returns: Array<{

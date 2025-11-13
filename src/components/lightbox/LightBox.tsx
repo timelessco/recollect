@@ -94,6 +94,15 @@ export const CustomLightBox = ({
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.lightboxShowSidepane,
 	);
+	// Read iframe enabled state from localStorage once during initial render
+	const isIframeEnabled = () => {
+		if (typeof window !== "undefined") {
+			const savedValue = localStorage.getItem("iframeEnabled");
+			return savedValue ? JSON.parse(savedValue) : true;
+		}
+
+		return true;
+	};
 
 	useEffect(() => {
 		if (typeof window === "undefined") {
@@ -148,7 +157,7 @@ export const CustomLightBox = ({
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!isYouTubeVideo(bookmark?.url) &&
-					!bookmark?.meta_data?.iframeAllowed && {
+					(!bookmark?.meta_data?.iframeAllowed || !isIframeEnabled()) && {
 						// using || instead of ?? to include 0
 						width: bookmark?.meta_data?.width || 1_200,
 						height: bookmark?.meta_data?.height || 1_200,
@@ -276,7 +285,11 @@ export const CustomLightBox = ({
 
 			const renderWebEmbedSlide = () => {
 				// Only render iframe if this is the active slide and iframe is allowed
-				if (bookmark?.meta_data?.iframeAllowed && isActive) {
+				if (
+					bookmark?.meta_data?.iframeAllowed &&
+					isActive &&
+					isIframeEnabled()
+				) {
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
@@ -521,11 +534,9 @@ export const CustomLightBox = ({
 							const invalidateQueries = async () => {
 								try {
 									if (categoryId) {
-										await queryClient.invalidateQueries([
-											BOOKMARKS_KEY,
-											session?.user?.id,
-											categoryId,
-										]);
+										await queryClient.invalidateQueries({
+											queryKey: [BOOKMARKS_KEY, session?.user?.id, categoryId],
+										});
 									}
 
 									if (searchText) {
@@ -537,19 +548,20 @@ export const CustomLightBox = ({
 											error: PostgrestError;
 										};
 
-										await queryClient.invalidateQueries([
-											BOOKMARKS_KEY,
-											session?.user?.id,
-											searchSlugKey(categoryData) ?? CATEGORY_ID,
-											searchText,
-										]);
+										await queryClient.invalidateQueries({
+											queryKey: [
+												BOOKMARKS_KEY,
+												session?.user?.id,
+												searchSlugKey(categoryData) ?? CATEGORY_ID,
+												searchText,
+											],
+										});
 									}
 
 									await Promise.all([
-										queryClient.invalidateQueries([
-											BOOKMARKS_COUNT_KEY,
-											session?.user?.id,
-										]),
+										queryClient.invalidateQueries({
+											queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+										}),
 									]);
 
 									lastInvalidatedIndex.current = index;

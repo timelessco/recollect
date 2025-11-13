@@ -31,8 +31,9 @@ const Switch = (props: SwitchProps) => {
 		"pointer-events-none inline-block  rounded-full bg-gray-0 shadow-lg ring-0 transition duration-200 ease-in-out disabled:opacity-40",
 		{
 			"translate-x-9": enabled === true && size === "large",
-			"translate-x-0": enabled === false,
+			"translate-x-3": enabled === true && size === "medium",
 			"translate-x-2.5": enabled === true && size === "small",
+			"translate-x-0": enabled === false,
 			"h-[24px] w-[24px]": size === "large",
 			"h-[16px] w-[16px]": size === "medium",
 			"h-[12px] w-[12px]": size === "small",

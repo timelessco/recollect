@@ -14,10 +14,13 @@ export default function useAddCategoryOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const addCategoryOptimisticMutation = useMutation(addUserCategory, {
+	const addCategoryOptimisticMutation = useMutation({
+		mutationFn: addUserCategory,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
+			await queryClient.cancelQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -60,12 +63,15 @@ export default function useAddCategoryOptimisticMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
-			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_COUNT_KEY,
-				session?.user?.id,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
 		},
 	});
 

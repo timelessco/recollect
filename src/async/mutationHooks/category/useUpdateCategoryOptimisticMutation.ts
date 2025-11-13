@@ -12,10 +12,13 @@ export default function useUpdateCategoryOptimisticMutation() {
 	// const { sortBy } = useGetSortBy();
 	// const { category_id: CATEGORIES_ID } = useGetCurrentCategoryId();
 
-	const updateCategoryOptimisticMutation = useMutation(updateCategory, {
+	const updateCategoryOptimisticMutation = useMutation({
+		mutationFn: updateCategory,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
+			await queryClient.cancelQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -29,6 +32,7 @@ export default function useUpdateCategoryOptimisticMutation() {
 				(old: { data: CategoriesData[] } | undefined) =>
 					({
 						...old,
+
 						data: old?.data?.map((item) => {
 							if (item?.id === data?.category_id) {
 								return {
@@ -69,7 +73,9 @@ export default function useUpdateCategoryOptimisticMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
-			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 			// removed due to the multiple get bookmark fetch when changing sort by issue
 			// void queryClient.invalidateQueries([
 			// 	BOOKMARKS_KEY,
