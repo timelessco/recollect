@@ -9,14 +9,16 @@ export default function useClearBookmarksInTrashMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const clearBookmarksInTrashMutation = useMutation(clearBookmarksInTrash, {
+	const clearBookmarksInTrashMutation = useMutation({
+		mutationFn: clearBookmarksInTrash,
 		onSuccess: () => {
 			// Invalidate and refetch
-			void queryClient.invalidateQueries([BOOKMARKS_KEY]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_COUNT_KEY,
-				session?.user?.id,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
 		},
 	});
 

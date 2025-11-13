@@ -12,15 +12,17 @@ export default function useDeleteSharedCategoriesUserMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const deleteSharedCategoriesUserMutation = useMutation(
-		deleteSharedCategoriesUser,
-		{
-			onSuccess: () => {
-				// Invalidate and refetch
-				void queryClient.invalidateQueries([SHARED_CATEGORIES_TABLE_NAME]);
-				void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-			},
+	const deleteSharedCategoriesUserMutation = useMutation({
+		mutationFn: deleteSharedCategoriesUser,
+		onSuccess: () => {
+			// Invalidate and refetch
+			void queryClient.invalidateQueries({
+				queryKey: [SHARED_CATEGORIES_TABLE_NAME],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 		},
-	);
+	});
 	return { deleteSharedCategoriesUserMutation };
 }

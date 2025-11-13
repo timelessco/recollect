@@ -10,10 +10,13 @@ export default function useUpdateUserProfileOptimisticMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 
-	const updateUserProfileOptimisticMutation = useMutation(updateUserProfile, {
+	const updateUserProfileOptimisticMutation = useMutation({
+		mutationFn: updateUserProfile,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([USER_PROFILE, session?.user?.id]);
+			await queryClient.cancelQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -27,6 +30,7 @@ export default function useUpdateUserProfileOptimisticMutation() {
 				(old: { data: ProfilesTableTypes[] } | undefined) =>
 					({
 						...old,
+
 						data: old?.data?.map((item) => ({
 							...item,
 							bookmarks_view: data?.updateData?.bookmarks_view,
@@ -46,7 +50,9 @@ export default function useUpdateUserProfileOptimisticMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
-			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
+			void queryClient.invalidateQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
 			// void queryClient.invalidateQueries([
 			// 	BOOKMARKS_KEY,
 			// 	session?.user?.id,

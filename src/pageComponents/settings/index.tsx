@@ -166,7 +166,7 @@ const Settings = () => {
 	const profilePicClassName = classNames({
 		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]: true,
 		"opacity-50":
-			uploadProfilePicMutation?.isLoading || removeProfilePic?.isLoading,
+			uploadProfilePicMutation?.isPending || removeProfilePic?.isPending,
 	});
 
 	return (
@@ -440,7 +440,7 @@ const Settings = () => {
 						>
 							<p className="flex w-full justify-center">
 								<span className="flex items-center justify-center gap-1.5">
-									{deleteUserMutation?.isLoading ? (
+									{deleteUserMutation?.isPending ? (
 										<Spinner
 											className="h-3 w-3 animate-spin"
 											style={{ color: "#CD2B31" }}

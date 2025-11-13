@@ -15,14 +15,15 @@ export default function useFetchUserProfile() {
 	const { data: userProfileData } = useQuery<{
 		data: ProfilesTableTypes[] | null;
 		error: Error;
-	}>(
-		[USER_PROFILE, session?.user?.id],
-		async () =>
+	}>({
+		// eslint-disable-next-line @tanstack/query/exhaustive-deps
+		queryKey: [USER_PROFILE, session?.user?.id],
+		queryFn: async () =>
 			await fetchUserProfiles({
 				userId: session?.user?.id as string,
 				session: session as SupabaseSessionType,
 			}),
-	);
+	});
 
 	return {
 		userProfileData,

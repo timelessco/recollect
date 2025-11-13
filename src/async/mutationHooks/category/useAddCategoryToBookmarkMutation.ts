@@ -16,20 +16,19 @@ export default function useAddCategoryToBookmarkMutation() {
 	const queryClient = useQueryClient();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
-	const addCategoryToBookmarkMutation = useMutation(addCategoryToBookmark, {
+	const addCategoryToBookmarkMutation = useMutation({
+		mutationFn: addCategoryToBookmark,
 		onSuccess: () => {
 			// Invalidate and refetch
-			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_COUNT_KEY,
-				session?.user?.id,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
 		},
 	});
 

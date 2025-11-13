@@ -15,15 +15,13 @@ export default function useDeleteBookmarksOptimisticMutation() {
 
 	const { sortBy } = useGetSortBy();
 
-	const deleteBookmarkOptismicMutation = useMutation(deleteData, {
+	const deleteBookmarkOptismicMutation = useMutation({
+		mutationFn: deleteData,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			await queryClient.cancelQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -67,17 +65,13 @@ export default function useDeleteBookmarksOptimisticMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 
-			void queryClient.invalidateQueries([
-				BOOKMARKS_COUNT_KEY,
-				session?.user?.id,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
 		},
 	});
 

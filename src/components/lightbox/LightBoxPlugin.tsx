@@ -102,6 +102,7 @@ const MyComponent = () => {
 	const { id } = router.query;
 	const shouldFetch = !previousData && Boolean(id);
 
+	// @ts-expect-error - props passed to useQuery - false-positive
 	const { data: bookmark } = useFetchBookmarkById(id as string, {
 		enabled: shouldFetch,
 	});

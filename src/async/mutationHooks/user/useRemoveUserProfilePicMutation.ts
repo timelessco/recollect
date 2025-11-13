@@ -8,14 +8,16 @@ import { removeUserProfilePic } from "../../supabaseCrudHelpers";
 export default function useRemoveUserProfilePicMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const removeProfilePic = useMutation(removeUserProfilePic, {
+	const removeProfilePic = useMutation({
+		mutationFn: removeUserProfilePic,
 		onSuccess: () => {
 			// Invalidate and refetch
-			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
-			void queryClient.invalidateQueries([
-				USER_PROFILE_PIC,
-				session?.user?.email,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [USER_PROFILE_PIC, session?.user?.email],
+			});
 		},
 	});
 	return { removeProfilePic };

@@ -10,10 +10,13 @@ export default function useDeleteCategoryOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const deleteCategoryOptimisticMutation = useMutation(deleteUserCategory, {
+	const deleteCategoryOptimisticMutation = useMutation({
+		mutationFn: deleteUserCategory,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([CATEGORIES_KEY, session?.user?.id]);
+			await queryClient.cancelQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -43,8 +46,12 @@ export default function useDeleteCategoryOptimisticMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
-			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
-			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
 		},
 	});
 
