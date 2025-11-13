@@ -14,8 +14,6 @@ import {
 } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
-import user from "@/icons/toastIcons/user";
-
 const bookmarkSchema = z.object({
 	title: z.string().nullable(),
 	description: z.string().nullable(),
@@ -127,7 +125,7 @@ export default async function handler(
 			...(existingCategories || []),
 		];
 
-		//** here we get all other fields required for the bookmark to be inserted in the main table*/
+		//* * here we get all other fields required for the bookmark to be inserted in the main table*/
 		const sanitizedBookmarks = await sanitizeBookmarks(
 			bookmarks,
 			user.id,
