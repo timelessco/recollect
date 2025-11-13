@@ -225,7 +225,7 @@ export const CustomLightBox = ({
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
-									? (bookmark?.ogImage ?? bookmark?.ogimage)
+									? bookmark?.ogImage
 									: (bookmark?.url ?? "")
 							}
 							width={bookmark?.meta_data?.width ?? 1_200}
@@ -317,7 +317,7 @@ export const CustomLightBox = ({
 				}
 
 				// Check if we have a placeholder to show
-				const placeholder = bookmark?.ogImage || bookmark?.ogimage;
+				const placeholder = bookmark?.ogImage;
 				if (placeholder) {
 					const placeholderHeight = bookmark?.meta_data?.height ?? 800;
 					const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
