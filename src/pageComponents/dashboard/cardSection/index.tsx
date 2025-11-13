@@ -653,7 +653,7 @@ const CardSection = ({
 	const renderSortByCondition = () =>
 		bookmarksList?.map((item) => ({
 			...item,
-			ogImage: item?.ogImage || (item?.ogimage as string),
+			ogImage: item?.ogImage,
 		}));
 
 	const renderBookmarkCardTypes = (item: SingleListData) => {

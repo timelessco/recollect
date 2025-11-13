@@ -140,9 +140,13 @@ tag_id (
 				(tagItem) => tagItem?.bookmark_id === item?.id,
 			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
+			// Rename ogimage -> ogImage
+			const { ogimage, ...rest } = item;
+			const transformedItem = { ...rest, ogImage: ogimage };
+
 			if (!isEmpty(matchedBookmarkWithTag)) {
 				return {
-					...item,
+					...transformedItem,
 					addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
 						id: matchedItem?.tag_id?.id,
 						name: matchedItem?.tag_id?.name,
@@ -150,7 +154,7 @@ tag_id (
 				};
 			}
 
-			return item;
+			return transformedItem;
 		}) as SingleListData[];
 
 		response.status(200).json({ data: finalData, error });
