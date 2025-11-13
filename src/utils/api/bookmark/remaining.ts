@@ -234,14 +234,20 @@ export const processAndUploadCoverImage = async (
  * @param imageUrl - URL of the image
  * @returns Object containing image metadata
  */
-export const generateImageMetadata = async (imageUrl: string | null) => {
-	if (!imageUrl) return null;
+export const generateImageMetadata = async (
+	imageUrl: string | null,
+	supabase: SupabaseClient,
+	userId: string,
+) => {
+	if (!imageUrl) {
+		return null;
+	}
 
 	try {
 		const [imgData, imageOcrValue, imageCaption] = await Promise.all([
 			blurhashFromURL(imageUrl),
-			ocr(imageUrl),
-			imageToText(imageUrl),
+			ocr(imageUrl, supabase, userId),
+			imageToText(imageUrl, supabase, userId),
 		]);
 
 		return {
@@ -278,6 +284,7 @@ export const processBookmarkImages = async (
 	url: string,
 	userId: string,
 	currentData: CurrentBookmarkData,
+	supabase: SupabaseClient,
 ) => {
 	// Process image URL if present
 	let uploadedImageThatIsAUrl = null;
@@ -304,7 +311,7 @@ export const processBookmarkImages = async (
 
 	const imageUrlForMetaDataGeneration = isUrlAnImageResult
 		? uploadedImageThatIsAUrl
-		: currentData?.meta_data?.screenshot ?? uploadedCoverImageUrl;
+		: (currentData?.meta_data?.screenshot ?? uploadedCoverImageUrl);
 
 	let metadata = null;
 	if (
@@ -315,6 +322,8 @@ export const processBookmarkImages = async (
 			currentData?.meta_data?.isOgImagePreferred
 				? ogImageMetaDataGeneration
 				: imageUrlForMetaDataGeneration,
+			supabase,
+			userId,
 		);
 	}
 

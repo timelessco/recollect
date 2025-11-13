@@ -16,6 +16,8 @@ export const serverSchema = z.object({
 	RESEND_KEY: z.string().optional(),
 	DEV_SUPABASE_SERVICE_KEY: z.string().optional(),
 	GOOGLE_GEMINI_TOKEN: z.string(),
+	RECOLLECT_SERVER_API: z.string().optional(),
+	RECOLLECT_SERVER_API_KEY: z.string().optional(),
 });
 
 /**
@@ -33,6 +35,8 @@ export const serverEnvironment = {
 	DEV_SUPABASE_SERVICE_KEY: process.env.DEV_SUPABASE_SERVICE_KEY,
 	GOOGLE_GEMINI_TOKEN: process.env.GOOGLE_GEMINI_TOKEN,
 	RESEND_KEY: process.env.RESEND_KEY,
+	RECOLLECT_SERVER_API: process.env.RECOLLECT_SERVER_API,
+	RECOLLECT_SERVER_API_KEY: process.env.RECOLLECT_SERVER_API_KEY,
 };
 
 /**

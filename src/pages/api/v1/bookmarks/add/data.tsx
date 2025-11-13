@@ -12,7 +12,13 @@ import {
 } from "../../../../../types/apiTypes";
 import { getBookmarkBodySchema } from "../../../../../utils/api/bookmark/add";
 import { formatErrorMessage } from "../../../../../utils/api/bookmark/errorHandling";
-import { getBaseUrl, NEXT_API_URL } from "../../../../../utils/constants";
+import {
+	ADD_BOOKMARK_MIN_DATA_API,
+	ADD_BOOKMARK_REMAINING_DATA_API,
+	ADD_BOOKMARK_SCREENSHOT_API,
+	getBaseUrl,
+	NEXT_API_URL,
+} from "../../../../../utils/constants";
 import {
 	apiCookieParser,
 	checkIfUrlAnImage,
@@ -38,7 +44,7 @@ const callMinDataApi = async (
 ): Promise<MinDataApiResponse> => {
 	try {
 		const minDataResponse = await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}v1/bookmarks/add/tasks/min-data`,
+			`${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA_API}`,
 			bodyData,
 			{
 				headers: {
@@ -83,7 +89,7 @@ const callRemainingApi = async (
 		}
 
 		const remainingResponse = await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}v1/bookmarks/add/tasks/remaining`,
+			`${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_REMAINING_DATA_API}`,
 			{
 				id: bookmarkData.id,
 				url,
@@ -126,7 +132,7 @@ const callScreenshotApi = async (
 ): Promise<MinDataApiResponse> => {
 	try {
 		const screenshotResponse = await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}v1/bookmarks/add/tasks/screenshot`,
+			`${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_SCREENSHOT_API}`,
 			{
 				id: minDataResponse.data?.[0]?.id,
 				url,
@@ -248,12 +254,6 @@ export default async function handler(
 	if (status !== 200 || !data?.data?.length) {
 		response.status(status).json(data);
 		return;
-	} else {
-		response.status(200).json({
-			error: null,
-			message: null,
-			data: data.data,
-		});
 	}
 
 	// Check if URL is an image
@@ -284,6 +284,7 @@ export default async function handler(
 
 		// Return the remaining API result
 		response.status(remainingResult.status).json(remainingResult.data);
+		return;
 	} catch (error) {
 		const errorMessage = formatErrorMessage(error);
 		Sentry.captureException("Error in processing APIs queue", {
@@ -294,5 +295,6 @@ export default async function handler(
 			message: errorMessage,
 			data: null,
 		});
+		return;
 	}
 }

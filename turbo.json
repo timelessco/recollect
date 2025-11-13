@@ -12,7 +12,9 @@
 				"UMAMI_SRC",
 				"UMAMI_ID",
 				"GOOGLE_GEMINI_TOKEN",
-				"RESEND_KEY"
+				"RESEND_KEY",
+				"RECOLLECT_SERVER_API",
+				"RECOLLECT_SERVER_API_KEY"
 			],
 			"inputs": ["$TURBO_DEFAULT$", ".env", ".env.local"],
 			"outputs": [".next/**", "!.next/cache/**"]

@@ -47,7 +47,7 @@ import {
 import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
-	ADD_BOOKMARK_MIN_DATA,
+	ADD_BOOKMARK_API,
 	ADD_CATEGORY_TO_BOOKMARK_API,
 	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
@@ -256,15 +256,11 @@ export const addBookmarkMinData = async ({
 			finalUrl = `https://${url}`;
 		}
 
-		const apiResponse = await axios.post(
-			// `${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
-			`${NEXT_API_URL}v1/bookmarks/add/data`,
-			{
-				url: finalUrl,
-				category_id: isNull(category_id) ? 0 : category_id,
-				update_access,
-			},
-		);
+		const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_API}`, {
+			url: finalUrl,
+			category_id: isNull(category_id) ? 0 : category_id,
+			update_access,
+		});
 
 		return apiResponse as { data: { data: SingleListData[] } };
 	} catch (error) {

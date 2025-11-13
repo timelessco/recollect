@@ -136,7 +136,7 @@ export default async function handler(
 			ogImageMetaDataGeneration,
 			imageUrlForMetaDataGeneration,
 			metadata,
-		} = await processBookmarkImages(url, userId, currentData);
+		} = await processBookmarkImages(url, userId, currentData, supabase);
 
 		// Get favicon
 		const favIconUrl = await getFavIconUrl(url, favIcon);

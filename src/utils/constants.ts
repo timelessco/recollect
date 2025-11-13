@@ -62,9 +62,6 @@ export const NEXT_API_URL = `/api`;
 // URL helper functions
 export const PREVIEW_PATH = "/preview";
 
-// URL helper functions
-export const PREVIEW_PATH = "/preview";
-
 export const PAGINATION_LIMIT = 25;
 
 // this api is to get the media type of the url
@@ -88,6 +85,11 @@ export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
+export const ADD_BOOKMARK_API = "/v1/bookmarks/add/data";
+export const ADD_BOOKMARK_MIN_DATA_API = "/v1/bookmarks/add/tasks/min-data";
+export const ADD_BOOKMARK_REMAINING_DATA_API =
+	"/v1/bookmarks/add/tasks/remaining";
+export const ADD_BOOKMARK_SCREENSHOT_API = "/v1/bookmarks/add/tasks/screenshot";
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
@@ -139,6 +141,9 @@ export const DELETE_API_KEY_API = "/v1/delete-api-key";
 // Screenshot api
 export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app/";
+
+// Recollect server api
+export const PDF_SCREENSHOT_API = "/upload/pdf-screenshot";
 
 // urls
 export const ALL_BOOKMARKS_URL = "all-bookmarks";

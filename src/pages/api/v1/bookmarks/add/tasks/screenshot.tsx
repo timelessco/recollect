@@ -1,8 +1,10 @@
 import { type NextApiResponse } from "next/dist/shared/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
+import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 
+import { getMediaType } from "../../../../../../async/supabaseCrudHelpers";
 import {
 	type AddBookmarkScreenshotPayloadTypes,
 	type NextApiRequest,
@@ -17,6 +19,11 @@ import {
 	uploadRemainingBookmarkData,
 	uploadScreenshot,
 } from "../../../../../../utils/api/bookmark/screenshot";
+import {
+	PDF_MIME_TYPE,
+	PDF_SCREENSHOT_API,
+	URL_PDF_CHECK_PATTERN,
+} from "../../../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
 
 /**
@@ -84,26 +91,60 @@ export default async function handler(
 		const supabase = apiSupabaseClient(request, response);
 		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
-		// Capture screenshot of the URL
-		const screenshotResult = await captureScreenshot(request.body.url);
-		if (!screenshotResult.success) {
-			response.status(500).json({
-				data: null,
-				error: screenshotResult.error,
-			});
-			return;
+		const mediaType = await getMediaType(request.body.url);
+
+		let publicURL = null;
+		let pageTitle: string | undefined;
+		let pageDescription: string | undefined;
+		let isPageScreenshot: boolean | undefined;
+
+		if (
+			mediaType === PDF_MIME_TYPE ||
+			URL_PDF_CHECK_PATTERN.test(request.body.url)
+		) {
+			try {
+				const axiosResponse = await axios.post(
+					`${process.env.RECOLLECT_SERVER_API}${PDF_SCREENSHOT_API}`,
+					{
+						url: request.body.url,
+					},
+					{
+						headers: {
+							Authorization: `Bearer ${process.env.RECOLLECT_SERVER_API_KEY}`,
+							"Content-Type": "application/json",
+						},
+						timeout: 30000,
+					},
+				);
+				publicURL = axiosResponse?.data?.publicUrl ?? null;
+				isPageScreenshot = false;
+			} catch (pdfScreenshotError) {
+				console.error("Error generating PDF screenshot:", pdfScreenshotError);
+			}
+		} else {
+			// Capture screenshot of the URL
+			const screenshotResult = await captureScreenshot(request.body.url);
+			if (!screenshotResult.success) {
+				response.status(500).json({
+					data: null,
+					error: screenshotResult.error,
+				});
+				return;
+			}
+
+			// Convert screenshot data to base64
+			const base64data = Buffer?.from(
+				screenshotResult.data?.screenshot?.data,
+				"binary",
+			)?.toString("base64");
+			const screenMeta = screenshotResult.data.metaData ?? {};
+			pageTitle = screenMeta?.title;
+			pageDescription = screenMeta?.description;
+			isPageScreenshot = screenMeta?.isPageScreenshot;
+
+			// Upload screenshot to R2 storage
+			publicURL = await uploadScreenshot(base64data, userId);
 		}
-
-		// Convert screenshot data to base64
-		const base64data = Buffer?.from(
-			screenshotResult.data?.screenshot?.data,
-			"binary",
-		)?.toString("base64");
-		const { title, description, isPageScreenshot } =
-			screenshotResult.data.metaData ?? {};
-
-		// Upload screenshot to R2 storage
-		const publicURL = await uploadScreenshot(base64data, userId);
 
 		// Fetch existing bookmark data to update
 		const { data: existingBookmarkData, error: fetchError } =
@@ -122,9 +163,10 @@ export default async function handler(
 		const existingMetaData = existingBookmarkData?.meta_data ?? {};
 
 		const updatedTitle =
-			title?.slice(0, MAX_LENGTH) ?? existingBookmarkData?.title;
+			pageTitle?.slice(0, MAX_LENGTH) ?? existingBookmarkData?.title;
 		const updatedDescription =
-			description?.slice(0, MAX_LENGTH) ?? existingBookmarkData?.description;
+			pageDescription?.slice(0, MAX_LENGTH) ??
+			existingBookmarkData?.description;
 
 		// Add screenshot URL and metadata
 		const updatedMetaData = {
