@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 import {
@@ -57,7 +57,6 @@ export type listPropsTypes = {
 const SingleListItemComponent = (listProps: listPropsTypes) => {
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 	const [activeMenu, setActiveMenu] = useState<string | null>(null);
-	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	const {
 		item,
@@ -153,9 +152,9 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										].map((dropdownItem) => (
 											<AriaDropdownMenu
 												key={dropdownItem?.value}
-												onClick={async (e) => {
-													e.preventDefault();
-													e.stopPropagation();
+												onClick={async (event) => {
+													event.preventDefault();
+													event.stopPropagation();
 
 													if (dropdownItem?.value === "share") {
 														setActiveMenu("share");

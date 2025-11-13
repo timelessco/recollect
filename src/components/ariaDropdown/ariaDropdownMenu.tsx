@@ -14,7 +14,9 @@ const AriaDropdownMenu = (props: AriaDropdownMenuTypes) => {
 	return (
 		<MenuItem
 			className={`rounded-lg focus-visible:outline-hidden ${className}`}
-			onClick={(e) => onClick(e as unknown as React.MouseEvent<HTMLElement>)}
+			onClick={async (event) =>
+				await onClick(event as unknown as React.MouseEvent<HTMLElement>)
+			}
 		>
 			{children}
 		</MenuItem>

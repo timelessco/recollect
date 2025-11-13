@@ -35,9 +35,7 @@ import {
 	settingsInputClassName,
 	settingsInputContainerClassName,
 	settingsInputLabelClassName,
-	settingsLightButtonClassName,
 	settingsMainHeadingClassName,
-	settingsParagraphClassName,
 } from "../../utils/commonClassNames";
 import {
 	DISPLAY_NAME_CHECK_PATTERN,
@@ -85,6 +83,7 @@ const Settings = () => {
 			const savedValue = localStorage.getItem("iframeEnabled");
 			return savedValue ? JSON.parse(savedValue) : true;
 		}
+
 		return true;
 	});
 
@@ -414,7 +413,7 @@ const Settings = () => {
 						icon={<IframeIcon />}
 						title="Enable iframe in lightbox"
 						description="Allow embedding external content in lightbox view"
-						isSwitch={true}
+						isSwitch
 						enabled={enabled}
 						onToggle={() => {
 							setEnabled(!enabled);

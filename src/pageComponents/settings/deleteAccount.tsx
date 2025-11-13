@@ -8,7 +8,7 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import BackIconBlack from "../../icons/actionIcons/backIconBlack";
+import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import {
 	useMiscellaneousStore,
@@ -86,7 +86,7 @@ const DeleteAccout = () => {
 					className="bg-gray-0 absolute left-[-7px] rounded-full p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
-					<figure>
+					<figure className="text-gray-900">
 						<BackIconBlack />
 					</figure>
 				</Button>

@@ -100,12 +100,15 @@ export const CustomLightBox = ({
 			const savedValue = localStorage.getItem("iframeEnabled");
 			return savedValue ? JSON.parse(savedValue) : true;
 		}
+
 		return true;
 	};
+
 	useEffect(() => {
 		if (typeof window === "undefined") {
 			return;
 		}
+
 		const storedState = localStorage.getItem("lightboxSidepaneOpen");
 		if (storedState !== null) {
 			setLightboxShowSidepane(storedState === "true");
