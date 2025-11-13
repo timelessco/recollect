@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import axios from "axios";
-import { parse } from "papaparse";
 
 import Button from "../../components/atoms/button";
 import {
@@ -22,37 +21,47 @@ export const ImportBookmarks = () => {
 	const [importLimit, setImportLimit] = useState(50);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const handleFile = (fileToProcess: File) => {
+	//  Dynamically import papaparse
+	const parseCSV = async (file: File) => {
+		console.log("importing papaparse");
+
+		const Papa = await import("papaparse");
+		return new Promise<any>((resolve, reject) => {
+			Papa.parse(file, {
+				header: true,
+				skipEmptyLines: true,
+				complete: (results) => resolve(results),
+				error: (error) => reject(error),
+			});
+		});
+	};
+
+	const handleFile = async (fileToProcess: File) => {
 		setSelectedFile(fileToProcess);
 		setBookmarkCount(null);
 		setStatusMessage("");
 		setProgress(0);
 		setImported(false);
 
-		parse(fileToProcess, {
-			header: true,
-			skipEmptyLines: true,
-			complete: (results) => {
-				const records = results.data as Array<{
-					title: string;
-					excerpt: string;
-					url: string;
-					cover: string;
-				}>;
-				setBookmarkCount(records.length);
-				setStatusMessage(
-					records.length
-						? `Found ${records.length} bookmarks, ready to import.`
-						: "No valid bookmarks found in CSV.",
-				);
-				// Auto-adjust slider max
-				setImportLimit(Math.min(50, records.length));
-			},
-			error: (err) => {
-				console.error(err);
-				setStatusMessage("Error parsing CSV file.");
-			},
-		});
+		try {
+			const results = await parseCSV(fileToProcess);
+			const records = results.data as Array<{
+				title: string;
+				excerpt: string;
+				url: string;
+				cover: string;
+			}>;
+			setBookmarkCount(records.length);
+			setStatusMessage(
+				records.length
+					? `Found ${records.length} bookmarks, ready to import.`
+					: "No valid bookmarks found in CSV.",
+			);
+			setImportLimit(Math.min(50, records.length));
+		} catch (err) {
+			console.error(err);
+			setStatusMessage("Error parsing CSV file.");
+		}
 	};
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,71 +90,63 @@ export const ImportBookmarks = () => {
 		setStatusMessage("Importing bookmarks...");
 		setProgress(0);
 
-		parse(selectedFile, {
-			header: true,
-			skipEmptyLines: true,
+		try {
+			const results = await parseCSV(selectedFile);
+			let records = results.data as Array<{
+				title: string;
+				excerpt: string;
+				url: string;
+				cover: string;
+				folder?: string;
+			}>;
 
-			// eslint-disable-next-line @typescript-eslint/no-misused-promises
-			complete: async (results) => {
-				let records = results.data as Array<{
-					title: string;
-					excerpt: string;
-					url: string;
-					cover: string;
-					folder?: string;
-				}>;
+			if (!records.length) {
+				setStatusMessage("No data found in CSV.");
+				setUploading(false);
+				return;
+			}
 
-				if (!records.length) {
-					setStatusMessage("No data found in CSV.");
-					setUploading(false);
-					return;
-				}
+			records = records.slice(0, importLimit);
 
-				// Apply import limit
-				records = records.slice(0, importLimit);
+			const bookmarks = records.map((bookmark) => ({
+				title: bookmark.title || null,
+				description: bookmark.excerpt || null,
+				url: bookmark.url,
+				ogImage: bookmark.cover || null,
+				category_name: bookmark.folder || null,
+			}));
 
-				const bookmarks = records.map((bookmark) => ({
-					title: bookmark.title || null,
-					description: bookmark.excerpt || null,
-					url: bookmark.url,
-					ogImage: bookmark.cover || null,
-					category_name: bookmark.folder || null,
-				}));
+			const response = await axios.post(
+				`${getBaseUrl()}${NEXT_API_URL}${RAINDROP_IMPORT_API}`,
+				{ bookmarks },
+				{
+					headers: { "Content-Type": "application/json" },
+					onUploadProgress: (progressEvent) => {
+						if (progressEvent.total) {
+							const percentage = Math.round(
+								(progressEvent.loaded * 100) / progressEvent.total,
+							);
+							setProgress(percentage);
+						}
+					},
+				},
+			);
 
-				try {
-					const response = await axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}${RAINDROP_IMPORT_API}`,
-						{ bookmarks },
-						{
-							headers: { "Content-Type": "application/json" },
-							onUploadProgress: (progressEvent) => {
-								if (progressEvent.total) {
-									const percentage = Math.round(
-										(progressEvent.loaded * 100) / progressEvent.total,
-									);
-									setProgress(percentage);
-								}
-							},
-						},
-					);
+			if (response.status !== 200) {
+				throw new Error("Error importing bookmarks.");
+			}
 
-					if (response.status !== 200) {
-						throw new Error("Error importing bookmarks.");
-					}
-
-					setProgress(100);
-					setImported(true);
-					setStatusMessage(
-						`Import completed successfully! Imported ${records.length} bookmarks.`,
-					);
-				} catch (error) {
-					console.error(error);
-					setStatusMessage("Error importing bookmarks.");
-				} finally {
-					setUploading(false);
-				}
-			},
-		});
+			setProgress(100);
+			setImported(true);
+			setStatusMessage(
+				`Import completed successfully! Imported ${records.length} bookmarks.`,
+			);
+		} catch (error) {
+			console.error(error);
+			setStatusMessage("Error importing bookmarks.");
+		} finally {
+			setUploading(false);
+		}
 	};
 
 	return (
@@ -202,7 +203,6 @@ export const ImportBookmarks = () => {
 				/>
 			</div>
 
-			{/* Slider for limit */}
 			{bookmarkCount && bookmarkCount > 0 && (
 				<div className="mb-4">
 					<label className="mb-1 block text-sm font-medium text-gray-700">
@@ -223,7 +223,6 @@ export const ImportBookmarks = () => {
 				</div>
 			)}
 
-			{/* Import Button */}
 			<div className="relative w-full overflow-hidden rounded-md">
 				<Button
 					className={`relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-md px-4 py-2 font-medium text-white transition-all duration-300 ${
@@ -256,7 +255,6 @@ export const ImportBookmarks = () => {
 				</Button>
 			</div>
 
-			{/* Status message */}
 			{statusMessage && (
 				<p className="mt-3 text-center text-sm text-gray-600">
 					{statusMessage}

@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { type PostgrestResponse } from "@supabase/supabase-js";
 import { isEmpty } from "lodash";
 import slugify from "slugify";
+import uniqid from "uniqid";
 import { z } from "zod";
 
 import { sanitizeBookmarks } from "../../../../async/supabaseCrudHelpers";
@@ -99,7 +100,7 @@ export default async function handler(
 		const categoriesToInsert = newCategories.map((category_name) => ({
 			category_name,
 			user_id: user.id,
-			category_slug: `${slugify(category_name, { lower: true })}-${Date.now()}-rain_drop`,
+			category_slug: `${slugify(category_name, { lower: true })}-rain_drop-${uniqid.time()}}`,
 			icon: "droplets-02",
 			icon_color: "#ffffff",
 		}));
@@ -200,7 +201,7 @@ export default async function handler(
 			return;
 		}
 
-		response.status(200).json({ message: "success", count: "data?.length" });
+		response.status(200).json({ message: "success", count: data?.length });
 	} catch (error) {
 		console.error("Error importing bookmarks", error);
 		Sentry.captureException(error);
