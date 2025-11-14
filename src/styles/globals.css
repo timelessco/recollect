@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./inter-v.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -461,7 +462,7 @@
 	/* Font Family */
 
 	/* Fonts */
-	--font-sans: var(--font-inter);
+	--font-sans: inter-v, inter-v-fallback;
 	/* stylelint-disable-next-line custom-property-pattern */
 	--font-sans--font-variation-settings: "opsz" 20;
 

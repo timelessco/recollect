@@ -7,7 +7,6 @@ import { ToastContainer } from "react-toastify";
 import { Providers } from "@/components/providers";
 import { AnalyticsScript } from "@/components/scripts/analytics-script";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
-import { inter } from "@/styles/font";
 import { rootMetaData, rootViewport } from "@/utils/metadata-utils";
 
 type RootLayoutProps = {
@@ -20,7 +19,7 @@ export default function RootLayout(props: RootLayoutProps) {
 	return (
 		<html
 			lang="en"
-			className={`antialiased inter-display optimize-legibility ${inter.variable}`}
+			className="antialiased inter-display optimize-legibility"
 			dir="ltr"
 		>
 			<body className="overflow-hidden bg-gray-0 outline-hidden">
