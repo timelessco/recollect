@@ -43,7 +43,7 @@ export default async function handler(
 			{
 				from: "admin@share.recollect.so",
 				to: data.emailList,
-				subject: "collections from recollect",
+				subject: "Collections from recollect",
 				html: `
 				<!DOCTYPE html>
 				<html lang="en">
