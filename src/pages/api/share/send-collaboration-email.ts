@@ -1,4 +1,5 @@
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { sign, type VerifyErrors } from "jsonwebtoken";
@@ -44,6 +45,7 @@ export default async function handler(
 		.maybeSingle();
 
 	if (checkError) {
+		console.warn("Error checking existing rows", checkError);
 		response
 			.status(500)
 			.json({ url: null, error: "Error checking existing rows" });
@@ -51,6 +53,7 @@ export default async function handler(
 	}
 
 	if (existingRows) {
+		console.warn("Email already exists", existingRows);
 		response.status(409).json({ url: null, error: "Email already exists" });
 		return;
 	}
@@ -64,8 +67,9 @@ export default async function handler(
 	});
 
 	if (!isNull(error)) {
+		console.warn("Error inserting row", error);
 		response.status(500).json({ url: null, error });
-		throw new Error("ERROR");
+		return;
 	}
 
 	const token = sign(
@@ -110,8 +114,6 @@ export default async function handler(
 				},
 			);
 
-			console.log(emailData);
-
 			if (status !== 200) {
 				console.warn("error in sending email", emailData);
 				response.status(500).json({
@@ -122,6 +124,9 @@ export default async function handler(
 
 			response.status(200).json({ url, error });
 		} catch (catchError: unknown) {
+			console.error("Error in resend email api", catchError);
+
+			Sentry.captureException(error);
 			response.status(500).json({
 				url: null,
 				error: catchError as string,
@@ -129,6 +134,8 @@ export default async function handler(
 			});
 		}
 	} else {
-		response.status(200).json({ url, error: null, message: "in dev mode" });
+		response
+			.status(200)
+			.json({ url, error: null, message: "in dev mode email not sent" });
 	}
 }
