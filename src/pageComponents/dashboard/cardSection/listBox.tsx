@@ -386,7 +386,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				</DragPreview>
 			</ul>
 			{state.selectionManager.selectedKeys.size > 0 && (
-				<div className="shadow-custom-6 fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] max-xl:left-1/2 max-xl:-translate-x-1/2 max-md:hidden">
+				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 max-xl:left-1/2 max-xl:-translate-x-1/2 max-md:hidden">
 					<div className="flex items-center gap-1">
 						<Checkbox
 							BookmarkHoverCheckbox
@@ -409,7 +409,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 					</div>
 					<div className="flex items-center">
 						<div
-							className="text-13 font-450 mr-[13px] cursor-pointer leading-[15px] text-gray-900"
+							className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
 							onClick={() => {
 								onBulkBookmarkDelete(
 									Array.from(
@@ -428,7 +428,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</div>
 						{isTrashPage && (
 							<div
-								className="text-13 font-450 mr-[13px] cursor-pointer leading-[15px] text-gray-900"
+								className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
 								onClick={() => {
 									onBulkBookmarkDelete(
 										Array.from(
@@ -449,8 +449,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 						{!isEmpty(categoryData?.data) && !isTrashPage && (
 							<AriaDropdown
 								menuButton={
-									<div className="text-13 font-450 flex items-center rounded-lg bg-gray-200 px-2 py-[5px] leading-4 text-gray-900">
-										<figure className="text-gray-1000 mr-[6px]">
+									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
+										<figure className="mr-[6px] text-gray-1000">
 											<MoveIcon />
 										</figure>
 										<p>Move to</p>

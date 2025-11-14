@@ -77,7 +77,7 @@ const AddBookmarkDropdown = ({
 						title="create"
 						type="dark"
 					>
-						<figure className="text-gray-0 h-4 w-4">
+						<figure className="h-4 w-4 text-gray-0">
 							<PlusIconWhite />
 						</figure>
 					</Button>

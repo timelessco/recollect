@@ -25,7 +25,7 @@ export default function GlobalError(props: GlobalErrorProps) {
 	}, [error]);
 
 	return (
-		<html className="optimize-legibility antialiased" lang="en">
+		<html className="antialiased optimize-legibility" lang="en">
 			<body className="min-h-dvh bg-black px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8">
 				<div className="mx-auto max-w-max">
 					<main className="sm:flex">

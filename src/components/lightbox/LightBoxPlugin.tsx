@@ -148,7 +148,7 @@ const MyComponent = () => {
 
 	if (!currentBookmark) {
 		return (
-			<div className="bg-gray-0 absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 backdrop-blur-[41px]">
+			<div className="absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]">
 				<Spinner
 					className="h-3 w-3 animate-spin"
 					style={{ color: "var(--color-plain-reverse)" }}
@@ -193,7 +193,7 @@ const MyComponent = () => {
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
-					className="bg-gray-0 absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 backdrop-blur-[41px]"
+					className="absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]"
 				>
 					<div className="flex flex-1 flex-col p-5 text-left">
 						{currentBookmark?.title && (
@@ -208,10 +208,10 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<div
-								className="text-13 font-450 pb-4 align-middle leading-[115%] tracking-[0.01em] text-gray-600"
+								className="pb-4 align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 								tabIndex={-1}
 							>
-								<div className="text-13 flex items-center gap-1 leading-[138%]">
+								<div className="flex items-center gap-1 text-13 leading-[138%]">
 									{metaData?.favIcon ? (
 										<Image
 											alt="favicon"
@@ -249,7 +249,7 @@ const MyComponent = () => {
 									{currentBookmark.description}
 									{showMore && isOverflowing && (
 										<button
-											className="text-13 inline leading-[138%] tracking-[0.01em] text-gray-800"
+											className="inline text-13 leading-[138%] tracking-[0.01em] text-gray-800"
 											onClick={() => setShowMore(false)}
 											type="button"
 										>
@@ -259,7 +259,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && !showMore && (
 									<button
-										className="bg-gray-0 text-13 absolute right-0 bottom-0 pl-1 leading-[138%] tracking-[0.01em] text-gray-800"
+										className="absolute right-0 bottom-0 bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-800"
 										onClick={() => setShowMore(true)}
 										type="button"
 									>
@@ -295,7 +295,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="text-13 font-450 align-middle leading-[115%] tracking-[0.01em] text-gray-600"
+												className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
 												#{tag?.name}
@@ -320,7 +320,7 @@ const MyComponent = () => {
 										<Icon className="h-[15px] w-[15px] text-gray-600">
 											<GeminiAiIcon />
 										</Icon>
-										<p className="text-13 font-450 align-middle leading-[115%] tracking-[0.01em] text-gray-600">
+										<p className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
 											AI Summary
 										</p>
 									</div>

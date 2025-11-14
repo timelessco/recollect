@@ -249,7 +249,7 @@ const Settings = () => {
 								</div>
 							</Button>
 							<Button
-								className="text-13 bg-gray-100 px-2 py-[6px] leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
+								className="bg-gray-100 px-2 py-[6px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
 								disabledClassName="bg-gray-100  hover:bg-gray-800 text-gray-400 "
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
@@ -397,7 +397,7 @@ const Settings = () => {
 						}
 					/>
 					{session?.user?.app_metadata?.provider === "email" && (
-						<div className="text-13 mt-2 flex items-center gap-x-2 leading-[150%] font-normal text-gray-600">
+						<div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">
 							<figure className="text-gray-900">
 								<InfoIcon />
 							</figure>

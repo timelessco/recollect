@@ -9,7 +9,7 @@ export default async function Page(props: AuthErrorPageProps) {
 	const params = await searchParams;
 
 	return (
-		<div className="optimize-legibility antialiased" lang="en">
+		<div className="antialiased optimize-legibility" lang="en">
 			<div className="min-h-dvh bg-black px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8">
 				<div className="mx-auto max-w-max">
 					<main className="sm:flex">

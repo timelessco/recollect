@@ -53,7 +53,7 @@ const SidePaneUserDropdown = () => {
 						<div className="flex w-4/5 items-center space-x-2">
 							<UserAvatar
 								alt="user-avatar"
-								className="bg-gray-1000 h-6 w-6 rounded-full object-contain"
+								className="h-6 w-6 rounded-full bg-gray-1000 object-contain"
 								height={24}
 								src={
 									!isNull(userProfilePicData?.data)

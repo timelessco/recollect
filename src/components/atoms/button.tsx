@@ -37,7 +37,7 @@ const Button: FC<ButtonProps> = (props) => {
 	const buttonClassNames = tcx(
 		classNames({
 			[smoothHoverClassName]: true,
-			"text-13 flex items-center rounded-lg px-2 py-[5px] leading-[14px] font-medium": true,
+			"flex items-center rounded-lg px-2 py-[5px] text-13 leading-[14px] font-medium": true,
 			"bg-gray-950 text-white hover:bg-gray-800": type === "dark",
 			"bg-transparent hover:bg-gray-100": type === "light",
 			"bg-gray-100": isActive,

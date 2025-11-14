@@ -93,7 +93,7 @@ const config = {
 	// Default plugins for all files
 	plugins: basePlugins,
 	tailwindFunctions: ["tcx"],
-	// tailwindStylesheet: "./src/styles/globals.css",
+	tailwindStylesheet: "./src/styles/globals.css",
 	useTabs: true,
 };
 

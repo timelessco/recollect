@@ -454,7 +454,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`text-13 relative mr-2 ml-1 truncate align-middle leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
+			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
 				!isNull(item?.category_id) && isNull(categorySlug)
 					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -537,7 +537,7 @@ const CardSection = ({
 		});
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="card-icon text-gray-1000 p-0.5">
+				<figure className="card-icon p-0.5 text-gray-1000">
 					<LinkIcon />
 				</figure>
 			);
@@ -584,7 +584,7 @@ const CardSection = ({
 			currentPath === VIDEOS_URL
 		) {
 			return (
-				<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
+				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
 					<VideoIcon size="15" />
 				</figure>
 			);
@@ -596,7 +596,7 @@ const CardSection = ({
 			currentPath === DOCUMENTS_URL
 		) {
 			return (
-				<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
+				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
 					<FolderIcon size="15" />
 				</figure>
 			);
@@ -608,14 +608,14 @@ const CardSection = ({
 			!item?.meta_data?.mediaType
 		) {
 			return (
-				<figure className="card-icon text-gray-1000 rounded p-0.5">
+				<figure className="card-icon rounded p-0.5 text-gray-1000">
 					<LinkIcon />
 				</figure>
 			);
 		}
 
 		return (
-			<figure className="card-icon text-gray-1000 rounded-sm p-0.5">
+			<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
 				<ImageIcon size={`${size}`} />
 			</figure>
 		);
@@ -631,10 +631,10 @@ const CardSection = ({
 				{!isNull(item?.category_id) &&
 					categorySlug === ALL_BOOKMARKS_URL &&
 					item?.category_id !== 0 && (
-						<div className="text-13 font-450 ml-1 flex items-center leading-4 text-gray-600">
+						<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
 							<p className="mr-1">in</p>
 							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="text-13 font-450 ml-1 leading-4 text-gray-600">
+							<p className="ml-1 text-13 leading-4 font-450 text-gray-600">
 								{bookmarkCategoryData?.category_name}
 							</p>
 						</div>
@@ -645,7 +645,7 @@ const CardSection = ({
 
 	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
 		<div
-			className="text-13 font-450 rounded-[5px] bg-gray-100 px-1 py-[1.5px] leading-[14.9px] tracking-[0.13px] text-gray-500 not-italic"
+			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 leading-[14.9px] font-450 tracking-[0.13px] text-gray-500 not-italic"
 			key={id}
 		>
 			#{name}
@@ -720,7 +720,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="text-13 font-450 relative leading-[115%] tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="relative text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -771,7 +771,7 @@ const CardSection = ({
 					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
 						{bookmarksInfoValue?.includes("description" as never) &&
 							!isEmpty(item.description) && (
-								<p className="text-13 font-450 mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden leading-4 break-all text-gray-600 max-sm:mt-px">
+								<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
 									{item?.description}
 								</p>
 							)}
@@ -786,7 +786,7 @@ const CardSection = ({
 								{renderFavIcon(item)}
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)
@@ -824,7 +824,7 @@ const CardSection = ({
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
 								{item?.inserted_at && (
-									<p className="text-13 font-450 relative leading-4 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
 											new Date(item?.inserted_at || ""),
 											isCurrentYear(item?.inserted_at)

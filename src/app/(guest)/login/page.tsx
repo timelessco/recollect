@@ -14,7 +14,7 @@ export default function LoginPage() {
 
 			<main className="flex flex-col items-center justify-center gap-4">
 				<NextLink
-					className="bg-gray-alpha-100 w-full text-gray-950 shadow-none hover:bg-gray-300"
+					className="w-full bg-gray-alpha-100 text-gray-950 shadow-none hover:bg-gray-300"
 					href="/email"
 					asButton
 				>

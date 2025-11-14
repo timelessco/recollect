@@ -712,7 +712,7 @@
 	}
 
 	.chakra-slider-group .slider-thumb .slider-thumb-handle {
-		@apply bg-gray-0 flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full shadow-md select-none;
+		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-gray-0 shadow-md select-none;
 	}
 
 	.chakra-slider-group .slider-thumb-handle:focus-within {
@@ -736,7 +736,7 @@
 
 	/* for the select card styles on card and moodboard views */
 	.single-bookmark[aria-selected="true"] .card-moodboard-info-wrapper {
-		@apply bg-plain-reverse text-plain rounded-t-none rounded-b-lg;
+		@apply rounded-t-none rounded-b-lg bg-plain-reverse text-plain;
 	}
 
 	/* Remove hover effect for selected cards */
