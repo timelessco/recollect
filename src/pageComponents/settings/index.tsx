@@ -397,12 +397,12 @@ const Settings = () => {
 						}
 					/>
 					{session?.user?.app_metadata?.provider === "email" && (
-						<p className="text-13 mt-2 flex items-center gap-x-2 leading-[150%] font-normal text-gray-600">
+						<div className="text-13 mt-2 flex items-center gap-x-2 leading-[150%] font-normal text-gray-600">
 							<figure className="text-gray-900">
 								<InfoIcon />
 							</figure>
 							You have logged in with your Google account.
-						</p>
+						</div>
 					)}
 				</div>
 				<div className="pt-10">

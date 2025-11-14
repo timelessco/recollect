@@ -22,5 +22,8 @@ export default function useClearBookmarksInTrashMutation() {
 		},
 	});
 
-	return { clearBookmarksInTrashMutation };
+	return {
+		clearBookmarksInTrashMutation,
+		isPending: clearBookmarksInTrashMutation.isPending,
+	};
 }

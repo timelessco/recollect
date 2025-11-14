@@ -37,6 +37,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 	return (
 		<>
 			<MenuButton
+				as="div"
 				className={`${menuButtonClassName ?? ""} ${
 					(menu.open && menuButtonActiveClassName) ?? ""
 				} focus-visible:outline-hidden`}
@@ -50,6 +51,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 				// @ts-expect-error - TODO: fix this
 				initialFocusRef={props.initialFocusRef}
 				state={menu}
+				portal
 			>
 				{children}
 			</Menu>
