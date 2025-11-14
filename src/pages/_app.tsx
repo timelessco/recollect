@@ -11,8 +11,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { getBaseUrl } from "../utils/constants";
 
-import { inter } from "@/styles/font";
-
 import "../styles/globals.css";
 
 const MyApp = ({
@@ -78,12 +76,6 @@ const MyApp = ({
 					)}
 				</Head>
 
-				{/* eslint-disable-next-line react/no-unknown-property */}
-				<style jsx global>{`
-					html {
-						font-family: ${inter.style.fontFamily};
-					}
-				`}</style>
 				<Component {...pageProps} />
 			</HydrationBoundary>
 			<ReactQueryDevtools />
