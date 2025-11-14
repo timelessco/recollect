@@ -15,9 +15,9 @@ export function SignInWithGoogleForm() {
 	const [callbackURL] = React.useState<string | undefined>(() => {
 		if ("window" in globalThis) {
 			const urlParams = new URLSearchParams(globalThis.location.search);
-			const redirect = urlParams.get("redirect");
+			const next = urlParams.get("next");
 
-			return redirect ?? undefined;
+			return next ?? undefined;
 		}
 
 		return undefined;
