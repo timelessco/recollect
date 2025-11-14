@@ -115,10 +115,12 @@ export default defineConfig(
 			// Typescript rules
 			"@typescript-eslint/naming-convention": "off",
 			"@typescript-eslint/no-use-before-define": "off",
+			"@typescript-eslint/consistent-type-definitions": "off",
 
 			// React
 			"react/prefer-read-only-props": "off",
 			"react/forbid-component-props": "off",
+			"react/function-component-definition": "off",
 
 			// TODO: Remove this rule later
 			"no-negated-condition": "off",
