@@ -1,3 +1,4 @@
+import { title } from "node:process";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -45,7 +46,12 @@ export default async function handler(
 		.maybeSingle();
 
 	if (checkError) {
-		console.warn("Error checking existing rows", checkError);
+		console.log("Error checking existing rows", checkError);
+		Sentry.captureException(checkError, {
+			extra: {
+				errorMessage: checkError,
+			},
+		});
 		response
 			.status(500)
 			.json({ url: null, error: "Error checking existing rows" });
@@ -68,6 +74,11 @@ export default async function handler(
 
 	if (!isNull(error)) {
 		console.warn("Error inserting row", error);
+		Sentry.captureException(error, {
+			extra: {
+				errorMessage: error,
+			},
+		});
 		response.status(500).json({ url: null, error });
 		return;
 	}
@@ -100,42 +111,34 @@ export default async function handler(
 
 	const categoryData = data?.[0];
 
-	if (process.env.NODE_ENV !== "development") {
-		try {
-			const { data: emailData, status } = await axios.post(
-				`${getBaseUrl()}${NEXT_API_URL}${SEND_EMAIL}`,
-				{
-					url,
-					display_name:
-						categoryData?.profiles?.display_name ||
-						categoryData?.profiles?.user_name,
-					category_name: categoryData?.category_name,
-					emailList: emailList[0],
-				},
-			);
+	// if (process.env.NODE_ENV !== "development") {
+	try {
+		await axios.post(`${getBaseUrl()}${NEXT_API_URL}${SEND_EMAIL}`, {
+			url,
+			display_name:
+				categoryData?.profiles?.display_name ||
+				categoryData?.profiles?.user_name,
+			category_name: categoryData?.category_name,
+			emailList: emailList[0],
+		});
 
-			if (status !== 200) {
-				console.warn("error in sending email", emailData);
-				response.status(500).json({
-					url: null,
-					error: "error in sending email",
-				});
-			}
-
-			response.status(200).json({ url, error });
-		} catch (catchError: unknown) {
-			console.error("Error in resend email api", catchError);
-
-			Sentry.captureException(error);
-			response.status(500).json({
-				url: null,
-				error: catchError as string,
-				message: "error in resend email api",
-			});
-		}
-	} else {
-		response
-			.status(200)
-			.json({ url, error: null, message: "in dev mode email not sent" });
+		response.status(200).json({ url, error: null });
+	} catch (catchError: unknown) {
+		console.error("Error in resend email api", catchError);
+		Sentry.captureException(catchError, {
+			extra: {
+				errorMessage: catchError,
+			},
+		});
+		response.status(500).json({
+			url: null,
+			error: catchError as string,
+			message: "error in resend email api",
+		});
 	}
+	// } else {
+	// 	response
+	// 		.status(200)
+	// 		.json({ url, error: null, message: "in dev mode email not sent" });
+	// }
 }
