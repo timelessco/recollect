@@ -12,7 +12,7 @@ const ToolTip = ({ toolTipContent, children }: ToolTipTypes) => (
 		<Ariakit.TooltipAnchor className="cursor-pointer">
 			{children}
 		</Ariakit.TooltipAnchor>
-		<Ariakit.Tooltip className="z-20 rounded-xl bg-gray-900 px-2 py-1 text-13 font-450 text-white">
+		<Ariakit.Tooltip className="z-20 rounded-xl bg-gray-900 px-2 py-1 text-13 font-450 text-gray-0">
 			{toolTipContent}
 		</Ariakit.Tooltip>
 	</Ariakit.TooltipProvider>

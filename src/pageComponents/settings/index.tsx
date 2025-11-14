@@ -250,7 +250,7 @@ const Settings = () => {
 							</Button>
 							<Button
 								className="bg-gray-100 px-2 py-[6px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
-								disabledClassName="bg-gray-100  hover:bg-gray-800 text-gray-400 "
+								disabledClassName="bg-gray-100 text-gray-400 hover:bg-gray-100"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -410,7 +410,11 @@ const Settings = () => {
 						Iframe
 					</p>
 					<SettingsToggleCard
-						icon={<IframeIcon />}
+						icon={
+							<figure className="text-gray-900">
+								<IframeIcon />
+							</figure>
+						}
 						title="Enable iframe in lightbox"
 						description="Allow embedding external content in lightbox view"
 						isSwitch
