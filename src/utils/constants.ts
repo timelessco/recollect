@@ -1,3 +1,5 @@
+import { BASE_URL } from "@/site-config";
+
 // table names
 export const MAIN_TABLE_NAME = "everything";
 export const TAG_TABLE_NAME = "tags";
@@ -35,24 +37,6 @@ export const URL_IMAGE_CHECK_PATTERN =
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
-
-const productionUrl =
-	process.env.NEXT_PUBLIC_SITE_URL ??
-	`https://${
-		process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
-		process.env.VERCEL_PROJECT_PRODUCTION_URL
-	}`;
-const vercelEnvironment =
-	process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV;
-const branchUrl =
-	process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL ?? process.env.VERCEL_BRANCH_URL;
-const vercelUrl =
-	vercelEnvironment === "production" ? productionUrl : `https://${branchUrl}`;
-
-export const BASE_URL =
-	process.env.NODE_ENV === "development"
-		? `http://localhost:${process.env.PORT ?? 3_000}`
-		: vercelUrl;
 
 // api constants
 export const getBaseUrl = () => BASE_URL;
@@ -141,6 +125,15 @@ export const SCREENSHOT_API =
 export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 
 // urls
+
+// Guest
+export const LOGIN_URL = "login";
+export const EMAIL_URL = "email";
+export const OTP_URL = "otp";
+export const AUTH_OAUTH_URL = "auth/oauth";
+export const AUTH_ERROR_URL = "auth/error";
+
+// Others
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
 export const UNCATEGORIZED_URL = "uncategorized";
 export const SEARCH_URL = "search";
@@ -149,7 +142,6 @@ export const TRASH_URL = "trash";
 export const DOCUMENTS_URL = "documents";
 export const TWEETS_URL = "tweets";
 export const SETTINGS_URL = "settings";
-export const LOGIN_URL = "login";
 export const SIGNUP_URL = "signup";
 export const SIGNIN_URL = "login";
 export const IMAGES_URL = "images";
@@ -370,3 +362,21 @@ export const springConfig = {
 	restDisplacementThreshold: 0.001,
 	type: "spring",
 } as const;
+
+/**
+ * Array of public paths that don't require authentication
+ * Dynamically generated from PAGE_SLUGS
+ */
+// export const PUBLIC_PATHS = new Set(["/"]);
+
+/**
+ * Array of guest paths that require authentication
+ */
+export const GUEST_PATHS = new Set([
+	`/${AUTH_ERROR_URL}`,
+	`/${AUTH_OAUTH_URL}`,
+	`/${EMAIL_URL}`,
+	`/${LOGIN_URL}`,
+	`/${OTP_URL}`,
+]);
+export const isGuestPath = (pathname: string) => GUEST_PATHS.has(pathname);

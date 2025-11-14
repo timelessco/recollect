@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { type Provider, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import {
 	type QueryFunctionContext,
 	type QueryKey,
@@ -795,14 +795,6 @@ export const uploadProfilePic = async ({ file }: UploadProfilePicPayload) => {
 };
 
 // auth
-
-export const signInWithOauth = async (
-	provider: Provider,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	supabase: SupabaseClient<any, "public", any>,
-) => {
-	await supabase.auth.signInWithOAuth({ provider });
-};
 
 export const signInWithOtp = async (
 	email: string,

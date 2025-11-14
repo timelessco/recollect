@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-	font-family: "Inter V";
-	font-weight: 100 900;
-	font-style: normal;
-	font-display: block;
-	src: url("/fonts/Inter-V.var.woff2") format("woff2");
-}
-
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -467,9 +459,11 @@
 /* Why inline is needed here: https://tailwindcss.com/docs/theme#referencing-other-variables */
 @theme inline {
 	/* Font Family */
-	--font-sans:
-		"Inter V", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+	/* Fonts */
+	--font-sans: var(--font-inter);
+	/* stylelint-disable-next-line custom-property-pattern */
+	--font-sans--font-variation-settings: "opsz" 20;
 
 	/* Plain colors */
 	--color-plain: var(--color-plain);
@@ -613,17 +607,14 @@
 	[role="button"]:not(:disabled) {
 		cursor: pointer;
 	}
+}
 
-	body {
-		@apply bg-gray-0 overflow-hidden antialiased outline-hidden;
+@utility optimize-legibility {
+	text-rendering: optimizelegibility;
+}
 
-		font-variation-settings: "opsz" 20;
-		text-rendering: optimizelegibility;
-	}
-
-	main {
-		height: calc(100vh - 48.5px);
-	}
+@utility inter-display {
+	font-optical-sizing: auto;
 }
 
 @utility hide-scrollbar {
