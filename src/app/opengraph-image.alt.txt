@@ -1,0 +1,1 @@
+Open source bookmark manager built using Next.js and Supabase. Save and organize your bookmarks, images, and documents in one place.

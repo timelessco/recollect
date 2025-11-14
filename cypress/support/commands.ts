@@ -43,7 +43,6 @@
 // @ts-expect-error - This is a valid global declaration
 declare global {
 	namespace Cypress {
-		// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 		interface Chainable {
 			/**
 			 * Custom command to select DOM element by data-cy attribute.
