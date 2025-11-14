@@ -45,10 +45,10 @@ export default async function handler(
 		.maybeSingle();
 
 	if (checkError) {
-		console.log("Error checking existing rows", checkError);
+		console.error("Error checking existing rows", checkError);
 		Sentry.captureException(checkError, {
 			extra: {
-				errorMessage: checkError,
+				errorMessage: "Error checking existing rows",
 			},
 		});
 		response
@@ -72,10 +72,10 @@ export default async function handler(
 	});
 
 	if (!isNull(error)) {
-		console.warn("Error inserting row", error);
+		console.error("Error inserting row", error);
 		Sentry.captureException(error, {
 			extra: {
-				errorMessage: error,
+				errorMessage: "Error inserting row",
 			},
 		});
 		response.status(500).json({ url: null, error });
@@ -126,7 +126,7 @@ export default async function handler(
 			console.error("Error in resend email api", catchError);
 			Sentry.captureException(catchError, {
 				extra: {
-					errorMessage: catchError,
+					errorMessage: "Error in resend email api",
 				},
 			});
 			response.status(500).json({
