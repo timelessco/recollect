@@ -163,7 +163,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				/>
 			</MenuButton>
 			<Menu
-				className="shadow-custom-1 absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-gray-50 px-3 ring-1 ring-black/5 focus:outline-hidden"
+				className="absolute left-4 z-10 mt-2 h-[368px] w-[310px] origin-top-left rounded-xl bg-gray-50 px-3 shadow-custom-1 ring-1 ring-black/5 focus:outline-hidden"
 				composite={false}
 				portal
 				state={menu}

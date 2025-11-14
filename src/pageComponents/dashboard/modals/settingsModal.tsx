@@ -108,10 +108,10 @@ const SettingsModal = () => {
 			wrapperClassName="skip-global-paste w-full max-w-[740px] rounded-[20px] outline-hidden self-center"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
-			<div className="bg-gray-0 flex h-[700px] rounded-[20px]">
-				<div className="bg-gray-0 flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 px-2 py-4 lg:min-w-[180px]">
+			<div className="flex h-[700px] rounded-[20px] bg-gray-0">
+				<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
 					{isDesktop && (
-						<div className="text-13 px-2 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
+						<div className="px-2 text-13 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
 							Settings
 						</div>
 					)}

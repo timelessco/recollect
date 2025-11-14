@@ -81,7 +81,7 @@ const ChangeEmail = () => {
 		<>
 			<div className="relative mb-[30px] flex items-center">
 				<Button
-					className="bg-gray-0 absolute left-[-7px] rounded-full p-1 hover:bg-gray-100"
+					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
 					<figure className="text-gray-900">

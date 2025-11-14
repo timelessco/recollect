@@ -136,7 +136,7 @@ export const AiFeatures = () => {
 							</p>
 						</div>
 					)}
-					<p className="text-13 mt-2 flex flex-wrap items-center leading-[150%] tracking-normal text-gray-600">
+					<p className="mt-2 flex flex-wrap items-center text-13 leading-[150%] tracking-normal text-gray-600">
 						<figure className="mr-2 shrink-0">
 							<InfoIcon />
 						</figure>

@@ -68,7 +68,7 @@ const AriaSearchableSelect = ({
 					}}
 					value={isEmpty(defaultValue) ? "Uncategorized" : defaultValue}
 				>
-					<Ariakit.Select className="aria-multi-select text-13 font-450 flex w-full items-center justify-between leading-[15px] tracking-[0.01em] text-gray-900 outline-hidden" />
+					<Ariakit.Select className="aria-multi-select flex w-full items-center justify-between text-13 leading-[15px] font-450 tracking-[0.01em] text-gray-900 outline-hidden" />
 					{isLoading && (
 						<Spinner
 							className="h-3 w-3 animate-spin"
@@ -76,7 +76,7 @@ const AriaSearchableSelect = ({
 						/>
 					)}
 					<Ariakit.SelectPopover
-						className="bg-gray-0 shadow-custom-7 z-10 rounded-xl p-[6px]"
+						className="z-10 rounded-xl bg-gray-0 p-[6px] shadow-custom-7"
 						gutter={4}
 						sameWidth
 					>

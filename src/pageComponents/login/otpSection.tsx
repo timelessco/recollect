@@ -82,7 +82,7 @@ const OtpSection = () => {
 							value={otp}
 						/>
 						<button
-							className="text-13 text-gray-0 shadow-custom-2 flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-center leading-[15px] font-medium hover:bg-gray-700"
+							className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-950 py-[7px] text-center text-13 leading-[15px] font-medium text-gray-0 shadow-custom-2 hover:bg-gray-700"
 							disabled={isLoading || otp.length !== 6}
 							onClick={handleVerifyOtp}
 							type="button"

@@ -157,7 +157,7 @@ const AccessUserInfo = (props: {
 				) : (
 					<DefaultUserIcon className="h-5 w-5" />
 				)}
-				<p className="text-13 font-450 ml-[6px] w-[171px] truncate leading-[15px] text-gray-800">
+				<p className="ml-[6px] w-[171px] truncate text-13 leading-[15px] font-450 text-gray-800">
 					{item.userEmail}
 				</p>
 			</div>
@@ -310,7 +310,7 @@ const ShareContent = (props: ShareContentProps) => {
 								]}
 								// disabled
 								renderCustomSelectButton={() => (
-									<div className="text-gray-alpha-600 flex items-center">
+									<div className="flex items-center text-gray-alpha-600">
 										<p className="mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
@@ -326,7 +326,7 @@ const ShareContent = (props: ShareContentProps) => {
 				/>
 			</form>
 			<div className="pt-3">
-				<p className="font-450 px-2 py-[6px] text-xs leading-[14px] text-gray-500">
+				<p className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-500">
 					People with access
 				</p>
 				<div className="pb-2">
@@ -357,7 +357,7 @@ const ShareContent = (props: ShareContentProps) => {
 						<figure className="text-gray-1000">
 							<GlobeIcon />
 						</figure>
-						<p className="text-13 font-450 ml-[6px] leading-[15px] text-gray-800">
+						<p className="ml-[6px] text-13 leading-[15px] font-450 text-gray-800">
 							Anyone with link
 						</p>
 					</div>
@@ -417,7 +417,7 @@ const ShareContent = (props: ShareContentProps) => {
 					<figure className="text-gray-1000">
 						<LinkIcon />
 					</figure>
-					<p className="text-13 font-450 ml-[6px] leading-[15px] text-[#007bf4e5]">
+					<p className="ml-[6px] text-13 leading-[15px] font-450 text-[#007bf4e5]">
 						{linkCopied ? "Link copied" : "Copy link"}
 					</p>
 				</div>

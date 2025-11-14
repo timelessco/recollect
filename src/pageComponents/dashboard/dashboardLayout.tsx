@@ -307,7 +307,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		} else {
 			return (
 				<Input
-					className="bg-gray-0 m-0 h-[28px] rounded-none border-none p-0 text-xl leading-[16px] font-semibold text-gray-900 focus:outline-hidden"
+					className="m-0 h-[28px] rounded-none border-none bg-gray-0 p-0 text-xl leading-[16px] font-semibold text-gray-900 focus:outline-hidden"
 					errorText=""
 					isError={false}
 					isFullWidth={false}
@@ -473,7 +473,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 							Sure you want to delete?
 						</p>
 						<Button
-							className="bg-gray-alpha-100 hover:bg-gray-alpha-200 flex w-full justify-center py-[5.5px] leading-[115%] tracking-[0.01em] text-[#D10303]"
+							className="flex w-full justify-center bg-gray-alpha-100 py-[5.5px] leading-[115%] tracking-[0.01em] text-[#D10303] hover:bg-gray-alpha-200"
 							id="warning-button"
 							onClick={onClearTrash}
 						>
@@ -526,7 +526,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		return (
 			<AriaDropdown
 				menuButton={
-					<Button className="hover:text-plain-reverse bg-transparent p-[7px] text-gray-600">
+					<Button className="bg-transparent p-[7px] text-gray-600 hover:text-plain-reverse">
 						<OptionsIcon />
 					</Button>
 				}
@@ -602,7 +602,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				{showHeadingCondition && (
 					<div className={figureWrapperClass}>
 						{renderSidePaneCollapseButton}
-						<figure className="text-plain-reverse mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center">
+						<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center text-plain-reverse">
 							{navBarLogo()}
 						</figure>
 						{navBarHeading()}

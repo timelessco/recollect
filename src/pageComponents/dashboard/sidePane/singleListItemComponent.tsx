@@ -94,13 +94,13 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						/>
 					</span>
 				) : (
-					<figure className="text-plain-reverse flex h-[18px] w-[18px] items-center">
+					<figure className="flex h-[18px] w-[18px] items-center text-plain-reverse">
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}
 				{(!responsiveIcon || isDesktop) && (
 					<p
-						className="font-450 ml-2 flex-1 truncate overflow-hidden text-[14px] leading-[115%] tracking-[0.01em]"
+						className="ml-2 flex-1 truncate overflow-hidden text-[14px] leading-[115%] font-450 tracking-[0.01em]"
 						id={listNameId}
 					>
 						{item?.name}
@@ -189,7 +189,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							item?.current && (
 								<div className="flex w-full justify-end">
 									<p
-										className={`font-450 min-w-[16px] text-right text-[11px] leading-[115%] tracking-[0.03em] text-gray-600 ${
+										className={`min-w-[16px] text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 ${
 											showDropdown ? "block group-hover:hidden" : "block"
 										} ${openedMenuId === item?.id ? "hidden" : ""}`}
 									>
@@ -203,7 +203,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					<span
 						className={`${
 							item?.name === "Tweets" ? "block" : "hidden"
-						} font-450 text-[11px] leading-3 text-gray-600 ${
+						} text-[11px] leading-3 font-450 text-gray-600 ${
 							showDropdown ? "block group-hover:hidden" : "block"
 						}`}
 					>

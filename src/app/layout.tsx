@@ -20,10 +20,10 @@ export default function RootLayout(props: RootLayoutProps) {
 	return (
 		<html
 			lang="en"
-			className={`optimize-legibility inter-display antialiased ${inter.variable}`}
+			className={`antialiased inter-display optimize-legibility ${inter.variable}`}
 			dir="ltr"
 		>
-			<body className="bg-gray-0 overflow-hidden outline-hidden">
+			<body className="overflow-hidden bg-gray-0 outline-hidden">
 				<Providers>{children}</Providers>
 
 				<AnalyticsScript />

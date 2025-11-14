@@ -98,7 +98,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
-		<div className="font-450 px-2 py-[6px] text-xs leading-[14px] text-gray-600">
+		<div className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-600">
 			{text}
 		</div>
 	);
@@ -169,7 +169,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				className="flex items-center justify-between px-2 py-[5.5px]"
 				key={item.label}
 			>
-				<p className="text-13 font-450 leading-[115%] tracking-[0.01em] text-gray-800">
+				<p className="text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800">
 					{item?.label}
 				</p>
 				<Switch
@@ -225,7 +225,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{bookmarksViewValue === viewValues.card ||
 			bookmarksViewValue === viewValues.moodboard ? (
 				<div className="flex items-center justify-between px-2 py-[5.5px]">
-					<p className="text-13 font-450 leading-[14px] text-gray-800">
+					<p className="text-13 leading-[14px] font-450 text-gray-800">
 						Columns
 					</p>
 					<div className="mt-px w-[90px]">
@@ -288,7 +288,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				</Button>
 			</MenuButton>
 			<Menu
-				className="shadow-custom-1 z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 ring-1 ring-black/5"
+				className="z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5"
 				// @ts-expect-error - TODO: fix this
 				initialFocusRef={radio0ref}
 				state={menu}

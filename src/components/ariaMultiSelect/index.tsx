@@ -93,7 +93,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
 					{...comboboxProps}
 				/>
 				<Ariakit.ComboboxPopover
-					className="bg-gray-0 shadow-custom-7 z-10 rounded-xl p-[6px]"
+					className="z-10 rounded-xl bg-gray-0 p-[6px] shadow-custom-7"
 					gutter={8}
 					render={<Ariakit.SelectList store={select} />}
 					sameWidth
@@ -136,7 +136,7 @@ type TagTypes = {
 
 const Tag = ({ children, onClick }: TagTypes) => (
 	<div
-		className="font-450 mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs leading-[15px] tracking-[0.01em] text-white"
+		className="mx-[2px] my-0.5 mr-1 cursor-pointer truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs leading-[15px] font-450 tracking-[0.01em] text-white"
 		onClick={onClick}
 		onKeyDown={() => {}}
 		role="button"
