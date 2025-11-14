@@ -25,7 +25,7 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 export const URL_PATTERN =
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*@[A-Za-z\d]*/gu;
+export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*#[A-Za-z\d]*/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
 	/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
