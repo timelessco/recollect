@@ -87,9 +87,9 @@ import Settings from "../settings";
 
 import AddModalContent from "./modals/addModalContent";
 import SettingsModal from "./modals/settingsModal";
-import ShareCategoryModal from "./modals/shareCategoryModal";
 import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
+import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 // import CardSection from "./cardSection";
 const CardSection = dynamic(async () => await import("./cardSection"), {
@@ -144,10 +144,6 @@ const Dashboard = () => {
 		(state) => state.toggleIsSortByLoading,
 	);
 
-	const toggleShareCategoryModal = useModalStore(
-		(state) => state.toggleShareCategoryModal,
-	);
-
 	const showDeleteBookmarkWarningModal = useModalStore(
 		(state) => state.showDeleteBookmarkWarningModal,
 	);
@@ -156,17 +152,6 @@ const Dashboard = () => {
 		(state) => state.toggleShowDeleteBookmarkWarningModal,
 	);
 
-	const showClearTrashWarningModal = useModalStore(
-		(state) => state.showClearTrashWarningModal,
-	);
-
-	const toggleShowClearTrashWarningModal = useModalStore(
-		(state) => state.toggleShowClearTrashWarningModal,
-	);
-
-	const setShareCategoryId = useMiscellaneousStore(
-		(state) => state.setShareCategoryId,
-	);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
@@ -224,7 +209,8 @@ const Dashboard = () => {
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
 
-	const { clearBookmarksInTrashMutation } = useClearBookmarksInTrashMutation();
+	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
+		useClearBookmarksInTrashMutation();
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 
 	const { addBookmarkMinDataOptimisticMutation } =
@@ -685,6 +671,10 @@ const Dashboard = () => {
 											style={{ overflow: "unset" }}
 										>
 											<CardSection
+												bookmarksCountData={getBookmarkCountForCurrentPage(
+													bookmarksCountData?.data ?? undefined,
+													CATEGORY_ID as unknown as string | number | null,
+												)}
 												deleteBookmarkId={deleteBookmarkId}
 												isBookmarkLoading={
 													addBookmarkMinDataOptimisticMutation?.isPending
@@ -1181,8 +1171,6 @@ const Dashboard = () => {
 							await onDeleteCollection(current, categoryId);
 							break;
 						case "share":
-							toggleShareCategoryModal();
-							setShareCategoryId(categoryId);
 							// code block
 							break;
 						default:
@@ -1190,8 +1178,9 @@ const Dashboard = () => {
 					}
 				}}
 				onClearTrash={() => {
-					toggleShowClearTrashWarningModal();
+					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 				}}
+				isClearingTrash={isClearingTrash}
 				onDeleteCollectionClick={async () =>
 					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
@@ -1232,7 +1221,6 @@ const Dashboard = () => {
 				uploadFileFromAddDropdown={onDrop}
 				userId={session?.user?.id ?? ""}
 			/>
-			<ShareCategoryModal />
 			<SettingsModal />
 			<WarningActionModal
 				buttonText="Delete"
@@ -1277,17 +1265,6 @@ const Dashboard = () => {
 				setOpen={toggleShowDeleteBookmarkWarningModal}
 				warningText="Are you sure you want to delete ?"
 				// isLoading={deleteBookmarkMutation?.isLoading}
-			/>
-			<WarningActionModal
-				buttonText="Clear trash"
-				isLoading={clearBookmarksInTrashMutation?.isPending}
-				onContinueCick={() => {
-					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
-					toggleShowClearTrashWarningModal();
-				}}
-				open={showClearTrashWarningModal}
-				setOpen={toggleShowClearTrashWarningModal}
-				warningText="Are you sure you want to delete ?"
 			/>
 			<ToastContainer />
 		</>

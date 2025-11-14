@@ -21,7 +21,6 @@ import LinkIcon from "../../../icons/linkIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
-	useModalStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -171,24 +170,25 @@ type EmailInput = {
 	email: string;
 };
 
-const ShareContent = () => {
+type ShareContentProps = {
+	categoryId?: string | number | null;
+};
+
+const ShareContent = (props: ShareContentProps) => {
 	const [publicUrl, setPublicUrl] = useState("");
 	const [linkCopied, setLinkCopied] = useState(false);
 	const [inviteUserEditAccess, setInviteUserEditAccess] = useState(false);
 
-	const showShareCategoryModal = useModalStore(
-		(state) => state.showShareCategoryModal,
-	);
-
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { category_id: currentCategoryId } = useGetCurrentCategoryId();
 
 	const shareCategoryId = useMiscellaneousStore(
 		(state) => state.shareCategoryId,
 	);
-	// categoryId will only be there for nav bar share and shareCategoryId will be there for side pane share
-	const dynamicCategoryId = shareCategoryId ?? categoryId;
+	// Priority: props.categoryId > shareCategoryId > currentCategoryId
+	const dynamicCategoryId =
+		props.categoryId ?? shareCategoryId ?? currentCategoryId;
 
 	const { updateCategoryOptimisticMutation } =
 		useUpdateCategoryOptimisticMutation();
@@ -215,12 +215,10 @@ const ShareContent = () => {
 
 	// this resets all the state
 	useEffect(() => {
-		if (!showShareCategoryModal) {
-			setInviteUserEditAccess(false);
-			setLinkCopied(false);
-			reset({ email: "" });
-		}
-	}, [reset, showShareCategoryModal]);
+		setInviteUserEditAccess(false);
+		setLinkCopied(false);
+		reset({ email: "" });
+	}, [reset]);
 
 	const onSubmit: SubmitHandler<EmailInput> = async (data) => {
 		const emailList = data?.email?.split(",");

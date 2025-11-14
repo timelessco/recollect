@@ -93,6 +93,7 @@ export type CardSectionProps = {
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
+	bookmarksCountData?: number;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -115,6 +116,7 @@ const CardSection = ({
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
+	bookmarksCountData,
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
@@ -868,7 +870,7 @@ const CardSection = ({
 		if (isLoading) {
 			return (
 				<BookmarksSkeletonLoader
-					count={26}
+					count={bookmarksCountData}
 					type={cardTypeCondition}
 					colCount={bookmarksColumns?.[0]}
 				/>

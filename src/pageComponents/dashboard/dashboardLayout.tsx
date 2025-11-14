@@ -55,6 +55,7 @@ import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
 } from "../../components/customDropdowns.tsx/addBookmarkDropdown";
+import { Spinner } from "../../components/spinner";
 import ToolTip from "../../components/tooltip";
 import RenameIcon from "../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
@@ -96,6 +97,7 @@ type DashboardLayoutProps = {
 	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 	userId: string;
 	isLoadingCategories?: boolean;
+	isClearingTrash?: boolean;
 };
 
 const interpolateScaleValue = (angle: number) => {
@@ -145,6 +147,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		onSearchEnterPress = () => null,
 		uploadFileFromAddDropdown,
 		onDeleteCollectionClick,
+		isClearingTrash,
 	} = props;
 
 	const [showHeadingInput, setShowHeadingInput] = useState(false);
@@ -405,8 +408,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				value: "trash",
 				render: (
 					<div
-						className={`flex items-center text-red-700 ${dropdownMenuItemClassName}`}
-						onClick={() => onClearTrash()}
+						className={`flex items-center text-red-700 hover:text-red-700 ${dropdownMenuItemClassName}`}
 					>
 						<TrashIconRed />
 						<p className="ml-[6px]">Clear Trash</p>
@@ -464,6 +466,29 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (headerOptionsCurrentTab) {
+			case "trash":
+				content = (
+					<div className="p-1">
+						<p className="py-[6px] text-[12px] leading-[115%] tracking-[0.02em] text-gray-600">
+							Sure you want to delete?
+						</p>
+						<Button
+							className="bg-gray-alpha-100 hover:bg-gray-alpha-200 flex w-full justify-center py-[5.5px] leading-[115%] tracking-[0.01em] text-[#D10303]"
+							id="warning-button"
+							onClick={onClearTrash}
+						>
+							{isClearingTrash ? (
+								<Spinner className="h-[15px] w-[15px]" />
+							) : (
+								<>
+									<TrashIconRed />
+									<p className="ml-[6px]">Clear Trash</p>
+								</>
+							)}
+						</Button>
+					</div>
+				);
+				break;
 			case "view":
 				content = (
 					<BookmarksViewDropdown
