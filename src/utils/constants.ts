@@ -95,6 +95,7 @@ export const UPDATE_SHARED_CATEGORY_USER_ROLE_API =
 export const DELETE_SHARED_CATEGORIES_USER_API =
 	"/share/delete-shared-categories-user";
 export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
+export const SEND_EMAIL = "/share/send-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";

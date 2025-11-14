@@ -1,15 +1,8 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
-// import nodemailer from 'nodemailer';
-
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-// import fromData from "form-data";
 import { sign, type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
-
-// import MainGun from "mailgun.js";
 
 import {
 	type NextApiRequest,
@@ -19,15 +12,10 @@ import {
 	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	NEXT_API_URL,
+	SEND_EMAIL,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
-
-// import jwt_decode from 'jwt-decode';
-
-/**
- * Builds invite link for a user to be added as colaborator and sends it via email
- */
 
 type Data = {
 	error: PostgrestError | VerifyErrors | string | null;
@@ -47,6 +35,25 @@ export default async function handler(
 	const editAccess = request?.body?.edit_access;
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
+	const { data: existingRows, error: checkError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.select("*")
+		.eq("category_id", categoryId)
+		.eq("email", emailList[0])
+		.maybeSingle();
+
+	if (checkError) {
+		response
+			.status(500)
+			.json({ url: null, error: "Error checking existing rows" });
+		return;
+	}
+
+	if (existingRows) {
+		response.status(409).json({ url: null, error: "Email already exists" });
+		return;
+	}
 
 	const { error } = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
 		category_id: categoryId,
@@ -91,12 +98,28 @@ export default async function handler(
 
 	if (process.env.NODE_ENV !== "development") {
 		try {
-			await axios.post(`${getBaseUrl()}${NEXT_API_URL}/share/send-email`, {
-				url,
-				display_name: categoryData?.profiles?.display_name,
-				category_name: categoryData?.category_name,
-				emailList: emailList[0],
-			});
+			const { data: emailData, status } = await axios.post(
+				`${getBaseUrl()}${NEXT_API_URL}${SEND_EMAIL}`,
+				{
+					url,
+					display_name:
+						categoryData?.profiles?.display_name ||
+						categoryData?.profiles?.user_name,
+					category_name: categoryData?.category_name,
+					emailList: emailList[0],
+				},
+			);
+
+			console.log(emailData);
+
+			if (status !== 200) {
+				console.warn("error in sending email", emailData);
+				response.status(500).json({
+					url: null,
+					error: "error in sending email",
+				});
+			}
+
 			response.status(200).json({ url, error });
 		} catch (catchError: unknown) {
 			response.status(500).json({
