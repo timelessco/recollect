@@ -1,8 +1,5 @@
-// import { type IconName } from "@/icons/icon-name";
-import { isNonNullable, isNullable } from "@/utils/assertion-utils";
+import { isNullable } from "@/utils/assertion-utils";
 import { tcx } from "@/utils/tailwind-merge";
-
-type IconName = "recollect";
 
 export interface IconProps extends React.ComponentProps<"svg"> {
 	/**
@@ -10,7 +7,6 @@ export interface IconProps extends React.ComponentProps<"svg"> {
 	 * If it does not have a label, the icon will be hidden from screen readers
 	 */
 	ariaLabel?: string;
-	name?: IconName;
 }
 
 // For accessibility - https://www.smashingmagazine.com/2021/05/accessible-svg-patterns-comparison/
@@ -36,7 +32,8 @@ export function Icon(props: IconProps) {
 			{...ariaLabelProps}
 			{...rest}
 		>
-			{isNonNullable(ariaLabel) ? <title>{ariaLabel}</title> : null}
+			{isNullable(ariaLabel) ? null : <title>{ariaLabel}</title>}
+
 			{name ? <use href={`/svg/sprite.svg#${name}`} /> : children}
 		</svg>
 	);

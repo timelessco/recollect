@@ -379,3 +379,10 @@ export const GUEST_PATHS = new Set([
 ]);
 export const isGuestPath = (pathname: string) =>
 	pathname.startsWith(`/${AUTH_URLS}`) || GUEST_PATHS.has(pathname);
+
+/**
+ * Array of public paths that don't require authentication
+ */
+export const PUBLIC_PATHS = new Set(["/public"]);
+export const isPublicPath = (pathname: string) =>
+	pathname.startsWith("/public");

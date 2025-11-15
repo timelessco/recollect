@@ -200,7 +200,7 @@ const ShareContent = (props: ShareContentProps) => {
 		if (typeof window !== "undefined") {
 			const categorySlug = currentCategory?.category_slug as string;
 			const userName = currentCategory?.user_id?.user_name;
-			const url = `${window?.location?.origin}/${userName}/${categorySlug}`;
+			const url = `${window?.location?.origin}/public/${userName}/${categorySlug}`;
 			setPublicUrl(url);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps

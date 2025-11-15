@@ -1,14 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
-import { isGuestPath } from "./utils/constants";
+import { isGuestPath, isPublicPath } from "./utils/constants";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
-	// const pathnames = request.nextUrl.pathname;
-	// console.log("🚀 ~ proxy ~ pathname:", pathnames);
-
 	try {
+		const { pathname } = request.nextUrl;
+
+		// If it's a public path, allow access
+		if (isPublicPath(pathname)) {
+			return NextResponse.next();
+		}
+
 		return await updateSession(request);
 	} catch (error) {
 		console.error("Proxy request error:", error);
@@ -20,7 +24,7 @@ export async function proxy(request: NextRequest) {
 		const { pathname } = request.nextUrl;
 
 		// If it's a public path or guest path (like login), allow access
-		if (isGuestPath(pathname)) {
+		if (isPublicPath(pathname) || isGuestPath(pathname)) {
 			return NextResponse.next();
 		}
 

@@ -967,24 +967,6 @@
 		@apply bg-gray-200 text-gray-900;
 	}
 
-	.aria-checkbox:checked + .checkbox-div::before {
-		content: "";
-
-		position: absolute;
-		z-index: 2;
-		inset: 0;
-
-		border-radius: 4px;
-
-		background-color: var(--color-plain);
-
-		mask: url("/checkbox-tick.svg") center / 10px 9px no-repeat;
-	}
-
-	input[type="checkbox"]:checked + .checkbox-div {
-		@apply border-none;
-	}
-
 	.icon-svg-parent svg {
 		@apply fill-current;
 	}

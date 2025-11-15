@@ -1,6 +1,6 @@
 import { Icon, type IconProps } from "@/components/ui/recollect/icon";
 
-const GoogleIcon = (props: IconProps) => (
+export const GoogleIcon = (props: IconProps) => (
 	<Icon fill="none" viewBox="0 0 16 16" {...props}>
 		<path
 			fill="#d94f3d"
@@ -20,5 +20,3 @@ const GoogleIcon = (props: IconProps) => (
 		/>
 	</Icon>
 );
-
-export default GoogleIcon;

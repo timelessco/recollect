@@ -6,7 +6,7 @@ import { button } from "../ui/recollect/button";
 import { Link } from "../ui/recollect/link";
 
 import { Button } from "@/components/ui/recollect/button";
-import GoogleIcon from "@/icons/google-icon";
+import { GoogleIcon } from "@/icons/google-icon";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_BOOKMARKS_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
