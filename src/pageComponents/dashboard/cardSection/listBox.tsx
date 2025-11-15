@@ -507,7 +507,7 @@ const boxStyles = tv({
 	},
 });
 
-const ListBoxCheckboxBoxSlot = (props: CheckboxRenderProps) => {
+function ListBoxCheckboxBoxSlot(props: CheckboxRenderProps) {
 	const { isSelected, isIndeterminate, ...renderRest } = props;
 
 	return (
@@ -520,4 +520,4 @@ const ListBoxCheckboxBoxSlot = (props: CheckboxRenderProps) => {
 			<CheckIcon aria-hidden className="text-[10px]" />
 		</div>
 	);
-};
+}

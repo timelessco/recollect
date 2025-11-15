@@ -184,7 +184,7 @@ type CardSectionOptionCheckboxProps = {
 	optionProps: ReturnType<typeof useOption>["optionProps"];
 };
 
-const CardSectionOptionCheckbox = (props: CardSectionOptionCheckboxProps) => {
+function CardSectionOptionCheckbox(props: CardSectionOptionCheckboxProps) {
 	const { isSelected, cardTypeCondition, optionProps } = props;
 
 	return (
@@ -198,4 +198,4 @@ const CardSectionOptionCheckbox = (props: CardSectionOptionCheckboxProps) => {
 			{...optionProps}
 		/>
 	);
-};
+}

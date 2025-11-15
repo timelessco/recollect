@@ -1,31 +1,30 @@
 "use client";
 
 import {
-	Checkbox as AriaCheckbox,
 	composeRenderProps,
-	useRenderProps,
-	type CheckboxProps as AriaCheckboxProps,
+	Checkbox as RACCheckbox,
 	type CheckboxRenderProps,
+	type CheckboxProps as RACCheckboxProps,
 	type RenderProps,
 } from "react-aria-components";
 
 import { CheckIcon } from "@/icons/check-icon";
-import { focusRing } from "@/utils/react-aria-utils";
+import { focusRing, renderSlot } from "@/utils/react-aria-utils";
 import { tv } from "@/utils/tailwind-merge";
 
 const checkboxStyles = tv({
 	base: "group relative flex cursor-pointer items-center justify-center",
 });
 
-export interface CheckboxProps extends AriaCheckboxProps {
+export interface CheckboxProps extends RACCheckboxProps {
 	boxSlot?: RenderProps<CheckboxRenderProps>["children"];
 }
 
 export function Checkbox(props: CheckboxProps) {
-	const { boxSlot, className, children, ...rest } = props;
+	const { boxSlot = CheckboxBoxSlot, className, children, ...rest } = props;
 
 	return (
-		<AriaCheckbox
+		<RACCheckbox
 			{...rest}
 			className={composeRenderProps(className, (className, renderProps) =>
 				checkboxStyles({ ...renderProps, className }),
@@ -33,12 +32,12 @@ export function Checkbox(props: CheckboxProps) {
 		>
 			{composeRenderProps(children, (children, renderProps) => (
 				<>
-					<CheckboxBoxSlot renderProps={renderProps} boxSlot={boxSlot} />
+					{renderSlot(boxSlot, renderProps)}
 
 					{children}
 				</>
 			))}
-		</AriaCheckbox>
+		</RACCheckbox>
 	);
 }
 
@@ -53,23 +52,9 @@ export const checkboxBoxStyles = tv({
 	},
 });
 
-interface CheckboxBoxSlotProps {
-	renderProps: CheckboxRenderProps;
-	boxSlot: RenderProps<CheckboxRenderProps>["children"];
-}
+function CheckboxBoxSlot(props: CheckboxRenderProps) {
+	const { isSelected, isIndeterminate, ...renderRest } = props;
 
-function CheckboxBoxSlot(props: CheckboxBoxSlotProps) {
-	const { renderProps: checkboxRenderProps, boxSlot } = props;
-	const renderProps = useRenderProps({
-		children: boxSlot,
-		values: { ...checkboxRenderProps },
-	});
-
-	if (boxSlot) {
-		return <>{renderProps.children}</>;
-	}
-
-	const { isSelected, isIndeterminate, ...renderRest } = checkboxRenderProps;
 	return (
 		<div
 			className={checkboxBoxStyles({

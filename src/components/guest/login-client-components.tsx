@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { button } from "../ui/recollect/button";
 import { Link } from "../ui/recollect/link";
+import { Spinner } from "../ui/recollect/spinner";
 
 import { Button } from "@/components/ui/recollect/button";
 import { GoogleIcon } from "@/icons/google-icon";
@@ -14,8 +15,6 @@ import { tv } from "@/utils/tailwind-merge";
 import { successToast } from "@/utils/toastMessages";
 
 export function SignInWithGoogleForm() {
-	const [isPending, setIsPending] = React.useState(false);
-
 	const [callbackURL] = React.useState<string | undefined>(() => {
 		if ("window" in globalThis) {
 			const urlParams = new URLSearchParams(globalThis.location.search);
@@ -26,6 +25,8 @@ export function SignInWithGoogleForm() {
 
 		return undefined;
 	});
+
+	const [isPending, setIsPending] = React.useState(false);
 
 	const handleSocialLogin = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -60,7 +61,12 @@ export function SignInWithGoogleForm() {
 				className="w-full"
 				isPending={isPending}
 				isDisabled={isPending}
-				pendingTextSlot={<span>Logging in...</span>}
+				pendingSlot={
+					<>
+						<Spinner className="text-xs" />
+						<span>Logging in...</span>
+					</>
+				}
 			>
 				<GoogleIcon className="mr-1.5" />
 

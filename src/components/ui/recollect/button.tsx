@@ -3,11 +3,13 @@
 import {
 	composeRenderProps,
 	Button as RACButton,
+	type ButtonRenderProps,
 	type ButtonProps as RACButtonProps,
+	type RenderProps,
 } from "react-aria-components";
 
 import { Spinner } from "./spinner";
-import { focusRing } from "@/utils/react-aria-utils";
+import { focusRing, renderSlot } from "@/utils/react-aria-utils";
 import { tv } from "@/utils/tailwind-merge";
 
 export const buttonBase = tv({
@@ -42,18 +44,14 @@ export const button = tv({
 });
 
 export interface ButtonProps extends RACButtonProps {
-	pendingSlot?: React.ReactNode;
-	pendingTextSlot?: React.ReactNode;
-	pendingSpinnerSlot?: React.ReactNode;
+	pendingSlot?: RenderProps<ButtonRenderProps>["children"];
 }
 
 export function Button(props: ButtonProps) {
 	const {
 		className,
 		children,
-		pendingTextSlot,
-		pendingSpinnerSlot,
-		pendingSlot,
+		pendingSlot = ButtonPendingSlot,
 		...rest
 	} = props;
 
@@ -64,21 +62,23 @@ export function Button(props: ButtonProps) {
 				button({ ...renderProps, className }),
 			)}
 		>
-			{composeRenderProps(children, (children, { isPending }) => {
+			{composeRenderProps(children, (children, renderProps) => {
+				const { isPending } = renderProps;
 				if (isPending) {
-					return pendingSlot ? (
-						<>{pendingSlot}</>
-					) : (
-						<>
-							{pendingSpinnerSlot ?? <Spinner className="text-xs" />}
-
-							{pendingTextSlot ?? <span>Loading...</span>}
-						</>
-					);
+					return renderSlot(pendingSlot, renderProps);
 				}
 
 				return <>{children}</>;
 			})}
 		</RACButton>
+	);
+}
+
+function ButtonPendingSlot() {
+	return (
+		<>
+			<Spinner className="text-xs" />
+			<span>Loading...</span>
+		</>
 	);
 }
