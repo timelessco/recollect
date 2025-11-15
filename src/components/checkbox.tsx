@@ -17,7 +17,6 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 	const {
 		label = "",
 		value,
-		onChange = () => {},
 		checked,
 		disabled = false,
 		classname,
@@ -33,7 +32,6 @@ const Checkbox = (props: CheckboxPropsTypes) => {
 				checked={checked}
 				className="aria-checkbox absolute top-[0.5px] right-1 h-[26px] w-[26px] opacity-0"
 				disabled={disabled}
-				onChange={(event) => onChange(event.target.value)}
 				value={value}
 				{...rest}
 			/>

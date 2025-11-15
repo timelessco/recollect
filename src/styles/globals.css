@@ -531,6 +531,159 @@
 	--color-blacks-950: var(--color-blacks-950);
 	--color-blacks-1000: var(--color-blacks-1000);
 
+	/* Red colors */
+	--color-red-50: var(--color-red-50);
+	--color-red-100: var(--color-red-100);
+	--color-red-200: var(--color-red-200);
+	--color-red-300: var(--color-red-300);
+	--color-red-400: var(--color-red-400);
+	--color-red-500: var(--color-red-500);
+	--color-red-600: var(--color-red-600);
+	--color-red-700: var(--color-red-700);
+	--color-red-800: var(--color-red-800);
+	--color-red-900: var(--color-red-900);
+	--color-red-950: var(--color-red-950);
+
+	/* Red Alpha colors */
+	--color-red-alpha-300: var(--color-red-alpha-300);
+	--color-red-alpha-400: var(--color-red-alpha-400);
+	--color-red-alpha-500: var(--color-red-alpha-500);
+	--color-red-alpha-600: var(--color-red-alpha-600);
+	--color-red-alpha-700: var(--color-red-alpha-700);
+	--color-red-alpha-800: var(--color-red-alpha-800);
+	--color-red-alpha-900: var(--color-red-alpha-900);
+	--color-red-alpha-950: var(--color-red-alpha-950);
+
+	/* Blue colors */
+	--color-blue-50: var(--color-blue-50);
+	--color-blue-100: var(--color-blue-100);
+	--color-blue-200: var(--color-blue-200);
+	--color-blue-300: var(--color-blue-300);
+	--color-blue-400: var(--color-blue-400);
+	--color-blue-500: var(--color-blue-500);
+	--color-blue-600: var(--color-blue-600);
+	--color-blue-700: var(--color-blue-700);
+	--color-blue-800: var(--color-blue-800);
+	--color-blue-900: var(--color-blue-900);
+	--color-blue-950: var(--color-blue-950);
+
+	/* Green colors */
+	--color-green-50: var(--color-green-50);
+	--color-green-100: var(--color-green-100);
+	--color-green-200: var(--color-green-200);
+	--color-green-300: var(--color-green-300);
+	--color-green-400: var(--color-green-400);
+	--color-green-500: var(--color-green-500);
+	--color-green-600: var(--color-green-600);
+	--color-green-700: var(--color-green-700);
+	--color-green-800: var(--color-green-800);
+	--color-green-900: var(--color-green-900);
+	--color-green-950: var(--color-green-950);
+
+	/* Amber colors */
+	--color-amber-50: var(--color-amber-50);
+	--color-amber-100: var(--color-amber-100);
+	--color-amber-200: var(--color-amber-200);
+	--color-amber-300: var(--color-amber-300);
+	--color-amber-400: var(--color-amber-400);
+	--color-amber-500: var(--color-amber-500);
+	--color-amber-600: var(--color-amber-600);
+	--color-amber-700: var(--color-amber-700);
+	--color-amber-800: var(--color-amber-800);
+	--color-amber-900: var(--color-amber-900);
+	--color-amber-950: var(--color-amber-950);
+
+	/* Orange colors */
+	--color-orange-50: var(--color-orange-50);
+	--color-orange-100: var(--color-orange-100);
+	--color-orange-200: var(--color-orange-200);
+	--color-orange-300: var(--color-orange-300);
+	--color-orange-400: var(--color-orange-400);
+	--color-orange-500: var(--color-orange-500);
+	--color-orange-600: var(--color-orange-600);
+	--color-orange-700: var(--color-orange-700);
+	--color-orange-800: var(--color-orange-800);
+	--color-orange-900: var(--color-orange-900);
+	--color-orange-950: var(--color-orange-950);
+
+	/* Yellow colors */
+	--color-yellow-50: var(--color-yellow-50);
+	--color-yellow-100: var(--color-yellow-100);
+	--color-yellow-200: var(--color-yellow-200);
+	--color-yellow-300: var(--color-yellow-300);
+	--color-yellow-400: var(--color-yellow-400);
+	--color-yellow-500: var(--color-yellow-500);
+	--color-yellow-600: var(--color-yellow-600);
+	--color-yellow-700: var(--color-yellow-700);
+	--color-yellow-800: var(--color-yellow-800);
+	--color-yellow-900: var(--color-yellow-900);
+	--color-yellow-950: var(--color-yellow-950);
+
+	/* Teal colors */
+	--color-teal-50: var(--color-teal-50);
+	--color-teal-100: var(--color-teal-100);
+	--color-teal-200: var(--color-teal-200);
+	--color-teal-300: var(--color-teal-300);
+	--color-teal-400: var(--color-teal-400);
+	--color-teal-500: var(--color-teal-500);
+	--color-teal-600: var(--color-teal-600);
+	--color-teal-700: var(--color-teal-700);
+	--color-teal-800: var(--color-teal-800);
+	--color-teal-900: var(--color-teal-900);
+	--color-teal-950: var(--color-teal-950);
+
+	/* Cyan colors */
+	--color-cyan-50: var(--color-cyan-50);
+	--color-cyan-100: var(--color-cyan-100);
+	--color-cyan-200: var(--color-cyan-200);
+	--color-cyan-300: var(--color-cyan-300);
+	--color-cyan-400: var(--color-cyan-400);
+	--color-cyan-500: var(--color-cyan-500);
+	--color-cyan-600: var(--color-cyan-600);
+	--color-cyan-700: var(--color-cyan-700);
+	--color-cyan-800: var(--color-cyan-800);
+	--color-cyan-900: var(--color-cyan-900);
+	--color-cyan-950: var(--color-cyan-950);
+
+	/* Purple colors */
+	--color-purple-50: var(--color-purple-50);
+	--color-purple-100: var(--color-purple-100);
+	--color-purple-200: var(--color-purple-200);
+	--color-purple-300: var(--color-purple-300);
+	--color-purple-400: var(--color-purple-400);
+	--color-purple-500: var(--color-purple-500);
+	--color-purple-600: var(--color-purple-600);
+	--color-purple-700: var(--color-purple-700);
+	--color-purple-800: var(--color-purple-800);
+	--color-purple-900: var(--color-purple-900);
+	--color-purple-950: var(--color-purple-950);
+
+	/* Pink colors */
+	--color-pink-50: var(--color-pink-50);
+	--color-pink-100: var(--color-pink-100);
+	--color-pink-200: var(--color-pink-200);
+	--color-pink-300: var(--color-pink-300);
+	--color-pink-400: var(--color-pink-400);
+	--color-pink-500: var(--color-pink-500);
+	--color-pink-600: var(--color-pink-600);
+	--color-pink-700: var(--color-pink-700);
+	--color-pink-800: var(--color-pink-800);
+	--color-pink-900: var(--color-pink-900);
+	--color-pink-950: var(--color-pink-950);
+
+	/* Violet colors */
+	--color-violet-50: var(--color-violet-50);
+	--color-violet-100: var(--color-violet-100);
+	--color-violet-200: var(--color-violet-200);
+	--color-violet-300: var(--color-violet-300);
+	--color-violet-400: var(--color-violet-400);
+	--color-violet-500: var(--color-violet-500);
+	--color-violet-600: var(--color-violet-600);
+	--color-violet-700: var(--color-violet-700);
+	--color-violet-800: var(--color-violet-800);
+	--color-violet-900: var(--color-violet-900);
+	--color-violet-950: var(--color-violet-950);
+
 	/* Custom Colors */
 	--color-custom-gradient-1: linear-gradient(180deg, #2e2e2e 0%, #242424 100%);
 	--color-custom-red-100: #fff0f0;

@@ -131,8 +131,7 @@ export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 export const LOGIN_URL = "login";
 export const EMAIL_URL = "email";
 export const OTP_URL = "otp";
-export const AUTH_OAUTH_URL = "auth/oauth";
-export const AUTH_ERROR_URL = "auth/error";
+export const AUTH_URLS = "auth";
 
 // Others
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
@@ -374,10 +373,9 @@ export const springConfig = {
  * Array of guest paths that require authentication
  */
 export const GUEST_PATHS = new Set([
-	`/${AUTH_ERROR_URL}`,
-	`/${AUTH_OAUTH_URL}`,
 	`/${EMAIL_URL}`,
 	`/${LOGIN_URL}`,
 	`/${OTP_URL}`,
 ]);
-export const isGuestPath = (pathname: string) => GUEST_PATHS.has(pathname);
+export const isGuestPath = (pathname: string) =>
+	pathname.startsWith(`/${AUTH_URLS}`) || GUEST_PATHS.has(pathname);

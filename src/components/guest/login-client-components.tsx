@@ -2,15 +2,19 @@
 
 import * as React from "react";
 
-import { LoadingButton } from "@/components/ui/recollect/button";
+import { button } from "../ui/recollect/button";
+import { Link } from "../ui/recollect/link";
+
+import { Button } from "@/components/ui/recollect/button";
 import GoogleIcon from "@/icons/google-icon";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_BOOKMARKS_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
+import { tv } from "@/utils/tailwind-merge";
 import { successToast } from "@/utils/toastMessages";
 
 export function SignInWithGoogleForm() {
-	const [isLoading, setIsLoading] = React.useState(false);
+	const [isPending, setIsPending] = React.useState(false);
 
 	const [callbackURL] = React.useState<string | undefined>(() => {
 		if ("window" in globalThis) {
@@ -26,7 +30,7 @@ export function SignInWithGoogleForm() {
 	const handleSocialLogin = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		setIsLoading(true);
+		setIsPending(true);
 
 		try {
 			const supabase = createClient();
@@ -45,22 +49,41 @@ export function SignInWithGoogleForm() {
 		} catch (error) {
 			handleClientError(error, "Failed to sign in with Google");
 		} finally {
-			setIsLoading(false);
+			setIsPending(false);
 		}
 	};
 
 	return (
 		<form onSubmit={handleSocialLogin} className="w-full">
-			<LoadingButton
+			<Button
 				type="submit"
 				className="w-full"
-				isLoading={isLoading}
-				loadingText="Logging in..."
+				isPending={isPending}
+				isDisabled={isPending}
+				pendingTextSlot={<span>Logging in...</span>}
 			>
 				<GoogleIcon className="mr-1.5" />
 
 				<span>Continue with Google</span>
-			</LoadingButton>
+			</Button>
 		</form>
+	);
+}
+
+const linkStyles = tv({
+	extend: button,
+	base: "w-full bg-gray-alpha-100 text-gray-950 shadow-none",
+	variants: {
+		isHovered: {
+			true: "bg-gray-300",
+		},
+	},
+});
+
+export function ContinueWithEmailLink() {
+	return (
+		<Link className={linkStyles} href="/email" asButton>
+			Continue with Email
+		</Link>
 	);
 }

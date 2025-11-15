@@ -1,5 +1,5 @@
 // import { type IconName } from "@/icons/icon-name";
-import { isNonNullable } from "@/utils/assertion-utils";
+import { isNonNullable, isNullable } from "@/utils/assertion-utils";
 import { tcx } from "@/utils/tailwind-merge";
 
 type IconName = "recollect";
@@ -17,15 +17,13 @@ export interface IconProps extends React.ComponentProps<"svg"> {
 // Default: aria hidden props are used as the majority of icons are decorative
 export function Icon(props: IconProps) {
 	const { "aria-label": ariaLabel, children, className, name, ...rest } = props;
-	const ariaLabelProps: AriaHiddenProps | AriaLabelProps = isNonNullable(
-		ariaLabel,
-	)
+	const ariaLabelProps: AriaHiddenProps | AriaLabelProps = isNullable(ariaLabel)
 		? {
-				role: "img",
-			}
-		: {
 				"aria-hidden": "true",
 				focusable: "false",
+			}
+		: {
+				role: "img",
 			};
 
 	return (

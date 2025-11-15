@@ -149,7 +149,9 @@ const Option = ({
 				}}
 			/>
 			{item.rendered}
+
 			{!isPublicPage && (
+				// @ts-expect-error - TODO: fix this
 				<Checkbox
 					checked={isSelected}
 					classname={`${
@@ -162,9 +164,7 @@ const Option = ({
 								: "top-3"
 					}`}
 					value={isSelected ? "true" : "false"}
-					{...(optionProps.onPointerDown
-						? { onPointerDown: optionProps.onPointerDown }
-						: {})}
+					{...optionProps}
 				/>
 			)}
 		</li>

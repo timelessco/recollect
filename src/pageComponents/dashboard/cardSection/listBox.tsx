@@ -49,7 +49,6 @@ import {
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
-// we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
 
 type ListBoxDropTypes = ListProps<object> & {

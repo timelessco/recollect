@@ -1,5 +1,7 @@
-import { SignInWithGoogleForm } from "@/components/guest/login-form";
-import { NextLink } from "@/components/ui/recollect/next-link";
+import {
+	ContinueWithEmailLink,
+	SignInWithGoogleForm,
+} from "@/components/guest/login-client-components";
 import { LaterpadLogoIcon } from "@/icons/laterpad-logo-icon";
 
 export default function LoginPage() {
@@ -13,13 +15,7 @@ export default function LoginPage() {
 			</header>
 
 			<main className="flex flex-col items-center justify-center gap-4">
-				<NextLink
-					className="w-full bg-gray-alpha-100 text-gray-950 shadow-none hover:bg-gray-300"
-					href="/email"
-					asButton
-				>
-					Continue with Email
-				</NextLink>
+				<ContinueWithEmailLink />
 
 				<SignInWithGoogleForm />
 			</main>
