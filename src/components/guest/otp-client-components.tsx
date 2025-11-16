@@ -2,14 +2,15 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Form, Input, TextField } from "react-aria-components";
-
-import { FieldError, inputStyles } from "../ui/recollect/field";
+import { OTPInput, REGEXP_ONLY_DIGITS, type SlotProps } from "input-otp";
+import { Form } from "react-aria-components";
 
 import { Button } from "@/components/ui/recollect/button";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_BOOKMARKS_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
+import { focusRing } from "@/utils/react-aria-utils";
+import { tcx } from "@/utils/tailwind-merge";
 
 interface VerifyOtpFormProps {
 	email: string;
@@ -17,11 +18,12 @@ interface VerifyOtpFormProps {
 
 export function VerifyOtpForm(props: VerifyOtpFormProps) {
 	const { email } = props;
+	const [otp, setOtp] = React.useState("");
 	const [isPending, setIsPending] = React.useState(false);
 	const router = useRouter();
 
 	const handleFormAction = async (formData: FormData) => {
-		const otp = formData.get("otp") as string;
+		const otpValue = formData.get("otp") as string;
 
 		setIsPending(true);
 
@@ -30,7 +32,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 
 			const { error } = await supabase.auth.verifyOtp({
 				email,
-				token: otp,
+				token: otpValue,
 				type: "email",
 			});
 
@@ -40,7 +42,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 
 			router.push(`/${ALL_BOOKMARKS_URL}`);
 		} catch (error) {
-			handleClientError(error, "Please enter a valid 6-digit OTP");
+			handleClientError(error, "Failed to verify OTP");
 		} finally {
 			setIsPending(false);
 		}
@@ -48,45 +50,62 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 
 	return (
 		<Form action={handleFormAction} className="flex w-full flex-col gap-4">
-			<TextField
-				type="text"
-				name="otp"
-				inputMode="numeric"
-				autoFocus
-				isRequired
-				aria-label="OTP"
-				pattern="\d*"
-				autoComplete="one-time-code"
-				validate={validateOtp}
-				className="flex flex-col gap-1"
-			>
-				<Input
-					placeholder="Enter 6-digit code"
-					className={inputStyles}
+			<div className="flex flex-col gap-1">
+				<OTPInput
+					name="otp"
 					maxLength={6}
+					value={otp}
+					onChange={setOtp}
+					pattern={REGEXP_ONLY_DIGITS}
+					autoFocus
+					inputMode="numeric"
+					containerClassName="group flex items-center justify-center gap-3"
+					render={({ slots }) => (
+						<>
+							{slots.map((slot, idx) => (
+								// Slots are stable and position-based, so index is appropriate here
+								// eslint-disable-next-line react/no-array-index-key
+								<Slot key={idx} {...slot} />
+							))}
+						</>
+					)}
 				/>
-				<FieldError />
-			</TextField>
+			</div>
 
-			<Button type="submit" isPending={isPending} isDisabled={isPending}>
+			<Button
+				type="submit"
+				isPending={isPending}
+				isDisabled={isPending || otp.length !== 6}
+			>
 				Verify Email
 			</Button>
 		</Form>
 	);
 }
 
-function validateOtp(value: string) {
-	if (!value) {
-		return "OTP is required";
-	}
+function Slot(props: SlotProps) {
+	return (
+		<div
+			className={tcx(
+				"relative h-10 w-18",
+				"flex items-center justify-center",
+				"bg-gray-alpha-100",
+				"text-sm font-medium text-gray-900",
+				"rounded-lg",
+				"transition",
+				focusRing({ isFocusVisible: props.isActive }),
+			)}
+		>
+			{props.char !== null && <div>{props.char}</div>}
+			{props.hasFakeCaret && <FakeCaret />}
+		</div>
+	);
+}
 
-	if (value.length !== 6) {
-		return "OTP must be 6 digits";
-	}
-
-	if (!/^\d{6}$/u.test(value)) {
-		return "OTP must contain only numbers";
-	}
-
-	return null;
+function FakeCaret() {
+	return (
+		<div className="pointer-events-none absolute inset-0 flex animate-caret-blink items-center justify-center">
+			<div className="h-8 w-px bg-gray-900" />
+		</div>
+	);
 }
