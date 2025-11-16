@@ -61,6 +61,17 @@ const nextConfig: NextConfig = {
 
 	serverExternalPackages: ["@sentry/nextjs", "image-size"],
 
+	async redirects() {
+		return await Promise.resolve([
+			{
+				destination: "/all-bookmarks",
+				// temporary redirect (307)
+				permanent: false,
+				source: "/",
+			},
+		]);
+	},
+
 	// https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/tree-shaking/#tree-shaking-with-nextjs
 	// Only include webpack config when Sentry is enabled
 	...(hasSentry && {
