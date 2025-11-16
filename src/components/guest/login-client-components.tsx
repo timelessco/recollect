@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { ProgressBar } from "react-aria-components";
 
 import { button } from "../ui/recollect/button";
 import { Link } from "../ui/recollect/link";
@@ -62,10 +63,10 @@ export function SignInWithGoogleForm() {
 				isPending={isPending}
 				isDisabled={isPending}
 				pendingSlot={
-					<>
-						<Spinner className="text-xs" />
+					<ProgressBar isIndeterminate aria-label="Logging in...">
+						<Spinner className="mr-2 text-xs" />
 						<span>Logging in...</span>
-					</>
+					</ProgressBar>
 				}
 			>
 				<GoogleIcon className="mr-1.5" />

@@ -2,6 +2,7 @@
 
 import {
 	composeRenderProps,
+	ProgressBar,
 	Button as RACButton,
 	type ButtonRenderProps,
 	type ButtonProps as RACButtonProps,
@@ -76,9 +77,9 @@ export function Button(props: ButtonProps) {
 
 function ButtonPendingSlot() {
 	return (
-		<>
-			<Spinner className="text-xs" />
+		<ProgressBar aria-label="Loading...">
+			<Spinner className="mr-2 text-xs" />
 			<span>Loading...</span>
-		</>
+		</ProgressBar>
 	);
 }

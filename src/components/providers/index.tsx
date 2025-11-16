@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { ReactAriaProvider } from "./react-aria-provider";
 import { ReactQueryProvider } from "./react-query-provider";
@@ -12,7 +13,9 @@ export function Providers(props: ProvidersProps) {
 
 	return (
 		<ReactAriaProvider>
-			<ReactQueryProvider>{children}</ReactQueryProvider>
+			<NuqsAdapter>
+				<ReactQueryProvider>{children}</ReactQueryProvider>
+			</NuqsAdapter>
 		</ReactAriaProvider>
 	);
 }
