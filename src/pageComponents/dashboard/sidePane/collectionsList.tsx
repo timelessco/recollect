@@ -54,7 +54,6 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
-import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
 	dropdownMenuClassName,
@@ -81,8 +80,6 @@ type CollectionsListPropertyTypes = {
 		current: boolean,
 		id: number,
 	) => Promise<void>;
-	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
-	onIconSelect: (value: string, id: number) => void;
 	isLoadingCategories?: boolean;
 	isFetchingCategories?: boolean;
 };
@@ -304,9 +301,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	const {
 		onBookmarksDrop,
 		onCategoryOptionClick,
-		onIconSelect,
 		onAddNewCategory,
-		onIconColorChange,
 		isLoadingCategories = false,
 		isFetchingCategories = false,
 	} = listProps;
@@ -569,10 +564,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 										item={item}
 										listNameId="collection-name"
 										onCategoryOptionClick={onCategoryOptionClick}
-										onIconColorChange={(color) =>
-											onIconColorChange?.(color, item?.id)
-										}
-										onIconSelect={onIconSelect}
 										showDropdown
 										showSpinner={item?.id === sidePaneOptionLoading}
 									/>
