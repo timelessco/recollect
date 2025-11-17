@@ -4,7 +4,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
-import pick from "lodash/pick";
 import {
 	DragPreview,
 	ListDropTargetDelegate,
@@ -282,12 +281,7 @@ const OptionDrop = ({
 				target={{ type: "item", key: item.key, dropPosition: "before" }}
 			/>
 			<li
-				{...mergeProps(
-					pick(optionProps, ["id", "data-key"]),
-					dropProps,
-					focusProps,
-					dragProps,
-				)}
+				{...mergeProps(optionProps, dropProps, focusProps, dragProps)}
 				// Apply a class when the item is the active drop target.
 				className={`option-drop ${isFocusVisible ? "focus-visible" : ""} ${
 					isDropTarget && isCardDragging ? "drop-target" : ""
