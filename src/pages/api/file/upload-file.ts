@@ -133,7 +133,7 @@ const videoLogic = async (
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
-		video_url: thumbnailUrl?.publicUrl ?? null,
+		video_url: null,
 	};
 
 	return { ogImage, meta_data };
