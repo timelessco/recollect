@@ -5,11 +5,10 @@ import {
 	Checkbox as RACCheckbox,
 	type CheckboxRenderProps,
 	type CheckboxProps as RACCheckboxProps,
-	type RenderProps,
 } from "react-aria-components";
 
 import { CheckIcon } from "@/icons/check-icon";
-import { focusRing, renderSlot } from "@/utils/react-aria-utils";
+import { focusRing } from "@/utils/react-aria-utils";
 import { tv } from "@/utils/tailwind-merge";
 
 const checkboxStyles = tv({
@@ -17,11 +16,11 @@ const checkboxStyles = tv({
 });
 
 export interface CheckboxProps extends RACCheckboxProps {
-	boxSlot?: RenderProps<CheckboxRenderProps>["children"];
+	BoxSlot?: React.ElementType<CheckboxRenderProps>;
 }
 
 export function Checkbox(props: CheckboxProps) {
-	const { boxSlot = CheckboxBoxSlot, className, children, ...rest } = props;
+	const { BoxSlot = CheckboxBoxSlot, className, children, ...rest } = props;
 
 	return (
 		<RACCheckbox
@@ -32,7 +31,7 @@ export function Checkbox(props: CheckboxProps) {
 		>
 			{composeRenderProps(children, (children, renderProps) => (
 				<>
-					{renderSlot(boxSlot, renderProps)}
+					<BoxSlot {...renderProps} />
 
 					{children}
 				</>

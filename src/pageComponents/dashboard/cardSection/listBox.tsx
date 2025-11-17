@@ -400,7 +400,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 							}
 							onChange={() => state.selectionManager.clearSelection()}
 							className="gap-3 text-sm leading-[21px] font-450 tracking-[1%] text-gray-900"
-							boxSlot={ListBoxCheckboxBoxSlot}
+							BoxSlot={ListBoxCheckboxBoxSlot}
 						>
 							{`${
 								Array.from(state.selectionManager.selectedKeys.keys())?.length

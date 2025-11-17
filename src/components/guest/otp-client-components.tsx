@@ -6,6 +6,7 @@ import { OTPInput, REGEXP_ONLY_DIGITS, type SlotProps } from "input-otp";
 import { Form } from "react-aria-components";
 
 import { Button } from "@/components/ui/recollect/button";
+import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_BOOKMARKS_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
@@ -19,37 +20,40 @@ interface VerifyOtpFormProps {
 export function VerifyOtpForm(props: VerifyOtpFormProps) {
 	const { email } = props;
 	const [otp, setOtp] = React.useState("");
-	const [isPending, setIsPending] = React.useState(false);
 	const router = useRouter();
+	const [isPending, startTransition] = React.useTransition();
+	const extendedIsPending = usePendingWithMinDuration(isPending);
 
-	const handleFormAction = async (formData: FormData) => {
-		const otpValue = formData.get("otp") as string;
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
 
-		setIsPending(true);
+		startTransition(async () => {
+			try {
+				const formData = new FormData(event.currentTarget);
+				const otpValue = formData.get("otp") as string;
 
-		try {
-			const supabase = createClient();
+				const supabase = createClient();
 
-			const { error } = await supabase.auth.verifyOtp({
-				email,
-				token: otpValue,
-				type: "email",
-			});
+				const { error } = await supabase.auth.verifyOtp({
+					email,
+					token: otpValue,
+					type: "email",
+				});
 
-			if (error) {
-				throw error;
+				if (error) {
+					throw error;
+				}
+
+				// Navigate immediately after success - same transition!
+				router.push(`/${ALL_BOOKMARKS_URL}`);
+			} catch (error) {
+				handleClientError(error, "Failed to verify OTP");
 			}
-
-			router.push(`/${ALL_BOOKMARKS_URL}`);
-		} catch (error) {
-			handleClientError(error, "Failed to verify OTP");
-		} finally {
-			setIsPending(false);
-		}
+		});
 	};
 
 	return (
-		<Form action={handleFormAction} className="flex w-full flex-col gap-4">
+		<Form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
 			<div className="flex flex-col gap-1">
 				<OTPInput
 					name="otp"
@@ -74,8 +78,8 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 
 			<Button
 				type="submit"
-				isPending={isPending}
-				isDisabled={isPending || otp.length !== 6}
+				isPending={extendedIsPending}
+				isDisabled={extendedIsPending || otp.length !== 6}
 			>
 				Verify Email
 			</Button>

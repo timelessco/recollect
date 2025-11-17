@@ -1,4 +1,4 @@
-import { composeRenderProps, type RenderProps } from "react-aria-components";
+import { composeRenderProps } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
 import { tcx } from "./tailwind-merge";
@@ -18,15 +18,4 @@ export function composeTailwindRenderProps<T>(
 	tw: string,
 ): string | ((v: T) => string) {
 	return composeRenderProps(className, (classList) => tcx(tw, classList));
-}
-
-export function renderSlot<T>(
-	children: RenderProps<T>["children"],
-	renderProps: T,
-) {
-	if (typeof children === "function") {
-		return children({ ...renderProps, defaultChildren: null });
-	}
-
-	return children;
 }

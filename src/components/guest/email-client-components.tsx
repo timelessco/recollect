@@ -9,47 +9,55 @@ import { z } from "zod";
 import { FieldError, inputStyles } from "../ui/recollect/field";
 
 import { Button } from "@/components/ui/recollect/button";
+import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect";
+import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_BOOKMARKS_URL, OTP_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 
 export function EmailToOtpForm() {
-	const [isPending, setIsPending] = React.useState(false);
-
 	const router = useRouter();
+	const [isPending, startTransition] = React.useTransition();
+	const extendedIsPending = usePendingWithMinDuration(isPending);
 
-	const handleFormAction = async (formData: FormData) => {
-		const email = formData.get("email") as string;
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
 
-		setIsPending(true);
+		startTransition(async () => {
+			try {
+				const formData = new FormData(event.currentTarget);
+				const email = formData.get("email") as string;
 
-		try {
-			const supabase = createClient();
-			const { error } = await supabase.auth.signInWithOtp({
-				email,
-				options: {
-					shouldCreateUser: true,
-					emailRedirectTo: `${window.location.origin}/${ALL_BOOKMARKS_URL}`,
-				},
-			});
+				const supabase = createClient();
+				const { error } = await supabase.auth.signInWithOtp({
+					email,
+					options: {
+						shouldCreateUser: true,
+						emailRedirectTo: `${window.location.origin}/${ALL_BOOKMARKS_URL}`,
+					},
+				});
 
-			if (error) {
-				throw error;
+				if (error) {
+					throw error;
+				}
+
+				// Navigate immediately after success - same transition!
+				router.push(`/${OTP_URL}?email=${encodeURIComponent(email)}`);
+			} catch (error) {
+				handleClientError(error, "Failed to send verification code");
 			}
-
-			router.push(`/${OTP_URL}?email=${encodeURIComponent(email)}`);
-		} catch (error) {
-			handleClientError(error, "Failed to send verification code");
-		} finally {
-			setIsPending(false);
-		}
+		});
 	};
 
 	return (
-		<Form action={handleFormAction} className="flex w-full flex-col gap-4">
+		<Form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
 			<EmailFieldWithQueryState />
 
-			<Button type="submit" isPending={isPending} isDisabled={isPending}>
+			<Button
+				type="submit"
+				isPending={extendedIsPending}
+				isDisabled={extendedIsPending}
+			>
 				Continue with Email
 			</Button>
 		</Form>
@@ -61,7 +69,7 @@ function EmailFieldWithQueryState() {
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	// Select all text when email value is pre-filled for easy clearing
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		if (inputRef.current && email) {
 			// Browsers don't support setSelectionRange on email inputs
 			// In those cases, we can temporarily change the type to text, select the text, then change back
@@ -73,7 +81,6 @@ function EmailFieldWithQueryState() {
 			input.type = originalType;
 		}
 		// This should only happen on the first mount
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (

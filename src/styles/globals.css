@@ -1145,4 +1145,48 @@
 			opacity: 1;
 		}
 	}
+
+	/* LinkHint */
+
+	/* From https://nextjs.org/docs/app/api-reference/functions/use-link-status#gracefully-handling-fast-navigation */
+	.link-hint {
+		display: inline-block;
+
+		width: 0.6em;
+		height: 0.6em;
+		margin-left: 0.25rem;
+		border-radius: 9999px;
+
+		visibility: hidden; /* reserve space without showing the hint */
+		opacity: 0;
+		background: currentcolor;
+	}
+
+	.link-hint.is-pending {
+		/* Animation 1: fade in after 100ms and keep final opacity */
+
+		/* Animation 2: subtle pulsing while pending */
+		visibility: visible;
+
+		animation-name: fade-in, pulse;
+		animation-duration: 200ms, 1s;
+		animation-timing-function: ease, ease-in-out;
+		animation-fill-mode: forwards, none;
+
+		/* Appear only if navigation actually takes time */
+		animation-delay: 100ms, 100ms;
+		animation-iteration-count: 1, infinite;
+	}
+
+	@keyframes fade-in {
+		to {
+			opacity: 0.35;
+		}
+	}
+
+	@keyframes pulse {
+		50% {
+			opacity: 0.15;
+		}
+	}
 }

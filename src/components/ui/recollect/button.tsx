@@ -1,16 +1,16 @@
 "use client";
 
+import * as React from "react";
 import {
 	composeRenderProps,
 	ProgressBar,
 	Button as RACButton,
 	type ButtonRenderProps,
 	type ButtonProps as RACButtonProps,
-	type RenderProps,
 } from "react-aria-components";
 
 import { Spinner } from "./spinner";
-import { focusRing, renderSlot } from "@/utils/react-aria-utils";
+import { focusRing } from "@/utils/react-aria-utils";
 import { tv } from "@/utils/tailwind-merge";
 
 export const buttonBase = tv({
@@ -45,14 +45,14 @@ export const button = tv({
 });
 
 export interface ButtonProps extends RACButtonProps {
-	pendingSlot?: RenderProps<ButtonRenderProps>["children"];
+	PendingSlot?: React.ElementType<ButtonRenderProps>;
 }
 
 export function Button(props: ButtonProps) {
 	const {
 		className,
 		children,
-		pendingSlot = ButtonPendingSlot,
+		PendingSlot = ButtonPendingSlot,
 		...rest
 	} = props;
 
@@ -66,7 +66,7 @@ export function Button(props: ButtonProps) {
 			{composeRenderProps(children, (children, renderProps) => {
 				const { isPending } = renderProps;
 				if (isPending) {
-					return renderSlot(pendingSlot, renderProps);
+					return <PendingSlot {...renderProps} />;
 				}
 
 				return <>{children}</>;
