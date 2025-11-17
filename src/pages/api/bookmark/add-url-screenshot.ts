@@ -65,7 +65,7 @@ export default async function handler(
 			"*************************Screenshot Loading*****************************",
 		);
 		screenShotResponse = await axios.get(
-			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
+			`${SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`,
 			{ responseType: "json" },
 		);
 		if (screenShotResponse.status === 200) {
@@ -79,6 +79,13 @@ export default async function handler(
 
 		return;
 	}
+
+	const uploadedUrls = await Promise.all(
+		screenShotResponse?.data?.allImages.map(async (b64buffer: string) => {
+			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
+			return await upload(base64, userId);
+		}),
+	);
 
 	const base64data = Buffer?.from(
 		screenShotResponse?.data?.screenshot?.data,
@@ -117,6 +124,7 @@ export default async function handler(
 		screenshot: publicURL,
 		isPageScreenshot,
 		coverImage: existingBookmarkData?.ogImage,
+		allImages: [...uploadedUrls],
 	};
 
 	const {

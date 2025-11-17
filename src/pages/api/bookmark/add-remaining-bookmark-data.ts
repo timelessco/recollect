@@ -305,6 +305,7 @@ export default async function handler(
 		mediaType: existingMetaData?.mediaType,
 		iframeAllowed: existingMetaData?.iframeAllowed,
 		isPageScreenshot: existingMetaData?.isPageScreenshot,
+		...existingMetaData,
 	};
 
 	const {
