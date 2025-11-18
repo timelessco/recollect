@@ -270,7 +270,8 @@ export default async (
 		if (fileType !== PDF_MIME_TYPE) {
 			if (!isEmpty(DatabaseData) && !isVideo) {
 				try {
-					await axios.post(
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const _response = await axios.post(
 						`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
 						{
 							id: DatabaseData[0]?.id,
