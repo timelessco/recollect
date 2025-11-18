@@ -173,7 +173,6 @@
 		"dotenv": "17.2.3",
 		"eslint": "9.39.1",
 		"eslint-config-canonical": "47.3.6",
-		"eslint-config-next": "16.0.2",
 		"eslint-config-prettier": "10.1.8",
 		"eslint-plugin-jsonc": "2.21.0",
 		"eslint-plugin-package-json": "0.74.0",

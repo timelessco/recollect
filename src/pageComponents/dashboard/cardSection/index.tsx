@@ -68,8 +68,6 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
-import { AriaDropdown } from "@/components/ariaDropdown";
-import AriaDropdownMenu from "@/components/ariaDropdown/ariaDropdownMenu";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -143,7 +141,6 @@ const CardSection = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router?.asPath]);
 
-	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 
@@ -287,49 +284,24 @@ const CardSection = ({
 			</div>
 		);
 
-		const isMenuOpen = openedMenuId === post.id;
-
 		const pencilIcon = (
-			<AriaDropdown
-				isOpen={isMenuOpen}
-				menuButton={
-					<div
-						className={`${iconBgClassName} ${isMenuOpen ? "flex bg-gray-100" : ""}`}
-						onClick={(event) => {
-							event.preventDefault();
-							event.stopPropagation();
-							setOpenedMenuId(isMenuOpen ? null : post.id);
-						}}
-						onKeyDown={() => {}}
-						onPointerDown={(event) => {
-							event.stopPropagation();
-						}}
-						role="button"
-						tabIndex={0}
-					>
-						<figure className="text-gray-1000">
-							<EditIcon />
-						</figure>
-					</div>
-				}
-				menuClassName="z-10 w-32 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-				menuOpenToggle={(isOpen) => {
-					setOpenedMenuId(isOpen ? post.id : null);
+			<div
+				className={`${iconBgClassName}`}
+				onClick={(event) => {
+					event.preventDefault();
+					onEditClick(post);
 				}}
+				onKeyDown={() => {}}
+				onPointerDown={(event) => {
+					event.stopPropagation();
+				}}
+				role="button"
+				tabIndex={0}
 			>
-				<AriaDropdownMenu
-					onClick={(event) => {
-						event.preventDefault();
-						event.stopPropagation();
-						onEditClick(post);
-						setOpenedMenuId(null);
-					}}
-				>
-					<div className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-						Edit
-					</div>
-				</AriaDropdownMenu>
-			</AriaDropdown>
+				<figure className="text-gray-1000">
+					<EditIcon />
+				</figure>
+			</div>
 		);
 
 		const trashIcon = (
