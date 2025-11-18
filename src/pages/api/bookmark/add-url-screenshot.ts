@@ -158,8 +158,9 @@ export default async function handler(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 				);
 
-				await axios.post(
-					`/ap1/bookmark/add-remaining-bookmark-data`,
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				const _response = axios.post(
+					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
 						favIcon: data?.[0]?.meta_data?.favIcon,
