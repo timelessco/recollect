@@ -159,7 +159,7 @@ export default async function handler(
 				);
 
 				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+					`/ap1/bookmark/add-remaining-bookmark-data`,
 					{
 						id: data[0]?.id,
 						favIcon: data?.[0]?.meta_data?.favIcon,
@@ -168,6 +168,8 @@ export default async function handler(
 					getAxiosConfigWithAuth(request),
 				);
 			}
+
+			console.log("after calling ADD_REMAINING_BOOKMARK_API");
 
 			response.status(200).json({ data, error: null });
 		} catch (remainingUploadError) {
