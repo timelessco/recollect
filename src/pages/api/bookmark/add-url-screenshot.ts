@@ -154,6 +154,10 @@ export default async function handler(
 			if (data && data.length > 0) {
 				console.log("calling add remaining bookmark api");
 
+				console.log(
+					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+				);
+
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
