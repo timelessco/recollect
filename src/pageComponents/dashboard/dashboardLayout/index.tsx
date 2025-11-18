@@ -1,12 +1,18 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useWindowSize } from "@react-hookz/web";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import find from "lodash/find";
 import Drawer from "react-modern-drawer";
-import { type ImperativePanelHandle } from "react-resizable-panels";
+import {
+	Panel,
+	PanelGroup,
+	PanelResizeHandle,
+	type ImperativePanelHandle,
+} from "react-resizable-panels";
 
 import Button from "../../../components/atoms/button";
 import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
@@ -32,9 +38,7 @@ import {
 } from "../../../utils/constants";
 import SidePane from "../sidePane";
 
-import { NavBarLogo, SidePaneCollapseButton } from "./components";
-import { NavBarHeading } from "./headingComponents";
-import { PanelWrapper } from "./panelWrapper";
+import { DashboardContent } from "./dashboardContent";
 
 import "react-modern-drawer/dist/index.css";
 
@@ -44,9 +48,7 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
-import AddBookmarkDropdown, {
-	type AddBookmarkDropdownTypes,
-} from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
+import { type AddBookmarkDropdownTypes } from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
 import { Spinner } from "../../../components/spinner";
 import RenameIcon from "../../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
@@ -57,7 +59,8 @@ import {
 } from "../../../utils/commonClassNames";
 import ShareContent from "../share/shareContent";
 
-import { SearchBar } from "./searchComponents";
+const MAX_SIZE_PIXEL = 350;
+const MIN_SIZE_PIXEL = 244;
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -99,12 +102,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		isClearingTrash,
 	} = props;
 
-	const { isDesktop } = useIsMobileView();
-
 	const [showSearchBar, setShowSearchBar] = useState(true);
 	const [triggerHeadingEdit, setTriggerHeadingEdit] = useState(false);
 	const sidePanelRef = useRef<ImperativePanelHandle | null>(null);
 	const [showSidePane, setShowSidePane] = useState(true);
+	const { width: windowWidth } = useWindowSize();
+
+	const { isDesktop } = useIsMobileView();
 
 	useEffect(() => {
 		if (isDesktop) {
@@ -314,14 +318,62 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 	};
 
+	const minSizePercentage = (MIN_SIZE_PIXEL / windowWidth) * 100;
+	const maxSizePercentage = (MAX_SIZE_PIXEL / windowWidth) * 100;
+
+	const sidePaneElement = (
+		<SidePane
+			onAddNewCategory={onAddNewCategory}
+			onBookmarksDrop={onBookmarksDrop}
+			onCategoryOptionClick={onCategoryOptionClick}
+			isLoadingCategories={props.isLoadingCategories}
+		/>
+	);
+
+	const dashboardContentElement = (
+		<DashboardContent
+			categoryId={categoryId}
+			currentCategoryData={currentCategoryData}
+			currentPath={currentPath}
+			headerName={headerName}
+			headerOptions={renderViewBasedHeaderOptions()}
+			isDesktop={isDesktop}
+			onAddBookmark={onAddBookmark}
+			onExpandSidePane={() => {
+				if (isDesktop) {
+					sidePanelRef.current?.expand(minSizePercentage);
+				} else {
+					setShowSidePane(true);
+				}
+			}}
+			onShowSearchBar={setShowSearchBar}
+			optionsMenuList={optionsMenuList}
+			showSearchBar={showSearchBar}
+			showSidePane={showSidePane}
+			triggerHeadingEdit={triggerHeadingEdit}
+			uploadFileFromAddDropdown={uploadFileFromAddDropdown}
+			userId={userId}
+		>
+			{children}
+		</DashboardContent>
+	);
+
 	if (isDesktop) {
 		return (
 			<div className="h-screen w-screen">
-				<PanelWrapper
-					setShowSidePane={setShowSidePane}
-					showSidePane={showSidePane}
-					sidePanelRef={sidePanelRef}
-					sidePaneContent={
+				<PanelGroup direction="horizontal" autoSaveId="conditional">
+					<Panel
+						ref={sidePanelRef}
+						id="left"
+						defaultSize={20}
+						collapsedSize={0}
+						minSize={minSizePercentage}
+						maxSize={maxSizePercentage}
+						collapsible
+						order={1}
+						onCollapse={() => setShowSidePane(false)}
+						onExpand={() => setShowSidePane(true)}
+					>
 						<div
 							className={classNames(
 								"h-full min-w-[200px] origin-left transition-all duration-200 ease-out",
@@ -331,71 +383,20 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								},
 							)}
 						>
-							<SidePane
-								onAddNewCategory={onAddNewCategory}
-								onBookmarksDrop={onBookmarksDrop}
-								onCategoryOptionClick={onCategoryOptionClick}
-								isLoadingCategories={props.isLoadingCategories}
-							/>
+							{sidePaneElement}
 						</div>
-					}
-				>
-					<div className="relative w-full">
-						<header className="absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] pr-3 pl-[13px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]">
-							{(isDesktop ? true : !showSearchBar) && (
-								<div className="flex w-1/5 items-center px-2 py-[3px] max-xl:w-3/4">
-									<SidePaneCollapseButton
-										showSidePane={showSidePane}
-										sidePanelRef={sidePanelRef}
-									/>
-									<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center text-plain-reverse">
-										<NavBarLogo
-											currentCategoryData={currentCategoryData}
-											optionsMenuList={optionsMenuList}
-										/>
-									</figure>
-									<NavBarHeading
-										currentCategoryData={currentCategoryData}
-										headerName={headerName}
-										triggerEdit={triggerHeadingEdit}
-									/>
-								</div>
-							)}
+					</Panel>
 
-							<div
-								className={classNames({
-									"flex w-4/5 items-center justify-between max-xl:justify-end max-sm:mt-0": true,
-									"max-xl:w-full": showSearchBar,
-									"max-xl:w-1/4": !showSearchBar,
-								})}
-							>
-								{/* this div is there for centering needs */}
-								<div className="h-5 w-[1%] max-xl:hidden" />
-								<SearchBar
-									showSearchBar={showSearchBar}
-									isDesktop={isDesktop}
-									categoryId={categoryId}
-									currentCategoryData={currentCategoryData}
-									currentPath={currentPath}
-									userId={userId}
-									onShowSearchBar={setShowSearchBar}
-								/>
-								<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
-									{renderViewBasedHeaderOptions()}
-									{currentPath !== TRASH_URL && (
-										<AddBookmarkDropdown
-											onAddBookmark={onAddBookmark}
-											uploadFile={uploadFileFromAddDropdown}
-										/>
-									)}
-									{/* Dark/Light toggle here */}
-								</div>
-							</div>
-						</header>
+					<PanelResizeHandle
+						className={`group w-5 cursor-grab! justify-center data-[resize-handle-state='drag']:cursor-grabbing! ${showSidePane ? "flex" : "hidden"}`}
+					>
+						<div className="h-full w-px cursor-grab! bg-gray-alpha-50 transition-all group-hover:w-2 group-hover:bg-gray-100" />
+					</PanelResizeHandle>
 
-						<main>{children}</main>
-					</div>
-				</PanelWrapper>
+					<Panel id="right" order={2}>
+						{dashboardContentElement}
+					</Panel>
+				</PanelGroup>
 			</div>
 		);
 	}
@@ -407,73 +408,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				onClose={() => setShowSidePane(false)}
 				open={showSidePane}
 			>
-				<SidePane
-					onAddNewCategory={onAddNewCategory}
-					onBookmarksDrop={onBookmarksDrop}
-					onCategoryOptionClick={onCategoryOptionClick}
-					isLoadingCategories={props.isLoadingCategories}
-				/>
+				{sidePaneElement}
 			</Drawer>
 
-			<div className="w-screen">
-				<div className="w-full">
-					<header className="absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] pr-3 pl-[13px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]">
-						{(isDesktop ? true : !showSearchBar) && (
-							<div className="flex w-1/5 items-center px-2 py-[3px] max-xl:w-3/4">
-								<SidePaneCollapseButton
-									showSidePane={showSidePane}
-									onToggle={() => {
-										setShowSidePane(true);
-									}}
-								/>
-								<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center text-plain-reverse">
-									<NavBarLogo
-										currentCategoryData={currentCategoryData}
-										optionsMenuList={optionsMenuList}
-									/>
-								</figure>
-								<NavBarHeading
-									currentCategoryData={currentCategoryData}
-									headerName={headerName}
-									triggerEdit={triggerHeadingEdit}
-								/>
-							</div>
-						)}
-
-						<div
-							className={classNames({
-								"flex w-4/5 items-center justify-between max-xl:justify-end max-sm:mt-0": true,
-								"max-xl:w-full": showSearchBar,
-								"max-xl:w-1/4": !showSearchBar,
-							})}
-						>
-							{/* this div is there for centering needs */}
-							<div className="h-5 w-[1%] max-xl:hidden" />
-							<SearchBar
-								showSearchBar={showSearchBar}
-								isDesktop={isDesktop}
-								categoryId={categoryId}
-								currentCategoryData={currentCategoryData}
-								currentPath={currentPath}
-								userId={userId}
-								onShowSearchBar={setShowSearchBar}
-							/>
-
-							<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
-								{renderViewBasedHeaderOptions()}
-								{currentPath !== TRASH_URL && (
-									<AddBookmarkDropdown
-										onAddBookmark={onAddBookmark}
-										uploadFile={uploadFileFromAddDropdown}
-									/>
-								)}
-								{/* Dark/Light toggle here */}
-							</div>
-						</div>
-					</header>
-					<main>{children}</main>
-				</div>
-			</div>
+			{dashboardContentElement}
 		</div>
 	);
 };
