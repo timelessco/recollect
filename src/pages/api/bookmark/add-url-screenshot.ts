@@ -94,7 +94,6 @@ export default async function handler(
 	} catch (error_) {
 		if (error_ instanceof Error) {
 			console.error("R2 upload failed:", error_);
-			Sentry.captureException(`R2 upload failed`);
 		}
 	}
 
@@ -127,6 +126,8 @@ export default async function handler(
 		isPageScreenshot,
 		coverImage: existingBookmarkData?.ogImage,
 	};
+
+	console.log(updatedDescription, updatedMetaData, updatedTitle);
 
 	const {
 		data,
