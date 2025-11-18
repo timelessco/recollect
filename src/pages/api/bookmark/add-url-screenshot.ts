@@ -1,3 +1,4 @@
+import { error } from "node:console";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -146,9 +147,14 @@ export default async function handler(
 		.match({ id: request.body.id, user_id: userId })
 		.select();
 
+	console.log("data", data);
+	console.log("error", error);
+
 	if (isNull(error)) {
 		try {
 			if (data && data.length > 0) {
+				console.log("calling add remaining bookmark api");
+
 				await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
