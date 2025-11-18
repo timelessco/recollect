@@ -72,7 +72,6 @@ import {
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
-	LOGIN_URL,
 	SETTINGS_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -133,13 +132,6 @@ const Dashboard = () => {
 	const router = useRouter();
 	const categorySlug = getCategorySlugFromRouter(router);
 
-	useEffect(() => {
-		if (router?.pathname === "/") {
-			// eslint-disable-next-line promise/prefer-await-to-then
-			void router.push(`/${ALL_BOOKMARKS_URL}`).catch(() => {});
-		}
-	}, [router, router?.pathname]);
-
 	const toggleIsSortByLoading = useLoadersStore(
 		(state) => state.toggleIsSortByLoading,
 	);
@@ -161,12 +153,6 @@ const Dashboard = () => {
 			setSelectedTag([]);
 		}
 	}, [showAddBookmarkModal]);
-
-	useEffect(() => {
-		if (isNull(session?.user)) {
-			void router.push(`/${LOGIN_URL}`);
-		}
-	}, [router, session]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { isInNotFoundPage } = useIsInNotFoundPage();
@@ -1184,44 +1170,17 @@ const Dashboard = () => {
 				onDeleteCollectionClick={async () =>
 					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
-				onIconColorChange={(color, id) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: id ?? CATEGORY_ID,
-							updateData: {
-								icon_color: color,
-							},
-						}),
-					);
-				}}
-				onIconSelect={(value, categoryId) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: categoryId,
-							updateData: { icon: value },
-						}),
-					);
-				}}
-				// onSearchEnterPress={onAddBookmark}
-				onSearchEnterPress={() => {}}
-				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}
-				updateCategoryName={(categoryId, name) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: categoryId,
-							updateData: {
-								category_name: name,
-							},
-						}),
-					);
-				}}
 				uploadFileFromAddDropdown={onDrop}
 				userId={session?.user?.id ?? ""}
-			/>
+			>
+				{renderMainPaneContent()}
+			</DashboardLayout>
+
 			<SettingsModal />
+
 			<WarningActionModal
 				buttonText="Delete"
 				isLoading={false}

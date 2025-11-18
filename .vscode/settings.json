@@ -41,7 +41,7 @@
 	// TypeScript
 	"typescript.updateImportsOnFileMove.enabled": "always",
 	"typescript.referencesCodeLens.enabled": true,
-	"typescript.tsserver.experimental.useVsCodeWatcher": true,
+	"typescript.tsserver.watchOptions": "vscode",
 	"typescript.referencesCodeLens.showOnAllFunctions": true,
 
 	// Markdown
@@ -73,7 +73,9 @@
 	// Detect additional class regex
 	"tailwindCSS.experimental.classRegex": [
 		// For const/let/var string assignments like: const baseClasses = "tw-..."
-		"(?:const|let|var)\\s+\\w+\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]"
+		"(?:const|let|var)\\s+\\w+\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]",
+		// https://www.tailwind-variants.org/docs/getting-started#intellisense-setup-optional
+		["([\"'`][^\"'`]*.*?[\"'`])", "[\"'`]([^\"'`]*).*?[\"'`]"]
 	],
 	// Enable features in languages that are not supported by default. Add a mapping here between the new language and an already supported language.
 	"tailwindCSS.includeLanguages": {
@@ -82,5 +84,5 @@
 		"typescriptreact": "javascript",
 		"javascriptreact": "javascript"
 	},
-	"tailwindCSS.classFunctions": ["cva", "tcx"]
+	"tailwindCSS.classFunctions": ["tcx", "tv"]
 }

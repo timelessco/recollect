@@ -2,12 +2,24 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
-import { ALL_BOOKMARKS_URL, isGuestPath, LOGIN_URL } from "@/utils/constants";
+import {
+	ALL_BOOKMARKS_URL,
+	isGuestPath,
+	isPublicPath,
+	LOGIN_URL,
+} from "@/utils/constants";
 
 export async function updateSession(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({
 		request,
 	});
+
+	const pathname = request.nextUrl.pathname;
+
+	// Skip authentication for public paths - allow anyone to view public collections
+	if (isPublicPath(pathname)) {
+		return supabaseResponse;
+	}
 
 	// With Fluid compute, don't put this client in a global environment
 	// variable. Always create a new one on each request.
@@ -39,8 +51,6 @@ export async function updateSession(request: NextRequest) {
 	// with the Supabase client, your users may be randomly logged out.
 	const { data } = await supabase.auth.getClaims();
 	const user = data?.claims;
-
-	const pathname = request.nextUrl.pathname;
 
 	// Redirect authenticated users away from guest-only paths
 	if (user && isGuestPath(pathname)) {

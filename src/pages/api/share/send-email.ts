@@ -43,34 +43,41 @@ export default async function handler(
 			{
 				from: "admin@share.recollect.so",
 				to: data.emailList,
-				subject: "collections from recollect",
+				subject: "Collections from recollect",
 				html: `
 				<!DOCTYPE html>
-							<html lang="en">
-							<body style="margin:0; padding:40px 0; background:#f3f4f6; font-family:'SF Pro Display','SF Pro Text','-apple-system',BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif; text-align:center;">
-
-									<div style="margin-bottom: 14px">
-									<img src="cid:logo" width="16" height="20" />
+				<html lang="en">
+					<body style="margin:0; background:#ececec; font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; text-align:center; -webkit-font-smoothing:antialiased;">
+						<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+							<tr>
+								<td align="center" style="padding:48px 16px;">
+									<div style="margin-bottom:24px;">
+										<img src="cid:logo" width="20" height="24" style="display:block;" alt="logo"/>
 									</div>
-
-									<div style="background: white; border-radius: 16px; padding: 48px 40px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); text-align: center; max-width: 600px; width: 100%; margin: 0 auto 14px auto;">
-											<h1 style="font-size: 24px; font-weight: 600; color: #1f2937; margin-bottom: 16px; line-height: 1.3;">
+									<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:20px; box-shadow:0 1px 12px rgba(0,0,0,0.06);" class="card">
+										<tr>
+											<td style="padding:56px 48px 48px 48px; text-align:center;">
+												<h1 class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; font-weight: 600; font-size: 20px; line-height: 28px; letter-spacing: 0; text-align: center; color: #111111; margin: 0 0 12px 0;">
 													You have been invited to a collection
-											</h1>
-											<p style="color: #6b7280; font-size: 16px; line-height: 1.5; margin-bottom: 32px;">
-													<span style="color: #374151; font-weight: 500;">${data.display_name}</span> has invited you to join the
-													<span style="color: #1f2937; font-weight: 600;">${data.category_name}</span> collection
-											</p>
-											<a href="${data.url}" style="padding:7px 10px; background:#000000; color:#ffffff; border-radius:11px; text-decoration:none; width:118px; height:36px; margin:0 auto;">Accept Invite</a>
-
+												</h1>
+												<p class="subtitle" style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; font-weight: 400; font-size: 16px; line-height: 100%; letter-spacing: 0; text-align: center; color: #6b6b6b; margin: 0 0 32px 0;">
+													<span style="color:#323232; font-weight:500;">${data.display_name}</span> has invited you to join the <span style="color:#000000; font-weight:600;">${data.category_name}</span> collection
+												</p>
+												<a href="${data.url}" class="button" style="display:inline-block; background:#000; color:#ffffff; padding:7px 10px; border-radius:12px; text-decoration:none; font-size:14px; font-weight:500;">
+													Accept Invite
+												</a>
+											</td>
+										</tr>
+									</table>
+									<div style="color:#707070; font-size:14px; font-weight:500; margin-top:20px;">
+										recollect.so
 									</div>
-
-									<div style="color: #9ca3af; font-size: 14px; font-weight: 500;">
-											recollect.so
-									</div>
-							</body>
+								</td>
+							</tr>
+						</table>
+					</body>
 				</html>
-				`,
+			`,
 				attachments: [
 					{
 						filename: "logo.png",

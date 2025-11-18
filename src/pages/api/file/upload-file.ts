@@ -133,7 +133,7 @@ const videoLogic = async (
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
-		video_url: thumbnailUrl?.publicUrl ?? null,
+		video_url: null,
 	};
 
 	return { ogImage, meta_data };
@@ -267,9 +267,9 @@ export default async (
 			.status(200)
 			.json({ data: DatabaseData, success: true, error: null });
 
-		try {
-			if (fileType !== PDF_MIME_TYPE) {
-				if (!isEmpty(DatabaseData) && !isVideo) {
+		if (fileType !== PDF_MIME_TYPE) {
+			if (!isEmpty(DatabaseData) && !isVideo) {
+				try {
 					await axios.post(
 						`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
 						{
@@ -279,19 +279,30 @@ export default async (
 						},
 						getAxiosConfigWithAuth(request),
 					);
-				} else {
-					console.error("Remaining upload api error: upload data is empty");
-					Sentry.captureException(
-						`Remaining upload api error: upload data is empty`,
-					);
+				} catch (error) {
+					console.error("Remaining upload api error", error);
+					Sentry.captureException(error, {
+						extra: {
+							errorMessage: "Remaining upload api error",
+						},
+					});
 				}
+			} else {
+				console.log(
+					"File type is video, so not calling the remaining upload api",
+				);
 			}
-		} catch (remainingerror) {
-			console.error(remainingerror);
-			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
+		} else {
+			console.log("File type is pdf, so not calling the remaining upload api");
 		}
 	} else {
 		console.error("Error uploading file:", publicUrlError, DBerror);
+		Sentry.captureException(DBerror, {
+			extra: {
+				errorMessage: "Error uploading file",
+				publicUrlError,
+			},
+		});
 		response
 			.status(500)
 			.json({ success: false, error: "Error uploading file" });

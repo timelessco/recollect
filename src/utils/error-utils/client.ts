@@ -18,18 +18,15 @@ export function handleClientError(
 	} else if (error instanceof ApplicationError) {
 		title = error.name;
 		description = error.message;
-	} else if (error instanceof Error) {
-		description = error.message;
-	} else if (typeof error === "string") {
-		description = error;
+	} else {
+		description = getErrorMessage(error);
 	}
 
 	// Show error details in toast in DEV mode
 	if (process.env.NODE_ENV === "development") {
 		console.error(`${title}: ${description}`);
 		console.error(error);
-
-		errorToast(`${title}: ${description} - ${getErrorMessage(error)}`);
+		errorToast(`${title}: ${description}`);
 
 		return;
 	}

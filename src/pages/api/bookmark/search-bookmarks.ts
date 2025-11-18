@@ -62,7 +62,7 @@ export default async function handler(
 
 	const tagName =
 		!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-			? matchedSearchTag?.map((item) => item?.replace("@", ""))
+			? matchedSearchTag?.map((item) => item?.replace("#", ""))
 			: undefined;
 
 	const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;

@@ -10,10 +10,7 @@ import { Spinner } from "../../../components/spinner";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import OptionsIcon from "../../../icons/optionsIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
-import {
-	type CategoryIconsDropdownTypes,
-	type ChildrenTypes,
-} from "../../../types/componentTypes";
+import { type ChildrenTypes } from "../../../types/componentTypes";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
@@ -46,8 +43,6 @@ export type listPropsTypes = {
 		id: number,
 	) => void;
 	onClick?: () => void;
-	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
-	onIconSelect?: (value: string, id: number) => void;
 	responsiveIcon?: boolean;
 	showDropdown?: boolean;
 	showIconDropdown?: boolean;
@@ -64,10 +59,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		showDropdown = false,
 		showIconDropdown = true,
 		listNameId = "",
-		onIconSelect = () => null,
 		onCategoryOptionClick = () => null,
 		showSpinner = false,
-		onIconColorChange = () => null,
 		onClick = () => null,
 		isLink = true,
 		responsiveIcon = false,
@@ -87,10 +80,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							buttonIconSize={18}
 							iconColor={item?.iconColor}
 							iconValue={item?.iconValue ?? null}
-							onIconColorChange={onIconColorChange}
-							onIconSelect={(value) => {
-								onIconSelect(value, item?.id);
-							}}
+							iconId={item?.id}
 						/>
 					</span>
 				) : (

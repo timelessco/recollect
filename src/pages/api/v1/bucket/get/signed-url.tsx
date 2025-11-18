@@ -1,4 +1,5 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import { R2_MAIN_BUCKET_NAME } from "../../../../../utils/constants";
@@ -90,6 +91,12 @@ export default async function handler(
 
 		// Handle errors from R2 URL generation
 		if (result.error) {
+			console.error("Failed to generate signed URL", result.error);
+			Sentry.captureException(result.error, {
+				extra: {
+					errorMessage: "Failed to generate signed URL",
+				},
+			});
 			response.status(500).json({
 				error: "Failed to generate signed URL",
 				data: null,
@@ -102,8 +109,13 @@ export default async function handler(
 			data: result.data,
 			error: null,
 		});
-	} catch {
-		// Handle any unexpected errors
+	} catch (error) {
+		console.error("Internal server error", error);
+		Sentry.captureException(error, {
+			extra: {
+				errorMessage: "Internal server error",
+			},
+		});
 		response.status(500).json({
 			error: "Internal server error",
 			data: null,

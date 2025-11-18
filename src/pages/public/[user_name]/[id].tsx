@@ -2,20 +2,18 @@ import { type GetServerSideProps, type NextPage } from "next";
 import axios from "axios";
 import { find, isEmpty, isNull } from "lodash";
 
-import CardSection from "../../pageComponents/dashboard/cardSection";
+import CardSection from "../../../pageComponents/dashboard/cardSection";
 import {
 	type GetPublicCategoryBookmarksApiResponseType,
 	type SingleListData,
-} from "../../types/apiTypes";
-import { options } from "../../utils/commonData";
+} from "../../../types/apiTypes";
+import { options } from "../../../utils/commonData";
 import {
 	colorPickerColors,
 	FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
 	getBaseUrl,
 	NEXT_API_URL,
-} from "../../utils/constants";
-
-// this renders a public category page
+} from "../../../utils/constants";
 
 type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
 
@@ -73,7 +71,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	const response = await axios.post<GetPublicCategoryBookmarksApiResponseType>(
 		`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
 			context?.query?.id as string
-		}&user_name=${context?.query?.category_id as string}`,
+		}&user_name=${context?.query?.user_name as string}`,
 	);
 
 	if (!response?.data?.is_public) {

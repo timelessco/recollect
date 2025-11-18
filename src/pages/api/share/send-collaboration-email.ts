@@ -1,15 +1,9 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
-// import nodemailer from 'nodemailer';
-
 import { type NextApiResponse } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-// import fromData from "form-data";
 import { sign, type VerifyErrors } from "jsonwebtoken";
 import { isNull } from "lodash";
-
-// import MainGun from "mailgun.js";
 
 import {
 	type NextApiRequest,
@@ -19,15 +13,10 @@ import {
 	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	NEXT_API_URL,
+	SEND_EMAIL,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
-
-// import jwt_decode from 'jwt-decode';
-
-/**
- * Builds invite link for a user to be added as colaborator and sends it via email
- */
 
 type Data = {
 	error: PostgrestError | VerifyErrors | string | null;
@@ -48,6 +37,32 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
+	const { data: existingRows, error: checkError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.select("*")
+		.eq("category_id", categoryId)
+		.eq("email", emailList[0])
+		.maybeSingle();
+
+	if (checkError) {
+		console.error("Error checking existing rows", checkError);
+		Sentry.captureException(checkError, {
+			extra: {
+				errorMessage: "Error checking existing rows",
+			},
+		});
+		response
+			.status(500)
+			.json({ url: null, error: "Error checking existing rows" });
+		return;
+	}
+
+	if (existingRows) {
+		console.warn("Email already exists", existingRows);
+		response.status(409).json({ url: null, error: "Email already exists" });
+		return;
+	}
+
 	const { error } = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
 		category_id: categoryId,
 		email: emailList[0],
@@ -57,8 +72,14 @@ export default async function handler(
 	});
 
 	if (!isNull(error)) {
+		console.error("Error inserting row", error);
+		Sentry.captureException(error, {
+			extra: {
+				errorMessage: "Error inserting row",
+			},
+		});
 		response.status(500).json({ url: null, error });
-		throw new Error("ERROR");
+		return;
 	}
 
 	const token = sign(
@@ -91,14 +112,23 @@ export default async function handler(
 
 	if (process.env.NODE_ENV !== "development") {
 		try {
-			await axios.post(`${getBaseUrl()}${NEXT_API_URL}/share/send-email`, {
+			await axios.post(`${getBaseUrl()}${NEXT_API_URL}${SEND_EMAIL}`, {
 				url,
-				display_name: categoryData?.profiles?.display_name,
+				display_name:
+					categoryData?.profiles?.display_name ||
+					categoryData?.profiles?.user_name,
 				category_name: categoryData?.category_name,
 				emailList: emailList[0],
 			});
-			response.status(200).json({ url, error });
+
+			response.status(200).json({ url, error: null });
 		} catch (catchError: unknown) {
+			console.error("Error in resend email api", catchError);
+			Sentry.captureException(catchError, {
+				extra: {
+					errorMessage: "Error in resend email api",
+				},
+			});
 			response.status(500).json({
 				url: null,
 				error: catchError as string,
@@ -106,6 +136,8 @@ export default async function handler(
 			});
 		}
 	} else {
-		response.status(200).json({ url, error: null, message: "in dev mode" });
+		response
+			.status(200)
+			.json({ url, error: null, message: "in dev mode email not sent" });
 	}
 }

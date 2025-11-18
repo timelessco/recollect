@@ -25,7 +25,7 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 export const URL_PATTERN =
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*@[A-Za-z\d]*/gu;
+export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*#[A-Za-z\d]*/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
 	/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
@@ -95,6 +95,7 @@ export const UPDATE_SHARED_CATEGORY_USER_ROLE_API =
 export const DELETE_SHARED_CATEGORIES_USER_API =
 	"/share/delete-shared-categories-user";
 export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
+export const SEND_EMAIL = "/share/send-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
@@ -130,8 +131,7 @@ export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 export const LOGIN_URL = "login";
 export const EMAIL_URL = "email";
 export const OTP_URL = "otp";
-export const AUTH_OAUTH_URL = "auth/oauth";
-export const AUTH_ERROR_URL = "auth/error";
+export const AUTH_URLS = "auth";
 
 // Others
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
@@ -373,10 +373,16 @@ export const springConfig = {
  * Array of guest paths that require authentication
  */
 export const GUEST_PATHS = new Set([
-	`/${AUTH_ERROR_URL}`,
-	`/${AUTH_OAUTH_URL}`,
 	`/${EMAIL_URL}`,
 	`/${LOGIN_URL}`,
 	`/${OTP_URL}`,
 ]);
-export const isGuestPath = (pathname: string) => GUEST_PATHS.has(pathname);
+export const isGuestPath = (pathname: string) =>
+	pathname.startsWith(`/${AUTH_URLS}`) || GUEST_PATHS.has(pathname);
+
+/**
+ * Array of public paths that don't require authentication
+ */
+export const PUBLIC_PATHS = new Set(["/public"]);
+export const isPublicPath = (pathname: string) =>
+	pathname.startsWith("/public");
