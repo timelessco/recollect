@@ -87,7 +87,15 @@ export default async function handler(
 	const { title, description, isPageScreenshot } =
 		screenShotResponse?.data.metaData || {};
 
-	const publicURL = await upload(base64data, userId);
+	try {
+		const publicURL = await upload(base64data, userId);
+		console.log(publicURL);
+	} catch (error_) {
+		if (error_ instanceof Error) {
+			console.error("R2 upload failed:", error_);
+			Sentry.captureException(`R2 upload failed`);
+		}
+	}
 
 	// First, fetch the existing bookmark data to get current meta_data
 	const { data: existingBookmarkData, error: fetchError } = await supabase
