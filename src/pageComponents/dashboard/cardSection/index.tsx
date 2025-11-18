@@ -68,6 +68,7 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
+import { AriaDropdown, AriaDropdownMenu } from "@/components/ariaDropdown";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -143,7 +144,7 @@ const CardSection = ({
 
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
-
+	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
 	// cat_id refers to cat slug here as its got from url
@@ -285,24 +286,54 @@ const CardSection = ({
 				</figure>
 			</div>
 		);
+		const isMenuOpen = openedMenuId === post.id;
+		// Replace the pencilIcon section with this updated code:
+
+		// Replace the pencilIcon section with this updated code:
 
 		const pencilIcon = (
-			<div
-				className={`${iconBgClassName}`}
-				onClick={(event) => {
-					event.preventDefault();
-					onEditClick(post);
-				}}
-				onKeyDown={() => {}}
-				onPointerDown={(event) => {
-					event.stopPropagation();
-				}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure className="text-gray-1000">
-					<EditIcon />
-				</figure>
+			<div className="relative">
+				<AriaDropdown
+					isOpen={isMenuOpen}
+					menuButton={
+						<div
+							className={`${iconBgClassName} ${isMenuOpen ? "bg-gray-100" : ""}`}
+							onClick={(event) => {
+								event.preventDefault();
+								event.stopPropagation();
+								setOpenedMenuId(isMenuOpen ? null : post.id);
+							}}
+							onKeyDown={() => {}}
+							onPointerDown={(event) => {
+								event.stopPropagation();
+							}}
+							role="button"
+							tabIndex={0}
+						>
+							<figure className="text-gray-1000">
+								<EditIcon />
+							</figure>
+						</div>
+					}
+					// Use relative positioning to keep menu anchored to button
+					menuClassName="absolute top-full left-0 z-10 w-32 mt-1 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+					menuOpenToggle={(isOpen) => {
+						setOpenedMenuId(isOpen ? post.id : null);
+					}}
+				>
+					<AriaDropdownMenu
+						onClick={(event) => {
+							event.preventDefault();
+							event.stopPropagation();
+							onEditClick(post);
+							setOpenedMenuId(null);
+						}}
+					>
+						<div className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+							Edit
+						</div>
+					</AriaDropdownMenu>
+				</AriaDropdown>
 			</div>
 		);
 
@@ -681,72 +712,79 @@ const CardSection = ({
 		grow: cardTypeCondition === viewValues.card,
 	});
 
-	const renderMoodboardAndCardType = (item: SingleListData) => (
-		<div className="flex w-full flex-col" id="single-moodboard-card">
-			{renderOgImage(
-				getImageSource(item),
-				item?.id,
-				item?.meta_data?.ogImgBlurUrl ?? "",
-				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-				item?.type,
-			)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className={moodboardAndCardInfoWrapperClass}>
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					{(bookmarksInfoValue as string[] | undefined)?.includes(
-						"description",
-					) &&
-						!isEmpty(item?.description) && (
-							<ReadMore
-								className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
-								enable={isUserInTweetsPage}
-							>
-								{item?.description}
-							</ReadMore>
+	const renderMoodboardAndCardType = (item: SingleListData) => {
+		const isMenuOpen = openedMenuId === item.id;
+		return (
+			<div className="flex w-full flex-col" id="single-moodboard-card">
+				{renderOgImage(
+					getImageSource(item),
+					item?.id,
+					item?.meta_data?.ogImgBlurUrl ?? "",
+					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+					item?.type,
+				)}
+				{bookmarksInfoValue?.length === 1 &&
+				bookmarksInfoValue[0] === "cover" ? null : (
+					<div className={moodboardAndCardInfoWrapperClass}>
+						{(bookmarksInfoValue as string[] | undefined)?.includes(
+							"title",
+						) && (
+							<p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900">
+								{item?.title}
+							</p>
 						)}
-					<div className="space-y-[6px] text-gray-500">
-						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
-							!isEmpty(item?.addedTags) && (
-								<div className="flex flex-wrap items-center space-x-1">
-									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
+						{(bookmarksInfoValue as string[] | undefined)?.includes(
+							"description",
+						) &&
+							!isEmpty(item?.description) && (
+								<ReadMore
+									className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
+									enable={isUserInTweetsPage}
+								>
+									{item?.description}
+								</ReadMore>
+							)}
+						<div className="space-y-[6px] text-gray-500">
+							{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
+								!isEmpty(item?.addedTags) && (
+									<div className="flex flex-wrap items-center space-x-1">
+										{item?.addedTags?.map((tag) =>
+											renderTag(tag?.id, tag?.name),
+										)}
+									</div>
+								)}
+							{(bookmarksInfoValue as string[] | undefined)?.includes(
+								"info",
+							) && (
+								<div className="flex flex-wrap items-center">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+									{item?.inserted_at && (
+										<p className="relative text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+											{format(
+												new Date(item?.inserted_at || ""),
+												isCurrentYear(item?.inserted_at)
+													? "dd MMM"
+													: "dd MMM YYY",
+											)}
+										</p>
+									)}
+									{renderCategoryBadge(item)}
 								</div>
 							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="flex flex-wrap items-center">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-								{renderCategoryBadge(item)}
-							</div>
-						)}
+						</div>
 					</div>
+				)}
+				<div
+					className={`w-full items-center space-x-1 ${!isPublicPage ? (window?.Cypress ? "flex" : isMenuOpen ? "flex" : "hidden") : "hidden"} absolute top-[10px] right-[8px] group-hover:flex`}
+				>
+					{showAvatar && renderAvatar(item)}
+					{renderEditAndDeleteIcons(item)}
 				</div>
-			)}
-			<div
-				className={`w-full items-center space-x-1 ${
-					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
-				} absolute top-[10px] right-[8px] group-hover:flex`}
-			>
-				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
 			</div>
-		</div>
-	);
+		);
+	};
 
 	const renderListCard = (item: SingleListData) => (
 		<div className="flex w-full items-center p-2" id="single-moodboard-card">
