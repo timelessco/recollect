@@ -81,7 +81,7 @@ const Settings = () => {
 	const [enabled, setEnabled] = useState<boolean>(() => {
 		if (typeof window !== "undefined") {
 			const savedValue = localStorage.getItem("iframeEnabled");
-			return savedValue ? JSON.parse(savedValue) : true;
+			return savedValue ? (JSON.parse(savedValue) as boolean) : true;
 		}
 
 		return true;
