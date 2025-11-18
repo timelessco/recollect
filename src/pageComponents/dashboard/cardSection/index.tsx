@@ -43,7 +43,6 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	DOCUMENTS_URL,
-	IMAGES_URL,
 	LINK_TYPE_PREFIX,
 	LINKS_URL,
 	PDF_MIME_TYPE,
@@ -561,7 +560,7 @@ const CardSection = ({
 			);
 		}
 
-		if (item?.meta_data?.favIcon || currentPath === IMAGES_URL) {
+		if (item?.meta_data?.favIcon) {
 			return (
 				<figure className={favIconFigureClassName}>
 					<Image
@@ -604,8 +603,7 @@ const CardSection = ({
 
 		if (
 			currentPath === LINKS_URL ||
-			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX) ||
-			!item?.meta_data?.mediaType
+			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX)
 		) {
 			return (
 				<figure className="card-icon rounded p-0.5 text-gray-1000">

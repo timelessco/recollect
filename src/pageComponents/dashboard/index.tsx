@@ -1225,7 +1225,6 @@ const Dashboard = () => {
 				warningText="Are you sure you want to delete ?"
 				// isLoading={deleteBookmarkMutation?.isLoading}
 			/>
-
 			<ToastContainer />
 		</>
 	);
