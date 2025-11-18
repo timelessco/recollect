@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
@@ -17,6 +17,9 @@ import {
 	settingsInputContainerClassName,
 	// settingsParagraphClassName,
 } from "../../utils/commonClassNames";
+
+import { EyeIconSlashed } from "@/icons/eyeIconSlashed";
+import { ShowEyeIcon } from "@/icons/showEyeIcon";
 
 /*  TYPES  */
 type AiFeaturesFormTypes = {
@@ -42,13 +45,13 @@ const AiFeaturesSkeleton = () => (
 
 /*  MAIN COMPONENT  */
 export const AiFeatures = () => {
+	const [showKey, setShowKey] = useState(false);
 	const { mutate: saveApiKey, isPending: isSaving } = useApiKeyMutation();
 	const { mutate: deleteApiKey, isPending: isDeleting } =
 		useDeleteApiKeyMutation();
 	const { data, isLoading: isChecking } = useFetchCheckApiKey();
-
 	const hasApiKey = data?.data?.hasApiKey ?? false;
-
+	const apiKey = data?.data?.apiKey ?? "";
 	const {
 		register,
 		handleSubmit,
@@ -86,24 +89,37 @@ export const AiFeatures = () => {
 					<div
 						className={`${settingsInputContainerClassName} mt-2 flex items-center justify-between`}
 					>
-						<Input
-							{...register("apiKey", { required: "API Key is required" })}
-							autoFocus={isDeleting}
-							className={settingsInputClassName}
-							errorText=""
-							id="api-key"
-							isDisabled={hasApiKey ? !isDeleting : false}
-							isError={Boolean(errors.apiKey)}
-							placeholder={
-								isSaving
-									? "••••••••••••••••••••••••••••••••"
-									: hasApiKey
+						<div className="relative w-full">
+							<Input
+								{...register("apiKey", { required: "API Key is required" })}
+								autoFocus={isDeleting}
+								className={`${settingsInputClassName}`}
+								errorText=""
+								id="api-key"
+								isDisabled={hasApiKey ? !isDeleting : false}
+								isError={Boolean(errors.apiKey)}
+								placeholder={
+									isSaving
 										? "••••••••••••••••••••••••••••••••"
-										: "Enter your API key"
-							}
-							showError={false}
-							type="password"
-						/>
+										: hasApiKey && showKey
+											? apiKey
+											: hasApiKey
+												? "••••••••••••••••••••••••••••••••"
+												: "Enter your API key"
+								}
+								showError={false}
+								type={hasApiKey && showKey ? "text" : "password"}
+							/>
+							{hasApiKey && (
+								<button
+									type="button"
+									onClick={() => setShowKey((prev) => !prev)}
+									className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+								>
+									{showKey ? <ShowEyeIcon /> : <EyeIconSlashed />}
+								</button>
+							)}
+						</div>
 						<Button
 							className={`relative my-[3px] ${saveButtonClassName} px-2 py-[4.5px]`}
 							onClick={() => {
@@ -140,10 +156,12 @@ export const AiFeatures = () => {
 						<figure className="mr-2 shrink-0">
 							<InfoIcon />
 						</figure>
-						<span className="flex flex-wrap items-center">
-							Add your API key to enable AI features, get a free key from{" "}
+						<span className="flex flex-wrap items-center space-x-1">
+							<span>
+								Add your API key to enable AI features, get a free key from
+							</span>
 							<a
-								className="relative ml-1 inline-flex items-center underline"
+								className="relative inline-flex items-center underline"
 								href="https://makersuite.google.com/app/apikey"
 								rel="noopener noreferrer"
 								target="_blank"
