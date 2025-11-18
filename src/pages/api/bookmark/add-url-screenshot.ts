@@ -80,12 +80,16 @@ export default async function handler(
 		return;
 	}
 
-	const uploadedUrls = await Promise.all(
-		screenShotResponse?.data?.allImages.map(async (b64buffer: string) => {
-			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
-			return await upload(base64, userId);
-		}),
-	);
+	let additionalImageURLS = [];
+
+	if (screenShotResponse?.data?.allImages) {
+		additionalImageURLS = await Promise.all(
+			screenShotResponse?.data?.allImages.map(async (b64buffer: string) => {
+				const base64 = Buffer.from(b64buffer, "binary").toString("base64");
+				return await upload(base64, userId);
+			}),
+		);
+	}
 
 	const base64data = Buffer?.from(
 		screenShotResponse?.data?.screenshot?.data,
@@ -124,7 +128,7 @@ export default async function handler(
 		screenshot: publicURL,
 		isPageScreenshot,
 		coverImage: existingBookmarkData?.ogImage,
-		allImages: [...uploadedUrls],
+		additionalImages: [...additionalImageURLS],
 	};
 
 	const {
