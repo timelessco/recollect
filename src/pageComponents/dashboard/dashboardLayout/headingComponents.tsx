@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import isEmpty from "lodash/isEmpty";
 
-import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
-import ToolTip from "../../components/tooltip";
-import GlobeIcon from "../../icons/globeIcon";
-import UsersCollabIcon from "../../icons/usersCollabIcon";
-import { type CategoriesData } from "../../types/apiTypes";
-import { mutationApiCall } from "../../utils/apiHelpers";
+import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import ToolTip from "../../../components/tooltip";
+import GlobeIcon from "../../../icons/globeIcon";
+import UsersCollabIcon from "../../../icons/usersCollabIcon";
+import { type CategoriesData } from "../../../types/apiTypes";
+import { mutationApiCall } from "../../../utils/apiHelpers";
 
 type NavBarHeadingProps = {
 	currentCategoryData: CategoriesData | undefined;

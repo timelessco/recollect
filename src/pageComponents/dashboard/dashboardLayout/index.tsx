@@ -6,62 +6,59 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Allotment, type AllotmentHandle } from "allotment";
 import classNames from "classnames";
 import find from "lodash/find";
+import Drawer from "react-modern-drawer";
 
-import Button from "../../components/atoms/button";
+import Button from "../../../components/atoms/button";
+import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
+import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
+import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
+import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useMiscellaneousStore } from "../../../store/componentStore";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
-} from "../../types/apiTypes";
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
-import {
-	BOOKMARKS_COUNT_KEY,
-	CATEGORIES_KEY,
-	TRASH_URL,
-} from "../../utils/constants";
-
-import "allotment/dist/style.css";
-
-import Drawer from "react-modern-drawer";
-
-import BookmarksSortDropdown from "../../components/customDropdowns.tsx/bookmarksSortDropdown";
-import BookmarksViewDropdown from "../../components/customDropdowns.tsx/bookmarksViewDropdown";
-import ShareDropdown from "../../components/customDropdowns.tsx/shareDropdown";
-import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
-import useIsMobileView from "../../hooks/useIsMobileView";
-import { useMiscellaneousStore } from "../../store/componentStore";
+} from "../../../types/apiTypes";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 	type BookmarkViewCategories,
-} from "../../types/componentStoreTypes";
-import { optionsMenuListArray } from "../../utils/commonData";
-
+} from "../../../types/componentStoreTypes";
+import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
+import { optionsMenuListArray } from "../../../utils/commonData";
 import {
-	NavBarLogo,
-	SidePaneCollapseButton,
-} from "./dashboardLayoutComponents";
-import { NavBarHeading } from "./dashboardLayoutHeadingComponents";
-import SidePane from "./sidePane";
+	BOOKMARKS_COUNT_KEY,
+	CATEGORIES_KEY,
+	TRASH_URL,
+} from "../../../utils/constants";
+import SidePane from "../sidePane";
+
+import { AllotmentWrapper } from "./allotmentWrapper";
+import { NavBarLogo, SidePaneCollapseButton } from "./components";
+import { NavBarHeading } from "./headingComponents";
 
 import "react-modern-drawer/dist/index.css";
 
 import { isNull } from "lodash";
 
-import { AriaDropdown, AriaDropdownMenu } from "../../components/ariaDropdown";
+import {
+	AriaDropdown,
+	AriaDropdownMenu,
+} from "../../../components/ariaDropdown";
 import AddBookmarkDropdown, {
 	type AddBookmarkDropdownTypes,
-} from "../../components/customDropdowns.tsx/addBookmarkDropdown";
-import { Spinner } from "../../components/spinner";
-import RenameIcon from "../../icons/actionIcons/renameIcon";
-import TrashIconRed from "../../icons/actionIcons/trashIconRed";
-import OptionsIcon from "../../icons/optionsIcon";
+} from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
+import { Spinner } from "../../../components/spinner";
+import RenameIcon from "../../../icons/actionIcons/renameIcon";
+import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
+import OptionsIcon from "../../../icons/optionsIcon";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
-} from "../../utils/commonClassNames";
+} from "../../../utils/commonClassNames";
+import ShareContent from "../share/shareContent";
 
-import { SearchBar } from "./dashboardLayoutSearchComponents";
-import ShareContent from "./share/shareContent";
+import { SearchBar } from "./searchComponents";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -85,36 +82,6 @@ type DashboardLayoutProps = {
 	isLoadingCategories?: boolean;
 	isClearingTrash?: boolean;
 	children: React.ReactNode;
-};
-
-const interpolateScaleValue = (angle: number) => {
-	if (angle < 0) {
-		return 0.95;
-	} else if (angle > 200) {
-		return 1;
-	} else {
-		return 0.95 + (angle / 200) * 0.05;
-	}
-};
-
-const interpolateTransformValue = (angle: number) => {
-	if (angle <= 0) {
-		return -23;
-	} else if (angle >= 200) {
-		return 0;
-	} else {
-		return -23 + (angle / 200) * 23;
-	}
-};
-
-const interpolateOpacityValue = (angle: number) => {
-	if (angle <= 0) {
-		return 0;
-	} else if (angle >= 180) {
-		return 1;
-	} else {
-		return angle / 180;
-	}
 };
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -145,51 +112,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const setShowSidePane = useMiscellaneousStore(
 		(state) => state.setShowSidePane,
 	);
-
-	// this is the resize pane animation logic
-	useEffect(() => {
-		const resizePaneRef = sidePaneRef?.current;
-		const savedState = localStorage.getItem("sidePaneOpen");
-		if (savedState !== null) {
-			setShowSidePane(savedState === "true");
-		}
-
-		const observer = new ResizeObserver((entries) => {
-			const elementWidth = entries[0]?.contentRect?.width;
-			const sidePaneElement = document.querySelector(
-				"#side-pane-id",
-			) as HTMLElement;
-
-			if (sidePaneElement) {
-				if (elementWidth < 200) {
-					sidePaneElement.style.scale =
-						interpolateScaleValue(elementWidth)?.toString();
-					sidePaneElement.style.transform = `translateX(${interpolateTransformValue(
-						elementWidth,
-					)}px)`;
-
-					sidePaneElement.style.opacity =
-						interpolateOpacityValue(elementWidth)?.toString();
-				} else {
-					sidePaneElement.style.scale = "1";
-					sidePaneElement.style.opacity = "1";
-					sidePaneElement.style.transform = `translateX(0px)`;
-				}
-			}
-		});
-
-		if (resizePaneRef) {
-			observer.observe(resizePaneRef);
-			return () => resizePaneRef && observer.unobserve(resizePaneRef);
-		}
-
-		return undefined;
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	useEffect(() => {
-		localStorage.setItem("sidePaneOpen", String(showSidePane));
-	}, [showSidePane]);
 
 	useEffect(() => {
 		if (isDesktop) {
@@ -402,48 +324,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	if (isDesktop) {
 		return (
 			<div style={{ width: "100vw", height: "100vh" }}>
-				<Allotment
-					className="split-view-container"
-					onChange={(value: number[]) => {
-						if (value[0] === 0) {
-							setShowSidePane(false);
-						}
-
-						if (value[0] === 184) {
-							setShowSidePane(true);
-						}
-					}}
-					onDragEnd={(values: number[]) => {
-						const leftPaneSize = values?.[0];
-						if (leftPaneSize === 0 && sidePaneRef?.current?.clientWidth === 0) {
-							// open side pane when its fully closed and on the resize pane click
-							setShowSidePane(true);
-							// opens side pane
-							setTimeout(() => allotmentRef?.current?.reset(), 120);
-						}
-
-						const sidepaneWidth = sidePaneRef.current?.clientWidth;
-						if (leftPaneSize < 180 && sidepaneWidth && sidepaneWidth > 0) {
-							// closes the side pane when user is resizing it and side pane is less than 180px
-							setTimeout(() => allotmentRef?.current?.resize([0, 100]), 100);
-							setShowSidePane(false);
-						}
-
-						if (leftPaneSize > 180 && leftPaneSize < 244) {
-							// resets the side pane to default sizes based on user resizing width
-							allotmentRef?.current?.reset();
-							// close collpase button on resize
-							setShowSidePane(true);
-						}
-
-						if (leftPaneSize > 244) {
-							setShowSidePane(true);
-						}
-					}}
-					onVisibleChange={() => {
-						setShowSidePane(false);
-					}}
-					ref={allotmentRef}
+				<AllotmentWrapper
+					allotmentRef={allotmentRef}
+					sidePaneRef={sidePaneRef}
+					showSidePane={showSidePane}
+					setShowSidePane={setShowSidePane}
 					separator={false}
 				>
 					<Allotment.Pane
@@ -534,10 +419,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 									</div>
 								</div>
 							</header>
+
 							<main>{children}</main>
 						</div>
 					</Allotment.Pane>
-				</Allotment>
+				</AllotmentWrapper>
 			</div>
 		);
 	}
