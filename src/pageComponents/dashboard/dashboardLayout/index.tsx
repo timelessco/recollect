@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { Allotment, type AllotmentHandle } from "allotment";
 import classNames from "classnames";
 import find from "lodash/find";
 import Drawer from "react-modern-drawer";
+import { type ImperativePanelHandle } from "react-resizable-panels";
 
 import Button from "../../../components/atoms/button";
 import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
@@ -14,7 +14,6 @@ import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookm
 import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import useIsMobileView from "../../../hooks/useIsMobileView";
-import { useMiscellaneousStore } from "../../../store/componentStore";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
@@ -33,9 +32,9 @@ import {
 } from "../../../utils/constants";
 import SidePane from "../sidePane";
 
-import { AllotmentWrapper } from "./allotmentWrapper";
 import { NavBarLogo, SidePaneCollapseButton } from "./components";
 import { NavBarHeading } from "./headingComponents";
+import { PanelWrapper } from "./panelWrapper";
 
 import "react-modern-drawer/dist/index.css";
 
@@ -104,14 +103,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 	const [triggerHeadingEdit, setTriggerHeadingEdit] = useState(false);
-
-	const allotmentRef = useRef<AllotmentHandle>(null);
-	const sidePaneRef = useRef<HTMLDivElement>(null);
-
-	const showSidePane = useMiscellaneousStore((state) => state.showSidePane);
-	const setShowSidePane = useMiscellaneousStore(
-		(state) => state.setShowSidePane,
-	);
+	const sidePanelRef = useRef<ImperativePanelHandle | null>(null);
+	const [showSidePane, setShowSidePane] = useState(true);
 
 	useEffect(() => {
 		if (isDesktop) {
@@ -323,24 +316,21 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	if (isDesktop) {
 		return (
-			<div style={{ width: "100vw", height: "100vh" }}>
-				<AllotmentWrapper
-					allotmentRef={allotmentRef}
-					sidePaneRef={sidePaneRef}
-					showSidePane={showSidePane}
+			<div className="h-screen w-screen">
+				<PanelWrapper
 					setShowSidePane={setShowSidePane}
-					separator={false}
-				>
-					<Allotment.Pane
-						className="split-left-pane"
-						maxSize={350}
-						minSize={0}
-						preferredSize={244}
-						ref={sidePaneRef}
-						snap
-						visible={showSidePane}
-					>
-						<div className="h-full min-w-[200px]" id="side-pane-id">
+					showSidePane={showSidePane}
+					sidePanelRef={sidePanelRef}
+					sidePaneContent={
+						<div
+							className={classNames(
+								"h-full min-w-[200px] origin-left transition-all duration-200 ease-out",
+								{
+									"translate-x-0 scale-100 opacity-100": showSidePane,
+									"-translate-x-5 scale-95 opacity-0": !showSidePane,
+								},
+							)}
+						>
 							<SidePane
 								onAddNewCategory={onAddNewCategory}
 								onBookmarksDrop={onBookmarksDrop}
@@ -348,82 +338,64 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								isLoadingCategories={props.isLoadingCategories}
 							/>
 						</div>
-					</Allotment.Pane>
-					<Allotment.Pane className="split-right-pane">
-						<div className="w-full">
-							<header
-								className={classNames(
-									"absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]",
-									{
-										// "pl-[15px] pr-3":
-										// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
-										// "px-[7px]":
-										// 	currentBookmarkView === "headlines" || currentBookmarkView === "list",
-										"pr-3 pl-[13px]": true,
-									},
-								)}
-							>
-								{(isDesktop ? true : !showSearchBar) && (
-									<div
-										className={classNames(
-											"flex w-1/5 items-center px-2 py-[3px] max-xl:w-3/4",
-										)}
-									>
-										<SidePaneCollapseButton
-											showSidePane={showSidePane}
-											onToggle={() => {
-												setShowSidePane(true);
-												setTimeout(() => allotmentRef?.current?.reset(), 120);
-											}}
-										/>
-										<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center text-plain-reverse">
-											<NavBarLogo
-												currentCategoryData={currentCategoryData}
-												optionsMenuList={optionsMenuList}
-											/>
-										</figure>
-										<NavBarHeading
-											currentCategoryData={currentCategoryData}
-											headerName={headerName}
-											triggerEdit={triggerHeadingEdit}
-										/>
-									</div>
-								)}
-								<div
-									className={classNames({
-										"flex w-4/5 items-center justify-between max-xl:justify-end max-sm:mt-0": true,
-										"max-xl:w-full": showSearchBar,
-										"max-xl:w-1/4": !showSearchBar,
-									})}
-								>
-									{/* this div is there for centering needs */}
-									<div className="h-5 w-[1%] max-xl:hidden" />
-									<SearchBar
-										showSearchBar={showSearchBar}
-										isDesktop={isDesktop}
-										categoryId={categoryId}
-										currentCategoryData={currentCategoryData}
-										currentPath={currentPath}
-										userId={userId}
-										onShowSearchBar={setShowSearchBar}
+					}
+				>
+					<div className="relative w-full">
+						<header className="absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] pr-3 pl-[13px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]">
+							{(isDesktop ? true : !showSearchBar) && (
+								<div className="flex w-1/5 items-center px-2 py-[3px] max-xl:w-3/4">
+									<SidePaneCollapseButton
+										showSidePane={showSidePane}
+										sidePanelRef={sidePanelRef}
 									/>
-									<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
-										{renderViewBasedHeaderOptions()}
-										{currentPath !== TRASH_URL && (
-											<AddBookmarkDropdown
-												onAddBookmark={onAddBookmark}
-												uploadFile={uploadFileFromAddDropdown}
-											/>
-										)}
-										{/* Dark/Light toggle here */}
-									</div>
+									<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center text-plain-reverse">
+										<NavBarLogo
+											currentCategoryData={currentCategoryData}
+											optionsMenuList={optionsMenuList}
+										/>
+									</figure>
+									<NavBarHeading
+										currentCategoryData={currentCategoryData}
+										headerName={headerName}
+										triggerEdit={triggerHeadingEdit}
+									/>
 								</div>
-							</header>
+							)}
 
-							<main>{children}</main>
-						</div>
-					</Allotment.Pane>
-				</AllotmentWrapper>
+							<div
+								className={classNames({
+									"flex w-4/5 items-center justify-between max-xl:justify-end max-sm:mt-0": true,
+									"max-xl:w-full": showSearchBar,
+									"max-xl:w-1/4": !showSearchBar,
+								})}
+							>
+								{/* this div is there for centering needs */}
+								<div className="h-5 w-[1%] max-xl:hidden" />
+								<SearchBar
+									showSearchBar={showSearchBar}
+									isDesktop={isDesktop}
+									categoryId={categoryId}
+									currentCategoryData={currentCategoryData}
+									currentPath={currentPath}
+									userId={userId}
+									onShowSearchBar={setShowSearchBar}
+								/>
+								<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
+									{renderViewBasedHeaderOptions()}
+									{currentPath !== TRASH_URL && (
+										<AddBookmarkDropdown
+											onAddBookmark={onAddBookmark}
+											uploadFile={uploadFileFromAddDropdown}
+										/>
+									)}
+									{/* Dark/Light toggle here */}
+								</div>
+							</div>
+						</header>
+
+						<main>{children}</main>
+					</div>
+				</PanelWrapper>
 			</div>
 		);
 	}
@@ -442,31 +414,16 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					isLoadingCategories={props.isLoadingCategories}
 				/>
 			</Drawer>
+
 			<div className="w-screen">
 				<div className="w-full">
-					<header
-						className={classNames(
-							"absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]",
-							{
-								// "pl-[15px] pr-3":
-								// 	currentBookmarkView === "card" || currentBookmarkView === "moodboard",
-								// "px-[7px]":
-								// 	currentBookmarkView === "headlines" || currentBookmarkView === "list",
-								"pr-3 pl-[13px]": true,
-							},
-						)}
-					>
+					<header className="absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] pr-3 pl-[13px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]">
 						{(isDesktop ? true : !showSearchBar) && (
-							<div
-								className={classNames(
-									"flex w-1/5 items-center px-2 py-[3px] max-xl:w-3/4",
-								)}
-							>
+							<div className="flex w-1/5 items-center px-2 py-[3px] max-xl:w-3/4">
 								<SidePaneCollapseButton
 									showSidePane={showSidePane}
 									onToggle={() => {
 										setShowSidePane(true);
-										setTimeout(() => allotmentRef?.current?.reset(), 120);
 									}}
 								/>
 								<figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center text-plain-reverse">
@@ -482,6 +439,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								/>
 							</div>
 						)}
+
 						<div
 							className={classNames({
 								"flex w-4/5 items-center justify-between max-xl:justify-end max-sm:mt-0": true,
@@ -500,6 +458,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								userId={userId}
 								onShowSearchBar={setShowSearchBar}
 							/>
+
 							<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
 								{renderViewBasedHeaderOptions()}
 								{currentPath !== TRASH_URL && (

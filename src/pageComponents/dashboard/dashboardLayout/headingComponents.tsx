@@ -59,7 +59,7 @@ export const NavBarHeading = (props: NavBarHeadingProps) => {
 						}
 					}}
 					role="button"
-					tabIndex={0}
+					tabIndex={currentCategoryData ? 0 : -1}
 				>
 					{headingInputValue}
 				</div>
