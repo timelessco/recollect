@@ -87,8 +87,9 @@ export default async function handler(
 	const { title, description, isPageScreenshot } =
 		screenShotResponse?.data.metaData || {};
 
+	let publicURL;
 	try {
-		const publicURL = await upload(base64data, userId);
+		publicURL = await upload(base64data, userId);
 		console.log(publicURL);
 	} catch (error_) {
 		if (error_ instanceof Error) {
