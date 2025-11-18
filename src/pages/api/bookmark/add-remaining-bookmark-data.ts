@@ -78,6 +78,8 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
+	console.log("inside add-remaining-bookmark-data");
+
 	const { url, favIcon, id } = request.body;
 
 	if (!id) {
