@@ -141,7 +141,7 @@ export const deleteApiKey = async (): Promise<{
 	}
 };
 
-type CheckApiKeyResponse = { data: { hasApiKey: boolean } };
+type CheckApiKeyResponse = { data: { hasApiKey: boolean; apiKey: string } };
 
 export const checkApiKey = async (): Promise<CheckApiKeyResponse> => {
 	try {
