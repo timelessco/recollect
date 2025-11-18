@@ -39,7 +39,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		renderOnlyButton = false,
 	} = props;
 
-	const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
+	const bookmarksInfoValueRaw = useGetViewValue("cardContentViewArray", []);
+	const bookmarksInfoValue = Array.isArray(bookmarksInfoValueRaw)
+		? (bookmarksInfoValueRaw as string[])
+		: [];
 	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
 	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
 
@@ -121,7 +124,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				if (item?.label === "Cover") {
 					return true;
 				} else {
-					return bookmarksInfoValue?.includes(item?.value as never) || false;
+					return bookmarksInfoValue.includes(item.value);
 				}
 			}
 
@@ -130,11 +133,11 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				if (item?.label === "Title") {
 					return true;
 				} else {
-					return bookmarksInfoValue?.includes(item?.value as never) || false;
+					return bookmarksInfoValue.includes(item.value);
 				}
 			}
 
-			return bookmarksInfoValue?.includes(item?.value as never) || false;
+			return bookmarksInfoValue.includes(item.value);
 		};
 
 		const isDisabledLogic = () => {
@@ -176,10 +179,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 					disabled={isDisabledLogic()}
 					enabled={isEnabledLogic()}
 					setEnabled={() => {
-						if (bookmarksInfoValue?.includes(item.value as never)) {
-							if (bookmarksInfoValue?.length > 1) {
+						if (bookmarksInfoValue.includes(item.value)) {
+							if (bookmarksInfoValue.length > 1) {
 								setBookmarksView(
-									(bookmarksInfoValue as string[])?.filter(
+									bookmarksInfoValue.filter(
 										(viewItem) => viewItem !== item.value,
 									),
 									singleInfoValues.info as BookmarkViewCategories,
@@ -189,7 +192,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 							}
 						} else {
 							setBookmarksView(
-								[...(bookmarksInfoValue as string[]), item.value],
+								[...bookmarksInfoValue, item.value],
 								singleInfoValues.info as BookmarkViewCategories,
 							);
 						}

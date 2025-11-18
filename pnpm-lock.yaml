@@ -51,6 +51,9 @@ importers:
       '@tanstack/react-virtual':
         specifier: 3.13.12
         version: 3.13.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@total-typescript/ts-reset':
+        specifier: 0.6.1
+        version: 0.6.1
       allotment:
         specifier: 1.20.4
         version: 1.20.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4177,6 +4180,9 @@ packages:
 
   '@tootallnate/quickjs-emscripten@0.23.0':
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
+
+  '@total-typescript/ts-reset@0.6.1':
+    resolution: {integrity: sha512-cka47fVSo6lfQDIATYqb/vO1nvFfbPw7uWLayIXIhGETj0wcOOlrlkobOMDNQOFr9QOafegUPq13V2+6vtD7yg==}
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -15296,6 +15302,8 @@ snapshots:
       - supports-color
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
+
+  '@total-typescript/ts-reset@0.6.1': {}
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
