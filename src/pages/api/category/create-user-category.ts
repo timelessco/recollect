@@ -66,6 +66,7 @@ export default async function handler(
 				operation: "check_existing_category",
 				userId,
 			},
+			extra: { categoryName: name },
 		});
 		response.status(500).json({
 			data: null,
@@ -74,90 +75,102 @@ export default async function handler(
 		return;
 	}
 
-	if (isEmpty(matchedCategoryName)) {
-		const { data, error }: PostgrestResponse<CategoriesData> = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.insert([
-				{
-					category_name: name,
-					user_id: userId,
-					category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
-				},
-			])
-			.select();
-
-		if (!isNull(error)) {
-			console.error("Error inserting category:", error);
-			Sentry.captureException(error, {
-				tags: {
-					operation: "insert_category",
-					userId,
-					categoryName: name,
-				},
-			});
-			response.status(500).json({
-				data: null,
-				error: { message: "Error creating category" },
-			});
-			return;
-		}
-
-		const { category_order } = request.body;
-		console.log("Category insert result:", {
-			categoryId: data?.[0]?.id,
-			categorySlug: data?.[0]?.category_slug,
-		});
-
-		if (data && !isEmpty(data) && category_order !== undefined) {
-			const order = !isNull(category_order) ? category_order : [];
-
-			console.log("Updating category order:", {
-				newCategoryId: data[0]?.id,
-			});
-
-			const { error: orderError } = await supabase
-				.from(PROFILES)
-				.update({
-					category_order: [...order, data[0]?.id],
-				})
-				.match({ id: userId }).select(`
-      id, category_order`);
-
-			if (!isNull(orderError)) {
-				console.error("Error updating category order:", orderError);
-				Sentry.captureException(orderError, {
-					tags: {
-						operation: "update_category_order",
-						userId,
-					},
-				});
-				response.status(500).json({
-					data: null,
-					error: { message: "Error updating category order" },
-				});
-				return;
-			}
-
-			console.log("Category created successfully:", {
-				categoryId: data?.[0]?.id,
-			});
-			response.status(200).json({ data, error: null });
-			return;
-		}
-
-		console.warn("Error in creating category:", {
-			data,
-		});
-		response.status(500).json({
-			data: null,
-			error: { message: "Error in creating category" },
-		});
-	} else {
+	// Check for duplicate category name
+	if (!isEmpty(matchedCategoryName)) {
 		console.warn("Duplicate category name attempt:", {
 			categoryName: name,
 		});
 		response
 			.status(500)
 			.json({ data: null, error: { message: DUPLICATE_CATEGORY_NAME_ERROR } });
+		return;
 	}
+
+	// Insert category
+	const { data, error }: PostgrestResponse<CategoriesData> = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.insert([
+			{
+				category_name: name,
+				user_id: userId,
+				category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
+			},
+		])
+		.select();
+
+	if (error) {
+		console.error("Error inserting category:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "insert_category",
+				userId,
+				categoryName: name,
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: { message: "Error creating category" },
+		});
+		return;
+	}
+
+	// Check if data was returned
+	if (!data || isEmpty(data)) {
+		console.warn(
+			"No data returned from the database while creating category:",
+			{ data },
+		);
+		response.status(500).json({
+			data: null,
+			error: {
+				message: "No data returned from the database while creating category",
+			},
+		});
+		return;
+	}
+
+	console.log("Category insert result:", {
+		categoryId: data[0]?.id,
+		categorySlug: data[0]?.category_slug,
+	});
+
+	// Update category order if provided
+	const { category_order } = request.body;
+	if (category_order !== undefined) {
+		const order = !isNull(category_order) ? category_order : [];
+
+		console.log("Updating category order:", {
+			newCategoryId: data[0]?.id,
+		});
+
+		const { error: orderError } = await supabase
+			.from(PROFILES)
+			.update({
+				category_order: [...order, data[0]?.id],
+			})
+			.match({ id: userId }).select(`
+      id, category_order`);
+
+		if (orderError) {
+			console.error("Error updating category order:", orderError);
+			Sentry.captureException(orderError, {
+				tags: {
+					operation: "update_category_order",
+					userId,
+				},
+				extra: { categoryId: data[0]?.id },
+			});
+			response.status(500).json({
+				data: null,
+				error: { message: "Error updating category order" },
+			});
+			return;
+		}
+	}
+
+	// Success
+	console.log("Category created successfully:", {
+		categoryId: data[0]?.id,
+	});
+	response.status(200).json({ data, error: null });
 }
