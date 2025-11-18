@@ -80,21 +80,11 @@ export default async function handler(
 		return;
 	}
 
-	let additionalImageURLS = [];
-
-	if (screenShotResponse?.data?.allImages) {
-		additionalImageURLS = await Promise.all(
-			screenShotResponse?.data?.allImages.map(async (b64buffer: string) => {
-				const base64 = Buffer.from(b64buffer, "binary").toString("base64");
-				return await upload(base64, userId);
-			}),
-		);
-	}
-
 	const base64data = Buffer?.from(
 		screenShotResponse?.data?.screenshot?.data,
 		"binary",
 	)?.toString("base64");
+
 	const { title, description, isPageScreenshot } =
 		screenShotResponse?.data.metaData || {};
 
@@ -122,13 +112,25 @@ export default async function handler(
 	const updatedDescription =
 		description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
 
+	let additionalImages = [];
+
+	// for instagram we get all the images from the post so we upload all the images to the R2
+	if (screenShotResponse?.data?.allImages) {
+		additionalImages = await Promise.all(
+			screenShotResponse?.data?.allImages.map(async (b64buffer: string) => {
+				const base64 = Buffer.from(b64buffer, "binary").toString("base64");
+				return await upload(base64, userId);
+			}),
+		);
+	}
+
 	// Add screenshot URL to meta_data
 	const updatedMetaData = {
 		...existingMetaData,
 		screenshot: publicURL,
 		isPageScreenshot,
 		coverImage: existingBookmarkData?.ogImage,
-		additionalImages: [...additionalImageURLS],
+		additionalImages,
 	};
 
 	const {
