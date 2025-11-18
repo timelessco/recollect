@@ -159,7 +159,7 @@ export default async function handler(
 				);
 
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const _response = axios.post(
+				const _response = await axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 					{
 						id: data[0]?.id,
@@ -169,6 +169,8 @@ export default async function handler(
 					getAxiosConfigWithAuth(request),
 				);
 			}
+
+			console.log(response);
 
 			console.log("after calling ADD_REMAINING_BOOKMARK_API");
 
