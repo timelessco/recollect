@@ -860,7 +860,12 @@ const CardSection = ({
 		if (isLoadingProfile) {
 			return (
 				<div className="absolute inset-0 flex items-center justify-center">
-					<Image src={loaderGif} alt="loader" className="h-12 w-12" />
+					<Image
+						src={loaderGif}
+						alt="loader"
+						className="h-12 w-12"
+						loader={(source) => source.src}
+					/>
 				</div>
 			);
 		}

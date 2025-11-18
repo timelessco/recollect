@@ -921,15 +921,15 @@
 	}
 
 	.single-bookmark[aria-selected="true"] .card-title {
-		@apply text-plain;
+		@apply text-gray-0!;
 	}
 
 	.single-bookmark[aria-selected="true"] .moodboard-card-img {
-		@apply rounded-br-none rounded-bl-none;
+		@apply rounded-br-none! rounded-bl-none!;
 	}
 
 	.single-bookmark[aria-selected="true"] .card-icon {
-		@apply text-plain;
+		@apply text-gray-0!;
 	}
 
 	.drop-target .side-pane-anchor {
