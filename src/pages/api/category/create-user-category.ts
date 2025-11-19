@@ -22,7 +22,10 @@ import {
 	DUPLICATE_CATEGORY_NAME_ERROR,
 	PROFILES,
 } from "../../../utils/constants";
-import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+import {
+	apiSupabaseClient,
+	getApiSupabaseUser,
+} from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: CategoriesData[] | null;
@@ -38,7 +41,8 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	const userId = (await getApiSupabaseUser(request, supabase))?.data?.user
+		?.id as string;
 	const { name } = request.body;
 
 	console.log("create-user-category API called:", { userId, name });
