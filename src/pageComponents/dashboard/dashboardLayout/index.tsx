@@ -65,9 +65,6 @@ const MIN_SIZE_PIXEL = 244;
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
 	onAddBookmark: AddBookmarkDropdownTypes["onAddBookmark"];
-	onAddNewCategory: (value: string) => Promise<void>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onBookmarksDrop: (event: any) => Promise<void>;
 	onCategoryOptionClick: (
 		value: number | string,
 		current: boolean,
@@ -91,12 +88,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		categoryId,
 		children,
 		userId,
-		onAddNewCategory,
 		onCategoryOptionClick,
 		onClearTrash,
 		setBookmarksView,
 		onAddBookmark,
-		onBookmarksDrop,
 		uploadFileFromAddDropdown,
 		onDeleteCollectionClick,
 		isClearingTrash,
@@ -323,8 +318,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const sidePaneElement = (
 		<SidePane
-			onAddNewCategory={onAddNewCategory}
-			onBookmarksDrop={onBookmarksDrop}
 			onCategoryOptionClick={onCategoryOptionClick}
 			isLoadingCategories={props.isLoadingCategories}
 		/>

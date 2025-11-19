@@ -1089,68 +1089,6 @@ const Dashboard = () => {
 				categoryId={CATEGORY_ID}
 				onAddBookmark={onAddBookmark}
 				isLoadingCategories={isLoadingCategories}
-				onAddNewCategory={async (newCategoryName) => {
-					if (!isNull(userProfileData?.data)) {
-						const response = (await mutationApiCall(
-							addCategoryOptimisticMutation.mutateAsync({
-								name: newCategoryName,
-								category_order: userProfileData?.data[0]?.category_order ?? [],
-							}),
-						)) as { data: CategoriesData[] };
-
-						if (!isEmpty(response?.data)) {
-							void router.push(`/${response?.data[0]?.category_slug}`);
-						}
-					}
-				}}
-				onBookmarksDrop={async (event) => {
-					if (event?.isInternal === false) {
-						const categoryId = Number.parseInt(
-							event?.target?.key as string,
-							10,
-						);
-
-						const currentCategory =
-							find(allCategories?.data, (item) => item?.id === categoryId) ??
-							find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-						// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
-
-						const updateAccessCondition =
-							find(
-								currentCategory?.collabData,
-								(item) => item?.userEmail === session?.user?.email,
-							)?.edit_access === true ||
-							currentCategory?.user_id?.id === session?.user?.id;
-
-						// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
-						await event?.items?.forEach(async (item: any) => {
-							const bookmarkId = (await item.getText("text/plain")) as string;
-
-							const bookmarkCreatedUserId = find(
-								flattendPaginationBookmarkData,
-								(bookmarkItem) =>
-									Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-							)?.user_id?.id;
-
-							if (bookmarkCreatedUserId === session?.user?.id) {
-								if (!updateAccessCondition) {
-									// if update access is not there then user cannot drag and drop anything into the collection
-									errorToast("Cannot upload in other owners collection");
-									return;
-								}
-
-								await addCategoryToBookmarkOptimisticMutation.mutateAsync({
-									category_id: categoryId,
-									bookmark_id: Number.parseInt(bookmarkId, 10),
-									// if user is changing to uncategorised then thay always have access
-									update_access: updateAccessCondition,
-								});
-							} else {
-								errorToast("You cannot move collaborators uploads");
-							}
-						});
-					}
-				}}
 				onCategoryOptionClick={async (value, current, categoryId) => {
 					switch (value) {
 						case "delete":

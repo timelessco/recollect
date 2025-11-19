@@ -6,9 +6,6 @@ import SidePaneTypesList from "./sidePaneTypesList";
 import SidePaneUserDropdown from "./sidePaneUserDropdown";
 
 type SidePaneTypes = {
-	onAddNewCategory: (value: string) => Promise<void>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onBookmarksDrop: (event: any) => Promise<void>;
 	onCategoryOptionClick: (
 		value: number | string,
 		current: boolean,
@@ -20,9 +17,7 @@ type SidePaneTypes = {
 
 const SidePane = (props: SidePaneTypes) => {
 	const {
-		onBookmarksDrop,
 		onCategoryOptionClick,
-		onAddNewCategory,
 		isLoadingCategories = false,
 		isFetchingCategories = false,
 	} = props;
@@ -34,8 +29,6 @@ const SidePane = (props: SidePaneTypes) => {
 			<SidePaneOptionsMenu />
 
 			<CollectionsList
-				onAddNewCategory={onAddNewCategory}
-				onBookmarksDrop={onBookmarksDrop}
 				onCategoryOptionClick={onCategoryOptionClick}
 				isLoadingCategories={isLoadingCategories}
 				isFetchingCategories={isFetchingCategories}

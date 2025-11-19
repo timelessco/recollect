@@ -1,4 +1,5 @@
 import { useRef, useState, type Key, type ReactNode } from "react";
+import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
@@ -33,13 +34,18 @@ import {
 	type ListState,
 } from "react-stately";
 
+import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
+import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import useGetFlattendPaginationBookmarkData from "../../../hooks/useGetFlattendPaginationBookmarkData";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -65,6 +71,7 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
+import { errorToast } from "../../../utils/toastMessages";
 
 import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
@@ -72,9 +79,6 @@ import SingleListItemComponent, {
 } from "./singleListItemComponent";
 
 type CollectionsListPropertyTypes = {
-	onAddNewCategory: (value: string) => Promise<void>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onBookmarksDrop: (event: any) => Promise<void>;
 	onCategoryOptionClick: (
 		value: number | string,
 		current: boolean,
@@ -299,21 +303,27 @@ const OptionDrop = ({
 
 const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	const {
-		onBookmarksDrop,
 		onCategoryOptionClick,
-		onAddNewCategory,
 		isLoadingCategories = false,
 		isFetchingCategories = false,
 	} = listProps;
 
+	const router = useRouter();
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
 
+	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
+	const { addCategoryToBookmarkOptimisticMutation } =
+		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
+	const { allCategories } = useFetchCategories();
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const { flattendPaginationBookmarkData } =
+		useGetFlattendPaginationBookmarkData();
 
 	const currentPath = useGetCurrentUrlPath();
 
@@ -351,6 +361,68 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	const sidePaneOptionLoading = useLoadersStore(
 		(state) => state.sidePaneOptionLoading,
 	);
+
+	const handleAddNewCategory = async (newCategoryName: string) => {
+		if (!isNull(userProfileData?.data)) {
+			const response = (await mutationApiCall(
+				addCategoryOptimisticMutation.mutateAsync({
+					name: newCategoryName,
+					category_order: userProfileData?.data[0]?.category_order ?? [],
+				}),
+			)) as { data: CategoriesData[] };
+
+			if (!isEmpty(response?.data)) {
+				void router.push(`/${response?.data[0]?.category_slug}`);
+			}
+		}
+	};
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const handleBookmarksDrop = async (event: any) => {
+		if (event?.isInternal === false) {
+			const categoryId = Number.parseInt(event?.target?.key as string, 10);
+
+			const currentCategory =
+				find(allCategories?.data, (item) => item?.id === categoryId) ??
+				find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
+			// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
+
+			const updateAccessCondition =
+				find(
+					currentCategory?.collabData,
+					(item) => item?.userEmail === session?.user?.email,
+				)?.edit_access === true ||
+				currentCategory?.user_id?.id === session?.user?.id;
+
+			// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
+			await event?.items?.forEach(async (item: any) => {
+				const bookmarkId = (await item.getText("text/plain")) as string;
+
+				const bookmarkCreatedUserId = find(
+					flattendPaginationBookmarkData,
+					(bookmarkItem) =>
+						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
+				)?.user_id?.id;
+
+				if (bookmarkCreatedUserId === session?.user?.id) {
+					if (!updateAccessCondition) {
+						// if update access is not there then user cannot drag and drop anything into the collection
+						errorToast("Cannot upload in other owners collection");
+						return;
+					}
+
+					await addCategoryToBookmarkOptimisticMutation.mutateAsync({
+						category_id: categoryId,
+						bookmark_id: Number.parseInt(bookmarkId, 10),
+						// if user is changing to uncategorised then thay always have access
+						update_access: updateAccessCondition,
+					});
+				} else {
+					errorToast("You cannot move collaborators uploads");
+				}
+			});
+		}
+	};
 
 	const collectionsList = session
 		? categoryData?.data?.map((item) => ({
@@ -472,7 +544,9 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					id="add-category-input"
 					onBlur={(event) => {
 						if (!isEmpty(event?.target?.value)) {
-							void onAddNewCategory((event.target as HTMLInputElement).value);
+							void handleAddNewCategory(
+								(event.target as HTMLInputElement).value,
+							);
 						}
 
 						setShowAddCategoryInput(false);
@@ -482,7 +556,9 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							event.key === "Enter" &&
 							!isEmpty((event.target as HTMLInputElement).value)
 						) {
-							void onAddNewCategory((event.target as HTMLInputElement).value);
+							void handleAddNewCategory(
+								(event.target as HTMLInputElement).value,
+							);
 							setShowAddCategoryInput(false);
 						}
 					}}
@@ -551,7 +627,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							aria-label="Categories-drop"
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							onItemDrop={(event: any) => {
-								void onBookmarksDrop(event);
+								void handleBookmarksDrop(event);
 							}}
 							onReorder={onReorder}
 							selectionBehavior="replace"
