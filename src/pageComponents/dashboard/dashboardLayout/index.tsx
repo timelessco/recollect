@@ -33,7 +33,11 @@ import {
 } from "../../../utils/constants";
 import SidePane from "../sidePane";
 
-import { AllotmentWrapper } from "./allotmentWrapper";
+import {
+	AllotmentWrapper,
+	SIDE_PANE_ANIMATION_DELAY,
+	SIDE_PANE_DEFAULT_WIDTH,
+} from "./allotmentWrapper";
 import { DashboardContent } from "./dashboardContent";
 
 import "react-modern-drawer/dist/index.css";
@@ -88,6 +92,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const allotmentRef = useRef<AllotmentHandle>(null);
 	const sidePaneRef = useRef<HTMLDivElement>(null);
+	const sidePaneContentRef = useRef<HTMLDivElement>(null);
 
 	const showSidePane = useSidePaneStore((state) => state.showSidePane);
 	const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
@@ -306,7 +311,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		const onExpandSidePane = () => {
 			if (isDesktop) {
 				setShowSidePane(true);
-				setTimeout(() => allotmentRef.current?.reset(), 120);
+				setTimeout(
+					() => allotmentRef.current?.reset(),
+					SIDE_PANE_ANIMATION_DELAY,
+				);
 			} else {
 				setShowSidePane(true);
 			}
@@ -337,22 +345,24 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	if (isDesktop) {
 		return (
-			<div style={{ width: "100vw", height: "100vh" }}>
+			<div className="h-screen w-screen">
 				<AllotmentWrapper
 					allotmentRef={allotmentRef}
 					sidePaneRef={sidePaneRef}
+					sidePaneContentRef={sidePaneContentRef}
+					className="split-view-container"
 					separator={false}
 				>
 					<Allotment.Pane
+						ref={sidePaneRef}
 						className="split-left-pane"
 						maxSize={350}
 						minSize={0}
-						preferredSize={244}
-						snap
+						preferredSize={SIDE_PANE_DEFAULT_WIDTH}
 						visible={showSidePane}
-						ref={sidePaneRef}
+						snap
 					>
-						<div className="h-full min-w-[200px]" id="side-pane-id">
+						<div className="h-full min-w-[200px]" ref={sidePaneContentRef}>
 							<SidePane />
 						</div>
 					</Allotment.Pane>

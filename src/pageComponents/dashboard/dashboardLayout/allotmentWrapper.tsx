@@ -1,23 +1,21 @@
-import { useEffect, type RefObject } from "react";
+import "allotment/dist/style.css";
+
+import { type RefObject } from "react";
+import { useResizeObserver } from "@react-hookz/web";
 import {
 	Allotment,
 	type AllotmentHandle,
 	type AllotmentProps,
 } from "allotment";
 
-import {
-	DEFAULT_SIDE_PANE_WIDTH,
-	useSidePaneStore,
-} from "../../../store/sidePaneStore";
+import { useSidePaneStore } from "../../../store/sidePaneStore";
 
-import "allotment/dist/style.css";
-
-// Side pane resize thresholds
-
+// Below this width, reset to default
+export const SIDE_PANE_DEFAULT_WIDTH = 244;
 // Below this width, snap closed
-const SNAP_THRESHOLD = 180;
+export const SIDE_PANE_SNAP_THRESHOLD = 200;
 // Delay for resize animations (ms)
-const ANIMATION_DELAY = 100;
+export const SIDE_PANE_ANIMATION_DELAY = 100;
 
 // Interpolation functions for Allotment resize animation
 const interpolateScaleValue = (angle: number) => {
@@ -53,89 +51,85 @@ const interpolateOpacityValue = (angle: number) => {
 interface AllotmentWrapperProps extends AllotmentProps {
 	allotmentRef: RefObject<AllotmentHandle | null>;
 	sidePaneRef: RefObject<HTMLDivElement | null>;
+	sidePaneContentRef: RefObject<HTMLDivElement | null>;
 	children: React.ReactNode;
 }
 
 export const AllotmentWrapper = (props: AllotmentWrapperProps) => {
-	const { allotmentRef, sidePaneRef, ...rest } = props;
+	const { allotmentRef, sidePaneRef, sidePaneContentRef, ...rest } = props;
 
 	const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
-	const setSidePaneWidth = useSidePaneStore((state) => state.setSidePaneWidth);
 
-	// Resize pane animation logic
-	useEffect(() => {
-		const resizePaneRef = sidePaneRef?.current;
+	// Resize pane animation logic with useResizeObserver for better performance
+	useResizeObserver(sidePaneRef, (entry) => {
+		const elementWidth = entry.contentRect.width;
+		const sidePaneElement = sidePaneContentRef.current;
 
-		const observer = new ResizeObserver((entries) => {
-			const elementWidth = entries[0]?.contentRect?.width;
-			const sidePaneElement = document.querySelector(
-				"#side-pane-id",
-			) as HTMLElement;
-
-			if (sidePaneElement) {
-				if (elementWidth < 200) {
-					sidePaneElement.style.scale =
-						interpolateScaleValue(elementWidth)?.toString();
-					sidePaneElement.style.transform = `translateX(${interpolateTransformValue(
-						elementWidth,
-					)}px)`;
-
-					sidePaneElement.style.opacity =
-						interpolateOpacityValue(elementWidth)?.toString();
-				} else {
-					sidePaneElement.style.scale = "1";
-					sidePaneElement.style.opacity = "1";
-					sidePaneElement.style.transform = `translateX(0px)`;
-				}
-			}
-		});
-
-		if (resizePaneRef) {
-			observer.observe(resizePaneRef);
-			return () => resizePaneRef && observer.unobserve(resizePaneRef);
+		if (!sidePaneElement) {
+			return;
 		}
 
-		return undefined;
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		// Use requestAnimationFrame for smooth 60fps updates
+		requestAnimationFrame(() => {
+			if (elementWidth < SIDE_PANE_SNAP_THRESHOLD) {
+				sidePaneElement.style.scale =
+					interpolateScaleValue(elementWidth).toString();
+				sidePaneElement.style.transform = `translateX(${interpolateTransformValue(
+					elementWidth,
+				)}px)`;
+				sidePaneElement.style.opacity =
+					interpolateOpacityValue(elementWidth).toString();
+			} else {
+				sidePaneElement.style.scale = "1";
+				sidePaneElement.style.opacity = "1";
+				sidePaneElement.style.transform = "translateX(0px)";
+			}
+		});
+	});
 
 	return (
+		// Ongoing issue with allotment - Accessing element.ref was removed in React 19. ref is now a regular prop. It will be removed from the JSX Element type in a future release.
+		// https://github.com/johnwalley/allotment/issues/833
 		<Allotment
-			onChange={(value: number[]) => {
-				if (value[0] === 0) {
+			onChange={(values) => {
+				const sidePaneSize = values[0];
+				if (sidePaneSize === 0) {
 					setShowSidePane(false);
 				}
 
-				if (value[0] === 184) {
+				if (sidePaneSize === 184) {
 					setShowSidePane(true);
 				}
 			}}
-			onDragEnd={(values: number[]) => {
-				const leftPaneSize = values?.[0];
-				if (leftPaneSize === 0 && sidePaneRef?.current?.clientWidth === 0) {
+			onDragEnd={(values) => {
+				const sidePaneSize = values[0];
+				if (sidePaneSize === 0 && sidePaneRef?.current?.clientWidth === 0) {
 					// open side pane when its fully closed and on the resize pane click
 					setShowSidePane(true);
 					// opens side pane
-					setTimeout(() => allotmentRef?.current?.reset(), ANIMATION_DELAY);
+					setTimeout(
+						() => allotmentRef?.current?.reset(),
+						SIDE_PANE_ANIMATION_DELAY,
+					);
 				}
 
 				const sidepaneWidth = sidePaneRef.current?.clientWidth;
 				if (
-					leftPaneSize < SNAP_THRESHOLD &&
+					sidePaneSize < SIDE_PANE_SNAP_THRESHOLD &&
 					sidepaneWidth &&
 					sidepaneWidth > 0
 				) {
 					// closes the side pane when user is resizing it and side pane is less than snap threshold
 					setTimeout(
 						() => allotmentRef?.current?.resize([0, 100]),
-						ANIMATION_DELAY,
+						SIDE_PANE_ANIMATION_DELAY,
 					);
 					setShowSidePane(false);
 				}
 
 				if (
-					leftPaneSize > SNAP_THRESHOLD &&
-					leftPaneSize < DEFAULT_SIDE_PANE_WIDTH
+					sidePaneSize > SIDE_PANE_SNAP_THRESHOLD &&
+					sidePaneSize < SIDE_PANE_DEFAULT_WIDTH
 				) {
 					// resets the side pane to default sizes based on user resizing width
 					allotmentRef?.current?.reset();
@@ -143,9 +137,8 @@ export const AllotmentWrapper = (props: AllotmentWrapperProps) => {
 					setShowSidePane(true);
 				}
 
-				if (leftPaneSize > DEFAULT_SIDE_PANE_WIDTH) {
+				if (sidePaneSize > SIDE_PANE_DEFAULT_WIDTH) {
 					setShowSidePane(true);
-					setSidePaneWidth(leftPaneSize);
 				}
 			}}
 			onVisibleChange={() => {

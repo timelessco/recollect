@@ -2,23 +2,18 @@ import { isBrowser } from "@react-hookz/web/util/const.js";
 import { create, type Mutate, type StoreApi } from "zustand";
 import { persist } from "zustand/middleware";
 
-// Below this width, reset to default
-export const DEFAULT_SIDE_PANE_WIDTH = 244;
-
 type SidePaneState = {
 	setShowSidePane: (value: boolean) => void;
-	setSidePaneWidth: (value: number) => void;
 	showSidePane: boolean;
-	sidePaneWidth: number;
 };
 
+// We are unable to store the width and apply it to the side pane
+// Issues related to allotment and its storing width logic - https://github.com/johnwalley/allotment/issues?q=sort%3Aupdated-desc%20is%3Aissue%20is%3Aopen%20width
 export const useSidePaneStore = create<SidePaneState>()(
 	persist(
 		(set) => ({
 			showSidePane: true,
-			sidePaneWidth: DEFAULT_SIDE_PANE_WIDTH,
 			setShowSidePane: (value) => set({ showSidePane: value }),
-			setSidePaneWidth: (value) => set({ sidePaneWidth: value }),
 		}),
 		{ name: "sidePaneOpen" },
 	),
