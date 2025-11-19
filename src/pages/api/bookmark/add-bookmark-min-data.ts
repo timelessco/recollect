@@ -66,42 +66,54 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 		.eq("id", categoryId);
 
 	if (categoryError) {
+		console.error("Error checking category ownership:", categoryError);
+		Sentry.captureException(categoryError, {
+			tags: {
+				operation: "check_category_ownership",
+				userId,
+			},
+			extra: { categoryId },
+		});
 		response
 			.status(500)
 			.json({ data: null, error: categoryError?.message, message: null });
-		Sentry.captureException(
-			`checkIfUserIsCategoryOwnerOrCollaborator error: ${categoryError?.message}`,
-		);
 		return false;
 	}
 
 	if (categoryData?.[0]?.user_id === userId) {
 		// user is the owner of the category
 		return true;
-	} else {
-		// check if user id a collaborator of the category
-		const { data: shareData, error: shareError } = await supabase
-			.from(SHARED_CATEGORIES_TABLE_NAME)
-			.select("id, edit_access")
-			.eq("category_id", categoryId)
-			.eq("email", email);
-
-		if (shareError) {
-			response
-				.status(500)
-				.json({ data: null, error: shareError?.message, message: null });
-			Sentry.captureException(`share check error: ${shareError?.message}`);
-			return false;
-		}
-
-		if (!isEmpty(shareData)) {
-			// user is a collaborator, if user does not have edit access then return false so that DB is not updated with data
-			return shareData?.[0]?.edit_access;
-		} else {
-			// user is not the owner or the collaborator of the collection
-			return false;
-		}
 	}
+
+	// check if user is a collaborator of the category
+	const { data: shareData, error: shareError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.select("id, edit_access")
+		.eq("category_id", categoryId)
+		.eq("email", email);
+
+	if (shareError) {
+		console.error("Error checking share access:", shareError);
+		Sentry.captureException(shareError, {
+			tags: {
+				operation: "check_share_access",
+				userId,
+			},
+			extra: { categoryId, email },
+		});
+		response
+			.status(500)
+			.json({ data: null, error: shareError?.message, message: null });
+		return false;
+	}
+
+	if (!isEmpty(shareData)) {
+		// user is a collaborator, if user does not have edit access then return false so that DB is not updated with data
+		return shareData?.[0]?.edit_access;
+	}
+
+	// user is not the owner or the collaborator of the collection
+	return false;
 };
 
 export default async function handler(
@@ -150,6 +162,7 @@ export default async function handler(
 	// }
 
 	if (!updateAccess) {
+		console.warn("User does not have update access:", { url });
 		response.status(500).json({
 			data: null,
 			error: "User does not have update access",
@@ -160,23 +173,25 @@ export default async function handler(
 
 	const supabase = apiSupabaseClient(request, response);
 
-	const userData = await supabase?.auth?.getUser();
+	// Check for auth errors
+	const { data: userData, error: userError } = await supabase.auth.getUser();
+	const userId = userData?.user?.id;
+	const email = userData?.user?.email;
 
-	const userId = userData?.data?.user?.id;
-	const email = userData?.data?.user?.email;
-
-	// Check if userId and email are retrieved from Supabase
-	if (!userId || !email) {
-		console.warn(
-			`User ID and email not retrieved from Supabase for url: ${url}`,
-		);
-		response.status(500).json({
+	if (userError || !userId || !email) {
+		console.warn("User authentication failed:", {
+			error: userError,
+			url,
+		});
+		response.status(401).json({
 			data: null,
-			error: "User ID and email not retrieved from Supabase",
-			message: "User ID and email not retrieved from Supabase",
+			error: "Unauthorized",
+			message: null,
 		});
 		return;
 	}
+
+	console.log("add-bookmark-min-data API called:", { userId, url, categoryId });
 
 	let scrapperResponse: ScrapperTypes = {
 		data: {
@@ -273,13 +288,15 @@ export default async function handler(
 
 		if (!isNull(checkBookmarkError)) {
 			console.error(
-				`Something went wrong in duplicate bookmark category check for url: ${url}`,
+				"Error in duplicate bookmark category check:",
 				checkBookmarkError,
 			);
 			Sentry.captureException(checkBookmarkError, {
-				extra: {
-					message: `Something went wrong in duplicate bookmark category check for url: ${url}`,
+				tags: {
+					operation: "check_duplicate_bookmark",
+					userId,
 				},
+				extra: { url, categoryId },
 			});
 			response.status(500).json({
 				data: null,
@@ -366,53 +383,61 @@ export default async function handler(
 	}
 
 	if (!isNull(error)) {
-		console.error(`Min bookmark data insert error for url: ${url}`, error);
+		console.error("Min bookmark data insert error:", error);
 		Sentry.captureException(error, {
-			extra: {
-				message: `Min bookmark data insert error for url: ${url}`,
+			tags: {
+				operation: "insert_min_bookmark",
+				userId,
 			},
+			extra: { url, categoryId: computedCategoryId },
 		});
 		response.status(500).json({
 			data: null,
 			error: "Min bookmark data insert error",
 			message: "Min bookmark data insert error",
 		});
-	} else {
-		response.status(200).json({
-			data,
-			error: null,
-			message: "Min bookmark data inserted successfully",
-		});
+		return;
+	}
 
-		try {
-			if (isUrlOfMimeType) {
-				// this adds the remaining data , like blur hash bucket uploads and all
-				// this is called only if the url is an image url like test.com/image.png.
-				// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
-				await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
-					{
-						id: data[0]?.id,
-						favIcon: scrapperResponse?.data?.favIcon,
-						url,
-					},
-					getAxiosConfigWithAuth(request),
-				);
-			} else {
-				console.log(
-					"Not a image(or similar mimetype) url, so not calling the add-remaining-bookmark-data api",
-				);
-			}
-		} catch (remainingUploadError) {
-			console.error(
-				`Remaining api error for url: ${url}`,
-				remainingUploadError,
-			);
-			Sentry.captureException(remainingUploadError, {
-				extra: {
-					message: `Remaining api error for url: ${url}`,
+	// Success
+	console.log("Min bookmark data inserted successfully:", {
+		bookmarkId: data[0]?.id,
+		url,
+	});
+	response.status(200).json({
+		data,
+		error: null,
+		message: "Min bookmark data inserted successfully",
+	});
+
+	// Call remaining API for media files
+	try {
+		if (isUrlOfMimeType) {
+			// this adds the remaining data , like blur hash bucket uploads and all
+			// this is called only if the url is an image url like test.com/image.png.
+			// for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
+			await axios.post(
+				`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+				{
+					id: data[0]?.id,
+					favIcon: scrapperResponse?.data?.favIcon,
+					url,
 				},
-			});
+				getAxiosConfigWithAuth(request),
+			);
+		} else {
+			console.log(
+				"Not a image(or similar mimetype) url, so not calling the add-remaining-bookmark-data api",
+			);
 		}
+	} catch (remainingUploadError) {
+		console.error("Remaining API error:", remainingUploadError);
+		Sentry.captureException(remainingUploadError, {
+			tags: {
+				operation: "call_remaining_bookmark_api",
+				userId,
+			},
+			extra: { bookmarkId: data[0]?.id, url },
+		});
 	}
 }
