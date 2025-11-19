@@ -88,7 +88,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const allotmentRef = useRef<AllotmentHandle>(null);
 	const sidePaneRef = useRef<HTMLDivElement>(null);
-	const sidePaneContentRef = useRef<HTMLDivElement>(null);
 
 	const showSidePane = useSidePaneStore((state) => state.showSidePane);
 	const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
@@ -303,34 +302,38 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 	};
 
-	const dashboardContentElement = (
-		<DashboardContent
-			categoryId={categoryId}
-			currentCategoryData={currentCategoryData}
-			currentPath={currentPath}
-			headerName={headerName}
-			headerOptions={renderViewBasedHeaderOptions()}
-			isDesktop={isDesktop}
-			onAddBookmark={onAddBookmark}
-			onExpandSidePane={() => {
-				if (isDesktop) {
-					setShowSidePane(true);
-					setTimeout(() => allotmentRef.current?.reset(), 120);
-				} else {
-					setShowSidePane(true);
-				}
-			}}
-			onShowSearchBar={setShowSearchBar}
-			optionsMenuList={optionsMenuList}
-			showSearchBar={showSearchBar}
-			showSidePane={showSidePane}
-			triggerHeadingEdit={triggerHeadingEdit}
-			uploadFileFromAddDropdown={uploadFileFromAddDropdown}
-			userId={userId}
-		>
-			{children}
-		</DashboardContent>
-	);
+	const dashboardContentElement = () => {
+		const onExpandSidePane = () => {
+			if (isDesktop) {
+				setShowSidePane(true);
+				setTimeout(() => allotmentRef.current?.reset(), 120);
+			} else {
+				setShowSidePane(true);
+			}
+		};
+
+		return (
+			<DashboardContent
+				categoryId={categoryId}
+				currentCategoryData={currentCategoryData}
+				currentPath={currentPath}
+				headerName={headerName}
+				headerOptions={renderViewBasedHeaderOptions()}
+				isDesktop={isDesktop}
+				onAddBookmark={onAddBookmark}
+				onExpandSidePane={onExpandSidePane}
+				onShowSearchBar={setShowSearchBar}
+				optionsMenuList={optionsMenuList}
+				showSearchBar={showSearchBar}
+				showSidePane={showSidePane}
+				triggerHeadingEdit={triggerHeadingEdit}
+				uploadFileFromAddDropdown={uploadFileFromAddDropdown}
+				userId={userId}
+			>
+				{children}
+			</DashboardContent>
+		);
+	};
 
 	if (isDesktop) {
 		return (
@@ -338,9 +341,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<AllotmentWrapper
 					allotmentRef={allotmentRef}
 					sidePaneRef={sidePaneRef}
-					sidePaneContentRef={sidePaneContentRef}
-					setShowSidePane={setShowSidePane}
-					setSidePaneWidth={() => {}}
 					separator={false}
 				>
 					<Allotment.Pane
@@ -352,12 +352,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 						visible={showSidePane}
 						ref={sidePaneRef}
 					>
-						<div className="h-full min-w-[200px]" ref={sidePaneContentRef}>
+						<div className="h-full min-w-[200px]" id="side-pane-id">
 							<SidePane />
 						</div>
 					</Allotment.Pane>
 					<Allotment.Pane className="split-right-pane">
-						{dashboardContentElement}
+						{dashboardContentElement()}
 					</Allotment.Pane>
 				</AllotmentWrapper>
 			</div>
@@ -374,7 +374,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<SidePane />
 			</Drawer>
 
-			{dashboardContentElement}
+			{dashboardContentElement()}
 		</div>
 	);
 };

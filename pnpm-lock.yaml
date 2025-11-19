@@ -159,9 +159,6 @@ importers:
       react-player:
         specifier: 3.4.0
         version: 3.4.0(@types/react-dom@19.2.3(@types/react@19.2.4))(@types/react@19.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      react-resizable-panels:
-        specifier: 3.0.6
-        version: 3.0.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-responsive:
         specifier: 10.0.1
         version: 10.0.1(react@19.2.0)
@@ -8680,12 +8677,6 @@ packages:
       '@types/react': 19.2.4
       react: ^17.0.2 || ^18 || ^19
       react-dom: ^17.0.2 || ^18 || ^19
-
-  react-resizable-panels@3.0.6:
-    resolution: {integrity: sha512-b3qKHQ3MLqOgSS+FRYKapNkJZf5EQzuf6+RLiq1/IlTHw99YrZ2NJZLk4hQIzTnnIkRg2LUqyVinu6YWWpUYew==}
-    peerDependencies:
-      react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
 
   react-responsive@10.0.1:
     resolution: {integrity: sha512-OM5/cRvbtUWEX8le8RCT8scA8y2OPtb0Q/IViEyCEM5FBN8lRrkUOZnu87I88A6njxDldvxG+rLBxWiA7/UM9g==}
@@ -20417,11 +20408,6 @@ snapshots:
       youtube-video-element: 1.8.0
     transitivePeerDependencies:
       - '@types/react-dom'
-
-  react-resizable-panels@3.0.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
-    dependencies:
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
 
   react-responsive@10.0.1(react@19.2.0):
     dependencies:
