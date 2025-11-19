@@ -100,7 +100,7 @@ export default async function handler(
 		const categoriesToInsert = newCategories.map((category_name) => ({
 			category_name,
 			user_id: user.id,
-			category_slug: `${slugify(category_name, { lower: true })}-rain_drop-${uniqid.time()}}`,
+			category_slug: `${slugify(category_name, { lower: true })}-rain_drop-${uniqid.time()}`,
 			icon: "droplets-02",
 			icon_color: "#ffffff",
 		}));
