@@ -155,10 +155,19 @@ export default async (
 			: 0
 		: 0;
 
-	const userData = await supabase?.auth?.getUser();
+	// Check for auth errors
+	const { data: userData, error: userError } = await supabase.auth.getUser();
+	const userId = userData?.user?.id;
+	const email = userData?.user?.email;
 
-	const userId = userData?.data?.user?.id;
-	const email = userData?.data?.user?.email;
+	if (userError || !userId) {
+		console.warn("User authentication failed:", { error: userError?.message });
+		response.status(401).json({
+			success: false,
+			error: "Unauthorized",
+		});
+		return;
+	}
 
 	const fileName = parseUploadFileName(data?.name ?? "");
 	const fileType = data?.type;
@@ -322,7 +331,7 @@ export default async (
 	};
 	console.log("Calling remaining upload API:", { remainingUploadBody });
 
-	void axios.post(
+	await axios.post(
 		`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
 		remainingUploadBody,
 		getAxiosConfigWithAuth(request),

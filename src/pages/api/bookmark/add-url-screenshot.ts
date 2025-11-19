@@ -88,16 +88,6 @@ const collectAdditionalImages = async ({
 				imageIndex: index,
 				error,
 			});
-
-			Sentry.captureException(error, {
-				tags: {
-					operation: "collect_additional_images",
-					userId,
-				},
-				extra: {
-					imageIndex: index,
-				},
-			});
 		}
 	}
 

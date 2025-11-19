@@ -41,8 +41,22 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = (await getApiSupabaseUser(request, supabase))?.data?.user
-		?.id as string;
+	// Check for auth errors
+	const { data: userData, error: userError } = await getApiSupabaseUser(
+		request,
+		supabase,
+	);
+	const userId = userData?.user?.id;
+
+	if (userError || !userId) {
+		console.warn("User authentication failed:", { error: userError?.message });
+		response.status(401).json({
+			data: null,
+			error: { message: "Unauthorized" },
+		});
+		return;
+	}
+
 	const { name } = request.body;
 
 	console.log("create-user-category API called:", { userId, name });

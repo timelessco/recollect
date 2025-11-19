@@ -90,7 +90,25 @@ export default async function handler(
 
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	// Check for auth errors
+	const { data: userData, error: userError } = await supabase.auth.getUser();
+	const userId = userData?.user?.id;
+
+	if (userError || !userId) {
+		console.warn("User authentication failed:", { error: userError?.message });
+		response
+			.status(401)
+			.json({ data: null, success: false, error: "Unauthorized" });
+		return;
+	}
+
+	// Entry point log
+	console.log("upload-file-remaining-data API called:", {
+		userId,
+		id,
+		publicUrl,
+		mediaType,
+	});
 
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
@@ -124,15 +142,22 @@ export default async function handler(
 		.single();
 
 	if (fetchError) {
-		console.error("Error fetching existing metadata", fetchError);
-		Sentry.captureException(
-			`Error fetching existing metadata ${fetchError.message}`,
-		);
+		console.error("Error fetching existing metadata:", fetchError);
+		Sentry.captureException(fetchError, {
+			tags: {
+				operation: "fetch_existing_metadata",
+				userId,
+			},
+			extra: {
+				bookmarkId: id,
+			},
+		});
 		response.status(500).json({
 			data: null,
 			success: false,
 			error: "Error fetching existing metadata",
 		});
+		return;
 	}
 
 	const existingMeta = existing?.meta_data || {};
@@ -160,12 +185,25 @@ export default async function handler(
 		.match({ id, user_id: userId });
 
 	if (DBerror) {
-		console.error("error updating db", DBerror);
-		Sentry.captureException(`error updating db ${DBerror.message}`);
-		response
-			.status(500)
-			.json({ data: null, success: false, error: "error updating db" });
+		console.error("Error updating file metadata:", DBerror);
+		Sentry.captureException(DBerror, {
+			tags: {
+				operation: "update_file_metadata",
+				userId,
+			},
+			extra: {
+				bookmarkId: id,
+			},
+		});
+		response.status(500).json({
+			data: null,
+			success: false,
+			error: "Error updating file metadata",
+		});
+		return;
 	}
 
+	// Success
+	console.log("File metadata updated successfully:", { bookmarkId: id });
 	response.status(200).json({ data: null, success: true, error: null });
 }

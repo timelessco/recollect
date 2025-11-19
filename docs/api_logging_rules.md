@@ -8,6 +8,37 @@ Guidelines for consistent logging, error handling, and Sentry integration in API
 import * as Sentry from "@sentry/nextjs";
 ```
 
+## Authentication Check
+
+Always verify user authentication before processing requests. Return 401 for auth failures:
+
+```typescript
+const supabase = apiSupabaseClient(request, response);
+
+// Check for auth errors
+const { data: userData, error: userError } = await supabase.auth.getUser();
+const userId = userData?.user?.id;
+
+if (userError || !userId) {
+	console.warn("User authentication failed:", { error: userError?.message });
+	response.status(401).json({
+		// Response format must match the API's existing response type
+		// Examples:
+		// { data: null, error: { message: "Unauthorized" } }
+		// { data: null, success: false, error: "Unauthorized" }
+		// { success: false, error: "Unauthorized" }
+	});
+	return;
+}
+```
+
+### Key Points
+
+- Use `console.warn` (user-caused issue, not system error)
+- Return 401 status code for unauthorized requests
+- Response format must match the API's existing response type
+- Always return early after sending the error response
+
 ## Flow Structure (Fail-Fast Pattern)
 
 Always check for errors immediately after operations and return early:
