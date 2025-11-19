@@ -300,11 +300,6 @@ export default async (
 		return;
 	}
 
-	console.log("File uploaded successfully:", {
-		bookmarkId: DatabaseData?.[0]?.id,
-	});
-	response.status(200).json({ data: DatabaseData, success: true, error: null });
-
 	// Skip remaining upload API for PDFs
 	if (fileType === PDF_MIME_TYPE) {
 		console.log("File type is pdf, so not calling the remaining upload api");
@@ -327,22 +322,14 @@ export default async (
 	};
 	console.log("Calling remaining upload API:", { remainingUploadBody });
 
-	try {
-		await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-			remainingUploadBody,
-			getAxiosConfigWithAuth(request),
-		);
-	} catch (error) {
-		console.error("Remaining upload api error:", error);
-		Sentry.captureException(error, {
-			tags: {
-				operation: "remaining_upload_api",
-				userId,
-			},
-			extra: {
-				bookmarkId: DatabaseData[0]?.id,
-			},
-		});
-	}
+	void axios.post(
+		`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+		remainingUploadBody,
+		getAxiosConfigWithAuth(request),
+	);
+
+	console.log("File uploaded successfully:", {
+		bookmarkId: DatabaseData?.[0]?.id,
+	});
+	response.status(200).json({ data: DatabaseData, success: true, error: null });
 };
