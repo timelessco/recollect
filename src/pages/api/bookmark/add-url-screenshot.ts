@@ -29,6 +29,10 @@ type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
 };
+type CollectAdditionalImagesArgs = {
+	allImages?: string[];
+	userId: string;
+};
 const MAX_LENGTH = 1_300;
 export const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
@@ -50,6 +54,59 @@ export const upload = async (base64info: string, uploadUserId: string) => {
 	const { data: storageData } = r2Helpers.getPublicUrl(storagePath);
 
 	return storageData?.publicUrl || null;
+};
+
+const collectAdditionalImages = async ({
+	allImages,
+	userId,
+}: CollectAdditionalImagesArgs) => {
+	if (!allImages?.length) {
+		return [];
+	}
+
+	const settledImages = await Promise.allSettled(
+		allImages.map(async (b64buffer) => {
+			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
+			return await upload(base64, userId);
+		}),
+	);
+
+	const failedUploads = settledImages
+		.map((result, index) => ({ result, index }))
+		.filter(({ result }) => result.status === "rejected") as Array<{
+		result: PromiseRejectedResult;
+		index: number;
+	}>;
+
+	if (failedUploads.length > 0) {
+		for (const { result, index } of failedUploads) {
+			const error = result.reason;
+
+			console.warn("collectAdditionalImages upload failed:", {
+				operation: "collect_additional_images",
+				userId,
+				imageIndex: index,
+				error,
+			});
+
+			Sentry.captureException(error, {
+				tags: {
+					operation: "collect_additional_images",
+					userId,
+				},
+				extra: {
+					imageIndex: index,
+				},
+			});
+		}
+	}
+
+	return settledImages
+		.filter(
+			(result): result is PromiseFulfilledResult<string | null> =>
+				result.status === "fulfilled" && Boolean(result.value),
+		)
+		.map((fulfilled) => fulfilled.value) as string[];
 };
 
 export default async function handler(
@@ -112,17 +169,10 @@ export default async function handler(
 	const updatedDescription =
 		description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
 
-	let additionalImages = [];
-
-	// for instagram we get all the images from the post so we upload all the images to the R2
-	if (screenShotResponse?.data?.allImages?.length > 0) {
-		additionalImages = await Promise.all(
-			screenShotResponse?.data?.allImages.map(async (b64buffer: string) => {
-				const base64 = Buffer.from(b64buffer, "binary").toString("base64");
-				return await upload(base64, userId);
-			}),
-		);
-	}
+	const additionalImages = await collectAdditionalImages({
+		allImages: screenShotResponse?.data?.allImages,
+		userId,
+	});
 
 	// Add screenshot URL to meta_data
 	const updatedMetaData = {
