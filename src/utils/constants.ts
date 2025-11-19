@@ -121,7 +121,7 @@ export const DELETE_API_KEY_API = "/v1/delete-api-key";
 
 // Screenshot api
 export const SCREENSHOT_API =
-	"https://vercel-puppeteer-screenshot-api.vercel.app/";
+	"https://vercel-puppeteer-screenshot-api.vercel.app";
 
 export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 

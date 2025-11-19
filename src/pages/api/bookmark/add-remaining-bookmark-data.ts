@@ -292,19 +292,14 @@ export default async function handler(
 	const existingMetaData = currentData?.meta_data || {};
 
 	const meta_data = {
+		...existingMetaData,
 		img_caption: imageCaption,
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
 		favIcon: await favIconLogic(),
 		ocr: imageOcrValue,
-		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
-		twitter_avatar_url: null,
-		isOgImagePreferred: existingMetaData?.isOgImagePreferred,
-		mediaType: existingMetaData?.mediaType,
-		iframeAllowed: existingMetaData?.iframeAllowed,
-		isPageScreenshot: existingMetaData?.isPageScreenshot,
 	};
 
 	const {
