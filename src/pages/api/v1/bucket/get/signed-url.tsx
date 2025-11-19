@@ -64,7 +64,8 @@ export default async function handler(
 		} = await supabase.auth.getUser();
 
 		if (userError || !user) {
-			response.status(401).json({ error: "Unauthorized user", data: null });
+			console.warn("User authentication failed:", { error: userError });
+			response.status(401).json({ error: "Unauthorized", data: null });
 			return;
 		}
 
@@ -72,6 +73,9 @@ export default async function handler(
 		const validatedQuery = getQuerySchema().safeParse(request.query);
 
 		if (!validatedQuery.success) {
+			console.warn("Invalid request parameters:", {
+				errors: validatedQuery.error.message,
+			});
 			response.status(400).json({
 				error: "Invalid request parameters",
 				data: null,
@@ -80,6 +84,9 @@ export default async function handler(
 		}
 
 		const { filePath } = validatedQuery.data;
+
+		// Entry point log
+		console.log("get-signed-url API called:", { userId: user.id, filePath });
 
 		// Generate a signed URL for file upload
 		// The URL will expire in 1 hour (3600 seconds)
@@ -91,11 +98,13 @@ export default async function handler(
 
 		// Handle errors from R2 URL generation
 		if (result.error) {
-			console.error("Failed to generate signed URL", result.error);
+			console.error("Failed to generate signed URL:", result.error);
 			Sentry.captureException(result.error, {
-				extra: {
-					errorMessage: "Failed to generate signed URL",
+				tags: {
+					operation: "generate_signed_url",
+					userId: user.id,
 				},
+				extra: { filePath },
 			});
 			response.status(500).json({
 				error: "Failed to generate signed URL",
@@ -104,16 +113,20 @@ export default async function handler(
 			return;
 		}
 
-		// Return the successful response with the signed URL
+		// Success
+		console.log("Signed URL generated successfully:", {
+			userId: user.id,
+			filePath,
+		});
 		response.status(200).json({
 			data: result.data,
 			error: null,
 		});
 	} catch (error) {
-		console.error("Internal server error", error);
+		console.error("Internal server error:", error);
 		Sentry.captureException(error, {
-			extra: {
-				errorMessage: "Internal server error",
+			tags: {
+				operation: "get_signed_url_handler",
 			},
 		});
 		response.status(500).json({

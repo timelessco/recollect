@@ -35,7 +35,22 @@ export default async function handler(
 	const categoryId = request?.body?.category_id;
 	const editAccess = request?.body?.edit_access;
 
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	// Check for auth errors
+	const { data: userData, error: userError } = await supabase.auth.getUser();
+	const userId = userData?.user?.id;
+
+	if (userError || !userId) {
+		console.warn("User authentication failed:", { error: userError?.message });
+		response.status(401).json({ url: null, error: "Unauthorized" });
+		return;
+	}
+
+	// Entry point log
+	console.log("send-collaboration-email API called:", {
+		userId,
+		categoryId,
+		emailList,
+	});
 
 	const { data: existingRows, error: checkError } = await supabase
 		.from(SHARED_CATEGORIES_TABLE_NAME)
@@ -45,11 +60,13 @@ export default async function handler(
 		.maybeSingle();
 
 	if (checkError) {
-		console.error("Error checking existing rows", checkError);
+		console.error("Error checking existing rows:", checkError);
 		Sentry.captureException(checkError, {
-			extra: {
-				errorMessage: "Error checking existing rows",
+			tags: {
+				operation: "check_existing_collaboration",
+				userId,
 			},
+			extra: { categoryId, email: emailList[0] },
 		});
 		response
 			.status(500)
@@ -72,13 +89,15 @@ export default async function handler(
 	});
 
 	if (!isNull(error)) {
-		console.error("Error inserting row", error);
+		console.error("Error inserting collaboration row:", error);
 		Sentry.captureException(error, {
-			extra: {
-				errorMessage: "Error inserting row",
+			tags: {
+				operation: "insert_collaboration",
+				userId,
 			},
+			extra: { categoryId, email: emailList[0] },
 		});
-		response.status(500).json({ url: null, error });
+		response.status(500).json({ url: null, error: "Error inserting row" });
 		return;
 	}
 
@@ -110,34 +129,42 @@ export default async function handler(
 
 	const categoryData = data?.[0];
 
-	if (process.env.NODE_ENV !== "development") {
-		try {
-			await axios.post(`${getBaseUrl()}${NEXT_API_URL}${SEND_EMAIL}`, {
-				url,
-				display_name:
-					categoryData?.profiles?.display_name ||
-					categoryData?.profiles?.user_name,
-				category_name: categoryData?.category_name,
-				emailList: emailList[0],
-			});
-
-			response.status(200).json({ url, error: null });
-		} catch (catchError: unknown) {
-			console.error("Error in resend email api", catchError);
-			Sentry.captureException(catchError, {
-				extra: {
-					errorMessage: "Error in resend email api",
-				},
-			});
-			response.status(500).json({
-				url: null,
-				error: catchError as string,
-				message: "error in resend email api",
-			});
-		}
-	} else {
+	if (process.env.NODE_ENV === "development") {
+		console.log("Dev mode - email not sent:", { url });
 		response
 			.status(200)
 			.json({ url, error: null, message: "in dev mode email not sent" });
+		return;
+	}
+
+	try {
+		await axios.post(`${getBaseUrl()}${NEXT_API_URL}${SEND_EMAIL}`, {
+			url,
+			display_name:
+				categoryData?.profiles?.display_name ||
+				categoryData?.profiles?.user_name,
+			category_name: categoryData?.category_name,
+			emailList: emailList[0],
+		});
+
+		console.log("Collaboration email sent successfully:", {
+			categoryId,
+			email: emailList[0],
+		});
+		response.status(200).json({ url, error: null });
+	} catch (catchError: unknown) {
+		console.error("Error in resend email API:", catchError);
+		Sentry.captureException(catchError, {
+			tags: {
+				operation: "send_collaboration_email",
+				userId,
+			},
+			extra: { categoryId, email: emailList[0] },
+		});
+		response.status(500).json({
+			url: null,
+			error: "Error sending email",
+			message: "error in resend email api",
+		});
 	}
 }

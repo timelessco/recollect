@@ -34,8 +34,12 @@ export function handleClientError(
 	errorToast(description);
 
 	Sentry.captureException(error, {
+		tags: {
+			source: "client_error_handler",
+		},
 		extra: {
-			errorMessage: `${title}: ${description}`,
+			title,
+			description,
 		},
 	});
 }
