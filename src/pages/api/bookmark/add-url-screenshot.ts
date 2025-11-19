@@ -115,7 +115,7 @@ export default async function handler(
 	let additionalImages = [];
 
 	// for instagram we get all the images from the post so we upload all the images to the R2
-	if (screenShotResponse?.data?.allImages) {
+	if (screenShotResponse?.data?.allImages?.length > 0) {
 		additionalImages = await Promise.all(
 			screenShotResponse?.data?.allImages.map(async (b64buffer: string) => {
 				const base64 = Buffer.from(b64buffer, "binary").toString("base64");
