@@ -1,18 +1,12 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWindowSize } from "@react-hookz/web";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { Allotment, type AllotmentHandle } from "allotment";
 import classNames from "classnames";
 import find from "lodash/find";
 import Drawer from "react-modern-drawer";
-import {
-	Panel,
-	PanelGroup,
-	PanelResizeHandle,
-	type ImperativePanelHandle,
-} from "react-resizable-panels";
 
 import Button from "../../../components/atoms/button";
 import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
@@ -20,6 +14,7 @@ import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookm
 import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useSidePaneStore } from "../../../store/sidePaneStore";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
@@ -38,6 +33,7 @@ import {
 } from "../../../utils/constants";
 import SidePane from "../sidePane";
 
+import { AllotmentWrapper } from "./allotmentWrapper";
 import { DashboardContent } from "./dashboardContent";
 
 import "react-modern-drawer/dist/index.css";
@@ -58,9 +54,6 @@ import {
 	dropdownMenuItemClassName,
 } from "../../../utils/commonClassNames";
 import ShareContent from "../share/shareContent";
-
-const MAX_SIZE_PIXEL = 350;
-const MIN_SIZE_PIXEL = 244;
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -92,9 +85,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 	const [triggerHeadingEdit, setTriggerHeadingEdit] = useState(false);
-	const sidePanelRef = useRef<ImperativePanelHandle | null>(null);
-	const [showSidePane, setShowSidePane] = useState(true);
-	const { width: windowWidth } = useWindowSize();
+
+	const allotmentRef = useRef<AllotmentHandle>(null);
+	const sidePaneRef = useRef<HTMLDivElement>(null);
+	const sidePaneContentRef = useRef<HTMLDivElement>(null);
+
+	const showSidePane = useSidePaneStore((state) => state.showSidePane);
+	const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
 
 	const { isDesktop } = useIsMobileView();
 
@@ -306,9 +303,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		);
 	};
 
-	const minSizePercentage = (MIN_SIZE_PIXEL / windowWidth) * 100;
-	const maxSizePercentage = (MAX_SIZE_PIXEL / windowWidth) * 100;
-
 	const dashboardContentElement = (
 		<DashboardContent
 			categoryId={categoryId}
@@ -320,7 +314,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			onAddBookmark={onAddBookmark}
 			onExpandSidePane={() => {
 				if (isDesktop) {
-					sidePanelRef.current?.expand(minSizePercentage);
+					setShowSidePane(true);
+					setTimeout(() => allotmentRef.current?.reset(), 120);
 				} else {
 					setShowSidePane(true);
 				}
@@ -339,43 +334,32 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	if (isDesktop) {
 		return (
-			<div className="h-screen w-screen">
-				<PanelGroup direction="horizontal" autoSaveId="conditional">
-					<Panel
-						ref={sidePanelRef}
-						id="left"
-						defaultSize={20}
-						collapsedSize={0}
-						minSize={minSizePercentage}
-						maxSize={maxSizePercentage}
-						collapsible
-						order={1}
-						onCollapse={() => setShowSidePane(false)}
-						onExpand={() => setShowSidePane(true)}
+			<div style={{ width: "100vw", height: "100vh" }}>
+				<AllotmentWrapper
+					allotmentRef={allotmentRef}
+					sidePaneRef={sidePaneRef}
+					sidePaneContentRef={sidePaneContentRef}
+					setShowSidePane={setShowSidePane}
+					setSidePaneWidth={() => {}}
+					separator={false}
+				>
+					<Allotment.Pane
+						className="split-left-pane"
+						maxSize={350}
+						minSize={0}
+						preferredSize={244}
+						snap
+						visible={showSidePane}
+						ref={sidePaneRef}
 					>
-						<div
-							className={classNames(
-								"h-full min-w-[200px] origin-left transition-all duration-200 ease-out",
-								{
-									"translate-x-0 scale-100 opacity-100": showSidePane,
-									"-translate-x-5 scale-95 opacity-0": !showSidePane,
-								},
-							)}
-						>
+						<div className="h-full min-w-[200px]" ref={sidePaneContentRef}>
 							<SidePane />
 						</div>
-					</Panel>
-
-					<PanelResizeHandle
-						className={`group w-5 cursor-grab! justify-center data-[resize-handle-state='drag']:cursor-grabbing! ${showSidePane ? "flex" : "hidden"}`}
-					>
-						<div className="h-full w-px cursor-grab! bg-gray-alpha-50 transition-all group-hover:w-2 group-hover:bg-gray-100" />
-					</PanelResizeHandle>
-
-					<Panel id="right" order={2}>
+					</Allotment.Pane>
+					<Allotment.Pane className="split-right-pane">
 						{dashboardContentElement}
-					</Panel>
-				</PanelGroup>
+					</Allotment.Pane>
+				</AllotmentWrapper>
 			</div>
 		);
 	}

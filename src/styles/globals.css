@@ -802,6 +802,56 @@
 
 /* Component classes - complex reusable patterns */
 @layer components {
+	/* Allotment sash styles */
+	.sash-module_sash__K-9lB::before {
+		background: unset !important;
+	}
+
+	.sash-container .sash-module_sash__K-9lB {
+		@apply z-5;
+	}
+
+	/* Side pane resizer animation */
+	.split-view .sash-vertical {
+		@apply z-10! ml-[5px]! w-[20px]! -translate-x-2/4! hover:cursor-grab! active:cursor-grabbing!;
+
+		transition: all 150ms ease-out;
+
+		&::before {
+			transition: width 200ms ease-out;
+
+			@apply w-0 -translate-x-2/4;
+		}
+	}
+
+	.split-view .sash-vertical:hover {
+		&::before {
+			@apply w-2! bg-gray-100!;
+		}
+	}
+
+	.split-view .sash-vertical:not(:hover) {
+		&::before {
+			@apply w-0! bg-gray-100!;
+		}
+	}
+
+	.split-left-pane,
+	.split-right-pane {
+		will-change: width;
+		transition: all 0.15s ease-out;
+	}
+
+	.split-view-container.split-view-sash-dragging .split-left-pane,
+	.split-view-container.split-view-sash-dragging .split-right-pane {
+		transition: none;
+	}
+
+	.split-view-container.split-view-sash-dragging .sash-vertical {
+		transition: none;
+	}
+
+	/* Masonry grid */
 	.my-masonry-grid {
 		@apply ml-[-24px] flex w-auto;
 	}
