@@ -65,11 +65,6 @@ const MIN_SIZE_PIXEL = 244;
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
 	onAddBookmark: AddBookmarkDropdownTypes["onAddBookmark"];
-	onCategoryOptionClick: (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => Promise<void>;
 	onClearTrash: () => void;
 	onDeleteCollectionClick: () => void;
 	setBookmarksView: (
@@ -78,7 +73,6 @@ type DashboardLayoutProps = {
 	) => void;
 	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 	userId: string;
-	isLoadingCategories?: boolean;
 	isClearingTrash?: boolean;
 	children: React.ReactNode;
 };
@@ -88,7 +82,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		categoryId,
 		children,
 		userId,
-		onCategoryOptionClick,
 		onClearTrash,
 		setBookmarksView,
 		onAddBookmark,
@@ -316,13 +309,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const minSizePercentage = (MIN_SIZE_PIXEL / windowWidth) * 100;
 	const maxSizePercentage = (MAX_SIZE_PIXEL / windowWidth) * 100;
 
-	const sidePaneElement = (
-		<SidePane
-			onCategoryOptionClick={onCategoryOptionClick}
-			isLoadingCategories={props.isLoadingCategories}
-		/>
-	);
-
 	const dashboardContentElement = (
 		<DashboardContent
 			categoryId={categoryId}
@@ -376,7 +362,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 								},
 							)}
 						>
-							{sidePaneElement}
+							<SidePane />
 						</div>
 					</Panel>
 
@@ -401,7 +387,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				onClose={() => setShowSidePane(false)}
 				open={showSidePane}
 			>
-				{sidePaneElement}
+				<SidePane />
 			</Drawer>
 
 			{dashboardContentElement}

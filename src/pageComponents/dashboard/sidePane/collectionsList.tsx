@@ -43,6 +43,7 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
+import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import useGetFlattendPaginationBookmarkData from "../../../hooks/useGetFlattendPaginationBookmarkData";
@@ -78,15 +79,6 @@ import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
 
-type CollectionsListPropertyTypes = {
-	onCategoryOptionClick: (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => Promise<void>;
-	isLoadingCategories?: boolean;
-	isFetchingCategories?: boolean;
-};
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
 //   keys: Set<unknown>;
@@ -301,13 +293,7 @@ const OptionDrop = ({
 	);
 };
 
-const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
-	const {
-		onCategoryOptionClick,
-		isLoadingCategories = false,
-		isFetchingCategories = false,
-	} = listProps;
-
+const CollectionsList = () => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
@@ -320,10 +306,28 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
-	const { allCategories } = useFetchCategories();
+	const { allCategories, isLoadingCategories } = useFetchCategories();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const { onDeleteCollection } = useDeleteCollection();
 	const { flattendPaginationBookmarkData } =
 		useGetFlattendPaginationBookmarkData();
+
+	const handleCategoryOptionClick = async (
+		value: number | string,
+		current: boolean,
+		id: number,
+	) => {
+		switch (value) {
+			case "delete":
+				await onDeleteCollection(current, id);
+				break;
+			case "share":
+				// code block
+				break;
+			default:
+			// code block
+		}
+	};
 
 	const currentPath = useGetCurrentUrlPath();
 
@@ -620,7 +624,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		<div className="pt-4">
 			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
 				<div id="collections-wrapper">
-					{isLoadingCategories || isFetchingCategories ? (
+					{isLoadingCategories ? (
 						<CollectionsListSkeleton />
 					) : (
 						<ListBoxDrop
@@ -639,7 +643,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 										extendedClassname="py-[6px]"
 										item={item}
 										listNameId="collection-name"
-										onCategoryOptionClick={onCategoryOptionClick}
+										onCategoryOptionClick={handleCategoryOptionClick}
 										showDropdown
 										showSpinner={item?.id === sidePaneOptionLoading}
 									/>
