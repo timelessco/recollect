@@ -96,8 +96,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	};
 	const { isMobile, isTablet } = useIsMobileView();
 
-	// this ref is for scrolling + virtualization
-	const parentRef = useRef<HTMLUListElement | null>(null);
 	// this ref is for react-aria listbox
 	const ariaRef = useRef<HTMLUListElement | null>(null);
 
@@ -285,14 +283,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
-			<ul
-				{...listBoxProps}
-				className={ulClassName}
-				ref={(element) => {
-					parentRef.current = element;
-					ariaRef.current = element;
-				}}
-			>
+			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
 				{cardTypeCondition === viewValues.moodboard ? (
 					<div
 						style={{

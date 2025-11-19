@@ -1,8 +1,6 @@
 import { type JSX, type ReactNode } from "react";
 import { type FileWithPath } from "react-dropzone";
 
-import { type CategoriesData } from "./apiTypes";
-
 export type IconData = {
 	icon: (iconColor: string, size?: string, className?: string) => JSX.Element;
 	label: string;
@@ -43,11 +41,3 @@ export type SearchSelectOption = {
 export type CategoryIdUrlTypes = number | string | null;
 
 export type FileType = FileWithPath;
-
-export type CategoryIconsDropdownTypes = {
-	buttonIconSize: number;
-	iconColor: CategoriesData["icon_color"];
-	iconValue: string | null;
-	onIconColorChange: (value: string, id?: CategoriesData["id"]) => void;
-	onIconSelect: (value: string) => void;
-};

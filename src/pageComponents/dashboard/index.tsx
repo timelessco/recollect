@@ -1170,44 +1170,17 @@ const Dashboard = () => {
 				onDeleteCollectionClick={async () =>
 					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
-				onIconColorChange={(color, id) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: id ?? CATEGORY_ID,
-							updateData: {
-								icon_color: color,
-							},
-						}),
-					);
-				}}
-				onIconSelect={(value, categoryId) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: categoryId,
-							updateData: { icon: value },
-						}),
-					);
-				}}
-				// onSearchEnterPress={onAddBookmark}
-				onSearchEnterPress={() => {}}
-				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}
-				updateCategoryName={(categoryId, name) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: categoryId,
-							updateData: {
-								category_name: name,
-							},
-						}),
-					);
-				}}
 				uploadFileFromAddDropdown={onDrop}
 				userId={session?.user?.id ?? ""}
-			/>
+			>
+				{renderMainPaneContent()}
+			</DashboardLayout>
+
 			<SettingsModal />
+
 			<WarningActionModal
 				buttonText="Delete"
 				isLoading={false}

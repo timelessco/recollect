@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useIsomorphicLayoutEffect } from "@react-hookz/web";
 import { useQueryState } from "nuqs";
 import { Form, Input, TextField } from "react-aria-components";
 import { z } from "zod";
@@ -9,7 +10,6 @@ import { z } from "zod";
 import { FieldError, inputStyles } from "../ui/recollect/field";
 
 import { Button } from "@/components/ui/recollect/button";
-import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_BOOKMARKS_URL, OTP_URL } from "@/utils/constants";
@@ -71,16 +71,8 @@ function EmailFieldWithQueryState() {
 	// Select all text when email value is pre-filled for easy clearing
 	useIsomorphicLayoutEffect(() => {
 		if (inputRef.current && email) {
-			// Browsers don't support setSelectionRange on email inputs
-			// In those cases, we can temporarily change the type to text, select the text, then change back
-			const input = inputRef.current;
-			const originalType = input.type;
-			input.type = "text";
-			const length = email.length;
-			input.setSelectionRange(0, length);
-			input.type = originalType;
+			inputRef.current.select();
 		}
-		// This should only happen on the first mount
 	}, []);
 
 	return (

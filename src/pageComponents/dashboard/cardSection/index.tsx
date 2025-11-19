@@ -43,7 +43,6 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	DOCUMENTS_URL,
-	IMAGES_URL,
 	LINK_TYPE_PREFIX,
 	LINKS_URL,
 	PDF_MIME_TYPE,
@@ -203,7 +202,9 @@ const CardSection = ({
 		categoryViewsFromProps,
 	);
 
-	const hasCoverImg = bookmarksInfoValue?.includes("cover" as never);
+	const hasCoverImg = (bookmarksInfoValue as string[] | undefined)?.includes(
+		"cover",
+	);
 
 	const sizesLogic = useMemo(() => {
 		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
@@ -561,7 +562,7 @@ const CardSection = ({
 			);
 		}
 
-		if (item?.meta_data?.favIcon || currentPath === IMAGES_URL) {
+		if (item?.meta_data?.favIcon) {
 			return (
 				<figure className={favIconFigureClassName}>
 					<Image
@@ -604,8 +605,7 @@ const CardSection = ({
 
 		if (
 			currentPath === LINKS_URL ||
-			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX) ||
-			!item?.meta_data?.mediaType
+			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX)
 		) {
 			return (
 				<figure className="card-icon rounded p-0.5 text-gray-1000">
@@ -694,12 +694,14 @@ const CardSection = ({
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
-					{bookmarksInfoValue?.includes("title" as never) && (
+					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
 						<p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900">
 							{item?.title}
 						</p>
 					)}
-					{bookmarksInfoValue?.includes("description" as never) &&
+					{(bookmarksInfoValue as string[] | undefined)?.includes(
+						"description",
+					) &&
 						!isEmpty(item?.description) && (
 							<ReadMore
 								className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
@@ -709,13 +711,13 @@ const CardSection = ({
 							</ReadMore>
 						)}
 					<div className="space-y-[6px] text-gray-500">
-						{bookmarksInfoValue?.includes("tags" as never) &&
+						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
 							!isEmpty(item?.addedTags) && (
 								<div className="flex flex-wrap items-center space-x-1">
 									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
-						{bookmarksInfoValue?.includes("info" as never) && (
+						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
 							<div className="flex flex-wrap items-center">
 								{renderFavIcon(item)}
 								{renderUrl(item)}
@@ -763,25 +765,27 @@ const CardSection = ({
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="overflow-hidden max-sm:space-y-1">
-					{bookmarksInfoValue?.includes("title" as never) && (
+					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
 						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
-						{bookmarksInfoValue?.includes("description" as never) &&
+						{(bookmarksInfoValue as string[] | undefined)?.includes(
+							"description",
+						) &&
 							!isEmpty(item.description) && (
 								<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
 									{item?.description}
 								</p>
 							)}
-						{bookmarksInfoValue?.includes("tags" as never) &&
+						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
 							!isEmpty(item?.addedTags) && (
 								<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
 									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
-						{bookmarksInfoValue?.includes("info" as never) && (
+						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
 							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
 								{renderFavIcon(item)}
 								{renderUrl(item)}
@@ -814,13 +818,13 @@ const CardSection = ({
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className="ml-[10px] w-full overflow-hidden">
-					{bookmarksInfoValue?.includes("title" as never) && (
+					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
 						<p className="card-title w-[98%] truncate text-sm leading-4 font-medium text-gray-900">
 							{item?.title}
 						</p>
 					)}
 					<div className="mt-[6px] space-y-2">
-						{bookmarksInfoValue?.includes("info" as never) && (
+						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
 							<div className="flex items-center space-x-2">
 								{renderUrl(item)}
 								{item?.inserted_at && (
@@ -862,7 +866,12 @@ const CardSection = ({
 		if (isLoadingProfile) {
 			return (
 				<div className="absolute inset-0 flex items-center justify-center">
-					<Image src={loaderGif} alt="loader" className="h-12 w-12" />
+					<Image
+						src={loaderGif}
+						alt="loader"
+						className="h-12 w-12"
+						loader={(source) => source.src}
+					/>
 				</div>
 			);
 		}

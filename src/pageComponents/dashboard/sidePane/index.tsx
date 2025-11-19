@@ -1,8 +1,6 @@
 import { memo } from "react";
 
-import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
-
-import SidePaneCollectionsList from "./sidePaneCollectionsList";
+import CollectionsList from "./collectionsList";
 import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
 import SidePaneTypesList from "./sidePaneTypesList";
 import SidePaneUserDropdown from "./sidePaneUserDropdown";
@@ -16,8 +14,6 @@ type SidePaneTypes = {
 		current: boolean,
 		id: number,
 	) => Promise<void>;
-	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
-	onIconSelect: (value: string, id: number) => void;
 	isLoadingCategories?: boolean;
 	isFetchingCategories?: boolean;
 };
@@ -26,26 +22,25 @@ const SidePane = (props: SidePaneTypes) => {
 	const {
 		onBookmarksDrop,
 		onCategoryOptionClick,
-		onIconSelect,
 		onAddNewCategory,
-		onIconColorChange,
 		isLoadingCategories = false,
 		isFetchingCategories = false,
 	} = props;
 
 	return (
-		<nav className="h-full overflow-y-auto border-r border-solid border-gray-alpha-50 bg-gray-0 p-2">
+		<nav className="h-full overflow-y-auto bg-gray-0 p-2">
 			<SidePaneUserDropdown />
+
 			<SidePaneOptionsMenu />
-			<SidePaneCollectionsList
+
+			<CollectionsList
 				onAddNewCategory={onAddNewCategory}
 				onBookmarksDrop={onBookmarksDrop}
 				onCategoryOptionClick={onCategoryOptionClick}
-				onIconColorChange={onIconColorChange}
-				onIconSelect={(value, id) => onIconSelect(value, id)}
 				isLoadingCategories={isLoadingCategories}
 				isFetchingCategories={isFetchingCategories}
 			/>
+
 			<SidePaneTypesList />
 		</nav>
 	);

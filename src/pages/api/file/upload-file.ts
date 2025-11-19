@@ -8,7 +8,6 @@ import {
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
-import isNil from "lodash/isNil";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
@@ -164,6 +163,13 @@ export default async (
 	const fileName = parseUploadFileName(data?.name ?? "");
 	const fileType = data?.type;
 
+	console.log("upload-file API called:", {
+		userId,
+		fileName,
+		fileType,
+		categoryId,
+	});
+
 	const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
 	// if the uploaded file is valid this happens
 	const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
@@ -182,6 +188,7 @@ export default async (
 			);
 
 		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
+			console.warn("User authorization failed for category:", { categoryId });
 			response.status(500).json({
 				error:
 					"User is neither owner or collaborator for the collection or does not have edit access",
@@ -195,6 +202,25 @@ export default async (
 	// the public url for the uploaded file is got
 	const { data: storageData, error: publicUrlError } =
 		r2Helpers.getPublicUrl(storagePath);
+
+	// Check for public URL error immediately
+	if (publicUrlError) {
+		console.error("Error getting public URL:", publicUrlError);
+		Sentry.captureException(publicUrlError, {
+			tags: {
+				operation: "get_public_url",
+				userId,
+			},
+			extra: {
+				storagePath,
+			},
+		});
+		response.status(500).json({
+			success: false,
+			error: "Error getting file URL",
+		});
+		return;
+	}
 
 	const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
 
@@ -220,18 +246,13 @@ export default async (
 
 	if (!isVideo) {
 		// if file is not a video
-		try {
-			ogImage = storageData?.publicUrl;
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new TypeError("Failed to generate PNG from PDF" + error.message);
-			}
-
-			// Optional: set a fallback image
-			ogImage = storageData?.publicUrl;
-		}
+		ogImage = storageData?.publicUrl;
 	} else {
 		// if file is a video
+		console.log("Processing video file:", {
+			thumbnailPath: data.thumbnailPath,
+		});
+
 		const { ogImage: image, meta_data: metaData } = await videoLogic(
 			data,
 			supabase,
@@ -262,49 +283,66 @@ export default async (
 		error: PostgrestError | VerifyErrors | string | null;
 	};
 
-	if (isNil(publicUrlError) && isNil(DBerror)) {
-		response
-			.status(200)
-			.json({ data: DatabaseData, success: true, error: null });
+	console.log("Database insert result:", { bookmarkId: DatabaseData?.[0]?.id });
 
-		if (fileType !== PDF_MIME_TYPE) {
-			if (!isEmpty(DatabaseData) && !isVideo) {
-				try {
-					await axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-						{
-							id: DatabaseData[0]?.id,
-							publicUrl: storageData?.publicUrl,
-							mediaType: meta_data?.mediaType,
-						},
-						getAxiosConfigWithAuth(request),
-					);
-				} catch (error) {
-					console.error("Remaining upload api error", error);
-					Sentry.captureException(error, {
-						extra: {
-							errorMessage: "Remaining upload api error",
-						},
-					});
-				}
-			} else {
-				console.log(
-					"File type is video, so not calling the remaining upload api",
-				);
-			}
-		} else {
-			console.log("File type is pdf, so not calling the remaining upload api");
-		}
-	} else {
-		console.error("Error uploading file:", publicUrlError, DBerror);
+	if (DBerror) {
+		console.error("Error inserting file to database:", DBerror);
 		Sentry.captureException(DBerror, {
-			extra: {
-				errorMessage: "Error uploading file",
-				publicUrlError,
+			tags: {
+				operation: "insert_file_to_database",
+				userId,
 			},
+			extra: { fileName, fileType },
 		});
 		response
 			.status(500)
 			.json({ success: false, error: "Error uploading file" });
+		return;
+	}
+
+	console.log("File uploaded successfully:", {
+		bookmarkId: DatabaseData?.[0]?.id,
+	});
+	response.status(200).json({ data: DatabaseData, success: true, error: null });
+
+	// Skip remaining upload API for PDFs
+	if (fileType === PDF_MIME_TYPE) {
+		console.log("File type is pdf, so not calling the remaining upload api");
+		return;
+	}
+
+	// Skip remaining upload API for videos or empty data
+	if (isEmpty(DatabaseData) || isVideo) {
+		console.log(
+			"File type is video or no data, so not calling the remaining upload api",
+		);
+		return;
+	}
+
+	// Call remaining upload API
+	const remainingUploadBody = {
+		id: DatabaseData[0]?.id,
+		publicUrl: storageData?.publicUrl,
+		mediaType: meta_data?.mediaType,
+	};
+	console.log("Calling remaining upload API:", { remainingUploadBody });
+
+	try {
+		await axios.post(
+			`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+			remainingUploadBody,
+			getAxiosConfigWithAuth(request),
+		);
+	} catch (error) {
+		console.error("Remaining upload api error:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "remaining_upload_api",
+				userId,
+			},
+			extra: {
+				bookmarkId: DatabaseData[0]?.id,
+			},
+		});
 	}
 };

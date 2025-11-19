@@ -89,6 +89,7 @@ const AddBookmarkDropdown = ({
 						clearErrors();
 					}
 				}}
+				menuClassName="z-5"
 			>
 				<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
 					<Button

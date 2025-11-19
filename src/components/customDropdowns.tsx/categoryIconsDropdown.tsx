@@ -9,22 +9,30 @@ import {
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import { find } from "lodash";
 
+import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
-import { type CategoryIconsDropdownTypes } from "../../types/componentTypes";
+import { mutationApiCall } from "../../utils/apiHelpers";
 import { options } from "../../utils/commonData";
 import { colorPickerColors } from "../../utils/constants";
 import Button from "../atoms/button";
 import { CollectionIcon } from "../collectionIcon";
 import ColorPicker from "../colorPicker";
 
+import { type CategoriesData } from "@/types/apiTypes";
+
+type CategoryIconsDropdownTypes = {
+	buttonIconSize?: number;
+	iconColor: CategoriesData["icon_color"];
+	iconValue: string | null;
+	iconId: number;
+};
+
 const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
-	const {
-		onIconSelect,
-		iconValue,
-		onIconColorChange,
-		iconColor,
-		buttonIconSize = 20,
-	} = props;
+	const { iconValue, iconColor, buttonIconSize = 20, iconId } = props;
+
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
+
 	// const [hsva, setHsva] = useState({ h: 0, s: 0, v: 289, a: 1 });
 	const [color, setColor] = useState(iconColor);
 	const [isSearch, setIsSearch] = useState(false);
@@ -32,6 +40,26 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	const [pageIndex, setPageIndex] = useState(0);
 
 	const iconsList = options();
+
+	const handleIconColorChange = (iconColor: string) => {
+		void mutationApiCall(
+			updateCategoryOptimisticMutation.mutateAsync({
+				category_id: iconId,
+				updateData: {
+					icon_color: iconColor,
+				},
+			}),
+		);
+	};
+
+	const handleIconSelect = (icon: string) => {
+		void mutationApiCall(
+			updateCategoryOptimisticMutation.mutateAsync({
+				category_id: iconId,
+				updateData: { icon },
+			}),
+		);
+	};
 
 	// constants
 	const totalIconsPerPage = 99;
@@ -118,7 +146,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 		<ComboboxItem
 			className="custom-select rounded-md p-1 hover:bg-gray-200 data-active-item:bg-gray-200"
 			key={value + index}
-			onClick={() => onIconSelect(value)}
+			onClick={() => handleIconSelect(value)}
 			setValueOnClick={false}
 			value={value}
 		>
@@ -197,9 +225,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 						colorsList={colorPickerColors}
 						onChange={(sliderColor) => {
 							setColor(sliderColor);
-							if (onIconColorChange) {
-								onIconColorChange(sliderColor);
-							}
+							handleIconColorChange(sliderColor);
 						}}
 						selectedColor={color}
 					/>

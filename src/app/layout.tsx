@@ -8,6 +8,7 @@ import { ToastContainer } from "react-toastify";
 
 import { Providers } from "@/components/providers";
 import { AnalyticsScript } from "@/components/scripts/analytics-script";
+import { ReactGrabScript } from "@/components/scripts/react-grab-script";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
 import { rootMetaData, rootViewport } from "@/utils/metadata-utils";
 
@@ -33,6 +34,7 @@ export default async function RootLayout(props: RootLayoutProps) {
 				<Providers>{children}</Providers>
 
 				<AnalyticsScript />
+				<ReactGrabScript />
 
 				<ToastContainer />
 				<TailwindIndicator />

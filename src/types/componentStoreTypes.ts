@@ -61,9 +61,7 @@ export type MiscellaneousStoreState = {
 	setSearchText: (value: string) => void;
 	setSelectedVideoId: (id: number | null) => void;
 	setShareCategoryId: (id: number | undefined) => void;
-	setShowSidePane: (value: boolean) => void;
 	shareCategoryId: number | undefined;
-	showSidePane: boolean;
 };
 
 export type SupabaseSessionStore = {

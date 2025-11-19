@@ -821,7 +821,7 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 			return null;
 		}
 
-		const data = await response.json();
+		const data = (await response.json()) as { mediaType?: string };
 
 		return data.mediaType || null;
 	} catch (error) {

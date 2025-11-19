@@ -4,7 +4,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
-import pick from "lodash/pick";
 import {
 	DragPreview,
 	ListDropTargetDelegate,
@@ -55,7 +54,6 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
-import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
 	dropdownMenuClassName,
@@ -82,8 +80,6 @@ type CollectionsListPropertyTypes = {
 		current: boolean,
 		id: number,
 	) => Promise<void>;
-	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
-	onIconSelect: (value: string, id: number) => void;
 	isLoadingCategories?: boolean;
 	isFetchingCategories?: boolean;
 };
@@ -282,12 +278,7 @@ const OptionDrop = ({
 				target={{ type: "item", key: item.key, dropPosition: "before" }}
 			/>
 			<li
-				{...mergeProps(
-					pick(optionProps, ["id", "data-key"]),
-					dropProps,
-					focusProps,
-					dragProps,
-				)}
+				{...mergeProps(optionProps, dropProps, focusProps, dragProps)}
 				// Apply a class when the item is the active drop target.
 				className={`option-drop ${isFocusVisible ? "focus-visible" : ""} ${
 					isDropTarget && isCardDragging ? "drop-target" : ""
@@ -310,9 +301,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	const {
 		onBookmarksDrop,
 		onCategoryOptionClick,
-		onIconSelect,
 		onAddNewCategory,
-		onIconColorChange,
 		isLoadingCategories = false,
 		isFetchingCategories = false,
 	} = listProps;
@@ -575,10 +564,6 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 										item={item}
 										listNameId="collection-name"
 										onCategoryOptionClick={onCategoryOptionClick}
-										onIconColorChange={(color) =>
-											onIconColorChange?.(color, item?.id)
-										}
-										onIconSelect={onIconSelect}
 										showDropdown
 										showSpinner={item?.id === sidePaneOptionLoading}
 									/>
