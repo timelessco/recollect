@@ -24,11 +24,7 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import {
-	checkIfUrlAnImage,
-	checkIfUrlAnMedia,
-	getBaseUrl,
-} from "../../../utils/helpers";
+import { checkIfUrlAnImage, checkIfUrlAnMedia } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
