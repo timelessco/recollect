@@ -32,6 +32,7 @@ import {
 	useMiscellaneousStore,
 } from "../../../store/componentStore";
 import {
+	type BookmarksTagData,
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type SingleListData,
@@ -66,9 +67,14 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
+import { EditDropdownContent } from "./EditDropdownContent";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
+import useAddTagToBookmarkMutation from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
+import useAddUserTagsMutation from "@/async/mutationHooks/tags/useAddUserTagsMutation";
+import useRemoveTagFromBookmarkMutation from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
 import { AriaDropdown, AriaDropdownMenu } from "@/components/ariaDropdown";
+import { mutationApiCall } from "@/utils/apiHelpers";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -88,12 +94,17 @@ export type CardSectionProps = {
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
-	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
+	userTags?: UserTagsData[];
+	isCategoryChangeLoading?: boolean;
+	onCreateNewCategory?: (category: {
+		label: string;
+		value: string | number;
+	}) => Promise<void>;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -105,7 +116,6 @@ const CardSection = ({
 	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
-	onEditClick = () => null,
 	userId,
 	showAvatar = false,
 	isOgImgLoading = false,
@@ -117,6 +127,9 @@ const CardSection = ({
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
+	userTags = [],
+	isCategoryChangeLoading = false,
+	onCreateNewCategory = async () => {},
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
@@ -165,6 +178,11 @@ const CardSection = ({
 	};
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
+	const { addUserTagsMutation } = useAddUserTagsMutation();
+
+	const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
+
+	const { removeTagFromBookmarkMutation } = useRemoveTagFromBookmarkMutation();
 
 	// gets from the trigram search api
 	const searchBookmarksData = queryClient.getQueryData([
@@ -316,22 +334,92 @@ const CardSection = ({
 						</div>
 					}
 					// Use relative positioning to keep menu anchored to button
-					menuClassName="absolute top-full left-0 z-10 w-32 mt-1 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+					menuClassName="absolute top-full left-0 z-10  mt-1 bg-gray-50 shadow-custom-3 rounded-md focus:outline-none p-2 dropdown-content"
 					menuOpenToggle={(isOpen) => {
 						setOpenedMenuId(isOpen ? post.id : null);
 					}}
 				>
 					<AriaDropdownMenu
-						onClick={(event) => {
-							event.preventDefault();
+						className="dropdown-content"
+						onClick={(event: React.MouseEvent) => {
 							event.stopPropagation();
-							onEditClick(post);
-							setOpenedMenuId(null);
+							event.preventDefault();
 						}}
 					>
-						<div className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-							Edit
-						</div>
+						<EditDropdownContent
+							post={post}
+							onCategoryChange={async (value) => {
+								if (value) {
+									onCategoryChange([post.id], Number(value.value));
+								}
+							}}
+							onCreateCategory={async (value) => {
+								if (value) {
+									await onCreateNewCategory(value);
+								}
+							}}
+							addExistingTag={async (tag) => {
+								const bookmarkTagsData = {
+									bookmark_id: post.id,
+									tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
+								} as unknown as BookmarksTagData;
+
+								await mutationApiCall(
+									addTagToBookmarkMutation.mutateAsync({
+										selectedData: bookmarkTagsData,
+									}),
+								);
+							}}
+							removeExistingTag={async (tag) => {
+								const delValue = tag.value;
+								const currentBookark = find(
+									bookmarksList,
+									(item) => item?.id === post?.id,
+								) as SingleListData;
+								const delData = find(
+									currentBookark?.addedTags,
+									(item) => item?.id === delValue || item?.name === delValue,
+								) as unknown as BookmarksTagData;
+
+								await mutationApiCall(
+									removeTagFromBookmarkMutation.mutateAsync({
+										selectedData: {
+											tag_id: delData?.id as number,
+											bookmark_id: currentBookark?.id,
+										},
+									}),
+								);
+							}}
+							createTag={async (tagData) => {
+								try {
+									const data = (await mutationApiCall(
+										addUserTagsMutation.mutateAsync({
+											tagsData: { name: tagData[tagData.length - 1]?.label },
+										}),
+									)) as { data: UserTagsData[] };
+
+									// on edit we are adding the new tag to bookmark as the bookmark is
+									// will already be there when editing
+									const bookmarkTagsData = {
+										bookmark_id: post?.id,
+										tag_id: data?.data[0]?.id,
+										user_id: userId,
+									} as unknown as BookmarksTagData;
+
+									await mutationApiCall(
+										addTagToBookmarkMutation.mutateAsync({
+											selectedData: bookmarkTagsData,
+										}),
+									);
+								} catch {
+									/* empty */
+								}
+							}}
+							userTags={userTags}
+							addedTags={post.addedTags}
+							isCategoryChangeLoading={isCategoryChangeLoading}
+							userId={userId}
+						/>
 					</AriaDropdownMenu>
 				</AriaDropdown>
 			</div>

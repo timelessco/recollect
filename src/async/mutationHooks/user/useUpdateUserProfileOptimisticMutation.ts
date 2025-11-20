@@ -37,7 +37,9 @@ export default function useUpdateUserProfileOptimisticMutation() {
 							...old,
 							data: old.data.map((item) => ({
 								...item,
-								bookmarks_view: data.updateData.bookmarks_view,
+								...(item.bookmarks_view !== data.updateData.bookmarks_view && {
+									bookmarks_view: data.updateData.bookmarks_view,
+								}),
 							})),
 						};
 					},
