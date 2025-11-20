@@ -84,12 +84,10 @@ export default async function handler(
 				categoryName: request.body.updateData?.category_name,
 				userId,
 			});
-			response
-				.status(409)
-				.json({
-					data: null,
-					error: { message: "Category name already exists" },
-				});
+			response.status(409).json({
+				data: null,
+				error: { message: "Category name already exists" },
+			});
 			return;
 		}
 

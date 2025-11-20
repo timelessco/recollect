@@ -50,7 +50,9 @@ export default async function handler(
 		const userId = userData?.user?.id;
 
 		if (userError || !userId) {
-			console.warn("User authentication failed:", { error: userError?.message });
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+			});
 			response.status(401).json({
 				data: null,
 				error: { message: "Unauthorized" },
@@ -101,7 +103,10 @@ export default async function handler(
 			});
 			response
 				.status(500)
-				.json({ data: null, error: { message: DUPLICATE_CATEGORY_NAME_ERROR } });
+				.json({
+					data: null,
+					error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
+				});
 			return;
 		}
 

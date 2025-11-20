@@ -33,9 +33,11 @@ import {
 	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
 	getAxiosConfigWithAuth,
+	getNormalisedUrl,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
-import { vet } from "../../../utils/try";
+
+import { vet } from "@/utils/try";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
 type Data = {
@@ -115,6 +117,32 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 
 	// user is not the owner or the collaborator of the collection
 	return false;
+};
+
+const getFavIconNormalisedUrl = async (favIcon: string | null, url: string) => {
+	const { hostname } = new URL(url);
+
+	if (favIcon) {
+		// Check for absolute URLs
+		const normalisedUrl = getNormalisedUrl(favIcon);
+
+		if (normalisedUrl) {
+			return normalisedUrl;
+		}
+
+		return new URL(favIcon, `https://${hostname}`).toString();
+	}
+
+	const [error, result] = await vet(() =>
+		fetch(`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`),
+	);
+
+	if (error) {
+		console.warn("Error fetching favicon:", error);
+		return null;
+	}
+
+	return result?.url;
 };
 
 export default async function handler(
@@ -351,6 +379,12 @@ export default async function handler(
 			}
 		}
 
+		const favIcon = await getFavIconNormalisedUrl(
+			scrapperResponse?.data?.favIcon,
+			url,
+		);
+		const mediaType = await getMediaType(url);
+
 		// here we add the scrapper data , in the remainingApi call we add s3 data
 		const {
 			data,
@@ -370,8 +404,8 @@ export default async function handler(
 					category_id: computedCategoryId,
 					meta_data: {
 						isOgImagePreferred,
-						mediaType: await getMediaType(url),
-						favIcon: scrapperResponse?.data?.favIcon,
+						mediaType,
+						favIcon,
 						iframeAllowed: iframeAllowedValue,
 					},
 					type: bookmarkType,
