@@ -123,14 +123,14 @@ export default async function handler(
 			error: null,
 		});
 	} catch (error) {
-		console.error("Internal server error:", error);
+		console.error("Unexpected error in get-signed-url:", error);
 		Sentry.captureException(error, {
 			tags: {
-				operation: "get_signed_url_handler",
+				operation: "get_signed_url_unexpected",
 			},
 		});
 		response.status(500).json({
-			error: "Internal server error",
+			error: "An unexpected error occurred",
 			data: null,
 		});
 	}
