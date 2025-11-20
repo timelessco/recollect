@@ -95,69 +95,64 @@ const EditDropdownContentBase = ({
 	}, [categoryData?.data, post?.category_id]);
 
 	return (
-		<div className="w-64">
-			<div className="space-y-3">
-				{isOwner && (
-					<LabelledComponent label="Tags">
-						<AriaMultiSelect
-							defaultList={addedTags?.map((item) => item?.name) || []}
-							list={userTags?.map((item) => item?.name) ?? []}
-							onChange={async (action, value) => {
-								if (action === "remove") {
-									const tagData = find(
-										addedTags,
-										(findItem) => findItem.name === value,
-									);
-									if (tagData) {
-										await removeExistingTag({
-											label: tagData?.name,
-											value: tagData?.id,
-										});
-									}
+		<div className="w-64 space-y-3">
+			{isOwner && (
+				<LabelledComponent label="Tags">
+					<AriaMultiSelect
+						defaultList={addedTags?.map((item) => item?.name) || []}
+						list={userTags?.map((item) => item?.name) ?? []}
+						onChange={async (action, value) => {
+							if (action === "remove") {
+								const tagData = find(
+									addedTags,
+									(findItem) => findItem.name === value,
+								);
+								if (tagData) {
+									await removeExistingTag({
+										label: tagData?.name,
+										value: tagData?.id,
+									});
 								}
+							}
 
-								if (action === "add" && typeof value !== "string") {
-									await addExistingTag(
-										value?.map((addItem) => ({
-											label: addItem,
-											value: find(
-												userTags,
-												(findItem) => findItem.name === addItem,
-											)?.id as number,
-										})),
-									);
-								}
+							if (action === "add" && typeof value !== "string") {
+								await addExistingTag(
+									value?.map((addItem) => ({
+										label: addItem,
+										value: find(
+											userTags,
+											(findItem) => findItem.name === addItem,
+										)?.id as number,
+									})),
+								);
+							}
 
-								if (action === "create") {
-									await createTag([{ label: value as string }]);
-								}
-							}}
-							placeholder="Tag name..."
-						/>
-					</LabelledComponent>
-				)}
-				<LabelledComponent label="Collection">
-					<AriaSearchableSelect
-						defaultValue={defaultValue?.label || ""}
-						isLoading={isCategoryChangeLoading}
-						list={categoryOptions.map((item) => item.label)}
-						onChange={async (value) => {
-							const data = find(
-								categoryOptions,
-								(item) => item.label === value,
-							);
-							if (data) {
-								await onCategoryChange(data);
-							} else {
-								console.error("Payload data is empty");
+							if (action === "create") {
+								await createTag([{ label: value as string }]);
 							}
 						}}
-						onCreate={async (value) =>
-							await onCreateCategory({ label: value, value })
-						}
+						placeholder="Tag name..."
 					/>
 				</LabelledComponent>
-			</div>
+			)}
+			<LabelledComponent label="Collection">
+				<AriaSearchableSelect
+					defaultValue={defaultValue?.label || ""}
+					isLoading={isCategoryChangeLoading}
+					list={categoryOptions.map((item) => item.label)}
+					onChange={async (value) => {
+						const data = find(categoryOptions, (item) => item.label === value);
+						if (data) {
+							await onCategoryChange(data);
+						} else {
+							console.error("Payload data is empty");
+						}
+					}}
+					onCreate={async (value) =>
+						await onCreateCategory({ label: value, value })
+					}
+				/>
+			</LabelledComponent>
 		</div>
 	);
 };

@@ -305,9 +305,6 @@ const CardSection = ({
 			</div>
 		);
 		const isMenuOpen = openedMenuId === post.id;
-		// Replace the pencilIcon section with this updated code:
-
-		// Replace the pencilIcon section with this updated code:
 
 		const pencilIcon = (
 			<div className="relative">
@@ -339,71 +336,33 @@ const CardSection = ({
 						setOpenedMenuId(isOpen ? post.id : null);
 					}}
 				>
-					<AriaDropdownMenu
-						className="dropdown-content"
-						onClick={(event: React.MouseEvent) => {
-							event.stopPropagation();
-							event.preventDefault();
-						}}
-					>
-						<EditDropdownContent
-							post={post}
-							onCategoryChange={async (value) => {
-								if (value) {
-									onCategoryChange([post.id], Number(value.value));
-								}
+					{isMenuOpen ? (
+						<AriaDropdownMenu
+							className="dropdown-content"
+							onClick={(event: React.MouseEvent) => {
+								event.stopPropagation();
+								event.preventDefault();
 							}}
-							onCreateCategory={async (value) => {
-								if (value) {
-									await onCreateNewCategory(value);
-								}
-							}}
-							addExistingTag={async (tag) => {
-								const bookmarkTagsData = {
-									bookmark_id: post.id,
-									tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
-								} as unknown as BookmarksTagData;
-
-								await mutationApiCall(
-									addTagToBookmarkMutation.mutateAsync({
-										selectedData: bookmarkTagsData,
-									}),
-								);
-							}}
-							removeExistingTag={async (tag) => {
-								const delValue = tag.value;
-								const currentBookark = find(
-									bookmarksList,
-									(item) => item?.id === post?.id,
-								) as SingleListData;
-								const delData = find(
-									currentBookark?.addedTags,
-									(item) => item?.id === delValue || item?.name === delValue,
-								) as unknown as BookmarksTagData;
-
-								await mutationApiCall(
-									removeTagFromBookmarkMutation.mutateAsync({
-										selectedData: {
-											tag_id: delData?.id as number,
-											bookmark_id: currentBookark?.id,
-										},
-									}),
-								);
-							}}
-							createTag={async (tagData) => {
-								try {
-									const data = (await mutationApiCall(
-										addUserTagsMutation.mutateAsync({
-											tagsData: { name: tagData[tagData.length - 1]?.label },
-										}),
-									)) as { data: UserTagsData[] };
-
-									// on edit we are adding the new tag to bookmark as the bookmark is
-									// will already be there when editing
+						>
+							<EditDropdownContent
+								post={post}
+								onCategoryChange={async (value) => {
+									if (value) {
+										onCategoryChange([post.id], Number(value.value));
+									}
+								}}
+								onCreateCategory={async (value) => {
+									if (value) {
+										await onCreateNewCategory(value);
+									}
+								}}
+								addExistingTag={async (tag) => {
 									const bookmarkTagsData = {
-										bookmark_id: post?.id,
-										tag_id: data?.data[0]?.id,
-										user_id: userId,
+										bookmark_id: post.id,
+										tag_id: Number.parseInt(
+											`${tag[tag.length - 1]?.value}`,
+											10,
+										),
 									} as unknown as BookmarksTagData;
 
 									await mutationApiCall(
@@ -411,16 +370,59 @@ const CardSection = ({
 											selectedData: bookmarkTagsData,
 										}),
 									);
-								} catch {
-									/* empty */
-								}
-							}}
-							userTags={userTags}
-							addedTags={post.addedTags}
-							isCategoryChangeLoading={isCategoryChangeLoading}
-							userId={userId}
-						/>
-					</AriaDropdownMenu>
+								}}
+								removeExistingTag={async (tag) => {
+									const delValue = tag.value;
+									const currentBookark = find(
+										bookmarksList,
+										(item) => item?.id === post?.id,
+									) as SingleListData;
+									const delData = find(
+										currentBookark?.addedTags,
+										(item) => item?.id === delValue || item?.name === delValue,
+									) as unknown as BookmarksTagData;
+
+									await mutationApiCall(
+										removeTagFromBookmarkMutation.mutateAsync({
+											selectedData: {
+												tag_id: delData?.id as number,
+												bookmark_id: currentBookark?.id,
+											},
+										}),
+									);
+								}}
+								createTag={async (tagData) => {
+									try {
+										const data = (await mutationApiCall(
+											addUserTagsMutation.mutateAsync({
+												tagsData: { name: tagData[tagData.length - 1]?.label },
+											}),
+										)) as { data: UserTagsData[] };
+
+										// on edit we are adding the new tag to bookmark as the bookmark is
+										// will already be there when editing
+										const bookmarkTagsData = {
+											bookmark_id: post?.id,
+											tag_id: data?.data[0]?.id,
+											user_id: userId,
+										} as unknown as BookmarksTagData;
+
+										await mutationApiCall(
+											addTagToBookmarkMutation.mutateAsync({
+												selectedData: bookmarkTagsData,
+											}),
+										);
+									} catch {
+										/* empty */
+									}
+								}}
+								userTags={userTags}
+								addedTags={post.addedTags}
+								isCategoryChangeLoading={isCategoryChangeLoading}
+								userId={userId}
+							/>
+						</AriaDropdownMenu>
+					) : null}
 				</AriaDropdown>
 			</div>
 		);
@@ -785,8 +787,6 @@ const CardSection = ({
 				return renderMoodboardAndCardType(item);
 			case viewValues.card:
 				return renderMoodboardAndCardType(item);
-			case viewValues.headlines:
-				return renderHeadlinesCard(item);
 			case viewValues.list:
 				return renderListCard(item);
 
@@ -874,106 +874,81 @@ const CardSection = ({
 		);
 	};
 
-	const renderListCard = (item: SingleListData) => (
-		<div className="flex w-full items-center p-2" id="single-moodboard-card">
-			{hasCoverImg ? (
-				renderOgImage(
-					getImageSource(item),
-					item?.id,
-					item?.meta_data?.ogImgBlurUrl ?? "",
-					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-					item?.type,
-				)
-			) : (
-				<div className="h-[48px]" />
-			)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="overflow-hidden max-sm:space-y-1">
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+	const renderListCard = (item: SingleListData) => {
+		const isMenuOpen = openedMenuId === item.id;
+
+		return (
+			<div className="flex w-full items-center p-2" id="single-moodboard-card">
+				{hasCoverImg ? (
+					renderOgImage(
+						getImageSource(item),
+						item?.id,
+						item?.meta_data?.ogImgBlurUrl ?? "",
+						item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+						item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+						item?.type,
+					)
+				) : (
+					<div className="h-[48px]" />
+				)}
+				{bookmarksInfoValue?.length === 1 &&
+				bookmarksInfoValue[0] === "cover" ? null : (
+					<div className="overflow-hidden max-sm:space-y-1">
 						{(bookmarksInfoValue as string[] | undefined)?.includes(
-							"description",
-						) &&
-							!isEmpty(item.description) && (
-								<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
-									{item?.description}
-								</p>
-							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
-							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
-									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
+							"title",
+						) && (
+							<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
+								{item?.title}
+							</p>
+						)}
+						<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+							{(bookmarksInfoValue as string[] | undefined)?.includes(
+								"description",
+							) &&
+								!isEmpty(item.description) && (
+									<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
+										{item?.description}
+									</p>
+								)}
+							{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
+								!isEmpty(item?.addedTags) && (
+									<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
+										{item?.addedTags?.map((tag) =>
+											renderTag(tag?.id, tag?.name),
+										)}
+									</div>
+								)}
+							{(bookmarksInfoValue as string[] | undefined)?.includes(
+								"info",
+							) && (
+								<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+									{item?.inserted_at && (
+										<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+											{format(
+												new Date(item?.inserted_at || ""),
+												isCurrentYear(item?.inserted_at)
+													? "dd MMM"
+													: "dd MMM YYY",
+											)}
+										</p>
+									)}
+									{renderCategoryBadge(item)}
 								</div>
 							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-								{renderCategoryBadge(item)}
-							</div>
-						)}
+						</div>
 					</div>
+				)}
+				<div
+					className={`absolute top-[15px] right-[8px] items-center space-x-1 group-hover:flex ${isMenuOpen ? "flex" : "hidden"}`}
+				>
+					{showAvatar && renderAvatar(item)}
+					{renderEditAndDeleteIcons(item)}
 				</div>
-			)}
-			<div className="absolute top-[15px] right-[8px] hidden items-center space-x-1 group-hover:flex">
-				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
 			</div>
-		</div>
-	);
-
-	const renderHeadlinesCard = (item: SingleListData) => (
-		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
-			{renderFavIcon(item)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="ml-[10px] w-full overflow-hidden">
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title w-[98%] truncate text-sm leading-4 font-medium text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					<div className="mt-[6px] space-y-2">
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="flex items-center space-x-2">
-								{renderUrl(item)}
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-							</div>
-						)}
-					</div>
-				</div>
-			)}
-			<div className="absolute top-[11px] right-[8px] hidden items-center space-x-1 group-hover:flex">
-				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
-			</div>
-		</div>
-	);
+		);
+	};
 
 	const listWrapperClass = classNames({
 		// "p-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.headlines,
