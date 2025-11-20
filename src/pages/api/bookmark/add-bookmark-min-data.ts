@@ -238,26 +238,17 @@ export default async function handler(
 			},
 		};
 
-		try {
-			const userAgent =
-				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
+		const userAgent =
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
-			const { result: ogScrapperResponse } = await ogs({
+		const [scrapperError, ogsResult] = await vet(() =>
+			ogs({
 				url,
 				fetchOptions: { headers: { "user-agent": userAgent } },
-			});
+			}),
+		);
 
-			scrapperResponse = {
-				data: {
-					title: ogScrapperResponse?.ogTitle ?? null,
-					description: ogScrapperResponse?.ogDescription ?? null,
-					OgImage: shouldSkipOgImage
-						? null
-						: (ogScrapperResponse?.ogImage?.[0]?.url ?? null),
-					favIcon: ogScrapperResponse?.favicon ?? null,
-				},
-			};
-		} catch (scrapperError) {
+		if (scrapperError) {
 			console.warn(`Scrapper error for url: ${url}`, scrapperError);
 
 			// if scrapper error is there then we just add the url host name as the title and proceed
@@ -270,6 +261,17 @@ export default async function handler(
 				},
 			};
 		}
+
+		scrapperResponse = {
+			data: {
+				title: ogsResult?.result?.ogTitle ?? null,
+				description: ogsResult?.result?.ogDescription ?? null,
+				OgImage: shouldSkipOgImage
+					? null
+					: (ogsResult?.result?.ogImage?.[0]?.url ?? null),
+				favIcon: ogsResult?.result?.favicon ?? null,
+			},
+		};
 
 		// this will either be 0 (uncategorized) or any number
 		// this also checks if the categoryId is one of the strings mentioned in uncategorizedPages , if they are it will be 0

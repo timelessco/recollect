@@ -101,12 +101,10 @@ export default async function handler(
 			console.warn("Duplicate category name attempt:", {
 				categoryName: name,
 			});
-			response
-				.status(500)
-				.json({
-					data: null,
-					error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
-				});
+			response.status(500).json({
+				data: null,
+				error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
+			});
 			return;
 		}
 
