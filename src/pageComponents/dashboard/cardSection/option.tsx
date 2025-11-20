@@ -4,6 +4,7 @@ import { type CardSectionProps } from ".";
 import { useRef, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import classNames from "classnames";
+import { pick } from "lodash";
 import omit from "lodash/omit";
 import {
 	mergeProps,
@@ -150,12 +151,15 @@ const Option = ({
 			{item.rendered}
 
 			{!isPublicPage && (
-				<CardSectionOptionCheckbox
+				<Checkbox
 					isSelected={isSelected}
-					cardTypeCondition={
-						cardTypeCondition as (typeof viewValues)[keyof typeof viewValues]
-					}
-					optionProps={optionProps}
+					className={cardSectionOptionCheckboxStyles({
+						isSelected,
+						cardTypeCondition:
+							cardTypeCondition as (typeof viewValues)[keyof typeof viewValues],
+					})}
+					// Pick only whats needed checkbox selection as the rest will cause an issue with drag and drop
+					{...pick(optionProps, ["onClick", "onPointerDown"])}
 				/>
 			)}
 		</li>
@@ -165,7 +169,7 @@ const Option = ({
 export default Option;
 
 const cardSectionOptionCheckboxStyles = tv({
-	base: "absolute top-2.5 right-[3px] z-15 cursor-pointer opacity-0 group-hover:opacity-100",
+	base: "absolute top-2.5 right-1.5 z-15 cursor-pointer group-hover:opacity-100",
 	variants: {
 		isSelected: {
 			true: "opacity-100",
@@ -177,25 +181,3 @@ const cardSectionOptionCheckboxStyles = tv({
 		},
 	},
 });
-
-type CardSectionOptionCheckboxProps = {
-	isSelected: ReturnType<typeof useOption>["isSelected"];
-	cardTypeCondition: (typeof viewValues)[keyof typeof viewValues];
-	optionProps: ReturnType<typeof useOption>["optionProps"];
-};
-
-function CardSectionOptionCheckbox(props: CardSectionOptionCheckboxProps) {
-	const { isSelected, cardTypeCondition, optionProps } = props;
-
-	return (
-		// @ts-expect-error - type mismatch between optionProps and CheckboxProps
-		<Checkbox
-			isSelected={isSelected}
-			className={cardSectionOptionCheckboxStyles({
-				isSelected,
-				cardTypeCondition,
-			})}
-			{...optionProps}
-		/>
-	);
-}

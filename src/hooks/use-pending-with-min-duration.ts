@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-
-import { useTimeout } from "./use-timeout";
+import { useTimeoutEffect } from "@react-hookz/web";
 
 /**
  * Extends isPending state to ensure it stays true for a minimum duration.
@@ -30,11 +29,11 @@ export function usePendingWithMinDuration(
 	}, [actualIsPending]);
 
 	// Set up timeout to clear isExtended after minimum duration
-	useTimeout(
+	useTimeoutEffect(
 		() => {
 			setIsExtended(false);
 		},
-		isExtended ? minDurationMs : null,
+		isExtended ? minDurationMs : undefined,
 	);
 
 	// isPending is true if either actual pending OR extended duration active

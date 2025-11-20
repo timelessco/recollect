@@ -4,7 +4,6 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isNull } from "lodash";
 import uniqid from "uniqid";
 
 import {
@@ -25,9 +24,15 @@ import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { vet } from "@/utils/try";
+
 type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
+};
+type CollectAdditionalImagesArgs = {
+	allImages?: string[];
+	userId: string;
 };
 const MAX_LENGTH = 1_300;
 export const upload = async (base64info: string, uploadUserId: string) => {
@@ -42,8 +47,16 @@ export const upload = async (base64info: string, uploadUserId: string) => {
 	);
 
 	if (uploadError) {
-		Sentry.captureException(`R2 upload failed`);
 		console.error("R2 upload failed:", uploadError);
+		Sentry.captureException(uploadError, {
+			tags: {
+				operation: "r2_upload",
+				userId: uploadUserId,
+			},
+			extra: {
+				storagePath,
+			},
+		});
 		return null;
 	}
 
@@ -52,114 +65,257 @@ export const upload = async (base64info: string, uploadUserId: string) => {
 	return storageData?.publicUrl || null;
 };
 
+const collectAdditionalImages = async ({
+	allImages,
+	userId,
+}: CollectAdditionalImagesArgs) => {
+	if (!allImages?.length) {
+		return [];
+	}
+
+	const settledImages = await Promise.allSettled(
+		allImages.map(async (b64buffer) => {
+			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
+			return await upload(base64, userId);
+		}),
+	);
+
+	const failedUploads = settledImages
+		.map((result, index) => ({ result, index }))
+		.filter(({ result }) => result.status === "rejected") as Array<{
+		result: PromiseRejectedResult;
+		index: number;
+	}>;
+
+	if (failedUploads.length > 0) {
+		for (const { result, index } of failedUploads) {
+			const error = result.reason;
+
+			console.warn("collectAdditionalImages upload failed:", {
+				operation: "collect_additional_images",
+				userId,
+				imageIndex: index,
+				error,
+			});
+		}
+	}
+
+	return settledImages
+		.filter(
+			(result): result is PromiseFulfilledResult<string | null> =>
+				result.status === "fulfilled" && Boolean(result.value),
+		)
+		.map((fulfilled) => fulfilled.value) as string[];
+};
+
 export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = apiSupabaseClient(request, response);
-
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
-	let screenShotResponse;
 	try {
-		console.log(
-			"*************************Screenshot Loading*****************************",
-		);
-		screenShotResponse = await axios.get(
-			`${SCREENSHOT_API}try?url=${encodeURIComponent(request.body.url)}`,
-			{ responseType: "json" },
-		);
-		if (screenShotResponse.status === 200) {
-			console.log("***Screenshot success**");
+		const supabase = apiSupabaseClient(request, response);
+
+		// Check for auth errors
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
+
+		if (userError || !userId) {
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+			});
+			response.status(401).json({
+				data: null,
+				error: "Unauthorized",
+			});
+			return;
 		}
-	} catch (error_) {
-		if (error_ instanceof Error) {
-			console.error("Screenshot error");
-			Sentry.captureException(`Screenshot error`);
+
+		// Entry point log
+		console.log("add-url-screenshot API called:", {
+			userId,
+			url: request.body.url,
+			id: request.body.id,
+		});
+
+		const [screenshotError, screenShotResponse] = await vet(() =>
+			axios.get(
+				`${SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`,
+				{ responseType: "json" },
+			),
+		);
+
+		if (screenshotError) {
+			console.error("Screenshot API error:", screenshotError);
+			Sentry.captureException(screenshotError, {
+				tags: {
+					operation: "screenshot_api",
+					userId,
+				},
+				extra: { url: request.body.url },
+			});
+			response.status(500).json({
+				data: null,
+				error: "Error capturing screenshot",
+			});
+			return;
 		}
 
-		return;
-	}
+		console.log("Screenshot API response received:", {
+			status: screenShotResponse.status,
+		});
 
-	const base64data = Buffer?.from(
-		screenShotResponse?.data?.screenshot?.data,
-		"binary",
-	)?.toString("base64");
-	const { title, description, isPageScreenshot } =
-		screenShotResponse?.data.metaData || {};
+		const base64data = Buffer?.from(
+			screenShotResponse?.data?.screenshot?.data,
+			"binary",
+		)?.toString("base64");
 
-	const publicURL = await upload(base64data, userId);
+		const { title, description, isPageScreenshot } =
+			screenShotResponse?.data.metaData || {};
 
-	// First, fetch the existing bookmark data to get current meta_data
-	const { data: existingBookmarkData, error: fetchError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select("meta_data, ogImage, title, description")
-		.match({ id: request.body.id, user_id: userId })
-		.single();
+		const publicURL = await upload(base64data, userId);
 
-	if (fetchError) {
-		console.error("Error fetching existing bookmark data:", fetchError);
-		response.status(500).json({ data: null, error: fetchError });
-		Sentry.captureException(`ERROR: fetch existing bookmark data error`);
-		return;
-	}
+		// First, fetch the existing bookmark data to get current meta_data
+		const { data: existingBookmarkData, error: fetchError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("meta_data, ogImage, title, description")
+			.match({ id: request.body.id, user_id: userId })
+			.single();
 
-	// Get existing meta_data or create empty object if null
-	const existingMetaData = existingBookmarkData?.meta_data || {};
+		if (fetchError) {
+			console.error("Error fetching existing bookmark data:", fetchError);
+			Sentry.captureException(fetchError, {
+				tags: {
+					operation: "fetch_existing_bookmark",
+					userId,
+				},
+				extra: {
+					bookmarkId: request.body.id,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: "Error fetching bookmark data",
+			});
+			return;
+		}
 
-	const updatedTitle =
-		title?.slice(0, MAX_LENGTH) || existingBookmarkData?.title;
-	const updatedDescription =
-		description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
+		// Log existing bookmark data
+		console.log("Existing bookmark data fetched:", {
+			id: request.body.id,
+			hasMetaData: Boolean(existingBookmarkData?.meta_data),
+		});
 
-	// Add screenshot URL to meta_data
-	const updatedMetaData = {
-		...existingMetaData,
-		screenshot: publicURL,
-		isPageScreenshot,
-		coverImage: existingBookmarkData?.ogImage,
-	};
+		// Get existing meta_data or create empty object if null
+		const existingMetaData = existingBookmarkData?.meta_data || {};
 
-	const {
-		data,
-		error,
-	}: {
-		data: SingleListData[] | null;
-		error: PostgrestError | VerifyErrors | string | null;
-	} = await supabase
-		.from(MAIN_TABLE_NAME)
-		// since we now have screenshot , we add that in ogImage as this will now be our primary image, and the existing ogImage (which is the scrapper data image) will be our cover image in meta_data
-		.update({
-			title: updatedTitle,
-			description: updatedDescription,
-			meta_data: updatedMetaData,
-		})
-		.match({ id: request.body.id, user_id: userId })
-		.select();
+		const updatedTitle =
+			title?.slice(0, MAX_LENGTH) || existingBookmarkData?.title;
+		const updatedDescription =
+			description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
 
-	if (isNull(error)) {
-		try {
-			if (data && data.length > 0) {
-				await axios.post(
+		const additionalImages = await collectAdditionalImages({
+			allImages: screenShotResponse?.data?.allImages,
+			userId,
+		});
+
+		// Log additional images result
+		console.log("Additional images collected:", {
+			count: additionalImages.length,
+		});
+
+		// Add screenshot URL to meta_data
+		const updatedMetaData = {
+			...existingMetaData,
+			screenshot: publicURL,
+			isPageScreenshot,
+			coverImage: existingBookmarkData?.ogImage,
+			additionalImages,
+		};
+
+		const {
+			data,
+			error,
+		}: {
+			data: SingleListData[] | null;
+			error: PostgrestError | VerifyErrors | string | null;
+		} = await supabase
+			.from(MAIN_TABLE_NAME)
+			// since we now have screenshot , we add that in ogImage as this will now be our primary image, and the existing ogImage (which is the scrapper data image) will be our cover image in meta_data
+			.update({
+				title: updatedTitle,
+				description: updatedDescription,
+				meta_data: updatedMetaData,
+			})
+			.match({ id: request.body.id, user_id: userId })
+			.select();
+
+		// Check error immediately - fail fast
+		if (error) {
+			console.error("Error updating bookmark with screenshot:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "update_bookmark_screenshot",
+					userId,
+				},
+				extra: {
+					bookmarkId: request.body.id,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: "Error updating bookmark with screenshot",
+			});
+			return;
+		}
+
+		// Success log and response
+		console.log("Bookmark updated with screenshot successfully:", {
+			id: data?.[0]?.id,
+		});
+		response.status(200).json({ data, error: null });
+
+		// Fire-and-forget: Call remaining bookmark data API
+		if (data && data.length > 0) {
+			const requestBody = {
+				id: data[0]?.id,
+				favIcon: data[0]?.meta_data?.favIcon,
+				url: request.body.url,
+			};
+			console.log("Calling remaining bookmark data API:", { requestBody });
+
+			const [remainingApiError] = await vet(() =>
+				axios.post(
 					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
-					{
-						id: data[0]?.id,
-						favIcon: data?.[0]?.meta_data?.favIcon,
-						url: request.body.url,
-					},
+					requestBody,
 					getAxiosConfigWithAuth(request),
-				);
-			}
-
-			response.status(200).json({ data, error: null });
-		} catch (remainingUploadError) {
-			console.error("Remaining bookmark data API error:", remainingUploadError);
-			Sentry.captureException(
-				`Remaining bookmark data API error: ${remainingUploadError}`,
+				),
 			);
+
+			if (remainingApiError) {
+				console.error("Remaining bookmark data API error:", remainingApiError);
+				Sentry.captureException(remainingApiError, {
+					tags: {
+						operation: "remaining_bookmark_data_api",
+						userId,
+					},
+					extra: {
+						bookmarkId: data[0]?.id,
+					},
+				});
+			}
+		} else {
+			console.log("No data returned from the database");
 		}
-	} else {
-		response.status(500).json({ data: null, error });
-		Sentry.captureException(`ERROR: update screenshot in DB error`);
-		throw new Error("ERROR: update screenshot in DB error");
+	} catch (error) {
+		console.error("Unexpected error in add-url-screenshot:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "add_url_screenshot_unexpected",
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: "An unexpected error occurred",
+		});
 	}
 }

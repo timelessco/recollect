@@ -41,7 +41,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 				</p>
 			</div>
 		</header>
-		<main className="overflow-y-scroll">
+		<main>
 			{!isEmpty(props?.data) ? (
 				<CardSection
 					categoryViewsFromProps={props?.category_views ?? undefined}
