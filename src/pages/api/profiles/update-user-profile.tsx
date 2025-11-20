@@ -24,45 +24,22 @@ type Data = {
 /**
  * Updates profile for a user
  */
-
 export default async function handler(
 	request: NextApiRequest<UpdateUserProfileApiPayload>,
 	response: NextApiResponse<Data>,
 ): Promise<void> {
 	try {
-		// Initialize Supabase client
-		const supabase = apiSupabaseClient(request, response);
-
-		// Get authenticated user
-		const userData = await supabase?.auth?.getUser();
-
-		// Check if user is authenticated
-		if (!userData?.data?.user) {
-			console.warn(
-				"[update-user-profile] Unauthorized: User not authenticated",
-			);
-			response.status(401).json({
-				data: null,
-				error: {
-					message: "Unauthorized: Please log in to update your profile",
-				},
-			});
-			return;
-		}
-
-		const userId = userData.data.user.id;
-
 		// Validate request body
 		if (!request.body?.updateData || isEmpty(request.body.updateData)) {
 			console.error(
 				"[update-user-profile] Invalid request: Missing updateData",
 				{
-					userId,
 					body: request.body,
 				},
 			);
 			Sentry.captureException(
 				new Error("[update-user-profile] Invalid request: Missing updateData"),
+				{ tags: { operation: "validate_request" } },
 			);
 			response.status(400).json({
 				data: null,
@@ -71,15 +48,23 @@ export default async function handler(
 			return;
 		}
 
-		// Validate userId
-		if (!userId) {
-			console.error("[update-user-profile] Invalid user data: Missing userId");
-			Sentry.captureException(
-				new Error("[update-user-profile] Invalid user data: Missing userId"),
-			);
-			response.status(400).json({
+		// Initialize Supabase client
+		const supabase = apiSupabaseClient(request, response);
+
+		// Get authenticated user
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
+
+		// Check for auth errors and userId
+		if (userError || !userId) {
+			console.warn("[update-user-profile] User authentication failed:", {
+				error: userError?.message,
+			});
+			response.status(401).json({
 				data: null,
-				error: { message: "Invalid user data: Missing user ID" },
+				error: {
+					message: "Unauthorized: Please log in to update your profile",
+				},
 			});
 			return;
 		}
@@ -100,11 +85,13 @@ export default async function handler(
 				table: PROFILES,
 				operation: "update",
 			});
-			Sentry.captureException(error);
+			Sentry.captureException(error, {
+				tags: { operation: "update_profile", userId },
+			});
 
 			response.status(500).json({
 				data: null,
-				error: isEmpty(error) ? { message: "Failed to update profile" } : error,
+				error: { message: "Failed to update profile" },
 			});
 			return;
 		}
@@ -122,6 +109,7 @@ export default async function handler(
 				new Error(
 					"[update-user-profile] Update failed: No data returned after update",
 				),
+				{ tags: { operation: "update_profile", userId } },
 			);
 			response.status(500).json({
 				data: null,
@@ -139,24 +127,15 @@ export default async function handler(
 			url: request.url,
 			body: request.body,
 		});
-		Sentry.captureException(unexpectedError);
+		Sentry.captureException(unexpectedError, {
+			tags: { operation: "update_profile" },
+		});
 
-		// Check if response was already sent
-		if (!response.headersSent) {
-			response.status(500).json({
-				data: null,
-				error: {
-					message: "An unexpected error occurred while updating profile",
-				},
-			});
-			return;
-		}
-
-		// If response was already sent, just log the error
-		console.error(
-			"[update-user-profile] Error occurred after response was sent:",
-			unexpectedError,
-		);
-		Sentry.captureException(unexpectedError);
+		response.status(500).json({
+			data: null,
+			error: {
+				message: "An unexpected error occurred while updating profile",
+			},
+		});
 	}
 }
