@@ -86,124 +86,140 @@ export default async function handler(
 		return;
 	}
 
-	const { publicUrl, id, mediaType } = request.body;
+	try {
+		const { publicUrl, id, mediaType } = request.body;
 
-	const supabase = apiSupabaseClient(request, response);
+		const supabase = apiSupabaseClient(request, response);
 
-	// Check for auth errors
-	const { data: userData, error: userError } = await supabase.auth.getUser();
-	const userId = userData?.user?.id;
+		// Check for auth errors
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
 
-	if (userError || !userId) {
-		console.warn("User authentication failed:", { error: userError?.message });
-		response
-			.status(401)
-			.json({ data: null, success: false, error: "Unauthorized" });
-		return;
-	}
+		if (userError || !userId) {
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+			});
+			response
+				.status(401)
+				.json({ data: null, success: false, error: "Unauthorized" });
+			return;
+		}
 
-	// Entry point log
-	console.log("upload-file-remaining-data API called:", {
-		userId,
-		id,
-		publicUrl,
-		mediaType,
-	});
+		// Entry point log
+		console.log("upload-file-remaining-data API called:", {
+			userId,
+			id,
+			publicUrl,
+			mediaType,
+		});
 
-	let meta_data: ImgMetadataType = {
-		img_caption: null,
-		width: null,
-		height: null,
-		ogImgBlurUrl: null,
-		favIcon: null,
-		twitter_avatar_url: null,
-		coverImage: null,
-		screenshot: null,
-		ocr: null,
-		isOgImagePreferred: false,
-		iframeAllowed: false,
-		mediaType: "",
-		isPageScreenshot: null,
-		video_url: null,
-	};
+		let meta_data: ImgMetadataType = {
+			img_caption: null,
+			width: null,
+			height: null,
+			ogImgBlurUrl: null,
+			favIcon: null,
+			twitter_avatar_url: null,
+			coverImage: null,
+			screenshot: null,
+			ocr: null,
+			isOgImagePreferred: false,
+			iframeAllowed: false,
+			mediaType: "",
+			isPageScreenshot: null,
+			video_url: null,
+		};
 
-	const { meta_data: metaData } = await notVideoLogic(
-		publicUrl,
-		mediaType,
-		supabase,
-		userId,
-	);
+		const { meta_data: metaData } = await notVideoLogic(
+			publicUrl,
+			mediaType,
+			supabase,
+			userId,
+		);
 
-	// Fetch existing metadata
-	const { data: existing, error: fetchError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select("meta_data")
-		.match({ id, user_id: userId })
-		.single();
+		// Fetch existing metadata
+		const { data: existing, error: fetchError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("meta_data")
+			.match({ id, user_id: userId })
+			.single();
 
-	if (fetchError) {
-		console.error("Error fetching existing metadata:", fetchError);
-		Sentry.captureException(fetchError, {
+		if (fetchError) {
+			console.error("Error fetching existing metadata:", fetchError);
+			Sentry.captureException(fetchError, {
+				tags: {
+					operation: "fetch_existing_metadata",
+					userId,
+				},
+				extra: {
+					bookmarkId: id,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				success: false,
+				error: "Error fetching existing metadata",
+			});
+			return;
+		}
+
+		const existingMeta = existing?.meta_data || {};
+
+		// Merge: keep existing values if new ones are null/undefined
+		const mergedMeta = {
+			...existingMeta,
+			...Object.fromEntries(
+				Object.entries(metaData).map(([key, value]) => [
+					key,
+					value || existingMeta?.[key],
+				]),
+			),
+		};
+
+		meta_data = metaData;
+
+		const { error: DBerror } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.update({
+				ogImage: publicUrl,
+				meta_data: mergedMeta,
+				description: (meta_data?.img_caption as string) || "",
+			})
+			.match({ id, user_id: userId });
+
+		if (DBerror) {
+			console.error("Error updating file metadata:", DBerror);
+			Sentry.captureException(DBerror, {
+				tags: {
+					operation: "update_file_metadata",
+					userId,
+				},
+				extra: {
+					bookmarkId: id,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				success: false,
+				error: "Error updating file metadata",
+			});
+			return;
+		}
+
+		// Success
+		console.log("File metadata updated successfully:", { bookmarkId: id });
+		response.status(200).json({ data: null, success: true, error: null });
+	} catch (error) {
+		console.error("Unexpected error in upload-file-remaining-data:", error);
+		Sentry.captureException(error, {
 			tags: {
-				operation: "fetch_existing_metadata",
-				userId,
-			},
-			extra: {
-				bookmarkId: id,
+				operation: "upload_file_remaining_data_unexpected",
 			},
 		});
 		response.status(500).json({
 			data: null,
 			success: false,
-			error: "Error fetching existing metadata",
+			error: "An unexpected error occurred",
 		});
-		return;
 	}
-
-	const existingMeta = existing?.meta_data || {};
-
-	// Merge: keep existing values if new ones are null/undefined
-	const mergedMeta = {
-		...existingMeta,
-		...Object.fromEntries(
-			Object.entries(metaData).map(([key, value]) => [
-				key,
-				value || existingMeta?.[key],
-			]),
-		),
-	};
-
-	meta_data = metaData;
-
-	const { error: DBerror } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.update({
-			ogImage: publicUrl,
-			meta_data: mergedMeta,
-			description: (meta_data?.img_caption as string) || "",
-		})
-		.match({ id, user_id: userId });
-
-	if (DBerror) {
-		console.error("Error updating file metadata:", DBerror);
-		Sentry.captureException(DBerror, {
-			tags: {
-				operation: "update_file_metadata",
-				userId,
-			},
-			extra: {
-				bookmarkId: id,
-			},
-		});
-		response.status(500).json({
-			data: null,
-			success: false,
-			error: "Error updating file metadata",
-		});
-		return;
-	}
-
-	// Success
-	console.log("File metadata updated successfully:", { bookmarkId: id });
-	response.status(200).json({ data: null, success: true, error: null });
 }
