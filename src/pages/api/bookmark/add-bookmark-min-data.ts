@@ -214,6 +214,12 @@ export default async function handler(
 
 		const { category_id: categoryId } = request.body;
 
+		console.log("add-bookmark-min-data API called:", {
+			userId,
+			url,
+			categoryId,
+		});
+
 		const urlHost = new URL(url)?.hostname?.toLowerCase();
 
 		const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some((keyword) =>
@@ -222,12 +228,6 @@ export default async function handler(
 		const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some((keyword) =>
 			urlHost?.includes(keyword),
 		);
-
-		console.log("add-bookmark-min-data API called:", {
-			userId,
-			url,
-			categoryId,
-		});
 
 		let scrapperResponse: ScrapperTypes = {
 			data: {
