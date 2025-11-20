@@ -312,6 +312,9 @@ export default async (
 	// Skip remaining upload API for PDFs
 	if (fileType === PDF_MIME_TYPE) {
 		console.log("File type is pdf, so not calling the remaining upload api");
+		response
+			.status(200)
+			.json({ data: DatabaseData, success: true, error: null });
 		return;
 	}
 
@@ -320,6 +323,9 @@ export default async (
 		console.log(
 			"File type is video or no data, so not calling the remaining upload api",
 		);
+		response
+			.status(200)
+			.json({ data: DatabaseData, success: true, error: null });
 		return;
 	}
 
