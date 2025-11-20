@@ -33,9 +33,11 @@ import {
 	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
 	getAxiosConfigWithAuth,
-	getBaseUrl as getBaseUrlHelper,
+	getNormalisedUrl,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+
+import { vet } from "@/utils/try";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
 type Data = {
@@ -117,27 +119,30 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 	return false;
 };
 
-const favIconLogic = async (favIcon: string | null, url: string) => {
+const getFavIconNormalisedUrl = async (favIcon: string | null, url: string) => {
 	const { hostname } = new URL(url);
 
 	if (favIcon) {
-		if (favIcon?.includes("https://")) {
-			return favIcon;
-		} else {
-			return hostname === "x.com"
-				? "https:" + favIcon
-				: `https://${getBaseUrlHelper(url)}${favIcon}`;
-		}
-	} else {
-		const result = await fetch(
-			`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
-		);
-		if (!result.ok) {
-			return null;
+		// Check for absolute URLs
+		const normalisedUrl = getNormalisedUrl(favIcon);
+
+		if (normalisedUrl) {
+			return normalisedUrl;
 		}
 
-		return result?.url;
+		return new URL(favIcon, `https://${hostname}`).toString();
 	}
+
+	const [error, result] = await vet(() =>
+		fetch(`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`),
+	);
+
+	if (error) {
+		console.warn("Error fetching favicon:", error);
+		return null;
+	}
+
+	return result?.url;
 };
 
 export default async function handler(
@@ -368,7 +373,10 @@ export default async function handler(
 		}
 	}
 
-	const favIcon = await favIconLogic(scrapperResponse?.data?.favIcon, url);
+	const favIcon = await getFavIconNormalisedUrl(
+		scrapperResponse?.data?.favIcon,
+		url,
+	);
 	const mediaType = await getMediaType(url);
 
 	// here we add the scrapper data , in the remainingApi call we add s3 data
