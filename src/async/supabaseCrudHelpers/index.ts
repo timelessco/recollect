@@ -66,6 +66,7 @@ import {
 	FETCH_USER_PROFILE_API,
 	FETCH_USER_PROFILE_PIC_API,
 	FETCH_USER_TAGS_API,
+	GET_API_KEY_API,
 	GET_MEDIA_TYPE_API,
 	getBaseUrl,
 	MOVE_BOOKMARK_TO_TRASH_API,
@@ -141,7 +142,7 @@ export const deleteApiKey = async (): Promise<{
 	}
 };
 
-type CheckApiKeyResponse = { data: { hasApiKey: boolean; apiKey: string } };
+type CheckApiKeyResponse = { data: { hasApiKey: boolean } };
 
 export const checkApiKey = async (): Promise<CheckApiKeyResponse> => {
 	try {
@@ -154,6 +155,21 @@ export const checkApiKey = async (): Promise<CheckApiKeyResponse> => {
 		return response.data;
 	} catch (error) {
 		console.error("Error checking API key:", error);
+		throw new Error("Failed to verify API key status");
+	}
+};
+
+export const getApiKey = async (): Promise<{ data: { apiKey: string } }> => {
+	try {
+		const response = await axios.get(`${NEXT_API_URL}${GET_API_KEY_API}`);
+
+		if (!response.data) {
+			throw new Error("Failed to get API key");
+		}
+
+		return response.data;
+	} catch (error) {
+		console.error("Error getting API key:", error);
 		throw new Error("Failed to verify API key status");
 	}
 };

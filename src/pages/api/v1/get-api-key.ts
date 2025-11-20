@@ -1,4 +1,5 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
+import CryptoJS from "crypto-js";
 
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -35,6 +36,16 @@ export default async function handler(
 
 		const hasApiKey = Boolean(DataResponse?.api_key);
 
+		let apiKey: string | null = null;
+
+		if (hasApiKey) {
+			const decryptedBytes = CryptoJS.AES.decrypt(
+				DataResponse?.api_key ?? "",
+				process.env.API_KEY_ENCRYPTION_KEY as string,
+			);
+			apiKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
+		}
+
 		if (ErrorResponse) {
 			console.error(ErrorResponse);
 			response.status(500).json({ error: "Database error" });
@@ -43,7 +54,7 @@ export default async function handler(
 
 		response.status(200).json({
 			message: "API key checked successfully",
-			data: { hasApiKey },
+			data: { hasApiKey, apiKey },
 		});
 	} catch (error) {
 		console.error(error);

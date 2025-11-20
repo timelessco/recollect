@@ -4,6 +4,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
 import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/useDeleteApiKeyMutation";
 import useFetchCheckApiKey from "../../async/queryHooks/ai/api-key/useFetchCheckApiKey";
+import useFetchGetApiKey from "../../async/queryHooks/ai/api-key/useFetchGetApiKey";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -20,6 +21,7 @@ import {
 
 import { EyeIconSlashed } from "@/icons/eyeIconSlashed";
 import { ShowEyeIcon } from "@/icons/showEyeIcon";
+import { errorToast } from "@/utils/toastMessages";
 
 /*  TYPES  */
 type AiFeaturesFormTypes = {
@@ -45,13 +47,27 @@ const AiFeaturesSkeleton = () => (
 
 /*  MAIN COMPONENT  */
 export const AiFeatures = () => {
+	const [apiKey, setApiKey] = useState<string | null>(null);
 	const [showKey, setShowKey] = useState(false);
 	const { mutate: saveApiKey, isPending: isSaving } = useApiKeyMutation();
 	const { mutate: deleteApiKey, isPending: isDeleting } =
 		useDeleteApiKeyMutation();
+	const { refetch: fetchApiKey } = useFetchGetApiKey();
+	const handleEyeClick = async () => {
+		if (!showKey) {
+			try {
+				const { data } = await fetchApiKey();
+				setApiKey(data?.data?.apiKey || null);
+			} catch (error) {
+				errorToast(error as string);
+			}
+		}
+
+		setShowKey((prev) => !prev);
+	};
+
 	const { data, isLoading: isChecking } = useFetchCheckApiKey();
 	const hasApiKey = data?.data?.hasApiKey ?? false;
-	const apiKey = data?.data?.apiKey ?? "";
 	const {
 		register,
 		handleSubmit,
@@ -98,14 +114,17 @@ export const AiFeatures = () => {
 								id="api-key"
 								isDisabled={hasApiKey ? !isDeleting : false}
 								isError={Boolean(errors.apiKey)}
+								value={
+									hasApiKey && !isDeleting
+										? showKey
+											? apiKey || ""
+											: "••••••••••••••••••••••••••••••••"
+										: undefined
+								}
 								placeholder={
 									isSaving
 										? "••••••••••••••••••••••••••••••••"
-										: hasApiKey && showKey
-											? apiKey
-											: hasApiKey
-												? "••••••••••••••••••••••••••••••••"
-												: "Enter your API key"
+										: "Enter your API key"
 								}
 								showError={false}
 								type={hasApiKey && showKey ? "text" : "password"}
@@ -113,8 +132,9 @@ export const AiFeatures = () => {
 							{hasApiKey && (
 								<button
 									type="button"
-									onClick={() => setShowKey((prev) => !prev)}
+									onClick={handleEyeClick}
 									className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+									aria-label={showKey ? "Hide API key" : "Show API key"}
 								>
 									{showKey ? <ShowEyeIcon /> : <EyeIconSlashed />}
 								</button>
