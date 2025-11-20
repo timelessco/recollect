@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
@@ -19,9 +19,9 @@ import {
 	// settingsParagraphClassName,
 } from "../../utils/commonClassNames";
 
-import { EyeIconSlashed } from "@/icons/eyeIconSlashed";
-import { ShowEyeIcon } from "@/icons/showEyeIcon";
-import { errorToast } from "@/utils/toastMessages";
+import { EyeIconSlashed } from "@/icons/eye-icon-slashed";
+import { ShowEyeIcon } from "@/icons/show-eye-icon";
+import { handleClientError } from "@/utils/error-utils/client";
 
 /*  TYPES  */
 type AiFeaturesFormTypes = {
@@ -59,7 +59,7 @@ export const AiFeatures = () => {
 				const { data } = await fetchApiKey();
 				setApiKey(data?.data?.apiKey || null);
 			} catch (error) {
-				errorToast(error as string);
+				handleClientError(error, "Failed to fetch API key");
 			}
 		}
 
@@ -145,7 +145,9 @@ export const AiFeatures = () => {
 							onClick={() => {
 								if (hasApiKey && !isDeleting) {
 									deleteApiKey();
-									reset();
+									reset({ apiKey: "" });
+									setApiKey(null);
+									setShowKey(false);
 								} else {
 									void handleSubmit(onSubmit)();
 								}

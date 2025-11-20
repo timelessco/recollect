@@ -31,7 +31,6 @@ export const useApiKeyMutation = () => {
 			await queryClient.invalidateQueries({ queryKey: [API_KEY_CHECK_KEY] });
 		},
 		onError: (error) => {
-			console.error("Error updating API key:", error);
 			errorToast(
 				error.message || "Failed to update API key. Please try again.",
 			);

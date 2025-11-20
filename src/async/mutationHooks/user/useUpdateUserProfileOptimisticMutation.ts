@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
-import { USER_PROFILE } from "../../../utils/constants";
+import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
 import { updateUserProfile } from "../../supabaseCrudHelpers";
 
 // update user profile date optimistically
@@ -13,36 +13,30 @@ export default function useUpdateUserProfileOptimisticMutation() {
 	const updateUserProfileOptimisticMutation = useMutation({
 		mutationFn: updateUserProfile,
 		onMutate: async (data) => {
-			// First, cancel any outgoing refetches
+			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
 			await queryClient.cancelQueries({
 				queryKey: [USER_PROFILE, session?.user?.id],
 			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
-				USER_PROFILE,
+				CATEGORIES_KEY,
 				session?.user?.id,
 			]);
 
 			// Optimistically update to the new value
-			if (data?.updateData?.bookmarks_view !== undefined) {
-				queryClient.setQueryData(
-					[USER_PROFILE, session?.user?.id],
-					(old: { data: ProfilesTableTypes[] } | undefined) => {
-						if (!old?.data) {
-							return old;
-						}
+			queryClient.setQueryData(
+				[USER_PROFILE, session?.user?.id],
+				(old: { data: ProfilesTableTypes[] } | undefined) =>
+					({
+						...old,
 
-						return {
-							...old,
-							data: old.data.map((item) => ({
-								...item,
-								bookmarks_view: data.updateData.bookmarks_view,
-							})),
-						};
-					},
-				);
-			}
+						data: old?.data?.map((item) => ({
+							...item,
+							bookmarks_view: data?.updateData?.bookmarks_view,
+						})),
+					}) as { data: ProfilesTableTypes[] },
+			);
 
 			// Return a context object with the snapshotted value
 			return { previousData };
