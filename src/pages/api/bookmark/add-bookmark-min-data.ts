@@ -120,29 +120,35 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 };
 
 const getFavIconNormalisedUrl = async (favIcon: string | null, url: string) => {
-	const { hostname } = new URL(url);
+	try {
+		const { hostname } = new URL(url);
 
-	if (favIcon) {
-		// Check for absolute URLs
-		const normalisedUrl = getNormalisedUrl(favIcon);
+		if (favIcon) {
+			// Check for absolute URLs
+			const normalisedUrl = getNormalisedUrl(favIcon);
 
-		if (normalisedUrl) {
-			return normalisedUrl;
+			if (normalisedUrl) {
+				return normalisedUrl;
+			}
+
+			return new URL(favIcon, `https://${hostname}`).toString();
 		}
 
-		return new URL(favIcon, `https://${hostname}`).toString();
-	}
+		const response = await fetch(
+			`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
+		);
 
-	const [error, result] = await vet(() =>
-		fetch(`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`),
-	);
+		if (!response.ok) {
+			throw new Error(
+				`Invalid response for the ${hostname}: ${response.statusText}`,
+			);
+		}
 
-	if (error) {
+		return response.url;
+	} catch (error) {
 		console.warn("Error fetching favicon:", error);
 		return null;
 	}
-
-	return result?.url;
 };
 
 export default async function handler(
