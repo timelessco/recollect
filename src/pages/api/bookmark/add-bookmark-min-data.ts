@@ -33,6 +33,7 @@ import {
 	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
 	getAxiosConfigWithAuth,
+	getBaseUrl as getBaseUrlHelper,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -114,6 +115,29 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 
 	// user is not the owner or the collaborator of the collection
 	return false;
+};
+
+const favIconLogic = async (favIcon: string | null, url: string) => {
+	const { hostname } = new URL(url);
+
+	if (favIcon) {
+		if (favIcon?.includes("https://")) {
+			return favIcon;
+		} else {
+			return hostname === "x.com"
+				? "https:" + favIcon
+				: `https://${getBaseUrlHelper(url)}${favIcon}`;
+		}
+	} else {
+		const result = await fetch(
+			`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
+		);
+		if (!result.ok) {
+			return null;
+		}
+
+		return result?.url;
+	}
 };
 
 export default async function handler(
@@ -344,6 +368,9 @@ export default async function handler(
 		}
 	}
 
+	const favIcon = await favIconLogic(scrapperResponse?.data?.favIcon, url);
+	const mediaType = await getMediaType(url);
+
 	// here we add the scrapper data , in the remainingApi call we add s3 data
 	const {
 		data,
@@ -363,8 +390,8 @@ export default async function handler(
 				category_id: computedCategoryId,
 				meta_data: {
 					isOgImagePreferred,
-					mediaType: await getMediaType(url),
-					favIcon: scrapperResponse?.data?.favIcon,
+					mediaType,
+					favIcon,
 					iframeAllowed: iframeAllowedValue,
 				},
 				type: bookmarkType,
@@ -420,7 +447,6 @@ export default async function handler(
 				`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
 				{
 					id: data[0]?.id,
-					favIcon: scrapperResponse?.data?.favIcon,
 					url,
 				},
 				getAxiosConfigWithAuth(request),

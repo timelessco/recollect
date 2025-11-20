@@ -78,7 +78,7 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const { url, favIcon, id } = request.body;
+	const { url, id } = request.body;
 
 	if (!id) {
 		response
@@ -175,29 +175,6 @@ export default async function handler(
 			uploadedImageThatIsAUrl = null;
 		}
 	}
-
-	const favIconLogic = async () => {
-		const { hostname } = new URL(url);
-
-		if (favIcon) {
-			if (favIcon?.includes("https://")) {
-				return favIcon;
-			} else {
-				return hostname === "x.com"
-					? "https:" + favIcon
-					: `https://${getBaseUrl(url)}${favIcon}`;
-			}
-		} else {
-			const result = await fetch(
-				`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
-			);
-			if (!result.ok) {
-				return null;
-			}
-
-			return result?.url;
-		}
-	};
 
 	let uploadedCoverImageUrl = null;
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
@@ -297,7 +274,6 @@ export default async function handler(
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
-		favIcon: await favIconLogic(),
 		ocr: imageOcrValue,
 		coverImage: uploadedCoverImageUrl,
 	};
