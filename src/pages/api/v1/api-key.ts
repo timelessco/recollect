@@ -57,7 +57,7 @@ export default async function handler(
 	try {
 		const encryptedApiKey = CryptoJS.AES.encrypt(
 			apikey,
-			process.env.API_KEY_ENCRYPTION_KEY as string,
+			process.env.API_KEY_ENCRYPTION_KEY,
 		).toString();
 
 		const { data: DataResponse, error: ErrorResponse } = await supabase

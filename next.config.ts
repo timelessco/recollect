@@ -8,7 +8,7 @@ import { withSentryConfig } from "@sentry/nextjs";
  */
 // eslint-disable-next-line no-eq-null, eqeqeq
 if (process.env.SKIP_ENV_VALIDATION == null) {
-	void (async () => {
+	(async () => {
 		await import("./scripts/env/server.js");
 	})();
 }
