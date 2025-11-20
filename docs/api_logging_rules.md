@@ -8,6 +8,56 @@ Guidelines for consistent logging, error handling, and Sentry integration in API
 import * as Sentry from "@sentry/nextjs";
 ```
 
+## Root-Level Error Handler (CRITICAL)
+
+**This is the most important rule.**
+Every API handler MUST wrap its entire body in a try-catch to handle unexpected errors:
+
+```typescript
+export default async function handler(
+	request: NextApiRequest<PayloadType>,
+	response: NextApiResponse<ResponseType>,
+) {
+	try {
+		const supabase = apiSupabaseClient(request, response);
+
+		// Authentication check
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
+
+		if (userError || !userId) {
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+			});
+			response.status(401).json({ data: null, error: "Unauthorized" });
+			return;
+		}
+
+		// All API logic goes here
+		// ...
+	} catch (error) {
+		console.error("Unexpected error in api-name:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "api_name_unexpected",
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: "An unexpected error occurred",
+		});
+	}
+}
+```
+
+### Requirements
+
+- Wrap ALL logic including supabase client and auth check in try-catch
+- Catch block handles any unexpected/unhandled errors
+- Always log the error with `console.error`
+- Always capture to Sentry with `operation` tag ending in `_unexpected`
+- Return generic user-friendly message (don't expose error details)
+
 ## Authentication Check
 
 Always verify user authentication before processing requests. Return 401 for auth failures:
@@ -39,6 +89,82 @@ if (userError || !userId) {
 - Response format must match the API's existing response type
 - Always return early after sending the error response
 
+## Using `vet` for Error-Throwing Operations
+
+Within the root-level try-catch, use `vet` utility for operations that throw errors instead of returning them.
+
+### When to Use `vet`
+
+**✅ Use `vet` for:**
+
+- External API calls (axios, fetch)
+- Operations that throw errors on failure
+- Any function that doesn't return errors in response
+
+**❌ Don't use `vet` for:**
+
+- Supabase operations (already return `{ data, error }` tuples)
+- Operations that return errors in response structure
+
+### Benefits
+
+- Eliminates `let` usage - use `const` with destructuring
+- Cleaner error handling with tuple destructuring
+- Consistent error handling pattern
+
+### Variable Naming Convention
+
+**CRITICAL**: Name destructured variables uniquely based on the operation to prevent conflicts in the same scope.
+
+**Pattern**: `const [operationError, operationResult] = await vet(...)`
+
+```typescript
+// ✅ Good - unique descriptive names
+const [screenshotError, screenshotResponse] = await vet(() =>
+	axios.get(`${SCREENSHOT_API}/try?url=${url}`),
+);
+
+const [uploadError, uploadResult] = await vet(() => axios.post(apiUrl, data));
+
+// ❌ Bad - generic names conflict with other vet calls
+const [error, response] = await vet(() => axios.get(url1));
+const [error, response] = await vet(() => axios.get(url2)); // Name conflict!
+```
+
+### Example
+
+```typescript
+// Before: using let with try-catch
+let screenShotResponse;
+try {
+	screenShotResponse = await axios.get(url, options);
+	console.log("Success:", { status: screenShotResponse.status });
+} catch (error_) {
+	console.error("API error:", error_);
+	Sentry.captureException(error_, {
+		tags: { operation: "screenshot_api", userId },
+	});
+	response.status(500).json({ data: null, error: "Error message" });
+	return;
+}
+
+// After: using vet with const
+const [screenshotError, screenShotResponse] = await vet(() =>
+	axios.get(url, options),
+);
+
+if (screenshotError) {
+	console.error("API error:", screenshotError);
+	Sentry.captureException(screenshotError, {
+		tags: { operation: "screenshot_api", userId },
+	});
+	response.status(500).json({ data: null, error: "Error message" });
+	return;
+}
+
+console.log("Success:", { status: screenShotResponse.status });
+```
+
 ## Flow Structure (Fail-Fast Pattern)
 
 Always check for errors immediately after operations and return early:
@@ -54,9 +180,10 @@ if (error) {
 		tags: { operation: "operation_name", userId },
 		extra: { contextualData },
 	});
+	// Use error format that matches the API's response type
 	response.status(500).json({
 		data: null,
-		error: { message: "User-friendly error message" },
+		error: "User-friendly error message",
 	});
 	return;
 }
@@ -64,6 +191,39 @@ if (error) {
 // 3. Continue with success path
 console.log("Success message:", { relevantData });
 response.status(200).json({ data, error: null });
+```
+
+## Early Return Response Rule
+
+**CRITICAL**: Every `return` statement in an API handler MUST be preceded by a response.
+
+### Why This Matters
+
+- Plain `return` without `response.status().json()` causes the HTTP request to hang
+- Client will timeout waiting for a response that never comes
+- This applies to ALL code paths, including "skip" scenarios
+
+### Correct Pattern
+
+Always send response before return:
+
+```typescript
+if (shouldSkipOperation) {
+	console.log("Skipping operation because:", { reason });
+	response.status(200).json({ data, success: true, error: null });
+	return;
+}
+```
+
+### Incorrect Pattern
+
+Never return without response:
+
+```typescript
+if (shouldSkipOperation) {
+	console.log("Skipping operation");
+	return; // BUG: Client will hang!
+}
 ```
 
 ## Log Levels Usage
@@ -184,10 +344,16 @@ response.status(200).json({ data, success: true, error: null });
 
 ### Error Response
 
-Send user-friendly messages only, not raw error objects:
+Send user-friendly messages only, not raw error objects. **Match the format to the API's existing response type**:
 
 ```typescript
-// For APIs with { data, error } structure
+// For APIs where error type is string
+response.status(500).json({
+	data: null,
+	error: "User-friendly error message",
+});
+
+// For APIs where error type is { message: string }
 response.status(500).json({
 	data: null,
 	error: { message: "User-friendly error message" },
@@ -200,6 +366,8 @@ response.status(500).json({
 });
 ```
 
+**Important**: Check the API's response type definition and use the matching error format. Do not change the type to accommodate a different format.
+
 ## Complete API Template
 
 ```typescript
@@ -211,62 +379,86 @@ export default async function handler(
 	request: NextApiRequest<PayloadType>,
 	response: NextApiResponse<ResponseType>,
 ) {
-	const supabase = apiSupabaseClient(request, response);
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	try {
+		const supabase = apiSupabaseClient(request, response);
 
-	// Extract request data
-	const { param1, param2 } = request.body;
+		// Authentication check
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
 
-	// 1. Entry point log
-	console.log("api-name API called:", { userId, param1, param2 });
+		if (userError || !userId) {
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+			});
+			response.status(401).json({ data: null, error: "Unauthorized" });
+			return;
+		}
 
-	// 2. First operation
-	const { data: result1, error: error1 } = await firstOperation();
+		// Extract request data
+		const { param1, param2 } = request.body;
 
-	// 3. Check error immediately
-	if (error1) {
-		console.error("Error in first operation:", error1);
-		Sentry.captureException(error1, {
+		// 1. Entry point log
+		console.log("api-name API called:", { userId, param1, param2 });
+
+		// 2. First operation
+		const { data: result1, error: error1 } = await firstOperation();
+
+		// 3. Check error immediately
+		if (error1) {
+			console.error("Error in first operation:", error1);
+			Sentry.captureException(error1, {
+				tags: {
+					operation: "first_operation",
+					userId,
+				},
+				extra: {
+					param1,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: "Error performing first operation",
+			});
+			return;
+		}
+
+		// 4. Log intermediate result
+		console.log("First operation result:", { id: result1?.[0]?.id });
+
+		// 5. Second operation
+		const { data: result2, error: error2 } = await secondOperation();
+
+		// 6. Check error immediately
+		if (error2) {
+			console.error("Error in second operation:", error2);
+			Sentry.captureException(error2, {
+				tags: {
+					operation: "second_operation",
+					userId,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: "Error performing second operation",
+			});
+			return;
+		}
+
+		// 7. Success log and response
+		console.log("Operation completed successfully:", { id: result2?.[0]?.id });
+		response.status(200).json({ data: result2, error: null });
+	} catch (error) {
+		console.error("Unexpected error in api-name:", error);
+		Sentry.captureException(error, {
 			tags: {
-				operation: "first_operation",
-				userId,
-			},
-			extra: {
-				param1,
+				operation: "api_name_unexpected",
 			},
 		});
 		response.status(500).json({
 			data: null,
-			error: { message: "Error performing first operation" },
+			error: "An unexpected error occurred",
 		});
-		return;
 	}
-
-	// 4. Log intermediate result
-	console.log("First operation result:", { id: result1?.[0]?.id });
-
-	// 5. Second operation
-	const { data: result2, error: error2 } = await secondOperation();
-
-	// 6. Check error immediately
-	if (error2) {
-		console.error("Error in second operation:", error2);
-		Sentry.captureException(error2, {
-			tags: {
-				operation: "second_operation",
-				userId,
-			},
-		});
-		response.status(500).json({
-			data: null,
-			error: { message: "Error performing second operation" },
-		});
-		return;
-	}
-
-	// 7. Success log and response
-	console.log("Operation completed successfully:", { id: result2?.[0]?.id });
-	response.status(200).json({ data: result2, error: null });
 }
 ```
 
@@ -325,3 +517,34 @@ if (shouldCallExternalApi) {
 6. **Minimal Sentry Extra**: Only contextual data, no redundant messages
 7. **Always Include Operation Tag**: Makes errors searchable in Sentry
 8. **Log External API Calls**: Always log URL and body before calling external APIs
+
+## APIs Following These Rules
+
+The following APIs have been migrated to follow all rules in this document:
+
+### File Operations
+
+- `file/upload-file.ts`
+- `file/upload-file-remaining-data.ts`
+
+### Bookmark Operations
+
+- `bookmark/add-bookmark-min-data.ts`
+- `bookmark/add-url-screenshot.ts`
+
+### Category Operations
+
+- `category/create-user-category.ts`
+
+### Share Operations
+
+- `share/send-collaboration-email.ts`
+- `share/fetch-shared-categories-data.ts`
+
+### Profile Operations
+
+- `profiles/update-user-profile.tsx`
+
+### Storage Operations
+
+- `v1/bucket/get/signed-url.tsx`
