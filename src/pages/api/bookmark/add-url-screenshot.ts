@@ -303,6 +303,8 @@ export default async function handler(
 					},
 				});
 			}
+		} else {
+			console.log("No data returned from the database");
 		}
 	} catch (error) {
 		console.error("Unexpected error in add-url-screenshot:", error);
