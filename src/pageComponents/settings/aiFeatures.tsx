@@ -48,19 +48,19 @@ export const AiFeatures = () => {
 	const { refetch: fetchApiKey } = useFetchGetApiKey();
 
 	const handleEyeClick = async () => {
-		if (showKey) {
-			setShowKey((prev) => !prev);
-			return;
-		}
-
 		try {
+			if (showKey) {
+				setShowKey(false);
+				return;
+			}
+
 			const { data } = await fetchApiKey();
 			if (!data?.data) {
 				return;
 			}
 
-			setApiKey(data?.data?.apiKey || null);
-			setShowKey((prev) => !prev);
+			setApiKey(data.data.apiKey);
+			setShowKey(true);
 		} catch (error) {
 			handleClientError(error, "Failed to fetch API key");
 		}
@@ -85,8 +85,6 @@ export const AiFeatures = () => {
 	};
 
 	const hasApiKey = data.data.hasApiKey;
-
-	const label = hasApiKey ? "Delete" : "Save";
 
 	return (
 		<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -157,7 +155,7 @@ export const AiFeatures = () => {
 								isSaving ? "opacity-0" : "opacity-100"
 							}`}
 						>
-							{label}
+							{hasApiKey ? "Delete" : "Save"}
 						</span>
 						{isSaving ? (
 							<span className="absolute inset-0 flex items-center justify-center">

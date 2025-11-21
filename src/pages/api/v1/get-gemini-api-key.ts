@@ -51,13 +51,8 @@ export default async function handler(
 		const hasApiKey = Boolean(profileData?.api_key);
 
 		if (!hasApiKey) {
-			console.error("No API key found");
-			Sentry.captureException("No API key found", {
-				tags: {
-					operation: "get_gemini_api_key",
-					userId,
-				},
-			});
+			console.warn("No API key found");
+
 			response.status(404).json({
 				data: null,
 				error: "No API key found",
