@@ -67,7 +67,7 @@ export default async function handler(
 			);
 			try {
 				const { data } = await axios.post(
-					process.env.PDF_URL_SCREENSHOT_API as string,
+					process.env.PDF_URL_SCREENSHOT_API,
 					{
 						url,
 						userId: user_id,

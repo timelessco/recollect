@@ -268,44 +268,48 @@ export default async function handler(
 			return;
 		}
 
+		if (!data || data.length === 0) {
+			console.warn("No data returned from the database");
+			response.status(500).json({
+				data: null,
+				error: "No data returned from the database",
+			});
+			return;
+		}
+
+		const requestBody = {
+			id: data[0]?.id,
+			favIcon: data[0]?.meta_data?.favIcon,
+			url: request.body.url,
+		};
+		console.log("Calling remaining bookmark data API:", { requestBody });
+
+		const [remainingApiError] = await vet(() =>
+			axios.post(
+				`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+				requestBody,
+				getAxiosConfigWithAuth(request),
+			),
+		);
+
+		if (remainingApiError) {
+			console.error("Remaining bookmark data API error:", remainingApiError);
+			Sentry.captureException(remainingApiError, {
+				tags: {
+					operation: "remaining_bookmark_data_api",
+					userId,
+				},
+				extra: {
+					bookmarkId: data[0]?.id,
+				},
+			});
+		}
+
 		// Success log and response
 		console.log("Bookmark updated with screenshot successfully:", {
 			id: data?.[0]?.id,
 		});
 		response.status(200).json({ data, error: null });
-
-		// Fire-and-forget: Call remaining bookmark data API
-		if (data && data.length > 0) {
-			const requestBody = {
-				id: data[0]?.id,
-				favIcon: data[0]?.meta_data?.favIcon,
-				url: request.body.url,
-			};
-			console.log("Calling remaining bookmark data API:", { requestBody });
-
-			const [remainingApiError] = await vet(() =>
-				axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
-					requestBody,
-					getAxiosConfigWithAuth(request),
-				),
-			);
-
-			if (remainingApiError) {
-				console.error("Remaining bookmark data API error:", remainingApiError);
-				Sentry.captureException(remainingApiError, {
-					tags: {
-						operation: "remaining_bookmark_data_api",
-						userId,
-					},
-					extra: {
-						bookmarkId: data[0]?.id,
-					},
-				});
-			}
-		} else {
-			console.log("No data returned from the database");
-		}
 	} catch (error) {
 		console.error("Unexpected error in add-url-screenshot:", error);
 		Sentry.captureException(error, {
