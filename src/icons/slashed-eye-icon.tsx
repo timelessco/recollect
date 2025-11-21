@@ -1,6 +1,6 @@
 import { Icon, type IconProps } from "@/components/ui/recollect/icon";
 
-export const EyeIconSlashed = (props: IconProps) => (
+export const SlashedEyeIcon = (props: IconProps) => (
 	<Icon fill="none" viewBox="0 0 24 24" {...props}>
 		<path
 			fill="currentColor"

@@ -17,6 +17,7 @@ type ButtonProps = {
 	tabIndex?: number;
 	title?: string;
 	type?: "dark" | "light";
+	buttonType?: "submit" | "button" | "reset";
 };
 
 const Button: FC<ButtonProps> = (props) => {
@@ -32,6 +33,7 @@ const Button: FC<ButtonProps> = (props) => {
 		isActive = false,
 		tabIndex = -1,
 		title = "",
+		buttonType = "button",
 	} = props;
 
 	const buttonClassNames = tcx(
@@ -55,7 +57,8 @@ const Button: FC<ButtonProps> = (props) => {
 			style={style}
 			tabIndex={tabIndex}
 			title={title}
-			type="button"
+			// eslint-disable-next-line react/button-has-type
+			type={buttonType}
 		>
 			{children}
 		</button>

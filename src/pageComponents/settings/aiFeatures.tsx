@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
 import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/useDeleteApiKeyMutation";
@@ -17,7 +17,7 @@ import {
 } from "../../utils/commonClassNames";
 
 import { ShowEyeIcon } from "@/icons/show-eye-icon";
-import { EyeIconSlashed } from "@/icons/slashed-eye-icon";
+import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
 import { handleClientError } from "@/utils/error-utils/client";
 
 type AiFeaturesFormTypes = {
@@ -67,10 +67,10 @@ export const AiFeatures = () => {
 	};
 
 	const {
-		register,
 		handleSubmit,
 		formState: { errors },
 		reset,
+		control,
 	} = useForm<AiFeaturesFormTypes>();
 
 	const { data, isLoading: isChecking } = useFetchCheckApiKey();
@@ -80,14 +80,27 @@ export const AiFeatures = () => {
 	}
 
 	const onSubmit: SubmitHandler<AiFeaturesFormTypes> = (formData) => {
+		if (hasApiKey) {
+			deleteApiKey();
+			reset({ apiKey: "" });
+			setApiKey(null);
+			setShowKey(false);
+			return;
+		}
+
 		saveApiKey({ apikey: formData.apiKey });
-		reset();
 	};
 
 	const hasApiKey = data.data.hasApiKey;
 
 	return (
-		<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+		<form
+			className="space-y-6"
+			onSubmit={(event) => {
+				event.preventDefault();
+				void handleSubmit(onSubmit)();
+			}}
+		>
 			<div className="relative mb-6 flex items-center">
 				<h2 className="text-[18px] leading-[115%] font-semibold tracking-normal text-gray-900">
 					AI Features
@@ -102,29 +115,39 @@ export const AiFeatures = () => {
 					className={`${settingsInputContainerClassName} mt-2 flex items-center justify-between`}
 				>
 					<div className="relative w-full">
-						<Input
-							{...register("apiKey", { required: "API Key is required" })}
-							autoFocus={isDeleting}
-							className={`${settingsInputClassName} leading-[115%]`}
-							errorText=""
-							id="api-key"
-							isDisabled={hasApiKey ? !isDeleting : false}
-							isError={Boolean(errors.apiKey)}
-							value={
-								hasApiKey && !isDeleting
-									? showKey
-										? apiKey || ""
-										: "••••••••••••••••••••••••••••••••"
-									: ""
-							}
-							placeholder={
-								isSaving
-									? "••••••••••••••••••••••••••••••••"
-									: "Enter your API key"
-							}
-							showError={false}
-							type={showKey ? "text" : "password"}
+						<Controller
+							name="apiKey"
+							control={control}
+							rules={{
+								...(hasApiKey ? {} : { required: "API Key is required" }),
+							}}
+							render={({ field }) => {
+								const rhfValue = field.value;
+
+								const displayValue =
+									hasApiKey && !isDeleting
+										? showKey
+											? apiKey || ""
+											: "••••••••••••••••••••••••••••••••"
+										: rhfValue;
+
+								return (
+									<Input
+										{...field}
+										className={`${settingsInputClassName} leading-[115%]`}
+										errorText=""
+										id="api-key"
+										isDisabled={hasApiKey ? !isDeleting : false}
+										isError={Boolean(errors.apiKey)}
+										value={displayValue}
+										placeholder="Enter your API key"
+										showError={false}
+										type={hasApiKey && !showKey ? "password" : "text"}
+									/>
+								);
+							}}
 						/>
+
 						{hasApiKey && (
 							<button
 								type="button"
@@ -132,23 +155,14 @@ export const AiFeatures = () => {
 								className="absolute top-1/2 right-2 -translate-y-1/2 text-xl leading-5 text-gray-500 hover:text-gray-700 focus:outline-none"
 								aria-label={showKey ? "Hide API key" : "Show API key"}
 							>
-								{showKey ? <ShowEyeIcon /> : <EyeIconSlashed />}
+								{showKey ? <ShowEyeIcon /> : <SlashedEyeIcon />}
 							</button>
 						)}
 					</div>
 
 					<Button
 						className={`relative my-[3px] ${saveButtonClassName} px-2 py-[4.5px]`}
-						onClick={() => {
-							if (hasApiKey && !isDeleting) {
-								deleteApiKey();
-								reset({ apiKey: "" });
-								setApiKey(null);
-								setShowKey(false);
-							} else {
-								void handleSubmit(onSubmit)();
-							}
-						}}
+						buttonType="submit"
 					>
 						<span
 							className={`transition-opacity duration-150 ${
@@ -157,6 +171,7 @@ export const AiFeatures = () => {
 						>
 							{hasApiKey ? "Delete" : "Save"}
 						</span>
+
 						{isSaving ? (
 							<span className="absolute inset-0 flex items-center justify-center">
 								<Spinner className="h-3 w-3" />
