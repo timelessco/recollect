@@ -1,3 +1,4 @@
+import { error } from "console";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -268,43 +269,57 @@ export default async function handler(
 			return;
 		}
 
-		if (data && data.length > 0) {
-			const requestBody = {
-				id: data[0]?.id,
-				favIcon: data[0]?.meta_data?.favIcon,
-				url: request.body.url,
-			};
-			console.log("Calling remaining bookmark data API:", { requestBody });
-
-			const [remainingApiError] = await vet(() =>
-				axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
-					requestBody,
-					getAxiosConfigWithAuth(request),
-				),
-			);
-
-			if (remainingApiError) {
-				console.error("Remaining bookmark data API error:", remainingApiError);
-				Sentry.captureException(remainingApiError, {
-					tags: {
-						operation: "remaining_bookmark_data_api",
-						userId,
-					},
-					extra: {
-						bookmarkId: data[0]?.id,
-					},
-				});
-			}
-
-			// Success log and response
-			console.log("Bookmark updated with screenshot successfully:", {
-				id: data?.[0]?.id,
+		if (!data || data.length == 0) {
+			console.warn("No data returned from the database");
+			Sentry.captureException(error, {
+				tags: {
+					operation: "update_bookmark_screenshot",
+					userId,
+				},
+				extra: {
+					bookmarkId: request.body.id,
+				},
 			});
-			response.status(200).json({ data, error: null });
-		} else {
-			console.log("No data returned from the database");
+			response.status(500).json({
+				data: null,
+				error: "No data returned from the database",
+			});
+			return;
 		}
+
+		const requestBody = {
+			id: data[0]?.id,
+			favIcon: data[0]?.meta_data?.favIcon,
+			url: request.body.url,
+		};
+		console.log("Calling remaining bookmark data API:", { requestBody });
+
+		const [remainingApiError] = await vet(() =>
+			axios.post(
+				`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+				requestBody,
+				getAxiosConfigWithAuth(request),
+			),
+		);
+
+		if (remainingApiError) {
+			console.error("Remaining bookmark data API error:", remainingApiError);
+			Sentry.captureException(remainingApiError, {
+				tags: {
+					operation: "remaining_bookmark_data_api",
+					userId,
+				},
+				extra: {
+					bookmarkId: data[0]?.id,
+				},
+			});
+		}
+
+		// Success log and response
+		console.log("Bookmark updated with screenshot successfully:", {
+			id: data?.[0]?.id,
+		});
+		response.status(200).json({ data, error: null });
 	} catch (error) {
 		console.error("Unexpected error in add-url-screenshot:", error);
 		Sentry.captureException(error, {
