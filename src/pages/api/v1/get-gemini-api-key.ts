@@ -88,8 +88,7 @@ export default async function handler(
 			}
 
 			console.log("API key retrieved successfully", {
-				hasApiKey: true,
-				keyPresent: Boolean(apiKey),
+				hasApiKey: Boolean(apiKey),
 			});
 
 			response.status(200).json({
