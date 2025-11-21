@@ -117,7 +117,7 @@ export const AiFeatures = () => {
 									? showKey
 										? apiKey || ""
 										: "••••••••••••••••••••••••••••••••"
-									: undefined
+									: ""
 							}
 							placeholder={
 								isSaving
