@@ -269,7 +269,7 @@ export default async function handler(
 		}
 
 		if (!data || data.length === 0) {
-			console.log("No data returned from the database");
+			console.warn("No data returned from the database");
 			response.status(500).json({
 				data: null,
 				error: "No data returned from the database",
