@@ -270,7 +270,7 @@ export default async function handler(
 
 		if (!data || data.length === 0) {
 			console.warn("No data returned from the database");
-			Sentry.captureException(error, {
+			Sentry.captureException(new Error("No data returned from the database"), {
 				tags: {
 					operation: "update_bookmark_screenshot",
 					userId,
