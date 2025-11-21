@@ -268,13 +268,6 @@ export default async function handler(
 			return;
 		}
 
-		// Success log and response
-		console.log("Bookmark updated with screenshot successfully:", {
-			id: data?.[0]?.id,
-		});
-		response.status(200).json({ data, error: null });
-
-		// Fire-and-forget: Call remaining bookmark data API
 		if (data && data.length > 0) {
 			const requestBody = {
 				id: data[0]?.id,
@@ -303,6 +296,12 @@ export default async function handler(
 					},
 				});
 			}
+
+			// Success log and response
+			console.log("Bookmark updated with screenshot successfully:", {
+				id: data?.[0]?.id,
+			});
+			response.status(200).json({ data, error: null });
 		} else {
 			console.log("No data returned from the database");
 		}
