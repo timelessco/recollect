@@ -1,4 +1,3 @@
-import { error } from "console";
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -269,7 +268,7 @@ export default async function handler(
 			return;
 		}
 
-		if (!data || data.length == 0) {
+		if (!data || data.length === 0) {
 			console.warn("No data returned from the database");
 			Sentry.captureException(error, {
 				tags: {
