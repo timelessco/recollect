@@ -37,7 +37,7 @@ export default async function handler(
 			console.error("Error fetching API key:", profileError);
 			Sentry.captureException(profileError, {
 				tags: {
-					operation: "get_api_key_fetch",
+					operation: "get_gemini_api_key_fetch",
 					userId,
 				},
 			});
@@ -49,44 +49,55 @@ export default async function handler(
 		}
 
 		const hasApiKey = Boolean(profileData?.api_key);
-		let apiKey: string | null = null;
 
-		// Decrypt API key if it exists
-		if (hasApiKey) {
-			try {
-				const decryptedBytes = CryptoJS.AES.decrypt(
-					profileData.api_key,
-					process.env.API_KEY_ENCRYPTION_KEY as string,
-				);
-				apiKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
-			} catch (decryptError) {
-				console.error("Error decrypting API key:", decryptError);
-				Sentry.captureException(decryptError, {
-					tags: {
-						operation: "api_key_decrypt",
-						userId,
-					},
-				});
-				response.status(500).json({
-					data: null,
-					error: "Failed to process API key",
-				});
-				return;
-			}
+		if (!hasApiKey) {
+			console.error("No API key found");
+			Sentry.captureException("No API key found", {
+				tags: {
+					operation: "get_gemini_api_key",
+					userId,
+				},
+			});
+			response.status(404).json({
+				data: null,
+				error: "No API key found",
+			});
+			return;
 		}
 
-		console.log("API key retrieved successfully", {
-			hasApiKey,
-			keyPresent: Boolean(apiKey),
-		});
+		// Decrypt API key
+		try {
+			const decryptedBytes = CryptoJS.AES.decrypt(
+				profileData.api_key,
+				process.env.API_KEY_ENCRYPTION_KEY as string,
+			);
+			const apiKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
-		response.status(200).json({
-			data: {
-				hasApiKey,
-				apiKey,
-			},
-			error: null,
-		});
+			console.log("API key retrieved successfully", {
+				hasApiKey: true,
+				keyPresent: Boolean(apiKey),
+			});
+
+			response.status(200).json({
+				data: {
+					hasApiKey: true,
+					apiKey,
+				},
+				error: null,
+			});
+		} catch (decryptError) {
+			console.error("Error decrypting API key:", decryptError);
+			Sentry.captureException(decryptError, {
+				tags: {
+					operation: "get_gemini_api_key_decrypt",
+					userId,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: "Failed to process API key",
+			});
+		}
 	} catch (error) {
 		console.error("Unexpected error in get-gemini-api-key:", error);
 		Sentry.captureException(error, {

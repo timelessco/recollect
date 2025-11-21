@@ -3,7 +3,6 @@ import * as Sentry from "@sentry/nextjs";
 import { errorToast } from "../toastMessages";
 
 import { ApplicationError, BaseError } from "./common";
-import { getErrorMessage } from "./error-message";
 
 export function handleClientError(
 	error: unknown,
@@ -18,8 +17,6 @@ export function handleClientError(
 	} else if (error instanceof ApplicationError) {
 		title = error.name;
 		description = error.message;
-	} else {
-		description = getErrorMessage(error);
 	}
 
 	// Show error details in toast in DEV mode

@@ -55,9 +55,7 @@ export default async function handler(
 		});
 
 		response.status(200).json({
-			data: {
-				hasApiKey,
-			},
+			data: { hasApiKey },
 			error: null,
 		});
 	} catch (error) {
