@@ -9,6 +9,11 @@ export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
+	if (request.method !== "GET") {
+		response.status(405).json({ data: null, error: "Method not allowed" });
+		return;
+	}
+
 	try {
 		const supabase = apiSupabaseClient(request, response);
 
