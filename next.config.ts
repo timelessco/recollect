@@ -101,10 +101,8 @@ const withSentry = hasSentry
 	? (config: NextConfig) =>
 			withSentryConfig(config, {
 				authToken: process.env.SENTRY_AUTH_TOKEN,
-				// org: process.env.SENTRY_ORG,
-				// project: process.env.SENTRY_PROJECT,
-				org: "abhishek-45",
-				project: "javascript-nextjs",
+				org: process.env.SENTRY_ORG,
+				project: process.env.SENTRY_PROJECT,
 
 				// authToken is required for this to work
 				// Upload a larger set of source maps for prettier stack traces (increases build time)

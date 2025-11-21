@@ -11,6 +11,9 @@
 		"next-devtools": {
 			"command": "npx",
 			"args": ["-y", "next-devtools-mcp@latest"]
+		},
+		"Sentry": {
+			"url": "https://mcp.sentry.dev/mcp/timeless-dev/recollect-web"
 		}
 	}
 }
