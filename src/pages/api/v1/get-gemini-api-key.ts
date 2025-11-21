@@ -68,6 +68,20 @@ export default async function handler(
 			);
 			const apiKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
+			// Validate decryption result is not empty
+			if (!apiKey) {
+				console.error("Decryption produced empty result");
+				Sentry.captureMessage("API key decryption returned empty string", {
+					level: "warning",
+					tags: { operation: "get_gemini_api_key_decrypt", userId },
+				});
+				response.status(500).json({
+					data: null,
+					error: "Failed to process API key",
+				});
+				return;
+			}
+
 			console.log("API key retrieved successfully", {
 				hasApiKey: true,
 				keyPresent: Boolean(apiKey),
