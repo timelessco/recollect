@@ -91,7 +91,7 @@ export default async function handler(
 			);
 			try {
 				const { data: screenshotData } = await axios.get(
-					`${SCREENSHOT_API}try?url=${encodeURIComponent(url)}`,
+					`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
 					{ responseType: "json" },
 				);
 
