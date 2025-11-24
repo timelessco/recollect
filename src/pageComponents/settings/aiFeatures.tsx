@@ -16,7 +16,7 @@ import {
 	settingsInputContainerClassName,
 } from "../../utils/commonClassNames";
 
-import { ShowEyeIcon } from "@/icons/show-eye";
+import { ShowEyeIcon } from "@/icons/show-eye-icon";
 import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
 import { handleClientError } from "@/utils/error-utils/client";
 
