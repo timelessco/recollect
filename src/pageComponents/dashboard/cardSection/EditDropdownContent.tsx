@@ -7,7 +7,6 @@ import filter from "lodash/filter";
 import AriaMultiSelect from "../../../components/ariaMultiSelect";
 import AriaSearchableSelect from "../../../components/ariaSearchableSelect";
 import LabelledComponent from "../../../components/labelledComponent";
-import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -20,6 +19,7 @@ import {
 import { CATEGORIES_KEY } from "../../../utils/constants";
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
+import { Spinner } from "@/components/spinner";
 
 interface EditDropdownContentProps {
 	post: SingleListData;
@@ -47,9 +47,7 @@ const EditDropdownContentBase = ({
 	userId,
 }: EditDropdownContentProps) => {
 	const queryClient = useQueryClient();
-	const session = useSupabaseSession((state) => state.session);
-	const isOwner = post?.user_id?.id === session?.user?.id;
-
+	const isOwner = userId && post?.user_id?.id === userId;
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
 		error: PostgrestError;
@@ -65,7 +63,7 @@ const EditDropdownContentBase = ({
 			},
 		];
 
-		if (userId === post?.user_id?.id) {
+		if (isOwner) {
 			return [
 				...base,
 				...(categoryData?.data?.map((item) => ({
@@ -76,7 +74,7 @@ const EditDropdownContentBase = ({
 		}
 
 		return base;
-	}, [categoryData?.data, post?.user_id?.id, userId]);
+	}, [categoryData?.data, isOwner]);
 
 	const defaultValue = useMemo(() => {
 		const match = filter(
@@ -93,6 +91,14 @@ const EditDropdownContentBase = ({
 			value: match?.id,
 		};
 	}, [categoryData?.data, post?.category_id]);
+
+	if (!categoryData) {
+		return (
+			<figure className="text-gray-1000">
+				<Spinner className="h-3 w-3" />
+			</figure>
+		);
+	}
 
 	return (
 		<div className="w-64 space-y-3">
@@ -115,16 +121,24 @@ const EditDropdownContentBase = ({
 								}
 							}
 
-							if (action === "add" && typeof value !== "string") {
-								await addExistingTag(
-									value?.map((addItem) => ({
-										label: addItem,
-										value: find(
+							if (action === "add" && Array.isArray(value)) {
+								const mapped = value
+									.map((addItem) => {
+										const match = find(
 											filteredUserTags,
-											(findItem) => findItem.name === addItem,
-										)?.id as number,
-									})),
-								);
+											(item) => item.name === addItem,
+										);
+										return match
+											? { label: match.name, value: match.id }
+											: undefined;
+									})
+									.filter(Boolean);
+
+								if (mapped.length) {
+									await addExistingTag(
+										mapped as Array<{ label: string; value: number }>,
+									);
+								}
 							}
 
 							if (action === "create") {

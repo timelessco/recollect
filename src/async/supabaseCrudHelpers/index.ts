@@ -563,7 +563,7 @@ export const addCategoryToBookmark = async ({
 		return response;
 	} catch (error) {
 		handleClientError(error, "Failed to add category to bookmark");
-		return error;
+		return { data: null };
 	}
 };
 
