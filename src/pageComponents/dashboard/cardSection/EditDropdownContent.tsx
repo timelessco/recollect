@@ -2,7 +2,6 @@ import { memo, useMemo } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
-import filter from "lodash/filter";
 
 import AriaMultiSelect from "../../../components/ariaMultiSelect";
 import AriaSearchableSelect from "../../../components/ariaSearchableSelect";
@@ -20,6 +19,7 @@ import { CATEGORIES_KEY } from "../../../utils/constants";
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { Spinner } from "@/components/spinner";
+import { handleClientError } from "@/utils/error-utils/client";
 
 interface EditDropdownContentProps {
 	post: SingleListData;
@@ -77,10 +77,10 @@ const EditDropdownContentBase = ({
 	}, [categoryData?.data, isOwner]);
 
 	const defaultValue = useMemo(() => {
-		const match = filter(
+		const match = find(
 			categoryData?.data,
 			(item) => item?.id === post?.category_id,
-		)?.[0];
+		);
 
 		if (!match) {
 			return undefined;
@@ -159,7 +159,7 @@ const EditDropdownContentBase = ({
 						if (data) {
 							await onCategoryChange(data);
 						} else {
-							console.error("Payload data is empty");
+							handleClientError("Failed to change category. Please try again.");
 						}
 					}}
 					onCreate={async (value) =>
