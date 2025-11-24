@@ -35,7 +35,7 @@ type Data = {
 };
 
 // this uploads all the remaining bookmark data
-// these data are blur hash and s3 uploads
+// these data are blur hash and r2 uploads
 
 export const upload = async (
 	base64info: string,
@@ -129,7 +129,7 @@ export default async function handler(
 
 	let imgData;
 
-	// if a url is an image, then we need to upload it to s3 and store it here
+	// if a url is an image, then we need to upload it to r2 and store it here
 	let uploadedImageThatIsAUrl = null;
 
 	const isUrlAnImage = await checkIfUrlAnImage(url);
@@ -139,7 +139,7 @@ export default async function handler(
 	const isUrlAnImageCondition = isUrlAnImage;
 
 	if (isUrlAnImageCondition) {
-		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to s3
+		// if the url itself is an img, like something.com/img.jgp, then we need to upload it to r2
 		try {
 			// Download the image from the URL
 			const realImageUrl = new URL(url)?.searchParams.get("url");
@@ -159,13 +159,13 @@ export default async function handler(
 			// If upload failed, log but don't fail the entire request
 			if (uploadedImageThatIsAUrl === null) {
 				console.error(
-					"Failed to upload image URL to S3, continuing without image",
+					"Failed to upload image URL to R2, continuing without image",
 				);
-				Sentry.captureException("Failed to upload image URL to S3");
+				Sentry.captureException("Failed to upload image URL to R2");
 			}
 		} catch (error) {
-			console.error("Error uploading image URL to S3:", error);
-			Sentry.captureException(`Error uploading image URL to S3: ${error}`);
+			console.error("Error uploading image URL to R2:", error);
+			Sentry.captureException(`Error uploading image URL to R2: ${error}`);
 
 			// Don't fail the entire request, just set imgUrl to null
 			uploadedImageThatIsAUrl = null;
@@ -174,7 +174,7 @@ export default async function handler(
 
 	let uploadedCoverImageUrl = null;
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
-	// upload scrapper image to s3
+	// upload scrapper image to r2
 	if (currentData?.ogImage && !isUrlAnMedia) {
 		try {
 			// 10 second timeout for image download
@@ -194,13 +194,13 @@ export default async function handler(
 			// If upload failed, log but don't fail the entire request
 			if (uploadedCoverImageUrl === null) {
 				uploadedCoverImageUrl = currentData?.ogImage;
-				console.error("Failed to upload image to S3, continuing without image");
-				Sentry.captureException("Failed to upload image to S3");
+				console.error("Failed to upload image to R2, continuing without image");
+				Sentry.captureException("Failed to upload image to R2");
 			}
 		} catch (error) {
 			uploadedCoverImageUrl = currentData?.ogImage;
-			console.error("Error uploading scrapped image to S3:", error);
-			Sentry.captureException(`Error uploading scrapped image to S3: ${error}`);
+			console.error("Error uploading scrapped image to R2:", error);
+			Sentry.captureException(`Error uploading scrapped image to R2: ${error}`);
 		}
 	}
 

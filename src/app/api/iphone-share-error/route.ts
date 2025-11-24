@@ -26,10 +26,8 @@ type ErrorPayload = z.infer<typeof ErrorPayloadSchema>;
 
 export async function POST(request: NextRequest) {
 	try {
-		// Create Supabase client with authorization support
 		const { supabase, token } = await createApiClient();
 
-		// Authenticate user (token is explicitly passed to getUser)
 		const {
 			data: { user },
 			error: userError,
@@ -45,7 +43,6 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Parse and validate request body
 		const body = await request.json();
 		const parsed = ErrorPayloadSchema.safeParse(body);
 
@@ -68,13 +65,11 @@ export async function POST(request: NextRequest) {
 			deviceModel: errorData.deviceInfo?.model,
 		});
 
-		// Create error object for Sentry
 		const errorToCapture = new Error(errorData.message);
 		if (errorData.stackTrace) {
 			errorToCapture.stack = errorData.stackTrace;
 		}
 
-		// Send to Sentry
 		const sentryEventId = Sentry.captureException(errorToCapture, {
 			tags: {
 				operation: "iphone_share_intent_error",
