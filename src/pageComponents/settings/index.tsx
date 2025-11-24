@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -18,9 +18,10 @@ import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import { IframeIcon } from "../../icons/iframeIcon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/infoIcon";
-import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
+import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {
 	useMiscellaneousStore,
@@ -34,9 +35,7 @@ import {
 	settingsInputClassName,
 	settingsInputContainerClassName,
 	settingsInputLabelClassName,
-	settingsLightButtonClassName,
 	settingsMainHeadingClassName,
-	settingsParagraphClassName,
 } from "../../utils/commonClassNames";
 import {
 	DISPLAY_NAME_CHECK_PATTERN,
@@ -44,6 +43,8 @@ import {
 	USER_PROFILE,
 } from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
+
+import { SettingsToggleCard } from "./settingsToggleCard";
 
 type SettingsUsernameFormTypes = {
 	username: string;
@@ -77,6 +78,14 @@ const Settings = () => {
 		data: ProfilesTableTypes[];
 		error: PostgrestError;
 	};
+	const [enabled, setEnabled] = useState<boolean>(() => {
+		if (typeof window !== "undefined") {
+			const savedValue = localStorage.getItem("iframeEnabled");
+			return savedValue ? (JSON.parse(savedValue) as boolean) : true;
+		}
+
+		return true;
+	});
 
 	const userData = userProfilesData?.data?.[0];
 
@@ -166,7 +175,7 @@ const Settings = () => {
 	const profilePicClassName = classNames({
 		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]: true,
 		"opacity-50":
-			uploadProfilePicMutation?.isLoading || removeProfilePic?.isLoading,
+			uploadProfilePicMutation?.isPending || removeProfilePic?.isPending,
 	});
 
 	return (
@@ -224,8 +233,8 @@ const Settings = () => {
 							/>
 						</figure>
 					</div>
-					<div className="sm:mt-2">
-						<div className="flex gap-2 text-sm font-semibold leading-[21px] text-black">
+					<div className="max-sm:mt-2">
+						<div className="flex gap-2 text-sm leading-[21px] font-semibold text-black">
 							<Button
 								className={`px-2 py-[6px] ${saveButtonClassName}`}
 								onClick={() => {
@@ -240,8 +249,8 @@ const Settings = () => {
 								</div>
 							</Button>
 							<Button
-								className="bg-gray-100 px-2 py-[6px] text-13 font-[500] leading-[115%] tracking-normal text-gray-800 hover:bg-gray-200"
-								disabledClassName="bg-gray-100  hover:bg-gray-800 text-gray-400 "
+								className="bg-gray-100 px-2 py-[6px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
+								disabledClassName="bg-gray-100 text-gray-400 hover:bg-gray-100"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
 									const response = await mutationApiCall(
@@ -363,62 +372,79 @@ const Settings = () => {
 				</div>
 				{/* <Switch /> */}
 				<div className="pt-10">
-					<p className="pb-[10px] text-[14px] font-[500] leading-[115%] text-gray-900">
+					<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
 						Email
 					</p>
-					<div className="flex items-center justify-between rounded-lg bg-gray-100">
-						<div className="ml-[19.5px] flex items-center gap-2 rounded-lg">
-							{session?.user?.app_metadata?.provider === "email" ? (
+					<SettingsToggleCard
+						icon={
+							session?.user?.app_metadata?.provider === "email" ? (
 								<MailIconBlack />
 							) : (
 								<GoogleLoginIcon />
-							)}
-							<p
-								className={`my-2 ml-2 text-gray-900 ${settingsParagraphClassName}`}
-							>
-								{userData?.email}
-								<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
-									Current email
-								</p>
-							</p>
-						</div>
-						{session?.user?.app_metadata?.provider === "email" && (
-							<Button
-								className={`mr-[10px] ${settingsLightButtonClassName}`}
-								onClick={() => setCurrentSettingsPage("change-email")}
-								type="light"
-							>
-								Change email
-							</Button>
-						)}
-					</div>
+							)
+						}
+						title={userData?.email}
+						description="Current email"
+						buttonLabel={
+							session?.user?.app_metadata?.provider === "email"
+								? "Change email"
+								: undefined
+						}
+						onClick={
+							session?.user?.app_metadata?.provider === "email"
+								? () => setCurrentSettingsPage("change-email")
+								: undefined
+						}
+					/>
 					{session?.user?.app_metadata?.provider === "email" && (
-						<p className="mt-2 flex items-center gap-x-2 text-13 font-[400] leading-[150%] text-gray-600">
+						<div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">
 							<figure className="text-gray-900">
 								<InfoIcon />
 							</figure>
 							You have logged in with your Google account.
-						</p>
+						</div>
 					)}
 				</div>
-				{/* 
+				<div className="pt-10">
+					<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
+						Iframe
+					</p>
+					<SettingsToggleCard
+						icon={
+							<figure className="text-gray-900">
+								<IframeIcon />
+							</figure>
+						}
+						title="Enable iframe in lightbox"
+						description="Allow embedding external content in lightbox view"
+						isSwitch
+						enabled={enabled}
+						onToggle={() => {
+							setEnabled(!enabled);
+							if (typeof window !== "undefined") {
+								localStorage.setItem("iframeEnabled", String(!enabled));
+							}
+						}}
+					/>
+				</div>
+				{/*
 				feature yet to implement
 				<div className="pt-10">
-					<p className="pb-[10px] text-[14px] font-[500] leading-[115%] text-gray-900">
+					<p className="pb-[10px] text-[14px] font-medium leading-[115%] text-gray-900">
 						Active devices
 					</p>
 					<div className="flex items-center justify-between rounded-lg bg>
-						<div className="  flex  flex-row sm:w-full">
+						<div className="  flex  flex-row max-sm:w-full">
 							<div className="my-[10px] ml-[19.5px] flex  gap-2 rounded-lg">
 								<PCLogo />
 								<p className={settingsParagraphClassName}>
 									Chrome on macOS
-									<p className="mt-1 text-[14px] font-[400]  text-gray-600">
+									<p className="mt-1 text-[14px] font-normal  text-gray-600">
 										Chennai, India
 									</p>
 								</p>
 							</div>
-							<div className="ml-2 mt-[9px] h-5 rounded-2xl bg-gray-50 px-1.5 py-[3px] text-[12px] font-[500] leading-[115%] text-[#18794E]">
+							<div className="ml-2 mt-[9px] h-5 rounded-2xl bg-gray-50 px-1.5 py-[3px] text-[12px] font-medium leading-[115%] text-[#18794E]">
 								This Device
 							</div>
 						</div>
@@ -426,11 +452,11 @@ const Settings = () => {
 				</div> */}
 				<Switch />
 				<div className="pt-10">
-					<p className="text-[14px] font-[500] leading-[115%] text-gray-900">
+					<p className="text-[14px] leading-[115%] font-medium text-gray-900">
 						Delete Account
 					</p>
 					<div className="flex flex-col justify-between pb-5">
-						<p className="my-[10px] text-[14px] font-[400] leading-[150%] text-gray-800">
+						<p className="my-[10px] text-[14px] leading-[150%] font-normal text-gray-800">
 							If you no longer wish to use recollect, you can permanently delete
 							your account.
 						</p>
@@ -440,7 +466,7 @@ const Settings = () => {
 						>
 							<p className="flex w-full justify-center">
 								<span className="flex items-center justify-center gap-1.5">
-									{deleteUserMutation?.isLoading ? (
+									{deleteUserMutation?.isPending ? (
 										<Spinner
 											className="h-3 w-3 animate-spin"
 											style={{ color: "#CD2B31" }}

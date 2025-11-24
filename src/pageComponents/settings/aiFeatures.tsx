@@ -25,23 +25,25 @@ type AiFeaturesFormTypes = {
 
 /*  SKELETON COMPONENT  */
 const AiFeaturesSkeleton = () => (
-	<div className="animate-pulse space-y-6">
-		{/* Header Skeleton */}
-		<div className="h-6 w-40 rounded bg-gray-200" />
-		{/* Input Section Skeleton */}
-		<div className="space-y-3">
-			<div className="h-3 w-24 rounded bg-gray-200" />
+	<div className="space-y-6">
+		{/* Header */}
+		<div className="relative mb-6 flex items-center">
+			<h2 className="text-[18px] leading-[115%] font-semibold tracking-normal text-gray-900">
+				AI Features
+			</h2>
+		</div>
+		{/* Skeleton for Input Section */}
+		<div className="animate-pulse">
+			<div className="mb-2 h-3 w-24 rounded-sm bg-gray-200" />
 			<div className="h-10 rounded-md bg-gray-100" />
 		</div>
-		{/* Button Skeleton */}
-		<div className="h-10 w-[130px] rounded-lg bg-gray-200" />
 	</div>
 );
 
 /*  MAIN COMPONENT  */
 export const AiFeatures = () => {
-	const { mutate: saveApiKey, isLoading: isSaving } = useApiKeyMutation();
-	const { mutate: deleteApiKey, isLoading: isDeleting } =
+	const { mutate: saveApiKey, isPending: isSaving } = useApiKeyMutation();
+	const { mutate: deleteApiKey, isPending: isDeleting } =
 		useDeleteApiKeyMutation();
 	const { data, isLoading: isChecking } = useFetchCheckApiKey();
 
@@ -72,7 +74,7 @@ export const AiFeatures = () => {
 			<form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
 				{/* ---------- HEADER ---------- */}
 				<div className="relative mb-6 flex items-center">
-					<h2 className="text-[18px] font-[600] leading-[115%] tracking-normal text-gray-900">
+					<h2 className="text-[18px] leading-[115%] font-semibold tracking-normal text-gray-900">
 						AI Features
 					</h2>
 				</div>
@@ -157,13 +159,13 @@ export const AiFeatures = () => {
 					Features
 				</p>
 				<div className="flex items-center justify-between rounded-lg bg-gray-100">
-					<div className="sm:flex sm:w-full sm:items-center sm:justify-between">
+					<div className="max-sm:flex max-sm:w-full max-sm:items-center max-sm:justify-between">
  							<EyeIcon />
 							<p
 								className={`my-2 ml-2 text-gray-900  ${settingsParagraphClassName}`}
 							>
 								Auto generate image descriptions
-								<p className="mt-1 text-[14px] font-[400] leading-[115%] text-gray-600">
+								<p className="mt-1 text-[14px] font-normal leading-[115%] text-gray-600">
 									So you can search all your memes by text
 								</p>
 							</p>

@@ -92,8 +92,8 @@ const config = {
 	],
 	// Default plugins for all files
 	plugins: basePlugins,
-	// tailwindFunctions: ["cn"],
-	// tailwindStylesheet: "./src/styles/global.css",
+	tailwindFunctions: ["tcx", "tv"],
+	tailwindStylesheet: "./src/styles/globals.css",
 	useTabs: true,
 };
 

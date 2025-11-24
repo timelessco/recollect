@@ -1,10 +1,10 @@
 import { useRef, useState, type Key, type ReactNode } from "react";
+import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
-import pick from "lodash/pick";
 import {
 	DragPreview,
 	ListDropTargetDelegate,
@@ -34,13 +34,19 @@ import {
 	type ListState,
 } from "react-stately";
 
+import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
+import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
+import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import useGetFlattendPaginationBookmarkData from "../../../hooks/useGetFlattendPaginationBookmarkData";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -55,7 +61,6 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
-import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
 	dropdownMenuClassName,
@@ -67,23 +72,13 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
+import { errorToast } from "../../../utils/toastMessages";
 
+import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
 
-type CollectionsListPropertyTypes = {
-	onAddNewCategory: (value: string) => Promise<void>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onBookmarksDrop: (event: any) => Promise<void>;
-	onCategoryOptionClick: (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => Promise<void>;
-	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
-	onIconSelect: (value: string, id: number) => void;
-};
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
 //   keys: Set<unknown>;
@@ -279,14 +274,8 @@ const OptionDrop = ({
 				target={{ type: "item", key: item.key, dropPosition: "before" }}
 			/>
 			<li
-				{...mergeProps(
-					pick(optionProps, ["id", "data-key"]),
-					dropProps,
-					focusProps,
-					dragProps,
-				)}
+				{...mergeProps(optionProps, dropProps, focusProps, dragProps)}
 				// Apply a class when the item is the active drop target.
-				// eslint-disable-next-line tailwindcss/no-custom-classname
 				className={`option-drop ${isFocusVisible ? "focus-visible" : ""} ${
 					isDropTarget && isCardDragging ? "drop-target" : ""
 				}`}
@@ -304,23 +293,41 @@ const OptionDrop = ({
 	);
 };
 
-const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
-	const {
-		onBookmarksDrop,
-		onCategoryOptionClick,
-		onIconSelect,
-		onAddNewCategory,
-		onIconColorChange,
-	} = listProps;
-
+const CollectionsList = () => {
+	const router = useRouter();
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
 
+	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
+	const { addCategoryToBookmarkOptimisticMutation } =
+		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
+	const { allCategories, isLoadingCategories } = useFetchCategories();
+	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const { onDeleteCollection } = useDeleteCollection();
+	const { flattendPaginationBookmarkData } =
+		useGetFlattendPaginationBookmarkData();
+
+	const handleCategoryOptionClick = async (
+		value: number | string,
+		current: boolean,
+		id: number,
+	) => {
+		switch (value) {
+			case "delete":
+				await onDeleteCollection(current, id);
+				break;
+			case "share":
+				// code block
+				break;
+			default:
+			// code block
+		}
+	};
 
 	const currentPath = useGetCurrentUrlPath();
 
@@ -358,6 +365,68 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 	const sidePaneOptionLoading = useLoadersStore(
 		(state) => state.sidePaneOptionLoading,
 	);
+
+	const handleAddNewCategory = async (newCategoryName: string) => {
+		if (!isNull(userProfileData?.data)) {
+			const response = (await mutationApiCall(
+				addCategoryOptimisticMutation.mutateAsync({
+					name: newCategoryName,
+					category_order: userProfileData?.data[0]?.category_order ?? [],
+				}),
+			)) as { data: CategoriesData[] };
+
+			if (!isEmpty(response?.data)) {
+				void router.push(`/${response?.data[0]?.category_slug}`);
+			}
+		}
+	};
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const handleBookmarksDrop = async (event: any) => {
+		if (event?.isInternal === false) {
+			const categoryId = Number.parseInt(event?.target?.key as string, 10);
+
+			const currentCategory =
+				find(allCategories?.data, (item) => item?.id === categoryId) ??
+				find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
+			// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
+
+			const updateAccessCondition =
+				find(
+					currentCategory?.collabData,
+					(item) => item?.userEmail === session?.user?.email,
+				)?.edit_access === true ||
+				currentCategory?.user_id?.id === session?.user?.id;
+
+			// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
+			await event?.items?.forEach(async (item: any) => {
+				const bookmarkId = (await item.getText("text/plain")) as string;
+
+				const bookmarkCreatedUserId = find(
+					flattendPaginationBookmarkData,
+					(bookmarkItem) =>
+						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
+				)?.user_id?.id;
+
+				if (bookmarkCreatedUserId === session?.user?.id) {
+					if (!updateAccessCondition) {
+						// if update access is not there then user cannot drag and drop anything into the collection
+						errorToast("Cannot upload in other owners collection");
+						return;
+					}
+
+					await addCategoryToBookmarkOptimisticMutation.mutateAsync({
+						category_id: categoryId,
+						bookmark_id: Number.parseInt(bookmarkId, 10),
+						// if user is changing to uncategorised then thay always have access
+						update_access: updateAccessCondition,
+					});
+				} else {
+					errorToast("You cannot move collaborators uploads");
+				}
+			});
+		}
+	};
 
 	const collectionsList = session
 		? categoryData?.data?.map((item) => ({
@@ -465,7 +534,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 			<div className="flex items-center">
 				<figure className="mr-2 h-[18px] w-[18px]">
 					<svg
-						fill="var(--plain-reverse-color)"
+						fill="var(--color-plain-reverse)"
 						height="16"
 						viewBox="0 0 18 18"
 						width="16"
@@ -475,11 +544,13 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 				</figure>
 				<input
 					autoFocus
-					className="!bg-black/[0.004] !text-sm !font-[450] !leading-4 !text-plain-reverse-color !opacity-40 placeholder:text-plain-reverse-color focus:!outline-none focus:!ring-0 focus:!ring-offset-0"
+					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
 					id="add-category-input"
 					onBlur={(event) => {
 						if (!isEmpty(event?.target?.value)) {
-							void onAddNewCategory((event.target as HTMLInputElement).value);
+							void handleAddNewCategory(
+								(event.target as HTMLInputElement).value,
+							);
 						}
 
 						setShowAddCategoryInput(false);
@@ -489,7 +560,9 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 							event.key === "Enter" &&
 							!isEmpty((event.target as HTMLInputElement).value)
 						) {
-							void onAddNewCategory((event.target as HTMLInputElement).value);
+							void handleAddNewCategory(
+								(event.target as HTMLInputElement).value,
+							);
 							setShowAddCategoryInput(false);
 						}
 					}}
@@ -504,7 +577,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 
 	const collectionsHeader = (
 		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
-			<div className="flex items-center text-13 font-medium leading-[14.95px] tracking-[0.02em] text-gray-600">
+			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
 					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
@@ -551,33 +624,33 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 		<div className="pt-4">
 			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
 				<div id="collections-wrapper">
-					<ListBoxDrop
-						aria-label="Categories-drop"
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						onItemDrop={(event: any) => {
-							void onBookmarksDrop(event);
-						}}
-						onReorder={onReorder}
-						selectionBehavior="replace"
-						selectionMode="multiple"
-					>
-						{sortedList()?.map((item) => (
-							<Item key={item?.id} textValue={item?.name}>
-								<SingleListItemComponent
-									extendedClassname="py-[6px]"
-									item={item}
-									listNameId="collection-name"
-									onCategoryOptionClick={onCategoryOptionClick}
-									onIconColorChange={(color) =>
-										onIconColorChange?.(color, item?.id)
-									}
-									onIconSelect={onIconSelect}
-									showDropdown
-									showSpinner={item?.id === sidePaneOptionLoading}
-								/>
-							</Item>
-						))}
-					</ListBoxDrop>
+					{isLoadingCategories ? (
+						<CollectionsListSkeleton />
+					) : (
+						<ListBoxDrop
+							aria-label="Categories-drop"
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							onItemDrop={(event: any) => {
+								void handleBookmarksDrop(event);
+							}}
+							onReorder={onReorder}
+							selectionBehavior="replace"
+							selectionMode="multiple"
+						>
+							{sortedList()?.map((item) => (
+								<Item key={item?.id} textValue={item?.name}>
+									<SingleListItemComponent
+										extendedClassname="py-[6px]"
+										item={item}
+										listNameId="collection-name"
+										onCategoryOptionClick={handleCategoryOptionClick}
+										showDropdown
+										showSpinner={item?.id === sidePaneOptionLoading}
+									/>
+								</Item>
+							))}
+						</ListBoxDrop>
+					)}
 				</div>
 				{renderAddCategoryInput}
 				<div
@@ -591,7 +664,7 @@ const CollectionsList = (listProps: CollectionsListPropertyTypes) => {
 					<figure className="text-gray-500">
 						<AddCategoryIcon />
 					</figure>
-					<p className="ml-2 flex-1 truncate text-sm font-450 leading-[16px] text-gray-600">
+					<p className="ml-2 flex-1 truncate text-sm leading-[16px] font-450 text-gray-600">
 						Add Collection
 					</p>
 				</div>

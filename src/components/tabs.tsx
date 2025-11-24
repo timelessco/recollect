@@ -10,11 +10,11 @@ const Tabs = (props: TabsProps) => {
 
 	return (
 		<div>
-			<div className="sm:hidden">
+			<div className="max-sm:hidden">
 				<label className="sr-only" htmlFor="tabs">
 					Select a tab
 					<select
-						className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-gray-500 focus:outline-none focus:ring-gray-500 sm:text-sm"
+						className="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-gray-500 focus:ring-gray-500 focus:outline-hidden max-sm:text-sm"
 						defaultValue={tabs.find((tab) => tab.current)?.name}
 						id="tabs"
 						name="tabs"
@@ -25,7 +25,7 @@ const Tabs = (props: TabsProps) => {
 					</select>
 				</label>
 			</div>
-			<div className="hidden sm:block">
+			<div className="hidden max-sm:block">
 				<div className="border-b border-gray-200">
 					<nav aria-label="Tabs" className="-mb-px flex space-x-8">
 						{tabs.map((tab) => (
@@ -35,7 +35,7 @@ const Tabs = (props: TabsProps) => {
 									tab.current
 										? "border-gray-500 text-gray-600"
 										: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
-									"cursor-pointer whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium",
+									"cursor-pointer border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap",
 								)}
 								id={`${tab?.name}-tab`}
 								key={tab.name}

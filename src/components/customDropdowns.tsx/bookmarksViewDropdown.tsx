@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { ViewListIcon } from "@heroicons/react/solid";
+import { Bars4Icon } from "@heroicons/react/20/solid";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import { debounce } from "lodash";
 import find from "lodash/find";
@@ -39,7 +39,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		renderOnlyButton = false,
 	} = props;
 
-	const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
+	const bookmarksInfoValueRaw = useGetViewValue("cardContentViewArray", []);
+	const bookmarksInfoValue = Array.isArray(bookmarksInfoValueRaw)
+		? (bookmarksInfoValueRaw as string[])
+		: [];
 	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
 	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
 
@@ -91,14 +94,14 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		{
 			label: "Timeline",
 			value: viewValues.timeline,
-			icon: <ViewListIcon className="h-4 w-4" />,
+			icon: <Bars4Icon className="h-4 w-4" />,
 		},
 	];
 	const menu = useMenuState({ gutter: 8 });
 	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
-		<div className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-600">
+		<div className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-600">
 			{text}
 		</div>
 	);
@@ -121,7 +124,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				if (item?.label === "Cover") {
 					return true;
 				} else {
-					return bookmarksInfoValue?.includes(item?.value as never) || false;
+					return bookmarksInfoValue.includes(item.value);
 				}
 			}
 
@@ -130,11 +133,11 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				if (item?.label === "Title") {
 					return true;
 				} else {
-					return bookmarksInfoValue?.includes(item?.value as never) || false;
+					return bookmarksInfoValue.includes(item.value);
 				}
 			}
 
-			return bookmarksInfoValue?.includes(item?.value as never) || false;
+			return bookmarksInfoValue.includes(item.value);
 		};
 
 		const isDisabledLogic = () => {
@@ -169,17 +172,17 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				className="flex items-center justify-between px-2 py-[5.5px]"
 				key={item.label}
 			>
-				<p className="text-13 font-450 leading-[115%] tracking-[0.01em] text-gray-800">
+				<p className="text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800">
 					{item?.label}
 				</p>
 				<Switch
 					disabled={isDisabledLogic()}
 					enabled={isEnabledLogic()}
 					setEnabled={() => {
-						if (bookmarksInfoValue?.includes(item.value as never)) {
-							if (bookmarksInfoValue?.length > 1) {
+						if (bookmarksInfoValue.includes(item.value)) {
+							if (bookmarksInfoValue.length > 1) {
 								setBookmarksView(
-									(bookmarksInfoValue as string[])?.filter(
+									bookmarksInfoValue.filter(
 										(viewItem) => viewItem !== item.value,
 									),
 									singleInfoValues.info as BookmarkViewCategories,
@@ -189,7 +192,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 							}
 						} else {
 							setBookmarksView(
-								[...(bookmarksInfoValue as string[]), item.value],
+								[...bookmarksInfoValue, item.value],
 								singleInfoValues.info as BookmarkViewCategories,
 							);
 						}
@@ -225,7 +228,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{bookmarksViewValue === viewValues.card ||
 			bookmarksViewValue === viewValues.moodboard ? (
 				<div className="flex items-center justify-between px-2 py-[5.5px]">
-					<p className="text-13 font-450 leading-[14px] text-gray-800">
+					<p className="text-13 leading-[14px] font-450 text-gray-800">
 						Columns
 					</p>
 					<div className="mt-px w-[90px]">
@@ -282,13 +285,14 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
 	return isDropdown ? (
 		<>
-			<MenuButton as="div" className="outline-none" state={menu}>
+			<MenuButton as="div" className="outline-hidden" state={menu}>
 				<Button isActive={menu.open} title="views" type="light">
 					{dropdownButtonContent}
 				</Button>
 			</MenuButton>
 			<Menu
-				className="z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pb-3 pt-[6px] shadow-custom-1 ring-1 ring-black/5"
+				className="z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5"
+				// @ts-expect-error - TODO: fix this
 				initialFocusRef={radio0ref}
 				state={menu}
 			>

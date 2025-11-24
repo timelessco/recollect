@@ -8,11 +8,16 @@ import { updateUsername } from "../../supabaseCrudHelpers";
 export default function useUpdateUsernameMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const updateUsernameMutation = useMutation(updateUsername, {
+	const updateUsernameMutation = useMutation({
+		mutationFn: updateUsername,
 		onSuccess: () => {
 			// Invalidate and refetch
-			void queryClient.invalidateQueries([USER_PROFILE, session?.user?.id]);
-			void queryClient.invalidateQueries([CATEGORIES_KEY, session?.user?.id]);
+			void queryClient.invalidateQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
 		},
 	});
 	return { updateUsernameMutation };

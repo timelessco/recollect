@@ -88,14 +88,12 @@ export default async function handler(
 				.eq("type", "tweet");
 
 		if (duplicateCheckError) {
+			console.warn("DB duplicateCheckError", duplicateCheckError);
+
 			response.status(400).send({
 				error: `DB duplicateCheckError: ${duplicateCheckError?.message}`,
 				success: false,
 			});
-
-			Sentry.captureException(
-				`DB duplicateCheckError: ${duplicateCheckError?.message}`,
-			);
 			return;
 		}
 
@@ -110,7 +108,7 @@ export default async function handler(
 		);
 
 		if (isEmpty(duplicateFilteredData)) {
-			console.log("No data to insert");
+			console.warn("No data to insert");
 
 			response
 				.status(404)
@@ -127,20 +125,19 @@ export default async function handler(
 			.select("*");
 
 		if (insertDBError) {
-			response
-				.status(400)
-				.send({ error: `DB error: ${insertDBError?.message}`, success: false });
+			console.warn("DB error", insertDBError);
 
-			Sentry.captureException(`DB error: ${insertDBError?.message}`);
+			response.status(400).send({ error: `DB error`, success: false });
+
 			return;
 		}
 
 		if (isEmpty(insertDBData)) {
+			console.warn("Empty data after insertion");
+
 			response
 				.status(400)
 				.send({ error: "Empty data after insertion", success: false });
-
-			Sentry.captureException(`Empty data after insertion`);
 
 			return;
 		}
@@ -154,15 +151,30 @@ export default async function handler(
 					sleep_seconds: 0,
 				});
 
-			if (!queueResultsError) {
-				console.log("successfully queued ", queueResults.length, "items");
+			if (queueResultsError) {
+				console.warn("Failed to queue item:", queueResultsError);
+
+				response.status(400).json({
+					success: false,
+					error: "Failed to queue item",
+				});
 			}
-		} catch {
-			console.error("Failed to queue item:");
+
+			console.log("successfully queued ", queueResults.length, "items");
+		} catch (error) {
+			console.error("Failed to queue item:", error);
+			Sentry.captureException(error);
+
+			response
+				.status(400)
+				.json({ success: false, error: "Failed to queue item" });
 		}
 
 		response.status(200).json({ success: true, error: null });
-	} catch {
+	} catch (error) {
+		console.error("Error in payload data:", error);
+		Sentry.captureException(error);
+
 		response
 			.status(400)
 			.send({ error: "Error in payload data", success: false });

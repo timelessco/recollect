@@ -9,10 +9,10 @@ export default function useFetchSharedCategories() {
 	const { data: sharedCategoriesData } = useQuery<{
 		data: FetchSharedCategoriesData[] | null;
 		error: Error;
-	}>(
-		[SHARED_CATEGORIES_TABLE_NAME],
-		async () => await fetchSharedCategoriesData(),
-	);
+	}>({
+		queryKey: [SHARED_CATEGORIES_TABLE_NAME],
+		queryFn: async () => await fetchSharedCategoriesData(),
+	});
 
 	return {
 		sharedCategoriesData,

@@ -13,9 +13,8 @@ import Settings from "../../settings";
 import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
 import DeleteAccout from "../../settings/deleteAccount";
+import { ImportBookmarks } from "../../settings/import";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
-
-// type SettingsModalTypes = {};
 
 const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
@@ -24,8 +23,11 @@ const SettingsModal = () => {
 		(state) => state.toggleShowSettingsModal,
 	);
 
-	const [currentSettingsPage, setCurrentSettingsPage] = useMiscellaneousStore(
-		(state) => [state.currentSettingsPage, state.setCurrentSettingsPage],
+	const currentSettingsPage = useMiscellaneousStore(
+		(state) => state.currentSettingsPage,
+	);
+	const setCurrentSettingsPage = useMiscellaneousStore(
+		(state) => state.setCurrentSettingsPage,
 	);
 
 	const [selectedMenuItem, setSelectedMenuItem] = useState(0);
@@ -34,7 +36,7 @@ const SettingsModal = () => {
 	useEffect(() => {
 		if (!showSettingsModal) {
 			setCurrentSettingsPage("main");
-			// ! TODO: Fix this in priority
+			// TODO: Fix this in priority
 			setSelectedMenuItem(0);
 		}
 	}, [setCurrentSettingsPage, showSettingsModal, selectedMenuItem]);
@@ -91,6 +93,8 @@ const SettingsModal = () => {
 				return <DeleteAccout />;
 			case "ai-features":
 				return <AiFeatures />;
+			case "import":
+				return <ImportBookmarks />;
 			default:
 				return null;
 		}
@@ -101,13 +105,13 @@ const SettingsModal = () => {
 			open={showSettingsModal}
 			setOpen={() => toggleShowSettingsModal()}
 			// adding skip-global-paste to avoid global paste event in the modal
-			wrapperClassName="skip-global-paste w-full max-w-[740px] rounded-[20px] outline-none self-center"
+			wrapperClassName="skip-global-paste w-full max-w-[740px] rounded-[20px] outline-hidden self-center"
 		>
 			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
 			<div className="flex h-[700px] rounded-[20px] bg-gray-0">
-				<div className="flex h-full min-w-[180px] flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-fit">
+				<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
 					{isDesktop && (
-						<div className="px-2 text-13 font-[500] leading-[115%] tracking-[0.02em] text-gray-600">
+						<div className="px-2 text-13 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
 							Settings
 						</div>
 					)}
@@ -126,6 +130,9 @@ const SettingsModal = () => {
 											break;
 										case 1:
 											setCurrentSettingsPage("ai-features");
+											break;
+										case 2:
+											setCurrentSettingsPage("import");
 											break;
 										default:
 											break;

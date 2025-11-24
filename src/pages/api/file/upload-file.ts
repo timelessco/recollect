@@ -8,7 +8,6 @@ import {
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
-import isNil from "lodash/isNil";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
@@ -34,6 +33,7 @@ import {
 } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+import { vet } from "../../../utils/try";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
 
 type BodyDataType = {
@@ -133,7 +133,7 @@ const videoLogic = async (
 		mediaType: "",
 		iframeAllowed: false,
 		isPageScreenshot: null,
-		video_url: thumbnailUrl?.publicUrl ?? null,
+		video_url: null,
 	};
 
 	return { ogImage, meta_data };
@@ -143,157 +143,241 @@ export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
 ) => {
-	const supabase = apiSupabaseClient(request, response);
+	try {
+		const supabase = apiSupabaseClient(request, response);
 
-	// Get data from JSON body
-	const data = request.body as BodyDataType;
+		// Check for auth errors
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
+		const email = userData?.user?.email;
 
-	const categoryId = data?.category_id;
-
-	const categoryIdLogic = categoryId
-		? isUserInACategory(categoryId)
-			? categoryId
-			: 0
-		: 0;
-
-	const userData = await supabase?.auth?.getUser();
-
-	const userId = userData?.data?.user?.id;
-	const email = userData?.data?.user?.email;
-
-	const fileName = parseUploadFileName(data?.name ?? "");
-	const fileType = data?.type;
-
-	const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
-	// if the uploaded file is valid this happens
-	const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
-
-	if (
-		Number.parseInt(categoryId as string, 10) !== 0 &&
-		typeof categoryId === "number"
-	) {
-		const checkIfUserIsCategoryOwnerOrCollaboratorValue =
-			await checkIfUserIsCategoryOwnerOrCollaborator(
-				supabase,
-				categoryId as number,
-				userId as string,
-				email as string,
-				response,
-			);
-
-		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
-			response.status(500).json({
-				error:
-					"User is neither owner or collaborator for the collection or does not have edit access",
+		if (userError || !userId) {
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+			});
+			response.status(401).json({
 				success: false,
+				error: "Unauthorized",
 			});
 			return;
 		}
-	}
 
-	// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
-	// the public url for the uploaded file is got
-	const { data: storageData, error: publicUrlError } =
-		r2Helpers.getPublicUrl(storagePath);
+		// Get data from JSON body
+		const data = request.body as BodyDataType;
+		const categoryId = data?.category_id;
+		const categoryIdLogic = categoryId
+			? isUserInACategory(categoryId)
+				? categoryId
+				: 0
+			: 0;
 
-	const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
+		const fileName = parseUploadFileName(data?.name ?? "");
+		const fileType = data?.type;
 
-	let meta_data: ImgMetadataType = {
-		img_caption: null,
-		width: null,
-		height: null,
-		ogImgBlurUrl: null,
-		favIcon: null,
-		twitter_avatar_url: null,
-		ocr: null,
-		coverImage: null,
-		screenshot: null,
-		isOgImagePreferred: false,
-		iframeAllowed: false,
-		mediaType,
-		isPageScreenshot: null,
-		video_url: null,
-	};
-	const isVideo = fileType?.includes("video");
+		console.log("upload-file API called:", {
+			userId,
+			fileName,
+			fileType,
+			categoryId,
+		});
 
-	let ogImage;
+		const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
+		// if the uploaded file is valid this happens
+		const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
 
-	if (!isVideo) {
-		// if file is not a video
-		try {
-			ogImage = storageData?.publicUrl;
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new TypeError("Failed to generate PNG from PDF" + error.message);
+		if (
+			Number.parseInt(categoryId as string, 10) !== 0 &&
+			typeof categoryId === "number"
+		) {
+			const checkIfUserIsCategoryOwnerOrCollaboratorValue =
+				await checkIfUserIsCategoryOwnerOrCollaborator(
+					supabase,
+					categoryId as number,
+					userId as string,
+					email as string,
+					response,
+				);
+
+			if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
+				console.warn("User authorization failed for category:", { categoryId });
+				response.status(500).json({
+					error:
+						"User is neither owner or collaborator for the collection or does not have edit access",
+					success: false,
+				});
+				return;
 			}
-
-			// Optional: set a fallback image
-			ogImage = storageData?.publicUrl;
 		}
-	} else {
-		// if file is a video
-		const { ogImage: image, meta_data: metaData } = await videoLogic(
-			data,
-			supabase,
-			userId ?? "",
+
+		// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
+		// the public url for the uploaded file is got
+		const { data: storageData, error: publicUrlError } =
+			r2Helpers.getPublicUrl(storagePath);
+
+		// Check for public URL error immediately
+		if (publicUrlError) {
+			console.error("Error getting public URL:", publicUrlError);
+			Sentry.captureException(publicUrlError, {
+				tags: {
+					operation: "get_public_url",
+					userId,
+				},
+				extra: {
+					storagePath,
+				},
+			});
+			response.status(500).json({
+				success: false,
+				error: "Error getting file URL",
+			});
+			return;
+		}
+
+		const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
+
+		let meta_data: ImgMetadataType = {
+			img_caption: null,
+			width: null,
+			height: null,
+			ogImgBlurUrl: null,
+			favIcon: null,
+			twitter_avatar_url: null,
+			ocr: null,
+			coverImage: null,
+			screenshot: null,
+			isOgImagePreferred: false,
+			iframeAllowed: false,
+			mediaType,
+			isPageScreenshot: null,
+			video_url: null,
+		};
+		const isVideo = fileType?.includes("video");
+
+		let ogImage;
+
+		if (!isVideo) {
+			// if file is not a video
+			ogImage = storageData?.publicUrl;
+		} else {
+			// if file is a video
+			console.log("Processing video file:", {
+				thumbnailPath: data.thumbnailPath,
+			});
+
+			const { ogImage: image, meta_data: metaData } = await videoLogic(
+				data,
+				supabase,
+				userId ?? "",
+			);
+
+			ogImage = image;
+			meta_data = metaData;
+		}
+
+		// we upload the final data in DB
+		const { data: DatabaseData, error: DBerror } = (await supabase
+			.from(MAIN_TABLE_NAME)
+			.insert([
+				{
+					url: storageData?.publicUrl,
+					title: fileName,
+					user_id: userId,
+					description: (meta_data?.img_caption as string) || "",
+					ogImage,
+					category_id: categoryIdLogic,
+					type: fileType,
+					meta_data,
+				},
+			])
+			.select(`id`)) as unknown as {
+			data: Array<{ id: SingleListData["id"] }>;
+			error: PostgrestError | VerifyErrors | string | null;
+		};
+
+		console.log("Database insert result:", {
+			bookmarkId: DatabaseData?.[0]?.id,
+		});
+
+		if (DBerror) {
+			console.error("Error inserting file to database:", DBerror);
+			Sentry.captureException(DBerror, {
+				tags: {
+					operation: "insert_file_to_database",
+					userId,
+				},
+				extra: { fileName, fileType },
+			});
+			response
+				.status(500)
+				.json({ success: false, error: "Error uploading file" });
+			return;
+		}
+
+		// Skip remaining upload API for PDFs
+		if (fileType === PDF_MIME_TYPE) {
+			console.log("File type is pdf, so not calling the remaining upload api");
+			response
+				.status(200)
+				.json({ data: DatabaseData, success: true, error: null });
+			return;
+		}
+
+		// Skip remaining upload API for videos or empty data
+		if (isEmpty(DatabaseData) || isVideo) {
+			console.log(
+				"File type is video or no data, so not calling the remaining upload api",
+			);
+			response
+				.status(200)
+				.json({ data: DatabaseData, success: true, error: null });
+			return;
+		}
+
+		// Call remaining upload API
+		const remainingUploadBody = {
+			id: DatabaseData[0]?.id,
+			publicUrl: storageData?.publicUrl,
+			mediaType: meta_data?.mediaType,
+		};
+		console.log("Calling remaining upload API:", { remainingUploadBody });
+
+		const [remainingUploadError] = await vet(() =>
+			axios.post(
+				`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
+				remainingUploadBody,
+				getAxiosConfigWithAuth(request),
+			),
 		);
 
-		ogImage = image;
-		meta_data = metaData;
-	}
+		if (remainingUploadError) {
+			console.error("Remaining upload API error:", remainingUploadError);
+			Sentry.captureException(remainingUploadError, {
+				tags: {
+					operation: "remaining_upload_api",
+					userId,
+				},
+				extra: {
+					bookmarkId: DatabaseData[0]?.id,
+				},
+			});
+		}
 
-	// we upload the final data in DB
-	const { data: DatabaseData, error: DBerror } = (await supabase
-		.from(MAIN_TABLE_NAME)
-		.insert([
-			{
-				url: storageData?.publicUrl,
-				title: fileName,
-				user_id: userId,
-				description: (meta_data?.img_caption as string) || "",
-				ogImage,
-				category_id: categoryIdLogic,
-				type: fileType,
-				meta_data,
-			},
-		])
-		.select(`id`)) as unknown as {
-		data: Array<{ id: SingleListData["id"] }>;
-		error: PostgrestError | VerifyErrors | string | null;
-	};
-
-	if (isNil(publicUrlError) && isNil(DBerror)) {
+		console.log("File uploaded successfully:", {
+			bookmarkId: DatabaseData?.[0]?.id,
+		});
 		response
 			.status(200)
 			.json({ data: DatabaseData, success: true, error: null });
-
-		try {
-			if (fileType !== PDF_MIME_TYPE) {
-				if (!isEmpty(DatabaseData) && !isVideo) {
-					await axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-						{
-							id: DatabaseData[0]?.id,
-							publicUrl: storageData?.publicUrl,
-							mediaType: meta_data?.mediaType,
-						},
-						getAxiosConfigWithAuth(request),
-					);
-				} else {
-					console.error("Remaining upload api error: upload data is empty");
-					Sentry.captureException(
-						`Remaining upload api error: upload data is empty`,
-					);
-				}
-			}
-		} catch (remainingerror) {
-			console.error(remainingerror);
-			Sentry.captureException(`Remaining upload api error ${remainingerror}`);
-		}
-	} else {
-		console.error("Error uploading file:", publicUrlError, DBerror);
-		response
-			.status(500)
-			.json({ success: false, error: "Error uploading file" });
+	} catch (error) {
+		console.error("Unexpected error in upload-file:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "upload_file_unexpected",
+			},
+		});
+		response.status(500).json({
+			success: false,
+			error: "An unexpected error occurred",
+		});
 	}
 };

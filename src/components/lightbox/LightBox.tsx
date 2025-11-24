@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -94,6 +94,27 @@ export const CustomLightBox = ({
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.lightboxShowSidepane,
 	);
+	// Read iframe enabled state from localStorage once during initial render
+	const isIframeEnabled = () => {
+		if (typeof window !== "undefined") {
+			const savedValue = localStorage.getItem("iframeEnabled");
+			return savedValue ? JSON.parse(savedValue) : true;
+		}
+
+		return true;
+	};
+
+	useEffect(() => {
+		if (typeof window === "undefined") {
+			return;
+		}
+
+		const storedState = localStorage.getItem("lightboxSidepaneOpen");
+		if (storedState !== null) {
+			setLightboxShowSidepane(storedState === "true");
+		}
+	}, [setLightboxShowSidepane]);
+
 	/**
 	 * Enhanced close handler that also resets the side panel state
 	 * Uses useCallback to prevent unnecessary re-renders
@@ -136,7 +157,7 @@ export const CustomLightBox = ({
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!isYouTubeVideo(bookmark?.url) &&
-					!bookmark?.meta_data?.iframeAllowed && {
+					(!bookmark?.meta_data?.iframeAllowed || !isIframeEnabled()) && {
 						// using || instead of ?? to include 0
 						width: bookmark?.meta_data?.width || 1_200,
 						height: bookmark?.meta_data?.height || 1_200,
@@ -204,7 +225,7 @@ export const CustomLightBox = ({
 							src={
 								bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 								bookmark?.meta_data?.isOgImagePreferred
-									? (bookmark?.ogImage ?? bookmark?.ogimage)
+									? bookmark?.ogImage
 									: (bookmark?.url ?? "")
 							}
 							width={bookmark?.meta_data?.width ?? 1_200}
@@ -264,7 +285,11 @@ export const CustomLightBox = ({
 
 			const renderWebEmbedSlide = () => {
 				// Only render iframe if this is the active slide and iframe is allowed
-				if (bookmark?.meta_data?.iframeAllowed && isActive) {
+				if (
+					bookmark?.meta_data?.iframeAllowed &&
+					isActive &&
+					isIframeEnabled()
+				) {
 					return (
 						<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 							<object
@@ -292,7 +317,7 @@ export const CustomLightBox = ({
 				}
 
 				// Check if we have a placeholder to show
-				const placeholder = bookmark?.ogImage || bookmark?.ogimage;
+				const placeholder = bookmark?.ogImage;
 				if (placeholder) {
 					const placeholderHeight = bookmark?.meta_data?.height ?? 800;
 					const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
@@ -509,11 +534,9 @@ export const CustomLightBox = ({
 							const invalidateQueries = async () => {
 								try {
 									if (categoryId) {
-										await queryClient.invalidateQueries([
-											BOOKMARKS_KEY,
-											session?.user?.id,
-											categoryId,
-										]);
+										await queryClient.invalidateQueries({
+											queryKey: [BOOKMARKS_KEY, session?.user?.id, categoryId],
+										});
 									}
 
 									if (searchText) {
@@ -525,19 +548,20 @@ export const CustomLightBox = ({
 											error: PostgrestError;
 										};
 
-										await queryClient.invalidateQueries([
-											BOOKMARKS_KEY,
-											session?.user?.id,
-											searchSlugKey(categoryData) ?? CATEGORY_ID,
-											searchText,
-										]);
+										await queryClient.invalidateQueries({
+											queryKey: [
+												BOOKMARKS_KEY,
+												session?.user?.id,
+												searchSlugKey(categoryData) ?? CATEGORY_ID,
+												searchText,
+											],
+										});
 									}
 
 									await Promise.all([
-										queryClient.invalidateQueries([
-											BOOKMARKS_COUNT_KEY,
-											session?.user?.id,
-										]),
+										queryClient.invalidateQueries({
+											queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+										}),
 									]);
 
 									lastInvalidatedIndex.current = index;
@@ -620,7 +644,7 @@ export const CustomLightBox = ({
 					// Left: Close button
 					<div className="flex items-center" key="left-section">
 						<button
-							className="group ml-4 mt-1.5 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
+							className="group mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
 							onClick={handleClose}
 							type="button"
 						>
@@ -640,7 +664,7 @@ export const CustomLightBox = ({
 							rel="noreferrer"
 							target="_blank"
 						>
-							<span className="truncate text-[14px] font-normal leading-[115%] tracking-normal text-gray-alpha-600">
+							<span className="truncate text-[14px] leading-[115%] font-normal tracking-normal text-gray-alpha-600">
 								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
 							</span>
 							<figure className="h-4 w-4 shrink-0 text-gray-alpha-600">
@@ -651,11 +675,15 @@ export const CustomLightBox = ({
 
 					// Right: Side pane toggle button
 					<div
-						className="group flex h-7 w-7 items-center justify-center pr-4 pt-[7px]"
+						className="group flex h-7 w-7 items-center justify-center pt-[7px] pr-4"
 						key="right-section"
 					>
 						<button
-							onClick={() => setLightboxShowSidepane(!lightboxShowSidepane)}
+							onClick={() => {
+								const newState = !lightboxShowSidepane;
+								setLightboxShowSidepane(newState);
+								localStorage.setItem("lightboxSidepaneOpen", String(newState));
+							}}
 							type="button"
 						>
 							<ShowSidePaneButton className="h-5 w-5 stroke-current text-gray-alpha-600 opacity-50 transition-colors duration-200 group-hover:opacity-100" />

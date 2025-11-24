@@ -22,7 +22,7 @@ const ShareDropdown = ({ renderOnlyButton = false }) => {
 
 	return (
 		<>
-			<MenuButton as="div" className="outline-none" state={menu}>
+			<MenuButton as="div" className="outline-hidden" state={menu}>
 				<Button
 					id="share-button"
 					isActive={menu.open}

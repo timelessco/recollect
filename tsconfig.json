@@ -1,24 +1,49 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
+		"strictNullChecks": true,
 		"allowJs": true,
+		"allowUnreachableCode": false,
+		"allowImportingTsExtensions": true,
 		"downlevelIteration": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"incremental": true,
 		"isolatedModules": true,
-		"jsx": "preserve",
-		"lib": ["dom", "dom.iterable", "esnext"],
+		"jsx": "react-jsx",
+		"lib": [
+			"dom",
+			"dom.iterable",
+			"esnext",
+			"esnext.asynciterable",
+			"webworker"
+		],
 		"module": "ESNext",
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"noEmit": true,
 		"noUnusedParameters": true,
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+		"plugins": [{ "name": "next" }],
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"target": "ES2017",
-		"typeRoots": ["./node_modules/@types", "@types", "./env/environment.d.ts"]
+		"target": "ESNext",
+		"typeRoots": [
+			"./node_modules/@types",
+			"@types",
+			"./env/environment.d.ts"
+			// "@serwist/next/typings"
+		],
+		"useUnknownInCatchVariables": true
 	},
-	"exclude": ["node_modules", ".next", "cypress"],
-	"include": ["./**/*"]
+	"exclude": ["node_modules", ".next", "cypress", "public/sw.js"],
+	"include": [
+		"./**/*",
+		".release-it.ts",
+		"next-env.d.ts",
+		".next/types/**/*.ts",
+		".next/dev/types/**/*.ts"
+	]
 }

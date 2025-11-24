@@ -181,7 +181,6 @@ export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(
 						focusOnHover={false}
 						ref={ref}
 						{...props}
-						// @ts-expect-error - TODO: fix this
 						render={renderMenuButton}
 					/>
 				) : (

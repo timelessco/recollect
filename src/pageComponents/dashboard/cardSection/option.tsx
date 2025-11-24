@@ -1,6 +1,10 @@
+import "yet-another-react-lightbox/styles.css";
+
 import { type CardSectionProps } from ".";
 import { useRef, type ReactNode } from "react";
+import { useRouter } from "next/router";
 import classNames from "classnames";
+import { pick } from "lodash";
 import omit from "lodash/omit";
 import {
 	mergeProps,
@@ -11,20 +15,17 @@ import {
 } from "react-aria";
 import { type DraggableCollectionState, type ListState } from "react-stately";
 
-import Checkbox from "../../../components/checkbox";
+import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
 	PREVIEW_PATH,
 	viewValues,
 } from "../../../utils/constants";
-
-import "yet-another-react-lightbox/styles.css";
-
-import { useRouter } from "next/router";
-
-import { useMiscellaneousStore } from "../../../store/componentStore";
 import { getCategorySlugFromRouter } from "../../../utils/url";
+
+import { Checkbox } from "@/components/ui/recollect/checkbox";
+import { tv } from "@/utils/tailwind-merge";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
@@ -65,7 +66,7 @@ const Option = ({
 	// Merge option props and dnd props, and render the item.
 
 	const liClassName = classNames(
-		"single-bookmark dark:group relative flex group rounded-lg duration-150 outline-none",
+		"single-bookmark dark:group relative flex group rounded-lg duration-150 outline-hidden",
 		{
 			"": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
@@ -87,37 +88,42 @@ const Option = ({
 		},
 	);
 
-	const disableDndCondition = isPublicPage;
-
 	return (
 		<li
 			aria-selected={isSelected}
 			className={classNames(liClassName, {
-				"rounded-b-lg rounded-t-3xl":
+				"rounded-t-3xl rounded-b-lg":
 					isSelected &&
 					(cardTypeCondition === viewValues.moodboard ||
 						cardTypeCondition === viewValues.card),
 			})}
 			ref={ref}
 			role="option"
-			{...(!lightboxOpen
-				? mergeProps(
-						disableDndCondition
-							? []
-							: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
-						disableDndCondition ? [] : focusProps,
-					)
-				: {})}
+			{...omit(
+				!lightboxOpen
+					? mergeProps(
+							isPublicPage
+								? []
+								: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+							isPublicPage ? [] : focusProps,
+						)
+					: {},
+				["values"],
+			)}
 		>
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
-				className={`absolute left-0 top-0 h-full w-full rounded-lg ${
+				className={`absolute top-0 left-0 h-full w-full rounded-lg ${
 					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (isTrashPage || item?.key === "$.0" || isPublicPage) {
+					if (
+						isTrashPage ||
+						item?.key?.toString().startsWith("$") ||
+						isPublicPage
+					) {
 						event.preventDefault();
 						return;
 					}
@@ -143,22 +149,17 @@ const Option = ({
 				}}
 			/>
 			{item.rendered}
+
 			{!isPublicPage && (
 				<Checkbox
-					checked={isSelected}
-					classname={`${
-						isSelected ? "opacity-100" : "opacity-0"
-					} absolute cursor-pointer opacity-0 z-15 group-hover:opacity-100 top-[10px] right-[3px]  ${
-						cardTypeCondition === viewValues.list
-							? "top-[15px]"
-							: cardTypeCondition === viewValues.headlines
-								? "top-[11px]"
-								: "top-3"
-					}`}
-					value={isSelected ? "true" : "false"}
-					{...(optionProps.onPointerDown
-						? { onPointerDown: optionProps.onPointerDown }
-						: {})}
+					isSelected={isSelected}
+					className={cardSectionOptionCheckboxStyles({
+						isSelected,
+						cardTypeCondition:
+							cardTypeCondition as (typeof viewValues)[keyof typeof viewValues],
+					})}
+					// Pick only whats needed checkbox selection as the rest will cause an issue with drag and drop
+					{...pick(optionProps, ["onClick", "onPointerDown"])}
 				/>
 			)}
 		</li>
@@ -166,3 +167,17 @@ const Option = ({
 };
 
 export default Option;
+
+const cardSectionOptionCheckboxStyles = tv({
+	base: "absolute top-2.5 right-1.5 z-15 cursor-pointer group-hover:opacity-100",
+	variants: {
+		isSelected: {
+			true: "opacity-100",
+			false: "opacity-0",
+		},
+		cardTypeCondition: {
+			[viewValues.list]: "top-[15px]",
+			[viewValues.headlines]: "top-[11px]",
+		},
+	},
+});

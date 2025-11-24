@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { type Provider, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import {
 	type QueryFunctionContext,
 	type QueryKey,
@@ -51,7 +51,6 @@ import {
 	ADD_CATEGORY_TO_BOOKMARK_API,
 	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
-	ALL_BOOKMARKS_URL,
 	CHECK_API_KEY_API,
 	CLEAR_BOOKMARK_TRASH_API,
 	CREATE_USER_CATEGORIES_API,
@@ -89,8 +88,11 @@ import {
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
 } from "../../utils/constants";
-// eslint-disable-next-line import/no-cycle
-import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
+import {
+	checkIfUrlAnImage,
+	isUserInACategory,
+	parseUploadFileName,
+} from "../../utils/helpers";
 
 // bookmark
 // get bookmark by id
@@ -343,13 +345,20 @@ export const searchBookmarks = async (
 	if (!isEmpty(searchText) && searchText !== "#") {
 		const categoryId = !isNull(category_id) ? category_id : "null";
 
+		// directly using '#' in the params might cause issues
+		const parameters = new URLSearchParams({
+			search: searchText ?? "",
+			category_id: String(categoryId ?? ""),
+			is_shared_category: String(isSharedCategory ?? ""),
+			offset: String(offset ?? 0),
+			limit: String(limit ?? 10),
+		});
+
 		try {
 			const response = await axios.get<{
 				data: BookmarksPaginatedDataTypes[];
 				error: Error | null;
-			}>(
-				`${NEXT_API_URL}${SEARCH_BOOKMARKS}?search=${searchText}&category_id=${categoryId}&is_shared_category=${isSharedCategory}&offset=${offset}&limit=${limit}`,
-			);
+			}>(`${NEXT_API_URL}${SEARCH_BOOKMARKS}?${parameters.toString()}`);
 			return response?.data;
 		} catch (error_) {
 			const error = error_ as Error;
@@ -793,55 +802,6 @@ export const uploadProfilePic = async ({ file }: UploadProfilePicPayload) => {
 
 // auth
 
-export const signInWithOauth = async (
-	provider: Provider,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	supabase: SupabaseClient<any, "public", any>,
-) => {
-	await supabase.auth.signInWithOAuth({ provider });
-};
-
-export const signInWithOtp = async (
-	email: string,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	supabase: SupabaseClient<any, "public", any>,
-) => {
-	const { data, error } = await supabase.auth.signInWithOtp({
-		email,
-		options: {
-			shouldCreateUser: true,
-			emailRedirectTo: `${getBaseUrl()}/${ALL_BOOKMARKS_URL}`,
-		},
-	});
-
-	return { data, error };
-};
-
-export const verifyOtp = async (
-	email: string,
-	otp: string,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	supabase: SupabaseClient<any, "public", any>,
-) => {
-	const { data, error } = await supabase.auth.verifyOtp({
-		email,
-		token: otp,
-		type: "email",
-	});
-	return { data, error };
-};
-
-export const signUpWithEmailPassword = async (
-	email: string,
-	password: string,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	supabase: SupabaseClient<any, "public", any>,
-) => {
-	const { error } = await supabase.auth.signUp({ email, password });
-
-	return { error };
-};
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
 	await supabase.auth.signOut({ scope: "local" });
@@ -861,7 +821,7 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 			return null;
 		}
 
-		const data = await response.json();
+		const data = (await response.json()) as { mediaType?: string };
 
 		return data.mediaType || null;
 	} catch (error) {
@@ -886,4 +846,63 @@ export const validateApiKey = async (apikey: string) => {
 	} catch {
 		throw new Error("Invalid API key");
 	}
+};
+
+export const sanitizeBookmarks = async (
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	bookmarks: any[],
+	userId: string,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	categories: any[],
+): Promise<SingleListData[]> => {
+	const results = await Promise.allSettled(
+		bookmarks.map(async (bookmark) => {
+			const { hostname } = new URL(bookmark.url);
+
+			// validate ogImage
+			const isImageValid =
+				bookmark.ogImage && (await checkIfUrlAnImage(bookmark.ogImage));
+
+			const mediaType = await getMediaType(bookmark.url);
+
+			let favIcon: string | null = null;
+
+			try {
+				const res = await fetch(
+					`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
+				);
+				favIcon = res.ok ? res.url : null;
+			} catch {
+				favIcon = null;
+			}
+
+			// if the bookmark have a category_name we get the category_id of it from the categories[]
+			const category_id =
+				categories.find(
+					(category) => category.category_name === bookmark?.category_name,
+				)?.id || 0;
+
+			return {
+				title: bookmark.title || null,
+				description: bookmark.description || null,
+				url: bookmark.url || null,
+				user_id: userId,
+				ogImage: bookmark.ogImage && isImageValid ? bookmark.ogImage : null,
+				type: "bookmark",
+				category_id,
+				meta_data: {
+					favIcon,
+					is_raindrop_bookmark: true,
+					mediaType,
+				},
+			};
+		}),
+	);
+
+	return (
+		results
+			.filter((resolve) => resolve.status === "fulfilled")
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			.map((resolve) => (resolve as PromiseFulfilledResult<any>).value)
+	);
 };

@@ -21,7 +21,6 @@ import prettier from "eslint-config-prettier/flat";
 import jsonc from "eslint-plugin-jsonc";
 import packageJson from "eslint-plugin-package-json";
 import reactRefresh from "eslint-plugin-react-refresh";
-import tailwind from "eslint-plugin-tailwindcss";
 import yml from "eslint-plugin-yml";
 import { defineConfig, globalIgnores } from "eslint/config";
 
@@ -34,7 +33,7 @@ export default defineConfig(
 		"public/",
 		".next/",
 		"next-env.d.ts",
-		"release-it/",
+		"scripts/release-it/",
 	]),
 	{
 		linterOptions: {
@@ -71,7 +70,6 @@ export default defineConfig(
 		extends: [typescriptTypeChecking.recommended],
 		languageOptions: {
 			parser: typescriptParser,
-			parserOptions: { projectService: true },
 		},
 	},
 	jsxA11y.recommended,
@@ -83,7 +81,6 @@ export default defineConfig(
 	zod.recommended,
 	// TODO: Add lodash recommended later
 	// lodash.recommended,
-	...tailwind.configs["flat/recommended"],
 	{
 		rules: {
 			// Eslint
@@ -118,10 +115,14 @@ export default defineConfig(
 			// Typescript rules
 			"@typescript-eslint/naming-convention": "off",
 			"@typescript-eslint/no-use-before-define": "off",
+			"@typescript-eslint/consistent-type-definitions": "off",
+			"@typescript-eslint/promise-function-async": "off",
+			"@typescript-eslint/no-shadow": "off",
 
 			// React
 			"react/prefer-read-only-props": "off",
 			"react/forbid-component-props": "off",
+			"react/function-component-definition": "off",
 
 			// TODO: Remove this rule later
 			"no-negated-condition": "off",
@@ -135,7 +136,7 @@ export default defineConfig(
 			"canonical/sort-react-dependencies": "off",
 			"react-refresh/only-export-components": "off",
 			"react-hooks/preserve-manual-memoization": "off",
-			// ! TODO: fix this in priority
+			// TODO: fix this in priority
 			"react/prop-types": "off",
 			"react-hooks/set-state-in-effect": "off",
 		},
@@ -170,135 +171,3 @@ export default defineConfig(
 	},
 	prettier,
 );
-
-// /**
-//  * @type {import('@typescript-eslint/experimental-utils').TSESLint.Linter.Config}
-//  */
-// module.exports = {
-// 	ignorePatterns: ["!**/.*"],
-// 	overrides: [
-// 		{
-// 			files: ["*.js", "*.cjs"],
-// 			extends: [
-// 				"canonical",
-// 				"canonical/node",
-// 				"canonical/regexp",
-// 				"canonical/jsdoc",
-// 				"canonical/zod",
-// 				"prettier",
-// 			],
-// 			settings: {
-// 				jsdoc: {
-// 					mode: "typescript",
-// 				},
-// 			},
-// 			rules: {
-// 				...commonNodeIgnoredRules,
-// 				"import/extensions": [
-// 					"error",
-// 					"always",
-// 					{
-// 						ignorePackages: true,
-// 					},
-// 				],
-// 			},
-// 			overrides: [
-// 				{
-// 					files: ["*.js"],
-// 					extends: ["canonical/module"],
-// 				},
-// 			],
-// 		},
-// 		{
-// 			files: ["./*.ts", "env/*.ts"],
-// 			excludedFiles: ["next-env.d.ts", "sentry.client.config.ts"],
-// 			extends: [
-// 				"canonical",
-// 				"canonical/node",
-// 				"canonical/module",
-// 				"canonical/typescript",
-// 				"canonical/typescript-type-checking",
-// 				"canonical/jsdoc",
-// 				"canonical/regexp",
-// 				"canonical/zod",
-// 				"prettier",
-// 			],
-// 			parserOptions: {
-// 				project: "./tsconfig.json",
-// 			},
-// 			settings: {
-// 				jsdoc: {
-// 					mode: "typescript",
-// 				},
-// 			},
-// 			rules: {
-// 				...commonNodeIgnoredRules,
-// 				...commonTypescriptIgnoredRules,
-// 			},
-// 		},
-// 		{
-// 			files: ["src/**/*.{ts,tsx}"],
-// 			extends: [
-// 				"canonical",
-// 				"canonical/browser",
-// 				"canonical/module",
-// 				"canonical/typescript",
-// 				"canonical/typescript-type-checking",
-// 				"canonical/zod",
-// 				"canonical/regexp",
-// 				"plugin:@next/next/core-web-vitals",
-// 				"prettier",
-// 			],
-// 			parserOptions: {
-// 				project: "./tsconfig.json",
-// 			},
-// 			rules: {
-// 				...commonIgnoredRules,
-// 				...commonTypescriptIgnoredRules,
-// 			},
-// 			overrides: [
-// 				{
-// 					files: ["*.ts"],
-// 					extends: ["canonical/jsdoc"],
-// 					settings: {
-// 						jsdoc: {
-// 							mode: "typescript",
-// 						},
-// 					},
-// 				},
-// 				{
-// 					files: ["*.tsx", "use*.ts"],
-// 					extends: [
-// 						"canonical/react",
-// 						"canonical/jsx-a11y",
-// 						"plugin:tailwindcss/recommended",
-// 					],
-// 					parserOptions: {
-// 						ecmaFeatures: {
-// 							jsx: true,
-// 						},
-// 					},
-// 					rules: {
-// 						// To support dynamic import
-// 						"promise/prefer-await-to-then": "off",
-// 						"@typescript-eslint/promise-function-async": "off",
-// 						// Other react rules
-// 						"react/hook-use-state": "off",
-// 						"react/jsx-indent": ["error", "tab"],
-// 						"react/jsx-indent-props": ["error", "tab"],
-// 						"react/forbid-component-props": "off",
-// 						"react/prop-types": "off",
-// 						"react/jsx-handler-names": "off",
-// 						"react/jsx-curly-newline": "off",
-// 						"react/prefer-read-only-props": "off",
-// 					},
-// 					settings: {
-// 						tailwindcss: {
-// 							config: "tailwind.config.cjs",
-// 						},
-// 					},
-// 				},
-// 			],
-// 		},
-// 	],
-// };

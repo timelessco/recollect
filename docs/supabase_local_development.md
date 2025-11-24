@@ -220,6 +220,8 @@ docker system prune -f
 npx supabase start
 ```
 
+**Note:** If you're experiencing extension-related errors (pg_cron, pgmq, pg_net), see the [Extension creation failures](#extension-creation-failures-pg_cron-pgmq-pg_net) section below.
+
 #### Outdated CLI version
 
 **Problem:** Features not working or unexpected errors
@@ -291,7 +293,7 @@ LIMIT 5;
 
 ```sql
 -- Reset sequences to match current max IDs
-SELECT setval('bookmarks_table_id_seq', (SELECT MAX(id) FROM bookmarks_table));
+SELECT setval('everything_id_seq', (SELECT MAX(id) FROM everything));
 SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));
 SELECT setval('tags_id_seq', (SELECT MAX(id) FROM tags));
 SELECT setval('bookmark_tags_id_seq', (SELECT MAX(id) FROM bookmark_tags));
@@ -327,6 +329,50 @@ npx supabase migration list --linked # Remote
 2. Review error message in terminal output
 3. Fix SQL syntax in the migration file
 4. Test with: `npx supabase db reset`
+
+#### Extension creation failures (pg_cron, pgmq, pg_net)
+
+**Problem:** `ERROR: permission denied to create extension` or `ERROR: function does not exist` during migration
+
+**Common errors:**
+
+- `permission denied to create extension "pg_cron"`
+- `function pgmq.drop_queue(text) does not exist`
+- Extensions fail to initialize properly
+
+**Solution:**
+
+The quickest fix is to remove the database volume and start fresh:
+
+```bash
+# Stop Supabase and delete all volumes (removes all local data)
+npx supabase stop --no-backup
+
+# Start fresh with clean containers
+npx supabase start
+```
+
+**Why this works:**
+
+- Some extensions (pg_cron, pgmq, pg_net) may have partial installations or corrupted state
+- Removing volumes ensures a clean slate for extension initialization
+- Extensions will install properly on fresh containers
+
+**Alternative approach (if you need to preserve data):**
+
+```bash
+# Export your data first
+npx supabase db dump --data-only > backup.sql
+
+# Remove volumes and restart
+npx supabase stop --no-backup
+npx supabase start
+
+# Restore your data
+psql "postgresql://postgres:postgres@localhost:54322/postgres" < backup.sql
+```
+
+**Note:** These extensions are available in Supabase Cloud but may have limitations in local Docker environments. Your application will work fine without them for local development - only advanced features (cron jobs, message queues) will be unavailable locally.
 
 #### Permission errors on tables
 
@@ -502,7 +548,7 @@ INSERT INTO auth.users (email) VALUES
   ('demo@example.com');
 
 -- Add test data for your tables
-INSERT INTO bookmarks_table (title, url, user_id) VALUES
+INSERT INTO everything (title, url, user_id) VALUES
   ('Test Bookmark', 'https://example.com', (SELECT id FROM auth.users WHERE email = 'test@example.com'));
 ```
 

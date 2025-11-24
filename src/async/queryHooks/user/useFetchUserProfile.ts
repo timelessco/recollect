@@ -12,19 +12,21 @@ import { fetchUserProfiles } from "../../supabaseCrudHelpers";
 export default function useFetchUserProfile() {
 	const session = useSupabaseSession((state) => state.session);
 
-	const { data: userProfileData } = useQuery<{
+	const { data: userProfileData, isLoading } = useQuery<{
 		data: ProfilesTableTypes[] | null;
 		error: Error;
-	}>(
-		[USER_PROFILE, session?.user?.id],
-		async () =>
+	}>({
+		// eslint-disable-next-line @tanstack/query/exhaustive-deps
+		queryKey: [USER_PROFILE, session?.user?.id],
+		queryFn: async () =>
 			await fetchUserProfiles({
 				userId: session?.user?.id as string,
 				session: session as SupabaseSessionType,
 			}),
-	);
+	});
 
 	return {
 		userProfileData,
+		isLoading,
 	};
 }

@@ -8,8 +8,8 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import BackIconBlack from "../../icons/actionIcons/backIconBlack";
-import MailIconBlack from "../../icons/miscellaneousIcons/mailIconBlack";
+import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
+import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -84,7 +84,7 @@ const ChangeEmail = () => {
 					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
-					<figure>
+					<figure className="text-gray-900">
 						<BackIconBlack />
 					</figure>
 				</Button>
@@ -142,9 +142,9 @@ const ChangeEmail = () => {
 						/>
 					</div>
 				</LabelledComponent>
-				<div className="flex w-1/2 justify-end sm:w-full">
+				<div className="flex w-1/2 justify-end max-sm:w-full">
 					<Button
-						className="flex w-[111px] justify-center bg-gray-300 px-[9px] py-2 text-sm leading-4 hover:bg-gray-700 sm:w-full"
+						className="flex w-[111px] justify-center bg-gray-300 px-[9px] py-2 text-sm leading-4 hover:bg-gray-700 max-sm:w-full"
 						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
 						type="dark"
@@ -152,7 +152,7 @@ const ChangeEmail = () => {
 						{changeEmailLoader ? (
 							<Spinner
 								className="h-3 w-3 animate-spin"
-								style={{ color: "var(--plain-color)" }}
+								style={{ color: "var(--color-plain)" }}
 							/>
 						) : (
 							"Change email"

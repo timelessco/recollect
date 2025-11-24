@@ -50,7 +50,7 @@ const SidePaneTypesList = () => {
 		<div className="pt-4">
 			<AriaDisclosure
 				renderDisclosureButton={
-					<div className="group flex items-center px-1 py-[7.5px] text-13 font-medium leading-[15px] tracking-[0.01em] text-gray-600">
+					<div className="group flex items-center px-1 py-[7.5px] text-13 leading-[15px] font-medium tracking-[0.01em] text-gray-600">
 						<p className="mr-1">Types</p>
 						<DownArrowGray
 							className="collections-sidepane-down-arrow mt-px hidden group-hover:block"

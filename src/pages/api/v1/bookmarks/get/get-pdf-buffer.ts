@@ -4,7 +4,7 @@ import { z } from "zod";
 import { PDF_MIME_TYPE } from "../../../../../utils/constants";
 
 const querySchema = z.object({
-	url: z.string().url("Invalid URL format"),
+	url: z.url("Invalid URL format"),
 });
 
 // this api is used to get the pdf buffer from the url
@@ -19,7 +19,7 @@ export default async function handler(
 
 	const parseResult = querySchema.safeParse(request.query);
 	if (!parseResult.success) {
-		response.status(400).json({ error: parseResult.error.errors });
+		response.status(400).json({ error: parseResult.error.issues });
 		return;
 	}
 

@@ -73,7 +73,7 @@ const AddBookmarkDropdown = ({
 				isOpen={openDropdown}
 				menuButton={
 					<Button
-						className="rounded-full p-[7px] [filter:drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))]"
+						className="rounded-full p-[7px] filter-[drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))]"
 						title="create"
 						type="dark"
 					>
@@ -89,6 +89,7 @@ const AddBookmarkDropdown = ({
 						clearErrors();
 					}
 				}}
+				menuClassName="z-5"
 			>
 				<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
 					<Button
@@ -99,7 +100,7 @@ const AddBookmarkDropdown = ({
 							}
 						}}
 					>
-						<AddBoomarkInputIcon className="absolute left-[14px] top-[11px] z-[1]" />
+						<AddBoomarkInputIcon className="absolute top-[11px] left-[14px] z-1" />
 					</Button>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<Input
@@ -113,8 +114,6 @@ const AddBookmarkDropdown = ({
 							ref={(event) => {
 								ref(event);
 								if (!isNull(inputRef)) {
-									// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-									// @ts-expect-error
 									inputRef.current = event;
 								}
 							}}

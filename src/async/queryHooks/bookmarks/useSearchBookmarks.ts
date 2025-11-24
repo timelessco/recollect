@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
@@ -60,10 +61,8 @@ export default function useSearchBookmarks() {
 			] as const,
 			enabled: !isEmpty(searchText),
 			refetchOnWindowFocus: false,
-			onSettled: () => {
-				toggleIsSearchLoading(false);
-			},
-			queryFn: async ({ pageParam: pageParameter = 0 }) => {
+			initialPageParam: 0,
+			queryFn: async ({ pageParam: pageParameter }) => {
 				// Set default value here
 				toggleIsSearchLoading(true);
 				if (searchText) {
@@ -90,6 +89,12 @@ export default function useSearchBookmarks() {
 			},
 			// Remove initialPageParam completely
 		});
+
+	useEffect(() => {
+		if (data) {
+			toggleIsSearchLoading(false);
+		}
+	}, [toggleIsSearchLoading, data]);
 
 	// Flatten the search results to match the expected data structure
 	return {

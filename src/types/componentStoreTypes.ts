@@ -6,9 +6,7 @@ export type ModalStoreState = {
 	showClearTrashWarningModal: boolean;
 	showDeleteBookmarkWarningModal: boolean;
 	showSettingsModal: boolean;
-	showShareCategoryModal: boolean;
 	showVideoModal: boolean;
-	toggleShareCategoryModal: () => void;
 	toggleShowClearTrashWarningModal: () => void;
 	toggleShowDeleteBookmarkWarningModal: () => void;
 	toggleShowSettingsModal: () => void;
@@ -30,7 +28,12 @@ export type LoadersStoreState = {
 export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	currentBookmarkView: BookmarksViewTypes;
-	currentSettingsPage: "ai-features" | "change-email" | "delete" | "main";
+	currentSettingsPage:
+		| "ai-features"
+		| "change-email"
+		| "delete"
+		| "main"
+		| "import";
 	currentSliderDropdownSlide: string | null;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;
@@ -58,9 +61,7 @@ export type MiscellaneousStoreState = {
 	setSearchText: (value: string) => void;
 	setSelectedVideoId: (id: number | null) => void;
 	setShareCategoryId: (id: number | undefined) => void;
-	setShowSidePane: (value: boolean) => void;
 	shareCategoryId: number | undefined;
-	showSidePane: boolean;
 };
 
 export type SupabaseSessionStore = {

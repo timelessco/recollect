@@ -61,6 +61,12 @@ const formatDate = (dateString: string) => {
  */
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
+	const [isInitialMount, setIsInitialMount] = useState(true);
+
+	useEffect(() => {
+		// Mark as not initial after first mount
+		setIsInitialMount(false);
+	}, []);
 	const [showMore, setShowMore] = useState(false);
 	const [isOverflowing, setIsOverflowing] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -95,6 +101,7 @@ const MyComponent = () => {
 	const { id } = router.query;
 	const shouldFetch = !previousData && Boolean(id);
 
+	// @ts-expect-error - props passed to useQuery - false-positive
 	const { data: bookmark } = useFetchBookmarkById(id as string, {
 		enabled: shouldFetch,
 	});
@@ -140,10 +147,10 @@ const MyComponent = () => {
 
 	if (!currentBookmark) {
 		return (
-			<div className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]">
+			<div className="absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col items-center justify-center border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]">
 				<Spinner
 					className="h-3 w-3 animate-spin"
-					style={{ color: "var(--plain-reverse-color)" }}
+					style={{ color: "var(--color-plain-reverse)" }}
 				/>
 			</div>
 		);
@@ -154,22 +161,44 @@ const MyComponent = () => {
 		<AnimatePresence>
 			{lightboxShowSidepane && (
 				<motion.div
+					initial={
+						isInitialMount && lightboxShowSidepane
+							? { x: 0, opacity: 0, scale: 0.97 }
+							: { x: "100%" }
+					}
 					animate={{
 						x: 0,
-						transition: { type: "tween", duration: 0.15, ease: "easeInOut" },
+						opacity: 1,
+						scale: 1,
+						transition:
+							isInitialMount && lightboxShowSidepane
+								? {
+										duration: 0.25,
+										ease: "easeInOut",
+										opacity: { duration: 0.25, ease: "easeInOut" },
+										scale: {
+											from: 0.97,
+											duration: 0.25,
+											ease: "easeInOut",
+										},
+									}
+								: {
+										type: "tween",
+										duration: 0.15,
+										ease: "easeInOut",
+									},
 					}}
-					className="absolute right-0 top-0 flex h-full w-1/5 min-w-[320px] max-w-[400px] flex-col border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]"
 					exit={{
 						x: "100%",
 						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
 					}}
-					initial={{ x: "100%" }}
+					className="absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]"
 				>
 					<div className="flex flex-1 flex-col p-5 text-left">
 						{currentBookmark?.title && (
 							<div>
 								<p
-									className="pb-2 align-middle text-[14px] font-medium leading-[115%] tracking-[0.01em] text-gray-900"
+									className="pb-2 align-middle text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900"
 									tabIndex={-1}
 								>
 									{currentBookmark.title}
@@ -178,14 +207,14 @@ const MyComponent = () => {
 						)}
 						{domain && (
 							<div
-								className="pb-4 align-middle text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
+								className="pb-4 align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-13 leading-[138%]">
 									{metaData?.favIcon ? (
 										<Image
 											alt="favicon"
-											className="h-[15px] w-[15px] rounded"
+											className="h-[15px] w-[15px] rounded-sm"
 											height={16}
 											onError={(error) => {
 												const target = error?.target as HTMLImageElement;
@@ -212,7 +241,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-clip text-13 font-normal leading-[139%] tracking-[0.01em] text-gray-800`}
+									} text-13 leading-[139%] font-normal tracking-[0.01em] text-clip text-gray-800`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
@@ -229,7 +258,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && !showMore && (
 									<button
-										className="absolute bottom-0 right-0 bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-800"
+										className="absolute right-0 bottom-0 bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-800"
 										onClick={() => setShowMore(true)}
 										type="button"
 									>
@@ -265,7 +294,7 @@ const MyComponent = () => {
 									<div className="flex flex-wrap gap-[6px]">
 										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
 											<span
-												className="align-middle text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600"
+												className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
 												#{tag?.name}
@@ -290,7 +319,7 @@ const MyComponent = () => {
 										<Icon className="h-[15px] w-[15px] text-gray-600">
 											<GeminiAiIcon />
 										</Icon>
-										<p className="align-middle text-13 font-[450] leading-[115%] tracking-[0.01em] text-gray-600">
+										<p className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
 											AI Summary
 										</p>
 									</div>

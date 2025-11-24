@@ -8,7 +8,7 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import BackIconBlack from "../../icons/actionIcons/backIconBlack";
+import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
 import {
 	useMiscellaneousStore,
@@ -86,7 +86,7 @@ const DeleteAccout = () => {
 					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
 					onClick={() => setCurrentSettingsPage("main")}
 				>
-					<figure>
+					<figure className="text-gray-900">
 						<BackIconBlack />
 					</figure>
 				</Button>
@@ -107,7 +107,7 @@ const DeleteAccout = () => {
 				className="mt-6 flex items-end justify-between"
 				onSubmit={handleSubmit(onSubmit)}
 			>
-				<div className="w-[70%] sm:w-full">
+				<div className="w-[70%] max-sm:w-full">
 					<LabelledComponent
 						label={`Please type your username ${userData?.user_name} to continue`}
 						labelClassName={settingsInputLabelClassName}
@@ -131,15 +131,15 @@ const DeleteAccout = () => {
 					</LabelledComponent>
 				</div>
 				<Button
-					className={`w-[150px] sm:w-full ${settingsDeleteButtonRedClassName}`}
+					className={`w-[150px] max-sm:w-full ${settingsDeleteButtonRedClassName}`}
 					onClick={handleSubmit(onSubmit)}
 				>
 					<div className="flex w-full items-center justify-center">
 						<figure className="mr-2">
 							<TrashIconRed />
 						</figure>
-						<p className="flex w-full justify-center sm:w-[100px]">
-							{deleteUserMutation?.isLoading ? (
+						<p className="flex w-full justify-center max-sm:w-[100px]">
+							{deleteUserMutation.isPending ? (
 								<Spinner
 									className="h-3 w-3 animate-spin"
 									style={{ color: "red" }}

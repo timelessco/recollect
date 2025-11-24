@@ -26,14 +26,17 @@ export default async function handler(
 		// Initialize Supabase client
 		const supabase = apiSupabaseClient(request, response);
 
-		// Get authenticated user
-		const userData = await supabase?.auth?.getUser();
+		// Check for auth errors
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
+		const email = userData?.user?.email;
 
-		// Check if user is authenticated
-		if (!userData?.data?.user) {
-			console.warn(
-				"[fetch-shared-categories-data] Unauthorized: User not authenticated",
-			);
+		if (userError || !userId || !email) {
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+				userId: userId ?? "missing",
+				email: email ?? "missing",
+			});
 			response.status(401).json({
 				data: null,
 				error: "Unauthorized: Please log in to access shared categories",
@@ -41,26 +44,8 @@ export default async function handler(
 			return;
 		}
 
-		const userId = userData.data.user.id;
-		const email = userData.data.user.email;
-
-		// Validate user data
-		if (!userId || !email) {
-			console.error("[fetch-shared-categories-data] Invalid user data:", {
-				userId: userId ?? "missing",
-				email: email ?? "missing",
-			});
-			Sentry.captureException(
-				new Error(
-					"[fetch-shared-categories-data] Invalid user data: Missing required fields",
-				),
-			);
-			response.status(400).json({
-				data: null,
-				error: "Invalid user data: Missing required fields",
-			});
-			return;
-		}
+		// Entry point log
+		console.log("fetch-shared-categories-data API called:", { userId, email });
 
 		// Fetch data where user is either a collaborator or owner of the category
 		const { data, error }: { data: DataResponse; error: ErrorResponse } =
@@ -71,15 +56,17 @@ export default async function handler(
 
 		// Handle database error
 		if (error) {
-			console.error("[fetch-shared-categories-data] Database error:", {
-				error,
-				table: SHARED_CATEGORIES_TABLE_NAME,
-				operation: "select",
-				query: `email.eq.${email},user_id.eq.${userId}`,
-				userId,
-				email,
+			console.error("Error fetching shared categories:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "fetch_shared_categories",
+					userId,
+				},
+				extra: {
+					email,
+					table: SHARED_CATEGORIES_TABLE_NAME,
+				},
 			});
-			Sentry.captureException(error);
 
 			// Determine appropriate status code based on error type
 			const statusCode =
@@ -87,39 +74,34 @@ export default async function handler(
 
 			response.status(statusCode).json({
 				data: null,
-				error: typeof error === "object" ? JSON.stringify(error) : error,
+				error: "Error fetching shared categories",
 			});
 			return;
 		}
 
-		// Success - return data
+		// Success log and response
+		console.log("Shared categories fetched successfully:", {
+			userId,
+			count: data?.length ?? 0,
+		});
 		response.status(200).json({ data, error: null });
 	} catch (unexpectedError) {
-		// Catch any unexpected errors
 		console.error(
-			"[fetch-shared-categories-data] Unexpected error:",
+			"Unexpected error in fetch-shared-categories-data:",
 			unexpectedError,
-			{
+		);
+		Sentry.captureException(unexpectedError, {
+			tags: {
+				operation: "fetch_shared_categories",
+			},
+			extra: {
 				method: request.method,
 				url: request.url,
 			},
-		);
-		Sentry.captureException(unexpectedError);
-
-		// Check if response was already sent
-		if (!response.headersSent) {
-			response.status(500).json({
-				data: null,
-				error: "An unexpected error occurred while fetching shared categories",
-			});
-			return;
-		}
-
-		// If response was already sent, just log the error
-		console.error(
-			"[fetch-shared-categories-data] Error occurred after response was sent:",
-			unexpectedError,
-		);
-		Sentry.captureException(unexpectedError);
+		});
+		response.status(500).json({
+			data: null,
+			error: "An unexpected error occurred while fetching shared categories",
+		});
 	}
 }

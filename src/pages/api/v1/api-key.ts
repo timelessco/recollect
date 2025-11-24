@@ -8,8 +8,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 const bodySchema = z.object({
 	apikey: z.string({
-		required_error: "API key is required",
-		invalid_type_error: "API key must be a string",
+		error: "API key is required",
 	}),
 });
 
@@ -39,7 +38,7 @@ export default async function handler(
 	if (!parsed.success) {
 		response.status(400).json({
 			error: "Invalid request body",
-			details: parsed.error.errors.map((error) => error.message),
+			details: parsed.error.issues.map((issue) => issue.message),
 		});
 		return;
 	}
@@ -58,7 +57,7 @@ export default async function handler(
 	try {
 		const encryptedApiKey = CryptoJS.AES.encrypt(
 			apikey,
-			process.env.API_KEY_ENCRYPTION_KEY as string,
+			process.env.API_KEY_ENCRYPTION_KEY,
 		).toString();
 
 		const { data: DataResponse, error: ErrorResponse } = await supabase

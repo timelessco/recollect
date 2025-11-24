@@ -22,7 +22,6 @@ import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/
 import useAddCategoryOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
 import useAddCategoryToBookmarkMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
-import useDeleteCategoryOptimisticMutation from "../../async/mutationHooks/category/useDeleteCategoryOptimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
@@ -41,6 +40,7 @@ import useFetchUserTags from "../../async/queryHooks/userTags/useFetchUserTags";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
 import Modal from "../../components/modal";
+import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
@@ -68,11 +68,9 @@ import {
 import { type FileType, type TagInputOption } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
-	ALL_BOOKMARKS_URL,
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
-	LOGIN_URL,
 	SETTINGS_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -87,9 +85,9 @@ import Settings from "../settings";
 
 import AddModalContent from "./modals/addModalContent";
 import SettingsModal from "./modals/settingsModal";
-import ShareCategoryModal from "./modals/shareCategoryModal";
 import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
+import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 // import CardSection from "./cardSection";
 const CardSection = dynamic(async () => await import("./cardSection"), {
@@ -133,19 +131,8 @@ const Dashboard = () => {
 	const router = useRouter();
 	const categorySlug = getCategorySlugFromRouter(router);
 
-	useEffect(() => {
-		if (router?.pathname === "/") {
-			// eslint-disable-next-line promise/prefer-await-to-then
-			void router.push(`/${ALL_BOOKMARKS_URL}`).catch(() => {});
-		}
-	}, [router, router?.pathname]);
-
 	const toggleIsSortByLoading = useLoadersStore(
 		(state) => state.toggleIsSortByLoading,
-	);
-
-	const toggleShareCategoryModal = useModalStore(
-		(state) => state.toggleShareCategoryModal,
 	);
 
 	const showDeleteBookmarkWarningModal = useModalStore(
@@ -156,17 +143,6 @@ const Dashboard = () => {
 		(state) => state.toggleShowDeleteBookmarkWarningModal,
 	);
 
-	const showClearTrashWarningModal = useModalStore(
-		(state) => state.showClearTrashWarningModal,
-	);
-
-	const toggleShowClearTrashWarningModal = useModalStore(
-		(state) => state.toggleShowClearTrashWarningModal,
-	);
-
-	const setShareCategoryId = useMiscellaneousStore(
-		(state) => state.setShareCategoryId,
-	);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 	useEffect(() => {
@@ -176,12 +152,6 @@ const Dashboard = () => {
 			setSelectedTag([]);
 		}
 	}, [showAddBookmarkModal]);
-
-	useEffect(() => {
-		if (isNull(session?.user)) {
-			void router.push(`/${LOGIN_URL}`);
-		}
-	}, [router, session]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { isInNotFoundPage } = useIsInNotFoundPage();
@@ -193,8 +163,11 @@ const Dashboard = () => {
 
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
-	const { allBookmarksData, fetchNextPage: fetchNextBookmarkPage } =
-		useFetchPaginatedBookmarks();
+	const {
+		allBookmarksData,
+		fetchNextPage: fetchNextBookmarkPage,
+		isAllBookmarksDataLoading,
+	} = useFetchPaginatedBookmarks();
 
 	const {
 		flattenedSearchData,
@@ -210,7 +183,8 @@ const Dashboard = () => {
 
 	useFetchBookmarksView();
 
-	const { userProfileData } = useFetchUserProfile();
+	const { userProfileData, isLoading: isUserProfileLoading } =
+		useFetchUserProfile();
 
 	// Mutations
 
@@ -220,7 +194,8 @@ const Dashboard = () => {
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
 
-	const { clearBookmarksInTrashMutation } = useClearBookmarksInTrashMutation();
+	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
+		useClearBookmarksInTrashMutation();
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 
 	const { addBookmarkMinDataOptimisticMutation } =
@@ -236,8 +211,7 @@ const Dashboard = () => {
 	// category mutation
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 
-	const { deleteCategoryOptimisticMutation } =
-		useDeleteCategoryOptimisticMutation();
+	const { onDeleteCollection } = useDeleteCollection();
 
 	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 
@@ -350,7 +324,7 @@ const Dashboard = () => {
 			(item) => item?.id === CATEGORY_ID,
 		) as unknown as CategoriesData;
 
-		// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+		// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
 		// if cat_id not number then user is not updated in a category , so access will always be true
 		const updateAccessCondition =
 			typeof CATEGORY_ID === "number"
@@ -633,7 +607,7 @@ const Dashboard = () => {
 			<div>
 				{session ? (
 					<>
-						<div className="mx-auto w-full xl:w-1/2" />
+						<div className="mx-auto w-full max-xl:w-1/2" />
 						<Dropzone
 							disabled={CATEGORY_ID === TRASH_URL}
 							noClick
@@ -645,7 +619,7 @@ const Dashboard = () => {
 									className={
 										isDragActive
 											? "absolute z-10 h-full w-full bg-gray-800 opacity-50"
-											: "outline-none"
+											: "outline-hidden"
 									}
 								>
 									<input {...getInputProps()} />
@@ -666,7 +640,7 @@ const Dashboard = () => {
 													: (flattendPaginationBookmarkData?.length ?? 0)
 											}
 											endMessage={
-												<p className="pb-6 text-center text-plain-reverse-color">
+												<p className="pb-6 text-center text-plain-reverse">
 													{isSearchLoading ? "" : "Life happens, save it."}
 												</p>
 											}
@@ -681,12 +655,21 @@ const Dashboard = () => {
 											style={{ overflow: "unset" }}
 										>
 											<CardSection
+												bookmarksCountData={getBookmarkCountForCurrentPage(
+													bookmarksCountData?.data ?? undefined,
+													CATEGORY_ID as unknown as string | number | null,
+												)}
 												deleteBookmarkId={deleteBookmarkId}
 												isBookmarkLoading={
-													addBookmarkMinDataOptimisticMutation?.isLoading
+													addBookmarkMinDataOptimisticMutation?.isPending
 												}
+												isLoading={
+													isAllBookmarksDataLoading ||
+													(isSearchLoading && flattenedSearchData.length === 0)
+												}
+												isLoadingProfile={isUserProfileLoading}
 												isOgImgLoading={
-													addBookmarkScreenshotMutation?.isLoading
+													addBookmarkScreenshotMutation?.isPending
 												}
 												listData={
 													isSearching
@@ -905,8 +888,8 @@ const Dashboard = () => {
 						}
 					}}
 					isCategoryChangeLoading={
-						addCategoryToBookmarkMutation?.isLoading ||
-						addCategoryToBookmarkOptimisticMutation?.isLoading
+						addCategoryToBookmarkMutation?.isPending ||
+						addCategoryToBookmarkOptimisticMutation?.isPending
 					}
 					mainButtonText={isEdit ? "Update Bookmark" : "Add Bookmark"}
 					onCategoryChange={async (value) => {
@@ -917,7 +900,7 @@ const Dashboard = () => {
 									(item) => item?.id === value?.value,
 								) ??
 								find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-							// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
+							// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
 
 							const updateAccessCondition =
 								find(
@@ -932,7 +915,7 @@ const Dashboard = () => {
 										category_id: value?.value ? (value?.value as number) : null,
 										bookmark_id: addedUrlData?.id as number,
 										update_access:
-											// if user is changing to uncategoried then thay always have access
+											// if user is changing to uncategorised then thay always have access
 											isNull(value?.value) || !value?.value
 												? true
 												: updateAccessCondition,
@@ -1043,57 +1026,6 @@ const Dashboard = () => {
 		void addBookmarkLogic(finalUrl);
 	};
 
-	const onDeleteCollection = useCallback(
-		async (current: boolean, categoryId: number) => {
-			if (
-				!isNull(userProfileData?.data) &&
-				userProfileData?.data[0]?.category_order
-			) {
-				const isDataPresentCheck =
-					find(
-						bookmarksCountData?.data?.categoryCount,
-						(item) => item?.category_id === categoryId,
-					)?.count === 0;
-
-				const currentCategory = find(
-					allCategories?.data,
-					(item) => item?.id === categoryId,
-				);
-
-				if (currentCategory?.user_id?.id === session?.user?.id) {
-					if (isDataPresentCheck) {
-						await mutationApiCall(
-							deleteCategoryOptimisticMutation.mutateAsync({
-								category_id: categoryId,
-								category_order: userProfileData?.data?.[0]?.category_order,
-							}),
-						);
-					} else {
-						errorToast(
-							"This collection still has bookmarks, Please empty collection",
-						);
-					}
-				} else {
-					errorToast("Only collection owner can delete this collection");
-				}
-
-				// current - only push to home if user is deleting the category when user is currently in that category
-				// isDataPresentCheck - only push to home after category get delete successfully
-				if (isDataPresentCheck && current) {
-					void router.push(`/${ALL_BOOKMARKS_URL}`);
-				}
-			}
-		},
-		[
-			allCategories?.data,
-			bookmarksCountData?.data?.categoryCount,
-			deleteCategoryOptimisticMutation,
-			router,
-			session,
-			userProfileData?.data,
-		],
-	);
-
 	if (isNil(session)) {
 		return <div />;
 	}
@@ -1103,127 +1035,24 @@ const Dashboard = () => {
 			<DashboardLayout
 				categoryId={CATEGORY_ID}
 				onAddBookmark={onAddBookmark}
-				onAddNewCategory={async (newCategoryName) => {
-					if (!isNull(userProfileData?.data)) {
-						const response = (await mutationApiCall(
-							addCategoryOptimisticMutation.mutateAsync({
-								name: newCategoryName,
-								category_order: userProfileData?.data[0]?.category_order ?? [],
-							}),
-						)) as { data: CategoriesData[] };
-
-						if (!isEmpty(response?.data)) {
-							void router.push(`/${response?.data[0]?.category_slug}`);
-						}
-					}
-				}}
-				onBookmarksDrop={async (event) => {
-					if (event?.isInternal === false) {
-						const categoryId = Number.parseInt(
-							event?.target?.key as string,
-							10,
-						);
-
-						const currentCategory =
-							find(allCategories?.data, (item) => item?.id === categoryId) ??
-							find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-						// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncatogorised
-
-						const updateAccessCondition =
-							find(
-								currentCategory?.collabData,
-								(item) => item?.userEmail === session?.user?.email,
-							)?.edit_access === true ||
-							currentCategory?.user_id?.id === session?.user?.id;
-
-						// eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
-						await event?.items?.forEach(async (item: any) => {
-							const bookmarkId = (await item.getText("text/plain")) as string;
-
-							const bookmarkCreatedUserId = find(
-								flattendPaginationBookmarkData,
-								(bookmarkItem) =>
-									Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-							)?.user_id?.id;
-
-							if (bookmarkCreatedUserId === session?.user?.id) {
-								if (!updateAccessCondition) {
-									// if update access is not there then user cannot drag and drop anything into the collection
-									errorToast("Cannot upload in other owners collection");
-									return;
-								}
-
-								await addCategoryToBookmarkOptimisticMutation.mutateAsync({
-									category_id: categoryId,
-									bookmark_id: Number.parseInt(bookmarkId, 10),
-									// if user is changing to uncategoried then thay always have access
-									update_access: updateAccessCondition,
-								});
-							} else {
-								errorToast("You cannot move collaborators uploads");
-							}
-						});
-					}
-				}}
-				onCategoryOptionClick={async (value, current, categoryId) => {
-					switch (value) {
-						case "delete":
-							await onDeleteCollection(current, categoryId);
-							break;
-						case "share":
-							toggleShareCategoryModal();
-							setShareCategoryId(categoryId);
-							// code block
-							break;
-						default:
-						// code block
-					}
-				}}
 				onClearTrash={() => {
-					toggleShowClearTrashWarningModal();
+					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 				}}
+				isClearingTrash={isClearingTrash}
 				onDeleteCollectionClick={async () =>
 					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
-				onIconColorChange={(color, id) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: id ?? CATEGORY_ID,
-							updateData: {
-								icon_color: color,
-							},
-						}),
-					);
-				}}
-				onIconSelect={(value, categoryId) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: categoryId,
-							updateData: { icon: value },
-						}),
-					);
-				}}
-				// onSearchEnterPress={onAddBookmark}
-				onSearchEnterPress={() => {}}
-				renderMainContent={renderMainPaneContent}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}
-				updateCategoryName={(categoryId, name) => {
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: categoryId,
-							updateData: {
-								category_name: name,
-							},
-						}),
-					);
-				}}
 				uploadFileFromAddDropdown={onDrop}
 				userId={session?.user?.id ?? ""}
-			/>
-			<ShareCategoryModal />
+			>
+				{renderMainPaneContent()}
+			</DashboardLayout>
+
 			<SettingsModal />
+
 			<WarningActionModal
 				buttonText="Delete"
 				isLoading={false}
@@ -1267,17 +1096,6 @@ const Dashboard = () => {
 				setOpen={toggleShowDeleteBookmarkWarningModal}
 				warningText="Are you sure you want to delete ?"
 				// isLoading={deleteBookmarkMutation?.isLoading}
-			/>
-			<WarningActionModal
-				buttonText="Clear trash"
-				isLoading={clearBookmarksInTrashMutation?.isLoading}
-				onContinueCick={() => {
-					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
-					toggleShowClearTrashWarningModal();
-				}}
-				open={showClearTrashWarningModal}
-				setOpen={toggleShowClearTrashWarningModal}
-				warningText="Are you sure you want to delete ?"
 			/>
 			<ToastContainer />
 		</>

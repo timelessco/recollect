@@ -1,4 +1,4 @@
-// ! TODO: Fix this in priority
+// TODO: Fix this in priority
 /* eslint-disable @typescript-eslint/no-base-to-string */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
@@ -77,8 +77,8 @@ const categoriesDelete = async (
 			throw new Error("ERROR: updateError");
 		} else {
 			console.log(
-				"updated collab bookmarks to uncategoried",
-				updateData?.map((item: { id: number }) => item?.id),
+				"updated collab bookmarks to uncategorised",
+				updateData?.map((item) => item?.id),
 			);
 		}
 	}
@@ -282,18 +282,18 @@ export default async function handler(
 	} else {
 		console.log("deleted bookmark_tags table data", userId);
 	}
-	// bookmarks_table delete
 
-	const { error: bookmarksTableError } = await supabase
+	// delete MAIN_TABLE_NAME
+	const { error: mainTableError } = await supabase
 		.from(MAIN_TABLE_NAME)
 		.delete()
 		.eq("user_id", userId);
 
-	if (!isNull(bookmarksTableError)) {
-		response.status(500).json({ data: null, error: bookmarksTableError });
-		throw new Error("ERROR: bookmarksTableError");
+	if (!isNull(mainTableError)) {
+		response.status(500).json({ data: null, error: mainTableError });
+		throw new Error("ERROR: mainTableError");
 	} else {
-		console.log("deleted bookmarks table data", userId);
+		console.log("deleted main table data", userId);
 	}
 	// tags delete
 

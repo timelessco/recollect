@@ -11,15 +11,13 @@ import { Spinner } from "../../../components/spinner";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import OptionsIcon from "../../../icons/optionsIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
-import {
-	type CategoryIconsDropdownTypes,
-	type ChildrenTypes,
-} from "../../../types/componentTypes";
+import { type ChildrenTypes } from "../../../types/componentTypes";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
 	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
+import ShareContent from "../share/shareContent";
 
 export type CollectionItemTypes = {
 	count?: number;
@@ -46,8 +44,6 @@ export type listPropsTypes = {
 		id: number,
 	) => void;
 	onClick?: () => void;
-	onIconColorChange?: CategoryIconsDropdownTypes["onIconColorChange"];
-	onIconSelect?: (value: string, id: number) => void;
 	responsiveIcon?: boolean;
 	showDropdown?: boolean;
 	showIconDropdown?: boolean;
@@ -56,6 +52,7 @@ export type listPropsTypes = {
 
 const SingleListItemComponent = (listProps: listPropsTypes) => {
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
+	const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
 	const {
 		item,
@@ -63,10 +60,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		showDropdown = false,
 		showIconDropdown = true,
 		listNameId = "",
-		onIconSelect = () => null,
 		onCategoryOptionClick = () => null,
 		showSpinner = false,
-		onIconColorChange = () => null,
 		onClick = () => null,
 		isLink = true,
 		responsiveIcon = false,
@@ -86,20 +81,17 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							buttonIconSize={18}
 							iconColor={item?.iconColor}
 							iconValue={item?.iconValue ?? null}
-							onIconColorChange={onIconColorChange}
-							onIconSelect={(value) => {
-								onIconSelect(value, item?.id);
-							}}
+							iconId={item?.id}
 						/>
 					</span>
 				) : (
-					<figure className="flex h-[18px] w-[18px] items-center text-plain-reverse-color">
+					<figure className="flex h-[18px] w-[18px] items-center text-plain-reverse">
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}
 				{(!responsiveIcon || isDesktop) && (
 					<p
-						className="ml-2 flex-1 overflow-hidden truncate text-[14px] font-[450] leading-[115%] tracking-[0.01em]"
+						className="ml-2 flex-1 truncate overflow-hidden text-[14px] leading-[115%] font-450 tracking-[0.01em]"
 						id={listNameId}
 					>
 						{item?.name}
@@ -117,14 +109,14 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						{showSpinner ? (
 							<Spinner
 								className="h-3 w-3 animate-spin"
-								style={{ color: "var(--plain-reverse-color)" }}
+								style={{ color: "var(--color-plain-reverse)" }}
 							/>
 						) : (
 							<AriaDropdown
 								menuButton={
 									<div
 										className={
-											openedMenuId === item?.id
+											openedMenuId === item?.id || activeMenu
 												? "flex text-gray-500"
 												: "hidden text-gray-500 group-hover:flex"
 										}
@@ -132,52 +124,77 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										<OptionsIcon />
 									</div>
 								}
-								menuClassName={`${dropdownMenuClassName} z-10`}
+								menuClassName={`${activeMenu ? "w-auto" : ""} ${dropdownMenuClassName} z-10`}
 								menuOpenToggle={(value) => {
-									if (value === true) {
+									if (value) {
 										setOpenedMenuId(item?.id);
+										setActiveMenu(null);
 									} else {
 										setOpenedMenuId(null);
+										setActiveMenu(null);
 									}
 								}}
 							>
-								{[
-									{ label: "Share", value: "share" },
-									{ label: "Delete", value: "delete" },
-								]?.map((dropdownItem) => (
-									<AriaDropdownMenu
-										key={dropdownItem?.value}
-										onClick={() =>
-											onCategoryOptionClick(
-												dropdownItem?.value,
-												item.current,
-												item.id,
-											)
-										}
-									>
-										<div className={dropdownMenuItemClassName}>
-											{dropdownItem?.label}
-										</div>
-									</AriaDropdownMenu>
-								))}
+								{!activeMenu ? (
+									<>
+										{[
+											{ label: "Share", value: "share" },
+											{ label: "Delete", value: "delete" },
+										].map((dropdownItem) => (
+											<AriaDropdownMenu
+												key={dropdownItem?.value}
+												onClick={async (event) => {
+													event.preventDefault();
+													event.stopPropagation();
+
+													if (dropdownItem?.value === "share") {
+														setActiveMenu("share");
+														return;
+													}
+
+													onCategoryOptionClick(
+														dropdownItem?.value,
+														item.current,
+														item.id,
+													);
+													setOpenedMenuId(null);
+												}}
+											>
+												<div className={dropdownMenuItemClassName}>
+													{dropdownItem?.label}
+												</div>
+											</AriaDropdownMenu>
+										))}
+									</>
+								) : (
+									<div className="rounded-lg bg-gray-50 p-1">
+										<ShareContent categoryId={item?.id} />
+									</div>
+								)}
 							</AriaDropdown>
 						)}
-						{item?.count !== undefined && !showSpinner && (
-							<p
-								className={`h-3 w-3 items-center justify-end text-right align-middle text-[11px] font-450 leading-[115%] tracking-[0.03em] text-gray-600 ${
-									showDropdown ? "block group-hover:hidden" : "block"
-								} ${openedMenuId === item?.id ? "hidden" : ""}`}
-							>
-								{item?.count}
-							</p>
-						)}
+
+						{item?.count !== undefined &&
+							!showSpinner &&
+							activeMenu !== "share" &&
+							item?.current && (
+								<div className="flex w-full justify-end">
+									<p
+										className={`min-w-[16px] text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 ${
+											showDropdown ? "block group-hover:hidden" : "block"
+										} ${openedMenuId === item?.id ? "hidden" : ""}`}
+									>
+										{item?.count}
+									</p>
+								</div>
+							)}
 					</div>
 				)}
 				{item?.count !== undefined && !showDropdown && (
 					<span
 						className={`${
 							item?.name === "Tweets" ? "block" : "hidden"
-						} text-[11px] font-450 leading-3 text-gray-600 ${
+						} text-[11px] leading-3 font-450 text-gray-600 ${
 							showDropdown ? "block group-hover:hidden" : "block"
 						}`}
 					>
@@ -190,15 +207,17 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
 	const contentWrapperClassNames = `${
 		item?.current ? "bg-gray-100 text-gray-900" : "text-gray-800"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor  group flex cursor-pointer items-center justify-between rounded-lg px-2  hover:bg-gray-100 hover:text-gray-900`;
+	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-gray-100 hover:text-gray-900`;
 
 	if (isLink) {
 		return (
-			<Link href={item?.href} legacyBehavior passHref>
-				{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-				<a className={contentWrapperClassNames} draggable={false}>
-					{renderContent()}
-				</a>
+			<Link
+				href={item?.href}
+				passHref
+				className={contentWrapperClassNames}
+				draggable={false}
+			>
+				{renderContent()}
 			</Link>
 		);
 	}

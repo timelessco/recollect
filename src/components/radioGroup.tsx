@@ -12,7 +12,7 @@ import { type ChildrenTypes } from "../types/componentTypes";
 type RadioGroupProps = {
 	disabled?: boolean;
 	initialRadioRef?:
-		| RefObject<HTMLInputElement>
+		| RefObject<HTMLInputElement | null>
 		| ((instance: HTMLInputElement | null) => void)
 		| null
 		| undefined;
@@ -53,8 +53,8 @@ const RadioGroup = (props: RadioGroupProps) => {
 				const isRadioSelected = value === item?.value;
 				return (
 					<label className={radioClassNames} key={item?.value}>
-						<div className="flex items-center text-13 font-450 leading-[115%] tracking-[0.01em]">
-							<figure className="mr-2 flex h-4 w-4 items-center justify-center text-plain-reverse-color">
+						<div className="flex items-center text-13 leading-[115%] font-450 tracking-[0.01em]">
+							<figure className="mr-2 flex h-4 w-4 items-center justify-center text-plain-reverse">
 								{item?.icon}
 							</figure>
 							<Radio

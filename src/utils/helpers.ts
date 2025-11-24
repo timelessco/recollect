@@ -124,6 +124,27 @@ export const getBaseUrl = (href: string): string => {
 	}
 };
 
+export const getNormalisedUrl = (url: string) => {
+	if (typeof url !== "string" || url.trim() === "") {
+		return null;
+	}
+
+	try {
+		if (url.startsWith("http://") || url.startsWith("https://")) {
+			return url;
+		}
+
+		if (url.startsWith("//")) {
+			return `https:${url}`;
+		}
+
+		return null;
+	} catch (error) {
+		console.warn("Error parsing URL:", error);
+		return null;
+	}
+};
+
 export const isUserInACategory = (url: string) => {
 	const nonCategoryPages = [
 		ALL_BOOKMARKS_URL,
@@ -401,4 +422,82 @@ export const searchSlugKey = (categoryData: {
 
 	// Fallback: return the original slug if no matching category was found
 	return categorySlug;
+};
+
+export const getColumnCount = (isDesktop: boolean, colCount?: number) => {
+	if (!isDesktop) {
+		return 2;
+	}
+
+	// If bookmarksColumns is provided, use its first value to determine column count
+	const firstColumn = colCount;
+
+	switch (firstColumn) {
+		case 10:
+			return 5;
+		case 20:
+			return 4;
+		case 30:
+			return 3;
+		case 40:
+			return 2;
+		case 50:
+			return 1;
+		case undefined:
+			return 2;
+		default:
+			return 1;
+	}
+};
+
+export const getBookmarkCountForCurrentPage = (
+	bookmarkCounts:
+		| {
+				categoryCount?: Array<{ category_id: number; count: number }>;
+				allBookmarks?: number;
+				trash?: number;
+				uncategorized?: number;
+				images?: number;
+				videos?: number;
+				documents?: number;
+				tweets?: number;
+				links?: number;
+		  }
+		| undefined,
+	categoryId: string | number | null,
+): number => {
+	if (!bookmarkCounts) {
+		return 0;
+	}
+
+	// Handle numeric category IDs
+	if (typeof categoryId === "number") {
+		const category = find(
+			bookmarkCounts.categoryCount,
+			(item) => item?.category_id === categoryId,
+		);
+		return category?.count ?? 0;
+	}
+
+	// Handle special category strings
+	switch (categoryId) {
+		case null:
+			return bookmarkCounts.allBookmarks ?? 0;
+		case TRASH_URL:
+			return bookmarkCounts.trash ?? 0;
+		case UNCATEGORIZED_URL:
+			return bookmarkCounts.uncategorized ?? 0;
+		case IMAGES_URL as unknown as string:
+			return bookmarkCounts.images ?? 0;
+		case VIDEOS_URL as unknown as string:
+			return bookmarkCounts.videos ?? 0;
+		case DOCUMENTS_URL as unknown as string:
+			return bookmarkCounts.documents ?? 0;
+		case TWEETS_URL as unknown as string:
+			return bookmarkCounts.tweets ?? 0;
+		case LINKS_URL as unknown as string:
+			return bookmarkCounts.links ?? 0;
+		default:
+			return 0;
+	}
 };

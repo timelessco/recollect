@@ -1,5 +1,7 @@
+import { BASE_URL } from "@/site-config";
+
 // table names
-export const MAIN_TABLE_NAME = "bookmarks_table";
+export const MAIN_TABLE_NAME = "everything";
 export const TAG_TABLE_NAME = "tags";
 export const BOOKMARK_TAGS_TABLE_NAME = "bookmark_tags";
 export const CATEGORIES_TABLE_NAME = "categories";
@@ -23,7 +25,7 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 export const URL_PATTERN =
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*@[A-Za-z\d]*/gu;
+export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*#[A-Za-z\d]*/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
 	/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
@@ -35,24 +37,6 @@ export const URL_IMAGE_CHECK_PATTERN =
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
-
-const productionUrl =
-	process.env.NEXT_PUBLIC_SITE_URL ??
-	`https://${
-		process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
-		process.env.VERCEL_PROJECT_PRODUCTION_URL
-	}`;
-const vercelEnvironment =
-	process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV;
-const branchUrl =
-	process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL ?? process.env.VERCEL_BRANCH_URL;
-const vercelUrl =
-	vercelEnvironment === "production" ? productionUrl : `https://${branchUrl}`;
-
-export const BASE_URL =
-	process.env.NODE_ENV === "development"
-		? `http://localhost:${process.env.PORT ?? 3_000}`
-		: vercelUrl;
 
 // api constants
 export const getBaseUrl = () => BASE_URL;
@@ -73,11 +57,12 @@ export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
 // no auth api yet
 // bookmark api
 export const FETCH_BOOKMARKS_DATA_API = "/bookmark/fetch-bookmarks-data";
-export const FETCH_BOOKMARK_BY_ID_API = "v1/bookmarks/get/fetch-by-id?id=";
+export const FETCH_BOOKMARK_BY_ID_API = "/v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
-export const WORKER_SCREENSHOT_API = "/v1/twitter/screenshot";
+export const WORKER_SCREENSHOT_API = "/v1/screenshot";
+export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
@@ -115,6 +100,7 @@ export const UPDATE_SHARED_CATEGORY_USER_ROLE_API =
 export const DELETE_SHARED_CATEGORIES_USER_API =
 	"/share/delete-shared-categories-user";
 export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
+export const SEND_EMAIL = "/share/send-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
@@ -140,12 +126,22 @@ export const DELETE_API_KEY_API = "/v1/delete-api-key";
 
 // Screenshot api
 export const SCREENSHOT_API =
-	"https://vercel-puppeteer-screenshot-api.vercel.app/";
+	"https://vercel-puppeteer-screenshot-api.vercel.app";
+
+export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 
 // Recollect server api
 export const PDF_SCREENSHOT_API = "/upload/pdf-screenshot";
 
 // urls
+
+// Guest
+export const LOGIN_URL = "login";
+export const EMAIL_URL = "email";
+export const OTP_URL = "otp";
+export const AUTH_URLS = "auth";
+
+// Others
 export const ALL_BOOKMARKS_URL = "all-bookmarks";
 export const UNCATEGORIZED_URL = "uncategorized";
 export const SEARCH_URL = "search";
@@ -154,7 +150,6 @@ export const TRASH_URL = "trash";
 export const DOCUMENTS_URL = "documents";
 export const TWEETS_URL = "tweets";
 export const SETTINGS_URL = "settings";
-export const LOGIN_URL = "login";
 export const SIGNUP_URL = "signup";
 export const SIGNIN_URL = "login";
 export const IMAGES_URL = "images";
@@ -327,6 +322,7 @@ export const OG_IMAGE_PREFERRED_SITES = [
 	"medium",
 	"spotify",
 	"imdb",
+	"pin.it",
 ];
 
 // Lightbox Constants
@@ -334,6 +330,8 @@ export const OG_IMAGE_PREFERRED_SITES = [
 // Media type prefixes
 export const IMAGE_TYPE_PREFIX = "image";
 export const VIDEO_TYPE_PREFIX = "video";
+
+export const LINK_TYPE_PREFIX = "text";
 
 // Media type specific strings
 export const PDF_MIME_TYPE = "application/pdf";
@@ -362,3 +360,37 @@ export const SKIP_OG_IMAGE_DOMAINS = [
 	"x.com",
 	"amazon.com",
 ];
+
+export const springConfig = {
+	mass: 1,
+	damping: 17,
+	stiffness: 250,
+	overshootClamping: false,
+	restSpeedThreshold: 0.001,
+	restDisplacementThreshold: 0.001,
+	type: "spring",
+} as const;
+
+/**
+ * Array of public paths that don't require authentication
+ * Dynamically generated from PAGE_SLUGS
+ */
+// export const PUBLIC_PATHS = new Set(["/"]);
+
+/**
+ * Array of guest paths that require authentication
+ */
+export const GUEST_PATHS = new Set([
+	`/${EMAIL_URL}`,
+	`/${LOGIN_URL}`,
+	`/${OTP_URL}`,
+]);
+export const isGuestPath = (pathname: string) =>
+	pathname.startsWith(`/${AUTH_URLS}`) || GUEST_PATHS.has(pathname);
+
+/**
+ * Array of public paths that don't require authentication
+ */
+export const PUBLIC_PATHS = new Set(["/public"]);
+export const isPublicPath = (pathname: string) =>
+	pathname.startsWith("/public");

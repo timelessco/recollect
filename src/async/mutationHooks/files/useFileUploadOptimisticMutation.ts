@@ -39,15 +39,13 @@ export default function useFileUploadOptimisticMutation() {
 
 	const { sortBy } = useGetSortBy();
 
-	const fileUploadOptimisticMutation = useMutation(uploadFile, {
+	const fileUploadOptimisticMutation = useMutation({
+		mutationFn: uploadFile,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			await queryClient.cancelQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -139,16 +137,12 @@ export default function useFileUploadOptimisticMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_COUNT_KEY,
-				session?.user?.id,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
 		},
 		onSuccess: async (apiResponse, data) => {
 			const uploadedDataType = data?.file?.type;
@@ -162,9 +156,9 @@ export default function useFileUploadOptimisticMutation() {
 			if (apiResponseTyped?.success === true) {
 				const fileTypeName = fileTypeIdentifier(uploadedDataType);
 
-				/* If the user uploads to a type page (links, videos) and the uploaded type is not of the page eg: user 
-					is uploading images in videos page then this logic fires and it tells where the item has been uploaded. 
-					Eg: If user uploads images in documents page then the user will get a toast message 
+				/* If the user uploads to a type page (links, videos) and the uploaded type is not of the page eg: user
+					is uploading images in videos page then this logic fires and it tells where the item has been uploaded.
+					Eg: If user uploads images in documents page then the user will get a toast message
 				telling "Added to documents page"  */
 
 				if (data?.file?.type === PDF_MIME_TYPE) {

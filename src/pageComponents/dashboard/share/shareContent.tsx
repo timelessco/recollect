@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TrashIcon } from "@heroicons/react/solid";
+import { TrashIcon } from "@heroicons/react/20/solid";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -21,7 +21,6 @@ import LinkIcon from "../../../icons/linkIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
-	useModalStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
@@ -158,7 +157,7 @@ const AccessUserInfo = (props: {
 				) : (
 					<DefaultUserIcon className="h-5 w-5" />
 				)}
-				<p className="ml-[6px] w-[171px] truncate text-13 font-450 leading-[15px] text-gray-800">
+				<p className="ml-[6px] w-[171px] truncate text-13 leading-[15px] font-450 text-gray-800">
 					{item.userEmail}
 				</p>
 			</div>
@@ -171,24 +170,25 @@ type EmailInput = {
 	email: string;
 };
 
-const ShareContent = () => {
+type ShareContentProps = {
+	categoryId?: string | number | null;
+};
+
+const ShareContent = (props: ShareContentProps) => {
 	const [publicUrl, setPublicUrl] = useState("");
 	const [linkCopied, setLinkCopied] = useState(false);
 	const [inviteUserEditAccess, setInviteUserEditAccess] = useState(false);
 
-	const showShareCategoryModal = useModalStore(
-		(state) => state.showShareCategoryModal,
-	);
-
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { category_id: currentCategoryId } = useGetCurrentCategoryId();
 
 	const shareCategoryId = useMiscellaneousStore(
 		(state) => state.shareCategoryId,
 	);
-	// categoryId will only be there for nav bar share and shareCategoryId will be there for side pane share
-	const dynamicCategoryId = shareCategoryId ?? categoryId;
+	// Priority: props.categoryId > shareCategoryId > currentCategoryId
+	const dynamicCategoryId =
+		props.categoryId ?? shareCategoryId ?? currentCategoryId;
 
 	const { updateCategoryOptimisticMutation } =
 		useUpdateCategoryOptimisticMutation();
@@ -200,7 +200,7 @@ const ShareContent = () => {
 		if (typeof window !== "undefined") {
 			const categorySlug = currentCategory?.category_slug as string;
 			const userName = currentCategory?.user_id?.user_name;
-			const url = `${window?.location?.origin}/${userName}/${categorySlug}`;
+			const url = `${window?.location?.origin}/public/${userName}/${categorySlug}`;
 			setPublicUrl(url);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -215,12 +215,10 @@ const ShareContent = () => {
 
 	// this resets all the state
 	useEffect(() => {
-		if (!showShareCategoryModal) {
-			setInviteUserEditAccess(false);
-			setLinkCopied(false);
-			reset({ email: "" });
-		}
-	}, [reset, showShareCategoryModal]);
+		setInviteUserEditAccess(false);
+		setLinkCopied(false);
+		reset({ email: "" });
+	}, [reset]);
 
 	const onSubmit: SubmitHandler<EmailInput> = async (data) => {
 		const emailList = data?.email?.split(",");
@@ -269,7 +267,7 @@ const ShareContent = () => {
 		currentCategory?.user_id?.id === session?.user?.id;
 
 	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-alpha-600 placeholder:text-gray-alpha-600": true,
+		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-800 placeholder:text-gray-alpha-600": true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
 
@@ -294,10 +292,10 @@ const ShareContent = () => {
 					isError={!isEmpty(errors)}
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
-						sendCollaborationEmailInviteMutation?.isLoading ? (
+						sendCollaborationEmailInviteMutation?.isPending ? (
 							<Spinner
 								className="h-3 w-3 animate-spin"
-								style={{ color: "var(--plain-reverse-color)" }}
+								style={{ color: "var(--color-plain-reverse)" }}
 							/>
 						) : (
 							<AriaSelect
@@ -328,7 +326,7 @@ const ShareContent = () => {
 				/>
 			</form>
 			<div className="pt-3">
-				<p className="px-2 py-[6px] text-xs font-450 leading-[14px] text-gray-500">
+				<p className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-500">
 					People with access
 				</p>
 				<div className="pb-2">
@@ -359,7 +357,7 @@ const ShareContent = () => {
 						<figure className="text-gray-1000">
 							<GlobeIcon />
 						</figure>
-						<p className="ml-[6px] text-13 font-450 leading-[15px] text-gray-800">
+						<p className="ml-[6px] text-13 leading-[15px] font-450 text-gray-800">
 							Anyone with link
 						</p>
 					</div>
@@ -419,7 +417,7 @@ const ShareContent = () => {
 					<figure className="text-gray-1000">
 						<LinkIcon />
 					</figure>
-					<p className="ml-[6px] text-13 font-450 leading-[15px] text-[#007bf4e5]">
+					<p className="ml-[6px] text-13 leading-[15px] font-450 text-[#007bf4e5]">
 						{linkCopied ? "Link copied" : "Copy link"}
 					</p>
 				</div>

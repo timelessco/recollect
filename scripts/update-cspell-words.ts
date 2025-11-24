@@ -12,8 +12,8 @@ type CSpellConfig = {
 };
 
 async function readCspellConfig(filePath: string): Promise<CSpellConfig> {
-	const [readError, readResult] = await vet(
-		async () => await fsExtra.readFile(filePath, "utf8"),
+	const [readError, readResult] = await vet(() =>
+		fsExtra.readFile(filePath, "utf8"),
 	);
 	if (readError) {
 		throw new Error(`Failed to read cspell config ${filePath}`, {
@@ -37,12 +37,8 @@ async function writeCspellConfig(
 	filePath: string,
 	config: CSpellConfig,
 ): Promise<void> {
-	const [writeError] = await vet(
-		async () =>
-			await fsExtra.writeFile(
-				filePath,
-				`${JSON.stringify(config, undefined, "\t")}\n`,
-			),
+	const [writeError] = await vet(() =>
+		fsExtra.writeFile(filePath, `${JSON.stringify(config, undefined, "\t")}\n`),
 	);
 
 	if (writeError) {

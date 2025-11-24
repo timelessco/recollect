@@ -40,7 +40,7 @@ const AriaSelect = (props: AriaSelectProps) => {
 	return (
 		<>
 			<Select
-				className="flex appearance-none items-center justify-between rounded-lg text-13 font-medium leading-4 outline-none"
+				className="flex appearance-none items-center justify-between rounded-lg text-13 leading-4 font-medium outline-hidden"
 				disabled={disabled}
 				state={select}
 			>

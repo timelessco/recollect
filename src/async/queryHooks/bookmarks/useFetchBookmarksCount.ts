@@ -12,10 +12,13 @@ export default function useFetchBookmarksCount() {
 	const { data: bookmarksCountData } = useQuery<{
 		data: BookmarksCountTypes | null;
 		error: Error;
-	}>(
-		[BOOKMARKS_COUNT_KEY, session?.user?.id as string],
-		async (data) => await getBookmarksCount(data, session ?? { user: null }),
-	);
+	}>({
+		// eslint-disable-next-line @tanstack/query/exhaustive-deps
+		queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id as string],
+		queryFn: async (data) =>
+			// @ts-expect-error - Todo fix this
+			await getBookmarksCount(data, session ?? { user: null }),
+	});
 
 	return {
 		bookmarksCountData,

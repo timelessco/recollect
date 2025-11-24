@@ -14,17 +14,18 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
+import { type CheckboxRenderProps } from "react-aria-components";
 import {
 	useDraggableCollectionState,
 	useListState,
 	type ListProps,
 } from "react-stately";
+import { tv } from "tailwind-variants";
 
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
-import Checkbox from "../../../components/checkbox";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsMobileView from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
@@ -46,10 +47,15 @@ import {
 	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
+import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
-// we are disabling this rule as option might get complicated , so we need to have it in a separate file
 import Option from "./option";
+import {
+	Checkbox,
+	checkboxBoxStyles,
+} from "@/components/ui/recollect/checkbox";
+import { CheckIcon } from "@/icons/check-icon";
 
 type ListBoxDropTypes = ListProps<object> & {
 	bookmarksColumns: number[];
@@ -77,6 +83,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	const setIsCardDragging = useMiscellaneousStore(
 		(store) => store.setIsCardDragging,
 	);
+
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((storeState) => storeState.session);
 
@@ -89,8 +96,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	};
 	const { isMobile, isTablet } = useIsMobileView();
 
-	// this ref is for scrolling + virtualization
-	const parentRef = useRef<HTMLUListElement | null>(null);
 	// this ref is for react-aria listbox
 	const ariaRef = useRef<HTMLUListElement | null>(null);
 
@@ -123,29 +128,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.moodboard
 			) {
-				if (isMobile || isTablet) {
-					lanes = 2;
-				} else {
-					switch (bookmarksColumns?.[0]) {
-						case 10:
-							lanes = 5;
-							break;
-						case 20:
-							lanes = 4;
-							break;
-						case 30:
-							lanes = 3;
-							break;
-						case 40:
-							lanes = 2;
-							break;
-						case 50:
-							lanes = 1;
-							break;
-						default:
-							lanes = 1;
-					}
-				}
+				lanes = getColumnCount(!isMobile && !isTablet, bookmarksColumns[0]);
 			}
 
 			// Get container width (fallback to 1200 if unknown)
@@ -251,7 +234,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 	// IMPORTANT: ariaRef is passed here so listeners attach properly
 	useDraggableCollection(props, dragState, ariaRef);
 
-	const ulClassName = classNames("outline-none focus:outline-none", {
+	const ulClassName = classNames("outline-hidden focus:outline-hidden", {
 		block: cardTypeCondition === viewValues.list,
 		"max-w-[600px] mx-auto space-y-4":
 			cardTypeCondition === viewValues.timeline,
@@ -300,14 +283,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
-			<ul
-				{...listBoxProps}
-				className={ulClassName}
-				ref={(element) => {
-					parentRef.current = element;
-					ariaRef.current = element;
-				}}
-			>
+			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
 				{cardTypeCondition === viewValues.moodboard ? (
 					<div
 						style={{
@@ -406,20 +382,22 @@ const ListBox = (props: ListBoxDropTypes) => {
 				</DragPreview>
 			</ul>
 			{state.selectionManager.selectedKeys.size > 0 && (
-				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 xl:left-1/2 xl:-translate-x-1/2 md:hidden">
+				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 max-xl:left-1/2 max-xl:-translate-x-1/2 max-md:hidden">
 					<div className="flex items-center gap-1">
 						<Checkbox
-							BookmarkHoverCheckbox
-							checked={
+							isSelected={
 								Array.from(state.selectionManager.selectedKeys.keys())?.length >
 								0
 							}
-							label={`${
+							onChange={() => state.selectionManager.clearSelection()}
+							className="gap-3 text-sm leading-[21px] font-450 tracking-[1%] text-gray-900"
+							BoxSlot={ListBoxCheckboxBoxSlot}
+						>
+							{`${
 								Array.from(state.selectionManager.selectedKeys.keys())?.length
 							} bookmarks`}
-							onChange={() => state.selectionManager.clearSelection()}
-							value="selected-bookmarks"
-						/>
+						</Checkbox>
+
 						{/* <Button
 							className="p-1 text-13 font-450 leading-[15px] text-gray-900"
 							onClick={() => state.selectionManager.selectAll()}
@@ -429,7 +407,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 					</div>
 					<div className="flex items-center">
 						<div
-							className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900"
+							className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
 							onClick={() => {
 								onBulkBookmarkDelete(
 									Array.from(
@@ -448,7 +426,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</div>
 						{isTrashPage && (
 							<div
-								className="mr-[13px] cursor-pointer text-13 font-450 leading-[15px] text-gray-900"
+								className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
 								onClick={() => {
 									onBulkBookmarkDelete(
 										Array.from(
@@ -469,7 +447,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 						{!isEmpty(categoryData?.data) && !isTrashPage && (
 							<AriaDropdown
 								menuButton={
-									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 font-450 leading-4 text-gray-900">
+									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
 										<figure className="mr-[6px] text-gray-1000">
 											<MoveIcon />
 										</figure>
@@ -508,3 +486,29 @@ const ListBox = (props: ListBoxDropTypes) => {
 };
 
 export default ListBox;
+
+const boxStyles = tv({
+	extend: checkboxBoxStyles,
+	base: "size-4 rounded-[5px]",
+	variants: {
+		isSelected: {
+			true: "bg-plain-reverse text-plain",
+			false: "bg-plain text-plain-reverse",
+		},
+	},
+});
+
+function ListBoxCheckboxBoxSlot(props: CheckboxRenderProps) {
+	const { isSelected, isIndeterminate, ...renderRest } = props;
+
+	return (
+		<div
+			className={boxStyles({
+				isSelected: isSelected || isIndeterminate,
+				...renderRest,
+			})}
+		>
+			<CheckIcon aria-hidden className="text-[10px]" />
+		</div>
+	);
+}

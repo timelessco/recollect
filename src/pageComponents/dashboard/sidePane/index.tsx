@@ -1,51 +1,21 @@
-import dynamic from "next/dynamic";
+import { memo } from "react";
 
-import { type CategoryIconsDropdownTypes } from "../../../types/componentTypes";
-
+import CollectionsList from "./collectionsList";
 import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
 import SidePaneTypesList from "./sidePaneTypesList";
 import SidePaneUserDropdown from "./sidePaneUserDropdown";
 
-const CollectionsList = dynamic(async () => await import("./collectionsList"), {
-	ssr: false,
-});
+const SidePane = () => (
+	<nav className="h-full overflow-y-auto border-r border-solid border-gray-alpha-50 bg-gray-0 p-2">
+		<SidePaneUserDropdown />
 
-type SidePaneTypes = {
-	onAddNewCategory: (value: string) => Promise<void>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onBookmarksDrop: (event: any) => Promise<void>;
-	onCategoryOptionClick: (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => Promise<void>;
-	onIconColorChange: CategoryIconsDropdownTypes["onIconColorChange"];
-	onIconSelect: (value: string, id: number) => void;
-};
+		<SidePaneOptionsMenu />
 
-const SidePane = (props: SidePaneTypes) => {
-	const {
-		onBookmarksDrop,
-		onCategoryOptionClick,
-		onIconSelect,
-		onAddNewCategory,
-		onIconColorChange,
-	} = props;
+		<CollectionsList />
 
-	return (
-		<nav className="h-full overflow-y-auto border-r border-solid border-gray-alpha-50 bg-gray-0 p-2">
-			<SidePaneUserDropdown />
-			<SidePaneOptionsMenu />
-			<CollectionsList
-				onAddNewCategory={onAddNewCategory}
-				onBookmarksDrop={onBookmarksDrop}
-				onCategoryOptionClick={onCategoryOptionClick}
-				onIconColorChange={onIconColorChange}
-				onIconSelect={(value, id) => onIconSelect(value, id)}
-			/>
-			<SidePaneTypesList />
-		</nav>
-	);
-};
+		<SidePaneTypesList />
+	</nav>
+);
 
-export default SidePane;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(SidePane);

@@ -2,21 +2,22 @@ import { useState } from "react";
 import { type AppProps } from "next/app";
 import Head from "next/head";
 import {
-	Hydrate,
+	HydrationBoundary,
 	QueryClient,
 	QueryClientProvider,
+	type DehydratedState,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import "../styles/globals.css";
-
 import { getBaseUrl } from "../utils/constants";
+
+import "../styles/globals.css";
 
 const MyApp = ({
 	Component,
 	pageProps: { ...pageProps },
 }: AppProps<{
-	dehydratedState: unknown;
+	dehydratedState: DehydratedState;
 }>) => {
 	// Create a client
 	// eslint-disable-next-line react/hook-use-state
@@ -35,7 +36,7 @@ const MyApp = ({
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<Hydrate state={pageProps.dehydratedState}>
+			<HydrationBoundary state={pageProps.dehydratedState}>
 				<Head>
 					<title>Recollect</title>
 					<meta
@@ -74,8 +75,9 @@ const MyApp = ({
 						/>
 					)}
 				</Head>
+
 				<Component {...pageProps} />
-			</Hydrate>
+			</HydrationBoundary>
 			<ReactQueryDevtools />
 		</QueryClientProvider>
 	);

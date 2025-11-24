@@ -24,11 +24,7 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import {
-	checkIfUrlAnImage,
-	checkIfUrlAnMedia,
-	getBaseUrl,
-} from "../../../utils/helpers";
+import { checkIfUrlAnImage, checkIfUrlAnMedia } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -78,7 +74,7 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
 	response: NextApiResponse<Data>,
 ) {
-	const { url, favIcon, id } = request.body;
+	const { url, id } = request.body;
 
 	if (!id) {
 		response
@@ -176,29 +172,6 @@ export default async function handler(
 		}
 	}
 
-	const favIconLogic = async () => {
-		const { hostname } = new URL(url);
-
-		if (favIcon) {
-			if (favIcon?.includes("https://")) {
-				return favIcon;
-			} else {
-				return hostname === "x.com"
-					? "https:" + favIcon
-					: `https://${getBaseUrl(url)}${favIcon}`;
-			}
-		} else {
-			const result = await fetch(
-				`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
-			);
-			if (!result.ok) {
-				return null;
-			}
-
-			return result?.url;
-		}
-	};
-
 	let uploadedCoverImageUrl = null;
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
 	// upload scrapper image to s3
@@ -292,19 +265,13 @@ export default async function handler(
 	const existingMetaData = currentData?.meta_data || {};
 
 	const meta_data = {
+		...existingMetaData,
 		img_caption: imageCaption,
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
-		favIcon: await favIconLogic(),
 		ocr: imageOcrValue,
-		screenshot: existingMetaData?.screenshot || null,
 		coverImage: uploadedCoverImageUrl,
-		twitter_avatar_url: null,
-		isOgImagePreferred: existingMetaData?.isOgImagePreferred,
-		mediaType: existingMetaData?.mediaType,
-		iframeAllowed: existingMetaData?.iframeAllowed,
-		isPageScreenshot: existingMetaData?.isPageScreenshot,
 	};
 
 	const {

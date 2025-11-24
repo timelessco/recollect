@@ -28,7 +28,7 @@ const UserAvatar = (props: UserAvatarTypes) => {
 		);
 	}
 
-	// eslint-disable-next-line tailwindcss/no-custom-classname
+	// TODO: fix this dynamic tailwind classname
 	return <DefaultUserIcon className={`h-[${height}px] w-[${width}px]`} />;
 };
 

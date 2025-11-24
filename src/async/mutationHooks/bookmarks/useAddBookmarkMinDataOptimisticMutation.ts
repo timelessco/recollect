@@ -41,15 +41,13 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	const { sortBy } = useGetSortBy();
 	const { addLoadingBookmarkId, removeLoadingBookmarkId } = useLoadersStore();
 
-	const addBookmarkMinDataOptimisticMutation = useMutation(addBookmarkMinData, {
+	const addBookmarkMinDataOptimisticMutation = useMutation({
+		mutationFn: addBookmarkMinData,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
+			await queryClient.cancelQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -104,16 +102,12 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 		// Always refetch after error or success:
 		onSettled: async (apiResponse: unknown) => {
 			const response = apiResponse as { data: { data: SingleListData[] } };
-			void queryClient.invalidateQueries([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				sortBy,
-			]);
-			void queryClient.invalidateQueries([
-				BOOKMARKS_COUNT_KEY,
-				session?.user?.id,
-			]);
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
 
 			if (!response?.data?.data) {
 				// something went wrong when adding min data so we return

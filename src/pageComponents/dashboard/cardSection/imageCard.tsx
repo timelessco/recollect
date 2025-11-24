@@ -56,11 +56,11 @@ const ImgLogicComponent = ({
 }: ImgLogicProps) => {
 	// image class name for all views
 	const imgClassName = classNames({
-		"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded":
+		"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded-sm":
 			cardTypeCondition === viewValues.list,
-		" w-full object-cover rounded-t-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
+		" w-full object-cover rounded-lg group-hover:rounded-b-none duration-150 moodboard-card-img aspect-[1.9047]":
 			cardTypeCondition === viewValues.card,
-		"w-full rounded-t-lg moodboard-card-img min-h-[192px] object-cover":
+		"w-full rounded-lg moodboard-card-img min-h-[192px] object-cover":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.timeline,
 		"relative z-[-1]":

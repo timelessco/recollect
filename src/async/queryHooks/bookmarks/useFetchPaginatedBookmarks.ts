@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -28,6 +29,7 @@ export default function useFetchPaginatedBookmarks() {
 		data: allBookmarksData,
 		fetchNextPage,
 		isLoading: isAllBookmarksDataLoading,
+		isFetching: isFetchingAllBookmarksData,
 	} = useInfiniteQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -38,17 +40,20 @@ export default function useFetchPaginatedBookmarks() {
 				session as SupabaseSessionType,
 				sortBy as BookmarksSortByTypes,
 			),
+		initialPageParam: 0,
 		getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
-		onSettled: () => {
-			if (isSortByLoading === true) {
-				toggleIsSortByLoading();
-			}
-		},
 	});
+
+	useEffect(() => {
+		if (allBookmarksData && isSortByLoading) {
+			toggleIsSortByLoading();
+		}
+	}, [isSortByLoading, allBookmarksData, toggleIsSortByLoading]);
 
 	return {
 		allBookmarksData,
 		fetchNextPage,
 		isAllBookmarksDataLoading,
+		isFetchingAllBookmarksData,
 	};
 }

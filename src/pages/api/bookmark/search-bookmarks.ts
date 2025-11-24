@@ -62,7 +62,7 @@ export default async function handler(
 
 	const tagName =
 		!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-			? matchedSearchTag?.map((item) => item?.replace("@", ""))
+			? matchedSearchTag?.map((item) => item?.replace("#", ""))
 			: undefined;
 
 	const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
@@ -140,9 +140,13 @@ tag_id (
 				(tagItem: { bookmark_id: number }) => tagItem?.bookmark_id === item?.id,
 			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
+			// Rename ogimage -> ogImage
+			const { ogimage, ...rest } = item;
+			const transformedItem = { ...rest, ogImage: ogimage };
+
 			if (!isEmpty(matchedBookmarkWithTag)) {
 				return {
-					...item,
+					...transformedItem,
 					addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
 						id: matchedItem?.tag_id?.id,
 						name: matchedItem?.tag_id?.name,
@@ -150,7 +154,7 @@ tag_id (
 				};
 			}
 
-			return item;
+			return transformedItem;
 		}) as SingleListData[];
 
 		response.status(200).json({ data: finalData, error });
