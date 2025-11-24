@@ -124,6 +124,27 @@ export const getBaseUrl = (href: string): string => {
 	}
 };
 
+export const getNormalisedUrl = (url: string) => {
+	if (typeof url !== "string" || url.trim() === "") {
+		return null;
+	}
+
+	try {
+		if (url.startsWith("http://") || url.startsWith("https://")) {
+			return url;
+		}
+
+		if (url.startsWith("//")) {
+			return `https:${url}`;
+		}
+
+		return null;
+	} catch (error) {
+		console.warn("Error parsing URL:", error);
+		return null;
+	}
+};
+
 export const isUserInACategory = (url: string) => {
 	const nonCategoryPages = [
 		ALL_BOOKMARKS_URL,

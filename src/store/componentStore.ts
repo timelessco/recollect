@@ -87,8 +87,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 		set(() => ({ addScreenshotBookmarkId: value })),
 	isCardDragging: false,
 	setIsCardDragging: (value: boolean) => set(() => ({ isCardDragging: value })),
-	showSidePane: true,
-	setShowSidePane: (value: boolean) => set(() => ({ showSidePane: value })),
 	currentBookmarkView: "moodboard",
 	setCurrentBookmarkView: (value: BookmarksViewTypes) =>
 		set(() => ({ currentBookmarkView: value })),

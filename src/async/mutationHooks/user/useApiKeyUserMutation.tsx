@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { API_KEY_CHECK_KEY } from "../../../utils/constants";
-import { errorToast, successToast } from "../../../utils/toastMessages";
+import { successToast } from "../../../utils/toastMessages";
 import { saveApiKey } from "../../supabaseCrudHelpers";
+
+import { handleClientError } from "@/utils/error-utils/client";
 
 type SaveApiKeyParameters = {
 	apikey: string;
@@ -31,10 +33,7 @@ export const useApiKeyMutation = () => {
 			await queryClient.invalidateQueries({ queryKey: [API_KEY_CHECK_KEY] });
 		},
 		onError: (error) => {
-			console.error("Error updating API key:", error);
-			errorToast(
-				error.message || "Failed to update API key. Please try again.",
-			);
+			handleClientError(error, "Failed to update API key. Please try again.");
 		},
 	});
 };

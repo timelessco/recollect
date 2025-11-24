@@ -115,13 +115,14 @@ export const UPLOAD_FILE_REMAINING_DATA_API =
 // user settings and keys
 export const SAVE_API_KEY_API = "/v1/api-key";
 
-export const CHECK_API_KEY_API = "/v1/check-api-key";
+export const CHECK_API_KEY_API = "/v1/check-gemini-api-key";
+export const GET_API_KEY_API = "/v1/get-gemini-api-key";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";
 
 // Screenshot api
 export const SCREENSHOT_API =
-	"https://vercel-puppeteer-screenshot-api.vercel.app/";
+	"https://vercel-puppeteer-screenshot-api.vercel.app";
 
 export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 
@@ -158,6 +159,7 @@ export const BOOKMARKS_VIEW = "bookmarks_view";
 export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
 export const API_KEY_CHECK_KEY = "api_key_check";
+export const GET_API_KEY_KEY = "get_api_key";
 
 // error msgs
 

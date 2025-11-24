@@ -5,7 +5,7 @@ export default function Document() {
 		<Html lang="en" dir="ltr">
 			<Head />
 
-			<body className="overflow-hidden bg-gray-0 antialiased outline-hidden inter-display optimize-legibility">
+			<body className="overflow-x-hidden bg-gray-0 antialiased outline-hidden inter-display optimize-legibility">
 				<Main />
 				<NextScript />
 			</body>

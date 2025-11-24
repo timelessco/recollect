@@ -5,46 +5,17 @@ import SidePaneOptionsMenu from "./sidePaneOptionsMenu";
 import SidePaneTypesList from "./sidePaneTypesList";
 import SidePaneUserDropdown from "./sidePaneUserDropdown";
 
-type SidePaneTypes = {
-	onAddNewCategory: (value: string) => Promise<void>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onBookmarksDrop: (event: any) => Promise<void>;
-	onCategoryOptionClick: (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => Promise<void>;
-	isLoadingCategories?: boolean;
-	isFetchingCategories?: boolean;
-};
+const SidePane = () => (
+	<nav className="h-full overflow-y-auto border-r border-solid border-gray-alpha-50 bg-gray-0 p-2">
+		<SidePaneUserDropdown />
 
-const SidePane = (props: SidePaneTypes) => {
-	const {
-		onBookmarksDrop,
-		onCategoryOptionClick,
-		onAddNewCategory,
-		isLoadingCategories = false,
-		isFetchingCategories = false,
-	} = props;
+		<SidePaneOptionsMenu />
 
-	return (
-		<nav className="h-full overflow-y-auto border-r border-solid border-gray-alpha-50 bg-gray-0 p-2">
-			<SidePaneUserDropdown />
+		<CollectionsList />
 
-			<SidePaneOptionsMenu />
-
-			<CollectionsList
-				onAddNewCategory={onAddNewCategory}
-				onBookmarksDrop={onBookmarksDrop}
-				onCategoryOptionClick={onCategoryOptionClick}
-				isLoadingCategories={isLoadingCategories}
-				isFetchingCategories={isFetchingCategories}
-			/>
-
-			<SidePaneTypesList />
-		</nav>
-	);
-};
+		<SidePaneTypesList />
+	</nav>
+);
 
 // Memoize the component to prevent unnecessary re-renders
 export default memo(SidePane);

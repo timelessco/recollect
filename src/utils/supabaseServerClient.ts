@@ -4,6 +4,7 @@ import {
 	serialize,
 	type CookieOptions,
 } from "@supabase/ssr";
+import { type SupabaseClient } from "@supabase/supabase-js";
 
 export const isProductionEnvironment = process.env.NODE_ENV === "production";
 
@@ -28,6 +29,12 @@ export const apiSupabaseClient = (
 	const apiCookieResponse = response as NextApiResponse & {
 		appendHeader: (name: unknown, function_: unknown) => void;
 	};
+
+	const authorization = request?.headers?.authorization;
+	if (authorization) {
+		console.log("Authorization token provided: ", authorization);
+	}
+
 	const supabase = createServerClient(
 		isProductionEnvironment
 			? process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -36,13 +43,9 @@ export const apiSupabaseClient = (
 		{
 			// This is for Recollect Mobile - Auth context from mobile app is passed to the server via Authorization header
 			// Fix for - https://supabase.com/docs/guides/functions/auth#:~:text=Row%20Level%20Security%23,Security%20will%20be%20enforced.
-			...(request.headers.authorization
+			...(authorization
 				? {
-						global: {
-							headers: {
-								Authorization: request.headers.authorization,
-							},
-						},
+						global: { headers: { Authorization: authorization } },
 					}
 				: {}),
 			cookies: {
@@ -66,4 +69,18 @@ export const apiSupabaseClient = (
 	);
 
 	return supabase;
+};
+
+export const getApiSupabaseUser = async (
+	request: NextApiRequest,
+	supabase: SupabaseClient,
+) => {
+	const authorization = request.headers.authorization;
+	const token = authorization?.replace("Bearer ", "");
+
+	if (!token) {
+		return await supabase.auth.getUser();
+	}
+
+	return await supabase.auth.getUser(token);
 };
