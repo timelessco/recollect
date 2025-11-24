@@ -53,7 +53,6 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 					onBulkBookmarkDelete={() => {}}
 					onCategoryChange={() => {}}
 					onDeleteClick={() => {}}
-					onEditClick={() => {}}
 					onMoveOutOfTrashClick={() => {}}
 					showAvatar={false}
 					userId=""

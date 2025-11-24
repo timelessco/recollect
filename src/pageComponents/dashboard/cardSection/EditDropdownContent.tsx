@@ -19,6 +19,8 @@ import {
 } from "../../../types/componentTypes";
 import { CATEGORIES_KEY } from "../../../utils/constants";
 
+import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
+
 interface EditDropdownContentProps {
 	post: SingleListData;
 	onCategoryChange: (value: SearchSelectOption | null) => Promise<void>;
@@ -28,7 +30,6 @@ interface EditDropdownContentProps {
 	) => Promise<void>;
 	removeExistingTag: (value: TagInputOption) => Promise<void>;
 	createTag: (value: Array<{ label: string }>) => Promise<void>;
-	userTags?: UserTagsData[];
 	addedTags: UserTagsData[];
 	isCategoryChangeLoading: boolean;
 	userId: string;
@@ -41,7 +42,6 @@ const EditDropdownContentBase = ({
 	addExistingTag,
 	removeExistingTag,
 	createTag,
-	userTags = [],
 	addedTags = [],
 	isCategoryChangeLoading = false,
 	userId,
@@ -54,6 +54,8 @@ const EditDropdownContentBase = ({
 		data: CategoriesData[];
 		error: PostgrestError;
 	};
+	const { userTags } = useFetchUserTags();
+	const filteredUserTags = userTags?.data ? userTags?.data : [];
 
 	// MEMOIZED: category options
 	const categoryOptions = useMemo(() => {
@@ -100,7 +102,7 @@ const EditDropdownContentBase = ({
 				<LabelledComponent label="Tags">
 					<AriaMultiSelect
 						defaultList={addedTags?.map((item) => item?.name) || []}
-						list={userTags?.map((item) => item?.name) ?? []}
+						list={filteredUserTags?.map((item) => item?.name) ?? []}
 						onChange={async (action, value) => {
 							if (action === "remove") {
 								const tagData = find(
@@ -120,7 +122,7 @@ const EditDropdownContentBase = ({
 									value?.map((addItem) => ({
 										label: addItem,
 										value: find(
-											userTags,
+											filteredUserTags,
 											(findItem) => findItem.name === addItem,
 										)?.id as number,
 									})),

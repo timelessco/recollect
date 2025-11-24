@@ -76,7 +76,6 @@ import Settings from "../settings";
 import SettingsModal from "./modals/settingsModal";
 import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
-import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 // import CardSection from "./cardSection";
@@ -154,7 +153,6 @@ const Dashboard = () => {
 
 	// Determine if we're currently searching
 	const isSearching = !isEmpty(searchText);
-	const { userTags } = useFetchUserTags();
 
 	const { sharedCategoriesData } = useFetchSharedCategories();
 
@@ -323,9 +321,6 @@ const Dashboard = () => {
 			}),
 		);
 	};
-
-	// any new tags created need not come in tag dropdown , this filter implements this
-	const filteredUserTags = userTags?.data ? userTags?.data : [];
 
 	const bookmarksViewApiLogic = (
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
@@ -611,7 +606,6 @@ const Dashboard = () => {
 										style={{ overflow: "unset" }}
 									>
 										<CardSection
-											userTags={filteredUserTags}
 											bookmarksCountData={getBookmarkCountForCurrentPage(
 												bookmarksCountData?.data ?? undefined,
 												CATEGORY_ID as unknown as string | number | null,

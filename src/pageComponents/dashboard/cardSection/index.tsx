@@ -99,7 +99,6 @@ export type CardSectionProps = {
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
-	userTags?: UserTagsData[];
 	isCategoryChangeLoading?: boolean;
 	onCreateNewCategory?: (category: {
 		label: string;
@@ -127,7 +126,6 @@ const CardSection = ({
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
-	userTags = [],
 	isCategoryChangeLoading = false,
 	onCreateNewCategory = async () => {},
 }: CardSectionProps) => {
@@ -416,7 +414,6 @@ const CardSection = ({
 										/* empty */
 									}
 								}}
-								userTags={userTags}
 								addedTags={post.addedTags}
 								isCategoryChangeLoading={isCategoryChangeLoading}
 								userId={userId}
