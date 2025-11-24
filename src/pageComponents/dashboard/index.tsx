@@ -68,7 +68,7 @@ import {
 	VIDEOS_URL,
 } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
-import { errorToast, successToast } from "../../utils/toastMessages";
+import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
@@ -711,7 +711,6 @@ const Dashboard = () => {
 																		: updateAccessCondition,
 															},
 														);
-														successToast("Category changed successfully");
 													} else {
 														errorToast("You cannot move collaborators uploads");
 													}

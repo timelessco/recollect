@@ -57,7 +57,6 @@ const EditDropdownContentBase = ({
 	const { userTags } = useFetchUserTags();
 	const filteredUserTags = userTags?.data ? userTags?.data : [];
 
-	// MEMOIZED: category options
 	const categoryOptions = useMemo(() => {
 		const base = [
 			{
@@ -79,7 +78,6 @@ const EditDropdownContentBase = ({
 		return base;
 	}, [categoryData?.data, post?.user_id?.id, userId]);
 
-	// MEMOIZED: default category
 	const defaultValue = useMemo(() => {
 		const match = filter(
 			categoryData?.data,
@@ -159,5 +157,4 @@ const EditDropdownContentBase = ({
 	);
 };
 
-// WRAP IN MEMO
 export const EditDropdownContent = memo(EditDropdownContentBase);
