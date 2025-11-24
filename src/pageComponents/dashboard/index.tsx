@@ -30,7 +30,6 @@ import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookma
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
-import useFetchUserTags from "../../async/queryHooks/userTags/useFetchUserTags";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
@@ -77,6 +76,7 @@ import Settings from "../settings";
 import SettingsModal from "./modals/settingsModal";
 import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
+import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 // import CardSection from "./cardSection";
@@ -622,7 +622,8 @@ const Dashboard = () => {
 											}
 											isLoading={
 												isAllBookmarksDataLoading ||
-												(isSearchLoading && flattenedSearchData.length === 0)
+												(isSearchLoading &&
+													(flattenedSearchData?.length ?? 0) === 0)
 											}
 											isLoadingProfile={isUserProfileLoading}
 											isOgImgLoading={addBookmarkScreenshotMutation?.isPending}
