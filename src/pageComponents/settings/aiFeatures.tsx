@@ -16,8 +16,8 @@ import {
 	settingsInputContainerClassName,
 } from "../../utils/commonClassNames";
 
+import { SlashedEyeIcon } from "@/icons/shashed-eye-icon";
 import { ShowEyeIcon } from "@/icons/show-eye-icon";
-import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
 import { handleClientError } from "@/utils/error-utils/client";
 
 type AiFeaturesFormTypes = {
