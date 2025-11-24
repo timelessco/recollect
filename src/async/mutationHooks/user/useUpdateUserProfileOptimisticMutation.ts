@@ -60,12 +60,6 @@ export default function useUpdateUserProfileOptimisticMutation() {
 			void queryClient.invalidateQueries({
 				queryKey: [USER_PROFILE, session?.user?.id],
 			});
-			// void queryClient.invalidateQueries([
-			// 	BOOKMARKS_KEY,
-			// 	session?.user?.id,
-			// 	CATEGORIES_ID,
-			// 	sortBy,
-			// ]);
 		},
 	});
 	return { updateUserProfileOptimisticMutation };
