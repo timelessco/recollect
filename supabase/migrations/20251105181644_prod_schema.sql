@@ -1000,7 +1000,7 @@ DECLARE
 BEGIN
   -- Set webhook URL based on environment
   -- IMPORTANT: Update this URL for your production environment
-  webhook_url := 'http://10.90.121.147:3000/api/v1/bookmarks/add/tasks/queue-consumer';
+  webhook_url := 'http://localhost:3000/api/v1/bookmarks/add/tasks/queue-consumer';
   
   -- Send HTTP POST request to queue consumer API
   -- Only process if pg_net extension is available

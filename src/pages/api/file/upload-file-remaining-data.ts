@@ -13,7 +13,7 @@ import {
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
-import { blurhashFromURL, blurhashFromURL } from "../../../utils/getBlurHash";
+import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = UploadFileApiResponse;

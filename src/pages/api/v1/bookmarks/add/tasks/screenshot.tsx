@@ -230,7 +230,7 @@ export default async function handler(
 
 		if (error) {
 			response.status(500).json({ data: null, error });
-			throw new Error("ERROR: update screenshot in DB error");
+			return;
 		}
 
 		// // Upload remaining bookmark data asynchronously
