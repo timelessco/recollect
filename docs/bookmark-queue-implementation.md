@@ -45,7 +45,7 @@ The bookmark queue system is a **background job processing architecture** that h
 │  - Ensures job persistence              │
 └──────┬──────────────────────────────────┘
        │
-       │ Processed by cron job/worker, in our case a worker that fires the consumer api when ever the queue DB is
+       │ Processed by cron job/worker, in our case a worker that fires the consumer api when ever the queue DB is updated and a CRON that deletes all the archive message which is run once everyday
        │
        ▼
 ┌─────────────────────────────────────────┐
