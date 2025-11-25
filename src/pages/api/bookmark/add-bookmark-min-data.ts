@@ -119,7 +119,10 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 	return false;
 };
 
-const getFavIconNormalisedUrl = async (favIcon: string | null, url: string) => {
+export const getNormalisedImageUrl = async (
+	favIcon: string | null,
+	url: string,
+) => {
 	try {
 		const { hostname } = new URL(url);
 
@@ -387,7 +390,7 @@ export default async function handler(
 			}
 		}
 
-		const favIcon = await getFavIconNormalisedUrl(
+		const favIcon = await getNormalisedImageUrl(
 			scrapperResponse?.data?.favIcon,
 			url,
 		);
