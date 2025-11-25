@@ -201,6 +201,10 @@ export const isBookmarkAudio = (type: string): boolean =>
 export const isBookmarkDocument = (type: string): boolean =>
 	documentFileTypes?.includes(type);
 
+// tells if the bookmark is of image type
+export const isBookmarkImage = (type: string): boolean =>
+	type?.includes("image");
+
 // used in apis to tell if user is in a collection or not
 export const isUserInACategoryInApi = (
 	category_id: string,
