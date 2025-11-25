@@ -149,7 +149,7 @@ export const getNormalisedImageUrl = async (
 
 		return response.url;
 	} catch (error) {
-		console.warn("Error fetching favicon:", error);
+		console.warn("Error fetching Image:", error);
 		return null;
 	}
 };
