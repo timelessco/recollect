@@ -12,6 +12,7 @@ import {
 	type UserTagsData,
 } from "@/types/apiTypes";
 import { mutationApiCall } from "@/utils/apiHelpers";
+import { handleClientError } from "@/utils/error-utils/client";
 
 export const EditDropdownButton = ({
 	isMenuOpen,
@@ -94,9 +95,14 @@ export const EditDropdownButton = ({
 								}
 							}}
 							addExistingTag={async (tag) => {
+								const tagValue = tag[tag.length - 1]?.value;
+								if (!tagValue) {
+									return;
+								}
+
 								const bookmarkTagsData = {
 									bookmark_id: post.id,
-									tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
+									tag_id: Number.parseInt(String(tagValue), 10),
 								} as unknown as BookmarksTagData;
 
 								await mutationApiCall(
@@ -146,8 +152,8 @@ export const EditDropdownButton = ({
 											selectedData: bookmarkTagsData,
 										}),
 									);
-								} catch {
-									/* empty */
+								} catch (error) {
+									handleClientError(error, "Failed to create tag");
 								}
 							}}
 							addedTags={post.addedTags}
