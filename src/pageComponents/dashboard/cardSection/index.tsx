@@ -20,7 +20,6 @@ import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
-import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
@@ -32,7 +31,6 @@ import {
 	useMiscellaneousStore,
 } from "../../../store/componentStore";
 import {
-	type BookmarksTagData,
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type SingleListData,
@@ -67,14 +65,9 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
-import { EditDropdownContent } from "./EditDropdownContent";
+import { EditDropdownButton } from "./EditDropdownButton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
-import useAddTagToBookmarkMutation from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
-import useAddUserTagsMutation from "@/async/mutationHooks/tags/useAddUserTagsMutation";
-import useRemoveTagFromBookmarkMutation from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
-import { AriaDropdown, AriaDropdownMenu } from "@/components/ariaDropdown";
-import { mutationApiCall } from "@/utils/apiHelpers";
 
 export type onBulkBookmarkDeleteType = (
 	bookmark_ids: number[],
@@ -176,12 +169,6 @@ const CardSection = ({
 	};
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-	const { addUserTagsMutation } = useAddUserTagsMutation();
-
-	const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
-
-	const { removeTagFromBookmarkMutation } = useRemoveTagFromBookmarkMutation();
-
 	// gets from the trigram search api
 	const searchBookmarksData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
@@ -305,123 +292,18 @@ const CardSection = ({
 		const isMenuOpen = openedMenuId === post.id;
 
 		const pencilIcon = (
-			<div className="relative">
-				<AriaDropdown
-					isOpen={isMenuOpen}
-					menuButton={
-						<div
-							className={`${iconBgClassName} ${!isPublicPage ? (window?.Cypress ? "flex" : isMenuOpen ? "flex" : "hidden") : "hidden"} ${isMenuOpen ? "bg-gray-100" : ""}`}
-							onClick={(event) => {
-								event.preventDefault();
-								event.stopPropagation();
-								setOpenedMenuId(isMenuOpen ? null : post.id);
-							}}
-							onKeyDown={() => {}}
-							onPointerDown={(event) => {
-								event.stopPropagation();
-							}}
-							role="button"
-							tabIndex={0}
-						>
-							<figure className="text-gray-1000">
-								<EditIcon />
-							</figure>
-						</div>
-					}
-					// Use relative positioning to keep menu anchored to button
-					menuClassName="absolute top-full left-0 z-10  mt-1 bg-gray-50 shadow-custom-3 rounded-md focus:outline-none p-2 dropdown-content"
-					menuOpenToggle={(isOpen) => {
-						setOpenedMenuId(isOpen ? post.id : null);
-					}}
-				>
-					{isMenuOpen ? (
-						<AriaDropdownMenu
-							className="dropdown-content"
-							onClick={(event: React.MouseEvent) => {
-								event.stopPropagation();
-								event.preventDefault();
-							}}
-						>
-							<EditDropdownContent
-								post={post}
-								onCategoryChange={async (value) => {
-									if (value) {
-										onCategoryChange([post.id], Number(value.value));
-									}
-								}}
-								onCreateCategory={async (value) => {
-									if (value) {
-										await onCreateNewCategory(value);
-									}
-								}}
-								addExistingTag={async (tag) => {
-									const bookmarkTagsData = {
-										bookmark_id: post.id,
-										tag_id: Number.parseInt(
-											`${tag[tag.length - 1]?.value}`,
-											10,
-										),
-									} as unknown as BookmarksTagData;
-
-									await mutationApiCall(
-										addTagToBookmarkMutation.mutateAsync({
-											selectedData: bookmarkTagsData,
-										}),
-									);
-								}}
-								removeExistingTag={async (tag) => {
-									const delValue = tag.value;
-									const currentBookark = find(
-										bookmarksList,
-										(item) => item?.id === post?.id,
-									) as SingleListData;
-									const delData = find(
-										currentBookark?.addedTags,
-										(item) => item?.id === delValue || item?.name === delValue,
-									) as unknown as BookmarksTagData;
-
-									await mutationApiCall(
-										removeTagFromBookmarkMutation.mutateAsync({
-											selectedData: {
-												tag_id: delData?.id as number,
-												bookmark_id: currentBookark?.id,
-											},
-										}),
-									);
-								}}
-								createTag={async (tagData) => {
-									try {
-										const data = (await mutationApiCall(
-											addUserTagsMutation.mutateAsync({
-												tagsData: { name: tagData[tagData.length - 1]?.label },
-											}),
-										)) as { data: UserTagsData[] };
-
-										// on edit we are adding the new tag to bookmark as the bookmark is
-										// will already be there when editing
-										const bookmarkTagsData = {
-											bookmark_id: post?.id,
-											tag_id: data?.data[0]?.id,
-											user_id: userId,
-										} as unknown as BookmarksTagData;
-
-										await mutationApiCall(
-											addTagToBookmarkMutation.mutateAsync({
-												selectedData: bookmarkTagsData,
-											}),
-										);
-									} catch {
-										/* empty */
-									}
-								}}
-								addedTags={post.addedTags}
-								isCategoryChangeLoading={isCategoryChangeLoading}
-								userId={userId}
-							/>
-						</AriaDropdownMenu>
-					) : null}
-				</AriaDropdown>
-			</div>
+			<EditDropdownButton
+				isMenuOpen={isMenuOpen}
+				iconBgClassName={iconBgClassName}
+				isPublicPage={isPublicPage}
+				setOpenedMenuId={setOpenedMenuId}
+				post={post}
+				onCategoryChange={onCategoryChange}
+				onCreateNewCategory={onCreateNewCategory}
+				bookmarksList={bookmarksList}
+				isCategoryChangeLoading={isCategoryChangeLoading}
+				userId={userId}
+			/>
 		);
 
 		const trashIcon = (
