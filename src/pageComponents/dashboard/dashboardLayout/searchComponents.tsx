@@ -184,6 +184,7 @@ const styles = {
 	},
 
 	suggestions: {
+		borderRadius: "12px",
 		list: {
 			backgroundColor: "var(--color-plain)",
 			padding: "6px",
