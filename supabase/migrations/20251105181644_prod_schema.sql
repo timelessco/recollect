@@ -949,8 +949,23 @@ END $$;
 
 -- ----------------------------------------------------------------------------
 -- Step 2: Configure Queue Permissions and Policies
--- Sets up RLS, grants, and webhook trigger for the queue
+-- Sets up RLS and grants for the queue
 -- Only runs if the queue table was successfully created
+-- ----------------------------------------------------------------------------
+-- NOTE: Database webhooks should be created via Supabase UI/Dashboard
+--       as they are environment-specific (localhost vs production URLs)
+-- 
+-- To create the webhook via Supabase Dashboard:
+--   1. Go to Database > Webhooks
+--   2. Click "Create a new hook"
+--   3. Name: add-bookmark-url-queue-webhook
+--   4. Table: q_add-bookmark-url-queue (in pgmq schema)
+--   5. Events: Insert
+--   6. Type: HTTP Request
+--   7. Method: POST
+--   8. URL: http://localhost:3000/api/v1/bookmarks/add/tasks/queue-consumer
+--           (Update for production environment)
+--   9. Timeout: 5000ms
 -- ----------------------------------------------------------------------------
 
 DO $$
@@ -959,6 +974,10 @@ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables
              WHERE table_schema = 'pgmq'
              AND table_name = 'q_add-bookmark-url-queue') THEN
+
+    -- Clean up any manually created triggers/functions
+    DROP TRIGGER IF EXISTS "add-bookmark-url-queue-webhook" ON "pgmq"."q_add-bookmark-url-queue";
+    DROP FUNCTION IF EXISTS "pgmq"."notify_add_bookmark_url_queue"();
 
     -- Enable RLS on pgmq queue
     ALTER TABLE "pgmq"."q_add-bookmark-url-queue" ENABLE ROW LEVEL SECURITY;
@@ -979,67 +998,6 @@ BEGIN
       GRANT INSERT, SELECT ON TABLE "pgmq"."a_add-bookmark-url-queue" TO "authenticated";
       GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "pgmq"."a_add-bookmark-url-queue" TO "service_role";
     END IF;
-  END IF;
-END $$;
-
--- ----------------------------------------------------------------------------
--- Step 3: Create Webhook Function
--- Creates a function that will be triggered when a message is inserted into the queue
--- This function sends an HTTP request to the queue consumer API
--- NOTE: Update the webhook URL to match your environment (local/production)
--- ----------------------------------------------------------------------------
-
-CREATE OR REPLACE FUNCTION "pgmq"."notify_add_bookmark_url_queue"()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-DECLARE
-  request_id bigint;
-  webhook_url text;
-BEGIN
-  -- Set webhook URL based on environment
-  -- IMPORTANT: Update this URL for your production environment
-  webhook_url := 'http://localhost:3000/api/v1/bookmarks/add/tasks/queue-consumer';
-  
-  -- Send HTTP POST request to queue consumer API
-  -- Only process if pg_net extension is available
-  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_net') THEN
-    SELECT net.http_post(
-      url := webhook_url,
-      headers := '{"Content-Type": "application/json"}'::jsonb,
-      body := '{}'::jsonb,
-      timeout_milliseconds := 5000
-    ) INTO request_id;
-  END IF;
-  
-  RETURN NEW;
-END;
-$$;
-
-ALTER FUNCTION "pgmq"."notify_add_bookmark_url_queue"() OWNER TO "postgres";
-
--- ----------------------------------------------------------------------------
--- Step 4: Create Webhook Trigger
--- Trigger fires on INSERT to q_add-bookmark-url-queue table
--- Calls the notify_add_bookmark_url_queue function to process the queue
--- ----------------------------------------------------------------------------
-
-DO $$
-BEGIN
-  -- Only create trigger if the queue table exists
-  IF EXISTS (SELECT 1 FROM information_schema.tables
-             WHERE table_schema = 'pgmq'
-             AND table_name = 'q_add-bookmark-url-queue') THEN
-    
-    -- Drop existing trigger if it exists
-    DROP TRIGGER IF EXISTS "add-bookmark-url-queue-webhook" ON "pgmq"."q_add-bookmark-url-queue";
-    
-    -- Create new trigger
-    CREATE TRIGGER "add-bookmark-url-queue-webhook"
-      AFTER INSERT ON "pgmq"."q_add-bookmark-url-queue"
-      FOR EACH ROW
-      EXECUTE FUNCTION "pgmq"."notify_add_bookmark_url_queue"();
   END IF;
 END $$;
 
@@ -1072,7 +1030,7 @@ BEGIN
     PERFORM cron.schedule(
       'add-bookmark-url-queue-cron',  -- job name
       '0 1 * * *',                      -- cron schedule: daily at 1:00 AM
-      $$DELETE FROM pgmq."a_add-bookmark-url-queue"$$  -- SQL to execute
+      $cmd$DELETE FROM pgmq."a_add-bookmark-url-queue"$cmd$  -- SQL to execute
     );
   END IF;
 END $$;
