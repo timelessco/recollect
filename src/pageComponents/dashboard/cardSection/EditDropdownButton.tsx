@@ -56,7 +56,13 @@ export const EditDropdownButton = ({
 							event.stopPropagation();
 							setOpenedMenuId(isMenuOpen ? null : post.id);
 						}}
-						onKeyDown={() => {}}
+						onKeyDown={(event) => {
+							if (event.key === "Enter" || event.key === " ") {
+								event.preventDefault();
+								event.stopPropagation();
+								setOpenedMenuId(isMenuOpen ? null : post.id);
+							}
+						}}
 						onPointerDown={(event) => {
 							event.stopPropagation();
 						}}
@@ -116,34 +122,56 @@ export const EditDropdownButton = ({
 								const currentBookark = find(
 									bookmarksList,
 									(item) => item?.id === post?.id,
-								) as SingleListData;
+								);
+								if (!currentBookark) {
+									handleClientError("Bookmark not found in bookmarksList");
+									return;
+								}
+
 								const delData = find(
 									currentBookark?.addedTags,
 									(item) => item?.id === delValue || item?.name === delValue,
-								) as unknown as BookmarksTagData;
+								);
+
+								if (!delData) {
+									handleClientError("Tag not found in bookmark tags");
+									return;
+								}
 
 								await mutationApiCall(
 									removeTagFromBookmarkMutation.mutateAsync({
 										selectedData: {
-											tag_id: delData?.id as number,
-											bookmark_id: currentBookark?.id,
+											tag_id: delData.id as number,
+											bookmark_id: currentBookark.id,
 										},
 									}),
 								);
 							}}
 							createTag={async (tagData) => {
 								try {
+									const newTagLabel = tagData[tagData.length - 1]?.label;
+									if (!newTagLabel) {
+										handleClientError("Invalid tag data: missing label");
+										return;
+									}
+
 									const data = (await mutationApiCall(
 										addUserTagsMutation.mutateAsync({
-											tagsData: { name: tagData[tagData.length - 1]?.label },
+											tagsData: { name: newTagLabel },
 										}),
 									)) as { data: UserTagsData[] };
+
+									const newTagId = data?.data?.[0]?.id;
+									if (!newTagId) {
+										console.error("Invalid response: missing tag ID");
+										return;
+									}
 
 									// on edit we are adding the new tag to bookmark as the bookmark is
 									// will already be there when editing
 									const bookmarkTagsData = {
 										bookmark_id: post?.id,
-										tag_id: data?.data[0]?.id,
+										tag_id: newTagId,
 										user_id: userId,
 									} as unknown as BookmarksTagData;
 
