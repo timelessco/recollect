@@ -172,7 +172,7 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 				operationId: "addBookmarkScreenshot",
 				summary: "Add bookmark screenshot",
 				description:
-					"[Internal Task] Captures and stores screenshot of the bookmarked URL",
+					"[Background Task] Captures and stores screenshot of the bookmarked URL. Uses service key authentication.",
 				tags: ["Add Bookmark Flow"],
 				requestBody: {
 					required: true,
@@ -180,15 +180,20 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 						"application/json": {
 							schema: {
 								type: "object",
-								required: ["id", "url"],
+								required: ["id", "url", "userId"],
 								properties: {
 									id: {
-										type: "string",
+										type: "number",
 										description: "Bookmark ID",
 									},
 									url: {
 										type: "string",
 										description: "URL to capture screenshot of",
+									},
+									userId: {
+										type: "string",
+										description:
+											"User ID (required for service key authentication)",
 									},
 								},
 							},
@@ -224,7 +229,7 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 				operationId: "addBookmarkRemainingData",
 				summary: "Add remaining bookmark data",
 				description:
-					"[Internal Task] Processes and stores remaining bookmark data including images and metadata",
+					"[Background Task] Processes and stores remaining bookmark data including images and metadata. Uses service key authentication.",
 				tags: ["Add Bookmark Flow"],
 				requestBody: {
 					required: true,
@@ -232,10 +237,10 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 						"application/json": {
 							schema: {
 								type: "object",
-								required: ["id", "url"],
+								required: ["id", "url", "userId"],
 								properties: {
 									id: {
-										type: "string",
+										type: "number",
 										description: "Bookmark ID",
 									},
 									url: {
@@ -246,6 +251,11 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 										type: "string",
 										nullable: true,
 										description: "Favicon URL",
+									},
+									userId: {
+										type: "string",
+										description:
+											"User ID (required for service key authentication)",
 									},
 								},
 							},
@@ -265,6 +275,86 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 					},
 					"400": {
 						description: "Invalid request body",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/ErrorResponse",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"/api/v1/bookmarks/add/tasks/queue-consumer": {
+			post: {
+				operationId: "processBookmarkQueue",
+				summary: "Process bookmark queue",
+				description:
+					"[Background Task] Processes messages from the bookmark queue. Called by cron job/worker. Reads up to 10 messages and processes them in batch.",
+				tags: ["Add Bookmark Flow"],
+				responses: {
+					"200": {
+						description: "Queue processing completed",
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										success: {
+											type: "boolean",
+										},
+										message: {
+											type: "string",
+										},
+										processedCount: {
+											type: "number",
+											description: "Total messages processed",
+										},
+										archivedCount: {
+											type: "number",
+											description: "Successfully completed jobs",
+										},
+										failedCount: {
+											type: "number",
+											description: "Failed jobs (remain in queue)",
+										},
+										results: {
+											type: "array",
+											items: {
+												type: "object",
+												properties: {
+													messageId: {
+														type: "number",
+													},
+													bookmarkId: {
+														type: "number",
+													},
+													success: {
+														type: "boolean",
+													},
+													archived: {
+														type: "boolean",
+													},
+													screenshotSuccess: {
+														type: "boolean",
+													},
+													remainingDataSuccess: {
+														type: "boolean",
+													},
+													error: {
+														type: "string",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					"500": {
+						description: "Internal server error",
 						content: {
 							"application/json": {
 								schema: {
