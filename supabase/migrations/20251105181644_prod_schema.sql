@@ -880,7 +880,10 @@ CREATE TRIGGER on_auth_user_created
 -- ============================================================================
 -- Configure pgmq (PostgreSQL Message Queue) for async job processing
 -- Queue: ai-embeddings - Processes AI embedding generation jobs
+-- Queue: add-bookmark-url-queue - Processes bookmark URL processing jobs
 
+-- ----------------------------------------------------------------------------
+-- 6.1 AI Embeddings Queue Setup
 -- ----------------------------------------------------------------------------
 -- Step 1: Create Queue
 -- Creates the ai-embeddings queue if it doesn't already exist
@@ -929,15 +932,160 @@ BEGIN
   END IF;
 END $$;
 
+-- ----------------------------------------------------------------------------
+-- 6.2 Add Bookmark URL Queue Setup
+-- ----------------------------------------------------------------------------
+-- Step 1: Create Queue
+-- Creates the add-bookmark-url-queue if it doesn't already exist
+-- This queue processes bookmark URL enrichment jobs (screenshots, metadata, etc.)
+-- ----------------------------------------------------------------------------
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pgmq.meta WHERE queue_name = 'add-bookmark-url-queue') THEN
+    PERFORM pgmq.create('add-bookmark-url-queue');
+  END IF;
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- Step 2: Configure Queue Permissions and Policies
+-- Sets up RLS, grants, and webhook trigger for the queue
+-- Only runs if the queue table was successfully created
+-- ----------------------------------------------------------------------------
+
+DO $$
+BEGIN
+  -- Only configure if the queue table exists
+  IF EXISTS (SELECT 1 FROM information_schema.tables
+             WHERE table_schema = 'pgmq'
+             AND table_name = 'q_add-bookmark-url-queue') THEN
+
+    -- Enable RLS on pgmq queue
+    ALTER TABLE "pgmq"."q_add-bookmark-url-queue" ENABLE ROW LEVEL SECURITY;
+
+    -- Create RLS policy for queue access
+    DROP POLICY IF EXISTS "auth-access" ON "pgmq"."q_add-bookmark-url-queue";
+    CREATE POLICY "auth-access" ON "pgmq"."q_add-bookmark-url-queue"
+      AS permissive FOR all TO authenticated USING (true);
+
+    -- Grant permissions for queue tables
+    GRANT DELETE, INSERT, SELECT, UPDATE ON TABLE "pgmq"."q_add-bookmark-url-queue" TO "authenticated";
+    GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "pgmq"."q_add-bookmark-url-queue" TO "service_role";
+
+    -- Grant permissions for archive table if it exists
+    IF EXISTS (SELECT 1 FROM information_schema.tables
+               WHERE table_schema = 'pgmq'
+               AND table_name = 'a_add-bookmark-url-queue') THEN
+      GRANT INSERT, SELECT ON TABLE "pgmq"."a_add-bookmark-url-queue" TO "authenticated";
+      GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "pgmq"."a_add-bookmark-url-queue" TO "service_role";
+    END IF;
+  END IF;
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- Step 3: Create Webhook Function
+-- Creates a function that will be triggered when a message is inserted into the queue
+-- This function sends an HTTP request to the queue consumer API
+-- NOTE: Update the webhook URL to match your environment (local/production)
+-- ----------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION "pgmq"."notify_add_bookmark_url_queue"()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  request_id bigint;
+  webhook_url text;
+BEGIN
+  -- Set webhook URL based on environment
+  -- IMPORTANT: Update this URL for your production environment
+  webhook_url := 'http://10.90.121.147:3000/api/v1/bookmarks/add/tasks/queue-consumer';
+  
+  -- Send HTTP POST request to queue consumer API
+  -- Only process if pg_net extension is available
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_net') THEN
+    SELECT net.http_post(
+      url := webhook_url,
+      headers := '{"Content-Type": "application/json"}'::jsonb,
+      body := '{}'::jsonb,
+      timeout_milliseconds := 5000
+    ) INTO request_id;
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION "pgmq"."notify_add_bookmark_url_queue"() OWNER TO "postgres";
+
+-- ----------------------------------------------------------------------------
+-- Step 4: Create Webhook Trigger
+-- Trigger fires on INSERT to q_add-bookmark-url-queue table
+-- Calls the notify_add_bookmark_url_queue function to process the queue
+-- ----------------------------------------------------------------------------
+
+DO $$
+BEGIN
+  -- Only create trigger if the queue table exists
+  IF EXISTS (SELECT 1 FROM information_schema.tables
+             WHERE table_schema = 'pgmq'
+             AND table_name = 'q_add-bookmark-url-queue') THEN
+    
+    -- Drop existing trigger if it exists
+    DROP TRIGGER IF EXISTS "add-bookmark-url-queue-webhook" ON "pgmq"."q_add-bookmark-url-queue";
+    
+    -- Create new trigger
+    CREATE TRIGGER "add-bookmark-url-queue-webhook"
+      AFTER INSERT ON "pgmq"."q_add-bookmark-url-queue"
+      FOR EACH ROW
+      EXECUTE FUNCTION "pgmq"."notify_add_bookmark_url_queue"();
+  END IF;
+END $$;
+
 -- ============================================================================
--- 7. PUBLICATIONS
+-- 7. CRON JOBS
+-- ============================================================================
+-- Configure scheduled jobs using pg_cron extension
+
+-- ----------------------------------------------------------------------------
+-- 7.1 Add Bookmark URL Queue - Archive Cleanup
+-- Purpose: Delete archived messages from the add-bookmark-url-queue daily at 1:00 AM
+-- Schedule: Every day at 1:00 AM (0 1 * * *)
+-- ----------------------------------------------------------------------------
+
+DO $$
+BEGIN
+  -- Only create cron job if the archive table exists and pg_cron is available
+  IF EXISTS (SELECT 1 FROM information_schema.tables
+             WHERE table_schema = 'pgmq'
+             AND table_name = 'a_add-bookmark-url-queue')
+     AND EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    
+    -- Remove existing job if it exists (pg_cron doesn't have IF NOT EXISTS)
+    PERFORM cron.unschedule('add-bookmark-url-queue-cron')
+    WHERE EXISTS (
+      SELECT 1 FROM cron.job WHERE jobname = 'add-bookmark-url-queue-cron'
+    );
+    
+    -- Schedule the job to run daily at 1:00 AM
+    PERFORM cron.schedule(
+      'add-bookmark-url-queue-cron',  -- job name
+      '0 1 * * *',                      -- cron schedule: daily at 1:00 AM
+      $$DELETE FROM pgmq."a_add-bookmark-url-queue"$$  -- SQL to execute
+    );
+  END IF;
+END $$;
+
+-- ============================================================================
+-- 8. PUBLICATIONS
 -- ============================================================================
 -- Configure Supabase Realtime publication for real-time subscriptions
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 -- ============================================================================
--- 8. STORAGE POLICIES
+-- 9. STORAGE POLICIES
 -- ============================================================================
 -- Configure Row Level Security policies for Supabase Storage
 -- SECURITY WARNING: Current policies allow:
@@ -958,7 +1106,7 @@ CREATE POLICY "Enable read access for all users" ON "storage"."objects"
   AS permissive FOR select TO public USING (true);
 
 -- ============================================================================
--- 9. SCHEMA PERMISSIONS
+-- 10. SCHEMA PERMISSIONS
 -- ============================================================================
 -- Grant usage permissions on schemas to different roles
 
@@ -972,7 +1120,7 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 GRANT USAGE ON SCHEMA "public" TO "postgres";
 
 -- ============================================================================
--- 10. DEFAULT PRIVILEGES
+-- 11. DEFAULT PRIVILEGES
 -- ============================================================================
 -- Set default permissions for future objects created by postgres role
 -- These apply to all new sequences, functions, and tables in public schema
