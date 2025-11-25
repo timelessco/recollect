@@ -166,7 +166,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										))}
 									</>
 								) : (
-									<div className="rounded-lg bg-gray-50 p-1">
+									<div className="rounded-lg bg-gray-50">
 										<ShareContent categoryId={item?.id} />
 									</div>
 								)}

@@ -93,6 +93,7 @@ import {
 } from "../../utils/helpers";
 
 import { handleClientError } from "@/utils/error-utils/client";
+import { successToast } from "@/utils/toastMessages";
 
 // bookmark
 // get bookmark by id
@@ -558,10 +559,11 @@ export const addCategoryToBookmark = async ({
 				update_access,
 			},
 		);
-
+		successToast("Category added to bookmark");
 		return response;
 	} catch (error) {
-		return error;
+		handleClientError(error, "Failed to add category to bookmark");
+		return { data: null };
 	}
 };
 

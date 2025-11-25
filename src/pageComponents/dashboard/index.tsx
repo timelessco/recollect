@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { type UserIdentity } from "@supabase/supabase-js";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
@@ -19,15 +18,10 @@ import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmark
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import useAddCategoryOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
-import useAddCategoryToBookmarkMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
-import useAddTagToBookmarkMutation from "../../async/mutationHooks/tags/useAddTagToBookmarkMutation";
-import useAddUserTagsMutation from "../../async/mutationHooks/tags/useAddUserTagsMutation";
-import useRemoveTagFromBookmarkMutation from "../../async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
@@ -36,10 +30,8 @@ import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookma
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
-import useFetchUserTags from "../../async/queryHooks/userTags/useFetchUserTags";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
-import Modal from "../../components/modal";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
@@ -51,21 +43,19 @@ import {
 	useSupabaseSession,
 } from "../../store/componentStore";
 import {
-	type BookmarksTagData,
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type ImgMetadataType,
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
-	type UserTagsData,
 } from "../../types/apiTypes";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 	type BookmarkViewCategories,
 } from "../../types/componentStoreTypes";
-import { type FileType, type TagInputOption } from "../../types/componentTypes";
+import { type FileType } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	DOCUMENTS_URL,
@@ -78,12 +68,11 @@ import {
 	VIDEOS_URL,
 } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
-import { errorToast, successToast } from "../../utils/toastMessages";
+import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
-import AddModalContent from "./modals/addModalContent";
 import SettingsModal from "./modals/settingsModal";
 import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
@@ -116,12 +105,6 @@ const Dashboard = () => {
 	}, [setSession, supabase.auth]);
 
 	// move to zustand
-	const [showAddBookmarkModal, setShowAddBookmarkModal] =
-		useState<boolean>(false);
-	const [addedUrlData, setAddedUrlData] = useState<SingleListData>();
-	const [selectedTag, setSelectedTag] = useState<TagInputOption[]>([]);
-	const [isEdit, setIsEdit] = useState<boolean>(false);
-	// const [setSelectedCategoryDuringAdd] = useState<SearchSelectOption | null>();
 	const [deleteBookmarkId, setDeleteBookmarkId] = useState<
 		number[] | undefined
 	>(undefined);
@@ -145,13 +128,6 @@ const Dashboard = () => {
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-	useEffect(() => {
-		if (!showAddBookmarkModal) {
-			setIsEdit(false);
-			setAddedUrlData(undefined);
-			setSelectedTag([]);
-		}
-	}, [showAddBookmarkModal]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { isInNotFoundPage } = useIsInNotFoundPage();
@@ -177,7 +153,6 @@ const Dashboard = () => {
 
 	// Determine if we're currently searching
 	const isSearching = !isEmpty(searchText);
-	const { userTags } = useFetchUserTags();
 
 	const { sharedCategoriesData } = useFetchSharedCategories();
 
@@ -202,18 +177,8 @@ const Dashboard = () => {
 		useAddBookmarkMinDataOptimisticMutation();
 
 	// tag mutation
-	const { addUserTagsMutation } = useAddUserTagsMutation();
-
-	const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
-
-	const { removeTagFromBookmarkMutation } = useRemoveTagFromBookmarkMutation();
-
-	// category mutation
-	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 
 	const { onDeleteCollection } = useDeleteCollection();
-
-	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 
 	const { addCategoryToBookmarkOptimisticMutation } =
 		useAddCategoryToBookmarkOptimisticMutation();
@@ -356,17 +321,6 @@ const Dashboard = () => {
 			}),
 		);
 	};
-
-	// any new tags created need not come in tag dropdown , this filter implements this
-	let filteredUserTags = userTags?.data ? userTags?.data : [];
-
-	if (selectedTag) {
-		for (const selectedItem of selectedTag) {
-			filteredUserTags = filteredUserTags.filter(
-				(index) => index?.id !== selectedItem?.value,
-			);
-		}
-	}
 
 	const bookmarksViewApiLogic = (
 		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
@@ -604,397 +558,215 @@ const Dashboard = () => {
 
 	const renderAllBookmarkCards = () => (
 		<>
-			<div>
-				{session ? (
-					<>
-						<div className="mx-auto w-full max-xl:w-1/2" />
-						<Dropzone
-							disabled={CATEGORY_ID === TRASH_URL}
-							noClick
-							onDrop={onDrop}
-						>
-							{({ getRootProps, getInputProps, isDragActive }) => (
+			{session ? (
+				<>
+					<div className="mx-auto w-full max-xl:w-1/2" />
+					<Dropzone
+						disabled={CATEGORY_ID === TRASH_URL}
+						noClick
+						onDrop={onDrop}
+					>
+						{({ getRootProps, getInputProps, isDragActive }) => (
+							<div
+								{...omit(getRootProps(), ["onBlur", "onFocus"])}
+								className={
+									isDragActive
+										? "absolute z-10 h-full w-full bg-gray-800 opacity-50"
+										: "outline-hidden"
+								}
+							>
+								<input {...getInputProps()} />
 								<div
-									{...omit(getRootProps(), ["onBlur", "onFocus"])}
-									className={
-										isDragActive
-											? "absolute z-10 h-full w-full bg-gray-800 opacity-50"
-											: "outline-hidden"
-									}
+									id="scrollableDiv"
+									ref={infiniteScrollRef}
+									style={{
+										height: "100vh",
+										overflowY: "auto",
+										overflowX: "hidden",
+										overflowAnchor: "none",
+									}}
 								>
-									<input {...getInputProps()} />
-									<div
-										id="scrollableDiv"
-										ref={infiniteScrollRef}
-										style={{
-											height: "100vh",
-											overflowY: "auto",
-											overflowX: "hidden",
-											overflowAnchor: "none",
-										}}
+									<InfiniteScroll
+										dataLength={
+											isSearching
+												? (flattenedSearchData?.length ?? 0)
+												: (flattendPaginationBookmarkData?.length ?? 0)
+										}
+										endMessage={
+											<p className="pb-6 text-center text-plain-reverse">
+												{isSearchLoading ? "" : "Life happens, save it."}
+											</p>
+										}
+										hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}
+										loader={<div />}
+										next={
+											isSearching ? fetchNextSearchPage : fetchNextBookmarkPage
+										}
+										scrollableTarget="scrollableDiv"
+										style={{ overflow: "unset" }}
 									>
-										<InfiniteScroll
-											dataLength={
+										<CardSection
+											bookmarksCountData={getBookmarkCountForCurrentPage(
+												bookmarksCountData?.data ?? undefined,
+												CATEGORY_ID as unknown as string | number | null,
+											)}
+											deleteBookmarkId={deleteBookmarkId}
+											isBookmarkLoading={
+												addBookmarkMinDataOptimisticMutation?.isPending
+											}
+											isLoading={
+												isAllBookmarksDataLoading ||
+												(isSearchLoading &&
+													(flattenedSearchData?.length ?? 0) === 0)
+											}
+											isLoadingProfile={isUserProfileLoading}
+											isOgImgLoading={addBookmarkScreenshotMutation?.isPending}
+											listData={
 												isSearching
-													? (flattenedSearchData?.length ?? 0)
-													: (flattendPaginationBookmarkData?.length ?? 0)
+													? flattenedSearchData
+													: flattendPaginationBookmarkData
 											}
-											endMessage={
-												<p className="pb-6 text-center text-plain-reverse">
-													{isSearchLoading ? "" : "Life happens, save it."}
-												</p>
-											}
-											hasMore={isSearching ? searchHasNextPage : hasMoreLogic()}
-											loader={<div />}
-											next={
-												isSearching
-													? fetchNextSearchPage
-													: fetchNextBookmarkPage
-											}
-											scrollableTarget="scrollableDiv"
-											style={{ overflow: "unset" }}
-										>
-											<CardSection
-												bookmarksCountData={getBookmarkCountForCurrentPage(
-													bookmarksCountData?.data ?? undefined,
-													CATEGORY_ID as unknown as string | number | null,
-												)}
-												deleteBookmarkId={deleteBookmarkId}
-												isBookmarkLoading={
-													addBookmarkMinDataOptimisticMutation?.isPending
-												}
-												isLoading={
-													isAllBookmarksDataLoading ||
-													(isSearchLoading && flattenedSearchData.length === 0)
-												}
-												isLoadingProfile={isUserProfileLoading}
-												isOgImgLoading={
-													addBookmarkScreenshotMutation?.isPending
-												}
-												listData={
-													isSearching
-														? flattenedSearchData
-														: flattendPaginationBookmarkData
-												}
-												onBulkBookmarkDelete={(
-													bookmarkIds,
-													isTrash,
-													deleteForever,
-												) => {
-													const currentBookmarksData = isSearching
-														? flattenedSearchData
-														: flattendPaginationBookmarkData;
+											onBulkBookmarkDelete={(
+												bookmarkIds,
+												isTrash,
+												deleteForever,
+											) => {
+												const currentBookmarksData = isSearching
+													? flattenedSearchData
+													: flattendPaginationBookmarkData;
 
-													if (!deleteForever) {
-														for (const item of bookmarkIds) {
-															const bookmarkId = Number.parseInt(
-																item.toString(),
-																10,
-															);
-															const delBookmarksData = find(
-																currentBookmarksData,
-																(delItem) => delItem?.id === bookmarkId,
-															) as SingleListData;
-
-															if (
-																delBookmarksData?.user_id?.id ===
-																session?.user?.id
-															) {
-																void mutationApiCall(
-																	moveBookmarkToTrashOptimisticMutation.mutateAsync(
-																		{
-																			data: delBookmarksData,
-																			isTrash,
-																		},
-																	),
-																	// eslint-disable-next-line promise/prefer-await-to-then
-																).catch(() => {});
-															} else {
-																errorToast("Cannot delete other users uploads");
-															}
-														}
-													} else {
-														setDeleteBookmarkId(bookmarkIds);
-														toggleShowDeleteBookmarkWarningModal();
-													}
-												}}
-												onCategoryChange={async (value, cat_id) => {
-													const categoryId = cat_id;
-													const currentBookmarksData = isSearching
-														? flattenedSearchData
-														: flattendPaginationBookmarkData;
-
-													const currentCategory =
-														find(
-															allCategories?.data,
-															(item) => item?.id === categoryId,
-														) ??
-														find(
-															allCategories?.data,
-															(item) => item?.id === CATEGORY_ID,
+												if (!deleteForever) {
+													for (const item of bookmarkIds) {
+														const bookmarkId = Number.parseInt(
+															item.toString(),
+															10,
 														);
-
-													const updateAccessCondition =
-														find(
-															currentCategory?.collabData,
-															(item) =>
-																item?.userEmail === session?.user?.email,
-														)?.edit_access === true ||
-														currentCategory?.user_id?.id === session?.user?.id;
-													for (const item of value) {
-														const bookmarkId = item.toString();
-
-														const bookmarkCreatedUserId = find(
+														const delBookmarksData = find(
 															currentBookmarksData,
-															(bookmarkItem) =>
-																Number.parseInt(bookmarkId, 10) ===
-																bookmarkItem?.id,
-														)?.user_id?.id;
+															(delItem) => delItem?.id === bookmarkId,
+														) as SingleListData;
 
-														if (bookmarkCreatedUserId === session?.user?.id) {
-															await addCategoryToBookmarkOptimisticMutation.mutateAsync(
-																{
-																	category_id: categoryId,
-																	bookmark_id: Number.parseInt(bookmarkId, 10),
-																	update_access:
-																		isNull(categoryId) || !categoryId
-																			? true
-																			: updateAccessCondition,
-																},
-															);
+														if (
+															delBookmarksData?.user_id?.id ===
+															session?.user?.id
+														) {
+															void mutationApiCall(
+																moveBookmarkToTrashOptimisticMutation.mutateAsync(
+																	{
+																		data: delBookmarksData,
+																		isTrash,
+																	},
+																),
+																// eslint-disable-next-line promise/prefer-await-to-then
+															).catch(() => {});
 														} else {
-															errorToast(
-																"You cannot move collaborators uploads",
-															);
+															errorToast("Cannot delete other users uploads");
 														}
 													}
-												}}
-												onDeleteClick={(item) => {
-													setDeleteBookmarkId(
-														item?.map((delItem) => delItem?.id),
+												} else {
+													setDeleteBookmarkId(bookmarkIds);
+													toggleShowDeleteBookmarkWarningModal();
+												}
+											}}
+											onCategoryChange={async (value, cat_id) => {
+												const categoryId = cat_id;
+												const currentBookmarksData = isSearching
+													? flattenedSearchData
+													: flattendPaginationBookmarkData;
+
+												const currentCategory =
+													find(
+														allCategories?.data,
+														(item) => item?.id === categoryId,
+													) ??
+													find(
+														allCategories?.data,
+														(item) => item?.id === CATEGORY_ID,
 													);
 
-													if (CATEGORY_ID === TRASH_URL) {
-														// delete bookmark if in trash
-														toggleShowDeleteBookmarkWarningModal();
-													} else if (!isEmpty(item) && item?.length > 0) {
-														// if not in trash then move bookmark to trash
-														void mutationApiCall(
-															moveBookmarkToTrashOptimisticMutation.mutateAsync(
-																{
-																	data: item[0],
-																	isTrash: true,
-																},
-															),
-															// eslint-disable-next-line promise/prefer-await-to-then
-														).catch(() => {});
+												const updateAccessCondition =
+													find(
+														currentCategory?.collabData,
+														(item) => item?.userEmail === session?.user?.email,
+													)?.edit_access === true ||
+													currentCategory?.user_id?.id === session?.user?.id;
+												for (const item of value) {
+													const bookmarkId = item.toString();
+
+													const bookmarkCreatedUserId = find(
+														currentBookmarksData,
+														(bookmarkItem) =>
+															Number.parseInt(bookmarkId, 10) ===
+															bookmarkItem?.id,
+													)?.user_id?.id;
+
+													if (bookmarkCreatedUserId === session?.user?.id) {
+														await addCategoryToBookmarkOptimisticMutation.mutateAsync(
+															{
+																category_id: categoryId,
+																bookmark_id: Number.parseInt(bookmarkId, 10),
+																update_access:
+																	isNull(categoryId) || !categoryId
+																		? true
+																		: updateAccessCondition,
+															},
+														);
+													} else {
+														errorToast("You cannot move collaborators uploads");
 													}
-												}}
-												onEditClick={(item) => {
-													setAddedUrlData(item);
-													setIsEdit(true);
-													setShowAddBookmarkModal(true);
-												}}
-												onMoveOutOfTrashClick={(data) => {
+												}
+											}}
+											isCategoryChangeLoading={
+												addCategoryToBookmarkOptimisticMutation?.isPending
+											}
+											onDeleteClick={(item) => {
+												setDeleteBookmarkId(
+													item?.map((delItem) => delItem?.id),
+												);
+
+												if (CATEGORY_ID === TRASH_URL) {
+													// delete bookmark if in trash
+													toggleShowDeleteBookmarkWarningModal();
+												} else if (!isEmpty(item) && item?.length > 0) {
+													// if not in trash then move bookmark to trash
 													void mutationApiCall(
 														moveBookmarkToTrashOptimisticMutation.mutateAsync({
-															data,
-															isTrash: false,
+															data: item[0],
+															isTrash: true,
 														}),
-													);
-												}}
-												showAvatar={
-													// only show for a collab category
-													Boolean(
-														CATEGORY_ID &&
-															!isNull(CATEGORY_ID) &&
-															(allCategories?.data?.find(
-																(item) => item?.id === CATEGORY_ID,
-															)?.collabData?.length ?? 0) > 1,
-													)
+														// eslint-disable-next-line promise/prefer-await-to-then
+													).catch(() => {});
 												}
-												userId={session?.user?.id ?? ""}
-											/>
-										</InfiniteScroll>
-									</div>
+											}}
+											onMoveOutOfTrashClick={(data) => {
+												void mutationApiCall(
+													moveBookmarkToTrashOptimisticMutation.mutateAsync({
+														data,
+														isTrash: false,
+													}),
+												);
+											}}
+											showAvatar={
+												// only show for a collab category
+												Boolean(
+													CATEGORY_ID &&
+														!isNull(CATEGORY_ID) &&
+														(allCategories?.data?.find(
+															(item) => item?.id === CATEGORY_ID,
+														)?.collabData?.length ?? 0) > 1,
+												)
+											}
+											userId={session?.user?.id ?? ""}
+										/>
+									</InfiniteScroll>
 								</div>
-							)}
-						</Dropzone>
-					</>
-				) : (
-					<SignedOutSection />
-				)}
-			</div>
-			<Modal
-				open={showAddBookmarkModal}
-				setOpen={() => setShowAddBookmarkModal(false)}
-				wrapperClassName="w-[324px] p-4 rounded-lg self-center"
-			>
-				<AddModalContent
-					addExistingTag={async (tag) => {
-						setSelectedTag([...selectedTag, tag[tag.length - 1]]);
-						if (isEdit) {
-							const bookmarkTagsData = {
-								bookmark_id: addedUrlData?.id,
-								tag_id: Number.parseInt(`${tag[tag.length - 1]?.value}`, 10),
-							} as unknown as BookmarksTagData;
-
-							await mutationApiCall(
-								addTagToBookmarkMutation.mutateAsync({
-									selectedData: bookmarkTagsData,
-								}),
-							);
-						}
-					}}
-					addedTags={
-						flattendPaginationBookmarkData?.find(
-							(item) => item?.id === addedUrlData?.id,
-						)?.addedTags ?? []
-					}
-					createTag={async (tagData) => {
-						const userData = session?.user as unknown as UserIdentity;
-						try {
-							const data = (await mutationApiCall(
-								addUserTagsMutation.mutateAsync({
-									tagsData: { name: tagData[tagData.length - 1]?.label },
-								}),
-							)) as { data: UserTagsData[] };
-
-							setSelectedTag([
-								...selectedTag,
-								// eslint-disable-next-line no-unsafe-optional-chaining
-								...data?.data.map((item) => ({
-									value: item?.id,
-									label: item?.name,
-								})),
-							]);
-							// on edit we are adding the new tag to bookmark as the bookmark is
-							// will already be there when editing
-							if (isEdit) {
-								const bookmarkTagsData = {
-									bookmark_id: addedUrlData?.id,
-									tag_id: data?.data[0]?.id,
-									user_id: userData?.id,
-								} as unknown as BookmarksTagData;
-
-								await mutationApiCall(
-									addTagToBookmarkMutation.mutateAsync({
-										selectedData: bookmarkTagsData,
-									}),
-								);
-							}
-						} catch {
-							/* empty */
-						}
-					}}
-					isCategoryChangeLoading={
-						addCategoryToBookmarkMutation?.isPending ||
-						addCategoryToBookmarkOptimisticMutation?.isPending
-					}
-					mainButtonText={isEdit ? "Update Bookmark" : "Add Bookmark"}
-					onCategoryChange={async (value) => {
-						if (isEdit) {
-							const currentCategory =
-								find(
-									allCategories?.data,
-									(item) => item?.id === value?.value,
-								) ??
-								find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-							// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
-
-							const updateAccessCondition =
-								find(
-									currentCategory?.collabData,
-									(item) => item?.userEmail === session?.user?.email,
-								)?.edit_access === true ||
-								currentCategory?.user_id?.id === session?.user?.id;
-
-							try {
-								await mutationApiCall(
-									addCategoryToBookmarkOptimisticMutation.mutateAsync({
-										category_id: value?.value ? (value?.value as number) : null,
-										bookmark_id: addedUrlData?.id as number,
-										update_access:
-											// if user is changing to uncategorised then thay always have access
-											isNull(value?.value) || !value?.value
-												? true
-												: updateAccessCondition,
-									}),
-								);
-
-								successToast("Collection updated");
-							} catch (error) {
-								errorToast(`Something went wrong: ${error}`);
-							}
-						} else {
-							// setSelectedCategoryDuringAdd(value);
-						}
-					}}
-					onCreateCategory={async (value) => {
-						if (value?.label && userProfileData?.data) {
-							const response = (await mutationApiCall(
-								addCategoryOptimisticMutation.mutateAsync({
-									name: value?.label,
-									category_order: userProfileData?.data[0]
-										?.category_order as number[],
-								}),
-							)) as { data: CategoriesData[] };
-
-							try {
-								// this is not optimistic as we need cat_id to add bookmark into that category
-								// add the bookmark to the category after its created in add bookmark modal
-								await mutationApiCall(
-									addCategoryToBookmarkMutation.mutateAsync({
-										category_id: response?.data[0]?.id,
-										bookmark_id: addedUrlData?.id as number,
-										// in this case user is creating the category , so they will have access
-										update_access: true,
-									}),
-								);
-
-								successToast("New collection created");
-							} catch (error) {
-								errorToast(`Something went wrong ${error}`);
-							}
-						} else {
-							errorToast("Collection name is missing");
-						}
-					}}
-					removeExistingTag={async (tag) => {
-						setSelectedTag(
-							selectedTag.filter((item) => item?.label !== tag?.label),
-						);
-						if (isEdit) {
-							const delValue = tag.value;
-							// const currentBookark = flattendPaginationBookmarkData?.filter(
-							//   (item) => item?.id === addedUrlData?.id
-							// ) as unknown as SingleListData[];
-
-							const currentBookark = find(
-								flattendPaginationBookmarkData,
-								(item) => item?.id === addedUrlData?.id,
-							) as SingleListData;
-							const delData = find(
-								currentBookark?.addedTags,
-								(item) => item?.id === delValue || item?.name === delValue,
-							) as unknown as BookmarksTagData;
-
-							await mutationApiCall(
-								removeTagFromBookmarkMutation.mutateAsync({
-									selectedData: {
-										tag_id: delData?.id as number,
-										bookmark_id: currentBookark?.id,
-									},
-								}),
-							);
-						}
-					}}
-					showMainButton={false}
-					urlData={addedUrlData}
-					userId={session?.user?.id ?? ""}
-					userTags={filteredUserTags}
-				/>
-			</Modal>
+							</div>
+						)}
+					</Dropzone>
+				</>
+			) : (
+				<SignedOutSection />
+			)}
 		</>
 	);
 

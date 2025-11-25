@@ -20,7 +20,6 @@ import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
-import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
@@ -66,6 +65,7 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
+import { EditDropdownButton } from "./EditDropdownButton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 
@@ -87,12 +87,16 @@ export type CardSectionProps = {
 	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
-	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
+	isCategoryChangeLoading?: boolean;
+	onCreateNewCategory?: (category: {
+		label: string;
+		value: string | number;
+	}) => Promise<void>;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -104,7 +108,6 @@ const CardSection = ({
 	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
-	onEditClick = () => null,
 	userId,
 	showAvatar = false,
 	isOgImgLoading = false,
@@ -116,6 +119,8 @@ const CardSection = ({
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
+	isCategoryChangeLoading = false,
+	onCreateNewCategory = async () => {},
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
@@ -143,7 +148,7 @@ const CardSection = ({
 
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
-
+	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
 	// cat_id refers to cat slug here as its got from url
@@ -164,7 +169,6 @@ const CardSection = ({
 	};
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-
 	// gets from the trigram search api
 	const searchBookmarksData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
@@ -264,11 +268,11 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs z-15";
+			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs z-15  group-hover:flex";
 
 		const externalLinkIcon = (
 			<div
-				className={`${iconBgClassName}`}
+				className={`${iconBgClassName} hidden`}
 				onClick={(event) => {
 					event.preventDefault();
 					window.open(post?.url, "_blank");
@@ -285,30 +289,26 @@ const CardSection = ({
 				</figure>
 			</div>
 		);
+		const isMenuOpen = openedMenuId === post.id;
 
 		const pencilIcon = (
-			<div
-				className={`${iconBgClassName}`}
-				onClick={(event) => {
-					event.preventDefault();
-					onEditClick(post);
-				}}
-				onKeyDown={() => {}}
-				onPointerDown={(event) => {
-					event.stopPropagation();
-				}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure className="text-gray-1000">
-					<EditIcon />
-				</figure>
-			</div>
+			<EditDropdownButton
+				isMenuOpen={isMenuOpen}
+				iconBgClassName={iconBgClassName}
+				isPublicPage={isPublicPage}
+				setOpenedMenuId={setOpenedMenuId}
+				post={post}
+				onCategoryChange={onCategoryChange}
+				onCreateNewCategory={onCreateNewCategory}
+				bookmarksList={bookmarksList}
+				isCategoryChangeLoading={isCategoryChangeLoading}
+				userId={userId}
+			/>
 		);
 
 		const trashIcon = (
 			<div
-				className={`ml-2 ${iconBgClassName}`}
+				className={`ml-2 ${iconBgClassName} hidden`}
 				onClick={(event) => {
 					event.stopPropagation();
 					onDeleteClick([post]);
@@ -666,8 +666,6 @@ const CardSection = ({
 				return renderMoodboardAndCardType(item);
 			case viewValues.card:
 				return renderMoodboardAndCardType(item);
-			case viewValues.headlines:
-				return renderHeadlinesCard(item);
 			case viewValues.list:
 				return renderListCard(item);
 
@@ -737,117 +735,88 @@ const CardSection = ({
 					</div>
 				</div>
 			)}
-			<div
-				className={`w-full items-center space-x-1 ${
-					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
-				} absolute top-[10px] right-[8px] group-hover:flex`}
-			>
+			<div className="absolute top-[10px] right-[8px] w-full items-center space-x-1">
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>
 		</div>
 	);
 
-	const renderListCard = (item: SingleListData) => (
-		<div className="flex w-full items-center p-2" id="single-moodboard-card">
-			{hasCoverImg ? (
-				renderOgImage(
-					getImageSource(item),
-					item?.id,
-					item?.meta_data?.ogImgBlurUrl ?? "",
-					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-					item?.type,
-				)
-			) : (
-				<div className="h-[48px]" />
-			)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="overflow-hidden max-sm:space-y-1">
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+	const renderListCard = (item: SingleListData) => {
+		const isMenuOpen = openedMenuId === item.id;
+
+		return (
+			<div className="flex w-full items-center p-2" id="single-moodboard-card">
+				{hasCoverImg ? (
+					renderOgImage(
+						getImageSource(item),
+						item?.id,
+						item?.meta_data?.ogImgBlurUrl ?? "",
+						item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+						item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+						item?.type,
+					)
+				) : (
+					<div className="h-[48px]" />
+				)}
+				{bookmarksInfoValue?.length === 1 &&
+				bookmarksInfoValue[0] === "cover" ? null : (
+					<div className="overflow-hidden max-sm:space-y-1">
 						{(bookmarksInfoValue as string[] | undefined)?.includes(
-							"description",
-						) &&
-							!isEmpty(item.description) && (
-								<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
-									{item?.description}
-								</p>
-							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
-							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
-									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
+							"title",
+						) && (
+							<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
+								{item?.title}
+							</p>
+						)}
+						<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+							{(bookmarksInfoValue as string[] | undefined)?.includes(
+								"description",
+							) &&
+								!isEmpty(item.description) && (
+									<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
+										{item?.description}
+									</p>
+								)}
+							{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
+								!isEmpty(item?.addedTags) && (
+									<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
+										{item?.addedTags?.map((tag) =>
+											renderTag(tag?.id, tag?.name),
+										)}
+									</div>
+								)}
+							{(bookmarksInfoValue as string[] | undefined)?.includes(
+								"info",
+							) && (
+								<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+									{item?.inserted_at && (
+										<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+											{format(
+												new Date(item?.inserted_at || ""),
+												isCurrentYear(item?.inserted_at)
+													? "dd MMM"
+													: "dd MMM YYY",
+											)}
+										</p>
+									)}
+									{renderCategoryBadge(item)}
 								</div>
 							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-								{renderCategoryBadge(item)}
-							</div>
-						)}
+						</div>
 					</div>
+				)}
+				<div
+					className={`absolute top-[15px] right-[8px] items-center space-x-1 group-hover:flex ${isMenuOpen ? "flex" : "hidden"}`}
+				>
+					{showAvatar && renderAvatar(item)}
+					{renderEditAndDeleteIcons(item)}
 				</div>
-			)}
-			<div className="absolute top-[15px] right-[8px] hidden items-center space-x-1 group-hover:flex">
-				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
 			</div>
-		</div>
-	);
-
-	const renderHeadlinesCard = (item: SingleListData) => (
-		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
-			{renderFavIcon(item)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="ml-[10px] w-full overflow-hidden">
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title w-[98%] truncate text-sm leading-4 font-medium text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					<div className="mt-[6px] space-y-2">
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="flex items-center space-x-2">
-								{renderUrl(item)}
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-							</div>
-						)}
-					</div>
-				</div>
-			)}
-			<div className="absolute top-[11px] right-[8px] hidden items-center space-x-1 group-hover:flex">
-				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
-			</div>
-		</div>
-	);
+		);
+	};
 
 	const listWrapperClass = classNames({
 		// "p-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.headlines,

@@ -2,7 +2,7 @@
 export const grayInputClassName =
 	"leading-4 block w-[300px] bg-gray-alpha-100  appearance-none border-none text-sm placeholder:text-sm placeholder:text-gray-600 text-gray-900 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-hidden";
 export const buttonDarkClassName =
-	"flex w-full h-[30px] justify-center rounded-lg bg-gray-900 text-13 py-[7.5px] font-medium leading-[15px] text-white hover:bg-gray-800";
+	"flex w-full h-[30px] justify-center rounded-lg bg-gray-900 text-13 py-[7.5px] font-medium leading-[15px] text-gray-0 hover:bg-gray-800";
 export const buttonLightClassName =
 	"flex cursor-pointer w-full justify-center items-center rounded-lg bg-white text-13 font-medium leading-[15px] text-gray-800 py-[7px] hover:bg-gray-100 shadow-custom-2";
 export const bottomBarText = "text-gray-800 font-450 text-sm leading-4";
