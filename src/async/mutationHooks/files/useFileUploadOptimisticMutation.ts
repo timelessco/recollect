@@ -72,6 +72,7 @@ export default function useFileUploadOptimisticMutation() {
 											{
 												title: fileName,
 												url: "",
+												type: data?.file?.type,
 												inserted_at: new Date(),
 											},
 											...item.data,

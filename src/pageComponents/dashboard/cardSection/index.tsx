@@ -13,7 +13,6 @@ import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import { Spinner } from "../../../components/spinner";
-import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
@@ -41,15 +40,12 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	DOCUMENTS_URL,
-	LINK_TYPE_PREFIX,
-	LINKS_URL,
+	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
 	TWEETS_URL,
 	VIDEO_TYPE_PREFIX,
-	VIDEOS_URL,
 	viewValues,
 } from "../../../utils/constants";
 import {
@@ -57,6 +53,7 @@ import {
 	getPreviewPathInfo,
 	isBookmarkAudio,
 	isBookmarkDocument,
+	isBookmarkImage,
 	isBookmarkVideo,
 	isCurrentYear,
 	isUserInACategory,
@@ -161,7 +158,6 @@ const CardSection = ({
 	);
 
 	const isUserInTweetsPage = useIsUserInTweetsPage();
-	const currentPath = useGetCurrentUrlPath();
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -529,8 +525,15 @@ const CardSection = ({
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
-		const isVideo = isBookmarkVideo(item?.type);
-		const isDocument = isBookmarkDocument(item?.type);
+		const isVideo =
+			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+			isBookmarkVideo(item?.type);
+		const isDocument =
+			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
+			isBookmarkDocument(item?.type);
+		const isImage =
+			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
+			isBookmarkImage(item?.type);
 		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
 		const favIconFigureClassName = classNames({
 			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
@@ -579,11 +582,7 @@ const CardSection = ({
 			);
 		}
 
-		if (
-			isVideo ||
-			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-			currentPath === VIDEOS_URL
-		) {
+		if (isVideo) {
 			return (
 				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
 					<VideoIcon size="15" />
@@ -591,11 +590,7 @@ const CardSection = ({
 			);
 		}
 
-		if (
-			isDocument ||
-			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
-			currentPath === DOCUMENTS_URL
-		) {
+		if (isDocument) {
 			return (
 				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
 					<FolderIcon size="15" />
@@ -603,20 +598,17 @@ const CardSection = ({
 			);
 		}
 
-		if (
-			currentPath === LINKS_URL ||
-			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX)
-		) {
+		if (isImage) {
 			return (
 				<figure className="card-icon rounded p-0.5 text-gray-1000">
-					<LinkIcon />
+					<ImageIcon size={`${size}`} />
 				</figure>
 			);
 		}
 
 		return (
 			<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
-				<ImageIcon size={`${size}`} />
+				<LinkIcon />
 			</figure>
 		);
 	};
