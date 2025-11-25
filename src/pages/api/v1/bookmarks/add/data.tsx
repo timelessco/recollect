@@ -14,8 +14,6 @@ import { getBookmarkBodySchema } from "../../../../../utils/api/bookmark/add";
 import { formatErrorMessage } from "../../../../../utils/api/bookmark/errorHandling";
 import {
 	ADD_BOOKMARK_MIN_DATA_API,
-	ADD_BOOKMARK_REMAINING_DATA_API,
-	ADD_BOOKMARK_SCREENSHOT_API,
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../../../../../utils/constants";
@@ -23,6 +21,7 @@ import {
 	apiCookieParser,
 	checkIfUrlAnImage,
 } from "../../../../../utils/helpers";
+import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 
 type ApiResponse = {
 	data: SingleListData[] | null;
@@ -74,107 +73,6 @@ const callMinDataApi = async (
 };
 
 /**
- * Helper function to call the remaining data API
- */
-const callRemainingApi = async (
-	minDataResponse: ApiResponse,
-	url: string,
-	cookies: { [key: string]: string },
-): Promise<MinDataApiResponse> => {
-	try {
-		// Get the bookmark ID from the min-data response
-		const bookmarkData = minDataResponse.data?.[0];
-		if (!bookmarkData?.id) {
-			throw new Error("No bookmark ID found in min-data response");
-		}
-
-		const remainingResponse = await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_REMAINING_DATA_API}`,
-			{
-				id: bookmarkData.id,
-				url,
-				favIcon: bookmarkData.meta_data?.favIcon ?? null,
-			},
-			{
-				headers: {
-					Cookie: apiCookieParser(cookies),
-				},
-			},
-		);
-
-		return {
-			status: remainingResponse.status,
-			data: remainingResponse.data,
-		};
-	} catch (error) {
-		const errorMessage = formatErrorMessage(error);
-		Sentry.captureException("Error calling remaining API", {
-			extra: { error: errorMessage },
-		});
-		return {
-			status: 500,
-			data: {
-				error: "Failed to process remaining bookmark data",
-				message: errorMessage,
-				data: null,
-			},
-		};
-	}
-};
-
-/**
- * Helper function to call the screenshot API
- */
-const callScreenshotApi = async (
-	minDataResponse: ApiResponse,
-	url: string,
-	cookies: { [key: string]: string },
-): Promise<MinDataApiResponse> => {
-	try {
-		const screenshotResponse = await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_SCREENSHOT_API}`,
-			{
-				id: minDataResponse.data?.[0]?.id,
-				url,
-			},
-			{
-				headers: {
-					Cookie: apiCookieParser(cookies),
-				},
-			},
-		);
-
-		return {
-			status: screenshotResponse.status,
-			data: screenshotResponse.data,
-		};
-	} catch (error) {
-		// If it's an axios error with a response, pass through the original error from the screenshot API
-		if (axios.isAxiosError(error) && error.response) {
-			return {
-				status: error.response.status,
-				data: error.response.data,
-			};
-		}
-
-		// For network or other errors, return a generic error
-		const errorMessage = formatErrorMessage(error);
-		Sentry.captureException("Network error calling screenshot API", {
-			extra: { error: errorMessage },
-		});
-		return {
-			status: 500,
-			data: {
-				error: "Failed to reach screenshot service",
-				message: errorMessage,
-				data: null,
-			},
-		};
-	}
-};
-
-/**
- * @swagger
  * /api/v1/bookmarks/add/data:
  *   post:
  *     summary: Add a new bookmark
@@ -219,6 +117,8 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	response: NextApiResponse<ApiResponse>,
 ) {
+	const supabase = apiSupabaseClient(request, response);
+
 	if (request.method !== "POST") {
 		response.status(405).send({
 			error: "Only POST requests allowed",
@@ -256,45 +156,56 @@ export default async function handler(
 		return;
 	}
 
-	// Check if URL is an image
-	const isUrlOfMimeType = await checkIfUrlAnImage(bodyData?.url);
-
-	try {
-		if (!isUrlOfMimeType) {
-			// For non-image URLs, call screenshot API first
-			const screenshotResult = await callScreenshotApi(
-				data,
-				bodyData.url,
-				(request?.cookies as { [key: string]: string }) ?? {},
-			);
-
-			if (screenshotResult.status !== 200) {
-				console.log("Screenshot Failed");
-			} else {
-				console.log("Screenshot Success");
-			}
-		}
-
-		// After screenshot (for non-images) or directly (for images), call remaining API
-		const remainingResult = await callRemainingApi(
-			data,
-			bodyData.url,
-			(request?.cookies as { [key: string]: string }) ?? {},
-		);
-
-		// Return the remaining API result
-		response.status(remainingResult.status).json(remainingResult.data);
-		return;
-	} catch (error) {
-		const errorMessage = formatErrorMessage(error);
-		Sentry.captureException("Error in processing APIs queue", {
-			extra: { error: errorMessage },
-		});
+	// Get bookmark ID from response
+	const bookmarkData = data.data[0];
+	if (!bookmarkData?.id) {
 		response.status(500).json({
-			error: "Failed to process bookmark completely",
-			message: errorMessage,
+			error: "Failed to create bookmark",
+			message: "No bookmark ID returned from min-data API",
 			data: null,
 		});
 		return;
+	}
+
+	// Send immediate response to client with the bookmark data
+	response.status(status).json(data);
+
+	// Queue the remaining work (screenshot and remaining data processing)
+	try {
+		// Check if URL is an image
+		const isUrlOfMimeType = await checkIfUrlAnImage(bodyData?.url);
+
+		// Queue message with all necessary data for background processing
+		const queuePayload = {
+			bookmarkId: bookmarkData.id,
+			url: bodyData.url,
+			userId: bookmarkData.user_id,
+			favIcon: bookmarkData.meta_data?.favIcon ?? null,
+			isImage: isUrlOfMimeType,
+		};
+
+		const queueResult = await supabase.schema("pgmq_public").rpc("send", {
+			queue_name: "add-bookmark-url-queue",
+			message: queuePayload,
+		});
+
+		if (queueResult.error) {
+			console.error("Failed to queue background job:", queueResult.error);
+			Sentry.captureException("Failed to queue background job", {
+				extra: {
+					error: queueResult.error,
+					bookmarkId: bookmarkData.id,
+				},
+			});
+		} else {
+			console.log(`✅ Queued background job for bookmark ${bookmarkData.id}`);
+		}
+	} catch (error) {
+		// Log error but don't fail the request since we already sent the response
+		const errorMessage = formatErrorMessage(error);
+		console.error("Error queuing background job:", errorMessage);
+		Sentry.captureException("Error queuing background job", {
+			extra: { error: errorMessage, bookmarkId: bookmarkData.id },
+		});
 	}
 }

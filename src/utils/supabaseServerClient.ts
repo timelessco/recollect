@@ -4,7 +4,7 @@ import {
 	serialize,
 	type CookieOptions,
 } from "@supabase/ssr";
-import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export const isProductionEnvironment = process.env.NODE_ENV === "production";
 
@@ -18,9 +18,21 @@ const developmentSupabaseAnonKey = process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY
 	? process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY
 	: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+const developmentSupabaseServiceKey = process.env.DEV_SUPABASE_SERVICE_KEY
+	? process.env.DEV_SUPABASE_SERVICE_KEY
+	: process.env.SUPABASE_SERVICE_KEY;
+
 export const supabaseAnonKey = !isProductionEnvironment
 	? developmentSupabaseAnonKey
 	: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+const supabaseUrl = !isProductionEnvironment
+	? developmentSupbaseUrl
+	: process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+const supabaseServiceKey = !isProductionEnvironment
+	? developmentSupabaseServiceKey
+	: process.env.SUPABASE_SERVICE_KEY;
 
 export const apiSupabaseClient = (
 	request: NextApiRequest,
@@ -67,6 +79,27 @@ export const apiSupabaseClient = (
 			},
 		},
 	);
+
+	return supabase;
+};
+
+/**
+ * Creates a Supabase client with service role key for server-side operations
+ * that don't require user authentication via cookies.
+ * This bypasses RLS and should only be used in secure server-side contexts.
+ *
+ * Use this when:
+ * - Cookies are expired/unavailable
+ * - Background jobs need database access
+ * - Service-to-service communication
+ */
+export const apiSupabaseServiceClient = () => {
+	const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+		auth: {
+			autoRefreshToken: false,
+			persistSession: false,
+		},
+	});
 
 	return supabase;
 };

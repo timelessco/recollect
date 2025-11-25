@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { type NextApiResponse } from "next/dist/shared/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";

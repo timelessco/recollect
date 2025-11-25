@@ -17,7 +17,7 @@ import {
 	updateBookmarkWithRemainingData,
 } from "../../../../../../utils/api/bookmark/remaining";
 import { MAIN_TABLE_NAME } from "../../../../../../utils/constants";
-import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
+import { apiSupabaseServiceClient } from "../../../../../../utils/supabaseServerClient";
 
 /**
  * Response data type for the remaining data API
@@ -56,6 +56,9 @@ type Data = {
  *                 type: string
  *                 nullable: true
  *                 description: Favicon URL
+ *               userId:
+ *                 type: string
+ *                 description: User ID (required when called from background jobs)
  *     responses:
  *       200:
  *         description: Remaining data added successfully
@@ -78,24 +81,29 @@ export default async function handler(
 		if (!validationResult.success) {
 			response.status(400).json({
 				data: null,
-				error: validationResult.error.errors
-					.map((validationError) => validationError.message)
-					.join(", "),
+				error: `Remaining data api Error in payload data: ${JSON.stringify(
+					request.body,
+					null,
+					2,
+				)}`,
 				message: null,
 			});
 			return;
 		}
 
-		const { url, favIcon, id } = validationResult.data;
+		const { url, favIcon, id, userId: requestUserId } = validationResult.data;
 
-		// Initialize Supabase client and get user data
-		const supabase = apiSupabaseClient(request, response);
-		const userId = (await supabase?.auth?.getUser())?.data?.user?.id;
+		// Use service client to bypass cookie authentication
+		// This is necessary when called from background jobs where cookies may be expired
+		const supabase = apiSupabaseServiceClient();
+
+		// Get userId from request body (for background jobs)
+		const userId = requestUserId;
 
 		if (!userId) {
-			response.status(401).json({
+			response.status(400).json({
 				data: null,
-				error: "User not authenticated",
+				error: "userId is required in request body",
 				message: null,
 			});
 			return;
@@ -131,7 +139,7 @@ export default async function handler(
 
 		// Process images and generate metadata
 		const {
-			uploadedImageThatIsAUrl,
+			// uploadedImageThatIsAUrl,
 			uploadedCoverImageUrl,
 			ogImageMetaDataGeneration,
 			imageUrlForMetaDataGeneration,
@@ -183,7 +191,6 @@ export default async function handler(
 			error: null,
 			message: null,
 		});
-		return;
 	} catch (error) {
 		console.error("Unexpected error in remaining data handler:", error);
 		Sentry.captureException("Unexpected error in remaining data handler", {

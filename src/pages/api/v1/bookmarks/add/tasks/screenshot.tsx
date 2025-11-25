@@ -16,7 +16,6 @@ import {
 	MAX_LENGTH,
 	screenshotRequestSchema,
 	updateBookmarkWithScreenshot,
-	uploadRemainingBookmarkData,
 	uploadScreenshot,
 } from "../../../../../../utils/api/bookmark/screenshot";
 import {
@@ -24,7 +23,7 @@ import {
 	PDF_SCREENSHOT_API,
 	URL_PDF_CHECK_PATTERN,
 } from "../../../../../../utils/constants";
-import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
+import { apiSupabaseServiceClient } from "../../../../../../utils/supabaseServerClient";
 
 /**
  * Response data type for the screenshot API
@@ -35,7 +34,6 @@ type Data = {
 };
 
 /**
- * @swagger
  * /api/v1/bookmarks/add/tasks/screenshot:
  *   post:
  *     summary: Add bookmark screenshot
@@ -58,6 +56,9 @@ type Data = {
  *               url:
  *                 type: string
  *                 description: URL to capture screenshot of
+ *               userId:
+ *                 type: string
+ *                 description: User ID (required when called from background jobs)
  *     responses:
  *       200:
  *         description: Screenshot added successfully
@@ -87,9 +88,20 @@ export default async function handler(
 			return;
 		}
 
-		// Initialize Supabase client and get user ID
-		const supabase = apiSupabaseClient(request, response);
-		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+		// Use service client to bypass cookie authentication
+		// This is necessary when called from background jobs where cookies may be expired
+		const supabase = apiSupabaseServiceClient();
+
+		// Get userId from request body (for background jobs)
+		const userId = request.body.userId;
+
+		if (!userId) {
+			response.status(400).json({
+				data: null,
+				error: "userId is required in request body",
+			});
+			return;
+		}
 
 		const mediaType = await getMediaType(request.body.url);
 
@@ -107,6 +119,7 @@ export default async function handler(
 					`${process.env.RECOLLECT_SERVER_API}${PDF_SCREENSHOT_API}`,
 					{
 						url: request.body.url,
+						userId,
 					},
 					{
 						headers: {
@@ -119,7 +132,37 @@ export default async function handler(
 				publicURL = axiosResponse?.data?.publicUrl ?? null;
 				isPageScreenshot = false;
 			} catch (pdfScreenshotError) {
-				console.error("Error generating PDF screenshot:", pdfScreenshotError);
+				// Extract actual error message from axios error response
+				let errorMessage = "Unknown error generating PDF screenshot";
+				let statusCode = 500;
+
+				if (axios.isAxiosError(pdfScreenshotError)) {
+					statusCode = pdfScreenshotError.response?.status ?? 500;
+					// Get the actual error message from the API response
+					errorMessage =
+						pdfScreenshotError.response?.data?.error ||
+						pdfScreenshotError.response?.data?.message ||
+						pdfScreenshotError.message ||
+						"PDF screenshot service error";
+
+					console.error("Error generating PDF screenshot:", {
+						status: statusCode,
+						message: errorMessage,
+						responseData: pdfScreenshotError.response?.data,
+					});
+				} else {
+					errorMessage =
+						pdfScreenshotError instanceof Error
+							? pdfScreenshotError.message
+							: errorMessage;
+					console.error("Error generating PDF screenshot:", errorMessage);
+				}
+
+				response.status(statusCode).json({
+					data: null,
+					error: errorMessage,
+				});
+				return;
 			}
 		} else {
 			// Capture screenshot of the URL
@@ -202,7 +245,6 @@ export default async function handler(
 		// }
 
 		response.status(200).json({ data, error: null });
-		return;
 	} catch (handlerError) {
 		console.error("Unexpected error:", handlerError);
 		Sentry.captureException("Unexpected error in screenshot handler", {

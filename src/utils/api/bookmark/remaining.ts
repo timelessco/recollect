@@ -37,6 +37,7 @@ export const remainingBookmarkSchema = z.object({
 	id: z.number().min(1, "Bookmark ID is required"),
 	url: z.string().url("Invalid URL format"),
 	favIcon: z.string().nullable().optional(),
+	userId: z.string(),
 });
 
 /**
@@ -69,7 +70,6 @@ export type CurrentBookmarkData = {
 
 /**
  * Uploads an image to R2 storage
- *
  * @param base64info - Base64 encoded image data
  * @param userIdForStorage - User ID for storage path
  * @param storagePath - Optional custom storage path
@@ -112,7 +112,6 @@ export const uploadToR2 = async (
 
 /**
  * Fetches the favicon for a URL
- *
  * @param url - The URL to get favicon for
  * @param favIcon - Optional favicon URL
  * @returns Favicon URL or null
@@ -150,7 +149,6 @@ export const getFavIconUrl = async (
 
 /**
  * Processes and uploads an image URL to R2
- *
  * @param url - The image URL to process
  * @param userId - User ID for storage
  * @returns Uploaded image URL or null
@@ -190,7 +188,6 @@ export const processAndUploadImageUrl = async (
 
 /**
  * Processes and uploads a cover image to R2
- *
  * @param ogImage - Original image URL
  * @param userId - User ID for storage
  * @returns Uploaded image URL or original URL
@@ -230,7 +227,6 @@ export const processAndUploadCoverImage = async (
 
 /**
  * Generates metadata for an image
- *
  * @param imageUrl - URL of the image
  * @returns Object containing image metadata
  */
@@ -274,7 +270,6 @@ export const generateImageMetadata = async (
 
 /**
  * Processes images and generates metadata for a bookmark
- *
  * @param url - The bookmark URL
  * @param userId - User ID for storage
  * @param currentData - Current bookmark data
@@ -338,7 +333,6 @@ export const processBookmarkImages = async (
 
 /**
  * Updates a bookmark with remaining data
- *
  * @param supabase - Supabase client
  * @param params - Update parameters
  * @param params.id - Bookmark ID

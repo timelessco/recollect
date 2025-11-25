@@ -33,15 +33,16 @@ export const MAX_LENGTH = 1_300;
  * Requires:
  * - id: non-empty string (bookmark ID)
  * - url: valid URL string
+ * - userId: user ID
  */
 export const screenshotRequestSchema = z.object({
 	id: z.number().min(1, "Bookmark ID is required"),
 	url: z.string().url("Invalid URL format"),
+	userId: z.string(),
 });
 
 /**
  * Uploads a screenshot image to R2 storage
- *
  * @param base64info - Base64 encoded image data
  * @param uploadUserId - User ID for creating the storage path
  * @returns Public URL of the uploaded image or null if upload fails
@@ -75,7 +76,6 @@ export const uploadScreenshot = async (
 
 /**
  * Captures a screenshot of a URL using the screenshot service
- *
  * @param url - URL to capture screenshot of
  * @returns Object containing success status, screenshot data, and any error
  */
@@ -85,7 +85,7 @@ export const captureScreenshot = async (url: string) => {
 			"*************************Screenshot Loading*****************************",
 		);
 		const screenShotResponse = await axios.get(
-			`${SCREENSHOT_API}try?url=${encodeURIComponent(url)}`,
+			`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
 			{
 				responseType: "json",
 			},
@@ -100,6 +100,7 @@ export const captureScreenshot = async (url: string) => {
 			error: null,
 		};
 	} catch (error_) {
+		console.error("Screenshot error~~~~~~~~~~~~~~~~~~~~~~~~~~~:", error_);
 		if (error_ instanceof Error) {
 			console.error("Screenshot error");
 			Sentry.captureException("Screenshot capture failed", {
@@ -117,7 +118,6 @@ export const captureScreenshot = async (url: string) => {
 
 /**
  * Fetches existing bookmark data from the database
- *
  * @param supabase - Supabase client instance
  * @param bookmarkId - ID of the bookmark to fetch
  * @param userId - User ID who owns the bookmark
@@ -147,7 +147,6 @@ export const fetchExistingBookmarkData = async (
 
 /**
  * Updates a bookmark with screenshot data
- *
  * @param supabase - Supabase client instance
  * @param params - Object containing:
  *   - bookmarkId: ID of the bookmark to update
@@ -201,7 +200,6 @@ export const updateBookmarkWithScreenshot = async (
 
 /**
  * Uploads remaining bookmark data asynchronously
- *
  * @param data - Array of bookmark data
  * @param url - URL of the bookmark
  * @param cookies - Request cookies for authentication
