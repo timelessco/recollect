@@ -77,7 +77,7 @@ You will have to get `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from [Google 
 
 Update all the env variables as per <https://github.com/timelessco/recollect/blob/main/env.local.txt>. The updated env variables should point out to the Supabase self hosted version
 
-### Setting up Recollect server keys, this is used for screenshot apis that run on other servers like awz or Hertzner
+### Setting up Recollect server keys, this is used for screenshot apis that run on other servers like awz or Hetzner
 
 ```env
 RECOLLECT_SERVER_API: ${RECOLLECT_SERVER_API}
