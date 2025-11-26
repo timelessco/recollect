@@ -49,6 +49,6 @@ export default async function handler(
 		response.status(200).json({ data, error: null });
 	} else {
 		response.status(500).json({ data: null, error });
-		Sentry.captureException(`create tag error : ${error}`);
+		Sentry.captureException(`create tag error : ${error?.message}`);
 	}
 }

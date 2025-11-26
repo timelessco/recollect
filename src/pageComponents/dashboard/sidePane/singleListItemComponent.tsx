@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Link from "next/link";
-import { isLink } from "@adaptui/react";
 
 import {
 	AriaDropdown,

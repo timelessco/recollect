@@ -148,12 +148,12 @@ export const fetchExistingBookmarkData = async (
 /**
  * Updates a bookmark with screenshot data
  * @param supabase - Supabase client instance
- * @param params - Object containing:
- *   - bookmarkId: ID of the bookmark to update
- *   - userId: User ID who owns the bookmark
- *   - title: Updated title
- *   - description: Updated description
- *   - metaData: Updated metadata object
+ * @param params - Object containing bookmark update parameters
+ * @param params.bookmarkId - ID of the bookmark to update
+ * @param params.userId - User ID who owns the bookmark
+ * @param params.title - Updated title
+ * @param params.description - Updated description
+ * @param params.metaData - Updated metadata object
  * @returns Object containing updated bookmark data and any error
  */
 export const updateBookmarkWithScreenshot = async (

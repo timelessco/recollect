@@ -4,10 +4,7 @@ import {
 	type QueryFunctionContext,
 	type QueryKey,
 } from "@tanstack/react-query";
-import axios, {
-	type AxiosResponseHeaders,
-	type RawAxiosResponseHeaders,
-} from "axios";
+import axios from "axios";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
