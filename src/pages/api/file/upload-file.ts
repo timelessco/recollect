@@ -210,6 +210,7 @@ export default async (
 						success: false,
 					});
 				}
+
 				return;
 			}
 		}

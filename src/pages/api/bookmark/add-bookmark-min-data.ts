@@ -17,19 +17,14 @@ import {
 	type ProfilesTableTypes,
 	type SingleListData,
 } from "../../../types/apiTypes";
-import {
-	checkIfUserIsCategoryOwnerOrCollaborator as checkIfUserIsCategoryOwnerOrCollaboratorUtil,
-	type CheckResult,
-} from "../../../utils/api/bookmark/add";
+import { checkIfUserIsCategoryOwnerOrCollaborator as checkIfUserIsCategoryOwnerOrCollaboratorUtil } from "../../../utils/api/bookmark/add";
 import {
 	ADD_REMAINING_BOOKMARK_API,
 	bookmarkType,
-	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
 	OG_IMAGE_PREFERRED_SITES,
-	SHARED_CATEGORIES_TABLE_NAME,
 	SKIP_OG_IMAGE_DOMAINS,
 	uncategorizedPages,
 } from "../../../utils/constants";
@@ -76,13 +71,11 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 	);
 
 	if (!result.ok) {
-		response
-			.status(500)
-			.json({
-				data: null,
-				error: result.error ?? "Unknown error",
-				message: null,
-			});
+		response.status(500).json({
+			data: null,
+			error: result.error ?? "Unknown error",
+			message: null,
+		});
 		return false;
 	}
 
@@ -286,6 +279,7 @@ export default async function handler(
 						message: null,
 					});
 				}
+
 				return;
 			}
 
