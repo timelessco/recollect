@@ -1,6 +1,4 @@
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
 
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
@@ -12,36 +10,29 @@ import {
 import UserAvatar from "../../../components/userAvatar";
 import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
 	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
-import { LOGIN_URL, USER_PROFILE } from "../../../utils/constants";
+import { LOGIN_URL } from "../../../utils/constants";
 import { createClient } from "../../../utils/supabaseClient";
+
+import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 
 const SidePaneUserDropdown = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const setSession = useSupabaseSession((state) => state.setSession);
 	const router = useRouter();
 
-	const queryClient = useQueryClient();
 	const supabase = createClient();
 
 	const { userProfilePicData } = useGetUserProfilePic(
 		session?.user?.email ?? "",
 	);
 
-	const userProfilesDataQuery = queryClient.getQueryData([
-		USER_PROFILE,
-		session?.user?.id,
-	]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
-
-	const userProfileData = userProfilesDataQuery?.data?.[0];
+	const { userProfileData } = useFetchUserProfile();
+	const userData = userProfileData?.data?.[0];
 
 	return (
 		<div className="flex justify-between">
@@ -63,7 +54,7 @@ const SidePaneUserDropdown = () => {
 								width={24}
 							/>
 							<p className="flex-1 truncate overflow-hidden text-left text-sm leading-4 font-medium text-gray-800">
-								{userProfileData?.display_name || userProfileData?.user_name}
+								{userData?.display_name || userData?.user_name}
 							</p>
 						</div>
 						<figure className="mt-px">
