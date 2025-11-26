@@ -503,21 +503,21 @@ export const getBookmarkCountForCurrentPage = (
 };
 
 export const getNormalisedImageUrl = async (
-	favIcon: string | null,
+	imageUrl: string | null,
 	url: string,
 ) => {
 	try {
 		const { hostname } = new URL(url);
 
-		if (favIcon) {
+		if (imageUrl) {
 			// Check for absolute URLs
-			const normalisedUrl = getNormalisedUrl(favIcon);
+			const normalisedUrl = getNormalisedUrl(imageUrl);
 
 			if (normalisedUrl) {
 				return normalisedUrl;
 			}
 
-			return new URL(favIcon, `https://${hostname}`).toString();
+			return new URL(imageUrl, `https://${hostname}`).toString();
 		}
 
 		const response = await fetch(
