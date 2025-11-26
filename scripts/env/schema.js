@@ -18,8 +18,6 @@ export const serverSchema = z.object({
 	RECOLLECT_SERVER_API: z.string().optional(),
 	RECOLLECT_SERVER_API_KEY: z.string().optional(),
 	API_KEY_ENCRYPTION_KEY: z.string(),
-	PDF_SECRET_KEY: z.string(),
-	PDF_URL_SCREENSHOT_API: z.string(),
 });
 
 /**
@@ -39,8 +37,6 @@ export const serverEnvironment = {
 	RECOLLECT_SERVER_API: process.env.RECOLLECT_SERVER_API,
 	RECOLLECT_SERVER_API_KEY: process.env.RECOLLECT_SERVER_API_KEY,
 	API_KEY_ENCRYPTION_KEY: process.env.API_KEY_ENCRYPTION_KEY,
-	PDF_SECRET_KEY: process.env.PDF_SECRET_KEY,
-	PDF_URL_SCREENSHOT_API: process.env.PDF_URL_SCREENSHOT_API,
 };
 
 /**
