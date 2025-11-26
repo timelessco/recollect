@@ -110,20 +110,6 @@ export const PreviewLightBox = ({
 		return () => {};
 	}, [open, setOpen, router]);
 
-	// using window event listener to handle browser back button for now
-	useEffect(() => {
-		const handlePopState = () => {
-			if (open) {
-				handleClose();
-			}
-		};
-
-		window.addEventListener("popstate", handlePopState);
-		return () => {
-			window.removeEventListener("popstate", handlePopState);
-		};
-	}, [open, handleClose, router]);
-
 	// Only render CustomLightBox when activeIndex is valid
 	if (!open || activeIndex === -1) {
 		return null;
