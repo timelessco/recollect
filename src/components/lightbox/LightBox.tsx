@@ -3,7 +3,10 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
+import Lightbox, {
+	type Slide as BaseSlide,
+	type ZoomRef,
+} from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import loaderGif from "../../../public/loader-gif.gif";
@@ -38,7 +41,6 @@ import { VideoPlayer } from "../VideoPlayer";
 
 import { PullEffect } from "./CloseOnSwipeDown";
 import MetaButtonPlugin from "./LightBoxPlugin";
-import { type CustomSlide } from "./previewLightBox";
 
 /**
  * CustomLightBox Component
@@ -731,4 +733,11 @@ const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
 	} catch {
 		return false;
 	}
+};
+
+export type CustomSlide = BaseSlide & {
+	data?: {
+		type?: string;
+	};
+	placeholder?: string;
 };
