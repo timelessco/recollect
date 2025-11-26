@@ -15,7 +15,7 @@ This document provides a comprehensive guide to the project's file and folder or
 
 ## Root Directory Structure
 
-```
+```text
 recollect/
 ├── .cursor/                # Cursor IDE rules and configurations
 │   └── rules/             # Project-specific coding rules
@@ -43,7 +43,7 @@ recollect/
 
 ### `/src` Directory Overview
 
-```
+```text
 src/
 ├── app/                   # Next.js App Router pages (newer)
 │   ├── (guest)/          # Guest-only routes
@@ -88,7 +88,7 @@ The project uses **two distinct API routing patterns**: the legacy flat structur
 
 The legacy API routes are organized by resource type in a flat structure:
 
-```
+```text
 src/pages/api/
 ├── bookmark/
 │   ├── add-bookmark-min-data.ts
@@ -147,7 +147,7 @@ src/pages/api/
 
 The modern API routes follow a versioned, hierarchical structure:
 
-```
+```text
 src/pages/api/v1/
 ├── bookmarks/
 │   ├── add/
@@ -207,7 +207,7 @@ src/pages/api/v1/
 ### API Routing Comparison
 
 | Aspect           | Old Structure                         | New Structure (v1)                        |
-| ---------------- | ------------------------------------- | ----------------------------------------- |
+| :--------------- | :------------------------------------ | :---------------------------------------- |
 | **Pattern**      | `/api/<resource>/<action>`            | `/api/v1/<resource>/<operation>/<action>` |
 | **Versioning**   | None                                  | Versioned (`v1`)                          |
 | **Organization** | Flat, resource-based                  | Hierarchical, operation-based             |
@@ -219,7 +219,20 @@ src/pages/api/v1/
 
 The v1 API structure supports task-based sub-routes for complex operations:
 
+```text
+/api/v1/bookmarks/add/
+├── data.tsx              # Main orchestrator endpoint
+├── swagger.ts            # API documentation
+└── tasks/
+    ├── min-data.tsx      # Step 1: Save minimal data
+    ├── remaining.tsx     # Step 2: Enrich with metadata
+    ├── screenshot.tsx    # Step 3: Capture screenshot
+    └── queue-consumer.ts # Step 4: Process background queue
 ```
+
+**Example flow:**
+
+```text
 /api/v1/bookmarks/add/
 ├── data.tsx              # Main orchestrator endpoint
 ├── swagger.ts            # API documentation
@@ -238,7 +251,7 @@ This structure allows breaking down complex operations into manageable, testable
 
 ### Component Directory Structure
 
-```
+```text
 src/components/
 ├── ariaDisclosure/        # Accessible disclosure components
 ├── ariaDropdown/          # Accessible dropdown menus
@@ -293,7 +306,7 @@ src/components/
 
 ### Page Components
 
-```
+```text
 src/pageComponents/
 ├── dashboard/
 │   ├── cardSection/           # Bookmark card displays
@@ -316,7 +329,7 @@ src/pageComponents/
 
 ### Root Configuration Files
 
-```
+```text
 recollect/
 ├── .env.example               # Environment variable template
 ├── .eslintrc.json            # ESLint linting rules (removed, now eslint.config.js)
@@ -340,7 +353,7 @@ recollect/
 
 ### Environment Configuration
 
-```
+```text
 scripts/env/
 ├── schema.js                 # Zod validation schemas
 ├── client.js                 # Client-side env vars
@@ -361,7 +374,7 @@ scripts/env/
 ### General Rules
 
 | File Type            | Convention                  | Example                                      |
-| -------------------- | --------------------------- | -------------------------------------------- |
+| :------------------- | :-------------------------- | :------------------------------------------- |
 | **React Components** | PascalCase                  | `AriaDropdown.tsx`, `UserAvatar.tsx`         |
 | **Pages**            | kebab-case or PascalCase    | `api-documentation.tsx`, `[category_id].tsx` |
 | **Utilities**        | camelCase                   | `supabaseClient.ts`, `constants.ts`          |
@@ -394,7 +407,7 @@ scripts/env/
 
 ### `/public` - Static Assets
 
-```
+```text
 public/
 ├── app-svgs/              # Application SVG files
 │   ├── errorImgPlaceholder.svg
@@ -415,7 +428,7 @@ public/
 
 ### `/supabase` - Database Configuration
 
-```
+```text
 supabase/
 ├── config.toml           # Supabase project configuration
 └── migrations/           # SQL migration files
@@ -426,7 +439,7 @@ supabase/
 
 ### `/cypress` - E2E Testing
 
-```
+```text
 cypress/
 ├── e2e/
 │   ├── api-tests/        # API endpoint tests
@@ -440,7 +453,7 @@ cypress/
 
 ### `/docs` - Documentation
 
-```
+```text
 docs/
 ├── api_logging_rules.md
 ├── bookmark-queue-implementation.md
@@ -571,7 +584,7 @@ console.warn(
 ### Common Paths
 
 | What                | Path                                                  |
-| ------------------- | ----------------------------------------------------- |
+| :------------------ | :---------------------------------------------------- |
 | Old API routes      | `src/pages/api/<resource>/<action>.ts`                |
 | New API routes      | `src/pages/api/v1/<resource>/<operation>/<action>.ts` |
 | UI Components       | `src/components/<component>.tsx`                      |

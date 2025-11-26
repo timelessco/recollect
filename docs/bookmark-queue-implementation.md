@@ -19,7 +19,7 @@ The bookmark queue system is a **background job processing architecture** that h
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────┐
 │   Client    │
 │  (Browser)  │
@@ -285,7 +285,7 @@ const userId = request.body.userId; // Passed explicitly
 ### Benefits of Service Key
 
 | Aspect              | Cookie Auth                        | Service Key Auth               |
-| ------------------- | ---------------------------------- | ------------------------------ |
+| :------------------ | :--------------------------------- | :----------------------------- |
 | **Expiration**      | ❌ Expires (hours/days)            | ✅ Never expires               |
 | **Queue Storage**   | ❌ Large payload (cookies are big) | ✅ Small payload (just userId) |
 | **Security**        | ❌ Sensitive session data in queue | ✅ Only userId in queue        |
@@ -378,7 +378,7 @@ await supabase.schema("pgmq_public").rpc("send", {
 
 #### **Step 3: Queue Consumer Processes Job**
 
-```typescript
+```javascript
 // Cron job calls queue consumer API every N minutes
 GET / api / v1 / bookmarks / add / tasks / queue - consumer;
 
@@ -442,7 +442,7 @@ await supabase.schema("pgmq_public").rpc("archive", {
 ### 1. Why Queue Instead of Serverless Functions?
 
 | Approach                 | Pros                                                              | Cons                                  |
-| ------------------------ | ----------------------------------------------------------------- | ------------------------------------- |
+| :----------------------- | :---------------------------------------------------------------- | :------------------------------------ |
 | **Direct API Call**      | Simple                                                            | User waits 30+ seconds                |
 | **Serverless Functions** | Fast response                                                     | Cold starts, timeouts, no retry logic |
 | **Queue (PGMQ)**         | ✅ Fast response<br>✅ Reliable<br>✅ Auto-retry<br>✅ Persistent | Need worker/cron                      |
