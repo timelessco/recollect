@@ -7,7 +7,7 @@ export const formatErrorMessage = (error: unknown): string => {
 	}
 
 	if (error instanceof ZodError) {
-		return error.errors.map((error_) => error_.message).join(", ");
+		return error.issues.map((issue) => issue.message).join(", ");
 	}
 
 	if (typeof error === "string") {

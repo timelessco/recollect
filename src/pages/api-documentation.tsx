@@ -7,7 +7,7 @@ import bookmarkAddApiSpec from "./api/v1/bookmarks/add/swagger";
 // Dynamically import SwaggerUI to avoid SSR issues
 const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
 
-const ApiDocumentation = (): JSX.Element => (
+const ApiDocumentation = () => (
 	<div className="h-screen w-full overflow-y-auto">
 		<div className="container mx-auto p-4">
 			<h1 className="mb-4 text-3xl font-bold">Recollect API Documentation</h1>

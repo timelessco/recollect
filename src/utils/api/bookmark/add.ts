@@ -274,8 +274,8 @@ export const processUrlMetadata = async (
 export const isUrlFromPreferredOgSite = (url: string): boolean => {
 	try {
 		const urlHost = new URL(url)?.hostname?.toLowerCase();
-		return OG_IMAGE_PREFERRED_SITES?.some(
-			(keyword) => urlHost?.includes(keyword),
+		return OG_IMAGE_PREFERRED_SITES?.some((keyword) =>
+			urlHost?.includes(keyword),
 		);
 	} catch (error) {
 		const errorMessage = formatErrorMessage(error);

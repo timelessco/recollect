@@ -282,16 +282,6 @@ const supabase = apiSupabaseServiceClient();
 const userId = request.body.userId; // Passed explicitly
 ```
 
-### Benefits of Service Key
-
-| Aspect              | Cookie Auth                        | Service Key Auth               |
-| :------------------ | :--------------------------------- | :----------------------------- |
-| **Expiration**      | ❌ Expires (hours/days)            | ✅ Never expires               |
-| **Queue Storage**   | ❌ Large payload (cookies are big) | ✅ Small payload (just userId) |
-| **Security**        | ❌ Sensitive session data in queue | ✅ Only userId in queue        |
-| **RLS Bypass**      | ❌ Subject to RLS policies         | ✅ Bypasses RLS (admin access) |
-| **Background Jobs** | ❌ Not suitable                    | ✅ Perfect for async work      |
-
 ### How Service Key Works
 
 ```typescript
@@ -441,11 +431,7 @@ await supabase.schema("pgmq_public").rpc("archive", {
 
 ### 1. Why Queue Instead of Serverless Functions?
 
-| Approach                 | Pros                                                              | Cons                                  |
-| :----------------------- | :---------------------------------------------------------------- | :------------------------------------ |
-| **Direct API Call**      | Simple                                                            | User waits 30+ seconds                |
-| **Serverless Functions** | Fast response                                                     | Cold starts, timeouts, no retry logic |
-| **Queue (PGMQ)**         | ✅ Fast response<br>✅ Reliable<br>✅ Auto-retry<br>✅ Persistent | Need worker/cron                      |
+Queue helps run complex tasks in parallel
 
 **Winner:** Queue-based approach for reliability and user experience
 
