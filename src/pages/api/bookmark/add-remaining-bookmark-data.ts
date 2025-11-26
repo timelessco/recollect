@@ -184,7 +184,8 @@ export default async function handler(
 			currentData?.ogImage,
 			url,
 		);
-		try {
+
+try {
 			// 10 second timeout for image download
 			const image = await axios.get(
 				ogImageNormalisedUrl || currentData?.ogImage,
