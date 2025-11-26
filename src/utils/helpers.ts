@@ -505,3 +505,38 @@ export const getBookmarkCountForCurrentPage = (
 			return 0;
 	}
 };
+
+export const getNormalisedImageUrl = async (
+	imageUrl: string | null,
+	url: string,
+) => {
+	try {
+		const { hostname } = new URL(url);
+
+		if (imageUrl) {
+			// Check for absolute URLs
+			const normalisedUrl = getNormalisedUrl(imageUrl);
+
+			if (normalisedUrl) {
+				return normalisedUrl;
+			}
+
+			return new URL(imageUrl, `https://${hostname}`).toString();
+		}
+
+		const response = await fetch(
+			`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
+		);
+
+		if (!response.ok) {
+			throw new Error(
+				`Invalid response for the ${hostname}: ${response.statusText}`,
+			);
+		}
+
+		return response.url;
+	} catch (error) {
+		console.warn("Error fetching Image:", error);
+		return null;
+	}
+};

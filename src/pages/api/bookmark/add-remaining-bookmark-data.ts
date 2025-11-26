@@ -24,7 +24,11 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { checkIfUrlAnImage, checkIfUrlAnMedia } from "../../../utils/helpers";
+import {
+	checkIfUrlAnImage,
+	checkIfUrlAnMedia,
+	getNormalisedImageUrl,
+} from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -176,17 +180,25 @@ export default async function handler(
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
 	// upload scrapper image to r2
 	if (currentData?.ogImage && !isUrlAnMedia) {
+		const ogImageNormalisedUrl = await getNormalisedImageUrl(
+			currentData?.ogImage,
+			url,
+		);
+
 		try {
 			// 10 second timeout for image download
-			const image = await axios.get(currentData?.ogImage, {
-				responseType: "arraybuffer",
-				// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
-				headers: {
-					"User-Agent": "Mozilla/5.0",
-					Accept: "image/*,*/*;q=0.8",
+			const image = await axios.get(
+				ogImageNormalisedUrl || currentData?.ogImage,
+				{
+					responseType: "arraybuffer",
+					// Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
+					headers: {
+						"User-Agent": "Mozilla/5.0",
+						Accept: "image/*,*/*;q=0.8",
+					},
+					timeout: 10_000,
 				},
-				timeout: 10_000,
-			});
+			);
 
 			const returnedB64 = Buffer.from(image?.data).toString("base64");
 			uploadedCoverImageUrl = await upload(returnedB64, userId, null);
