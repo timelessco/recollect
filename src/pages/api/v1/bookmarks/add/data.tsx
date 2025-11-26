@@ -117,8 +117,6 @@ export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	response: NextApiResponse<ApiResponse>,
 ) {
-	const supabase = apiSupabaseClient(request, response);
-
 	if (request.method !== "POST") {
 		response.status(405).send({
 			error: "Only POST requests allowed",
@@ -140,6 +138,25 @@ export default async function handler(
 			error: "Invalid request body",
 			message: errorMessage,
 			data: null,
+		});
+		return;
+	}
+
+	// Initialize Supabase client after validation
+	const supabase = apiSupabaseClient(request, response);
+
+	// Authentication check
+	const { data: userData, error: userError } = await supabase.auth.getUser();
+	const userId = userData?.user?.id;
+
+	if (userError || !userId) {
+		console.warn("User authentication failed:", {
+			error: userError?.message,
+		});
+		response.status(401).json({
+			data: null,
+			error: "Unauthorized",
+			message: "User authentication failed",
 		});
 		return;
 	}

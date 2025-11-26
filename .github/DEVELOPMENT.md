@@ -58,8 +58,32 @@ environmental variables in a **`.env`** file in the root directory of the
 project. The **`.env`** file should contain key-value pairs in the following
 format:
 
-- **`NEXT_PUBLIC_SITE_URL`** (required): The URL of the frontend App of the
-  project.
+### Required Environment Variables
+
+#### Server-side Variables
+
+- **`SUPABASE_SERVICE_KEY`** (required): Supabase service role key for admin operations
+- **`GOOGLE_GEMINI_TOKEN`** (required): Google Gemini API token for AI features
+- **`API_KEY_ENCRYPTION_KEY`** (required): Key for encrypting user API keys
+- **`INTERNAL_API_KEY`** (required): Secret key for authenticating internal background job APIs
+- **`RECOLLECT_SERVER_API`** (optional): URL for external Recollect server API
+- **`RECOLLECT_SERVER_API_KEY`** (optional): API key for external Recollect server
+- **`IMAGE_CAPTION_URL`** (optional): URL for image caption generation service
+- **`RESEND_KEY`** (optional): Resend API key for email services
+- **`DEV_SUPABASE_SERVICE_KEY`** (optional): Local development Supabase service key
+
+#### Client-side Variables
+
+- **`NEXT_PUBLIC_SITE_URL`** (required): The URL of the frontend App
+- **`NEXT_PUBLIC_SUPABASE_URL`** (required): Supabase project URL
+- **`NEXT_PUBLIC_SUPABASE_ANON_KEY`** (required): Supabase anonymous key
+- **`NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID`** (required): Cloudflare R2 account ID
+- **`NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID`** (required): Cloudflare R2 access key
+- **`NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY`** (required): Cloudflare R2 secret key
+- **`NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL`** (required): Cloudflare R2 public bucket URL
+- **`NEXT_PUBLIC_DEV_SUPABASE_URL`** (optional): Local development Supabase URL
+- **`NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY`** (optional): Local development Supabase anon key
+- **`NEXT_PUBLIC_SENTRY_DSN`** (optional): Sentry DSN for error tracking
 
 > Adding a new environmental variable requires a zod schema update in the `env`
 > folder and a new entry in the `schema.js` file in the `serverSchema` variable
@@ -79,8 +103,7 @@ This will download and install all the required dependencies for the project.
 
 ## Add the env file
 
-You need to create a `.env` file and add all the environmental variables as per
-the `env.local.txt` file
+You need to create a `.env` file and add all the environmental variables. See the environment configuration section below for required variables.
 
 ## Running the project locally
 

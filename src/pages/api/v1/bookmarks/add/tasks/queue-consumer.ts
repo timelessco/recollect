@@ -49,6 +49,24 @@ export default async function handler(
 	response: NextApiResponse<ApiResponse>,
 ) {
 	try {
+		// Authenticate internal API key
+		const apiKey =
+			request.headers["x-api-key"] ||
+			request.headers.authorization?.replace("Bearer ", "");
+
+		if (apiKey !== process.env.INTERNAL_API_KEY) {
+			response.status(401).json({
+				success: false,
+				message: "Unauthorized - Invalid API key",
+				processedCount: 0,
+				archivedCount: 0,
+				failedCount: 0,
+				results: [],
+				error: "Unauthorized",
+			});
+			return;
+		}
+
 		const supabase = apiSupabaseClient(request, response);
 		const queueName = "add-bookmark-url-queue";
 		// Process up to 10 messages at a time
@@ -161,6 +179,11 @@ export default async function handler(
 							url: payload.url,
 							userId: payload.userId,
 						},
+						{
+							headers: {
+								"x-api-key": process.env.INTERNAL_API_KEY,
+							},
+						},
 					);
 
 					screenshotSuccess = screenshotResponse.status === 200;
@@ -188,6 +211,11 @@ export default async function handler(
 						url: payload.url,
 						favIcon: payload.favIcon,
 						userId: payload.userId,
+					},
+					{
+						headers: {
+							"x-api-key": process.env.INTERNAL_API_KEY,
+						},
 					},
 				);
 

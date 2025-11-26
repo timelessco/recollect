@@ -18,6 +18,7 @@ export const serverSchema = z.object({
 	RECOLLECT_SERVER_API: z.string().optional(),
 	RECOLLECT_SERVER_API_KEY: z.string().optional(),
 	API_KEY_ENCRYPTION_KEY: z.string(),
+	INTERNAL_API_KEY: z.string(),
 });
 
 /**
@@ -37,6 +38,7 @@ export const serverEnvironment = {
 	RECOLLECT_SERVER_API: process.env.RECOLLECT_SERVER_API,
 	RECOLLECT_SERVER_API_KEY: process.env.RECOLLECT_SERVER_API_KEY,
 	API_KEY_ENCRYPTION_KEY: process.env.API_KEY_ENCRYPTION_KEY,
+	INTERNAL_API_KEY: process.env.INTERNAL_API_KEY,
 };
 
 /**

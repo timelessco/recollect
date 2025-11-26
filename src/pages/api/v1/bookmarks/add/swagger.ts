@@ -11,7 +11,8 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 	tags: [
 		{
 			name: "Add Bookmark Flow",
-			description: "Main endpoint and its sub-tasks for adding bookmarks",
+			description:
+				"Main endpoint and its sub-tasks for adding bookmarks. Endpoints marked with 🔒 require internal API key authentication.",
 		},
 	],
 	paths: {
@@ -170,10 +171,15 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 		"/api/v1/bookmarks/add/tasks/screenshot": {
 			post: {
 				operationId: "addBookmarkScreenshot",
-				summary: "Add bookmark screenshot",
+				summary: "Add bookmark screenshot (🔒 Requires API Key)",
 				description:
-					"[Background Task] Captures and stores screenshot of the bookmarked URL. Uses service key authentication.",
+					"[Background Task] Captures and stores screenshot of the bookmarked URL. **Authentication Required:** Include INTERNAL_API_KEY in x-api-key header or as Bearer token in Authorization header.",
 				tags: ["Add Bookmark Flow"],
+				security: [
+					{
+						ApiKeyAuth: [],
+					},
+				],
 				requestBody: {
 					required: true,
 					content: {
@@ -221,16 +227,41 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 							},
 						},
 					},
+					"401": {
+						description: "Unauthorized - Invalid or missing API key",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/ErrorResponse",
+								},
+							},
+						},
+					},
+					"500": {
+						description: "Internal server error",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/ErrorResponse",
+								},
+							},
+						},
+					},
 				},
 			},
 		},
 		"/api/v1/bookmarks/add/tasks/remaining": {
 			post: {
 				operationId: "addBookmarkRemainingData",
-				summary: "Add remaining bookmark data",
+				summary: "Add remaining bookmark data (🔒 Requires API Key)",
 				description:
-					"[Background Task] Processes and stores remaining bookmark data including images and metadata. Uses service key authentication.",
+					"[Background Task] Processes and stores remaining bookmark data including images and metadata. **Authentication Required:** Include INTERNAL_API_KEY in x-api-key header or as Bearer token in Authorization header.",
 				tags: ["Add Bookmark Flow"],
+				security: [
+					{
+						ApiKeyAuth: [],
+					},
+				],
 				requestBody: {
 					required: true,
 					content: {
@@ -283,16 +314,51 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 							},
 						},
 					},
+					"401": {
+						description: "Unauthorized - Invalid or missing API key",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/ErrorResponse",
+								},
+							},
+						},
+					},
+					"404": {
+						description: "Bookmark not found",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/ErrorResponse",
+								},
+							},
+						},
+					},
+					"500": {
+						description: "Internal server error",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/ErrorResponse",
+								},
+							},
+						},
+					},
 				},
 			},
 		},
 		"/api/v1/bookmarks/add/tasks/queue-consumer": {
 			post: {
 				operationId: "processBookmarkQueue",
-				summary: "Process bookmark queue",
+				summary: "Process bookmark queue (🔒 Requires API Key)",
 				description:
-					"[Background Task] Processes messages from the bookmark queue. Called by cron job/worker. Reads up to 10 messages and processes them in batch.",
+					"[Background Task] Processes messages from the bookmark queue. Called by cron job/worker. **Authentication Required:** Include INTERNAL_API_KEY in x-api-key header or as Bearer token in Authorization header. Reads up to 10 messages and processes them in batch.",
 				tags: ["Add Bookmark Flow"],
+				security: [
+					{
+						ApiKeyAuth: [],
+					},
+				],
 				responses: {
 					"200": {
 						description: "Queue processing completed",
@@ -353,6 +419,16 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 							},
 						},
 					},
+					"401": {
+						description: "Unauthorized - Invalid or missing API key",
+						content: {
+							"application/json": {
+								schema: {
+									$ref: "#/components/schemas/ErrorResponse",
+								},
+							},
+						},
+					},
 					"500": {
 						description: "Internal server error",
 						content: {
@@ -368,6 +444,15 @@ const bookmarkAddApiSpec: OpenAPIV3.Document = {
 		},
 	},
 	components: {
+		securitySchemes: {
+			ApiKeyAuth: {
+				type: "apiKey",
+				in: "header",
+				name: "x-api-key",
+				description:
+					"Internal API key for authenticating background job endpoints. Include the key in the x-api-key header or as a Bearer token in the Authorization header.",
+			},
+		},
 		schemas: {
 			SingleListData: {
 				type: "object",

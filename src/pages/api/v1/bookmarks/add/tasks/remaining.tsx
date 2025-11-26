@@ -32,9 +32,12 @@ type Data = {
 // /api/v1/bookmarks/add/tasks/remaining:
 //   post:
 //     summary: Add remaining bookmark data
-//     description: Processes and stores remaining bookmark data including images and metadata
+//     description: Processes and stores remaining bookmark data including images and metadata. This is an internal API that requires authentication.
 //     tags:
 //       - Bookmarks
+//       - Internal APIs
+//     security:
+//       - ApiKeyAuth: []
 //     requestBody:
 //       required: true
 //       content:
@@ -44,6 +47,7 @@ type Data = {
 //             required:
 //               - id
 //               - url
+//               - userId
 //             properties:
 //               id:
 //                 type: string
@@ -57,14 +61,14 @@ type Data = {
 //                 description: Favicon URL
 //               userId:
 //                 type: string
-//                 description: User ID (required when called from background jobs)
+//                 description: User ID (required)
 //     responses:
 //       200:
 //         description: Remaining data added successfully
 //       400:
 //         description: Invalid request body
 //       401:
-//         description: Unauthorized
+//         description: Unauthorized - Invalid or missing API key
 //       404:
 //         description: Bookmark not found
 //       500:
@@ -74,6 +78,20 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	try {
+		// Authenticate internal API key
+		const apiKey =
+			request.headers["x-api-key"] ||
+			request.headers.authorization?.replace("Bearer ", "");
+
+		if (apiKey !== process.env.INTERNAL_API_KEY) {
+			response.status(401).json({
+				data: null,
+				error: "Unauthorized - Invalid API key",
+				message: null,
+			});
+			return;
+		}
+
 		// Validate request body
 		const validationResult = remainingBookmarkSchema.safeParse(request.body);
 		if (!validationResult.success) {

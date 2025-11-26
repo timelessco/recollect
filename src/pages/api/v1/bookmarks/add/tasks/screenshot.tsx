@@ -37,9 +37,12 @@ type Data = {
  * /api/v1/bookmarks/add/tasks/screenshot:
  *   post:
  *     summary: Add bookmark screenshot
- *     description: Captures and stores screenshot of the bookmarked URL
+ *     description: Captures and stores screenshot of the bookmarked URL. This is an internal API that requires authentication.
  *     tags:
  *       - Bookmarks
+ *       - Internal APIs
+ *     security:
+ *       - ApiKeyAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -49,6 +52,7 @@ type Data = {
  *             required:
  *               - id
  *               - url
+ *               - userId
  *             properties:
  *               id:
  *                 type: number
@@ -58,14 +62,14 @@ type Data = {
  *                 description: URL to capture screenshot of
  *               userId:
  *                 type: string
- *                 description: User ID (required when called from background jobs)
+ *                 description: User ID (required)
  *     responses:
  *       200:
  *         description: Screenshot added successfully
  *       400:
  *         description: Invalid request body
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Invalid or missing API key
  *       500:
  *         description: Internal server error
  */
@@ -74,6 +78,19 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ) {
 	try {
+		// Authenticate internal API key
+		const apiKey =
+			request.headers["x-api-key"] ||
+			request.headers.authorization?.replace("Bearer ", "");
+
+		if (apiKey !== process.env.INTERNAL_API_KEY) {
+			response.status(401).json({
+				data: null,
+				error: "Unauthorized - Invalid API key",
+			});
+			return;
+		}
+
 		// Validate request body using Zod schema
 		const validationResult = screenshotRequestSchema.safeParse(request.body);
 		if (!validationResult.success) {

@@ -63,6 +63,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 DEV_SUPABASE_AUTH_GOOGLE_CLIENT_ID=your-dev-google-client-id
 DEV_SUPABASE_AUTH_GOOGLE_SECRET=your-dev-google-secret
 
+# Internal API Key (for background job authentication)
+# Generate a secure random string for local development
+INTERNAL_API_KEY=your-secure-random-key-here
+
 # Copy other necessary env variables from .env.example
 ```
 
