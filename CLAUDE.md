@@ -27,6 +27,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search is explicitly requested.
 
+### Development Guidelines
+
+**TypeScript:**
+
+- Only create abstractions when actually needed
+- Prefer clear function/variable names over inline comments
+- Avoid helper functions when a simple inline expression suffices
+- Use `knip` to remove unused code when making large changes
+- The `gh` CLI is installed - use it for GitHub operations
+- Don't unnecessarily add `try`/`catch` blocks
+
+**React:**
+
+- Avoid massive JSX blocks - compose smaller components
+- Colocate code that changes together
+- Avoid `useEffect` unless absolutely needed
+
+**Tailwind:**
+
+- Mostly use built-in values, occasionally allow dynamic values, rarely globals
+- Always use v4 global CSS file format with shadcn/ui
+
+**Next.js:**
+
+- Prefer fetching data in RSC (page can still be static)
+- Use next/font and next/script when applicable
+- next/image above the fold: use `sync`/`eager`/`priority` sparingly
+- Be mindful of serialized prop size for RSC to child components
+
 ### Code Style Conventions
 
 Core principles for maintaining clean, consistent, and accessible code in the project.
