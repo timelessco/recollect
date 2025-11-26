@@ -3,12 +3,8 @@ import { type User } from "@supabase/supabase-js";
 import { type SingleListData } from "./apiTypes";
 
 export type ModalStoreState = {
-	showClearTrashWarningModal: boolean;
-	showDeleteBookmarkWarningModal: boolean;
 	showSettingsModal: boolean;
 	showVideoModal: boolean;
-	toggleShowClearTrashWarningModal: () => void;
-	toggleShowDeleteBookmarkWarningModal: () => void;
 	toggleShowSettingsModal: () => void;
 	toggleShowVideoModal: () => void;
 };

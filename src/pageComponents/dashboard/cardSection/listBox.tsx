@@ -51,6 +51,7 @@ import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import Option from "./option";
+import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import {
 	Checkbox,
 	checkboxBoxStyles,
@@ -406,24 +407,28 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</Button> */}
 					</div>
 					<div className="flex items-center">
-						<div
-							className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
-							onClick={() => {
-								onBulkBookmarkDelete(
-									Array.from(
-										state.selectionManager.selectedKeys.keys(),
-									) as number[],
-									true,
-									Boolean(isTrashPage),
-								);
-								state.selectionManager.clearSelection();
-							}}
-							onKeyDown={() => {}}
-							role="button"
-							tabIndex={0}
-						>
-							{isTrashPage ? "Delete Forever" : "Delete"}
-						</div>
+						{!isTrashPage ? (
+							<div
+								className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
+								onClick={() => {
+									onBulkBookmarkDelete(
+										Array.from(
+											state.selectionManager.selectedKeys.keys(),
+										) as number[],
+										true,
+										Boolean(isTrashPage),
+									);
+									state.selectionManager.clearSelection();
+								}}
+								onKeyDown={() => {}}
+								role="button"
+								tabIndex={0}
+							>
+								Delete
+							</div>
+						) : (
+							<ClearTrashDropdown />
+						)}
 						{isTrashPage && (
 							<div
 								className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"

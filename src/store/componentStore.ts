@@ -10,16 +10,6 @@ import {
 } from "../types/componentStoreTypes";
 
 export const useModalStore = create<ModalStoreState>((set) => ({
-	showDeleteBookmarkWarningModal: false,
-	toggleShowDeleteBookmarkWarningModal: () =>
-		set((state) => ({
-			showDeleteBookmarkWarningModal: !state.showDeleteBookmarkWarningModal,
-		})),
-	showClearTrashWarningModal: false,
-	toggleShowClearTrashWarningModal: () =>
-		set((state) => ({
-			showClearTrashWarningModal: !state.showClearTrashWarningModal,
-		})),
 	showSettingsModal: false,
 	toggleShowSettingsModal: () =>
 		set((state) => ({

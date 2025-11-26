@@ -16,7 +16,6 @@ import isNull from "lodash/isNull";
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
-import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
@@ -39,13 +38,11 @@ import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-	useModalStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
-	type ImgMetadataType,
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 	type SingleListData,
@@ -74,7 +71,6 @@ import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
 import SettingsModal from "./modals/settingsModal";
-import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
 import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
@@ -118,14 +114,6 @@ const Dashboard = () => {
 		(state) => state.toggleIsSortByLoading,
 	);
 
-	const showDeleteBookmarkWarningModal = useModalStore(
-		(state) => state.showDeleteBookmarkWarningModal,
-	);
-
-	const toggleShowDeleteBookmarkWarningModal = useModalStore(
-		(state) => state.toggleShowDeleteBookmarkWarningModal,
-	);
-
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
@@ -162,9 +150,6 @@ const Dashboard = () => {
 		useFetchUserProfile();
 
 	// Mutations
-
-	const { deleteBookmarkOptismicMutation } =
-		useDeleteBookmarksOptimisticMutation();
 
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
@@ -665,7 +650,6 @@ const Dashboard = () => {
 													}
 												} else {
 													setDeleteBookmarkId(bookmarkIds);
-													toggleShowDeleteBookmarkWarningModal();
 												}
 											}}
 											onCategoryChange={async (value, cat_id) => {
@@ -726,7 +710,6 @@ const Dashboard = () => {
 
 												if (CATEGORY_ID === TRASH_URL) {
 													// delete bookmark if in trash
-													toggleShowDeleteBookmarkWarningModal();
 												} else if (!isEmpty(item) && item?.length > 0) {
 													// if not in trash then move bookmark to trash
 													void mutationApiCall(
@@ -825,50 +808,6 @@ const Dashboard = () => {
 
 			<SettingsModal />
 
-			<WarningActionModal
-				buttonText="Delete"
-				isLoading={false}
-				onContinueCick={() => {
-					if (deleteBookmarkId && !isEmpty(deleteBookmarkId)) {
-						toggleShowDeleteBookmarkWarningModal();
-						const deleteData = deleteBookmarkId?.map((delItem) => {
-							const idAsNumber = Number.parseInt(
-								delItem as unknown as string,
-								10,
-							);
-
-							const delBookmarkData = find(
-								flattendPaginationBookmarkData,
-								(item) => item?.id === idAsNumber,
-							);
-
-							const delBookmarkTitle = delBookmarkData?.title as string;
-							const delBookmarkImgLink = delBookmarkData?.ogImage as string;
-							const delBookmarkUrl = delBookmarkData?.url as string;
-
-							return {
-								id: idAsNumber,
-								title: delBookmarkTitle,
-								ogImage: delBookmarkImgLink,
-								url: delBookmarkUrl,
-								meta_data: delBookmarkData?.meta_data as ImgMetadataType,
-							};
-						});
-
-						void mutationApiCall(
-							deleteBookmarkOptismicMutation.mutateAsync({
-								deleteData,
-							}),
-						);
-					}
-
-					setDeleteBookmarkId(undefined);
-				}}
-				open={showDeleteBookmarkWarningModal}
-				setOpen={toggleShowDeleteBookmarkWarningModal}
-				warningText="Are you sure you want to delete ?"
-				// isLoading={deleteBookmarkMutation?.isLoading}
-			/>
 			<ToastContainer />
 		</>
 	);
