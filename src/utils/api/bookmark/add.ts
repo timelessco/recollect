@@ -40,6 +40,13 @@ export type ApiErrorResponse = {
 	message: string | null;
 };
 
+export type CheckResult<T> = {
+	ok: boolean;
+	value?: T;
+	error?: string;
+	reason?: "error" | "forbidden" | "duplicate";
+};
+
 export const getBookmarkBodySchema = () =>
 	z.object({
 		category_id: z.number().optional().or(z.string().optional()),
@@ -47,24 +54,17 @@ export const getBookmarkBodySchema = () =>
 		url: z.string(),
 	});
 
-// Helper to send error response
-const sendErrorResponse = (
-	response: NextApiResponse,
-	status: number,
-	error: string,
-	message: string = error,
-): void => {
-	response.status(status).json({ data: null, error, message });
-};
-
 // tells if user is either category owner or collaborator
 export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 	supabase: SupabaseClient,
 	categoryId: SingleListData["category_id"],
 	userId: SingleListData["user_id"]["id"],
 	email: ProfilesTableTypes["email"],
-	response: NextApiResponse,
-): Promise<boolean> => {
+): Promise<CheckResult<boolean>> => {
+	if (categoryId === null) {
+		return { ok: true, value: false };
+	}
+
 	try {
 		const { data: categoryData, error: categoryError } = await supabase
 			.from(CATEGORIES_TABLE_NAME)
@@ -75,13 +75,12 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 			const errorMessage = `Failed to check category ownership: ${formatErrorMessage(
 				categoryError,
 			)}`;
-			sendErrorResponse(response, 500, errorMessage);
 			Sentry.captureException(errorMessage);
-			return false;
+			return { ok: false, reason: "error", error: errorMessage };
 		}
 
 		if (categoryData?.[0]?.user_id === userId) {
-			return true;
+			return { ok: true, value: true };
 		}
 
 		// Check if user is a collaborator
@@ -95,20 +94,19 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 			const errorMessage = `Failed to check collaboration access: ${formatErrorMessage(
 				shareError,
 			)}`;
-			sendErrorResponse(response, 500, errorMessage);
 			Sentry.captureException(errorMessage);
-			return false;
+			return { ok: false, reason: "error", error: errorMessage };
 		}
 
 		// Return edit access if user is a collaborator
-		return !isEmpty(shareData) ? shareData[0]?.edit_access : false;
+		const hasAccess = !isEmpty(shareData) ? shareData[0]?.edit_access : false;
+		return { ok: true, value: hasAccess };
 	} catch (error) {
 		const errorMessage = `Unexpected error checking user access: ${formatErrorMessage(
 			error,
 		)}`;
-		sendErrorResponse(response, 500, errorMessage);
 		Sentry.captureException(errorMessage);
-		return false;
+		return { ok: false, reason: "error", error: errorMessage };
 	}
 };
 
@@ -117,8 +115,7 @@ export const checkIfBookmarkExists = async (
 	supabase: SupabaseClient,
 	url: string,
 	categoryId: number | string,
-	response: NextApiResponse,
-): Promise<boolean> => {
+): Promise<CheckResult<boolean>> => {
 	try {
 		const {
 			data: checkBookmarkData,
@@ -136,19 +133,18 @@ export const checkIfBookmarkExists = async (
 		if (!isNull(checkBookmarkError)) {
 			const errorMessage = "Failed to check for duplicate bookmark";
 			const formattedError = formatErrorMessage(checkBookmarkError);
-			sendErrorResponse(response, 500, errorMessage, formattedError);
 			Sentry.captureException(`${errorMessage}: ${formattedError}`);
-			return false;
+			return { ok: false, reason: "error", error: formattedError };
 		}
 
-		return !isEmpty(checkBookmarkData);
+		const exists = !isEmpty(checkBookmarkData);
+		return { ok: true, value: exists };
 	} catch (error) {
 		const errorMessage = `Unexpected error checking bookmark existence: ${formatErrorMessage(
 			error,
 		)}`;
-		sendErrorResponse(response, 500, errorMessage);
 		Sentry.captureException(errorMessage);
-		return false;
+		return { ok: false, reason: "error", error: errorMessage };
 	}
 };
 
@@ -196,10 +192,23 @@ export const scrapeUrlMetadata = async (
 				extra: { error: scraperApiError },
 			});
 
-			// Fallback to using hostname as title
+			// Fallback to using hostname as title, with safe parsing
+			let fallbackTitle: string | null = null;
+			try {
+				fallbackTitle = new URL(url)?.hostname;
+			} catch (urlParseError) {
+				// If URL parsing fails, use null as fallback
+				Sentry.captureException(
+					`Failed to parse URL for fallback title: ${url}`,
+					{
+						extra: { error: formatErrorMessage(urlParseError) },
+					},
+				);
+			}
+
 			scrapperResponse = {
 				data: {
-					title: new URL(url)?.hostname,
+					title: fallbackTitle,
 					description: null,
 					OgImage: null,
 					favIcon: null,
@@ -221,7 +230,7 @@ export const computeCategoryId = (
 	categoryId !== "null" &&
 	categoryId !== 0 &&
 	!uncategorizedPages?.includes(categoryId as string)
-		? (categoryId as number)
+		? Number(categoryId)
 		: 0;
 
 // Process URL and get image/iframe data

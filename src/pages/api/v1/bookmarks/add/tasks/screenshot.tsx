@@ -51,7 +51,7 @@ type Data = {
  *               - url
  *             properties:
  *               id:
- *                 type: string
+ *                 type: number
  *                 description: Bookmark ID
  *               url:
  *                 type: string
@@ -79,11 +79,7 @@ export default async function handler(
 		if (!validationResult.success) {
 			response.status(400).json({
 				data: null,
-				error: `Screenshot api Error in payload data: ${JSON.stringify(
-					request.body,
-					null,
-					2,
-				)}`,
+				error: `Screenshot api Error in payload data: ${validationResult.error.message}`,
 			});
 			return;
 		}
@@ -187,6 +183,13 @@ export default async function handler(
 
 			// Upload screenshot to R2 storage
 			publicURL = await uploadScreenshot(base64data, userId);
+			if (!publicURL) {
+				response.status(500).json({
+					data: null,
+					error: "Failed to upload screenshot to storage",
+				});
+				return;
+			}
 		}
 
 		// Fetch existing bookmark data to update

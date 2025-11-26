@@ -336,6 +336,7 @@ export const processBookmarkImages = async (
  * @param supabase - Supabase client
  * @param params - Update parameters
  * @param params.id - Bookmark ID
+ * @param params.userId - User ID for authorization
  * @param params.metaData - Updated metadata
  * @param params.description - Updated description
  * @param params.ogImage - Updated OG image URL
@@ -345,6 +346,7 @@ export const updateBookmarkWithRemainingData = async (
 	supabase: SupabaseClient,
 	{
 		id,
+		userId,
 		metaData,
 		description,
 		ogImage,
@@ -353,6 +355,7 @@ export const updateBookmarkWithRemainingData = async (
 		id: number;
 		metaData: Record<string, unknown>;
 		ogImage: string | null;
+		userId: string;
 	},
 ): Promise<{
 	data: SingleListData[] | null;
@@ -371,7 +374,7 @@ export const updateBookmarkWithRemainingData = async (
 			description,
 			ogImage,
 		})
-		.match({ id })
+		.match({ id, user_id: userId })
 		.select(`id`);
 
 	if (isNull(data)) {

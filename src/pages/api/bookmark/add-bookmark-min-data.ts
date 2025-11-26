@@ -18,6 +18,10 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	checkIfUserIsCategoryOwnerOrCollaborator as checkIfUserIsCategoryOwnerOrCollaboratorUtil,
+	type CheckResult,
+} from "../../../utils/api/bookmark/add";
+import {
 	ADD_REMAINING_BOOKMARK_API,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
@@ -56,67 +60,33 @@ type ScrapperTypes = {
 };
 
 // tells if user is either category owner or collaborator
+// @deprecated Use checkIfUserIsCategoryOwnerOrCollaboratorUtil from utils/api/bookmark/add.ts instead
 export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 	supabase: SupabaseClient,
 	categoryId: SingleListData["category_id"],
 	userId: SingleListData["user_id"]["id"],
 	email: ProfilesTableTypes["email"],
 	response: NextApiResponse,
-) => {
-	const { data: categoryData, error: categoryError } = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.select("user_id")
-		.eq("id", categoryId);
+): Promise<boolean> => {
+	const result = await checkIfUserIsCategoryOwnerOrCollaboratorUtil(
+		supabase,
+		categoryId,
+		userId,
+		email,
+	);
 
-	if (categoryError) {
-		console.error("Error checking category ownership:", categoryError);
-		Sentry.captureException(categoryError, {
-			tags: {
-				operation: "check_category_ownership",
-				userId,
-			},
-			extra: { categoryId },
-		});
+	if (!result.ok) {
 		response
 			.status(500)
-			.json({ data: null, error: categoryError?.message, message: null });
+			.json({
+				data: null,
+				error: result.error ?? "Unknown error",
+				message: null,
+			});
 		return false;
 	}
 
-	if (categoryData?.[0]?.user_id === userId) {
-		// user is the owner of the category
-		return true;
-	}
-
-	// check if user is a collaborator of the category
-	const { data: shareData, error: shareError } = await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.select("id, edit_access")
-		.eq("category_id", categoryId)
-		.eq("email", email);
-
-	if (shareError) {
-		console.error("Error checking share access:", shareError);
-		Sentry.captureException(shareError, {
-			tags: {
-				operation: "check_share_access",
-				userId,
-			},
-			extra: { categoryId, email },
-		});
-		response
-			.status(500)
-			.json({ data: null, error: shareError?.message, message: null });
-		return false;
-	}
-
-	if (!isEmpty(shareData)) {
-		// user is a collaborator, if user does not have edit access then return false so that DB is not updated with data
-		return shareData?.[0]?.edit_access;
-	}
-
-	// user is not the owner or the collaborator of the collection
-	return false;
+	return result.value ?? false;
 };
 
 const getFavIconNormalisedUrl = async (favIcon: string | null, url: string) => {
@@ -301,16 +271,21 @@ export default async function handler(
 					response,
 				);
 
+			// Note: helper function already sends error response if needed
 			if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
 				console.warn(
 					`User is neither owner or collaborator for the collection ${categoryId} or does not have edit access for url: ${url}`,
 				);
-				response.status(403).json({
-					data: null,
-					error:
-						"User is neither owner or collaborator for the collection or does not have edit access",
-					message: null,
-				});
+				// Don't send response here - helper already sent it if there was an error
+				// Only send 403 if user lacks permission (not a DB error)
+				if (!response.headersSent) {
+					response.status(403).json({
+						data: null,
+						error:
+							"User is neither owner or collaborator for the collection or does not have edit access",
+						message: null,
+					});
+				}
 				return;
 			}
 

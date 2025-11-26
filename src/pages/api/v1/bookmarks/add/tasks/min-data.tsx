@@ -139,15 +139,23 @@ export default async function handler(
 
 		if (computedCategoryId !== 0) {
 			// Check user permissions and duplicate bookmarks for categorized items
-			const hasAccess = await checkIfUserIsCategoryOwnerOrCollaborator(
+			const accessCheckResult = await checkIfUserIsCategoryOwnerOrCollaborator(
 				supabase,
 				computedCategoryId,
 				userId,
 				email,
-				response,
 			);
 
-			if (!hasAccess) {
+			if (!accessCheckResult.ok) {
+				sendErrorResponse(
+					response,
+					500,
+					accessCheckResult.error ?? "Unknown error",
+				);
+				return;
+			}
+
+			if (!accessCheckResult.value) {
 				sendErrorResponse(
 					response,
 					403,
@@ -156,14 +164,22 @@ export default async function handler(
 				return;
 			}
 
-			const isBookmarkAlreadyPresent = await checkIfBookmarkExists(
+			const bookmarkExistsResult = await checkIfBookmarkExists(
 				supabase,
 				url,
 				computedCategoryId,
-				response,
 			);
 
-			if (isBookmarkAlreadyPresent) {
+			if (!bookmarkExistsResult.ok) {
+				sendErrorResponse(
+					response,
+					500,
+					bookmarkExistsResult.error ?? "Unknown error",
+				);
+				return;
+			}
+
+			if (bookmarkExistsResult.value) {
 				sendErrorResponse(
 					response,
 					409,

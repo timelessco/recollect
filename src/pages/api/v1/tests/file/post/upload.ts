@@ -173,12 +173,17 @@ export default async (
 				response,
 			);
 
+		// Note: helper function already sends error response if needed
 		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
-			response.status(500).json({
-				error:
-					"User is neither owner or collaborator for the collection or does not have edit access",
-				success: false,
-			});
+			// Don't send response here - helper already sent it if there was an error
+			// Only send 403 if user lacks permission (not a DB error)
+			if (!response.headersSent) {
+				response.status(403).json({
+					error:
+						"User is neither owner or collaborator for the collection or does not have edit access",
+					success: false,
+				});
+			}
 			return;
 		}
 	}

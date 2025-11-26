@@ -111,7 +111,7 @@ export default async function handler(
 		const { data: currentData, error: currentDataError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("ogImage, meta_data, description")
-			.match({ id })
+			.match({ id, user_id: userId })
 			.single();
 
 		if (currentDataError) {
@@ -168,6 +168,7 @@ export default async function handler(
 		// Update bookmark with remaining data
 		const { data, error } = await updateBookmarkWithRemainingData(supabase, {
 			id,
+			userId,
 			metaData: meta_data,
 			description: currentData?.description ?? metadata?.imageCaption ?? null,
 			ogImage: currentData?.meta_data?.isOgImagePreferred
