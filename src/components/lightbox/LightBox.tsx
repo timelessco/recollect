@@ -521,10 +521,7 @@ export const CustomLightBox = ({
 						return;
 					}
 
-					const transitionDuration = 200;
-					setTimeout(() => {
-						setActiveIndex(index);
-					}, transitionDuration);
+					setActiveIndex(index);
 
 					// Invalidate queries when slide changes
 					if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
@@ -735,7 +732,7 @@ const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
 	}
 };
 
-export type CustomSlide = BaseSlide & {
+type CustomSlide = BaseSlide & {
 	data?: {
 		type?: string;
 	};
