@@ -31,7 +31,7 @@ const SidePaneUserDropdown = () => {
 		session?.user?.email ?? "",
 	);
 
-	const { userProfileData } = useFetchUserProfile();
+	const { userProfileData, isLoading } = useFetchUserProfile();
 	const userData = userProfileData?.data?.[0];
 
 	return (
@@ -54,7 +54,11 @@ const SidePaneUserDropdown = () => {
 								width={24}
 							/>
 							<p className="flex-1 truncate overflow-hidden text-left text-sm leading-4 font-medium text-gray-800">
-								{userData?.display_name || userData?.user_name}
+								{isLoading
+									? "Loading..."
+									: userData?.display_name ||
+										userData?.user_name ||
+										userData?.email}
 							</p>
 						</div>
 						<figure className="mt-px">
