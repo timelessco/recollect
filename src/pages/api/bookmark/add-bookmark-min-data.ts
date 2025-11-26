@@ -5,6 +5,7 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 import axios from "axios";
+import { fileTypeFromStream } from "file-type";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
@@ -359,6 +360,14 @@ export default async function handler(
 			scrapperResponse?.data?.favIcon,
 			url,
 		);
+
+		// const url = "https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg";
+
+		const response_ = await fetch(url);
+		const fileType = await fileTypeFromStream(response_?.body);
+		console.log("fileType", fileType);
+
+		// console.log(fileType);
 		const mediaType = await getMediaType(url);
 
 		// here we add the scrapper data , in the remainingApi call we add s3 data

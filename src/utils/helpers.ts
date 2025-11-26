@@ -540,3 +540,51 @@ export const getNormalisedImageUrl = async (
 		return null;
 	}
 };
+
+/**
+ * Detects the file type of a URL by examining its binary signature (magic numbers)
+ * @param url - The URL to check
+ * @returns FileType object containing ext and mime, or null if detection fails
+ * @example
+ * const fileType = await getFileTypeFromUrl("https://example.com/image.jpg");
+ * // Returns: { ext: 'jpg', mime: 'image/jpeg' }
+ */
+export const getFileTypeFromUrl = async (
+	url: string,
+): Promise<{ ext: string; mime: string } | null> => {
+	try {
+		// Import fileTypeFromStream dynamically (it's an ESM module)
+		const { fileTypeFromStream } = await import("file-type");
+
+		const response = await fetch(url, {
+			headers: {
+				"User-Agent": "Mozilla/5.0",
+			},
+		});
+
+		if (!response.ok) {
+			console.warn(`Failed to fetch URL for file type detection: ${url}`);
+			return null;
+		}
+
+		if (!response.body) {
+			console.warn(`No response body available for URL: ${url}`);
+			return null;
+		}
+
+		const fileType = await fileTypeFromStream(response.body);
+
+		if (!fileType) {
+			console.warn(`Could not detect file type for URL: ${url}`);
+			return null;
+		}
+
+		return {
+			ext: fileType.ext,
+			mime: fileType.mime,
+		};
+	} catch (error) {
+		console.error("Error detecting file type from URL:", error);
+		return null;
+	}
+};
