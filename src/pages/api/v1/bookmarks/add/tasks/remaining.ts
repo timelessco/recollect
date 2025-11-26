@@ -84,6 +84,7 @@ export default async function handler(
 			request.headers.authorization?.replace("Bearer ", "");
 
 		if (apiKey !== process.env.INTERNAL_API_KEY) {
+			console.warn("Unauthorized - Invalid API key");
 			response.status(401).json({
 				data: null,
 				error: "Unauthorized - Invalid API key",
@@ -95,6 +96,9 @@ export default async function handler(
 		// Validate request body
 		const validationResult = remainingBookmarkSchema.safeParse(request.body);
 		if (!validationResult.success) {
+			console.warn("Invalid request body:", {
+				error: validationResult.error.message,
+			});
 			response.status(400).json({
 				data: null,
 				error: `Remaining data api Error in payload data: ${JSON.stringify(
@@ -117,6 +121,7 @@ export default async function handler(
 		const userId = requestUserId;
 
 		if (!userId) {
+			console.warn("userId is required in request body");
 			response.status(400).json({
 				data: null,
 				error: "userId is required in request body",
@@ -125,7 +130,15 @@ export default async function handler(
 			return;
 		}
 
+		// Entry point log
+		console.log("Add bookmark remaining data API called:", {
+			userId,
+			bookmarkId: id,
+			url,
+		});
+
 		// Fetch current bookmark data
+		console.log("Fetching current bookmark data:", { bookmarkId: id });
 		const { data: currentData, error: currentDataError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("ogImage, meta_data, description")
@@ -133,8 +146,15 @@ export default async function handler(
 			.single();
 
 		if (currentDataError) {
-			Sentry.captureException("Failed to fetch current bookmark data", {
-				extra: { error: currentDataError },
+			console.error("Failed to fetch current bookmark data:", currentDataError);
+			Sentry.captureException(currentDataError, {
+				tags: {
+					operation: "fetch_current_bookmark_data",
+					userId,
+				},
+				extra: {
+					bookmarkId: id,
+				},
 			});
 			response.status(500).json({
 				data: null,
@@ -145,6 +165,7 @@ export default async function handler(
 		}
 
 		if (!currentData) {
+			console.warn("Bookmark not found:", { bookmarkId: id });
 			response.status(404).json({
 				data: null,
 				error: "Bookmark not found",
@@ -153,7 +174,10 @@ export default async function handler(
 			return;
 		}
 
+		console.log("Current bookmark data fetched successfully");
+
 		// Process images and generate metadata
+		console.log("Processing bookmark images:", { url });
 		const {
 			// uploadedImageThatIsAUrl,
 			uploadedCoverImageUrl,
@@ -161,8 +185,10 @@ export default async function handler(
 			imageUrlForMetaDataGeneration,
 			metadata,
 		} = await processBookmarkImages(url, userId, currentData, supabase);
+		console.log("Bookmark images processed successfully");
 
 		// Get favicon
+		console.log("Getting favicon URL");
 		const favIconUrl = await getFavIconUrl(url, favIcon);
 
 		// Prepare metadata for update
@@ -184,6 +210,7 @@ export default async function handler(
 		};
 
 		// Update bookmark with remaining data
+		console.log("Updating bookmark with remaining data:", { bookmarkId: id });
 		const { data, error } = await updateBookmarkWithRemainingData(supabase, {
 			id,
 			userId,
@@ -195,6 +222,19 @@ export default async function handler(
 		});
 
 		if (error) {
+			console.error("Error updating bookmark with remaining data:", error);
+			Sentry.captureException(
+				typeof error === "string" ? new Error(error) : error,
+				{
+					tags: {
+						operation: "update_bookmark_remaining_data",
+						userId,
+					},
+					extra: {
+						bookmarkId: id,
+					},
+				},
+			);
 			response.status(500).json({
 				data: null,
 				error,
@@ -203,15 +243,20 @@ export default async function handler(
 			return;
 		}
 
+		console.log("Bookmark updated successfully with remaining data:", {
+			bookmarkId: id,
+		});
 		response.status(200).json({
 			data,
 			error: null,
 			message: null,
 		});
 	} catch (error) {
-		console.error("Unexpected error in remaining data handler:", error);
-		Sentry.captureException("Unexpected error in remaining data handler", {
-			extra: { error },
+		console.error("Unexpected error in remaining data API:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "add_bookmark_remaining_data_unexpected",
+			},
 		});
 		response.status(500).json({
 			data: null,

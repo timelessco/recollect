@@ -102,8 +102,11 @@ export default async function handler(
 			bodyData = schema.parse(request.body);
 		} catch (parseError) {
 			const errorMessage = formatErrorMessage(parseError);
-			Sentry.captureException("Invalid request body", {
-				extra: { error: errorMessage },
+			console.warn("Invalid request body:", { error: errorMessage });
+			Sentry.captureException(parseError, {
+				tags: {
+					operation: "validate_request_body",
+				},
 			});
 			sendErrorResponse(response, 400, "Invalid request body", errorMessage);
 			return;
@@ -116,6 +119,7 @@ export default async function handler(
 		} = bodyData;
 
 		if (!updateAccess) {
+			console.warn("User does not have update access");
 			sendErrorResponse(response, 403, "User does not have update access");
 			return;
 		}
@@ -127,15 +131,23 @@ export default async function handler(
 		const email = userData?.data?.user?.email;
 
 		if (!userId || !email) {
-			const errorMessage = "User ID and email not retrieved from Supabase";
-			Sentry.captureException(errorMessage, { extra: { userId, email } });
-			sendErrorResponse(response, 401, errorMessage);
+			console.warn("User authentication failed:", { userId, email });
+			sendErrorResponse(response, 401, "Unauthorized");
 			return;
 		}
+
+		// Entry point log
+		console.log("Add bookmark min-data API called:", {
+			userId,
+			url,
+			categoryId,
+		});
 
 		// Compute final category ID and check permissions
 		const computedCategoryId = computeCategoryId(updateAccess, categoryId);
 		const isOgImagePreferred = isUrlFromPreferredOgSite(url);
+
+		console.log("Computed category ID:", { computedCategoryId });
 
 		if (computedCategoryId !== 0) {
 			// Check user permissions and duplicate bookmarks for categorized items
@@ -147,6 +159,22 @@ export default async function handler(
 			);
 
 			if (!accessCheckResult.ok) {
+				console.error(
+					"Error checking user access:",
+					accessCheckResult.error ?? "Unknown error",
+				);
+				Sentry.captureException(
+					new Error(accessCheckResult.error ?? "Unknown error"),
+					{
+						tags: {
+							operation: "check_user_access",
+							userId,
+						},
+						extra: {
+							categoryId: computedCategoryId,
+						},
+					},
+				);
 				sendErrorResponse(
 					response,
 					500,
@@ -156,6 +184,9 @@ export default async function handler(
 			}
 
 			if (!accessCheckResult.value) {
+				console.warn(
+					"User is neither owner or collaborator for the collection or does not have edit access",
+				);
 				sendErrorResponse(
 					response,
 					403,
@@ -171,6 +202,23 @@ export default async function handler(
 			);
 
 			if (!bookmarkExistsResult.ok) {
+				console.error(
+					"Error checking if bookmark exists:",
+					bookmarkExistsResult.error ?? "Unknown error",
+				);
+				Sentry.captureException(
+					new Error(bookmarkExistsResult.error ?? "Unknown error"),
+					{
+						tags: {
+							operation: "check_bookmark_exists",
+							userId,
+						},
+						extra: {
+							url,
+							categoryId: computedCategoryId,
+						},
+					},
+				);
 				sendErrorResponse(
 					response,
 					500,
@@ -180,6 +228,10 @@ export default async function handler(
 			}
 
 			if (bookmarkExistsResult.value) {
+				console.warn("Duplicate bookmark attempt:", {
+					url,
+					categoryId: computedCategoryId,
+				});
 				sendErrorResponse(
 					response,
 					409,
@@ -190,12 +242,17 @@ export default async function handler(
 		}
 
 		// Get URL metadata and process it
+		console.log("Scraping URL metadata:", { url });
 		const { scrapperResponse, scraperApiError } = await scrapeUrlMetadata(url);
 		const { ogImageToBeAdded, iframeAllowedValue } = await processUrlMetadata(
 			url,
 			isOgImagePreferred,
 			scrapperResponse?.data?.OgImage,
 		);
+		console.log("URL metadata scraped:", {
+			hasTitle: Boolean(scrapperResponse?.data?.title),
+			hasOgImage: Boolean(ogImageToBeAdded),
+		});
 
 		// Insert bookmark into database
 		const {
@@ -226,16 +283,29 @@ export default async function handler(
 			.select();
 
 		if (isEmpty(data) || isNull(data)) {
-			const errorMessage = "Data is empty after insert";
-			Sentry.captureException(errorMessage);
-			sendErrorResponse(response, 400, errorMessage);
+			console.error("Data is empty after insert");
+			Sentry.captureException(new Error("Data is empty after insert"), {
+				tags: {
+					operation: "insert_bookmark",
+					userId,
+				},
+			});
+			sendErrorResponse(response, 400, "Data is empty after insert");
 			return;
 		}
 
 		if (!isNull(databaseError)) {
 			const errorMessage = formatErrorMessage(databaseError);
-			Sentry.captureException("Error inserting bookmark", {
-				extra: { error: errorMessage },
+			console.error("Error inserting bookmark:", errorMessage);
+			Sentry.captureException(databaseError, {
+				tags: {
+					operation: "insert_bookmark",
+					userId,
+				},
+				extra: {
+					url,
+					categoryId: computedCategoryId,
+				},
 			});
 			sendErrorResponse(
 				response,
@@ -247,15 +317,23 @@ export default async function handler(
 		}
 
 		// Send success response
+		console.log("Bookmark inserted successfully:", { id: data[0]?.id });
 		response
 			.status(200)
 			.json({ data, error: scraperApiError ?? null, message: null });
 	} catch (error) {
 		// Catch any unhandled errors
-		const errorMessage = "Unexpected error processing bookmark";
-		const formattedError = formatErrorMessage(error);
-		console.error(errorMessage, formattedError);
-		Sentry.captureException(errorMessage, { extra: { error: formattedError } });
-		sendErrorResponse(response, 500, errorMessage, formattedError);
+		console.error("Unexpected error in add bookmark min-data API:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "add_bookmark_min_data_unexpected",
+			},
+		});
+		sendErrorResponse(
+			response,
+			500,
+			"An unexpected error occurred",
+			"An unexpected error occurred",
+		);
 	}
 }

@@ -11,6 +11,7 @@ import {
 	NEXT_API_URL,
 } from "../../../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
+import { vet } from "../../../../../../utils/try";
 
 type QueueMessagePayload = {
 	bookmarkId: number;
@@ -55,6 +56,7 @@ export default async function handler(
 			request.headers.authorization?.replace("Bearer ", "");
 
 		if (apiKey !== process.env.INTERNAL_API_KEY) {
+			console.warn("Unauthorized - Invalid API key");
 			response.status(401).json({
 				success: false,
 				message: "Unauthorized - Invalid API key",
@@ -83,8 +85,14 @@ export default async function handler(
 			});
 
 		if (readError) {
-			Sentry.captureException("Error reading from queue", {
-				extra: { error: readError.message, queueName },
+			console.error("Error reading from queue:", readError);
+			Sentry.captureException(readError, {
+				tags: {
+					operation: "read_queue",
+				},
+				extra: {
+					queueName,
+				},
 			});
 
 			response.status(500).json({
@@ -139,9 +147,11 @@ export default async function handler(
 				console.log("❌", errorMessage);
 				console.log("⚠️ Message will remain in queue for retry");
 
-				Sentry.captureException("Invalid queue message payload", {
+				Sentry.captureException(new Error(errorMessage), {
+					tags: {
+						operation: "validate_queue_message",
+					},
 					extra: {
-						error: errorMessage,
 						messageId: message.msg_id,
 						payload: message.message,
 					},
@@ -171,9 +181,11 @@ export default async function handler(
 				console.log("ℹ️ Skipping screenshot (URL is an image)");
 			} else {
 				console.log("📸 Calling screenshot API...");
-				try {
-					const screenshotResponse = await axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_SCREENSHOT_API}`,
+				const screenshotApiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_SCREENSHOT_API}`;
+
+				const [screenshotApiError, screenshotResponse] = await vet(() =>
+					axios.post(
+						screenshotApiUrl,
 						{
 							id: payload.bookmarkId,
 							url: payload.url,
@@ -184,8 +196,15 @@ export default async function handler(
 								"x-api-key": process.env.INTERNAL_API_KEY,
 							},
 						},
-					);
+					),
+				);
 
+				if (screenshotApiError) {
+					screenshotError = formatErrorMessage(screenshotApiError);
+					console.log("❌ Screenshot API failed:", screenshotError);
+					screenshotSuccess = false;
+					// Continue to try remaining API even if screenshot fails
+				} else {
 					screenshotSuccess = screenshotResponse.status === 200;
 					if (screenshotSuccess) {
 						console.log("✅ Screenshot API succeeded");
@@ -193,19 +212,16 @@ export default async function handler(
 						screenshotError = `Screenshot API returned status ${screenshotResponse.status}`;
 						console.log(`⚠️ ${screenshotError}`);
 					}
-				} catch (error) {
-					screenshotError = formatErrorMessage(error);
-					console.log("❌ Screenshot API failed:", screenshotError);
-					screenshotSuccess = false;
-					// Continue to try remaining API even if screenshot fails
 				}
 			}
 
 			// Call remaining data API
 			console.log("📝 Calling remaining data API...");
-			try {
-				const remainingResponse = await axios.post(
-					`${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_REMAINING_DATA_API}`,
+			const remainingApiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_REMAINING_DATA_API}`;
+
+			const [remainingApiError, remainingResponse] = await vet(() =>
+				axios.post(
+					remainingApiUrl,
 					{
 						id: payload.bookmarkId,
 						url: payload.url,
@@ -217,21 +233,20 @@ export default async function handler(
 							"x-api-key": process.env.INTERNAL_API_KEY,
 						},
 					},
-				);
+				),
+			);
 
-				if (remainingResponse.status === 200) {
-					console.log("✅ Remaining data API succeeded");
-					remainingDataSuccess = true;
-					// Only archive if both screenshot (when required) and remaining data succeeded
-					shouldArchive = screenshotSuccess && remainingDataSuccess;
-					// shouldArchive = remainingDataSuccess;
-				} else {
-					remainingDataError = `Remaining data API returned status ${remainingResponse.status}`;
-					console.log(`❌ ${remainingDataError}`);
-				}
-			} catch (error) {
-				remainingDataError = formatErrorMessage(error);
+			if (remainingApiError) {
+				remainingDataError = formatErrorMessage(remainingApiError);
 				console.log("❌ Remaining data API failed:", remainingDataError);
+			} else if (remainingResponse.status === 200) {
+				console.log("✅ Remaining data API succeeded");
+				remainingDataSuccess = true;
+				// Only archive if both screenshot (when required) and remaining data succeeded
+				shouldArchive = screenshotSuccess && remainingDataSuccess;
+			} else {
+				remainingDataError = `Remaining data API returned status ${remainingResponse.status}`;
+				console.log(`❌ ${remainingDataError}`);
 			}
 
 			// Only archive if remaining data API succeeded
@@ -246,9 +261,12 @@ export default async function handler(
 
 				if (archiveError) {
 					console.log("⚠️ Failed to archive message:", archiveError.message);
-					Sentry.captureException("Error archiving message from queue", {
+					Sentry.captureException(archiveError, {
+						tags: {
+							operation: "archive_queue_message",
+							userId: payload.userId,
+						},
 						extra: {
-							error: archiveError.message,
 							queueName,
 							messageId: message.msg_id,
 							bookmarkId: payload.bookmarkId,
@@ -288,15 +306,21 @@ export default async function handler(
 					.filter(Boolean)
 					.join("; ");
 
-				Sentry.captureException("Failed to process queue message", {
-					extra: {
-						error: combinedError,
-						messageId: message.msg_id,
-						bookmarkId: payload.bookmarkId,
-						screenshotSuccess,
-						remainingDataSuccess,
+				Sentry.captureException(
+					new Error(combinedError || "Processing failed"),
+					{
+						tags: {
+							operation: "process_queue_message",
+							userId: payload.userId,
+						},
+						extra: {
+							messageId: message.msg_id,
+							bookmarkId: payload.bookmarkId,
+							screenshotSuccess,
+							remainingDataSuccess,
+						},
 					},
-				});
+				);
 
 				failedCount++;
 				results.push({
@@ -329,8 +353,11 @@ export default async function handler(
 	} catch (error) {
 		const errorMessage =
 			error instanceof Error ? error.message : "Unknown error occurred";
-		Sentry.captureException("Unexpected error in queue consumer", {
-			extra: { error: errorMessage },
+		console.error("Unexpected error in queue consumer:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "queue_consumer_unexpected",
+			},
 		});
 
 		response.status(500).json({
