@@ -11,6 +11,7 @@ import { createServiceClient } from "../../../utils/supabaseClient";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
 
 const requestBodySchema = z.object({
+	id: z.number(),
 	ogImage: z.url({ message: "ogImage must be a valid URL" }),
 	user_id: z.uuid({ message: "user_id must be a valid UUID" }),
 	url: z.url({ message: "url must be a valid URL" }),
