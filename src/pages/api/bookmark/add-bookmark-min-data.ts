@@ -33,7 +33,7 @@ import {
 	checkIfUrlAnImage,
 	checkIfUrlAnMedia,
 	getAxiosConfigWithAuth,
-	getNormalisedUrl,
+	getNormalisedImageUrl,
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -117,41 +117,6 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 
 	// user is not the owner or the collaborator of the collection
 	return false;
-};
-
-export const getNormalisedImageUrl = async (
-	favIcon: string | null,
-	url: string,
-) => {
-	try {
-		const { hostname } = new URL(url);
-
-		if (favIcon) {
-			// Check for absolute URLs
-			const normalisedUrl = getNormalisedUrl(favIcon);
-
-			if (normalisedUrl) {
-				return normalisedUrl;
-			}
-
-			return new URL(favIcon, `https://${hostname}`).toString();
-		}
-
-		const response = await fetch(
-			`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
-		);
-
-		if (!response.ok) {
-			throw new Error(
-				`Invalid response for the ${hostname}: ${response.statusText}`,
-			);
-		}
-
-		return response.url;
-	} catch (error) {
-		console.warn("Error fetching Image:", error);
-		return null;
-	}
 };
 
 export default async function handler(

@@ -24,11 +24,13 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { checkIfUrlAnImage, checkIfUrlAnMedia } from "../../../utils/helpers";
+import {
+	checkIfUrlAnImage,
+	checkIfUrlAnMedia,
+	getNormalisedImageUrl,
+} from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
-
-import { getNormalisedImageUrl } from "./add-bookmark-min-data";
 
 type Data = {
 	data: SingleListData[] | null;
