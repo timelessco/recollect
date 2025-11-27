@@ -1,17 +1,16 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
+import { request } from "http";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
-import isNull from "lodash/isNull";
+import { email } from "zod";
 
 import { type UserProfilePicTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
-
-// fetches profile pic data for a perticular user
 
 type DataResponse = UserProfilePicTypes[] | null;
 type ErrorResponse =
@@ -79,7 +78,8 @@ export default async function handler(
 				operation: "select",
 			});
 			Sentry.captureException(error, {
-				tags: { operation: "fetch_profile_pic", email: email as string },
+				tags: { operation: "fetch_profile_pic" },
+				extra: { email },
 			});
 
 			response.status(500).json({
