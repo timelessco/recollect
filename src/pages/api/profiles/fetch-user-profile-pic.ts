@@ -108,7 +108,7 @@ export default async function handler(
 		console.log(
 			"[fetch-user-profile-pic] Successfully fetched profile picture",
 			{
-				email,
+				userId,
 			},
 		);
 		response.status(200).json({ data, error: null });
