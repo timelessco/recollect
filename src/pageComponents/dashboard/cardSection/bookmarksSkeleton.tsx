@@ -23,7 +23,7 @@ export const BookmarksSkeletonLoader = ({
 		return (
 			<div className="flex flex-col gap-4 px-2 py-2">
 				{Array.from({ length: count }).map(() => (
-					<div key="" className="flex items-center gap-3">
+					<div key={crypto.randomUUID()} className="flex items-center gap-3">
 						<div className="h-12 w-20 shrink-0 animate-pulse rounded bg-gray-100" />
 						<div className="flex-1 space-y-2">
 							<div className="h-4 w-1/3 animate-pulse rounded bg-gray-100" />
@@ -42,7 +42,7 @@ export const BookmarksSkeletonLoader = ({
 				<div className="w-[600px] space-y-6">
 					{Array.from({ length: Math.min(count, 10) }).map(() => (
 						<div
-							key=""
+							key={crypto.randomUUID()}
 							className="h-[500px] animate-pulse rounded-lg bg-gray-100"
 						/>
 					))}
@@ -55,7 +55,9 @@ export const BookmarksSkeletonLoader = ({
 	const columnHeights: number[] = Array.from({ length: columnCount }, () => 0);
 
 	// Generate unique IDs for columns and items
-	const columnKeys = Array.from({ length: columns.length }, () => "");
+	const columnKeys = Array.from({ length: columns.length }, () =>
+		crypto.randomUUID(),
+	);
 
 	// Card View Skeleton
 	if (type === viewValues.card) {
@@ -71,7 +73,7 @@ export const BookmarksSkeletonLoader = ({
 					>
 						{Array.from({ length: itemsPerColumn }).map(() => (
 							<div
-								key=""
+								key={crypto.randomUUID()}
 								className="animate-pulse rounded-lg bg-gray-100"
 								style={{
 									height: `${fixedHeight}px`,
@@ -100,7 +102,7 @@ export const BookmarksSkeletonLoader = ({
 				<div key={columnKeys[colIndex]} className="flex flex-1 flex-col gap-6">
 					{colh.map((height) => (
 						<div
-							key=""
+							key={crypto.randomUUID()}
 							className="animate-pulse rounded-lg bg-gray-100"
 							style={{
 								height: `${height - 16}px`,

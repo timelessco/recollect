@@ -1,6 +1,6 @@
 export const CollectionsListSkeleton = () => {
 	const skeletonItems = Array.from({ length: 5 }, () => ({
-		id: "",
+		id: crypto.randomUUID(),
 	}));
 
 	return (
