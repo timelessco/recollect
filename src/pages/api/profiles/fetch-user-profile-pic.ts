@@ -85,18 +85,6 @@ export default async function handler(
 			return;
 		}
 
-		// Verify user is fetching their own profile picture
-		const userEmail = userData?.user?.email;
-		if (userEmail !== email) {
-			response.status(403).json({
-				data: null,
-				error: {
-					message: "Forbidden: Cannot access another user's profile picture",
-				},
-			});
-			return;
-		}
-
 		// Fetch user profile picture from database
 		const { data, error } = (await supabase
 			.from(PROFILES)
