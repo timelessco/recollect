@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import find from "lodash/find";
@@ -45,7 +45,6 @@ import {
 	type CategoriesData,
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
-	type SingleListData,
 } from "../../types/apiTypes";
 import {
 	type BookmarksSortByTypes,
@@ -100,10 +99,9 @@ const Dashboard = () => {
 		fetchSession();
 	}, [setSession, supabase.auth]);
 
-	// move to zustand
-	const [deleteBookmarkId, setDeleteBookmarkId] = useState<
-		number[] | undefined
-	>(undefined);
+	const setDeleteBookmarkId = useMiscellaneousStore(
+		(state) => state.setDeleteBookmarkId,
+	);
 
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
@@ -595,7 +593,6 @@ const Dashboard = () => {
 												bookmarksCountData?.data ?? undefined,
 												CATEGORY_ID as unknown as string | number | null,
 											)}
-											deleteBookmarkId={deleteBookmarkId}
 											isBookmarkLoading={
 												addBookmarkMinDataOptimisticMutation?.isPending
 											}
@@ -611,47 +608,6 @@ const Dashboard = () => {
 													? flattenedSearchData
 													: flattendPaginationBookmarkData
 											}
-											onBulkBookmarkDelete={(
-												bookmarkIds,
-												isTrash,
-												deleteForever,
-											) => {
-												const currentBookmarksData = isSearching
-													? flattenedSearchData
-													: flattendPaginationBookmarkData;
-
-												if (!deleteForever) {
-													for (const item of bookmarkIds) {
-														const bookmarkId = Number.parseInt(
-															item.toString(),
-															10,
-														);
-														const delBookmarksData = find(
-															currentBookmarksData,
-															(delItem) => delItem?.id === bookmarkId,
-														) as SingleListData;
-
-														if (
-															delBookmarksData?.user_id?.id ===
-															session?.user?.id
-														) {
-															void mutationApiCall(
-																moveBookmarkToTrashOptimisticMutation.mutateAsync(
-																	{
-																		data: delBookmarksData,
-																		isTrash,
-																	},
-																),
-																// eslint-disable-next-line promise/prefer-await-to-then
-															).catch(() => {});
-														} else {
-															errorToast("Cannot delete other users uploads");
-														}
-													}
-												} else {
-													setDeleteBookmarkId(bookmarkIds);
-												}
-											}}
 											onCategoryChange={async (value, cat_id) => {
 												const categoryId = cat_id;
 												const currentBookmarksData = isSearching

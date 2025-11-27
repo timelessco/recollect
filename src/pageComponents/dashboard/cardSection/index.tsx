@@ -66,22 +66,14 @@ import { EditDropdownButton } from "./EditDropdownButton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 
-export type onBulkBookmarkDeleteType = (
-	bookmark_ids: number[],
-	isTrash: boolean,
-	deleteForever: boolean,
-) => void;
-
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
 
-	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
@@ -109,9 +101,7 @@ const CardSection = ({
 	showAvatar = false,
 	isOgImgLoading = false,
 	isBookmarkLoading = false,
-	deleteBookmarkId,
 	onCategoryChange,
-	onBulkBookmarkDelete,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
@@ -122,6 +112,9 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
+	const deleteBookmarkId = useMiscellaneousStore(
+		(state) => state.deleteBookmarkId,
+	);
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -879,7 +872,6 @@ const CardSection = ({
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
 				isPublicPage={isPublicPage}
-				onBulkBookmarkDelete={onBulkBookmarkDelete}
 				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"
 			>

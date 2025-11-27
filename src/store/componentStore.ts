@@ -98,6 +98,9 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	currentSliderDropdownSlide: null,
 	setCurrentSliderDropdownSlide: (value: string | null) =>
 		set(() => ({ currentSliderDropdownSlide: value })),
+	deleteBookmarkId: undefined,
+	setDeleteBookmarkId: (bookmarkIds: number[]) =>
+		set(() => ({ deleteBookmarkId: bookmarkIds })),
 }));
 
 export const useSupabaseSession = create<SupabaseSessionStore>((set) => ({
