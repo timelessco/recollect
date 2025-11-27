@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextApiRequest, type NextApiResponse } from "next";
 import axios from "axios";
+import { z } from "zod";
 
 import imageToText from "../../../async/ai/imageToText";
 import ocr from "../../../async/ai/ocr";
@@ -8,6 +9,21 @@ import { MAIN_TABLE_NAME } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
+
+const requestBodySchema = z.object({
+	id: z.number(),
+	ogImage: z.url({ message: "ogImage must be a valid URL" }),
+	user_id: z.uuid({ message: "user_id must be a valid UUID" }),
+	url: z.url({ message: "url must be a valid URL" }),
+	isRaindropBookmark: z.boolean().optional().default(false),
+	message: z.object({
+		msg_id: z.number(),
+		message: z.object({
+			meta_data: z.record(z.string(), z.any()).optional().default({}),
+		}),
+	}),
+	queue_name: z.string().min(1, { message: "queue_name is required" }),
+});
 
 export default async function handler(
 	request: NextApiRequest,
@@ -19,6 +35,16 @@ export default async function handler(
 	}
 
 	try {
+		const parseResult = requestBodySchema.safeParse(request.body);
+
+		if (!parseResult.success) {
+			console.warn("Validation error:", parseResult.error.issues);
+			response.status(400).json({
+				error: "Validation failed",
+			});
+			return;
+		}
+
 		const {
 			ogImage: ogImageUrl,
 			user_id,
@@ -26,12 +52,7 @@ export default async function handler(
 			isRaindropBookmark,
 			message,
 			queue_name,
-		} = request.body;
-
-		if (!ogImageUrl || !user_id || !url || !message) {
-			response.status(400).json({ error: "Missing required fields" });
-			return;
-		}
+		} = parseResult.data;
 
 		const supabase = createServiceClient();
 		let ogImage = ogImageUrl;
@@ -49,7 +70,7 @@ export default async function handler(
 			});
 
 			const returnedB64 = Buffer.from(image.data).toString("base64");
-			ogImage = await upload(returnedB64, user_id, null);
+			ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
 		}
 
 		const newMeta: any = { ...message.message.meta_data };

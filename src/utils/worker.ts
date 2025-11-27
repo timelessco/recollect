@@ -6,7 +6,7 @@ import {
 	getBaseUrl,
 	NEXT_API_URL,
 	WORKER_SCREENSHOT_API,
-} from "../../../utils/constants";
+} from "./constants";
 
 type ProcessParameters = { batchSize: number; queue_name: string };
 

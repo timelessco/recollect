@@ -1,8 +1,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 import { createServiceClient } from "../../../utils/supabaseClient";
-
-import { processImageQueue } from "./worker";
+import { processImageQueue } from "../../../utils/worker";
 
 export default async function handler(
 	request: NextApiRequest,
