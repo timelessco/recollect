@@ -31,6 +31,14 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ): Promise<void> {
 	try {
+		// Validate HTTP method
+		if (request.method !== "GET") {
+			response.status(405).json({
+				data: null,
+				error: { message: "Method not allowed" },
+			});
+			return;
+		}
 		// Get email from query params
 		const { email } = request.query;
 
