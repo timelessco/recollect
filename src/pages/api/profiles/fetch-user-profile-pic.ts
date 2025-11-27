@@ -39,6 +39,7 @@ export default async function handler(
 			});
 			return;
 		}
+
 		// Get email from query params
 		const { email } = request.query;
 
