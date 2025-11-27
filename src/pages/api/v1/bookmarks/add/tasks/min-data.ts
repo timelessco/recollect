@@ -319,7 +319,7 @@ export default async function handler(
 				response,
 				500,
 				"Failed to insert bookmark",
-				errorMessage,
+				databaseError?.message,
 			);
 			return;
 		}
