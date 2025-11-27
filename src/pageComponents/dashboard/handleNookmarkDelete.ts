@@ -75,9 +75,9 @@ export const handleBulkBookmarkDelete = ({
 			} else {
 				errorToast("Cannot delete other users uploads");
 			}
-
-			void Promise.allSettled(mutations);
 		}
+
+		void Promise.allSettled(mutations);
 	} else {
 		const bookmarksToDelete = [...(deleteBookmarkId ?? []), ...bookmarkIds];
 		if (bookmarksToDelete.length > 0) {
@@ -99,9 +99,9 @@ export const handleBulkBookmarkDelete = ({
 						return null;
 					}
 
-					const delBookmarkTitle = delBookmarkData?.title as string;
-					const delBookmarkImgLink = delBookmarkData?.ogImage as string;
-					const delBookmarkUrl = delBookmarkData?.url as string;
+					const delBookmarkTitle = delBookmarkData.title ?? "";
+					const delBookmarkImgLink = delBookmarkData.ogImage ?? "";
+					const delBookmarkUrl = delBookmarkData.url ?? "";
 
 					return {
 						id: idAsNumber,
