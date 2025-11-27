@@ -73,7 +73,11 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 			const errorMessage = `Failed to check category ownership: ${formatErrorMessage(
 				categoryError,
 			)}`;
-			Sentry.captureException(errorMessage);
+			console.error(errorMessage, categoryError);
+			Sentry.captureException(categoryError, {
+				tags: { operation: "check_category_ownership", userId },
+				extra: { categoryId, email },
+			});
 			return { ok: false, reason: "error", error: errorMessage };
 		}
 
@@ -92,7 +96,11 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 			const errorMessage = `Failed to check collaboration access: ${formatErrorMessage(
 				shareError,
 			)}`;
-			Sentry.captureException(errorMessage);
+			console.error(errorMessage, shareError);
+			Sentry.captureException(shareError, {
+				tags: { operation: "check_collaboration_access", userId },
+				extra: { categoryId, email },
+			});
 			return { ok: false, reason: "error", error: errorMessage };
 		}
 
@@ -103,7 +111,11 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 		const errorMessage = `Unexpected error checking user access: ${formatErrorMessage(
 			error,
 		)}`;
-		Sentry.captureException(errorMessage);
+		console.error(errorMessage, error);
+		Sentry.captureException(error, {
+			tags: { operation: "check_user_access", userId },
+			extra: { categoryId, email },
+		});
 		return { ok: false, reason: "error", error: errorMessage };
 	}
 };
@@ -131,7 +143,11 @@ export const checkIfBookmarkExists = async (
 		if (!isNull(checkBookmarkError)) {
 			const errorMessage = "Failed to check for duplicate bookmark";
 			const formattedError = formatErrorMessage(checkBookmarkError);
-			Sentry.captureException(`${errorMessage}: ${formattedError}`);
+			console.error(`${errorMessage}:`, checkBookmarkError);
+			Sentry.captureException(checkBookmarkError, {
+				tags: { operation: "check_bookmark_exists" },
+				extra: { url, categoryId },
+			});
 			return { ok: false, reason: "error", error: formattedError };
 		}
 
@@ -141,7 +157,11 @@ export const checkIfBookmarkExists = async (
 		const errorMessage = `Unexpected error checking bookmark existence: ${formatErrorMessage(
 			error,
 		)}`;
-		Sentry.captureException(errorMessage);
+		console.error(errorMessage, error);
+		Sentry.captureException(error, {
+			tags: { operation: "check_bookmark_exists" },
+			extra: { url, categoryId },
+		});
 		return { ok: false, reason: "error", error: errorMessage };
 	}
 };
@@ -186,8 +206,10 @@ export const scrapeUrlMetadata = async (
 	} catch (scrapperError) {
 		if (scrapperError) {
 			scraperApiError = formatErrorMessage(scrapperError);
-			Sentry.captureException(`Failed to scrape URL metadata: ${url}`, {
-				extra: { error: scraperApiError },
+			console.error("Failed to scrape URL metadata:", scrapperError);
+			Sentry.captureException(scrapperError, {
+				tags: { operation: "scrape_url_metadata" },
+				extra: { url },
 			});
 
 			// Fallback to using hostname as title, with safe parsing
@@ -196,12 +218,11 @@ export const scrapeUrlMetadata = async (
 				fallbackTitle = new URL(url)?.hostname;
 			} catch (urlParseError) {
 				// If URL parsing fails, use null as fallback
-				Sentry.captureException(
-					`Failed to parse URL for fallback title: ${url}`,
-					{
-						extra: { error: formatErrorMessage(urlParseError) },
-					},
-				);
+				console.error("Failed to parse URL for fallback title:", urlParseError);
+				Sentry.captureException(urlParseError, {
+					tags: { operation: "parse_url_for_fallback_title" },
+					extra: { url },
+				});
 			}
 
 			scrapperResponse = {
@@ -265,8 +286,10 @@ export const processUrlMetadata = async (
 		};
 	} catch (error) {
 		const errorMessage = formatErrorMessage(error);
-		Sentry.captureException(`Failed to process URL metadata: ${url}`, {
-			extra: { error: errorMessage },
+		console.error("Failed to process URL metadata:", error);
+		Sentry.captureException(error, {
+			tags: { operation: "process_url_metadata" },
+			extra: { url, isOgImagePreferred, scrapperOgImage },
 		});
 		// Return safe defaults on error
 		return {
@@ -286,8 +309,10 @@ export const isUrlFromPreferredOgSite = (url: string): boolean => {
 		);
 	} catch (error) {
 		const errorMessage = formatErrorMessage(error);
-		Sentry.captureException(`Failed to check OG image preference: ${url}`, {
-			extra: { error: errorMessage },
+		console.error("Failed to check OG image preference:", error);
+		Sentry.captureException(error, {
+			tags: { operation: "check_og_image_preference" },
+			extra: { url },
 		});
 		return false;
 	}

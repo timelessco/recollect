@@ -94,10 +94,11 @@ export const uploadToR2 = async (
 		);
 
 		if (uploadError) {
-			Sentry.captureException("R2 upload failed", {
-				extra: { error: uploadError },
-			});
 			console.error("R2 upload failed:", uploadError);
+			Sentry.captureException(uploadError, {
+				tags: { operation: "remaining_upload_to_r2" },
+				extra: { userIdForStorage, storagePath: storagePath_ },
+			});
 			return null;
 		}
 
@@ -106,6 +107,10 @@ export const uploadToR2 = async (
 		return storageData?.publicUrl ?? null;
 	} catch (error) {
 		console.error("Error in upload function:", error);
+		Sentry.captureException(error, {
+			tags: { operation: "upload_to_r2" },
+			extra: { userIdForStorage, storagePath },
+		});
 		return null;
 	}
 };
@@ -143,6 +148,10 @@ export const getFavIconUrl = async (
 		}
 	} catch (error) {
 		console.error("Error getting favicon:", error);
+		Sentry.captureException(error, {
+			tags: { operation: "get_favicon_url" },
+			extra: { url, favIcon },
+		});
 		return null;
 	}
 };
@@ -173,14 +182,14 @@ export const processAndUploadImageUrl = async (
 
 		if (uploadedUrl === null) {
 			console.error("Failed to upload image URL to r2");
-			Sentry.captureException("Failed to upload image URL to r2");
 		}
 
 		return uploadedUrl;
 	} catch (error) {
 		console.error("Error uploading image URL to r2:", error);
-		Sentry.captureException("Error uploading image URL to r2", {
-			extra: { error },
+		Sentry.captureException(error, {
+			tags: { operation: "process_and_upload_image_url", userId },
+			extra: { url },
 		});
 		return null;
 	}
@@ -210,16 +219,16 @@ export const processAndUploadCoverImage = async (
 		const uploadedUrl = await uploadToR2(returnedB64, userId, null);
 
 		if (uploadedUrl === null) {
-			console.error("Failed to upload image to r2");
-			Sentry.captureException("Failed to upload image to r2");
+			console.error("Failed to upload cover image to r2");
 			return ogImage;
 		}
 
 		return uploadedUrl;
 	} catch (error) {
-		console.error("Error uploading scrapped image to r2:", error);
-		Sentry.captureException("Error uploading scrapped image to r2", {
-			extra: { error },
+		console.error("Error uploading cover image to r2:", error);
+		Sentry.captureException(error, {
+			tags: { operation: "process_and_upload_cover_image", userId },
+			extra: { ogImage },
 		});
 		return ogImage;
 	}
@@ -253,8 +262,9 @@ export const generateImageMetadata = async (
 		};
 	} catch (error) {
 		console.error("Error generating image metadata:", error);
-		Sentry.captureException("Error generating image metadata", {
-			extra: { error },
+		Sentry.captureException(error, {
+			tags: { operation: "generate_image_metadata", userId },
+			extra: { imageUrl },
 		});
 		return {
 			imgData: {
@@ -378,13 +388,23 @@ export const updateBookmarkWithRemainingData = async (
 		.select(`id`);
 
 	if (isNull(data)) {
-		Sentry.captureException("DB return data is empty");
+		const error = new Error("DB return data is empty");
+		console.error("DB return data is empty for bookmark:", id);
+		Sentry.captureException(error, {
+			tags: { operation: "update_bookmark_with_remaining_data", userId },
+			extra: { id },
+		});
 		return { data: null, error: "DB return data is empty" };
 	}
 
 	if (!isNull(databaseError)) {
-		Sentry.captureException("Failed to update bookmark with remaining data", {
-			extra: { error: databaseError },
+		console.error(
+			"Failed to update bookmark with remaining data:",
+			databaseError,
+		);
+		Sentry.captureException(databaseError, {
+			tags: { operation: "update_bookmark_with_remaining_data", userId },
+			extra: { id, description, ogImage },
 		});
 		return { data: null, error: databaseError };
 	}

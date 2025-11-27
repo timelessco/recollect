@@ -62,10 +62,11 @@ export const uploadScreenshot = async (
 	);
 
 	if (uploadError) {
-		Sentry.captureException("R2 upload failed", {
-			extra: { error: uploadError },
-		});
 		console.error("R2 upload failed:", uploadError);
+		Sentry.captureException(uploadError, {
+			tags: { operation: "screenshot_upload_to_r2" },
+			extra: { uploadUserId, storagePath },
+		});
 		return null;
 	}
 
@@ -100,13 +101,11 @@ export const captureScreenshot = async (url: string) => {
 			error: null,
 		};
 	} catch (error_) {
-		console.error("Screenshot error~~~~~~~~~~~~~~~~~~~~~~~~~~~:", error_);
-		if (error_ instanceof Error) {
-			console.error("Screenshot error");
-			Sentry.captureException("Screenshot capture failed", {
-				extra: { error: error_.message },
-			});
-		}
+		console.error("Screenshot capture failed:", error_);
+		Sentry.captureException(error_, {
+			tags: { operation: "capture_screenshot" },
+			extra: { url },
+		});
 
 		return {
 			success: false,
@@ -136,8 +135,9 @@ export const fetchExistingBookmarkData = async (
 
 	if (fetchError) {
 		console.error("Error fetching existing bookmark data:", fetchError);
-		Sentry.captureException("Failed to fetch existing bookmark data", {
-			extra: { error: fetchError },
+		Sentry.captureException(fetchError, {
+			tags: { operation: "fetch_existing_bookmark_data", userId },
+			extra: { bookmarkId },
 		});
 		return { data: null, error: fetchError };
 	}
@@ -192,8 +192,10 @@ export const updateBookmarkWithScreenshot = async (
 		return { data, error: null };
 	}
 
-	Sentry.captureException("Failed to update screenshot in DB", {
-		extra: { error },
+	console.error("Failed to update screenshot in DB:", error);
+	Sentry.captureException(error, {
+		tags: { operation: "update_bookmark_with_screenshot", userId },
+		extra: { bookmarkId, title, description },
 	});
 	return { data: null, error };
 };
@@ -232,8 +234,9 @@ export const uploadRemainingBookmarkData = async (
 		return { error: null };
 	} catch (remainingUploadError) {
 		console.error("Remaining bookmark data API error:", remainingUploadError);
-		Sentry.captureException("Failed to upload remaining bookmark data", {
-			extra: { error: remainingUploadError },
+		Sentry.captureException(remainingUploadError, {
+			tags: { operation: "upload_remaining_bookmark_data" },
+			extra: { url, bookmarkId: data[0]?.id },
 		});
 		return { error: remainingUploadError };
 	}
