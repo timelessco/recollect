@@ -1,12 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { request } from "http";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
-import { email } from "zod";
 
 import { type UserProfilePicTypes } from "../../../types/apiTypes";
 import { PROFILES } from "../../../utils/constants";
