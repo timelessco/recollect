@@ -46,11 +46,9 @@ import {
 	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
-import {
-	getColumnCount,
-	handleBulkBookmarkDelete,
-} from "../../../utils/helpers";
+import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
+import { handleBulkBookmarkDelete } from "../handleNookmarkDelete";
 
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";

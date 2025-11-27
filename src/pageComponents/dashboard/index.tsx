@@ -70,12 +70,10 @@ import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
+import { handleBulkBookmarkDelete } from "./handleNookmarkDelete";
 import SettingsModal from "./modals/settingsModal";
 import SignedOutSection from "./signedOutSection";
-import {
-	getBookmarkCountForCurrentPage,
-	handleBulkBookmarkDelete,
-} from "@/utils/helpers";
+import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 // import CardSection from "./cardSection";
 const CardSection = dynamic(async () => await import("./cardSection"), {
