@@ -70,7 +70,7 @@ import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
-import { handleBulkBookmarkDelete } from "./handleNookmarkDelete";
+import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import SettingsModal from "./modals/settingsModal";
 import SignedOutSection from "./signedOutSection";
 import { getBookmarkCountForCurrentPage } from "@/utils/helpers";

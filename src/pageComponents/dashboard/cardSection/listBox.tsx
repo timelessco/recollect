@@ -48,7 +48,7 @@ import {
 } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
-import { handleBulkBookmarkDelete } from "../handleNookmarkDelete";
+import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
