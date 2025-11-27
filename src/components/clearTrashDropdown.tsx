@@ -6,7 +6,7 @@ interface ClearTrashDropdownProps {
 	onClearTrash: () => void;
 	isClearingTrash: boolean;
 	label?: string;
-	isBottomBar: boolean;
+	isBottomBar?: boolean;
 	isOpen?: boolean;
 	menuOpenToggle?: (isOpen: boolean) => void;
 }
@@ -30,13 +30,22 @@ export const ClearTrashDropdown = (props: ClearTrashDropdownProps) => {
 						className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
 						role="button"
 						tabIndex={0}
+						onKeyDown={(event) => {
+							if (event.key === "Enter" || event.key === " ") {
+								event.preventDefault();
+							}
+						}}
 					>
 						Delete Forever
 					</div>
 				) : (
 					<div
 						className="z-15 ml-2 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs group-hover:flex"
-						onKeyDown={() => {}}
+						onKeyDown={(event) => {
+							if (event.key === "Enter" || event.key === " ") {
+								event.preventDefault();
+							}
+						}}
 						role="button"
 						tabIndex={0}
 					>
@@ -56,7 +65,9 @@ export const ClearTrashDropdown = (props: ClearTrashDropdownProps) => {
 			}
 		>
 			<AriaDropdownMenu onClick={() => {}}>
-				<div className="z-10 w-[180px] rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden focus-visible:outline-hidden">
+				<div
+					className={`z-10 ${!isBottomBar ? "ml-2" : ""} w-[180px] rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden focus-visible:outline-hidden`}
+				>
 					<ClearTrashContent
 						onClearTrash={() => {
 							onClearTrash();
