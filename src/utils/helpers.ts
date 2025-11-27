@@ -617,12 +617,15 @@ export const handleBulkBookmarkDelete = ({
 	} else {
 		const bookmarksToDelete = [...(deleteBookmarkId ?? []), ...bookmarkIds];
 		if (bookmarksToDelete.length > 0) {
-			setDeleteBookmarkId(bookmarkIds);
+			setDeleteBookmarkId(bookmarksToDelete);
 			const deleteData = bookmarksToDelete.map((delItem) => {
-				const idAsNumber = Number.parseInt(delItem as unknown as string, 10);
+				const idAsNumber =
+					typeof delItem === "number"
+						? delItem
+						: Number.parseInt(delItem as string, 10);
 
 				const delBookmarkData = find(
-					flattendPaginationBookmarkData,
+					currentBookmarksData,
 					(item) => item?.id === idAsNumber,
 				);
 
@@ -644,10 +647,9 @@ export const handleBulkBookmarkDelete = ({
 					deleteData,
 				}),
 			);
+			setDeleteBookmarkId([]);
+			// Clear selection to close the selection bar
+			clearSelection();
 		}
-
-		setDeleteBookmarkId([]);
-		// Clear selection to close the selection bar
-		clearSelection();
 	}
 };

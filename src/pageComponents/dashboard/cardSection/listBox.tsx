@@ -487,7 +487,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 							</div>
 						) : (
 							<ClearTrashDropdown
-								isClearAllTrash={false}
+								isBottomBar
+								label="Delete Bookmarks"
 								onClearTrash={() => {
 									onBulkBookmarkDelete(
 										Array.from(

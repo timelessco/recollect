@@ -5,11 +5,11 @@ import TrashIconRed from "@/icons/actionIcons/trashIconRed";
 interface ClearTrashContentProps {
 	onClearTrash: () => void;
 	isClearingTrash: boolean;
-	isClearAllTrash?: boolean;
+	label?: string;
 }
 
 export const ClearTrashContent = (props: ClearTrashContentProps) => {
-	const { onClearTrash, isClearingTrash, isClearAllTrash = true } = props;
+	const { onClearTrash, isClearingTrash, label = "Clear All Trash" } = props;
 
 	return (
 		<div className="p-1">
@@ -26,9 +26,7 @@ export const ClearTrashContent = (props: ClearTrashContentProps) => {
 				) : (
 					<>
 						<TrashIconRed />
-						<p className="ml-[6px]">
-							{isClearAllTrash ? "Clear All Trash" : "Delete Bookmarks"}
-						</p>
+						<p className="ml-[6px]">{label}</p>
 					</>
 				)}
 			</Button>

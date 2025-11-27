@@ -1,24 +1,58 @@
 import { AriaDropdown, AriaDropdownMenu } from "./ariaDropdown";
 import { ClearTrashContent } from "./clearTrashContent";
+import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 
 interface ClearTrashDropdownProps {
 	onClearTrash: () => void;
 	isClearingTrash: boolean;
-	isClearAllTrash: boolean;
+	label?: string;
+	isBottomBar: boolean;
+	isOpen?: boolean;
+	menuOpenToggle?: (isOpen: boolean) => void;
 }
 
 export const ClearTrashDropdown = (props: ClearTrashDropdownProps) => {
-	const { onClearTrash, isClearingTrash, isClearAllTrash } = props;
+	const {
+		onClearTrash,
+		isClearingTrash,
+		label,
+		isBottomBar = false,
+		isOpen,
+		menuOpenToggle,
+	} = props;
 	return (
 		<AriaDropdown
+			isOpen={isOpen}
+			menuOpenToggle={menuOpenToggle}
 			menuButton={
-				<div
-					className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
-					role="button"
-					tabIndex={0}
-				>
-					Delete Forever
-				</div>
+				isBottomBar ? (
+					<div
+						className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
+						role="button"
+						tabIndex={0}
+					>
+						Delete Forever
+					</div>
+				) : (
+					<div
+						className="z-15 ml-2 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs group-hover:flex"
+						onKeyDown={() => {}}
+						role="button"
+						tabIndex={0}
+					>
+						<figure
+							onPointerDown={(event) => {
+								event.stopPropagation();
+							}}
+						>
+							<TrashIconGray
+								onPointerDown={(event) => {
+									event.stopPropagation();
+								}}
+							/>
+						</figure>
+					</div>
+				)
 			}
 		>
 			<AriaDropdownMenu onClick={() => {}}>
@@ -28,7 +62,7 @@ export const ClearTrashDropdown = (props: ClearTrashDropdownProps) => {
 							onClearTrash();
 						}}
 						isClearingTrash={isClearingTrash}
-						isClearAllTrash={isClearAllTrash}
+						label={label}
 					/>
 				</div>
 			</AriaDropdownMenu>

@@ -16,6 +16,7 @@ import isNull from "lodash/isNull";
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
+import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
@@ -71,7 +72,10 @@ import Settings from "../settings";
 
 import SettingsModal from "./modals/settingsModal";
 import SignedOutSection from "./signedOutSection";
-import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
+import {
+	getBookmarkCountForCurrentPage,
+	handleBulkBookmarkDelete,
+} from "@/utils/helpers";
 
 // import CardSection from "./cardSection";
 const CardSection = dynamic(async () => await import("./cardSection"), {
@@ -101,6 +105,10 @@ const Dashboard = () => {
 
 	const setDeleteBookmarkId = useMiscellaneousStore(
 		(state) => state.setDeleteBookmarkId,
+	);
+
+	const deleteBookmarkId = useMiscellaneousStore(
+		(state) => state.deleteBookmarkId,
 	);
 
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
@@ -151,6 +159,9 @@ const Dashboard = () => {
 
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
+
+	const { deleteBookmarkOptismicMutation } =
+		useDeleteBookmarksOptimisticMutation();
 
 	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
 		useClearBookmarksInTrashMutation();
@@ -660,12 +671,25 @@ const Dashboard = () => {
 												addCategoryToBookmarkOptimisticMutation?.isPending
 											}
 											onDeleteClick={(item) => {
-												setDeleteBookmarkId(
-													item?.map((delItem) => delItem?.id),
-												);
-
 												if (CATEGORY_ID === TRASH_URL) {
-													// delete bookmark if in trash
+													// delete bookmark permanently if in trash
+													handleBulkBookmarkDelete({
+														bookmarkIds: item?.map((delItem) => delItem?.id),
+														deleteForever: true,
+														isTrash: true,
+														isSearching,
+														flattenedSearchData: flattenedSearchData ?? [],
+														flattendPaginationBookmarkData:
+															flattendPaginationBookmarkData ?? [],
+														deleteBookmarkId,
+														setDeleteBookmarkId,
+														sessionUserId: session?.user?.id,
+														moveBookmarkToTrashOptimisticMutation,
+														deleteBookmarkOptismicMutation,
+														clearSelection: () => {},
+														mutationApiCall,
+														errorToast,
+													});
 												} else if (!isEmpty(item) && item?.length > 0) {
 													// if not in trash then move bookmark to trash
 													void mutationApiCall(
