@@ -174,10 +174,12 @@ export default async function handler(
 			return;
 		}
 
-		console.log("Current bookmark data fetched successfully");
+		console.log("Current bookmark data fetched successfully:", {
+			bookmarkId: id,
+		});
 
 		// Process images and generate metadata
-		console.log("Processing bookmark images:", { url });
+		console.log("Processing bookmark images:", { url, bookmarkId: id });
 		const {
 			// uploadedImageThatIsAUrl,
 			uploadedCoverImageUrl,
@@ -185,10 +187,12 @@ export default async function handler(
 			imageUrlForMetaDataGeneration,
 			metadata,
 		} = await processBookmarkImages(url, userId, currentData, supabase);
-		console.log("Bookmark images processed successfully");
+		console.log("Bookmark images processed successfully:", {
+			bookmarkId: id,
+		});
 
 		// Get favicon
-		console.log("Getting favicon URL");
+		console.log("Getting favicon URL:", { bookmarkId: id, url });
 		const favIconUrl = await getFavIconUrl(url, favIcon);
 
 		// Prepare metadata for update

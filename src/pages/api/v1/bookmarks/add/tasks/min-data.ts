@@ -19,7 +19,6 @@ import {
 	processUrlMetadata,
 	scrapeUrlMetadata,
 } from "../../../../../../utils/api/bookmark/add";
-import { formatErrorMessage } from "../../../../../../utils/api/bookmark/errorHandling";
 import {
 	bookmarkType,
 	MAIN_TABLE_NAME,
@@ -97,20 +96,19 @@ export default async function handler(
 
 		// Validate request body
 		const schema = getBookmarkBodySchema();
-		let bodyData;
-		try {
-			bodyData = schema.parse(request.body);
-		} catch (parseError) {
-			const errorMessage = formatErrorMessage(parseError);
-			console.warn("Invalid request body:", { error: errorMessage });
-			Sentry.captureException(parseError, {
+		const parseResult = schema.safeParse(request.body);
+		if (!parseResult.success) {
+			console.warn("Invalid request body:", parseResult.error);
+			Sentry.captureException(parseResult.error, {
 				tags: {
 					operation: "validate_request_body",
 				},
 			});
-			sendErrorResponse(response, 400, "Invalid request body", errorMessage);
+			sendErrorResponse(response, 400, "Invalid request body");
 			return;
 		}
+
+		const bodyData = parseResult.data;
 
 		const {
 			category_id: categoryId,
@@ -119,7 +117,7 @@ export default async function handler(
 		} = bodyData;
 
 		if (!updateAccess) {
-			console.warn("User does not have update access");
+			console.warn("User does not have update access:", { url });
 			sendErrorResponse(response, 403, "User does not have update access");
 			return;
 		}
@@ -159,10 +157,11 @@ export default async function handler(
 			);
 
 			if (!accessCheckResult.ok) {
-				console.error(
-					"Error checking user access:",
-					accessCheckResult.error ?? "Unknown error",
-				);
+				console.error("Error checking user access:", {
+					error: accessCheckResult.error ?? "Unknown error",
+					categoryId: computedCategoryId,
+					userId,
+				});
 				Sentry.captureException(
 					new Error(accessCheckResult.error ?? "Unknown error"),
 					{
@@ -185,7 +184,11 @@ export default async function handler(
 
 			if (!accessCheckResult.value) {
 				console.warn(
-					"User is neither owner or collaborator for the collection or does not have edit access",
+					"User is neither owner or collaborator for the collection or does not have edit access:",
+					{
+						userId,
+						categoryId: computedCategoryId,
+					},
 				);
 				sendErrorResponse(
 					response,
@@ -202,10 +205,12 @@ export default async function handler(
 			);
 
 			if (!bookmarkExistsResult.ok) {
-				console.error(
-					"Error checking if bookmark exists:",
-					bookmarkExistsResult.error ?? "Unknown error",
-				);
+				console.error("Error checking if bookmark exists:", {
+					error: bookmarkExistsResult.error ?? "Unknown error",
+					url,
+					categoryId: computedCategoryId,
+					userId,
+				});
 				Sentry.captureException(
 					new Error(bookmarkExistsResult.error ?? "Unknown error"),
 					{
@@ -283,7 +288,11 @@ export default async function handler(
 			.select();
 
 		if (isEmpty(data) || isNull(data)) {
-			console.error("Data is empty after insert");
+			console.error("Data is empty after insert:", {
+				url,
+				userId,
+				categoryId: computedCategoryId,
+			});
 			Sentry.captureException(new Error("Data is empty after insert"), {
 				tags: {
 					operation: "insert_bookmark",
@@ -295,8 +304,7 @@ export default async function handler(
 		}
 
 		if (!isNull(databaseError)) {
-			const errorMessage = formatErrorMessage(databaseError);
-			console.error("Error inserting bookmark:", errorMessage);
+			console.error("Error inserting bookmark:", databaseError);
 			Sentry.captureException(databaseError, {
 				tags: {
 					operation: "insert_bookmark",

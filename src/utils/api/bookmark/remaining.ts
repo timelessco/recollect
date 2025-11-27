@@ -172,14 +172,14 @@ export const processAndUploadImageUrl = async (
 		const uploadedUrl = await uploadToR2(returnedB64, userId, null);
 
 		if (uploadedUrl === null) {
-			console.error("Failed to upload image URL to S3");
-			Sentry.captureException("Failed to upload image URL to S3");
+			console.error("Failed to upload image URL to r2");
+			Sentry.captureException("Failed to upload image URL to r2");
 		}
 
 		return uploadedUrl;
 	} catch (error) {
-		console.error("Error uploading image URL to S3:", error);
-		Sentry.captureException("Error uploading image URL to S3", {
+		console.error("Error uploading image URL to r2:", error);
+		Sentry.captureException("Error uploading image URL to r2", {
 			extra: { error },
 		});
 		return null;
@@ -210,15 +210,15 @@ export const processAndUploadCoverImage = async (
 		const uploadedUrl = await uploadToR2(returnedB64, userId, null);
 
 		if (uploadedUrl === null) {
-			console.error("Failed to upload image to S3");
-			Sentry.captureException("Failed to upload image to S3");
+			console.error("Failed to upload image to r2");
+			Sentry.captureException("Failed to upload image to r2");
 			return ogImage;
 		}
 
 		return uploadedUrl;
 	} catch (error) {
-		console.error("Error uploading scrapped image to S3:", error);
-		Sentry.captureException("Error uploading scrapped image to S3", {
+		console.error("Error uploading scrapped image to r2:", error);
+		Sentry.captureException("Error uploading scrapped image to r2", {
 			extra: { error },
 		});
 		return ogImage;

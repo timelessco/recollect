@@ -20,9 +20,8 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	uncategorizedPages,
 } from "../../constants";
+import { formatErrorMessage } from "../../error-utils/bookmark-api-error";
 import { checkIfUrlAnImage, checkIfUrlAnMedia } from "../../helpers";
-
-import { formatErrorMessage } from "./errorHandling";
 
 export type ScrapperTypes = {
 	data: {

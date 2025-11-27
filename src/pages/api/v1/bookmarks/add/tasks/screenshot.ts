@@ -141,7 +141,10 @@ export default async function handler(
 			mediaType === PDF_MIME_TYPE ||
 			URL_PDF_CHECK_PATTERN.test(request.body.url)
 		) {
-			console.log("Processing PDF screenshot");
+			console.log("Processing PDF screenshot:", {
+				bookmarkId: request.body.id,
+				url: request.body.url,
+			});
 			const pdfApiUrl = `${process.env.RECOLLECT_SERVER_API}${PDF_SCREENSHOT_API}`;
 
 			const [pdfScreenshotError, axiosResponse] = await vet(() =>
@@ -185,7 +188,11 @@ export default async function handler(
 						pdfScreenshotError instanceof Error
 							? pdfScreenshotError.message
 							: errorMessage;
-					console.error("Error generating PDF screenshot:", errorMessage);
+					console.error("Error generating PDF screenshot:", {
+						error: errorMessage,
+						bookmarkId: request.body.id,
+						url: request.body.url,
+					});
 				}
 
 				Sentry.captureException(pdfScreenshotError, {
@@ -209,23 +216,66 @@ export default async function handler(
 
 			publicURL = axiosResponse?.data?.publicUrl ?? null;
 			isPageScreenshot = false;
-			console.log("PDF screenshot generated successfully");
-		} else {
-			// Capture screenshot of the URL
-			console.log("Capturing screenshot of URL");
-			const screenshotResult = await captureScreenshot(request.body.url);
-			if (!screenshotResult.success) {
-				console.error("Failed to capture screenshot:", screenshotResult.error);
-				Sentry.captureException(new Error(screenshotResult.error), {
-					tags: {
-						operation: "capture_screenshot",
-						userId,
-					},
-					extra: {
+
+			if (!publicURL) {
+				console.error(
+					"Failed to generate PDF screenshot - no publicUrl returned:",
+					{
 						bookmarkId: request.body.id,
 						url: request.body.url,
+						responseData: axiosResponse?.data,
 					},
+				);
+				Sentry.captureException(
+					new Error("Failed to generate PDF screenshot"),
+					{
+						tags: {
+							operation: "pdf_screenshot",
+							userId,
+						},
+						extra: {
+							bookmarkId: request.body.id,
+							url: request.body.url,
+							responseData: axiosResponse?.data,
+						},
+					},
+				);
+				response.status(500).json({
+					data: null,
+					error: "Failed to generate PDF screenshot",
 				});
+				return;
+			}
+
+			console.log("PDF screenshot generated successfully:", {
+				bookmarkId: request.body.id,
+			});
+		} else {
+			// Capture screenshot of the URL
+			console.log("Capturing screenshot of URL:", {
+				bookmarkId: request.body.id,
+				url: request.body.url,
+			});
+			const screenshotResult = await captureScreenshot(request.body.url);
+			if (!screenshotResult.success) {
+				console.error("Failed to capture screenshot:", {
+					error: screenshotResult.error,
+					bookmarkId: request.body.id,
+					url: request.body.url,
+				});
+				Sentry.captureException(
+					new Error(screenshotResult.error ?? "Unknown screenshot error"),
+					{
+						tags: {
+							operation: "capture_screenshot",
+							userId,
+						},
+						extra: {
+							bookmarkId: request.body.id,
+							url: request.body.url,
+						},
+					},
+				);
 				response.status(500).json({
 					data: null,
 					error: screenshotResult.error,
@@ -233,7 +283,9 @@ export default async function handler(
 				return;
 			}
 
-			console.log("Screenshot captured successfully");
+			console.log("Screenshot captured successfully:", {
+				bookmarkId: request.body.id,
+			});
 
 			// Convert screenshot data to base64
 			const base64data = Buffer?.from(
@@ -246,10 +298,15 @@ export default async function handler(
 			isPageScreenshot = screenMeta?.isPageScreenshot;
 
 			// Upload screenshot to R2 storage
-			console.log("Uploading screenshot to R2 storage");
+			console.log("Uploading screenshot to R2 storage:", {
+				bookmarkId: request.body.id,
+			});
 			publicURL = await uploadScreenshot(base64data, userId);
 			if (!publicURL) {
-				console.error("Failed to upload screenshot to storage");
+				console.error("Failed to upload screenshot to storage:", {
+					bookmarkId: request.body.id,
+					userId,
+				});
 				Sentry.captureException(new Error("Failed to upload screenshot"), {
 					tags: {
 						operation: "upload_screenshot",
@@ -265,7 +322,10 @@ export default async function handler(
 				});
 				return;
 			}
-			console.log("Screenshot uploaded successfully");
+
+			console.log("Screenshot uploaded successfully:", {
+				bookmarkId: request.body.id,
+			});
 		}
 
 		// Fetch existing bookmark data to update
@@ -281,20 +341,28 @@ export default async function handler(
 
 		if (fetchError) {
 			console.error("Error fetching existing bookmark data:", fetchError);
-			Sentry.captureException(new Error(fetchError), {
-				tags: {
-					operation: "fetch_existing_bookmark_data",
-					userId,
+			Sentry.captureException(
+				new Error(
+					typeof fetchError === "string" ? fetchError : fetchError.message,
+				),
+				{
+					tags: {
+						operation: "fetch_existing_bookmark_data",
+						userId,
+					},
+					extra: {
+						bookmarkId: request.body.id,
+						postgrestError: fetchError,
+					},
 				},
-				extra: {
-					bookmarkId: request.body.id,
-				},
-			});
+			);
 			response.status(500).json({ data: null, error: fetchError });
 			return;
 		}
 
-		console.log("Existing bookmark data fetched successfully");
+		console.log("Existing bookmark data fetched successfully:", {
+			bookmarkId: request.body.id,
+		});
 
 		// Prepare metadata for update
 		const existingMetaData = existingBookmarkData?.meta_data ?? {};
@@ -327,15 +395,19 @@ export default async function handler(
 
 		if (error) {
 			console.error("Error updating bookmark with screenshot:", error);
-			Sentry.captureException(new Error(error), {
-				tags: {
-					operation: "update_bookmark_with_screenshot",
-					userId,
+			Sentry.captureException(
+				new Error(typeof error === "string" ? error : error.message),
+				{
+					tags: {
+						operation: "update_bookmark_with_screenshot",
+						userId,
+					},
+					extra: {
+						bookmarkId: request.body.id,
+						postgrestError: error,
+					},
 				},
-				extra: {
-					bookmarkId: request.body.id,
-				},
-			});
+			);
 			response.status(500).json({ data: null, error });
 			return;
 		}

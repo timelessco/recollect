@@ -81,7 +81,7 @@ export const uploadScreenshot = async (
  */
 export const captureScreenshot = async (url: string) => {
 	try {
-		console.error(
+		console.log(
 			"*************************Screenshot Loading*****************************",
 		);
 		const screenShotResponse = await axios.get(

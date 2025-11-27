@@ -27,6 +27,7 @@ You can provide the API key in one of two ways:
    ```
 
 2. **Using `Authorization` header with Bearer token:**
+
    ```http
    Authorization: Bearer your-internal-api-key-here
    ```
@@ -84,7 +85,7 @@ export const serverSchema = z.object({
 
 ### Calling Protected Endpoints
 
-#### Using axios:
+#### Using axios
 
 ```typescript
 import axios from "axios";
@@ -105,7 +106,7 @@ const response = await axios.post(
 );
 ```
 
-#### Using fetch:
+#### Using fetch
 
 ```typescript
 const response = await fetch(
@@ -132,7 +133,7 @@ const response = await fetch(
 - **401**: Unauthorized - Invalid or missing API key
 - **500**: Internal server error
 
-### 401 Unauthorized Response Example:
+### 401 Unauthorized Response Example
 
 ```json
 {

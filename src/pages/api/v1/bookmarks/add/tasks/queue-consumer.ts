@@ -3,14 +3,13 @@ import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 
 import { type NextApiRequest } from "../../../../../../types/apiTypes";
-import { formatErrorMessage } from "../../../../../../utils/api/bookmark/errorHandling";
 import {
 	ADD_BOOKMARK_REMAINING_DATA_API,
 	ADD_BOOKMARK_SCREENSHOT_API,
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../../../../../../utils/constants";
-import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
+import { apiSupabaseServiceClient } from "../../../../../../utils/supabaseServerClient";
 import { vet } from "../../../../../../utils/try";
 
 type QueueMessagePayload = {
@@ -45,7 +44,7 @@ type ApiResponse = {
  * Queue consumer API that reads messages from the queue,
  * processes each one, and deletes only the successful ones.
  */
-export default async function handler(
+export async function handler(
 	request: NextApiRequest<Record<string, never>>,
 	response: NextApiResponse<ApiResponse>,
 ) {
@@ -69,7 +68,7 @@ export default async function handler(
 			return;
 		}
 
-		const supabase = apiSupabaseClient(request, response);
+		const supabase = apiSupabaseServiceClient();
 		const queueName = "add-bookmark-url-queue";
 		// Process up to 10 messages at a time
 		const batchSize = 10;
@@ -120,9 +119,10 @@ export default async function handler(
 			return;
 		}
 
-		console.log(`\n========================================`);
-		console.log(`📥 Processing ${messages.length} message(s) from queue`);
-		console.log(`========================================\n`);
+		console.log("Queue consumer API called:", {
+			messageCount: messages.length,
+			queueName,
+		});
 
 		// Process each message
 		const results: MessageResult[] = [];
@@ -130,9 +130,10 @@ export default async function handler(
 		let failedCount = 0;
 
 		for (const message of messages) {
-			console.log(`\n----- Processing Message -----`);
-			console.log("Message ID:", message.msg_id);
-			console.log("Message payload:", JSON.stringify(message.message, null, 2));
+			console.log("Processing queue message:", {
+				messageId: message.msg_id,
+				payload: message.message,
+			});
 
 			// Parse the message payload
 			const payload = message.message as QueueMessagePayload;
@@ -144,8 +145,10 @@ export default async function handler(
 				typeof payload.isImage !== "boolean"
 			) {
 				const errorMessage = "Invalid message payload structure";
-				console.log("❌", errorMessage);
-				console.log("⚠️ Message will remain in queue for retry");
+				console.warn("Invalid queue message payload:", {
+					messageId: message.msg_id,
+					payload: message.message,
+				});
 
 				Sentry.captureException(new Error(errorMessage), {
 					tags: {
@@ -168,7 +171,10 @@ export default async function handler(
 				continue;
 			}
 
-			console.log(`📌 Processing bookmark ID: ${payload.bookmarkId}`);
+			console.log("Processing bookmark:", {
+				bookmarkId: payload.bookmarkId,
+				url: payload.url,
+			});
 
 			let screenshotSuccess = true;
 			let screenshotError: string | undefined;
@@ -178,9 +184,14 @@ export default async function handler(
 
 			// Call screenshot API if URL is not an image
 			if (payload.isImage) {
-				console.log("ℹ️ Skipping screenshot (URL is an image)");
+				console.log("Skipping screenshot because URL is an image:", {
+					bookmarkId: payload.bookmarkId,
+				});
 			} else {
-				console.log("📸 Calling screenshot API...");
+				console.log("Calling screenshot API:", {
+					bookmarkId: payload.bookmarkId,
+					url: payload.url,
+				});
 				const screenshotApiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_SCREENSHOT_API}`;
 
 				const [screenshotApiError, screenshotResponse] = await vet(() =>
@@ -200,23 +211,34 @@ export default async function handler(
 				);
 
 				if (screenshotApiError) {
-					screenshotError = formatErrorMessage(screenshotApiError);
-					console.log("❌ Screenshot API failed:", screenshotError);
+					console.error("Screenshot API failed:", {
+						bookmarkId: payload.bookmarkId,
+						error: screenshotApiError,
+					});
+					screenshotError = "Screenshot API failed";
 					screenshotSuccess = false;
 					// Continue to try remaining API even if screenshot fails
 				} else {
 					screenshotSuccess = screenshotResponse.status === 200;
 					if (screenshotSuccess) {
-						console.log("✅ Screenshot API succeeded");
+						console.log("Screenshot API succeeded:", {
+							bookmarkId: payload.bookmarkId,
+						});
 					} else {
 						screenshotError = `Screenshot API returned status ${screenshotResponse.status}`;
-						console.log(`⚠️ ${screenshotError}`);
+						console.warn("Screenshot API returned non-200 status:", {
+							bookmarkId: payload.bookmarkId,
+							status: screenshotResponse.status,
+						});
 					}
 				}
 			}
 
 			// Call remaining data API
-			console.log("📝 Calling remaining data API...");
+			console.log("Calling remaining data API:", {
+				bookmarkId: payload.bookmarkId,
+				url: payload.url,
+			});
 			const remainingApiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_REMAINING_DATA_API}`;
 
 			const [remainingApiError, remainingResponse] = await vet(() =>
@@ -237,21 +259,32 @@ export default async function handler(
 			);
 
 			if (remainingApiError) {
-				remainingDataError = formatErrorMessage(remainingApiError);
-				console.log("❌ Remaining data API failed:", remainingDataError);
+				console.error("Remaining data API failed:", {
+					bookmarkId: payload.bookmarkId,
+					error: remainingApiError,
+				});
+				remainingDataError = "Remaining data API failed";
 			} else if (remainingResponse.status === 200) {
-				console.log("✅ Remaining data API succeeded");
+				console.log("Remaining data API succeeded:", {
+					bookmarkId: payload.bookmarkId,
+				});
 				remainingDataSuccess = true;
 				// Only archive if both screenshot (when required) and remaining data succeeded
 				shouldArchive = screenshotSuccess && remainingDataSuccess;
 			} else {
 				remainingDataError = `Remaining data API returned status ${remainingResponse.status}`;
-				console.log(`❌ ${remainingDataError}`);
+				console.error("Remaining data API returned non-200 status:", {
+					bookmarkId: payload.bookmarkId,
+					status: remainingResponse.status,
+				});
 			}
 
 			// Only archive if remaining data API succeeded
 			if (shouldArchive) {
-				console.log("🗄️ Archiving message...");
+				console.log("Archiving message:", {
+					messageId: message.msg_id,
+					bookmarkId: payload.bookmarkId,
+				});
 				const { error: archiveError } = await supabase
 					.schema("pgmq_public")
 					.rpc("archive", {
@@ -260,7 +293,11 @@ export default async function handler(
 					});
 
 				if (archiveError) {
-					console.log("⚠️ Failed to archive message:", archiveError.message);
+					console.error("Failed to archive message:", {
+						messageId: message.msg_id,
+						bookmarkId: payload.bookmarkId,
+						error: archiveError.message,
+					});
 					Sentry.captureException(archiveError, {
 						tags: {
 							operation: "archive_queue_message",
@@ -284,7 +321,10 @@ export default async function handler(
 						error: `Processing succeeded but failed to archive: ${archiveError.message}`,
 					});
 				} else {
-					console.log("✅ Message successfully archived");
+					console.log("Message successfully archived:", {
+						messageId: message.msg_id,
+						bookmarkId: payload.bookmarkId,
+					});
 					archivedCount++;
 					results.push({
 						messageId: message.msg_id,
@@ -297,7 +337,12 @@ export default async function handler(
 				}
 			} else {
 				// Processing failed, don't archive
-				console.log("⚠️ Message will remain in queue for retry");
+				console.log("Message will remain in queue for retry:", {
+					messageId: message.msg_id,
+					bookmarkId: payload.bookmarkId,
+					screenshotSuccess,
+					remainingDataSuccess,
+				});
 
 				const combinedError = [
 					screenshotError && `Screenshot: ${screenshotError}`,
@@ -335,11 +380,11 @@ export default async function handler(
 			}
 		}
 
-		console.log(`\n========================================`);
-		console.log(
-			`✅ Processed: ${messages.length} | Archived: ${archivedCount} | Failed: ${failedCount}`,
-		);
-		console.log(`========================================\n`);
+		console.log("Queue processing completed:", {
+			processedCount: messages.length,
+			archivedCount,
+			failedCount,
+		});
 
 		// Return success response with details
 		response.status(200).json({

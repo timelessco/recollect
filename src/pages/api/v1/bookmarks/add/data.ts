@@ -11,15 +11,14 @@ import {
 	type SingleListData,
 } from "../../../../../types/apiTypes";
 import { getBookmarkBodySchema } from "../../../../../utils/api/bookmark/add";
-import { formatErrorMessage } from "../../../../../utils/api/bookmark/errorHandling";
 import {
 	ADD_BOOKMARK_MIN_DATA_API,
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../../../../../utils/constants";
 import {
-	apiCookieParser,
 	checkIfUrlAnImage,
+	getAxiosConfigWithAuth,
 } from "../../../../../utils/helpers";
 import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 import { vet } from "../../../../../utils/try";
@@ -40,22 +39,20 @@ type MinDataApiResponse = {
  */
 const callMinDataApi = async (
 	bodyData: z.infer<ReturnType<typeof getBookmarkBodySchema>>,
-	cookies: { [key: string]: string },
+	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	userId: string,
 ): Promise<MinDataApiResponse> => {
 	const apiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA_API}`;
 
 	const [minDataError, minDataResponse] = await vet(() =>
-		axios.post(apiUrl, bodyData, {
-			headers: {
-				Cookie: apiCookieParser(cookies),
-			},
-		}),
+		axios.post(apiUrl, bodyData, getAxiosConfigWithAuth(request)),
 	);
 
 	if (minDataError) {
-		const errorMessage = formatErrorMessage(minDataError);
-		console.error("Error calling min-data API:", errorMessage);
+		console.error("Error calling min-data API:", {
+			error: minDataError,
+			apiUrl,
+		});
 		Sentry.captureException(minDataError, {
 			tags: {
 				operation: "call_min_data_api",
@@ -69,7 +66,7 @@ const callMinDataApi = async (
 			status: 500,
 			data: {
 				error: "Failed to process bookmark",
-				message: errorMessage,
+				message: "Failed to process bookmark",
 				data: null,
 			},
 		};
@@ -126,7 +123,7 @@ const callMinDataApi = async (
  *       500:
  *         description: Internal server error
  */
-export default async function handler(
+export async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	response: NextApiResponse<ApiResponse>,
 ) {
@@ -162,19 +159,18 @@ export default async function handler(
 
 		// Validate request body
 		const schema = getBookmarkBodySchema();
-		let bodyData;
-		try {
-			bodyData = schema.parse(request.body);
-		} catch (parseError) {
-			const errorMessage = formatErrorMessage(parseError);
-			console.warn("Invalid request body:", { error: errorMessage });
+		const parseResult = schema.safeParse(request.body);
+		if (!parseResult.success) {
+			console.warn("Invalid request body:", parseResult.error);
 			response.status(400).send({
 				error: "Invalid request body",
-				message: errorMessage,
+				message: "Invalid request body",
 				data: null,
 			});
 			return;
 		}
+
+		const bodyData = parseResult.data;
 
 		// Entry point log
 		console.log("Add bookmark API called:", {
@@ -184,11 +180,7 @@ export default async function handler(
 		});
 
 		// Call min-data API and forward the response
-		const { status, data } = await callMinDataApi(
-			bodyData,
-			(request?.cookies as { [key: string]: string }) ?? {},
-			userId,
-		);
+		const { status, data } = await callMinDataApi(bodyData, request, userId);
 
 		// If min-data API failed, return error
 		if (status !== 200 || !data?.data?.length) {
@@ -200,7 +192,10 @@ export default async function handler(
 		// Get bookmark ID from response
 		const bookmarkData = data.data[0];
 		if (!bookmarkData?.id) {
-			console.error("No bookmark ID returned from min-data API");
+			console.error("No bookmark ID returned from min-data API:", {
+				userId,
+				url: bodyData.url,
+			});
 			response.status(500).json({
 				error: "Failed to create bookmark",
 				message: "No bookmark ID returned from min-data API",
@@ -240,7 +235,10 @@ export default async function handler(
 			});
 
 			if (queueResult.error) {
-				console.error("Failed to queue background job:", queueResult.error);
+				console.error("Failed to queue background job:", {
+					bookmarkId: bookmarkData.id,
+					error: queueResult.error,
+				});
 				Sentry.captureException(queueResult.error, {
 					tags: {
 						operation: "queue_background_job",
