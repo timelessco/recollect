@@ -1,5 +1,6 @@
 import { type NextApiResponse } from "next";
-import { type PostgrestError } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/nextjs";
+import { SupabaseClient, type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 
@@ -25,94 +26,234 @@ type Data = {
 	message: string | null;
 };
 
-// this api adds category to a bookmark
-// it updates category based on the user's access role for the category
+// Helper function to update category ID for the bookmark
+const updateCategoryIdLogic = async (
+	supabase: SupabaseClient,
+	bookmarkId: number,
+	categoryId: number | null,
+	updateAccess: boolean,
+	userId: string,
+	response: NextApiResponse<Data>,
+): Promise<void> => {
+	const { data, error }: { data: DataResponse; error: ErrorResponse } =
+		await supabase
+			.from(MAIN_TABLE_NAME)
+			.update({ category_id: updateAccess ? categoryId : null })
+			.match({ id: bookmarkId, user_id: userId })
+			.select();
+
+	if (error || isNull(data)) {
+		console.error("[add-category-to-bookmark] Error updating category:", {
+			error,
+			bookmarkId,
+			categoryId,
+			userId,
+		});
+		Sentry.captureException(error, {
+			tags: {
+				operation: "update_bookmark_category",
+				userId,
+			},
+			extra: {
+				bookmarkId,
+				categoryId,
+				updateAccess,
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: "Failed to update bookmark category",
+			message: null,
+		});
+		return;
+	}
+
+	console.log("[add-category-to-bookmark] Category updated successfully:", {
+		bookmarkId,
+		categoryId: updateAccess ? categoryId : null,
+	});
+	response.status(200).json({
+		data,
+		error: null,
+		message: updateAccess ? null : ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
+	});
+};
+
+/**
+ * Adds a category to a bookmark
+ * Updates category based on the user's access role for the category
+ */
 export default async function handler(
 	request: NextApiRequest<AddCategoryToBookmarkApiPayload>,
 	response: NextApiResponse<Data>,
-) {
-	const supabase = apiSupabaseClient(request, response);
+): Promise<void> {
+	try {
+		const supabase = apiSupabaseClient(request, response);
 
-	const {
-		update_access: updateAccess,
-		category_id: categoryId,
-		bookmark_id: bookmarkId,
-	} = request.body;
+		// Authentication check
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
+		const email = userData?.user?.email;
 
-	const userData = await supabase?.auth?.getUser();
-
-	const userId = userData?.data?.user?.id as string;
-	const email = userData?.data?.user?.email as string;
-
-	// this updates the category id for the bookmark
-	const updateCategoryIdLogic = async () => {
-		const { data, error }: { data: DataResponse; error: ErrorResponse } =
-			await supabase
-				.from(MAIN_TABLE_NAME)
-				.update({ category_id: updateAccess ? categoryId : null })
-				.match({ id: bookmarkId, user_id: userId })
-				.select();
-
-		if (!isNull(data)) {
-			response.status(200).json({
-				data,
-				error,
-				message: updateAccess ? null : ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
+		if (userError || !userId) {
+			console.warn("[add-category-to-bookmark] User authentication failed:", {
+				error: userError?.message,
 			});
-		} else {
-			response.status(500).json({ data, error, message: null });
-			throw new Error("ERROR: update category db error");
+			response.status(401).json({
+				data: null,
+				error: "Unauthorized",
+				message: null,
+			});
+			return;
 		}
-	};
 
-	// check if the bookmark for which the category id is being updated is created by the user
+		// Extract request data
+		const {
+			update_access: updateAccess,
+			category_id: categoryId,
+			bookmark_id: bookmarkId,
+		} = request.body;
 
-	const { data: bookmarkData, error: bookmarkError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select(`user_id`)
-		.eq("id", bookmarkId);
-
-	if (bookmarkError) {
-		response.status(500).json({
-			data: null,
-			error: "error fetching user bookmark data",
-			message: bookmarkError?.message,
+		// Entry point log
+		console.log("[add-category-to-bookmark] API called:", {
+			userId,
+			bookmarkId,
+			categoryId,
+			updateAccess,
 		});
-		throw new Error("ERROR: error fetching user bookmark data");
-	}
 
-	if (bookmarkData?.[0]?.user_id !== userId) {
-		// this means the bookmark has not been created by the user
-		response.status(500).json({
-			data: null,
-			error: "user is not the bookmark owner",
-			message: null,
-		});
-		throw new Error("ERROR: user is not the bookmark owner");
-	}
+		// Check if the bookmark was created by the user
+		const { data: bookmarkData, error: bookmarkError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select(`user_id`)
+			.eq("id", bookmarkId);
 
-	// get category data
-	const { data: categoryData, error: categoryError } = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.select(`user_id`)
-		.eq("id", categoryId);
+		if (bookmarkError) {
+			console.error(
+				"[add-category-to-bookmark] Error fetching bookmark data:",
+				{
+					error: bookmarkError,
+					bookmarkId,
+				},
+			);
+			Sentry.captureException(bookmarkError, {
+				tags: {
+					operation: "fetch_bookmark_data",
+					userId,
+				},
+				extra: {
+					bookmarkId,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: "Failed to fetch bookmark data",
+				message: bookmarkError?.message || null,
+			});
+			return;
+		}
 
-	if (categoryError) {
-		response.status(500).json({
-			data: null,
-			error: "error fetching user category data",
-			message: categoryError?.message,
-		});
-		throw new Error("ERROR: error fetching user category data");
-	}
+		if (isEmpty(bookmarkData)) {
+			console.warn("[add-category-to-bookmark] Bookmark not found:", {
+				bookmarkId,
+			});
+			response.status(404).json({
+				data: null,
+				error: "Bookmark not found",
+				message: null,
+			});
+			return;
+		}
 
-	const categoryUserId = categoryData?.[0]?.user_id;
+		// Verify bookmark ownership
+		if (bookmarkData?.[0]?.user_id !== userId) {
+			console.warn("[add-category-to-bookmark] User is not bookmark owner:", {
+				userId,
+				bookmarkId,
+				bookmarkOwnerId: bookmarkData?.[0]?.user_id,
+			});
+			response.status(403).json({
+				data: null,
+				error: "You are not the bookmark owner",
+				message: null,
+			});
+			return;
+		}
 
-	if (categoryUserId !== userId && categoryId !== 0) {
-		// the user is not the category owner, and category id should not be 0 if it is then user is moving bookmark to uncategorized
+		console.log("[add-category-to-bookmark] Bookmark ownership verified");
 
-		// we check if user is a collaborator if so check users edit access in the category
+		// Get category data
+		const { data: categoryData, error: categoryError } = await supabase
+			.from(CATEGORIES_TABLE_NAME)
+			.select(`user_id`)
+			.eq("id", categoryId);
 
+		if (categoryError) {
+			console.error(
+				"[add-category-to-bookmark] Error fetching category data:",
+				{
+					error: categoryError,
+					categoryId,
+				},
+			);
+			Sentry.captureException(categoryError, {
+				tags: {
+					operation: "fetch_category_data",
+					userId,
+				},
+				extra: {
+					categoryId,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: "Failed to fetch category data",
+				message: categoryError?.message || null,
+			});
+			return;
+		}
+
+		if (isEmpty(categoryData)) {
+			console.warn("[add-category-to-bookmark] Category not found:", {
+				categoryId,
+			});
+			response.status(404).json({
+				data: null,
+				error: "Category not found",
+				message: null,
+			});
+			return;
+		}
+
+		const categoryUserId = categoryData?.[0]?.user_id;
+
+		if (categoryUserId === userId && categoryId === 0) {
+			console.log(
+				"[add-category-to-bookmark] User is category owner or moving to uncategorized",
+			);
+			await updateCategoryIdLogic(
+				supabase,
+				bookmarkId,
+				categoryId,
+				updateAccess,
+				userId,
+				response,
+			);
+			return;
+		}
+
+		// Check if user is the category owner or if it's uncategorized (0)
+		// if (categoryUserId !== userId && categoryId !== 0) {
+		console.log(
+			"[add-category-to-bookmark] User is not category owner, checking collaboration access:",
+			{
+				userId,
+				categoryId,
+				categoryOwnerId: categoryUserId,
+			},
+		);
+
+		// Check if user is a collaborator with edit access
 		const { data: sharedCategoryData, error: sharedCategoryError } =
 			await supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
@@ -121,39 +262,87 @@ export default async function handler(
 				.eq("email", email);
 
 		if (sharedCategoryError) {
+			console.error(
+				"[add-category-to-bookmark] Error fetching shared category data:",
+				{
+					error: sharedCategoryError,
+					categoryId,
+					email,
+				},
+			);
+			Sentry.captureException(sharedCategoryError, {
+				tags: {
+					operation: "fetch_shared_category_data",
+					userId,
+				},
+				extra: {
+					categoryId,
+					email,
+				},
+			});
 			response.status(500).json({
 				data: null,
-				error: "error fetching shared category data",
-				message: sharedCategoryError?.message,
+				error: "Failed to fetch collaboration data",
+				message: sharedCategoryError?.message || null,
 			});
-			throw new Error("ERROR: error fetching shared category data");
+			return;
 		}
 
-		if (!isEmpty(sharedCategoryData)) {
-			// user is a collab for the category
-			if (sharedCategoryData?.[0]?.edit_access) {
-				// user has edit access
-				await updateCategoryIdLogic();
-			} else {
-				// user does not have edit access
-				response.status(500).json({
-					data: null,
-					error: "user does not have edit access",
-					message: null,
-				});
-				throw new Error("ERROR: user does not have edit access");
-			}
-		} else {
-			// user is not a collab for the category
-			response.status(500).json({
+		if (isEmpty(sharedCategoryData)) {
+			console.warn(
+				"[add-category-to-bookmark] User is not owner or collaborator:",
+				{
+					userId,
+					categoryId,
+				},
+			);
+			response.status(403).json({
 				data: null,
-				error: "user is not the owner of category",
+				error: "You are not the owner of this category",
 				message: null,
 			});
-			throw new Error("ERROR: user is not the owner of category");
+			return;
 		}
-	}
 
-	// only if user is owner , or user has edit access they can update the bookmark category in the table, or else bookmark will be added with category null
-	await updateCategoryIdLogic();
+		if (!sharedCategoryData[0]?.edit_access) {
+			console.warn(
+				"[add-category-to-bookmark] User does not have edit access:",
+				{
+					userId,
+					categoryId,
+					email,
+				},
+			);
+			response.status(403).json({
+				data: null,
+				error: "You do not have edit access to this category",
+				message: null,
+			});
+			return;
+		}
+
+		console.log(
+			"[add-category-to-bookmark] User has edit access as collaborator",
+		);
+		await updateCategoryIdLogic(
+			supabase,
+			bookmarkId,
+			categoryId,
+			updateAccess,
+			userId,
+			response,
+		);
+	} catch (error) {
+		console.error("[add-category-to-bookmark] Unexpected error:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "add_category_to_bookmark_unexpected",
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: "An unexpected error occurred",
+			message: null,
+		});
+	}
 }
