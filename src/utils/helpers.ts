@@ -596,7 +596,7 @@ export const handleBulkBookmarkDelete = ({
 
 	if (!deleteForever) {
 		for (const item of bookmarkIds) {
-			const bookmarkId = Number.parseInt(item.toString(), 10);
+			const bookmarkId = item;
 			const delBookmarksData = find(
 				currentBookmarksData,
 				(delItem) => delItem?.id === bookmarkId,
@@ -608,8 +608,7 @@ export const handleBulkBookmarkDelete = ({
 						data: delBookmarksData,
 						isTrash,
 					}),
-					// eslint-disable-next-line promise/prefer-await-to-then
-				).catch(() => {});
+				);
 			} else {
 				errorToast("Cannot delete other users uploads");
 			}
