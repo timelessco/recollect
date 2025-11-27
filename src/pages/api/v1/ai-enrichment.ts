@@ -38,10 +38,9 @@ export default async function handler(
 		const parseResult = requestBodySchema.safeParse(request.body);
 
 		if (!parseResult.success) {
-			console.error("Validation error:", parseResult.error.issues);
+			console.warn("Validation error:", parseResult.error.issues);
 			response.status(400).json({
 				error: "Validation failed",
-				details: parseResult.error.issues,
 			});
 			return;
 		}
