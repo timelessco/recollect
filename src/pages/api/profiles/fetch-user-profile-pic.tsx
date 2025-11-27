@@ -31,9 +31,6 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ): Promise<void> {
 	try {
-		// Initialize Supabase client
-		const supabase = apiSupabaseClient(request, response);
-
 		// Get email from query params
 		const { email } = request.query;
 
@@ -58,6 +55,27 @@ export default async function handler(
 			return;
 		}
 
+		// Initialize Supabase client
+		const supabase = apiSupabaseClient(request, response);
+
+		// Get authenticated user
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const userId = userData?.user?.id;
+
+		// Check for auth errors and userId
+		if (userError || !userId) {
+			console.warn("[fetch-user-profile-pic] User authentication failed:", {
+				error: userError?.message,
+			});
+			response.status(401).json({
+				data: null,
+				error: {
+					message: "Unauthorized: Please log in to fetch your profile picture",
+				},
+			});
+			return;
+		}
+
 		// Fetch user profile picture from database
 		const { data, error } = (await supabase
 			.from(PROFILES)
@@ -76,8 +94,7 @@ export default async function handler(
 				operation: "select",
 			});
 			Sentry.captureException(error, {
-				tags: { operation: "fetch_profile_pic" },
-				extra: { email },
+				tags: { operation: "fetch_profile_pic", userId },
 			});
 
 			response.status(500).json({
