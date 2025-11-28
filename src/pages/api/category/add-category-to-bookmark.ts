@@ -5,7 +5,7 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty } from "lodash";
 
 import {
 	type AddCategoryToBookmarkApiPayload,
@@ -21,12 +21,11 @@ import {
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = SingleListData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = PostgrestError | VerifyErrors | { message: string } | null;
 
 type Data = {
 	data: DataResponse;
 	error: ErrorResponse;
-	message: string | null;
 };
 
 // Helper function to update category ID for the bookmark
@@ -45,7 +44,7 @@ const updateCategoryIdLogic = async (
 			.match({ id: bookmarkId, user_id: userId })
 			.select();
 
-	if (error || isNull(data)) {
+	if (error) {
 		console.error("[add-category-to-bookmark] Error updating category:", {
 			error,
 			bookmarkId,
@@ -65,8 +64,20 @@ const updateCategoryIdLogic = async (
 		});
 		response.status(500).json({
 			data: null,
-			error: "Failed to update bookmark category",
-			message: null,
+			error: { message: "Failed to update bookmark category" },
+		});
+		return;
+	}
+
+	if (isEmpty(data)) {
+		console.warn("[add-category-to-bookmark] No data found:", {
+			bookmarkId,
+			categoryId,
+			userId,
+		});
+		response.status(404).json({
+			data: null,
+			error: { message: "No data found" },
 		});
 		return;
 	}
@@ -78,7 +89,6 @@ const updateCategoryIdLogic = async (
 	response.status(200).json({
 		data,
 		error: null,
-		message: updateAccess ? null : ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
 	});
 };
 
@@ -104,8 +114,7 @@ export default async function handler(
 			});
 			response.status(401).json({
 				data: null,
-				error: "Unauthorized",
-				message: null,
+				error: { message: "Unauthorized" },
 			});
 			return;
 		}
@@ -150,8 +159,7 @@ export default async function handler(
 			});
 			response.status(500).json({
 				data: null,
-				error: "Failed to fetch bookmark data",
-				message: bookmarkError?.message || null,
+				error: { message: "Failed to fetch bookmark data" },
 			});
 			return;
 		}
@@ -162,8 +170,7 @@ export default async function handler(
 			});
 			response.status(404).json({
 				data: null,
-				error: "Bookmark not found",
-				message: null,
+				error: { message: "Bookmark not found" },
 			});
 			return;
 		}
@@ -177,8 +184,7 @@ export default async function handler(
 			});
 			response.status(403).json({
 				data: null,
-				error: "You are not the bookmark owner",
-				message: null,
+				error: { message: "You are not the bookmark owner" },
 			});
 			return;
 		}
@@ -210,8 +216,7 @@ export default async function handler(
 			});
 			response.status(500).json({
 				data: null,
-				error: "Failed to fetch category data",
-				message: categoryError?.message || null,
+				error: { message: "Failed to fetch category data" },
 			});
 			return;
 		}
@@ -222,8 +227,7 @@ export default async function handler(
 			});
 			response.status(404).json({
 				data: null,
-				error: "Category not found",
-				message: null,
+				error: { message: "Category not found" },
 			});
 			return;
 		}
@@ -284,8 +288,7 @@ export default async function handler(
 			});
 			response.status(500).json({
 				data: null,
-				error: "Failed to fetch collaboration data",
-				message: sharedCategoryError?.message || null,
+				error: { message: "Failed to fetch collaboration data" },
 			});
 			return;
 		}
@@ -300,8 +303,7 @@ export default async function handler(
 			);
 			response.status(403).json({
 				data: null,
-				error: "You are not the owner of this category",
-				message: null,
+				error: { message: "You are not the owner of this category" },
 			});
 			return;
 		}
@@ -317,8 +319,7 @@ export default async function handler(
 			);
 			response.status(403).json({
 				data: null,
-				error: "You do not have edit access to this category",
-				message: null,
+				error: { message: "You do not have edit access to this category" },
 			});
 			return;
 		}
@@ -343,8 +344,7 @@ export default async function handler(
 		});
 		response.status(500).json({
 			data: null,
-			error: "An unexpected error occurred",
-			message: null,
+			error: { message: "An unexpected error occurred" },
 		});
 	}
 }
