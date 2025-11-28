@@ -242,6 +242,7 @@ export const CustomLightBox = ({
 						className="group mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
 						onClick={handleClose}
 						type="button"
+						aria-label="Close lightbox"
 					>
 						<LightboxCloseIcon className="h-5 w-5" />
 					</button>
@@ -274,10 +275,17 @@ export const CustomLightBox = ({
 					key="right-section"
 				>
 					<button
+						aria-label={
+							lightboxShowSidepane ? "Hide side panel" : "Show side panel"
+						}
 						onClick={() => {
 							const newState = !lightboxShowSidepane;
 							setLightboxShowSidepane(newState);
-							localStorage.setItem("lightboxSidepaneOpen", String(newState));
+							try {
+								localStorage.setItem("lightboxSidepaneOpen", String(newState));
+							} catch {
+								// Silently fail if localStorage is unavailable
+							}
 						}}
 						type="button"
 					>

@@ -272,7 +272,7 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 
 	return (
 		<Image
-			alt="img-error"
+			alt="Loading placeholder"
 			className="h-[50px] w-[50px] rounded-lg object-cover"
 			loader={(source) => source.src}
 			src={loaderGif}
