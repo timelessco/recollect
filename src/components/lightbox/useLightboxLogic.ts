@@ -111,9 +111,9 @@ export const useLightboxNavigation = ({
 
 	/**
 	 * Handle view changes
-	 * Uses a ref to ensure the callback is stable but access latest values
+	 * We define the logic here to capture the latest state (closures)
 	 */
-	const onViewRef = useRef((index: number) => {
+	const handleViewChange = (index: number) => {
 		if (!isPage || !bookmarks?.[index]) {
 			return;
 		}
@@ -190,101 +190,21 @@ export const useLightboxNavigation = ({
 			}`,
 			{ shallow: true },
 		);
-	});
+	};
 
-	// Update ref when dependencies change
+	/**
+	 * Create a stable ref that always holds the latest version of the handler.
+	 * We initialize it with the current handler so it works on first render.
+	 */
+	const onViewRef = useRef(handleViewChange);
+
+	/**
+	 * Update the ref whenever the handler's dependencies change.
+	 * This ensures onViewRef.current always points to a function with fresh closures.
+	 */
 	useEffect(() => {
-		onViewRef.current = (index: number) => {
-			if (!isPage || !bookmarks?.[index]) {
-				return;
-			}
-
-			// Only update if index actually changed
-			if (index !== activeIndex) {
-				setActiveIndex(index);
-			}
-
-			// Invalidate queries when slide changes
-			if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
-				const currentBookmark = bookmarks?.[index];
-				if (currentBookmark) {
-					const categoryId = currentBookmark.category_id;
-
-					// Create a function to handle the async operations
-					const invalidateQueries = async () => {
-						try {
-							if (categoryId) {
-								await queryClient.invalidateQueries({
-									queryKey: [BOOKMARKS_KEY, session?.user?.id, categoryId],
-								});
-							}
-
-							if (searchText) {
-								const categoryData = queryClient.getQueryData([
-									CATEGORIES_KEY,
-									session?.user?.id,
-								]) as {
-									data: CategoriesData[];
-									error: PostgrestError;
-								};
-
-								await queryClient.invalidateQueries({
-									queryKey: [
-										BOOKMARKS_KEY,
-										session?.user?.id,
-										searchSlugKey(categoryData) ?? CATEGORY_ID,
-										searchText,
-									],
-								});
-							}
-
-							await Promise.all([
-								queryClient.invalidateQueries({
-									queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
-								}),
-							]);
-
-							lastInvalidatedIndex.current = index;
-						} catch (error) {
-							console.error("Error invalidating queries:", error);
-						} finally {
-							setIsCollectionChanged(false);
-						}
-					};
-
-					// Call the async function without awaiting
-					void invalidateQueries();
-				}
-			}
-
-			// Update browser URL
-			void router?.push(
-				{
-					pathname: `${CATEGORY_ID_PATHNAME}`,
-					query: {
-						category_id: getCategorySlugFromRouter(router),
-						id: bookmarks?.[index]?.id,
-					},
-				},
-				`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
-					bookmarks?.[index]?.id
-				}`,
-				{ shallow: true },
-			);
-		};
-	}, [
-		bookmarks,
-		activeIndex,
-		isPage,
-		session?.user?.id,
-		router,
-		searchText,
-		isCollectionChanged,
-		setIsCollectionChanged,
-		queryClient,
-		CATEGORY_ID,
-		setActiveIndex,
-	]);
+		onViewRef.current = handleViewChange;
+	});
 
 	return onViewRef;
 };
