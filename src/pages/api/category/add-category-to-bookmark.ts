@@ -13,7 +13,6 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
-	ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
