@@ -43,7 +43,7 @@ END;$function$
 --    - URL: 60%
 --    - Title: 50%
 --    - Description: 30%
---    - OCR metadata: 15%
+--    - OCR metadata: 10%
 --    - Image caption: 15%
 -- 3. Set trigram threshold to 0.6 for better fuzzy matching
 -- ============================================================================
