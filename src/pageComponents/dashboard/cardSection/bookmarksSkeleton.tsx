@@ -1,4 +1,4 @@
-import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 
