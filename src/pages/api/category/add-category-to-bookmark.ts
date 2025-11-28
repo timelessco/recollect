@@ -227,7 +227,7 @@ export default async function handler(
 
 		const categoryUserId = categoryData?.[0]?.user_id;
 
-		if (categoryUserId === userId && categoryId === 0) {
+		if (categoryUserId === userId || categoryId === 0) {
 			console.log(
 				"[add-category-to-bookmark] User is category owner or moving to uncategorized",
 			);
