@@ -26,7 +26,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import useGetViewValue from "../../../hooks/useGetViewValue";
-import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
 	useMiscellaneousStore,
