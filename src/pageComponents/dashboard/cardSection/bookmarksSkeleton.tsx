@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
