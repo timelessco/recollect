@@ -9,13 +9,15 @@ set check_function_bodies = off;
 CREATE OR REPLACE FUNCTION public.search_bookmarks_debugging(search_text character varying)
  RETURNS TABLE(id bigint, user_id uuid, inserted_at timestamp with time zone, title extensions.citext, url text, description text, ogimage text, screenshot text, category_id bigint, trash boolean, type text, meta_data jsonb, sort_index text)
  LANGUAGE plpgsql
- SET search_path TO 'public', 'extensions'
+ STABLE
+ SECURITY INVOKER
+ SET search_path = ''
 AS $function$BEGIN
-    PERFORM set_limit(0.6);
+    PERFORM public.set_limit(0.6);
 
     RETURN QUERY
     SELECT b.*
-    FROM everything b
+    FROM public.everything b
     WHERE
         (search_text % ANY(STRING_TO_ARRAY(b.title || b.description, ' ')))
         OR b.url ILIKE '%' || search_text || '%'
@@ -26,13 +28,13 @@ AS $function$BEGIN
               AND value ILIKE '%' || search_text || '%'
         )
     ORDER BY
-        (
-            similarity(b.url, search_text) * 0.6 +
-            similarity(b.title, search_text) * 0.5 +
-            similarity(b.description, search_text) * 0.3 +
-            similarity(COALESCE(b.meta_data->>'ocr',''), search_text) * 0.1 +
-            similarity(COALESCE(b.meta_data->>'img_caption',''), search_text) * 0.15
-        ) DESC;
+    (
+        similarity(b.url, search_text) * 0.36 +
+        similarity(b.title, search_text) * 0.30 +
+        similarity(b.description, search_text) * 0.18 +
+        similarity(COALESCE(b.meta_data->>'ocr',''), search_text) * 0.06 +
+        similarity(COALESCE(b.meta_data->>'img_caption',''), search_text) * 0.10
+    ) DESC;
 END;$function$
 ;
 
@@ -40,11 +42,11 @@ END;$function$
 -- CHANGES MADE:
 -- 1. Added URL search: OR b.url ILIKE '%' || search_text || '%'
 -- 2. Added similarity-based ranking with weighted scoring:
---    - URL: 60%
---    - Title: 50%
---    - Description: 30%
---    - OCR metadata: 10%
---    - Image caption: 15%
+--    - URL: 36%
+--    - Title: 30%
+--    - Description: 18%
+--    - OCR metadata: 6%
+--    - Image caption: 10%
 -- 3. Set trigram threshold to 0.6 for better fuzzy matching
 -- ============================================================================
 
