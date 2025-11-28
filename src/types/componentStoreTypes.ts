@@ -1,5 +1,4 @@
 import { type User } from "@supabase/supabase-js";
-import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
 import { type SingleListData } from "./apiTypes";
 
@@ -95,10 +94,3 @@ export type BookmarksSortByTypes =
 //   sortBy: BookmarksSortByTypes;
 //   setSortBy: (value: BookmarksSortByTypes) => void;
 // }
-
-export type CustomSlide = BaseSlide & {
-	data?: {
-		type?: string;
-	};
-	placeholder?: string;
-};

@@ -1,3 +1,5 @@
+import { type Slide as BaseSlide } from "yet-another-react-lightbox";
+
 import { YOUTU_BE, YOUTUBE_COM } from "../../utils/constants";
 
 /**
@@ -56,4 +58,11 @@ export const isIframeEnabled = (): boolean => {
 	}
 
 	return true;
+};
+
+export type CustomSlide = BaseSlide & {
+	data?: {
+		type?: string;
+	};
+	placeholder?: string;
 };

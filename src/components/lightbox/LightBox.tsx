@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMediaQuery } from "react-responsive";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
@@ -23,10 +24,8 @@ import {
 	WebEmbedSlide,
 	YouTubeSlide,
 } from "./LightboxRenderers";
-import { isYouTubeVideo } from "./LightboxUtils";
+import { isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
 import { useLightboxNavigation, useLightboxSlides } from "./useLightboxLogic";
-import useIsMobileView from "@/hooks/useIsMobileView";
-import { type CustomSlide } from "@/types/componentStoreTypes";
 
 /**
  * CustomLightBox Component
@@ -65,7 +64,7 @@ export const CustomLightBox = ({
 
 	const zoomRef = useRef<ZoomRef>(null);
 	const [zoomLevel, setZoomLevel] = useState(1);
-	const { isLessthan768: isMobile } = useIsMobileView();
+	const isMobile = useMediaQuery({ maxWidth: 768 });
 
 	// Restore side panel state from local storage
 	useEffect(() => {
