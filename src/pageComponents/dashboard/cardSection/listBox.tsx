@@ -1,5 +1,4 @@
-import { type onBulkBookmarkDeleteType } from ".";
-import { useEffect, useRef, type Key } from "react";
+import { useCallback, useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -49,13 +48,21 @@ import {
 } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
+import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 
 import Option from "./option";
+import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
+import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
+import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
+import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import {
 	Checkbox,
 	checkboxBoxStyles,
 } from "@/components/ui/recollect/checkbox";
+import useGetFlattendPaginationBookmarkData from "@/hooks/useGetFlattendPaginationBookmarkData";
 import { CheckIcon } from "@/icons/check-icon";
+import { mutationApiCall } from "@/utils/apiHelpers";
+import { errorToast } from "@/utils/toastMessages";
 
 type ListBoxDropTypes = ListProps<object> & {
 	bookmarksColumns: number[];
@@ -63,7 +70,6 @@ type ListBoxDropTypes = ListProps<object> & {
 	cardTypeCondition: unknown;
 	getItems?: (keys: Set<Key>) => DragItem[];
 	isPublicPage?: boolean;
-	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onItemDrop?: (event: any) => void;
@@ -76,9 +82,15 @@ const ListBox = (props: ListBoxDropTypes) => {
 		cardTypeCondition,
 		bookmarksList,
 		onCategoryChange,
-		onBulkBookmarkDelete,
 		isPublicPage,
 	} = props;
+
+	const deleteBookmarkId = useMiscellaneousStore(
+		(state) => state.deleteBookmarkId,
+	);
+	const setDeleteBookmarkId = useMiscellaneousStore(
+		(state) => state.setDeleteBookmarkId,
+	);
 
 	const setIsCardDragging = useMiscellaneousStore(
 		(store) => store.setIsCardDragging,
@@ -86,6 +98,18 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((storeState) => storeState.session);
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+
+	// Hooks for data fetching
+	const { flattenedSearchData } = useSearchBookmarks();
+	const { flattendPaginationBookmarkData } =
+		useGetFlattendPaginationBookmarkData();
+	const { moveBookmarkToTrashOptimisticMutation } =
+		useMoveBookmarkToTrashOptimisticMutation();
+	const { deleteBookmarkOptismicMutation } =
+		useDeleteBookmarksOptimisticMutation();
+	// Determine if we're currently searching
+	const isSearching = !isEmpty(searchText);
 
 	const categoryData = queryClient.getQueryData([
 		CATEGORIES_KEY,
@@ -241,6 +265,40 @@ const ListBox = (props: ListBoxDropTypes) => {
 	});
 
 	const isTrashPage = categorySlug === TRASH_URL;
+
+	// Bulk delete handler
+	const onBulkBookmarkDelete = useCallback(
+		(bookmarkIds: number[], deleteForever: boolean, isTrash: boolean) => {
+			handleBulkBookmarkDelete({
+				bookmarkIds,
+				deleteForever,
+				isTrash,
+				isSearching,
+				flattenedSearchData,
+				flattendPaginationBookmarkData,
+				deleteBookmarkId,
+				setDeleteBookmarkId,
+				sessionUserId: session?.user?.id,
+				moveBookmarkToTrashOptimisticMutation,
+				deleteBookmarkOptismicMutation,
+				clearSelection: () => state.selectionManager.clearSelection(),
+				mutationApiCall,
+				errorToast,
+			});
+		},
+		[
+			deleteBookmarkId,
+			deleteBookmarkOptismicMutation,
+			flattendPaginationBookmarkData,
+			flattenedSearchData,
+			isSearching,
+			moveBookmarkToTrashOptimisticMutation,
+			session?.user?.id,
+			setDeleteBookmarkId,
+			state,
+		],
+	);
+
 	const renderOption = (virtualIndex: number) => {
 		const item = [...state.collection][virtualIndex];
 
@@ -406,24 +464,48 @@ const ListBox = (props: ListBoxDropTypes) => {
 						</Button> */}
 					</div>
 					<div className="flex items-center">
-						<div
-							className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
-							onClick={() => {
-								onBulkBookmarkDelete(
-									Array.from(
-										state.selectionManager.selectedKeys.keys(),
-									) as number[],
-									true,
-									Boolean(isTrashPage),
-								);
-								state.selectionManager.clearSelection();
-							}}
-							onKeyDown={() => {}}
-							role="button"
-							tabIndex={0}
-						>
-							{isTrashPage ? "Delete Forever" : "Delete"}
-						</div>
+						{!isTrashPage ? (
+							<div
+								className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
+								onClick={() => {
+									onBulkBookmarkDelete(
+										Array.from(
+											state.selectionManager.selectedKeys.keys(),
+										) as number[],
+										true,
+										Boolean(isTrashPage),
+									);
+									state.selectionManager.clearSelection();
+								}}
+								onKeyDown={() => {}}
+								role="button"
+								tabIndex={0}
+							>
+								Delete
+							</div>
+						) : (
+							<ClearTrashDropdown
+								isBottomBar
+								label="Delete Bookmarks"
+								onClearTrash={() => {
+									onBulkBookmarkDelete(
+										Array.from(
+											state.selectionManager.selectedKeys.keys(),
+										) as number[],
+										true,
+										true,
+									);
+								}}
+								isClearingTrash={
+									Array.from(state.selectionManager.selectedKeys.keys()).some(
+										(key) =>
+											deleteBookmarkId?.includes(
+												Number.parseInt(key.toString(), 10),
+											),
+									) ?? false
+								}
+							/>
+						)}
 						{isTrashPage && (
 							<div
 								className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"

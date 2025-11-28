@@ -3,12 +3,8 @@ import { type User } from "@supabase/supabase-js";
 import { type SingleListData } from "./apiTypes";
 
 export type ModalStoreState = {
-	showClearTrashWarningModal: boolean;
-	showDeleteBookmarkWarningModal: boolean;
 	showSettingsModal: boolean;
 	showVideoModal: boolean;
-	toggleShowClearTrashWarningModal: () => void;
-	toggleShowDeleteBookmarkWarningModal: () => void;
 	toggleShowSettingsModal: () => void;
 	toggleShowVideoModal: () => void;
 };
@@ -35,6 +31,7 @@ export type MiscellaneousStoreState = {
 		| "main"
 		| "import";
 	currentSliderDropdownSlide: string | null;
+	deleteBookmarkId: number[] | undefined;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;
 	lightboxId: string | null;
@@ -49,6 +46,7 @@ export type MiscellaneousStoreState = {
 		value: MiscellaneousStoreState["currentSettingsPage"],
 	) => void;
 	setCurrentSliderDropdownSlide: (value: string | null) => void;
+	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setIsCollectionChanged: (value: boolean) => void;
 	setLightboxId: (id: string | null) => void;
