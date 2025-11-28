@@ -85,10 +85,6 @@ export const PreviewLightBox = ({
 
 	// Handle close animation and cleanup
 	const handleClose = useCallback(() => {
-		if (!open) {
-			return undefined;
-		}
-
 		setOpen(false);
 
 		// Update URL without page reload
@@ -106,9 +102,7 @@ export const PreviewLightBox = ({
 
 		// Reset state after animation
 		setActiveIndex(-1);
-
-		return () => {};
-	}, [open, setOpen, router]);
+	}, [setOpen, router]);
 
 	// Only render CustomLightBox when activeIndex is valid
 	if (!open || activeIndex === -1) {
