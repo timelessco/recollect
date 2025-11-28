@@ -25,6 +25,7 @@ import {
 } from "./LightboxRenderers";
 import { isYouTubeVideo } from "./LightboxUtils";
 import { useLightboxNavigation, useLightboxSlides } from "./useLightboxLogic";
+import useIsMobileView from "@/hooks/useIsMobileView";
 import { type CustomSlide } from "@/types/componentStoreTypes";
 
 /**
@@ -64,9 +65,7 @@ export const CustomLightBox = ({
 
 	const zoomRef = useRef<ZoomRef>(null);
 	const [zoomLevel, setZoomLevel] = useState(1);
-	const isMobile =
-		typeof window !== "undefined" &&
-		window.matchMedia("(max-width: 768px)").matches;
+	const { isLessthan768: isMobile } = useIsMobileView();
 
 	// Restore side panel state from local storage
 	useEffect(() => {
