@@ -24,8 +24,11 @@ import {
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 
-import { isIframeEnabled, isYouTubeVideo } from "./LightboxUtils";
-import { type CustomSlide } from "@/types/componentStoreTypes";
+import {
+	isIframeEnabled,
+	isYouTubeVideo,
+	type CustomSlide,
+} from "./LightboxUtils";
 
 /**
  * Hook to transform bookmarks into lightbox slides
