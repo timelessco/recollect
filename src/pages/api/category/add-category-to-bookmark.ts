@@ -1,6 +1,9 @@
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import { SupabaseClient, type PostgrestError } from "@supabase/supabase-js";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 
@@ -227,6 +230,7 @@ export default async function handler(
 
 		const categoryUserId = categoryData?.[0]?.user_id;
 
+		// Check if user is the category owner or if it's uncategorized (0)
 		if (categoryUserId === userId || categoryId === 0) {
 			console.log(
 				"[add-category-to-bookmark] User is category owner or moving to uncategorized",
@@ -242,8 +246,6 @@ export default async function handler(
 			return;
 		}
 
-		// Check if user is the category owner or if it's uncategorized (0)
-		// if (categoryUserId !== userId && categoryId !== 0) {
 		console.log(
 			"[add-category-to-bookmark] User is not category owner, checking collaboration access:",
 			{
