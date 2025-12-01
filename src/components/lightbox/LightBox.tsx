@@ -38,6 +38,7 @@ import { VideoPlayer } from "../VideoPlayer";
 
 import { PullEffect } from "./CloseOnSwipeDown";
 import MetaButtonPlugin from "./LightBoxPlugin";
+import { highlightSearch } from "./LightboxUtils";
 import { type CustomSlide } from "./previewLightBox";
 
 /**
@@ -665,7 +666,10 @@ export const CustomLightBox = ({
 							target="_blank"
 						>
 							<span className="truncate text-[14px] leading-[115%] font-normal tracking-normal text-gray-alpha-600">
-								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
+								{highlightSearch(
+									bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, ""),
+									searchText,
+								)}
 							</span>
 							<figure className="h-4 w-4 shrink-0 text-gray-alpha-600">
 								<LightboxExternalLink />
