@@ -3,13 +3,16 @@ import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
-import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
-} from "../../store/componentStore";
-import { useIframeStore } from "../../store/iframeStore";
-import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
+} from "../../../store/componentStore";
+import { useIframeStore } from "../../../store/iframeStore";
+import {
+	type CategoriesData,
+	type SingleListData,
+} from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -21,11 +24,10 @@ import {
 	PREVIEW_PATH,
 	tweetType,
 	VIDEO_TYPE_PREFIX,
-} from "../../utils/constants";
-import { searchSlugKey } from "../../utils/helpers";
-import { getCategorySlugFromRouter } from "../../utils/url";
-
-import { isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
+} from "../../../utils/constants";
+import { searchSlugKey } from "../../../utils/helpers";
+import { getCategorySlugFromRouter } from "../../../utils/url";
+import { isYouTubeVideo, type CustomSlide } from "../LightboxUtils";
 
 /**
  * Hook to transform bookmarks into lightbox slides

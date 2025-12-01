@@ -16,6 +16,10 @@ import {
 } from "../../utils/constants";
 
 import { PullEffect } from "./CloseOnSwipeDown";
+import {
+	useLightboxNavigation,
+	useLightboxSlides,
+} from "./hooks/useLightboxLogic";
 import MetaButtonPlugin from "./LightBoxPlugin";
 import {
 	ImageSlide,
@@ -25,7 +29,6 @@ import {
 	YouTubeSlide,
 } from "./LightboxRenderers";
 import { isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
-import { useLightboxNavigation, useLightboxSlides } from "./useLightboxLogic";
 
 /**
  * CustomLightBox Component

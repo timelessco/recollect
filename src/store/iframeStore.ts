@@ -23,7 +23,12 @@ type StoreWithPersist = Mutate<
 	[["zustand/persist", unknown]]
 >;
 
-export const withStorageDOMEvents = (store: StoreWithPersist) => {
+/**
+ * Syncs the store across different tabs/windows by listening to the "storage" event.
+ * When the local storage value changes (e.g. from another tab), this function
+ * triggers a rehydration of the store to ensure state consistency.
+ */
+const withStorageDOMEvents = (store: StoreWithPersist) => {
 	if (!isBrowser) {
 		return () => {};
 	}
