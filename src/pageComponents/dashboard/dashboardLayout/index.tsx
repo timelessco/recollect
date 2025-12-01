@@ -13,7 +13,7 @@ import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookm
 import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 import {
 	type BookmarksCountTypes,
