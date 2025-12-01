@@ -30,19 +30,16 @@ export const processImageQueue = async (
 				n: batchSize,
 			});
 
-		if (messages.length === 0) {
-			return;
-		}
-
 		if (messageError) {
 			console.error(
 				"[process-image-queue] Error fetching messages from queue:",
 				messageError,
 			);
-			return;
+			throw messageError;
 		}
 
 		if (!messages?.length) {
+			console.log("[process-image-queue] No messages found in queue");
 			return;
 		}
 
