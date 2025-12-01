@@ -8,7 +8,11 @@ import {
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
-import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
+import {
+	BOOKMARKS_COUNT_KEY,
+	BOOKMARKS_KEY,
+	TRASH_URL,
+} from "../../../utils/constants";
 import { moveBookmarkToTrash } from "../../supabaseCrudHelpers";
 
 // move bookmark to trash optimistically
@@ -121,7 +125,7 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 			if (debouncedSearch && context?.previousSearchData) {
 				queryClient.setQueryData(
 					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-					context.previousSearchData,
+					context?.previousSearchData,
 				);
 			}
 		},
@@ -132,6 +136,9 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 			});
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id, TRASH_URL],
 			});
 		},
 	});

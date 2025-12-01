@@ -53,7 +53,6 @@ export const handleBulkBookmarkDelete = ({
 	const currentBookmarksData = isSearching
 		? flattenedSearchData
 		: flattendPaginationBookmarkData;
-
 	if (!deleteForever) {
 		const mutations = [];
 		for (const item of bookmarkIds) {
@@ -62,7 +61,6 @@ export const handleBulkBookmarkDelete = ({
 				currentBookmarksData,
 				(delItem) => delItem?.id === bookmarkId,
 			) as SingleListData;
-
 			if (delBookmarksData && delBookmarksData.user_id?.id === sessionUserId) {
 				mutations.push(
 					mutationApiCall(
