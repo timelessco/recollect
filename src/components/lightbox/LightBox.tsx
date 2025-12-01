@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMediaQuery } from "react-responsive";
+import { useMediaQuery } from "@react-hookz/web";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
@@ -67,7 +67,7 @@ export const CustomLightBox = ({
 
 	const zoomRef = useRef<ZoomRef>(null);
 	const [zoomLevel, setZoomLevel] = useState(1);
-	const isMobile = useMediaQuery({ maxWidth: 768 });
+	const isMobile = useMediaQuery("(max-width: 768px)");
 
 	// Restore side panel state from local storage
 	useEffect(() => {
