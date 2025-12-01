@@ -185,6 +185,9 @@ export default async function handler(
 			url,
 		);
 
+		console.log("ogImageNormalisedUrl", ogImageNormalisedUrl);
+		console.log("currentData?.ogImage", currentData?.ogImage);
+
 		try {
 			// 10 second timeout for image download
 			const image = await axios.get(
@@ -215,6 +218,9 @@ export default async function handler(
 			Sentry.captureException(`Error uploading scrapped image to R2: ${error}`);
 		}
 	}
+
+	console.log("uploadedCoverImageUrl", uploadedCoverImageUrl);
+	console.log("uploadedImageThatIsAUrl", uploadedImageThatIsAUrl);
 
 	let imageOcrValue = null;
 	let imageCaption = null;
