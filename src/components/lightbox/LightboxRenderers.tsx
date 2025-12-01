@@ -3,6 +3,7 @@ import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
 import loaderGif from "../../../public/loader-gif.gif";
+import { useIframeStore } from "../../store/iframeStore";
 import { type SingleListData } from "../../types/apiTypes";
 import {
 	IMAGE_TYPE_PREFIX,
@@ -12,8 +13,6 @@ import {
 	tweetType,
 } from "../../utils/constants";
 import { VideoPlayer } from "../VideoPlayer";
-
-import { isIframeEnabled } from "./LightboxUtils";
 
 interface SlideProps {
 	bookmark: SingleListData | undefined;
@@ -126,8 +125,9 @@ export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
  * Handles iframe permissions and fallback image rendering
  */
 export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
+	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
 	// Only render iframe if this is the active slide and iframe is allowed
-	if (bookmark?.meta_data?.iframeAllowed && isActive && isIframeEnabled()) {
+	if (bookmark?.meta_data?.iframeAllowed && isActive && iframeEnabled) {
 		return (
 			<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
 				<object

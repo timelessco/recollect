@@ -8,6 +8,7 @@ import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
+import { useIframeStore } from "../../store/iframeStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
@@ -24,11 +25,7 @@ import {
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 
-import {
-	isIframeEnabled,
-	isYouTubeVideo,
-	type CustomSlide,
-} from "./LightboxUtils";
+import { isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
 
 /**
  * Hook to transform bookmarks into lightbox slides
@@ -62,7 +59,8 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) =>
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!isYouTubeVideo(bookmark?.url) &&
-					(!bookmark?.meta_data?.iframeAllowed || !isIframeEnabled()) && {
+					(!bookmark?.meta_data?.iframeAllowed ||
+						!useIframeStore.getState().iframeEnabled) && {
 						// using || instead of ?? to include 0
 						width: bookmark?.meta_data?.width || 1_200,
 						height: bookmark?.meta_data?.height || 1_200,

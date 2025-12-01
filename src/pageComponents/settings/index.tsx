@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -27,6 +27,7 @@ import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
+import { useIframeStore } from "../../store/iframeStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
@@ -78,14 +79,8 @@ const Settings = () => {
 		data: ProfilesTableTypes[];
 		error: PostgrestError;
 	};
-	const [enabled, setEnabled] = useState<boolean>(() => {
-		if (typeof window !== "undefined") {
-			const savedValue = localStorage.getItem("iframeEnabled");
-			return savedValue ? (JSON.parse(savedValue) as boolean) : true;
-		}
-
-		return true;
-	});
+	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
+	const setIframeEnabled = useIframeStore((state) => state.setIframeEnabled);
 
 	const userData = userProfilesData?.data?.[0];
 
@@ -418,12 +413,9 @@ const Settings = () => {
 						title="Enable iframe in lightbox"
 						description="Allow embedding external content in lightbox view"
 						isSwitch
-						enabled={enabled}
+						enabled={iframeEnabled}
 						onToggle={() => {
-							setEnabled(!enabled);
-							if (typeof window !== "undefined") {
-								localStorage.setItem("iframeEnabled", String(!enabled));
-							}
+							setIframeEnabled(!iframeEnabled);
 						}}
 					/>
 				</div>

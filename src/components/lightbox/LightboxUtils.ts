@@ -47,19 +47,6 @@ export const isYouTubeVideo = (
 	}
 };
 
-/**
- * Checks if iframe embedding is enabled in user settings
- * @returns boolean - True if iframe embedding is enabled
- */
-export const isIframeEnabled = (): boolean => {
-	if (typeof window !== "undefined") {
-		const savedValue = localStorage.getItem("iframeEnabled");
-		return savedValue ? (JSON.parse(savedValue) as boolean) : true;
-	}
-
-	return true;
-};
-
 export type CustomSlide = BaseSlide & {
 	data?: {
 		type?: string;
