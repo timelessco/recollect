@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import Modal from "../../../components/modal";
-import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";

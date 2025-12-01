@@ -7,7 +7,7 @@ import {
 } from "../../../components/ariaDropdown";
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { Spinner } from "../../../components/spinner";
-import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import OptionsIcon from "../../../icons/optionsIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { type ChildrenTypes } from "../../../types/componentTypes";
