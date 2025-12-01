@@ -66,6 +66,7 @@ export const processImageQueue = async (
 					if (deleteError) {
 						console.error(
 							"[process-image-queue] Error deleting message from queue",
+							deleteError,
 						);
 					}
 
