@@ -18,7 +18,6 @@ import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
-import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
@@ -65,23 +64,17 @@ import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import { EditDropdownButton } from "./EditDropdownButton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
-
-export type onBulkBookmarkDeleteType = (
-	bookmark_ids: number[],
-	isTrash: boolean,
-	deleteForever: boolean,
-) => void;
+import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
+import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
 
-	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
@@ -109,9 +102,7 @@ const CardSection = ({
 	showAvatar = false,
 	isOgImgLoading = false,
 	isBookmarkLoading = false,
-	deleteBookmarkId,
 	onCategoryChange,
-	onBulkBookmarkDelete,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
@@ -122,6 +113,9 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
+	const deleteBookmarkId = useMiscellaneousStore(
+		(state) => state.deleteBookmarkId,
+	);
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -146,6 +140,9 @@ const CardSection = ({
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
+	const [openedTrashMenuId, setOpenedTrashMenuId] = useState<number | null>(
+		null,
+	);
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
 	// cat_id refers to cat slug here as its got from url
@@ -302,30 +299,46 @@ const CardSection = ({
 			/>
 		);
 
-		const trashIcon = (
-			<div
-				className={`ml-2 ${iconBgClassName} hidden`}
-				onClick={(event) => {
-					event.stopPropagation();
-					onDeleteClick([post]);
-				}}
-				onKeyDown={() => {}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure
-					onPointerDown={(event) => {
-						event.stopPropagation();
+		const isTrashMenuOpen = openedTrashMenuId === post.id;
+
+		const trashIcon =
+			categorySlug === TRASH_URL ? (
+				<ClearTrashDropdown
+					isBottomBar={false}
+					label="Delete Bookmark"
+					onClearTrash={() => {
+						onDeleteClick([post]);
 					}}
+					isClearingTrash={false}
+					isOpen={isTrashMenuOpen}
+					menuOpenToggle={(isOpen) => {
+						setOpenedTrashMenuId(isOpen ? post.id : null);
+					}}
+				/>
+			) : (
+				<div
+					className={`ml-2 ${iconBgClassName} hidden`}
+					onClick={(event) => {
+						event.stopPropagation();
+						onDeleteClick([post]);
+					}}
+					onKeyDown={() => {}}
+					role="button"
+					tabIndex={0}
 				>
-					<TrashIconGray
+					<figure
 						onPointerDown={(event) => {
 							event.stopPropagation();
 						}}
-					/>
-				</figure>
-			</div>
-		);
+					>
+						<TrashIconGray
+							onPointerDown={(event) => {
+								event.stopPropagation();
+							}}
+						/>
+					</figure>
+				</div>
+			);
 
 		if (isPublicPage) {
 			const publicExternalIconClassname = classNames({
@@ -346,16 +359,20 @@ const CardSection = ({
 		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
 			// in trash page
 
-			const trashIconWrapperClassname = classNames({
-				"absolute top-[2px] flex": true,
-				"left-[17px]":
-					cardTypeCondition === viewValues.moodboard ||
-					cardTypeCondition === viewValues.card ||
-					cardTypeCondition === viewValues.timeline,
-				"left-[-64px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
-			});
+			const trashIconWrapperClassname = classNames(
+				"absolute top-[2px]",
+				"group-hover:flex",
+				isTrashMenuOpen ? "flex" : "hidden",
+				{
+					"left-[17px]":
+						cardTypeCondition === viewValues.moodboard ||
+						cardTypeCondition === viewValues.card ||
+						cardTypeCondition === viewValues.timeline,
+					"left-[-64px]":
+						cardTypeCondition === viewValues.list ||
+						cardTypeCondition === viewValues.headlines,
+				},
+			);
 			return (
 				<div className={trashIconWrapperClassname}>
 					<div
@@ -878,7 +895,6 @@ const CardSection = ({
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
 				isPublicPage={isPublicPage}
-				onBulkBookmarkDelete={onBulkBookmarkDelete}
 				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"
 			>

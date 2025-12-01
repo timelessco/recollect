@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## General
 
-- Use lowercase for SQL reserved words to maintain consistency and readability.
+- Use lowercase for SQL reserved words to maintain consistency and readability. Exception: Migration files may use uppercase keywords for better readability of function definitions.
 - Employ consistent, descriptive identifiers for tables, columns, and other database objects.
 - Use white space and indentation to enhance the readability of your code.
 - Store dates in ISO 8601 format (`yyyy-mm-ddThh:mm:ss.sssss`).

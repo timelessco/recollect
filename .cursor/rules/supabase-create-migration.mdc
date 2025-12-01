@@ -39,6 +39,7 @@ Write Postgres-compatible SQL code for Supabase migration files that:
 - Includes a header comment with metadata about the migration, such as the purpose, affected tables/columns, and any special considerations.
 - Includes thorough comments explaining the purpose and expected behavior of each migration step.
 - Write all SQL in lowercase.
+- SQL casing in migration files is in uppercase. Prioritize consistency within each migration file.
 - Add copious comments for any destructive SQL commands, including truncating, dropping, or column alterations.
 - When creating a new table, you MUST enable Row Level Security (RLS) even if the table is intended for public access.
 - When creating RLS Policies

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import find from "lodash/find";
@@ -39,16 +39,13 @@ import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
-	useModalStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
-	type ImgMetadataType,
 	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
-	type SingleListData,
 } from "../../types/apiTypes";
 import {
 	type BookmarksSortByTypes,
@@ -73,8 +70,8 @@ import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import Settings from "../settings";
 
+import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import SettingsModal from "./modals/settingsModal";
-import WarningActionModal from "./modals/warningActionModal";
 import SignedOutSection from "./signedOutSection";
 import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
@@ -104,10 +101,13 @@ const Dashboard = () => {
 		fetchSession();
 	}, [setSession, supabase.auth]);
 
-	// move to zustand
-	const [deleteBookmarkId, setDeleteBookmarkId] = useState<
-		number[] | undefined
-	>(undefined);
+	const setDeleteBookmarkId = useMiscellaneousStore(
+		(state) => state.setDeleteBookmarkId,
+	);
+
+	const deleteBookmarkId = useMiscellaneousStore(
+		(state) => state.deleteBookmarkId,
+	);
 
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
@@ -116,14 +116,6 @@ const Dashboard = () => {
 
 	const toggleIsSortByLoading = useLoadersStore(
 		(state) => state.toggleIsSortByLoading,
-	);
-
-	const showDeleteBookmarkWarningModal = useModalStore(
-		(state) => state.showDeleteBookmarkWarningModal,
-	);
-
-	const toggleShowDeleteBookmarkWarningModal = useModalStore(
-		(state) => state.toggleShowDeleteBookmarkWarningModal,
 	);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
@@ -163,11 +155,11 @@ const Dashboard = () => {
 
 	// Mutations
 
-	const { deleteBookmarkOptismicMutation } =
-		useDeleteBookmarksOptimisticMutation();
-
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
+
+	const { deleteBookmarkOptismicMutation } =
+		useDeleteBookmarksOptimisticMutation();
 
 	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
 		useClearBookmarksInTrashMutation();
@@ -610,7 +602,6 @@ const Dashboard = () => {
 												bookmarksCountData?.data ?? undefined,
 												CATEGORY_ID as unknown as string | number | null,
 											)}
-											deleteBookmarkId={deleteBookmarkId}
 											isBookmarkLoading={
 												addBookmarkMinDataOptimisticMutation?.isPending
 											}
@@ -626,48 +617,6 @@ const Dashboard = () => {
 													? flattenedSearchData
 													: flattendPaginationBookmarkData
 											}
-											onBulkBookmarkDelete={(
-												bookmarkIds,
-												isTrash,
-												deleteForever,
-											) => {
-												const currentBookmarksData = isSearching
-													? flattenedSearchData
-													: flattendPaginationBookmarkData;
-
-												if (!deleteForever) {
-													for (const item of bookmarkIds) {
-														const bookmarkId = Number.parseInt(
-															item.toString(),
-															10,
-														);
-														const delBookmarksData = find(
-															currentBookmarksData,
-															(delItem) => delItem?.id === bookmarkId,
-														) as SingleListData;
-
-														if (
-															delBookmarksData?.user_id?.id ===
-															session?.user?.id
-														) {
-															void mutationApiCall(
-																moveBookmarkToTrashOptimisticMutation.mutateAsync(
-																	{
-																		data: delBookmarksData,
-																		isTrash,
-																	},
-																),
-																// eslint-disable-next-line promise/prefer-await-to-then
-															).catch(() => {});
-														} else {
-															errorToast("Cannot delete other users uploads");
-														}
-													}
-												} else {
-													setDeleteBookmarkId(bookmarkIds);
-													toggleShowDeleteBookmarkWarningModal();
-												}
-											}}
 											onCategoryChange={async (value, cat_id) => {
 												const categoryId = cat_id;
 												const currentBookmarksData = isSearching
@@ -720,13 +669,25 @@ const Dashboard = () => {
 												addCategoryToBookmarkOptimisticMutation?.isPending
 											}
 											onDeleteClick={(item) => {
-												setDeleteBookmarkId(
-													item?.map((delItem) => delItem?.id),
-												);
-
 												if (CATEGORY_ID === TRASH_URL) {
-													// delete bookmark if in trash
-													toggleShowDeleteBookmarkWarningModal();
+													// delete bookmark permanently if in trash
+													handleBulkBookmarkDelete({
+														bookmarkIds: item?.map((delItem) => delItem?.id),
+														deleteForever: true,
+														isTrash: true,
+														isSearching,
+														flattenedSearchData: flattenedSearchData ?? [],
+														flattendPaginationBookmarkData:
+															flattendPaginationBookmarkData ?? [],
+														deleteBookmarkId,
+														setDeleteBookmarkId,
+														sessionUserId: session?.user?.id,
+														moveBookmarkToTrashOptimisticMutation,
+														deleteBookmarkOptismicMutation,
+														clearSelection: () => {},
+														mutationApiCall,
+														errorToast,
+													});
 												} else if (!isEmpty(item) && item?.length > 0) {
 													// if not in trash then move bookmark to trash
 													void mutationApiCall(
@@ -825,50 +786,6 @@ const Dashboard = () => {
 
 			<SettingsModal />
 
-			<WarningActionModal
-				buttonText="Delete"
-				isLoading={false}
-				onContinueCick={() => {
-					if (deleteBookmarkId && !isEmpty(deleteBookmarkId)) {
-						toggleShowDeleteBookmarkWarningModal();
-						const deleteData = deleteBookmarkId?.map((delItem) => {
-							const idAsNumber = Number.parseInt(
-								delItem as unknown as string,
-								10,
-							);
-
-							const delBookmarkData = find(
-								flattendPaginationBookmarkData,
-								(item) => item?.id === idAsNumber,
-							);
-
-							const delBookmarkTitle = delBookmarkData?.title as string;
-							const delBookmarkImgLink = delBookmarkData?.ogImage as string;
-							const delBookmarkUrl = delBookmarkData?.url as string;
-
-							return {
-								id: idAsNumber,
-								title: delBookmarkTitle,
-								ogImage: delBookmarkImgLink,
-								url: delBookmarkUrl,
-								meta_data: delBookmarkData?.meta_data as ImgMetadataType,
-							};
-						});
-
-						void mutationApiCall(
-							deleteBookmarkOptismicMutation.mutateAsync({
-								deleteData,
-							}),
-						);
-					}
-
-					setDeleteBookmarkId(undefined);
-				}}
-				open={showDeleteBookmarkWarningModal}
-				setOpen={toggleShowDeleteBookmarkWarningModal}
-				warningText="Are you sure you want to delete ?"
-				// isLoading={deleteBookmarkMutation?.isLoading}
-			/>
 			<ToastContainer />
 		</>
 	);
