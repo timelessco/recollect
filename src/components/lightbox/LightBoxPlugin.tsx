@@ -228,7 +228,9 @@ const MyComponent = () => {
 									) : (
 										<ImageIcon size="15" />
 									)}
-									<span className="truncate">{domain}</span>
+									<span className="truncate">
+										{highlightSearch(domain ?? "", searchText)}
+									</span>
 									<span>·</span>
 									{currentBookmark?.inserted_at && (
 										<span className="truncate">
@@ -332,12 +334,12 @@ const MyComponent = () => {
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
 											{highlightSearch(
-												metaData?.img_caption || metaData?.image_caption,
+												metaData?.img_caption || metaData?.image_caption || "",
 												searchText,
 											)}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}
-											{highlightSearch(metaData?.ocr, searchText)}
+											{highlightSearch(metaData?.ocr ?? "", searchText)}
 										</p>
 									</div>
 								</motion.div>
