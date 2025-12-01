@@ -190,6 +190,22 @@ export default async function handler(
 
 		console.log("[add-category-to-bookmark] Bookmark ownership verified");
 
+		// Allow uncategorized bookmarks (categoryId === 0) without category validation
+		if (categoryId === 0) {
+			console.log(
+				"[add-category-to-bookmark] Moving bookmark to uncategorized",
+			);
+			await updateCategoryIdLogic(
+				supabase,
+				bookmarkId,
+				categoryId,
+				updateAccess,
+				userId,
+				response,
+			);
+			return;
+		}
+
 		// Get category data
 		const { data: categoryData, error: categoryError } = await supabase
 			.from(CATEGORIES_TABLE_NAME)
@@ -233,11 +249,9 @@ export default async function handler(
 
 		const categoryUserId = categoryData?.[0]?.user_id;
 
-		// Check if user is the category owner or if it's uncategorized (0)
-		if (categoryUserId === userId || categoryId === 0) {
-			console.log(
-				"[add-category-to-bookmark] User is category owner or moving to uncategorized",
-			);
+		// Check if user is the category owner
+		if (categoryUserId === userId) {
+			console.log("[add-category-to-bookmark] User is category owner");
 			await updateCategoryIdLogic(
 				supabase,
 				bookmarkId,
