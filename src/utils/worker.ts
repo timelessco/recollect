@@ -11,6 +11,9 @@ import {
 type ProcessParameters = { batchSize: number; queue_name: string };
 
 const SLEEP_SECONDS = 30;
+
+//max retries for a message
+const MAX_RETRIES = 3;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
@@ -43,6 +46,25 @@ export const processImageQueue = async (
 		for (const message of messages) {
 			try {
 				const { user_id, url, id } = message.message;
+
+				// this is the number of retries
+				const read_ct = message.read_ct;
+
+				if (read_ct > MAX_RETRIES) {
+					console.log("Deleting message from queue");
+
+					const { error: deleteError } = await supabase
+						.schema("pgmq_public")
+						.rpc("delete", {
+							queue_name,
+							message_id: message.msg_id,
+						});
+
+					if (deleteError) {
+						console.error("Error deleting message from queue");
+					}
+					continue;
+				}
 
 				const ogImage = message.message.ogImage;
 
