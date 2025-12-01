@@ -27,20 +27,27 @@ type Data = {
 	error: ErrorResponse;
 };
 
+type UpdateCategoryIdLogicProps = {
+	supabase: SupabaseClient;
+	bookmarkId: number;
+	categoryId: number | null;
+	updateAccess: boolean;
+	userId: string;
+	response: NextApiResponse<Data>;
+};
+
 // Helper function to update category ID for the bookmark
 const updateCategoryIdLogic = async (
-	supabase: SupabaseClient,
-	bookmarkId: number,
-	categoryId: number | null,
-	updateAccess: boolean,
-	userId: string,
-	response: NextApiResponse<Data>,
+	props: UpdateCategoryIdLogicProps,
 ): Promise<void> => {
+	const { supabase, bookmarkId, categoryId, updateAccess, userId, response } =
+		props;
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ category_id: updateAccess ? categoryId : null })
-			.match({ id: bookmarkId, user_id: userId })
+			.eq("id", bookmarkId)
 			.select();
 
 	if (error) {
@@ -195,14 +202,14 @@ export default async function handler(
 			console.log(
 				"[add-category-to-bookmark] Moving bookmark to uncategorized",
 			);
-			await updateCategoryIdLogic(
+			await updateCategoryIdLogic({
 				supabase,
 				bookmarkId,
 				categoryId,
 				updateAccess,
 				userId,
 				response,
-			);
+			});
 			return;
 		}
 
@@ -252,14 +259,14 @@ export default async function handler(
 		// Check if user is the category owner
 		if (categoryUserId === userId) {
 			console.log("[add-category-to-bookmark] User is category owner");
-			await updateCategoryIdLogic(
+			await updateCategoryIdLogic({
 				supabase,
 				bookmarkId,
 				categoryId,
 				updateAccess,
 				userId,
 				response,
-			);
+			});
 			return;
 		}
 
@@ -340,14 +347,14 @@ export default async function handler(
 		console.log(
 			"[add-category-to-bookmark] User has edit access as collaborator",
 		);
-		await updateCategoryIdLogic(
+		await updateCategoryIdLogic({
 			supabase,
 			bookmarkId,
 			categoryId,
 			updateAccess,
 			userId,
 			response,
-		);
+		});
 	} catch (error) {
 		console.error("[add-category-to-bookmark] Unexpected error:", error);
 		Sentry.captureException(error, {
