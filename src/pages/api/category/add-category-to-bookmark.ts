@@ -107,7 +107,7 @@ export default async function handler(
 		const userId = userData?.user?.id;
 		const email = userData?.user?.email;
 
-		if (userError || !userId) {
+		if (userError || !userId || !email) {
 			console.warn("[add-category-to-bookmark] User authentication failed:", {
 				error: userError?.message,
 			});
