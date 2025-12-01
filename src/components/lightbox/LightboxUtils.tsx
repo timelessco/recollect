@@ -1,3 +1,5 @@
+import { ESCAPE_REGEXP_PATTERN } from "../../utils/constants";
+
 export const highlightSearch = (
 	text: string,
 	search: string,
@@ -6,7 +8,7 @@ export const highlightSearch = (
 		return [text ?? ""];
 	}
 
-	const escaped = search.replaceAll(/[$()*+.?[\\\]^{|}]/gu, "\\$&");
+	const escaped = search.replaceAll(ESCAPE_REGEXP_PATTERN, "\\$&");
 	const regex = new RegExp(`(${escaped})`, "iu");
 
 	// Return JSX with <mark> tags
