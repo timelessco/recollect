@@ -12,7 +12,7 @@ type ProcessParameters = { batchSize: number; queue_name: string };
 
 const SLEEP_SECONDS = 30;
 
-//max retries for a message
+// max retries for a message
 const MAX_RETRIES = 3;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
@@ -35,7 +35,10 @@ export const processImageQueue = async (
 		}
 
 		if (messageError) {
-			console.error("Error fetching messages from queue:", messageError);
+			console.error(
+				"[process-image-queue] Error fetching messages from queue:",
+				messageError,
+			);
 			return;
 		}
 
@@ -51,7 +54,10 @@ export const processImageQueue = async (
 				const read_ct = message.read_ct;
 
 				if (read_ct > MAX_RETRIES) {
-					console.log("Deleting message from queue");
+					console.log(
+						"[process-image-queue] Deleting message from queue",
+						message,
+					);
 
 					const { error: deleteError } = await supabase
 						.schema("pgmq_public")
@@ -61,8 +67,11 @@ export const processImageQueue = async (
 						});
 
 					if (deleteError) {
-						console.error("Error deleting message from queue");
+						console.error(
+							"[process-image-queue] Error deleting message from queue",
+						);
 					}
+
 					continue;
 				}
 
@@ -102,14 +111,18 @@ export const processImageQueue = async (
 					);
 				}
 			} catch (error) {
-				console.error("Processing failed for message:", message.msg_id, error);
+				console.error(
+					"[process-image-queue] Processing failed for message:",
+					message,
+					error,
+				);
 			}
 		}
 
 		// eslint-disable-next-line consistent-return
 		return { messageId: messages[0]?.msg_id };
 	} catch (error) {
-		console.error("Queue processing error:", error);
+		console.error("[process-image-queue] Queue processing error:", error);
 		throw error;
 	}
 };
