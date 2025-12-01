@@ -21,6 +21,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
+	HTTP_PATTERN,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
@@ -665,7 +666,7 @@ export const CustomLightBox = ({
 							target="_blank"
 						>
 							<span className="truncate text-[14px] leading-[115%] font-normal tracking-normal text-gray-alpha-600">
-								{bookmarks?.[activeIndex]?.url?.replace(/^https?:\/\//u, "")}
+								{bookmarks?.[activeIndex]?.url?.replace(HTTP_PATTERN, "")}
 							</span>
 							<figure className="h-4 w-4 shrink-0 text-gray-alpha-600">
 								<LightboxExternalLink />

@@ -41,6 +41,7 @@ import { Icon } from "../atoms/icon";
 import { Spinner } from "../spinner";
 
 import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
+import { highlightSearch } from "./LightboxUtils";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -202,7 +203,7 @@ const MyComponent = () => {
 									className="pb-2 align-middle text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900"
 									tabIndex={-1}
 								>
-									{currentBookmark.title}
+									{highlightSearch(currentBookmark.title, searchText)}
 								</p>
 							</div>
 						)}
@@ -227,7 +228,9 @@ const MyComponent = () => {
 									) : (
 										<ImageIcon size="15" />
 									)}
-									<span className="truncate">{domain}</span>
+									<span className="truncate">
+										{highlightSearch(domain ?? "", searchText)}
+									</span>
 									<span>·</span>
 									{currentBookmark?.inserted_at && (
 										<span className="truncate">
@@ -246,7 +249,7 @@ const MyComponent = () => {
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
-									{currentBookmark.description}
+									{highlightSearch(currentBookmark.description, searchText)}
 									{showMore && isOverflowing && (
 										<button
 											className="inline text-13 leading-[138%] tracking-[0.01em] text-gray-800"
@@ -298,7 +301,7 @@ const MyComponent = () => {
 												className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
-												#{tag?.name}
+												#{highlightSearch(tag?.name, searchText)}
 											</span>
 										))}
 									</div>
@@ -330,10 +333,13 @@ const MyComponent = () => {
 										}`}
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
-											{metaData?.img_caption || metaData?.image_caption}
+											{highlightSearch(
+												metaData?.img_caption || metaData?.image_caption || "",
+												searchText,
+											)}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}
-											{metaData?.ocr}
+											{highlightSearch(metaData?.ocr ?? "", searchText)}
 										</p>
 									</div>
 								</motion.div>
