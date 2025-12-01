@@ -60,7 +60,7 @@ export default async function handler(
 	// Extract site scope (e.g., @instagram) from search query
 	const matchedSiteScope = search?.match(GET_SITE_SCOPE_PATTERN);
 
-	let siteFilter =
+	const siteFilter =
 		matchedSiteScope && matchedSiteScope[0]
 			? matchedSiteScope[0].replace("@", "").toLowerCase()
 			: "";
