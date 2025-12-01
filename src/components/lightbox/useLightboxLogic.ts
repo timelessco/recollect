@@ -30,8 +30,9 @@ import { isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
 /**
  * Hook to transform bookmarks into lightbox slides
  */
-export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) =>
-	useMemo(() => {
+export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
+	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
+	return useMemo(() => {
 		if (!bookmarks) {
 			return [];
 		}
@@ -59,8 +60,7 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) =>
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
 					!isYouTubeVideo(bookmark?.url) &&
-					(!bookmark?.meta_data?.iframeAllowed ||
-						!useIframeStore.getState().iframeEnabled) && {
+					(!bookmark?.meta_data?.iframeAllowed || !iframeEnabled) && {
 						// using || instead of ?? to include 0
 						width: bookmark?.meta_data?.width || 1_200,
 						height: bookmark?.meta_data?.height || 1_200,
@@ -79,7 +79,8 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) =>
 				}),
 			};
 		}) as CustomSlide[];
-	}, [bookmarks]);
+	}, [bookmarks, iframeEnabled]);
+};
 
 interface UseLightboxNavigationProps {
 	activeIndex: number;
