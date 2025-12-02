@@ -322,7 +322,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				showSidePane={showSidePane}
 				triggerHeadingEdit={triggerHeadingEdit}
 				uploadFileFromAddDropdown={uploadFileFromAddDropdown}
-				userId={userId}
 			>
 				{children}
 			</DashboardContent>
