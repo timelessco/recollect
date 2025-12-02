@@ -104,7 +104,7 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 			}
 
 			// Return a context object with the snapshotted value
-			return { previousData, previousSearchData };
+			return { previousData, previousSearchData, debouncedSearch };
 		},
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (
@@ -113,6 +113,7 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 			context?: {
 				previousData: BookmarksPaginatedDataTypes | undefined;
 				previousSearchData: BookmarksPaginatedDataTypes | undefined;
+				debouncedSearch: string;
 			},
 		) => {
 			if (context?.previousData) {
@@ -122,9 +123,14 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 				);
 			}
 
-			if (debouncedSearch && context?.previousSearchData) {
+			if (context?.debouncedSearch && context?.previousSearchData) {
 				queryClient.setQueryData(
-					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
+					[
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						CATEGORY_ID,
+						context.debouncedSearch,
+					],
 					context?.previousSearchData,
 				);
 			}
