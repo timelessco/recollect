@@ -1,6 +1,7 @@
 import { find } from "lodash";
 
 import { type ImgMetadataType, type SingleListData } from "@/types/apiTypes";
+import { isBookmarkOwner } from "@/utils/helpers";
 
 type BulkDeleteBookmarkParams = {
 	bookmarkIds: number[];
@@ -67,10 +68,10 @@ export const handleBulkBookmarkDelete = ({
 				continue;
 			}
 
-			const isOwnBookmark =
-				delBookmarksData.user_id?.id === sessionUserId ||
-				(typeof delBookmarksData.user_id === "string" &&
-					delBookmarksData.user_id === sessionUserId);
+			const isOwnBookmark = isBookmarkOwner(
+				delBookmarksData.user_id,
+				sessionUserId,
+			);
 
 			if (isOwnBookmark) {
 				mutations.push(
