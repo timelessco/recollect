@@ -89,12 +89,12 @@ export default function useSearchBookmarks() {
 		});
 
 	useEffect(() => {
-		if (!isEmpty(searchText)) {
+		if (!isEmpty(debouncedSearch)) {
 			toggleIsSearchLoading(isLoading);
 		} else {
 			toggleIsSearchLoading(false);
 		}
-	}, [toggleIsSearchLoading, isLoading, searchText]);
+	}, [toggleIsSearchLoading, isLoading, debouncedSearch]);
 
 	// Flatten the search results to match the expected data structure
 	return {
