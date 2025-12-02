@@ -61,7 +61,13 @@ export const handleBulkBookmarkDelete = ({
 				currentBookmarksData,
 				(delItem) => delItem?.id === bookmarkId,
 			) as SingleListData;
-			if (delBookmarksData && delBookmarksData.user_id?.id === sessionUserId) {
+			console.log("delBookmarksData", delBookmarksData);
+			if (
+				delBookmarksData &&
+				(delBookmarksData.user_id?.id === sessionUserId ||
+					(typeof delBookmarksData.user_id === "string" &&
+						delBookmarksData.user_id === sessionUserId))
+			) {
 				mutations.push(
 					mutationApiCall(
 						moveBookmarkToTrashOptimisticMutation.mutateAsync({
