@@ -61,9 +61,7 @@ export default async function handler(
 	const matchedSiteScope = search?.match(GET_SITE_SCOPE_PATTERN);
 
 	const siteFilter =
-		matchedSiteScope && matchedSiteScope[0]
-			? matchedSiteScope[0].replace("@", "").toLowerCase()
-			: "";
+		matchedSiteScope?.[0]?.replace("@", "").toLowerCase() ?? "";
 
 	console.log(siteFilter);
 
