@@ -61,13 +61,18 @@ export const handleBulkBookmarkDelete = ({
 				currentBookmarksData,
 				(delItem) => delItem?.id === bookmarkId,
 			) as SingleListData;
-			console.log("delBookmarksData", delBookmarksData);
-			if (
-				delBookmarksData &&
-				(delBookmarksData.user_id?.id === sessionUserId ||
-					(typeof delBookmarksData.user_id === "string" &&
-						delBookmarksData.user_id === sessionUserId))
-			) {
+
+			if (!delBookmarksData) {
+				console.warn(`Bookmark ${bookmarkId} not found in current data`);
+				continue;
+			}
+
+			const isOwnBookmark =
+				delBookmarksData.user_id?.id === sessionUserId ||
+				(typeof delBookmarksData.user_id === "string" &&
+					delBookmarksData.user_id === sessionUserId);
+
+			if (isOwnBookmark) {
 				mutations.push(
 					mutationApiCall(
 						moveBookmarkToTrashOptimisticMutation.mutateAsync({
