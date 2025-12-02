@@ -540,3 +540,30 @@ export const getNormalisedImageUrl = async (
 		return null;
 	}
 };
+
+/**
+ * Checks if the current user is the owner of the bookmark.
+ * @param bookmarkUserId - The user_id object or string from the bookmark data.
+ * @param sessionUserId - The ID of the currently logged-in user.
+ * @returns boolean - True if the user is the owner, false otherwise.
+ */
+export const isBookmarkOwner = (
+	bookmarkUserId: SingleListData["user_id"] | string | undefined,
+	sessionUserId: string | undefined,
+): boolean => {
+	if (!bookmarkUserId || !sessionUserId) {
+		return false;
+	}
+
+	// Check if bookmarkUserId is an object with an 'id' property (ProfilesTableTypes)
+	if (typeof bookmarkUserId === "object" && "id" in bookmarkUserId) {
+		return bookmarkUserId.id === sessionUserId;
+	}
+
+	// Check if bookmarkUserId is a string (legacy or direct ID)
+	if (typeof bookmarkUserId === "string") {
+		return bookmarkUserId === sessionUserId;
+	}
+
+	return false;
+};

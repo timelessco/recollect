@@ -12,8 +12,8 @@ export const ClearTrashContent = (props: ClearTrashContentProps) => {
 	const { onClearTrash, isClearingTrash, label = "Clear All Trash" } = props;
 
 	return (
-		<div className="p-1">
-			<p className="py-[6px] text-[12px] leading-[115%] tracking-[0.02em] text-gray-600">
+		<>
+			<p className="py-[6px] pl-2 text-[12px] leading-[115%] tracking-[0.02em] text-gray-600">
 				Sure you want to delete?
 			</p>
 			<Button
@@ -30,6 +30,6 @@ export const ClearTrashContent = (props: ClearTrashContentProps) => {
 					</>
 				)}
 			</Button>
-		</div>
+		</>
 	);
 };
