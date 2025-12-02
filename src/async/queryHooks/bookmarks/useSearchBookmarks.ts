@@ -63,8 +63,6 @@ export default function useSearchBookmarks() {
 			refetchOnWindowFocus: false,
 			initialPageParam: 0,
 			queryFn: async ({ pageParam: pageParameter }) => {
-				// Set default value here
-				toggleIsSearchLoading(true);
 				if (searchText) {
 					const result = await searchBookmarks(
 						searchText,
@@ -91,10 +89,12 @@ export default function useSearchBookmarks() {
 		});
 
 	useEffect(() => {
-		if (data) {
+		if (!isEmpty(debouncedSearch)) {
+			toggleIsSearchLoading(isLoading);
+		} else {
 			toggleIsSearchLoading(false);
 		}
-	}, [toggleIsSearchLoading, data]);
+	}, [toggleIsSearchLoading, isLoading, debouncedSearch]);
 
 	// Flatten the search results to match the expected data structure
 	return {

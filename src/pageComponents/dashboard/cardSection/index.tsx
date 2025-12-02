@@ -53,6 +53,7 @@ import {
 	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkImage,
+	isBookmarkOwner,
 	isBookmarkVideo,
 	isCurrentYear,
 	isUserInACategory,
@@ -236,7 +237,7 @@ const CardSection = ({
 		}
 
 		// show if bookmark is created by loggedin user
-		if (post?.user_id?.id === userId) {
+		if (isBookmarkOwner(post?.user_id, userId)) {
 			return true;
 		}
 
@@ -245,7 +246,7 @@ const CardSection = ({
 
 	const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
 		// show if bookmark is created by loggedin user
-		if (post?.user_id?.id === userId) {
+		if (isBookmarkOwner(post?.user_id, userId)) {
 			return true;
 		}
 

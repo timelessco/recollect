@@ -1,6 +1,7 @@
 import { find } from "lodash";
 
 import { type ImgMetadataType, type SingleListData } from "@/types/apiTypes";
+import { isBookmarkOwner } from "@/utils/helpers";
 
 type BulkDeleteBookmarkParams = {
 	bookmarkIds: number[];
@@ -53,7 +54,6 @@ export const handleBulkBookmarkDelete = ({
 	const currentBookmarksData = isSearching
 		? flattenedSearchData
 		: flattendPaginationBookmarkData;
-
 	if (!deleteForever) {
 		const mutations = [];
 		for (const item of bookmarkIds) {
@@ -63,7 +63,17 @@ export const handleBulkBookmarkDelete = ({
 				(delItem) => delItem?.id === bookmarkId,
 			) as SingleListData;
 
-			if (delBookmarksData && delBookmarksData.user_id?.id === sessionUserId) {
+			if (!delBookmarksData) {
+				console.warn(`Bookmark ${bookmarkId} not found in current data`);
+				continue;
+			}
+
+			const isOwnBookmark = isBookmarkOwner(
+				delBookmarksData.user_id,
+				sessionUserId,
+			);
+
+			if (isOwnBookmark) {
 				mutations.push(
 					mutationApiCall(
 						moveBookmarkToTrashOptimisticMutation.mutateAsync({
