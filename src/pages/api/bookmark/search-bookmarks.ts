@@ -60,12 +60,13 @@ export default async function handler(
 	// Extract site scope (e.g., @instagram) from search query
 	const matchedSiteScope = search?.match(GET_SITE_SCOPE_PATTERN);
 
-	const urlScope = matchedSiteScope?.[0]?.replace("@", "").toLowerCase() ?? "";
-
-	console.log(urlScope);
+	const urlScope = matchedSiteScope?.[0]?.replace("@", "")?.toLowerCase() ?? "";
 
 	// Remove both #tags and @site from search text
-	const searchText = search?.replace(GET_SITE_SCOPE_PATTERN, "")?.trim();
+	const searchText = search
+		?.replace(GET_SITE_SCOPE_PATTERN, "")
+		?.replace(GET_TEXT_WITH_AT_CHAR, "")
+		?.trim();
 
 	const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
 
