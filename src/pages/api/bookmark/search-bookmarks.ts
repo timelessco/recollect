@@ -60,10 +60,9 @@ export default async function handler(
 	// Extract site scope (e.g., @instagram) from search query
 	const matchedSiteScope = search?.match(GET_SITE_SCOPE_PATTERN);
 
-	const siteFilter =
-		matchedSiteScope?.[0]?.replace("@", "").toLowerCase() ?? "";
+	const urlScope = matchedSiteScope?.[0]?.replace("@", "").toLowerCase() ?? "";
 
-	console.log(siteFilter);
+	console.log(urlScope);
 
 	// Remove both #tags and @site from search text
 	const searchText = search?.replace(GET_SITE_SCOPE_PATTERN, "")?.trim();
@@ -78,9 +77,9 @@ export default async function handler(
 	const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	let query = supabase
-		.rpc("search_bookmarks_debugging_duplicate", {
+		.rpc("search_bookmarks_debugging_url_scope", {
 			search_text: searchText,
-			site_filter: siteFilter,
+			url_scope: urlScope,
 		})
 		.eq("trash", category_id === TRASH_URL)
 		.range(offset, offset + limit);
