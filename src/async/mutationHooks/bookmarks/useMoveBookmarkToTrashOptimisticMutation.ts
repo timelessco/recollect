@@ -12,6 +12,7 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
 	TRASH_URL,
+	UNCATEGORIZED_URL,
 } from "../../../utils/constants";
 import { moveBookmarkToTrash } from "../../supabaseCrudHelpers";
 
@@ -136,7 +137,7 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 			}
 		},
 		// Always refetch after error or success:
-		onSettled: () => {
+		onSettled: (_data, _error, variables) => {
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
 			});
@@ -146,6 +147,26 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, TRASH_URL],
 			});
+
+			if (!variables.isTrash) {
+				void queryClient.invalidateQueries({
+					queryKey: [BOOKMARKS_KEY, session?.user?.id, null],
+				});
+
+				if (variables.data?.category_id) {
+					void queryClient.invalidateQueries({
+						queryKey: [
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							variables.data.category_id,
+						],
+					});
+				} else {
+					void queryClient.invalidateQueries({
+						queryKey: [BOOKMARKS_KEY, session?.user?.id, UNCATEGORIZED_URL],
+					});
+				}
+			}
 		},
 	});
 
