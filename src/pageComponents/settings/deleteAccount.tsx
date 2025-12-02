@@ -98,16 +98,16 @@ const DeleteAccout = () => {
 				<p className={settingsSubHeadingClassName}>
 					Are you sure you want to delete your account ?
 				</p>
-				<p className={`${settingsParagraphClassName} mt-1`}>
+				<p className={`${settingsParagraphClassName} mt-2`}>
 					This action will delete all your data, collections, tags what all you
 					have uploaded using this application. Please do proceed with caution
 				</p>
 			</div>
 			<form
-				className="mt-6 flex items-end justify-between"
+				className="mt-6 flex flex-wrap items-end justify-between gap-2"
 				onSubmit={handleSubmit(onSubmit)}
 			>
-				<div className="w-[70%] max-sm:w-full">
+				<div className="w-full max-sm:w-full">
 					<LabelledComponent
 						label={`Please type your username ${userData?.user_name} to continue`}
 						labelClassName={settingsInputLabelClassName}
