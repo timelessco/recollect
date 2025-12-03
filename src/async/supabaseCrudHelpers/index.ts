@@ -272,7 +272,7 @@ export const addBookmarkMinData = async ({
 		// append https here
 		let finalUrl = url;
 
-		if (!url.startsWith("http") || !url.startsWith("https")) {
+		if (!url.startsWith("http://") && !url.startsWith("https://")) {
 			finalUrl = `https://${url}`;
 		}
 
