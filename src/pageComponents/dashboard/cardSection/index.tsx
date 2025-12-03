@@ -456,7 +456,11 @@ const CardSection = ({
 			);
 		}
 
-		return <DefaultUserIcon className={`h-5 w-5 ${avatarClassName}`} />;
+		return (
+			<DefaultUserIcon
+				className={`hidden h-5 w-5 group-hover:flex ${avatarClassName}`}
+			/>
+		);
 	};
 
 	const renderUrl = (item: SingleListData) => (
