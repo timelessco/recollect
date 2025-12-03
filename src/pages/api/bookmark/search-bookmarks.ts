@@ -4,6 +4,7 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
+import { z } from "zod";
 
 import { type SingleListData } from "../../../types/apiTypes";
 import {
@@ -26,10 +27,6 @@ import {
 import { isUserInACategoryInApi } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-// searches bookmarks
-
-// TODO: current logic not efficient, rethink this logic
-
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | { message: string } | null;
 
@@ -38,16 +35,35 @@ type Data = {
 	error: ErrorResponse;
 };
 
+const querySchema = z.object({
+	search: z.string().min(1, "Search parameter is required"),
+	category_id: z.string().optional(),
+	is_shared_category: z.string().optional(),
+});
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
 	try {
+		const parseResult = querySchema.safeParse(request.query);
+
+		if (!parseResult.success) {
+			console.warn("[search-bookmarks] Invalid search parameter:", {
+				issues: parseResult.error.issues,
+			});
+			response.status(400).json({
+				data: null,
+				error: { message: "Search parameter is required" },
+			});
+			return;
+		}
+
 		const supabase = apiSupabaseClient(request, response);
 
-		const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+		const { data: userData, error: userError } = await supabase.auth.getUser();
+		const user_id = userData?.user?.id;
 
-		if (!user_id) {
+		if (userError || !user_id) {
 			console.warn("[search-bookmarks] Missing user_id from Supabase auth");
 			response.status(401).json({
 				data: null,
@@ -56,8 +72,7 @@ export default async function handler(
 			return;
 		}
 
-		const { category_id, is_shared_category } = request.query;
-		const search = request.query.search as string;
+		const { search, category_id, is_shared_category } = parseResult.data;
 
 		const offset = Number.parseInt(request.query.offset as string, 10) || 0;
 		const limit = PAGINATION_LIMIT;
@@ -70,20 +85,16 @@ export default async function handler(
 			limit,
 		});
 
-		// Extract site scope (e.g., @instagram) from search query
-		const matchedSiteScope = search?.match(GET_SITE_SCOPE_PATTERN);
-
+		const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
 		const urlScope =
 			matchedSiteScope?.[0]?.replace("@", "")?.toLowerCase() ?? "";
 
-		// Remove both #tags and @site from search text
 		const searchText = search
 			?.replace(GET_SITE_SCOPE_PATTERN, "")
 			?.replace(GET_TEXT_WITH_AT_CHAR, "")
 			?.trim();
 
-		const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
-
+		const matchedSearchTag = search.match(GET_TEXT_WITH_AT_CHAR);
 		const tagName =
 			!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
 				? matchedSearchTag?.map((item) => item?.replace("#", ""))
