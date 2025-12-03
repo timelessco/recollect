@@ -28,7 +28,6 @@ export const fileUpload = async (
 			acceptedFiles[index] &&
 			acceptedFileTypes?.includes(acceptedFiles[index]?.type)
 		) {
-			const isVideo = acceptedFiles[index]?.type?.includes("video");
 			const uploadFileNamePath = uniqid.time(
 				"",
 				`-${parseUploadFileName(acceptedFiles[index]?.name)}`,
@@ -46,7 +45,7 @@ export const fileUpload = async (
 				fileUploadOptimisticMutation.mutateAsync({
 					file: acceptedFiles[index],
 					category_id,
-					thumbnailPath: isVideo ? null : null,
+					thumbnailPath: null,
 					uploadFileNamePath,
 				}),
 				// eslint-disable-next-line promise/prefer-await-to-then
