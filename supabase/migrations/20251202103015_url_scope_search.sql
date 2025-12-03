@@ -10,7 +10,7 @@
 
 SET check_function_bodies = off;
 
-CREATE OR REPLACE FUNCTION public.search_bookmarks_url_scope(
+CREATE OR REPLACE FUNCTION public.search_bookmarks_debugging(
     search_text character varying,
     url_scope character varying
 )
@@ -66,5 +66,5 @@ BEGIN
 END;
 $function$;
 
-COMMENT ON FUNCTION public.search_bookmarks_url_scope(character varying, character varying) IS
+COMMENT ON FUNCTION public.search_bookmarks_debugging(character varying, character varying) IS
 'URL-scoped bookmark search used by the API (debug variant): keeps original search behavior with url_scope filter.';

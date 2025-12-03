@@ -45,6 +45,17 @@ export default async function handler(
 	try {
 		const supabase = apiSupabaseClient(request, response);
 
+		const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
+		if (!user_id) {
+			console.warn("[search-bookmarks] Missing user_id from Supabase auth");
+			response.status(401).json({
+				data: null,
+				error: { message: "Unauthorized" },
+			});
+			return;
+		}
+
 		const { category_id, is_shared_category } = request.query;
 		const search = request.query.search as string;
 
@@ -83,17 +94,6 @@ export default async function handler(
 			searchText,
 			tagName,
 		});
-
-		const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
-
-		if (!user_id) {
-			console.warn("[search-bookmarks] Missing user_id from Supabase auth");
-			response.status(401).json({
-				data: null,
-				error: { message: "Unauthorized" },
-			});
-			return;
-		}
 
 		let query = supabase
 			.rpc("search_bookmarks_url_tag_scope", {
