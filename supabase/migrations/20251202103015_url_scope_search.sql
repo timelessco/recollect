@@ -10,7 +10,7 @@
 
 SET check_function_bodies = off;
 
-CREATE OR REPLACE FUNCTION public.search_bookmarks_debugging_url_scope(
+CREATE OR REPLACE FUNCTION public.search_bookmarks_debugging(
     search_text character varying,
     url_scope character varying
 )
@@ -30,9 +30,9 @@ RETURNS TABLE(
     sort_index text
 )
 LANGUAGE plpgsql
-STABLE
+VOLATILE
 SECURITY INVOKER
-SET search_path = ''
+SET search_path = public, extensions
 AS $function$
 BEGIN
     SET LOCAL pg_trgm.similarity_threshold = 0.6;
