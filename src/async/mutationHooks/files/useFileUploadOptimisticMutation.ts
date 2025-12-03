@@ -48,6 +48,7 @@ export default function useFileUploadOptimisticMutation() {
 		mutationFn: async (data: UploadFileApiPayload) => {
 			// For videos, generate thumbnail if not provided
 			let thumbnailPath = data.thumbnailPath;
+			// please verify if this file type is available for mobile devices
 			const isVideo = data?.file?.type?.includes("video");
 
 			if (isVideo && !thumbnailPath) {
