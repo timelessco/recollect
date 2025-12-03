@@ -350,10 +350,6 @@ const Dashboard = () => {
 					return ["title", ...existingViewData];
 				}
 
-				if (value === "headlines") {
-					return ["title", "cover", "info"];
-				}
-
 				return existingViewData;
 			};
 
