@@ -960,8 +960,8 @@
 		@apply bg-plain-reverse!;
 	}
 
-	/* for the select card styles on list and headlines views */
-	.single-bookmark[aria-selected="true"].list-headlines-wrapper {
+	/* for the select card styles on list view */
+	.single-bookmark[aria-selected="true"].list-wrapper {
 		@apply bg-plain-reverse text-plain;
 	}
 

@@ -289,7 +289,6 @@ export const viewValues = {
 	moodboard: "moodboard",
 	card: "card",
 	list: "list",
-	headlines: "headlines",
 };
 
 export const singleInfoValues = {
