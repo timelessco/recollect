@@ -29,7 +29,8 @@ RETURNS TABLE(
     trash boolean,
     type text,
     meta_data jsonb,
-    sort_index text
+    sort_index text,
+    added_tags jsonb
 )
 LANGUAGE plpgsql
 VOLATILE
@@ -40,7 +41,22 @@ BEGIN
     SET LOCAL pg_trgm.similarity_threshold = 0.6;
 
     RETURN QUERY
-    SELECT b.*
+    SELECT
+        b.*,
+        COALESCE(
+            (
+                SELECT jsonb_agg(
+                    jsonb_build_object(
+                        'id', t.id,
+                        'name', t.name
+                    )
+                )
+                FROM public.bookmark_tags bt
+                JOIN public.tags t ON t.id = bt.tag_id
+                WHERE bt.bookmark_id = b.id
+            ),
+            '[]'::jsonb
+        ) AS added_tags
     FROM public.everything b
     WHERE
         -- URL scope filter (optional)

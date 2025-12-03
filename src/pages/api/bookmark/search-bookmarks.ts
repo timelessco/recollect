@@ -188,9 +188,14 @@ export default async function handler(
 		});
 
 		const finalData = (data ?? []).map((item) => {
-			// Rename ogimage -> ogImage
-			const { ogimage, ...rest } = item;
-			return { ...rest, ogImage: ogimage };
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const { ogimage, added_tags: addedTags, ...rest } = item as any;
+
+			return {
+				...(rest as SingleListData),
+				ogImage: ogimage,
+				addedTags,
+			};
 		}) as SingleListData[];
 
 		response.status(200).json({ data: finalData, error: null });
