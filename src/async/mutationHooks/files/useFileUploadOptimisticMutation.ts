@@ -58,7 +58,7 @@ export default function useFileUploadOptimisticMutation() {
 
 					if (thumbnailBase64) {
 						const uploadFileNamePath = data?.uploadFileNamePath;
-						const thumbnailFileName = `thumbnail-${uploadFileNamePath}.png`;
+						const thumbnailFileName = `thumbnail-${uploadFileNamePath}.jpg`;
 						const supabase = createClient();
 						const { data: userData } = await supabase.auth.getUser();
 						const userId = userData?.user?.id;
@@ -72,7 +72,7 @@ export default function useFileUploadOptimisticMutation() {
 
 							if (uploadTokenData?.signedUrl && !error) {
 								try {
-									const base64Data = thumbnailBase64.split(",")[1];
+									const base64Data = thumbnailBase64?.split(",")?.[1];
 									if (base64Data) {
 										const buffer = Buffer.from(base64Data, "base64");
 										const uploadResponse = await fetch(
