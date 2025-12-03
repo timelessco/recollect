@@ -17,6 +17,7 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	GET_SITE_SCOPE_PATTERN,
 	GET_TEXT_WITH_AT_CHAR,
 	imageFileTypes,
 	IMAGES_URL,
@@ -56,7 +57,16 @@ export default async function handler(
 	const offset = Number.parseInt(request.query.offset as string, 10) || 0;
 	const limit = PAGINATION_LIMIT;
 
-	const searchText = search?.replace(GET_TEXT_WITH_AT_CHAR, "");
+	// Extract site scope (e.g., @instagram) from search query
+	const matchedSiteScope = search?.match(GET_SITE_SCOPE_PATTERN);
+
+	const urlScope = matchedSiteScope?.[0]?.replace("@", "")?.toLowerCase() ?? "";
+
+	// Remove both #tags and @site from search text
+	const searchText = search
+		?.replace(GET_SITE_SCOPE_PATTERN, "")
+		?.replace(GET_TEXT_WITH_AT_CHAR, "")
+		?.trim();
 
 	const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
 
@@ -68,8 +78,9 @@ export default async function handler(
 	const user_id = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	let query = supabase
-		.rpc("search_bookmarks_debugging", {
+		.rpc("search_bookmarks_url_scope", {
 			search_text: searchText,
+			url_scope: urlScope,
 		})
 		.eq("trash", category_id === TRASH_URL)
 		.range(offset, offset + limit);
