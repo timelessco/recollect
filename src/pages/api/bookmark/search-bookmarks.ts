@@ -187,7 +187,7 @@ export default async function handler(
 			hasTagFilter: !isEmpty(tagName),
 		});
 
-		const finalData = data?.map((item) => {
+		const finalData = (data ?? []).map((item) => {
 			// Rename ogimage -> ogImage
 			const { ogimage, ...rest } = item;
 			return { ...rest, ogImage: ogimage };

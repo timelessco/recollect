@@ -100,5 +100,15 @@ BEGIN
 END;
 $function$;
 
+-- ============================================================================
+-- Indexes to support tag_scope filtering performance
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_bookmark_tags_bookmark_id
+    ON public.bookmark_tags (bookmark_id);
+
+CREATE INDEX IF NOT EXISTS idx_tags_name
+    ON public.tags (name);
+
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[]) IS
 'Flexible bookmark search with optional URL scope and tag scope (array support). Searches across title, description, URL, and metadata with similarity scoring.';
