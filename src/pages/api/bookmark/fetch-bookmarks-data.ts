@@ -1,9 +1,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import {
-	type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 
@@ -15,7 +12,6 @@ import {
 import {
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
-	CATEGORIES_TABLE_NAME,
 	documentFileTypes,
 	DOCUMENTS_URL,
 	imageFileTypes,
@@ -23,7 +19,6 @@ import {
 	LINKS_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
-	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
 	TWEETS_URL,
 	tweetType,
@@ -31,7 +26,11 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { isUserInACategoryInApi } from "../../../utils/helpers";
+import {
+	checkIsUserOwnerOfCategory,
+	isUserCollaboratorInCategory,
+	isUserInACategoryInApi,
+} from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // gets all bookmarks data mapped with the data related to other tables , like tags , categories etc...
@@ -39,58 +38,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 type Data = {
 	count: BookmarksCountTypes | null;
 	data: SingleListData[] | null;
-	error: PostgrestError | VerifyErrors | string | null;
-};
-
-// tells if user is a collaborator for the category
-export const isUserCollaboratorInCategory = async (
-	supabase: SupabaseClient,
-	category_id: string,
-	email: string,
-	response: NextApiResponse,
-) => {
-	const { data: sharedCategoryData, error: sharedCategoryError } =
-		await supabase
-			.from(SHARED_CATEGORIES_TABLE_NAME)
-			.select("id")
-			.eq("category_id", category_id)
-			.eq("email", email);
-
-	if (sharedCategoryError) {
-		Sentry.captureException(
-			`Get shared category data error : ${sharedCategoryError?.message}`,
-		);
-		response
-			.status(500)
-			.json({ data: null, error: sharedCategoryError?.message, count: null });
-		return false;
-	}
-
-	return !isEmpty(sharedCategoryData);
-};
-
-export const checkIsUserOwnerOfCategory = async (
-	supabase: SupabaseClient,
-	category_id: string,
-	userId: string,
-	response: NextApiResponse,
-) => {
-	const { data: categoryData, error: categoryDataError } = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.select("user_id")
-		.eq("id", category_id);
-
-	if (categoryDataError) {
-		Sentry.captureException(
-			`Get category data error : ${categoryDataError?.message}`,
-		);
-		response
-			.status(500)
-			.json({ data: null, error: categoryDataError?.message, count: null });
-		return false;
-	}
-
-	return categoryData?.[0]?.user_id === userId;
+	error: PostgrestError | VerifyErrors | { message: string } | null;
 };
 
 export default async function handler(
@@ -130,20 +78,75 @@ user_id (
 
 	if (categoryCondition) {
 		// check if user is user is a collaborator for the category_id
-		const isUserCollaboratorInCategoryValue =
-			await isUserCollaboratorInCategory(
-				supabase,
-				category_id as string,
-				email,
-				response,
-			);
+		const {
+			success: isUserCollaboratorInCategorySuccess,
+			isCollaborator: isUserCollaboratorInCategoryValue,
+			error: isUserCollaboratorInCategoryError,
+		} = await isUserCollaboratorInCategory(
+			supabase,
+			category_id as string,
+			email,
+		);
 
-		const isUserOwnerOfCategory = await checkIsUserOwnerOfCategory(
+		if (!isUserCollaboratorInCategorySuccess) {
+			console.error(
+				"[fetch-bookmarks-data] Error checking if user is a collaborator for the category:",
+				isUserCollaboratorInCategoryError,
+			);
+			Sentry.captureException(isUserCollaboratorInCategoryError, {
+				tags: {
+					operation: "check_user_collaborator_of_category",
+				},
+				extra: { category_id },
+				user: {
+					id: userId,
+					email,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: {
+					message: "error checking if user is a collaborator for the category",
+				},
+				count: null,
+			});
+			return;
+		}
+
+		const {
+			success: isUserOwnerOfCategorySuccess,
+			isOwner: isUserOwnerOfCategory,
+			error: isUserOwnerOfCategoryError,
+		} = await checkIsUserOwnerOfCategory(
 			supabase,
 			category_id as string,
 			userId,
-			response,
 		);
+
+		if (!isUserOwnerOfCategorySuccess) {
+			console.error(
+				"[fetch-bookmarks-data] Error checking if user is the owner of the category:",
+				isUserOwnerOfCategoryError,
+			);
+			Sentry.captureException(isUserOwnerOfCategoryError, {
+				tags: {
+					operation: "check_user_owner_of_category",
+				},
+				extra: { category_id },
+				user: {
+					id: userId,
+					email,
+				},
+			});
+			response.status(500).json({
+				data: null,
+				error: {
+					message: "error checking if user is the owner of the category",
+				},
+				count: null,
+			});
+			return;
+		}
 
 		if (isUserCollaboratorInCategoryValue || isUserOwnerOfCategory) {
 			// **** here we are checking if user is a collaborator for the category_id or user is the owner of the category
