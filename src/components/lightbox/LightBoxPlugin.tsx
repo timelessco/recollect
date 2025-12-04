@@ -73,6 +73,7 @@ const MyComponent = () => {
 	const [isOverflowing, setIsOverflowing] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
+	const aiSummaryScrollRef = useRef<HTMLDivElement>(null);
 
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
@@ -324,9 +325,14 @@ const MyComponent = () => {
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
 									}`}
-									onClick={() =>
-										hasAIOverflowContent && setIsExpanded(!isExpanded)
-									}
+									onClick={() => {
+										if (hasAIOverflowContent) {
+											setIsExpanded(!isExpanded);
+											if (aiSummaryScrollRef.current) {
+												aiSummaryScrollRef.current.scrollTop = 0;
+											}
+										}
+									}}
 									whileTap={hasAIOverflowContent ? { scale: 0.98 } : {}}
 								>
 									<div className="mb-2 flex items-center gap-2">
@@ -338,6 +344,7 @@ const MyComponent = () => {
 										</p>
 									</div>
 									<div
+										ref={aiSummaryScrollRef}
 										className={`max-h-[200px] ${
 											isExpanded ? "hide-scrollbar scroll-shadows" : ""
 										}`}
