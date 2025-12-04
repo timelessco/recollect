@@ -54,6 +54,7 @@ BEGIN
                 FROM public.bookmark_tags bt
                 JOIN public.tags t ON t.id = bt.tag_id
                 WHERE bt.bookmark_id = b.id
+                  AND bt.user_id = b.user_id
             ),
             '[]'::jsonb
         ) AS added_tags

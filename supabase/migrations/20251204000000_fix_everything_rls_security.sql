@@ -18,7 +18,7 @@ FOR ALL
 TO authenticated
 USING (
     -- User created this bookmark
-    user_id = auth.uid()
+    user_id = (SELECT auth.uid())
     OR
     -- User is a collaborator in this category (can see all bookmarks in shared categories)
     category_id IN (
@@ -31,7 +31,7 @@ USING (
     category_id IN (
         SELECT id
         FROM public.categories
-        WHERE user_id = auth.uid()
+        WHERE user_id = (SELECT auth.uid())
     )
 );
 
