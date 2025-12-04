@@ -1,23 +1,21 @@
 import { useEffect, useState } from "react";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty, isNull } from "lodash";
 import { Mention, MentionsInput } from "react-mentions";
 
+import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import Button from "@/components/atoms/button";
 import { Spinner } from "@/components/spinner";
 import SearchInputSearchIcon from "@/icons/searchInputSearchIcon";
 import { useLoadersStore, useMiscellaneousStore } from "@/store/componentStore";
-import { type CategoriesData, type UserTagsData } from "@/types/apiTypes";
+import { type CategoriesData } from "@/types/apiTypes";
 import { type CategoryIdUrlTypes } from "@/types/componentTypes";
-import { GET_TEXT_WITH_AT_CHAR, USER_TAGS_KEY } from "@/utils/constants";
+import { GET_TEXT_WITH_AT_CHAR } from "@/utils/constants";
 
 type SearchBarProps = {
 	showSearchBar: boolean;
 	isDesktop: boolean;
 	currentCategoryData: CategoriesData | undefined;
 	currentPath: string | null;
-	userId: string;
 	categoryId: CategoryIdUrlTypes;
 	onShowSearchBar: (value: boolean) => void;
 };
@@ -28,7 +26,6 @@ export function SearchBar(props: SearchBarProps) {
 		isDesktop,
 		currentCategoryData,
 		currentPath,
-		userId,
 		categoryId,
 		onShowSearchBar,
 	} = props;
@@ -50,7 +47,6 @@ export function SearchBar(props: SearchBarProps) {
 					placeholder={`Search in ${
 						currentCategoryData?.category_name ?? currentPath
 					}`}
-					userId={userId}
 				/>
 			</div>
 		);
@@ -70,22 +66,18 @@ type SearchInputTypes = {
 	onBlur: () => void;
 	onChange: (value: string) => void;
 	placeholder: string;
-	userId: string;
 };
 
 const SearchInput = (props: SearchInputTypes) => {
-	const { placeholder, onChange, userId, onBlur } = props;
+	const { placeholder, onChange, onBlur } = props;
 	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 	const [isFocused, setIsFocused] = useState(false);
 
-	const queryClient = useQueryClient();
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, userId]) as {
-		data: UserTagsData[];
-		error: PostgrestError;
-	};
+	const { userTags } = useFetchUserTags();
+	const userTagsData = userTags?.data ?? [];
 
 	return (
 		<div className="search-wrapper relative">
@@ -123,7 +115,7 @@ const SearchInput = (props: SearchInputTypes) => {
 			>
 				<Mention
 					appendSpaceOnAdd
-					data={userTagsData?.data
+					data={userTagsData
 						?.map((item) => ({
 							id: String(item?.id || ""),
 							display: String(item?.name || ""),
@@ -184,9 +176,11 @@ const styles = {
 	},
 
 	suggestions: {
+		backgroundColor: "transparent",
+		zIndex: 5,
 		list: {
 			backgroundColor: "var(--color-plain)",
-			padding: "6px",
+			padding: "4px",
 			boxShadow:
 				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
 			borderRadius: "12px",

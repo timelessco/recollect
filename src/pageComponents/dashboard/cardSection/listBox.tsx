@@ -26,7 +26,7 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import useGetViewValue from "../../../hooks/useGetViewValue";
-import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import MoveIcon from "../../../icons/moveIcon";
 import {
 	useMiscellaneousStore,
@@ -268,9 +268,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	// Bulk delete handler
 	const onBulkBookmarkDelete = useCallback(
-		(bookmarkIds: number[], deleteForever: boolean, isTrash: boolean) => {
+		(bookmarkIds: Key[], deleteForever: boolean, isTrash: boolean) => {
 			handleBulkBookmarkDelete({
-				bookmarkIds,
+				bookmarkIds: bookmarkIds.map(Number),
 				deleteForever,
 				isTrash,
 				isSearching,
@@ -469,11 +469,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 								className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
 								onClick={() => {
 									onBulkBookmarkDelete(
-										Array.from(
-											state.selectionManager.selectedKeys.keys(),
-										) as number[],
+										Array.from(state.selectionManager.selectedKeys.keys()),
+										false,
 										true,
-										Boolean(isTrashPage),
 									);
 									state.selectionManager.clearSelection();
 								}}

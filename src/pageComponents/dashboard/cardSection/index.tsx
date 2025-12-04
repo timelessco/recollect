@@ -53,6 +53,7 @@ import {
 	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkImage,
+	isBookmarkOwner,
 	isBookmarkVideo,
 	isCurrentYear,
 	isUserInACategory,
@@ -236,7 +237,7 @@ const CardSection = ({
 		}
 
 		// show if bookmark is created by loggedin user
-		if (post?.user_id?.id === userId) {
+		if (isBookmarkOwner(post?.user_id, userId)) {
 			return true;
 		}
 
@@ -245,7 +246,7 @@ const CardSection = ({
 
 	const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
 		// show if bookmark is created by loggedin user
-		if (post?.user_id?.id === userId) {
+		if (isBookmarkOwner(post?.user_id, userId)) {
 			return true;
 		}
 
@@ -347,9 +348,7 @@ const CardSection = ({
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
 					cardTypeCondition === viewValues.timeline,
-				"left-[-34px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
+				"left-[-34px]": cardTypeCondition === viewValues.list,
 			});
 			return (
 				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
@@ -368,9 +367,7 @@ const CardSection = ({
 						cardTypeCondition === viewValues.moodboard ||
 						cardTypeCondition === viewValues.card ||
 						cardTypeCondition === viewValues.timeline,
-					"left-[-64px]":
-						cardTypeCondition === viewValues.list ||
-						cardTypeCondition === viewValues.headlines,
+					"left-[-64px]": cardTypeCondition === viewValues.list,
 				},
 			);
 			return (
@@ -406,9 +403,7 @@ const CardSection = ({
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
 					cardTypeCondition === viewValues.timeline,
-				"left-[-94px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
+				"left-[-94px]": cardTypeCondition === viewValues.list,
 			});
 
 			return (
@@ -445,9 +440,7 @@ const CardSection = ({
 		const avatarClassName = classNames({
 			"absolute h-[26px] w-[26px] rounded-full": true,
 			"right-[65px] top-0": isCreatedByLoggedInUser,
-			"right-[100px]":
-				cardTypeCondition === viewValues.list ||
-				cardTypeCondition === viewValues.headlines,
+			"right-[100px]": cardTypeCondition === viewValues.list,
 			"right-0 top-0": !isCreatedByLoggedInUser,
 		});
 
@@ -463,7 +456,11 @@ const CardSection = ({
 			);
 		}
 
-		return <DefaultUserIcon className={`h-5 w-5 ${avatarClassName}`} />;
+		return (
+			<DefaultUserIcon
+				className={`hidden h-5 w-5 group-hover:flex ${avatarClassName}`}
+			/>
+		);
 	};
 
 	const renderUrl = (item: SingleListData) => (
@@ -493,14 +490,13 @@ const CardSection = ({
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
 			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
-			"w-full shadow-custom-8 rounded-t-lg group-hover:rounded-b-none":
+			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-t-lg shadow-custom-8":
-				cardTypeCondition === viewValues.moodboard,
+			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
 		const playSvgClassName = classNames({
@@ -551,10 +547,9 @@ const CardSection = ({
 		const isImage =
 			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 			isBookmarkImage(item?.type);
-		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
+		const size = 15;
 		const favIconFigureClassName = classNames({
-			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
-			"h-[14] w-[14px] mt-px": cardTypeCondition !== viewValues.headlines,
+			"h-[14] w-[14px] mt-px": true,
 		});
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
@@ -828,11 +823,8 @@ const CardSection = ({
 	};
 
 	const listWrapperClass = classNames({
-		// "p-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.headlines,
 		"mt-[47px]": true,
-		"px-4 py-2":
-			cardTypeCondition === viewValues.list ||
-			cardTypeCondition === viewValues.headlines,
+		"px-4 py-2": cardTypeCondition === viewValues.list,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,

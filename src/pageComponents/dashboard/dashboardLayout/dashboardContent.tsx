@@ -27,7 +27,6 @@ type DashboardContentProps = {
 	showSidePane: boolean;
 	triggerHeadingEdit: boolean;
 	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
-	userId: string;
 };
 
 export const DashboardContent = (props: DashboardContentProps) => {
@@ -47,7 +46,6 @@ export const DashboardContent = (props: DashboardContentProps) => {
 		showSidePane,
 		triggerHeadingEdit,
 		uploadFileFromAddDropdown,
-		userId,
 	} = props;
 
 	return (
@@ -88,7 +86,6 @@ export const DashboardContent = (props: DashboardContentProps) => {
 						categoryId={categoryId}
 						currentCategoryData={currentCategoryData}
 						currentPath={currentPath}
-						userId={userId}
 						onShowSearchBar={onShowSearchBar}
 					/>
 					<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">

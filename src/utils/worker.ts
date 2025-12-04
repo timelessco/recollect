@@ -11,6 +11,9 @@ import {
 type ProcessParameters = { batchSize: number; queue_name: string };
 
 const SLEEP_SECONDS = 30;
+
+// max retries for a message
+const MAX_RETRIES = 3;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
@@ -27,22 +30,48 @@ export const processImageQueue = async (
 				n: batchSize,
 			});
 
-		if (messages.length === 0) {
-			return;
-		}
-
 		if (messageError) {
-			console.error("Error fetching messages from queue:", messageError);
-			return;
+			console.error(
+				"[process-image-queue] Error fetching messages from queue:",
+				messageError,
+			);
+			throw messageError;
 		}
 
 		if (!messages?.length) {
+			console.log("[process-image-queue] No messages found in queue");
 			return;
 		}
 
 		for (const message of messages) {
 			try {
 				const { user_id, url, id } = message.message;
+
+				// this is the number of retries
+				const read_ct = message.read_ct;
+
+				if (read_ct > MAX_RETRIES) {
+					console.log(
+						"[process-image-queue] Deleting message from queue",
+						message,
+					);
+
+					const { error: deleteError } = await supabase
+						.schema("pgmq_public")
+						.rpc("delete", {
+							queue_name,
+							message_id: message.msg_id,
+						});
+
+					if (deleteError) {
+						console.error(
+							"[process-image-queue] Error deleting message from queue",
+							deleteError,
+						);
+					}
+
+					continue;
+				}
 
 				const ogImage = message.message.ogImage;
 
@@ -80,14 +109,18 @@ export const processImageQueue = async (
 					);
 				}
 			} catch (error) {
-				console.error("Processing failed for message:", message.msg_id, error);
+				console.error(
+					"[process-image-queue] Processing failed for message:",
+					message,
+					error,
+				);
 			}
 		}
 
 		// eslint-disable-next-line consistent-return
 		return { messageId: messages[0]?.msg_id };
 	} catch (error) {
-		console.error("Queue processing error:", error);
+		console.error("[process-image-queue] Queue processing error:", error);
 		throw error;
 	}
 };

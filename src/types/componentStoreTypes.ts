@@ -67,12 +67,7 @@ export type SupabaseSessionStore = {
 	setSession: (value: SupabaseSessionStore["session"]) => void;
 };
 
-export type BookmarksViewTypes =
-	| "card"
-	| "headlines"
-	| "list"
-	| "moodboard"
-	| "timeline";
+export type BookmarksViewTypes = "card" | "list" | "moodboard" | "timeline";
 export type BookmarkViewCategories = "colums" | "info" | "sort" | "view";
 export type BookmarksSortByTypes =
 	| "alphabetical-sort-acending"

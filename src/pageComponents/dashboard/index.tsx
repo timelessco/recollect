@@ -350,10 +350,6 @@ const Dashboard = () => {
 					return ["title", ...existingViewData];
 				}
 
-				if (value === "headlines") {
-					return ["title", "cover", "info"];
-				}
-
 				return existingViewData;
 			};
 
@@ -755,7 +751,10 @@ const Dashboard = () => {
 	};
 
 	const onAddBookmark = (url: string) => {
-		const finalUrl = url?.includes("https://") ? url : `https://${url}`;
+		// Check if URL already has a protocol (http:// or https://)
+		const hasProtocol =
+			url?.startsWith("http://") || url?.startsWith("https://");
+		const finalUrl = hasProtocol ? url : `https://${url}`;
 		void addBookmarkLogic(finalUrl);
 	};
 
