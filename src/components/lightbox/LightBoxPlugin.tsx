@@ -282,9 +282,19 @@ const MyComponent = () => {
 						metaData?.img_caption ||
 						metaData?.ocr) && (
 						<motion.div
-							animate={{ y: isExpanded ? 0 : "calc(100% - 100px)" }}
+							animate={{
+								y: isExpanded
+									? 0
+									: `calc(100% - ${
+											currentBookmark?.addedTags?.length > 0 ? 145 : 110
+										}px)`,
+							}}
 							className="relative overflow-hidden"
-							initial={{ y: "calc(100% - 100px)" }}
+							initial={{
+								y: `calc(100% - ${
+									currentBookmark?.addedTags?.length > 0 ? 145 : 110
+								}px)`,
+							}}
 							key={currentBookmark?.id}
 							ref={expandableRef}
 							transition={{
