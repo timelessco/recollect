@@ -7,7 +7,6 @@ declare global {
 	// error prone and not useful in front end applications.
 	namespace NodeJS {
 		interface ProcessEnv
-			extends z.infer<typeof clientSchema>,
-				z.infer<typeof serverSchema> {}
+			extends z.infer<typeof clientSchema>, z.infer<typeof serverSchema> {}
 	}
 }
