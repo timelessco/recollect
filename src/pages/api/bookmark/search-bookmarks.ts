@@ -142,7 +142,7 @@ export default async function handler(
 
 			if (!isUserCollaboratorInCategorySuccess) {
 				console.error(
-					"[fetch-bookmarks-data] Error checking if user is a collaborator for the category:",
+					"[search-bookmarks] Error checking if user is a collaborator for the category:",
 					isUserCollaboratorInCategoryError,
 				);
 				Sentry.captureException(isUserCollaboratorInCategoryError, {
@@ -159,7 +159,7 @@ export default async function handler(
 					data: null,
 					error: {
 						message:
-							"error checking if user is a collaborator for the category",
+							"Error checking if user is a collaborator for the category",
 					},
 				});
 				return;
@@ -178,7 +178,7 @@ export default async function handler(
 
 			if (!isUserOwnerOfCategorySuccess) {
 				console.error(
-					"[fetch-bookmarks-data] Error checking if user is the owner of the category:",
+					"[search-bookmarks] Error checking if user is the owner of the category:",
 					isUserOwnerOfCategoryError,
 				);
 				Sentry.captureException(isUserOwnerOfCategoryError, {
@@ -194,7 +194,7 @@ export default async function handler(
 				response.status(500).json({
 					data: null,
 					error: {
-						message: "error checking if user is the owner of the category",
+						message: "Error checking if user is the owner of the category",
 					},
 				});
 				return;

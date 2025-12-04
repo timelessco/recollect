@@ -106,7 +106,7 @@ user_id (
 			response.status(500).json({
 				data: null,
 				error: {
-					message: "error checking if user is a collaborator for the category",
+					message: "Error checking if user is a collaborator for the category",
 				},
 				count: null,
 			});
@@ -141,7 +141,7 @@ user_id (
 			response.status(500).json({
 				data: null,
 				error: {
-					message: "error checking if user is the owner of the category",
+					message: "Error checking if user is the owner of the category",
 				},
 				count: null,
 			});
