@@ -820,10 +820,9 @@
 /* Progressive enhancement for browsers supporting scroll-driven animations */
 @supports (animation-timeline: scroll()) {
 	.scroll-shadows {
+		mask-image: none;
 		animation: scroll-shadow-mask linear both;
 		animation-timeline: scroll(self);
-
-		mask-image: none;
 	}
 }
 

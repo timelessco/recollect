@@ -1,13 +1,15 @@
 /* Arial Fallback for inter-v */
 @font-face {
 	font-family: inter-v-fallback;
-	font-display: swap;
-	src: local("Arial");
+
 	ascent-override: 90.6218%;
+	/* stylelint-disable-next-line at-rule-descriptor-value-no-unknown */
 	descent-override: -22.5641%;
+	font-display: swap;
 	line-gap-override: 0%;
 
 	size-adjust: 106.9003%;
+	src: local("Arial");
 }
 
 /* Inter V webfont subsets */
@@ -17,6 +19,7 @@
 	font-family: inter-v;
 	font-weight: 100 900;
 	font-style: normal;
+
 	font-display: swap;
 	src: url("/fonts/inter/inter-rest.woff2") format("woff2");
 	unicode-range:
@@ -54,6 +57,7 @@
 	font-family: inter-v;
 	font-weight: 100 900;
 	font-style: normal;
+
 	font-display: swap;
 	src: url("/fonts/inter/inter-latin-ext.woff2") format("woff2");
 	unicode-range:
@@ -67,6 +71,7 @@
 	font-family: inter-v;
 	font-weight: 100 900;
 	font-style: normal;
+
 	font-display: swap;
 	src: url("/fonts/inter/inter-latin.woff2") format("woff2");
 	unicode-range:
