@@ -75,7 +75,7 @@ export const EditDropdownButton = ({
 					</div>
 				}
 				// Use relative positioning to keep menu anchored to button
-				menuClassName="absolute top-full left-0 z-10  mt-1 bg-gray-50 shadow-custom-3 rounded-md focus:outline-none p-2 dropdown-content"
+				menuClassName="absolute top-full left-0 z-10  mt-1 bg-gray-50 shadow-custom-3 rounded-xl focus:outline-none p-1 dropdown-content"
 				menuOpenToggle={(isOpen) => {
 					setOpenedMenuId(isOpen ? post.id : null);
 				}}
