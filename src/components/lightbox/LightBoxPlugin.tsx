@@ -339,7 +339,7 @@ const MyComponent = () => {
 									</div>
 									<div
 										className={`max-h-[200px] ${
-											isExpanded ? "overflow-y-auto" : ""
+											isExpanded ? "hide-scrollbar scroll-shadows" : ""
 										}`}
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
