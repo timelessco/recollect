@@ -126,6 +126,7 @@ const MyComponent = () => {
 	const expandableRef = useRef<HTMLDivElement>(null);
 
 	const metaData = currentBookmark?.meta_data;
+	const collapsedOffset = currentBookmark?.addedTags?.length > 0 ? 145 : 110;
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state.lightboxShowSidepane,
 	);
@@ -284,12 +285,12 @@ const MyComponent = () => {
 						metaData?.ocr) && (
 						<motion.div
 							animate={{
-								y: isExpanded
-									? 0
-									: `calc(100% - ${currentBookmark?.addedTags?.length > 0 ? 145 : 110}px)`,
+								y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
 							}}
 							className="relative overflow-hidden"
-							initial={false}
+							initial={{
+								y: `calc(100% - ${collapsedOffset}px)`,
+							}}
 							key={currentBookmark?.id}
 							ref={expandableRef}
 							transition={{
