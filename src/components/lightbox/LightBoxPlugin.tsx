@@ -357,17 +357,17 @@ const MyComponent = () => {
 									</div>
 								</motion.div>
 							)}
-							{/* Gradient overlay */}
-							{!isExpanded && hasAIOverflowContent && (
-								<div
-									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[159px]"
-									style={{
-										background:
-											"linear-gradient(180deg, var(--color-whites-50) 0%, var(--color-whites-800) 77%, var(--color-whites-1000) 100%)",
-									}}
-								/>
-							)}
 						</motion.div>
+					)}
+					{/* Gradient overlay - outside animating container to stay fixed at bottom */}
+					{!isExpanded && hasAIOverflowContent && (
+						<div
+							className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[60px]"
+							style={{
+								background:
+									"linear-gradient(180deg, var(--color-whites-50) 0%, var(--color-whites-800) 77%, var(--color-whites-1000) 100%)",
+							}}
+						/>
 					)}
 				</motion.div>
 			)}
