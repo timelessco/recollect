@@ -800,6 +800,64 @@
 	}
 }
 
+/*
+ * Scroll shadows utility with fallback for unsupported browsers.
+ * Uses scroll-driven animations when supported (Chrome 115+, Edge 115+, Safari 18.2+).
+ * Falls back to a static bottom fade for Firefox and older browsers.
+ */
+@utility scroll-shadows {
+	overflow: auto;
+
+	/* Fallback: static bottom fade to hint at scrollable content */
+	mask-image: linear-gradient(
+		to bottom,
+		black 0,
+		black calc(100% - 24px),
+		transparent 100%
+	);
+}
+
+/* Progressive enhancement for browsers supporting scroll-driven animations */
+@supports (animation-timeline: scroll()) {
+	.scroll-shadows {
+		animation: scroll-shadow-mask linear both;
+		animation-timeline: scroll(self);
+
+		mask-image: none;
+	}
+}
+
+@keyframes scroll-shadow-mask {
+	0% {
+		mask-image: linear-gradient(
+			to bottom,
+			black 0,
+			black calc(100% - 32px),
+			transparent 100%
+		);
+	}
+
+	1%,
+	99% {
+		mask-image: linear-gradient(
+			to bottom,
+			transparent 0%,
+			black 32px,
+			black calc(100% - 32px),
+			transparent 100%
+		);
+	}
+
+	100% {
+		mask-image: linear-gradient(
+			to bottom,
+			transparent 0%,
+			black 32px,
+			black 100%
+		);
+	}
+}
+
 /* Component classes - complex reusable patterns */
 @layer components {
 	/* Allotment sash styles */
