@@ -116,14 +116,39 @@ END;
 $function$;
 
 -- ============================================================================
--- Indexes to support tag_scope filtering performance
+-- Indexes to support search performance
 -- ============================================================================
 
+-- B-tree indexes for joins and exact matches
 CREATE INDEX IF NOT EXISTS idx_bookmark_tags_bookmark_id
     ON public.bookmark_tags (bookmark_id);
 
 CREATE INDEX IF NOT EXISTS idx_tags_name
     ON public.tags (name);
 
+-- ============================================================================
+-- Trigram GIN indexes for ILIKE pattern matching (performance optimization)
+-- Without these, ILIKE '%text%' causes full table scans
+-- ============================================================================
+
+-- Enable pg_trgm extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- For URL searches with ILIKE '%url%'
+CREATE INDEX IF NOT EXISTS idx_everything_url_trgm
+    ON public.everything USING GIN (url gin_trgm_ops);
+
+-- For title searches (used in similarity scoring)
+CREATE INDEX IF NOT EXISTS idx_everything_title_trgm
+    ON public.everything USING GIN (title gin_trgm_ops);
+
+-- For description searches (used in similarity scoring)
+CREATE INDEX IF NOT EXISTS idx_everything_description_trgm
+    ON public.everything USING GIN (description gin_trgm_ops);
+
+-- For tag name searches (if we add ILIKE for tags in future)
+CREATE INDEX IF NOT EXISTS idx_tags_name_trgm
+    ON public.tags USING GIN (name gin_trgm_ops);
+
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[]) IS
-'Flexible bookmark search with optional URL scope and tag scope (array support). Searches across title, description, URL, and metadata with similarity scoring.';
+'Flexible bookmark search with optional URL scope and tag scope (array support). Searches across title, description, URL, and metadata with similarity scoring. Uses pg_trgm GIN indexes for ILIKE performance.';
