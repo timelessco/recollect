@@ -27,6 +27,11 @@ import {
 import { isUserInACategoryInApi } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import {
+	checkIsUserOwnerOfCategory,
+	isUserCollaboratorInCategory,
+} from "./fetch-bookmarks-data";
+
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | { message: string } | null;
 
@@ -38,7 +43,6 @@ type Data = {
 const querySchema = z.object({
 	search: z.string().min(1, "Search parameter is required"),
 	category_id: z.string().optional(),
-	is_shared_category: z.string().optional(),
 });
 export default async function handler(
 	request: NextApiRequest,
@@ -72,14 +76,13 @@ export default async function handler(
 			return;
 		}
 
-		const { search, category_id, is_shared_category } = parseResult.data;
+		const { search, category_id } = parseResult.data;
 
 		const offset = Number.parseInt(request.query.offset as string, 10) || 0;
 		const limit = PAGINATION_LIMIT;
 
 		console.log("[search-bookmarks] API called:", {
 			category_id,
-			is_shared_category,
 			rawSearch: search,
 			offset,
 			limit,
@@ -115,21 +118,44 @@ export default async function handler(
 			.eq("trash", category_id === TRASH_URL)
 			.range(offset, offset + limit);
 
-		// TODO: is_shared_category needs to be got in api itself not in payload
-		if (is_shared_category === "false") {
-			// if the collection is a shared one then is_shared_category will be true
-			// if it is not a shared collection then add user_is to the filter query, as we need to bookmarks that have the uploaded by the user alone
-			// if its is a shared collection then we need all the bookmarks in the collection irrespective of the user ,
-			// because many people belongling to the collection would have uploaded their bookmarks
-			query = query.eq("user_id", user_id);
-		}
-
 		const userInCollectionsCondition = isUserInACategoryInApi(
 			category_id as string,
 			false,
 		);
 
+		if (!userInCollectionsCondition) {
+			// if user is not in any category, then get only the items that match the user_id
+			query = query.eq("user_id", user_id);
+		}
+
 		if (userInCollectionsCondition) {
+			// check if user is a collaborator for the category
+			const isUserCollaboratorInCategoryValue =
+				await isUserCollaboratorInCategory(
+					supabase,
+					category_id as string,
+					userData?.user?.email as string,
+					response,
+				);
+
+			// check if user is the owner of the category
+			const isUserOwnerOfCategory = await checkIsUserOwnerOfCategory(
+				supabase,
+				category_id as string,
+				user_id,
+				response,
+			);
+
+			// check if user is not a collaborator or the owner of the category
+			const is_user_not_collaborator_or_owner =
+				!isUserCollaboratorInCategoryValue && !isUserOwnerOfCategory;
+
+			if (is_user_not_collaborator_or_owner) {
+				// if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
+				query = query.eq("user_id", user_id);
+			}
+
+			// get all the items for the category_id irrespective of the user_id, as user has access to all the items in the category
 			query = query.eq(
 				"category_id",
 				category_id === UNCATEGORIZED_URL ? 0 : category_id,
@@ -165,7 +191,6 @@ export default async function handler(
 			console.error("[search-bookmarks] Error executing search query:", {
 				error,
 				category_id,
-				is_shared_category,
 				rawSearch: search,
 				urlScope,
 				tagName,
@@ -175,7 +200,7 @@ export default async function handler(
 					operation: "search_bookmarks",
 					userId: user_id,
 				},
-				extra: { category_id, is_shared_category, rawSearch: search },
+				extra: { category_id, rawSearch: search },
 			});
 			response.status(500).json({
 				data: null,
@@ -194,7 +219,6 @@ export default async function handler(
 		console.log("[search-bookmarks] Search query succeeded:", {
 			resultsCount: data?.length ?? 0,
 			category_id,
-			is_shared_category,
 			hasTagFilter: !isEmpty(tagName),
 		});
 

@@ -1,6 +1,9 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 
@@ -39,6 +42,57 @@ type Data = {
 	error: PostgrestError | VerifyErrors | string | null;
 };
 
+// tells if user is a collaborator for the category
+export const isUserCollaboratorInCategory = async (
+	supabase: SupabaseClient,
+	category_id: string,
+	email: string,
+	response: NextApiResponse,
+) => {
+	const { data: sharedCategoryData, error: sharedCategoryError } =
+		await supabase
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.select("id")
+			.eq("category_id", category_id)
+			.eq("email", email);
+
+	if (sharedCategoryError) {
+		Sentry.captureException(
+			`Get shared category data error : ${sharedCategoryError?.message}`,
+		);
+		response
+			.status(500)
+			.json({ data: null, error: sharedCategoryError?.message, count: null });
+		return false;
+	}
+
+	return !isEmpty(sharedCategoryData);
+};
+
+export const checkIsUserOwnerOfCategory = async (
+	supabase: SupabaseClient,
+	category_id: string,
+	userId: string,
+	response: NextApiResponse,
+) => {
+	const { data: categoryData, error: categoryDataError } = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select("user_id")
+		.eq("id", category_id);
+
+	if (categoryDataError) {
+		Sentry.captureException(
+			`Get category data error : ${categoryDataError?.message}`,
+		);
+		response
+			.status(500)
+			.json({ data: null, error: categoryDataError?.message, count: null });
+		return false;
+	}
+
+	return categoryData?.[0]?.user_id === userId;
+};
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -53,47 +107,6 @@ export default async function handler(
 
 	const userId = userData?.data?.user?.id as string;
 	const email = userData?.data?.user?.email as string;
-
-	// tells if user is a collaborator for the category
-	const isUserCollaboratorInCategory = async () => {
-		const { data: sharedCategoryData, error: sharedCategoryError } =
-			await supabase
-				.from(SHARED_CATEGORIES_TABLE_NAME)
-				.select("id")
-				.eq("category_id", category_id)
-				.eq("email", email);
-
-		if (sharedCategoryError) {
-			Sentry.captureException(
-				`Get shared category data error : ${sharedCategoryError?.message}`,
-			);
-			response
-				.status(500)
-				.json({ data: null, error: sharedCategoryError?.message, count: null });
-			return false;
-		}
-
-		return !isEmpty(sharedCategoryData);
-	};
-
-	const checkIsUserOwnerOfCategory = async () => {
-		const { data: categoryData, error: categoryDataError } = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.select("user_id")
-			.eq("id", category_id);
-
-		if (categoryDataError) {
-			Sentry.captureException(
-				`Get category data error : ${categoryDataError?.message}`,
-			);
-			response
-				.status(500)
-				.json({ data: null, error: categoryDataError?.message, count: null });
-			return false;
-		}
-
-		return categoryData?.[0]?.user_id === userId;
-	};
 
 	// tells if user is in a category or not
 	const categoryCondition = isUserInACategoryInApi(category_id as string);
@@ -118,9 +131,19 @@ user_id (
 	if (categoryCondition) {
 		// check if user is user is a collaborator for the category_id
 		const isUserCollaboratorInCategoryValue =
-			await isUserCollaboratorInCategory();
+			await isUserCollaboratorInCategory(
+				supabase,
+				category_id as string,
+				email,
+				response,
+			);
 
-		const isUserOwnerOfCategory = await checkIsUserOwnerOfCategory();
+		const isUserOwnerOfCategory = await checkIsUserOwnerOfCategory(
+			supabase,
+			category_id as string,
+			userId,
+			response,
+		);
 
 		if (isUserCollaboratorInCategoryValue || isUserOwnerOfCategory) {
 			// **** here we are checking if user is a collaborator for the category_id or user is the owner of the category
