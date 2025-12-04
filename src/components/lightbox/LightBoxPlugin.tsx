@@ -286,16 +286,10 @@ const MyComponent = () => {
 							animate={{
 								y: isExpanded
 									? 0
-									: `calc(100% - ${
-											currentBookmark?.addedTags?.length > 0 ? 145 : 110
-										}px)`,
+									: `calc(100% - ${currentBookmark?.addedTags?.length > 0 ? 145 : 110}px)`,
 							}}
 							className="relative overflow-hidden"
-							initial={{
-								y: `calc(100% - ${
-									currentBookmark?.addedTags?.length > 0 ? 145 : 110
-								}px)`,
-							}}
+							initial={false}
 							key={currentBookmark?.id}
 							ref={expandableRef}
 							transition={{
@@ -326,11 +320,13 @@ const MyComponent = () => {
 										hasAIOverflowContent ? "cursor-pointer" : ""
 									}`}
 									onClick={() => {
-										if (hasAIOverflowContent) {
-											setIsExpanded(!isExpanded);
-											if (aiSummaryScrollRef.current) {
-												aiSummaryScrollRef.current.scrollTop = 0;
-											}
+										if (!hasAIOverflowContent) {
+											return;
+										}
+
+										setIsExpanded((prev) => !prev);
+										if (aiSummaryScrollRef.current) {
+											aiSummaryScrollRef.current.scrollTop = 0;
 										}
 									}}
 									whileTap={hasAIOverflowContent ? { scale: 0.98 } : {}}
