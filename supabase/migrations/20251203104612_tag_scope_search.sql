@@ -68,21 +68,19 @@ BEGIN
         )
 
         AND
-        -- Tag scope filter (optional, supports multiple tags)
+        -- Tag scope filter (optional, supports multiple tags with AND logic)
         (
             tag_scope IS NULL
             OR array_length(tag_scope, 1) IS NULL
-            OR EXISTS (
-                SELECT 1
+            OR (
+                SELECT COUNT(DISTINCT LOWER(t.name))
                 FROM public.bookmark_tags bt
                 JOIN public.tags t ON t.id = bt.tag_id
                 WHERE bt.bookmark_id = b.id
-                  AND EXISTS (
-                      SELECT 1
-                      FROM unnest(tag_scope) AS tag_filter
-                      WHERE t.name ILIKE '%' || tag_filter || '%'
+                  AND LOWER(t.name) = ANY(
+                      SELECT LOWER(unnest(tag_scope))
                   )
-            )
+            ) = array_length(tag_scope, 1)  -- Must match ALL searched tags (AND logic)
         )
 
         AND
