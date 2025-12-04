@@ -6,6 +6,7 @@ import {
 } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
+import { z } from "zod";
 
 import {
 	type AddCategoryToBookmarkApiPayload,
@@ -26,6 +27,15 @@ type Data = {
 	data: DataResponse;
 	error: ErrorResponse;
 };
+
+const bodySchema = z.object({
+	bookmark_id: z
+		.number()
+		.int()
+		.positive("Bookmark ID must be a positive integer"),
+	category_id: z.number().int().nullable(),
+	update_access: z.boolean(),
+});
 
 type UpdateCategoryIdLogicProps = {
 	supabase: SupabaseClient;
@@ -107,6 +117,29 @@ export default async function handler(
 	response: NextApiResponse<Data>,
 ): Promise<void> {
 	try {
+		// Validate request body first
+		const bodyValidation = bodySchema.safeParse(request.body);
+
+		if (!bodyValidation.success) {
+			console.warn("[add-category-to-bookmark] Invalid request body:", {
+				errors: bodyValidation.error.issues,
+			});
+			response.status(400).json({
+				data: null,
+				error: {
+					message: `Invalid request: ${bodyValidation.error.message}`,
+				},
+			});
+			return;
+		}
+
+		// Extract validated data
+		const {
+			update_access: updateAccess,
+			category_id: categoryId,
+			bookmark_id: bookmarkId,
+		} = bodyValidation.data;
+
 		const supabase = apiSupabaseClient(request, response);
 
 		// Authentication check
@@ -117,6 +150,8 @@ export default async function handler(
 		if (userError || !userId || !email) {
 			console.warn("[add-category-to-bookmark] User authentication failed:", {
 				error: userError?.message,
+				userId: userId ?? "missing",
+				email: email ?? "missing",
 			});
 			response.status(401).json({
 				data: null,
@@ -124,13 +159,6 @@ export default async function handler(
 			});
 			return;
 		}
-
-		// Extract request data
-		const {
-			update_access: updateAccess,
-			category_id: categoryId,
-			bookmark_id: bookmarkId,
-		} = request.body;
 
 		// Entry point log
 		console.log("[add-category-to-bookmark] API called:", {
@@ -319,11 +347,14 @@ export default async function handler(
 				{
 					userId,
 					categoryId,
+					email,
 				},
 			);
 			response.status(403).json({
 				data: null,
-				error: { message: "You are not the owner of this category" },
+				error: {
+					message: "You are not owner or collaborator of this category",
+				},
 			});
 			return;
 		}
