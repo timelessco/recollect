@@ -18,7 +18,7 @@ type CreateAndAssignTagPayload = {
 	bookmarkId: number;
 };
 
-export default function useCreateAndAssignTagMutation() {
+export function useCreateAndAssignTagMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
