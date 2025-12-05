@@ -28,12 +28,16 @@ export default function useCreateAndAssignTagMutation() {
 				tagsData: { name: tagName },
 			})) as { data: UserTagsData[] };
 
+			if (!tagResponse?.data || "message" in tagResponse) {
+				throw new Error("Failed to create tag");
+			}
+
 			const newTagId = tagResponse?.data?.[0]?.id;
 			if (!newTagId) {
 				throw new Error("Failed to create tag: missing tag ID");
 			}
 
-			await addTagToBookmark({
+			const bookmarkResponse = (await addTagToBookmark({
 				selectedData: [
 					{
 						bookmark_id: bookmarkId,
@@ -42,7 +46,11 @@ export default function useCreateAndAssignTagMutation() {
 						user_id: session?.user?.id ?? "",
 					},
 				],
-			});
+			})) as { data: SingleListData } | { message: string };
+
+			if (!("data" in bookmarkResponse) || "message" in bookmarkResponse) {
+				throw new Error("Failed to assign tag to bookmark");
+			}
 
 			return { tagId: newTagId, tagName };
 		},
