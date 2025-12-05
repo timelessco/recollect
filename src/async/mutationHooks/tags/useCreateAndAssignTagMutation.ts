@@ -32,11 +32,13 @@ export function useCreateAndAssignTagMutation() {
 
 			if (!tagResponse?.data || "message" in tagResponse) {
 				handleClientError("Failed to create tag");
+				throw new Error("Failed to create tag");
 			}
 
 			const newTagId = tagResponse?.data?.[0]?.id;
 			if (!newTagId) {
 				handleClientError("Failed to create tag: missing tag ID");
+				throw new Error("Failed to create tag: missing tag ID");
 			}
 
 			const bookmarkResponse = (await addTagToBookmark({
@@ -48,6 +50,7 @@ export function useCreateAndAssignTagMutation() {
 
 			if (!("data" in bookmarkResponse) || "message" in bookmarkResponse) {
 				handleClientError("Failed to assign tag to bookmark");
+				throw new Error("Failed to assign tag to bookmark");
 			}
 
 			return { tagId: newTagId, tagName };
