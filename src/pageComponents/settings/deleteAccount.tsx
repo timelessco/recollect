@@ -33,7 +33,7 @@ type SettingsFormTypes = {
 	confirmText: string;
 };
 
-const DeleteAccout = () => {
+export const DeleteAccount = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
@@ -131,6 +131,7 @@ const DeleteAccout = () => {
 				<div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
 					<Button
 						className={`${settingsDeleteButtonRedClassName}`}
+						isDisabled={deleteUserMutation.isPending}
 						onClick={handleSubmit(onSubmit)}
 					>
 						<div className="flex w-full items-center justify-center">
@@ -154,5 +155,3 @@ const DeleteAccout = () => {
 		</>
 	);
 };
-
-export default DeleteAccout;
