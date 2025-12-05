@@ -2,15 +2,11 @@ import { find } from "lodash";
 
 import { EditDropdownContent } from "./EditDropdownContent";
 import useAddTagToBookmarkMutation from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
-import useAddUserTagsMutation from "@/async/mutationHooks/tags/useAddUserTagsMutation";
+import useCreateAndAssignTagMutation from "@/async/mutationHooks/tags/useCreateAndAssignTagMutation";
 import useRemoveTagFromBookmarkMutation from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
 import { AriaDropdown, AriaDropdownMenu } from "@/components/ariaDropdown";
 import EditIcon from "@/icons/editIcon";
-import {
-	type BookmarksTagData,
-	type SingleListData,
-	type UserTagsData,
-} from "@/types/apiTypes";
+import { type BookmarksTagData, type SingleListData } from "@/types/apiTypes";
 import { mutationApiCall } from "@/utils/apiHelpers";
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -41,7 +37,7 @@ export const EditDropdownButton = ({
 	userId: string;
 }) => {
 	const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
-	const { addUserTagsMutation } = useAddUserTagsMutation();
+	const { createAndAssignTagMutation } = useCreateAndAssignTagMutation();
 	const { removeTagFromBookmarkMutation } = useRemoveTagFromBookmarkMutation();
 
 	return (
@@ -155,29 +151,11 @@ export const EditDropdownButton = ({
 										return;
 									}
 
-									const data = (await mutationApiCall(
-										addUserTagsMutation.mutateAsync({
-											tagsData: { name: newTagLabel },
-										}),
-									)) as { data: UserTagsData[] };
-
-									const newTagId = data?.data?.[0]?.id;
-									if (!newTagId) {
-										console.error("Invalid response: missing tag ID");
-										return;
-									}
-
-									// on edit we are adding the new tag to bookmark as the bookmark is
-									// will already be there when editing
-									const bookmarkTagsData = {
-										bookmark_id: post?.id,
-										tag_id: newTagId,
-										user_id: userId,
-									} as unknown as BookmarksTagData;
-
+									// Optimistic mutation - UI updates instantly
 									await mutationApiCall(
-										addTagToBookmarkMutation.mutateAsync({
-											selectedData: bookmarkTagsData,
+										createAndAssignTagMutation.mutateAsync({
+											tagName: newTagLabel,
+											bookmarkId: post.id,
 										}),
 									);
 								} catch (error) {
