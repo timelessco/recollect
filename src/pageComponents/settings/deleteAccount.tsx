@@ -132,6 +132,7 @@ export const DeleteAccount = () => {
 					<Button
 						className={`${settingsDeleteButtonRedClassName}`}
 						isDisabled={deleteUserMutation.isPending}
+						buttonType="submit"
 						onClick={handleSubmit(onSubmit)}
 					>
 						<div className="flex w-full items-center justify-center">
@@ -140,10 +141,7 @@ export const DeleteAccount = () => {
 							</figure>
 							<p className="flex justify-center">
 								{deleteUserMutation.isPending ? (
-									<Spinner
-										className="h-3 w-3 animate-spin"
-										style={{ color: "red" }}
-									/>
+									<Spinner className="h-3 w-3 animate-spin text-red-600" />
 								) : (
 									"Confirm delete"
 								)}
