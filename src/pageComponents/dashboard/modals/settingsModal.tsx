@@ -12,7 +12,7 @@ import {
 import Settings from "../../settings";
 import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
-import DeleteAccout from "../../settings/deleteAccount";
+import { DeleteAccount } from "../../settings/deleteAccount";
 import { ImportBookmarks } from "../../settings/import";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
@@ -90,7 +90,7 @@ const SettingsModal = () => {
 			case "change-email":
 				return <ChangeEmail />;
 			case "delete":
-				return <DeleteAccout />;
+				return <DeleteAccount />;
 			case "ai-features":
 				return <AiFeatures />;
 			case "import":

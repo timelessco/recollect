@@ -33,7 +33,7 @@ type SettingsFormTypes = {
 	confirmText: string;
 };
 
-const DeleteAccout = () => {
+export const DeleteAccount = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
@@ -104,55 +104,52 @@ const DeleteAccout = () => {
 				</p>
 			</div>
 			<form
-				className="mt-6 flex flex-wrap items-end justify-between gap-2"
+				className="mt-6 flex flex-wrap items-end justify-between sm:flex-nowrap"
 				onSubmit={handleSubmit(onSubmit)}
 			>
-				<div className="w-full max-sm:w-full">
-					<LabelledComponent
-						label={`Please type your username ${userData?.user_name} to continue`}
-						labelClassName={settingsInputLabelClassName}
-					>
-						<div className={settingsInputContainerClassName}>
-							<Input
-								errorClassName=" absolute w-full top-[29px]"
-								{...register("confirmText", {
-									required: {
-										value: true,
-										message: "Please add the confirm text",
-									},
-								})}
-								className={settingsInputClassName}
-								errorText={errors?.confirmText?.message ?? ""}
-								id="confirmText"
-								isError={Boolean(errors?.confirmText)}
-								placeholder="Enter text"
-							/>
-						</div>
-					</LabelledComponent>
-				</div>
-				<Button
-					className={`w-[150px] max-sm:w-full ${settingsDeleteButtonRedClassName}`}
-					onClick={handleSubmit(onSubmit)}
+				<LabelledComponent
+					label={`Please type your username ${userData?.user_name} to continue`}
+					labelClassName={settingsInputLabelClassName}
 				>
-					<div className="flex w-full items-center justify-center">
-						<figure className="mr-2">
-							<TrashIconRed />
-						</figure>
-						<p className="flex w-full justify-center max-sm:w-[100px]">
-							{deleteUserMutation.isPending ? (
-								<Spinner
-									className="h-3 w-3 animate-spin"
-									style={{ color: "red" }}
-								/>
-							) : (
-								"Confirm delete"
-							)}{" "}
-						</p>
+					<div className={settingsInputContainerClassName}>
+						<Input
+							errorClassName=" absolute w-full top-[29px]"
+							{...register("confirmText", {
+								required: {
+									value: true,
+									message: "Please add the confirm text",
+								},
+							})}
+							className={settingsInputClassName}
+							errorText={errors?.confirmText?.message ?? ""}
+							id="confirmText"
+							isError={Boolean(errors?.confirmText)}
+							placeholder="Enter username"
+						/>
 					</div>
-				</Button>
+				</LabelledComponent>
+				<div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
+					<Button
+						className={`${settingsDeleteButtonRedClassName}`}
+						isDisabled={deleteUserMutation.isPending}
+						buttonType="submit"
+						onClick={handleSubmit(onSubmit)}
+					>
+						<div className="flex w-full items-center justify-center">
+							<figure className="mr-2">
+								<TrashIconRed />
+							</figure>
+							<p className="flex justify-center">
+								{deleteUserMutation.isPending ? (
+									<Spinner className="h-3 w-3 animate-spin text-red-600" />
+								) : (
+									"Confirm delete"
+								)}
+							</p>
+						</div>
+					</Button>
+				</div>
 			</form>
 		</>
 	);
 };
-
-export default DeleteAccout;

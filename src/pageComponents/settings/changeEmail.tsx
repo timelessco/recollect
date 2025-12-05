@@ -19,6 +19,7 @@ import {
 	settingsInputClassName,
 	settingsInputContainerClassName,
 	settingsInputLabelClassName,
+	settingsLightButtonClassName,
 	settingsMainHeadingClassName,
 } from "../../utils/commonClassNames";
 import { EMAIL_CHECK_PATTERN, USER_PROFILE } from "../../utils/constants";
@@ -114,7 +115,7 @@ const ChangeEmail = () => {
 				</LabelledComponent>
 			</div>
 			<form
-				className="flex items-end justify-between pt-[28px]"
+				className="flex flex-wrap items-end justify-between pt-[28px] sm:flex-nowrap"
 				onSubmit={handleSubmit(onSubmit)}
 			>
 				<LabelledComponent
@@ -123,7 +124,7 @@ const ChangeEmail = () => {
 				>
 					<div className={settingsInputContainerClassName}>
 						<Input
-							errorClassName="absolute w-full top-[29px]"
+							errorClassName="absolute w-full top-[35px]"
 							{...register("newEmail", {
 								required: {
 									value: true,
@@ -142,12 +143,12 @@ const ChangeEmail = () => {
 						/>
 					</div>
 				</LabelledComponent>
-				<div className="flex w-1/2 justify-end max-sm:w-full">
+				<div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
 					<Button
-						className="flex w-[111px] justify-center bg-gray-300 px-[9px] py-2 text-sm leading-4 hover:bg-gray-700 max-sm:w-full"
+						className={`${settingsLightButtonClassName}`}
 						isDisabled={changeEmailLoader}
 						onClick={handleSubmit(onSubmit)}
-						type="dark"
+						type="light"
 					>
 						{changeEmailLoader ? (
 							<Spinner

@@ -153,7 +153,7 @@ const styles = {
 		fontSize: 14,
 		fontWeight: 400,
 		lineHeight: "16px",
-		color: "var(--color-gray-600)",
+		color: "var(--color-gray-800)",
 
 		width: "100%",
 		padding: "6px",
@@ -193,7 +193,7 @@ const styles = {
 			fontWeight: "450",
 			fontSize: "13px",
 			lineHeight: "15px",
-			color: "var(--color-gray-550)",
+			color: "var(--color-gray-800)",
 			cursor: "pointer",
 			transition: "plain-color 0.2s ease",
 
