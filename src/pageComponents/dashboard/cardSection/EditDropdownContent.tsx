@@ -103,7 +103,10 @@ const EditDropdownContentBase = ({
 	return (
 		<div className="w-64 space-y-3">
 			{isOwner && (
-				<LabelledComponent label="Tags">
+				<LabelledComponent
+					label="Tags"
+					labelClassName="ml-2 mb-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2"
+				>
 					<AriaMultiSelect
 						defaultList={addedTags?.map((item) => item?.name) || []}
 						list={filteredUserTags?.map((item) => item?.name) ?? []}
@@ -149,7 +152,10 @@ const EditDropdownContentBase = ({
 					/>
 				</LabelledComponent>
 			)}
-			<LabelledComponent label="Collection">
+			<LabelledComponent
+				label="Collection"
+				labelClassName="ml-2 mb-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2"
+			>
 				<AriaSearchableSelect
 					defaultValue={defaultValue?.label || ""}
 					isLoading={isCategoryChangeLoading}
