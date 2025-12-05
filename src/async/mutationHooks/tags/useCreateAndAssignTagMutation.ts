@@ -4,18 +4,20 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
 import {
+	type BookmarksTagData,
 	type SingleListData,
 	type UserTagsData,
 } from "../../../types/apiTypes";
 import { BOOKMARKS_KEY, USER_TAGS_KEY } from "../../../utils/constants";
 import { addTagToBookmark, addUserTags } from "../../supabaseCrudHelpers";
 
+import { handleClientError } from "@/utils/error-utils/client";
+
 type CreateAndAssignTagPayload = {
 	tagName: string;
 	bookmarkId: number;
 };
 
-// Creates a new tag and assigns it to a bookmark with optimistic updates
 export default function useCreateAndAssignTagMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
@@ -29,27 +31,23 @@ export default function useCreateAndAssignTagMutation() {
 			})) as { data: UserTagsData[] };
 
 			if (!tagResponse?.data || "message" in tagResponse) {
-				throw new Error("Failed to create tag");
+				handleClientError("Failed to create tag");
 			}
 
 			const newTagId = tagResponse?.data?.[0]?.id;
 			if (!newTagId) {
-				throw new Error("Failed to create tag: missing tag ID");
+				handleClientError("Failed to create tag: missing tag ID");
 			}
 
 			const bookmarkResponse = (await addTagToBookmark({
-				selectedData: [
-					{
-						bookmark_id: bookmarkId,
-						tag_id: newTagId,
-						bookmark_tag_id: 0,
-						user_id: session?.user?.id ?? "",
-					},
-				],
+				selectedData: {
+					bookmark_id: bookmarkId,
+					tag_id: newTagId,
+				} as BookmarksTagData,
 			})) as { data: SingleListData } | { message: string };
 
 			if (!("data" in bookmarkResponse) || "message" in bookmarkResponse) {
-				throw new Error("Failed to assign tag to bookmark");
+				handleClientError("Failed to assign tag to bookmark");
 			}
 
 			return { tagId: newTagId, tagName };
