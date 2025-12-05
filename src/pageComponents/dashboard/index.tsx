@@ -350,10 +350,6 @@ const Dashboard = () => {
 					return ["title", ...existingViewData];
 				}
 
-				if (value === "headlines") {
-					return ["title", "cover", "info"];
-				}
-
 				return existingViewData;
 			};
 
@@ -711,10 +707,10 @@ const Dashboard = () => {
 												// only show for a collab category
 												Boolean(
 													CATEGORY_ID &&
-														!isNull(CATEGORY_ID) &&
-														(allCategories?.data?.find(
-															(item) => item?.id === CATEGORY_ID,
-														)?.collabData?.length ?? 0) > 1,
+													!isNull(CATEGORY_ID) &&
+													(allCategories?.data?.find(
+														(item) => item?.id === CATEGORY_ID,
+													)?.collabData?.length ?? 0) > 1,
 												)
 											}
 											userId={session?.user?.id ?? ""}

@@ -4,7 +4,10 @@ import isNull from "lodash/isNull";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
+import {
+	type BookmarksPaginatedDataTypes,
+	type UploadFileApiPayload,
+} from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -25,9 +28,11 @@ import {
 import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import {
 	fileTypeIdentifier,
+	generateVideoThumbnail,
 	parseUploadFileName,
 } from "../../../utils/helpers";
 import { r2Helpers } from "../../../utils/r2Client";
+import { createClient } from "../../../utils/supabaseClient";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
 
@@ -40,8 +45,70 @@ export default function useFileUploadOptimisticMutation() {
 	const { sortBy } = useGetSortBy();
 
 	const fileUploadOptimisticMutation = useMutation({
-		mutationFn: uploadFile,
-		onMutate: async (data) => {
+		mutationFn: async (data: UploadFileApiPayload) => {
+			// For videos, generate thumbnail if not provided
+			let thumbnailPath = data.thumbnailPath;
+			// please verify if this file type is available for mobile devices
+			const isVideo = data?.file?.type?.includes("video");
+
+			if (isVideo && !thumbnailPath) {
+				try {
+					const thumbnailBase64 = (await generateVideoThumbnail(
+						data?.file,
+					)) as string;
+
+					if (thumbnailBase64) {
+						const uploadFileNamePath = data?.uploadFileNamePath;
+						const thumbnailFileName = `thumbnail-${uploadFileNamePath}.jpg`;
+						const supabase = createClient();
+						const { data: userData } = await supabase.auth.getUser();
+						const userId = userData?.user?.id;
+
+						if (userId) {
+							const { data: uploadTokenData, error } =
+								await r2Helpers.createSignedUploadUrl(
+									R2_MAIN_BUCKET_NAME,
+									`${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`,
+								);
+
+							if (uploadTokenData?.signedUrl && !error) {
+								try {
+									const base64Data = thumbnailBase64?.split(",")?.[1];
+									if (base64Data) {
+										const buffer = Buffer.from(base64Data, "base64");
+										const uploadResponse = await fetch(
+											uploadTokenData.signedUrl,
+											{
+												method: "PUT",
+												headers: {
+													"Content-Type": "image/jpg",
+												},
+												body: buffer.buffer as BodyInit,
+											},
+										);
+
+										if (uploadResponse.ok) {
+											thumbnailPath = `${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`;
+										}
+									}
+								} catch (uploadError) {
+									console.error("Thumbnail upload error:", uploadError);
+								}
+							}
+						}
+					}
+				} catch (error) {
+					console.error("Error generating video thumbnail:", error);
+				}
+			}
+
+			// Call the original uploadFile with the updated thumbnail path
+			return await uploadFile({
+				...data,
+				thumbnailPath,
+			});
+		},
+		onMutate: async (data: UploadFileApiPayload) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
 			await queryClient.cancelQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -57,7 +124,8 @@ export default function useFileUploadOptimisticMutation() {
 
 			const fileName = parseUploadFileName(data?.file?.name);
 
-			// Optimistically update to the new value
+			// Optimistically update to the new value immediately
+			// This shows the bookmark right away, even for videos
 			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 				(old) => {
