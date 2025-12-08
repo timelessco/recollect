@@ -36,7 +36,7 @@ const MyApp = ({
 	const baseUrl = getBaseUrl();
 
 	return (
-		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+		<ThemeProvider attribute="class">
 			<QueryClientProvider client={queryClient}>
 				<HydrationBoundary state={pageProps.dehydratedState}>
 					<Head>

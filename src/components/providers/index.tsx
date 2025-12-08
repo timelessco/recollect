@@ -13,7 +13,7 @@ export function Providers(props: ProvidersProps) {
 	const { children } = props;
 
 	return (
-		<ThemeProvider attribute="class" enableSystem>
+		<ThemeProvider attribute="class">
 			<ReactAriaProvider>
 				<NuqsAdapter>
 					<ReactQueryProvider>{children}</ReactQueryProvider>
