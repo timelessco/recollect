@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { ReactAriaProvider } from "./react-aria-provider";
@@ -12,10 +13,12 @@ export function Providers(props: ProvidersProps) {
 	const { children } = props;
 
 	return (
-		<ReactAriaProvider>
-			<NuqsAdapter>
-				<ReactQueryProvider>{children}</ReactQueryProvider>
-			</NuqsAdapter>
-		</ReactAriaProvider>
+		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+			<ReactAriaProvider>
+				<NuqsAdapter>
+					<ReactQueryProvider>{children}</ReactQueryProvider>
+				</NuqsAdapter>
+			</ReactAriaProvider>
+		</ThemeProvider>
 	);
 }
