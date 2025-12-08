@@ -21,6 +21,7 @@ import {
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 
+import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
 import { CustomLightBox } from "./LightBox";
 
 type PreviewLightBoxProps = {
@@ -49,6 +50,7 @@ export const PreviewLightBox = ({
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const debouncedSearch = useDebounce(searchText, 500);
+
 	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
 	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
@@ -66,6 +68,14 @@ export const PreviewLightBox = ({
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
 	}, [previousData?.pages]);
+
+	// Prefetch next page when approaching the end of current data
+	useLightboxPrefetch({
+		open,
+		activeIndex,
+		bookmarksLength: bookmarks?.length ?? 0,
+		pages: previousData?.pages,
+	});
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {

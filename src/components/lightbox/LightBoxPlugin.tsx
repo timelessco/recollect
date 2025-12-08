@@ -87,6 +87,7 @@ const MyComponent = () => {
 		error: PostgrestError;
 	};
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const trimmedSearchText = searchText?.trim() ?? "";
 	const { sortBy } = useGetSortBy();
 
 	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
@@ -205,7 +206,7 @@ const MyComponent = () => {
 									className="pb-2 align-middle text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900"
 									tabIndex={-1}
 								>
-									{highlightSearch(currentBookmark.title, searchText)}
+									{highlightSearch(currentBookmark.title, trimmedSearchText)}
 								</p>
 							</div>
 						)}
@@ -231,7 +232,7 @@ const MyComponent = () => {
 										<ImageIcon size="15" />
 									)}
 									<span className="truncate">
-										{highlightSearch(domain ?? "", searchText)}
+										{highlightSearch(domain ?? "", trimmedSearchText)}
 									</span>
 									<span>·</span>
 									{currentBookmark?.inserted_at && (
@@ -251,7 +252,10 @@ const MyComponent = () => {
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
-									{highlightSearch(currentBookmark.description, searchText)}
+									{highlightSearch(
+										currentBookmark.description,
+										trimmedSearchText,
+									)}
 									{showMore && isOverflowing && (
 										<button
 											className="inline text-13 leading-[138%] tracking-[0.01em] text-gray-800"
@@ -307,7 +311,7 @@ const MyComponent = () => {
 												className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
-												#{highlightSearch(tag?.name, searchText)}
+												{highlightSearch("#" + tag?.name, trimmedSearchText)}
 											</span>
 										))}
 									</div>
@@ -349,11 +353,11 @@ const MyComponent = () => {
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
 											{highlightSearch(
 												metaData?.img_caption || metaData?.image_caption || "",
-												searchText,
+												trimmedSearchText,
 											)}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}
-											{highlightSearch(metaData?.ocr ?? "", searchText)}
+											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
 										</p>
 									</div>
 								</motion.div>
