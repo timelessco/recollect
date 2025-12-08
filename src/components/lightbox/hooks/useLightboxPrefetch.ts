@@ -6,6 +6,7 @@ import { PAGINATION_LIMIT } from "../../../utils/constants";
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { useMiscellaneousStore } from "@/store/componentStore";
+import { handleClientError } from "@/utils/error-utils/client";
 
 type UseLightboxPrefetchParams = {
 	activeIndex: number;
@@ -52,12 +53,11 @@ export function useLightboxPrefetch({
 						await fetchNextBookmarkPage();
 					}
 				} catch (error) {
-					console.error("Error prefetching next page:", error);
+					handleClientError(error, "Error prefetching next page");
 				}
 			};
 
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
-			prefetch();
+			void prefetch();
 		}
 	}, [
 		activeIndex,
