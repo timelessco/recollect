@@ -438,7 +438,7 @@ const CardSection = ({
 		const isCreatedByLoggedInUser = isBookmarkCreatedByLoggedinUser(item);
 
 		const avatarClassName = classNames({
-			"absolute h-[26px] w-[26px] rounded-full": true,
+			"absolute h-[26px] w-[26px] rounded-full hidden group-hover:flex": true,
 			"right-[65px] top-0": isCreatedByLoggedInUser,
 			"right-[100px]": cardTypeCondition === viewValues.list,
 			"right-0 top-0": !isCreatedByLoggedInUser,
