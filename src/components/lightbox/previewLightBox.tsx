@@ -2,8 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { isEmpty } from "lodash";
 import { type DraggableItemProps } from "react-aria";
 
+import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
+import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useDebounce from "../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
@@ -17,6 +20,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
+	PAGINATION_LIMIT,
 } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -49,6 +53,15 @@ export const PreviewLightBox = ({
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const debouncedSearch = useDebounce(searchText, 500);
+
+	// Determine if we're currently searching
+	const isSearching = !isEmpty(searchText);
+
+	// Get fetchNextPage from pagination hooks
+	const { fetchNextPage: fetchNextBookmarkPage } = useFetchPaginatedBookmarks();
+	const { fetchNextPage: fetchNextSearchPage, hasNextPage: searchHasNextPage } =
+		useSearchBookmarks();
+
 	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
 	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
@@ -66,6 +79,38 @@ export const PreviewLightBox = ({
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
 	}, [previousData?.pages]);
+
+	// Prefetch next page when approaching the end of current data
+	useEffect(() => {
+		if (!open || activeIndex === -1 || !bookmarks?.length) {
+			return;
+		}
+
+		const threshold = 3;
+		const shouldFetchMore = activeIndex >= bookmarks.length - threshold;
+
+		const currentPageCount = previousData?.pages?.length ?? 0;
+		const lastPageItemCount =
+			previousData?.pages?.[currentPageCount - 1]?.data?.length ?? 0;
+		const hasMoreData = lastPageItemCount >= PAGINATION_LIMIT;
+
+		if (shouldFetchMore && hasMoreData) {
+			if (isSearching && searchHasNextPage) {
+				void fetchNextSearchPage();
+			} else if (!isSearching) {
+				void fetchNextBookmarkPage();
+			}
+		}
+	}, [
+		activeIndex,
+		bookmarks?.length,
+		open,
+		previousData?.pages,
+		isSearching,
+		searchHasNextPage,
+		fetchNextSearchPage,
+		fetchNextBookmarkPage,
+	]);
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {
