@@ -1,11 +1,10 @@
 import { useEffect } from "react";
 import { isEmpty } from "lodash";
 
-import { PAGINATION_LIMIT } from "../../../utils/constants";
-
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { useMiscellaneousStore } from "@/store/componentStore";
+import { PAGINATION_LIMIT } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 
 type UseLightboxPrefetchParams = {
