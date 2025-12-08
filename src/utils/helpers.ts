@@ -21,11 +21,11 @@ import { type UrlInput } from "../types/componentTypes";
 
 import {
 	acceptedFileTypes,
-	ALL_BOOKMARKS_URL,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	EVERYTHING_URL,
 	FILE_NAME_PARSING_PATTERN,
 	GET_NAME_FROM_EMAIL_PATTERN,
 	imageFileTypes,
@@ -152,7 +152,7 @@ export const getNormalisedUrl = (url: string) => {
 
 export const isUserInACategory = (url: string) => {
 	const nonCategoryPages = [
-		ALL_BOOKMARKS_URL,
+		EVERYTHING_URL,
 		UNCATEGORIZED_URL,
 		INBOX_URL,
 		SEARCH_URL,
@@ -402,7 +402,7 @@ export const getPreviewPathInfo = (
  * @param categoryData.data - Array of category data to search through
  * @param categoryData.error - Optional error object from the data fetch
  * @returns number | string | null - Returns:
- *   - null if the current route is for all bookmarks or search
+ *   - null if the current route is for everything or search
  *   - category ID (number) if a matching category is found
  *   - the original category slug (string) if no matching category is found
  */
@@ -419,8 +419,8 @@ export const searchSlugKey = (categoryData: {
 		(item) => item?.category_slug === categorySlug,
 	)?.id;
 
-	// Special case: return null for 'all bookmarks' or 'search' routes
-	if (categorySlug === ALL_BOOKMARKS_URL || categorySlug === SEARCH_URL) {
+	// Special case: return null for 'everything' or 'search' routes
+	if (categorySlug === EVERYTHING_URL || categorySlug === SEARCH_URL) {
 		return null;
 	}
 
@@ -463,7 +463,7 @@ export const getBookmarkCountForCurrentPage = (
 	bookmarkCounts:
 		| {
 				categoryCount?: Array<{ category_id: number; count: number }>;
-				allBookmarks?: number;
+				everything?: number;
 				trash?: number;
 				uncategorized?: number;
 				images?: number;
@@ -491,7 +491,7 @@ export const getBookmarkCountForCurrentPage = (
 	// Handle special category strings
 	switch (categoryId) {
 		case null:
-			return bookmarkCounts.allBookmarks ?? 0;
+			return bookmarkCounts.everything ?? 0;
 		case TRASH_URL:
 			return bookmarkCounts.trash ?? 0;
 		case UNCATEGORIZED_URL:

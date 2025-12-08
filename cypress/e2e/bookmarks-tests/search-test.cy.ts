@@ -1,6 +1,8 @@
+import { EVERYTHING_URL } from "../../../src/utils/constants";
+
 describe("optimistic tests", () => {
 	beforeEach(() => {
-		cy.visit("http://localhost:3000/all-bookmarks");
+		cy.visit(`http://localhost:3000/${EVERYTHING_URL}`);
 	});
 
 	it("add and del bookmark optimistically test ", () => {

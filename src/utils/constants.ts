@@ -140,7 +140,7 @@ export const OTP_URL = "otp";
 export const AUTH_URLS = "auth";
 
 // Others
-export const ALL_BOOKMARKS_URL = "all-bookmarks";
+export const EVERYTHING_URL = "everything";
 export const UNCATEGORIZED_URL = "uncategorized";
 export const SEARCH_URL = "search";
 export const INBOX_URL = "inbox";
@@ -264,7 +264,7 @@ export const colorPickerColors = [
 export const defaultBlur = "Uf4:~MrTiwbcpfi]Z~kDb_agaJoco}jbaeax";
 
 export const menuListItemName = {
-	allBookmarks: "All Bookmarks",
+	everything: "Everything",
 	inbox: "Inbox",
 	trash: "Trash",
 	settings: "Settings",

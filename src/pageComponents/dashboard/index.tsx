@@ -480,7 +480,7 @@ const Dashboard = () => {
 			}
 
 			if (CATEGORY_ID === null) {
-				const count = bookmarksCountData?.data?.allBookmarks;
+				const count = bookmarksCountData?.data?.everything;
 				return count !== flattendPaginationBookmarkData?.length;
 			}
 

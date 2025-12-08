@@ -37,9 +37,9 @@ import {
 } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import {
-	ALL_BOOKMARKS_URL,
 	CATEGORIES_KEY,
 	DOCUMENTS_URL,
+	EVERYTHING_URL,
 	IMAGES_URL,
 	LINKS_URL,
 	TWEETS_URL,
@@ -71,7 +71,7 @@ export const AddToCollectionDropdown = memo(
 		const session = useSupabaseSession((state) => state.session);
 		const queryClient = useQueryClient();
 		const specialUrls = [
-			ALL_BOOKMARKS_URL,
+			EVERYTHING_URL,
 			UNCATEGORIZED_URL,
 			DOCUMENTS_URL,
 			TWEETS_URL,

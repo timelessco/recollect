@@ -3,7 +3,7 @@
 
 describe("Meta data testing", () => {
 	beforeEach(() => {
-		// cy.visit("/all-bookmarks");
+		// cy.visit(`/${EVERYTHING_URL}`);
 		cy.visit("/login");
 	});
 

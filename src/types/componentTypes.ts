@@ -32,7 +32,7 @@ export type SearchSelectOption = {
 
 // export type CategoryIdUrlTypes =
 // 	| number
-// 	| typeof ALL_BOOKMARKS_URL
+// 	| typeof EVERYTHING_URL
 // 	| typeof TRASH_URL
 // 	| typeof UNCATEGORIZED_URL
 // 	| null;

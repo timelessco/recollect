@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { GoogleIcon } from "@/icons/google-icon";
 import { createClient } from "@/lib/supabase/client";
-import { ALL_BOOKMARKS_URL } from "@/utils/constants";
+import { EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 import { tv } from "@/utils/tailwind-merge";
 import { successToast } from "@/utils/toastMessages";
@@ -41,7 +41,7 @@ export function SignInWithGoogleForm() {
 				const { error } = await supabase.auth.signInWithOAuth({
 					provider: "google",
 					options: {
-						redirectTo: `${window.location.origin}/auth/oauth?next=${callbackURL ? `${callbackURL}` : `/${ALL_BOOKMARKS_URL}`}`,
+						redirectTo: `${window.location.origin}/auth/oauth?next=${callbackURL ? `${callbackURL}` : `/${EVERYTHING_URL}`}`,
 					},
 				});
 

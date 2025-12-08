@@ -9,7 +9,7 @@ import useFetchCategories from "../async/queryHooks/category/useFetchCategories"
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
 import { useSupabaseSession } from "../store/componentStore";
 import { mutationApiCall } from "../utils/apiHelpers";
-import { ALL_BOOKMARKS_URL } from "../utils/constants";
+import { EVERYTHING_URL } from "../utils/constants";
 import { errorToast } from "../utils/toastMessages";
 
 export const useDeleteCollection = () => {
@@ -59,7 +59,7 @@ export const useDeleteCollection = () => {
 				// current - only push to home if user is deleting the category when user is currently in that category
 				// isDataPresentCheck - only push to home after category get delete successfully
 				if (isDataPresentCheck && current) {
-					void router.push(`/${ALL_BOOKMARKS_URL}`);
+					void router.push(`/${EVERYTHING_URL}`);
 				}
 			}
 		},

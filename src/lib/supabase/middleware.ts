@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 import {
-	ALL_BOOKMARKS_URL,
+	EVERYTHING_URL,
 	isGuestPath,
 	isPublicPath,
 	LOGIN_URL,
@@ -55,7 +55,7 @@ export async function updateSession(request: NextRequest) {
 	// Redirect authenticated users away from guest-only paths
 	if (user && isGuestPath(pathname)) {
 		const url = request.nextUrl.clone();
-		url.pathname = `/${ALL_BOOKMARKS_URL}`;
+		url.pathname = `/${EVERYTHING_URL}`;
 		// Clear query & hash parameters
 		url.search = "";
 		url.hash = "";

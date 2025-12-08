@@ -8,7 +8,7 @@ import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
 import {
-	ALL_BOOKMARKS_URL,
+	EVERYTHING_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../utils/constants";
 import { createServiceClient } from "../../utils/supabaseClient";
@@ -95,7 +95,7 @@ export default async function handler(
 
 			if (isNull(catError)) {
 				// User has been added as a colaborator to the category
-				response?.redirect(`/${ALL_BOOKMARKS_URL}`);
+				response?.redirect(`/${EVERYTHING_URL}`);
 			} else if (catError?.code === "23503") {
 				// if collab user does not have an existing account
 				response.status(500).json({

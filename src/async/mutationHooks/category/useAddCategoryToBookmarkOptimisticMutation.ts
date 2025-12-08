@@ -56,7 +56,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 					({
 						...old,
 
-						// do not filter when user is in all-bookmarks page
+						// do not filter when user is in everything page
 						data: isNull(CATEGORY_ID)
 							? old?.data
 							: old?.data?.filter((item) => item?.id !== data?.bookmark_id),

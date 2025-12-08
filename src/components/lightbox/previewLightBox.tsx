@@ -13,10 +13,10 @@ import {
 } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
+	EVERYTHING_URL,
 } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -50,8 +50,7 @@ export const PreviewLightBox = ({
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const debouncedSearch = useDebounce(searchText, 500);
-
-	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
+	// if there is text in searchbar we get the cache of searched data else we get from everything
 	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
@@ -103,10 +102,10 @@ export const PreviewLightBox = ({
 			{
 				pathname: `${CATEGORY_ID_PATHNAME}`,
 				query: {
-					category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
+					category_id: router?.query?.category_id ?? EVERYTHING_URL,
 				},
 			},
-			getCategorySlugFromRouter(router) ?? ALL_BOOKMARKS_URL,
+			getCategorySlugFromRouter(router) ?? EVERYTHING_URL,
 			{ shallow: true },
 		);
 
