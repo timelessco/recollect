@@ -18,13 +18,7 @@ export async function GET(request: Request) {
 			const { error } = await supabase.auth.exchangeCodeForSession(code);
 
 			if (!error) {
-				// original origin before load balancer
-				const forwardedHost = request.headers.get("x-forwarded-host");
-				if (forwardedHost) {
-					return redirect(`https://${forwardedHost}${next}`);
-				} else {
-					return redirect(next);
-				}
+				return redirect(next);
 			} else {
 				redirect(`/auth/error?error=${getErrorMessage(error)}`);
 			}

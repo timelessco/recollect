@@ -21,6 +21,7 @@ import {
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 
+import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
 import { CustomLightBox } from "./LightBox";
 
 type PreviewLightBoxProps = {
@@ -66,6 +67,14 @@ export const PreviewLightBox = ({
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
 	}, [previousData?.pages]);
+
+	// Prefetch next page when approaching the end of current data
+	useLightboxPrefetch({
+		open,
+		activeIndex,
+		bookmarksLength: bookmarks?.length ?? 0,
+		pages: previousData?.pages,
+	});
 
 	// Only update activeIndex when the lightbox is being opened
 	useEffect(() => {
