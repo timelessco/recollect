@@ -55,8 +55,6 @@ export default async function handler(
 			request.headers["x-api-key"] ||
 			request.headers.authorization?.replace("Bearer ", "");
 
-		console.log("apiKey", apiKey, "env!!!!", process.env.INTERNAL_API_KEY);
-
 		if (apiKey !== process.env.INTERNAL_API_KEY) {
 			console.warn("Unauthorized - Invalid API key");
 			response.status(401).json({
