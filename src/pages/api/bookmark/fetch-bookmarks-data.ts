@@ -33,7 +33,7 @@ import {
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-// gets all bookmarks data mapped with the data related to other tables , like tags , categories etc...
+// gets all bookmarks data mapped with the data related to other tables, like tags, categories etc...
 
 type Data = {
 	count: BookmarksCountTypes | null;

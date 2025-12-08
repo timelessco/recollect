@@ -74,7 +74,7 @@ export default async function handler(
 	const email = userData?.data?.user?.email as string;
 
 	let count: BookmarksCountTypes = {
-		allBookmarks: 0,
+		everything: 0,
 		categoryCount: [],
 		trash: 0,
 		uncategorized: 0,
@@ -153,7 +153,7 @@ export default async function handler(
 
 		count = {
 			...count,
-			allBookmarks: bookmarkCount ?? 0,
+			everything: bookmarkCount ?? 0,
 			images: bookmarkImageCount ?? 0,
 			videos: bookmarkVideoCount ?? 0,
 			documents: bookmarkDocumentCount ?? 0,

@@ -12,7 +12,7 @@ import { FieldError, inputStyles } from "../ui/recollect/field";
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
-import { ALL_BOOKMARKS_URL, OTP_URL } from "@/utils/constants";
+import { EVERYTHING_URL, OTP_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 
 export function EmailToOtpForm() {
@@ -33,7 +33,7 @@ export function EmailToOtpForm() {
 					email,
 					options: {
 						shouldCreateUser: true,
-						emailRedirectTo: `${window.location.origin}/${ALL_BOOKMARKS_URL}`,
+						emailRedirectTo: `${window.location.origin}/${EVERYTHING_URL}`,
 					},
 				});
 

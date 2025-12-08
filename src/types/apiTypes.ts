@@ -46,7 +46,7 @@ export type SingleListData = {
 };
 
 export type BookmarksCountTypes = {
-	allBookmarks: number;
+	everything: number;
 	categoryCount: Array<{ category_id: number; count: number }>;
 	documents: number;
 	images: number;

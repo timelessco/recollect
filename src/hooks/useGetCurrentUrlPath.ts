@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 
-// gets current url path , eg if url is <origin>/all-bookmarks , this hook will return all-bookmarks
+// gets current url path , eg if url is <origin>/everything , this hook will return everything
 export default function useGetCurrentUrlPath() {
 	const router = useRouter();
 

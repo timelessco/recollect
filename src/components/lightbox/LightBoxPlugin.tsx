@@ -89,7 +89,7 @@ const MyComponent = () => {
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const { sortBy } = useGetSortBy();
 
-	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
+	// if there is text in searchbar we get the cache of searched data else we get from everything
 	const previousData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,

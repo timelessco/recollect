@@ -12,8 +12,8 @@ import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
 
 import {
-	ALL_BOOKMARKS_URL,
 	DOCUMENTS_URL,
+	EVERYTHING_URL,
 	IMAGES_URL,
 	LINKS_URL,
 	menuListItemName,
@@ -3583,11 +3583,11 @@ export const optionsMenuListArray = (
 ) => [
 	{
 		icon: <HomeIconGray />,
-		name: menuListItemName.allBookmarks,
-		href: `/${ALL_BOOKMARKS_URL}`,
-		current: currentPath === ALL_BOOKMARKS_URL,
+		name: menuListItemName.everything,
+		href: `/${EVERYTHING_URL}`,
+		current: currentPath === EVERYTHING_URL,
 		id: 0,
-		count: bookmarksCountData?.data?.allBookmarks,
+		count: bookmarksCountData?.data?.everything,
 		iconColor: "",
 	},
 	{

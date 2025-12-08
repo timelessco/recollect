@@ -12,7 +12,7 @@ import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
 import { BOOKMARKS_KEY, PAGINATION_LIMIT } from "../../../utils/constants";
 import { fetchBookmarksData } from "../../supabaseCrudHelpers";
 
-// fetches paginated bookmarks pages on user location like all-bookmarks or categories etc...
+// fetches paginated bookmarks pages on user location like everything or categories etc...
 export default function useFetchPaginatedBookmarks() {
 	const session = useSupabaseSession((state) => state.session);
 

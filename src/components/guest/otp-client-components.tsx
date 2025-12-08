@@ -8,7 +8,7 @@ import { Form } from "react-aria-components";
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
-import { ALL_BOOKMARKS_URL } from "@/utils/constants";
+import { EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 import { focusRing } from "@/utils/react-aria-utils";
 import { tcx } from "@/utils/tailwind-merge";
@@ -45,7 +45,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 				}
 
 				// Navigate immediately after success - same transition!
-				router.push(`/${ALL_BOOKMARKS_URL}`);
+				router.push(`/${EVERYTHING_URL}`);
 			} catch (error) {
 				handleClientError(error, "Failed to verify OTP");
 			}

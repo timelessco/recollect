@@ -140,7 +140,7 @@ export const OTP_URL = "otp";
 export const AUTH_URLS = "auth";
 
 // Others
-export const ALL_BOOKMARKS_URL = "all-bookmarks";
+export const EVERYTHING_URL = "everything";
 export const UNCATEGORIZED_URL = "uncategorized";
 export const SEARCH_URL = "search";
 export const INBOX_URL = "inbox";
@@ -154,7 +154,7 @@ export const IMAGES_URL = "images";
 export const VIDEOS_URL = "videos";
 export const LINKS_URL = "links";
 
-// react-query keys
+// react -query keys
 
 export const BOOKMARKS_KEY = "bookmarks";
 export const BOOKMARKS_COUNT_KEY = "bookmarks_count";
@@ -174,7 +174,7 @@ export const DUPLICATE_CATEGORY_NAME_ERROR =
 	"You already have a category with this name , please add any other name";
 export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
-// accepted file type constants
+// accep ted file type constants
 export const acceptedFileTypes = [
 	// Image
 	"image/gif",
@@ -210,7 +210,7 @@ export const acceptedFileTypes = [
 	"video/3gpp2",
 	"video/x-msvideo",
 
-	// Application
+	// Appli cation
 	"application/msword",
 	"application/pdf",
 ];
@@ -259,12 +259,12 @@ export const colorPickerColors = [
 	"#003468",
 ];
 
-// blur-hash
-// cspell:disable-next-line -- disables checking till the end of the next line.
+// blur- hash
+// cspel l:disable-next-line -- disables checking till the end of the next line.
 export const defaultBlur = "Uf4:~MrTiwbcpfi]Z~kDb_agaJoco}jbaeax";
 
 export const menuListItemName = {
-	allBookmarks: "All Bookmarks",
+	everything: "Everything",
 	inbox: "Inbox",
 	trash: "Trash",
 	settings: "Settings",
@@ -311,7 +311,7 @@ export const infoValues = [
 
 export const CATEGORY_ID_PATHNAME = `/[category_id]`;
 
-// OG_IMAGE_PREFERRED_SITES
+// OG_IMAGE_P REFERRED_SITES
 export const OG_IMAGE_PREFERRED_SITES = [
 	"cosmos",
 	"pinterest",
@@ -323,7 +323,7 @@ export const OG_IMAGE_PREFERRED_SITES = [
 	"pin.it",
 ];
 
-// Lightbox Constants
+// Lightbox C onstants
 
 // Media type prefixes
 export const IMAGE_TYPE_PREFIX = "image";
@@ -339,7 +339,7 @@ export const IMAGE_JPEG_MIME_TYPE = "image/jpeg";
 // UI strings
 export const PREVIEW_ALT_TEXT = "preview";
 
-// URL patterns
+// URL patter ns
 export const YOUTUBE_COM = "youtube.com";
 export const YOUTU_BE = "youtu.be";
 
@@ -347,7 +347,7 @@ export const YOUTU_BE = "youtu.be";
 export const PDF_VIEWER_PARAMS =
 	"#toolbar=0&navpanes=0&scrollbar=0&zoom=100&page=1&view=FitH";
 
-// Lightbox button types
+// Lightbox b utton types
 export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
 export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
@@ -370,13 +370,13 @@ export const springConfig = {
 } as const;
 
 /**
- * Array of public paths that don't require authentication
+ * Array  of public paths that don't require authentication
  * Dynamically generated from PAGE_SLUGS
  */
-// export const PUBLIC_PATHS = new Set(["/"]);
+// export con st PUBLIC_PATHS = new Set(["/"]);
 
 /**
- * Array of guest paths that require authentication
+ * Array  of guest paths that require authentication
  */
 export const GUEST_PATHS = new Set([
 	`/${EMAIL_URL}`,
@@ -387,7 +387,7 @@ export const isGuestPath = (pathname: string) =>
 	pathname.startsWith(`/${AUTH_URLS}`) || GUEST_PATHS.has(pathname);
 
 /**
- * Array of public paths that don't require authentication
+ * Array  of public paths that don't require authentication
  */
 export const PUBLIC_PATHS = new Set(["/public"]);
 export const isPublicPath = (pathname: string) =>

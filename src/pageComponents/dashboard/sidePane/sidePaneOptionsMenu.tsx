@@ -38,7 +38,7 @@ const SidePaneOptionsMenu = () => {
 	).filter((item) => {
 		if (
 			item?.name === menuListItemName.inbox ||
-			item?.name === menuListItemName.allBookmarks ||
+			item?.name === menuListItemName.everything ||
 			item?.name === menuListItemName.trash ||
 			item?.name === menuListItemName.settings
 		) {

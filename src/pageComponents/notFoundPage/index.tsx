@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { buttonDarkClassName } from "../../utils/commonClassNames";
-import { ALL_BOOKMARKS_URL } from "../../utils/constants";
+import { EVERYTHING_URL } from "../../utils/constants";
 
 const NotFoundPage = () => (
 	<div className="flex justify-center py-[300px]">
@@ -11,7 +11,7 @@ const NotFoundPage = () => (
 			</p>
 			<Link
 				className={buttonDarkClassName}
-				href={`/${ALL_BOOKMARKS_URL}`}
+				href={`/${EVERYTHING_URL}`}
 				passHref
 				type="dark"
 			>

@@ -36,9 +36,9 @@ import {
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
@@ -633,7 +633,7 @@ const CardSection = ({
 		return (
 			<>
 				{!isNull(item?.category_id) &&
-					categorySlug === ALL_BOOKMARKS_URL &&
+					categorySlug === EVERYTHING_URL &&
 					item?.category_id !== 0 && (
 						<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
 							<p className="mr-1">in</p>

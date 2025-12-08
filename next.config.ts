@@ -64,7 +64,7 @@ const nextConfig: NextConfig = {
 	async redirects() {
 		return await Promise.resolve([
 			{
-				destination: "/all-bookmarks",
+				destination: `/everything`,
 				// temporary redirect (307)
 				permanent: false,
 				source: "/",
