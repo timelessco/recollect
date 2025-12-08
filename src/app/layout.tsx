@@ -29,6 +29,7 @@ export default async function RootLayout(props: RootLayoutProps) {
 			lang={lang}
 			dir={isRTL(lang) ? "rtl" : "ltr"}
 			className="antialiased inter-display optimize-legibility"
+			suppressHydrationWarning
 		>
 			<body className="overflow-hidden bg-gray-0 outline-hidden">
 				<Providers>{children}</Providers>

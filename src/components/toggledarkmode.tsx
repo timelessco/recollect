@@ -1,45 +1,11 @@
-import { useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 
 export const Switch = () => {
-	const [theme, setTheme] = useState<"dark" | "light" | "system">("system");
-	// Use useLayoutEffect to prevent flash of incorrect theme
-	useLayoutEffect(() => {
-		const storedTheme = localStorage.getItem("theme");
-		if (storedTheme === "dark" || storedTheme === "light") {
-			setTheme(storedTheme);
-			document.documentElement.classList.toggle("dark", storedTheme === "dark");
-		} else {
-			setTheme("system");
-			const prefersDark = window.matchMedia(
-				"(prefers-color-scheme: dark)",
-			).matches;
-			document.documentElement.classList.toggle("dark", prefersDark);
-		}
-	}, []);
+	const { theme, setTheme, resolvedTheme } = useTheme();
 
-	// Handle theme changes
-	useEffect(() => {
-		// Skip initial render
-		if (!theme) {
-			return;
-		}
-
-		if (theme === "system") {
-			localStorage.removeItem("theme");
-			const prefersDark = window.matchMedia(
-				"(prefers-color-scheme: dark)",
-			).matches;
-			document.documentElement.classList.toggle("dark", prefersDark);
-		} else {
-			localStorage.setItem("theme", theme);
-			document.documentElement.classList.toggle("dark", theme === "dark");
-		}
-	}, [theme]);
-
-	// Don't render until theme is determined
-	if (theme === null) {
-		// or a loading spinner
+	// Don't render until theme is determined (prevents hydration mismatch)
+	if (!resolvedTheme) {
 		return null;
 	}
 
