@@ -69,6 +69,12 @@ const nextConfig: NextConfig = {
 				permanent: false,
 				source: "/",
 			},
+			{
+				destination: `/everything`,
+				// 301 permanent redirect
+				permanent: true,
+				source: "/all-bookmarks",
+			},
 		]);
 	},
 
