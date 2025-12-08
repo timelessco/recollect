@@ -9,6 +9,52 @@ export type Json =
 export type Database = {
 	public: {
 		Tables: {
+			bookmark_categories: {
+				Row: {
+					bookmark_id: number;
+					category_id: number;
+					created_at: string;
+					id: number;
+					user_id: string;
+				};
+				Insert: {
+					bookmark_id: number;
+					category_id: number;
+					created_at?: string;
+					id?: number;
+					user_id: string;
+				};
+				Update: {
+					bookmark_id?: number;
+					category_id?: number;
+					created_at?: string;
+					id?: number;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "bookmark_categories_bookmark_id_fkey";
+						columns: ["bookmark_id"];
+						isOneToOne: false;
+						referencedRelation: "everything";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "bookmark_categories_category_id_fkey";
+						columns: ["category_id"];
+						isOneToOne: false;
+						referencedRelation: "categories";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "bookmark_categories_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "profiles";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			bookmark_tags: {
 				Row: {
 					bookmark_id: number;
@@ -298,9 +344,51 @@ export type Database = {
 					title: string;
 				}>;
 			};
-			search_bookmarks_debugging: {
-				Args: { search_text: string };
+			search_bookmarks_debugging:
+				| {
+						Args: { search_text: string; url_scope: string };
+						Returns: Array<{
+							category_id: number;
+							description: string;
+							id: number;
+							inserted_at: string;
+							meta_data: Json;
+							ogimage: string;
+							screenshot: string;
+							sort_index: string;
+							title: string;
+							trash: boolean;
+							type: string;
+							url: string;
+							user_id: string;
+						}>;
+				  }
+				| {
+						Args: { search_text: string };
+						Returns: Array<{
+							category_id: number;
+							description: string;
+							id: number;
+							inserted_at: string;
+							meta_data: Json;
+							ogimage: string;
+							screenshot: string;
+							sort_index: string;
+							title: string;
+							trash: boolean;
+							type: string;
+							url: string;
+							user_id: string;
+						}>;
+				  };
+			search_bookmarks_url_tag_scope: {
+				Args: {
+					search_text?: string;
+					tag_scope?: string[];
+					url_scope?: string;
+				};
 				Returns: Array<{
+					added_tags: Json;
 					category_id: number;
 					description: string;
 					id: number;

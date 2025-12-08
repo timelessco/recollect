@@ -29,7 +29,14 @@ export type ImgMetadataType = {
 export type twitter_sort_index = string;
 
 export type SingleListData = {
+	/**
+	 * Array of categories (many-to-many)
+	 */
+	addedCategories?: CategoriesData[];
 	addedTags: UserTagsData[];
+	/**
+	 * @deprecated Will be removed after migration completes
+	 */
 	category_id: number | null;
 	description: string;
 	id: number;
@@ -100,6 +107,15 @@ export type BookmarksTagData = {
 	created_at?: string;
 	id?: number;
 	tag_id: number;
+	user_id: string;
+};
+
+// Junction table type for many-to-many bookmark-category relationship
+export type BookmarksCategoryData = {
+	bookmark_id: number;
+	category_id: number;
+	created_at: string;
+	id: number;
 	user_id: string;
 };
 
@@ -242,6 +258,17 @@ export type AddCategoryToBookmarkApiPayload = {
 	bookmark_id: number;
 	category_id: number | null;
 	update_access: boolean;
+};
+
+// NEW: Many-to-many category API payloads
+export type SetBookmarkCategoriesApiPayload = {
+	bookmark_id: number;
+	category_ids: number[];
+};
+
+export type BookmarkCategoryOperationPayload = {
+	bookmark_id: number;
+	category_id: number;
 };
 
 export type AddUserCategoryApiPayload = {

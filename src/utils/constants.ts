@@ -4,6 +4,7 @@ import { BASE_URL } from "@/site-config";
 export const MAIN_TABLE_NAME = "everything";
 export const TAG_TABLE_NAME = "tags";
 export const BOOKMARK_TAGS_TABLE_NAME = "bookmark_tags";
+export const BOOKMARK_CATEGORIES_TABLE_NAME = "bookmark_categories";
 export const CATEGORIES_TABLE_NAME = "categories";
 export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
@@ -89,6 +90,11 @@ export const ADD_CATEGORY_TO_BOOKMARK_API =
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
 export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
+export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
+export const ADD_CATEGORY_TO_BOOKMARK_V2_API =
+	"/category/add-category-to-bookmark-v2";
+export const REMOVE_CATEGORY_FROM_BOOKMARK_API =
+	"/category/remove-category-from-bookmark";
 // share api
 export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API =
 	"/fetch-public-category-bookmarks";
