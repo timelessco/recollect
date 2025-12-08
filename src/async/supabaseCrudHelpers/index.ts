@@ -66,6 +66,7 @@ import {
 	FETCH_USER_PROFILE_API,
 	FETCH_USER_PROFILE_PIC_API,
 	FETCH_USER_TAGS_API,
+	GET_API_KEY_API,
 	GET_MEDIA_TYPE_API,
 	getBaseUrl,
 	MOVE_BOOKMARK_TO_TRASH_API,
@@ -90,6 +91,9 @@ import {
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../utils/helpers";
+
+import { handleClientError } from "@/utils/error-utils/client";
+import { successToast } from "@/utils/toastMessages";
 
 // bookmark
 // get bookmark by id
@@ -141,20 +145,37 @@ export const deleteApiKey = async (): Promise<{
 	}
 };
 
-type CheckApiKeyResponse = { data: { hasApiKey: boolean } };
+type CheckApiKeyResponse = {
+	data: { hasApiKey: boolean } | null;
+};
 
-export const checkApiKey = async (): Promise<CheckApiKeyResponse> => {
+export const checkGeminiApiKey = async (): Promise<CheckApiKeyResponse> => {
 	try {
-		const response = await axios.get(`${NEXT_API_URL}${CHECK_API_KEY_API}`);
+		const response = await axios.get<CheckApiKeyResponse>(
+			`${NEXT_API_URL}${CHECK_API_KEY_API}`,
+		);
 
-		if (!response.data) {
-			throw new Error("Failed to check API key status");
-		}
-
-		return response.data;
+		return { data: response.data.data };
 	} catch (error) {
-		console.error("Error checking API key:", error);
-		throw new Error("Failed to verify API key status");
+		handleClientError(error, "Failed to check API key");
+		return { data: null };
+	}
+};
+
+type GetApiKeyResponse = {
+	data: { apiKey: string } | null;
+};
+
+export const getGeminiApiKey = async (): Promise<GetApiKeyResponse> => {
+	try {
+		const response = await axios.get<GetApiKeyResponse>(
+			`${NEXT_API_URL}${GET_API_KEY_API}`,
+		);
+
+		return { data: response.data.data };
+	} catch (error) {
+		handleClientError(error, "Failed to get API key try again later ");
+		return { data: null };
 	}
 };
 
@@ -251,7 +272,7 @@ export const addBookmarkMinData = async ({
 		// append https here
 		let finalUrl = url;
 
-		if (!url.startsWith("http") || !url.startsWith("https")) {
+		if (!url.startsWith("http://") && !url.startsWith("https://")) {
 			finalUrl = `https://${url}`;
 		}
 
@@ -535,10 +556,11 @@ export const addCategoryToBookmark = async ({
 				update_access,
 			},
 		);
-
+		successToast("Category added to bookmark");
 		return response;
 	} catch (error) {
-		return error;
+		handleClientError(error, "Failed to add category to bookmark");
+		return { data: null };
 	}
 };
 

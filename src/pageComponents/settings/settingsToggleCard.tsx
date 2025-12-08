@@ -39,7 +39,7 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
 			</div>
 		</div>
 		{isSwitch ? (
-			<div className="mr-[10px]">
+			<div className="mr-[10px] flex items-center">
 				<Switch
 					enabled={enabled}
 					disabled={!onToggle}

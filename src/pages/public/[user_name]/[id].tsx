@@ -45,15 +45,12 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 			{!isEmpty(props?.data) ? (
 				<CardSection
 					categoryViewsFromProps={props?.category_views ?? undefined}
-					deleteBookmarkId={undefined}
 					isBookmarkLoading={false}
 					isOgImgLoading={false}
 					isPublicPage
 					listData={props?.data as SingleListData[]}
-					onBulkBookmarkDelete={() => {}}
 					onCategoryChange={() => {}}
 					onDeleteClick={() => {}}
-					onEditClick={() => {}}
 					onMoveOutOfTrashClick={() => {}}
 					showAvatar={false}
 					userId=""

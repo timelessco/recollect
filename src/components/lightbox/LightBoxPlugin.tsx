@@ -41,6 +41,7 @@ import { Icon } from "../atoms/icon";
 import { Spinner } from "../spinner";
 
 import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
+import { highlightSearch } from "./LightboxUtils";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -71,6 +72,7 @@ const MyComponent = () => {
 	const [isOverflowing, setIsOverflowing] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
+	const aiSummaryScrollRef = useRef<HTMLDivElement>(null);
 
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
@@ -84,6 +86,7 @@ const MyComponent = () => {
 		error: PostgrestError;
 	};
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const trimmedSearchText = searchText?.trim() ?? "";
 	const { sortBy } = useGetSortBy();
 
 	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
@@ -123,6 +126,7 @@ const MyComponent = () => {
 	const expandableRef = useRef<HTMLDivElement>(null);
 
 	const metaData = currentBookmark?.meta_data;
+	const collapsedOffset = currentBookmark?.addedTags?.length > 0 ? 145 : 110;
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state.lightboxShowSidepane,
 	);
@@ -201,7 +205,7 @@ const MyComponent = () => {
 									className="pb-2 align-middle text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900"
 									tabIndex={-1}
 								>
-									{currentBookmark.title}
+									{highlightSearch(currentBookmark.title, trimmedSearchText)}
 								</p>
 							</div>
 						)}
@@ -226,7 +230,9 @@ const MyComponent = () => {
 									) : (
 										<ImageIcon size="15" />
 									)}
-									<span className="truncate">{domain}</span>
+									<span className="truncate">
+										{highlightSearch(domain ?? "", trimmedSearchText)}
+									</span>
 									<span>·</span>
 									{currentBookmark?.inserted_at && (
 										<span className="truncate">
@@ -245,7 +251,10 @@ const MyComponent = () => {
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
-									{currentBookmark.description}
+									{highlightSearch(
+										currentBookmark.description,
+										trimmedSearchText,
+									)}
 									{showMore && isOverflowing && (
 										<button
 											className="inline text-13 leading-[138%] tracking-[0.01em] text-gray-800"
@@ -278,9 +287,13 @@ const MyComponent = () => {
 						metaData?.img_caption ||
 						metaData?.ocr) && (
 						<motion.div
-							animate={{ y: isExpanded ? 0 : "calc(100% - 100px)" }}
+							animate={{
+								y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
+							}}
 							className="relative overflow-hidden"
-							initial={{ y: "calc(100% - 100px)" }}
+							initial={{
+								y: `calc(100% - ${collapsedOffset}px)`,
+							}}
 							key={currentBookmark?.id}
 							ref={expandableRef}
 							transition={{
@@ -297,7 +310,7 @@ const MyComponent = () => {
 												className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 												key={tag?.id}
 											>
-												#{tag?.name}
+												{highlightSearch("#" + tag?.name, trimmedSearchText)}
 											</span>
 										))}
 									</div>
@@ -310,9 +323,16 @@ const MyComponent = () => {
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
 									}`}
-									onClick={() =>
-										hasAIOverflowContent && setIsExpanded(!isExpanded)
-									}
+									onClick={() => {
+										if (!hasAIOverflowContent) {
+											return;
+										}
+
+										setIsExpanded((prev) => !prev);
+										if (aiSummaryScrollRef.current) {
+											aiSummaryScrollRef.current.scrollTop = 0;
+										}
+									}}
 									whileTap={hasAIOverflowContent ? { scale: 0.98 } : {}}
 								>
 									<div className="mb-2 flex items-center gap-2">
@@ -324,30 +344,34 @@ const MyComponent = () => {
 										</p>
 									</div>
 									<div
+										ref={aiSummaryScrollRef}
 										className={`max-h-[200px] ${
-											isExpanded ? "overflow-y-auto" : ""
+											isExpanded ? "hide-scrollbar scroll-shadows" : ""
 										}`}
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
-											{metaData?.img_caption || metaData?.image_caption}
+											{highlightSearch(
+												metaData?.img_caption || metaData?.image_caption || "",
+												trimmedSearchText,
+											)}
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}
-											{metaData?.ocr}
+											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
 										</p>
 									</div>
 								</motion.div>
 							)}
-							{/* Gradient overlay */}
-							{!isExpanded && hasAIOverflowContent && (
-								<div
-									className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[159px]"
-									style={{
-										background:
-											"linear-gradient(180deg, var(--color-whites-50) 0%, var(--color-whites-800) 77%, var(--color-whites-1000) 100%)",
-									}}
-								/>
-							)}
 						</motion.div>
+					)}
+					{/* Gradient overlay - outside animating container to stay fixed at bottom */}
+					{!isExpanded && hasAIOverflowContent && (
+						<div
+							className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[60px]"
+							style={{
+								background:
+									"linear-gradient(180deg, var(--color-whites-50) 0%, var(--color-whites-800) 77%, var(--color-whites-1000) 100%)",
+							}}
+						/>
 					)}
 				</motion.div>
 			)}

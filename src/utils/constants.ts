@@ -22,10 +22,13 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 // regx
 
 // Supports any valid TLD (2+ characters)
+
+export const HTTP_PATTERN = /^(https?:\/\/)?/u;
 export const URL_PATTERN =
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
 export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*#[A-Za-z\d]*/gu;
+export const GET_SITE_SCOPE_PATTERN = /@([A-Za-z\d]+)/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
 	/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
@@ -37,6 +40,8 @@ export const URL_IMAGE_CHECK_PATTERN =
 // eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
+
+export const ESCAPE_REGEXP_PATTERN = /[$()*+.?[\\\]^{|}]/gu;
 
 // api constants
 export const getBaseUrl = () => BASE_URL;
@@ -120,7 +125,8 @@ export const UPLOAD_FILE_REMAINING_DATA_API =
 // user settings and keys
 export const SAVE_API_KEY_API = "/v1/api-key";
 
-export const CHECK_API_KEY_API = "/v1/check-api-key";
+export const CHECK_API_KEY_API = "/v1/check-gemini-api-key";
+export const GET_API_KEY_API = "/v1/get-gemini-api-key";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";
 
@@ -166,6 +172,7 @@ export const BOOKMARKS_VIEW = "bookmarks_view";
 export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
 export const API_KEY_CHECK_KEY = "api_key_check";
+export const GET_API_KEY_KEY = "get_api_key";
 
 // error msgs
 
@@ -290,7 +297,6 @@ export const viewValues = {
 	moodboard: "moodboard",
 	card: "card",
 	list: "list",
-	headlines: "headlines",
 };
 
 export const singleInfoValues = {

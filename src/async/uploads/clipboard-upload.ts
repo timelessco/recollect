@@ -50,10 +50,9 @@ export const clipboardUpload = async (
 		const isUrl = text?.match(URL_PATTERN);
 
 		if (isUrl && !isEmpty(isUrl)) {
-			// upload the url as bookmark
 			await mutationApiCall(
 				addBookmarkMinDataOptimisticMutation.mutateAsync({
-					url: isUrl?.[0],
+					url: text.trim(),
 					category_id,
 					update_access: true,
 				}),

@@ -13,7 +13,7 @@ import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookm
 import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import useIsMobileView from "../../../hooks/useIsMobileView";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 import {
 	type BookmarksCountTypes,
@@ -49,7 +49,6 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import { type AddBookmarkDropdownTypes } from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
-import { Spinner } from "../../../components/spinner";
 import RenameIcon from "../../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -58,6 +57,8 @@ import {
 	dropdownMenuItemClassName,
 } from "../../../utils/commonClassNames";
 import ShareContent from "../share/shareContent";
+
+import { ClearTrashContent } from "@/components/clearTrashContent";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
@@ -233,25 +234,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		switch (headerOptionsCurrentTab) {
 			case "trash":
 				content = (
-					<div className="p-1">
-						<p className="py-[6px] text-[12px] leading-[115%] tracking-[0.02em] text-gray-600">
-							Sure you want to delete?
-						</p>
-						<Button
-							className="flex w-full justify-center bg-gray-alpha-100 py-[5.5px] leading-[115%] tracking-[0.01em] text-[#D10303] hover:bg-gray-alpha-200"
-							id="warning-button"
-							onClick={onClearTrash}
-						>
-							{isClearingTrash ? (
-								<Spinner className="h-[15px] w-[15px]" />
-							) : (
-								<>
-									<TrashIconRed />
-									<p className="ml-[6px]">Clear Trash</p>
-								</>
-							)}
-						</Button>
-					</div>
+					<ClearTrashContent
+						onClearTrash={onClearTrash}
+						isClearingTrash={isClearingTrash ?? false}
+					/>
 				);
 				break;
 			case "view":
@@ -336,7 +322,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				showSidePane={showSidePane}
 				triggerHeadingEdit={triggerHeadingEdit}
 				uploadFileFromAddDropdown={uploadFileFromAddDropdown}
-				userId={userId}
 			>
 				{children}
 			</DashboardContent>

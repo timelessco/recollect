@@ -108,14 +108,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
 	const renderViewsSwitch = (item: CardContentOptionsTypes) => {
 		const isEnabledLogic = () => {
-			if (bookmarksViewValue === viewValues.headlines) {
-				return (
-					item?.value === singleInfoValues.cover ||
-					item?.value === singleInfoValues.title ||
-					item?.value === singleInfoValues.info
-				);
-			}
-
 			if (
 				bookmarksViewValue === viewValues.moodboard ||
 				bookmarksViewValue === viewValues.card
@@ -143,11 +135,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		const isDisabledLogic = () => {
 			if (isInTweetsPage) {
 				// if in twitter page then disable all the options
-				return true;
-			}
-
-			if (bookmarksViewValue === viewValues.headlines) {
-				// if headlines disable all
 				return true;
 			}
 

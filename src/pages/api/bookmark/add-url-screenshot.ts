@@ -153,6 +153,36 @@ export default async function handler(
 				},
 				extra: { url: request.body.url },
 			});
+
+			const requestBody = {
+				id: request.body.id,
+				url: request.body.url,
+			};
+			console.log("Calling remaining bookmark data API (screenshot failed):", {
+				requestBody,
+			});
+
+			const [remainingApiError] = await vet(() =>
+				axios.post(
+					`${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
+					requestBody,
+					getAxiosConfigWithAuth(request),
+				),
+			);
+
+			if (remainingApiError) {
+				console.error("Remaining bookmark data API error:", remainingApiError);
+				Sentry.captureException(remainingApiError, {
+					tags: {
+						operation: "remaining_bookmark_data_api",
+						userId,
+					},
+					extra: {
+						bookmarkId: request.body.id,
+					},
+				});
+			}
+
 			response.status(500).json({
 				data: null,
 				error: "Error capturing screenshot",
@@ -282,7 +312,9 @@ export default async function handler(
 			favIcon: data[0]?.meta_data?.favIcon,
 			url: request.body.url,
 		};
-		console.log("Calling remaining bookmark data API:", { requestBody });
+		console.log("Calling remaining bookmark data API (screenshot succeeded):", {
+			requestBody,
+		});
 
 		const [remainingApiError] = await vet(() =>
 			axios.post(

@@ -1,6 +1,9 @@
 import { type NextApiRequest } from "next";
 import router from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
+import {
+	type PostgrestError,
+	type SupabaseClient,
+} from "@supabase/supabase-js";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
@@ -20,6 +23,7 @@ import {
 	acceptedFileTypes,
 	ALL_BOOKMARKS_URL,
 	bookmarkType,
+	CATEGORIES_TABLE_NAME,
 	documentFileTypes,
 	DOCUMENTS_URL,
 	FILE_NAME_PARSING_PATTERN,
@@ -30,6 +34,7 @@ import {
 	LINKS_URL,
 	menuListItemName,
 	SEARCH_URL,
+	SHARED_CATEGORIES_TABLE_NAME,
 	TRASH_URL,
 	TWEETS_URL,
 	tweetType,
@@ -200,6 +205,10 @@ export const isBookmarkAudio = (type: string): boolean =>
 // tells if the bookmark is of document type
 export const isBookmarkDocument = (type: string): boolean =>
 	documentFileTypes?.includes(type);
+
+// tells if the bookmark is of image type
+export const isBookmarkImage = (type: string): boolean =>
+	type?.includes("image");
 
 // used in apis to tell if user is in a collection or not
 export const isUserInACategoryInApi = (
@@ -500,4 +509,115 @@ export const getBookmarkCountForCurrentPage = (
 		default:
 			return 0;
 	}
+};
+
+export const getNormalisedImageUrl = async (
+	imageUrl: string | null,
+	url: string,
+) => {
+	try {
+		const { hostname } = new URL(url);
+
+		if (imageUrl) {
+			// Check for absolute URLs
+			const normalisedUrl = getNormalisedUrl(imageUrl);
+
+			if (normalisedUrl) {
+				return normalisedUrl;
+			}
+
+			return new URL(imageUrl, `https://${hostname}`).toString();
+		}
+
+		const response = await fetch(
+			`https://www.google.com/s2/favicons?sz=128&domain_url=${hostname}`,
+		);
+
+		if (!response.ok) {
+			throw new Error(
+				`Invalid response for the ${hostname}: ${response.statusText}`,
+			);
+		}
+
+		return response.url;
+	} catch (error) {
+		console.warn("Error fetching Image:", error);
+		return null;
+	}
+};
+
+/**
+ * Checks if the current user is the owner of the bookmark.
+ * @param bookmarkUserId - The user_id object or string from the bookmark data.
+ * @param sessionUserId - The ID of the currently logged-in user.
+ * @returns boolean - True if the user is the owner, false otherwise.
+ */
+export const isBookmarkOwner = (
+	bookmarkUserId: SingleListData["user_id"] | string | undefined,
+	sessionUserId: string | undefined,
+): boolean => {
+	if (!bookmarkUserId || !sessionUserId) {
+		return false;
+	}
+
+	// Check if bookmarkUserId is an object with an 'id' property (ProfilesTableTypes)
+	if (typeof bookmarkUserId === "object" && "id" in bookmarkUserId) {
+		return bookmarkUserId.id === sessionUserId;
+	}
+
+	// Check if bookmarkUserId is a string (legacy or direct ID)
+	if (typeof bookmarkUserId === "string") {
+		return bookmarkUserId === sessionUserId;
+	}
+
+	return false;
+};
+
+// tells if user is a collaborator for the category
+export const isUserCollaboratorInCategory = async (
+	supabase: SupabaseClient,
+	category_id: string,
+	email: string,
+): Promise<{
+	success: boolean;
+	isCollaborator: boolean;
+	error?: PostgrestError;
+}> => {
+	const { data: sharedCategoryData, error: sharedCategoryError } =
+		await supabase
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.select("id")
+			.eq("category_id", category_id)
+			.eq("email", email);
+
+	if (sharedCategoryError) {
+		return {
+			success: false,
+			isCollaborator: false,
+			error: sharedCategoryError,
+		};
+	}
+
+	return { success: true, isCollaborator: !isEmpty(sharedCategoryData) };
+};
+
+export const checkIsUserOwnerOfCategory = async (
+	supabase: SupabaseClient,
+	category_id: string,
+	userId: string,
+): Promise<{ success: boolean; isOwner: boolean; error?: PostgrestError }> => {
+	const { data: categoryData, error: categoryDataError } = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select("user_id")
+		.eq("id", category_id);
+
+	if (categoryDataError) {
+		return {
+			success: false,
+			isOwner: false,
+			error: categoryDataError,
+		};
+	}
+
+	return { success: true, isOwner: categoryData?.[0]?.user_id === userId };
 };

@@ -93,7 +93,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
 					{...comboboxProps}
 				/>
 				<Ariakit.ComboboxPopover
-					className="z-10 rounded-xl bg-gray-0 p-[6px] shadow-custom-7"
+					className="z-10 rounded-xl bg-gray-0 p-1 shadow-custom-7"
 					gutter={8}
 					render={<Ariakit.SelectList store={select} />}
 					sameWidth

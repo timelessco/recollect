@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type ProfilesTableTypes } from "../../../types/apiTypes";
-import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
+import { USER_PROFILE } from "../../../utils/constants";
 import { updateUserProfile } from "../../supabaseCrudHelpers";
 
 // update user profile date optimistically
@@ -20,23 +20,30 @@ export default function useUpdateUserProfileOptimisticMutation() {
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
-				CATEGORIES_KEY,
+				USER_PROFILE,
 				session?.user?.id,
 			]);
-
 			// Optimistically update to the new value
-			queryClient.setQueryData(
-				[USER_PROFILE, session?.user?.id],
-				(old: { data: ProfilesTableTypes[] } | undefined) =>
-					({
-						...old,
+			if (data?.updateData?.bookmarks_view !== undefined) {
+				queryClient.setQueryData(
+					[USER_PROFILE, session?.user?.id],
+					(old: { data: ProfilesTableTypes[] } | undefined) => {
+						if (!old?.data) {
+							return old;
+						}
 
-						data: old?.data?.map((item) => ({
-							...item,
-							bookmarks_view: data?.updateData?.bookmarks_view,
-						})),
-					}) as { data: ProfilesTableTypes[] },
-			);
+						return {
+							...old,
+							data: old.data.map((item) => ({
+								...item,
+								...(item.bookmarks_view !== data.updateData.bookmarks_view && {
+									bookmarks_view: data.updateData.bookmarks_view,
+								}),
+							})),
+						};
+					},
+				);
+			}
 
 			// Return a context object with the snapshotted value
 			return { previousData };
@@ -53,12 +60,6 @@ export default function useUpdateUserProfileOptimisticMutation() {
 			void queryClient.invalidateQueries({
 				queryKey: [USER_PROFILE, session?.user?.id],
 			});
-			// void queryClient.invalidateQueries([
-			// 	BOOKMARKS_KEY,
-			// 	session?.user?.id,
-			// 	CATEGORIES_ID,
-			// 	sortBy,
-			// ]);
 		},
 	});
 	return { updateUserProfileOptimisticMutation };

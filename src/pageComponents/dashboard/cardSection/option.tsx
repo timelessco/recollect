@@ -78,13 +78,9 @@ const Option = ({
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
 			"hover:bg-gray-100 mb-1":
-				(cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines) &&
-				!isSelected,
+				cardTypeCondition === viewValues.list && !isSelected,
 
-			"mb-1 list-headlines-wrapper":
-				cardTypeCondition === viewValues.list ||
-				cardTypeCondition === viewValues.headlines,
+			"mb-1 list-wrapper": cardTypeCondition === viewValues.list,
 		},
 	);
 
@@ -177,7 +173,6 @@ const cardSectionOptionCheckboxStyles = tv({
 		},
 		cardTypeCondition: {
 			[viewValues.list]: "top-[15px]",
-			[viewValues.headlines]: "top-[11px]",
 		},
 	},
 });

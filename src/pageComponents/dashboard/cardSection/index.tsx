@@ -13,14 +13,11 @@ import { CollectionIcon } from "../../../components/collectionIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import { Spinner } from "../../../components/spinner";
-import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
-import TrashIconGray from "../../../icons/actionIcons/trashIconGray";
-import EditIcon from "../../../icons/editIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
@@ -42,15 +39,12 @@ import {
 	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	DOCUMENTS_URL,
-	LINK_TYPE_PREFIX,
-	LINKS_URL,
+	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
 	TWEETS_URL,
 	VIDEO_TYPE_PREFIX,
-	VIDEOS_URL,
 	viewValues,
 } from "../../../utils/constants";
 import {
@@ -58,6 +52,8 @@ import {
 	getPreviewPathInfo,
 	isBookmarkAudio,
 	isBookmarkDocument,
+	isBookmarkImage,
+	isBookmarkOwner,
 	isBookmarkVideo,
 	isCurrentYear,
 	isUserInACategory,
@@ -66,33 +62,32 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
+import { EditDropdownButton } from "./EditDropdownButton";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
-
-export type onBulkBookmarkDeleteType = (
-	bookmark_ids: number[],
-	isTrash: boolean,
-	deleteForever: boolean,
-) => void;
+import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
+import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
 
-	deleteBookmarkId: number[] | undefined;
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onBulkBookmarkDelete: onBulkBookmarkDeleteType;
 	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
-	onEditClick: (item: SingleListData) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
+	isCategoryChangeLoading?: boolean;
+	onCreateNewCategory?: (category: {
+		label: string;
+		value: string | number;
+	}) => Promise<void>;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -104,22 +99,24 @@ const CardSection = ({
 	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
-	onEditClick = () => null,
 	userId,
 	showAvatar = false,
 	isOgImgLoading = false,
 	isBookmarkLoading = false,
-	deleteBookmarkId,
 	onCategoryChange,
-	onBulkBookmarkDelete,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
+	isCategoryChangeLoading = false,
+	onCreateNewCategory = async () => {},
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
+	const deleteBookmarkId = useMiscellaneousStore(
+		(state) => state.deleteBookmarkId,
+	);
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -143,7 +140,10 @@ const CardSection = ({
 
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
-
+	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
+	const [openedTrashMenuId, setOpenedTrashMenuId] = useState<number | null>(
+		null,
+	);
 	const CARD_DEFAULT_HEIGHT = 600;
 	const CARD_DEFAULT_WIDTH = 600;
 	// cat_id refers to cat slug here as its got from url
@@ -156,7 +156,6 @@ const CardSection = ({
 	);
 
 	const isUserInTweetsPage = useIsUserInTweetsPage();
-	const currentPath = useGetCurrentUrlPath();
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -164,7 +163,6 @@ const CardSection = ({
 	};
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-
 	// gets from the trigram search api
 	const searchBookmarksData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
@@ -239,7 +237,7 @@ const CardSection = ({
 		}
 
 		// show if bookmark is created by loggedin user
-		if (post?.user_id?.id === userId) {
+		if (isBookmarkOwner(post?.user_id, userId)) {
 			return true;
 		}
 
@@ -248,7 +246,7 @@ const CardSection = ({
 
 	const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
 		// show if bookmark is created by loggedin user
-		if (post?.user_id?.id === userId) {
+		if (isBookmarkOwner(post?.user_id, userId)) {
 			return true;
 		}
 
@@ -264,11 +262,11 @@ const CardSection = ({
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
-			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs z-15";
+			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs z-15  group-hover:flex";
 
 		const externalLinkIcon = (
 			<div
-				className={`${iconBgClassName}`}
+				className={`${iconBgClassName} hidden`}
 				onClick={(event) => {
 					event.preventDefault();
 					window.open(post?.url, "_blank");
@@ -285,51 +283,63 @@ const CardSection = ({
 				</figure>
 			</div>
 		);
+		const isMenuOpen = openedMenuId === post.id;
 
 		const pencilIcon = (
-			<div
-				className={`${iconBgClassName}`}
-				onClick={(event) => {
-					event.preventDefault();
-					onEditClick(post);
-				}}
-				onKeyDown={() => {}}
-				onPointerDown={(event) => {
-					event.stopPropagation();
-				}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure className="text-gray-1000">
-					<EditIcon />
-				</figure>
-			</div>
+			<EditDropdownButton
+				isMenuOpen={isMenuOpen}
+				iconBgClassName={iconBgClassName}
+				isPublicPage={isPublicPage}
+				setOpenedMenuId={setOpenedMenuId}
+				post={post}
+				onCategoryChange={onCategoryChange}
+				onCreateNewCategory={onCreateNewCategory}
+				bookmarksList={bookmarksList}
+				isCategoryChangeLoading={isCategoryChangeLoading}
+				userId={userId}
+			/>
 		);
 
-		const trashIcon = (
-			<div
-				className={`ml-2 ${iconBgClassName}`}
-				onClick={(event) => {
-					event.stopPropagation();
-					onDeleteClick([post]);
-				}}
-				onKeyDown={() => {}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure
-					onPointerDown={(event) => {
-						event.stopPropagation();
+		const isTrashMenuOpen = openedTrashMenuId === post.id;
+
+		const trashIcon =
+			categorySlug === TRASH_URL ? (
+				<ClearTrashDropdown
+					isBottomBar={false}
+					label="Delete Bookmark"
+					onClearTrash={() => {
+						onDeleteClick([post]);
 					}}
+					isClearingTrash={false}
+					isOpen={isTrashMenuOpen}
+					menuOpenToggle={(isOpen) => {
+						setOpenedTrashMenuId(isOpen ? post.id : null);
+					}}
+				/>
+			) : (
+				<div
+					className={`ml-2 ${iconBgClassName} hidden`}
+					onClick={(event) => {
+						event.stopPropagation();
+						onDeleteClick([post]);
+					}}
+					onKeyDown={() => {}}
+					role="button"
+					tabIndex={0}
 				>
-					<TrashIconGray
+					<figure
 						onPointerDown={(event) => {
 							event.stopPropagation();
 						}}
-					/>
-				</figure>
-			</div>
-		);
+					>
+						<TrashIconGray
+							onPointerDown={(event) => {
+								event.stopPropagation();
+							}}
+						/>
+					</figure>
+				</div>
+			);
 
 		if (isPublicPage) {
 			const publicExternalIconClassname = classNames({
@@ -338,9 +348,7 @@ const CardSection = ({
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
 					cardTypeCondition === viewValues.timeline,
-				"left-[-34px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
+				"left-[-34px]": cardTypeCondition === viewValues.list,
 			});
 			return (
 				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
@@ -350,16 +358,18 @@ const CardSection = ({
 		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
 			// in trash page
 
-			const trashIconWrapperClassname = classNames({
-				"absolute top-[2px] flex": true,
-				"left-[17px]":
-					cardTypeCondition === viewValues.moodboard ||
-					cardTypeCondition === viewValues.card ||
-					cardTypeCondition === viewValues.timeline,
-				"left-[-64px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
-			});
+			const trashIconWrapperClassname = classNames(
+				"absolute top-[2px]",
+				"group-hover:flex",
+				isTrashMenuOpen ? "flex" : "hidden",
+				{
+					"left-[17px]":
+						cardTypeCondition === viewValues.moodboard ||
+						cardTypeCondition === viewValues.card ||
+						cardTypeCondition === viewValues.timeline,
+					"left-[-64px]": cardTypeCondition === viewValues.list,
+				},
+			);
 			return (
 				<div className={trashIconWrapperClassname}>
 					<div
@@ -393,9 +403,7 @@ const CardSection = ({
 					cardTypeCondition === viewValues.moodboard ||
 					cardTypeCondition === viewValues.card ||
 					cardTypeCondition === viewValues.timeline,
-				"left-[-94px]":
-					cardTypeCondition === viewValues.list ||
-					cardTypeCondition === viewValues.headlines,
+				"left-[-94px]": cardTypeCondition === viewValues.list,
 			});
 
 			return (
@@ -430,11 +438,9 @@ const CardSection = ({
 		const isCreatedByLoggedInUser = isBookmarkCreatedByLoggedinUser(item);
 
 		const avatarClassName = classNames({
-			"absolute h-[26px] w-[26px] rounded-full": true,
+			"absolute h-[26px] w-[26px] rounded-full hidden group-hover:flex": true,
 			"right-[65px] top-0": isCreatedByLoggedInUser,
-			"right-[100px]":
-				cardTypeCondition === viewValues.list ||
-				cardTypeCondition === viewValues.headlines,
+			"right-[100px]": cardTypeCondition === viewValues.list,
 			"right-0 top-0": !isCreatedByLoggedInUser,
 		});
 
@@ -450,7 +456,11 @@ const CardSection = ({
 			);
 		}
 
-		return <DefaultUserIcon className={`h-5 w-5 ${avatarClassName}`} />;
+		return (
+			<DefaultUserIcon
+				className={`hidden h-5 w-5 group-hover:flex ${avatarClassName}`}
+			/>
+		);
 	};
 
 	const renderUrl = (item: SingleListData) => (
@@ -480,14 +490,13 @@ const CardSection = ({
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
 			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
-			"w-full shadow-custom-8 rounded-t-lg group-hover:rounded-b-none":
+			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
 				cardTypeCondition === viewValues.card,
 			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"rounded-t-lg shadow-custom-8":
-				cardTypeCondition === viewValues.moodboard,
+			"rounded-lg shadow-custom-8": cardTypeCondition === viewValues.moodboard,
 		});
 
 		const playSvgClassName = classNames({
@@ -529,12 +538,18 @@ const CardSection = ({
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
-		const isVideo = isBookmarkVideo(item?.type);
-		const isDocument = isBookmarkDocument(item?.type);
-		const size = cardTypeCondition === viewValues.headlines ? 16 : 15;
+		const isVideo =
+			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
+			isBookmarkVideo(item?.type);
+		const isDocument =
+			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
+			isBookmarkDocument(item?.type);
+		const isImage =
+			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
+			isBookmarkImage(item?.type);
+		const size = 15;
 		const favIconFigureClassName = classNames({
-			"min-h-[16px] min-w-[16px]": cardTypeCondition === viewValues.headlines,
-			"h-[14] w-[14px] mt-px": cardTypeCondition !== viewValues.headlines,
+			"h-[14] w-[14px] mt-px": true,
 		});
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
@@ -579,11 +594,7 @@ const CardSection = ({
 			);
 		}
 
-		if (
-			isVideo ||
-			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-			currentPath === VIDEOS_URL
-		) {
+		if (isVideo) {
 			return (
 				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
 					<VideoIcon size="15" />
@@ -591,11 +602,7 @@ const CardSection = ({
 			);
 		}
 
-		if (
-			isDocument ||
-			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
-			currentPath === DOCUMENTS_URL
-		) {
+		if (isDocument) {
 			return (
 				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
 					<FolderIcon size="15" />
@@ -603,20 +610,17 @@ const CardSection = ({
 			);
 		}
 
-		if (
-			currentPath === LINKS_URL ||
-			item?.meta_data?.mediaType?.startsWith(LINK_TYPE_PREFIX)
-		) {
+		if (isImage) {
 			return (
 				<figure className="card-icon rounded p-0.5 text-gray-1000">
-					<LinkIcon />
+					<ImageIcon size={`${size}`} />
 				</figure>
 			);
 		}
 
 		return (
 			<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
-				<ImageIcon size={`${size}`} />
+				<LinkIcon />
 			</figure>
 		);
 	};
@@ -666,8 +670,6 @@ const CardSection = ({
 				return renderMoodboardAndCardType(item);
 			case viewValues.card:
 				return renderMoodboardAndCardType(item);
-			case viewValues.headlines:
-				return renderHeadlinesCard(item);
 			case viewValues.list:
 				return renderListCard(item);
 
@@ -737,124 +739,92 @@ const CardSection = ({
 					</div>
 				</div>
 			)}
-			<div
-				className={`w-full items-center space-x-1 ${
-					!isPublicPage ? (window?.Cypress ? "flex" : "hidden") : "hidden"
-				} absolute top-[10px] right-[8px] group-hover:flex`}
-			>
+			<div className="absolute top-[10px] right-[8px] w-full items-center space-x-1">
 				{showAvatar && renderAvatar(item)}
 				{renderEditAndDeleteIcons(item)}
 			</div>
 		</div>
 	);
 
-	const renderListCard = (item: SingleListData) => (
-		<div className="flex w-full items-center p-2" id="single-moodboard-card">
-			{hasCoverImg ? (
-				renderOgImage(
-					getImageSource(item),
-					item?.id,
-					item?.meta_data?.ogImgBlurUrl ?? "",
-					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-					item?.type,
-				)
-			) : (
-				<div className="h-[48px]" />
-			)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="overflow-hidden max-sm:space-y-1">
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+	const renderListCard = (item: SingleListData) => {
+		const isMenuOpen = openedMenuId === item.id;
+
+		return (
+			<div className="flex w-full items-center p-2" id="single-moodboard-card">
+				{hasCoverImg ? (
+					renderOgImage(
+						getImageSource(item),
+						item?.id,
+						item?.meta_data?.ogImgBlurUrl ?? "",
+						item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+						item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+						item?.type,
+					)
+				) : (
+					<div className="h-[48px]" />
+				)}
+				{bookmarksInfoValue?.length === 1 &&
+				bookmarksInfoValue[0] === "cover" ? null : (
+					<div className="overflow-hidden max-sm:space-y-1">
 						{(bookmarksInfoValue as string[] | undefined)?.includes(
-							"description",
-						) &&
-							!isEmpty(item.description) && (
-								<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
-									{item?.description}
-								</p>
-							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
-							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
-									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
+							"title",
+						) && (
+							<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
+								{item?.title}
+							</p>
+						)}
+						<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+							{(bookmarksInfoValue as string[] | undefined)?.includes(
+								"description",
+							) &&
+								!isEmpty(item.description) && (
+									<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
+										{item?.description}
+									</p>
+								)}
+							{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
+								!isEmpty(item?.addedTags) && (
+									<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
+										{item?.addedTags?.map((tag) =>
+											renderTag(tag?.id, tag?.name),
+										)}
+									</div>
+								)}
+							{(bookmarksInfoValue as string[] | undefined)?.includes(
+								"info",
+							) && (
+								<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+									{item?.inserted_at && (
+										<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+											{format(
+												new Date(item?.inserted_at || ""),
+												isCurrentYear(item?.inserted_at)
+													? "dd MMM"
+													: "dd MMM YYY",
+											)}
+										</p>
+									)}
+									{renderCategoryBadge(item)}
 								</div>
 							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-								{renderCategoryBadge(item)}
-							</div>
-						)}
+						</div>
 					</div>
+				)}
+				<div
+					className={`absolute top-[15px] right-[8px] items-center space-x-1 group-hover:flex ${isMenuOpen ? "flex" : "hidden"}`}
+				>
+					{showAvatar && renderAvatar(item)}
+					{renderEditAndDeleteIcons(item)}
 				</div>
-			)}
-			<div className="absolute top-[15px] right-[8px] hidden items-center space-x-1 group-hover:flex">
-				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
 			</div>
-		</div>
-	);
-
-	const renderHeadlinesCard = (item: SingleListData) => (
-		<div className="group flex h-[53px] w-full p-2" key={item?.id}>
-			{renderFavIcon(item)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="ml-[10px] w-full overflow-hidden">
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title w-[98%] truncate text-sm leading-4 font-medium text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					<div className="mt-[6px] space-y-2">
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="flex items-center space-x-2">
-								{renderUrl(item)}
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-							</div>
-						)}
-					</div>
-				</div>
-			)}
-			<div className="absolute top-[11px] right-[8px] hidden items-center space-x-1 group-hover:flex">
-				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
-			</div>
-		</div>
-	);
+		);
+	};
 
 	const listWrapperClass = classNames({
-		// "p-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.headlines,
 		"mt-[47px]": true,
-		"px-4 py-2":
-			cardTypeCondition === viewValues.list ||
-			cardTypeCondition === viewValues.headlines,
+		"px-4 py-2": cardTypeCondition === viewValues.list,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
@@ -918,7 +888,6 @@ const CardSection = ({
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
 				isPublicPage={isPublicPage}
-				onBulkBookmarkDelete={onBulkBookmarkDelete}
 				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"
 			>

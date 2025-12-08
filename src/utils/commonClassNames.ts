@@ -2,7 +2,7 @@
 export const grayInputClassName =
 	"leading-4 block w-[300px] bg-gray-alpha-100  appearance-none border-none text-sm placeholder:text-sm placeholder:text-gray-600 text-gray-900 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-hidden";
 export const buttonDarkClassName =
-	"flex w-full h-[30px] justify-center rounded-lg bg-gray-900 text-13 py-[7.5px] font-medium leading-[15px] text-white hover:bg-gray-800";
+	"flex w-full h-[30px] justify-center rounded-lg bg-gray-900 text-13 py-[7.5px] font-medium leading-[15px] text-gray-0 hover:bg-gray-800";
 export const buttonLightClassName =
 	"flex cursor-pointer w-full justify-center items-center rounded-lg bg-white text-13 font-medium leading-[15px] text-gray-800 py-[7px] hover:bg-gray-100 shadow-custom-2";
 export const bottomBarText = "text-gray-800 font-450 text-sm leading-4";
@@ -35,7 +35,7 @@ export const settingsSubHeadingClassName =
 	"text-sm font-medium leading-4 max-sm:leading-none tracking-[1.5%] text-gray-900";
 
 export const settingsParagraphClassName =
-	"text-[14px] font-medium leading-[110%]  max-sm:leading-1  text-gray-900";
+	"text-[14px] font-medium leading-[110%] text-gray-900";
 
 export const settingsDeleteButtonRedClassName =
 	"bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[0.02em] text-[#CD2B31] hover:bg-gray-200";

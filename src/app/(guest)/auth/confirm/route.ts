@@ -23,13 +23,7 @@ export async function GET(request: NextRequest) {
 			});
 
 			if (!error) {
-				// original origin before load balancer
-				const forwardedHost = request.headers.get("x-forwarded-host");
-				if (forwardedHost) {
-					return redirect(`https://${forwardedHost}${next}`);
-				} else {
-					return redirect(next);
-				}
+				redirect(next);
 			} else {
 				// redirect the user to an error page with some instructions
 				redirect(`/auth/error?error=${getErrorMessage(error)}`);
