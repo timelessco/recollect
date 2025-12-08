@@ -285,7 +285,6 @@ export const processUrlMetadata = async (
 			isUrlOfMimeType,
 		};
 	} catch (error) {
-		const errorMessage = formatErrorMessage(error);
 		console.error("Failed to process URL metadata:", error);
 		Sentry.captureException(error, {
 			tags: { operation: "process_url_metadata" },
@@ -308,7 +307,6 @@ export const isUrlFromPreferredOgSite = (url: string): boolean => {
 			urlHost?.includes(keyword),
 		);
 	} catch (error) {
-		const errorMessage = formatErrorMessage(error);
 		console.error("Failed to check OG image preference:", error);
 		Sentry.captureException(error, {
 			tags: { operation: "check_og_image_preference" },
