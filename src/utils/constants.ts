@@ -75,11 +75,20 @@ export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
-export const ADD_BOOKMARK_API = "/v1/bookmarks/add/data";
-export const ADD_BOOKMARK_MIN_DATA_API = "/v1/bookmarks/add/tasks/min-data";
-export const ADD_BOOKMARK_REMAINING_DATA_API =
-	"/v1/bookmarks/add/tasks/remaining";
-export const ADD_BOOKMARK_SCREENSHOT_API = "/v1/bookmarks/add/tasks/screenshot";
+export const ADD_BOOKMARK_APIS = {
+	DATA: "/v1/bookmarks/add/data",
+	MIN_DATA: "/v1/bookmarks/add/tasks/min-data",
+	QUEUE_CONSUMER: "/v1/bookmarks/add/tasks/queue-consumer",
+	REMAINING: "/v1/bookmarks/add/tasks/remaining",
+	SCREENSHOT: "/v1/bookmarks/add/tasks/screenshot",
+};
+
+export const UPLOAD_FILE_APIS = {
+	DATA: "/v1/file/upload/data",
+	MIN_DATA: "/v1/file/upload/tasks/min-data",
+	QUEUE_CONSUMER: "/v1/file/upload/tasks/queue-consumer",
+	REMAINING: "/v1/file/upload/tasks/remaining",
+};
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";

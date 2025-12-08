@@ -8,9 +8,16 @@ The Recollect application uses internal API key authentication to secure backgro
 
 The following endpoints require internal API key authentication:
 
+### Bookmark Processing
+
 1. **`/api/v1/bookmarks/add/tasks/remaining`** - Processes remaining bookmark data including images and metadata
 2. **`/api/v1/bookmarks/add/tasks/screenshot`** - Captures and stores screenshots of bookmarked URLs
 3. **`/api/v1/bookmarks/add/tasks/queue-consumer`** - Processes messages from the bookmark queue
+
+### File Upload Processing
+
+4. **`/api/v1/file/upload/tasks/remaining`** - Processes uploaded files (blurhash, OCR, AI captions)
+5. **`/api/v1/file/upload/tasks/queue-consumer`** - Processes messages from the file upload queue
 
 ## Authentication Method
 

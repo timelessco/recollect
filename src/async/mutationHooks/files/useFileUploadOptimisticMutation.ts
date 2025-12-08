@@ -230,19 +230,6 @@ export default function useFileUploadOptimisticMutation() {
 					Eg: If user uploads images in documents page then the user will get a toast message
 				telling "Added to documents page"  */
 
-				if (data?.file?.type === PDF_MIME_TYPE) {
-					try {
-						successToast(`generating  thumbnail`);
-						await handlePdfThumbnailAndUpload({
-							fileUrl: `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
-							fileId: apiResponseTyped?.data[0].id,
-							sessionUserId: session?.user?.id,
-						});
-					} catch {
-						errorToast("Failed to generate thumbnail");
-					}
-				}
-
 				if (
 					CATEGORY_ID === IMAGES_URL &&
 					!imageFileTypes?.includes(uploadedDataType)

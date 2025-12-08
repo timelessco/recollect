@@ -12,7 +12,7 @@ import {
 } from "../../../../../types/apiTypes";
 import { getBookmarkBodySchema } from "../../../../../utils/api/bookmark/add";
 import {
-	ADD_BOOKMARK_MIN_DATA_API,
+	ADD_BOOKMARK_APIS,
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../../../../../utils/constants";
@@ -42,7 +42,7 @@ const callMinDataApi = async (
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	userId: string,
 ): Promise<MinDataApiResponse> => {
-	const apiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA_API}`;
+	const apiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_APIS.MIN_DATA}`;
 
 	const [minDataError, minDataResponse] = await vet(() =>
 		axios.post(apiUrl, bodyData, getAxiosConfigWithAuth(request)),
@@ -123,7 +123,7 @@ const callMinDataApi = async (
  *       500:
  *         description: Internal server error
  */
-export async function handler(
+export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	response: NextApiResponse<ApiResponse>,
 ) {
