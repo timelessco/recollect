@@ -15,8 +15,8 @@ if (process.env.SKIP_ENV_VALIDATION == null) {
 
 const hasSentry = Boolean(
 	process.env.SENTRY_ORG &&
-		process.env.SENTRY_PROJECT &&
-		process.env.SENTRY_AUTH_TOKEN,
+	process.env.SENTRY_PROJECT &&
+	process.env.SENTRY_AUTH_TOKEN,
 );
 
 const nextConfig: NextConfig = {
