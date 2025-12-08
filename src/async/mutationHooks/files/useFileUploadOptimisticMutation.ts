@@ -17,7 +17,6 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
-	PDF_MIME_TYPE,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
@@ -25,7 +24,6 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import {
 	fileTypeIdentifier,
 	generateVideoThumbnail,

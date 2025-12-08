@@ -16,8 +16,8 @@ The following endpoints require internal API key authentication:
 
 ### File Upload Processing
 
-4. **`/api/v1/file/upload/tasks/remaining`** - Processes uploaded files (blurhash, OCR, AI captions)
-5. **`/api/v1/file/upload/tasks/queue-consumer`** - Processes messages from the file upload queue
+1. **`/api/v1/file/upload/tasks/remaining`** - Processes uploaded files (blurhash, OCR, AI captions)
+2. **`/api/v1/file/upload/tasks/queue-consumer`** - Processes messages from the file upload queue
 
 ## Authentication Method
 
