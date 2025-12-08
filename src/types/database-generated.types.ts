@@ -404,6 +404,22 @@ export type Database = {
 					user_id: string;
 				}>;
 			};
+			set_bookmark_categories: {
+				Args: { p_bookmark_id: number; p_category_ids: number[] };
+				Returns: Array<{
+					bookmark_id: number;
+					category_id: number;
+					created_at: string;
+					id: number;
+					user_id: string;
+				}>;
+				SetofOptions: {
+					from: "*";
+					to: "bookmark_categories";
+					isOneToOne: false;
+					isSetofReturn: true;
+				};
+			};
 		};
 		Enums: {
 			[_ in never]: never;

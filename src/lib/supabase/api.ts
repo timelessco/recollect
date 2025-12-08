@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers";
+import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 import { type Database } from "@/types/database.types";
@@ -96,4 +97,62 @@ export async function getApiUser(
 
 	// Web app: Use cookie-based auth
 	return await supabase.auth.getUser();
+}
+
+// Error response shape - matches ApiErrorResponse from api-response.ts
+type AuthErrorResponse = { data: null; error: string };
+
+/**
+ * Result type for requireAuth - discriminated union for type narrowing
+ */
+export type AuthResult =
+	| { supabase: SupabaseClient<Database>; user: User; errorResponse: null }
+	| {
+			supabase: null;
+			user: null;
+			errorResponse: NextResponse<AuthErrorResponse>;
+	  };
+
+/**
+ * Authenticates API request and returns Supabase client + user.
+ * Returns error response if auth fails.
+ * @param routeName - Route identifier for logging (e.g., "set-bookmark-categories")
+ * @returns Auth context or error response
+ * @example
+ * const auth = await requireAuth("my-endpoint");
+ * if (auth.errorResponse) return auth.errorResponse;
+ * const { supabase, user } = auth;
+ */
+export async function requireAuth(routeName: string): Promise<AuthResult> {
+	const { supabase, token } = await createApiClient();
+	const {
+		data: { user },
+		error: userError,
+	} = await getApiUser(supabase, token);
+
+	if (userError) {
+		console.warn(`[${routeName}] Auth error:`, userError);
+		return {
+			supabase: null,
+			user: null,
+			errorResponse: NextResponse.json(
+				{ data: null, error: userError.message },
+				{ status: 400 },
+			),
+		};
+	}
+
+	if (!user) {
+		console.warn(`[${routeName}] No user found in session`);
+		return {
+			supabase: null,
+			user: null,
+			errorResponse: NextResponse.json(
+				{ data: null, error: "Not authenticated" },
+				{ status: 401 },
+			),
+		};
+	}
+
+	return { supabase, user, errorResponse: null };
 }

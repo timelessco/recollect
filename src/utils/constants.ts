@@ -1,5 +1,8 @@
 import { BASE_URL } from "@/site-config";
 
+// Category IDs
+export const UNCATEGORIZED_CATEGORY_ID = 0;
+
 // table names
 export const MAIN_TABLE_NAME = "everything";
 export const TAG_TABLE_NAME = "tags";
