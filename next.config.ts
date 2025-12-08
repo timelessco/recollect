@@ -70,10 +70,10 @@ const nextConfig: NextConfig = {
 				source: "/",
 			},
 			{
-				destination: `/everything`,
+				destination: `/everything/:path*`,
 				// 301 permanent redirect
 				permanent: true,
-				source: "/all-bookmarks",
+				source: "/all-bookmarks/:path*",
 			},
 		]);
 	},
