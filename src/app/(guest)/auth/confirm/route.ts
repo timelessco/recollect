@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 			});
 
 			if (!error) {
-				return redirect(next);
+				redirect(next);
 			} else {
 				// redirect the user to an error page with some instructions
 				redirect(`/auth/error?error=${getErrorMessage(error)}`);
