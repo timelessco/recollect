@@ -206,6 +206,17 @@ export type BookmarksWithTagsWithTagForginKeys = Array<{
 	tag_id: { id: number; name: string };
 }>;
 
+export type BookmarksWithCategoriesWithCategoryForeignKeys = Array<{
+	bookmark_id: number;
+	category_id: {
+		category_name: string;
+		category_slug: string;
+		icon: string | null;
+		icon_color: string;
+		id: number;
+	};
+}>;
+
 export type UserProfilePicTypes = { profile_pic: string | null };
 
 // file upload

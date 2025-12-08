@@ -6,10 +6,12 @@ import isEmpty from "lodash/isEmpty";
 
 import {
 	type BookmarksCountTypes,
+	type BookmarksWithCategoriesWithCategoryForeignKeys,
 	type BookmarksWithTagsWithTagForginKeys,
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
 	documentFileTypes,
@@ -237,23 +239,49 @@ user_id (
 		)
 		.eq("user_id", userId);
 
+	const { data: bookmarksWithCategories } = await supabase
+		.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+		.select(
+			`
+    bookmark_id,
+    category_id (
+      id,
+      category_name,
+      category_slug,
+      icon,
+      icon_color
+    )`,
+		)
+		.eq("user_id", userId);
+
 	const finalData = data
 		?.map((item) => {
 			const matchedBookmarkWithTag = bookmarksWithTags?.filter(
 				(tagItem) => tagItem?.bookmark_id === item?.id,
 			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
-			if (!isEmpty(matchedBookmarkWithTag)) {
-				return {
-					...item,
-					addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
-						id: matchedItem?.tag_id?.id,
-						name: matchedItem?.tag_id?.name,
-					})),
-				};
-			}
+			const matchedBookmarkWithCategory = bookmarksWithCategories?.filter(
+				(catItem) => catItem?.bookmark_id === item?.id,
+			) as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
 
-			return item;
+			return {
+				...item,
+				addedTags: !isEmpty(matchedBookmarkWithTag)
+					? matchedBookmarkWithTag?.map((matchedItem) => ({
+							id: matchedItem?.tag_id?.id,
+							name: matchedItem?.tag_id?.name,
+						}))
+					: [],
+				addedCategories: !isEmpty(matchedBookmarkWithCategory)
+					? matchedBookmarkWithCategory?.map((matchedItem) => ({
+							id: matchedItem?.category_id?.id,
+							category_name: matchedItem?.category_id?.category_name,
+							category_slug: matchedItem?.category_id?.category_slug,
+							icon: matchedItem?.category_id?.icon,
+							icon_color: matchedItem?.category_id?.icon_color,
+						}))
+					: [],
+			};
 		})
 		.filter(Boolean) as SingleListData[];
 

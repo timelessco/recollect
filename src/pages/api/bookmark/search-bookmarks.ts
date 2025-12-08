@@ -210,6 +210,9 @@ export default async function handler(
 			}
 
 			// get all the items for the category_id irrespective of the user_id, as user has access to all the items in the category
+			// NOTE: This uses the everything.category_id column for backward compatibility during
+			// the many-to-many migration. The junction table (bookmark_categories) has the same data.
+			// Full junction table filtering will be implemented when category_id column is dropped.
 			query = query.eq(
 				"category_id",
 				category_id === UNCATEGORIZED_URL ? 0 : category_id,

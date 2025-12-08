@@ -19,6 +19,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	ADD_REMAINING_BOOKMARK_API,
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
@@ -416,10 +417,37 @@ export default async function handler(
 			return;
 		}
 
+		// Insert into junction table for many-to-many relationship
+		const { error: junctionError } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.insert({
+				bookmark_id: data[0]?.id as number,
+				category_id: computedCategoryId as number,
+				user_id: userId as string,
+			});
+
+		if (junctionError) {
+			console.error("Error inserting into bookmark_categories:", junctionError);
+			Sentry.captureException(junctionError, {
+				tags: {
+					operation: "insert_bookmark_category_junction",
+					userId,
+				},
+				extra: {
+					bookmarkId: data[0]?.id,
+					categoryId: computedCategoryId,
+					url,
+				},
+			});
+			// Non-blocking: don't fail the request, log and continue
+			// The category_id column still has the data for backward compatibility
+		}
+
 		// Success
 		console.log("Min bookmark data inserted successfully:", {
 			bookmarkId: data[0]?.id,
 			url,
+			categoryId: computedCategoryId,
 		});
 		response.status(200).json({
 			data,
