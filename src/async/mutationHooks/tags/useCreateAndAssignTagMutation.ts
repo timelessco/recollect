@@ -165,6 +165,7 @@ export function useCreateAndAssignTagMutation() {
 				previousBookmarks,
 				previousSearchBookmarks,
 				tempId,
+				debouncedSearch,
 			};
 		},
 		onError: (
@@ -175,6 +176,7 @@ export function useCreateAndAssignTagMutation() {
 						previousUserTags: unknown;
 						previousBookmarks: unknown;
 						previousSearchBookmarks: unknown;
+						debouncedSearch: string;
 				  }
 				| undefined,
 		) => {
@@ -192,27 +194,45 @@ export function useCreateAndAssignTagMutation() {
 				);
 			}
 
-			if (context?.previousSearchBookmarks && debouncedSearch) {
+			if (context?.previousSearchBookmarks && context?.debouncedSearch) {
 				queryClient.setQueryData(
-					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
+					[
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						CATEGORY_ID,
+						context?.debouncedSearch,
+					],
 					context.previousSearchBookmarks,
 				);
 			}
 		},
-		onSettled: () => {
+		onSettled: (
+			_data,
+			_error,
+			_variables,
+			context:
+				| {
+						previousUserTags: unknown;
+						previousBookmarks: unknown;
+						previousSearchBookmarks: unknown;
+						debouncedSearch: string;
+				  }
+				| undefined,
+		) => {
 			void queryClient.invalidateQueries({
 				queryKey: [USER_TAGS_KEY, session?.user?.id],
 			});
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 			});
-			if (debouncedSearch) {
+			// Use captured debouncedSearch from context to avoid stale closure
+			if (context?.debouncedSearch) {
 				void queryClient.invalidateQueries({
 					queryKey: [
 						BOOKMARKS_KEY,
 						session?.user?.id,
 						CATEGORY_ID,
-						debouncedSearch,
+						context?.debouncedSearch,
 					],
 				});
 			}
