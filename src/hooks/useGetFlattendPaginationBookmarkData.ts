@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { flatten } from "lodash";
 
 import { useSupabaseSession } from "../store/componentStore";
@@ -8,20 +8,23 @@ import { BOOKMARKS_KEY } from "../utils/constants";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 import useGetSortBy from "./useGetSortBy";
 
-type BookmarksPaginatedData = {
-	pages: Array<{
-		data: SingleListData[];
-	}>;
-};
-
 export default function useGetFlattendPaginationBookmarkData() {
 	const session = useSupabaseSession((state) => state.session);
+	const queryClient = useQueryClient();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
+
 	const { sortBy } = useGetSortBy();
-	const { data: allBookmarksData } = useQuery<BookmarksPaginatedData>({
-		queryKey: [BOOKMARKS_KEY, session?.user?.id, categoryId, sortBy],
-		enabled: false,
-	});
+
+	const allBookmarksData = queryClient.getQueryData([
+		BOOKMARKS_KEY,
+		session?.user?.id,
+		categoryId,
+		sortBy,
+	]) as {
+		pages: Array<{
+			data: SingleListData[];
+		}>;
+	};
 
 	const flattendPaginationBookmarkData = flatten(
 		allBookmarksData?.pages?.map((item) =>

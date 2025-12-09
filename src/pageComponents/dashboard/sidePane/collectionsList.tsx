@@ -37,6 +37,7 @@ import {
 import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
@@ -46,7 +47,6 @@ import {
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import useGetFlattendPaginationBookmarkData from "../../../hooks/useGetFlattendPaginationBookmarkData";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -309,8 +309,10 @@ const CollectionsList = () => {
 	const { allCategories, isLoadingCategories } = useFetchCategories();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
-	const { flattendPaginationBookmarkData } =
-		useGetFlattendPaginationBookmarkData();
+	const { allBookmarksData } = useFetchPaginatedBookmarks();
+
+	const flattendPaginationBookmarkData =
+		allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 
 	const handleCategoryOptionClick = async (
 		value: number | string,
