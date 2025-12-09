@@ -1,4 +1,4 @@
-import { useRef, useState, type Key, type ReactNode } from "react";
+import { useMemo, useRef, useState, type Key, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -309,10 +309,13 @@ const CollectionsList = () => {
 	const { allCategories, isLoadingCategories } = useFetchCategories();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
-	const { allBookmarksData } = useFetchPaginatedBookmarks();
+	const { allBookmarksData, isAllBookmarksDataLoading } =
+		useFetchPaginatedBookmarks();
 
-	const flattendPaginationBookmarkData =
-		allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
+	const flattendPaginationBookmarkData = useMemo(
+		() => allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
+		[allBookmarksData?.pages],
+	);
 
 	const handleCategoryOptionClick = async (
 		value: number | string,
@@ -385,6 +388,11 @@ const CollectionsList = () => {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleBookmarksDrop = async (event: any) => {
+		// Guard: don't process drops while bookmarks are still loading
+		if (isAllBookmarksDataLoading || !allBookmarksData) {
+			return;
+		}
+
 		if (event?.isInternal === false) {
 			const categoryId = Number.parseInt(event?.target?.key as string, 10);
 
