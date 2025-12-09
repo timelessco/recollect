@@ -1,6 +1,7 @@
 import { type NextApiResponse } from "next/dist/shared/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
+import { waitUntil } from "@vercel/functions";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
@@ -211,9 +212,9 @@ export default async function handler(
 		// Send response to client with the file data
 		response.status(status).json(data);
 
-		// Queue remaining data processing (fire-and-forget)
-		// This happens after sending response
-		// Skip for PDFs, videos, or empty data
+		// Queue remaining data processing
+		// Use waitUntil to ensure the background work completes even after response is sent
+		// Skip for videos or empty data
 		const isVideo = fileType?.includes("video");
 		const shouldProcessRemaining = !isVideo && !isEmpty(data.data);
 
@@ -227,164 +228,171 @@ export default async function handler(
 			return;
 		}
 
-		// Queue the remaining work
-		try {
-			// Fetch the file record to get publicUrl and mediaType
-			const { data: fileRecord, error: fetchError } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.select("url, meta_data")
-				.eq("id", fileData.id)
-				.single();
+		// Queue the remaining work with waitUntil to ensure completion
+		waitUntil(
+			(async () => {
+				try {
+					// Fetch the file record to get publicUrl and mediaType
+					const { data: fileRecord, error: fetchError } = await supabase
+						.from(MAIN_TABLE_NAME)
+						.select("url, meta_data")
+						.eq("id", fileData.id)
+						.single();
 
-			if (fetchError || !fileRecord) {
-				console.error("Error fetching file record for remaining processing:", {
-					error: fetchError,
-					bookmarkId: fileData.id,
-				});
-				Sentry.captureException(fetchError, {
-					tags: {
-						operation: "fetch_file_for_remaining",
-						userId,
-					},
-					extra: {
-						bookmarkId: fileData.id,
-					},
-				});
-				return;
-			}
-
-			// For PDFs, generate a screenshot/thumbnail using the PDF screenshot API
-			let queuePublicUrl = fileRecord.url;
-			const isPdf = fileType === PDF_MIME_TYPE;
-
-			if (isPdf && fileRecord.url) {
-				console.log("Generating PDF screenshot:", {
-					bookmarkId: fileData.id,
-					pdfUrl: fileRecord.url,
-				});
-
-				const pdfApiUrl = `${process.env.RECOLLECT_SERVER_API}${PDF_SCREENSHOT_API}`;
-
-				const [pdfScreenshotError, pdfScreenshotResponse] = await vet(() =>
-					axios.post(
-						pdfApiUrl,
-						{
-							url: fileRecord.url,
-							userId,
-						},
-						{
-							headers: {
-								Authorization: `Bearer ${process.env.RECOLLECT_SERVER_API_KEY}`,
-								"Content-Type": "application/json",
+					if (fetchError || !fileRecord) {
+						console.error(
+							"Error fetching file record for remaining processing:",
+							{
+								error: fetchError,
+								bookmarkId: fileData.id,
 							},
-							timeout: 30000,
-						},
-					),
-				);
-
-				if (pdfScreenshotError) {
-					// Log error but continue with original URL - don't fail the entire operation
-					let errorMessage = "Unknown error generating PDF screenshot";
-
-					if (axios.isAxiosError(pdfScreenshotError)) {
-						errorMessage =
-							pdfScreenshotError.response?.data?.error ||
-							pdfScreenshotError.response?.data?.message ||
-							pdfScreenshotError.message ||
-							"PDF screenshot service error";
-
-						console.error("Error generating PDF screenshot:", {
-							bookmarkId: fileData.id,
-							status: pdfScreenshotError.response?.status,
-							message: errorMessage,
-							responseData: pdfScreenshotError.response?.data,
+						);
+						Sentry.captureException(fetchError, {
+							tags: {
+								operation: "fetch_file_for_remaining",
+								userId,
+							},
+							extra: {
+								bookmarkId: fileData.id,
+							},
 						});
-					} else {
-						errorMessage =
-							pdfScreenshotError instanceof Error
-								? pdfScreenshotError.message
-								: errorMessage;
-						console.error("Error generating PDF screenshot:", {
-							bookmarkId: fileData.id,
-							error: errorMessage,
-						});
+						return;
 					}
 
-					Sentry.captureException(pdfScreenshotError, {
+					// For PDFs, generate a screenshot/thumbnail using the PDF screenshot API
+					let queuePublicUrl = fileRecord.url;
+					const isPdf = fileType === PDF_MIME_TYPE;
+
+					if (isPdf && fileRecord.url) {
+						console.log("Generating PDF screenshot:", {
+							bookmarkId: fileData.id,
+							pdfUrl: fileRecord.url,
+						});
+
+						const pdfApiUrl = `${process.env.RECOLLECT_SERVER_API}${PDF_SCREENSHOT_API}`;
+
+						const [pdfScreenshotError, pdfScreenshotResponse] = await vet(() =>
+							axios.post(
+								pdfApiUrl,
+								{
+									url: fileRecord.url,
+									userId,
+								},
+								{
+									headers: {
+										Authorization: `Bearer ${process.env.RECOLLECT_SERVER_API_KEY}`,
+										"Content-Type": "application/json",
+									},
+									timeout: 30000,
+								},
+							),
+						);
+
+						if (pdfScreenshotError) {
+							// Log error but continue with original URL - don't fail the entire operation
+							let errorMessage = "Unknown error generating PDF screenshot";
+
+							if (axios.isAxiosError(pdfScreenshotError)) {
+								errorMessage =
+									pdfScreenshotError.response?.data?.error ||
+									pdfScreenshotError.response?.data?.message ||
+									pdfScreenshotError.message ||
+									"PDF screenshot service error";
+
+								console.error("Error generating PDF screenshot:", {
+									bookmarkId: fileData.id,
+									status: pdfScreenshotError.response?.status,
+									message: errorMessage,
+									responseData: pdfScreenshotError.response?.data,
+								});
+							} else {
+								errorMessage =
+									pdfScreenshotError instanceof Error
+										? pdfScreenshotError.message
+										: errorMessage;
+								console.error("Error generating PDF screenshot:", {
+									bookmarkId: fileData.id,
+									error: errorMessage,
+								});
+							}
+
+							Sentry.captureException(pdfScreenshotError, {
+								tags: {
+									operation: "pdf_screenshot_for_queue",
+									userId,
+								},
+								extra: {
+									bookmarkId: fileData.id,
+									pdfUrl: fileRecord.url,
+									pdfApiUrl,
+								},
+							});
+							// Continue with original URL as fallback
+						} else if (pdfScreenshotResponse?.data?.publicUrl) {
+							queuePublicUrl = pdfScreenshotResponse.data.publicUrl;
+							console.log("PDF screenshot generated successfully:", {
+								bookmarkId: fileData.id,
+								screenshotUrl: queuePublicUrl,
+							});
+						} else {
+							console.warn("PDF screenshot API returned no publicUrl:", {
+								bookmarkId: fileData.id,
+								responseData: pdfScreenshotResponse?.data,
+							});
+							// Continue with original URL as fallback
+						}
+					}
+
+					const queuePayload = {
+						id: fileData.id,
+						publicUrl: queuePublicUrl,
+						mediaType: (fileRecord.meta_data as ImgMetadataType)?.mediaType,
+					};
+
+					console.log("Queueing background job for remaining data:", {
+						bookmarkId: fileData.id,
+						publicUrl: fileRecord.url,
+					});
+
+					const queueResult = await supabase.schema("pgmq_public").rpc("send", {
+						queue_name: "upload-file-queue",
+						message: queuePayload,
+					});
+
+					if (queueResult.error) {
+						console.error("Failed to queue background job:", {
+							bookmarkId: fileData.id,
+							error: queueResult.error,
+						});
+						Sentry.captureException(queueResult.error, {
+							tags: {
+								operation: "queue_file_remaining_data",
+								userId,
+							},
+							extra: {
+								bookmarkId: fileData.id,
+							},
+						});
+					} else {
+						console.log("Background job queued successfully:", {
+							bookmarkId: fileData.id,
+						});
+					}
+				} catch (error) {
+					// Log error but don't fail the request since we already sent the response
+					console.error("Error queuing background job:", error);
+					Sentry.captureException(error, {
 						tags: {
-							operation: "pdf_screenshot_for_queue",
+							operation: "queue_file_remaining_data_unexpected",
 							userId,
 						},
 						extra: {
 							bookmarkId: fileData.id,
-							pdfUrl: fileRecord.url,
-							pdfApiUrl,
 						},
 					});
-					// Continue with original URL as fallback
-				} else if (pdfScreenshotResponse?.data?.publicUrl) {
-					queuePublicUrl = pdfScreenshotResponse.data.publicUrl;
-					console.log("PDF screenshot generated successfully:", {
-						bookmarkId: fileData.id,
-						screenshotUrl: queuePublicUrl,
-					});
-				} else {
-					console.warn("PDF screenshot API returned no publicUrl:", {
-						bookmarkId: fileData.id,
-						responseData: pdfScreenshotResponse?.data,
-					});
-					// Continue with original URL as fallback
 				}
-			}
-
-			const queuePayload = {
-				id: fileData.id,
-				publicUrl: queuePublicUrl,
-				mediaType: (fileRecord.meta_data as ImgMetadataType)?.mediaType,
-			};
-
-			console.log("Queueing background job for remaining data:", {
-				bookmarkId: fileData.id,
-				publicUrl: fileRecord.url,
-			});
-
-			const queueResult = await supabase.schema("pgmq_public").rpc("send", {
-				queue_name: "upload-file-queue",
-				message: queuePayload,
-			});
-
-			if (queueResult.error) {
-				console.error("Failed to queue background job:", {
-					bookmarkId: fileData.id,
-					error: queueResult.error,
-				});
-				Sentry.captureException(queueResult.error, {
-					tags: {
-						operation: "queue_file_remaining_data",
-						userId,
-					},
-					extra: {
-						bookmarkId: fileData.id,
-					},
-				});
-			} else {
-				console.log("Background job queued successfully:", {
-					bookmarkId: fileData.id,
-				});
-			}
-		} catch (error) {
-			// Log error but don't fail the request since we already sent the response
-			console.error("Error queuing background job:", error);
-			Sentry.captureException(error, {
-				tags: {
-					operation: "queue_file_remaining_data_unexpected",
-					userId,
-				},
-				extra: {
-					bookmarkId: fileData.id,
-				},
-			});
-		}
+			})(),
+		);
 	} catch (error) {
 		console.error("Unexpected error in upload file API:", error);
 		Sentry.captureException(error, {

@@ -94,6 +94,7 @@
 		"@tanstack/react-query": "5.90.12",
 		"@tanstack/react-virtual": "3.13.12",
 		"@total-typescript/ts-reset": "0.6.1",
+		"@vercel/functions": "3.3.4",
 		"allotment": "1.20.4",
 		"ariakit": "2.0.0-next.43",
 		"array-to-image": "1.0.0",
