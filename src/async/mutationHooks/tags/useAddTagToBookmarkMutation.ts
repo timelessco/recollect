@@ -3,7 +3,10 @@ import { find, isArray } from "lodash";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
-import { useSupabaseSession } from "../../../store/componentStore";
+import {
+	useMiscellaneousStore,
+	useSupabaseSession,
+} from "../../../store/componentStore";
 import {
 	type AddTagToBookmarkApiPayload,
 	type SingleListData,
@@ -12,12 +15,17 @@ import {
 import { BOOKMARKS_KEY, USER_TAGS_KEY } from "../../../utils/constants";
 import { addTagToBookmark } from "../../supabaseCrudHelpers";
 
+import useDebounce from "@/hooks/useDebounce";
+
 // add tag to a bookmark
 export default function useAddTagToBookmarkMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const debouncedSearch = useDebounce(searchText, 500);
+
 	const addTagToBookmarkMutation = useMutation({
 		mutationFn: addTagToBookmark,
 		onMutate: async (data: AddTagToBookmarkApiPayload) => {
@@ -25,6 +33,16 @@ export default function useAddTagToBookmarkMutation() {
 			await queryClient.cancelQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 			});
+			if (debouncedSearch) {
+				await queryClient.cancelQueries({
+					queryKey: [
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						CATEGORY_ID,
+						debouncedSearch,
+					],
+				});
+			}
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
@@ -33,6 +51,14 @@ export default function useAddTagToBookmarkMutation() {
 				CATEGORY_ID,
 				sortBy,
 			]);
+			const previousSearchData = debouncedSearch
+				? queryClient.getQueryData([
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						CATEGORY_ID,
+						debouncedSearch,
+					])
+				: undefined;
 
 			const userTagsData = queryClient.getQueryData([
 				USER_TAGS_KEY,
@@ -48,63 +74,102 @@ export default function useAddTagToBookmarkMutation() {
 					(!isArray(data?.selectedData) ? data?.selectedData.tag_id : null),
 			);
 
-			// Optimistically update to the new value
+			// Helper to update bookmark tags in paginated data
+			const updateBookmarkTags = (oldData: unknown) => {
+				const old = oldData as { pages: Array<{ data: SingleListData[] }> };
+				if (!old?.pages) {
+					return oldData;
+				}
+
+				return {
+					...old,
+					pages: old?.pages?.map((pagesItem) => ({
+						...pagesItem,
+						data: pagesItem?.data?.map((dataItem) => {
+							if (
+								dataItem?.id ===
+								(!isArray(data?.selectedData)
+									? data?.selectedData.bookmark_id
+									: null)
+							) {
+								if (dataItem?.addedTags) {
+									return {
+										...dataItem,
+										addedTags: [
+											...dataItem.addedTags,
+											{ id: updatingTag?.id, name: updatingTag?.name },
+										],
+									};
+								} else {
+									return {
+										...dataItem,
+										addedTags: [
+											{ id: updatingTag?.id, name: updatingTag?.name },
+										],
+									};
+								}
+							} else {
+								return dataItem;
+							}
+						}),
+					})),
+				};
+			};
+
+			// Optimistically update regular bookmarks cache
 			queryClient.setQueryData(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				(oldData: unknown) => {
-					const old = oldData as { pages: Array<{ data: SingleListData[] }> };
-					const updateData = {
-						...old,
-						pages: old?.pages?.map((pagesItem) => ({
-							...pagesItem,
-							data: pagesItem?.data?.map((dataItem) => {
-								if (
-									dataItem?.id ===
-									(!isArray(data?.selectedData)
-										? data?.selectedData.bookmark_id
-										: null)
-								) {
-									if (dataItem?.addedTags) {
-										return {
-											...dataItem,
-											addedTags: [
-												...dataItem.addedTags,
-												{ id: updatingTag?.id, name: updatingTag?.name },
-											],
-										};
-									} else {
-										return {
-											...dataItem,
-											addedTags: [
-												{ id: updatingTag?.id, name: updatingTag?.name },
-											],
-										};
-									}
-								} else {
-									return dataItem;
-								}
-							}),
-						})),
-					};
-					return updateData;
-				},
+				updateBookmarkTags,
 			);
 
+			if (debouncedSearch) {
+				queryClient.setQueryData(
+					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
+					updateBookmarkTags,
+				);
+			}
+
 			// Return a context object with the snapshotted value
-			return { previousData };
+			return { previousData, previousSearchData };
 		},
 		// If the mutation fails, use the context returned from onMutate to roll back
-		onError: (context: { previousData: unknown }) => {
-			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				context?.previousData,
-			);
+		onError: (
+			_error,
+			_variables,
+			context:
+				| { previousData: unknown; previousSearchData: unknown }
+				| undefined,
+		) => {
+			if (context?.previousData) {
+				queryClient.setQueryData(
+					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+					context.previousData,
+				);
+			}
+
+			if (context?.previousSearchData && debouncedSearch) {
+				queryClient.setQueryData(
+					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
+					context.previousSearchData,
+				);
+			}
 		},
 		// Always refetch after error or success:
 		onSettled: () => {
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 			});
+			// Also invalidate search cache
+			if (debouncedSearch) {
+				void queryClient.invalidateQueries({
+					queryKey: [
+						BOOKMARKS_KEY,
+						session?.user?.id,
+						CATEGORY_ID,
+						debouncedSearch,
+					],
+				});
+			}
 		},
 	});
 	return { addTagToBookmarkMutation };

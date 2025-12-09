@@ -5,6 +5,7 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	useLoadersStore,
+	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
@@ -15,6 +16,8 @@ import {
 } from "../../../utils/constants";
 import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
+import useDebounce from "@/hooks/useDebounce";
+
 // adds cat to bookmark optimistically
 export default function useAddCategoryToBookmarkOptimisticMutation(
 	isLightbox = false,
@@ -23,6 +26,8 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 	const queryClient = useQueryClient();
 	const { sortBy } = useGetSortBy();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const debouncedSearch = useDebounce(searchText, 500);
 
 	const setSidePaneOptionLoading = useLoadersStore(
 		(state) => state.setSidePaneOptionLoading,
@@ -83,6 +88,16 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 					void queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
 					});
+					if (debouncedSearch) {
+						void queryClient.invalidateQueries({
+							queryKey: [
+								BOOKMARKS_KEY,
+								session?.user?.id,
+								CATEGORY_ID,
+								debouncedSearch,
+							],
+						});
+					}
 				}
 			} finally {
 				setSidePaneOptionLoading(null);
