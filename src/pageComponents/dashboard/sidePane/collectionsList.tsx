@@ -402,11 +402,16 @@ const CollectionsList = () => {
 			await event?.items?.forEach(async (item: any) => {
 				const bookmarkId = (await item.getText("text/plain")) as string;
 
-				const bookmarkCreatedUserId = find(
+				const foundBookmark = find(
 					flattendPaginationBookmarkData,
 					(bookmarkItem) =>
 						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-				)?.user_id?.id;
+				);
+				// Handle both nested object (from regular fetch) and plain string (from search)
+				const bookmarkCreatedUserId =
+					typeof foundBookmark?.user_id === "object"
+						? foundBookmark?.user_id?.id
+						: foundBookmark?.user_id;
 
 				if (bookmarkCreatedUserId === session?.user?.id) {
 					if (!updateAccessCondition) {
