@@ -16,8 +16,8 @@ import { removeTagFromBookmark } from "../../supabaseCrudHelpers";
 
 import useDebounce from "@/hooks/useDebounce";
 
-// add new tag for a user to add to bookmark
-export default function useRemoveTagFromBookmarkMutation() {
+// remove tag from a bookmark
+export function useRemoveTagFromBookmarkMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();

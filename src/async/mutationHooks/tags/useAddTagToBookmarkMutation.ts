@@ -18,7 +18,7 @@ import { addTagToBookmark } from "../../supabaseCrudHelpers";
 import useDebounce from "@/hooks/useDebounce";
 
 // add tag to a bookmark
-export default function useAddTagToBookmarkMutation() {
+export function useAddTagToBookmarkMutation() {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
