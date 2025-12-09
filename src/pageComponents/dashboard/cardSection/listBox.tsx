@@ -427,7 +427,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				)}
 				<DragPreview ref={preview}>
 					{(items) => (
-						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
+						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4 dark:bg-gray-alpha-100">
 							{items.length > 1
 								? `${items.length} bookmarks`
 								: find(
