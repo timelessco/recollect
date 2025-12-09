@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -114,6 +114,75 @@ export const useLightboxNavigation = ({
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	/**
+	 * Invalidate queries for a given bookmark index
+	 */
+	const invalidateQueriesForIndex = useCallback(
+		async (index: number, updateLastInvalidated = true) => {
+			const currentBookmark = bookmarks?.[index];
+			if (!currentBookmark) {
+				return;
+			}
+
+			const bookmarkCategoryId = currentBookmark.category_id;
+
+			try {
+				// Always invalidate the current view's category (the collection being viewed)
+				if (CATEGORY_ID) {
+					await queryClient.invalidateQueries({
+						queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+					});
+				}
+
+				// Also invalidate the bookmark's category if it's different from current view
+				if (bookmarkCategoryId && bookmarkCategoryId !== CATEGORY_ID) {
+					await queryClient.invalidateQueries({
+						queryKey: [BOOKMARKS_KEY, session?.user?.id, bookmarkCategoryId],
+					});
+				}
+
+				if (searchText) {
+					const categoryData = queryClient.getQueryData([
+						CATEGORIES_KEY,
+						session?.user?.id,
+					]) as {
+						data: CategoriesData[];
+						error: PostgrestError;
+					};
+
+					await queryClient.invalidateQueries({
+						queryKey: [
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							searchSlugKey(categoryData) ?? CATEGORY_ID,
+							searchText,
+						],
+					});
+				}
+
+				await queryClient.invalidateQueries({
+					queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+				});
+
+				if (updateLastInvalidated) {
+					lastInvalidatedIndex.current = index;
+				}
+			} catch (error) {
+				console.error("Error invalidating queries:", error);
+			} finally {
+				setIsCollectionChanged(false);
+			}
+		},
+		[
+			bookmarks,
+			queryClient,
+			session?.user?.id,
+			searchText,
+			CATEGORY_ID,
+			setIsCollectionChanged,
+		],
+	);
+
+	/**
 	 * Handle view changes
 	 * We define the logic here to capture the latest state (closures)
 	 */
@@ -129,55 +198,7 @@ export const useLightboxNavigation = ({
 
 		// Invalidate queries when slide changes
 		if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
-			const currentBookmark = bookmarks?.[index];
-			if (currentBookmark) {
-				const categoryId = currentBookmark.category_id;
-
-				// Create a function to handle the async operations
-				const invalidateQueries = async () => {
-					try {
-						if (categoryId) {
-							await queryClient.invalidateQueries({
-								queryKey: [BOOKMARKS_KEY, session?.user?.id, categoryId],
-							});
-						}
-
-						if (searchText) {
-							const categoryData = queryClient.getQueryData([
-								CATEGORIES_KEY,
-								session?.user?.id,
-							]) as {
-								data: CategoriesData[];
-								error: PostgrestError;
-							};
-
-							await queryClient.invalidateQueries({
-								queryKey: [
-									BOOKMARKS_KEY,
-									session?.user?.id,
-									searchSlugKey(categoryData) ?? CATEGORY_ID,
-									searchText,
-								],
-							});
-						}
-
-						await Promise.all([
-							queryClient.invalidateQueries({
-								queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
-							}),
-						]);
-
-						lastInvalidatedIndex.current = index;
-					} catch (error) {
-						console.error("Error invalidating queries:", error);
-					} finally {
-						setIsCollectionChanged(false);
-					}
-				};
-
-				// Call the async function without awaiting
-				void invalidateQueries();
-			}
+			void invalidateQueriesForIndex(index);
 		}
 
 		// Update browser URL
@@ -197,6 +218,15 @@ export const useLightboxNavigation = ({
 	};
 
 	/**
+	 * Handle lightbox close - invalidate queries if collection was changed
+	 */
+	const handleClose = useCallback(() => {
+		if (isCollectionChanged && bookmarks?.[activeIndex]) {
+			void invalidateQueriesForIndex(activeIndex, false);
+		}
+	}, [isCollectionChanged, bookmarks, activeIndex, invalidateQueriesForIndex]);
+
+	/**
 	 * Create a stable ref that always holds the latest version of the handler.
 	 * We initialize it with the current handler so it works on first render.
 	 */
@@ -210,5 +240,5 @@ export const useLightboxNavigation = ({
 		onViewRef.current = handleViewChange;
 	});
 
-	return onViewRef;
+	return { onViewRef, handleClose };
 };
