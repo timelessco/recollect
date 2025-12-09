@@ -74,8 +74,20 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 			);
 		},
 		// Always refetch after error or success:
-		onSettled: async () => {
+		onSettled: async (_data, _error, variables) => {
 			try {
+				// Invalidate the destination collection (where the bookmark is being moved to)
+				if (variables?.category_id) {
+					void queryClient.invalidateQueries({
+						queryKey: [
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							variables.category_id,
+							sortBy,
+						],
+					});
+				}
+
 				if (!isLightbox) {
 					void queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
