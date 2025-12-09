@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { RecollectLogoIcon } from "@/icons/recollect-icon";
+import { RecollectLogoIcon } from "@/icons/recollect-logo-icon";
 
 interface AuthLayoutProps {
 	children: React.ReactNode;
