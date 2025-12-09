@@ -11,9 +11,9 @@ export default function AuthLayout(props: AuthLayoutProps) {
 
 	return (
 		<div className="mx-auto flex min-h-dvh max-w-[300px] flex-col justify-center">
-			<header className="mb-[21px] flex items-center justify-center text-2xl leading-7 font-semibold tracking-[0.24px]">
+			<header className="mb-[21px] flex items-center justify-center">
 				<RecollectLogoIcon
-					className="text-3xl text-plain-reverse"
+					className="h-[23px] w-[19px] text-plain-reverse"
 					aria-label="Recollect"
 				/>
 			</header>
