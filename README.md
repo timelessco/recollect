@@ -33,6 +33,9 @@
 
 ## About The Project
 
+[![Run in Smithery](https://smithery.ai/badge/skills/timelessco)](https://smithery.ai/skills?ns=timelessco&utm_source=github&utm_medium=badge)
+
+
 ![Screen Shot](https://framerusercontent.com/assets/6aRlWSrfJQJTYIASrZ6vXzWTs.jpg)
 
 Recollect is your one stop where you can add and manage your bookmarks, images and documents. Here are the features that recollect has :
