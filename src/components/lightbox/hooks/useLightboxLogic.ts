@@ -141,19 +141,20 @@ export const useLightboxNavigation = ({
 				}
 
 				if (searchText) {
-					const categoryData = queryClient.getQueryData([
-						CATEGORIES_KEY,
-						session?.user?.id,
-					]) as {
+					const categoryData = queryClient.getQueryData<{
 						data: CategoriesData[];
 						error: PostgrestError;
-					};
+					}>([CATEGORIES_KEY, session?.user?.id]);
+
+					const searchCategorySlug = categoryData
+						? searchSlugKey(categoryData)
+						: CATEGORY_ID;
 
 					await queryClient.invalidateQueries({
 						queryKey: [
 							BOOKMARKS_KEY,
 							session?.user?.id,
-							searchSlugKey(categoryData) ?? CATEGORY_ID,
+							searchCategorySlug,
 							searchText,
 						],
 					});
