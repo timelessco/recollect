@@ -126,20 +126,27 @@ export const useLightboxNavigation = ({
 			const bookmarkCategoryId = currentBookmark.category_id;
 
 			try {
-				// Always invalidate the current view's category (the collection being viewed)
+				const invalidationPromises: Array<Promise<unknown>> = [];
+
+				// Invalidate current view's category
 				if (CATEGORY_ID) {
-					await queryClient.invalidateQueries({
-						queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
-					});
+					invalidationPromises.push(
+						queryClient.invalidateQueries({
+							queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+						}),
+					);
 				}
 
-				// Also invalidate the bookmark's category if it's different from current view
+				// Invalidate the bookmark's category if different
 				if (bookmarkCategoryId && bookmarkCategoryId !== CATEGORY_ID) {
-					await queryClient.invalidateQueries({
-						queryKey: [BOOKMARKS_KEY, session?.user?.id, bookmarkCategoryId],
-					});
+					invalidationPromises.push(
+						queryClient.invalidateQueries({
+							queryKey: [BOOKMARKS_KEY, session?.user?.id, bookmarkCategoryId],
+						}),
+					);
 				}
 
+				// Invalidate search view if applicable
 				if (searchText) {
 					const categoryData = queryClient.getQueryData<{
 						data: CategoriesData[];
@@ -150,19 +157,26 @@ export const useLightboxNavigation = ({
 						? searchSlugKey(categoryData)
 						: CATEGORY_ID;
 
-					await queryClient.invalidateQueries({
-						queryKey: [
-							BOOKMARKS_KEY,
-							session?.user?.id,
-							searchCategorySlug,
-							searchText,
-						],
-					});
+					invalidationPromises.push(
+						queryClient.invalidateQueries({
+							queryKey: [
+								BOOKMARKS_KEY,
+								session?.user?.id,
+								searchCategorySlug,
+								searchText,
+							],
+						}),
+					);
 				}
 
-				await queryClient.invalidateQueries({
-					queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
-				});
+				invalidationPromises.push(
+					queryClient.invalidateQueries({
+						queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+					}),
+				);
+
+				// Run invalidations in parallel
+				await Promise.allSettled(invalidationPromises);
 
 				if (updateLastInvalidated) {
 					lastInvalidatedIndex.current = index;
