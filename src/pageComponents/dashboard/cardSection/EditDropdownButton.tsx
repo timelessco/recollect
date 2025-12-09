@@ -89,11 +89,16 @@ export const EditDropdownButton = ({
 							onCategoryChange={async (value) => {
 								if (value) {
 									onCategoryChange([post.id], Number(value.value));
+									setOpenedMenuId(null);
 								}
 							}}
 							onCreateCategory={async (value) => {
 								if (value) {
-									await onCreateNewCategory(value);
+									try {
+										await onCreateNewCategory(value);
+									} finally {
+										setOpenedMenuId(null);
+									}
 								}
 							}}
 							addExistingTag={async (tag) => {
