@@ -50,6 +50,8 @@ import { getCategorySlugFromRouter } from "../../utils/url";
 // UI Components
 import { CollectionIcon } from "../collectionIcon";
 
+import { handleClientError } from "@/utils/error-utils/client";
+
 /**
  * Props for the AddToCollectionDropdown component
  */
@@ -178,7 +180,7 @@ export const AddToCollectionDropdown = memo(
 					});
 					setIsCollectionChanged(true);
 				} catch (error) {
-					console.error("Error adding to collection:", error);
+					handleClientError(error, "Error adding to collection", false);
 				}
 
 				setSearchTerm("");

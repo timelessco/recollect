@@ -7,6 +7,7 @@ import { ApplicationError, BaseError } from "./common";
 export function handleClientError(
 	error: unknown,
 	fallbackMessage = "Something went wrong",
+	shouldToast = true,
 ) {
 	let title = "Error";
 	let description = fallbackMessage;
@@ -28,7 +29,9 @@ export function handleClientError(
 		return;
 	}
 
-	errorToast(description);
+	if (shouldToast) {
+		errorToast(description);
+	}
 
 	Sentry.captureException(error, {
 		tags: {

@@ -4,6 +4,7 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -28,6 +29,8 @@ import {
 import { searchSlugKey } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 import { isYouTubeVideo, type CustomSlide } from "../LightboxUtils";
+
+import { handleClientError } from "@/utils/error-utils/client";
 
 /**
  * Hook to transform bookmarks into lightbox slides
@@ -112,6 +115,7 @@ export const useLightboxNavigation = ({
 	const router = useRouter();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const { sortBy } = useGetSortBy();
 
 	/**
 	 * Invalidate queries for a given bookmark index
@@ -132,7 +136,7 @@ export const useLightboxNavigation = ({
 				if (CATEGORY_ID) {
 					invalidationPromises.push(
 						queryClient.invalidateQueries({
-							queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+							queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 						}),
 					);
 				}
@@ -141,7 +145,12 @@ export const useLightboxNavigation = ({
 				if (bookmarkCategoryId && bookmarkCategoryId !== CATEGORY_ID) {
 					invalidationPromises.push(
 						queryClient.invalidateQueries({
-							queryKey: [BOOKMARKS_KEY, session?.user?.id, bookmarkCategoryId],
+							queryKey: [
+								BOOKMARKS_KEY,
+								session?.user?.id,
+								bookmarkCategoryId,
+								sortBy,
+							],
 						}),
 					);
 				}
@@ -182,7 +191,7 @@ export const useLightboxNavigation = ({
 					lastInvalidatedIndex.current = index;
 				}
 			} catch (error) {
-				console.error("Error invalidating queries:", error);
+				handleClientError(error, "Error invalidating queries", false);
 			} finally {
 				setIsCollectionChanged(false);
 			}
@@ -193,6 +202,7 @@ export const useLightboxNavigation = ({
 			session?.user?.id,
 			searchText,
 			CATEGORY_ID,
+			sortBy,
 			setIsCollectionChanged,
 		],
 	);

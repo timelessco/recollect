@@ -79,7 +79,12 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 				// Invalidate the destination collection (where the bookmark is being moved to)
 				if (variables?.category_id) {
 					void queryClient.invalidateQueries({
-						queryKey: [BOOKMARKS_KEY, session?.user?.id, variables.category_id],
+						queryKey: [
+							BOOKMARKS_KEY,
+							session?.user?.id,
+							variables.category_id,
+							sortBy,
+						],
 					});
 				}
 
