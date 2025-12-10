@@ -38,6 +38,7 @@ import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/categ
 import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
+import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
@@ -311,10 +312,16 @@ const CollectionsList = () => {
 	const { onDeleteCollection } = useDeleteCollection();
 	const { allBookmarksData, isAllBookmarksDataLoading } =
 		useFetchPaginatedBookmarks();
+	const { flattenedSearchData } = useSearchBookmarks();
 
 	const flattendPaginationBookmarkData = useMemo(
 		() => allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
 		[allBookmarksData?.pages],
+	);
+
+	const mergedBookmarkData = useMemo(
+		() => [...flattendPaginationBookmarkData, ...(flattenedSearchData ?? [])],
+		[flattendPaginationBookmarkData, flattenedSearchData],
 	);
 
 	const handleCategoryOptionClick = async (
@@ -412,12 +419,17 @@ const CollectionsList = () => {
 			await event?.items?.forEach(async (item: any) => {
 				const bookmarkId = (await item.getText("text/plain")) as string;
 
-				const bookmarkCreatedUserId = find(
-					flattendPaginationBookmarkData,
+				const foundBookmark = find(
+					mergedBookmarkData,
 					(bookmarkItem) =>
 						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-				)?.user_id?.id;
-
+				);
+				// Handle both nested object (from regular fetch) and plain string (from search)
+				const bookmarkCreatedUserId =
+					foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
+				console.log("bookmarkCreatedUserId", bookmarkCreatedUserId);
+				console.log("session?.user?.id", session?.user?.id);
+				console.log("updateAccessCondition", updateAccessCondition);
 				if (bookmarkCreatedUserId === session?.user?.id) {
 					if (!updateAccessCondition) {
 						// if update access is not there then user cannot drag and drop anything into the collection

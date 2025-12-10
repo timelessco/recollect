@@ -1,9 +1,9 @@
 import { find } from "lodash";
 
 import { EditDropdownContent } from "./EditDropdownContent";
-import useAddTagToBookmarkMutation from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
+import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
 import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/useCreateAndAssignTagMutation";
-import useRemoveTagFromBookmarkMutation from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
+import { useRemoveTagFromBookmarkMutation } from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
 import { AriaDropdown, AriaDropdownMenu } from "@/components/ariaDropdown";
 import EditIcon from "@/icons/editIcon";
 import { type BookmarksTagData, type SingleListData } from "@/types/apiTypes";
@@ -89,11 +89,16 @@ export const EditDropdownButton = ({
 							onCategoryChange={async (value) => {
 								if (value) {
 									onCategoryChange([post.id], Number(value.value));
+									setOpenedMenuId(null);
 								}
 							}}
 							onCreateCategory={async (value) => {
 								if (value) {
-									await onCreateNewCategory(value);
+									try {
+										await onCreateNewCategory(value);
+									} finally {
+										setOpenedMenuId(null);
+									}
 								}
 							}}
 							addExistingTag={async (tag) => {

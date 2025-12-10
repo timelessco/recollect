@@ -47,7 +47,9 @@ const EditDropdownContentBase = ({
 	userId,
 }: EditDropdownContentProps) => {
 	const queryClient = useQueryClient();
-	const isOwner = userId && post?.user_id?.id === userId;
+	const postUserId =
+		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
+	const isOwner = userId && postUserId === userId;
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
 		error: PostgrestError;

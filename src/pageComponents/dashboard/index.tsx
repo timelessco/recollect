@@ -638,12 +638,16 @@ const Dashboard = () => {
 												for (const item of value) {
 													const bookmarkId = item.toString();
 
-													const bookmarkCreatedUserId = find(
+													const foundBookmark = find(
 														currentBookmarksData,
 														(bookmarkItem) =>
 															Number.parseInt(bookmarkId, 10) ===
 															bookmarkItem?.id,
-													)?.user_id?.id;
+													);
+													const bookmarkCreatedUserId =
+														typeof foundBookmark?.user_id === "object"
+															? foundBookmark?.user_id?.id
+															: foundBookmark?.user_id;
 
 													if (bookmarkCreatedUserId === session?.user?.id) {
 														await addCategoryToBookmarkOptimisticMutation.mutateAsync(
