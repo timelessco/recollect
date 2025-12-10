@@ -1,4 +1,5 @@
 import { find } from "lodash";
+import { useTheme } from "next-themes";
 
 import { type CategoriesData } from "../types/apiTypes";
 import { options } from "../utils/commonData";
@@ -14,12 +15,7 @@ const normalizeColor = (color?: string) => {
 };
 
 // --- Utility: adjust color based on dark mode ---
-const getAdjustedColor = (color?: string) => {
-	if (typeof window === "undefined") {
-		return color;
-	}
-
-	const isDarkMode = document?.documentElement?.classList?.contains("dark");
+const getAdjustedColor = (color?: string, isDarkMode?: boolean) => {
 	const colorNorm = normalizeColor(color);
 
 	const isWhite =
@@ -51,7 +47,17 @@ export const CollectionIcon = ({
 	iconSize = "10",
 	size = "14",
 }: CollectionIconProps) => {
-	const adjustedBgColor = getAdjustedColor(bookmarkCategoryData?.icon_color);
+	const { resolvedTheme } = useTheme();
+	const isDarkMode =
+		resolvedTheme === "dark" ||
+		(!resolvedTheme &&
+			typeof document !== "undefined" &&
+			document.documentElement.classList.contains("dark"));
+
+	const adjustedBgColor = getAdjustedColor(
+		bookmarkCategoryData?.icon_color,
+		isDarkMode,
+	);
 	const matchedIcon = find(
 		options(),
 		(optionItem) => optionItem?.label === bookmarkCategoryData?.icon,

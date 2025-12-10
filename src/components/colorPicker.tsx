@@ -1,6 +1,5 @@
 import classNames from "classnames";
-
-import { colorPickerColors } from "../utils/constants";
+import { useTheme } from "next-themes";
 
 type ColorPickerProps = {
 	colorsList: string[];
@@ -26,39 +25,82 @@ const colorBlockSelected = ({
 		"bg-gray-200": colorItem === selectedColor,
 	});
 
-const colorBlockItemBorder = (colorItem: string) =>
+const colorBlockItemBorder = (colorItem: string, baseLightColor: string) =>
 	classNames(
 		"h-4",
 		"w-4",
 		"rounded-full",
 		"border",
 		"p-1",
-		{ "border-gray-900": colorItem === colorPickerColors[0] },
-		{ "border-transparent": colorItem !== colorPickerColors[0] },
+		{ "border-gray-900": colorItem === baseLightColor },
+		{ "border-transparent": colorItem !== baseLightColor },
 	);
 
 const ColorPicker = ({
 	colorsList,
 	onChange,
 	selectedColor,
-}: ColorPickerProps) => (
-	<div className={colorBlockWrapper}>
-		{colorsList?.map((colorItem) => (
-			<div
-				className={colorBlockSelected({ colorItem, selectedColor })}
-				key={colorItem}
-			>
+}: ColorPickerProps) => {
+	const { resolvedTheme } = useTheme();
+	const isDark = resolvedTheme === "dark";
+
+	// Swap first two colors (white/black) in dark mode for better visibility.
+	const displayColors =
+		isDark && colorsList.length >= 2
+			? [colorsList[1], colorsList[0], ...colorsList.slice(2)]
+			: colorsList;
+
+	// Map what the user clicks back to the stored value.
+	const mapToStoredColor = (colorItem: string) => {
+		if (!isDark || colorsList.length < 2) {
+			return colorItem;
+		}
+
+		if (colorItem === colorsList[0]) {
+			return colorsList[1];
+		}
+
+		if (colorItem === colorsList[1]) {
+			return colorsList[0];
+		}
+
+		return colorItem;
+	};
+
+	// Adjust selection highlighting to match the swapped display.
+	const mappedSelected =
+		isDark && colorsList.length >= 2
+			? selectedColor === colorsList[0]
+				? colorsList[1]
+				: selectedColor === colorsList[1]
+					? colorsList[0]
+					: selectedColor
+			: selectedColor;
+
+	const baseLightColor = colorsList[0];
+
+	return (
+		<div className={colorBlockWrapper}>
+			{displayColors?.map((colorItem) => (
 				<div
-					className={colorBlockItemBorder(colorItem)}
-					onClick={() => onChange(colorItem)}
-					onKeyDown={() => {}}
-					role="button"
-					style={{ backgroundColor: colorItem }}
-					tabIndex={0}
-				/>
-			</div>
-		))}
-	</div>
-);
+					className={colorBlockSelected({
+						colorItem,
+						selectedColor: mappedSelected,
+					})}
+					key={colorItem}
+				>
+					<div
+						className={colorBlockItemBorder(colorItem, baseLightColor)}
+						onClick={() => onChange(mapToStoredColor(colorItem))}
+						onKeyDown={() => {}}
+						role="button"
+						style={{ backgroundColor: colorItem }}
+						tabIndex={0}
+					/>
+				</div>
+			))}
+		</div>
+	);
+};
 
 export default ColorPicker;
