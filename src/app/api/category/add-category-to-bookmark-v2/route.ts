@@ -13,7 +13,7 @@ import {
 
 const ROUTE = "add-category-to-bookmark-v2";
 
-const AddCategoryToBookmarkV2Schema = z.object({
+const AddCategoryToBookmarkV2PayloadSchema = z.object({
 	bookmark_id: z
 		.number()
 		.int()
@@ -21,12 +21,20 @@ const AddCategoryToBookmarkV2Schema = z.object({
 	category_id: z.number().int().min(0, "Category ID must be non-negative"),
 });
 
-const BookmarkCategoryOutputSchema = z.array(
+export type AddCategoryToBookmarkV2Payload = z.infer<
+	typeof AddCategoryToBookmarkV2PayloadSchema
+>;
+
+const AddCategoryToBookmarkV2ResponseSchema = z.array(
 	z.object({
 		bookmark_id: z.number(),
 		category_id: z.number(),
 	}),
 );
+
+export type AddCategoryToBookmarkV2Response = z.infer<
+	typeof AddCategoryToBookmarkV2ResponseSchema
+>;
 
 export async function POST(request: NextRequest) {
 	try {
@@ -37,7 +45,7 @@ export async function POST(request: NextRequest) {
 
 		const body = await parseBody({
 			request,
-			schema: AddCategoryToBookmarkV2Schema,
+			schema: AddCategoryToBookmarkV2PayloadSchema,
 			route: ROUTE,
 		});
 		if (body.errorResponse) {
@@ -207,7 +215,7 @@ export async function POST(request: NextRequest) {
 		return apiSuccess({
 			route: ROUTE,
 			data: insertedData,
-			schema: BookmarkCategoryOutputSchema,
+			schema: AddCategoryToBookmarkV2ResponseSchema,
 		});
 	} catch (error) {
 		return apiError({

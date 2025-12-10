@@ -13,7 +13,7 @@ import {
 
 const ROUTE = "remove-category-from-bookmark";
 
-const RemoveCategoryFromBookmarkSchema = z.object({
+const RemoveCategoryFromBookmarkPayloadSchema = z.object({
 	bookmark_id: z
 		.number()
 		.int()
@@ -21,12 +21,20 @@ const RemoveCategoryFromBookmarkSchema = z.object({
 	category_id: z.number().int().min(0, "Category ID must be non-negative"),
 });
 
-const BookmarkCategoryOutputSchema = z.array(
+export type RemoveCategoryFromBookmarkPayload = z.infer<
+	typeof RemoveCategoryFromBookmarkPayloadSchema
+>;
+
+const RemoveCategoryFromBookmarkResponseSchema = z.array(
 	z.object({
 		bookmark_id: z.number(),
 		category_id: z.number(),
 	}),
 );
+
+export type RemoveCategoryFromBookmarkResponse = z.infer<
+	typeof RemoveCategoryFromBookmarkResponseSchema
+>;
 
 export async function POST(request: NextRequest) {
 	try {
@@ -37,7 +45,7 @@ export async function POST(request: NextRequest) {
 
 		const body = await parseBody({
 			request,
-			schema: RemoveCategoryFromBookmarkSchema,
+			schema: RemoveCategoryFromBookmarkPayloadSchema,
 			route: ROUTE,
 		});
 		if (body.errorResponse) {
@@ -183,7 +191,7 @@ export async function POST(request: NextRequest) {
 			return apiSuccess({
 				route: ROUTE,
 				data: replacedData,
-				schema: BookmarkCategoryOutputSchema,
+				schema: RemoveCategoryFromBookmarkResponseSchema,
 			});
 		}
 
@@ -223,7 +231,7 @@ export async function POST(request: NextRequest) {
 		return apiSuccess({
 			route: ROUTE,
 			data: deletedData,
-			schema: BookmarkCategoryOutputSchema,
+			schema: RemoveCategoryFromBookmarkResponseSchema,
 		});
 	} catch (error) {
 		return apiError({

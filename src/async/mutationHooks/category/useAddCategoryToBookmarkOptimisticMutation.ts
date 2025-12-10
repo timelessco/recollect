@@ -18,7 +18,15 @@ import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
 import useDebounce from "@/hooks/useDebounce";
 
-// adds cat to bookmark optimistically
+/**
+ * @deprecated This hook uses the legacy single-category model (category_id column).
+ * For the new many-to-many category system, use one of:
+ * - `useSetBookmarkCategoriesMutation` - Replace all categories on a bookmark
+ * - `useAddCategoryToBookmarkV2Mutation` - Add a single category (additive)
+ * - `useRemoveCategoryFromBookmarkMutation` - Remove a single category
+ *
+ * This hook will be removed once all consumers are migrated to the new system.
+ */
 export default function useAddCategoryToBookmarkOptimisticMutation(
 	isLightbox = false,
 ) {

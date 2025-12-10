@@ -271,17 +271,6 @@ export type AddCategoryToBookmarkApiPayload = {
 	update_access: boolean;
 };
 
-// NEW: Many-to-many category API payloads
-export type SetBookmarkCategoriesApiPayload = {
-	bookmark_id: number;
-	category_ids: number[];
-};
-
-export type BookmarkCategoryOperationPayload = {
-	bookmark_id: number;
-	category_id: number;
-};
-
 export type AddUserCategoryApiPayload = {
 	category_order: number[];
 	name: string;
@@ -400,3 +389,6 @@ export type ParsedFormDataType = {
 		}>;
 	};
 };
+
+// Shared type for paginated bookmarks data structure in React Query cache
+export type PaginatedBookmarks = { pages: Array<{ data: SingleListData[] }> };

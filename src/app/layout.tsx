@@ -9,6 +9,7 @@ import { ToastContainer } from "react-toastify";
 import { Providers } from "@/components/providers";
 import { AnalyticsScript } from "@/components/scripts/analytics-script";
 import { ReactGrabScript } from "@/components/scripts/react-grab-script";
+import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
 import { rootMetaData, rootViewport } from "@/utils/metadata-utils";
 
@@ -39,6 +40,7 @@ export default async function RootLayout(props: RootLayoutProps) {
 
 				<ToastContainer />
 				<TailwindIndicator />
+				<MutationIndicator />
 			</body>
 		</html>
 	);

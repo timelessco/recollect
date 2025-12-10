@@ -12,7 +12,7 @@ import {
 
 const ROUTE = "set-bookmark-categories";
 
-const SetBookmarkCategoriesSchema = z.object({
+const SetBookmarkCategoriesPayloadSchema = z.object({
 	bookmark_id: z
 		.number()
 		.int()
@@ -27,12 +27,20 @@ const SetBookmarkCategoriesSchema = z.object({
 		),
 });
 
-const BookmarkCategoryOutputSchema = z.array(
+export type SetBookmarkCategoriesPayload = z.infer<
+	typeof SetBookmarkCategoriesPayloadSchema
+>;
+
+const SetBookmarkCategoriesResponseSchema = z.array(
 	z.object({
 		bookmark_id: z.number(),
 		category_id: z.number(),
 	}),
 );
+
+export type SetBookmarkCategoriesResponse = z.infer<
+	typeof SetBookmarkCategoriesResponseSchema
+>;
 
 export async function POST(request: NextRequest) {
 	try {
@@ -43,7 +51,7 @@ export async function POST(request: NextRequest) {
 
 		const body = await parseBody({
 			request,
-			schema: SetBookmarkCategoriesSchema,
+			schema: SetBookmarkCategoriesPayloadSchema,
 			route: ROUTE,
 		});
 		if (body.errorResponse) {
@@ -203,7 +211,7 @@ export async function POST(request: NextRequest) {
 		return apiSuccess({
 			route: ROUTE,
 			data: insertedData,
-			schema: BookmarkCategoryOutputSchema,
+			schema: SetBookmarkCategoriesResponseSchema,
 		});
 	} catch (error) {
 		return apiError({

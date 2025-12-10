@@ -1,13 +1,17 @@
 import * as Sentry from "@sentry/nextjs";
 
-import { errorToast } from "../toastMessages";
+import { errorToast, successToast } from "../toastMessages";
 
 import { ApplicationError, BaseError } from "./common";
+
+export function handleSuccess(message: string) {
+	successToast(message);
+}
 
 export function handleClientError(
 	error: unknown,
 	fallbackMessage = "Something went wrong",
-	shouldToast = true,
+	showErrorToast = true,
 ) {
 	let title = "Error";
 	let description = fallbackMessage;
@@ -29,7 +33,7 @@ export function handleClientError(
 		return;
 	}
 
-	if (shouldToast) {
+	if (showErrorToast) {
 		errorToast(description);
 	}
 
