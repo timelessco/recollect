@@ -1166,6 +1166,11 @@
 		@apply text-gray-900;
 	}
 
+	.search-bar__suggestions,
+	.search-bar__suggestions__list {
+		@apply hide-scrollbar;
+	}
+
 	/* for the collections side pane arrow collapse rotate */
 	.aria-disclosure-button[aria-expanded="false"]
 		.collections-sidepane-down-arrow {

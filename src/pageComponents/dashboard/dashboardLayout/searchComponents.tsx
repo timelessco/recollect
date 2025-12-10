@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { isEmpty, isNull } from "lodash";
-import { Mention, MentionsInput } from "react-mentions";
+import {
+	Mention,
+	MentionsInput,
+	type MentionsInputProps,
+} from "react-mentions";
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import Button from "@/components/atoms/button";
@@ -141,7 +145,7 @@ const SearchInput = (props: SearchInputTypes) => {
 	);
 };
 
-const styles = {
+const styles: MentionsInputProps["style"] = {
 	input: {
 		left: 27,
 		top: 6.5,
@@ -179,11 +183,17 @@ const styles = {
 		backgroundColor: "transparent",
 		zIndex: 5,
 		list: {
+			marginTop: "20px",
+
 			backgroundColor: "var(--color-plain)",
 			padding: "4px",
+			borderRadius: "12px",
+			overflowY: "auto",
+			maxHeight: "200px",
+			maxWidth: "200px",
 			boxShadow:
 				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
-			borderRadius: "12px",
+
 			// border: "1px solid rgba(0,0,0,0.15)",
 			// fontSize: 14,
 		},
