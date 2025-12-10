@@ -9,10 +9,11 @@ import {
 } from "../../../types/apiTypes";
 import { options } from "../../../utils/commonData";
 import {
-	colorPickerColors,
+	BLACK_COLOR,
 	FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
 	getBaseUrl,
 	NEXT_API_URL,
+	WHITE_COLOR,
 } from "../../../utils/constants";
 
 type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
@@ -26,13 +27,11 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 					style={{
 						width: 20,
 						height: 20,
-						backgroundColor: props?.icon_color ?? colorPickerColors[1],
+						backgroundColor: props?.icon_color ?? BLACK_COLOR,
 					}}
 				>
 					{find(options(), (item) => item?.label === props?.icon)?.icon(
-						props?.icon_color === colorPickerColors[0]
-							? colorPickerColors[1]
-							: colorPickerColors[0],
+						props?.icon_color === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR,
 						"14",
 					)}
 				</div>

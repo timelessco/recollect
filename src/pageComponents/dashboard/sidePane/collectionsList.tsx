@@ -1,4 +1,4 @@
-import { useRef, useState, type Key, type ReactNode } from "react";
+import { useMemo, useRef, useState, type Key, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,6 +37,8 @@ import {
 import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
 import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
+import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
@@ -46,7 +48,6 @@ import {
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import useGetFlattendPaginationBookmarkData from "../../../hooks/useGetFlattendPaginationBookmarkData";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -309,8 +310,19 @@ const CollectionsList = () => {
 	const { allCategories, isLoadingCategories } = useFetchCategories();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
-	const { flattendPaginationBookmarkData } =
-		useGetFlattendPaginationBookmarkData();
+	const { allBookmarksData, isAllBookmarksDataLoading } =
+		useFetchPaginatedBookmarks();
+	const { flattenedSearchData } = useSearchBookmarks();
+
+	const flattendPaginationBookmarkData = useMemo(
+		() => allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
+		[allBookmarksData?.pages],
+	);
+
+	const mergedBookmarkData = useMemo(
+		() => [...flattendPaginationBookmarkData, ...(flattenedSearchData ?? [])],
+		[flattendPaginationBookmarkData, flattenedSearchData],
+	);
 
 	const handleCategoryOptionClick = async (
 		value: number | string,
@@ -383,6 +395,11 @@ const CollectionsList = () => {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleBookmarksDrop = async (event: any) => {
+		// Guard: don't process drops while bookmarks are still loading
+		if (isAllBookmarksDataLoading || !allBookmarksData) {
+			return;
+		}
+
 		if (event?.isInternal === false) {
 			const categoryId = Number.parseInt(event?.target?.key as string, 10);
 
@@ -402,12 +419,17 @@ const CollectionsList = () => {
 			await event?.items?.forEach(async (item: any) => {
 				const bookmarkId = (await item.getText("text/plain")) as string;
 
-				const bookmarkCreatedUserId = find(
-					flattendPaginationBookmarkData,
+				const foundBookmark = find(
+					mergedBookmarkData,
 					(bookmarkItem) =>
 						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-				)?.user_id?.id;
-
+				);
+				// Handle both nested object (from regular fetch) and plain string (from search)
+				const bookmarkCreatedUserId =
+					foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
+				console.log("bookmarkCreatedUserId", bookmarkCreatedUserId);
+				console.log("session?.user?.id", session?.user?.id);
+				console.log("updateAccessCondition", updateAccessCondition);
 				if (bookmarkCreatedUserId === session?.user?.id) {
 					if (!updateAccessCondition) {
 						// if update access is not there then user cannot drag and drop anything into the collection
