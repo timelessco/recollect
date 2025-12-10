@@ -74,7 +74,7 @@ export function useRemoveTagFromBookmarkMutation() {
 			);
 
 			// Helper to remove tag from bookmark in paginated data
-			const removeTagFromBookmarks = (oldData: unknown) => {
+			const removeTagFromBookmarkInCache = (oldData: unknown) => {
 				const old = oldData as { pages: Array<{ data: SingleListData[] }> };
 				if (!old?.pages) {
 					return oldData;
@@ -115,14 +115,14 @@ export function useRemoveTagFromBookmarkMutation() {
 			// Optimistically update regular bookmarks cache
 			queryClient.setQueryData(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				removeTagFromBookmarks,
+				removeTagFromBookmarkInCache,
 			);
 
 			// Also update search cache if searching
 			if (debouncedSearch) {
 				queryClient.setQueryData(
 					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-					removeTagFromBookmarks,
+					removeTagFromBookmarkInCache,
 				);
 			}
 

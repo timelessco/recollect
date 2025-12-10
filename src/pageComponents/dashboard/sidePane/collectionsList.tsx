@@ -60,6 +60,7 @@ import {
 	type CategoriesData,
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
+	type SingleListData,
 } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
@@ -68,6 +69,7 @@ import {
 } from "../../../utils/commonClassNames";
 import {
 	BOOKMARKS_COUNT_KEY,
+	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
@@ -311,10 +313,30 @@ const CollectionsList = () => {
 	const { onDeleteCollection } = useDeleteCollection();
 	const { allBookmarksData, isAllBookmarksDataLoading } =
 		useFetchPaginatedBookmarks();
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+
+	const searchBookmarksData = queryClient.getQueryData([
+		BOOKMARKS_KEY,
+		session?.user?.id,
+		CATEGORY_ID,
+		searchText,
+	]) as {
+		pages: Array<{ data: SingleListData[] }>;
+	};
 
 	const flattendPaginationBookmarkData = useMemo(
 		() => allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
 		[allBookmarksData?.pages],
+	);
+
+	const flattenedSearchBookmarkData = useMemo(
+		() => searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
+		[searchBookmarksData?.pages],
+	);
+
+	const mergedBookmarkData = useMemo(
+		() => [...flattendPaginationBookmarkData, ...flattenedSearchBookmarkData],
+		[flattendPaginationBookmarkData, flattenedSearchBookmarkData],
 	);
 
 	const handleCategoryOptionClick = async (
@@ -413,16 +435,13 @@ const CollectionsList = () => {
 				const bookmarkId = (await item.getText("text/plain")) as string;
 
 				const foundBookmark = find(
-					flattendPaginationBookmarkData,
+					mergedBookmarkData,
 					(bookmarkItem) =>
 						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
 				);
 				// Handle both nested object (from regular fetch) and plain string (from search)
 				const bookmarkCreatedUserId =
-					typeof foundBookmark?.user_id === "object"
-						? foundBookmark?.user_id?.id
-						: foundBookmark?.user_id;
-
+					foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
 				if (bookmarkCreatedUserId === session?.user?.id) {
 					if (!updateAccessCondition) {
 						// if update access is not there then user cannot drag and drop anything into the collection

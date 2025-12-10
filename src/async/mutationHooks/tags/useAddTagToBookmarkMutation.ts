@@ -75,7 +75,7 @@ export function useAddTagToBookmarkMutation() {
 			);
 
 			// Helper to update bookmark tags in paginated data
-			const updateBookmarkTags = (oldData: unknown) => {
+			const updateBookmarkTagsInCache = (oldData: unknown) => {
 				const old = oldData as { pages: Array<{ data: SingleListData[] }> };
 				if (!old?.pages) {
 					return oldData;
@@ -119,13 +119,13 @@ export function useAddTagToBookmarkMutation() {
 			// Optimistically update regular bookmarks cache
 			queryClient.setQueryData(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				updateBookmarkTags,
+				updateBookmarkTagsInCache,
 			);
 
 			if (debouncedSearch) {
 				queryClient.setQueryData(
 					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-					updateBookmarkTags,
+					updateBookmarkTagsInCache,
 				);
 			}
 

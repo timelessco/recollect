@@ -74,7 +74,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (context: { previousData: CategoriesData }) => {
 			queryClient.setQueryData(
-				[CATEGORIES_KEY, session?.user?.id],
+				[BOOKMARKS_KEY, isNull(CATEGORY_ID) ? session?.user?.id : CATEGORY_ID],
 				context?.previousData,
 			);
 		},

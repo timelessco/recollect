@@ -26,7 +26,12 @@ export default function useAddCategoryToBookmarkMutation() {
 
 	const addCategoryToBookmarkMutation = useMutation({
 		mutationFn: addCategoryToBookmark,
-		onSuccess: () => {
+		onMutate: () => ({ debouncedSearch }),
+		onSuccess: (
+			_data,
+			_variables,
+			context: { debouncedSearch: string } | undefined,
+		) => {
 			// Invalidate and refetch
 			void queryClient.invalidateQueries({
 				queryKey: [CATEGORIES_KEY, session?.user?.id],
@@ -37,13 +42,14 @@ export default function useAddCategoryToBookmarkMutation() {
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
 			});
-			if (debouncedSearch) {
+			// Use captured debouncedSearch from context to avoid stale closure
+			if (context?.debouncedSearch) {
 				void queryClient.invalidateQueries({
 					queryKey: [
 						BOOKMARKS_KEY,
 						session?.user?.id,
 						CATEGORY_ID,
-						debouncedSearch,
+						context.debouncedSearch,
 					],
 				});
 			}

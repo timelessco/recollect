@@ -90,7 +90,7 @@ export function useCreateAndAssignTagMutation() {
 				CATEGORY_ID,
 				sortBy,
 			]);
-			const previousSearchBookmarks = debouncedSearch
+			const previousSearchData = debouncedSearch
 				? queryClient.getQueryData([
 						BOOKMARKS_KEY,
 						session?.user?.id,
@@ -118,7 +118,7 @@ export function useCreateAndAssignTagMutation() {
 			);
 
 			// Helper to update bookmark tags in paginated data
-			const updateBookmarkTags = (oldData: unknown) => {
+			const updateBookmarkTagsInCache = (oldData: unknown) => {
 				const old = oldData as {
 					pages: Array<{ data: SingleListData[] }>;
 				};
@@ -150,20 +150,20 @@ export function useCreateAndAssignTagMutation() {
 			// Update regular bookmarks cache
 			queryClient.setQueryData(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				updateBookmarkTags,
+				updateBookmarkTagsInCache,
 			);
 
 			if (debouncedSearch) {
 				queryClient.setQueryData(
 					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-					updateBookmarkTags,
+					updateBookmarkTagsInCache,
 				);
 			}
 
 			return {
 				previousUserTags,
 				previousBookmarks,
-				previousSearchBookmarks,
+				previousSearchData,
 				tempId,
 				debouncedSearch,
 			};
@@ -175,7 +175,7 @@ export function useCreateAndAssignTagMutation() {
 				| {
 						previousUserTags: unknown;
 						previousBookmarks: unknown;
-						previousSearchBookmarks: unknown;
+						previousSearchData: unknown;
 						debouncedSearch: string;
 				  }
 				| undefined,
@@ -194,7 +194,7 @@ export function useCreateAndAssignTagMutation() {
 				);
 			}
 
-			if (context?.previousSearchBookmarks && context?.debouncedSearch) {
+			if (context?.previousSearchData && context?.debouncedSearch) {
 				queryClient.setQueryData(
 					[
 						BOOKMARKS_KEY,
@@ -202,7 +202,7 @@ export function useCreateAndAssignTagMutation() {
 						CATEGORY_ID,
 						context?.debouncedSearch,
 					],
-					context.previousSearchBookmarks,
+					context.previousSearchData,
 				);
 			}
 		},
@@ -214,7 +214,7 @@ export function useCreateAndAssignTagMutation() {
 				| {
 						previousUserTags: unknown;
 						previousBookmarks: unknown;
-						previousSearchBookmarks: unknown;
+						previousSearchData: unknown;
 						debouncedSearch: string;
 				  }
 				| undefined,
