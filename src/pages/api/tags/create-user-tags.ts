@@ -10,7 +10,11 @@ import {
 	type NextApiRequest,
 	type UserTagsData,
 } from "../../../types/apiTypes";
-import { TAG_TABLE_NAME } from "../../../utils/constants";
+import {
+	MAX_TAG_NAME_LENGTH,
+	MIN_TAG_NAME_LENGTH,
+	TAG_TABLE_NAME,
+} from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = UserTagsData[] | null;
@@ -32,14 +36,28 @@ export default async function handler(
 	const supabase = apiSupabaseClient(request, response);
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
-	const { name } = request.body;
+	const rawName = request?.body?.name;
+	const trimmedName =
+		typeof rawName === "string" ? rawName.trim() : ("" as string);
+
+	if (
+		typeof rawName !== "string" ||
+		trimmedName.length < MIN_TAG_NAME_LENGTH ||
+		trimmedName.length > MAX_TAG_NAME_LENGTH
+	) {
+		response.status(400).json({
+			data: null,
+			error: `Tag name must be between ${MIN_TAG_NAME_LENGTH} and ${MAX_TAG_NAME_LENGTH} characters`,
+		});
+		return;
+	}
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(TAG_TABLE_NAME)
 			.insert([
 				{
-					name,
+					name: trimmedName,
 					user_id: userId,
 				},
 			])
