@@ -392,3 +392,6 @@ export const isGuestPath = (pathname: string) =>
 export const PUBLIC_PATHS = new Set(["/public"]);
 export const isPublicPath = (pathname: string) =>
 	pathname.startsWith("/public");
+
+export const WHITE_COLOR = colorPickerColors[0];
+export const BLACK_COLOR = colorPickerColors[1];

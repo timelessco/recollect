@@ -1,9 +1,10 @@
+import { useMemo } from "react";
 import { find } from "lodash";
 import { useTheme } from "next-themes";
 
 import { type CategoriesData } from "../types/apiTypes";
 import { options } from "../utils/commonData";
-import { colorPickerColors } from "../utils/constants";
+import { BLACK_COLOR, WHITE_COLOR } from "../utils/constants";
 
 // --- Utility: normalize color ---
 const normalizeColor = (color?: string) => {
@@ -48,26 +49,19 @@ export const CollectionIcon = ({
 	size = "14",
 }: CollectionIconProps) => {
 	const { resolvedTheme } = useTheme();
-	const isDarkMode =
-		resolvedTheme === "dark" ||
-		(!resolvedTheme &&
-			typeof document !== "undefined" &&
-			document.documentElement.classList.contains("dark"));
+	const isDarkMode = resolvedTheme === "dark";
 
 	const adjustedBgColor = getAdjustedColor(
 		bookmarkCategoryData?.icon_color,
 		isDarkMode,
 	);
-	const matchedIcon = find(
-		options(),
-		(optionItem) => optionItem?.label === bookmarkCategoryData?.icon,
+	const matchedIcon = useMemo(
+		() => find(options(), (opt) => opt?.label === bookmarkCategoryData?.icon),
+		[bookmarkCategoryData?.icon],
 	);
 
 	// Pick contrasting icon color depending on background
-	const iconColor =
-		adjustedBgColor === colorPickerColors[0]
-			? colorPickerColors[1]
-			: colorPickerColors[0];
+	const iconColor = adjustedBgColor === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR;
 
 	return (
 		<div

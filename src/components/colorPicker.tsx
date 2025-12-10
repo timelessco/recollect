@@ -50,32 +50,23 @@ export const ColorPicker = ({
 			? [colorsList[1], colorsList[0], ...colorsList.slice(2)]
 			: colorsList;
 
-	// Map what the user clicks back to the stored value.
-	const mapToStoredColor = (colorItem: string) => {
+	const swapFirstTwo = (color: string) => {
 		if (!isDark || colorsList.length < 2) {
-			return colorItem;
+			return color;
 		}
 
-		if (colorItem === colorsList[0]) {
+		if (color === colorsList[0]) {
 			return colorsList[1];
 		}
 
-		if (colorItem === colorsList[1]) {
+		if (color === colorsList[1]) {
 			return colorsList[0];
 		}
 
-		return colorItem;
+		return color;
 	};
 
-	// Adjust selection highlighting to match the swapped display.
-	const mappedSelected =
-		isDark && colorsList.length >= 2
-			? selectedColor === colorsList[0]
-				? colorsList[1]
-				: selectedColor === colorsList[1]
-					? colorsList[0]
-					: selectedColor
-			: selectedColor;
+	const mappedSelected = swapFirstTwo(selectedColor);
 
 	const baseLightColor = colorsList[0];
 
@@ -91,13 +82,15 @@ export const ColorPicker = ({
 				>
 					<div
 						className={colorBlockItemBorder(colorItem, baseLightColor)}
-						onClick={() => onChange(mapToStoredColor(colorItem))}
+						onClick={() => onChange(swapFirstTwo(colorItem))}
 						onKeyDown={(event) => {
 							if (event.key === "Enter" || event.key === " ") {
 								event.preventDefault();
-								onChange(mapToStoredColor(colorItem));
+								onChange(swapFirstTwo(colorItem));
 							}
 						}}
+						aria-label={`Select ${colorItem} color`}
+						aria-pressed={colorItem === mappedSelected}
 						role="button"
 						style={{ backgroundColor: colorItem }}
 						tabIndex={0}
