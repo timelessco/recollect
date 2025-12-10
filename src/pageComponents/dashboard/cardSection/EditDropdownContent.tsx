@@ -15,7 +15,7 @@ import {
 	type SearchSelectOption,
 	type TagInputOption,
 } from "../../../types/componentTypes";
-import { CATEGORIES_KEY } from "../../../utils/constants";
+import { CATEGORIES_KEY, MAX_TAG_NAME_LENGTH } from "../../../utils/constants";
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { Spinner } from "@/components/spinner";
@@ -147,7 +147,27 @@ const EditDropdownContentBase = ({
 							}
 
 							if (action === "create") {
-								await createTag([{ label: value as string }]);
+								if (typeof value !== "string") {
+									handleClientError("create-tag", "Invalid tag name");
+									return;
+								}
+
+								const trimmedTagName = value.trim();
+
+								if (!trimmedTagName) {
+									handleClientError("create-tag", "Tag name cannot be empty");
+									return;
+								}
+
+								if (trimmedTagName.length > MAX_TAG_NAME_LENGTH) {
+									handleClientError(
+										"create-tag",
+										`Tag name must be ${MAX_TAG_NAME_LENGTH} characters or less`,
+									);
+									return;
+								}
+
+								await createTag([{ label: trimmedTagName }]);
 							}
 						}}
 						placeholder="Tag name..."

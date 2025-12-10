@@ -392,3 +392,6 @@ export const isGuestPath = (pathname: string) =>
 export const PUBLIC_PATHS = new Set(["/public"]);
 export const isPublicPath = (pathname: string) =>
 	pathname.startsWith("/public");
+
+export const MAX_TAG_NAME_LENGTH = 20;
+export const MIN_TAG_NAME_LENGTH = 1;
