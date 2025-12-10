@@ -69,7 +69,7 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 			);
 
 			// Return a context object with the snapshotted value
-			return { previousData };
+			return { previousData, debouncedSearch };
 		},
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (context: { previousData: CategoriesData }) => {
@@ -79,7 +79,12 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 			);
 		},
 		// Always refetch after error or success:
-		onSettled: async (_data, _error, variables) => {
+		onSettled: async (
+			_data,
+			_error,
+			variables,
+			context: { previousData: unknown; debouncedSearch: string } | undefined,
+		) => {
 			try {
 				// Invalidate the destination collection (where the bookmark is being moved to)
 				if (variables?.category_id) {
@@ -100,13 +105,13 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 					void queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
 					});
-					if (debouncedSearch) {
+					if (context?.debouncedSearch) {
 						void queryClient.invalidateQueries({
 							queryKey: [
 								BOOKMARKS_KEY,
 								session?.user?.id,
 								CATEGORY_ID,
-								debouncedSearch,
+								context?.debouncedSearch,
 							],
 						});
 					}
