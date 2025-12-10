@@ -76,7 +76,7 @@ const AriaSearchableSelect = ({
 						/>
 					)}
 					<Ariakit.SelectPopover
-						className="z-10 rounded-xl bg-gray-0 p-1 shadow-custom-7"
+						className="z-10 mt-1 hide-scrollbar max-h-[220px] max-w-[260px] overflow-y-auto rounded-xl bg-gray-0 p-1 shadow-custom-7"
 						gutter={4}
 						sameWidth
 					>
@@ -87,7 +87,7 @@ const AriaSearchableSelect = ({
 								placeholder="Search..."
 							/>
 						</div>
-						<Ariakit.ComboboxList>
+						<Ariakit.ComboboxList className="hide-scrollbar">
 							{matches.map((value) => (
 								<Ariakit.SelectItem
 									className={menuItemClassName}
