@@ -38,6 +38,7 @@ import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/categ
 import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
+import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
@@ -60,7 +61,6 @@ import {
 	type CategoriesData,
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
-	type SingleListData,
 } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
@@ -69,7 +69,6 @@ import {
 } from "../../../utils/commonClassNames";
 import {
 	BOOKMARKS_COUNT_KEY,
-	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
@@ -313,30 +312,16 @@ const CollectionsList = () => {
 	const { onDeleteCollection } = useDeleteCollection();
 	const { allBookmarksData, isAllBookmarksDataLoading } =
 		useFetchPaginatedBookmarks();
-	const searchText = useMiscellaneousStore((state) => state.searchText);
-
-	const searchBookmarksData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		CATEGORY_ID,
-		searchText,
-	]) as {
-		pages: Array<{ data: SingleListData[] }>;
-	};
+	const { flattenedSearchData } = useSearchBookmarks();
 
 	const flattendPaginationBookmarkData = useMemo(
 		() => allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
 		[allBookmarksData?.pages],
 	);
 
-	const flattenedSearchBookmarkData = useMemo(
-		() => searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
-		[searchBookmarksData?.pages],
-	);
-
 	const mergedBookmarkData = useMemo(
-		() => [...flattendPaginationBookmarkData, ...flattenedSearchBookmarkData],
-		[flattendPaginationBookmarkData, flattenedSearchBookmarkData],
+		() => [...flattendPaginationBookmarkData, ...(flattenedSearchData ?? [])],
+		[flattendPaginationBookmarkData, flattenedSearchData],
 	);
 
 	const handleCategoryOptionClick = async (
@@ -442,6 +427,9 @@ const CollectionsList = () => {
 				// Handle both nested object (from regular fetch) and plain string (from search)
 				const bookmarkCreatedUserId =
 					foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
+				console.log("bookmarkCreatedUserId", bookmarkCreatedUserId);
+				console.log("session?.user?.id", session?.user?.id);
+				console.log("updateAccessCondition", updateAccessCondition);
 				if (bookmarkCreatedUserId === session?.user?.id) {
 					if (!updateAccessCondition) {
 						// if update access is not there then user cannot drag and drop anything into the collection
