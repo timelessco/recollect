@@ -161,11 +161,6 @@ const styles: MentionsInputProps["style"] = {
 
 		width: "100%",
 		padding: "6px",
-		// padding: "3px 10px 3px 28px",
-		// padding: "2px 10px 2px 28px",
-		// paddingTop: "6px",
-		// paddingBottom: "6px",
-
 		borderRadius: 11,
 	},
 	"&multiLine": {
@@ -189,13 +184,10 @@ const styles: MentionsInputProps["style"] = {
 			padding: "4px",
 			borderRadius: "12px",
 			overflowY: "auto",
-			maxHeight: "200px",
-			maxWidth: "200px",
+			maxHeight: "220px",
+			maxWidth: "260px",
 			boxShadow:
 				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
-
-			// border: "1px solid rgba(0,0,0,0.15)",
-			// fontSize: 14,
 		},
 		item: {
 			padding: "7px 8px",
@@ -207,7 +199,6 @@ const styles: MentionsInputProps["style"] = {
 			cursor: "pointer",
 			transition: "plain-color 0.2s ease",
 
-			// borderBottom: "1px solid rgba(0,0,0,0.15)",
 			"&focused": {
 				backgroundColor: "var(--color-gray-200)",
 			},
