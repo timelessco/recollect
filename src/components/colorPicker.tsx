@@ -36,7 +36,7 @@ const colorBlockItemBorder = (colorItem: string, baseLightColor: string) =>
 		{ "border-transparent": colorItem !== baseLightColor },
 	);
 
-const ColorPicker = ({
+export const ColorPicker = ({
 	colorsList,
 	onChange,
 	selectedColor,
@@ -92,7 +92,12 @@ const ColorPicker = ({
 					<div
 						className={colorBlockItemBorder(colorItem, baseLightColor)}
 						onClick={() => onChange(mapToStoredColor(colorItem))}
-						onKeyDown={() => {}}
+						onKeyDown={(event) => {
+							if (event.key === "Enter" || event.key === " ") {
+								event.preventDefault();
+								onChange(mapToStoredColor(colorItem));
+							}
+						}}
 						role="button"
 						style={{ backgroundColor: colorItem }}
 						tabIndex={0}
@@ -102,5 +107,3 @@ const ColorPicker = ({
 		</div>
 	);
 };
-
-export default ColorPicker;

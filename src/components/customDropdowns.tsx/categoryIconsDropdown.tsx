@@ -16,7 +16,7 @@ import { options } from "../../utils/commonData";
 import { colorPickerColors } from "../../utils/constants";
 import Button from "../atoms/button";
 import { CollectionIcon } from "../collectionIcon";
-import ColorPicker from "../colorPicker";
+import { ColorPicker } from "../colorPicker";
 
 import { type CategoriesData } from "@/types/apiTypes";
 
