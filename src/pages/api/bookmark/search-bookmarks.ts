@@ -10,8 +10,8 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	GET_HASHTAG_TAG_PATTERN,
 	GET_SITE_SCOPE_PATTERN,
-	GET_TEXT_WITH_AT_CHAR,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
@@ -95,7 +95,7 @@ export default async function handler(
 
 		const searchText = search
 			?.replace(GET_SITE_SCOPE_PATTERN, "")
-			?.replace(GET_TEXT_WITH_AT_CHAR, "")
+			?.replace(GET_HASHTAG_TAG_PATTERN, "")
 			?.trim();
 
 		const tagName = extractTagNamesFromSearch(search);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { isEmpty } from "lodash";
 import {
 	Mention,
@@ -81,7 +81,21 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const { userTags } = useFetchUserTags();
-	const userTagsData = userTags?.data ?? [];
+	const userTagsData = useMemo(() => userTags?.data ?? [], [userTags]);
+
+	const filteredTagsData = useMemo(
+		() =>
+			userTagsData
+				?.map((item) => ({
+					id: String(item?.id || ""),
+					display: String(item?.name || ""),
+				}))
+				?.filter(
+					(filterItem) =>
+						!addedTags?.includes(String(filterItem?.display || "")),
+				),
+		[userTagsData, addedTags],
+	);
 
 	return (
 		<div className="search-wrapper relative">
@@ -112,15 +126,7 @@ const SearchInput = (props: SearchInputTypes) => {
 			>
 				<Mention
 					appendSpaceOnAdd
-					data={userTagsData
-						?.map((item) => ({
-							id: String(item?.id || ""),
-							display: String(item?.name || ""),
-						}))
-						?.filter(
-							(filterItem) =>
-								!addedTags?.includes(String(filterItem?.display || "")),
-						)}
+					data={filteredTagsData}
 					displayTransform={(_url, display) => `#${display}`}
 					markup="#[__display__](__id__)"
 					trigger="#"

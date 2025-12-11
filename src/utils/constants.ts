@@ -27,7 +27,7 @@ export const HTTP_PATTERN = /^(https?:\/\/)?/u;
 export const URL_PATTERN =
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /#\[[^\]]+\]\([^)]+\)|#[^\s#]+/gu;
+export const GET_HASHTAG_TAG_PATTERN = /#\[[^\]]+\]\([^)]+\)|#[^\s#]+/gu;
 
 export const TAG_MARKUP_REGEX = /#\[(?<display>[^\]]+)\]\([^)]+\)/u;
 

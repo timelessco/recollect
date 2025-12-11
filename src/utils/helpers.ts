@@ -27,8 +27,8 @@ import {
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	FILE_NAME_PARSING_PATTERN,
+	GET_HASHTAG_TAG_PATTERN,
 	GET_NAME_FROM_EMAIL_PATTERN,
-	GET_TEXT_WITH_AT_CHAR,
 	imageFileTypes,
 	IMAGES_URL,
 	INBOX_URL,
@@ -115,7 +115,7 @@ export const extractTagNamesFromSearch = (search: string) => {
 		return undefined;
 	}
 
-	const matches = search.match(GET_TEXT_WITH_AT_CHAR);
+	const matches = search.match(GET_HASHTAG_TAG_PATTERN);
 
 	if (!matches || isEmpty(matches)) {
 		return undefined;
