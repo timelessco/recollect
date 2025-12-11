@@ -26,10 +26,10 @@ export default function useFetchPaginatedBookmarks() {
 	const { sortBy } = useGetSortBy();
 
 	const {
-		data: allBookmarksData,
+		data: everythingData,
 		fetchNextPage,
-		isLoading: isAllBookmarksDataLoading,
-		isFetching: isFetchingAllBookmarksData,
+		isLoading: isEverythingDataLoading,
+		isFetching: isFetchingEverythingData,
 	} = useInfiniteQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -45,15 +45,15 @@ export default function useFetchPaginatedBookmarks() {
 	});
 
 	useEffect(() => {
-		if (allBookmarksData && isSortByLoading) {
+		if (everythingData && isSortByLoading) {
 			toggleIsSortByLoading();
 		}
-	}, [isSortByLoading, allBookmarksData, toggleIsSortByLoading]);
+	}, [isSortByLoading, everythingData, toggleIsSortByLoading]);
 
 	return {
-		allBookmarksData,
+		everythingData,
 		fetchNextPage,
-		isAllBookmarksDataLoading,
-		isFetchingAllBookmarksData,
+		isEverythingDataLoading,
+		isFetchingEverythingData,
 	};
 }
