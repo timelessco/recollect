@@ -173,7 +173,7 @@ const Dashboard = () => {
 	const { onDeleteCollection } = useDeleteCollection();
 
 	const { addCategoryToBookmarkOptimisticMutation } =
-		useAddCategoryToBookmarkOptimisticMutation();
+		useAddCategoryToBookmarkOptimisticMutation(true);
 
 	const { updateCategoryOptimisticMutation } =
 		useUpdateCategoryOptimisticMutation();
