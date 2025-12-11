@@ -253,6 +253,12 @@ export default async function handler(
 			count: additionalImages.length,
 		});
 
+		console.log("Additional videos collected:", {
+			urls: screenShotResponse?.data?.allVideos,
+		});
+
+		const additionalVideos = screenShotResponse?.data?.allVideos;
+
 		// Add screenshot URL to meta_data
 		const updatedMetaData = {
 			...existingMetaData,
@@ -260,6 +266,7 @@ export default async function handler(
 			isPageScreenshot,
 			coverImage: existingBookmarkData?.ogImage,
 			additionalImages,
+			additionalVideos,
 		};
 
 		const {
