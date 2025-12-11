@@ -39,8 +39,6 @@ import { CATEGORIES_KEY } from "../../utils/constants";
 // UI Components
 import { CollectionIcon } from "../collectionIcon";
 
-import { handleClientError } from "@/utils/error-utils/client";
-
 /**
  * Props for the AddToCollectionDropdown component
  */
@@ -117,6 +115,9 @@ export const AddToCollectionDropdown = memo(
 			async (newCollection: CategoriesData | null) => {
 				// Optimistically update the current collection
 				const previousCollection = currentCollection;
+				const currentBookmark = everythingData?.find(
+					(b) => b?.id === bookmarkId,
+				);
 
 				try {
 					// Optimistically update the UI
@@ -143,9 +144,6 @@ export const AddToCollectionDropdown = memo(
 						: null;
 
 					// Update the current collection optimistically
-					const currentBookmark = everythingData?.find(
-						(b) => b?.id === bookmarkId,
-					);
 					if (currentBookmark) {
 						currentBookmark.category_id = selectedCollection?.id ?? null;
 					}
@@ -157,7 +155,11 @@ export const AddToCollectionDropdown = memo(
 					});
 					setIsCollectionChanged(true);
 				} catch (error) {
-					handleClientError(error, "Error adding to collection", false);
+					console.log("error", error);
+					// Roll back the optimistic update if the mutation fails
+					if (currentBookmark) {
+						currentBookmark.category_id = previousCollection?.id ?? null;
+					}
 				}
 
 				setSearchTerm("");
