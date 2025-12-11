@@ -129,7 +129,7 @@ const SearchInput = (props: SearchInputTypes) => {
 								!addedTags?.includes(String(filterItem?.display || "")),
 						)}
 					displayTransform={(_url, display) => `#${display}`}
-					markup="#__display__"
+					markup="#[__display__](__id__)"
 					trigger="#"
 				/>
 			</MentionsInput>
