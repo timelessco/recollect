@@ -304,7 +304,7 @@ const CollectionsList = () => {
 
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 	const { addCategoryToBookmarkOptimisticMutation } =
-		useAddCategoryToBookmarkOptimisticMutation();
+		useAddCategoryToBookmarkOptimisticMutation(true);
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
 	const { allCategories, isLoadingCategories } = useFetchCategories();
@@ -427,9 +427,6 @@ const CollectionsList = () => {
 				// Handle both nested object (from regular fetch) and plain string (from search)
 				const bookmarkCreatedUserId =
 					foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
-				console.log("bookmarkCreatedUserId", bookmarkCreatedUserId);
-				console.log("session?.user?.id", session?.user?.id);
-				console.log("updateAccessCondition", updateAccessCondition);
 				if (bookmarkCreatedUserId === session?.user?.id) {
 					if (!updateAccessCondition) {
 						// if update access is not there then user cannot drag and drop anything into the collection
