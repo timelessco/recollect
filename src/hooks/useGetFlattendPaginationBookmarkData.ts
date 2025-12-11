@@ -15,7 +15,7 @@ export default function useGetFlattendPaginationBookmarkData() {
 
 	const { sortBy } = useGetSortBy();
 
-	const allBookmarksData = queryClient.getQueryData([
+	const everythingData = queryClient.getQueryData([
 		BOOKMARKS_KEY,
 		session?.user?.id,
 		categoryId,
@@ -27,9 +27,7 @@ export default function useGetFlattendPaginationBookmarkData() {
 	};
 
 	const flattendPaginationBookmarkData = flatten(
-		allBookmarksData?.pages?.map((item) =>
-			item?.data?.map((twoItem) => twoItem),
-		),
+		everythingData?.pages?.map((item) => item?.data?.map((twoItem) => twoItem)),
 	) as SingleListData[];
 
 	return { flattendPaginationBookmarkData };

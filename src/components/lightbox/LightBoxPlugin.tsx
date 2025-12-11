@@ -110,17 +110,17 @@ const MyComponent = () => {
 		enabled: shouldFetch,
 	});
 	let currentBookmark;
-	let allBookmarksData;
+	let everythingData;
 	// handling the case where user opens a preview link directly
 	if (!previousData) {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
-		allBookmarksData = bookmark?.data;
+		everythingData = bookmark?.data;
 	} else {
 		currentBookmark = previousData?.pages?.flatMap(
 			(page) => page?.data ?? [],
 		)?.[currentIndex];
-		allBookmarksData = previousData?.pages?.flatMap((page) => page?.data ?? []);
+		everythingData = previousData?.pages?.flatMap((page) => page?.data ?? []);
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
@@ -278,7 +278,7 @@ const MyComponent = () => {
 							</div>
 						)}
 						<AddToCollectionDropdown
-							allbookmarksdata={allBookmarksData as SingleListData[]}
+							everythingData={everythingData as SingleListData[]}
 							bookmarkId={currentBookmark?.id}
 							shouldFetch={shouldFetch}
 						/>

@@ -57,8 +57,8 @@ export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 
 export const getCountInCategory = (
 	id: number | string | null,
-	allBookmarks: SingleListData[],
-) => allBookmarks?.filter((item) => item?.category_id === id)?.length;
+	everything: SingleListData[],
+) => everything?.filter((item) => item?.category_id === id)?.length;
 
 export const getCategoryIdFromSlug = (
 	slug: string | null,

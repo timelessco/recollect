@@ -45,7 +45,7 @@ import { handleClientError } from "@/utils/error-utils/client";
  * Props for the AddToCollectionDropdown component
  */
 type AddToCollectionDropdownProps = {
-	allbookmarksdata: SingleListData[];
+	everythingData: SingleListData[];
 	bookmarkId: number;
 	shouldFetch?: boolean;
 };
@@ -53,7 +53,7 @@ type AddToCollectionDropdownProps = {
 export const AddToCollectionDropdown = memo(
 	({
 		bookmarkId,
-		allbookmarksdata,
+		everythingData,
 		shouldFetch,
 	}: AddToCollectionDropdownProps) => {
 		// State for search functionality
@@ -79,7 +79,7 @@ export const AddToCollectionDropdown = memo(
 
 		collections = useFetchCategories(shouldFetch).allCategories?.data ?? [];
 
-		const category_id = allbookmarksdata?.find(
+		const category_id = everythingData?.find(
 			(bookmark) => bookmark?.id === bookmarkId,
 		)?.category_id;
 
@@ -143,7 +143,7 @@ export const AddToCollectionDropdown = memo(
 						: null;
 
 					// Update the current collection optimistically
-					const currentBookmark = allbookmarksdata?.find(
+					const currentBookmark = everythingData?.find(
 						(b) => b?.id === bookmarkId,
 					);
 					if (currentBookmark) {
@@ -165,7 +165,7 @@ export const AddToCollectionDropdown = memo(
 			[
 				currentCollection,
 				collections,
-				allbookmarksdata,
+				everythingData,
 				addCategoryToBookmarkOptimisticMutation,
 				bookmarkId,
 				setIsCollectionChanged,
