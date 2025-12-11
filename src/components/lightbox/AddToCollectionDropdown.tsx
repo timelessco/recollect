@@ -154,8 +154,7 @@ export const AddToCollectionDropdown = memo(
 						update_access: true,
 					});
 					setIsCollectionChanged(true);
-				} catch (error) {
-					console.log("error", error);
+				} catch {
 					// Roll back the optimistic update if the mutation fails
 					if (currentBookmark) {
 						currentBookmark.category_id = previousCollection?.id ?? null;
