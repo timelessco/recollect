@@ -9,7 +9,7 @@ import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import { CollectionIcon } from "../../../components/collectionIcon";
+import { CategoryBadges } from "../../../components/categoryBadges";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import { Spinner } from "../../../components/spinner";
@@ -251,12 +251,6 @@ const CardSection = ({
 		}
 
 		return false;
-	};
-
-	const singleBookmarkCategoryData = (category_id: number) => {
-		const name = find(categoryData?.data, (item) => item?.id === category_id);
-
-		return name as CategoriesData;
 	};
 
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
@@ -626,24 +620,25 @@ const CardSection = ({
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
-		const bookmarkCategoryData = singleBookmarkCategoryData(
-			item?.category_id ?? 0,
+		// Only show categories in "Everything" view
+		if (categorySlug !== EVERYTHING_URL) {
+			return null;
+		}
+
+		// Filter out uncategorized (id=0) for display
+		const displayCategories = item.addedCategories?.filter(
+			(cat) => cat.id !== 0,
 		);
 
+		if (!displayCategories?.length) {
+			return null;
+		}
+
 		return (
-			<>
-				{!isNull(item?.category_id) &&
-					categorySlug === EVERYTHING_URL &&
-					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
-							<p className="mr-1">in</p>
-							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-13 leading-4 font-450 text-gray-600">
-								{bookmarkCategoryData?.category_name}
-							</p>
-						</div>
-					)}
-			</>
+			<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
+				<p className="mr-1">in</p>
+				<CategoryBadges categories={displayCategories} maxVisible={2} />
+			</div>
 		);
 	};
 
