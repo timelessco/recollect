@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { isEmpty, isNull } from "lodash";
+import { useEffect, useMemo, useState } from "react";
+import { isEmpty } from "lodash";
 import {
 	Mention,
 	MentionsInput,
@@ -13,7 +13,7 @@ import SearchInputSearchIcon from "@/icons/searchInputSearchIcon";
 import { useLoadersStore, useMiscellaneousStore } from "@/store/componentStore";
 import { type CategoriesData } from "@/types/apiTypes";
 import { type CategoryIdUrlTypes } from "@/types/componentTypes";
-import { GET_TEXT_WITH_AT_CHAR } from "@/utils/constants";
+import { extractTagNamesFromSearch } from "@/utils/helpers";
 
 type SearchBarProps = {
 	showSearchBar: boolean;
@@ -81,7 +81,21 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const { userTags } = useFetchUserTags();
-	const userTagsData = userTags?.data ?? [];
+	const userTagsData = useMemo(() => userTags?.data ?? [], [userTags]);
+
+	const filteredTagsData = useMemo(
+		() =>
+			userTagsData
+				?.map((item) => ({
+					id: String(item?.id || ""),
+					display: String(item?.name || ""),
+				}))
+				?.filter(
+					(filterItem) =>
+						!addedTags?.includes(String(filterItem?.display || "")),
+				),
+		[userTagsData, addedTags],
+	);
 
 	return (
 		<div className="search-wrapper relative">
@@ -102,14 +116,7 @@ const SearchInput = (props: SearchInputTypes) => {
 
 					const search = event.target.value;
 
-					const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
-
-					const tagName =
-						!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-							? matchedSearchTag?.map((item) => item?.replace("@", ""))
-							: undefined;
-
-					setAddedTags(tagName);
+					setAddedTags(extractTagNamesFromSearch(search));
 				}}
 				onFocus={() => setIsFocused(true)}
 				placeholder={placeholder}
@@ -119,17 +126,9 @@ const SearchInput = (props: SearchInputTypes) => {
 			>
 				<Mention
 					appendSpaceOnAdd
-					data={userTagsData
-						?.map((item) => ({
-							id: String(item?.id || ""),
-							display: String(item?.name || ""),
-						}))
-						?.filter(
-							(filterItem) =>
-								!addedTags?.includes(String(filterItem?.display || "")),
-						)}
+					data={filteredTagsData}
 					displayTransform={(_url, display) => `#${display}`}
-					markup="#__display__"
+					markup="#[__display__](__id__)"
 					trigger="#"
 				/>
 			</MentionsInput>

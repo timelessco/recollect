@@ -27,6 +27,7 @@ import {
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	FILE_NAME_PARSING_PATTERN,
+	GET_HASHTAG_TAG_PATTERN,
 	GET_NAME_FROM_EMAIL_PATTERN,
 	imageFileTypes,
 	IMAGES_URL,
@@ -35,6 +36,7 @@ import {
 	menuListItemName,
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
+	TAG_MARKUP_REGEX,
 	TRASH_URL,
 	TWEETS_URL,
 	tweetType,
@@ -106,6 +108,33 @@ export const getUserNameFromEmail = (email: string) => {
 	}
 
 	return null;
+};
+
+export const extractTagNamesFromSearch = (search: string) => {
+	if (typeof search !== "string" || search.length === 0) {
+		return undefined;
+	}
+
+	const matches = search.match(GET_HASHTAG_TAG_PATTERN);
+
+	if (!matches || isEmpty(matches)) {
+		return undefined;
+	}
+
+	const tagNames = matches
+		.map((item) => {
+			const markupMatch = TAG_MARKUP_REGEX.exec(item);
+			const display = markupMatch?.groups?.display;
+
+			if (display) {
+				return display;
+			}
+
+			return item.replace("#", "");
+		})
+		.filter((tag): tag is string => typeof tag === "string" && tag.length > 0);
+
+	return isEmpty(tagNames) ? undefined : tagNames;
 };
 
 export const getBaseUrl = (href: string): string => {
