@@ -220,9 +220,11 @@ export function useReactQueryMutation<
 					if (failureCount >= (retryConfig.retryCount ?? 0)) {
 						return false;
 					}
+
 					if (retryConfig.retryOn) {
 						return retryConfig.retryOn(error as Error);
 					}
+
 					return true;
 				},
 				retryDelay: (attemptIndex: number) =>

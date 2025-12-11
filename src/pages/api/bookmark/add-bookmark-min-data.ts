@@ -282,53 +282,6 @@ export default async function handler(
 				});
 				return;
 			}
-
-			// when adding a bookmark into a category the same bookmark should not be present in the category
-			// this function checks if the bookmark is already present in the category
-			const {
-				data: checkBookmarkData,
-				error: checkBookmarkError,
-			}: {
-				data: Array<{ id: SingleListData["id"] }> | null;
-				error: PostgrestError | VerifyErrors | string | null;
-			} = await supabase
-				.from(MAIN_TABLE_NAME)
-				.select(`id`)
-				.eq("url", url)
-				.eq("category_id", categoryId)
-				.eq("trash", false);
-
-			if (!isNull(checkBookmarkError)) {
-				console.error(
-					"Error checking for duplicate bookmark:",
-					checkBookmarkError,
-				);
-				Sentry.captureException(checkBookmarkError, {
-					tags: {
-						operation: "check_duplicate_bookmark",
-						userId,
-					},
-					extra: { url, categoryId },
-				});
-				response.status(500).json({
-					data: null,
-					error: "Error checking for duplicate bookmark",
-					message: null,
-				});
-				return;
-			}
-
-			if (!isEmpty(checkBookmarkData)) {
-				console.warn(
-					`Bookmark already present in category ${categoryId} for url: ${url}`,
-				);
-				response.status(409).json({
-					data: null,
-					error: "Bookmark already present in category",
-					message: null,
-				});
-				return;
-			}
 		}
 
 		let ogImageToBeAdded = null;
@@ -378,7 +331,6 @@ export default async function handler(
 					user_id: userId,
 					description: scrapperResponse?.data?.description,
 					ogImage: ogImageToBeAdded,
-					category_id: computedCategoryId,
 					meta_data: {
 						isOgImagePreferred,
 						mediaType,
