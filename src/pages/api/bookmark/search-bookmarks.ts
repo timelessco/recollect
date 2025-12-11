@@ -3,7 +3,6 @@ import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
 import { z } from "zod";
 
 import { type SingleListData } from "../../../types/apiTypes";
@@ -26,6 +25,7 @@ import {
 } from "../../../utils/constants";
 import {
 	checkIsUserOwnerOfCategory,
+	extractTagNamesFromSearch,
 	isUserCollaboratorInCategory,
 	isUserInACategoryInApi,
 } from "../../../utils/helpers";
@@ -43,6 +43,7 @@ const querySchema = z.object({
 	search: z.string().min(1, "Search parameter is required"),
 	category_id: z.string().optional(),
 });
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -97,11 +98,7 @@ export default async function handler(
 			?.replace(GET_TEXT_WITH_AT_CHAR, "")
 			?.trim();
 
-		const matchedSearchTag = search.match(GET_TEXT_WITH_AT_CHAR);
-		const tagName =
-			!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-				? matchedSearchTag?.map((item) => item?.replace("#", ""))
-				: undefined;
+		const tagName = extractTagNamesFromSearch(search);
 
 		console.log("[search-bookmarks] Parsed search parameters:", {
 			urlScope,

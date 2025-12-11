@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty } from "lodash";
 import {
 	Mention,
 	MentionsInput,
@@ -13,7 +13,7 @@ import SearchInputSearchIcon from "@/icons/searchInputSearchIcon";
 import { useLoadersStore, useMiscellaneousStore } from "@/store/componentStore";
 import { type CategoriesData } from "@/types/apiTypes";
 import { type CategoryIdUrlTypes } from "@/types/componentTypes";
-import { GET_TEXT_WITH_AT_CHAR } from "@/utils/constants";
+import { extractTagNamesFromSearch } from "@/utils/helpers";
 
 type SearchBarProps = {
 	showSearchBar: boolean;
@@ -102,14 +102,7 @@ const SearchInput = (props: SearchInputTypes) => {
 
 					const search = event.target.value;
 
-					const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
-
-					const tagName =
-						!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-							? matchedSearchTag?.map((item) => item?.replace("@", ""))
-							: undefined;
-
-					setAddedTags(tagName);
+					setAddedTags(extractTagNamesFromSearch(search));
 				}}
 				onFocus={() => setIsFocused(true)}
 				placeholder={placeholder}
