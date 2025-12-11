@@ -31,7 +31,10 @@ export const HTTP_PATTERN = /^(https?:\/\/)?/u;
 export const URL_PATTERN =
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*#[A-Za-z\d]*/gu;
+export const GET_HASHTAG_TAG_PATTERN = /#\[[^\]]+\]\([^)]+\)|#[^\s#]+/gu;
+
+export const TAG_MARKUP_REGEX = /#\[(?<display>[^\]]+)\]\([^)]+\)/u;
+
 export const GET_SITE_SCOPE_PATTERN = /@([A-Za-z\d]+)/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,

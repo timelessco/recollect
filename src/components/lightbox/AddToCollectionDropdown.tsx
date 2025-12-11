@@ -23,7 +23,6 @@
  */
 
 import { memo, startTransition, useCallback, useMemo, useState } from "react";
-import { useRouter } from "next/router";
 import * as Ariakit from "@ariakit/react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -36,17 +35,7 @@ import {
 	useSupabaseSession,
 } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
-import {
-	CATEGORIES_KEY,
-	DOCUMENTS_URL,
-	EVERYTHING_URL,
-	IMAGES_URL,
-	LINKS_URL,
-	TWEETS_URL,
-	UNCATEGORIZED_URL,
-	VIDEOS_URL,
-} from "../../utils/constants";
-import { getCategorySlugFromRouter } from "../../utils/url";
+import { CATEGORIES_KEY } from "../../utils/constants";
 // UI Components
 import { CollectionIcon } from "../collectionIcon";
 
@@ -72,26 +61,14 @@ export const AddToCollectionDropdown = memo(
 		// Get current session and query client
 		const session = useSupabaseSession((state) => state.session);
 		const queryClient = useQueryClient();
-		const specialUrls = [
-			EVERYTHING_URL,
-			UNCATEGORIZED_URL,
-			DOCUMENTS_URL,
-			TWEETS_URL,
-			IMAGES_URL,
-			VIDEOS_URL,
-			LINKS_URL,
-		];
+
 		const setIsCollectionChanged = useMiscellaneousStore(
 			(state) => state.setIsCollectionChanged,
 		);
-		const router = useRouter();
-		const categorySlug = getCategorySlugFromRouter(router);
 
 		// Mutation hook for adding a bookmark to a collection
 		const { addCategoryToBookmarkOptimisticMutation } =
-			useAddCategoryToBookmarkOptimisticMutation(
-				!specialUrls?.includes(categorySlug ?? ""),
-			);
+			useAddCategoryToBookmarkOptimisticMutation();
 		// Get collections from the query cache
 		let collections = useMemo(() => {
 			const categoryData = queryClient?.getQueryData<{

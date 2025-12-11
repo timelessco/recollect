@@ -3,7 +3,6 @@ import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
 import { z } from "zod";
 
 import { type SingleListData } from "../../../types/apiTypes";
@@ -11,8 +10,8 @@ import {
 	bookmarkType,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	GET_HASHTAG_TAG_PATTERN,
 	GET_SITE_SCOPE_PATTERN,
-	GET_TEXT_WITH_AT_CHAR,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
@@ -26,6 +25,7 @@ import {
 } from "../../../utils/constants";
 import {
 	checkIsUserOwnerOfCategory,
+	extractTagNamesFromSearch,
 	isUserCollaboratorInCategory,
 	isUserInACategoryInApi,
 } from "../../../utils/helpers";
@@ -43,6 +43,7 @@ const querySchema = z.object({
 	search: z.string().min(1, "Search parameter is required"),
 	category_id: z.string().optional(),
 });
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -94,14 +95,10 @@ export default async function handler(
 
 		const searchText = search
 			?.replace(GET_SITE_SCOPE_PATTERN, "")
-			?.replace(GET_TEXT_WITH_AT_CHAR, "")
+			?.replace(GET_HASHTAG_TAG_PATTERN, "")
 			?.trim();
 
-		const matchedSearchTag = search.match(GET_TEXT_WITH_AT_CHAR);
-		const tagName =
-			!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-				? matchedSearchTag?.map((item) => item?.replace("#", ""))
-				: undefined;
+		const tagName = extractTagNamesFromSearch(search);
 
 		// Determine category_scope for junction table filtering
 		// Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
