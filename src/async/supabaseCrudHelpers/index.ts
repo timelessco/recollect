@@ -563,9 +563,11 @@ export const addCategoryToBookmark = async ({
 		return response;
 	} catch (error) {
 		handleClientError(error, "Failed to add category to bookmark");
-		throw error instanceof Error
-			? error
-			: new Error("Failed to add category to bookmark");
+		return await Promise.reject(
+			error instanceof Error
+				? error
+				: new Error("Failed to add category to bookmark"),
+		);
 	}
 };
 
