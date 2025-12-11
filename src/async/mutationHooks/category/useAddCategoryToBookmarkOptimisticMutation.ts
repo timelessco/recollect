@@ -17,7 +17,7 @@ import { addCategoryToBookmark } from "../../supabaseCrudHelpers";
 
 // adds cat to bookmark optimistically
 export default function useAddCategoryToBookmarkOptimisticMutation(
-	isDnd: boolean = false,
+	isInvalidate: boolean = false,
 ) {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
@@ -88,12 +88,17 @@ export default function useAddCategoryToBookmarkOptimisticMutation(
 					});
 				}
 
-				if (isDnd) {
+				if (isInvalidate) {
 					void queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
 					});
 					void queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+					});
+					// Ensure search results and any bookmark queries for this user refresh
+					void queryClient.invalidateQueries({
+						queryKey: [BOOKMARKS_KEY, session?.user?.id],
+						exact: false,
 					});
 				}
 			} finally {
