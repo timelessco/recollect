@@ -159,10 +159,9 @@ const EditDropdownContentBase = ({
 								}
 
 								const trimmedTagName = validateName({
-									errorId: "create-tag",
 									value,
 									emptyMessage: "Tag name cannot be empty",
-									lengthMessage: `Tag name must be ${MAX_TAG_COLLECTION_NAME_LENGTH} characters or less`,
+									lengthMessage: `Tag name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
 								});
 
 								if (!trimmedTagName) {
@@ -194,7 +193,6 @@ const EditDropdownContentBase = ({
 					}}
 					onCreate={async (value) => {
 						const validatedName = validateName({
-							errorId: "create-collection",
 							value: typeof value === "string" ? value : "",
 							emptyMessage: "Collection name cannot be empty",
 							lengthMessage: `Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,

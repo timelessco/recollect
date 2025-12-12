@@ -7,7 +7,6 @@ import {
 import { handleClientError } from "@/utils/error-utils/client";
 
 type ValidateNameArgs = {
-	errorId?: string;
 	value: string;
 	emptyMessage: string;
 	lengthMessage: string;
@@ -19,16 +18,11 @@ type ValidateNameArgs = {
  */
 export const useNameValidation = () => {
 	const validateName = useCallback(
-		({
-			errorId = "validation",
-			value,
-			emptyMessage,
-			lengthMessage,
-		}: ValidateNameArgs) => {
+		({ value, emptyMessage, lengthMessage }: ValidateNameArgs) => {
 			const trimmedValue = typeof value === "string" ? value.trim() : "";
 
 			if (!trimmedValue) {
-				handleClientError(errorId, emptyMessage);
+				handleClientError(new Error(emptyMessage), emptyMessage);
 				return null;
 			}
 
@@ -36,7 +30,7 @@ export const useNameValidation = () => {
 				trimmedValue.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
 				trimmedValue.length > MAX_TAG_COLLECTION_NAME_LENGTH
 			) {
-				handleClientError(errorId, lengthMessage);
+				handleClientError(new Error(lengthMessage), lengthMessage);
 				return null;
 			}
 

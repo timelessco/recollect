@@ -384,7 +384,6 @@ const CollectionsList = () => {
 
 	const handleAddNewCategory = async (newCategoryName: string) => {
 		const trimmedCategoryName = validateName({
-			errorId: "create-collection",
 			value: newCategoryName,
 			emptyMessage: "Collection name cannot be empty",
 			lengthMessage: `Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
