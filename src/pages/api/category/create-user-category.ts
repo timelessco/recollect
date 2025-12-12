@@ -80,8 +80,6 @@ export default async function handler(
 			return;
 		}
 
-		console.log("create-user-category API called:", { userId, name: rawName });
-
 		// check if category name is already there for the user
 		const { data: matchedCategoryName, error: matchedCategoryNameError } =
 			await supabase
