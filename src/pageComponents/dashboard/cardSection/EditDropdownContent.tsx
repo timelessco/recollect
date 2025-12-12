@@ -15,7 +15,11 @@ import {
 	type SearchSelectOption,
 	type TagInputOption,
 } from "../../../types/componentTypes";
-import { CATEGORIES_KEY, MAX_TAG_NAME_LENGTH } from "../../../utils/constants";
+import {
+	CATEGORIES_KEY,
+	MAX_TAG_COLLECTION_NAME_LENGTH,
+	MIN_TAG_COLLECTION_NAME_LENGTH,
+} from "../../../utils/constants";
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { Spinner } from "@/components/spinner";
@@ -159,10 +163,10 @@ const EditDropdownContentBase = ({
 									return;
 								}
 
-								if (trimmedTagName.length > MAX_TAG_NAME_LENGTH) {
+								if (trimmedTagName.length > MAX_TAG_COLLECTION_NAME_LENGTH) {
 									handleClientError(
 										"create-tag",
-										`Tag name must be ${MAX_TAG_NAME_LENGTH} characters or less`,
+										`Tag name must be ${MAX_TAG_COLLECTION_NAME_LENGTH} characters or less`,
 									);
 									return;
 								}
@@ -190,9 +194,34 @@ const EditDropdownContentBase = ({
 							handleClientError("Failed to change category. Please try again.");
 						}
 					}}
-					onCreate={async (value) =>
-						await onCreateCategory({ label: value, value })
-					}
+					onCreate={async (value) => {
+						const trimmedCategoryName =
+							typeof value === "string" ? value.trim() : "";
+
+						if (!trimmedCategoryName) {
+							handleClientError(
+								"create-collection",
+								"Collection name cannot be empty",
+							);
+							return;
+						}
+
+						if (
+							trimmedCategoryName.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
+							trimmedCategoryName.length > MAX_TAG_COLLECTION_NAME_LENGTH
+						) {
+							handleClientError(
+								"create-collection",
+								`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+							);
+							return;
+						}
+
+						await onCreateCategory({
+							label: trimmedCategoryName,
+							value: trimmedCategoryName,
+						});
+					}}
 				/>
 			</LabelledComponent>
 		</div>

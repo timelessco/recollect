@@ -11,8 +11,8 @@ import {
 	type UserTagsData,
 } from "../../../types/apiTypes";
 import {
-	MAX_TAG_NAME_LENGTH,
-	MIN_TAG_NAME_LENGTH,
+	MAX_TAG_COLLECTION_NAME_LENGTH,
+	MIN_TAG_COLLECTION_NAME_LENGTH,
 	TAG_TABLE_NAME,
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -42,12 +42,12 @@ export default async function handler(
 
 	if (
 		typeof rawName !== "string" ||
-		trimmedName.length < MIN_TAG_NAME_LENGTH ||
-		trimmedName.length > MAX_TAG_NAME_LENGTH
+		trimmedName.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
+		trimmedName.length > MAX_TAG_COLLECTION_NAME_LENGTH
 	) {
 		response.status(400).json({
 			data: null,
-			error: `Tag name must be between ${MIN_TAG_NAME_LENGTH} and ${MAX_TAG_NAME_LENGTH} characters`,
+			error: `Tag name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
 		});
 		return;
 	}

@@ -20,6 +20,8 @@ import {
 import {
 	CATEGORIES_TABLE_NAME,
 	DUPLICATE_CATEGORY_NAME_ERROR,
+	MAX_TAG_COLLECTION_NAME_LENGTH,
+	MIN_TAG_COLLECTION_NAME_LENGTH,
 	PROFILES,
 } from "../../../utils/constants";
 import {
@@ -60,9 +62,25 @@ export default async function handler(
 			return;
 		}
 
-		const { name } = request.body;
+		const rawName = request.body?.name;
+		const trimmedName =
+			typeof rawName === "string" ? rawName.trim() : ("" as string);
 
-		console.log("create-user-category API called:", { userId, name });
+		if (
+			typeof rawName !== "string" ||
+			trimmedName.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
+			trimmedName.length > MAX_TAG_COLLECTION_NAME_LENGTH
+		) {
+			response.status(400).json({
+				data: null,
+				error: {
+					message: `Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+				},
+			});
+			return;
+		}
+
+		console.log("create-user-category API called:", { userId, name: rawName });
 
 		// check if category name is already there for the user
 		const { data: matchedCategoryName, error: matchedCategoryNameError } =
@@ -70,7 +88,7 @@ export default async function handler(
 				.from(CATEGORIES_TABLE_NAME)
 				.select(`category_name`)
 				.eq("user_id", userId)
-				.eq("category_name", name.trim());
+				.eq("category_name", trimmedName);
 
 		console.log("Existing category check result:", {
 			matchedCategoryName,
@@ -87,7 +105,7 @@ export default async function handler(
 					operation: "check_existing_category",
 					userId,
 				},
-				extra: { categoryName: name },
+				extra: { categoryName: trimmedName },
 			});
 			response.status(500).json({
 				data: null,
@@ -99,7 +117,7 @@ export default async function handler(
 		// Check for duplicate category name
 		if (!isEmpty(matchedCategoryName)) {
 			console.warn("Duplicate category name attempt:", {
-				categoryName: name,
+				categoryName: trimmedName,
 			});
 			response.status(500).json({
 				data: null,
@@ -113,9 +131,9 @@ export default async function handler(
 			.from(CATEGORIES_TABLE_NAME)
 			.insert([
 				{
-					category_name: name,
+					category_name: trimmedName,
 					user_id: userId,
-					category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
+					category_slug: `${slugify(trimmedName, { lower: true })}-${uniqid.time()}`,
 				},
 			])
 			.select();
@@ -126,7 +144,7 @@ export default async function handler(
 				tags: {
 					operation: "insert_category",
 					userId,
-					categoryName: name,
+					categoryName: trimmedName,
 				},
 			});
 			response.status(500).json({
