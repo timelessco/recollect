@@ -37,8 +37,7 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 	const rawName = request?.body?.name;
-	const trimmedName =
-		typeof rawName === "string" ? rawName.trim() : ("" as string);
+	const trimmedName = typeof rawName === "string" ? rawName.trim() : "";
 
 	if (
 		typeof rawName !== "string" ||
