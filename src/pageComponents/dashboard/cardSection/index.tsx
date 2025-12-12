@@ -823,7 +823,7 @@ const CardSection = ({
 	};
 
 	const listWrapperClass = classNames({
-		"mt-[47px]": true,
+		"mt-[47px]": !isPublicPage,
 		"px-4 py-2": cardTypeCondition === viewValues.list,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||

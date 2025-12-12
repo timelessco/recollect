@@ -17,6 +17,7 @@ import {
 } from "../../../types/componentTypes";
 import { CATEGORIES_KEY, MAX_TAG_NAME_LENGTH } from "../../../utils/constants";
 
+import { useChangeDiscoverable } from "@/async/mutationHooks/bookmarks/useChangeDiscoverable";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { Spinner } from "@/components/spinner";
 import { handleClientError } from "@/utils/error-utils/client";
@@ -50,6 +51,7 @@ const EditDropdownContentBase = ({
 	const postUserId =
 		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
 	const isOwner = userId && postUserId === userId;
+	const { changeDiscoverableMutation } = useChangeDiscoverable();
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
 		error: PostgrestError;
@@ -195,6 +197,36 @@ const EditDropdownContentBase = ({
 					}
 				/>
 			</LabelledComponent>
+			<div className="flex items-center gap-2 rounded-md border border-gray-200 px-2 py-1">
+				<input
+					aria-label="Discoverable"
+					checked={Boolean(post?.is_discoverable)}
+					className="h-4 w-4"
+					disabled={!isOwner}
+					onChange={() => {
+						if (!post?.id || !isOwner) {
+							return;
+						}
+
+						changeDiscoverableMutation.mutate(
+							{
+								bookmark_id: post?.id,
+								is_discoverable: !post?.is_discoverable,
+							},
+							{
+								onError: (error) => {
+									handleClientError(
+										error,
+										"Failed to update discoverability, please try again.",
+									);
+								},
+							},
+						);
+					}}
+					type="checkbox"
+				/>
+				<span className="text-sm text-gray-800">Discoverable</span>
+			</div>
 		</div>
 	);
 };

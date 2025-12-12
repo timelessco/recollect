@@ -40,7 +40,8 @@ const SidePaneOptionsMenu = () => {
 			item?.name === menuListItemName.inbox ||
 			item?.name === menuListItemName.everything ||
 			item?.name === menuListItemName.trash ||
-			item?.name === menuListItemName.settings
+			item?.name === menuListItemName.settings ||
+			item?.name === menuListItemName.discover
 		) {
 			return item;
 		} else {

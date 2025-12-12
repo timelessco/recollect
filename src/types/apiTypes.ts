@@ -35,6 +35,7 @@ export type SingleListData = {
 	id: number;
 	inserted_at: string;
 	meta_data: ImgMetadataType;
+	is_discoverable: boolean;
 	ogImage: string;
 	ogimage?: string;
 	screenshot: string;
@@ -236,6 +237,11 @@ export type DeleteDataApiPayload = { id: number; session: SupabaseSessionType };
 export type MoveBookmarkToTrashApiPayload = {
 	data: SingleListData;
 	isTrash: boolean;
+};
+
+export type UpdateBookmarkDiscoverableApiPayload = {
+	bookmark_id: number;
+	is_discoverable: boolean;
 };
 
 export type AddCategoryToBookmarkApiPayload = {

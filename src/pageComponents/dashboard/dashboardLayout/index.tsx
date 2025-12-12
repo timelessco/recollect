@@ -73,6 +73,7 @@ type DashboardLayoutProps = {
 	userId: string;
 	isClearingTrash?: boolean;
 	children: React.ReactNode;
+	viewStateOverride?: BookmarksViewDataTypes;
 };
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
@@ -86,6 +87,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		uploadFileFromAddDropdown,
 		onDeleteCollectionClick,
 		isClearingTrash,
+		viewStateOverride,
 	} = props;
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
@@ -153,6 +155,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				value: "view",
 				render: (
 					<BookmarksViewDropdown
+						currentViewState={viewStateOverride}
 						renderOnlyButton
 						setBookmarksView={setBookmarksView}
 					/>
@@ -163,6 +166,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				value: "sort",
 				render: (
 					<BookmarksSortDropdown
+						currentSort={viewStateOverride?.sortBy}
 						renderOnlyButton
 						setBookmarksView={setBookmarksView}
 					/>
@@ -243,6 +247,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			case "view":
 				content = (
 					<BookmarksViewDropdown
+						currentViewState={viewStateOverride}
 						isDropdown={false}
 						setBookmarksView={setBookmarksView}
 					/>
@@ -251,6 +256,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			case "sort":
 				content = (
 					<BookmarksSortDropdown
+						currentSort={viewStateOverride?.sortBy}
 						isDropdown={false}
 						setBookmarksView={setBookmarksView}
 					/>

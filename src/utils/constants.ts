@@ -69,6 +69,8 @@ export const FETCH_BOOKMARK_BY_ID_API = "/v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
+export const FETCH_DISCOVER_BOOKMARKS_API =
+	"/bookmark/fetch-discover-bookmarks";
 export const WORKER_SCREENSHOT_API = "/v1/screenshot";
 export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
@@ -78,6 +80,8 @@ export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
+export const UPDATE_BOOKMARK_DISCOVERABLE_API =
+	"/bookmark/update-bookmark-discoverable";
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
@@ -145,6 +149,7 @@ export const AUTH_URLS = "auth";
 // Others
 export const EVERYTHING_URL = "everything";
 export const UNCATEGORIZED_URL = "uncategorized";
+export const DISCOVER_URL = "discover";
 export const SEARCH_URL = "search";
 export const INBOX_URL = "inbox";
 export const TRASH_URL = "trash";
@@ -268,6 +273,7 @@ export const defaultBlur = "Uf4:~MrTiwbcpfi]Z~kDb_agaJoco}jbaeax";
 
 export const menuListItemName = {
 	everything: "Everything",
+	discover: "Discover",
 	inbox: "Inbox",
 	trash: "Trash",
 	settings: "Settings",

@@ -3,7 +3,11 @@ import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 
-const precomputedHeights = generateRandomHeights(26);
+// Deterministic heights to avoid hydration mismatches between server and client
+const PRECOMPUTED_HEIGHTS = [
+	330, 243, 691, 644, 514, 545, 408, 287, 450, 650, 332, 461, 483, 271, 726,
+	616, 404, 309, 586, 552, 675, 252, 617, 614, 709, 309,
+];
 
 export const BookmarksSkeletonLoader = ({
 	count = 26,
@@ -16,7 +20,7 @@ export const BookmarksSkeletonLoader = ({
 }) => {
 	const { isDesktop } = useIsMobileView();
 
-	const skeletonHeights = precomputedHeights.slice(0, count);
+	const skeletonHeights = PRECOMPUTED_HEIGHTS.slice(0, count);
 	const columnCount = getColumnCount(isDesktop, colCount);
 
 	// List View Skeleton
@@ -119,10 +123,3 @@ export const BookmarksSkeletonLoader = ({
 		</div>
 	);
 };
-
-function generateRandomHeights(count: number): number[] {
-	return Array.from(
-		{ length: count },
-		() => Math.floor(Math.random() * (850 - 250 + 1)) + 250,
-	);
-}
