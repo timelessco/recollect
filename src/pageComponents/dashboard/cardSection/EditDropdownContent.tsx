@@ -23,6 +23,7 @@ import {
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { Spinner } from "@/components/spinner";
+import { useNameValidation } from "@/hooks/useNameValidation";
 import { handleClientError } from "@/utils/error-utils/client";
 
 interface EditDropdownContentProps {
@@ -60,6 +61,7 @@ const EditDropdownContentBase = ({
 	};
 	const { userTags } = useFetchUserTags();
 	const filteredUserTags = userTags?.data ? userTags?.data : [];
+	const { validateName } = useNameValidation();
 
 	const categoryOptions = useMemo(() => {
 		const base = [
@@ -156,18 +158,14 @@ const EditDropdownContentBase = ({
 									return;
 								}
 
-								const trimmedTagName = value.trim();
+								const trimmedTagName = validateName({
+									errorId: "create-tag",
+									value,
+									emptyMessage: "Tag name cannot be empty",
+									lengthMessage: `Tag name must be ${MAX_TAG_COLLECTION_NAME_LENGTH} characters or less`,
+								});
 
 								if (!trimmedTagName) {
-									handleClientError("create-tag", "Tag name cannot be empty");
-									return;
-								}
-
-								if (trimmedTagName.length > MAX_TAG_COLLECTION_NAME_LENGTH) {
-									handleClientError(
-										"create-tag",
-										`Tag name must be ${MAX_TAG_COLLECTION_NAME_LENGTH} characters or less`,
-									);
 									return;
 								}
 
@@ -195,31 +193,20 @@ const EditDropdownContentBase = ({
 						}
 					}}
 					onCreate={async (value) => {
-						const trimmedCategoryName =
-							typeof value === "string" ? value.trim() : "";
+						const validatedName = validateName({
+							errorId: "create-collection",
+							value: typeof value === "string" ? value : "",
+							emptyMessage: "Collection name cannot be empty",
+							lengthMessage: `Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+						});
 
-						if (!trimmedCategoryName) {
-							handleClientError(
-								"create-collection",
-								"Collection name cannot be empty",
-							);
-							return;
-						}
-
-						if (
-							trimmedCategoryName.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
-							trimmedCategoryName.length > MAX_TAG_COLLECTION_NAME_LENGTH
-						) {
-							handleClientError(
-								"create-collection",
-								`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
-							);
+						if (!validatedName) {
 							return;
 						}
 
 						await onCreateCategory({
-							label: trimmedCategoryName,
-							value: trimmedCategoryName,
+							label: validatedName,
+							value: validatedName,
 						});
 					}}
 				/>

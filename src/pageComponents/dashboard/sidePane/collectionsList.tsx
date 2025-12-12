@@ -81,7 +81,7 @@ import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useNameValidation } from "@/hooks/useNameValidation";
 
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
@@ -377,27 +377,20 @@ const CollectionsList = () => {
 		error: PostgrestError;
 	};
 
+	const { validateName } = useNameValidation();
 	const sidePaneOptionLoading = useLoadersStore(
 		(state) => state.sidePaneOptionLoading,
 	);
 
 	const handleAddNewCategory = async (newCategoryName: string) => {
-		const trimmedCategoryName =
-			typeof newCategoryName === "string" ? newCategoryName.trim() : "";
+		const trimmedCategoryName = validateName({
+			errorId: "create-collection",
+			value: newCategoryName,
+			emptyMessage: "Collection name cannot be empty",
+			lengthMessage: `Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+		});
 
 		if (!trimmedCategoryName) {
-			handleClientError("create-collection", "Collection name cannot be empty");
-			return;
-		}
-
-		if (
-			trimmedCategoryName.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
-			trimmedCategoryName.length > MAX_TAG_COLLECTION_NAME_LENGTH
-		) {
-			handleClientError(
-				"create-collection",
-				`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
-			);
 			return;
 		}
 
