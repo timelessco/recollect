@@ -78,6 +78,11 @@ export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
+export const ADD_BOOKMARK_API = "/v1/bookmarks/add/data";
+export const ADD_BOOKMARK_MIN_DATA_API = "/v1/bookmarks/add/tasks/min-data";
+export const ADD_BOOKMARK_REMAINING_DATA_API =
+	"/v1/bookmarks/add/tasks/remaining";
+export const ADD_BOOKMARK_SCREENSHOT_API = "/v1/bookmarks/add/tasks/screenshot";
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
@@ -133,6 +138,9 @@ export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app";
 
 export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
+
+// Recollect server api
+export const PDF_SCREENSHOT_API = "/upload/pdf-screenshot";
 
 // urls
 
