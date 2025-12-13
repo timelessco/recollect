@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "setup": "cp $CONDUCTOR_ROOT_PATH/.env.local .env.local && cp -r $CONDUCTOR_ROOT_PATH/.vercel . && mkdir -p .claude && cp $CONDUCTOR_ROOT_PATH/.claude/settings.local.json .claude/settings.local.json && pnpm install",
+    "run": "pnpm run dev",
+    "archive": ""
+  }
+}
