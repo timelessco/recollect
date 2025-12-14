@@ -32,14 +32,14 @@ import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category
 import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/useRemoveCategoryFromBookmarkMutation";
 
 type AddToCollectionDropdownProps = {
-	allbookmarksdata: SingleListData[];
+	everythingData: SingleListData[];
 	bookmarkId: number;
 	shouldFetch?: boolean;
 };
 
 export const AddToCollectionDropdown = ({
 	bookmarkId,
-	allbookmarksdata,
+	everythingData,
 	shouldFetch,
 }: AddToCollectionDropdownProps) => {
 	const [, startTransition] = useTransition();
@@ -73,7 +73,7 @@ export const AddToCollectionDropdown = ({
 	collections = useFetchCategories(shouldFetch).allCategories?.data ?? [];
 
 	// Get current bookmark's categories
-	const currentBookmark = allbookmarksdata?.find(
+	const currentBookmark = everythingData?.find(
 		(bookmark) => bookmark?.id === bookmarkId,
 	);
 

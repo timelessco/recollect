@@ -30,10 +30,10 @@ export default function useFetchPaginatedBookmarks() {
 	const { sortBy } = useGetSortBy();
 
 	const {
-		data: allBookmarksData,
+		data: everythingData,
 		fetchNextPage,
-		isLoading: isAllBookmarksDataLoading,
-		isFetching: isFetchingAllBookmarksData,
+		isLoading: isEverythingDataLoading,
+		isFetching: isFetchingEverythingData,
 	} = useInfiniteQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -49,10 +49,10 @@ export default function useFetchPaginatedBookmarks() {
 	});
 
 	useEffect(() => {
-		if (allBookmarksData && isSortByLoading) {
+		if (everythingData && isSortByLoading) {
 			toggleIsSortByLoading();
 		}
-	}, [isSortByLoading, allBookmarksData, toggleIsSortByLoading]);
+	}, [isSortByLoading, everythingData, toggleIsSortByLoading]);
 
 	// Flatten paginated data reactively - this updates when cache changes
 	const flattendPaginationBookmarkData = useMemo(
@@ -64,10 +64,10 @@ export default function useFetchPaginatedBookmarks() {
 	);
 
 	return {
-		allBookmarksData,
+		everythingData,
 		flattendPaginationBookmarkData,
 		fetchNextPage,
-		isAllBookmarksDataLoading,
-		isFetchingAllBookmarksData,
+		isEverythingDataLoading,
+		isFetchingEverythingData,
 	};
 }

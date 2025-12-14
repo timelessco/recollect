@@ -130,10 +130,10 @@ const Dashboard = () => {
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
 	const {
-		allBookmarksData,
+		everythingData,
 		flattendPaginationBookmarkData,
 		fetchNextPage: fetchNextBookmarkPage,
-		isAllBookmarksDataLoading,
+		isEverythingDataLoading,
 	} = useFetchPaginatedBookmarks();
 
 	const {
@@ -455,8 +455,8 @@ const Dashboard = () => {
 		}
 
 		const firstPaginatedData =
-			allBookmarksData?.pages?.length !== 0
-				? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
+			everythingData?.pages?.length !== 0
+				? (everythingData?.pages[0] as SingleBookmarksPaginatedDataTypes)
 				: null;
 
 		if (!isNull(firstPaginatedData)) {
@@ -598,7 +598,7 @@ const Dashboard = () => {
 												addBookmarkMinDataOptimisticMutation?.isPending
 											}
 											isLoading={
-												isAllBookmarksDataLoading ||
+												isEverythingDataLoading ||
 												(isSearchLoading &&
 													(flattenedSearchData?.length ?? 0) === 0)
 											}

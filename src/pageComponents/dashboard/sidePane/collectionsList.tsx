@@ -308,13 +308,13 @@ const CollectionsList = () => {
 	const { allCategories, isLoadingCategories } = useFetchCategories();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
-	const { allBookmarksData, isAllBookmarksDataLoading } =
+	const { everythingData, isEverythingDataLoading } =
 		useFetchPaginatedBookmarks();
 	const { flattenedSearchData } = useSearchBookmarks();
 
 	const flattendPaginationBookmarkData = useMemo(
-		() => allBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
-		[allBookmarksData?.pages],
+		() => everythingData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
+		[everythingData?.pages],
 	);
 
 	const mergedBookmarkData = useMemo(
@@ -390,7 +390,7 @@ const CollectionsList = () => {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleBookmarksDrop = async (event: any) => {
 		// Guard: don't process drops while bookmarks are still loading
-		if (isAllBookmarksDataLoading || !allBookmarksData) {
+		if (isEverythingDataLoading || !everythingData) {
 			return;
 		}
 

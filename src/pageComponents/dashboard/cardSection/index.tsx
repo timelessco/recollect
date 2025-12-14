@@ -414,7 +414,7 @@ const CardSection = ({
 			);
 		}
 
-		return <div className="absolute top-0 left-[10px]">{externalLinkIcon}</div>;
+		return <div className="absolute top-0 left-[15px]">{externalLinkIcon}</div>;
 	};
 
 	const renderAvatar = (item: SingleListData) => {
