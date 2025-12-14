@@ -39,6 +39,7 @@ export function apiWarn({
 	context,
 }: ApiWarnProps): NextResponse<ApiErrorResponse> {
 	console.warn(`[${route}] ${message}`, context);
+
 	return NextResponse.json({ data: null, error: message }, { status });
 }
 
@@ -60,6 +61,7 @@ export function apiError({
 		tags: { operation, ...(userId && { userId }) },
 		extra,
 	});
+
 	return NextResponse.json(
 		{ data: null, error: message },
 		{ status: HttpStatus.INTERNAL_SERVER_ERROR },
@@ -117,11 +119,15 @@ export async function parseBody<T>({
 	const parsed = schema.safeParse(body);
 
 	if (!parsed.success) {
+		// Use first Zod error message for user-friendly display
+		const firstError = parsed.error.issues[0];
+		const userMessage = firstError?.message || "Invalid input";
+
 		return {
 			data: null,
 			errorResponse: apiWarn({
 				route,
-				message: "Invalid request body",
+				message: userMessage,
 				status: HttpStatus.BAD_REQUEST,
 				context: { errors: parsed.error.issues },
 			}),

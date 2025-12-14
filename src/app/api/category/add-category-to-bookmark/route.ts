@@ -1,8 +1,14 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { apiError, apiSuccess, apiWarn, parseBody } from "@/lib/api-response";
+import {
+	apiError,
+	apiSuccess,
+	apiWarn,
+	parseBody,
+} from "@/lib/api-helpers/response";
 import { requireAuth } from "@/lib/supabase/api";
+import { isNullable } from "@/utils/assertion-utils";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
@@ -11,29 +17,42 @@ import {
 	UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
-const ROUTE = "add-category-to-bookmark-v2";
+const ROUTE = "add-category-to-bookmark";
 
-const AddCategoryToBookmarkV2PayloadSchema = z.object({
+const AddCategoryToBookmarkPayloadSchema = z.object({
 	bookmark_id: z
-		.number()
-		.int()
-		.positive("Bookmark ID must be a positive integer"),
-	category_id: z.number().int().min(0, "Category ID must be non-negative"),
+		.number({
+			error: (issue) =>
+				isNullable(issue.input)
+					? "Bookmark ID is required"
+					: "Bookmark ID must be a number",
+		})
+		.int({ error: "Bookmark ID must be a whole number" })
+		.positive({ error: "Bookmark ID must be a positive number" }),
+	category_id: z
+		.number({
+			error: (issue) =>
+				isNullable(issue.input)
+					? "Collection ID is required"
+					: "Collection ID must be a number",
+		})
+		.int({ error: "Collection ID must be a whole number" })
+		.min(0, { error: "Collection ID must be non-negative" }),
 });
 
-export type AddCategoryToBookmarkV2Payload = z.infer<
-	typeof AddCategoryToBookmarkV2PayloadSchema
+export type AddCategoryToBookmarkPayload = z.infer<
+	typeof AddCategoryToBookmarkPayloadSchema
 >;
 
-const AddCategoryToBookmarkV2ResponseSchema = z.array(
+const AddCategoryToBookmarkResponseSchema = z.array(
 	z.object({
 		bookmark_id: z.number(),
 		category_id: z.number(),
 	}),
 );
 
-export type AddCategoryToBookmarkV2Response = z.infer<
-	typeof AddCategoryToBookmarkV2ResponseSchema
+export type AddCategoryToBookmarkResponse = z.infer<
+	typeof AddCategoryToBookmarkResponseSchema
 >;
 
 export async function POST(request: NextRequest) {
@@ -45,7 +64,7 @@ export async function POST(request: NextRequest) {
 
 		const body = await parseBody({
 			request,
-			schema: AddCategoryToBookmarkV2PayloadSchema,
+			schema: AddCategoryToBookmarkPayloadSchema,
 			route: ROUTE,
 		});
 		if (body.errorResponse) {
@@ -215,14 +234,14 @@ export async function POST(request: NextRequest) {
 		return apiSuccess({
 			route: ROUTE,
 			data: insertedData,
-			schema: AddCategoryToBookmarkV2ResponseSchema,
+			schema: AddCategoryToBookmarkResponseSchema,
 		});
 	} catch (error) {
 		return apiError({
 			route: ROUTE,
 			message: "An unexpected error occurred",
 			error,
-			operation: "add_category_to_bookmark_v2_unexpected",
+			operation: "add_category_to_bookmark_unexpected",
 		});
 	}
 }

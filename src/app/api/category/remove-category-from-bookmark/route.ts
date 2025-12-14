@@ -2,8 +2,14 @@ import { type NextRequest } from "next/server";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import { apiError, apiSuccess, apiWarn, parseBody } from "@/lib/api-response";
+import {
+	apiError,
+	apiSuccess,
+	apiWarn,
+	parseBody,
+} from "@/lib/api-helpers/response";
 import { requireAuth } from "@/lib/supabase/api";
+import { isNullable } from "@/utils/assertion-utils";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
@@ -15,10 +21,23 @@ const ROUTE = "remove-category-from-bookmark";
 
 const RemoveCategoryFromBookmarkPayloadSchema = z.object({
 	bookmark_id: z
-		.number()
-		.int()
-		.positive("Bookmark ID must be a positive integer"),
-	category_id: z.number().int().min(0, "Category ID must be non-negative"),
+		.number({
+			error: (issue) =>
+				isNullable(issue.input)
+					? "Bookmark ID is required"
+					: "Bookmark ID must be a number",
+		})
+		.int({ error: "Bookmark ID must be a whole number" })
+		.positive({ error: "Bookmark ID must be a positive number" }),
+	category_id: z
+		.number({
+			error: (issue) =>
+				isNullable(issue.input)
+					? "Collection ID is required"
+					: "Collection ID must be a number",
+		})
+		.int({ error: "Collection ID must be a whole number" })
+		.min(0, { error: "Collection ID must be non-negative" }),
 });
 
 export type RemoveCategoryFromBookmarkPayload = z.infer<
@@ -61,6 +80,16 @@ export async function POST(request: NextRequest) {
 			bookmarkId,
 			categoryId,
 		});
+
+		// Block removal of category 0 (permanent base category)
+		if (categoryId === UNCATEGORIZED_CATEGORY_ID) {
+			return apiWarn({
+				route: ROUTE,
+				message: "Cannot remove the uncategorized category",
+				status: 400,
+				context: { bookmarkId, categoryId },
+			});
+		}
 
 		// 1. Verify bookmark ownership
 		const { data: bookmarkData, error: bookmarkError } = await supabase
@@ -130,72 +159,8 @@ export async function POST(request: NextRequest) {
 
 		console.log(`[${ROUTE}] Permission verified`);
 
-		// 3. Check remaining category count before delete
-		const { count: categoryCount, error: countError } = await supabase
-			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-			.select("*", { count: "exact", head: true })
-			.eq("bookmark_id", bookmarkId);
-
-		if (countError) {
-			return apiError({
-				route: ROUTE,
-				message: "Failed to count bookmark categories",
-				error: countError,
-				operation: "count_bookmark_categories",
-				userId,
-				extra: { bookmarkId },
-			});
-		}
-
-		const isLastCategory = categoryCount === 1;
-		const isRemovingUncategorized = categoryId === UNCATEGORIZED_CATEGORY_ID;
-
-		// 4. Prevent orphaned bookmarks
-		if (isLastCategory && isRemovingUncategorized) {
-			return apiWarn({
-				route: ROUTE,
-				message: "Cannot remove the last category from bookmark",
-				status: 400,
-				context: { bookmarkId, categoryId },
-			});
-		}
-
-		// 5. Auto-assign to uncategorized when removing last non-uncategorized category
-		if (isLastCategory && !isRemovingUncategorized) {
-			const { data: replacedData, error: replaceError } = await supabase
-				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-				.update({ category_id: UNCATEGORIZED_CATEGORY_ID })
-				.eq("bookmark_id", bookmarkId)
-				.eq("category_id", categoryId)
-				.select();
-
-			if (replaceError) {
-				return apiError({
-					route: ROUTE,
-					message: "Failed to reassign bookmark to uncategorized",
-					error: replaceError,
-					operation: "reassign_to_uncategorized",
-					userId,
-					extra: { bookmarkId, categoryId },
-				});
-			}
-
-			console.log(
-				`[${ROUTE}] Last category removed, auto-assigned to uncategorized:`,
-				{
-					bookmarkId,
-					removedCategoryId: categoryId,
-				},
-			);
-
-			return apiSuccess({
-				route: ROUTE,
-				data: replacedData,
-				schema: RemoveCategoryFromBookmarkResponseSchema,
-			});
-		}
-
-		// 6. Delete the bookmark_category entry (normal case - bookmark has multiple categories)
+		// 3. Delete the bookmark_category entry
+		// Category 0 is always present, so bookmark won't be orphaned
 		const { data: deletedData, error: deleteError } = await supabase
 			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
 			.delete()

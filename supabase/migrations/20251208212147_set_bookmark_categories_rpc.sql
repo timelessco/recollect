@@ -18,15 +18,22 @@ SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_user_id uuid := (SELECT auth.uid());
+  v_category_ids bigint[];
 BEGIN
+  -- Always include category 0 (Uncategorized) as base category
+  -- This ensures every bookmark always has at least the default category
+  v_category_ids := array_append(p_category_ids, 0::bigint);
+  -- Remove duplicates
+  v_category_ids := ARRAY(SELECT DISTINCT unnest(v_category_ids));
+
   -- Delete existing entries for this bookmark/user
   DELETE FROM public.bookmark_categories
   WHERE bookmark_id = p_bookmark_id AND user_id = v_user_id;
 
-  -- Insert new entries and return them
+  -- Insert new entries (always includes 0) and return them
   RETURN QUERY
   INSERT INTO public.bookmark_categories (bookmark_id, category_id, user_id)
-  SELECT p_bookmark_id, unnest(p_category_ids), v_user_id
+  SELECT p_bookmark_id, unnest(v_category_ids), v_user_id
   RETURNING *;
 END;
 $$;

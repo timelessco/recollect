@@ -1,8 +1,14 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { apiError, apiSuccess, apiWarn, parseBody } from "@/lib/api-response";
+import {
+	apiError,
+	apiSuccess,
+	apiWarn,
+	parseBody,
+} from "@/lib/api-helpers/response";
 import { requireAuth } from "@/lib/supabase/api";
+import { isNullable } from "@/utils/assertion-utils";
 import {
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
@@ -14,17 +20,30 @@ const ROUTE = "set-bookmark-categories";
 
 const SetBookmarkCategoriesPayloadSchema = z.object({
 	bookmark_id: z
-		.number()
-		.int()
-		.positive("Bookmark ID must be a positive integer"),
+		.number({
+			error: (issue) =>
+				isNullable(issue.input)
+					? "Bookmark ID is required"
+					: "Bookmark ID must be a number",
+		})
+		.int({ error: "Bookmark ID must be a whole number" })
+		.positive({ error: "Bookmark ID must be a positive number" }),
 	category_ids: z
-		.array(z.number().int().min(0, "Category ID must be non-negative"))
-		.min(1, "At least one category ID is required")
-		.max(100, "Cannot add more than 100 categories to a bookmark")
-		.refine(
-			(ids) => new Set(ids).size === ids.length,
-			"Duplicate category IDs not allowed",
-		),
+		.array(
+			z
+				.number({
+					error: (issue) =>
+						isNullable(issue.input)
+							? "Collection ID is required"
+							: "Collection ID must be a number",
+				})
+				.int({ error: "Collection ID must be a whole number" })
+				.min(0, { error: "Collection ID must be non-negative" }),
+		)
+		.max(100, { error: "Cannot add more than 100 collections to a bookmark" })
+		.refine((ids) => new Set(ids).size === ids.length, {
+			error: "Duplicate collection IDs not allowed",
+		}),
 });
 
 export type SetBookmarkCategoriesPayload = z.infer<

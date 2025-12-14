@@ -76,6 +76,7 @@ BEGIN
                         'icon', c.icon,
                         'icon_color', c.icon_color
                     )
+                    ORDER BY bc.created_at ASC
                 )
                 FROM public.bookmark_categories bc
                 JOIN public.categories c ON c.id = bc.category_id

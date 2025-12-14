@@ -45,7 +45,27 @@ ALTER TABLE public.bookmark_categories ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON TABLE public.bookmark_categories TO anon;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.bookmark_categories TO authenticated;
 
--- 4. RLS policies (matching everything table pattern for shared/public access)
+-- 4. Helper function to check bookmark ownership (bypasses RLS to prevent recursion)
+-- This is the Supabase-recommended pattern for breaking circular RLS dependencies
+CREATE OR REPLACE FUNCTION public.user_owns_bookmark(p_bookmark_id bigint, p_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+STABLE
+AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM public.everything
+        WHERE id = p_bookmark_id AND user_id = p_user_id
+    );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.user_owns_bookmark(bigint, uuid) TO authenticated;
+
+COMMENT ON FUNCTION public.user_owns_bookmark(bigint, uuid) IS
+'Helper function to check if a user owns a bookmark. Uses SECURITY DEFINER to bypass RLS and prevent infinite recursion in bookmark_categories INSERT policy.';
+
+-- 5. RLS policies (matching everything table pattern for shared/public access)
 
 -- SELECT: Authenticated users can view bookmark_categories if:
 -- 1. They own the entry (user_id = auth.uid())
@@ -89,8 +109,8 @@ ON public.bookmark_categories FOR INSERT TO authenticated
 WITH CHECK (
     user_id = (SELECT auth.uid())
     AND
-    -- User MUST own the bookmark they're adding
-    bookmark_id IN (SELECT id FROM public.everything WHERE user_id = (SELECT auth.uid()))
+    -- Use SECURITY DEFINER function to check bookmark ownership without triggering RLS recursion
+    public.user_owns_bookmark(bookmark_id, (SELECT auth.uid()))
 );
 
 -- DELETE: Users can delete bookmark_categories if:
@@ -143,13 +163,12 @@ FROM public.everything e
 WHERE e.category_id IS NOT NULL AND e.category_id != 0
 ON CONFLICT (bookmark_id, category_id) DO NOTHING;
 
--- Handle uncategorized bookmarks (category_id = 0 or NULL) by creating entry with category_id = 0
--- Note: This requires a "default" category with id=0 to exist, or we skip uncategorized for now
--- For safety, we only migrate bookmarks that have a valid category_id pointing to existing categories
+-- Ensure ALL bookmarks have category_id = 0 (Uncategorized) as the default base category
+-- This is always present and cannot be removed via UI - only deleted when bookmark is deleted
+-- This allows the UI to show "empty" selection while still maintaining database integrity
 INSERT INTO public.bookmark_categories (bookmark_id, category_id, user_id, created_at)
 SELECT e.id, 0, e.user_id, e.inserted_at
 FROM public.everything e
-WHERE e.category_id IS NULL OR e.category_id = 0
 ON CONFLICT (bookmark_id, category_id) DO NOTHING;
 
 -- Documentation

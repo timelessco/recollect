@@ -143,7 +143,6 @@ export type Database = {
 			};
 			everything: {
 				Row: {
-					category_id: number;
 					description: string | null;
 					id: number;
 					inserted_at: string;
@@ -158,7 +157,6 @@ export type Database = {
 					user_id: string;
 				};
 				Insert: {
-					category_id?: number;
 					description?: string | null;
 					id?: number;
 					inserted_at?: string;
@@ -173,7 +171,6 @@ export type Database = {
 					user_id: string;
 				};
 				Update: {
-					category_id?: number;
 					description?: string | null;
 					id?: number;
 					inserted_at?: string;
@@ -188,13 +185,6 @@ export type Database = {
 					user_id?: string;
 				};
 				Relationships: [
-					{
-						foreignKeyName: "everything_category_id_fkey";
-						columns: ["category_id"];
-						isOneToOne: false;
-						referencedRelation: "categories";
-						referencedColumns: ["id"];
-					},
 					{
 						foreignKeyName: "everything_user_id_fkey";
 						columns: ["user_id"];
@@ -381,29 +371,55 @@ export type Database = {
 							user_id: string;
 						}>;
 				  };
-			search_bookmarks_url_tag_scope: {
-				Args: {
-					search_text?: string;
-					tag_scope?: string[];
-					url_scope?: string;
-				};
-				Returns: Array<{
-					added_tags: Json;
-					category_id: number;
-					description: string;
-					id: number;
-					inserted_at: string;
-					meta_data: Json;
-					ogimage: string;
-					screenshot: string;
-					sort_index: string;
-					title: string;
-					trash: boolean;
-					type: string;
-					url: string;
-					user_id: string;
-				}>;
-			};
+			search_bookmarks_url_tag_scope:
+				| {
+						Args: {
+							search_text?: string;
+							tag_scope?: string[];
+							url_scope?: string;
+						};
+						Returns: Array<{
+							added_tags: Json;
+							category_id: number;
+							description: string;
+							id: number;
+							inserted_at: string;
+							meta_data: Json;
+							ogimage: string;
+							screenshot: string;
+							sort_index: string;
+							title: string;
+							trash: boolean;
+							type: string;
+							url: string;
+							user_id: string;
+						}>;
+				  }
+				| {
+						Args: {
+							category_scope?: number;
+							search_text?: string;
+							tag_scope?: string[];
+							url_scope?: string;
+						};
+						Returns: Array<{
+							added_categories: Json;
+							added_tags: Json;
+							category_id: number;
+							description: string;
+							id: number;
+							inserted_at: string;
+							meta_data: Json;
+							ogimage: string;
+							screenshot: string;
+							sort_index: string;
+							title: string;
+							trash: boolean;
+							type: string;
+							url: string;
+							user_id: string;
+						}>;
+				  };
 			set_bookmark_categories: {
 				Args: { p_bookmark_id: number; p_category_ids: number[] };
 				Returns: Array<{
@@ -419,6 +435,10 @@ export type Database = {
 					isOneToOne: false;
 					isSetofReturn: true;
 				};
+			};
+			user_owns_bookmark: {
+				Args: { p_bookmark_id: number; p_user_id: string };
+				Returns: boolean;
 			};
 		};
 		Enums: {
