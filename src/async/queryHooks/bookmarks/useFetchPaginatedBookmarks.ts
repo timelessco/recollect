@@ -58,9 +58,9 @@ export default function useFetchPaginatedBookmarks() {
 	const flattendPaginationBookmarkData = useMemo(
 		() =>
 			flatten(
-				allBookmarksData?.pages?.map((page) => page?.data),
+				everythingData?.pages?.map((page) => page?.data),
 			) as SingleListData[],
-		[allBookmarksData],
+		[everythingData],
 	);
 
 	return {
