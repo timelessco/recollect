@@ -70,24 +70,18 @@ import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
-
+	flattendPaginationBookmarkData?: SingleListData[];
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
-	isCategoryChangeLoading?: boolean;
-	onCreateNewCategory?: (category: {
-		label: string;
-		value: string | number;
-	}) => Promise<void>;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -96,6 +90,7 @@ const getImageSource = (item: SingleListData) =>
 
 const CardSection = ({
 	listData = [],
+	flattendPaginationBookmarkData = [],
 	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
@@ -103,13 +98,10 @@ const CardSection = ({
 	showAvatar = false,
 	isOgImgLoading = false,
 	isBookmarkLoading = false,
-	onCategoryChange,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
-	isCategoryChangeLoading = false,
-	onCreateNewCategory = async () => {},
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
@@ -286,10 +278,7 @@ const CardSection = ({
 				isPublicPage={isPublicPage}
 				setOpenedMenuId={setOpenedMenuId}
 				post={post}
-				onCategoryChange={onCategoryChange}
-				onCreateNewCategory={onCreateNewCategory}
 				bookmarksList={bookmarksList}
-				isCategoryChangeLoading={isCategoryChangeLoading}
 				userId={userId}
 			/>
 		);
@@ -882,8 +871,8 @@ const CardSection = ({
 				bookmarksColumns={bookmarksColumns}
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
+				flattendPaginationBookmarkData={flattendPaginationBookmarkData}
 				isPublicPage={isPublicPage}
-				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"
 			>
 				{sortByCondition?.map((item) => (

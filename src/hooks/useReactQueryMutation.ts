@@ -144,9 +144,18 @@ export interface ReactQueryMutationOptions<
 }
 
 /**
- * Rollback function returned from onMutate for error recovery
+ * Rollback function returned from onMutate for error recovery.
+ * Can be called directly for rollback, and optionally includes
+ * a captured secondary query key for search cache invalidation.
  */
-export type RollbackFn = () => void;
+export interface RollbackFn {
+	(): void;
+	/**
+	 * Captured secondary query key (e.g., search results).
+	 * Used by onSettled to invalidate both primary and secondary caches.
+	 */
+	capturedSecondaryKey?: QueryKey | null;
+}
 
 /**
  * Options for optimistic mutations with cache updates.
@@ -170,6 +179,12 @@ export interface ReactQueryOptimisticMutationOptions<
 	 * Query key to update optimistically
 	 */
 	queryKey: TQueryKey;
+	/**
+	 * Optional secondary query key (e.g., for search results).
+	 * Gets the same optimistic update, snapshot, and rollback treatment.
+	 * Pass null when not searching.
+	 */
+	secondaryQueryKey?: QueryKey | null;
 	/**
 	 * Function to compute optimistic cache update.
 	 * Receives current cache data and returns updated cache data.
@@ -281,6 +296,7 @@ export function useReactQueryOptimisticMutation<
 	mutationKey,
 	guardConcurrentInvalidation = false,
 	queryKey,
+	secondaryQueryKey,
 	updater,
 	invalidates,
 	onSettled: userOnSettled,
@@ -303,18 +319,44 @@ export function useReactQueryOptimisticMutation<
 			// Cancel outgoing refetches to prevent race conditions
 			await queryClient.cancelQueries({ queryKey });
 
-			// Snapshot previous value for rollback
-			const snapshot = queryClient.getQueryData<TCacheData>(queryKey);
+			// Also cancel secondary key if provided (e.g., search results)
+			if (secondaryQueryKey) {
+				await queryClient.cancelQueries({ queryKey: secondaryQueryKey });
+			}
 
-			// Apply optimistic update (cache data type may differ from mutation response)
+			// Snapshot previous values for rollback
+			const snapshot = queryClient.getQueryData<TCacheData>(queryKey);
+			const secondarySnapshot = secondaryQueryKey
+				? queryClient.getQueryData<TCacheData>(secondaryQueryKey)
+				: undefined;
+
+			// Apply optimistic update to primary cache
 			queryClient.setQueryData<TCacheData>(queryKey, (currentData) =>
 				updater(currentData, variables),
 			);
 
-			// Return rollback function as context
-			return () => {
+			// Apply same update to secondary cache if provided
+			if (secondaryQueryKey) {
+				queryClient.setQueryData<TCacheData>(secondaryQueryKey, (currentData) =>
+					updater(currentData, variables),
+				);
+			}
+
+			// Return rollback function as context (callable, with extra property)
+			const rollback = (() => {
 				queryClient.setQueryData<TCacheData>(queryKey, snapshot);
-			};
+				if (secondaryQueryKey && secondarySnapshot !== undefined) {
+					queryClient.setQueryData<TCacheData>(
+						secondaryQueryKey,
+						secondarySnapshot,
+					);
+				}
+			}) as RollbackFn;
+
+			// Capture secondary key for onSettled invalidation (avoids stale closure)
+			rollback.capturedSecondaryKey = secondaryQueryKey;
+
+			return rollback;
 		},
 		onError: (error, variables, rollback) => {
 			// Execute rollback to restore previous state
@@ -344,6 +386,14 @@ export function useReactQueryOptimisticMutation<
 				for (const key of keysToInvalidate) {
 					void queryClient.invalidateQueries({ queryKey: key });
 				}
+			}
+
+			// Also invalidate secondary key (e.g., search results)
+			// Use captured key from context to avoid stale closure
+			if (!error && rollback?.capturedSecondaryKey) {
+				void queryClient.invalidateQueries({
+					queryKey: rollback.capturedSecondaryKey,
+				});
 			}
 		},
 	});

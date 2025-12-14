@@ -1,33 +1,17 @@
-/**
- * AddToCollectionDropdown Component
- *
- * A dropdown component that allows users to:
- * - View available collections
- * - Search through collections
- * - Add the current bookmark to a selected collection
- * - Shows the current collection of the bookmark
- *
- * Features:
- * - Real-time search filtering
- * - Optimistic UI updates
- * - Keyboard navigation support via Ariakit
- * - Responsive design
- * - Visual feedback for the current collection
- * @example
- * ```tsx
- * <AddToCollectionDropdown
- *   bookmarkId={123}
- *   category_id={currentCollectionId}
- * />
- * ```
- */
-
-import { memo, startTransition, useCallback, useMemo, useState } from "react";
-import * as Ariakit from "@ariakit/react";
+import { useMemo, useOptimistic, useRef, useTransition } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+	Autocomplete,
+	Button,
+	Input,
+	ListBox,
+	Popover,
+	SearchField,
+	Select,
+	useFilter,
+	type Key,
+} from "react-aria-components";
 
-// Custom hooks and utilities
-import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
 import {
@@ -35,266 +19,216 @@ import {
 	useSupabaseSession,
 } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
-import { CATEGORIES_KEY } from "../../utils/constants";
-// UI Components
-import { CollectionIcon } from "../collectionIcon";
+import {
+	CATEGORIES_KEY,
+	UNCATEGORIZED_CATEGORY_ID,
+} from "../../utils/constants";
+import {
+	CategoryListBoxItem,
+	CategoryTagList,
+} from "../categoryMultiSelect/components";
 
-import { handleClientError } from "@/utils/error-utils/client";
+import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
+import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/useRemoveCategoryFromBookmarkMutation";
 
-/**
- * Props for the AddToCollectionDropdown component
- */
 type AddToCollectionDropdownProps = {
 	allbookmarksdata: SingleListData[];
 	bookmarkId: number;
 	shouldFetch?: boolean;
 };
 
-export const AddToCollectionDropdown = memo(
-	({
-		bookmarkId,
-		allbookmarksdata,
-		shouldFetch,
-	}: AddToCollectionDropdownProps) => {
-		// State for search functionality
-		const [searchTerm, setSearchTerm] = useState("");
-		// Get current session and query client
-		const session = useSupabaseSession((state) => state.session);
-		const queryClient = useQueryClient();
+export const AddToCollectionDropdown = ({
+	bookmarkId,
+	allbookmarksdata,
+	shouldFetch,
+}: AddToCollectionDropdownProps) => {
+	const [, startTransition] = useTransition();
+	const filter = useFilter({ sensitivity: "base" });
+	const triggerRef = useRef<HTMLDivElement | null>(null);
 
-		const setIsCollectionChanged = useMiscellaneousStore(
-			(state) => state.setIsCollectionChanged,
-		);
+	const session = useSupabaseSession((state) => state.session);
+	const queryClient = useQueryClient();
 
-		// Mutation hook for adding a bookmark to a collection
-		const { addCategoryToBookmarkOptimisticMutation } =
-			useAddCategoryToBookmarkOptimisticMutation();
-		// Get collections from the query cache
-		let collections = useMemo(() => {
-			const categoryData = queryClient?.getQueryData<{
-				data: CategoriesData[];
-			}>([CATEGORIES_KEY, session?.user?.id]);
-			return categoryData?.data ?? [];
-		}, [queryClient, session?.user?.id]);
+	const setIsCollectionChanged = useMiscellaneousStore(
+		(state) => state.setIsCollectionChanged,
+	);
 
-		collections = useFetchCategories(shouldFetch).allCategories?.data ?? [];
+	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation({
+		skipInvalidation: true,
+	});
+	const { removeCategoryFromBookmarkMutation } =
+		useRemoveCategoryFromBookmarkMutation({
+			skipInvalidation: true,
+			preserveInList: true,
+		});
 
-		const category_id = allbookmarksdata?.find(
-			(bookmark) => bookmark?.id === bookmarkId,
-		)?.category_id;
+	// Get collections from cache or fetch
+	let collections = useMemo(() => {
+		const categoryData = queryClient?.getQueryData<{
+			data: CategoriesData[];
+		}>([CATEGORIES_KEY, session?.user?.id]);
+		return categoryData?.data ?? [];
+	}, [queryClient, session?.user?.id]);
 
-		// Find the current collection based on category_id
-		const currentCollection = useMemo(() => {
-			if (!category_id) {
-				return null;
-			}
+	collections = useFetchCategories(shouldFetch).allCategories?.data ?? [];
 
-			return collections?.find((collection) => collection?.id === category_id);
-		}, [collections, category_id]);
+	// Get current bookmark's categories
+	const currentBookmark = allbookmarksdata?.find(
+		(bookmark) => bookmark?.id === bookmarkId,
+	);
 
-		// Filter collections based on search term and exclude current collection
-		const filteredCollections = useMemo(() => {
-			// Filter out current collection
-			const availableCollections = collections?.filter(
-				(collection) => collection?.id !== currentCollection?.id,
-			);
+	// Get selected category IDs from addedCategories
+	const selectedCategoryIds = useMemo(
+		() =>
+			currentBookmark?.addedCategories?.length
+				? currentBookmark.addedCategories.map((cat) => cat.id)
+				: [],
+		[currentBookmark?.addedCategories],
+	);
 
-			// Return filtered collections if no search term
-			if (!searchTerm?.trim()) {
-				return availableCollections;
-			}
+	// Filter out uncategorized from visible selections
+	const visibleSelectedIds = selectedCategoryIds.filter(
+		(id) => id !== UNCATEGORIZED_CATEGORY_ID,
+	);
 
-			// Filter collections by name (case-insensitive)
-			return availableCollections?.filter((collection) =>
-				collection?.category_name
-					?.toLowerCase()
-					.includes(searchTerm?.toLowerCase()),
-			);
-		}, [collections, searchTerm, currentCollection?.id]);
+	// Optimistic state for instant UI feedback
+	const [optimisticSelectedIds, addOptimisticIds] = useOptimistic(
+		visibleSelectedIds,
+		(_, newIds: number[]) => newIds,
+	);
 
-		// Handle when a collection is selected
-		const handleCollectionClick = useCallback(
-			async (newCollection: CategoriesData | null) => {
-				// Optimistically update the current collection
-				const previousCollection = currentCollection;
+	// Filter out uncategorized from available options
+	const visibleCategories = collections.filter(
+		(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+	);
 
-				try {
-					// Optimistically update the UI
-					const updatedCollections = [...collections];
+	// Convert number IDs to string keys for RAC Select
+	const selectedValue = optimisticSelectedIds.map(String);
 
-					// Remove the new collection from available collections
-					const newCollections = updatedCollections?.filter(
-						(collection) => collection.id !== newCollection?.id,
-					);
+	// Get selected categories data
+	const selectedCategories = optimisticSelectedIds
+		.map((id) => visibleCategories.find((cat) => cat.id === id))
+		.filter((cat): cat is CategoriesData => cat !== undefined);
 
-					// If moving from one collection to another, add the previous collection back
-					if (
-						previousCollection &&
-						previousCollection?.id !== newCollection?.id
-					) {
-						newCollections?.push(previousCollection);
-					}
+	const handleValueChange = (newValue: Key[]) => {
+		const newIds = new Set(newValue.map(Number));
+		const currentIds = new Set(optimisticSelectedIds);
 
-					// Find the newly selected collection to update currentCollection
-					const selectedCollection = newCollection
-						? (updatedCollections?.find(
-								(category) => category?.id === newCollection?.id,
-							) ?? newCollection)
-						: null;
-
-					// Update the current collection optimistically
-					const currentBookmark = allbookmarksdata?.find(
-						(b) => b?.id === bookmarkId,
-					);
-					if (currentBookmark) {
-						currentBookmark.category_id = selectedCollection?.id ?? null;
-					}
-
-					await addCategoryToBookmarkOptimisticMutation?.mutateAsync({
+		// Added categories
+		for (const id of newIds) {
+			if (!currentIds.has(id)) {
+				startTransition(() => {
+					addOptimisticIds([...optimisticSelectedIds, id]);
+					addCategoryToBookmarkMutation.mutate({
 						bookmark_id: bookmarkId,
-						category_id: selectedCollection?.id ?? null,
-						update_access: true,
+						category_id: id,
 					});
-					setIsCollectionChanged(true);
-				} catch (error) {
-					handleClientError(error, "Error adding to collection", false);
-				}
+				});
+			}
+		}
 
-				setSearchTerm("");
-			},
-			[
-				currentCollection,
-				collections,
-				allbookmarksdata,
-				addCategoryToBookmarkOptimisticMutation,
-				bookmarkId,
-				setIsCollectionChanged,
-			],
-		);
-		const [isOpen, setIsOpen] = useState(false);
+		// Removed categories
+		for (const id of currentIds) {
+			if (!newIds.has(id)) {
+				startTransition(() => {
+					addOptimisticIds(optimisticSelectedIds.filter((x) => x !== id));
+					removeCategoryFromBookmarkMutation.mutate({
+						bookmark_id: bookmarkId,
+						category_id: id,
+					});
+				});
+			}
+		}
 
-		return (
-			// Main container with relative positioning for dropdown
-			<div className="relative pt-6">
-				{/* Combobox provider for search functionality */}
-				<Ariakit.ComboboxProvider
-					// Update search term with debouncing using startTransition
-					setValue={(value) =>
-						startTransition(() => {
-							setSearchTerm(value);
-						})
-					}
-					value={searchTerm}
+		setIsCollectionChanged(true);
+	};
+
+	const handleTagRemove = (keys: Set<Key>) => {
+		for (const key of keys) {
+			const id = Number(key);
+
+			startTransition(() => {
+				addOptimisticIds(optimisticSelectedIds.filter((x) => x !== id));
+				removeCategoryFromBookmarkMutation.mutate({
+					bookmark_id: bookmarkId,
+					category_id: id,
+				});
+			});
+		}
+
+		setIsCollectionChanged(true);
+	};
+
+	const filterFn = (textValue: string, inputValue: string) =>
+		filter.contains(textValue, inputValue);
+
+	return (
+		<div className="relative pt-6">
+			{/* Tags + Select trigger - ref for stable popover positioning */}
+			<div className="flex flex-wrap items-center gap-[6px]" ref={triggerRef}>
+				{/* Selected collection tags */}
+				{selectedCategories.length > 0 && (
+					<CategoryTagList
+						onRemove={handleTagRemove}
+						selectedCategories={selectedCategories}
+					/>
+				)}
+
+				<Select
+					aria-label="Add to collection"
+					onChange={handleValueChange}
+					selectionMode="multiple"
+					value={selectedValue}
 				>
-					{/* Select provider for dropdown selection */}
-					<Ariakit.SelectProvider
-						open={isOpen}
-						setOpen={setIsOpen}
-						setValue={(value) => {
-							const collection = collections.find(
-								(coll) => coll?.category_name === value,
-							);
-							if (collection) {
-								void handleCollectionClick(collection);
-							}
-						}}
-						value={currentCollection ? currentCollection?.category_name : ""}
+					{/* Trigger button */}
+					<Button className="flex items-center gap-[6px] rounded-md border border-transparent py-[2px] text-left text-13 text-gray-500 hover:text-plain-reverse focus:outline-hidden">
+						<div className="h-[14px] w-[14px] text-gray-600">
+							<AddToCollectionsButton />
+						</div>
+
+						<span>
+							{selectedCategories.length > 0
+								? "Edit collections"
+								: "Add to collection"}
+						</span>
+					</Button>
+
+					{/* Popover anchored to outer container for stable positioning */}
+					<Popover
+						className="z-50 mt-1 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
+						triggerRef={triggerRef}
 					>
-						<div className="flex items-center gap-[6px]">
-							<Ariakit.Select className="flex items-center gap-[6px]">
-								{/* Collection icon or add icon */}
-								<div className="h-[14px] w-[14px] text-gray-600">
-									{currentCollection ? (
-										<CollectionIcon bookmarkCategoryData={currentCollection} />
-									) : (
-										<AddToCollectionsButton />
-									)}
-								</div>
-								{/* Dropdown button */}
-								<button
-									className={`group rounded-md border border-transparent py-[2px] text-left text-13 ${
-										currentCollection ? "text-gray-800" : "text-gray-500"
-									} focus:outline-hidden`}
-									type="button"
-								>
-									{/* Show current collection name or default text */}
-									<div className="flex items-center transition-all group-hover:text-plain-reverse">
-										<span>
-											{currentCollection
-												? currentCollection?.category_name
-												: "Add to collection"}
-										</span>
-									</div>
-								</button>
-							</Ariakit.Select>
-							{/* Dropdown popover with search and collection list */}
-							<Ariakit.SelectPopover
-								className="z-50 mt-1 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
-								// Allow interaction with the rest of the page
-								modal={false}
-							>
-								{/* Fixed search bar */}
-								<div className="sticky top-0 z-10 bg-gray-50 p-1 pb-0">
-									<Ariakit.Combobox
+						<Autocomplete filter={filterFn}>
+							{/* Search input */}
+							<div className="sticky top-0 z-10 bg-gray-50 p-1 pb-0">
+								<SearchField aria-label="Search collections" className="w-full">
+									<Input
 										autoFocus
-										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[14px] leading-[115%] font-normal tracking-normal text-gray-800 placeholder:text-gray-alpha-600 focus:outline-hidden"
+										className="w-full rounded-lg bg-gray-alpha-100 px-2 py-[5px] text-[14px] leading-[115%] font-normal tracking-normal text-gray-800 placeholder:text-gray-alpha-600 focus:outline-hidden [&::-webkit-search-cancel-button]:hidden"
 										placeholder="Search"
 									/>
-								</div>
-								{/* Scrollable list of collections */}
-								<div className="hide-scrollbar overflow-y-auto">
-									<Ariakit.ComboboxList className="p-1">
-										{/* Show Uncategorized option only if current item is in a collection */}
-										{currentCollection && (
-											<Ariakit.ComboboxItem
-												className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
-												onClick={async () => await handleCollectionClick(null)}
-												value="Uncategorized"
-											>
-												<span className="text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800">
-													Uncategorized
-												</span>
-											</Ariakit.ComboboxItem>
-										)}
-										{filteredCollections?.length ? (
-											filteredCollections?.map((collection) => (
-												<Ariakit.ComboboxItem
-													// Styling for each collection item
-													className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left hover:bg-gray-200 aria-selected:bg-gray-200"
-													key={collection?.id}
-													onClick={async () =>
-														await handleCollectionClick(collection)
-													}
-													onMouseDown={(event) => {
-														// Prevent default to avoid losing focus
-														event.preventDefault();
-													}}
-													value={collection?.category_name}
-												>
-													<CollectionIcon
-														bookmarkCategoryData={collection}
-														iconSize="12"
-														size="16"
-													/>
-													{/* Collection name */}
-													<span className="text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800">
-														{collection?.category_name}
-													</span>
-												</Ariakit.ComboboxItem>
-											))
-										) : searchTerm?.trim() ? (
-											// Show message when no collections match the search
-											<div className="px-3 py-2 text-sm text-gray-400">
-												No collections found
-											</div>
-										) : null}
-									</Ariakit.ComboboxList>
-								</div>
-							</Ariakit.SelectPopover>
-						</div>
-					</Ariakit.SelectProvider>
-				</Ariakit.ComboboxProvider>
+								</SearchField>
+							</div>
+
+							{/* Checkable list */}
+							<div className="hide-scrollbar overflow-y-auto p-1">
+								<ListBox
+									aria-label="Collections"
+									className="outline-none"
+									items={visibleCategories}
+									renderEmptyState={() => (
+										<div className="px-2 py-[5px] text-13 text-gray-500">
+											No collections found
+										</div>
+									)}
+								>
+									{(category) => <CategoryListBoxItem category={category} />}
+								</ListBox>
+							</div>
+						</Autocomplete>
+					</Popover>
+				</Select>
 			</div>
-		);
-	},
-);
+		</div>
+	);
+};

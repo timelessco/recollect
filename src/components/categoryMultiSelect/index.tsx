@@ -1,245 +1,193 @@
-import {
-	forwardRef,
-	useDeferredValue,
-	useId,
-	useMemo,
-	useState,
-	type ComponentPropsWithoutRef,
-} from "react";
-import * as Ariakit from "@ariakit/react";
-import classNames from "classnames";
-import { matchSorter } from "match-sorter";
+"use client";
 
-import { type CategoriesData } from "../../types/apiTypes";
-import { UNCATEGORIZED_CATEGORY_ID } from "../../utils/constants";
-import { CollectionIcon } from "../collectionIcon";
+import {
+	useOptimistic,
+	useRef,
+	useState,
+	useTransition,
+	type Key,
+} from "react";
+import {
+	Autocomplete,
+	Input,
+	ListBox,
+	SearchField,
+	useFilter,
+	type Selection,
+} from "react-aria-components";
+
+import { CategoryListBoxItem, CategoryTagList } from "./components";
+import { type CategoriesData } from "@/types/apiTypes";
+import { UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
 type CategoryMultiSelectProps = {
 	allCategories: CategoriesData[];
-	disabled?: boolean;
-	onChange: (categoryIds: number[]) => void;
+	onAddCategory: (categoryId: number) => void;
+	onRemoveCategory: (categoryId: number) => void;
 	placeholder?: string;
 	selectedCategoryIds: number[];
 };
 
-type CategoryComboboxProps = Omit<
-	ComponentPropsWithoutRef<"input">,
-	"onChange"
-> & {
-	children: React.ReactNode;
-	onChange?: (value: string) => void;
-	onToggleCategory: (categoryId: number) => void;
-	selectedIds: number[];
-	value?: string;
-};
-
-const CategoryCombobox = forwardRef<HTMLInputElement, CategoryComboboxProps>(
-	(props, ref) => {
-		const {
-			children,
-			onChange,
-			onToggleCategory,
-			selectedIds,
-			value,
-			...comboboxProps
-		} = props;
-
-		const combobox = Ariakit.useComboboxStore({
-			resetValueOnHide: true,
-			setValue: onChange,
-			value,
-		});
-
-		const select = Ariakit.useSelectStore({
-			combobox,
-			setValue: (newValues) => {
-				// Find the category that was toggled (added or removed)
-				const newValue = newValues[newValues.length - 1];
-				if (newValue) {
-					const categoryId = Number(newValue);
-					onToggleCategory(categoryId);
-				}
-			},
-			value: selectedIds.map(String),
-		});
-
-		const defaultInputId = useId();
-		const inputId = comboboxProps.id ?? defaultInputId;
-
-		return (
-			<>
-				<Ariakit.Combobox
-					className="ml-1 w-full bg-inherit text-sm leading-4 font-normal text-gray-600 outline-hidden"
-					id={inputId}
-					ref={ref}
-					store={combobox}
-					{...comboboxProps}
-				/>
-				<Ariakit.ComboboxPopover
-					className="z-10 hide-scrollbar max-h-[220px] max-w-[300px] overflow-y-auto rounded-xl bg-gray-0 p-1 shadow-custom-7"
-					gutter={8}
-					render={<Ariakit.SelectList store={select} />}
-					sameWidth
-					store={combobox}
-				>
-					{children}
-				</Ariakit.ComboboxPopover>
-			</>
-		);
-	},
-);
-
-type CategoryItemProps = ComponentPropsWithoutRef<"div"> & {
-	category: CategoriesData;
-	isSelected: boolean;
-};
-
-const menuItemClassName =
-	"rounded-lg px-2 py-[5px] cursor-pointer text-13 font-450 leading-[15px] tracking-[0.01em] text-gray-900 data-active-item:bg-gray-200";
-
-const CategoryItem = forwardRef<HTMLDivElement, CategoryItemProps>(
-	({ category, isSelected, ...props }, ref) => (
-		<Ariakit.SelectItem
-			className={menuItemClassName}
-			ref={ref}
-			render={<Ariakit.ComboboxItem />}
-			value={String(category.id)}
-			{...props}
-		>
-			<div className="flex w-full items-center gap-2">
-				<input
-					checked={isSelected}
-					className="size-4 accent-gray-800"
-					readOnly
-					type="checkbox"
-				/>
-				<CollectionIcon
-					bookmarkCategoryData={category}
-					iconSize="10"
-					size="16"
-				/>
-				<span className="truncate">{category.category_name}</span>
-			</div>
-		</Ariakit.SelectItem>
-	),
-);
-
-type CategoryTagProps = {
-	category: CategoriesData;
-	onRemove: () => void;
-};
-
-const CategoryTag = ({ category, onRemove }: CategoryTagProps) => (
-	<div
-		className="mx-[2px] my-0.5 mr-1 flex cursor-pointer items-center gap-1 truncate rounded-md bg-gray-800 px-2 py-[2px] text-xs leading-[15px] font-450 tracking-[0.01em] text-white"
-		onClick={onRemove}
-		onKeyDown={(event) => {
-			if (event.key === "Enter" || event.key === " ") {
-				onRemove();
-			}
-		}}
-		role="button"
-		tabIndex={0}
-	>
-		<CollectionIcon bookmarkCategoryData={category} iconSize="8" size="12" />
-		<span className="truncate">{category.category_name}</span>
-	</div>
-);
-
 export const CategoryMultiSelect = ({
 	allCategories,
-	disabled = false,
-	onChange,
+	onAddCategory,
+	onRemoveCategory,
 	placeholder = "Search categories...",
 	selectedCategoryIds,
 }: CategoryMultiSelectProps) => {
-	const [searchValue, setSearchValue] = useState("");
-	const deferredSearchValue = useDeferredValue(searchValue);
+	const filter = useFilter({ sensitivity: "base" });
+	const [isOpen, setIsOpen] = useState(false);
+	const [inputValue, setInputValue] = useState("");
+	const isEscapePressedRef = useRef(false);
+	const [, startTransition] = useTransition();
 
-	// Filter categories based on search
-	const filteredCategories = useMemo(
-		() =>
-			matchSorter(allCategories, deferredSearchValue, {
-				keys: ["category_name"],
-			}),
-		[allCategories, deferredSearchValue],
+	const visibleSelectedIds = selectedCategoryIds.filter(
+		(id) => id !== UNCATEGORIZED_CATEGORY_ID,
 	);
 
-	// Get selected category objects
-	const selectedCategories = useMemo(
-		() => allCategories.filter((cat) => selectedCategoryIds.includes(cat.id)),
-		[allCategories, selectedCategoryIds],
+	// Optimistic state for instant UI feedback
+	const [optimisticSelectedIds, addOptimisticIds] = useOptimistic(
+		visibleSelectedIds,
+		(_, newIds: number[]) => newIds,
 	);
 
-	// Handle category toggle with uncategorized mutual exclusivity
-	const handleToggleCategory = (categoryId: number) => {
-		const isCurrentlySelected = selectedCategoryIds.includes(categoryId);
+	// Filter out hidden category from available options
+	const visibleCategories = allCategories.filter(
+		(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+	);
 
-		if (isCurrentlySelected) {
-			// Prevent removing if it's the only selected category
-			if (selectedCategoryIds.length === 1) {
-				return;
-			}
+	// Convert number IDs to string keys for RAC
+	const selectedKeys = new Set(optimisticSelectedIds.map(String));
 
-			// Remove the category
-			onChange(selectedCategoryIds.filter((id) => id !== categoryId));
-		} else if (categoryId === UNCATEGORIZED_CATEGORY_ID) {
-			// Selecting Uncategorized clears all others
-			onChange([UNCATEGORIZED_CATEGORY_ID]);
-		} else {
-			// Selecting any other category removes Uncategorized
-			const withoutUncategorized = selectedCategoryIds.filter(
-				(id) => id !== UNCATEGORIZED_CATEGORY_ID,
-			);
-			onChange([...withoutUncategorized, categoryId]);
-		}
-	};
+	// Get selected categories data
+	const selectedCategories = optimisticSelectedIds
+		.map((id) => visibleCategories.find((cat) => cat.id === id))
+		.filter((cat): cat is CategoriesData => cat !== undefined);
 
-	// Handle removing a tag
-	const handleRemoveTag = (categoryId: number) => {
-		// Prevent removing if it's the only selected category
-		if (selectedCategoryIds.length === 1) {
+	const handleSelectionChange = (newSelection: Selection) => {
+		if (newSelection === "all") {
 			return;
 		}
 
-		onChange(selectedCategoryIds.filter((id) => id !== categoryId));
+		const newIds = new Set([...newSelection].map(Number));
+		const currentIds = new Set(optimisticSelectedIds);
+
+		// Only ignore empty selection changes from Escape key, not intentional unchecking
+		if (
+			newIds.size === 0 &&
+			currentIds.size > 0 &&
+			isEscapePressedRef.current
+		) {
+			return;
+		}
+
+		// Determine what was added vs removed
+		for (const id of newIds) {
+			if (!currentIds.has(id)) {
+				// Added - optimistic update then call mutation
+				startTransition(() => {
+					addOptimisticIds([...optimisticSelectedIds, id]);
+					onAddCategory(id);
+				});
+			}
+		}
+
+		for (const id of currentIds) {
+			if (!newIds.has(id)) {
+				// Removed - optimistic update then call mutation
+				startTransition(() => {
+					addOptimisticIds(optimisticSelectedIds.filter((x) => x !== id));
+					onRemoveCategory(id);
+				});
+			}
+		}
 	};
 
-	const mainWrapperClassName = classNames(
-		"py-[3px] px-[10px] rounded-lg w-full bg-gray-100 flex items-center flex-wrap min-h-[30px]",
-		{ "opacity-50 pointer-events-none": disabled },
-	);
+	const handleTagRemove = (keys: Set<Key>) => {
+		for (const key of keys) {
+			const id = Number(key);
+			startTransition(() => {
+				addOptimisticIds(optimisticSelectedIds.filter((x) => x !== id));
+				onRemoveCategory(id);
+			});
+		}
+	};
+
+	// Handle keyboard events on input
+	const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		// Escape closes the ListBox (prevent default to avoid clearing selection)
+		if (event.key === "Escape") {
+			isEscapePressedRef.current = true;
+			event.stopPropagation();
+			setIsOpen(false);
+			queueMicrotask(() => {
+				isEscapePressedRef.current = false;
+			});
+			return;
+		}
+
+		// Backspace/Delete on empty input removes last visible tag
+		if (
+			(event.key === "Backspace" || event.key === "Delete") &&
+			inputValue === "" &&
+			optimisticSelectedIds.length > 0
+		) {
+			const lastId = optimisticSelectedIds[optimisticSelectedIds.length - 1];
+			handleTagRemove(new Set([String(lastId)]));
+		}
+	};
+
+	const filterFn = (textValue: string, inputValue: string) =>
+		filter.contains(textValue, inputValue);
 
 	return (
-		<div className={mainWrapperClassName}>
-			{selectedCategories.map((category) => (
-				<CategoryTag
-					category={category}
-					key={category.id}
-					onRemove={() => handleRemoveTag(category.id)}
-				/>
-			))}
-			<div className="min-w-[120px] flex-1">
-				<CategoryCombobox
-					disabled={disabled}
-					onChange={setSearchValue}
-					onToggleCategory={handleToggleCategory}
-					placeholder={placeholder}
-					selectedIds={selectedCategoryIds}
-					value={searchValue}
+		<div
+			aria-label="Select categories"
+			className="relative flex min-h-[30px] w-full flex-wrap items-center gap-1 rounded-lg bg-gray-100 px-[10px] py-[3px]"
+			onFocus={(event) => event.stopPropagation()}
+			role="group"
+		>
+			<CategoryTagList
+				onRemove={handleTagRemove}
+				selectedCategories={selectedCategories}
+			/>
+
+			<Autocomplete filter={filterFn}>
+				<SearchField
+					aria-label="Search categories"
+					className="flex min-w-[80px] flex-1 items-center"
+					onChange={(value) => {
+						setInputValue(value);
+						setIsOpen(true);
+					}}
+					onFocus={() => setIsOpen(true)}
+					value={inputValue}
 				>
-					{filteredCategories.map((category) => (
-						<CategoryItem
-							category={category}
-							isSelected={selectedCategoryIds.includes(category.id)}
-							key={category.id}
-						/>
-					))}
-					{filteredCategories.length === 0 && (
-						<div className={menuItemClassName}>No categories found</div>
-					)}
-				</CategoryCombobox>
-			</div>
+					<Input
+						className="w-full bg-transparent text-sm outline-none placeholder:text-gray-500 [&::-webkit-search-cancel-button]:hidden"
+						onKeyDown={handleInputKeyDown}
+						placeholder={placeholder}
+					/>
+				</SearchField>
+
+				{isOpen && (
+					<ListBox
+						aria-label="Categories"
+						className="absolute top-full left-0 z-10 mt-1 max-h-[220px] w-full overflow-auto rounded-xl bg-gray-0 p-1 shadow-custom-7 outline-none"
+						items={visibleCategories}
+						onSelectionChange={handleSelectionChange}
+						renderEmptyState={() => (
+							<div className="px-2 py-[5px] text-13 text-gray-500">
+								No categories found
+							</div>
+						)}
+						selectedKeys={selectedKeys}
+						selectionMode="multiple"
+					>
+						{(category) => <CategoryListBoxItem category={category} />}
+					</ListBox>
+				)}
+			</Autocomplete>
 		</div>
 	);
 };

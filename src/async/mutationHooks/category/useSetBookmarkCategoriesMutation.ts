@@ -4,7 +4,7 @@ import {
 } from "@/app/api/category/set-bookmark-categories/route";
 import { useBookmarkMutationContext } from "@/hooks/useBookmarkMutationContext";
 import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryMutation";
-import { vetAxios } from "@/lib/vet-axios";
+import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
@@ -13,12 +13,20 @@ import {
 	SET_BOOKMARK_CATEGORIES_API,
 } from "@/utils/constants";
 
+type SetBookmarkCategoriesMutationOptions = {
+	skipInvalidation?: boolean;
+	preserveInList?: boolean;
+};
+
 /**
  * Mutation hook for setting all categories for a bookmark.
  * Replaces existing categories with the new set.
  */
-export function useSetBookmarkCategoriesMutation() {
-	const { queryClient, session, queryKey, CATEGORY_ID } =
+export function useSetBookmarkCategoriesMutation({
+	skipInvalidation = false,
+	preserveInList = false,
+}: SetBookmarkCategoriesMutationOptions = {}) {
+	const { queryClient, session, queryKey, searchQueryKey, CATEGORY_ID } =
 		useBookmarkMutationContext();
 
 	const setBookmarkCategoriesMutation = useReactQueryOptimisticMutation<
@@ -29,11 +37,12 @@ export function useSetBookmarkCategoriesMutation() {
 		PaginatedBookmarks
 	>({
 		mutationFn: (payload) =>
-			vetAxios.post<SetBookmarkCategoriesResponse>(
+			postApi<SetBookmarkCategoriesResponse>(
 				`/api${SET_BOOKMARK_CATEGORIES_API}`,
 				payload,
 			),
 		queryKey,
+		secondaryQueryKey: searchQueryKey,
 		updater: (currentData, variables) => {
 			if (!currentData?.pages) {
 				return currentData as PaginatedBookmarks;
@@ -57,6 +66,11 @@ export function useSetBookmarkCategoriesMutation() {
 				return currentData;
 			}
 
+			// Check if new categories include current collection
+			const includesCurrentCollection =
+				typeof CATEGORY_ID === "number" &&
+				variables.category_ids.includes(CATEGORY_ID);
+
 			// Find the page containing the bookmark, then update only that page
 			for (
 				let pageIndex = 0;
@@ -75,11 +89,17 @@ export function useSetBookmarkCategoriesMutation() {
 							pageIdx === pageIndex
 								? {
 										...page,
-										data: page.data.map((bookmark, idx) =>
-											idx === bookmarkIndex
-												? { ...bookmark, addedCategories: newCategories }
-												: bookmark,
-										),
+										// Remove bookmark if current collection is removed (unless preserveInList), else update categories
+										data:
+											!includesCurrentCollection && !preserveInList
+												? page.data.filter(
+														(b) => b.id !== variables.bookmark_id,
+													)
+												: page.data.map((bookmark, idx) =>
+														idx === bookmarkIndex
+															? { ...bookmark, addedCategories: newCategories }
+															: bookmark,
+													),
 									}
 								: page,
 						),
@@ -90,32 +110,23 @@ export function useSetBookmarkCategoriesMutation() {
 			// Bookmark not found in any page - return unchanged
 			return currentData;
 		},
-		onSettled: (_data, error, variables) => {
-			if (error) {
+		onSettled: (_data, error) => {
+			if (error || skipInvalidation) {
 				return;
 			}
 
-			// Always invalidate bookmark counts
+			// Invalidate bookmark counts
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
 			});
 
-			// Invalidate current category view
+			// Invalidate ALL bookmark queries for user (covers all collections)
 			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				queryKey: [BOOKMARKS_KEY, session?.user?.id],
 			});
-
-			// Invalidate all target categories that differ from current
-			for (const categoryId of variables.category_ids) {
-				if (categoryId !== CATEGORY_ID) {
-					void queryClient.invalidateQueries({
-						queryKey: [BOOKMARKS_KEY, session?.user?.id, categoryId],
-					});
-				}
-			}
 		},
 		showSuccessToast: true,
-		successMessage: "Categories updated",
+		successMessage: "Collection updated",
 	});
 
 	return { setBookmarkCategoriesMutation };

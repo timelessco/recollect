@@ -43,7 +43,6 @@ import {
 import {
 	CATEGORIES_KEY,
 	TRASH_URL,
-	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
@@ -53,13 +52,13 @@ import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
+import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import {
 	Checkbox,
 	checkboxBoxStyles,
 } from "@/components/ui/recollect/checkbox";
-import useGetFlattendPaginationBookmarkData from "@/hooks/useGetFlattendPaginationBookmarkData";
 import { CheckIcon } from "@/icons/check-icon";
 import { mutationApiCall } from "@/utils/apiHelpers";
 import { errorToast } from "@/utils/toastMessages";
@@ -68,9 +67,9 @@ type ListBoxDropTypes = ListProps<object> & {
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];
 	cardTypeCondition: unknown;
+	flattendPaginationBookmarkData?: SingleListData[];
 	getItems?: (keys: Set<Key>) => DragItem[];
 	isPublicPage?: boolean;
-	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onItemDrop?: (event: any) => void;
 };
@@ -81,9 +80,11 @@ const ListBox = (props: ListBoxDropTypes) => {
 		bookmarksColumns,
 		cardTypeCondition,
 		bookmarksList,
-		onCategoryChange,
+		flattendPaginationBookmarkData = [],
 		isPublicPage,
 	} = props;
+
+	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 
 	const deleteBookmarkId = useMiscellaneousStore(
 		(state) => state.deleteBookmarkId,
@@ -102,8 +103,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	// Hooks for data fetching
 	const { flattenedSearchData } = useSearchBookmarks();
-	const { flattendPaginationBookmarkData } =
-		useGetFlattendPaginationBookmarkData();
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
 	const { deleteBookmarkOptismicMutation } =
@@ -328,17 +327,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 			value: item?.id,
 		})) || [];
 
-	let finalCategoryData;
-
-	if (categorySlug !== UNCATEGORIZED_URL) {
-		finalCategoryData = [
-			{ label: "Uncategorized", value: 0 },
-			...categoryDataMapper,
-		];
-	} else {
-		finalCategoryData = [...categoryDataMapper];
-	}
-
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
@@ -531,22 +519,27 @@ const ListBox = (props: ListBoxDropTypes) => {
 										<figure className="mr-[6px] text-gray-1000">
 											<MoveIcon />
 										</figure>
-										<p>Move to</p>
+										<p>Add to</p>
 									</div>
 								}
 								menuClassName={dropdownMenuClassName}
 							>
-								{finalCategoryData?.map((dropdownItem) => (
+								{categoryDataMapper?.map((dropdownItem) => (
 									<AriaDropdownMenu
 										key={dropdownItem?.value}
 										onClick={() => {
-											state.selectionManager.clearSelection();
-											onCategoryChange(
-												Array.from(
-													state.selectionManager.selectedKeys.keys(),
-												) as number[],
-												dropdownItem?.value,
+											const selectedIds = Array.from(
+												state.selectionManager.selectedKeys.keys(),
 											);
+
+											state.selectionManager.clearSelection();
+											// Add each selected bookmark to the chosen category
+											for (const bookmarkId of selectedIds) {
+												addCategoryToBookmarkMutation.mutate({
+													bookmark_id: Number(bookmarkId),
+													category_id: dropdownItem?.value,
+												});
+											}
 										}}
 									>
 										<div

@@ -127,7 +127,8 @@ export const useLightboxNavigation = ({
 				return;
 			}
 
-			const bookmarkCategoryId = currentBookmark.category_id;
+			const bookmarkCategoryIds =
+				currentBookmark.addedCategories?.map((cat) => cat.id) ?? [];
 
 			try {
 				const invalidationPromises: Array<Promise<unknown>> = [];
@@ -141,18 +142,20 @@ export const useLightboxNavigation = ({
 					);
 				}
 
-				// Invalidate the bookmark's category if different
-				if (bookmarkCategoryId && bookmarkCategoryId !== CATEGORY_ID) {
-					invalidationPromises.push(
-						queryClient.invalidateQueries({
-							queryKey: [
-								BOOKMARKS_KEY,
-								session?.user?.id,
-								bookmarkCategoryId,
-								sortBy,
-							],
-						}),
-					);
+				// Invalidate the bookmark's categories if different from current view
+				for (const categoryId of bookmarkCategoryIds) {
+					if (categoryId !== CATEGORY_ID) {
+						invalidationPromises.push(
+							queryClient.invalidateQueries({
+								queryKey: [
+									BOOKMARKS_KEY,
+									session?.user?.id,
+									categoryId,
+									sortBy,
+								],
+							}),
+						);
+					}
 				}
 
 				// Invalidate search view if applicable

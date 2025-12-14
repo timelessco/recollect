@@ -4,7 +4,7 @@ import {
 } from "@/app/api/category/remove-category-from-bookmark/route";
 import { useBookmarkMutationContext } from "@/hooks/useBookmarkMutationContext";
 import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryMutation";
-import { vetAxios } from "@/lib/vet-axios";
+import { postApi } from "@/lib/api-helpers/api";
 import { type PaginatedBookmarks } from "@/types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
@@ -12,12 +12,20 @@ import {
 	REMOVE_CATEGORY_FROM_BOOKMARK_API,
 } from "@/utils/constants";
 
+type RemoveCategoryMutationOptions = {
+	skipInvalidation?: boolean;
+	preserveInList?: boolean;
+};
+
 /**
  * Mutation hook for removing a single category from a bookmark.
  * Removes only the specified category, keeping other categories intact.
  */
-export function useRemoveCategoryFromBookmarkMutation() {
-	const { queryClient, session, queryKey, CATEGORY_ID } =
+export function useRemoveCategoryFromBookmarkMutation({
+	skipInvalidation = false,
+	preserveInList = false,
+}: RemoveCategoryMutationOptions = {}) {
+	const { queryClient, session, queryKey, searchQueryKey, CATEGORY_ID } =
 		useBookmarkMutationContext();
 
 	const removeCategoryFromBookmarkMutation = useReactQueryOptimisticMutation<
@@ -28,15 +36,19 @@ export function useRemoveCategoryFromBookmarkMutation() {
 		PaginatedBookmarks
 	>({
 		mutationFn: (payload) =>
-			vetAxios.post<RemoveCategoryFromBookmarkResponse>(
+			postApi<RemoveCategoryFromBookmarkResponse>(
 				`/api${REMOVE_CATEGORY_FROM_BOOKMARK_API}`,
 				payload,
 			),
 		queryKey,
+		secondaryQueryKey: searchQueryKey,
 		updater: (currentData, variables) => {
 			if (!currentData?.pages) {
 				return currentData as PaginatedBookmarks;
 			}
+
+			// If removing the current collection from a bookmark, remove from list
+			const isRemovingCurrentCollection = variables.category_id === CATEGORY_ID;
 
 			// Find the page containing the bookmark, then update only that page
 			for (
@@ -56,16 +68,24 @@ export function useRemoveCategoryFromBookmarkMutation() {
 							pageIdx === pageIndex
 								? {
 										...page,
-										data: page.data.map((b, idx) =>
-											idx === bookmarkIndex
-												? {
-														...b,
-														addedCategories: (b.addedCategories ?? []).filter(
-															(cat) => cat.id !== variables.category_id,
-														),
-													}
-												: b,
-										),
+										// Remove bookmark when removing current collection (unless preserveInList), else update addedCategories
+										data:
+											isRemovingCurrentCollection && !preserveInList
+												? page.data.filter(
+														(b) => b.id !== variables.bookmark_id,
+													)
+												: page.data.map((b, idx) =>
+														idx === bookmarkIndex
+															? {
+																	...b,
+																	addedCategories: (
+																		b.addedCategories ?? []
+																	).filter(
+																		(cat) => cat.id !== variables.category_id,
+																	),
+																}
+															: b,
+													),
 									}
 								: page,
 						),
@@ -76,30 +96,23 @@ export function useRemoveCategoryFromBookmarkMutation() {
 			// Bookmark not found in any page - return unchanged
 			return currentData;
 		},
-		onSettled: (_data, error, variables) => {
-			if (error) {
+		onSettled: (_data, error) => {
+			if (error || skipInvalidation) {
 				return;
 			}
 
-			// Always invalidate bookmark counts
+			// Invalidate bookmark counts
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
 			});
 
-			// Invalidate current category view
+			// Invalidate ALL bookmark queries for user (covers all collections)
 			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+				queryKey: [BOOKMARKS_KEY, session?.user?.id],
 			});
-
-			// Invalidate removed category if different from current
-			if (variables.category_id !== CATEGORY_ID) {
-				void queryClient.invalidateQueries({
-					queryKey: [BOOKMARKS_KEY, session?.user?.id, variables.category_id],
-				});
-			}
 		},
 		showSuccessToast: true,
-		successMessage: "Category removed",
+		successMessage: "Collection removed",
 	});
 
 	return { removeCategoryFromBookmarkMutation };
