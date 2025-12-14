@@ -186,7 +186,10 @@ export default function useFileUploadOptimisticMutation() {
 
 			if (uploadTokenData?.signedUrl && errorCondition) {
 				try {
-					console.log("[Upload Debug] Starting file upload to:", uploadTokenData.signedUrl.slice(0, 100));
+					console.log(
+						"[Upload Debug] Starting file upload to:",
+						uploadTokenData.signedUrl.slice(0, 100),
+					);
 					const uploadResponse = await fetch(uploadTokenData.signedUrl, {
 						method: "PUT",
 						body: data?.file,
