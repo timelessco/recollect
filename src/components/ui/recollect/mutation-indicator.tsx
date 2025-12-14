@@ -25,9 +25,9 @@ export function MutationIndicator() {
 	return (
 		<div
 			aria-hidden
-			className="fixed right-1 bottom-1 z-50 flex items-center gap-1.5 rounded-full bg-blue-600 px-2.5 py-1 text-xs text-white"
+			className="fixed top-1 left-1 z-50 flex items-center gap-1.5 rounded-full bg-plain-reverse px-2.5 py-2 text-xs text-white"
 		>
-			<span className="size-2 animate-pulse rounded-full bg-white" />
+			<span className="size-4 animate-pulse rounded-full bg-plain" />
 			Saving {pendingMutations.length}...
 		</div>
 	);

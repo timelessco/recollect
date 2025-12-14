@@ -121,7 +121,7 @@
 		"pdfjs-dist": "3.4.120",
 		"react": "19.2.1",
 		"react-aria": "3.44.0",
-		"react-aria-components": "3.0.0-nightly-46eb0efb5-251114",
+		"react-aria-components": "3.0.0-nightly-c80e3d1d6-251212",
 		"react-dom": "19.2.1",
 		"react-dropzone": "14.3.8",
 		"react-hook-form": "7.68.0",

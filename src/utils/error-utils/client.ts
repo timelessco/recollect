@@ -22,6 +22,8 @@ export function handleClientError(
 	} else if (error instanceof ApplicationError) {
 		title = error.name;
 		description = error.message;
+	} else if (error instanceof Error) {
+		description = error.message;
 	}
 
 	// Show error details in toast in DEV mode

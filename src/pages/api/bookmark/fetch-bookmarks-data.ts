@@ -150,15 +150,32 @@ user_id (
 			return;
 		}
 
+		// Query junction table for bookmark IDs in this category
+		const numericCategoryId = Number.parseInt(category_id as string, 10);
+		const { data: junctionBookmarks } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.select("bookmark_id")
+			.eq("category_id", numericCategoryId);
+
+		const junctionIds =
+			junctionBookmarks?.map((item) => item.bookmark_id) ?? [];
+
 		if (isUserCollaboratorInCategoryValue || isUserOwnerOfCategory) {
-			// **** here we are checking if user is a collaborator for the category_id or user is the owner of the category
-			// user is collaborator
-			// get all the items for the category_id irrespective of the user_is , as user has access to all the items in the category
-			query = query.eq("category_id", category_id);
+			// User is collaborator or owner - access all items in the category
+			if (junctionIds.length > 0) {
+				query = query.in("id", junctionIds);
+			} else {
+				// No bookmarks in this category - return empty result
+				query = query.in("id", [-1]);
+			}
 		} else {
-			// user is not collaborator
-			// get only the items that match the user_id and category_id, as user only has access to items created by the user
-			query = query.eq("category_id", category_id);
+			// User is not collaborator - only access items they created
+			if (junctionIds.length > 0) {
+				query = query.in("id", junctionIds);
+			} else {
+				query = query.in("id", [-1]);
+			}
+
 			query = query.eq("user_id", userId);
 		}
 	} else {
@@ -166,7 +183,19 @@ user_id (
 	}
 
 	if (category_id === UNCATEGORIZED_URL) {
-		query = query.eq("category_id", 0);
+		// Query junction table for uncategorized bookmarks (category_id = 0)
+		const { data: uncatJunction } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.select("bookmark_id")
+			.eq("category_id", 0)
+			.eq("user_id", userId);
+
+		const uncatIds = uncatJunction?.map((item) => item.bookmark_id) ?? [];
+		if (uncatIds.length > 0) {
+			query = query.in("id", uncatIds);
+		} else {
+			query = query.in("id", [-1]);
+		}
 	}
 
 	if (category_id === IMAGES_URL) {
@@ -252,7 +281,8 @@ user_id (
       icon_color
     )`,
 		)
-		.eq("user_id", userId);
+		.eq("user_id", userId)
+		.order("created_at", { ascending: true });
 
 	const finalData = data
 		?.map((item) => {
