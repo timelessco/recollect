@@ -31,7 +31,10 @@ import {
 	generateVideoThumbnail,
 	parseUploadFileName,
 } from "../../../utils/helpers";
-import { r2Helpers } from "../../../utils/r2Client";
+import {
+	getStoragePublicBaseUrl,
+	storageHelpers,
+} from "../../../utils/storageClient";
 import { createClient } from "../../../utils/supabaseClient";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
@@ -66,7 +69,7 @@ export default function useFileUploadOptimisticMutation() {
 
 						if (userId) {
 							const { data: uploadTokenData, error } =
-								await r2Helpers.createSignedUploadUrl(
+								await storageHelpers.createSignedUploadUrl(
 									R2_MAIN_BUCKET_NAME,
 									`${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`,
 								);
@@ -161,17 +164,29 @@ export default function useFileUploadOptimisticMutation() {
 			const uploadFileNamePath = data?.uploadFileNamePath;
 
 			// Generate presigned URL for secure client-side upload
+			const storagePath = `${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`;
+			console.log("[Upload Debug] Creating signed URL for:", {
+				bucket: R2_MAIN_BUCKET_NAME,
+				path: storagePath,
+			});
+
 			const { data: uploadTokenData, error } =
-				await r2Helpers.createSignedUploadUrl(
+				await storageHelpers.createSignedUploadUrl(
 					R2_MAIN_BUCKET_NAME,
-					`${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`,
+					storagePath,
 				);
+
+			console.log("[Upload Debug] Signed URL result:", {
+				signedUrl: uploadTokenData?.signedUrl?.slice(0, 100),
+				error,
+			});
 
 			// Upload file using presigned URL
 			const errorCondition = isNull(error);
 
 			if (uploadTokenData?.signedUrl && errorCondition) {
 				try {
+					console.log("[Upload Debug] Starting file upload to:", uploadTokenData.signedUrl.slice(0, 100));
 					const uploadResponse = await fetch(uploadTokenData.signedUrl, {
 						method: "PUT",
 						body: data?.file,
@@ -180,14 +195,27 @@ export default function useFileUploadOptimisticMutation() {
 						},
 					});
 
+					console.log("[Upload Debug] Upload response:", {
+						ok: uploadResponse.ok,
+						status: uploadResponse.status,
+					});
+
 					if (!uploadResponse.ok) {
+						const errorText = await uploadResponse.text();
+						console.error("[Upload Debug] Upload failed:", errorText);
 						const errorMessage = `Upload failed with status: ${uploadResponse.status}`;
 						errorToast(errorMessage);
 					}
 				} catch (uploadError) {
-					console.error("Upload error:", uploadError);
+					console.error("[Upload Debug] Upload error:", uploadError);
 					errorToast("Upload failed");
 				}
+			} else {
+				console.error("[Upload Debug] No signed URL or error:", {
+					hasSignedUrl: Boolean(uploadTokenData?.signedUrl),
+					error,
+					errorCondition,
+				});
 			}
 
 			if (!errorCondition) {
@@ -234,7 +262,7 @@ export default function useFileUploadOptimisticMutation() {
 					try {
 						successToast(`generating  thumbnail`);
 						await handlePdfThumbnailAndUpload({
-							fileUrl: `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
+							fileUrl: `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
 							fileId: apiResponseTyped?.data[0].id,
 							sessionUserId: session?.user?.id,
 						});
