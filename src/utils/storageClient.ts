@@ -1,6 +1,7 @@
+import { createServerServiceClient } from "@/lib/supabase/service";
+
 import { R2_MAIN_BUCKET_NAME } from "./constants";
 import { r2Helpers } from "./r2Client";
-import { createClient } from "./supabaseClient";
 
 // Environment detection
 const isProductionEnvironment = process.env.NODE_ENV === "production";
@@ -8,10 +9,6 @@ const hasDevSupabase = Boolean(process.env.NEXT_PUBLIC_DEV_SUPABASE_URL);
 
 // Use local Supabase storage in development when dev Supabase is configured
 export const useLocalStorage = !isProductionEnvironment && hasDevSupabase;
-
-// Supabase client for storage operations (only used in local dev)
-// Uses the browser client which maintains the user's authenticated session
-const getSupabaseStorageClient = () => createClient();
 
 // Public URL base for storage
 export const getStoragePublicBaseUrl = () => {
@@ -32,39 +29,68 @@ const toAbsoluteUrl = (url: string): string => {
 };
 
 // Type definitions matching r2Helpers
-type ListResult = {
+export type ListResult = {
 	data: Array<{ Key?: string }> | null;
 	error: unknown;
 };
 
-type UploadResult = {
+export type UploadResult = {
 	error: unknown;
 };
 
-type DeleteResult = {
+export type DeleteResult = {
 	error: unknown;
 };
 
-type DeleteMultipleResult = {
+export type DeleteMultipleResult = {
 	data: Array<{ Key?: string }> | null;
 	error: unknown;
 };
 
-type SignedUrlResult = {
+export type SignedUrlResult = {
 	data: { signedUrl: string } | null;
 	error: unknown;
 };
 
-type PublicUrlResult = {
+export type PublicUrlResult = {
 	data: { publicUrl: string };
 	error: null;
 };
 
+// Shared interface for both Supabase and R2 storage implementations
+export interface StorageHelpersInterface {
+	listObjects: (bucket: string, prefix?: string) => Promise<ListResult>;
+	uploadObject: (
+		bucket: string,
+		key: string,
+		body: Buffer | Uint8Array,
+		contentType?: string,
+	) => Promise<UploadResult>;
+	deleteObject: (bucket: string, key: string) => Promise<DeleteResult>;
+	deleteObjects: (bucket: string, keys: string[]) => Promise<DeleteMultipleResult>;
+	createSignedUploadUrl: (
+		bucket: string,
+		key: string,
+		expiresIn?: number,
+	) => Promise<SignedUrlResult>;
+	createSignedDownloadUrl: (
+		bucket: string,
+		key: string,
+		expiresIn?: number,
+	) => Promise<SignedUrlResult>;
+	getPublicUrl: (path: string) => PublicUrlResult;
+	getSignedUrl: (
+		bucket: string,
+		key: string,
+		expiresIn?: number,
+	) => Promise<SignedUrlResult>;
+}
+
 // Supabase Storage implementation
-const supabaseStorageHelpers = {
+const supabaseStorageHelpers: StorageHelpersInterface = {
 	async listObjects(bucket: string, prefix?: string): Promise<ListResult> {
 		try {
-			const supabase = getSupabaseStorageClient();
+			const supabase = await createServerServiceClient();
 			const { data, error } = await supabase.storage.from(bucket).list(prefix);
 
 			if (error) {
@@ -90,7 +116,7 @@ const supabaseStorageHelpers = {
 		contentType?: string,
 	): Promise<UploadResult> {
 		try {
-			const supabase = getSupabaseStorageClient();
+			const supabase = await createServerServiceClient();
 			const { error } = await supabase.storage.from(bucket).upload(key, body, {
 				contentType,
 				upsert: true,
@@ -104,7 +130,7 @@ const supabaseStorageHelpers = {
 
 	async deleteObject(bucket: string, key: string): Promise<DeleteResult> {
 		try {
-			const supabase = getSupabaseStorageClient();
+			const supabase = await createServerServiceClient();
 			const { error } = await supabase.storage.from(bucket).remove([key]);
 
 			return { error };
@@ -118,7 +144,7 @@ const supabaseStorageHelpers = {
 		keys: string[],
 	): Promise<DeleteMultipleResult> {
 		try {
-			const supabase = getSupabaseStorageClient();
+			const supabase = await createServerServiceClient();
 			const { data, error } = await supabase.storage.from(bucket).remove(keys);
 
 			if (error) {
@@ -142,7 +168,7 @@ const supabaseStorageHelpers = {
 		_expiresIn = 3_600,
 	): Promise<SignedUrlResult> {
 		try {
-			const supabase = getSupabaseStorageClient();
+			const supabase = await createServerServiceClient();
 			const { data, error } = await supabase.storage
 				.from(bucket)
 				.createSignedUploadUrl(key);
@@ -161,13 +187,18 @@ const supabaseStorageHelpers = {
 		}
 	},
 
+	/**
+	 * Creates a short-lived signed URL for immediate file downloads.
+	 * Default expiration: 1 hour (3600 seconds)
+	 * Use case: Immediate download links, temporary access
+	 */
 	async createSignedDownloadUrl(
 		bucket: string,
 		key: string,
 		expiresIn = 3_600,
 	): Promise<SignedUrlResult> {
 		try {
-			const supabase = getSupabaseStorageClient();
+			const supabase = await createServerServiceClient();
 			const { data, error } = await supabase.storage
 				.from(bucket)
 				.createSignedUrl(key, expiresIn);
@@ -191,6 +222,11 @@ const supabaseStorageHelpers = {
 		return { data: { publicUrl }, error: null };
 	},
 
+	/**
+	 * Creates a long-lived signed URL for persistent file access.
+	 * Default expiration: 1 week (604800 seconds)
+	 * Use case: Stored references, bookmark thumbnails, profile images
+	 */
 	async getSignedUrl(
 		bucket: string,
 		key: string,
@@ -200,7 +236,7 @@ const supabaseStorageHelpers = {
 		const maxExpiration = Math.min(expiresIn, 604_800);
 
 		try {
-			const supabase = getSupabaseStorageClient();
+			const supabase = await createServerServiceClient();
 			const { data, error } = await supabase.storage
 				.from(bucket)
 				.createSignedUrl(key, maxExpiration);
