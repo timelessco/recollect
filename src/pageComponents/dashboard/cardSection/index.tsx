@@ -175,9 +175,10 @@ const CardSection = ({
 		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 	};
 
-	const bookmarksList = isEmpty(searchText)
-		? listData
-		: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
+	const bookmarksList =
+		isPublicPage || isEmpty(searchText)
+			? listData
+			: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { type SingleListData } from "../../../types/apiTypes";
 import {
 	bookmarkType,
+	DISCOVER_URL,
 	documentFileTypes,
 	DOCUMENTS_URL,
 	GET_HASHTAG_TAG_PATTERN,
@@ -68,7 +69,11 @@ export default async function handler(
 		const user_id = userData?.user?.id;
 		const email = userData?.user?.email as string;
 
-		if (userError || !user_id) {
+		const { search, category_id } = parseResult.data;
+
+		const isDiscoverPage = category_id === DISCOVER_URL;
+
+		if (!isDiscoverPage && (userError || !user_id)) {
 			console.warn("[search-bookmarks] Missing user_id from Supabase auth");
 			response.status(401).json({
 				data: null,
@@ -76,8 +81,6 @@ export default async function handler(
 			});
 			return;
 		}
-
-		const { search, category_id } = parseResult.data;
 
 		const offset = Number.parseInt(request.query.offset as string, 10) || 0;
 		const limit = PAGINATION_LIMIT;
@@ -115,102 +118,114 @@ export default async function handler(
 			.eq("trash", category_id === TRASH_URL)
 			.range(offset, offset + limit);
 
-		const userInCollectionsCondition = isUserInACategoryInApi(
-			category_id as string,
-			false,
-		);
-
-		if (!userInCollectionsCondition) {
-			// if user is not in any category, then get only the items that match the user_id
-			query = query.eq("user_id", user_id);
-		}
-
-		if (userInCollectionsCondition) {
-			// check if user is a collaborator for the category
-			const {
-				success: isUserCollaboratorInCategorySuccess,
-				isCollaborator: isUserCollaboratorInCategoryValue,
-				error: isUserCollaboratorInCategoryError,
-			} = await isUserCollaboratorInCategory(
-				supabase,
-				category_id as string,
-				email,
-			);
-
-			if (!isUserCollaboratorInCategorySuccess) {
-				console.error(
-					"[search-bookmarks] Error checking if user is a collaborator for the category:",
-					isUserCollaboratorInCategoryError,
-				);
-				Sentry.captureException(isUserCollaboratorInCategoryError, {
-					tags: {
-						operation: "check_user_collaborator_of_category",
-					},
-					extra: { category_id },
-					user: {
-						id: user_id,
-						email,
-					},
-				});
-				response.status(500).json({
+		if (isDiscoverPage) {
+			query = query.eq("is_discoverable", true);
+		} else {
+			if (!user_id) {
+				response.status(401).json({
 					data: null,
-					error: {
-						message:
-							"Error checking if user is a collaborator for the category",
-					},
+					error: { message: "Unauthorized" },
 				});
 				return;
 			}
 
-			// check if user is the owner of the category
-			const {
-				success: isUserOwnerOfCategorySuccess,
-				isOwner: isUserOwnerOfCategory,
-				error: isUserOwnerOfCategoryError,
-			} = await checkIsUserOwnerOfCategory(
-				supabase,
+			const userInCollectionsCondition = isUserInACategoryInApi(
 				category_id as string,
-				user_id,
+				false,
 			);
 
-			if (!isUserOwnerOfCategorySuccess) {
-				console.error(
-					"[search-bookmarks] Error checking if user is the owner of the category:",
-					isUserOwnerOfCategoryError,
-				);
-				Sentry.captureException(isUserOwnerOfCategoryError, {
-					tags: {
-						operation: "check_user_owner_of_category",
-					},
-					extra: { category_id },
-					user: {
-						id: user_id,
-						email,
-					},
-				});
-				response.status(500).json({
-					data: null,
-					error: {
-						message: "Error checking if user is the owner of the category",
-					},
-				});
-				return;
-			}
-
-			// check if user is not a collaborator or the owner of the category
-			const is_user_not_collaborator_or_owner =
-				!isUserCollaboratorInCategoryValue && !isUserOwnerOfCategory;
-
-			if (is_user_not_collaborator_or_owner) {
-				// if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
+			if (!userInCollectionsCondition) {
+				// if user is not in any category, then get only the items that match the user_id
 				query = query.eq("user_id", user_id);
 			}
 
-			// get all the items for the category_id irrespective of the user_id, as user has access to all the items in the category
-			query = query.eq(
-				"category_id",
-				category_id === UNCATEGORIZED_URL ? 0 : category_id,
-			);
+			if (userInCollectionsCondition) {
+				// check if user is a collaborator for the category
+				const {
+					success: isUserCollaboratorInCategorySuccess,
+					isCollaborator: isUserCollaboratorInCategoryValue,
+					error: isUserCollaboratorInCategoryError,
+				} = await isUserCollaboratorInCategory(
+					supabase,
+					category_id as string,
+					email,
+				);
+
+				if (!isUserCollaboratorInCategorySuccess) {
+					console.error(
+						"[search-bookmarks] Error checking if user is a collaborator for the category:",
+						isUserCollaboratorInCategoryError,
+					);
+					Sentry.captureException(isUserCollaboratorInCategoryError, {
+						tags: {
+							operation: "check_user_collaborator_of_category",
+						},
+						extra: { category_id },
+						user: {
+							id: user_id,
+							email,
+						},
+					});
+					response.status(500).json({
+						data: null,
+						error: {
+							message:
+								"Error checking if user is a collaborator for the category",
+						},
+					});
+					return;
+				}
+
+				// check if user is the owner of the category
+				const {
+					success: isUserOwnerOfCategorySuccess,
+					isOwner: isUserOwnerOfCategory,
+					error: isUserOwnerOfCategoryError,
+				} = await checkIsUserOwnerOfCategory(
+					supabase,
+					category_id as string,
+					user_id,
+				);
+
+				if (!isUserOwnerOfCategorySuccess) {
+					console.error(
+						"[search-bookmarks] Error checking if user is the owner of the category:",
+						isUserOwnerOfCategoryError,
+					);
+					Sentry.captureException(isUserOwnerOfCategoryError, {
+						tags: {
+							operation: "check_user_owner_of_category",
+						},
+						extra: { category_id },
+						user: {
+							id: user_id,
+							email,
+						},
+					});
+					response.status(500).json({
+						data: null,
+						error: {
+							message: "Error checking if user is the owner of the category",
+						},
+					});
+					return;
+				}
+
+				// check if user is not a collaborator or the owner of the category
+				const is_user_not_collaborator_or_owner =
+					!isUserCollaboratorInCategoryValue && !isUserOwnerOfCategory;
+
+				if (is_user_not_collaborator_or_owner) {
+					// if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
+					query = query.eq("user_id", user_id);
+				}
+
+				// get all the items for the category_id irrespective of the user_id, as user has access to all the items in the category
+				query = query.eq(
+					"category_id",
+					category_id === UNCATEGORIZED_URL ? 0 : category_id,
+				);
+			}
 		}
 
 		if (category_id === IMAGES_URL) {

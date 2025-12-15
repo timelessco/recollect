@@ -59,13 +59,13 @@ export default function useSearchBookmarks() {
 				CATEGORY_ID,
 				debouncedSearch,
 			] as const,
-			enabled: !isEmpty(searchText),
+			enabled: !isEmpty(debouncedSearch),
 			refetchOnWindowFocus: false,
 			initialPageParam: 0,
 			queryFn: async ({ pageParam: pageParameter }) => {
-				if (searchText) {
+				if (debouncedSearch) {
 					const result = await searchBookmarks(
-						searchText,
+						debouncedSearch,
 						CATEGORY_ID,
 						isSharedCategory,
 						pageParameter,

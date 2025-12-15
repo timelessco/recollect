@@ -33,6 +33,7 @@ import useFetchSharedCategories from "../../async/queryHooks/share/useFetchShare
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
+import useDebounce from "../../hooks/useDebounce";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
@@ -122,6 +123,7 @@ const Dashboard = () => {
 	);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const debouncedSearchText = useDebounce(searchText, 500);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -154,8 +156,8 @@ const Dashboard = () => {
 		isLoading: isDiscoverLoading,
 	} = useFetchDiscoverBookmarks();
 
-	// Determine if we're currently searching
-	const isSearching = !isEmpty(searchText);
+	// Determine if we're currently searching (use debounced to match when query runs)
+	const isSearching = !isEmpty(debouncedSearchText);
 	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
 	const flattenedDiscoverData = useMemo(
@@ -786,47 +788,59 @@ const Dashboard = () => {
 		</>
 	);
 
-	const renderDiscoverBookmarkCards = () => (
-		<div
-			id="scrollableDiv"
-			ref={infiniteScrollRef}
-			style={{
-				height: "100vh",
-				overflowY: "auto",
-				overflowX: "hidden",
-				overflowAnchor: "none",
-			}}
-		>
-			<InfiniteScroll
-				dataLength={flattenedDiscoverData.length}
-				hasMore={discoverHasNextPage ?? false}
-				loader={<div />}
-				next={fetchNextDiscoverPage}
-				scrollableTarget="scrollableDiv"
-				endMessage={
-					<p className="pb-6 text-center text-plain-reverse">
-						Life happens, save it.
-					</p>
-				}
-				style={{ overflow: "unset", height: "100vh" }}
+	const renderDiscoverBookmarkCards = () => {
+		// Use search results when searching, otherwise use discover data
+		const displayData = isSearching
+			? flattenedSearchData
+			: flattenedDiscoverData;
+		const hasMore = isSearching ? searchHasNextPage : discoverHasNextPage;
+		const fetchNext = isSearching ? fetchNextSearchPage : fetchNextDiscoverPage;
+		const isLoading = isSearching
+			? isSearchLoading && flattenedSearchData.length === 0
+			: isDiscoverLoading && flattenedDiscoverData.length === 0;
+		const isOgImgLoading = isSearching ? false : isFetchingNextDiscoverPage;
+		return (
+			<div
+				id="scrollableDiv"
+				ref={infiniteScrollRef}
+				style={{
+					height: "100vh",
+					overflowY: "auto",
+					overflowX: "hidden",
+					overflowAnchor: "none",
+				}}
 			>
-				<CardSection
-					categoryViewsFromProps={discoverCategoryViews}
-					isBookmarkLoading={false}
-					isLoading={isDiscoverLoading && flattenedDiscoverData.length === 0}
-					isOgImgLoading={isFetchingNextDiscoverPage}
-					isPublicPage
-					listData={flattenedDiscoverData}
-					onCategoryChange={() => {}}
-					onCreateNewCategory={async () => {}}
-					onDeleteClick={() => {}}
-					onMoveOutOfTrashClick={() => {}}
-					showAvatar={false}
-					userId=""
-				/>
-			</InfiniteScroll>
-		</div>
-	);
+				<InfiniteScroll
+					dataLength={displayData.length}
+					hasMore={hasMore ?? false}
+					loader={<div />}
+					next={fetchNext}
+					scrollableTarget="scrollableDiv"
+					endMessage={
+						<p className="pb-6 text-center text-plain-reverse">
+							{isSearchLoading ? "" : "Life happens, save it."}
+						</p>
+					}
+					style={{ overflow: "unset", height: "100vh" }}
+				>
+					<CardSection
+						categoryViewsFromProps={discoverCategoryViews}
+						isBookmarkLoading={false}
+						isLoading={isLoading}
+						isOgImgLoading={isOgImgLoading}
+						isPublicPage
+						listData={displayData}
+						onCategoryChange={() => {}}
+						onCreateNewCategory={async () => {}}
+						onDeleteClick={() => {}}
+						onMoveOutOfTrashClick={() => {}}
+						showAvatar={false}
+						userId=""
+					/>
+				</InfiniteScroll>
+			</div>
+		);
+	};
 
 	const renderMainPaneContent = () => {
 		if (!isInNotFoundPage) {
