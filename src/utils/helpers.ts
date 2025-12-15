@@ -23,6 +23,7 @@ import {
 	acceptedFileTypes,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
+	DISCOVER_URL,
 	documentFileTypes,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
@@ -71,7 +72,8 @@ export const getCategoryIdFromSlug = (
 		slug === VIDEOS_URL ||
 		slug === LINKS_URL ||
 		slug === DOCUMENTS_URL ||
-		slug === TWEETS_URL
+		slug === TWEETS_URL ||
+		slug === DISCOVER_URL
 	) {
 		return slug;
 	}
@@ -191,6 +193,7 @@ export const isUserInACategory = (url: string) => {
 		DOCUMENTS_URL,
 		LINKS_URL,
 		TWEETS_URL,
+		DISCOVER_URL,
 	];
 
 	return !nonCategoryPages?.includes(url);

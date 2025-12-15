@@ -19,10 +19,7 @@ USING (
     AND trash = false
 );
 
-END;
-$function$;
-
-
 COMMENT ON POLICY "public_discover_access" ON public.everything IS
 'Allows anyone (including anonymous) to read bookmarks marked as discoverable and not in trash.';
+
 COMMIT;

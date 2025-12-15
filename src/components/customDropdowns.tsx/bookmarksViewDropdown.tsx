@@ -29,11 +29,6 @@ type BookmarksViewDropdownProps = {
 		value: BookmarksViewTypes | number[] | string[],
 		type: BookmarkViewCategories,
 	) => void;
-	currentViewState?: {
-		bookmarksView: BookmarksViewTypes;
-		cardContentViewArray: string[];
-		moodboardColumns: number[];
-	};
 };
 
 // This renders the view options
@@ -42,21 +37,14 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		setBookmarksView,
 		isDropdown = true,
 		renderOnlyButton = false,
-		currentViewState,
 	} = props;
 
-	const bookmarksInfoValueRaw = currentViewState?.cardContentViewArray
-		? currentViewState.cardContentViewArray
-		: useGetViewValue("cardContentViewArray", []);
+	const bookmarksInfoValueRaw = useGetViewValue("cardContentViewArray", []);
 	const bookmarksInfoValue = Array.isArray(bookmarksInfoValueRaw)
 		? (bookmarksInfoValueRaw as string[])
 		: [];
-	const bookmarksColumns = currentViewState?.moodboardColumns
-		? currentViewState.moodboardColumns
-		: useGetViewValue("moodboardColumns", [10]);
-	const bookmarksViewValue = currentViewState?.bookmarksView
-		? currentViewState.bookmarksView
-		: (useGetViewValue("bookmarksView", "") as BookmarksViewTypes);
+	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
+	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
 
 	const isInTweetsPage = useIsUserInTweetsPage();
 

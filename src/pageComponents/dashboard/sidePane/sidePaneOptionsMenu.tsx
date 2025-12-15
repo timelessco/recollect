@@ -54,11 +54,11 @@ const SidePaneOptionsMenu = () => {
 			{optionsMenuList?.map((item) => (
 				<SingleListItemComponent
 					extendedClassname="py-[7px]"
-					isLink={item?.id !== 3}
+					isLink={item?.id !== 4}
 					item={item}
 					key={item.id}
 					onClick={() => {
-						if (item?.id === 3) {
+						if (item?.id === 4) {
 							// we clicked on settings
 							toggleShowSettingsModal();
 						}

@@ -20,7 +20,6 @@ type BookmarksSortDropdownTypes = {
 		value: BookmarksSortByTypes,
 		type: BookmarkViewCategories,
 	) => void;
-	currentSort?: BookmarksSortByTypes;
 };
 
 const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
@@ -28,11 +27,9 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 		setBookmarksView,
 		isDropdown = true,
 		renderOnlyButton = false,
-		currentSort,
 	} = props;
 
-	const { sortBy: bookmarksSortValueRaw } = useGetSortBy();
-	const bookmarksSortValue = currentSort ?? bookmarksSortValueRaw;
+	const { sortBy: bookmarksSortValue } = useGetSortBy();
 
 	const sortOptions = [
 		// {
