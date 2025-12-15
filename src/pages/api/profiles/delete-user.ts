@@ -27,7 +27,7 @@ import {
 	STORAGE_USER_PROFILE_PATH,
 	TAG_TABLE_NAME,
 } from "../../../utils/constants";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -105,7 +105,7 @@ const storageDeleteLogic = async (
 	// bookmarks storage ogImages delete
 
 	const { data: bookmarksStorageFiles, error: bookmarksStorageError } =
-		await r2Helpers.listObjects(
+		await storageHelpers.listObjects(
 			R2_MAIN_BUCKET_NAME,
 			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/`,
 		);
@@ -121,7 +121,7 @@ const storageDeleteLogic = async (
 
 	if (!isEmpty(filesToRemove) && !isNil(filesToRemove)) {
 		const { error: bookmarksStorageDeleteError } =
-			await r2Helpers.deleteObjects(R2_MAIN_BUCKET_NAME, filesToRemove);
+			await storageHelpers.deleteObjects(R2_MAIN_BUCKET_NAME, filesToRemove);
 
 		if (!isNull(bookmarksStorageDeleteError)) {
 			response.status(500).json({
@@ -141,7 +141,7 @@ const storageDeleteLogic = async (
 	const {
 		data: bookmarksStorageScreenshotFiles,
 		error: bookmarksStorageScreenshotError,
-	} = await r2Helpers.listObjects(
+	} = await storageHelpers.listObjects(
 		R2_MAIN_BUCKET_NAME,
 		`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/`,
 	);
@@ -160,7 +160,7 @@ const storageDeleteLogic = async (
 
 	if (!isEmpty(filesToRemoveScreenshot) && !isNil(filesToRemoveScreenshot)) {
 		const { error: bookmarksStorageScreenshotDeleteError } =
-			await r2Helpers.deleteObjects(
+			await storageHelpers.deleteObjects(
 				R2_MAIN_BUCKET_NAME,
 				filesToRemoveScreenshot,
 			);
@@ -181,7 +181,7 @@ const storageDeleteLogic = async (
 	// files storage delete
 
 	const { data: filesStorageData, error: filesStorageDataError } =
-		await r2Helpers.listObjects(
+		await storageHelpers.listObjects(
 			R2_MAIN_BUCKET_NAME,
 			`${STORAGE_FILES_PATH}/${userId}/`,
 		);
@@ -199,7 +199,7 @@ const storageDeleteLogic = async (
 		!isEmpty(filesStorageFilesToRemove) &&
 		!isNil(filesStorageFilesToRemove)
 	) {
-		const { error: filesDeleteError } = await r2Helpers.deleteObjects(
+		const { error: filesDeleteError } = await storageHelpers.deleteObjects(
 			R2_MAIN_BUCKET_NAME,
 			filesStorageFilesToRemove,
 		);
@@ -219,7 +219,7 @@ const storageDeleteLogic = async (
 	// user profile storage delete
 
 	const { data: userProfileFilesData, error: userProfileFilesError } =
-		await r2Helpers.listObjects(
+		await storageHelpers.listObjects(
 			R2_MAIN_BUCKET_NAME,
 			`${STORAGE_USER_PROFILE_PATH}/${userId}/`,
 		);
@@ -237,7 +237,7 @@ const storageDeleteLogic = async (
 
 	if (!isEmpty(userProfileFilesToRemove) && !isNil(userProfileFilesToRemove)) {
 		const { error: userProfileFilesDeleteError } =
-			await r2Helpers.deleteObjects(
+			await storageHelpers.deleteObjects(
 				R2_MAIN_BUCKET_NAME,
 				userProfileFilesToRemove,
 			);
