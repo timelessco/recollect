@@ -788,25 +788,27 @@ const Dashboard = () => {
 
 	const renderDiscoverBookmarkCards = () => (
 		<div
-			className="pt-[60px]"
-			id="discoverScrollableDiv"
+			id="scrollableDiv"
+			ref={infiniteScrollRef}
 			style={{
-				height: "calc(100vh - 60px)",
+				height: "100vh",
 				overflowY: "auto",
 				overflowX: "hidden",
+				overflowAnchor: "none",
 			}}
 		>
 			<InfiniteScroll
 				dataLength={flattenedDiscoverData.length}
 				hasMore={discoverHasNextPage ?? false}
-				loader={
-					<div className="flex justify-center py-4">
-						<div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-					</div>
-				}
+				loader={<div />}
 				next={fetchNextDiscoverPage}
-				scrollableTarget="discoverScrollableDiv"
-				style={{ overflow: "unset" }}
+				scrollableTarget="scrollableDiv"
+				endMessage={
+					<p className="pb-6 text-center text-plain-reverse">
+						Life happens, save it.
+					</p>
+				}
+				style={{ overflow: "unset", height: "100vh" }}
 			>
 				<CardSection
 					categoryViewsFromProps={discoverCategoryViews}

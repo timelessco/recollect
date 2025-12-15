@@ -38,6 +38,7 @@ import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	DISCOVER_URL,
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
@@ -823,7 +824,7 @@ const CardSection = ({
 	};
 
 	const listWrapperClass = classNames({
-		"mt-[47px]": !isPublicPage,
+		"mt-[47px]": !isPublicPage || categorySlug === DISCOVER_URL,
 		"px-4 py-2": cardTypeCondition === viewValues.list,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
