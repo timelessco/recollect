@@ -165,10 +165,6 @@ export default function useFileUploadOptimisticMutation() {
 
 			// Generate presigned URL for secure client-side upload
 			const storagePath = `${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`;
-			console.log("[Upload Debug] Creating signed URL for:", {
-				bucket: R2_MAIN_BUCKET_NAME,
-				path: storagePath,
-			});
 
 			const { data: uploadTokenData, error } =
 				await storageHelpers.createSignedUploadUrl(
@@ -176,20 +172,11 @@ export default function useFileUploadOptimisticMutation() {
 					storagePath,
 				);
 
-			console.log("[Upload Debug] Signed URL result:", {
-				signedUrl: uploadTokenData?.signedUrl?.slice(0, 100),
-				error,
-			});
-
 			// Upload file using presigned URL
 			const errorCondition = isNull(error);
 
 			if (uploadTokenData?.signedUrl && errorCondition) {
 				try {
-					console.log(
-						"[Upload Debug] Starting file upload to:",
-						uploadTokenData.signedUrl.slice(0, 100),
-					);
 					const uploadResponse = await fetch(uploadTokenData.signedUrl, {
 						method: "PUT",
 						body: data?.file,
@@ -198,27 +185,13 @@ export default function useFileUploadOptimisticMutation() {
 						},
 					});
 
-					console.log("[Upload Debug] Upload response:", {
-						ok: uploadResponse.ok,
-						status: uploadResponse.status,
-					});
-
 					if (!uploadResponse.ok) {
-						const errorText = await uploadResponse.text();
-						console.error("[Upload Debug] Upload failed:", errorText);
 						const errorMessage = `Upload failed with status: ${uploadResponse.status}`;
 						errorToast(errorMessage);
 					}
-				} catch (uploadError) {
-					console.error("[Upload Debug] Upload error:", uploadError);
+				} catch {
 					errorToast("Upload failed");
 				}
-			} else {
-				console.error("[Upload Debug] No signed URL or error:", {
-					hasSignedUrl: Boolean(uploadTokenData?.signedUrl),
-					error,
-					errorCondition,
-				});
 			}
 
 			if (!errorCondition) {
