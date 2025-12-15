@@ -30,6 +30,7 @@ RETURNS TABLE(
     type text,
     meta_data jsonb,
     sort_index text,
+    is_discoverable boolean,
     added_tags jsonb
 )
 LANGUAGE plpgsql
