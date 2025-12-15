@@ -66,7 +66,10 @@ export interface StorageHelpersInterface {
 		contentType?: string,
 	) => Promise<UploadResult>;
 	deleteObject: (bucket: string, key: string) => Promise<DeleteResult>;
-	deleteObjects: (bucket: string, keys: string[]) => Promise<DeleteMultipleResult>;
+	deleteObjects: (
+		bucket: string,
+		keys: string[],
+	) => Promise<DeleteMultipleResult>;
 	createSignedUploadUrl: (
 		bucket: string,
 		key: string,
