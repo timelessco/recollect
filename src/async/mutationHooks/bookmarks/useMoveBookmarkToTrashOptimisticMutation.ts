@@ -153,14 +153,14 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 					queryKey: [BOOKMARKS_KEY, session?.user?.id, null],
 				});
 
-				if (variables.data?.category_id) {
-					void queryClient.invalidateQueries({
-						queryKey: [
-							BOOKMARKS_KEY,
-							session?.user?.id,
-							variables.data.category_id,
-						],
-					});
+				const categoryIds =
+					variables.data?.addedCategories?.map((cat) => cat.id) ?? [];
+				if (categoryIds.length > 0) {
+					for (const catId of categoryIds) {
+						void queryClient.invalidateQueries({
+							queryKey: [BOOKMARKS_KEY, session?.user?.id, catId],
+						});
+					}
 				} else {
 					void queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_KEY, session?.user?.id, UNCATEGORIZED_URL],

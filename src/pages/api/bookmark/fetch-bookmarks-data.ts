@@ -256,22 +256,29 @@ user_id (
 	// eslint-disable-next-line prefer-const
 	data = bookmarkData as SingleListData[];
 
-	const { data: bookmarksWithTags } = await supabase
-		.from(BOOKMARK_TAGS_TABLE_NAME)
-		.select(
-			`
+	// Get bookmark IDs for the current page to filter related data
+	const bookmarkIds = data?.map((item) => item.id) ?? [];
+
+	// Only fetch tags/categories for the current page's bookmarks (more efficient + avoids 1000 row limit)
+	const { data: bookmarksWithTags } = bookmarkIds.length
+		? await supabase
+				.from(BOOKMARK_TAGS_TABLE_NAME)
+				.select(
+					`
     bookmark_id,
     tag_id (
       id,
       name
     )`,
-		)
-		.eq("user_id", userId);
+				)
+				.in("bookmark_id", bookmarkIds)
+		: { data: [] };
 
-	const { data: bookmarksWithCategories } = await supabase
-		.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-		.select(
-			`
+	const { data: bookmarksWithCategories } = bookmarkIds.length
+		? await supabase
+				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+				.select(
+					`
     bookmark_id,
     category_id (
       id,
@@ -280,9 +287,10 @@ user_id (
       icon,
       icon_color
     )`,
-		)
-		.eq("user_id", userId)
-		.order("created_at", { ascending: true });
+				)
+				.in("bookmark_id", bookmarkIds)
+				.order("created_at", { ascending: true })
+		: { data: [] };
 
 	const finalData = data
 		?.map((item) => {

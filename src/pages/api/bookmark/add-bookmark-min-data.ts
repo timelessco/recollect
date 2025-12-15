@@ -59,7 +59,7 @@ type ScrapperTypes = {
 // tells if user is either category owner or collaborator
 export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 	supabase: SupabaseClient,
-	categoryId: SingleListData["category_id"],
+	categoryId: number | null,
 	userId: SingleListData["user_id"]["id"],
 	email: ProfilesTableTypes["email"],
 	response: NextApiResponse,
@@ -392,7 +392,6 @@ export default async function handler(
 				},
 			});
 			// Non-blocking: don't fail the request, log and continue
-			// The category_id column still has the data for backward compatibility
 		}
 
 		// Success

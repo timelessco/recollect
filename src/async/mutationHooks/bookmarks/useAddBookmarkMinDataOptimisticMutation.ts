@@ -98,7 +98,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 										data: [
 											{
 												url: data?.url,
-												category_id: data?.category_id,
 												addedCategories,
 												inserted_at: new Date(),
 												addedTags: [],

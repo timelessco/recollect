@@ -1,13 +1,7 @@
-import { type NextRequest } from "next/server";
 import { z } from "zod";
 
-import {
-	apiError,
-	apiSuccess,
-	apiWarn,
-	parseBody,
-} from "@/lib/api-helpers/response";
-import { requireAuth } from "@/lib/supabase/api";
+import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNullable } from "@/utils/assertion-utils";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
@@ -55,27 +49,15 @@ export type AddCategoryToBookmarkResponse = z.infer<
 	typeof AddCategoryToBookmarkResponseSchema
 >;
 
-export async function POST(request: NextRequest) {
-	try {
-		const auth = await requireAuth(ROUTE);
-		if (auth.errorResponse) {
-			return auth.errorResponse;
-		}
-
-		const body = await parseBody({
-			request,
-			schema: AddCategoryToBookmarkPayloadSchema,
-			route: ROUTE,
-		});
-		if (body.errorResponse) {
-			return body.errorResponse;
-		}
-
-		const { supabase, user } = auth;
-		const { bookmark_id: bookmarkId, category_id: categoryId } = body.data;
+export const POST = createSupabasePostApiHandler({
+	route: ROUTE,
+	inputSchema: AddCategoryToBookmarkPayloadSchema,
+	outputSchema: AddCategoryToBookmarkResponseSchema,
+	handler: async ({ data, supabase, user, route }) => {
+		const { bookmark_id: bookmarkId, category_id: categoryId } = data;
 		const userId = user.id;
 
-		console.log(`[${ROUTE}] API called:`, {
+		console.log(`[${route}] API called:`, {
 			userId,
 			bookmarkId,
 			categoryId,
@@ -102,7 +84,7 @@ export async function POST(request: NextRequest) {
 		if (bookmarkResult.error) {
 			if (bookmarkResult.error.code === "PGRST116") {
 				return apiWarn({
-					route: ROUTE,
+					route,
 					message: "Bookmark not found or not owned by user",
 					status: 404,
 					context: { bookmarkId },
@@ -110,7 +92,7 @@ export async function POST(request: NextRequest) {
 			}
 
 			return apiError({
-				route: ROUTE,
+				route,
 				message: "Failed to verify bookmark ownership",
 				error: bookmarkResult.error,
 				operation: "fetch_bookmark",
@@ -119,14 +101,14 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		console.log(`[${ROUTE}] Bookmark exists and user owns it`);
+		console.log(`[${route}] Bookmark exists and user owns it`);
 
 		// 2. Verify category access (skip for uncategorized = 0)
 		if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
 			if (categoryResult.error) {
 				if (categoryResult.error.code === "PGRST116") {
 					return apiWarn({
-						route: ROUTE,
+						route,
 						message: "Category not found",
 						status: 404,
 						context: { categoryId },
@@ -134,7 +116,7 @@ export async function POST(request: NextRequest) {
 				}
 
 				return apiError({
-					route: ROUTE,
+					route,
 					message: "Failed to fetch category",
 					error: categoryResult.error,
 					operation: "fetch_category",
@@ -149,7 +131,7 @@ export async function POST(request: NextRequest) {
 				const email = user.email;
 				if (!email) {
 					return apiWarn({
-						route: ROUTE,
+						route,
 						message: "No access to this category",
 						status: 403,
 						context: { userId, categoryId },
@@ -165,7 +147,7 @@ export async function POST(request: NextRequest) {
 
 				if (sharedError && sharedError.code !== "PGRST116") {
 					return apiError({
-						route: ROUTE,
+						route,
 						message: "Failed to fetch shared category",
 						error: sharedError,
 						operation: "fetch_shared_category",
@@ -176,7 +158,7 @@ export async function POST(request: NextRequest) {
 
 				if (!sharedData?.edit_access) {
 					return apiWarn({
-						route: ROUTE,
+						route,
 						message: "No edit access to this category",
 						status: 403,
 						context: {
@@ -188,13 +170,13 @@ export async function POST(request: NextRequest) {
 					});
 				}
 
-				console.log(`[${ROUTE}] User has edit access as collaborator`);
+				console.log(`[${route}] User has edit access as collaborator`);
 			} else {
-				console.log(`[${ROUTE}] User is category owner`);
+				console.log(`[${route}] User is category owner`);
 			}
 		} else {
 			console.log(
-				`[${ROUTE}] Adding to uncategorized (category_id=${UNCATEGORIZED_CATEGORY_ID})`,
+				`[${route}] Adding to uncategorized (category_id=${UNCATEGORIZED_CATEGORY_ID})`,
 			);
 		}
 
@@ -213,10 +195,11 @@ export async function POST(request: NextRequest) {
 				},
 			)
 			.select();
+		console.log("🚀 ~ insertedData:", insertedData);
 
 		if (insertError) {
 			return apiError({
-				route: ROUTE,
+				route,
 				message: "Failed to add category to bookmark",
 				error: insertError,
 				operation: "insert_bookmark_category",
@@ -225,23 +208,12 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		console.log(`[${ROUTE}] Category added successfully:`, {
+		console.log(`[${route}] Category added successfully:`, {
 			bookmarkId,
 			categoryId,
 			isNewEntry: insertedData && insertedData.length > 0,
 		});
 
-		return apiSuccess({
-			route: ROUTE,
-			data: insertedData,
-			schema: AddCategoryToBookmarkResponseSchema,
-		});
-	} catch (error) {
-		return apiError({
-			route: ROUTE,
-			message: "An unexpected error occurred",
-			error,
-			operation: "add_category_to_bookmark_unexpected",
-		});
-	}
-}
+		return insertedData;
+	},
+});

@@ -1,13 +1,7 @@
-import { type NextRequest } from "next/server";
 import { z } from "zod";
 
-import {
-	apiError,
-	apiSuccess,
-	apiWarn,
-	parseBody,
-} from "@/lib/api-helpers/response";
-import { requireAuth } from "@/lib/supabase/api";
+import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNullable } from "@/utils/assertion-utils";
 import {
 	CATEGORIES_TABLE_NAME,
@@ -61,27 +55,15 @@ export type SetBookmarkCategoriesResponse = z.infer<
 	typeof SetBookmarkCategoriesResponseSchema
 >;
 
-export async function POST(request: NextRequest) {
-	try {
-		const auth = await requireAuth(ROUTE);
-		if (auth.errorResponse) {
-			return auth.errorResponse;
-		}
-
-		const body = await parseBody({
-			request,
-			schema: SetBookmarkCategoriesPayloadSchema,
-			route: ROUTE,
-		});
-		if (body.errorResponse) {
-			return body.errorResponse;
-		}
-
-		const { supabase, user } = auth;
-		const { bookmark_id: bookmarkId, category_ids: categoryIds } = body.data;
+export const POST = createSupabasePostApiHandler({
+	route: ROUTE,
+	inputSchema: SetBookmarkCategoriesPayloadSchema,
+	outputSchema: SetBookmarkCategoriesResponseSchema,
+	handler: async ({ data, supabase, user, route }) => {
+		const { bookmark_id: bookmarkId, category_ids: categoryIds } = data;
 		const userId = user.id;
 
-		console.log(`[${ROUTE}] API called:`, {
+		console.log(`[${route}] API called:`, {
 			userId,
 			bookmarkId,
 			categoryIds,
@@ -113,7 +95,7 @@ export async function POST(request: NextRequest) {
 		if (bookmarkResult.error) {
 			if (bookmarkResult.error.code === "PGRST116") {
 				return apiWarn({
-					route: ROUTE,
+					route,
 					message: "Bookmark not found or not owned by user",
 					status: 404,
 					context: { bookmarkId },
@@ -121,7 +103,7 @@ export async function POST(request: NextRequest) {
 			}
 
 			return apiError({
-				route: ROUTE,
+				route,
 				message: "Failed to verify bookmark ownership",
 				error: bookmarkResult.error,
 				operation: "fetch_bookmark",
@@ -134,7 +116,7 @@ export async function POST(request: NextRequest) {
 		if (nonZeroCategoryIds.length > 0) {
 			if (ownedCategoriesResult.error) {
 				return apiError({
-					route: ROUTE,
+					route,
 					message: "Failed to fetch categories",
 					error: ownedCategoriesResult.error,
 					operation: "fetch_owned_categories",
@@ -162,7 +144,7 @@ export async function POST(request: NextRequest) {
 
 				if (sharedCategoriesError) {
 					return apiError({
-						route: ROUTE,
+						route,
 						message: "Failed to fetch shared categories",
 						error: sharedCategoriesError,
 						operation: "fetch_shared_categories",
@@ -183,7 +165,7 @@ export async function POST(request: NextRequest) {
 
 				if (unauthorizedCategoryIds.length > 0) {
 					return apiWarn({
-						route: ROUTE,
+						route,
 						message: `No access to categories: ${unauthorizedCategoryIds.join(", ")}`,
 						status: 403,
 						context: { userId, unauthorizedCategoryIds },
@@ -191,7 +173,7 @@ export async function POST(request: NextRequest) {
 				}
 			} else if (notOwnedCategoryIds.length > 0) {
 				return apiWarn({
-					route: ROUTE,
+					route,
 					message: `No access to categories: ${notOwnedCategoryIds.join(", ")}`,
 					status: 403,
 					context: { userId, notOwnedCategoryIds },
@@ -199,7 +181,7 @@ export async function POST(request: NextRequest) {
 			}
 		}
 
-		console.log(`[${ROUTE}] Category access verified`);
+		console.log(`[${route}] Category access verified`);
 
 		// 3. Atomically replace bookmark categories via RPC
 		const { data: insertedData, error: rpcError } = await supabase.rpc(
@@ -212,7 +194,7 @@ export async function POST(request: NextRequest) {
 
 		if (rpcError) {
 			return apiError({
-				route: ROUTE,
+				route,
 				message: "Failed to set bookmark categories",
 				error: rpcError,
 				operation: "set_bookmark_categories_rpc",
@@ -221,23 +203,12 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		console.log(`[${ROUTE}] Categories set successfully:`, {
+		console.log(`[${route}] Categories set successfully:`, {
 			bookmarkId,
 			categoryIds,
 			insertedCount: insertedData.length,
 		});
 
-		return apiSuccess({
-			route: ROUTE,
-			data: insertedData,
-			schema: SetBookmarkCategoriesResponseSchema,
-		});
-	} catch (error) {
-		return apiError({
-			route: ROUTE,
-			message: "An unexpected error occurred",
-			error,
-			operation: "set_bookmark_categories_unexpected",
-		});
-	}
-}
+		return insertedData;
+	},
+});

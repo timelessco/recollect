@@ -31,10 +31,6 @@ export async function createApiClient() {
 	// Strip "Bearer " prefix from token for use with getUser()
 	const token = authorization?.replace("Bearer ", "") ?? null;
 
-	if (authorization) {
-		console.log("Authorization token provided: ", authorization);
-	}
-
 	const supabase = createServerClient<Database>(
 		SUPABASE_URL,
 		SUPABASE_ANON_KEY,
@@ -57,10 +53,16 @@ export async function createApiClient() {
 						for (const { name, value, options } of cookiesToSet) {
 							cookieStore.set(name, value, options);
 						}
-					} catch {
+					} catch (error) {
 						// The `setAll` method was called from a Server Component.
 						// This can be ignored if you have middleware refreshing
 						// user sessions.
+						if (process.env.NODE_ENV === "development") {
+							console.warn(
+								"[createApiClient] Cookie setAll failed (expected in RSC):",
+								error,
+							);
+						}
 					}
 				},
 			},

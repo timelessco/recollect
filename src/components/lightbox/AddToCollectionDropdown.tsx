@@ -1,5 +1,4 @@
-import { useMemo, useOptimistic, useRef, useTransition } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import {
 	Autocomplete,
 	Button,
@@ -14,15 +13,9 @@ import {
 
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
-import {
-	CATEGORIES_KEY,
-	UNCATEGORIZED_CATEGORY_ID,
-} from "../../utils/constants";
+import { UNCATEGORIZED_CATEGORY_ID } from "../../utils/constants";
 import {
 	CategoryListBoxItem,
 	CategoryTagList,
@@ -46,9 +39,6 @@ export const AddToCollectionDropdown = ({
 	const filter = useFilter({ sensitivity: "base" });
 	const triggerRef = useRef<HTMLDivElement | null>(null);
 
-	const session = useSupabaseSession((state) => state.session);
-	const queryClient = useQueryClient();
-
 	const setIsCollectionChanged = useMiscellaneousStore(
 		(state) => state.setIsCollectionChanged,
 	);
@@ -59,18 +49,12 @@ export const AddToCollectionDropdown = ({
 	const { removeCategoryFromBookmarkMutation } =
 		useRemoveCategoryFromBookmarkMutation({
 			skipInvalidation: true,
-			preserveInList: true,
+			preserveInList: false,
 		});
 
-	// Get collections from cache or fetch
-	let collections = useMemo(() => {
-		const categoryData = queryClient?.getQueryData<{
-			data: CategoriesData[];
-		}>([CATEGORIES_KEY, session?.user?.id]);
-		return categoryData?.data ?? [];
-	}, [queryClient, session?.user?.id]);
-
-	collections = useFetchCategories(shouldFetch).allCategories?.data ?? [];
+	// Get collections from fetch hook (handles caching internally via React Query)
+	const { allCategories } = useFetchCategories(shouldFetch);
+	const collections = allCategories?.data ?? [];
 
 	// Get current bookmark's categories
 	const currentBookmark = everythingData?.find(
@@ -159,6 +143,8 @@ export const AddToCollectionDropdown = ({
 		setIsCollectionChanged(true);
 	};
 
+	const [isOpen, setIsOpen] = useState(false);
+
 	const filterFn = (textValue: string, inputValue: string) =>
 		filter.contains(textValue, inputValue);
 
@@ -181,7 +167,10 @@ export const AddToCollectionDropdown = ({
 					value={selectedValue}
 				>
 					{/* Trigger button */}
-					<Button className="flex items-center gap-[6px] rounded-md border border-transparent py-[2px] text-left text-13 text-gray-500 hover:text-plain-reverse focus:outline-hidden">
+					<Button
+						className="flex items-center gap-[6px] rounded-md border border-transparent py-[2px] text-left text-13 text-gray-500 hover:text-plain-reverse focus:outline-hidden"
+						onPress={() => setIsOpen(true)}
+					>
 						<div className="h-[14px] w-[14px] text-gray-600">
 							<AddToCollectionsButton />
 						</div>
@@ -195,7 +184,9 @@ export const AddToCollectionDropdown = ({
 
 					{/* Popover anchored to outer container for stable positioning */}
 					<Popover
-						className="z-50 mt-1 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
+						className="z-50 -mt-2 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
+						isOpen={isOpen}
+						onOpenChange={setIsOpen}
 						triggerRef={triggerRef}
 					>
 						<Autocomplete filter={filterFn}>

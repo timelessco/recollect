@@ -77,7 +77,17 @@ type ApiSuccessProps<T extends z.ZodType> = {
 
 /**
  * Success response with strict output validation.
- * Throws error if data doesn't match schema.
+ * @throws {Error} If outputSchema validation fails. This is intentional -
+ * the throw is caught by the route's catch block which returns a generic
+ * "unexpected error" to the user, hiding internal validation details.
+ * The error is still logged and captured by Sentry for debugging.
+ * @example
+ * // In a route handler:
+ * try {
+ *   return apiSuccess({ route, data: result, schema: OutputSchema });
+ * } catch (error) {
+ *   return apiError({ route, message: "Unexpected error", error, operation: "..." });
+ * }
  */
 export function apiSuccess<T extends z.ZodType>({
 	route,
@@ -115,7 +125,21 @@ export async function parseBody<T>({
 	schema,
 	route,
 }: ParseBodyProps<T>): Promise<ParseBodyResult<T>> {
-	const body = await request.json();
+	let body: unknown;
+	try {
+		body = await request.json();
+	} catch (error) {
+		return {
+			data: null,
+			errorResponse: apiWarn({
+				route,
+				message: "Invalid JSON in request body",
+				status: HttpStatus.BAD_REQUEST,
+				context: { error: error instanceof Error ? error.message : String(error) },
+			}),
+		};
+	}
+
 	const parsed = schema.safeParse(body);
 
 	if (!parsed.success) {

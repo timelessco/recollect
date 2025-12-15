@@ -285,19 +285,6 @@ const Dashboard = () => {
 					currentCategory?.user_id?.id === session?.user?.id
 				: true;
 
-		if (typeof CATEGORY_ID === "number") {
-			// to check that the same bookmark should not be there in the same category
-			const existingBookmarkCheck = find(
-				flattendPaginationBookmarkData,
-				(item) => item?.url === url && item?.category_id === CATEGORY_ID,
-			);
-
-			if (existingBookmarkCheck) {
-				errorToast("This bookmark already exists in the category");
-				return;
-			}
-		}
-
 		await mutationApiCall(
 			addBookmarkMinDataOptimisticMutation.mutateAsync({
 				url,

@@ -3,7 +3,7 @@ import {
 	type RemoveCategoryFromBookmarkResponse,
 } from "@/app/api/category/remove-category-from-bookmark/route";
 import { useBookmarkMutationContext } from "@/hooks/useBookmarkMutationContext";
-import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryMutation";
+import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryOptimisticMutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type PaginatedBookmarks } from "@/types/apiTypes";
 import {

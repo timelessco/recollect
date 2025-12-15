@@ -35,6 +35,10 @@ export const CategoryMultiSelect = ({
 	placeholder = "Search categories...",
 	selectedCategoryIds,
 }: CategoryMultiSelectProps) => {
+	console.log(
+		"🚀 ~ CategoryMultiSelect ~ selectedCategoryIds:",
+		selectedCategoryIds,
+	);
 	const filter = useFilter({ sensitivity: "base" });
 	const [isOpen, setIsOpen] = useState(false);
 	const [inputValue, setInputValue] = useState("");

@@ -4,12 +4,91 @@ Guidelines for logging, error handling, and Sentry integration in API routes.
 
 ## App Router Authentication (Recommended)
 
-Use `requireAuth`, `parseBody`, and response helpers for App Router API routes:
+### Using `createSupabasePostApiHandler` (Preferred)
+
+Use the HOF wrapper for cleaner API routes with automatic auth, validation, and error handling:
+
+```typescript
+import { z } from "zod";
+import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { apiError, apiWarn } from "@/lib/api-helpers/response";
+
+const ROUTE = "endpoint-name";
+
+const InputSchema = z.object({
+	param1: z.string(),
+});
+
+const OutputSchema = z.object({
+	id: z.number(),
+	name: z.string(),
+});
+
+export const POST = createSupabasePostApiHandler({
+	route: ROUTE,
+	inputSchema: InputSchema,
+	outputSchema: OutputSchema,
+	handler: async ({ data, supabase, user, route }) => {
+		const { param1 } = data;
+		const userId = user.id;
+
+		console.log(`[${route}] API called:`, { userId, param1 });
+
+		// Business logic...
+		const { data: result, error } = await supabase.from("table").select();
+		if (error) {
+			return apiError({
+				route,
+				message: "Failed to fetch data",
+				error,
+				operation: "operation_name",
+				userId,
+				extra: { param1 },
+			});
+		}
+
+		// Return raw data (automatically wrapped in apiSuccess)
+		return result;
+	},
+});
+```
+
+**`createSupabasePostApiHandler` config:**
+
+| Prop           | Type        | Description                            |
+| -------------- | ----------- | -------------------------------------- |
+| `route`        | `string`    | Route name for logging prefix          |
+| `inputSchema`  | `z.ZodType` | Zod schema for request body validation |
+| `outputSchema` | `z.ZodType` | Zod schema for response validation     |
+| `handler`      | `function`  | Async handler receiving context        |
+
+**Handler context:**
+
+| Prop       | Type             | Description            |
+| ---------- | ---------------- | ---------------------- |
+| `data`     | `TInput`         | Validated request body |
+| `supabase` | `SupabaseClient` | Authenticated client   |
+| `user`     | `User`           | Authenticated user     |
+| `route`    | `string`         | Route name             |
+
+**Handler return behavior:**
+
+- Return raw data → wrapped in `apiSuccess` automatically
+- Return `NextResponse` (via `apiWarn`/`apiError`) → passed through directly
+
+### Manual Pattern (For Custom Control)
+
+Use manual helpers when you need custom authentication flow or special handling:
 
 ```typescript
 import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { apiError, apiSuccess, apiWarn, parseBody } from "@/lib/api-response";
+import {
+	apiError,
+	apiSuccess,
+	apiWarn,
+	parseBody,
+} from "@/lib/api-helpers/response";
 import { requireAuth } from "@/lib/supabase/api";
 
 const ROUTE = "endpoint-name";
@@ -119,13 +198,37 @@ type ApiErrorResponse = { data: null; error: string };
 export type ApiResponse<T> = ApiErrorResponse | ApiSuccessResponse<T>;
 ```
 
+**Response Examples:**
+
+```json
+// 200 Success
+{ "data": { "id": 1, "name": "Example" }, "error": null }
+
+// 401 Unauthorized
+{ "data": null, "error": "Not authenticated" }
+
+// 400 Bad Request (validation)
+{ "data": null, "error": "Bookmark ID is required" }
+
+// 403 Forbidden
+{ "data": null, "error": "No access to this category" }
+
+// 404 Not Found
+{ "data": null, "error": "Bookmark not found or not owned by user" }
+
+// 500 Internal Server Error
+{ "data": null, "error": "Failed to fetch data" }
+```
+
+Note: Error responses use simple strings, not structured objects.
+
 ### `requireAuth` Details
 
 Returns discriminated union for type narrowing:
 
 ```typescript
 type AuthResult =
-	| { supabase: SupabaseClient; user: User; errorResponse: null }
+	| { supabase: SupabaseClient<Database>; user: User; errorResponse: null }
 	| {
 			supabase: null;
 			user: null;
@@ -133,8 +236,10 @@ type AuthResult =
 	  };
 ```
 
-- `userError` → 400 (bad request)
-- `!user` → 401 (unauthorized)
+**Auth error responses:**
+
+- `userError` → 400: `{ data: null, error: userError.message }`
+- `!user` → 401: `{ data: null, error: "Not authenticated" }`
 
 ## Pages Router Authentication (Legacy)
 

@@ -4,14 +4,14 @@ import { useMutationState } from "@tanstack/react-query";
 
 /**
  * Dev-only indicator showing pending mutations.
- * Positioned in bottom-right corner (opposite of tailwind-indicator).
+ * Positioned in top-left corner.
  *
  * Uses useMutationState from TanStack Query v5 to track all pending mutations.
  */
 export function MutationIndicator() {
 	const pendingMutations = useMutationState({
 		filters: { status: "pending" },
-		select: (mutation) => mutation.state.variables,
+		select: () => 1,
 	});
 
 	if (process.env.NODE_ENV === "production") {

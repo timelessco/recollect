@@ -1,14 +1,8 @@
-import { type NextRequest } from "next/server";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import {
-	apiError,
-	apiSuccess,
-	apiWarn,
-	parseBody,
-} from "@/lib/api-helpers/response";
-import { requireAuth } from "@/lib/supabase/api";
+import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNullable } from "@/utils/assertion-utils";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
@@ -54,27 +48,15 @@ export type RemoveCategoryFromBookmarkResponse = z.infer<
 	typeof RemoveCategoryFromBookmarkResponseSchema
 >;
 
-export async function POST(request: NextRequest) {
-	try {
-		const auth = await requireAuth(ROUTE);
-		if (auth.errorResponse) {
-			return auth.errorResponse;
-		}
-
-		const body = await parseBody({
-			request,
-			schema: RemoveCategoryFromBookmarkPayloadSchema,
-			route: ROUTE,
-		});
-		if (body.errorResponse) {
-			return body.errorResponse;
-		}
-
-		const { supabase, user } = auth;
-		const { bookmark_id: bookmarkId, category_id: categoryId } = body.data;
+export const POST = createSupabasePostApiHandler({
+	route: ROUTE,
+	inputSchema: RemoveCategoryFromBookmarkPayloadSchema,
+	outputSchema: RemoveCategoryFromBookmarkResponseSchema,
+	handler: async ({ data, supabase, user, route }) => {
+		const { bookmark_id: bookmarkId, category_id: categoryId } = data;
 		const userId = user.id;
 
-		console.log(`[${ROUTE}] API called:`, {
+		console.log(`[${route}] API called:`, {
 			userId,
 			bookmarkId,
 			categoryId,
@@ -83,7 +65,7 @@ export async function POST(request: NextRequest) {
 		// Block removal of category 0 (permanent base category)
 		if (categoryId === UNCATEGORIZED_CATEGORY_ID) {
 			return apiWarn({
-				route: ROUTE,
+				route,
 				message: "Cannot remove the uncategorized category",
 				status: 400,
 				context: { bookmarkId, categoryId },
@@ -101,7 +83,7 @@ export async function POST(request: NextRequest) {
 		if (bookmarkError) {
 			if (bookmarkError.code === "PGRST116") {
 				return apiWarn({
-					route: ROUTE,
+					route,
 					message: "Bookmark not found or not owned by user",
 					status: 404,
 					context: { bookmarkId },
@@ -109,7 +91,7 @@ export async function POST(request: NextRequest) {
 			}
 
 			return apiError({
-				route: ROUTE,
+				route,
 				message: "Failed to fetch bookmark",
 				error: bookmarkError,
 				operation: "fetch_bookmark",
@@ -118,7 +100,7 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		console.log(`[${ROUTE}] Bookmark ownership verified`);
+		console.log(`[${route}] Bookmark ownership verified`);
 
 		// 2. Delete the bookmark_category entry
 		// Category 0 is always present, so bookmark won't be orphaned
@@ -131,7 +113,7 @@ export async function POST(request: NextRequest) {
 
 		if (deleteError) {
 			return apiError({
-				route: ROUTE,
+				route,
 				message: "Failed to remove category from bookmark",
 				error: deleteError,
 				operation: "delete_bookmark_category",
@@ -142,29 +124,18 @@ export async function POST(request: NextRequest) {
 
 		if (isEmpty(deletedData)) {
 			return apiWarn({
-				route: ROUTE,
+				route,
 				message: "Category association not found",
 				status: 404,
 				context: { bookmarkId, categoryId },
 			});
 		}
 
-		console.log(`[${ROUTE}] Category removed successfully:`, {
+		console.log(`[${route}] Category removed successfully:`, {
 			bookmarkId,
 			categoryId,
 		});
 
-		return apiSuccess({
-			route: ROUTE,
-			data: deletedData,
-			schema: RemoveCategoryFromBookmarkResponseSchema,
-		});
-	} catch (error) {
-		return apiError({
-			route: ROUTE,
-			message: "An unexpected error occurred",
-			error,
-			operation: "remove_category_from_bookmark_unexpected",
-		});
-	}
-}
+		return deletedData;
+	},
+});

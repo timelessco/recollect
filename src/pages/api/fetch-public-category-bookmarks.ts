@@ -79,6 +79,19 @@ export default async function handler(
 		const sortBy = categoryData[0]?.category_views?.sortBy;
 		const categoryId = categoryData[0]?.id;
 
+		if (!categoryId) {
+			response.status(404).json({
+				data: null,
+				error: "category not found",
+				category_views: null,
+				icon: null,
+				icon_color: null,
+				category_name: null,
+				is_public: null,
+			});
+			return;
+		}
+
 		// Query through junction table for many-to-many relationship
 		let query = supabase
 			.from(MAIN_TABLE_NAME)
@@ -119,21 +132,10 @@ export default async function handler(
 
 		const { data: rawData, error } = await query;
 
-		// Map response to flatten junction table structure for backward compatibility
-		// Transform from: { bookmark_categories: [{ category_id: {...} }] }
-		// To: { category_id: {...} } (keeping same structure frontend expects)
-		const data = (rawData as Array<Record<string, unknown>>)?.map((item) => {
-			const junctionEntries = item[BOOKMARK_CATEGORIES_TABLE_NAME] as
-				| Array<{ category_id: CategoriesData }>
-				| undefined;
-			const categoryFromJunction = junctionEntries?.[0]?.category_id ?? null;
-
-			// Remove junction table field and add flattened category_id
-			return {
-				...omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
-				category_id: categoryFromJunction,
-			};
-		}) as GetPublicCategoryBookmarksApiResponseType["data"];
+		// Remove junction table field from response (not needed in frontend)
+		const data = (rawData as Array<Record<string, unknown>>)?.map((item) =>
+			omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
+		) as GetPublicCategoryBookmarksApiResponseType["data"];
 
 		if (!isNull(error) || !isNull(categoryError)) {
 			response.status(500).json({

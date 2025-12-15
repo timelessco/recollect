@@ -34,10 +34,6 @@ export type SingleListData = {
 	 */
 	addedCategories?: CategoriesData[];
 	addedTags: UserTagsData[];
-	/**
-	 * @deprecated Will be removed after migration completes
-	 */
-	category_id: number | null;
 	description: string;
 	id: number;
 	inserted_at: string;
