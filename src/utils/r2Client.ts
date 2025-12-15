@@ -8,6 +8,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+import { type StorageHelpersInterface } from "./storageClient";
+
 // R2 configuration
 const ACCOUNT_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID;
 const ACCESS_KEY_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID;
@@ -50,7 +52,7 @@ const getR2Client = () => {
 };
 
 // Helper functions for R2 operations
-export const r2Helpers = {
+export const r2Helpers: StorageHelpersInterface = {
 	// List objects in a bucket with prefix
 	async listObjects(bucket: string, prefix?: string) {
 		const command = new ListObjectsV2Command({
@@ -137,7 +139,11 @@ export const r2Helpers = {
 		}
 	},
 
-	// Generate presigned URL for download
+	/**
+	 * Creates a short-lived signed URL for immediate file downloads.
+	 * Default expiration: 1 hour (3600 seconds)
+	 * Use case: Immediate download links, temporary access
+	 */
 	async createSignedDownloadUrl(
 		bucket: string,
 		key: string,
@@ -164,7 +170,11 @@ export const r2Helpers = {
 		return { data: { publicUrl: url }, error: null };
 	},
 
-	// Get signed URL with maximum allowed expiration (7 days)
+	/**
+	 * Creates a long-lived signed URL for persistent file access.
+	 * Default expiration: 1 week (604800 seconds)
+	 * Use case: Stored references, bookmark thumbnails, profile images
+	 */
 	async getSignedUrl(bucket: string, key: string, expiresIn = 604_800) {
 		// Max expiration is 7 days (604,800 seconds) for R2
 		const maxExpiration = Math.min(expiresIn, 604_800);
