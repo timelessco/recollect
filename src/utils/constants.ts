@@ -10,7 +10,8 @@ export const PROFILES = "profiles";
 export const BOOKMARKS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
-export const R2_MAIN_BUCKET_NAME = "recollect";
+export const R2_MAIN_BUCKET_NAME =
+	process.env.NEXT_PUBLIC_CLOUDFLARE_R2_BUCKET_NAME;
 
 export const STORAGE_SCRAPPED_IMAGES_PATH =
 	BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
