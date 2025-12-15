@@ -1,7 +1,6 @@
-import { createServerServiceClient } from "@/lib/supabase/service";
-
 import { R2_MAIN_BUCKET_NAME } from "./constants";
 import { r2Helpers } from "./r2Client";
+import { createServiceClient } from "./supabaseClient";
 
 // Environment detection
 const isProductionEnvironment = process.env.NODE_ENV === "production";
@@ -90,7 +89,7 @@ export interface StorageHelpersInterface {
 const supabaseStorageHelpers: StorageHelpersInterface = {
 	async listObjects(bucket: string, prefix?: string): Promise<ListResult> {
 		try {
-			const supabase = await createServerServiceClient();
+			const supabase = createServiceClient();
 			const { data, error } = await supabase.storage.from(bucket).list(prefix);
 
 			if (error) {
@@ -116,7 +115,7 @@ const supabaseStorageHelpers: StorageHelpersInterface = {
 		contentType?: string,
 	): Promise<UploadResult> {
 		try {
-			const supabase = await createServerServiceClient();
+			const supabase = createServiceClient();
 			const { error } = await supabase.storage.from(bucket).upload(key, body, {
 				contentType,
 				upsert: true,
@@ -130,7 +129,7 @@ const supabaseStorageHelpers: StorageHelpersInterface = {
 
 	async deleteObject(bucket: string, key: string): Promise<DeleteResult> {
 		try {
-			const supabase = await createServerServiceClient();
+			const supabase = createServiceClient();
 			const { error } = await supabase.storage.from(bucket).remove([key]);
 
 			return { error };
@@ -144,7 +143,7 @@ const supabaseStorageHelpers: StorageHelpersInterface = {
 		keys: string[],
 	): Promise<DeleteMultipleResult> {
 		try {
-			const supabase = await createServerServiceClient();
+			const supabase = createServiceClient();
 			const { data, error } = await supabase.storage.from(bucket).remove(keys);
 
 			if (error) {
@@ -168,7 +167,7 @@ const supabaseStorageHelpers: StorageHelpersInterface = {
 		_expiresIn = 3_600,
 	): Promise<SignedUrlResult> {
 		try {
-			const supabase = await createServerServiceClient();
+			const supabase = createServiceClient();
 			const { data, error } = await supabase.storage
 				.from(bucket)
 				.createSignedUploadUrl(key);
@@ -198,7 +197,7 @@ const supabaseStorageHelpers: StorageHelpersInterface = {
 		expiresIn = 3_600,
 	): Promise<SignedUrlResult> {
 		try {
-			const supabase = await createServerServiceClient();
+			const supabase = createServiceClient();
 			const { data, error } = await supabase.storage
 				.from(bucket)
 				.createSignedUrl(key, expiresIn);
@@ -236,7 +235,7 @@ const supabaseStorageHelpers: StorageHelpersInterface = {
 		const maxExpiration = Math.min(expiresIn, 604_800);
 
 		try {
-			const supabase = await createServerServiceClient();
+			const supabase = createServiceClient();
 			const { data, error } = await supabase.storage
 				.from(bucket)
 				.createSignedUrl(key, maxExpiration);
