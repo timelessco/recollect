@@ -19,7 +19,7 @@ import {
 	STORAGE_SCRAPPED_IMAGES_PATH,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this is a cascading delete, deletes bookmarks from main table and all its respective joint tables
@@ -82,7 +82,7 @@ export default async function handler(
 	];
 
 	const { error: storageScreenshotOgImageError } =
-		await r2Helpers.deleteObjects(
+		await storageHelpers.deleteObjects(
 			R2_MAIN_BUCKET_NAME,
 			deleteScreenshotImagePaths,
 		);
@@ -123,7 +123,7 @@ export default async function handler(
 		),
 	];
 
-	const { error: storageOgImageError } = await r2Helpers.deleteObjects(
+	const { error: storageOgImageError } = await storageHelpers.deleteObjects(
 		R2_MAIN_BUCKET_NAME,
 		deleteImagePaths,
 	);
@@ -138,7 +138,7 @@ export default async function handler(
 		return `${STORAGE_FILES_PATH}/${userId}/${name}`;
 	});
 
-	const { error: fileStorageError } = await r2Helpers.deleteObjects(
+	const { error: fileStorageError } = await storageHelpers.deleteObjects(
 		R2_MAIN_BUCKET_NAME,
 		deleteFileImagesPaths,
 	);
@@ -150,7 +150,7 @@ export default async function handler(
 		return `${STORAGE_FILES_PATH}/${userId}/${name}`;
 	});
 
-	const { error: fileVideoStorageError } = await r2Helpers.deleteObjects(
+	const { error: fileVideoStorageError } = await storageHelpers.deleteObjects(
 		R2_MAIN_BUCKET_NAME,
 		deleteFileVideoPaths,
 	);

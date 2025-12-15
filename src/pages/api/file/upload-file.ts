@@ -32,7 +32,7 @@ import {
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../utils/helpers";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { vet } from "../../../utils/try";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
@@ -65,7 +65,7 @@ const videoLogic = async (
 	}
 
 	// Get the public URL for the uploaded thumbnail
-	const { data: thumbnailUrl } = r2Helpers.getPublicUrl(thumbnailPath);
+	const { data: thumbnailUrl } = storageHelpers.getPublicUrl(thumbnailPath);
 
 	const ogImage = thumbnailUrl?.publicUrl;
 
@@ -213,7 +213,7 @@ export default async (
 		// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
 		// the public url for the uploaded file is got
 		const { data: storageData, error: publicUrlError } =
-			r2Helpers.getPublicUrl(storagePath);
+			storageHelpers.getPublicUrl(storagePath);
 
 		// Check for public URL error immediately
 		if (publicUrlError) {

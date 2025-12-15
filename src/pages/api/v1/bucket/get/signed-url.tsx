@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import { R2_MAIN_BUCKET_NAME } from "../../../../../utils/constants";
-import { r2Helpers } from "../../../../../utils/r2Client";
+import { storageHelpers } from "../../../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 
 /**
@@ -90,7 +90,7 @@ export default async function handler(
 
 		// Generate a signed URL for file upload
 		// The URL will expire in 1 hour (3600 seconds)
-		const result = await r2Helpers.createSignedUploadUrl(
+		const result = await storageHelpers.createSignedUploadUrl(
 			R2_MAIN_BUCKET_NAME,
 			filePath,
 			3_600,
