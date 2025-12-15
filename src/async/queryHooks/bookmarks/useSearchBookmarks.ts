@@ -52,7 +52,6 @@ export default function useSearchBookmarks() {
 
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery({
-			// eslint-disable-next-line @tanstack/query/exhaustive-deps
 			queryKey: [
 				BOOKMARKS_KEY,
 				session?.user?.id,
