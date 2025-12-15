@@ -354,7 +354,7 @@ export const PDF_VIEWER_PARAMS =
 // Lightbox button types
 export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
-export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
+export const CF_IMAGE_LOADER_URL = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/cdn-cgi/image`;
 
 export const SKIP_OG_IMAGE_DOMAINS = [
 	"amazon.in",
