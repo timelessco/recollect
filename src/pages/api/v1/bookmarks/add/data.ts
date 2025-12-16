@@ -1,6 +1,7 @@
 import { type NextApiResponse } from "next/dist/shared/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
+import { waitUntil } from "@vercel/functions";
 import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { type z } from "zod";
@@ -12,7 +13,7 @@ import {
 } from "../../../../../types/apiTypes";
 import { getBookmarkBodySchema } from "../../../../../utils/api/bookmark/add";
 import {
-	ADD_BOOKMARK_MIN_DATA_API,
+	ADD_BOOKMARK_APIS,
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../../../../../utils/constants";
@@ -42,7 +43,7 @@ const callMinDataApi = async (
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	userId: string,
 ): Promise<MinDataApiResponse> => {
-	const apiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA_API}`;
+	const apiUrl = `${getBaseUrl()}${NEXT_API_URL}${ADD_BOOKMARK_APIS.MIN_DATA}`;
 
 	const [minDataError, minDataResponse] = await vet(() =>
 		axios.post(apiUrl, bodyData, getAxiosConfigWithAuth(request)),
@@ -123,7 +124,7 @@ const callMinDataApi = async (
  *       500:
  *         description: Internal server error
  */
-export async function handler(
+export default async function handler(
 	request: NextApiRequest<AddBookmarkMinDataPayloadTypes>,
 	response: NextApiResponse<ApiResponse>,
 ) {
@@ -210,62 +211,66 @@ export async function handler(
 		response.status(status).json(data);
 
 		// Queue the remaining work (screenshot and remaining data processing)
-		// This happens after sending response (fire-and-forget)
-		try {
-			// Check if URL is an image
-			const isUrlOfMimeType = await checkIfUrlAnImage(bodyData?.url);
+		// Use waitUntil to ensure the queue operation completes even after response is sent
+		waitUntil(
+			(async () => {
+				try {
+					// Check if URL is an image
+					const isUrlOfMimeType = await checkIfUrlAnImage(bodyData?.url);
 
-			// Queue message with all necessary data for background processing
-			const queuePayload = {
-				bookmarkId: bookmarkData.id,
-				url: bodyData.url,
-				userId: bookmarkData.user_id,
-				favIcon: bookmarkData.meta_data?.favIcon ?? null,
-				isImage: isUrlOfMimeType,
-			};
-
-			console.log("Queueing background job:", {
-				bookmarkId: bookmarkData.id,
-				isImage: isUrlOfMimeType,
-			});
-
-			const queueResult = await supabase.schema("pgmq_public").rpc("send", {
-				queue_name: "add-bookmark-url-queue",
-				message: queuePayload,
-			});
-
-			if (queueResult.error) {
-				console.error("Failed to queue background job:", {
-					bookmarkId: bookmarkData.id,
-					error: queueResult.error,
-				});
-				Sentry.captureException(queueResult.error, {
-					tags: {
-						operation: "queue_background_job",
-						userId,
-					},
-					extra: {
+					// Queue message with all necessary data for background processing
+					const queuePayload = {
 						bookmarkId: bookmarkData.id,
-					},
-				});
-			} else {
-				console.log("Background job queued successfully:", {
-					bookmarkId: bookmarkData.id,
-				});
-			}
-		} catch (error) {
-			// Log error but don't fail the request since we already sent the response
-			console.error("Error queuing background job:", error);
-			Sentry.captureException(error, {
-				tags: {
-					operation: "queue_background_job_unexpected",
-					userId,
-				},
-				extra: {
-					bookmarkId: bookmarkData.id,
-				},
-			});
-		}
+						url: bodyData.url,
+						userId: bookmarkData.user_id,
+						favIcon: bookmarkData.meta_data?.favIcon ?? null,
+						isImage: isUrlOfMimeType,
+					};
+
+					console.log("Queueing background job:", {
+						bookmarkId: bookmarkData.id,
+						isImage: isUrlOfMimeType,
+					});
+
+					const queueResult = await supabase.schema("pgmq_public").rpc("send", {
+						queue_name: "add-bookmark-url-queue",
+						message: queuePayload,
+					});
+
+					if (queueResult.error) {
+						console.error("Failed to queue background job:", {
+							bookmarkId: bookmarkData.id,
+							error: queueResult.error,
+						});
+						Sentry.captureException(queueResult.error, {
+							tags: {
+								operation: "queue_background_job",
+								userId,
+							},
+							extra: {
+								bookmarkId: bookmarkData.id,
+							},
+						});
+					} else {
+						console.log("Background job queued successfully:", {
+							bookmarkId: bookmarkData.id,
+						});
+					}
+				} catch (error) {
+					// Log error but don't fail the request since we already sent the response
+					console.error("Error queuing background job:", error);
+					Sentry.captureException(error, {
+						tags: {
+							operation: "queue_background_job_unexpected",
+							userId,
+						},
+						extra: {
+							bookmarkId: bookmarkData.id,
+						},
+					});
+				}
+			})(),
+		);
 	} catch (error) {
 		console.error("Unexpected error in add bookmark API:", error);
 		Sentry.captureException(error, {

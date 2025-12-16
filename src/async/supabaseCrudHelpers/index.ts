@@ -44,7 +44,7 @@ import {
 import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
-	ADD_BOOKMARK_API,
+	ADD_BOOKMARK_APIS,
 	ADD_CATEGORY_TO_BOOKMARK_API,
 	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
@@ -83,7 +83,7 @@ import {
 	UPDATE_USER_CATEGORIES_API,
 	UPDATE_USER_PROFILE_API,
 	UPDATE_USERNAME_API,
-	UPLOAD_FILE_API,
+	UPLOAD_FILE_APIS,
 	UPLOAD_PROFILE_PIC_API,
 } from "../../utils/constants";
 import {
@@ -276,11 +276,14 @@ export const addBookmarkMinData = async ({
 			finalUrl = `https://${url}`;
 		}
 
-		const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_API}`, {
-			url: finalUrl,
-			category_id: isNull(category_id) ? 0 : category_id,
-			update_access,
-		});
+		const apiResponse = await axios.post(
+			`${NEXT_API_URL}${ADD_BOOKMARK_APIS.DATA}`,
+			{
+				url: finalUrl,
+				category_id: isNull(category_id) ? 0 : category_id,
+				update_access,
+			},
+		);
 
 		return apiResponse as { data: { data: SingleListData[] } };
 	} catch (error) {
@@ -788,7 +791,7 @@ export const uploadFile = async ({
 	try {
 		const fileName = parseUploadFileName(file?.name);
 		const response = await axios.post<UploadFileApiResponse>(
-			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
+			`${NEXT_API_URL}${UPLOAD_FILE_APIS.DATA}`,
 			{
 				category_id,
 				thumbnailPath,
