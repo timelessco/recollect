@@ -49,12 +49,14 @@ export const CustomLightBox = ({
 	isOpen,
 	handleClose: originalHandleClose,
 	isPage,
+	isPublicPage = false,
 }: {
 	activeIndex: number;
 	bookmarks?: SingleListData[];
 	handleClose: () => void;
 	isOpen: boolean;
 	isPage?: boolean;
+	isPublicPage?: boolean;
 	setActiveIndex: (index: number) => void;
 }) => {
 	// Zustand store hooks for managing lightbox side panel state
@@ -63,6 +65,9 @@ export const CustomLightBox = ({
 	);
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state?.lightboxShowSidepane,
+	);
+	const setLightboxBookmarks = useMiscellaneousStore(
+		(state) => state?.setLightboxBookmarks,
 	);
 
 	const zoomRef = useRef<ZoomRef>(null);
@@ -84,12 +89,22 @@ export const CustomLightBox = ({
 	// Transform bookmarks into slides using custom hook
 	const slides = useLightboxSlides(bookmarks);
 
+	// Store bookmarks in store so plugin can access them (especially for public pages)
+	useEffect(() => {
+		if (isOpen) {
+			setLightboxBookmarks(bookmarks);
+		} else {
+			setLightboxBookmarks(undefined);
+		}
+	}, [isOpen, bookmarks, setLightboxBookmarks]);
+
 	// Handle navigation, query invalidation and URL updates using custom hook
 	const { onViewRef, handleClose: handleCloseInvalidation } =
 		useLightboxNavigation({
 			activeIndex,
 			bookmarks,
 			isPage,
+			isPublicPage,
 			setActiveIndex,
 		});
 

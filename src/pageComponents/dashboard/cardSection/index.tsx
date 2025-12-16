@@ -118,7 +118,12 @@ const CardSection = ({
 		(state) => state.deleteBookmarkId,
 	);
 	// Handle route changes for lightbox
+	// Skip URL-based lightbox control for public pages since they don't use preview routes
 	useEffect(() => {
+		if (isPublicPage) {
+			return;
+		}
+
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
 			router?.asPath,
 			PREVIEW_ALT_TEXT,
@@ -136,7 +141,7 @@ const CardSection = ({
 			setLightboxId(null);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [router?.asPath]);
+	}, [router?.asPath, isPublicPage]);
 
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
@@ -904,7 +909,9 @@ const CardSection = ({
 		<>
 			<div className={listWrapperClass}>{renderItem()}</div>
 			<PreviewLightBox
+				bookmarks={isPublicPage ? bookmarksList : undefined}
 				id={lightboxId}
+				isPublicPage={isPublicPage}
 				open={lightboxOpen}
 				setOpen={setLightboxOpen}
 			/>

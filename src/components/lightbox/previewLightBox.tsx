@@ -28,12 +28,16 @@ type PreviewLightBoxProps = {
 	id: DraggableItemProps["key"] | null;
 	open: boolean;
 	setOpen: (value: boolean) => void;
+	bookmarks?: SingleListData[];
+	isPublicPage?: boolean;
 };
 
 export const PreviewLightBox = ({
 	id,
 	open,
 	setOpen,
+	bookmarks: bookmarksProp,
+	isPublicPage = false,
 }: PreviewLightBoxProps) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
@@ -51,29 +55,39 @@ export const PreviewLightBox = ({
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const debouncedSearch = useDebounce(searchText, 500);
 	// if there is text in searchbar we get the cache of searched data else we get from everything
-	const previousData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-		searchText ? debouncedSearch : sortBy,
-	]) as {
-		data: SingleListData[];
-		pages: Array<{ data: SingleListData[] }>;
-	};
-	// Get and transform bookmarks from query cache
+	// Skip query cache lookup for public pages since bookmarks are provided via props
+	const previousData = isPublicPage
+		? undefined
+		: (queryClient.getQueryData([
+				BOOKMARKS_KEY,
+				session?.user?.id,
+				searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
+				searchText ? debouncedSearch : sortBy,
+			]) as {
+				data: SingleListData[];
+				pages: Array<{ data: SingleListData[] }>;
+			});
+	// Get and transform bookmarks from query cache or use provided bookmarks prop
 	const bookmarks = useMemo(() => {
+		// If bookmarks are provided as prop (e.g., for public pages), use them
+		if (bookmarksProp) {
+			return bookmarksProp;
+		}
+
+		// Otherwise, get from query cache (for logged-in users)
 		const rawBookmarks =
 			previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
 		// Transform SingleListData to match the expected type in CustomLightBox
 		return rawBookmarks;
-	}, [previousData?.pages]);
+	}, [bookmarksProp, previousData?.pages]);
 
 	// Prefetch next page when approaching the end of current data
+	// For public pages, pass undefined pages to skip prefetching since all data is provided via props
 	useLightboxPrefetch({
-		open,
+		open: open && !isPublicPage,
 		activeIndex,
 		bookmarksLength: bookmarks?.length ?? 0,
-		pages: previousData?.pages,
+		pages: isPublicPage ? undefined : previousData?.pages,
 	});
 
 	// Only update activeIndex when the lightbox is being opened
@@ -96,22 +110,26 @@ export const PreviewLightBox = ({
 	const handleClose = useCallback(() => {
 		setOpen(false);
 
-		// Update URL without page reload
-		// Clean up path by removing leading slashes
-		void router.push(
-			{
-				pathname: `${CATEGORY_ID_PATHNAME}`,
-				query: {
-					category_id: router?.query?.category_id ?? EVERYTHING_URL,
+		// For public pages, we don't use URL navigation, so just close the lightbox
+		// For logged-in users, update URL to remove preview segment
+		if (!isPublicPage) {
+			// Update URL without page reload for logged-in users
+			// Clean up path by removing leading slashes
+			void router.push(
+				{
+					pathname: `${CATEGORY_ID_PATHNAME}`,
+					query: {
+						category_id: router?.query?.category_id ?? EVERYTHING_URL,
+					},
 				},
-			},
-			getCategorySlugFromRouter(router) ?? EVERYTHING_URL,
-			{ shallow: true },
-		);
+				getCategorySlugFromRouter(router) ?? EVERYTHING_URL,
+				{ shallow: true },
+			);
+		}
 
 		// Reset state after animation
 		setActiveIndex(-1);
-	}, [setOpen, router]);
+	}, [setOpen, router, isPublicPage]);
 
 	// Only render CustomLightBox when activeIndex is valid
 	if (!open || activeIndex === -1) {
@@ -125,6 +143,7 @@ export const PreviewLightBox = ({
 			handleClose={handleClose}
 			isOpen={open}
 			isPage
+			isPublicPage={isPublicPage}
 			setActiveIndex={setActiveIndex}
 		/>
 	);

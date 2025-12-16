@@ -115,11 +115,7 @@ const Option = ({
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (
-						isTrashPage ||
-						item?.key?.toString().startsWith("$") ||
-						isPublicPage
-					) {
+					if (isTrashPage || item?.key?.toString().startsWith("$")) {
 						event.preventDefault();
 						return;
 					}
@@ -127,21 +123,25 @@ const Option = ({
 					event.preventDefault();
 					setLightboxId(item?.key?.toString());
 					setLightboxOpen(true);
-					void router.push(
-						{
-							// https://github.com/vercel/next.js/discussions/11625
-							// https://github.com/adamwathan/headbangstagram/pull/1/files
-							pathname: `${CATEGORY_ID_PATHNAME}`,
-							query: {
-								category_id: getCategorySlugFromRouter(router),
-								id: item?.key,
+					// For public pages, don't navigate URL since there's no preview route
+					// Just open the lightbox via state management
+					if (!isPublicPage) {
+						void router.push(
+							{
+								// https://github.com/vercel/next.js/discussions/11625
+								// https://github.com/adamwathan/headbangstagram/pull/1/files
+								pathname: `${CATEGORY_ID_PATHNAME}`,
+								query: {
+									category_id: getCategorySlugFromRouter(router),
+									id: item?.key,
+								},
 							},
-						},
-						`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item?.key}`,
-						{
-							shallow: true,
-						},
-					);
+							`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item?.key}`,
+							{
+								shallow: true,
+							},
+						);
+					}
 				}}
 			/>
 			{item.rendered}

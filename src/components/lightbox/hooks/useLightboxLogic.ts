@@ -20,6 +20,7 @@ import {
 	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
+	isPublicPath,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
 	PREVIEW_PATH,
@@ -91,6 +92,7 @@ interface UseLightboxNavigationProps {
 	activeIndex: number;
 	bookmarks: SingleListData[] | undefined;
 	isPage?: boolean;
+	isPublicPage?: boolean;
 	setActiveIndex: (index: number) => void;
 }
 
@@ -101,6 +103,7 @@ export const useLightboxNavigation = ({
 	activeIndex,
 	bookmarks,
 	isPage,
+	isPublicPage = false,
 	setActiveIndex,
 }: UseLightboxNavigationProps) => {
 	const queryClient = useQueryClient();
@@ -226,20 +229,25 @@ export const useLightboxNavigation = ({
 			void invalidateQueriesForIndex(index);
 		}
 
-		// Update browser URL
-		void router?.push(
-			{
-				pathname: `${CATEGORY_ID_PATHNAME}`,
-				query: {
-					category_id: getCategorySlugFromRouter(router),
-					id: bookmarks?.[index]?.id,
+		// Update browser URL (skip for public pages since they don't use URL navigation)
+		// Use both prop and pathname check as fallback
+		const isOnPublicPage =
+			isPublicPage || (router?.asPath ? isPublicPath(router.asPath) : false);
+		if (!isOnPublicPage) {
+			void router?.push(
+				{
+					pathname: `${CATEGORY_ID_PATHNAME}`,
+					query: {
+						category_id: getCategorySlugFromRouter(router),
+						id: bookmarks?.[index]?.id,
+					},
 				},
-			},
-			`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
-				bookmarks?.[index]?.id
-			}`,
-			{ shallow: true },
-		);
+				`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
+					bookmarks?.[index]?.id
+				}`,
+				{ shallow: true },
+			);
+		}
 	};
 
 	/**

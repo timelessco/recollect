@@ -11,9 +11,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { isEmpty } from "lodash";
 import { AnimatePresence, motion } from "motion/react";
 import {
 	createModule,
@@ -22,21 +21,17 @@ import {
 } from "yet-another-react-lightbox";
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
-import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../hooks/useGetSortBy";
+import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
+import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
 import { GeminiAiIcon } from "../../icons/geminiAiIcon";
 import ImageIcon from "../../icons/imageIcon";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
-import {
-	type CategoriesData,
+	type BookmarksPaginatedDataTypes,
 	type SingleListData,
 	type UserTagsData,
 } from "../../types/apiTypes";
-import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../utils/constants";
-import { searchSlugKey } from "../../utils/helpers";
+import { isPublicPath } from "../../utils/constants";
 import { Icon } from "../atoms/icon";
 import { Spinner } from "../spinner";
 
@@ -75,35 +70,30 @@ const MyComponent = () => {
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
 	const aiSummaryScrollRef = useRef<HTMLDivElement>(null);
 
-	const queryClient = useQueryClient();
-	const session = useSupabaseSession((state) => state.session);
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-
-	const categoryData = queryClient.getQueryData([
-		CATEGORIES_KEY,
-		session?.user?.id,
-	]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
+	const router = useRouter();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const trimmedSearchText = searchText?.trim() ?? "";
-	const { sortBy } = useGetSortBy();
+	const lightboxBookmarks = useMiscellaneousStore(
+		(state) => state.lightboxBookmarks,
+	);
 
-	// if there is text in searchbar we get the cache of searched data else we get from everything
-	const previousData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-		searchText ? searchText : sortBy,
-	]) as {
-		data: SingleListData[];
-		pages: Array<{ data: SingleListData[] }>;
-	};
-	const router = useRouter();
+	// Check if we're on a public page
+	const isPublicPage = isPublicPath(router.asPath);
+
+	// For public pages, use bookmarks from store. Otherwise, use query hooks
+	const { everythingData: paginatedBookmarksData } =
+		useFetchPaginatedBookmarks();
+	const { data: searchBookmarksData } = useSearchBookmarks();
+
+	// Select the appropriate data based on whether we're on public page or searching
+	const previousData = isPublicPage
+		? undefined
+		: isEmpty(searchText)
+			? paginatedBookmarksData
+			: searchBookmarksData;
 
 	const { id } = router.query;
-	const shouldFetch = !previousData && Boolean(id);
+	const shouldFetch = !previousData && !lightboxBookmarks && Boolean(id);
 
 	// @ts-expect-error - props passed to useQuery - false-positive
 	const { data: bookmark } = useFetchBookmarkById(id as string, {
@@ -111,16 +101,37 @@ const MyComponent = () => {
 	});
 	let currentBookmark;
 	let everythingData;
-	// handling the case where user opens a preview link directly
-	if (!previousData) {
+	// handling the case where user opens a preview link directly or uses bookmarks from store (public pages)
+	if (lightboxBookmarks) {
+		// Use bookmarks from store (for public pages)
+		currentBookmark = lightboxBookmarks[currentIndex];
+		everythingData = lightboxBookmarks;
+	} else if (!previousData) {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
 		everythingData = bookmark?.data;
 	} else {
-		currentBookmark = previousData?.pages?.flatMap(
-			(page) => page?.data ?? [],
-		)?.[currentIndex];
-		everythingData = previousData?.pages?.flatMap((page) => page?.data ?? []);
+		const pages = previousData?.pages as
+			| Array<{ data: SingleListData[] }>
+			| Array<{ data: BookmarksPaginatedDataTypes[] | null }>
+			| undefined;
+
+		const flattenedData =
+			pages?.flatMap((page) => {
+				const pageData = page?.data;
+				if (Array.isArray(pageData) && pageData.length > 0) {
+					const firstItem = pageData[0];
+					if (firstItem && typeof firstItem === "object" && "id" in firstItem) {
+						return pageData as SingleListData[];
+					}
+				}
+
+				return [];
+			}) ?? [];
+
+		currentBookmark = flattenedData[currentIndex];
+
+		everythingData = flattenedData;
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
@@ -277,11 +288,13 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						<AddToCollectionDropdown
-							everythingData={everythingData as SingleListData[]}
-							bookmarkId={currentBookmark?.id}
-							shouldFetch={shouldFetch}
-						/>
+						{!isPublicPage && (
+							<AddToCollectionDropdown
+								everythingData={everythingData as SingleListData[]}
+								bookmarkId={currentBookmark?.id}
+								shouldFetch={shouldFetch}
+							/>
+						)}
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.image_caption ||
