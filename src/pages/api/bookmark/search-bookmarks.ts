@@ -100,10 +100,23 @@ export default async function handler(
 
 		const tagName = extractTagNamesFromSearch(search);
 
+		// Determine category_scope for junction table filtering
+		// Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
+		const userInCollections = isUserInACategoryInApi(
+			category_id as string,
+			false,
+		);
+		const categoryScope = userInCollections
+			? category_id === UNCATEGORIZED_URL
+				? 0
+				: Number(category_id)
+			: null;
+
 		console.log("[search-bookmarks] Parsed search parameters:", {
 			urlScope,
 			searchText,
 			tagName,
+			categoryScope,
 		});
 
 		let query = supabase
@@ -111,21 +124,17 @@ export default async function handler(
 				search_text: searchText,
 				url_scope: urlScope,
 				tag_scope: tagName,
+				category_scope: categoryScope,
 			})
 			.eq("trash", category_id === TRASH_URL)
 			.range(offset, offset + limit);
 
-		const userInCollectionsCondition = isUserInACategoryInApi(
-			category_id as string,
-			false,
-		);
-
-		if (!userInCollectionsCondition) {
+		if (!userInCollections) {
 			// if user is not in any category, then get only the items that match the user_id
 			query = query.eq("user_id", user_id);
 		}
 
-		if (userInCollectionsCondition) {
+		if (userInCollections) {
 			// check if user is a collaborator for the category
 			const {
 				success: isUserCollaboratorInCategorySuccess,
@@ -205,12 +214,6 @@ export default async function handler(
 				// if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
 				query = query.eq("user_id", user_id);
 			}
-
-			// get all the items for the category_id irrespective of the user_id, as user has access to all the items in the category
-			query = query.eq(
-				"category_id",
-				category_id === UNCATEGORIZED_URL ? 0 : category_id,
-			);
 		}
 
 		if (category_id === IMAGES_URL) {
@@ -274,13 +277,19 @@ export default async function handler(
 		});
 
 		const finalData = (data ?? []).map((item) => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const { ogimage, added_tags: addedTags, ...rest } = item as any;
+			const {
+				ogimage,
+				added_tags: addedTags,
+				added_categories: addedCategories,
+				...rest
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} = item as any;
 
 			return {
 				...(rest as SingleListData),
 				ogImage: ogimage,
 				addedTags,
+				addedCategories,
 			};
 		}) as SingleListData[];
 

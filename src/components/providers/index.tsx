@@ -4,6 +4,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { ReactAriaProvider } from "./react-aria-provider";
 import { ReactQueryProvider } from "./react-query-provider";
+import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
 
 interface ProvidersProps {
 	readonly children: ReactNode;
@@ -16,7 +17,10 @@ export function Providers(props: ProvidersProps) {
 		<ThemeProvider attribute="class">
 			<ReactAriaProvider>
 				<NuqsAdapter>
-					<ReactQueryProvider>{children}</ReactQueryProvider>
+					<ReactQueryProvider>
+						{children}
+						<MutationIndicator />
+					</ReactQueryProvider>
 				</NuqsAdapter>
 			</ReactAriaProvider>
 		</ThemeProvider>
