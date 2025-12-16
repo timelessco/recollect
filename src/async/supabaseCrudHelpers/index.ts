@@ -247,7 +247,10 @@ export const fetchDiscoverBookmarks = async ({
 			error: null,
 		} as unknown as FetchDataResponse;
 	} catch (error) {
-		return { data: undefined, error } as unknown as FetchDataResponse;
+		return {
+			data: [],
+			error: error as PostgrestError,
+		} as unknown as FetchDataResponse;
 	}
 };
 

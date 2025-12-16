@@ -208,20 +208,10 @@ const EditDropdownContentBase = ({
 							return;
 						}
 
-						changeDiscoverableMutation.mutate(
-							{
-								bookmark_id: post?.id,
-								is_discoverable: !post?.is_discoverable,
-							},
-							{
-								onError: (error) => {
-									handleClientError(
-										error,
-										"Failed to update discoverability, please try again.",
-									);
-								},
-							},
-						);
+						changeDiscoverableMutation.mutate({
+							bookmark_id: post?.id,
+							is_discoverable: !post?.is_discoverable,
+						});
 					}}
 					type="checkbox"
 				/>

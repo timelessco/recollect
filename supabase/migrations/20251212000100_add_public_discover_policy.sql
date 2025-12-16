@@ -6,20 +6,41 @@
 
 BEGIN;
 
--- Replace any existing policy with the new discoverability rule
-DROP POLICY IF EXISTS "public_discover_access" ON "public"."everything";
+-- Replace any existing policies with the new discoverability rules
+DROP POLICY IF EXISTS "anon_discover_access" ON "public"."everything";
+DROP POLICY IF EXISTS "authenticated_discover_access" ON "public"."everything";
 
-CREATE POLICY "public_discover_access"
+-- Policy for anonymous (unauthenticated) users
+CREATE POLICY "anon_discover_access"
 ON "public"."everything"
 AS permissive
 FOR SELECT
-TO public
+TO anon
 USING (
     is_discoverable = true
     AND trash = false
 );
 
-COMMENT ON POLICY "public_discover_access" ON public.everything IS
-'Allows anyone (including anonymous) to read bookmarks marked as discoverable and not in trash.';
+COMMENT ON POLICY "anon_discover_access" ON public.everything IS
+'Allows anonymous (unauthenticated) users to read bookmarks marked as discoverable and not in trash.';
+
+-- Policy for authenticated users
+CREATE POLICY "authenticated_discover_access"
+ON "public"."everything"
+AS permissive
+FOR SELECT
+TO authenticated
+USING (
+    is_discoverable = true
+    AND trash = false
+);
+
+COMMENT ON POLICY "authenticated_discover_access" ON public.everything IS
+'Allows authenticated users to read bookmarks marked as discoverable and not in trash.';
+
+-- Performance indexes for RLS policy lookups
+CREATE INDEX IF NOT EXISTS idx_everything_is_discoverable ON public.everything (is_discoverable);
+CREATE INDEX IF NOT EXISTS idx_everything_trash ON public.everything (trash);
+CREATE INDEX IF NOT EXISTS idx_everything_discoverable_trash ON public.everything (is_discoverable, trash) WHERE is_discoverable = true AND trash = false;
 
 COMMIT;
