@@ -30,7 +30,7 @@ RETURNS TABLE(
     type text,
     meta_data jsonb,
     sort_index text,
-    is_discoverable boolean,
+    is_discoverable timestamp with time zone,
     added_tags jsonb
 )
 LANGUAGE plpgsql

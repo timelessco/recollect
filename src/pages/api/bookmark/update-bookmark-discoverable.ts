@@ -68,7 +68,9 @@ export default async function handler(
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(MAIN_TABLE_NAME)
-			.update({ is_discoverable: isDiscoverable })
+			.update({
+				is_discoverable: isDiscoverable ? new Date().toISOString() : null,
+			})
 			.match({ id: bookmarkId, user_id: userId })
 			.select();
 

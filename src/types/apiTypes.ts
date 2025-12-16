@@ -35,7 +35,7 @@ export type SingleListData = {
 	id: number;
 	inserted_at: string;
 	meta_data: ImgMetadataType;
-	is_discoverable: boolean;
+	is_discoverable: string | null;
 	ogImage: string;
 	ogimage?: string;
 	screenshot: string;

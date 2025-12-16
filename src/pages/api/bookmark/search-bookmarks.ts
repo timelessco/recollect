@@ -119,7 +119,7 @@ export default async function handler(
 			.range(offset, offset + limit);
 
 		if (isDiscoverPage) {
-			query = query.eq("is_discoverable", true);
+			query = query.not("is_discoverable", "is", null);
 		} else {
 			if (!user_id) {
 				response.status(401).json({

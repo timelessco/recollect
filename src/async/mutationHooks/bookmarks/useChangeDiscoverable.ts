@@ -35,7 +35,10 @@ const updateBookmarkPages = (
 			...page,
 			data: page.data?.map((item) =>
 				item?.id === bookmarkId
-					? { ...item, is_discoverable: isDiscoverable }
+					? {
+							...item,
+							is_discoverable: isDiscoverable ? new Date().toISOString() : null,
+						}
 					: item,
 			),
 		})),

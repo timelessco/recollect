@@ -17,7 +17,7 @@ AS permissive
 FOR SELECT
 TO anon
 USING (
-    is_discoverable = true
+    is_discoverable IS NOT NULL
     AND trash = false
 );
 
@@ -31,7 +31,7 @@ AS permissive
 FOR SELECT
 TO authenticated
 USING (
-    is_discoverable = true
+    is_discoverable IS NOT NULL
     AND trash = false
 );
 
@@ -41,6 +41,6 @@ COMMENT ON POLICY "authenticated_discover_access" ON public.everything IS
 -- Performance indexes for RLS policy lookups
 CREATE INDEX IF NOT EXISTS idx_everything_is_discoverable ON public.everything (is_discoverable);
 CREATE INDEX IF NOT EXISTS idx_everything_trash ON public.everything (trash);
-CREATE INDEX IF NOT EXISTS idx_everything_discoverable_trash ON public.everything (is_discoverable, trash) WHERE is_discoverable = true AND trash = false;
+CREATE INDEX IF NOT EXISTS idx_everything_discoverable_trash ON public.everything (is_discoverable, trash) WHERE is_discoverable IS NOT NULL AND trash = false;
 
 COMMIT;

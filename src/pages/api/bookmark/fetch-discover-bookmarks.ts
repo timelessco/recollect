@@ -43,8 +43,8 @@ export default async function handler(
 		.from(MAIN_TABLE_NAME)
 		.select("*")
 		.eq("trash", false)
-		.eq("is_discoverable", true)
-		.order("inserted_at", { ascending: false })
+		.not("is_discoverable", "is", null)
+		.order("is_discoverable", { ascending: false })
 		.range(rangeStart, rangeEnd);
 
 	if (error) {
