@@ -11,6 +11,7 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
 type AddCategoryMutationOptions = {
@@ -42,6 +43,7 @@ export function useAddCategoryToBookmarkMutation({
 			),
 		queryKey,
 		secondaryQueryKey: searchQueryKey,
+		skipSecondaryInvalidation: skipInvalidation,
 		updater: (currentData, variables) => {
 			if (!currentData?.pages) {
 				return currentData as PaginatedBookmarks;
@@ -87,6 +89,15 @@ export function useAddCategoryToBookmarkMutation({
 						return currentData;
 					}
 
+					// EXCLUSIVE MODEL: When adding a real category, filter out category 0
+					const isAddingRealCategory =
+						variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
+					const filteredCategories = isAddingRealCategory
+						? existingCategories.filter(
+								(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+							)
+						: existingCategories;
+
 					// Found the bookmark - only clone this page
 					return {
 						...currentData,
@@ -99,7 +110,7 @@ export function useAddCategoryToBookmarkMutation({
 												? {
 														...b,
 														addedCategories: [
-															...existingCategories,
+															...filteredCategories,
 															newCategoryEntry,
 														],
 													}

@@ -1,23 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
 import { useIframeStore } from "../../../store/iframeStore";
-import {
-	type CategoriesData,
-	type SingleListData,
-} from "../../../types/apiTypes";
+import { type SingleListData } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
-	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
@@ -26,7 +19,6 @@ import {
 	tweetType,
 	VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
-import { searchSlugKey } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 import { isYouTubeVideo, type CustomSlide } from "../LightboxUtils";
 
@@ -113,12 +105,12 @@ export const useLightboxNavigation = ({
 		(state) => state.setIsCollectionChanged,
 	);
 	const router = useRouter();
-	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const { sortBy } = useGetSortBy();
 
 	/**
-	 * Invalidate queries for a given bookmark index
+	 * Invalidate queries for a given bookmark index.
+	 * Uses broad invalidation because we can't track which specific categories
+	 * were added/removed during the lightbox session - optimistic updates have
+	 * already modified addedCategories before we get here.
 	 */
 	const invalidateQueriesForIndex = useCallback(
 		async (index: number, updateLastInvalidated = true) => {
@@ -127,68 +119,16 @@ export const useLightboxNavigation = ({
 				return;
 			}
 
-			const bookmarkCategoryIds =
-				currentBookmark.addedCategories?.map((cat) => cat.id) ?? [];
-
 			try {
-				const invalidationPromises: Array<Promise<unknown>> = [];
-
-				// Invalidate current view's category
-				if (CATEGORY_ID) {
-					invalidationPromises.push(
-						queryClient.invalidateQueries({
-							queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-						}),
-					);
-				}
-
-				// Invalidate the bookmark's categories if different from current view
-				for (const categoryId of bookmarkCategoryIds) {
-					if (categoryId !== CATEGORY_ID) {
-						invalidationPromises.push(
-							queryClient.invalidateQueries({
-								queryKey: [
-									BOOKMARKS_KEY,
-									session?.user?.id,
-									categoryId,
-									sortBy,
-								],
-							}),
-						);
-					}
-				}
-
-				// Invalidate search view if applicable
-				if (searchText) {
-					const categoryData = queryClient.getQueryData<{
-						data: CategoriesData[];
-						error: PostgrestError;
-					}>([CATEGORIES_KEY, session?.user?.id]);
-
-					const searchCategorySlug = categoryData
-						? searchSlugKey(categoryData)
-						: CATEGORY_ID;
-
-					invalidationPromises.push(
-						queryClient.invalidateQueries({
-							queryKey: [
-								BOOKMARKS_KEY,
-								session?.user?.id,
-								searchCategorySlug,
-								searchText,
-							],
-						}),
-					);
-				}
-
-				invalidationPromises.push(
+				// Invalidate ALL bookmark queries for user (covers all collections)
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: [BOOKMARKS_KEY, session?.user?.id],
+					}),
 					queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
 					}),
-				);
-
-				// Run invalidations in parallel
-				await Promise.allSettled(invalidationPromises);
+				]);
 
 				if (updateLastInvalidated) {
 					lastInvalidatedIndex.current = index;
@@ -199,15 +139,7 @@ export const useLightboxNavigation = ({
 				setIsCollectionChanged(false);
 			}
 		},
-		[
-			bookmarks,
-			queryClient,
-			session?.user?.id,
-			searchText,
-			CATEGORY_ID,
-			sortBy,
-			setIsCollectionChanged,
-		],
+		[bookmarks, queryClient, session?.user?.id, setIsCollectionChanged],
 	);
 
 	/**

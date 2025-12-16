@@ -11,6 +11,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	SET_BOOKMARK_CATEGORIES_API,
+	UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
 type SetBookmarkCategoriesMutationOptions = {
@@ -56,13 +57,25 @@ export function useSetBookmarkCategoriesMutation({
 						| undefined
 				)?.data ?? [];
 
+			// EXCLUSIVE MODEL: Filter out 0 from input (users cannot manually assign to 0)
+			const nonZeroCategoryIds = variables.category_ids.filter(
+				(id) => id !== UNCATEGORIZED_CATEGORY_ID,
+			);
+
+			// Determine final category IDs based on exclusive model
+			// Empty = only uncategorized, Non-empty = only real categories
+			const finalCategoryIds =
+				nonZeroCategoryIds.length === 0
+					? [UNCATEGORIZED_CATEGORY_ID]
+					: nonZeroCategoryIds;
+
 			// Filter to only categories that exist in cache
-			const newCategories = variables.category_ids
+			const newCategories = finalCategoryIds
 				.map((id) => allCategories.find((cat) => cat.id === id))
 				.filter((cat): cat is CategoriesData => cat !== undefined);
 
 			// If any categories weren't in cache, skip optimistic update and wait for server
-			if (newCategories.length !== variables.category_ids.length) {
+			if (newCategories.length !== finalCategoryIds.length) {
 				return currentData;
 			}
 

@@ -1,14 +1,9 @@
-import { isEmpty } from "lodash";
 import { z } from "zod";
 
 import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNullable } from "@/utils/assertion-utils";
-import {
-	BOOKMARK_CATEGORIES_TABLE_NAME,
-	MAIN_TABLE_NAME,
-	UNCATEGORIZED_CATEGORY_ID,
-} from "@/utils/constants";
+import { MAIN_TABLE_NAME, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
 const ROUTE = "remove-category-from-bookmark";
 
@@ -62,17 +57,19 @@ export const POST = createSupabasePostApiHandler({
 			categoryId,
 		});
 
-		// Block removal of category 0 (permanent base category)
+		// Block manual removal of category 0 - it's auto-managed by the exclusive model
+		// Users should add a real category to automatically remove category 0
 		if (categoryId === UNCATEGORIZED_CATEGORY_ID) {
 			return apiWarn({
 				route,
-				message: "Cannot remove the uncategorized category",
+				message:
+					"Cannot manually remove uncategorized. Add a real category to auto-remove it.",
 				status: 400,
 				context: { bookmarkId, categoryId },
 			});
 		}
 
-		// 1. Verify bookmark ownership
+		// 1. Verify bookmark ownership (for better error messages than RPC provides)
 		const { error: bookmarkError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("id")
@@ -102,27 +99,29 @@ export const POST = createSupabasePostApiHandler({
 
 		console.log(`[${route}] Bookmark ownership verified`);
 
-		// 2. Delete the bookmark_category entry
-		// Category 0 is always present, so bookmark won't be orphaned
-		const { data: deletedData, error: deleteError } = await supabase
-			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-			.delete()
-			.eq("bookmark_id", bookmarkId)
-			.eq("category_id", categoryId)
-			.select();
+		// 2. Call RPC to remove category from bookmark
+		// RPC handles: FOR UPDATE locking, deletion, auto-add of category 0 when last real category removed
+		const { data: rpcData, error: rpcError } = await supabase.rpc(
+			"remove_category_from_bookmark",
+			{
+				p_bookmark_id: bookmarkId,
+				p_category_id: categoryId,
+			},
+		);
 
-		if (deleteError) {
+		if (rpcError) {
 			return apiError({
 				route,
 				message: "Failed to remove category from bookmark",
-				error: deleteError,
-				operation: "delete_bookmark_category",
+				error: rpcError,
+				operation: "rpc_remove_category_from_bookmark",
 				userId,
 				extra: { bookmarkId, categoryId },
 			});
 		}
 
-		if (isEmpty(deletedData)) {
+		// RPC returns empty array if nothing was deleted (category wasn't associated)
+		if (!rpcData || rpcData.length === 0) {
 			return apiWarn({
 				route,
 				message: "Category association not found",
@@ -131,11 +130,15 @@ export const POST = createSupabasePostApiHandler({
 			});
 		}
 
+		const addedUncategorized = rpcData[0]?.added_uncategorized ?? false;
+
 		console.log(`[${route}] Category removed successfully:`, {
 			bookmarkId,
 			categoryId,
+			addedUncategorized,
 		});
 
-		return deletedData;
+		// Return in API schema format
+		return [{ bookmark_id: bookmarkId, category_id: categoryId }];
 	},
 });

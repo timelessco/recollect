@@ -1,6 +1,6 @@
 -- ============================================================================
 -- MIGRATION: Implement many-to-many bookmark categories relationship
--- Created: 2024-12-08
+-- Created: 2025-12-08
 -- Purpose: Enable bookmarks to belong to multiple categories via junction table
 -- ============================================================================
 --
@@ -52,6 +52,10 @@ CREATE INDEX IF NOT EXISTS idx_bookmark_categories_user_id ON public.bookmark_ca
 CREATE INDEX IF NOT EXISTS idx_bookmark_categories_user_category ON public.bookmark_categories(user_id, category_id);
 CREATE INDEX IF NOT EXISTS idx_bookmark_categories_bookmark_user ON public.bookmark_categories(bookmark_id, user_id);
 
+-- Indexes for columns referenced in RLS policies (performance optimization)
+CREATE INDEX IF NOT EXISTS idx_categories_is_public ON public.categories(is_public);
+CREATE INDEX IF NOT EXISTS idx_shared_categories_edit_access ON public.shared_categories(edit_access);
+
 -- 3. Enable RLS
 ALTER TABLE public.bookmark_categories ENABLE ROW LEVEL SECURITY;
 
@@ -61,23 +65,35 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.bookmark_categories TO auth
 
 -- 4. Helper function to check bookmark ownership (bypasses RLS to prevent recursion)
 -- This is the Supabase-recommended pattern for breaking circular RLS dependencies
+-- SECURITY: Function only checks ownership for the calling user (p_user_id must equal auth.uid())
+-- This prevents enumeration attacks where users could check arbitrary user_id values
 CREATE OR REPLACE FUNCTION public.user_owns_bookmark(p_bookmark_id bigint, p_user_id uuid)
 RETURNS boolean
-LANGUAGE sql
+LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 STABLE
 AS $$
-    SELECT EXISTS (
+BEGIN
+    -- SECURITY: Only allow checking ownership for the calling user
+    -- This prevents enumeration attacks (cannot check other users' bookmark ownership)
+    IF p_user_id IS DISTINCT FROM auth.uid() THEN
+        RETURN false;
+    END IF;
+
+    RETURN EXISTS (
         SELECT 1 FROM public.everything
         WHERE id = p_bookmark_id AND user_id = p_user_id
     );
+END;
 $$;
 
+-- Grant EXECUTE to authenticated users (needed for RLS policies)
+-- Security is enforced inside the function by checking p_user_id = auth.uid()
 GRANT EXECUTE ON FUNCTION public.user_owns_bookmark(bigint, uuid) TO authenticated;
 
 COMMENT ON FUNCTION public.user_owns_bookmark(bigint, uuid) IS
-'Helper function to check if a user owns a bookmark. Uses SECURITY DEFINER to bypass RLS and prevent infinite recursion in bookmark_categories INSERT policy.';
+'Helper function to check if a user owns a bookmark. Uses SECURITY DEFINER to bypass RLS and prevent infinite recursion in bookmark_categories policies. Function enforces that p_user_id must equal auth.uid() to prevent enumeration attacks.';
 
 -- 5. RLS policies (matching everything table pattern for shared/public access)
 
@@ -129,60 +145,78 @@ WITH CHECK (
 
 -- DELETE: Users can delete bookmark_categories if:
 -- 1. They own the entry
--- 2. OR they have edit_access in a shared category
+-- 2. OR they have edit_access in a shared category AND own the bookmark
 CREATE POLICY "bookmark_categories_delete"
 ON public.bookmark_categories FOR DELETE TO authenticated
 USING (
     user_id = (SELECT auth.uid())
     OR
-    category_id IN (
-        SELECT category_id
-        FROM public.shared_categories
-        WHERE email = (SELECT auth.jwt()->>'email')
-        AND edit_access = true
+    (
+        category_id IN (
+            SELECT category_id
+            FROM public.shared_categories
+            WHERE email = (SELECT auth.jwt()->>'email')
+            AND edit_access = true
+        )
+        AND
+        public.user_owns_bookmark(bookmark_id, (SELECT auth.uid()))
     )
 );
 
 -- UPDATE: Users can update bookmark_categories if:
 -- 1. They own the entry
--- 2. OR they have edit_access in a shared category
+-- 2. OR they have edit_access in a shared category AND own the bookmark
 CREATE POLICY "bookmark_categories_update"
 ON public.bookmark_categories FOR UPDATE TO authenticated
 USING (
     user_id = (SELECT auth.uid())
     OR
-    category_id IN (
-        SELECT category_id
-        FROM public.shared_categories
-        WHERE email = (SELECT auth.jwt()->>'email')
-        AND edit_access = true
+    (
+        category_id IN (
+            SELECT category_id
+            FROM public.shared_categories
+            WHERE email = (SELECT auth.jwt()->>'email')
+            AND edit_access = true
+        )
+        AND
+        public.user_owns_bookmark(bookmark_id, (SELECT auth.uid()))
     )
 )
 WITH CHECK (
     user_id = (SELECT auth.uid())
     OR
-    category_id IN (
-        SELECT category_id
-        FROM public.shared_categories
-        WHERE email = (SELECT auth.jwt()->>'email')
-        AND edit_access = true
+    (
+        category_id IN (
+            SELECT category_id
+            FROM public.shared_categories
+            WHERE email = (SELECT auth.jwt()->>'email')
+            AND edit_access = true
+        )
+        AND
+        public.user_owns_bookmark(bookmark_id, (SELECT auth.uid()))
     )
 );
 
 -- 6. Migrate existing data from everything.category_id to junction table
--- This preserves the current one-to-one relationship as entries in the junction table
+-- EXCLUSIVE MODEL: A bookmark has EITHER category 0 OR real categories, never both
+-- Category 0 is auto-managed by the backend and cannot be manually assigned by users
+
+-- Step 1: Migrate bookmarks with real categories (NOT 0)
+-- These bookmarks will NOT have category 0 in the junction table
 INSERT INTO public.bookmark_categories (bookmark_id, category_id, user_id, created_at)
 SELECT e.id, e.category_id, e.user_id, e.inserted_at
 FROM public.everything e
 WHERE e.category_id IS NOT NULL AND e.category_id != 0
 ON CONFLICT (bookmark_id, category_id) DO NOTHING;
 
--- Ensure ALL bookmarks have category_id = 0 (Uncategorized) as the default base category
--- This is always present and cannot be removed via UI - only deleted when bookmark is deleted
--- This allows the UI to show "empty" selection while still maintaining database integrity
+-- Step 2: Add category 0 ONLY for bookmarks that have NO entry yet (truly uncategorized)
+-- This ensures bookmarks with real categories don't also get category 0
 INSERT INTO public.bookmark_categories (bookmark_id, category_id, user_id, created_at)
 SELECT e.id, 0, e.user_id, e.inserted_at
 FROM public.everything e
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.bookmark_categories bc WHERE bc.bookmark_id = e.id
+)
 ON CONFLICT (bookmark_id, category_id) DO NOTHING;
 
 -- Documentation
@@ -239,6 +273,7 @@ EXECUTE FUNCTION public.prevent_uncategorized_category_deletion();
 -- ============================================================================
 
 -- Atomic function to replace bookmark categories
+-- EXCLUSIVE MODEL: Bookmark has EITHER category 0 OR real categories, never both
 CREATE OR REPLACE FUNCTION public.set_bookmark_categories(
   p_bookmark_id bigint,
   p_category_ids bigint[]
@@ -251,10 +286,21 @@ AS $$
 DECLARE
   v_user_id uuid := (SELECT auth.uid());
   v_category_ids bigint[];
+  v_non_zero_ids bigint[];
 BEGIN
-  -- Always include category 0 (Uncategorized) as base category
-  -- This ensures every bookmark always has at least the default category
-  v_category_ids := array_append(p_category_ids, 0::bigint);
+  -- Filter out category 0 from input (users cannot manually assign to 0)
+  v_non_zero_ids := ARRAY(
+    SELECT unnest(p_category_ids)
+    WHERE unnest != 0
+  );
+
+  -- EXCLUSIVE logic: If no real categories, use only 0. Otherwise, use only real categories.
+  IF array_length(v_non_zero_ids, 1) IS NULL OR array_length(v_non_zero_ids, 1) = 0 THEN
+    v_category_ids := ARRAY[0::bigint];
+  ELSE
+    v_category_ids := v_non_zero_ids;
+  END IF;
+
   -- Remove duplicates
   v_category_ids := ARRAY(SELECT DISTINCT unnest(v_category_ids));
 
@@ -268,7 +314,7 @@ BEGIN
   DELETE FROM public.bookmark_categories
   WHERE bookmark_id = p_bookmark_id AND user_id = v_user_id;
 
-  -- Insert new entries (always includes 0) and return them
+  -- Insert new entries and return them
   RETURN QUERY
   INSERT INTO public.bookmark_categories (bookmark_id, category_id, user_id)
   SELECT p_bookmark_id, unnest(v_category_ids), v_user_id
@@ -283,6 +329,115 @@ GRANT EXECUTE ON FUNCTION public.set_bookmark_categories(bigint, bigint[]) TO au
 
 COMMENT ON FUNCTION public.set_bookmark_categories IS
 'Atomically replaces all category associations for a bookmark. Uses FOR UPDATE locking to prevent race conditions. Deletes existing entries and inserts new ones in a single transaction.';
+
+-- Bulk add: Add single category to multiple bookmarks
+-- EXCLUSIVE MODEL: When adding a real category, remove category 0 first
+CREATE OR REPLACE FUNCTION public.add_category_to_bookmarks(
+    p_bookmark_ids bigint[],
+    p_category_id bigint
+)
+RETURNS TABLE(out_bookmark_id bigint, out_category_id bigint)
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_user_id uuid := (SELECT auth.uid());
+BEGIN
+    -- Lock the bookmark rows to prevent race conditions
+    -- This ensures atomic updates when multiple requests try to modify categories
+    PERFORM 1 FROM public.everything
+    WHERE id = ANY(p_bookmark_ids) AND user_id = v_user_id
+    FOR UPDATE;
+
+    -- EXCLUSIVE logic: When adding a non-0 category, remove category 0 from these bookmarks
+    IF p_category_id != 0 THEN
+        DELETE FROM public.bookmark_categories
+        WHERE bookmark_id = ANY(p_bookmark_ids)
+          AND category_id = 0
+          AND user_id = v_user_id;
+    END IF;
+
+    -- Insert the new category association
+    RETURN QUERY
+    INSERT INTO public.bookmark_categories AS bc (bookmark_id, category_id, user_id)
+    SELECT unnest(p_bookmark_ids), p_category_id, v_user_id
+    ON CONFLICT (bookmark_id, category_id) DO NOTHING
+    RETURNING bc.bookmark_id, bc.category_id;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.add_category_to_bookmarks(bigint[], bigint) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.add_category_to_bookmarks(bigint[], bigint) FROM anon;
+GRANT EXECUTE ON FUNCTION public.add_category_to_bookmarks(bigint[], bigint) TO authenticated;
+
+COMMENT ON FUNCTION public.add_category_to_bookmarks IS
+'Adds a single category to multiple bookmarks atomically. Uses FOR UPDATE locking to prevent race conditions. Uses ON CONFLICT DO NOTHING to skip existing associations. Removes category 0 when adding a real category (exclusive model).';
+
+-- Remove category from bookmark with auto-add of category 0 when last real category removed
+-- EXCLUSIVE MODEL: Auto-adds 0 when no real categories remain
+CREATE OR REPLACE FUNCTION public.remove_category_from_bookmark(
+    p_bookmark_id bigint,
+    p_category_id bigint
+)
+RETURNS TABLE(deleted_category_id bigint, added_uncategorized boolean)
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_user_id uuid := (SELECT auth.uid());
+    v_remaining_non_zero_count int;
+    v_deleted boolean := false;
+BEGIN
+    -- Lock the bookmark row to prevent race conditions
+    -- This ensures atomic updates when multiple requests try to modify categories
+    PERFORM 1 FROM public.everything
+    WHERE id = p_bookmark_id AND user_id = v_user_id
+    FOR UPDATE;
+
+    -- Cannot manually remove category 0 (it's auto-managed)
+    IF p_category_id = 0 THEN
+        RAISE EXCEPTION 'Cannot manually remove uncategorized category. Add a real category instead.';
+    END IF;
+
+    -- Delete the specified category
+    DELETE FROM public.bookmark_categories
+    WHERE bookmark_id = p_bookmark_id
+      AND category_id = p_category_id
+      AND user_id = v_user_id;
+
+    -- Check if delete was successful
+    IF FOUND THEN
+        v_deleted := true;
+    END IF;
+
+    -- Check remaining non-0 categories
+    SELECT COUNT(*) INTO v_remaining_non_zero_count
+    FROM public.bookmark_categories
+    WHERE bookmark_id = p_bookmark_id
+      AND category_id != 0
+      AND user_id = v_user_id;
+
+    -- EXCLUSIVE logic: If no non-0 categories remain, auto-add 0
+    IF v_remaining_non_zero_count = 0 THEN
+        INSERT INTO public.bookmark_categories (bookmark_id, category_id, user_id)
+        VALUES (p_bookmark_id, 0, v_user_id)
+        ON CONFLICT (bookmark_id, category_id) DO NOTHING;
+
+        RETURN QUERY SELECT p_category_id, true;
+    ELSE
+        RETURN QUERY SELECT p_category_id, false;
+    END IF;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.remove_category_from_bookmark(bigint, bigint) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.remove_category_from_bookmark(bigint, bigint) FROM anon;
+GRANT EXECUTE ON FUNCTION public.remove_category_from_bookmark(bigint, bigint) TO authenticated;
+
+COMMENT ON FUNCTION public.remove_category_from_bookmark IS
+'Removes a category from a bookmark. Uses FOR UPDATE locking to prevent race conditions. Auto-adds category 0 when last non-0 category is removed (exclusive model). Cannot manually remove category 0.';
 
 -- ============================================================================
 -- PART 3: Update search RPC for junction table queries (optimized with CTEs)
@@ -358,7 +513,7 @@ BEGIN
         b.title,
         b.url,
         b.description,
-        b.ogimage,
+        b."ogImage",
         b.screenshot,
         b.trash,
         b.type,
@@ -483,8 +638,5 @@ DROP INDEX IF EXISTS idx_everything_category_id;
 -- 4. Drop foreign key constraints
 ALTER TABLE public.everything DROP CONSTRAINT IF EXISTS bookmarks_category_id_fkey;
 ALTER TABLE public.everything DROP CONSTRAINT IF EXISTS everything_category_id_fkey;
-
--- 5. Drop the column
-ALTER TABLE public.everything DROP COLUMN IF EXISTS category_id;
 
 COMMIT;

@@ -143,6 +143,7 @@ export type Database = {
 			};
 			everything: {
 				Row: {
+					category_id: number;
 					description: string | null;
 					id: number;
 					inserted_at: string;
@@ -157,6 +158,7 @@ export type Database = {
 					user_id: string;
 				};
 				Insert: {
+					category_id?: number;
 					description?: string | null;
 					id?: number;
 					inserted_at?: string;
@@ -171,6 +173,7 @@ export type Database = {
 					user_id: string;
 				};
 				Update: {
+					category_id?: number;
 					description?: string | null;
 					id?: number;
 					inserted_at?: string;
@@ -307,6 +310,20 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			add_category_to_bookmarks: {
+				Args: { p_bookmark_ids: number[]; p_category_id: number };
+				Returns: Array<{
+					out_bookmark_id: number;
+					out_category_id: number;
+				}>;
+			};
+			remove_category_from_bookmark: {
+				Args: { p_bookmark_id: number; p_category_id: number };
+				Returns: Array<{
+					added_uncategorized: boolean;
+					deleted_category_id: number;
+				}>;
+			};
 			search_bookmarks: {
 				Args: { search_text: string };
 				Returns: Array<{
@@ -374,13 +391,14 @@ export type Database = {
 			search_bookmarks_url_tag_scope:
 				| {
 						Args: {
+							category_scope?: number;
 							search_text?: string;
 							tag_scope?: string[];
 							url_scope?: string;
 						};
 						Returns: Array<{
+							added_categories: Json;
 							added_tags: Json;
-							category_id: number;
 							description: string;
 							id: number;
 							inserted_at: string;
@@ -397,13 +415,11 @@ export type Database = {
 				  }
 				| {
 						Args: {
-							category_scope?: number;
 							search_text?: string;
 							tag_scope?: string[];
 							url_scope?: string;
 						};
 						Returns: Array<{
-							added_categories: Json;
 							added_tags: Json;
 							category_id: number;
 							description: string;

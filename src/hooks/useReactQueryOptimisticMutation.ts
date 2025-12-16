@@ -52,6 +52,11 @@ export interface ReactQueryOptimisticMutationOptions<
 	 * Query keys to invalidate after mutation succeeds
 	 */
 	invalidates?: QueryKey | QueryKey[];
+	/**
+	 * Skip invalidating the secondary query key on success.
+	 * Useful when deferring invalidation (e.g., lightbox category changes).
+	 */
+	skipSecondaryInvalidation?: boolean;
 }
 
 // ============================================================================
@@ -85,6 +90,7 @@ export function useReactQueryOptimisticMutation<
 	secondaryQueryKey,
 	updater,
 	invalidates,
+	skipSecondaryInvalidation = false,
 	onSettled: userOnSettled,
 	onError: userOnError,
 	...restOptions
@@ -139,8 +145,9 @@ export function useReactQueryOptimisticMutation<
 				}
 			}) as RollbackFn;
 
-			// Capture secondary key for onSettled invalidation (avoids stale closure)
+			// Capture context for onSettled (avoids stale closures)
 			rollback.capturedSecondaryKey = secondaryQueryKey;
+			rollback.skipSecondaryInvalidation = skipSecondaryInvalidation;
 
 			return rollback;
 		},
@@ -185,7 +192,12 @@ export function useReactQueryOptimisticMutation<
 
 			// Also invalidate secondary key (e.g., search results)
 			// Use captured key from context to avoid stale closure
-			if (!error && rollback?.capturedSecondaryKey) {
+			// Skip if skipSecondaryInvalidation was set (e.g., lightbox defers invalidation)
+			if (
+				!error &&
+				rollback?.capturedSecondaryKey &&
+				!rollback?.skipSecondaryInvalidation
+			) {
 				void queryClient.invalidateQueries({
 					queryKey: rollback.capturedSecondaryKey,
 				});

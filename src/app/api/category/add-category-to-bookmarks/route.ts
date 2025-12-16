@@ -10,18 +10,23 @@ import {
 	UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
-const ROUTE = "add-category-to-bookmark";
+const ROUTE = "add-category-to-bookmarks";
 
-const AddCategoryToBookmarkPayloadSchema = z.object({
-	bookmark_id: z
-		.number({
-			error: (issue) =>
-				isNullable(issue.input)
-					? "Bookmark ID is required"
-					: "Bookmark ID must be a number",
-		})
-		.int({ error: "Bookmark ID must be a whole number" })
-		.positive({ error: "Bookmark ID must be a positive number" }),
+const AddCategoryToBookmarksPayloadSchema = z.object({
+	bookmark_ids: z
+		.array(
+			z
+				.number({
+					error: (issue) =>
+						isNullable(issue.input)
+							? "Bookmark ID is required"
+							: "Bookmark ID must be a number",
+				})
+				.int({ error: "Bookmark ID must be a whole number" })
+				.positive({ error: "Bookmark ID must be a positive number" }),
+		)
+		.min(1, { error: "At least one bookmark ID is required" })
+		.max(100, { error: "Cannot process more than 100 bookmarks at once" }),
 	category_id: z
 		.number({
 			error: (issue) =>
@@ -33,79 +38,78 @@ const AddCategoryToBookmarkPayloadSchema = z.object({
 		.min(0, { error: "Collection ID must be non-negative" }),
 });
 
-export type AddCategoryToBookmarkPayload = z.infer<
-	typeof AddCategoryToBookmarkPayloadSchema
+export type AddCategoryToBookmarksPayload = z.infer<
+	typeof AddCategoryToBookmarksPayloadSchema
 >;
 
-const AddCategoryToBookmarkResponseSchema = z.array(
+const AddCategoryToBookmarksResponseSchema = z.array(
 	z.object({
 		bookmark_id: z.number(),
 		category_id: z.number(),
 	}),
 );
 
-export type AddCategoryToBookmarkResponse = z.infer<
-	typeof AddCategoryToBookmarkResponseSchema
+export type AddCategoryToBookmarksResponse = z.infer<
+	typeof AddCategoryToBookmarksResponseSchema
 >;
 
 export const POST = createSupabasePostApiHandler({
 	route: ROUTE,
-	inputSchema: AddCategoryToBookmarkPayloadSchema,
-	outputSchema: AddCategoryToBookmarkResponseSchema,
+	inputSchema: AddCategoryToBookmarksPayloadSchema,
+	outputSchema: AddCategoryToBookmarksResponseSchema,
 	handler: async ({ data, supabase, user, route }) => {
-		const { bookmark_id: bookmarkId, category_id: categoryId } = data;
+		const { bookmark_ids: bookmarkIds, category_id: categoryId } = data;
 		const userId = user.id;
 
 		console.log(`[${route}] API called:`, {
 			userId,
-			bookmarkId,
+			bookmarkIds,
 			categoryId,
+			count: bookmarkIds.length,
 		});
 
-		// 1. Verify bookmark ownership + category ownership in parallel
-		const [bookmarkResult, categoryResult] = await Promise.all([
-			supabase
-				.from(MAIN_TABLE_NAME)
-				.select("id")
-				.eq("id", bookmarkId)
-				.eq("user_id", userId)
-				.single(),
-			categoryId !== UNCATEGORIZED_CATEGORY_ID
-				? supabase
-						.from(CATEGORIES_TABLE_NAME)
-						.select("user_id")
-						.eq("id", categoryId)
-						.single()
-				: Promise.resolve({ data: null, error: null }),
-		]);
+		// 1. Verify ALL bookmarks are owned by user (batch check)
+		const { data: ownedBookmarks, error: bookmarkError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("id")
+			.in("id", bookmarkIds)
+			.eq("user_id", userId);
 
-		// Handle bookmark check result
-		if (bookmarkResult.error) {
-			if (bookmarkResult.error.code === "PGRST116") {
-				return apiWarn({
-					route,
-					message: "Bookmark not found or not owned by user",
-					status: 404,
-					context: { bookmarkId },
-				});
-			}
-
+		if (bookmarkError) {
 			return apiError({
 				route,
 				message: "Failed to verify bookmark ownership",
-				error: bookmarkResult.error,
-				operation: "fetch_bookmark",
+				error: bookmarkError,
+				operation: "fetch_bookmarks",
 				userId,
-				extra: { bookmarkId },
+				extra: { bookmarkIds },
 			});
 		}
 
-		console.log(`[${route}] Bookmark exists and user owns it`);
+		const ownedIds = new Set(ownedBookmarks?.map((b) => b.id));
+		const notOwnedIds = bookmarkIds.filter((id) => !ownedIds.has(id));
+
+		if (notOwnedIds.length > 0) {
+			return apiWarn({
+				route,
+				message: `${notOwnedIds.length} bookmark(s) not found or not owned by user`,
+				status: 403,
+				context: { notOwnedIds },
+			});
+		}
+
+		console.log(`[${route}] All ${bookmarkIds.length} bookmarks verified`);
 
 		// 2. Verify category access (skip for uncategorized = 0)
 		if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
-			if (categoryResult.error) {
-				if (categoryResult.error.code === "PGRST116") {
+			const { data: categoryData, error: categoryError } = await supabase
+				.from(CATEGORIES_TABLE_NAME)
+				.select("user_id")
+				.eq("id", categoryId)
+				.single();
+
+			if (categoryError) {
+				if (categoryError.code === "PGRST116") {
 					return apiWarn({
 						route,
 						message: "Category not found",
@@ -117,7 +121,7 @@ export const POST = createSupabasePostApiHandler({
 				return apiError({
 					route,
 					message: "Failed to fetch category",
-					error: categoryResult.error,
+					error: categoryError,
 					operation: "fetch_category",
 					userId,
 					extra: { categoryId },
@@ -125,7 +129,7 @@ export const POST = createSupabasePostApiHandler({
 			}
 
 			// Check if user owns the category
-			if (categoryResult.data?.user_id !== userId) {
+			if (categoryData.user_id !== userId) {
 				// Check if user is a collaborator with edit access
 				const email = user.email;
 				if (!email) {
@@ -147,9 +151,9 @@ export const POST = createSupabasePostApiHandler({
 				if (sharedError && sharedError.code !== "PGRST116") {
 					return apiError({
 						route,
-						message: "Failed to fetch shared category",
+						message: "Failed to check shared access",
 						error: sharedError,
-						operation: "fetch_shared_category",
+						operation: "fetch_shared",
 						userId,
 						extra: { categoryId, email },
 					});
@@ -160,12 +164,7 @@ export const POST = createSupabasePostApiHandler({
 						route,
 						message: "No edit access to this category",
 						status: 403,
-						context: {
-							userId,
-							categoryId,
-							hasSharedAccess: Boolean(sharedData),
-							editAccess: sharedData?.edit_access,
-						},
+						context: { userId, categoryId },
 					});
 				}
 
@@ -179,13 +178,12 @@ export const POST = createSupabasePostApiHandler({
 			);
 		}
 
-		// 3. Call bulk RPC with single-element array
-		// RPC handles exclusive model logic (removing category 0 when adding real categories)
+		// 3. Call RPC for atomic bulk insert
 		// RPC returns out_bookmark_id/out_category_id (prefixed to avoid SQL ambiguity)
 		const { data: insertedData, error: insertError } = await supabase.rpc(
 			"add_category_to_bookmarks",
 			{
-				p_bookmark_ids: [bookmarkId],
+				p_bookmark_ids: bookmarkIds,
 				p_category_id: categoryId,
 			},
 		);
@@ -193,26 +191,25 @@ export const POST = createSupabasePostApiHandler({
 		if (insertError) {
 			return apiError({
 				route,
-				message: "Failed to add category to bookmark",
+				message: "Failed to add category to bookmarks",
 				error: insertError,
 				operation: "rpc_add_category_to_bookmarks",
 				userId,
-				extra: { bookmarkId, categoryId },
+				extra: { bookmarkIds, categoryId },
 			});
 		}
 
-		const transformedData: AddCategoryToBookmarkResponse = insertedData.map(
-			(row) => ({
-				bookmark_id: row.out_bookmark_id,
-				category_id: row.out_category_id,
-			}),
-		);
+		// Transform RPC response to match API schema
+		const transformedData: AddCategoryToBookmarksResponse = (
+			insertedData ?? []
+		).map((row) => ({
+			bookmark_id: row.out_bookmark_id,
+			category_id: row.out_category_id,
+		}));
 
-		console.log(`[${route}] Category added successfully:`, {
-			bookmarkId,
-			categoryId,
-			isNewEntry: transformedData.length > 0,
-		});
+		console.log(
+			`[${route}] Category added to ${transformedData.length} bookmarks (${bookmarkIds.length - transformedData.length} already had it)`,
+		);
 
 		return transformedData;
 	},

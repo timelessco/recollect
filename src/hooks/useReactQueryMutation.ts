@@ -154,6 +154,11 @@ export interface RollbackFn {
 	 * Used by onSettled to invalidate both primary and secondary caches.
 	 */
 	capturedSecondaryKey?: QueryKey | null;
+	/**
+	 * When true, skip invalidating the secondary query key on success.
+	 * Used by mutations that defer invalidation (e.g., lightbox category changes).
+	 */
+	skipSecondaryInvalidation?: boolean;
 }
 
 /**

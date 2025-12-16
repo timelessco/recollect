@@ -98,6 +98,8 @@ export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
 export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
 export const ADD_CATEGORY_TO_BOOKMARK_API =
 	"/category/add-category-to-bookmark";
+export const ADD_CATEGORY_TO_BOOKMARKS_API =
+	"/category/add-category-to-bookmarks";
 export const REMOVE_CATEGORY_FROM_BOOKMARK_API =
 	"/category/remove-category-from-bookmark";
 // share api

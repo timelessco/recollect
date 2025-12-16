@@ -49,7 +49,7 @@ export const AddToCollectionDropdown = ({
 	const { removeCategoryFromBookmarkMutation } =
 		useRemoveCategoryFromBookmarkMutation({
 			skipInvalidation: true,
-			preserveInList: false,
+			preserveInList: true,
 		});
 
 	// Get collections from fetch hook (handles caching internally via React Query)

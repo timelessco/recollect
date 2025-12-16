@@ -5,11 +5,13 @@ import {
 import { useBookmarkMutationContext } from "@/hooks/useBookmarkMutationContext";
 import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryOptimisticMutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type PaginatedBookmarks } from "@/types/apiTypes";
+import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
+	CATEGORIES_KEY,
 	REMOVE_CATEGORY_FROM_BOOKMARK_API,
+	UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
 type RemoveCategoryMutationOptions = {
@@ -42,6 +44,7 @@ export function useRemoveCategoryFromBookmarkMutation({
 			),
 		queryKey,
 		secondaryQueryKey: searchQueryKey,
+		skipSecondaryInvalidation: skipInvalidation,
 		updater: (currentData, variables) => {
 			if (!currentData?.pages) {
 				return currentData as PaginatedBookmarks;
@@ -61,6 +64,39 @@ export function useRemoveCategoryFromBookmarkMutation({
 				);
 
 				if (bookmarkIndex !== -1) {
+					const bookmark = currentData.pages[pageIndex].data[bookmarkIndex];
+
+					// Filter out the removed category
+					const filteredCategories = (bookmark.addedCategories ?? []).filter(
+						(cat) => cat.id !== variables.category_id,
+					);
+
+					// EXCLUSIVE MODEL: Check if any non-0 categories remain
+					const hasNonZeroCategories = filteredCategories.some(
+						(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+					);
+
+					// Determine final categories
+					let finalCategories = filteredCategories;
+					if (!hasNonZeroCategories) {
+						// Get uncategorized entry from cache
+						const allCategories =
+							(
+								queryClient.getQueryData([
+									CATEGORIES_KEY,
+									session?.user?.id,
+								]) as { data: CategoriesData[] } | undefined
+							)?.data ?? [];
+						const uncategorizedEntry = allCategories.find(
+							(cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
+						);
+
+						// Auto-add uncategorized if available in cache
+						if (uncategorizedEntry) {
+							finalCategories = [uncategorizedEntry];
+						}
+					}
+
 					// Found the bookmark - only clone this page
 					return {
 						...currentData,
@@ -78,11 +114,7 @@ export function useRemoveCategoryFromBookmarkMutation({
 														idx === bookmarkIndex
 															? {
 																	...b,
-																	addedCategories: (
-																		b.addedCategories ?? []
-																	).filter(
-																		(cat) => cat.id !== variables.category_id,
-																	),
+																	addedCategories: finalCategories,
 																}
 															: b,
 													),
