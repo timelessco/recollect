@@ -11,7 +11,7 @@ import {
 	type BookmarksPaginatedDataTypes,
 	type UpdateBookmarkDiscoverableApiPayload,
 } from "../../../types/apiTypes";
-import { BOOKMARKS_KEY } from "../../../utils/constants";
+import { BOOKMARKS_KEY, DISCOVER_URL } from "../../../utils/constants";
 import { updateBookmarkDiscoverable } from "../../supabaseCrudHelpers";
 
 type MutationContext = {
@@ -119,6 +119,11 @@ export const useChangeDiscoverable = () => {
 					context.previousSearchData,
 				);
 			}
+		},
+		onSettled: () => {
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
+			});
 		},
 	});
 

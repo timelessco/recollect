@@ -428,6 +428,14 @@ export const updateBookmarkDiscoverable = async ({
 			bookmark_id,
 			is_discoverable,
 		});
+		if (response?.data?.error) {
+			const err = response.data.error;
+			throw new Error(
+				typeof err === "string"
+					? err
+					: ((err as Error).message ?? "Failed to update discoverability"),
+			);
+		}
 
 		return response?.data;
 	} catch (error) {

@@ -20,7 +20,10 @@ export const BookmarksSkeletonLoader = ({
 }) => {
 	const { isDesktop } = useIsMobileView();
 
-	const skeletonHeights = PRECOMPUTED_HEIGHTS.slice(0, count);
+	const skeletonHeights = Array.from({ length: count }, (_, index) => {
+		const height = PRECOMPUTED_HEIGHTS[index % PRECOMPUTED_HEIGHTS.length];
+		return height ?? 300;
+	});
 	const columnCount = getColumnCount(isDesktop, colCount);
 
 	// List View Skeleton
