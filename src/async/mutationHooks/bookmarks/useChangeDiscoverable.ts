@@ -23,7 +23,7 @@ type MutationContext = {
 const updateBookmarkPages = (
 	oldData: BookmarksPaginatedDataTypes | undefined,
 	bookmarkId: number,
-	isDiscoverable: boolean,
+	makeDiscoverable: boolean,
 ): BookmarksPaginatedDataTypes | undefined => {
 	if (!oldData) {
 		return oldData;
@@ -37,7 +37,9 @@ const updateBookmarkPages = (
 				item?.id === bookmarkId
 					? {
 							...item,
-							is_discoverable: isDiscoverable ? new Date().toISOString() : null,
+							make_discoverable: makeDiscoverable
+								? new Date().toISOString()
+								: null,
 						}
 					: item,
 			),
@@ -56,7 +58,7 @@ export const useChangeDiscoverable = () => {
 	const changeDiscoverableMutation = useMutation({
 		mutationFn: updateBookmarkDiscoverable,
 		onMutate: async (variables: UpdateBookmarkDiscoverableApiPayload) => {
-			const { bookmark_id, is_discoverable } = variables;
+			const { bookmark_id, make_discoverable } = variables;
 
 			await queryClient.cancelQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -72,7 +74,7 @@ export const useChangeDiscoverable = () => {
 
 			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				(old) => updateBookmarkPages(old, bookmark_id, is_discoverable),
+				(old) => updateBookmarkPages(old, bookmark_id, make_discoverable),
 			);
 
 			let previousSearchData: BookmarksPaginatedDataTypes | undefined;
@@ -97,7 +99,7 @@ export const useChangeDiscoverable = () => {
 
 				queryClient.setQueryData<BookmarksPaginatedDataTypes>(
 					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-					(old) => updateBookmarkPages(old, bookmark_id, is_discoverable),
+					(old) => updateBookmarkPages(old, bookmark_id, make_discoverable),
 				);
 			}
 

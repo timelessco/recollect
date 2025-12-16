@@ -200,7 +200,7 @@ const EditDropdownContentBase = ({
 			<div className="flex items-center gap-2 rounded-md border border-gray-200 px-2 py-1">
 				<input
 					aria-label="Discoverable"
-					checked={Boolean(post?.is_discoverable)}
+					checked={Boolean(post?.make_discoverable)}
 					className="h-4 w-4"
 					disabled={!isOwner}
 					onChange={() => {
@@ -210,7 +210,7 @@ const EditDropdownContentBase = ({
 
 						changeDiscoverableMutation.mutate({
 							bookmark_id: post?.id,
-							is_discoverable: !post?.is_discoverable,
+							make_discoverable: !post?.make_discoverable,
 						});
 					}}
 					type="checkbox"

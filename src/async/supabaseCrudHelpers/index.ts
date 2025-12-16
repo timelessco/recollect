@@ -421,7 +421,7 @@ export const searchBookmarks = async (
 
 export const updateBookmarkDiscoverable = async ({
 	bookmark_id,
-	is_discoverable,
+	make_discoverable,
 }: UpdateBookmarkDiscoverableApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -429,7 +429,7 @@ export const updateBookmarkDiscoverable = async ({
 			error: Error | PostgrestError | string | null;
 		}>(`${NEXT_API_URL}${UPDATE_BOOKMARK_DISCOVERABLE_API}`, {
 			bookmark_id,
-			is_discoverable,
+			make_discoverable,
 		});
 		if (response?.data?.error) {
 			const err = response.data.error;

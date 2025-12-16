@@ -35,7 +35,7 @@ export type SingleListData = {
 	id: number;
 	inserted_at: string;
 	meta_data: ImgMetadataType;
-	is_discoverable: string | null;
+	make_discoverable: string | null;
 	ogImage: string;
 	ogimage?: string;
 	screenshot: string;
@@ -241,7 +241,7 @@ export type MoveBookmarkToTrashApiPayload = {
 
 export type UpdateBookmarkDiscoverableApiPayload = {
 	bookmark_id: number;
-	is_discoverable: boolean;
+	make_discoverable: boolean;
 };
 
 export type AddCategoryToBookmarkApiPayload = {
