@@ -35,14 +35,10 @@ export const CategoryMultiSelect = ({
 	placeholder = "Search categories...",
 	selectedCategoryIds,
 }: CategoryMultiSelectProps) => {
-	console.log(
-		"🚀 ~ CategoryMultiSelect ~ selectedCategoryIds:",
-		selectedCategoryIds,
-	);
 	const filter = useFilter({ sensitivity: "base" });
 	const [isOpen, setIsOpen] = useState(false);
 	const [inputValue, setInputValue] = useState("");
-	const isEscapePressedRef = useRef(false);
+	const isClosingRef = useRef(false);
 	const [, startTransition] = useTransition();
 
 	const visibleSelectedIds = selectedCategoryIds.filter(
@@ -69,21 +65,17 @@ export const CategoryMultiSelect = ({
 		.filter((cat): cat is CategoriesData => cat !== undefined);
 
 	const handleSelectionChange = (newSelection: Selection) => {
+		// Ignore selection changes while closing (Escape key triggers empty selection)
+		if (isClosingRef.current) {
+			return;
+		}
+
 		if (newSelection === "all") {
 			return;
 		}
 
 		const newIds = new Set([...newSelection].map(Number));
 		const currentIds = new Set(optimisticSelectedIds);
-
-		// Only ignore empty selection changes from Escape key, not intentional unchecking
-		if (
-			newIds.size === 0 &&
-			currentIds.size > 0 &&
-			isEscapePressedRef.current
-		) {
-			return;
-		}
 
 		// Determine what was added vs removed
 		for (const id of newIds) {
@@ -119,14 +111,10 @@ export const CategoryMultiSelect = ({
 
 	// Handle keyboard events on input
 	const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		// Escape closes the ListBox (prevent default to avoid clearing selection)
+		// Escape closes the ListBox - mark as closing to ignore selection changes
 		if (event.key === "Escape") {
-			isEscapePressedRef.current = true;
-			event.stopPropagation();
+			isClosingRef.current = true;
 			setIsOpen(false);
-			queueMicrotask(() => {
-				isEscapePressedRef.current = false;
-			});
 			return;
 		}
 
@@ -156,42 +144,55 @@ export const CategoryMultiSelect = ({
 				selectedCategories={selectedCategories}
 			/>
 
-			<Autocomplete filter={filterFn}>
-				<SearchField
-					aria-label="Search categories"
-					className="flex min-w-[80px] flex-1 items-center"
-					onChange={(value) => {
-						setInputValue(value);
-						setIsOpen(true);
-					}}
-					onFocus={() => setIsOpen(true)}
-					value={inputValue}
-				>
-					<Input
-						className="w-full bg-transparent text-sm outline-none placeholder:text-gray-500 [&::-webkit-search-cancel-button]:hidden"
-						onKeyDown={handleInputKeyDown}
-						placeholder={placeholder}
-					/>
-				</SearchField>
-
-				{isOpen && (
-					<ListBox
-						aria-label="Categories"
-						className="absolute top-full left-0 z-10 mt-1 max-h-[220px] w-full overflow-auto rounded-xl bg-gray-0 p-1 shadow-custom-7 outline-none"
-						items={visibleCategories}
-						onSelectionChange={handleSelectionChange}
-						renderEmptyState={() => (
-							<div className="px-2 py-[5px] text-13 text-gray-500">
-								No categories found
-							</div>
-						)}
-						selectedKeys={selectedKeys}
-						selectionMode="multiple"
+			<div
+				onKeyDownCapture={(event) => {
+					// Capture phase - fires BEFORE React Aria's internal handlers
+					if (event.key === "Escape") {
+						isClosingRef.current = true;
+					}
+				}}
+			>
+				<Autocomplete filter={filterFn}>
+					<SearchField
+						aria-label="Search categories"
+						className="flex min-w-[80px] flex-1 items-center"
+						onChange={(value) => {
+							isClosingRef.current = false;
+							setInputValue(value);
+							setIsOpen(true);
+						}}
+						onFocus={() => {
+							isClosingRef.current = false;
+							setIsOpen(true);
+						}}
+						value={inputValue}
 					>
-						{(category) => <CategoryListBoxItem category={category} />}
-					</ListBox>
-				)}
-			</Autocomplete>
+						<Input
+							className="w-full bg-transparent text-sm outline-none placeholder:text-gray-500 [&::-webkit-search-cancel-button]:hidden"
+							onKeyDown={handleInputKeyDown}
+							placeholder={placeholder}
+						/>
+					</SearchField>
+
+					{isOpen && (
+						<ListBox
+							aria-label="Categories"
+							className="absolute top-full left-0 z-10 mt-1 max-h-[220px] w-full overflow-auto rounded-xl bg-gray-0 p-1 shadow-custom-7 outline-none"
+							items={visibleCategories}
+							onSelectionChange={handleSelectionChange}
+							renderEmptyState={() => (
+								<div className="px-2 py-[5px] text-13 text-gray-500">
+									No categories found
+								</div>
+							)}
+							selectedKeys={selectedKeys}
+							selectionMode="multiple"
+						>
+							{(category) => <CategoryListBoxItem category={category} />}
+						</ListBox>
+					)}
+				</Autocomplete>
+			</div>
 		</div>
 	);
 };
