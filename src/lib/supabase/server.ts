@@ -23,8 +23,11 @@ export async function createServerClient() {
 					}
 				} catch (error) {
 					// Expected when called from Server Component with middleware refreshing sessions
-					if (process.env.NODE_ENV === 'development') {
-						console.warn('[createServerClient] Cookie setAll failed (expected in RSC):', error);
+					if (process.env.NODE_ENV === "development") {
+						console.warn(
+							"[createServerClient] Cookie setAll failed (expected in RSC):",
+							error,
+						);
 					}
 				}
 			},

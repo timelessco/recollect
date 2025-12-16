@@ -135,7 +135,9 @@ export async function parseBody<T>({
 				route,
 				message: "Invalid JSON in request body",
 				status: HttpStatus.BAD_REQUEST,
-				context: { error: error instanceof Error ? error.message : String(error) },
+				context: {
+					error: error instanceof Error ? error.message : String(error),
+				},
 			}),
 		};
 	}

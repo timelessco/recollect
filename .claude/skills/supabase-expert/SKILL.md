@@ -548,10 +548,9 @@ supabase functions new my-function
 
 ```typescript
 // supabase/functions/my-function/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-serve(async (req) => {
+Deno.serve(async (req) => {
 	try {
 		// Initialize Supabase client
 		const supabase = createClient(
@@ -706,24 +705,31 @@ $$;
 
 ```typescript
 // app/posts/page.tsx
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export default async function PostsPage() {
-  const supabase = createServerComponentClient({ cookies });
-
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  return (
-    <div>
-      {posts?.map((post) => (
-        <div key={post.id}>{post.title}</div>
-      ))}
-    </div>
-  );
+	const cookieStore = cookies();
+	const supabase = createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			cookies: {
+				getAll() {
+					return cookieStore.getAll();
+				},
+				setAll(cookiesToSet) {
+					try {
+						cookiesToSet.forEach(({ name, value, options }) =>
+							cookieStore.set(name, value, options),
+						);
+					} catch {
+						// Called from Server Component - ignore
+					}
+				},
+			},
+		},
+	);
 }
 ```
 
@@ -733,11 +739,14 @@ export default async function PostsPage() {
 // app/new-post/page.tsx
 'use client';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import { useState } from 'react';
 
 export default function NewPostPage() {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const [title, setTitle] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
@@ -758,24 +767,52 @@ export default function NewPostPage() {
 
 ```typescript
 // middleware.ts
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
-	const res = NextResponse.next();
-	const supabase = createMiddlewareClient({ req, res });
+export async function middleware(request: NextRequest) {
+	let response = NextResponse.next({
+		request,
+	});
 
-	const {
-		data: { session },
-	} = await supabase.auth.getSession();
+	const supabase = createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			cookies: {
+				getAll() {
+					return request.cookies.getAll();
+				},
+				setAll(cookiesToSet) {
+					for (const { name, value } of cookiesToSet) {
+						request.cookies.set(name, value);
+					}
 
-	// Redirect to login if not authenticated
-	if (!session && req.nextUrl.pathname.startsWith("/dashboard")) {
-		return NextResponse.redirect(new URL("/login", req.url));
+					response = NextResponse.next({
+						request,
+					});
+					for (const { name, value, options } of cookiesToSet) {
+						response.cookies.set(name, value, options);
+					}
+				},
+			},
+		},
+	);
+
+	const { data, error } = await supabase.auth.getClaims();
+
+	if (error) {
+		throw error;
 	}
 
-	return res;
+	const user = data?.claims;
+
+	// Redirect to login if not authenticated
+	if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+		return NextResponse.redirect(new URL("/login", request.url));
+	}
+
+	return response;
 }
 
 export const config = {
@@ -787,12 +824,37 @@ export const config = {
 
 ```typescript
 // app/api/posts/route.ts
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+async function createClient() {
+	const cookieStore = await cookies();
+
+	return createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			cookies: {
+				getAll() {
+					return cookieStore.getAll();
+				},
+				setAll(cookiesToSet) {
+					try {
+						for (const { name, value, options } of cookiesToSet) {
+							cookieStore.set(name, value, options);
+						}
+					} catch {
+						// Called from Server Component - ignore
+					}
+				},
+			},
+		},
+	);
+}
+
 export async function GET() {
-	const supabase = createRouteHandlerClient({ cookies });
+	const supabase = await createClient();
 
 	const { data: posts } = await supabase.from("posts").select("*");
 
@@ -800,7 +862,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-	const supabase = createRouteHandlerClient({ cookies });
+	const supabase = await createClient();
 	const body = await request.json();
 
 	const { data, error } = await supabase
@@ -1011,32 +1073,27 @@ export function createClient() {
 }
 
 // lib/supabase/server.ts - Server-side (Next.js App Router)
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Database } from "./types";
 
-export function createClient() {
-	const cookieStore = cookies();
+export async function createClient() {
+	const cookieStore = await cookies();
 
 	return createServerClient<Database>(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 		{
 			cookies: {
-				get(name: string) {
-					return cookieStore.get(name)?.value;
+				getAll() {
+					return cookieStore.getAll();
 				},
-				set(name: string, value: string, options: CookieOptions) {
+				setAll(cookiesToSet) {
 					try {
-						cookieStore.set({ name, value, ...options });
-					} catch (error) {
-						// Called from Server Component - ignore
-					}
-				},
-				remove(name: string, options: CookieOptions) {
-					try {
-						cookieStore.set({ name, value: "", ...options });
-					} catch (error) {
+						for (const { name, value, options } of cookiesToSet) {
+							cookieStore.set(name, value, options);
+						}
+					} catch {
 						// Called from Server Component - ignore
 					}
 				},
@@ -1515,14 +1572,12 @@ export async function GET(request: NextRequest) {
 
 ```typescript
 // middleware.ts
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
 	let response = NextResponse.next({
-		request: {
-			headers: request.headers,
-		},
+		request,
 	});
 
 	const supabase = createServerClient(
@@ -1530,50 +1585,32 @@ export async function middleware(request: NextRequest) {
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 		{
 			cookies: {
-				get(name: string) {
-					return request.cookies.get(name)?.value;
+				getAll() {
+					return request.cookies.getAll();
 				},
-				set(name: string, value: string, options: CookieOptions) {
-					request.cookies.set({
-						name,
-						value,
-						...options,
-					});
+				setAll(cookiesToSet) {
+					for (const { name, value } of cookiesToSet) {
+						request.cookies.set(name, value);
+					}
+
 					response = NextResponse.next({
-						request: {
-							headers: request.headers,
-						},
+						request,
 					});
-					response.cookies.set({
-						name,
-						value,
-						...options,
-					});
-				},
-				remove(name: string, options: CookieOptions) {
-					request.cookies.set({
-						name,
-						value: "",
-						...options,
-					});
-					response = NextResponse.next({
-						request: {
-							headers: request.headers,
-						},
-					});
-					response.cookies.set({
-						name,
-						value: "",
-						...options,
-					});
+					for (const { name, value, options } of cookiesToSet) {
+						response.cookies.set(name, value, options);
+					}
 				},
 			},
 		},
 	);
 
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+	const { data, error } = await supabase.auth.getClaims();
+
+	if (error) {
+		throw error;
+	}
+
+	const user = data?.claims;
 
 	// Protect dashboard routes
 	if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
