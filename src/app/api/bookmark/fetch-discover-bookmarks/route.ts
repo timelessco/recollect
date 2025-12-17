@@ -1,7 +1,7 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { apiError, apiSuccess, apiWarn } from "@/lib/api-helpers/response";
+import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { createApiClient } from "@/lib/supabase/api";
 import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
@@ -9,27 +9,12 @@ import { HttpStatus } from "@/utils/error-utils/common";
 const ROUTE = "fetch-discover-bookmarks";
 
 const FetchDiscoverBookmarksQuerySchema = z.object({
-	from: z
-		.string()
-		.optional()
-		.transform((val) => {
-			if (!val) {
-				return 0;
-			}
-
-			const parsed = Number.parseInt(val, 10);
-			return Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
-		}),
+	page: z.coerce.number().int().nonnegative(),
 });
 
-// Response schema - validates array of bookmark objects
-// Using z.any() for complex nested types (user_id, meta_data, etc.) as they're validated by TypeScript
-const FetchDiscoverBookmarksResponseSchema = z.array(z.any());
-
-const getRange = (from: number) => {
-	const start = Number.isNaN(from) || from < 0 ? 0 : from;
-	const rangeStart = start;
-	const rangeEnd = start + PAGINATION_LIMIT - 1;
+const getRange = (page: number) => {
+	const rangeStart = page * PAGINATION_LIMIT;
+	const rangeEnd = (page + 1) * PAGINATION_LIMIT - 1;
 
 	return { rangeEnd, rangeStart };
 };
@@ -37,11 +22,11 @@ const getRange = (from: number) => {
 export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
-		const fromParam = searchParams.get("from") ?? "0";
+		const pageParam = searchParams.get("page");
 
 		// Parse and validate query parameters
 		const queryParseResult = FetchDiscoverBookmarksQuerySchema.safeParse({
-			from: fromParam,
+			page: pageParam,
 		});
 
 		if (!queryParseResult.success) {
@@ -53,12 +38,12 @@ export async function GET(request: NextRequest) {
 			});
 		}
 
-		const from = queryParseResult.data.from;
-		const { rangeEnd, rangeStart } = getRange(from);
+		const page = queryParseResult.data.page;
+		const { rangeEnd, rangeStart } = getRange(page);
 
 		// Entry point log
 		console.log(`[${ROUTE}] API called:`, {
-			from,
+			page,
 			rangeStart,
 			rangeEnd,
 		});
@@ -80,7 +65,7 @@ export async function GET(request: NextRequest) {
 				error,
 				operation: "fetch_discoverable_bookmarks",
 				extra: {
-					from,
+					page,
 					rangeStart,
 					rangeEnd,
 				},
@@ -91,11 +76,7 @@ export async function GET(request: NextRequest) {
 			count: data?.length ?? 0,
 		});
 
-		return apiSuccess({
-			route: ROUTE,
-			data: data ?? [],
-			schema: FetchDiscoverBookmarksResponseSchema,
-		});
+		return NextResponse.json({ data, error: null }, { status: HttpStatus.OK });
 	} catch (error) {
 		return apiError({
 			route: ROUTE,

@@ -1,8 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import {
-	type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import {
 	type QueryFunctionContext,
 	type QueryKey,
@@ -31,7 +28,6 @@ import {
 	type RemoveUserProfilePicPayload,
 	type SingleListData,
 	type SupabaseSessionType,
-	type UpdateBookmarkDiscoverableApiPayload,
 	type UpdateCategoryApiPayload,
 	type UpdateCategoryOrderApiPayload,
 	type UpdateSharedCategoriesUserAccessApiPayload,
@@ -63,7 +59,6 @@ import {
 	FETCH_BOOKMARKS_COUNT,
 	FETCH_BOOKMARKS_DATA_API,
 	FETCH_BOOKMARKS_VIEW,
-	FETCH_DISCOVER_BOOKMARKS_API,
 	FETCH_SHARED_CATEGORIES_DATA_API,
 	FETCH_USER_CATEGORIES_API,
 	FETCH_USER_PROFILE_API,
@@ -81,7 +76,6 @@ import {
 	SAVE_API_KEY_API,
 	SEARCH_BOOKMARKS,
 	SEND_COLLABORATION_EMAIL_API,
-	UPDATE_BOOKMARK_DISCOVERABLE_API,
 	UPDATE_CATEGORY_ORDER_API,
 	UPDATE_SHARED_CATEGORY_USER_ROLE_API,
 	UPDATE_USER_CATEGORIES_API,
@@ -228,26 +222,6 @@ export const fetchBookmarksData = async (
 		} as unknown as FetchDataResponse;
 	} catch (error) {
 		return { data: undefined, error } as unknown as FetchDataResponse;
-	}
-};
-
-export const fetchDiscoverBookmarks = async ({
-	pageParam: pageParameter = 0,
-}: QueryFunctionContext<Array<string | number | null>>) => {
-	try {
-		const discoverData = await axios.get<{
-			data: SingleListData[] | null;
-		}>(`${NEXT_API_URL}${FETCH_DISCOVER_BOOKMARKS_API}?from=${pageParameter}`);
-
-		return {
-			data: discoverData?.data?.data ?? [],
-			error: null,
-		} as unknown as FetchDataResponse;
-	} catch (error) {
-		return {
-			data: [],
-			error: error as PostgrestError,
-		} as unknown as FetchDataResponse;
 	}
 };
 
@@ -414,38 +388,6 @@ export const searchBookmarks = async (
 		data: null,
 		error: { name: "error", message: "No search text provided" },
 	};
-};
-
-export const updateBookmarkDiscoverable = async ({
-	bookmark_id,
-	make_discoverable,
-}: UpdateBookmarkDiscoverableApiPayload) => {
-	try {
-		const response = await axios.post<{
-			data: SingleListData[] | null;
-			error: Error | PostgrestError | string | null;
-		}>(`${NEXT_API_URL}${UPDATE_BOOKMARK_DISCOVERABLE_API}`, {
-			bookmark_id,
-			make_discoverable,
-		});
-		if (response?.data?.error) {
-			const err = response.data.error;
-			throw new Error(
-				typeof err === "string"
-					? err
-					: ((err as Error).message ?? "Failed to update discoverability"),
-			);
-		}
-
-		return response?.data;
-	} catch (error) {
-		handleClientError(error, "Failed to update discoverability");
-		return await Promise.reject(
-			error instanceof Error
-				? error
-				: new Error("Failed to update discoverability"),
-		);
-	}
 };
 
 // user tags

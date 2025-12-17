@@ -10,10 +10,17 @@ import {
 } from "../../../store/componentStore";
 import {
 	type BookmarksPaginatedDataTypes,
+	type SingleListData,
 	type UpdateBookmarkDiscoverableApiPayload,
 } from "../../../types/apiTypes";
-import { BOOKMARKS_KEY, DISCOVER_URL } from "../../../utils/constants";
-import { updateBookmarkDiscoverable } from "../../supabaseCrudHelpers";
+import {
+	BOOKMARKS_KEY,
+	DISCOVER_URL,
+	NEXT_API_URL,
+	UPDATE_BOOKMARK_DISCOVERABLE_API,
+} from "../../../utils/constants";
+
+import { postApi } from "@/lib/api-helpers/api";
 
 const updateBookmarkPages = (
 	oldData: BookmarksPaginatedDataTypes | undefined,
@@ -69,19 +76,19 @@ export const useChangeDiscoverableOptimisticMutation = () => {
 		QueryKey,
 		BookmarksPaginatedDataTypes
 	>({
-		mutationFn: updateBookmarkDiscoverable,
+		mutationFn: (variables) =>
+			postApi<{ data: SingleListData; error: Error | null }>(
+				`${NEXT_API_URL}${UPDATE_BOOKMARK_DISCOVERABLE_API}`,
+				variables,
+			),
 		queryKey,
 		secondaryQueryKey,
-		updater: (currentData, variables) => {
-			const updated = updateBookmarkPages(
+		updater: (currentData, variables) =>
+			updateBookmarkPages(
 				currentData,
 				variables.bookmark_id,
 				variables.make_discoverable,
-			);
-			// If updateBookmarkPages returns undefined (when currentData is undefined),
-			// return currentData as-is. The hook will handle undefined gracefully.
-			return (updated ?? currentData) as BookmarksPaginatedDataTypes;
-		},
+			) as BookmarksPaginatedDataTypes,
 		invalidates: [[BOOKMARKS_KEY, DISCOVER_URL]],
 	});
 
