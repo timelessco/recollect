@@ -465,7 +465,8 @@ RETURNS TABLE(
     meta_data jsonb,
     sort_index text,
     added_tags jsonb,
-    added_categories jsonb
+    added_categories jsonb,
+    make_discoverable timestamp with time zone
 )
 LANGUAGE plpgsql
 VOLATILE
@@ -520,7 +521,8 @@ BEGIN
         b.meta_data,
         b.sort_index,
         COALESCE(bta.tags_json, '[]'::jsonb) AS added_tags,
-        COALESCE(bca.categories_json, '[]'::jsonb) AS added_categories
+        COALESCE(bca.categories_json, '[]'::jsonb) AS added_categories,
+        b.make_discoverable
     FROM public.everything b
     LEFT JOIN bookmark_tags_agg bta ON bta.bookmark_id = b.id AND bta.user_id = b.user_id
     LEFT JOIN bookmark_cats_agg bca ON bca.bookmark_id = b.id AND bca.user_id = b.user_id

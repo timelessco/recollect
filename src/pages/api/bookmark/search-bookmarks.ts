@@ -65,21 +65,28 @@ export default async function handler(
 
 		const supabase = apiSupabaseClient(request, response);
 
-		const { data: userData, error: userError } = await supabase.auth.getUser();
-		const user_id = userData?.user?.id;
-		const email = userData?.user?.email as string;
-
 		const { search, category_id } = parseResult.data;
 
 		const isDiscoverPage = category_id === DISCOVER_URL;
 
-		if (!isDiscoverPage && (userError || !user_id)) {
-			console.warn("[search-bookmarks] Missing user_id from Supabase auth");
-			response.status(401).json({
-				data: null,
-				error: { message: "Unauthorized" },
-			});
-			return;
+		// Discover page doesn't require authentication
+		let user_id: string | undefined;
+		let email: string | undefined;
+
+		if (!isDiscoverPage) {
+			const { data: userData, error: userError } =
+				await supabase.auth.getUser();
+			user_id = userData?.user?.id;
+			email = userData?.user?.email as string;
+
+			if (userError || !user_id) {
+				console.warn("[search-bookmarks] Missing user_id from Supabase auth");
+				response.status(401).json({
+					data: null,
+					error: { message: "Unauthorized" },
+				});
+				return;
+			}
 		}
 
 		const offset = Number.parseInt(request.query.offset as string, 10) || 0;
@@ -127,72 +134,22 @@ export default async function handler(
 				search_text: searchText,
 				url_scope: urlScope,
 				tag_scope: tagName,
-				category_scope: categoryScope,
+				category_scope: isDiscoverPage ? null : categoryScope,
 			})
 			.eq("trash", category_id === TRASH_URL)
 			.range(offset, offset + limit);
 
 		if (isDiscoverPage) {
 			query = query.not("make_discoverable", "is", null);
-		} else if (!user_id) {
-			if (!user_id) {
-				response.status(401).json({
-					data: null,
-					error: { message: "Unauthorized" },
-				});
-				return;
-			}
+		} else {
+			const userId = user_id as string;
+			const userEmail = email as string;
 
 			if (!userInCollections) {
-				// if user is not in any category, then get only the items that match the user_id
-				query = query.eq("user_id", user_id);
-			}
-		}
-
-		if (userInCollections) {
-			// check if user is a collaborator for the category
-			const {
-				success: isUserCollaboratorInCategorySuccess,
-				error: isUserCollaboratorInCategoryError,
-			} = await isUserCollaboratorInCategory(
-				supabase,
-				category_id as string,
-				email,
-			);
-
-			if (!isUserCollaboratorInCategorySuccess) {
-				console.error(
-					"[search-bookmarks] Error checking if user is a collaborator for the category:",
-					isUserCollaboratorInCategoryError,
-				);
-				Sentry.captureException(isUserCollaboratorInCategoryError, {
-					tags: {
-						operation: "check_user_collaborator_of_category",
-					},
-					extra: { category_id },
-					user: {
-						id: user_id,
-						email,
-					},
-				});
-				response.status(500).json({
-					data: null,
-					error: { message: "Unauthorized" },
-				});
-				return;
+				query = query.eq("user_id", userId);
 			}
 
-			const userInCollectionsCondition = isUserInACategoryInApi(
-				category_id as string,
-				false,
-			);
-
-			if (!userInCollectionsCondition) {
-				// if user is not in any category, then get only the items that match the user_id
-				query = query.eq("user_id", user_id);
-			}
-
-			if (userInCollectionsCondition) {
+			if (userInCollections) {
 				// check if user is a collaborator for the category
 				const {
 					success: isUserCollaboratorInCategorySuccess,
@@ -201,7 +158,7 @@ export default async function handler(
 				} = await isUserCollaboratorInCategory(
 					supabase,
 					category_id as string,
-					email,
+					userEmail,
 				);
 
 				if (!isUserCollaboratorInCategorySuccess) {
@@ -215,8 +172,8 @@ export default async function handler(
 						},
 						extra: { category_id },
 						user: {
-							id: user_id,
-							email,
+							id: userId,
+							email: userEmail,
 						},
 					});
 					response.status(500).json({
@@ -237,7 +194,7 @@ export default async function handler(
 				} = await checkIsUserOwnerOfCategory(
 					supabase,
 					category_id as string,
-					user_id as string,
+					userId,
 				);
 
 				if (!isUserOwnerOfCategorySuccess) {
@@ -251,8 +208,8 @@ export default async function handler(
 						},
 						extra: { category_id },
 						user: {
-							id: user_id,
-							email,
+							id: userId,
+							email: userEmail,
 						},
 					});
 					response.status(500).json({
@@ -270,14 +227,8 @@ export default async function handler(
 
 				if (is_user_not_collaborator_or_owner) {
 					// if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
-					query = query.eq("user_id", user_id);
+					query = query.eq("user_id", userId);
 				}
-
-				// get all the items for the category_id irrespective of the user_id, as user has access to all the items in the category
-				query = query.eq(
-					"category_id",
-					category_id === UNCATEGORIZED_URL ? 0 : category_id,
-				);
 			}
 		}
 
@@ -317,7 +268,7 @@ export default async function handler(
 			Sentry.captureException(error, {
 				tags: {
 					operation: "search_bookmarks",
-					userId: user_id,
+					userId: user_id ?? "discover_page",
 				},
 				extra: { category_id, rawSearch: search },
 			});
