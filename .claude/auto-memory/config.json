@@ -1,0 +1,13 @@
+{
+	"triggerMode": "default",
+	"autoManage": true,
+	"initialized": "2025-12-17T00:00:00.000Z",
+	"baseline": {
+		"framework": "nextjs",
+		"version": "16.0.10",
+		"typescript": true,
+		"styling": "tailwindcss-v4",
+		"backend": "supabase",
+		"stateManagement": ["zustand", "react-query"]
+	}
+}
