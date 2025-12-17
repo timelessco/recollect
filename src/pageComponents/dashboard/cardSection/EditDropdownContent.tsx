@@ -18,7 +18,7 @@ import {
 	UNCATEGORIZED_CATEGORY_ID,
 } from "../../../utils/constants";
 
-import { useChangeDiscoverable } from "@/async/mutationHooks/bookmarks/useChangeDiscoverable";
+import { useChangeDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/useChangeDiscoverableOptimisticMutation";
 import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/useRemoveCategoryFromBookmarkMutation";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
@@ -51,7 +51,8 @@ const EditDropdownContentBase = ({
 	const postUserId =
 		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
 	const isOwner = userId && postUserId === userId;
-	const { changeDiscoverableMutation } = useChangeDiscoverable();
+	const { changeDiscoverableMutation } =
+		useChangeDiscoverableOptimisticMutation();
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
 		error: PostgrestError;

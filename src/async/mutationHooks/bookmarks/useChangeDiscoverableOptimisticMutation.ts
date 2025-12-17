@@ -42,7 +42,7 @@ const updateBookmarkPages = (
 	};
 };
 
-export const useChangeDiscoverable = () => {
+export const useChangeDiscoverableOptimisticMutation = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
