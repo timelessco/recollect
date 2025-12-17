@@ -405,6 +405,7 @@ export type Database = {
 							description: string;
 							id: number;
 							inserted_at: string;
+							make_discoverable: string;
 							meta_data: Json;
 							ogimage: string;
 							screenshot: string;
