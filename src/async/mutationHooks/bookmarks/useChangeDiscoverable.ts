@@ -1,8 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type QueryKey } from "@tanstack/react-query";
 
 import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { useReactQueryOptimisticMutation } from "../../../hooks/useReactQueryOptimisticMutation";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -13,12 +14,6 @@ import {
 } from "../../../types/apiTypes";
 import { BOOKMARKS_KEY, DISCOVER_URL } from "../../../utils/constants";
 import { updateBookmarkDiscoverable } from "../../supabaseCrudHelpers";
-
-type MutationContext = {
-	debouncedSearch?: string;
-	previousData?: BookmarksPaginatedDataTypes;
-	previousSearchData?: BookmarksPaginatedDataTypes;
-};
 
 const updateBookmarkPages = (
 	oldData: BookmarksPaginatedDataTypes | undefined,
@@ -51,85 +46,43 @@ export const useChangeDiscoverable = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
-	const queryClient = useQueryClient();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const debouncedSearch = useDebounce(searchText, 500);
 
-	const changeDiscoverableMutation = useMutation({
+	// Primary query key for regular bookmarks
+	const queryKey: QueryKey = [
+		BOOKMARKS_KEY,
+		session?.user?.id,
+		CATEGORY_ID,
+		sortBy,
+	];
+
+	// Secondary query key for search results (if searching)
+	const secondaryQueryKey: QueryKey | null = debouncedSearch
+		? [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch]
+		: null;
+
+	const changeDiscoverableMutation = useReactQueryOptimisticMutation<
+		{ data: unknown; error: unknown },
+		Error,
+		UpdateBookmarkDiscoverableApiPayload,
+		QueryKey,
+		BookmarksPaginatedDataTypes
+	>({
 		mutationFn: updateBookmarkDiscoverable,
-		onMutate: async (variables: UpdateBookmarkDiscoverableApiPayload) => {
-			const { bookmark_id, make_discoverable } = variables;
-
-			await queryClient.cancelQueries({
-				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-			});
-
-			const previousData =
-				queryClient.getQueryData<BookmarksPaginatedDataTypes>([
-					BOOKMARKS_KEY,
-					session?.user?.id,
-					CATEGORY_ID,
-					sortBy,
-				]);
-
-			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-				(old) => updateBookmarkPages(old, bookmark_id, make_discoverable),
+		queryKey,
+		secondaryQueryKey,
+		updater: (currentData, variables) => {
+			const updated = updateBookmarkPages(
+				currentData,
+				variables.bookmark_id,
+				variables.make_discoverable,
 			);
-
-			let previousSearchData: BookmarksPaginatedDataTypes | undefined;
-
-			if (debouncedSearch) {
-				await queryClient.cancelQueries({
-					queryKey: [
-						BOOKMARKS_KEY,
-						session?.user?.id,
-						CATEGORY_ID,
-						debouncedSearch,
-					],
-				});
-
-				previousSearchData =
-					queryClient.getQueryData<BookmarksPaginatedDataTypes>([
-						BOOKMARKS_KEY,
-						session?.user?.id,
-						CATEGORY_ID,
-						debouncedSearch,
-					]);
-
-				queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
-					(old) => updateBookmarkPages(old, bookmark_id, make_discoverable),
-				);
-			}
-
-			return { previousData, previousSearchData, debouncedSearch };
+			// If updateBookmarkPages returns undefined (when currentData is undefined),
+			// return currentData as-is. The hook will handle undefined gracefully.
+			return (updated ?? currentData) as BookmarksPaginatedDataTypes;
 		},
-		onError: (_error, _variables, context: MutationContext = {}) => {
-			if (context.previousData) {
-				queryClient.setQueryData(
-					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-					context.previousData,
-				);
-			}
-
-			if (context.debouncedSearch && context.previousSearchData) {
-				queryClient.setQueryData(
-					[
-						BOOKMARKS_KEY,
-						session?.user?.id,
-						CATEGORY_ID,
-						context.debouncedSearch,
-					],
-					context.previousSearchData,
-				);
-			}
-		},
-		onSettled: () => {
-			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
-			});
-		},
+		invalidates: [[BOOKMARKS_KEY, DISCOVER_URL]],
 	});
 
 	return { changeDiscoverableMutation };

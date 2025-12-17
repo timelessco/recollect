@@ -98,7 +98,6 @@ const MyComponent = () => {
 	const trimmedSearchText = searchText?.trim() ?? "";
 	const { sortBy } = useGetSortBy();
 
-	// Determine the correct query key based on whether we're on discover page
 	const queryKey = isDiscoverPage
 		? searchText
 			? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText]
