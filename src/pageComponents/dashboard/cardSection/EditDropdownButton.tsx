@@ -16,10 +16,7 @@ export const EditDropdownButton = ({
 	isPublicPage,
 	setOpenedMenuId,
 	post,
-	onCategoryChange,
-	onCreateNewCategory,
 	bookmarksList,
-	isCategoryChangeLoading,
 	userId,
 }: {
 	isMenuOpen: boolean;
@@ -27,13 +24,7 @@ export const EditDropdownButton = ({
 	isPublicPage: boolean;
 	setOpenedMenuId: (id: number | null) => void;
 	post: SingleListData;
-	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
-	onCreateNewCategory: (category: {
-		label: string;
-		value: string | number;
-	}) => Promise<void>;
 	bookmarksList: SingleListData[];
-	isCategoryChangeLoading: boolean;
 	userId: string;
 }) => {
 	const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
@@ -86,21 +77,6 @@ export const EditDropdownButton = ({
 					>
 						<EditDropdownContent
 							post={post}
-							onCategoryChange={async (value) => {
-								if (value) {
-									onCategoryChange([post.id], Number(value.value));
-									setOpenedMenuId(null);
-								}
-							}}
-							onCreateCategory={async (value) => {
-								if (value) {
-									try {
-										await onCreateNewCategory(value);
-									} finally {
-										setOpenedMenuId(null);
-									}
-								}
-							}}
 							addExistingTag={async (tag) => {
 								const tagValue = tag[tag.length - 1]?.value;
 								if (!tagValue) {
@@ -156,7 +132,6 @@ export const EditDropdownButton = ({
 										return;
 									}
 
-									// Optimistic mutation - UI updates instantly
 									await mutationApiCall(
 										createAndAssignTagMutation.mutateAsync({
 											tagName: newTagLabel,
@@ -168,7 +143,6 @@ export const EditDropdownButton = ({
 								}
 							}}
 							addedTags={post.addedTags}
-							isCategoryChangeLoading={isCategoryChangeLoading}
 							userId={userId}
 						/>
 					</AriaDropdownMenu>

@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { flatten } from "lodash";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -7,7 +8,10 @@ import {
 	useLoadersStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
-import { type SupabaseSessionType } from "../../../types/apiTypes";
+import {
+	type SingleListData,
+	type SupabaseSessionType,
+} from "../../../types/apiTypes";
 import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
 import {
 	BOOKMARKS_KEY,
@@ -55,8 +59,18 @@ export default function useFetchPaginatedBookmarks() {
 		}
 	}, [isSortByLoading, everythingData, toggleIsSortByLoading]);
 
+	// Flatten paginated data reactively - this updates when cache changes
+	const flattendPaginationBookmarkData = useMemo(
+		() =>
+			flatten(
+				everythingData?.pages?.map((page) => page?.data),
+			) as SingleListData[],
+		[everythingData],
+	);
+
 	return {
 		everythingData,
+		flattendPaginationBookmarkData,
 		fetchNextPage,
 		isEverythingDataLoading,
 		isFetchingEverythingData,

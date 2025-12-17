@@ -21,7 +21,7 @@ import {
 	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 import { getAxiosConfigWithAuth } from "../../../utils/helpers";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 import { vet } from "@/utils/try";
@@ -39,7 +39,7 @@ export const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
 
-	const { error: uploadError } = await r2Helpers.uploadObject(
+	const { error: uploadError } = await storageHelpers.uploadObject(
 		R2_MAIN_BUCKET_NAME,
 		storagePath,
 		new Uint8Array(decode(base64info)),
@@ -47,10 +47,10 @@ export const upload = async (base64info: string, uploadUserId: string) => {
 	);
 
 	if (uploadError) {
-		console.error("R2 upload failed:", uploadError);
+		console.error("Storage upload failed:", uploadError);
 		Sentry.captureException(uploadError, {
 			tags: {
-				operation: "r2_upload",
+				operation: "storage_upload",
 				userId: uploadUserId,
 			},
 			extra: {
@@ -60,7 +60,7 @@ export const upload = async (base64info: string, uploadUserId: string) => {
 		return null;
 	}
 
-	const { data: storageData } = r2Helpers.getPublicUrl(storagePath);
+	const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
 
 	return storageData?.publicUrl || null;
 };

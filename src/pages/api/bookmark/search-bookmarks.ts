@@ -103,10 +103,23 @@ export default async function handler(
 
 		const tagName = extractTagNamesFromSearch(search);
 
+		// Determine category_scope for junction table filtering
+		// Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
+		const userInCollections = isUserInACategoryInApi(
+			category_id as string,
+			false,
+		);
+		const categoryScope = userInCollections
+			? category_id === UNCATEGORIZED_URL
+				? 0
+				: Number(category_id)
+			: null;
+
 		console.log("[search-bookmarks] Parsed search parameters:", {
 			urlScope,
 			searchText,
 			tagName,
+			categoryScope,
 		});
 
 		let query = supabase
@@ -114,15 +127,55 @@ export default async function handler(
 				search_text: searchText,
 				url_scope: urlScope,
 				tag_scope: tagName,
+				category_scope: categoryScope,
 			})
 			.eq("trash", category_id === TRASH_URL)
 			.range(offset, offset + limit);
 
 		if (isDiscoverPage) {
 			query = query.not("make_discoverable", "is", null);
-		} else {
+		} else if (!user_id) {
 			if (!user_id) {
 				response.status(401).json({
+					data: null,
+					error: { message: "Unauthorized" },
+				});
+				return;
+			}
+
+			if (!userInCollections) {
+				// if user is not in any category, then get only the items that match the user_id
+				query = query.eq("user_id", user_id);
+			}
+		}
+
+		if (userInCollections) {
+			// check if user is a collaborator for the category
+			const {
+				success: isUserCollaboratorInCategorySuccess,
+				error: isUserCollaboratorInCategoryError,
+			} = await isUserCollaboratorInCategory(
+				supabase,
+				category_id as string,
+				email,
+			);
+
+			if (!isUserCollaboratorInCategorySuccess) {
+				console.error(
+					"[search-bookmarks] Error checking if user is a collaborator for the category:",
+					isUserCollaboratorInCategoryError,
+				);
+				Sentry.captureException(isUserCollaboratorInCategoryError, {
+					tags: {
+						operation: "check_user_collaborator_of_category",
+					},
+					extra: { category_id },
+					user: {
+						id: user_id,
+						email,
+					},
+				});
+				response.status(500).json({
 					data: null,
 					error: { message: "Unauthorized" },
 				});
@@ -184,7 +237,7 @@ export default async function handler(
 				} = await checkIsUserOwnerOfCategory(
 					supabase,
 					category_id as string,
-					user_id,
+					user_id as string,
 				);
 
 				if (!isUserOwnerOfCategorySuccess) {
@@ -289,13 +342,19 @@ export default async function handler(
 		});
 
 		const finalData = (data ?? []).map((item) => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const { ogimage, added_tags: addedTags, ...rest } = item as any;
+			const {
+				ogimage,
+				added_tags: addedTags,
+				added_categories: addedCategories,
+				...rest
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} = item as any;
 
 			return {
 				...(rest as SingleListData),
 				ogImage: ogimage,
 				addedTags,
+				addedCategories,
 			};
 		}) as SingleListData[];
 

@@ -89,3 +89,4 @@ public/sitemap-0.xml
 .claude/docs
 .vercel
 .worktrees
+supabase/seed.sql

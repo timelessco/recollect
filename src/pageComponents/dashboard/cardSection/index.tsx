@@ -9,7 +9,7 @@ import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import { CollectionIcon } from "../../../components/collectionIcon";
+import { CategoryBadges } from "../../../components/categoryBadges";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import { Spinner } from "../../../components/spinner";
@@ -71,24 +71,18 @@ import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
-
+	flattendPaginationBookmarkData?: SingleListData[];
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	onDeleteClick: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
-	isCategoryChangeLoading?: boolean;
-	onCreateNewCategory?: (category: {
-		label: string;
-		value: string | number;
-	}) => Promise<void>;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -97,6 +91,7 @@ const getImageSource = (item: SingleListData) =>
 
 const CardSection = ({
 	listData = [],
+	flattendPaginationBookmarkData = [],
 	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
@@ -104,13 +99,10 @@ const CardSection = ({
 	showAvatar = false,
 	isOgImgLoading = false,
 	isBookmarkLoading = false,
-	onCategoryChange,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
-	isCategoryChangeLoading = false,
-	onCreateNewCategory = async () => {},
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
@@ -255,12 +247,6 @@ const CardSection = ({
 		return false;
 	};
 
-	const singleBookmarkCategoryData = (category_id: number) => {
-		const name = find(categoryData?.data, (item) => item?.id === category_id);
-
-		return name as CategoriesData;
-	};
-
 	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
 		const iconBgClassName =
@@ -294,10 +280,7 @@ const CardSection = ({
 				isPublicPage={isPublicPage}
 				setOpenedMenuId={setOpenedMenuId}
 				post={post}
-				onCategoryChange={onCategoryChange}
-				onCreateNewCategory={onCreateNewCategory}
 				bookmarksList={bookmarksList}
-				isCategoryChangeLoading={isCategoryChangeLoading}
 				userId={userId}
 			/>
 		);
@@ -468,7 +451,7 @@ const CardSection = ({
 	const renderUrl = (item: SingleListData) => (
 		<p
 			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
-				!isNull(item?.category_id) && isNull(categorySlug)
+				(item?.addedCategories?.length ?? 0) > 0 && isNull(categorySlug)
 					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
 			}`}
@@ -628,24 +611,25 @@ const CardSection = ({
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
-		const bookmarkCategoryData = singleBookmarkCategoryData(
-			item?.category_id ?? 0,
+		// Only show categories in "Everything" view
+		if (categorySlug !== EVERYTHING_URL) {
+			return null;
+		}
+
+		// Filter out uncategorized (id=0) for display
+		const displayCategories = item.addedCategories?.filter(
+			(cat) => cat.id !== 0,
 		);
 
+		if (!displayCategories?.length) {
+			return null;
+		}
+
 		return (
-			<>
-				{!isNull(item?.category_id) &&
-					categorySlug === EVERYTHING_URL &&
-					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
-							<p className="mr-1">in</p>
-							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-13 leading-4 font-450 text-gray-600">
-								{bookmarkCategoryData?.category_name}
-							</p>
-						</div>
-					)}
-			</>
+			<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
+				<p className="mr-1">in</p>
+				<CategoryBadges categories={displayCategories} maxVisible={2} />
+			</div>
 		);
 	};
 
@@ -889,8 +873,8 @@ const CardSection = ({
 				bookmarksColumns={bookmarksColumns}
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
+				flattendPaginationBookmarkData={flattendPaginationBookmarkData}
 				isPublicPage={isPublicPage}
-				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"
 			>
 				{sortByCondition?.map((item) => (

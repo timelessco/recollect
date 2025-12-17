@@ -18,7 +18,6 @@ import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmark
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
@@ -36,7 +35,6 @@ import { fileUpload } from "../../async/uploads/file-upload";
 import useDebounce from "../../hooks/useDebounce";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
-import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useGetViewValue from "../../hooks/useGetViewValue";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
@@ -138,6 +136,7 @@ const Dashboard = () => {
 
 	const {
 		everythingData,
+		flattendPaginationBookmarkData,
 		fetchNextPage: fetchNextBookmarkPage,
 		isEverythingDataLoading,
 	} = useFetchPaginatedBookmarks();
@@ -228,9 +227,6 @@ const Dashboard = () => {
 	// tag mutation
 
 	const { onDeleteCollection } = useDeleteCollection();
-
-	const { addCategoryToBookmarkOptimisticMutation } =
-		useAddCategoryToBookmarkOptimisticMutation(true);
 
 	const { updateCategoryOptimisticMutation } =
 		useUpdateCategoryOptimisticMutation();
@@ -329,9 +325,6 @@ const Dashboard = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userProfileData?.data?.[0]?.provider]);
 
-	const { flattendPaginationBookmarkData } =
-		useGetFlattendPaginationBookmarkData();
-
 	const addBookmarkLogic = async (url: string) => {
 		const currentCategory = find(
 			allCategories?.data,
@@ -348,19 +341,6 @@ const Dashboard = () => {
 					)?.edit_access === true ||
 					currentCategory?.user_id?.id === session?.user?.id
 				: true;
-
-		if (typeof CATEGORY_ID === "number") {
-			// to check that the same bookmark should not be there in the same category
-			const existingBookmarkCheck = find(
-				flattendPaginationBookmarkData,
-				(item) => item?.url === url && item?.category_id === CATEGORY_ID,
-			);
-
-			if (existingBookmarkCheck) {
-				errorToast("This bookmark already exists in the category");
-				return;
-			}
-		}
 
 		await mutationApiCall(
 			addBookmarkMinDataOptimisticMutation.mutateAsync({
@@ -655,6 +635,9 @@ const Dashboard = () => {
 												bookmarksCountData?.data ?? undefined,
 												CATEGORY_ID as unknown as string | number | null,
 											)}
+											flattendPaginationBookmarkData={
+												flattendPaginationBookmarkData
+											}
 											isBookmarkLoading={
 												addBookmarkMinDataOptimisticMutation?.isPending
 											}
@@ -669,61 +652,6 @@ const Dashboard = () => {
 												isSearching
 													? flattenedSearchData
 													: flattendPaginationBookmarkData
-											}
-											onCategoryChange={async (value, cat_id) => {
-												const categoryId = cat_id;
-												const currentBookmarksData = isSearching
-													? flattenedSearchData
-													: flattendPaginationBookmarkData;
-
-												const currentCategory =
-													find(
-														allCategories?.data,
-														(item) => item?.id === categoryId,
-													) ??
-													find(
-														allCategories?.data,
-														(item) => item?.id === CATEGORY_ID,
-													);
-
-												const updateAccessCondition =
-													find(
-														currentCategory?.collabData,
-														(item) => item?.userEmail === session?.user?.email,
-													)?.edit_access === true ||
-													currentCategory?.user_id?.id === session?.user?.id;
-												for (const item of value) {
-													const bookmarkId = item.toString();
-
-													const foundBookmark = find(
-														currentBookmarksData,
-														(bookmarkItem) =>
-															Number.parseInt(bookmarkId, 10) ===
-															bookmarkItem?.id,
-													);
-													const bookmarkCreatedUserId =
-														typeof foundBookmark?.user_id === "object"
-															? foundBookmark?.user_id?.id
-															: foundBookmark?.user_id;
-
-													if (bookmarkCreatedUserId === session?.user?.id) {
-														await addCategoryToBookmarkOptimisticMutation.mutateAsync(
-															{
-																category_id: categoryId,
-																bookmark_id: Number.parseInt(bookmarkId, 10),
-																update_access:
-																	isNull(categoryId) || !categoryId
-																		? true
-																		: updateAccessCondition,
-															},
-														);
-													} else {
-														errorToast("You cannot move collaborators uploads");
-													}
-												}
-											}}
-											isCategoryChangeLoading={
-												addCategoryToBookmarkOptimisticMutation?.isPending
 											}
 											onDeleteClick={(item) => {
 												if (CATEGORY_ID === TRASH_URL) {
@@ -830,8 +758,6 @@ const Dashboard = () => {
 						isOgImgLoading={isOgImgLoading}
 						isPublicPage
 						listData={displayData}
-						onCategoryChange={() => {}}
-						onCreateNewCategory={async () => {}}
 						onDeleteClick={() => {}}
 						onMoveOutOfTrashClick={() => {}}
 						showAvatar={false}

@@ -12,6 +12,9 @@ import { ThemeProvider } from "next-themes";
 
 import { getBaseUrl } from "../utils/constants";
 
+import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
+import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
+
 import "../styles/globals.css";
 
 const MyApp = ({
@@ -81,6 +84,8 @@ const MyApp = ({
 					<Component {...pageProps} />
 				</HydrationBoundary>
 				<ReactQueryDevtools />
+				<TailwindIndicator />
+				<MutationIndicator />
 			</QueryClientProvider>
 		</ThemeProvider>
 	);

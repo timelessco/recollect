@@ -15,7 +15,6 @@ import isNull from "lodash/isNull";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type AddBookmarkScreenshotPayloadTypes,
-	type AddCategoryToBookmarkApiPayload,
 	type AddTagToBookmarkApiPayload,
 	type AddUserTagsApiPayload,
 	type BookmarksCountTypes,
@@ -49,7 +48,6 @@ import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
 	ADD_BOOKMARK_MIN_DATA,
-	ADD_CATEGORY_TO_BOOKMARK_API,
 	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
 	CHECK_API_KEY_API,
@@ -99,7 +97,6 @@ import {
 } from "../../utils/helpers";
 
 import { handleClientError } from "@/utils/error-utils/client";
-import { successToast } from "@/utils/toastMessages";
 
 // bookmark
 // get bookmark by id
@@ -600,32 +597,6 @@ export const deleteUserCategory = async ({
 		return response?.data;
 	} catch (error) {
 		return error;
-	}
-};
-
-export const addCategoryToBookmark = async ({
-	category_id,
-	bookmark_id,
-	update_access = false,
-}: AddCategoryToBookmarkApiPayload) => {
-	try {
-		const response = await axios.post(
-			`${NEXT_API_URL}${ADD_CATEGORY_TO_BOOKMARK_API}`,
-			{
-				category_id: isNull(category_id) || !category_id ? 0 : category_id,
-				bookmark_id,
-				update_access,
-			},
-		);
-		successToast("Category added to bookmark");
-		return response;
-	} catch (error) {
-		handleClientError(error, "Failed to add category to bookmark");
-		return await Promise.reject(
-			error instanceof Error
-				? error
-				: new Error("Failed to add category to bookmark"),
-		);
 	}
 };
 

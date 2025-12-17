@@ -1,16 +1,21 @@
 import { BASE_URL } from "@/site-config";
 
+// Category IDs
+export const UNCATEGORIZED_CATEGORY_ID = 0;
+
 // table names
 export const MAIN_TABLE_NAME = "everything";
 export const TAG_TABLE_NAME = "tags";
 export const BOOKMARK_TAGS_TABLE_NAME = "bookmark_tags";
+export const BOOKMARK_CATEGORIES_TABLE_NAME = "bookmark_categories";
 export const CATEGORIES_TABLE_NAME = "categories";
 export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
 export const BOOKMARKS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
-export const R2_MAIN_BUCKET_NAME = "recollect";
+export const R2_MAIN_BUCKET_NAME =
+	process.env.NEXT_PUBLIC_CLOUDFLARE_R2_BUCKET_NAME;
 
 export const STORAGE_SCRAPPED_IMAGES_PATH =
 	BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
@@ -91,11 +96,16 @@ export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
 // category api
 export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
-export const ADD_CATEGORY_TO_BOOKMARK_API =
-	"/category/add-category-to-bookmark";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
 export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
+export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
+export const ADD_CATEGORY_TO_BOOKMARK_API =
+	"/category/add-category-to-bookmark";
+export const ADD_CATEGORY_TO_BOOKMARKS_API =
+	"/category/add-category-to-bookmarks";
+export const REMOVE_CATEGORY_FROM_BOOKMARK_API =
+	"/category/remove-category-from-bookmark";
 // share api
 export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API =
 	"/fetch-public-category-bookmarks";
@@ -359,7 +369,7 @@ export const PDF_VIEWER_PARAMS =
 // Lightbox button types
 export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
-export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
+export const CF_IMAGE_LOADER_URL = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/cdn-cgi/image`;
 
 export const SKIP_OG_IMAGE_DOMAINS = [
 	"amazon.in",
@@ -398,9 +408,9 @@ export const isGuestPath = (pathname: string) =>
 /**
  * Array of public paths that don't require authentication
  */
-export const PUBLIC_PATHS = new Set(["/public"]);
+export const PUBLIC_PATHS = new Set(["/error", "/public"]);
 export const isPublicPath = (pathname: string) =>
-	pathname.startsWith("/public");
+	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
 
 export const MAX_TAG_NAME_LENGTH = 20;
 export const MIN_TAG_NAME_LENGTH = 1;

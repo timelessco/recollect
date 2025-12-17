@@ -1,6 +1,6 @@
 -- ============================================================================
 -- MIGRATION: Fix Authorization Bypass in everything table RLS (REC-656)
--- Created: 2024-12-04
+-- Created: 2025-12-04
 -- Purpose: Replace insecure USING (true) policy with proper user-scoped access
 -- ============================================================================
 
@@ -44,5 +44,5 @@ CREATE INDEX IF NOT EXISTS idx_everything_user_id ON public.everything (user_id)
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON public.categories (user_id);
 
 -- Documentation
-COMMENT ON POLICY "user_access_own_bookmarks" ON public.everything IS 
+COMMENT ON POLICY "user_access_own_bookmarks" ON public.everything IS
 'Allows users to access: (1) their own bookmarks, (2) all bookmarks in categories shared with them as collaborators, (3) all bookmarks in categories they own (including those added by collaborators). Fixes OWASP A01:2021 (Broken Access Control) vulnerability.';

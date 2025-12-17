@@ -4,50 +4,50 @@ import { useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
 
 import AriaMultiSelect from "../../../components/ariaMultiSelect";
-import AriaSearchableSelect from "../../../components/ariaSearchableSelect";
+import { CategoryMultiSelect } from "../../../components/categoryMultiSelect";
 import LabelledComponent from "../../../components/labelledComponent";
 import {
 	type CategoriesData,
 	type SingleListData,
 	type UserTagsData,
 } from "../../../types/apiTypes";
+import { type TagInputOption } from "../../../types/componentTypes";
 import {
-	type SearchSelectOption,
-	type TagInputOption,
-} from "../../../types/componentTypes";
-import { CATEGORIES_KEY, MAX_TAG_NAME_LENGTH } from "../../../utils/constants";
+	CATEGORIES_KEY,
+	MAX_TAG_NAME_LENGTH,
+	UNCATEGORIZED_CATEGORY_ID,
+} from "../../../utils/constants";
 
 import { useChangeDiscoverable } from "@/async/mutationHooks/bookmarks/useChangeDiscoverable";
+import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
+import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/useRemoveCategoryFromBookmarkMutation";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { Spinner } from "@/components/spinner";
 import { handleClientError } from "@/utils/error-utils/client";
 
 interface EditDropdownContentProps {
 	post: SingleListData;
-	onCategoryChange: (value: SearchSelectOption | null) => Promise<void>;
-	onCreateCategory: (value: SearchSelectOption | null) => Promise<void>;
 	addExistingTag: (
 		value: Array<{ label: string; value: number }>,
 	) => Promise<void>;
 	removeExistingTag: (value: TagInputOption) => Promise<void>;
 	createTag: (value: Array<{ label: string }>) => Promise<void>;
 	addedTags: UserTagsData[];
-	isCategoryChangeLoading: boolean;
 	userId: string;
 }
 
 const EditDropdownContentBase = ({
 	post,
-	onCategoryChange,
-	onCreateCategory,
 	addExistingTag,
 	removeExistingTag,
 	createTag,
 	addedTags = [],
-	isCategoryChangeLoading = false,
 	userId,
 }: EditDropdownContentProps) => {
 	const queryClient = useQueryClient();
+	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
+	const { removeCategoryFromBookmarkMutation } =
+		useRemoveCategoryFromBookmarkMutation();
 	const postUserId =
 		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
 	const isOwner = userId && postUserId === userId;
@@ -59,42 +59,20 @@ const EditDropdownContentBase = ({
 	const { userTags } = useFetchUserTags();
 	const filteredUserTags = userTags?.data ? userTags?.data : [];
 
-	const categoryOptions = useMemo(() => {
-		const base = [
-			{
-				label: "Uncategorized",
-				value: 0,
-			},
-		];
+	// Get all categories for the multi-select dropdown
+	const allCategories = useMemo(
+		() => categoryData?.data ?? [],
+		[categoryData?.data],
+	);
 
-		if (isOwner) {
-			return [
-				...base,
-				...(categoryData?.data?.map((item) => ({
-					label: item?.category_name,
-					value: item?.id,
-				})) ?? []),
-			];
-		}
-
-		return base;
-	}, [categoryData?.data, isOwner]);
-
-	const defaultValue = useMemo(() => {
-		const match = find(
-			categoryData?.data,
-			(item) => item?.id === post?.category_id,
-		);
-
-		if (!match) {
-			return undefined;
-		}
-
-		return {
-			label: match?.category_name,
-			value: match?.id,
-		};
-	}, [categoryData?.data, post?.category_id]);
+	// Get selected category IDs from the bookmark
+	const selectedCategoryIds = useMemo(
+		() =>
+			post.addedCategories?.length
+				? post.addedCategories.map((cat) => cat.id)
+				: [UNCATEGORIZED_CATEGORY_ID],
+		[post.addedCategories],
+	);
 
 	if (!categoryData) {
 		return (
@@ -104,97 +82,100 @@ const EditDropdownContentBase = ({
 		);
 	}
 
+	if (!isOwner) {
+		return null;
+	}
+
 	return (
 		<div className="w-64 space-y-3">
-			{isOwner && (
-				<LabelledComponent
-					label="Tags"
-					labelClassName="ml-2 mb-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2"
-				>
-					<AriaMultiSelect
-						defaultList={addedTags?.map((item) => item?.name) || []}
-						list={filteredUserTags?.map((item) => item?.name) ?? []}
-						onChange={async (action, value) => {
-							if (action === "remove") {
-								const tagData = find(
-									addedTags,
-									(findItem) => findItem.name === value,
-								);
-								if (tagData) {
-									await removeExistingTag({
-										label: tagData?.name,
-										value: tagData?.id,
-									});
-								}
-							}
-
-							if (action === "add" && Array.isArray(value)) {
-								const mapped = value
-									.map((addItem) => {
-										const match = find(
-											filteredUserTags,
-											(item) => item.name === addItem,
-										);
-										return match
-											? { label: match.name, value: match.id }
-											: undefined;
-									})
-									.filter(Boolean);
-
-								if (mapped.length) {
-									await addExistingTag(
-										mapped as Array<{ label: string; value: number }>,
-									);
-								}
-							}
-
-							if (action === "create") {
-								if (typeof value !== "string") {
-									handleClientError("create-tag", "Invalid tag name");
-									return;
-								}
-
-								const trimmedTagName = value.trim();
-
-								if (!trimmedTagName) {
-									handleClientError("create-tag", "Tag name cannot be empty");
-									return;
-								}
-
-								if (trimmedTagName.length > MAX_TAG_NAME_LENGTH) {
-									handleClientError(
-										"create-tag",
-										`Tag name must be ${MAX_TAG_NAME_LENGTH} characters or less`,
-									);
-									return;
-								}
-
-								await createTag([{ label: trimmedTagName }]);
-							}
-						}}
-						placeholder="Tag name..."
-					/>
-				</LabelledComponent>
-			)}
 			<LabelledComponent
-				label="Collection"
+				label="Tags"
 				labelClassName="ml-2 mb-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2"
 			>
-				<AriaSearchableSelect
-					defaultValue={defaultValue?.label || ""}
-					isLoading={isCategoryChangeLoading}
-					list={categoryOptions.map((item) => item.label)}
-					onChange={async (value) => {
-						const data = find(categoryOptions, (item) => item.label === value);
-						if (data) {
-							await onCategoryChange(data);
-						} else {
-							handleClientError("Failed to change category. Please try again.");
+				<AriaMultiSelect
+					defaultList={addedTags?.map((item) => item?.name) || []}
+					list={filteredUserTags?.map((item) => item?.name) ?? []}
+					onChange={async (action, value) => {
+						if (action === "remove") {
+							const tagData = find(
+								addedTags,
+								(findItem) => findItem.name === value,
+							);
+							if (tagData) {
+								await removeExistingTag({
+									label: tagData?.name,
+									value: tagData?.id,
+								});
+							}
+						}
+
+						if (action === "add" && Array.isArray(value)) {
+							const mapped = value
+								.map((addItem) => {
+									const match = find(
+										filteredUserTags,
+										(item) => item.name === addItem,
+									);
+									return match
+										? { label: match.name, value: match.id }
+										: undefined;
+								})
+								.filter(Boolean);
+
+							if (mapped.length) {
+								await addExistingTag(
+									mapped as Array<{ label: string; value: number }>,
+								);
+							}
+						}
+
+						if (action === "create") {
+							if (typeof value !== "string") {
+								handleClientError("create-tag", "Invalid tag name");
+								return;
+							}
+
+							const trimmedTagName = value.trim();
+
+							if (!trimmedTagName) {
+								handleClientError("create-tag", "Tag name cannot be empty");
+								return;
+							}
+
+							if (trimmedTagName.length > MAX_TAG_NAME_LENGTH) {
+								handleClientError(
+									"create-tag",
+									`Tag name must be ${MAX_TAG_NAME_LENGTH} characters or less`,
+								);
+								return;
+							}
+
+							await createTag([{ label: trimmedTagName }]);
 						}
 					}}
-					onCreate={async (value) =>
-						await onCreateCategory({ label: value, value })
-					}
+					placeholder="Tag name..."
+				/>
+			</LabelledComponent>
+
+			<LabelledComponent
+				label="Collections"
+				labelClassName="ml-2 mb-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2"
+			>
+				<CategoryMultiSelect
+					allCategories={allCategories}
+					onAddCategory={(categoryId) => {
+						addCategoryToBookmarkMutation.mutate({
+							bookmark_id: post.id,
+							category_id: categoryId,
+						});
+					}}
+					onRemoveCategory={(categoryId) => {
+						removeCategoryFromBookmarkMutation.mutate({
+							bookmark_id: post.id,
+							category_id: categoryId,
+						});
+					}}
+					selectedCategoryIds={selectedCategoryIds}
 				/>
 			</LabelledComponent>
 			<div className="flex items-center gap-2 rounded-md border border-gray-200 px-2 py-1">
