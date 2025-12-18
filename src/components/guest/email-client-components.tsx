@@ -16,7 +16,7 @@ import { handleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
 const emailSchema = z.object({
-	email: z.email({ message: "Invalid email address" }),
+	email: z.email({ error: "Invalid email address" }),
 });
 
 export function EmailToOtpForm() {
