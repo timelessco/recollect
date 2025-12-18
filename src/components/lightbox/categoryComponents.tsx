@@ -13,7 +13,7 @@ import { CollectionIcon } from "../collectionIcon";
 import { checkboxBoxStyles } from "../ui/recollect/checkbox";
 
 import { CheckIcon } from "@/icons/check-icon";
-import { LightboxCloseIcon } from "@/icons/lightboxCloseIcon";
+import { LightboxCloseIcon } from "@/icons/lightbox-close-icon";
 import { type CategoriesData } from "@/types/apiTypes";
 
 const tagStyles = tv({

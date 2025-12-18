@@ -169,10 +169,10 @@ See [`docs/frontend_rules.md`](./docs/frontend_rules.md) for full details.
 
 Recollect is an open-source bookmark, images, and documents manager built with:
 
-- Next.js 16.0.10 (React 19.2.1)
+- Next.js 16.0.10 (React 19.2.3)
 - TypeScript 5.9.3 (strict mode)
 - Supabase SSR (@supabase/ssr)
-- TailwindCSS 4.1.17
+- TailwindCSS 4.1.18
 - Zustand 5.0.9 & React Query 5.90.12
 
 ## Key Features
@@ -192,9 +192,9 @@ Recollect is an open-source bookmark, images, and documents manager built with:
 | Category   | Package                               | Version       |
 | ---------- | ------------------------------------- | ------------- |
 | Framework  | next                                  | 16.0.10       |
-| React      | react, react-dom                      | 19.2.1        |
+| React      | react, react-dom                      | 19.2.3        |
 | TypeScript | typescript                            | 5.9.3         |
-| Styling    | tailwindcss                           | 4.1.17        |
+| Styling    | tailwindcss                           | 4.1.18        |
 | Backend    | @supabase/ssr                         | 0.8.0         |
 | State      | zustand                               | 5.0.9         |
 | Data       | @tanstack/react-query                 | 5.90.12       |

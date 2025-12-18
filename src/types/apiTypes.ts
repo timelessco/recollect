@@ -320,7 +320,9 @@ export type UpdateSharedCategoriesUserAccessApiPayload = {
 };
 
 export type AddTagToBookmarkApiPayload = {
-	selectedData: BookmarksTagData | BookmarksTagData[];
+	selectedData:
+		| Pick<BookmarksTagData, "bookmark_id" | "tag_id">
+		| Array<Pick<BookmarksTagData, "bookmark_id" | "tag_id">>;
 };
 
 export type AddUserTagsApiPayload = { tagsData: { name: string } };
