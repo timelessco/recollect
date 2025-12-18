@@ -11,14 +11,14 @@ import { CheckIcon } from "@/icons/check-icon";
 import { LightboxCloseIcon } from "@/icons/lightbox-close-icon";
 import { cn } from "@/utils/tailwind-merge";
 
-// Marker for the "create new" option
 const CREATE_NEW_MARKER = Symbol("create-new");
-type CreateNewItem = { __createNew: typeof CREATE_NEW_MARKER; label: string };
 
-// =============================================================================
-// HELPER: Check if item is create marker
-// =============================================================================
+type CreateNewItem = {
+	__createNew: typeof CREATE_NEW_MARKER;
+	label: string;
+};
 
+// Type guard for CreateNewItem
 const isCreateNewItem = (item: unknown): item is CreateNewItem =>
 	typeof item === "object" &&
 	item !== null &&
@@ -55,7 +55,7 @@ const Root = <T,>({
 	const containerRef = React.useRef<HTMLDivElement | null>(null);
 	const [inputValue, setInputValue] = React.useState("");
 
-	const handleValueChange = (newValue: T[]) => {
+	const handleValueChange = (newValue: Array<T | CreateNewItem>) => {
 		// Check if create marker was selected
 		const createItem = newValue.find((item) => isCreateNewItem(item));
 		if (createItem) {
@@ -63,10 +63,15 @@ const Root = <T,>({
 			return;
 		}
 
-		const newIds = new Set(newValue.map(getItemId));
+		// Filter out any CreateNewItem instances (type guard ensures only T items remain)
+		const validNewItems = newValue.filter(
+			(item): item is T => !isCreateNewItem(item),
+		);
+
+		const newIds = new Set(validNewItems.map(getItemId));
 		const currentIds = new Set(selectedItems.map(getItemId));
 
-		for (const item of newValue) {
+		for (const item of validNewItems) {
 			if (!currentIds.has(getItemId(item))) {
 				onAdd(item);
 			}
@@ -117,6 +122,7 @@ const Root = <T,>({
 			onAdd,
 			onRemove,
 			inputValue,
+			setInputValue,
 			onCreate,
 			createSchema,
 		],
@@ -124,11 +130,8 @@ const Root = <T,>({
 
 	// Add create item to items array when conditions are met
 	// This ensures the create option participates in keyboard navigation
-	const itemsWithCreate = showCreateOption
-		? [
-				...items,
-				{ __createNew: CREATE_NEW_MARKER, label: inputValue.trim() } as T,
-			]
+	const itemsWithCreate: Array<T | CreateNewItem> = showCreateOption
+		? [...items, { __createNew: CREATE_NEW_MARKER, label: inputValue.trim() }]
 		: items;
 
 	return (
@@ -361,8 +364,9 @@ export const EditPopoverMultiSelect = {
 	ItemIndicator,
 };
 
-// Re-export context hooks for custom implementations
+// Re-export context hooks and types for custom implementations
 export {
+	type EditPopoverMultiSelectContextValue,
 	useEditPopoverMultiSelectContext,
 	useTypedEditPopoverContext,
 } from "./context";

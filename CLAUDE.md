@@ -200,6 +200,7 @@ Recollect is an open-source bookmark, images, and documents manager built with:
 | Data       | @tanstack/react-query                 | 5.90.12       |
 | Forms      | react-hook-form                       | 7.68.0        |
 | Validation | zod                                   | 4.1.13        |
+| UI         | @base-ui/react                        | 1.0.0         |
 | UI         | @ariakit/react, react-aria-components | 0.3.7 nightly |
 | Monitoring | @sentry/nextjs                        | 10.28.0       |
 
