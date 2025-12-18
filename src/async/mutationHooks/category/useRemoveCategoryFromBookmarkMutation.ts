@@ -45,6 +45,7 @@ export function useRemoveCategoryFromBookmarkMutation({
 		queryKey,
 		secondaryQueryKey: searchQueryKey,
 		skipSecondaryInvalidation: skipInvalidation,
+
 		updater: (currentData, variables) => {
 			if (!currentData?.pages) {
 				return currentData as PaginatedBookmarks;
@@ -128,7 +129,64 @@ export function useRemoveCategoryFromBookmarkMutation({
 			// Bookmark not found in any page - return unchanged
 			return currentData;
 		},
+
+		// Additional optimistic update for single bookmark cache (preview route support)
+		additionalOptimisticUpdates: [
+			{
+				getQueryKey: (variables) => [
+					BOOKMARKS_KEY,
+					String(variables.bookmark_id),
+				],
+				updater: (currentData, variables) => {
+					const data = currentData as
+						| { data: Array<{ addedCategories?: CategoriesData[] }> }
+						| undefined;
+					if (!data?.data?.[0]) {
+						return currentData;
+					}
+
+					const existingCategories = data.data[0].addedCategories ?? [];
+					const filteredCategories = existingCategories.filter(
+						(cat) => cat.id !== variables.category_id,
+					);
+
+					// Check if any non-zero categories remain
+					const hasNonZeroCategories = filteredCategories.some(
+						(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+					);
+
+					let finalCategories = filteredCategories;
+					if (!hasNonZeroCategories) {
+						// Get uncategorized entry from cache
+						const allCategories =
+							(
+								queryClient.getQueryData([
+									CATEGORIES_KEY,
+									session?.user?.id,
+								]) as { data: CategoriesData[] } | undefined
+							)?.data ?? [];
+						const uncategorizedEntry = allCategories.find(
+							(cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
+						);
+
+						if (uncategorizedEntry) {
+							finalCategories = [uncategorizedEntry];
+						}
+					}
+
+					return {
+						...data,
+						data: data.data.map((bookmark) => ({
+							...bookmark,
+							addedCategories: finalCategories,
+						})),
+					};
+				},
+			},
+		],
+
 		onSettled: (_data, error) => {
+			// Single bookmark cache is now updated optimistically via additionalOptimisticUpdates
 			if (error || skipInvalidation) {
 				return;
 			}

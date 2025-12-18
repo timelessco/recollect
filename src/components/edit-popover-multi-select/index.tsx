@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Combobox } from "@base-ui/react/combobox";
+import { matchSorter } from "match-sorter";
 import { type z } from "zod";
 
 import {
@@ -54,6 +55,36 @@ const Root = <T,>({
 }: RootProps<T>) => {
 	const containerRef = React.useRef<HTMLDivElement | null>(null);
 	const [inputValue, setInputValue] = React.useState("");
+
+	// Filter function for Base UI to know which items pass the filter
+	const filterFn = React.useCallback(
+		(itemValue: T | CreateNewItem, inputVal: string) => {
+			if (!inputVal.trim()) {
+				return true;
+			}
+
+			if (isCreateNewItem(itemValue)) {
+				return true;
+			}
+
+			const result = matchSorter([itemValue], inputVal, {
+				keys: [(item) => getItemLabel(item as T)],
+			});
+			return result.length > 0;
+		},
+		[getItemLabel],
+	);
+
+	// Filtered and sorted items using match-sorter
+	const filteredItems = React.useMemo(() => {
+		if (!inputValue.trim()) {
+			return items;
+		}
+
+		return matchSorter(items, inputValue, {
+			keys: [(item) => getItemLabel(item)],
+		});
+	}, [items, inputValue, getItemLabel]);
 
 	const handleValueChange = (newValue: Array<T | CreateNewItem>) => {
 		// Check if create marker was selected
@@ -128,11 +159,14 @@ const Root = <T,>({
 		],
 	);
 
-	// Add create item to items array when conditions are met
+	// Add create item to filtered items array when conditions are met
 	// This ensures the create option participates in keyboard navigation
 	const itemsWithCreate: Array<T | CreateNewItem> = showCreateOption
-		? [...items, { __createNew: CREATE_NEW_MARKER, label: inputValue.trim() }]
-		: items;
+		? [
+				...filteredItems,
+				{ __createNew: CREATE_NEW_MARKER, label: inputValue.trim() },
+			]
+		: filteredItems;
 
 	return (
 		<EditPopoverMultiSelectContext
@@ -143,9 +177,11 @@ const Root = <T,>({
 			<Combobox.Root
 				items={itemsWithCreate}
 				multiple
+				autoHighlight
 				value={selectedItems}
 				onValueChange={handleValueChange}
 				onInputValueChange={(value) => setInputValue(value ?? "")}
+				filter={filterFn}
 			>
 				{children}
 			</Combobox.Root>
@@ -239,34 +275,55 @@ function Input({
 }
 
 // =============================================================================
-// POPUP (Portal + Positioner + Popup)
+// PORTAL (re-export from Combobox)
 // =============================================================================
 
-type PopupProps = Combobox.Popup.Props & {
-	sideOffset?: number;
+const Portal = Combobox.Portal;
+
+// =============================================================================
+// POSITIONER
+// =============================================================================
+
+type PositionerProps = Omit<Combobox.Positioner.Props, "anchor"> & {
+	anchor?: Combobox.Positioner.Props["anchor"];
 };
 
-function Popup({ className, children, sideOffset = 4, ...props }: PopupProps) {
+function Positioner({
+	className,
+	children,
+	sideOffset = 4,
+	anchor,
+	...props
+}: PositionerProps) {
 	const { containerRef } = useEditPopoverMultiSelectContext();
 
 	return (
-		<Combobox.Portal>
-			<Combobox.Positioner
-				className="z-50"
-				sideOffset={sideOffset}
-				anchor={containerRef}
-			>
-				<Combobox.Popup
-					className={cn(
-						"max-h-[220px] w-(--anchor-width) overflow-y-auto rounded-xl bg-gray-0 p-1 shadow-custom-7",
-						className,
-					)}
-					{...props}
-				>
-					{children}
-				</Combobox.Popup>
-			</Combobox.Positioner>
-		</Combobox.Portal>
+		<Combobox.Positioner
+			className={cn("z-50", className)}
+			sideOffset={sideOffset}
+			anchor={anchor ?? containerRef}
+			{...props}
+		>
+			{children}
+		</Combobox.Positioner>
+	);
+}
+
+// =============================================================================
+// POPUP
+// =============================================================================
+
+function Popup({ className, children, ...props }: Combobox.Popup.Props) {
+	return (
+		<Combobox.Popup
+			className={cn(
+				"max-h-[220px] w-(--anchor-width) overflow-y-auto rounded-xl bg-gray-0 p-1 shadow-custom-7",
+				className,
+			)}
+			{...props}
+		>
+			{children}
+		</Combobox.Popup>
 	);
 }
 
@@ -357,6 +414,8 @@ export const EditPopoverMultiSelect = {
 	Chip,
 	ChipRemove,
 	Input,
+	Portal,
+	Positioner,
 	Popup,
 	Empty,
 	List,

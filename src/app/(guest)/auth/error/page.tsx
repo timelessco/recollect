@@ -1,4 +1,6 @@
+import { buttonBaseClasses } from "@/components/ui/recollect/button";
 import { Link } from "@/components/ui/recollect/link";
+import { cn } from "@/utils/tailwind-merge";
 
 interface AuthErrorPageProps {
 	searchParams: Promise<{ error: string }>;
@@ -36,8 +38,10 @@ export default async function Page(props: AuthErrorPageProps) {
 
 							<div className="mt-10 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6">
 								<Link
-									asButton
-									className="inline-flex items-center rounded-md border-transparent bg-[#171717] px-4 py-2 text-base font-medium text-white shadow-xs outline-hidden transition-all hover:bg-[#c18f33] hover:bg-linear-to-br focus-visible:ring-2 focus-visible:ring-white"
+									className={cn(
+										buttonBaseClasses,
+										"rounded-md border-transparent bg-[#171717] px-4 py-2 text-base font-medium text-white no-underline shadow-xs hover:bg-[#c18f33] hover:bg-linear-to-br focus-visible:ring-2 focus-visible:ring-white",
+									)}
 									href="/login"
 								>
 									Go back to login

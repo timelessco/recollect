@@ -44,6 +44,7 @@ export function useAddCategoryToBookmarkMutation({
 		queryKey,
 		secondaryQueryKey: searchQueryKey,
 		skipSecondaryInvalidation: skipInvalidation,
+
 		updater: (currentData, variables) => {
 			if (!currentData?.pages) {
 				return currentData as PaginatedBookmarks;
@@ -126,6 +127,66 @@ export function useAddCategoryToBookmarkMutation({
 			// Bookmark not found in any page - return unchanged
 			return currentData;
 		},
+
+		// Additional optimistic update for single bookmark cache (preview route support)
+		additionalOptimisticUpdates: [
+			{
+				getQueryKey: (variables) => [
+					BOOKMARKS_KEY,
+					String(variables.bookmark_id),
+				],
+				updater: (currentData, variables) => {
+					const data = currentData as
+						| { data: Array<{ addedCategories?: CategoriesData[] }> }
+						| undefined;
+					if (!data?.data?.[0]) {
+						return currentData;
+					}
+
+					const allCategories =
+						(
+							queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
+								| { data: CategoriesData[] }
+								| undefined
+						)?.data ?? [];
+					const newCategoryEntry = allCategories.find(
+						(cat) => cat.id === variables.category_id,
+					);
+
+					// If category not in cache, skip update
+					if (!newCategoryEntry) {
+						return currentData;
+					}
+
+					const existingCategories = data.data[0].addedCategories ?? [];
+
+					// Check for duplicates
+					const alreadyHasCategory = existingCategories.some(
+						(cat) => cat.id === variables.category_id,
+					);
+					if (alreadyHasCategory) {
+						return currentData;
+					}
+
+					// EXCLUSIVE MODEL: Filter out uncategorized when adding real category
+					const filteredCategories =
+						variables.category_id !== UNCATEGORIZED_CATEGORY_ID
+							? existingCategories.filter(
+									(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+								)
+							: existingCategories;
+
+					return {
+						...data,
+						data: data.data.map((bookmark) => ({
+							...bookmark,
+							addedCategories: [...filteredCategories, newCategoryEntry],
+						})),
+					};
+				},
+			},
+		],
+
 		onSettled: (_data, error) => {
 			if (error || skipInvalidation) {
 				return;
