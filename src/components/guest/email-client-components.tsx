@@ -68,7 +68,9 @@ export function EmailToOtpForm() {
 			onFormSubmit={handleFormSubmit}
 			className="flex w-full flex-col gap-4"
 		>
-			<EmailFieldWithQueryState />
+			<React.Suspense fallback={<EmailField />}>
+				<EmailFieldWithQueryState />
+			</React.Suspense>
 
 			<Button
 				type="submit"
@@ -79,6 +81,41 @@ export function EmailToOtpForm() {
 				Continue with Email
 			</Button>
 		</Form>
+	);
+}
+
+type EmailFieldProps = Pick<
+	React.ComponentPropsWithRef<typeof Field.Control>,
+	"value" | "onChange" | "autoFocus" | "ref"
+>;
+
+function EmailField({ ref, value, onChange, autoFocus }: EmailFieldProps) {
+	return (
+		<Field.Root name="email" className="flex flex-col gap-1">
+			<Field.Control
+				ref={ref}
+				type="email"
+				required
+				autoFocus={autoFocus}
+				aria-label="Email"
+				value={value}
+				inputMode="email"
+				autoComplete="email"
+				onChange={onChange}
+				placeholder="Enter your email"
+				className={cn(
+					"bg-gray-alpha-100",
+					"rounded-lg px-[10px] py-[7px]",
+					"text-sm leading-4 text-gray-900",
+					"placeholder:text-gray-600",
+					"transition",
+					"outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+					"data-invalid:bg-red-50 data-invalid:ring-red-600",
+					"data-disabled:cursor-not-allowed data-disabled:opacity-50",
+				)}
+			/>
+			<Field.Error className="text-xs text-red-600" />
+		</Field.Root>
 	);
 }
 
@@ -94,31 +131,11 @@ function EmailFieldWithQueryState() {
 	}, []);
 
 	return (
-		<Field.Root name="email" className="flex flex-col gap-1">
-			<Field.Control
-				ref={inputRef}
-				type="email"
-				required
-				autoFocus
-				aria-label="Email"
-				value={email}
-				inputMode="email"
-				autoComplete="email"
-				onChange={(event) => setEmail(event.target.value)}
-				placeholder="Enter your email"
-				className={cn(
-					"bg-gray-alpha-100",
-					"rounded-lg px-[10px] py-[7px]",
-					"text-sm leading-4 text-gray-900",
-					"placeholder:text-gray-600",
-					"transition",
-					"outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
-					"data-invalid:bg-red-50 data-invalid:ring-red-600",
-					"data-disabled:cursor-not-allowed data-disabled:opacity-50",
-				)}
-			/>
-
-			<Field.Error className="text-xs text-red-600" />
-		</Field.Root>
+		<EmailField
+			ref={inputRef}
+			value={email}
+			onChange={(event) => setEmail(event.target.value)}
+			autoFocus
+		/>
 	);
 }
