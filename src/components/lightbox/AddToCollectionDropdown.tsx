@@ -16,13 +16,14 @@ import { AddToCollectionsButton } from "../../icons/addToCollectionsButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import { UNCATEGORIZED_CATEGORY_ID } from "../../utils/constants";
-import {
-	CategoryListBoxItem,
-	CategoryTagList,
-} from "../categoryMultiSelect/components";
 
+import { CategoryListBoxItem, CategoryTagList } from "./categoryComponents";
 import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/useRemoveCategoryFromBookmarkMutation";
+
+type OptimisticAction =
+	| { type: "add"; id: number }
+	| { type: "remove"; id: number };
 
 type AddToCollectionDropdownProps = {
 	everythingData: SingleListData[];
@@ -75,11 +76,17 @@ export const AddToCollectionDropdown = ({
 		(id) => id !== UNCATEGORIZED_CATEGORY_ID,
 	);
 
-	// Optimistic state for instant UI feedback
-	const [optimisticSelectedIds, addOptimisticIds] = useOptimistic(
-		visibleSelectedIds,
-		(_, newIds: number[]) => newIds,
-	);
+	// Optimistic state for instant UI feedback (action-based to avoid stale closures)
+	const [optimisticSelectedIds, dispatch] = useOptimistic<
+		number[],
+		OptimisticAction
+	>(visibleSelectedIds, (current, action) => {
+		if (action.type === "add") {
+			return current.includes(action.id) ? current : [...current, action.id];
+		}
+
+		return current.filter((x) => x !== action.id);
+	});
 
 	// Filter out uncategorized from available options
 	const visibleCategories = collections.filter(
@@ -102,7 +109,7 @@ export const AddToCollectionDropdown = ({
 		for (const id of newIds) {
 			if (!currentIds.has(id)) {
 				startTransition(() => {
-					addOptimisticIds([...optimisticSelectedIds, id]);
+					dispatch({ type: "add", id });
 					addCategoryToBookmarkMutation.mutate({
 						bookmark_id: bookmarkId,
 						category_id: id,
@@ -115,7 +122,7 @@ export const AddToCollectionDropdown = ({
 		for (const id of currentIds) {
 			if (!newIds.has(id)) {
 				startTransition(() => {
-					addOptimisticIds(optimisticSelectedIds.filter((x) => x !== id));
+					dispatch({ type: "remove", id });
 					removeCategoryFromBookmarkMutation.mutate({
 						bookmark_id: bookmarkId,
 						category_id: id,
@@ -132,7 +139,7 @@ export const AddToCollectionDropdown = ({
 			const id = Number(key);
 
 			startTransition(() => {
-				addOptimisticIds(optimisticSelectedIds.filter((x) => x !== id));
+				dispatch({ type: "remove", id });
 				removeCategoryFromBookmarkMutation.mutate({
 					bookmark_id: bookmarkId,
 					category_id: id,
@@ -187,6 +194,7 @@ export const AddToCollectionDropdown = ({
 						className="z-50 -mt-2 flex max-h-[186px] w-[150px] flex-col rounded-xl bg-gray-50 shadow-md"
 						isOpen={isOpen}
 						onOpenChange={setIsOpen}
+						isNonModal
 						triggerRef={triggerRef}
 					>
 						<Autocomplete filter={filterFn}>

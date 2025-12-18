@@ -84,5 +84,5 @@
 		"typescriptreact": "javascript",
 		"javascriptreact": "javascript"
 	},
-	"tailwindCSS.classFunctions": ["tcx", "tv"]
+	"tailwindCSS.classFunctions": ["tcx", "tv", "cn"]
 }
