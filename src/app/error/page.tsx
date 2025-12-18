@@ -1,8 +1,10 @@
 import { type Metadata } from "next";
 
+import { buttonBaseClasses } from "@/components/ui/recollect/button";
 import { Link } from "@/components/ui/recollect/link";
 import { BASE_URL } from "@/site-config";
 import { generatePageMetadata } from "@/utils/metadata-utils";
+import { cn } from "@/utils/tailwind-merge";
 
 export const metadata: Metadata = generatePageMetadata({
 	title: "Error",
@@ -43,8 +45,10 @@ export default async function Page(props: ErrorPageProps) {
 
 							<div className="mt-10 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6">
 								<Link
-									asButton
-									className="inline-flex items-center rounded-md border-transparent bg-plain px-4 py-2 text-base font-medium text-plain-reverse shadow-xs outline-hidden transition-all"
+									className={cn(
+										buttonBaseClasses,
+										"rounded-md border-transparent bg-plain px-4 py-2 text-base font-medium text-plain-reverse no-underline shadow-xs",
+									)}
 									href="/login"
 								>
 									Go back to login

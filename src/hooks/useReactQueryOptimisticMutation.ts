@@ -9,6 +9,29 @@ import {
 } from "@/hooks/useReactQueryMutation";
 
 // ============================================================================
+// Additional Optimistic Update Interface
+// ============================================================================
+
+/**
+ * Definition for additional dynamic optimistic cache updates.
+ * Use when you need to update extra cache locations beyond the primary queryKey.
+ * @template TVariables - Variables passed to mutationFn
+ * @template TData - Cache data type for this location (can differ from primary)
+ */
+export interface AdditionalOptimisticUpdate<TVariables, TData = unknown> {
+	/**
+	 * Function to compute query key from mutation variables.
+	 * Return null to skip this update (e.g., when cache doesn't exist).
+	 */
+	getQueryKey: (variables: TVariables) => QueryKey | null;
+	/**
+	 * Function to compute optimistic cache update for this location.
+	 * Can have different data shape than primary updater.
+	 */
+	updater: (currentData: TData | undefined, variables: TVariables) => TData;
+}
+
+// ============================================================================
 // Optimistic Mutation Options
 // ============================================================================
 
@@ -57,6 +80,12 @@ export interface ReactQueryOptimisticMutationOptions<
 	 * Useful when deferring invalidation (e.g., lightbox category changes).
 	 */
 	skipSecondaryInvalidation?: boolean;
+	/**
+	 * Additional cache locations to update optimistically.
+	 * Each entry can have a different data shape and dynamic key computed from variables.
+	 * Use for updating related caches (e.g., single bookmark cache alongside paginated cache).
+	 */
+	additionalOptimisticUpdates?: Array<AdditionalOptimisticUpdate<TVariables>>;
 }
 
 // ============================================================================
@@ -91,6 +120,7 @@ export function useReactQueryOptimisticMutation<
 	updater,
 	invalidates,
 	skipSecondaryInvalidation = false,
+	additionalOptimisticUpdates = [],
 	onSettled: userOnSettled,
 	onError: userOnError,
 	...restOptions
@@ -116,11 +146,32 @@ export function useReactQueryOptimisticMutation<
 				await queryClient.cancelQueries({ queryKey: secondaryQueryKey });
 			}
 
+			// Cancel queries for additional dynamic keys
+			const additionalSnapshots: Array<{ queryKey: QueryKey; data: unknown }> =
+				[];
+			for (const { getQueryKey } of additionalOptimisticUpdates) {
+				const dynamicKey = getQueryKey(variables);
+				if (dynamicKey) {
+					await queryClient.cancelQueries({ queryKey: dynamicKey });
+				}
+			}
+
 			// Snapshot previous values for rollback
 			const snapshot = queryClient.getQueryData<TCacheData>(queryKey);
 			const secondarySnapshot = secondaryQueryKey
 				? queryClient.getQueryData<TCacheData>(secondaryQueryKey)
 				: undefined;
+
+			// Snapshot additional caches
+			for (const { getQueryKey } of additionalOptimisticUpdates) {
+				const dynamicKey = getQueryKey(variables);
+				if (dynamicKey) {
+					additionalSnapshots.push({
+						queryKey: dynamicKey,
+						data: queryClient.getQueryData(dynamicKey),
+					});
+				}
+			}
 
 			// Apply optimistic update to primary cache
 			queryClient.setQueryData<TCacheData>(queryKey, (currentData) =>
@@ -134,6 +185,19 @@ export function useReactQueryOptimisticMutation<
 				);
 			}
 
+			// Apply additional optimistic updates with their own updaters
+			for (const {
+				getQueryKey,
+				updater: additionalUpdater,
+			} of additionalOptimisticUpdates) {
+				const dynamicKey = getQueryKey(variables);
+				if (dynamicKey) {
+					queryClient.setQueryData(dynamicKey, (currentData: unknown) =>
+						additionalUpdater(currentData, variables),
+					);
+				}
+			}
+
 			// Return rollback function as context (callable, with extra property)
 			const rollback = (() => {
 				queryClient.setQueryData<TCacheData>(queryKey, snapshot);
@@ -142,6 +206,11 @@ export function useReactQueryOptimisticMutation<
 						secondaryQueryKey,
 						secondarySnapshot,
 					);
+				}
+
+				// Rollback additional caches
+				for (const { queryKey: snapKey, data } of additionalSnapshots) {
+					queryClient.setQueryData(snapKey, data);
 				}
 			}) as RollbackFn;
 

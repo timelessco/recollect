@@ -1,12 +1,12 @@
 import { Icon, type IconProps } from "./icon";
-import { tcx } from "@/utils/tailwind-merge";
+import { cn } from "@/utils/tailwind-merge";
 
 export const Spinner = (props: IconProps) => {
 	const { className, ...rest } = props;
 
 	return (
 		<Icon
-			className={tcx(`animate-spin ${className}`)}
+			className={cn("animate-spin", className)}
 			fill="none"
 			viewBox="0 0 18 19"
 			{...rest}

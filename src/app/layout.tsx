@@ -2,8 +2,6 @@ import "@/styles/globals.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { type Metadata, type Viewport } from "next";
-import { headers } from "next/headers";
-import { isRTL } from "react-aria-components";
 import { ToastContainer } from "react-toastify";
 
 import { Providers } from "@/components/providers";
@@ -19,15 +17,10 @@ type RootLayoutProps = {
 export default async function RootLayout(props: RootLayoutProps) {
 	const { children } = props;
 
-	// Get the user's preferred language from the Accept-Language header.
-	// You could also get this from a database, URL param, etc.
-	const acceptLanguage = (await headers()).get("accept-language");
-	const lang = acceptLanguage?.split(/[,;]/u)[0] || "en-US";
-
 	return (
 		<html
-			lang={lang}
-			dir={isRTL(lang) ? "rtl" : "ltr"}
+			lang="en"
+			dir="ltr"
 			className="antialiased inter-display optimize-legibility"
 			suppressHydrationWarning
 		>

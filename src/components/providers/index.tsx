@@ -2,7 +2,6 @@ import { type ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
-import { ReactAriaProvider } from "./react-aria-provider";
 import { ReactQueryProvider } from "./react-query-provider";
 import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
 
@@ -15,14 +14,12 @@ export function Providers(props: ProvidersProps) {
 
 	return (
 		<ThemeProvider attribute="class">
-			<ReactAriaProvider>
-				<NuqsAdapter>
-					<ReactQueryProvider>
-						{children}
-						<MutationIndicator />
-					</ReactQueryProvider>
-				</NuqsAdapter>
-			</ReactAriaProvider>
+			<NuqsAdapter>
+				<ReactQueryProvider>
+					{children}
+					<MutationIndicator />
+				</ReactQueryProvider>
+			</NuqsAdapter>
 		</ThemeProvider>
 	);
 }

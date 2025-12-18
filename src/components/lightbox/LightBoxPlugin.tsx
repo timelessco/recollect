@@ -40,7 +40,7 @@ import { searchSlugKey } from "../../utils/helpers";
 import { Icon } from "../atoms/icon";
 import { Spinner } from "../spinner";
 
-import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
+import { CategoryMultiSelect } from "./category-multi-select";
 import { highlightSearch } from "./LightboxUtils";
 
 /**
@@ -110,17 +110,14 @@ const MyComponent = () => {
 		enabled: shouldFetch,
 	});
 	let currentBookmark;
-	let everythingData;
 	// handling the case where user opens a preview link directly
 	if (!previousData) {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
-		everythingData = bookmark?.data;
 	} else {
 		currentBookmark = previousData?.pages?.flatMap(
 			(page) => page?.data ?? [],
 		)?.[currentIndex];
-		everythingData = previousData?.pages?.flatMap((page) => page?.data ?? []);
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
@@ -277,8 +274,7 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						<AddToCollectionDropdown
-							everythingData={everythingData as SingleListData[]}
+						<CategoryMultiSelect
 							bookmarkId={currentBookmark?.id}
 							shouldFetch={shouldFetch}
 						/>

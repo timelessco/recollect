@@ -159,15 +159,19 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 				<EditPopoverMultiSelect.Chip />
 				<EditPopoverMultiSelect.Input placeholder="Tag name..." />
 			</EditPopoverMultiSelect.Chips>
-			<EditPopoverMultiSelect.Popup>
-				<EditPopoverMultiSelect.List
-					renderItem={(item: UserTagsData) => (
-						<EditPopoverMultiSelect.Item value={item}>
-							<span className="truncate">{item.name}</span>
-						</EditPopoverMultiSelect.Item>
-					)}
-				/>
-			</EditPopoverMultiSelect.Popup>
+			<EditPopoverMultiSelect.Portal>
+				<EditPopoverMultiSelect.Positioner>
+					<EditPopoverMultiSelect.Popup>
+						<EditPopoverMultiSelect.List
+							renderItem={(item: UserTagsData) => (
+								<EditPopoverMultiSelect.Item value={item}>
+									<span className="truncate">{item.name}</span>
+								</EditPopoverMultiSelect.Item>
+							)}
+						/>
+					</EditPopoverMultiSelect.Popup>
+				</EditPopoverMultiSelect.Positioner>
+			</EditPopoverMultiSelect.Portal>
 		</EditPopoverMultiSelect.Root>
 	);
 };
@@ -259,23 +263,27 @@ export const CategoryMultiSelect = ({
 				<CategoryChips />
 				<EditPopoverMultiSelect.Input placeholder="Search Collections..." />
 			</EditPopoverMultiSelect.Chips>
-			<EditPopoverMultiSelect.Popup>
-				<EditPopoverMultiSelect.Empty>
-					No categories found
-				</EditPopoverMultiSelect.Empty>
-				<EditPopoverMultiSelect.List
-					renderItem={(item: CategoriesData) => (
-						<EditPopoverMultiSelect.Item value={item}>
-							<CollectionIcon
-								bookmarkCategoryData={item}
-								iconSize="10"
-								size="16"
-							/>
-							<span className="truncate">{item.category_name}</span>
-						</EditPopoverMultiSelect.Item>
-					)}
-				/>
-			</EditPopoverMultiSelect.Popup>
+			<EditPopoverMultiSelect.Portal>
+				<EditPopoverMultiSelect.Positioner>
+					<EditPopoverMultiSelect.Popup>
+						<EditPopoverMultiSelect.Empty>
+							No categories found
+						</EditPopoverMultiSelect.Empty>
+						<EditPopoverMultiSelect.List
+							renderItem={(item: CategoriesData) => (
+								<EditPopoverMultiSelect.Item value={item}>
+									<CollectionIcon
+										bookmarkCategoryData={item}
+										iconSize="10"
+										size="16"
+									/>
+									<span className="truncate">{item.category_name}</span>
+								</EditPopoverMultiSelect.Item>
+							)}
+						/>
+					</EditPopoverMultiSelect.Popup>
+				</EditPopoverMultiSelect.Positioner>
+			</EditPopoverMultiSelect.Portal>
 		</EditPopoverMultiSelect.Root>
 	);
 };

@@ -13,13 +13,11 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
-import { type CheckboxRenderProps } from "react-aria-components";
 import {
 	useDraggableCollectionState,
 	useListState,
 	type ListProps,
 } from "react-stately";
-import { tv } from "tailwind-variants";
 
 import {
 	AriaDropdown,
@@ -55,11 +53,7 @@ import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/book
 import { useAddCategoryToBookmarksMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarksMutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
-import {
-	Checkbox,
-	checkboxBoxStyles,
-} from "@/components/ui/recollect/checkbox";
-import { CheckIcon } from "@/icons/check-icon";
+import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { mutationApiCall } from "@/utils/apiHelpers";
 import { errorToast } from "@/utils/toastMessages";
 
@@ -431,19 +425,20 @@ const ListBox = (props: ListBoxDropTypes) => {
 			{state.selectionManager.selectedKeys.size > 0 && (
 				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 max-xl:left-1/2 max-xl:-translate-x-1/2 max-md:hidden">
 					<div className="flex items-center gap-1">
-						<Checkbox
-							isSelected={
-								Array.from(state.selectionManager.selectedKeys.keys())?.length >
-								0
-							}
-							onChange={() => state.selectionManager.clearSelection()}
-							className="gap-3 text-sm leading-[21px] font-450 tracking-[1%] text-gray-900"
-							BoxSlot={ListBoxCheckboxBoxSlot}
-						>
+						<label className="group relative flex cursor-pointer items-center justify-center gap-2">
+							<Checkbox
+								checked={
+									Array.from(state.selectionManager.selectedKeys.keys())
+										?.length > 0
+								}
+								onCheckedChange={() => state.selectionManager.clearSelection()}
+								className="flex size-4 items-center justify-center gap-3 rounded-[5px] text-[10px] leading-[21px] font-450 tracking-[1%] text-gray-900 data-checked:bg-plain-reverse data-checked:text-plain data-unchecked:bg-plain data-unchecked:text-plain-reverse"
+							/>
+
 							{`${
 								Array.from(state.selectionManager.selectedKeys.keys())?.length
 							} bookmarks`}
-						</Checkbox>
+						</label>
 
 						{/* <Button
 							className="p-1 text-13 font-450 leading-[15px] text-gray-900"
@@ -563,29 +558,3 @@ const ListBox = (props: ListBoxDropTypes) => {
 };
 
 export default ListBox;
-
-const boxStyles = tv({
-	extend: checkboxBoxStyles,
-	base: "size-4 rounded-[5px]",
-	variants: {
-		isSelected: {
-			true: "bg-plain-reverse text-plain",
-			false: "bg-plain text-plain-reverse",
-		},
-	},
-});
-
-function ListBoxCheckboxBoxSlot(props: CheckboxRenderProps) {
-	const { isSelected, isIndeterminate, ...renderRest } = props;
-
-	return (
-		<div
-			className={boxStyles({
-				isSelected: isSelected || isIndeterminate,
-				...renderRest,
-			})}
-		>
-			<CheckIcon aria-hidden className="text-[10px]" />
-		</div>
-	);
-}
