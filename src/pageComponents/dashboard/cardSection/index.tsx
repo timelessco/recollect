@@ -109,12 +109,8 @@ const CardSection = ({
 		useMiscellaneousStore();
 
 	// Handle route changes for lightbox
-	// Skip URL-based lightbox control for public pages since they don't use preview routes
+	// Support both authenticated and public preview routes
 	useEffect(() => {
-		if (isPublicPage) {
-			return;
-		}
-
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
 			router?.asPath,
 			PREVIEW_ALT_TEXT,

@@ -22,7 +22,10 @@ import {
 	PREVIEW_PATH,
 	viewValues,
 } from "../../../utils/constants";
-import { getCategorySlugFromRouter } from "../../../utils/url";
+import {
+	getCategorySlugFromRouter,
+	getPublicPageInfo,
+} from "../../../utils/url";
 
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { cn } from "@/utils/tailwind-merge";
@@ -123,9 +126,27 @@ const Option = ({
 					event.preventDefault();
 					setLightboxId(item?.key?.toString());
 					setLightboxOpen(true);
-					// For public pages, don't navigate URL since there's no preview route
-					// Just open the lightbox via state management
-					if (!isPublicPage) {
+					if (isPublicPage) {
+						const publicInfo = getPublicPageInfo(router);
+						if (publicInfo) {
+							void router.push(
+								{
+									// https://github.com/vercel/next.js/discussions/11625
+									// https://github.com/adamwathan/headbangstagram/pull/1/files
+									pathname: `/public/[user_name]/[id]`,
+									query: {
+										user_name: publicInfo.user_name,
+										id: publicInfo.category_slug,
+										bookmark_id: item?.key,
+									},
+								},
+								`/public/${publicInfo.user_name}/${publicInfo.category_slug}${PREVIEW_PATH}/${item?.key}`,
+								{
+									shallow: true,
+								},
+							);
+						}
+					} else {
 						void router.push(
 							{
 								// https://github.com/vercel/next.js/discussions/11625

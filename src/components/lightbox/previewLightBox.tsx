@@ -19,7 +19,7 @@ import {
 	EVERYTHING_URL,
 } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
-import { getCategorySlugFromRouter } from "../../utils/url";
+import { getCategorySlugFromRouter, getPublicPageInfo } from "../../utils/url";
 
 import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
 import { CustomLightBox } from "./LightBox";
@@ -110,9 +110,23 @@ export const PreviewLightBox = ({
 	const handleClose = useCallback(() => {
 		setOpen(false);
 
-		// For public pages, we don't use URL navigation, so just close the lightbox
-		// For logged-in users, update URL to remove preview segment
-		if (!isPublicPage) {
+		// Update URL to remove preview segment for both authenticated and public pages
+		if (isPublicPage) {
+			const publicInfo = getPublicPageInfo(router);
+			if (publicInfo) {
+				void router.push(
+					{
+						pathname: `/public/[user_name]/[id]`,
+						query: {
+							user_name: publicInfo.user_name,
+							id: publicInfo.category_slug,
+						},
+					},
+					`/public/${publicInfo.user_name}/${publicInfo.category_slug}`,
+					{ shallow: true },
+				);
+			}
+		} else {
 			// Update URL without page reload for logged-in users
 			// Clean up path by removing leading slashes
 			void router.push(

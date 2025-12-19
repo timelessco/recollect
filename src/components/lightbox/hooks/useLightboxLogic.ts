@@ -13,14 +13,16 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
-	isPublicPath,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
 	PREVIEW_PATH,
 	tweetType,
 	VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
-import { getCategorySlugFromRouter } from "../../../utils/url";
+import {
+	getCategorySlugFromRouter,
+	getPublicPageInfo,
+} from "../../../utils/url";
 import { isYouTubeVideo, type CustomSlide } from "../LightboxUtils";
 
 import { handleClientError } from "@/utils/error-utils/client";
@@ -159,16 +161,35 @@ export const useLightboxNavigation = ({
 			setActiveIndex(index);
 		}
 
-		// Invalidate queries when slide changes
-		if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
+		// Invalidate queries when slide changes (only for authenticated pages)
+		if (
+			index !== lastInvalidatedIndex.current &&
+			isCollectionChanged &&
+			!isPublicPage
+		) {
 			void invalidateQueriesForIndex(index);
 		}
 
-		// Update browser URL (skip for public pages since they don't use URL navigation)
-		// Use both prop and pathname check as fallback
-		const isOnPublicPage =
-			isPublicPage || (router?.asPath ? isPublicPath(router.asPath) : false);
-		if (!isOnPublicPage) {
+		// Update browser URL for both authenticated and public pages
+		if (isPublicPage) {
+			const publicInfo = getPublicPageInfo(router);
+			if (publicInfo && bookmarks?.[index]?.id) {
+				void router?.push(
+					{
+						// https://github.com/vercel/next.js/discussions/11625
+						// https://github.com/adamwathan/headbangstagram/pull/1/files
+						pathname: `/public/[user_name]/[id]`,
+						query: {
+							user_name: publicInfo.user_name,
+							id: publicInfo.category_slug,
+							bookmark_id: bookmarks[index].id,
+						},
+					},
+					`/public/${publicInfo.user_name}/${publicInfo.category_slug}${PREVIEW_PATH}/${bookmarks[index].id}`,
+					{ shallow: true },
+				);
+			}
+		} else {
 			void router?.push(
 				{
 					pathname: `${CATEGORY_ID_PATHNAME}`,
