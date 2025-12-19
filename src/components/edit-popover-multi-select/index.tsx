@@ -55,6 +55,7 @@ const Root = <T,>({
 }: RootProps<T>) => {
 	const containerRef = React.useRef<HTMLDivElement | null>(null);
 	const [inputValue, setInputValue] = React.useState("");
+	const [isOpen, setIsOpen] = React.useState(false);
 
 	// Filter function for Base UI to know which items pass the filter
 	const filterFn = React.useCallback(
@@ -144,6 +145,7 @@ const Root = <T,>({
 			containerRef,
 			onCreate,
 			createSchema,
+			isOpen,
 		}),
 		[
 			items,
@@ -156,6 +158,7 @@ const Root = <T,>({
 			setInputValue,
 			onCreate,
 			createSchema,
+			isOpen,
 		],
 	);
 
@@ -181,6 +184,7 @@ const Root = <T,>({
 				value={selectedItems}
 				onValueChange={handleValueChange}
 				onInputValueChange={(value) => setInputValue(value ?? "")}
+				onOpenChange={(open) => setIsOpen(open)}
 				filter={filterFn}
 			>
 				{children}
@@ -242,7 +246,7 @@ function ChipRemove({ className, ...props }: Combobox.ChipRemove.Props) {
 	return (
 		<Combobox.ChipRemove
 			className={cn(
-				"rounded-full p-0.5 hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+				"flex items-center justify-center rounded p-0.5 hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
 				className,
 			)}
 			aria-label="Remove"
@@ -260,8 +264,21 @@ function ChipRemove({ className, ...props }: Combobox.ChipRemove.Props) {
 function Input({
 	className,
 	placeholder = "Search...",
+	onKeyDown,
 	...props
 }: Combobox.Input.Props) {
+	const { isOpen } = useEditPopoverMultiSelectContext();
+
+	const handleKeyDown: Combobox.Input.Props["onKeyDown"] = (event) => {
+		// Prevent clear-on-escape when popup is closed
+		// This allows the event to bubble up to close parent popover instead
+		if (event.key === "Escape" && !isOpen) {
+			event.preventBaseUIHandler();
+		}
+
+		onKeyDown?.(event);
+	};
+
 	return (
 		<Combobox.Input
 			placeholder={placeholder}
@@ -269,6 +286,7 @@ function Input({
 				"min-w-[80px] flex-1 bg-transparent text-sm outline-none placeholder:text-gray-500",
 				className,
 			)}
+			onKeyDown={handleKeyDown}
 			{...props}
 		/>
 	);
@@ -398,7 +416,7 @@ function ItemIndicator({ className, ...props }: Combobox.ItemIndicator.Props) {
 		<Combobox.ItemIndicator
 			keepMounted
 			className={cn(
-				"flex size-4 items-center justify-center rounded-[5px] bg-plain-reverse text-plain-reverse data-selected:text-plain",
+				"flex size-4 shrink-0 items-center justify-center rounded-[5px] bg-plain-reverse text-plain-reverse data-selected:text-plain",
 				className,
 			)}
 			{...props}

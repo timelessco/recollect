@@ -194,7 +194,7 @@ const CategoryChips = () => {
 					<span className="max-w-[100px] truncate">{item.category_name}</span>
 
 					<Combobox.ChipRemove
-						className="rounded-full p-0.5 hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+						className="flex items-center justify-center rounded p-0.5 hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
 						aria-label="Remove"
 					>
 						<LightboxCloseIcon className="size-2.5" />

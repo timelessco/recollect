@@ -16,6 +16,7 @@ export type EditPopoverMultiSelectContextValue<T> = {
 	containerRef: React.RefObject<HTMLDivElement | null>;
 	onCreate?: (inputValue: string) => void;
 	createSchema?: z.ZodType<string>;
+	isOpen: boolean;
 };
 
 // Internal context - type parameter is erased at runtime
