@@ -30,7 +30,12 @@ export async function proxy(request: NextRequest) {
 
 		// For protected routes, show an error page instead of allowing access
 		// This prevents unauthorized access when auth system is down
-		return NextResponse.rewrite(new URL("/500", request.url));
+		return NextResponse.rewrite(
+			new URL(
+				"/error?status=500&error=Service temporarily unavailable",
+				request.url,
+			),
+		);
 	}
 }
 

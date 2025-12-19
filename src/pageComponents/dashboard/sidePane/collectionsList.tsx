@@ -35,7 +35,6 @@ import {
 } from "react-stately";
 
 import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
-import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
@@ -52,7 +51,6 @@ import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
 import {
-	useLoadersStore,
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
@@ -79,6 +77,7 @@ import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
+import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
@@ -303,8 +302,7 @@ const CollectionsList = () => {
 		useState(false);
 
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
-	const { addCategoryToBookmarkOptimisticMutation } =
-		useAddCategoryToBookmarkOptimisticMutation(true);
+	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
 	const { allCategories, isLoadingCategories } = useFetchCategories();
@@ -374,10 +372,6 @@ const CollectionsList = () => {
 		error: PostgrestError;
 	};
 
-	const sidePaneOptionLoading = useLoadersStore(
-		(state) => state.sidePaneOptionLoading,
-	);
-
 	const handleAddNewCategory = async (newCategoryName: string) => {
 		if (!isNull(userProfileData?.data)) {
 			const response = (await mutationApiCall(
@@ -434,11 +428,9 @@ const CollectionsList = () => {
 						return;
 					}
 
-					await addCategoryToBookmarkOptimisticMutation.mutateAsync({
+					addCategoryToBookmarkMutation.mutate({
 						category_id: categoryId,
 						bookmark_id: Number.parseInt(bookmarkId, 10),
-						// if user is changing to uncategorised then thay always have access
-						update_access: updateAccessCondition,
 					});
 				} else {
 					errorToast("You cannot move collaborators uploads");
@@ -664,7 +656,11 @@ const CollectionsList = () => {
 										listNameId="collection-name"
 										onCategoryOptionClick={handleCategoryOptionClick}
 										showDropdown
-										showSpinner={item?.id === sidePaneOptionLoading}
+										showSpinner={
+											addCategoryToBookmarkMutation.isPending &&
+											addCategoryToBookmarkMutation.variables?.category_id ===
+												item?.id
+										}
 									/>
 								</Item>
 							))}

@@ -2,16 +2,15 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { Form } from "@base-ui/react/form";
 import { OTPInput, REGEXP_ONLY_DIGITS, type SlotProps } from "input-otp";
-import { Form } from "react-aria-components";
 
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
-import { focusRing } from "@/utils/react-aria-utils";
-import { tcx } from "@/utils/tailwind-merge";
+import { cn } from "@/utils/tailwind-merge";
 
 interface VerifyOtpFormProps {
 	email: string;
@@ -41,7 +40,8 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 				});
 
 				if (error) {
-					throw error;
+					handleClientError(error, "Failed to verify OTP");
+					return;
 				}
 
 				// Navigate immediately after success - same transition!
@@ -78,8 +78,9 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 
 			<Button
 				type="submit"
-				isPending={extendedIsPending}
-				isDisabled={extendedIsPending || otp.length !== 6}
+				className="gap-2 rounded-lg bg-gray-950 p-2 text-13 leading-[15px] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				pending={extendedIsPending}
+				disabled={extendedIsPending || otp.length !== 6}
 			>
 				Verify Email
 			</Button>
@@ -90,14 +91,14 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 function Slot(props: SlotProps) {
 	return (
 		<div
-			className={tcx(
+			className={cn(
 				"relative h-10 w-18",
 				"flex items-center justify-center",
 				"bg-gray-alpha-100",
 				"text-sm font-medium text-gray-900",
 				"rounded-lg",
 				"transition",
-				focusRing({ isFocusVisible: props.isActive }),
+				props.isActive && "ring-2 ring-blue-500 ring-offset-1 outline-none",
 			)}
 		>
 			{props.char !== null && <div>{props.char}</div>}

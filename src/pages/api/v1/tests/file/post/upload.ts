@@ -13,6 +13,7 @@ import {
 	type SingleListData,
 } from "../../../../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
@@ -237,7 +238,6 @@ export default async (
 				user_id: userId,
 				description: (meta_data?.img_caption as string) || "",
 				ogImage,
-				category_id: categoryIdLogic,
 				type: fileType,
 				meta_data,
 			},
@@ -246,6 +246,27 @@ export default async (
 		data: Array<{ id: SingleListData["id"] }>;
 		error: PostgrestError | VerifyErrors | string | null;
 	};
+
+	// Add category association via junction table
+	if (DatabaseData?.[0]?.id) {
+		const { error: junctionError } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.insert({
+				bookmark_id: DatabaseData[0].id,
+				category_id: categoryIdLogic,
+				user_id: userId,
+			});
+
+		if (junctionError) {
+			console.error("Error inserting category association:", junctionError);
+			Sentry.captureException(junctionError, {
+				tags: {
+					operation: "insert_bookmark_category_junction",
+				},
+				extra: { bookmarkId: DatabaseData[0].id, categoryId: categoryIdLogic },
+			});
+		}
+	}
 
 	if (isNil(publicUrlError) && isNil(DBerror)) {
 		response

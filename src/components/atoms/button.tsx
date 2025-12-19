@@ -3,7 +3,7 @@ import classNames from "classnames";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
 import { smoothHoverClassName } from "../../utils/commonClassNames";
-import { tcx } from "../../utils/tailwind-merge";
+import { cn } from "../../utils/tailwind-merge";
 
 type ButtonProps = {
 	children: ChildrenTypes;
@@ -36,7 +36,7 @@ const Button: FC<ButtonProps> = (props) => {
 		buttonType = "button",
 	} = props;
 
-	const buttonClassNames = tcx(
+	const buttonClassNames = cn(
 		classNames({
 			[smoothHoverClassName]: true,
 			"flex items-center rounded-lg px-2 py-[5px] text-13 leading-[14px] font-medium": true,

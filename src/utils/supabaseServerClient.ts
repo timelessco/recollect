@@ -31,9 +31,6 @@ export const apiSupabaseClient = (
 	};
 
 	const authorization = request?.headers?.authorization;
-	if (authorization) {
-		console.log("Authorization token provided: ", authorization);
-	}
 
 	const supabase = createServerClient(
 		isProductionEnvironment

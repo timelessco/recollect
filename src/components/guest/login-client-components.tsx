@@ -1,20 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { useLinkStatus } from "next/link";
-import { ProgressBar } from "react-aria-components";
 
-import { button } from "../ui/recollect/button";
-import { Link } from "../ui/recollect/link";
-import { Spinner } from "../ui/recollect/spinner";
-
-import { Button } from "@/components/ui/recollect/button";
+import {
+	Button,
+	buttonBaseClasses,
+	ButtonDefaultPendingComp,
+} from "@/components/ui/recollect/button";
+import { Link, LinkHint } from "@/components/ui/recollect/link";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { GoogleIcon } from "@/icons/google-icon";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
-import { tv } from "@/utils/tailwind-merge";
+import { cn } from "@/utils/tailwind-merge";
 import { successToast } from "@/utils/toastMessages";
 
 export function SignInWithGoogleForm() {
@@ -35,18 +34,19 @@ export function SignInWithGoogleForm() {
 	const handleSocialLogin = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
+		const redirectTo = `${window.location.origin}/auth/oauth?next=${callbackURL ?? `/${EVERYTHING_URL}`}`;
+
 		startTransition(async () => {
 			try {
 				const supabase = createClient();
 				const { error } = await supabase.auth.signInWithOAuth({
 					provider: "google",
-					options: {
-						redirectTo: `${window.location.origin}/auth/oauth?next=${callbackURL ? `${callbackURL}` : `/${EVERYTHING_URL}`}`,
-					},
+					options: { redirectTo },
 				});
 
 				if (error) {
-					throw error;
+					handleClientError(error, "Failed to sign in with Google");
+					return;
 				}
 
 				successToast("Proceeding with Google OAuth!");
@@ -60,10 +60,13 @@ export function SignInWithGoogleForm() {
 		<form onSubmit={handleSocialLogin} className="w-full">
 			<Button
 				type="submit"
-				className="w-full"
-				isPending={extendedIsPending}
-				isDisabled={extendedIsPending}
-				PendingSlot={GoogleButtonPendingSlot}
+				className="w-full gap-2 rounded-lg bg-gray-950 p-2 text-13 leading-[15px] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				pending={extendedIsPending}
+				pendingSlot={
+					<ButtonDefaultPendingComp>
+						<span>Logging in...</span>
+					</ButtonDefaultPendingComp>
+				}
 			>
 				<GoogleIcon className="mr-1.5" />
 
@@ -73,36 +76,18 @@ export function SignInWithGoogleForm() {
 	);
 }
 
-function GoogleButtonPendingSlot() {
-	return (
-		<ProgressBar isIndeterminate aria-label="Logging in...">
-			<Spinner className="mr-2 text-xs" />
-			<span>Logging in...</span>
-		</ProgressBar>
-	);
-}
-
-const linkStyles = tv({
-	extend: button,
-	base: "w-full bg-gray-alpha-100 text-gray-950 shadow-none",
-	variants: {
-		isHovered: {
-			true: "bg-gray-300",
-		},
-	},
-});
-
 export function ContinueWithEmailLink() {
 	return (
-		<Link className={linkStyles} href="/email" asButton>
+		<Link
+			className={cn(
+				buttonBaseClasses,
+				"w-full bg-gray-alpha-100 text-gray-950",
+				"gap-2 rounded-lg p-2 text-13 leading-[15px] font-medium",
+				"no-underline hover:not-data-disabled:bg-gray-300",
+			)}
+			href="/email"
+		>
 			Continue with Email <LinkHint />
 		</Link>
-	);
-}
-
-function LinkHint() {
-	const { pending } = useLinkStatus();
-	return (
-		<span aria-hidden className={`link-hint ${pending ? "is-pending" : ""}`} />
 	);
 }

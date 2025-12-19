@@ -9,6 +9,7 @@ import { z } from "zod";
 import { sanitizeBookmarks } from "../../../../async/supabaseCrudHelpers";
 import { type CategoriesData } from "../../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
 	PROFILES,
@@ -144,6 +145,29 @@ export default async function handler(
 				error: "Error in inserting bookmarks",
 			});
 			return;
+		}
+
+		// Create junction table entries for many-to-many bookmark-category relationship
+		const bookmarkCategoryRelations = data
+			.filter((bookmark) => bookmark.category_id && bookmark.category_id > 0)
+			.map((bookmark) => ({
+				bookmark_id: bookmark.id,
+				category_id: bookmark.category_id,
+				user_id: user.id,
+			}));
+
+		if (bookmarkCategoryRelations.length > 0) {
+			const { error: junctionError } = await supabase
+				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+				.insert(bookmarkCategoryRelations);
+
+			if (junctionError) {
+				console.warn(
+					"Error inserting bookmark-category relations",
+					junctionError,
+				);
+				// Non-blocking: bookmarks are already inserted, junction entries are supplementary
+			}
 		}
 
 		// here the order of the categories is updated

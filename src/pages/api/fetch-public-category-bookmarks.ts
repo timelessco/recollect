@@ -3,6 +3,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
+import omit from "lodash/omit";
 
 import {
 	type BookmarkViewDataTypes,
@@ -10,7 +11,11 @@ import {
 	type GetPublicCategoryBookmarksApiResponseType,
 	type ProfilesTableTypes,
 } from "../../types/apiTypes";
-import { CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "../../utils/constants";
+import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
+	CATEGORIES_TABLE_NAME,
+	MAIN_TABLE_NAME,
+} from "../../utils/constants";
 import { createServiceClient } from "../../utils/supabaseClient";
 
 /**
@@ -28,6 +33,7 @@ export default async function handler(
 		.from(CATEGORIES_TABLE_NAME)
 		.select(
 			`
+			id,
       user_id (
         email,
 				user_name
@@ -45,6 +51,7 @@ export default async function handler(
 			category_views: BookmarkViewDataTypes;
 			icon: CategoriesData["icon"];
 			icon_color: CategoriesData["icon_color"];
+			id: CategoriesData["id"];
 			is_public: CategoriesData["is_public"];
 			user_id: {
 				email: ProfilesTableTypes["email"];
@@ -70,13 +77,41 @@ export default async function handler(
 		console.log("username mismatch from url query");
 	} else {
 		const sortBy = categoryData[0]?.category_views?.sortBy;
+		const categoryId = categoryData[0]?.id;
 
+		if (!categoryId) {
+			response.status(404).json({
+				data: null,
+				error: "category not found",
+				category_views: null,
+				icon: null,
+				icon_color: null,
+				category_name: null,
+				is_public: null,
+			});
+			return;
+		}
+
+		// Query through junction table for many-to-many relationship
 		let query = supabase
 			.from(MAIN_TABLE_NAME)
-			.select("*, category_id!inner(*), user_id!inner(*)")
-			.eq("category_id.category_slug", request.query.category_slug)
-			// .eq('user_id.user_name', req.query.user_name) // if this is there then collabs bookmarks are not coming
-			.eq("category_id.is_public", true)
+			.select(
+				`
+				*,
+				${BOOKMARK_CATEGORIES_TABLE_NAME}!inner (
+					category_id (
+						id,
+						category_name,
+						category_slug,
+						is_public,
+						icon,
+						icon_color
+					)
+				),
+				user_id!inner (*)
+			`,
+			)
+			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, categoryId)
 			.eq("trash", false);
 
 		if (sortBy === "date-sort-acending") {
@@ -95,10 +130,12 @@ export default async function handler(
 			query = query.order("title", { ascending: false });
 		}
 
-		const { data, error } = (await query) as unknown as {
-			data: GetPublicCategoryBookmarksApiResponseType["data"];
-			error: GetPublicCategoryBookmarksApiResponseType["error"];
-		};
+		const { data: rawData, error } = await query;
+
+		// Remove junction table field from response (not needed in frontend)
+		const data = (rawData as Array<Record<string, unknown>>)?.map((item) =>
+			omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
+		) as GetPublicCategoryBookmarksApiResponseType["data"];
 
 		if (!isNull(error) || !isNull(categoryError)) {
 			response.status(500).json({

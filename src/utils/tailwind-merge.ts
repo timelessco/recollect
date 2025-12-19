@@ -1,5 +1,5 @@
+import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
-import { tv as tvBase, type TV } from "tailwind-variants";
 
 // Custom color shades used across all color families
 const COLOR_SHADES = [
@@ -89,25 +89,11 @@ const twMergeConfig = {
 };
 
 // Export extended tailwind-merge with custom config
-export const tcx = extendTailwindMerge({
+const tcx = extendTailwindMerge({
 	// @ts-expect-error - TypeScript doesn't recognize theme.colors extension but it works at runtime per tailwind-merge docs
 	extend: twMergeConfig,
 });
 
-// Export tailwind-variants with custom merge config
-export const tv: TV = (options, config) =>
-	tvBase(options, {
-		...config,
-		twMerge: config?.twMerge ?? true,
-		twMergeConfig: {
-			...config?.twMergeConfig,
-			theme: {
-				...config?.twMergeConfig?.theme,
-				...twMergeConfig.theme,
-			},
-			classGroups: {
-				...config?.twMergeConfig?.classGroups,
-				...twMergeConfig.classGroups,
-			},
-		},
-	});
+export function cn(...inputs: ClassValue[]) {
+	return tcx(clsx(inputs));
+}

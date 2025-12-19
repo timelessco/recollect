@@ -15,6 +15,7 @@ import isNull from "lodash/isNull";
 
 import { type SingleListData } from "../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
@@ -60,25 +61,22 @@ const categoriesDelete = async (
 		throw new Error("ERROR: categoriesDataError");
 	}
 
-	// set category id to uncategorised (id: 0)
+	// delete category associations from junction table for user's categories
 
 	if (!isNil(categoriesData) && !isEmpty(categoriesData)) {
-		const { data: updateData, error: updateError } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.update({ category_id: 0 })
-			.in(
-				"category_id",
-				categoriesData?.map((item) => item?.id),
-			)
-			.select(`id`);
+		const categoryIds = categoriesData.map((item) => item?.id);
+		const { error: junctionDeleteError } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.delete()
+			.in("category_id", categoryIds);
 
-		if (!isNull(updateError)) {
-			response.status(500).json({ data: null, error: updateError });
-			throw new Error("ERROR: updateError");
+		if (!isNull(junctionDeleteError)) {
+			response.status(500).json({ data: null, error: junctionDeleteError });
+			throw new Error("ERROR: junctionDeleteError");
 		} else {
 			console.log(
-				"updated collab bookmarks to uncategorised",
-				updateData?.map((item) => item?.id),
+				"deleted category associations from junction table for categories",
+				categoryIds,
 			);
 		}
 	}

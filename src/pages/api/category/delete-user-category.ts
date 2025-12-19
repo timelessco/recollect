@@ -15,6 +15,7 @@ import {
 	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
 	PROFILES,
@@ -115,29 +116,51 @@ export default async function handler(
 	}
 
 	// if bookmarks from the del category is in trash
-	// then we need to set the category id of the bookmark to uncategorized
+	// then we need to remove their category association from the junction table
 
-	const { data: trashData, error: trashDataError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.update({
-			category_id: 0,
-		})
-		.match({ category_id: request.body.category_id, trash: true })
-		.select(`id`);
+	// First get IDs of trashed bookmarks in this category
+	const { data: trashedBookmarks, error: trashedBookmarksError } =
+		await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("id")
+			.eq("trash", true)
+			.eq("user_id", userId);
 
-	if (!isNull(trashDataError)) {
+	if (!isNull(trashedBookmarksError)) {
 		response.status(500).json({
 			data: null,
 			error: {
-				message: `error on updating all trash bookmarks to uncategorized`,
-				dbErrorMessage: trashDataError,
+				message: `error on fetching trashed bookmarks`,
+				dbErrorMessage: trashedBookmarksError,
 			},
 		});
 		throw new Error("ERROR");
 	}
 
-	if (!isEmpty(trashData)) {
-		console.log(`Updated trash bookmarks to uncategorized`, trashData);
+	// Delete junction entries for trashed bookmarks in this category
+	if (!isEmpty(trashedBookmarks) && trashedBookmarks) {
+		const trashedIds = trashedBookmarks.map((b) => b.id);
+		const { error: junctionDeleteError } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.delete()
+			.eq("category_id", request.body.category_id)
+			.in("bookmark_id", trashedIds);
+
+		if (!isNull(junctionDeleteError)) {
+			response.status(500).json({
+				data: null,
+				error: {
+					message: `error on deleting category associations for trashed bookmarks`,
+					dbErrorMessage: junctionDeleteError,
+				},
+			});
+			throw new Error("ERROR");
+		}
+
+		console.log(
+			`Deleted category associations for trashed bookmarks`,
+			trashedIds.length,
+		);
 	}
 
 	const { data, error }: PostgrestResponse<CategoriesData> = await supabase

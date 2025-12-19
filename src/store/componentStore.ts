@@ -29,11 +29,6 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
 		set((state) => ({
 			isSortByLoading: !state.isSortByLoading,
 		})),
-	sidePaneOptionLoading: null,
-	setSidePaneOptionLoading: (value: number | string | null) =>
-		set(() => ({
-			sidePaneOptionLoading: value,
-		})),
 	isSearchLoading: false,
 	toggleIsSearchLoading: (value: boolean) =>
 		set(() => ({

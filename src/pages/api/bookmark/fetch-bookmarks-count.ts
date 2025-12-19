@@ -22,15 +22,20 @@ type Data = {
 
 const getCategoryCount = async (
 	supabase: SupabaseClient,
-	_userId: string,
+	userId: string,
 	categoryIds: number[],
 	sharedCategories: unknown[],
 ) => {
+	// Count from junction table, filtering out trashed bookmarks
 	const buildCategoryPromises = categoryIds.map(async (categoryId) => {
 		const { count } = await supabase
 			.from(MAIN_TABLE_NAME)
-			.select("id", { count: "exact", head: true })
-			.eq("category_id", categoryId)
+			.select("id, bookmark_categories!inner(category_id)", {
+				count: "exact",
+				head: true,
+			})
+			.eq("bookmark_categories.category_id", categoryId)
+			.eq("bookmark_categories.user_id", userId)
 			.eq("trash", false);
 
 		return {
@@ -43,8 +48,11 @@ const getCategoryCount = async (
 		async (sharedCategory) => {
 			const { count } = await supabase
 				.from(MAIN_TABLE_NAME)
-				.select("id", { count: "exact", head: true })
-				.eq("category_id", sharedCategory)
+				.select("id, bookmark_categories!inner(category_id)", {
+					count: "exact",
+					head: true,
+				})
+				.eq("bookmark_categories.category_id", sharedCategory)
 				.eq("trash", false);
 
 			return {
@@ -132,12 +140,16 @@ export default async function handler(
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.eq("trash", true),
+			// Count from junction table, filtering out trashed (category_id 0 = uncategorized)
 			supabase
 				.from(MAIN_TABLE_NAME)
-				.select("id", { count: "exact", head: true })
-				.eq("user_id", userId)
-				.eq("trash", false)
-				.eq("category_id", 0),
+				.select("id, bookmark_categories!inner(category_id)", {
+					count: "exact",
+					head: true,
+				})
+				.eq("bookmark_categories.category_id", 0)
+				.eq("bookmark_categories.user_id", userId)
+				.eq("trash", false),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })

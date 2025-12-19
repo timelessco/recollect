@@ -4,6 +4,7 @@ import { isEmpty } from "lodash";
 import { z } from "zod";
 
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
 } from "../../../../utils/constants";
@@ -76,15 +77,43 @@ export default async function handler(
 
 				const categoryId = categoryData.id;
 
-				// 2. Update main table
-				const { error: updateError } = await supabase
+				// 2. Get the bookmark ID for this URL
+				const { data: bookmarkData, error: bookmarkError } = await supabase
 					.from(MAIN_TABLE_NAME)
-					.update({ category_id: categoryId })
+					.select("id")
 					.eq("url", item.url)
-					.eq("user_id", userId);
+					.eq("user_id", userId)
+					.single();
 
-				if (updateError) {
-					console.error(`Failed to update ${item.url}`, updateError);
+				if (bookmarkError || !bookmarkData) {
+					console.error(
+						`Failed to find bookmark for ${item.url}`,
+						bookmarkError,
+					);
+					return {
+						url: item.url,
+						success: false,
+						reason: "Bookmark not found",
+					};
+				}
+
+				// 3. Upsert into junction table
+				const { error: upsertError } = await supabase
+					.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+					.upsert(
+						{
+							bookmark_id: bookmarkData.id,
+							category_id: categoryId,
+							user_id: userId,
+						},
+						{ onConflict: "bookmark_id,category_id", ignoreDuplicates: true },
+					);
+
+				if (upsertError) {
+					console.error(
+						`Failed to upsert category for ${item.url}`,
+						upsertError,
+					);
 					return { url: item.url, success: false };
 				}
 

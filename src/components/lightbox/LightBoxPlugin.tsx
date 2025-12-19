@@ -35,7 +35,7 @@ import { isPublicPath } from "../../utils/constants";
 import { Icon } from "../atoms/icon";
 import { Spinner } from "../spinner";
 
-import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
+import { CategoryMultiSelect } from "./category-multi-select";
 import { highlightSearch } from "./LightboxUtils";
 
 /**
@@ -100,16 +100,13 @@ const MyComponent = () => {
 		enabled: shouldFetch,
 	});
 	let currentBookmark;
-	let everythingData;
 	// handling the case where user opens a preview link directly or uses bookmarks from store (public pages)
 	if (lightboxBookmarks) {
 		// Use bookmarks from store (for public pages)
 		currentBookmark = lightboxBookmarks[currentIndex];
-		everythingData = lightboxBookmarks;
 	} else if (!previousData) {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
-		everythingData = bookmark?.data;
 	} else {
 		const pages = previousData?.pages as
 			| Array<{ data: SingleListData[] }>
@@ -130,8 +127,6 @@ const MyComponent = () => {
 			}) ?? [];
 
 		currentBookmark = flattenedData[currentIndex];
-
-		everythingData = flattenedData;
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
@@ -288,13 +283,11 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						{!isPublicPage && (
-							<AddToCollectionDropdown
-								everythingData={everythingData as SingleListData[]}
-								bookmarkId={currentBookmark?.id}
-								shouldFetch={shouldFetch}
-							/>
-						)}
+
+						<CategoryMultiSelect
+							bookmarkId={currentBookmark?.id}
+							shouldFetch={shouldFetch}
+						/>
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.image_caption ||

@@ -19,6 +19,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	ADD_REMAINING_BOOKMARK_API,
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	getBaseUrl,
@@ -58,7 +59,7 @@ type ScrapperTypes = {
 // tells if user is either category owner or collaborator
 export const checkIfUserIsCategoryOwnerOrCollaborator = async (
 	supabase: SupabaseClient,
-	categoryId: SingleListData["category_id"],
+	categoryId: number | null,
 	userId: SingleListData["user_id"]["id"],
 	email: ProfilesTableTypes["email"],
 	response: NextApiResponse,
@@ -281,53 +282,6 @@ export default async function handler(
 				});
 				return;
 			}
-
-			// when adding a bookmark into a category the same bookmark should not be present in the category
-			// this function checks if the bookmark is already present in the category
-			const {
-				data: checkBookmarkData,
-				error: checkBookmarkError,
-			}: {
-				data: Array<{ id: SingleListData["id"] }> | null;
-				error: PostgrestError | VerifyErrors | string | null;
-			} = await supabase
-				.from(MAIN_TABLE_NAME)
-				.select(`id`)
-				.eq("url", url)
-				.eq("category_id", categoryId)
-				.eq("trash", false);
-
-			if (!isNull(checkBookmarkError)) {
-				console.error(
-					"Error checking for duplicate bookmark:",
-					checkBookmarkError,
-				);
-				Sentry.captureException(checkBookmarkError, {
-					tags: {
-						operation: "check_duplicate_bookmark",
-						userId,
-					},
-					extra: { url, categoryId },
-				});
-				response.status(500).json({
-					data: null,
-					error: "Error checking for duplicate bookmark",
-					message: null,
-				});
-				return;
-			}
-
-			if (!isEmpty(checkBookmarkData)) {
-				console.warn(
-					`Bookmark already present in category ${categoryId} for url: ${url}`,
-				);
-				response.status(409).json({
-					data: null,
-					error: "Bookmark already present in category",
-					message: null,
-				});
-				return;
-			}
 		}
 
 		let ogImageToBeAdded = null;
@@ -377,7 +331,6 @@ export default async function handler(
 					user_id: userId,
 					description: scrapperResponse?.data?.description,
 					ogImage: ogImageToBeAdded,
-					category_id: computedCategoryId,
 					meta_data: {
 						isOgImagePreferred,
 						mediaType,
@@ -416,10 +369,36 @@ export default async function handler(
 			return;
 		}
 
+		// Insert into junction table for many-to-many relationship
+		const { error: junctionError } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.insert({
+				bookmark_id: data[0]?.id as number,
+				category_id: computedCategoryId as number,
+				user_id: userId as string,
+			});
+
+		if (junctionError) {
+			console.error("Error inserting into bookmark_categories:", junctionError);
+			Sentry.captureException(junctionError, {
+				tags: {
+					operation: "insert_bookmark_category_junction",
+					userId,
+				},
+				extra: {
+					bookmarkId: data[0]?.id,
+					categoryId: computedCategoryId,
+					url,
+				},
+			});
+			// Non-blocking: don't fail the request, log and continue
+		}
+
 		// Success
 		console.log("Min bookmark data inserted successfully:", {
 			bookmarkId: data[0]?.id,
 			url,
+			categoryId: computedCategoryId,
 		});
 		response.status(200).json({
 			data,
