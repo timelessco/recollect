@@ -3,10 +3,14 @@ import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import {
+	type BookmarksWithCategoriesWithCategoryForeignKeys,
 	type NextApiRequest,
 	type SingleListData,
 } from "../../../../../types/apiTypes";
-import { MAIN_TABLE_NAME } from "../../../../../utils/constants";
+import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
+	MAIN_TABLE_NAME,
+} from "../../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 
 type RequestType = {
@@ -53,11 +57,13 @@ export default async function handler(
 
 		const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
+		const bookmarkId = Number.parseInt(bodyData?.id, 10);
+
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("*")
 			.eq("user_id", userId)
-			.eq("id", Number.parseInt(bodyData?.id, 10));
+			.eq("id", bookmarkId);
 
 		if (error) {
 			response.status(500).send({ error: "fetch error", data: null });
@@ -65,7 +71,42 @@ export default async function handler(
 			return;
 		}
 
-		response.status(200).send({ error: null, data });
+		// Fetch categories via junction table
+		const { data: categoriesData } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.select(
+				`
+				bookmark_id,
+				category_id (
+					id,
+					category_name,
+					category_slug,
+					icon,
+					icon_color
+				)
+			`,
+			)
+			.eq("bookmark_id", bookmarkId)
+			.eq("user_id", userId);
+
+		// Construct addedCategories array
+		const bookmarkCategories =
+			categoriesData as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
+		const addedCategories = bookmarkCategories?.map((item) => ({
+			id: item?.category_id?.id,
+			category_name: item?.category_id?.category_name,
+			category_slug: item?.category_id?.category_slug,
+			icon: item?.category_id?.icon,
+			icon_color: item?.category_id?.icon_color,
+		}));
+
+		// Add categories to bookmark data
+		const dataWithCategories = data?.map((bookmark) => ({
+			...bookmark,
+			addedCategories: addedCategories ?? [],
+		}));
+
+		response.status(200).send({ error: null, data: dataWithCategories });
 	} catch {
 		response.status(400).send({ error: "Error in payload data", data: null });
 	}

@@ -1,5 +1,5 @@
 {
-	"triggerMode": "default",
+	"triggerMode": "gitmode",
 	"autoManage": true,
 	"initialized": "2025-12-17T00:00:00.000Z",
 	"baseline": {

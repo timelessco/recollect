@@ -3,7 +3,7 @@ import { useMediaQuery } from "@react-hookz/web";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
-import { LightboxCloseIcon } from "../../icons/lightboxCloseIcon";
+import { LightboxCloseIcon } from "../../icons/lightbox-close-icon";
 import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
 import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
