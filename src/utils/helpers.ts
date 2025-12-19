@@ -5,7 +5,6 @@ import {
 	type PostgrestError,
 	type SupabaseClient,
 } from "@supabase/supabase-js";
-import axios from "axios";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
@@ -665,23 +664,12 @@ const isInstagramVideoUrl = (url: string): boolean => {
 const validateVideoSize = (
 	response: Response,
 	arrayBuffer: ArrayBuffer,
-	maxVideoSizeBytes: number,
 ): { isValid: boolean; error?: string } => {
 	// 1KB tolerance for size mismatch
 	const SIZE_TOLERANCE_BYTES = 1024;
-	//  Content-Length validation (before download)
-	const contentLength = response.headers.get("content-length");
-	if (contentLength) {
-		const size = Number.parseInt(contentLength, 10);
-		if (size > maxVideoSizeBytes) {
-			return {
-				isValid: false,
-				error: `Video too large: ${size} bytes (max: ${maxVideoSizeBytes})`,
-			};
-		}
-	}
 
-	// 2. ArrayBuffer size validation (after download)
+	// ArrayBuffer size validation (verify downloaded size matches Content-Length)
+	const contentLength = response.headers.get("content-length");
 	if (contentLength) {
 		const expectedSize = Number.parseInt(contentLength, 10);
 		const sizeDiff = Math.abs(arrayBuffer.byteLength - expectedSize);
@@ -738,13 +726,13 @@ export const collectInstagramVideos = async ({
 			batch.map(async (videoUrl) => {
 				// Fetch with timeout
 				const [downloadError, videoResponse] = await vet(() =>
-					axios.get(videoUrl, {
-						responseType: "arraybuffer",
-						timeout: 30_000,
+					fetch(videoUrl, {
+						method: "GET",
+						signal: AbortSignal.timeout(30_000),
 					}),
 				);
 
-				if (downloadError || !videoResponse) {
+				if (downloadError || !videoResponse?.ok) {
 					const errorMessage =
 						downloadError instanceof Error
 							? downloadError.message
@@ -752,8 +740,8 @@ export const collectInstagramVideos = async ({
 					throw new Error(`Failed to download: ${errorMessage}`);
 				}
 
-				// Validate size BEFORE downloading
-				const contentLength = videoResponse.headers["content-length"];
+				// Validate size BEFORE downloading (check headers first)
+				const contentLength = videoResponse.headers.get("content-length");
 				if (contentLength) {
 					const size = Number.parseInt(contentLength, 10);
 					if (size > MAX_VIDEO_SIZE_BYTES) {
@@ -780,15 +768,21 @@ export const collectInstagramVideos = async ({
 					}
 				}
 
-				// Download ArrayBuffer
-				const arrayBuffer = videoResponse.data;
-
-				// Validate downloaded content size
-				const validation = validateVideoSize(
-					videoResponse.data,
-					arrayBuffer,
-					MAX_VIDEO_SIZE_BYTES,
+				// Download ArrayBuffer (only if size check passed)
+				const [arrayBufferError, arrayBuffer] = await vet(() =>
+					videoResponse.arrayBuffer(),
 				);
+
+				if (arrayBufferError || !arrayBuffer) {
+					const errorMessage =
+						arrayBufferError instanceof Error
+							? arrayBufferError.message
+							: "Unknown error";
+					throw new Error(`Failed to get array buffer: ${errorMessage}`);
+				}
+
+				// Validate downloaded content size matches Content-Length
+				const validation = validateVideoSize(videoResponse, arrayBuffer);
 				if (!validation.isValid) {
 					// Log and send to Sentry
 					console.warn("Video validation failed:", {
@@ -806,7 +800,7 @@ export const collectInstagramVideos = async ({
 							},
 							extra: {
 								videoUrl,
-								contentLength: videoResponse.headers["content-length"],
+								contentLength: videoResponse.headers.get("content-length"),
 								actualSize: arrayBuffer.byteLength,
 							},
 						},
