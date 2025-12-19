@@ -39,7 +39,11 @@ type CollectInstagramVideosArgs = {
 	allVideos?: string[];
 	userId: string;
 };
+
 const MAX_LENGTH = 1_300;
+
+const MAX_CONCURRENT_VIDEOS = 3;
+
 export const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
@@ -132,10 +136,12 @@ const collectInstagramVideos = async ({
 		return [];
 	}
 
-	const settledVideos = await Promise.allSettled(
-		instagramVideoUrls.map(async (videoUrl) => {
+	const settledVideos = await processInBatches(
+		instagramVideoUrls,
+		MAX_CONCURRENT_VIDEOS,
+		async (videoUrl) => {
 			const [downloadError, videoResponse] = await vet(() =>
-				axios.get(videoUrl, { responseType: "arraybuffer" }),
+				axios.get(videoUrl, { responseType: "arraybuffer", timeout: 30_000 }),
 			);
 
 			if (downloadError || !videoResponse) {
@@ -145,7 +151,7 @@ const collectInstagramVideos = async ({
 			}
 
 			return await uploadVideo(videoResponse.data, userId);
-		}),
+		},
 	);
 
 	const failedUploads = settledVideos
@@ -186,6 +192,22 @@ const collectInstagramVideos = async ({
 				result.status === "fulfilled" && Boolean(result.value),
 		)
 		.map((fulfilled) => fulfilled.value) as string[];
+};
+
+const processInBatches = async <T, R>(
+	items: T[],
+	batchSize: number,
+	processor: (item: T) => Promise<R>,
+): Promise<Array<PromiseSettledResult<R>>> => {
+	const results: Array<PromiseSettledResult<R>> = [];
+
+	for (let index = 0; index < items.length; index += batchSize) {
+		const batch = items.slice(index, index + batchSize);
+		const batchResults = await Promise.allSettled(batch.map(processor));
+		results.push(...batchResults);
+	}
+
+	return results;
 };
 
 const collectAdditionalImages = async ({
