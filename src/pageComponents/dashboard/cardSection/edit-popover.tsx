@@ -3,6 +3,7 @@ import { Combobox } from "@base-ui/react/combobox";
 import { Popover } from "@base-ui/react/popover";
 import { z } from "zod";
 
+import { useChangeDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/useChangeDiscoverableOptimisticMutation";
 import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
 import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/useRemoveCategoryFromBookmarkMutation";
 import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
@@ -15,6 +16,7 @@ import {
 	EditPopoverMultiSelect,
 	useTypedEditPopoverContext,
 } from "@/components/edit-popover-multi-select";
+import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { useBookmarkCategories } from "@/hooks/useBookmarkCategories";
 import { useBookmarkTags } from "@/hooks/useBookmarkTags";
 import { useIsPublicPage } from "@/hooks/useIsPublicPage";
@@ -84,6 +86,13 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 								<div className="w-full">
 									<CategoryMultiSelect bookmarkId={post.id} />
 								</div>
+							</div>
+
+							<div className="w-full">
+								<DiscoverableCheckbox
+									bookmarkId={post.id}
+									isDiscoverable={post.make_discoverable !== null}
+								/>
 							</div>
 						</div>
 					</Popover.Popup>
@@ -285,5 +294,42 @@ export const CategoryMultiSelect = ({
 				</EditPopoverMultiSelect.Positioner>
 			</EditPopoverMultiSelect.Portal>
 		</EditPopoverMultiSelect.Root>
+	);
+};
+
+type DiscoverableCheckboxProps = {
+	bookmarkId: number;
+	isDiscoverable: boolean;
+};
+
+const DiscoverableCheckbox = ({
+	bookmarkId,
+	isDiscoverable,
+}: DiscoverableCheckboxProps) => {
+	const { changeDiscoverableMutation } =
+		useChangeDiscoverableOptimisticMutation();
+
+	const handleCheckedChange = (checked: boolean) => {
+		changeDiscoverableMutation.mutate({
+			bookmark_id: bookmarkId,
+			make_discoverable: checked,
+		});
+	};
+
+	return (
+		<div className="flex items-center gap-2 px-2 py-1.5">
+			<Checkbox
+				id={`discoverable-${bookmarkId}`}
+				checked={isDiscoverable}
+				onCheckedChange={handleCheckedChange}
+				className="flex size-4 items-center justify-center rounded border-2 border-gray-400 data-checked:border-gray-800 data-checked:bg-gray-800 [&_svg]:text-white"
+			/>
+			<label
+				htmlFor={`discoverable-${bookmarkId}`}
+				className="cursor-pointer text-sm font-medium text-gray-800"
+			>
+				Make discoverable
+			</label>
+		</div>
 	);
 };

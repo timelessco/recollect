@@ -38,6 +38,7 @@ import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	DISCOVER_URL,
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
@@ -163,9 +164,10 @@ const CardSection = ({
 		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 	};
 
-	const bookmarksList = isEmpty(searchText)
-		? listData
-		: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
+	const bookmarksList =
+		isPublicPage || isEmpty(searchText)
+			? listData
+			: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],
@@ -739,7 +741,7 @@ const CardSection = ({
 	);
 
 	const listWrapperClass = classNames({
-		"mt-[47px]": true,
+		"mt-[47px]": !isPublicPage || categorySlug === DISCOVER_URL,
 		"px-4 py-2": cardTypeCondition === viewValues.list,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||

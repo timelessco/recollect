@@ -147,6 +147,7 @@ export type Database = {
 					description: string | null;
 					id: number;
 					inserted_at: string;
+					make_discoverable: string | null;
 					meta_data: Json | null;
 					ogImage: string | null;
 					screenshot: string | null;
@@ -162,6 +163,7 @@ export type Database = {
 					description?: string | null;
 					id?: number;
 					inserted_at?: string;
+					make_discoverable?: string | null;
 					meta_data?: Json | null;
 					ogImage?: string | null;
 					screenshot?: string | null;
@@ -177,6 +179,7 @@ export type Database = {
 					description?: string | null;
 					id?: number;
 					inserted_at?: string;
+					make_discoverable?: string | null;
 					meta_data?: Json | null;
 					ogImage?: string | null;
 					screenshot?: string | null;
@@ -402,6 +405,7 @@ export type Database = {
 							description: string;
 							id: number;
 							inserted_at: string;
+							make_discoverable: string;
 							meta_data: Json;
 							ogimage: string;
 							screenshot: string;
@@ -425,6 +429,7 @@ export type Database = {
 							description: string;
 							id: number;
 							inserted_at: string;
+							make_discoverable: string;
 							meta_data: Json;
 							ogimage: string;
 							screenshot: string;

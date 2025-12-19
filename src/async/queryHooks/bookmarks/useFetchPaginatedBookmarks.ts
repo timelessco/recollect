@@ -13,7 +13,11 @@ import {
 	type SupabaseSessionType,
 } from "../../../types/apiTypes";
 import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
-import { BOOKMARKS_KEY, PAGINATION_LIMIT } from "../../../utils/constants";
+import {
+	BOOKMARKS_KEY,
+	DISCOVER_URL,
+	PAGINATION_LIMIT,
+} from "../../../utils/constants";
 import { fetchBookmarksData } from "../../supabaseCrudHelpers";
 
 // fetches paginated bookmarks pages on user location like everything or categories etc...
@@ -46,6 +50,7 @@ export default function useFetchPaginatedBookmarks() {
 			),
 		initialPageParam: 0,
 		getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
+		enabled: CATEGORY_ID !== DISCOVER_URL,
 	});
 
 	useEffect(() => {
