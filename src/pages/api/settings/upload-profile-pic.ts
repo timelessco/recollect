@@ -20,7 +20,7 @@ import {
 	STORAGE_USER_PROFILE_PATH,
 } from "../../../utils/constants";
 import { parseUploadFileName } from "../../../utils/helpers";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // first we need to disable the default body parser
@@ -35,7 +35,7 @@ export const deleteLogic = async (
 	response: NextApiResponse,
 	userId: ProfilesTableTypes["id"],
 ) => {
-	const { data: list, error: listError } = await r2Helpers.listObjects(
+	const { data: list, error: listError } = await storageHelpers.listObjects(
 		R2_MAIN_BUCKET_NAME,
 		`${STORAGE_USER_PROFILE_PATH}/${userId}/`,
 	);
@@ -52,7 +52,7 @@ export const deleteLogic = async (
 		!isEmpty(list) && list ? list?.map((x) => `${x.Key}`) : [];
 
 	if (!isNil(filesToRemove) && !isEmpty(filesToRemove)) {
-		const { error: deleteError } = await r2Helpers.deleteObjects(
+		const { error: deleteError } = await storageHelpers.deleteObjects(
 			R2_MAIN_BUCKET_NAME,
 			filesToRemove,
 		);
@@ -66,7 +66,7 @@ export const deleteLogic = async (
 		}
 	}
 
-	const { error: folderDeleteError } = await r2Helpers.deleteObjects(
+	const { error: folderDeleteError } = await storageHelpers.deleteObjects(
 		R2_MAIN_BUCKET_NAME,
 		[`${STORAGE_USER_PROFILE_PATH}/${userId}/`],
 	);
@@ -123,7 +123,7 @@ export default async (
 
 	if (contents) {
 		await deleteLogic(response, userId);
-		const { error: storageError } = await r2Helpers.uploadObject(
+		const { error: storageError } = await storageHelpers.uploadObject(
 			R2_MAIN_BUCKET_NAME,
 			`${STORAGE_USER_PROFILE_PATH}/${userId}/${fileName}`,
 			new Uint8Array(decode(contents)),
@@ -139,9 +139,10 @@ export default async (
 			throw new Error("ERROR: storage error");
 		}
 
-		const { data: storageData, error: publicUrlError } = r2Helpers.getPublicUrl(
-			`${STORAGE_USER_PROFILE_PATH}/${userId}/${fileName}`,
-		);
+		const { data: storageData, error: publicUrlError } =
+			storageHelpers.getPublicUrl(
+				`${STORAGE_USER_PROFILE_PATH}/${userId}/${fileName}`,
+			);
 
 		if (!isNil(publicUrlError)) {
 			response.status(500).json({

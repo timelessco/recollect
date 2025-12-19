@@ -29,8 +29,11 @@ export type ImgMetadataType = {
 export type twitter_sort_index = string;
 
 export type SingleListData = {
+	/**
+	 * Array of categories (many-to-many)
+	 */
+	addedCategories?: CategoriesData[];
 	addedTags: UserTagsData[];
-	category_id: number | null;
 	description: string;
 	id: number;
 	inserted_at: string;
@@ -100,6 +103,15 @@ export type BookmarksTagData = {
 	created_at?: string;
 	id?: number;
 	tag_id: number;
+	user_id: string;
+};
+
+// Junction table type for many-to-many bookmark-category relationship
+export type BookmarksCategoryData = {
+	bookmark_id: number;
+	category_id: number;
+	created_at: string;
+	id: number;
 	user_id: string;
 };
 
@@ -190,6 +202,17 @@ export type BookmarksWithTagsWithTagForginKeys = Array<{
 	tag_id: { id: number; name: string };
 }>;
 
+export type BookmarksWithCategoriesWithCategoryForeignKeys = Array<{
+	bookmark_id: number;
+	category_id: {
+		category_name: string;
+		category_slug: string;
+		icon: string | null;
+		icon_color: string;
+		id: number;
+	};
+}>;
+
 export type UserProfilePicTypes = { profile_pic: string | null };
 
 // file upload
@@ -236,12 +259,6 @@ export type DeleteDataApiPayload = { id: number; session: SupabaseSessionType };
 export type MoveBookmarkToTrashApiPayload = {
 	data: SingleListData;
 	isTrash: boolean;
-};
-
-export type AddCategoryToBookmarkApiPayload = {
-	bookmark_id: number;
-	category_id: number | null;
-	update_access: boolean;
 };
 
 export type AddUserCategoryApiPayload = {
@@ -303,7 +320,9 @@ export type UpdateSharedCategoriesUserAccessApiPayload = {
 };
 
 export type AddTagToBookmarkApiPayload = {
-	selectedData: BookmarksTagData | BookmarksTagData[];
+	selectedData:
+		| Pick<BookmarksTagData, "bookmark_id" | "tag_id">
+		| Array<Pick<BookmarksTagData, "bookmark_id" | "tag_id">>;
 };
 
 export type AddUserTagsApiPayload = { tagsData: { name: string } };
@@ -362,3 +381,6 @@ export type ParsedFormDataType = {
 		}>;
 	};
 };
+
+// Shared type for paginated bookmarks data structure in React Query cache
+export type PaginatedBookmarks = { pages: Array<{ data: SingleListData[] }> };

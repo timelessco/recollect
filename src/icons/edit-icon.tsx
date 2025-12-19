@@ -1,11 +1,7 @@
-const EditIcon = () => (
-	<svg
-		fill="none"
-		height="16"
-		viewBox="0 0 16 16"
-		width="16"
-		xmlns="http://www.w3.org/2000/svg"
-	>
+import { Icon, type IconProps } from "@/components/ui/recollect/icon";
+
+export const EditIcon = (props: IconProps) => (
+	<Icon fill="none" viewBox="0 0 16 16" {...props}>
 		<g opacity="0.12">
 			<path
 				d="M12 7.33301C12.5304 7.33301 13.0391 7.12229 13.4142 6.74722C13.7893 6.37215 14 5.86344 14 5.33301C14 4.80257 13.7893 4.29387 13.4142 3.91879C13.0391 3.54372 12.5304 3.33301 12 3.33301C11.4696 3.33301 10.9609 3.54372 10.5858 3.91879C10.2107 4.29387 10 4.80257 10 5.33301C10 5.86344 10.2107 6.37215 10.5858 6.74722C10.9609 7.12229 11.4696 7.33301 12 7.33301Z"
@@ -23,7 +19,5 @@ const EditIcon = () => (
 			strokeLinejoin="round"
 			strokeOpacity="0.91"
 		/>
-	</svg>
+	</Icon>
 );
-
-export default EditIcon;

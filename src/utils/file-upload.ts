@@ -10,7 +10,7 @@ import {
 	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "./constants";
-import { r2Helpers } from "./r2Client";
+import { getStoragePublicBaseUrl, storageHelpers } from "./storageClient";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -86,7 +86,7 @@ export const handlePdfThumbnailAndUpload = async ({
 		const thumbnailFileName = `thumb-${fileName}.jpg`;
 
 		const { data: thumbUploadUrl, error: thumbError } =
-			await r2Helpers.createSignedUploadUrl(
+			await storageHelpers.createSignedUploadUrl(
 				"recollect",
 				`${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`,
 			);
@@ -110,7 +110,7 @@ export const handlePdfThumbnailAndUpload = async ({
 			throw new Error("Thumbnail upload failed: " + message);
 		}
 
-		const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`;
+		const publicUrl = `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`;
 
 		try {
 			await axios.post(

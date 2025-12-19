@@ -1,6 +1,6 @@
 -- ============================================================================
 -- MIGRATION: Safe Rename of bookmarks_table to everything
--- Created: 2024-11-11
+-- Created: 2025-11-11
 -- Purpose: Rename table while preserving ALL data, sequences, and dependencies
 -- ============================================================================
 

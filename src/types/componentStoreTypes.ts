@@ -15,8 +15,6 @@ export type LoadersStoreState = {
 	isSortByLoading: boolean;
 	loadingBookmarkIds: Set<number>;
 	removeLoadingBookmarkId: (id: number) => void;
-	setSidePaneOptionLoading: (value: number | string | null) => void;
-	sidePaneOptionLoading: number | string | null;
 	toggleIsSearchLoading: (value: boolean) => void;
 	toggleIsSortByLoading: () => void;
 };

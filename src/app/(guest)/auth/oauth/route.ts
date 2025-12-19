@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 
 // The client you created from the Server-Side Auth instructions
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@/lib/supabase/server";
 import { getErrorMessage } from "@/utils/error-utils/error-message";
 
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 		const next = _next?.startsWith("/") ? _next : "/";
 
 		if (code) {
-			const supabase = await createClient();
+			const supabase = await createServerClient();
 			const { error } = await supabase.auth.exchangeCodeForSession(code);
 
 			if (!error) {

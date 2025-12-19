@@ -25,7 +25,7 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import { Checkbox } from "@/components/ui/recollect/checkbox";
-import { tv } from "@/utils/tailwind-merge";
+import { cn } from "@/utils/tailwind-merge";
 
 type OptionDropItemTypes = DraggableItemProps & {
 	rendered: ReactNode;
@@ -148,12 +148,12 @@ const Option = ({
 
 			{!isPublicPage && (
 				<Checkbox
-					isSelected={isSelected}
-					className={cardSectionOptionCheckboxStyles({
-						isSelected,
-						cardTypeCondition:
-							cardTypeCondition as (typeof viewValues)[keyof typeof viewValues],
-					})}
+					checked={isSelected}
+					className={cn(
+						"absolute top-2.5 right-1.5 z-15 box-border flex size-[26px] cursor-pointer items-center justify-center rounded-lg text-sm backdrop-blur-[10px] group-hover:opacity-100 data-checked:bg-blacks-700 data-checked:text-whites-800 data-unchecked:bg-whites-700 data-unchecked:text-blacks-800",
+						isSelected ? "opacity-100" : "opacity-0",
+						cardTypeCondition === viewValues.list && "top-[15px]",
+					)}
 					// Pick only whats needed checkbox selection as the rest will cause an issue with drag and drop
 					{...pick(optionProps, ["onClick", "onPointerDown"])}
 				/>
@@ -163,16 +163,3 @@ const Option = ({
 };
 
 export default Option;
-
-const cardSectionOptionCheckboxStyles = tv({
-	base: "absolute top-2.5 right-1.5 z-15 cursor-pointer group-hover:opacity-100",
-	variants: {
-		isSelected: {
-			true: "opacity-100",
-			false: "opacity-0",
-		},
-		cardTypeCondition: {
-			[viewValues.list]: "top-[15px]",
-		},
-	},
-});
