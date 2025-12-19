@@ -113,7 +113,7 @@ const Option = ({
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute top-0 left-0 h-full w-full rounded-lg ${
-					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
+					isTrashPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}
 				href={url}
