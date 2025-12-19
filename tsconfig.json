@@ -38,9 +38,12 @@
 		],
 		"useUnknownInCatchVariables": true
 	},
-	"exclude": ["node_modules", ".next", "cypress", "public/sw.js"],
+	"exclude": [".next", "cypress", "public/sw.js"],
 	"include": [
-		"./**/*",
+		"src/**/*",
+		"scripts/**/*",
+		"package-typings/**/*",
+		"next.config.ts",
 		".release-it.ts",
 		"next-env.d.ts",
 		".next/types/**/*.ts",
