@@ -28,11 +28,6 @@ const nextConfig: NextConfig = {
 
 	typedRoutes: true,
 
-	// Turn on fetch and it's data cache logging when debugging rsc fetches
-	experimental: {
-		turbopackFileSystemCacheForDev: true,
-	},
-
 	logging: {
 		fetches: {
 			fullUrl: true,
