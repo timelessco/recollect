@@ -25,6 +25,7 @@ import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { collectInstagramVideos } from "@/utils/helpers";
 import { vet } from "@/utils/try";
 
 type Data = {
@@ -35,14 +36,8 @@ type CollectAdditionalImagesArgs = {
 	allImages?: string[];
 	userId: string;
 };
-type CollectInstagramVideosArgs = {
-	allVideos?: string[];
-	userId: string;
-};
 
 const MAX_LENGTH = 1_300;
-
-const MAX_CONCURRENT_VIDEOS = 3;
 
 export const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
@@ -105,109 +100,6 @@ export const uploadVideo = async (
 	const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
 
 	return storageData?.publicUrl || null;
-};
-
-const isInstagramVideoUrl = (url: string): boolean => {
-	try {
-		const urlObj = new URL(url);
-		const hostname = urlObj.hostname.toLowerCase();
-		return (
-			hostname.includes("instagram.com") || hostname.includes("instagr.am")
-		);
-	} catch {
-		return false;
-	}
-};
-
-const collectInstagramVideos = async ({
-	allVideos,
-	userId,
-}: CollectInstagramVideosArgs) => {
-	if (!allVideos?.length) {
-		return [];
-	}
-
-	// Filter for Instagram URLs only
-	const instagramVideoUrls = allVideos.filter((url) =>
-		isInstagramVideoUrl(url),
-	);
-
-	if (!instagramVideoUrls.length) {
-		return [];
-	}
-
-	const settledVideos = await processInBatches(
-		instagramVideoUrls,
-		MAX_CONCURRENT_VIDEOS,
-		async (videoUrl) => {
-			const [downloadError, videoResponse] = await vet(() =>
-				axios.get(videoUrl, { responseType: "arraybuffer", timeout: 30_000 }),
-			);
-
-			if (downloadError || !videoResponse) {
-				throw new Error(
-					`Failed to download video: ${downloadError?.message || "Unknown error"}`,
-				);
-			}
-
-			return await uploadVideo(videoResponse.data, userId);
-		},
-	);
-
-	const failedUploads = settledVideos
-		.map((result, index) => ({ result, index }))
-		.filter(({ result }) => result.status === "rejected") as Array<{
-		result: PromiseRejectedResult;
-		index: number;
-	}>;
-
-	if (failedUploads.length > 0) {
-		for (const { result, index } of failedUploads) {
-			const error = result.reason;
-
-			console.warn("collectInstagramVideos upload failed:", {
-				operation: "collect_instagram_videos",
-				userId,
-				videoIndex: index,
-				videoUrl: instagramVideoUrls[index],
-				error,
-			});
-
-			Sentry.captureException(error, {
-				tags: {
-					operation: "collect_instagram_videos",
-					userId,
-				},
-				extra: {
-					videoIndex: index,
-					videoUrl: instagramVideoUrls[index],
-				},
-			});
-		}
-	}
-
-	return settledVideos
-		.filter(
-			(result): result is PromiseFulfilledResult<string | null> =>
-				result.status === "fulfilled" && Boolean(result.value),
-		)
-		.map((fulfilled) => fulfilled.value) as string[];
-};
-
-const processInBatches = async <T, R>(
-	items: T[],
-	batchSize: number,
-	processor: (item: T) => Promise<R>,
-): Promise<Array<PromiseSettledResult<R>>> => {
-	const results: Array<PromiseSettledResult<R>> = [];
-
-	for (let index = 0; index < items.length; index += batchSize) {
-		const batch = items.slice(index, index + batchSize);
-		const batchResults = await Promise.allSettled(batch.map(processor));
-		results.push(...batchResults);
-	}
-
-	return results;
 };
 
 const collectAdditionalImages = async ({

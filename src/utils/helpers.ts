@@ -1,9 +1,11 @@
 import { type NextApiRequest } from "next";
 import router from "next/router";
+import * as Sentry from "@sentry/nextjs";
 import {
 	type PostgrestError,
 	type SupabaseClient,
 } from "@supabase/supabase-js";
+import axios from "axios";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
@@ -44,7 +46,9 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
+import { vet } from "./try";
 import { getCategorySlugFromRouter } from "./url";
+import { uploadVideo } from "@/pages/api/bookmark/add-url-screenshot";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 	find(tagsData, (item) => {
@@ -644,4 +648,223 @@ export const checkIsUserOwnerOfCategory = async (
 	}
 
 	return { success: true, isOwner: categoryData?.[0]?.user_id === userId };
+};
+
+const isInstagramVideoUrl = (url: string): boolean => {
+	try {
+		const urlObj = new URL(url);
+		const hostname = urlObj.hostname.toLowerCase();
+		return (
+			hostname.includes("instagram.com") || hostname.includes("instagr.am")
+		);
+	} catch {
+		return false;
+	}
+};
+
+const validateVideoSize = (
+	response: Response,
+	arrayBuffer: ArrayBuffer,
+	maxVideoSizeBytes: number,
+): { isValid: boolean; error?: string } => {
+	// 1KB tolerance for size mismatch
+	const SIZE_TOLERANCE_BYTES = 1024;
+	//  Content-Length validation (before download)
+	const contentLength = response.headers.get("content-length");
+	if (contentLength) {
+		const size = Number.parseInt(contentLength, 10);
+		if (size > maxVideoSizeBytes) {
+			return {
+				isValid: false,
+				error: `Video too large: ${size} bytes (max: ${maxVideoSizeBytes})`,
+			};
+		}
+	}
+
+	// 2. ArrayBuffer size validation (after download)
+	if (contentLength) {
+		const expectedSize = Number.parseInt(contentLength, 10);
+		const sizeDiff = Math.abs(arrayBuffer.byteLength - expectedSize);
+		if (sizeDiff > SIZE_TOLERANCE_BYTES) {
+			return {
+				isValid: false,
+				error: `Size mismatch: expected ${expectedSize}, got ${arrayBuffer.byteLength}`,
+			};
+		}
+	}
+
+	return { isValid: true };
+};
+
+type CollectInstagramVideosArgs = {
+	allVideos?: string[];
+	userId: string;
+};
+export const collectInstagramVideos = async ({
+	allVideos,
+	userId,
+}: CollectInstagramVideosArgs) => {
+	const MAX_CONCURRENT_VIDEOS = 3;
+
+	// 10MB - matches codebase file upload limit
+	const MAX_VIDEO_SIZE_BYTES = 10_485_760;
+
+	if (!allVideos?.length) {
+		return [];
+	}
+
+	// Filter for Instagram URLs only
+	const instagramVideoUrls = allVideos.filter((url) =>
+		isInstagramVideoUrl(url),
+	);
+
+	if (!instagramVideoUrls.length) {
+		return [];
+	}
+
+	// Process videos with concurrency limit (3 at a time)
+	const settledVideos: Array<PromiseSettledResult<string | null>> = [];
+
+	for (
+		let index = 0;
+		index < instagramVideoUrls.length;
+		index += MAX_CONCURRENT_VIDEOS
+	) {
+		const batch = instagramVideoUrls.slice(
+			index,
+			index + MAX_CONCURRENT_VIDEOS,
+		);
+		const batchResults = await Promise.allSettled(
+			batch.map(async (videoUrl) => {
+				// Fetch with timeout
+				const [downloadError, videoResponse] = await vet(() =>
+					axios.get(videoUrl, {
+						responseType: "arraybuffer",
+						timeout: 30_000,
+					}),
+				);
+
+				if (downloadError || !videoResponse) {
+					const errorMessage =
+						downloadError instanceof Error
+							? downloadError.message
+							: "Unknown error";
+					throw new Error(`Failed to download: ${errorMessage}`);
+				}
+
+				// Validate size BEFORE downloading
+				const contentLength = videoResponse.headers["content-length"];
+				if (contentLength) {
+					const size = Number.parseInt(contentLength, 10);
+					if (size > MAX_VIDEO_SIZE_BYTES) {
+						const error = `Video too large: ${size} bytes`;
+						console.warn("Video validation failed:", {
+							videoUrl,
+							error,
+							validationType: "size",
+							size,
+						});
+						Sentry.captureException(new Error(error), {
+							tags: {
+								operation: "video_content_validation",
+								validation_type: "size",
+								userId,
+							},
+							extra: {
+								videoUrl,
+								contentLength: size,
+							},
+						});
+						// Skip this video
+						return null;
+					}
+				}
+
+				// Download ArrayBuffer
+				const arrayBuffer = videoResponse.data;
+
+				// Validate downloaded content size
+				const validation = validateVideoSize(
+					videoResponse.data,
+					arrayBuffer,
+					MAX_VIDEO_SIZE_BYTES,
+				);
+				if (!validation.isValid) {
+					// Log and send to Sentry
+					console.warn("Video validation failed:", {
+						videoUrl,
+						error: validation.error,
+						validationType: "size-validation",
+					});
+					Sentry.captureException(
+						new Error(validation.error || "Validation failed"),
+						{
+							tags: {
+								operation: "video_content_validation",
+								validation_type: "size-validation",
+								userId,
+							},
+							extra: {
+								videoUrl,
+								contentLength: videoResponse.headers["content-length"],
+								actualSize: arrayBuffer.byteLength,
+							},
+						},
+					);
+					// Skip this video
+					return null;
+				}
+
+				const [uploadError, uploadedUrl] = await vet(() =>
+					uploadVideo(arrayBuffer, userId),
+				);
+
+				if (uploadError) {
+					throw uploadError;
+				}
+
+				return uploadedUrl;
+			}),
+		);
+		settledVideos.push(...batchResults);
+	}
+
+	const failedUploads = settledVideos
+		.map((result, index) => ({ result, index }))
+		.filter(({ result }) => result.status === "rejected") as Array<{
+		result: PromiseRejectedResult;
+		index: number;
+	}>;
+
+	if (failedUploads.length > 0) {
+		for (const { result, index } of failedUploads) {
+			const error = result.reason;
+
+			console.warn("collectInstagramVideos upload failed:", {
+				operation: "collect_instagram_videos",
+				userId,
+				videoIndex: index,
+				videoUrl: instagramVideoUrls[index],
+				error,
+			});
+
+			Sentry.captureException(error, {
+				tags: {
+					operation: "collect_instagram_videos",
+					userId,
+				},
+				extra: {
+					videoIndex: index,
+					videoUrl: instagramVideoUrls[index],
+				},
+			});
+		}
+	}
+
+	return settledVideos
+		.filter(
+			(result): result is PromiseFulfilledResult<string | null> =>
+				result.status === "fulfilled" && Boolean(result.value),
+		)
+		.map((fulfilled) => fulfilled.value) as string[];
 };
