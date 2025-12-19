@@ -398,7 +398,7 @@ function ItemIndicator({ className, ...props }: Combobox.ItemIndicator.Props) {
 		<Combobox.ItemIndicator
 			keepMounted
 			className={cn(
-				"flex size-4 items-center justify-center rounded-[5px] bg-plain-reverse text-plain-reverse data-selected:text-plain",
+				"flex size-4 shrink-0 items-center justify-center rounded-[5px] bg-plain-reverse text-plain-reverse data-selected:text-plain",
 				className,
 			)}
 			{...props}
