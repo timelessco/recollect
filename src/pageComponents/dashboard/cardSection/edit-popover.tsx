@@ -25,10 +25,10 @@ import {
 	type SingleListData,
 	type UserTagsData,
 } from "@/types/apiTypes";
-import { MAX_TAG_NAME_LENGTH } from "@/utils/constants";
+import { MAX_TAG_COLLECTION_NAME_LENGTH } from "@/utils/constants";
 import { cn } from "@/utils/tailwind-merge";
 
-const TAG_CREATE_SCHEMA = z.string().max(MAX_TAG_NAME_LENGTH);
+const TAG_CREATE_SCHEMA = z.string().max(MAX_TAG_COLLECTION_NAME_LENGTH);
 
 type EditPopoverProps = {
 	post: SingleListData;
