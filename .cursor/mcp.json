@@ -4,10 +4,6 @@
 			"type": "http",
 			"url": "https://mcp.supabase.com/mcp?project_ref=fgveraehgourpwwzlzhy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cbranching%2Cfunctions%2Cstorage"
 		},
-		"react-aria": {
-			"command": "npx",
-			"args": ["@react-aria/mcp@latest"]
-		},
 		"next-devtools": {
 			"command": "npx",
 			"args": ["-y", "next-devtools-mcp@latest"]
