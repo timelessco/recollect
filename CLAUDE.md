@@ -43,6 +43,7 @@ If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search
 - Use `knip` to remove unused code when making large changes
 - The `gh` CLI is installed - use it for GitHub operations
 - Don't unnecessarily add `try`/`catch` blocks
+- **Optimistic mutations**: Add Sentry breadcrumbs for cache misses and state inconsistencies to aid debugging
 
 **React:**
 
@@ -55,6 +56,8 @@ If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search
 - **Base UI** (`@base-ui/react`): Primary library for new components
   - Use for forms (Field, Form), combobox/select, accessible primitives
   - Unstyled components with full accessibility support
+  - **Combobox pattern**: See `/src/components/ui/recollect/combobox` - uses context for state management and match-sorter filtering
+  - **ScrollArea**: Wrapped Base UI component at `/src/components/ui/recollect/scroll-area.tsx` with fade/gutter support
 - **React Aria** (`react-aria`): Legacy components being phased out
   - Still used in dashboard and lightbox (4 files)
   - Prefer Base UI for new implementations
@@ -97,6 +100,7 @@ See [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md) f
 **Quick Reference:**
 
 - Components: `PascalCase` | Functions: `camelCase` | Constants: `UPPER_SNAKE_CASE`
+- **File naming**: Hook and utility files use `kebab-case` (e.g., `use-bookmark-categories.ts`), exported function names remain `camelCase`
 - Server components by default, `"use client"` when needed
 - Tailwind CSS v4 with `cn()` for conditional classes
 - Type deduction over custom interfaces (see type guidelines)
