@@ -62,7 +62,7 @@ If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search
   - Still used in dashboard and lightbox (4 files)
   - Prefer Base UI for new implementations
 - **Ariakit** (`@ariakit/react`): Specialized use cases
-- **Multi-select pattern**: Use `edit-popover-multi-select` with Base UI Combobox + match-sorter for filtering
+- **Multi-select pattern**: Use `use-category-multi-select` hook with Base UI Combobox + match-sorter for filtering (see `/src/components/lightbox/category-multi-select.tsx`)
 
 **Tailwind:**
 
