@@ -1,7 +1,7 @@
 import { useCallback, useRef, useSyncExternalStore } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useBookmarkMutationContext } from "./useBookmarkMutationContext";
+import { useBookmarkMutationContext } from "./use-bookmark-mutation-context";
 import { type PaginatedBookmarks, type SingleListData } from "@/types/apiTypes";
 import { BOOKMARKS_KEY } from "@/utils/constants";
 

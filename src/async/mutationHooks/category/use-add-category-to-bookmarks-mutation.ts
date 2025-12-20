@@ -1,9 +1,11 @@
+import * as Sentry from "@sentry/nextjs";
+
 import {
 	type AddCategoryToBookmarksPayload,
 	type AddCategoryToBookmarksResponse,
 } from "@/app/api/category/add-category-to-bookmarks/route";
-import { useBookmarkMutationContext } from "@/hooks/useBookmarkMutationContext";
-import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryOptimisticMutation";
+import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
+import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import {
@@ -55,6 +57,25 @@ export function useAddCategoryToBookmarksMutation() {
 
 			// If category not in cache, skip optimistic update and wait for server response
 			if (!newCategoryEntry) {
+				if (process.env.NODE_ENV === "development") {
+					console.warn(
+						`[Optimistic Update] Category ${variables.category_id} not found in cache.`,
+						{
+							bookmarkIds: variables.bookmark_ids,
+							categoryId: variables.category_id,
+						},
+					);
+				}
+
+				Sentry.addBreadcrumb({
+					category: "optimistic-update",
+					message: "Category not found in cache (bulk operation)",
+					level: "warning",
+					data: {
+						bookmarkIds: variables.bookmark_ids,
+						categoryId: variables.category_id,
+					},
+				});
 				return currentData;
 			}
 

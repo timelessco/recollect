@@ -1,13 +1,13 @@
 import { type GetServerSideProps, type NextPage } from "next";
 import axios from "axios";
-import { find, isEmpty, isNull } from "lodash";
+import { isEmpty, isNull } from "lodash";
 
 import CardSection from "../../../pageComponents/dashboard/cardSection";
 import {
 	type GetPublicCategoryBookmarksApiResponseType,
 	type SingleListData,
 } from "../../../types/apiTypes";
-import { options } from "../../../utils/commonData";
+import { iconMap } from "../../../utils/commonData";
 import {
 	BLACK_COLOR,
 	FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
@@ -30,10 +30,13 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 						backgroundColor: props?.icon_color ?? BLACK_COLOR,
 					}}
 				>
-					{find(options(), (item) => item?.label === props?.icon)?.icon(
-						props?.icon_color === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR,
-						"14",
-					)}
+					{props?.icon &&
+						iconMap
+							.get(props.icon)
+							?.icon(
+								props?.icon_color === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR,
+								"14",
+							)}
 				</div>
 				<p className="text-xl leading-[23px] font-semibold text-gray-900">
 					{props.category_name}

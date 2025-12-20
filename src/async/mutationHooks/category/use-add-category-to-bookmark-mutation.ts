@@ -1,9 +1,11 @@
+import * as Sentry from "@sentry/nextjs";
+
 import {
 	type AddCategoryToBookmarkPayload,
 	type AddCategoryToBookmarkResponse,
 } from "@/app/api/category/add-category-to-bookmark/route";
-import { useBookmarkMutationContext } from "@/hooks/useBookmarkMutationContext";
-import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryOptimisticMutation";
+import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
+import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import {
@@ -63,6 +65,25 @@ export function useAddCategoryToBookmarkMutation({
 
 			// If category not in cache, skip optimistic update and wait for server response
 			if (!newCategoryEntry) {
+				if (process.env.NODE_ENV === "development") {
+					console.warn(
+						`[Optimistic Update] Category ${variables.category_id} not found in cache.`,
+						{
+							bookmarkId: variables.bookmark_id,
+							categoryId: variables.category_id,
+						},
+					);
+				}
+
+				Sentry.addBreadcrumb({
+					category: "optimistic-update",
+					message: "Category not found in cache",
+					level: "warning",
+					data: {
+						bookmarkId: variables.bookmark_id,
+						categoryId: variables.category_id,
+					},
+				});
 				return currentData;
 			}
 
@@ -155,6 +176,25 @@ export function useAddCategoryToBookmarkMutation({
 
 					// If category not in cache, skip update
 					if (!newCategoryEntry) {
+						if (process.env.NODE_ENV === "development") {
+							console.warn(
+								`[Optimistic Update] Category ${variables.category_id} not found in cache (single bookmark).`,
+								{
+									bookmarkId: variables.bookmark_id,
+									categoryId: variables.category_id,
+								},
+							);
+						}
+
+						Sentry.addBreadcrumb({
+							category: "optimistic-update",
+							message: "Category not found in cache (single bookmark)",
+							level: "warning",
+							data: {
+								bookmarkId: variables.bookmark_id,
+								categoryId: variables.category_id,
+							},
+						});
 						return currentData;
 					}
 

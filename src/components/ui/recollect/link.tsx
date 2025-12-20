@@ -15,10 +15,11 @@ export function Link(props: LinkProps) {
 
 	return (
 		<AriaCurrentLink
+			data-slot="aria-current-link"
 			className={cn(
 				"rounded-xs underline transition data-disabled:cursor-default data-disabled:no-underline",
 				!hasImageChildren &&
-					"outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+					"outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
 				hasImageChildren && "group",
 				className,
 			)}
@@ -59,7 +60,10 @@ function ImageFocusRing(props: ImageFocusRingProps) {
 	}
 
 	return (
-		<div className="group-focus-visible:ring-ring/50 absolute inset-0 size-full transition ring-inset group-focus-visible:ring" />
+		<div
+			className="group-focus-visible:ring-ring/50 absolute inset-0 size-full transition ring-inset group-focus-visible:ring"
+			data-slot="image-focus-ring"
+		/>
 	);
 }
 
@@ -67,6 +71,10 @@ export function LinkHint() {
 	const { pending } = useLinkStatus();
 
 	return (
-		<span aria-hidden className={`link-hint ${pending ? "is-pending" : ""}`} />
+		<span
+			aria-hidden
+			className={`link-hint ${pending ? "is-pending" : ""}`}
+			data-slot="link-hint"
+		/>
 	);
 }

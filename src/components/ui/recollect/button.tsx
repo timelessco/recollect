@@ -31,6 +31,7 @@ export function Button(props: ButtonProps) {
 	return (
 		<BaseButton
 			{...rest}
+			data-slot="button"
 			disabled={disabled || pending}
 			focusableWhenDisabled={pending}
 			className={cn(buttonBaseClasses, className)}
@@ -51,7 +52,7 @@ export const buttonBaseClasses = [
 	"hover:not-data-disabled:-translate-y-px",
 	"active:not-data-disabled:translate-y-0",
 	// Focus ring
-	"outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+	"outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
 ];
 
 type ButtonDefaultPendingCompProps = Omit<Progress.Root.Props, "value"> & {

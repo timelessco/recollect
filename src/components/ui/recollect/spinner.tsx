@@ -9,6 +9,9 @@ export const Spinner = (props: IconProps) => {
 			className={cn("animate-spin", className)}
 			fill="none"
 			viewBox="0 0 18 19"
+			aria-label="Loading"
+			role="status"
+			data-slot="spinner"
 			{...rest}
 		>
 			<path
