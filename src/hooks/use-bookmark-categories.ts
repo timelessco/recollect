@@ -1,4 +1,4 @@
-import { useBookmarkRelation } from "./useBookmarkRelation";
+import { useBookmarkRelation } from "./use-bookmark-relation";
 import { UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
 /**

@@ -1,4 +1,4 @@
-import { useBookmarkRelation } from "./useBookmarkRelation";
+import { useBookmarkRelation } from "./use-bookmark-relation";
 
 /**
  * Reactively reads a bookmark's tag IDs from the React Query cache.
