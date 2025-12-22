@@ -190,17 +190,16 @@ export const useLightboxNavigation = ({
 				);
 			}
 		} else {
+			const categorySlug = getCategorySlugFromRouter(router);
 			void router?.push(
 				{
 					pathname: `${CATEGORY_ID_PATHNAME}`,
 					query: {
-						category_id: getCategorySlugFromRouter(router),
+						category_id: categorySlug,
 						id: bookmarks?.[index]?.id,
 					},
 				},
-				`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
-					bookmarks?.[index]?.id
-				}`,
+				`/${categorySlug}${PREVIEW_PATH}/${bookmarks?.[index]?.id}`,
 				{ shallow: true },
 			);
 		}
