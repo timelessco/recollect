@@ -15,10 +15,18 @@ import {
 	MIN_TAG_COLLECTION_NAME_LENGTH,
 	TAG_TABLE_NAME,
 } from "../../../utils/constants";
-import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+import {
+	apiSupabaseClient,
+	getApiSupabaseUser,
+} from "../../../utils/supabaseServerClient";
 
 type DataResponse = UserTagsData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse =
+	| PostgrestError
+	| VerifyErrors
+	| string
+	| { message: string }
+	| null;
 
 type Data = {
 	data: DataResponse;
@@ -35,7 +43,24 @@ export default async function handler(
 ) {
 	const supabase = apiSupabaseClient(request, response);
 
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+	// Check for auth errors
+	const { data: userData, error: userError } = await getApiSupabaseUser(
+		request,
+		supabase,
+	);
+	const userId = userData?.user?.id;
+
+	if (userError || !userId) {
+		console.warn("User authentication failed:", {
+			error: userError?.message,
+		});
+		response.status(401).json({
+			data: null,
+			error: { message: "Unauthorized" },
+		});
+		return;
+	}
+
 	const rawName = request?.body?.name;
 	const trimmedName = typeof rawName === "string" ? rawName.trim() : "";
 
