@@ -72,6 +72,7 @@ import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 
+import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
 import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import SettingsModal from "./modals/settingsModal";
 import SignedOutSection from "./signedOutSection";
@@ -727,44 +728,17 @@ const Dashboard = () => {
 			? isSearchLoading && flattenedSearchData.length === 0
 			: isDiscoverLoading && flattenedDiscoverData.length === 0;
 		const isOgImgLoading = isSearching ? false : isFetchingNextDiscoverPage;
+
 		return (
-			<div
-				id="scrollableDiv"
-				ref={infiniteScrollRef}
-				style={{
-					height: "100vh",
-					overflowY: "auto",
-					overflowX: "hidden",
-					overflowAnchor: "none",
-				}}
-			>
-				<InfiniteScroll
-					dataLength={displayData.length}
-					hasMore={hasMore ?? false}
-					loader={<div />}
-					next={fetchNext}
-					scrollableTarget="scrollableDiv"
-					endMessage={
-						<p className="pb-6 text-center text-plain-reverse">
-							{isSearchLoading ? "" : "Life happens, save it."}
-						</p>
-					}
-					style={{ overflow: "unset", height: "100vh" }}
-				>
-					<CardSection
-						categoryViewsFromProps={discoverCategoryViews}
-						isBookmarkLoading={false}
-						isLoading={isLoading}
-						isOgImgLoading={isOgImgLoading}
-						isPublicPage
-						listData={displayData}
-						onDeleteClick={() => {}}
-						onMoveOutOfTrashClick={() => {}}
-						showAvatar={false}
-						userId=""
-					/>
-				</InfiniteScroll>
-			</div>
+			<DiscoverBookmarkCards
+				displayData={displayData}
+				hasMore={hasMore ?? false}
+				fetchNext={fetchNext}
+				isLoading={isLoading}
+				isOgImgLoading={isOgImgLoading}
+				isSearchLoading={isSearchLoading}
+				discoverCategoryViews={discoverCategoryViews}
+			/>
 		);
 	};
 
