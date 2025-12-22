@@ -80,7 +80,8 @@ import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
 import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-mutation";
-import { useNameValidation } from "@/hooks/useNameValidation";
+import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
+import { handleClientError } from "@/utils/error-utils/client";
 
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
@@ -375,17 +376,18 @@ const CollectionsList = () => {
 		error: PostgrestError;
 	};
 
-	const { validateName } = useNameValidation();
 	const handleAddNewCategory = async (newCategoryName: string) => {
-		const trimmedCategoryName = validateName({
-			value: newCategoryName,
-			emptyMessage: "Collection name cannot be empty",
-			lengthMessage: `Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
-		});
+		const result = tagCategoryNameSchema.safeParse(newCategoryName);
 
-		if (!trimmedCategoryName) {
+		if (!result.success) {
+			handleClientError(
+				new Error(result.error.issues[0]?.message ?? "Invalid collection name"),
+				`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+			);
 			return;
 		}
+
+		const trimmedCategoryName = result.data;
 
 		if (!isNull(userProfileData?.data)) {
 			const response = (await mutationApiCall(

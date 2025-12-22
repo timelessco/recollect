@@ -6,15 +6,12 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
+import { tagCategoryNameSchema } from "../../../lib/validation/tag-category-schema";
 import {
 	type NextApiRequest,
 	type UserTagsData,
 } from "../../../types/apiTypes";
-import {
-	MAX_TAG_COLLECTION_NAME_LENGTH,
-	MIN_TAG_COLLECTION_NAME_LENGTH,
-	TAG_TABLE_NAME,
-} from "../../../utils/constants";
+import { TAG_TABLE_NAME } from "../../../utils/constants";
 import {
 	apiSupabaseClient,
 	getApiSupabaseUser,
@@ -61,20 +58,19 @@ export default async function handler(
 		return;
 	}
 
-	const rawName = request?.body?.name;
-	const trimmedName = typeof rawName === "string" ? rawName.trim() : "";
+	const result = tagCategoryNameSchema.safeParse(request?.body?.name);
 
-	if (
-		typeof rawName !== "string" ||
-		trimmedName.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
-		trimmedName.length > MAX_TAG_COLLECTION_NAME_LENGTH
-	) {
+	if (!result.success) {
+		const errorMessage = result.error.issues[0]?.message ?? "Invalid tag name";
 		response.status(400).json({
 			data: null,
-			error: `Tag name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+			error: { message: errorMessage },
 		});
 		return;
 	}
+
+	// Already trimmed by Zod
+	const trimmedName = result.data;
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase

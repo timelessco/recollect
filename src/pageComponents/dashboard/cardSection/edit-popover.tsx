@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
-import { z } from "zod";
 
 import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
 import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/useCreateAndAssignTagMutation";
@@ -13,15 +12,13 @@ import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
+import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import {
 	type CategoriesData,
 	type SingleListData,
 	type UserTagsData,
 } from "@/types/apiTypes";
-import { MAX_TAG_COLLECTION_NAME_LENGTH } from "@/utils/constants";
 import { cn } from "@/utils/tailwind-merge";
-
-const TAG_CREATE_SCHEMA = z.string().max(MAX_TAG_COLLECTION_NAME_LENGTH);
 
 type EditPopoverProps = {
 	post: SingleListData;
@@ -146,7 +143,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 			onAdd={handleAdd}
 			onRemove={handleRemove}
 			onCreate={handleCreate}
-			createSchema={TAG_CREATE_SCHEMA}
+			createSchema={tagCategoryNameSchema}
 		>
 			<Combobox.Chips>
 				<Combobox.Value>

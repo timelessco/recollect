@@ -12,6 +12,7 @@ import isNull from "lodash/isNull";
 import slugify from "slugify";
 import uniqid from "uniqid";
 
+import { tagCategoryNameSchema } from "../../../lib/validation/tag-category-schema";
 import {
 	type AddUserCategoryApiPayload,
 	type CategoriesData,
@@ -20,8 +21,6 @@ import {
 import {
 	CATEGORIES_TABLE_NAME,
 	DUPLICATE_CATEGORY_NAME_ERROR,
-	MAX_TAG_COLLECTION_NAME_LENGTH,
-	MIN_TAG_COLLECTION_NAME_LENGTH,
 	PROFILES,
 } from "../../../utils/constants";
 import {
@@ -62,22 +61,20 @@ export default async function handler(
 			return;
 		}
 
-		const rawName = request.body?.name;
-		const trimmedName = typeof rawName === "string" ? rawName.trim() : "";
+		const result = tagCategoryNameSchema.safeParse(request.body?.name);
 
-		if (
-			typeof rawName !== "string" ||
-			trimmedName.length < MIN_TAG_COLLECTION_NAME_LENGTH ||
-			trimmedName.length > MAX_TAG_COLLECTION_NAME_LENGTH
-		) {
+		if (!result.success) {
+			const errorMessage =
+				result.error.issues[0]?.message ?? "Invalid collection name";
 			response.status(400).json({
 				data: null,
-				error: {
-					message: `Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
-				},
+				error: { message: errorMessage },
 			});
 			return;
 		}
+
+		// Already trimmed by Zod
+		const trimmedName = result.data;
 
 		// check if category name is already there for the user
 		const { data: matchedCategoryName, error: matchedCategoryNameError } =
