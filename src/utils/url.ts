@@ -26,7 +26,7 @@ export const getCategorySlugFromRouter = (
 	const pathSegments = router?.asPath?.split("/")?.filter(Boolean) || [];
 
 	// Handle public routes: /public/[user_name]/[category_slug]
-	if (pathSegments[0] === "public" && pathSegments.length >= 2) {
+	if (pathSegments[0] === "public" && pathSegments.length >= 3) {
 		return pathSegments[2]?.split("?")?.[0] || null;
 	}
 

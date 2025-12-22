@@ -1,11 +1,11 @@
 import { type GetServerSideProps } from "next";
 import { useRouter } from "next/router";
-import axios from "axios";
 import { isEmpty } from "lodash";
 
 import "yet-another-react-lightbox/styles.css";
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 import { CustomLightBox } from "../../../../../components/lightbox/LightBox";
 import { Spinner } from "../../../../../components/spinner";
@@ -42,20 +42,20 @@ const PublicPreview = () => {
 		const fetchBookmark = async () => {
 			try {
 				setIsLoading(true);
-				const response =
-					await axios.post<GetPublicCategoryBookmarksApiResponseType>(
-						`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
-							categorySlug as string
-						}&user_name=${user_name as string}`,
-					);
+				const response = await fetch(
+					`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${user_name}`,
+					{ method: "POST" },
+				);
+				const data =
+					(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
-				if (!response?.data?.is_public) {
+				if (data?.is_public) {
 					setError("This page is not public");
 					setIsLoading(false);
 					return;
 				}
 
-				const bookmarks = response?.data?.data;
+				const bookmarks = data?.data;
 				if (isEmpty(bookmarks)) {
 					setError("No bookmarks found");
 					setIsLoading(false);
@@ -113,7 +113,16 @@ const PublicPreview = () => {
 		) {
 			void router.push(`/public/${user_name}/${categorySlug}`);
 		}
-	}, [router, isLoading, bookmark, error, user_name, categorySlug]);
+	}, [
+		router,
+		isLoading,
+		bookmark,
+		error,
+		user_name,
+		categorySlug,
+		router.isReady,
+		router.push,
+	]);
 
 	// Wait for router to be ready before rendering
 	if (!router.isReady || isLoading) {
