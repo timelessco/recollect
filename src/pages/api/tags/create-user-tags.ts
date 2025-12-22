@@ -38,55 +38,76 @@ export default async function handler(
 	}>,
 	response: NextApiResponse<Data>,
 ) {
-	const supabase = apiSupabaseClient(request, response);
+	try {
+		const supabase = apiSupabaseClient(request, response);
 
-	// Check for auth errors
-	const { data: userData, error: userError } = await getApiSupabaseUser(
-		request,
-		supabase,
-	);
-	const userId = userData?.user?.id;
+		// Check for auth errors
+		const { data: userData, error: userError } = await getApiSupabaseUser(
+			request,
+			supabase,
+		);
+		const userId = userData?.user?.id;
 
-	if (userError || !userId) {
-		console.warn("User authentication failed:", {
-			error: userError?.message,
-		});
-		response.status(401).json({
-			data: null,
-			error: { message: "Unauthorized" },
-		});
-		return;
-	}
+		if (userError || !userId) {
+			console.warn("User authentication failed:", {
+				error: userError?.message,
+			});
+			response.status(401).json({
+				data: null,
+				error: { message: "Unauthorized" },
+			});
+			return;
+		}
 
-	const result = tagCategoryNameSchema.safeParse(request?.body?.name);
+		const result = tagCategoryNameSchema.safeParse(request?.body?.name);
 
-	if (!result.success) {
-		const errorMessage = result.error.issues[0]?.message ?? "Invalid tag name";
-		response.status(400).json({
-			data: null,
-			error: { message: errorMessage },
-		});
-		return;
-	}
+		if (!result.success) {
+			const errorMessage =
+				result.error.issues[0]?.message ?? "Invalid tag name";
+			response.status(400).json({
+				data: null,
+				error: { message: errorMessage },
+			});
+			return;
+		}
 
-	// Already trimmed by Zod
-	const trimmedName = result.data;
+		// Already trimmed by Zod
+		const trimmedName = result.data;
 
-	const { data, error }: { data: DataResponse; error: ErrorResponse } =
-		await supabase
-			.from(TAG_TABLE_NAME)
-			.insert([
-				{
-					name: trimmedName,
-					user_id: userId,
+		const { data, error }: { data: DataResponse; error: ErrorResponse } =
+			await supabase
+				.from(TAG_TABLE_NAME)
+				.insert([
+					{
+						name: trimmedName,
+						user_id: userId,
+					},
+				])
+				.select();
+
+		if (isNull(error)) {
+			response.status(200).json({ data, error: null });
+		} else {
+			console.error("Error inserting tag:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "insert_tag",
+					userId,
+					tagName: trimmedName,
 				},
-			])
-			.select();
-
-	if (isNull(error)) {
-		response.status(200).json({ data, error: null });
-	} else {
-		response.status(500).json({ data: null, error });
-		Sentry.captureException(`create tag error : ${error?.message}`);
+			});
+			response.status(500).json({ data: null, error });
+		}
+	} catch (error) {
+		console.error("Unexpected error in create-user-tags:", error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "create_user_tag_unexpected",
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: { message: "An unexpected error occurred" },
+		});
 	}
 }
