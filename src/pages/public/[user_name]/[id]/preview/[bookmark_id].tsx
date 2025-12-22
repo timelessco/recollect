@@ -5,7 +5,6 @@ import { isEmpty } from "lodash";
 import "yet-another-react-lightbox/styles.css";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 import { CustomLightBox } from "../../../../../components/lightbox/LightBox";
 import { Spinner } from "../../../../../components/spinner";
@@ -18,6 +17,8 @@ import {
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../../../../../utils/constants";
+
+import { handleClientError } from "@/utils/error-utils/client";
 
 export type BookmarkResponse = {
 	data: SingleListData[];
@@ -44,8 +45,17 @@ const PublicPreview = () => {
 				setIsLoading(true);
 				const response = await fetch(
 					`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${user_name}`,
-					{ method: "POST" },
 				);
+
+				if (!response.ok) {
+					handleClientError(
+						new Error(`HTTP error! status: ${response.status}`),
+						"Failed to fetch bookmark",
+						false,
+					);
+					return;
+				}
+
 				const data =
 					(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
@@ -163,21 +173,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	// Verify the category exists and is public
 	try {
-		const response =
-			await axios.post<GetPublicCategoryBookmarksApiResponseType>(
-				`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
-					categorySlug as string
-				}&user_name=${user_name as string}`,
-			);
+		const response = await fetch(
+			`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
+				categorySlug as string
+			}&user_name=${user_name as string}`,
+		);
+		const data =
+			(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
-		if (!response?.data?.is_public) {
+		if (!data?.is_public) {
 			return {
 				notFound: true,
 			};
 		}
 
 		// Check if bookmark exists in the category
-		const bookmarks = response?.data?.data;
+		const bookmarks = data?.data;
 		const bookmarkExists = bookmarks?.some(
 			(b) => String(b.id) === String(bookmark_id),
 		);
