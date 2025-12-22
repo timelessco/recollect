@@ -105,12 +105,7 @@ export const DiscoverBookmarkCards = () => {
 		<div
 			id="scrollableDiv"
 			ref={infiniteScrollRef}
-			style={{
-				height: "100vh",
-				overflowY: "auto",
-				overflowX: "hidden",
-				overflowAnchor: "none",
-			}}
+			className="overflow-anchor-none h-full overflow-x-hidden overflow-y-auto"
 		>
 			<InfiniteScroll
 				dataLength={displayData.length}
