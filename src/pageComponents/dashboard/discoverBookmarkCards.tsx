@@ -1,36 +1,105 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
+import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
+import { useFetchDiscoverBookmarks } from "../../async/queryHooks/bookmarks/useFetchDiscoverBookmarks";
+import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
+import useDebounce from "../../hooks/useDebounce";
+import useGetSortBy from "../../hooks/useGetSortBy";
+import useGetViewValue from "../../hooks/useGetViewValue";
 import {
-	type BookmarkViewDataTypes,
-	type SingleListData,
-} from "../../types/apiTypes";
+	useLoadersStore,
+	useMiscellaneousStore,
+} from "../../store/componentStore";
+import { type BookmarkViewDataTypes } from "../../types/apiTypes";
+import {
+	type BookmarksSortByTypes,
+	type BookmarksViewTypes,
+} from "../../types/componentStoreTypes";
+import { viewValues } from "../../utils/constants";
 
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
 });
 
-type DiscoverBookmarkCardsProps = {
-	displayData: SingleListData[];
-	hasMore: boolean;
-	fetchNext: () => void;
-	isLoading: boolean;
-	isOgImgLoading: boolean;
-	isSearchLoading: boolean;
-	discoverCategoryViews: BookmarkViewDataTypes;
-};
-
-export const DiscoverBookmarkCards = ({
-	displayData,
-	hasMore,
-	fetchNext,
-	isLoading,
-	isOgImgLoading,
-	isSearchLoading,
-	discoverCategoryViews,
-}: DiscoverBookmarkCardsProps) => {
+export const DiscoverBookmarkCards = () => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
+
+	// Search functionality
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const debouncedSearchText = useDebounce(searchText, 500);
+	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
+
+	const {
+		flattenedSearchData,
+		fetchNextPage: fetchNextSearchPage,
+		hasNextPage: searchHasNextPage,
+	} = useSearchBookmarks();
+
+	// Discover data
+	const {
+		discoverData,
+		fetchNextPage: fetchNextDiscoverPage,
+		hasNextPage: discoverHasNextPage,
+		isFetchingNextPage: isFetchingNextDiscoverPage,
+		isLoading: isDiscoverLoading,
+	} = useFetchDiscoverBookmarks();
+
+	// Determine if we're currently searching (use debounced to match when query runs)
+	const isSearching = !isEmpty(debouncedSearchText);
+
+	const flattenedDiscoverData = useMemo(
+		() => discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
+		[discoverData],
+	);
+
+	// Get user's view preferences for discover page
+	const discoverBookmarksView = useGetViewValue(
+		"bookmarksView",
+		viewValues.card,
+		false,
+	);
+	const discoverCardContentViewArray = useGetViewValue(
+		"cardContentViewArray",
+		[],
+		false,
+	) as string[];
+	const discoverMoodboardColumns = useGetViewValue(
+		"moodboardColumns",
+		[10],
+		false,
+	) as number[];
+	const { sortBy: discoverSortBy } = useGetSortBy();
+
+	// Build categoryViewsFromProps for discover page
+	const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
+		() => ({
+			bookmarksView:
+				(discoverBookmarksView as BookmarksViewTypes) ||
+				(viewValues.card as BookmarksViewTypes),
+			cardContentViewArray: discoverCardContentViewArray || [],
+			moodboardColumns: discoverMoodboardColumns || [10],
+			sortBy:
+				(discoverSortBy as BookmarksSortByTypes) ||
+				("date-sort-acending" as BookmarksSortByTypes),
+		}),
+		[
+			discoverBookmarksView,
+			discoverCardContentViewArray,
+			discoverMoodboardColumns,
+			discoverSortBy,
+		],
+	);
+
+	// Use search results when searching, otherwise use discover data
+	const displayData = isSearching ? flattenedSearchData : flattenedDiscoverData;
+	const hasMore = isSearching ? searchHasNextPage : discoverHasNextPage;
+	const fetchNext = isSearching ? fetchNextSearchPage : fetchNextDiscoverPage;
+	const isLoading = isSearching
+		? isSearchLoading && flattenedSearchData.length === 0
+		: isDiscoverLoading && flattenedDiscoverData.length === 0;
+	const isOgImgLoading = isSearching ? false : isFetchingNextDiscoverPage;
 
 	return (
 		<div
