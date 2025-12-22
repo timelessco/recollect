@@ -49,7 +49,7 @@ const PublicPreview = () => {
 				const data =
 					(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
-				if (data?.is_public) {
+				if (!data?.is_public) {
 					setError("This page is not public");
 					setIsLoading(false);
 					return;
