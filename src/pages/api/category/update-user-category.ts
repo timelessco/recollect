@@ -60,8 +60,6 @@ export default async function handler(
 				.select();
 
 		if (!isNull(error)) {
-			console.error("Error updating category:", error);
-
 			// Handle unique constraint violation (case-insensitive duplicate)
 			// Postgres error code 23505 = unique_violation
 			const isPostgrestError =
@@ -83,6 +81,7 @@ export default async function handler(
 				return;
 			}
 
+			console.error("[update-user-category] Error updating category:", error);
 			Sentry.captureException(error, {
 				tags: {
 					operation: "update_category",

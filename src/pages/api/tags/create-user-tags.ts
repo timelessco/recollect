@@ -64,6 +64,11 @@ export default async function handler(
 		if (!result.success) {
 			const errorMessage =
 				result.error.issues[0]?.message ?? "Invalid tag name";
+			console.warn("[create-user-tags] Validation failed:", {
+				userId,
+				name: request.body?.name,
+				issues: result.error.issues,
+			});
 			response.status(400).json({
 				data: null,
 				error: { message: errorMessage },
@@ -85,11 +90,7 @@ export default async function handler(
 				])
 				.select();
 
-		if (isNull(error)) {
-			response.status(200).json({ data, error: null });
-		} else {
-			console.error("Error inserting tag:", error);
-
+		if (!isNull(error)) {
 			// Handle unique constraint violation (case-insensitive duplicate)
 			// Postgres error code 23505 = unique_violation
 			const isPostgrestError =
@@ -100,10 +101,13 @@ export default async function handler(
 				(isPostgrestError && (error as PostgrestError).code === "23505") ||
 				errorMessage.includes("unique_user_tag_name_ci")
 			) {
-				console.warn("Duplicate tag name attempt (case-insensitive):", {
-					tagName: trimmedName,
-					userId,
-				});
+				console.warn(
+					"[create-user-tags] Duplicate tag name attempt (case-insensitive):",
+					{
+						tagName: trimmedName,
+						userId,
+					},
+				);
 				response.status(409).json({
 					data: null,
 					error: {
@@ -114,6 +118,7 @@ export default async function handler(
 				return;
 			}
 
+			console.error("[create-user-tags] Error inserting tag:", error);
 			Sentry.captureException(error, {
 				tags: {
 					operation: "insert_tag",
@@ -122,7 +127,10 @@ export default async function handler(
 				},
 			});
 			response.status(500).json({ data: null, error });
+			return;
 		}
+
+		response.status(200).json({ data, error: null });
 	} catch (error) {
 		console.error("Unexpected error in create-user-tags:", error);
 		Sentry.captureException(error, {

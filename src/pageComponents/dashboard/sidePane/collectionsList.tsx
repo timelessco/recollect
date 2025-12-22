@@ -387,12 +387,10 @@ const CollectionsList = () => {
 			return;
 		}
 
-		const trimmedCategoryName = result.data;
-
 		if (!isNull(userProfileData?.data)) {
 			const response = (await mutationApiCall(
 				addCategoryOptimisticMutation.mutateAsync({
-					name: trimmedCategoryName,
+					name: result.data,
 					category_order: userProfileData?.data[0]?.category_order ?? [],
 				}),
 			)) as { data: CategoriesData[] };
@@ -575,9 +573,8 @@ const CollectionsList = () => {
 					id="add-category-input"
 					onBlur={(event) => {
 						const inputValue = (event.target as HTMLInputElement)?.value;
-						const trimmedValue = inputValue?.trim();
-						if (trimmedValue) {
-							void handleAddNewCategory(trimmedValue);
+						if (inputValue) {
+							void handleAddNewCategory(inputValue);
 						}
 
 						setShowAddCategoryInput(false);
@@ -585,10 +582,9 @@ const CollectionsList = () => {
 					onKeyUp={(event) => {
 						if (event.key === "Enter") {
 							const inputValue = (event.target as HTMLInputElement)?.value;
-							const trimmedValue = inputValue?.trim();
 
-							if (trimmedValue) {
-								void handleAddNewCategory(trimmedValue);
+							if (inputValue) {
+								void handleAddNewCategory(inputValue);
 							}
 
 							setShowAddCategoryInput(false);

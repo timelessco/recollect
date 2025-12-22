@@ -61,11 +61,30 @@ export default async function handler(
 			return;
 		}
 
+		console.log("[create-user-category] API called:", {
+			userId,
+			name: request.body?.name,
+		});
 		const result = tagCategoryNameSchema.safeParse(request.body?.name);
 
 		if (!result.success) {
 			const errorMessage =
 				result.error.issues[0]?.message ?? "Invalid collection name";
+			const validationError = new Error(errorMessage);
+			console.warn("[create-user-category] Validation failed:", {
+				userId,
+				name: request.body?.name,
+				issues: result.error.issues,
+			});
+			Sentry.captureException(validationError, {
+				tags: {
+					operation: "validate_category_name",
+					userId,
+				},
+				extra: {
+					name: request.body?.name,
+				},
+			});
 			response.status(400).json({
 				data: null,
 				error: { message: errorMessage },
@@ -89,8 +108,6 @@ export default async function handler(
 			.select();
 
 		if (error) {
-			console.error("Error inserting category:", error);
-
 			// Handle unique constraint violation (case-insensitive duplicate)
 			// Postgres error code 23505 = unique_violation
 			if (
@@ -108,6 +125,7 @@ export default async function handler(
 				return;
 			}
 
+			console.error("[create-user-category] Error inserting category:", error);
 			Sentry.captureException(error, {
 				tags: {
 					operation: "insert_category",
