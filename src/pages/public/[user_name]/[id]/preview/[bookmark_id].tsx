@@ -181,7 +181,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		const data =
 			(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
-		if (!data?.is_public) {
+		if (!data?.is_public || !response.ok) {
+			handleClientError(
+				new Error(`HTTP error! status: ${response.status}`),
+				"Failed to fetch bookmark",
+				false,
+			);
 			return {
 				notFound: true,
 			};
