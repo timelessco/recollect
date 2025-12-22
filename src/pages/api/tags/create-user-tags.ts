@@ -89,6 +89,31 @@ export default async function handler(
 			response.status(200).json({ data, error: null });
 		} else {
 			console.error("Error inserting tag:", error);
+
+			// Handle unique constraint violation (case-insensitive duplicate)
+			// Postgres error code 23505 = unique_violation
+			const isPostgrestError =
+				error && typeof error === "object" && "code" in error;
+			const errorMessage =
+				isPostgrestError && "message" in error ? String(error.message) : "";
+			if (
+				(isPostgrestError && (error as PostgrestError).code === "23505") ||
+				errorMessage.includes("unique_user_tag_name_ci")
+			) {
+				console.warn("Duplicate tag name attempt (case-insensitive):", {
+					tagName: trimmedName,
+					userId,
+				});
+				response.status(409).json({
+					data: null,
+					error: {
+						message:
+							"You already have a tag with this name, please use a different name",
+					},
+				});
+				return;
+			}
+
 			Sentry.captureException(error, {
 				tags: {
 					operation: "insert_tag",

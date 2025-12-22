@@ -52,45 +52,6 @@ export default async function handler(
 			categoryName: request.body.updateData?.category_name,
 		});
 
-		// check if category name is already there for the user, along with the category id
-		const { data: matchedCategoryName, error: matchedCategoryNameError } =
-			await supabase
-				.from(CATEGORIES_TABLE_NAME)
-				.select(`category_name`)
-				.eq("user_id", userId)
-				.eq("category_name", request?.body?.updateData?.category_name)
-				.neq("id", request.body.category_id);
-
-		if (!isNull(matchedCategoryNameError)) {
-			console.error(
-				"Database error while checking category name:",
-				matchedCategoryNameError,
-			);
-			Sentry.captureException(matchedCategoryNameError, {
-				tags: {
-					operation: "check_duplicate_category",
-					userId,
-				},
-			});
-			response.status(500).json({
-				data: null,
-				error: { message: "Database error while checking category name" },
-			});
-			return;
-		}
-
-		if (matchedCategoryName && matchedCategoryName.length > 0) {
-			console.warn("Duplicate category name attempt:", {
-				categoryName: request.body.updateData?.category_name,
-				userId,
-			});
-			response.status(409).json({
-				data: null,
-				error: { message: "Category name already exists" },
-			});
-			return;
-		}
-
 		const { data, error }: { data: DataResponse; error: ErrorResponse } =
 			await supabase
 				.from(CATEGORIES_TABLE_NAME)
@@ -100,6 +61,28 @@ export default async function handler(
 
 		if (!isNull(error)) {
 			console.error("Error updating category:", error);
+
+			// Handle unique constraint violation (case-insensitive duplicate)
+			// Postgres error code 23505 = unique_violation
+			const isPostgrestError =
+				error && typeof error === "object" && "code" in error;
+			const errorMessage =
+				isPostgrestError && "message" in error ? String(error.message) : "";
+			if (
+				(isPostgrestError && (error as PostgrestError).code === "23505") ||
+				errorMessage.includes("unique_user_category_name_ci")
+			) {
+				console.warn("Duplicate category name attempt (case-insensitive):", {
+					categoryName: request.body.updateData?.category_name,
+					userId,
+				});
+				response.status(409).json({
+					data: null,
+					error: { message: "Category name already exists" },
+				});
+				return;
+			}
+
 			Sentry.captureException(error, {
 				tags: {
 					operation: "update_category",

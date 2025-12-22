@@ -76,50 +76,6 @@ export default async function handler(
 		// Already trimmed by Zod
 		const trimmedName = result.data;
 
-		// check if category name is already there for the user
-		const { data: matchedCategoryName, error: matchedCategoryNameError } =
-			await supabase
-				.from(CATEGORIES_TABLE_NAME)
-				.select(`category_name`)
-				.eq("user_id", userId)
-				.eq("category_name", trimmedName);
-
-		console.log("Existing category check result:", {
-			matchedCategoryName,
-			hasMatch: !isEmpty(matchedCategoryName),
-		});
-
-		if (!isNull(matchedCategoryNameError)) {
-			console.error(
-				"Error checking existing category name:",
-				matchedCategoryNameError,
-			);
-			Sentry.captureException(matchedCategoryNameError, {
-				tags: {
-					operation: "check_existing_category",
-					userId,
-				},
-				extra: { categoryName: trimmedName },
-			});
-			response.status(500).json({
-				data: null,
-				error: { message: "Error checking existing category" },
-			});
-			return;
-		}
-
-		// Check for duplicate category name
-		if (!isEmpty(matchedCategoryName)) {
-			console.warn("Duplicate category name attempt:", {
-				categoryName: trimmedName,
-			});
-			response.status(500).json({
-				data: null,
-				error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
-			});
-			return;
-		}
-
 		// Insert category
 		const { data, error }: PostgrestResponse<CategoriesData> = await supabase
 			.from(CATEGORIES_TABLE_NAME)
@@ -134,6 +90,24 @@ export default async function handler(
 
 		if (error) {
 			console.error("Error inserting category:", error);
+
+			// Handle unique constraint violation (case-insensitive duplicate)
+			// Postgres error code 23505 = unique_violation
+			if (
+				error.code === "23505" ||
+				error.message?.includes("unique_user_category_name_ci")
+			) {
+				console.warn("Duplicate category name attempt (case-insensitive):", {
+					categoryName: trimmedName,
+					userId,
+				});
+				response.status(409).json({
+					data: null,
+					error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
+				});
+				return;
+			}
+
 			Sentry.captureException(error, {
 				tags: {
 					operation: "insert_category",
