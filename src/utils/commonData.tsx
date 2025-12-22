@@ -3560,21 +3560,31 @@ const object = [
 		name: "signal-01",
 	},
 ];
-export const options = () =>
-	object.map((index) => ({
-		label: index.name,
-		icon: (iconColor: string, size: string = "16", className: string = "") => (
-			<svg
-				className={className}
-				fill={iconColor}
-				height={size}
-				viewBox="0 0 18 18"
-				width={size}
-			>
-				<use href={`/sprite.svg#${index.name}`} />
-			</svg>
-		),
-	}));
+export const iconOptions = object.map((index) => ({
+	label: index.name,
+	icon: (iconColor: string, size: string = "16", className: string = "") => (
+		<svg
+			className={className}
+			fill={iconColor}
+			height={size}
+			viewBox="0 0 18 18"
+			width={size}
+		>
+			<use href={`/sprite.svg#${index.name}`} />
+		</svg>
+	),
+}));
+
+/**
+ * Pre-computed Map for O(1) icon lookups by label
+ * Replaces O(n) find() operations in icon rendering
+ */
+export const iconMap = new Map(iconOptions.map((opt) => [opt.label, opt]));
+
+/**
+ * @deprecated Use `iconOptions` instead - cached at module level
+ */
+export const options = () => iconOptions;
 
 export const optionsMenuListArray = (
 	currentPath: string | null,

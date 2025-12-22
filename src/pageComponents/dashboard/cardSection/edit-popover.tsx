@@ -1,25 +1,18 @@
 import { useMemo, useState } from "react";
-import { Combobox } from "@base-ui/react/combobox";
 import { Popover } from "@base-ui/react/popover";
 import { z } from "zod";
 
-import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
-import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/useRemoveCategoryFromBookmarkMutation";
 import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
 import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/useCreateAndAssignTagMutation";
 import { useRemoveTagFromBookmarkMutation } from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { CollectionIcon } from "@/components/collectionIcon";
-import {
-	EditPopoverMultiSelect,
-	useTypedEditPopoverContext,
-} from "@/components/edit-popover-multi-select";
-import { useBookmarkCategories } from "@/hooks/useBookmarkCategories";
-import { useBookmarkTags } from "@/hooks/useBookmarkTags";
-import { useIsPublicPage } from "@/hooks/useIsPublicPage";
+import { Combobox } from "@/components/ui/recollect/combobox";
+import { ScrollArea } from "@/components/ui/recollect/scroll-area";
+import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
+import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
+import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
-import { LightboxCloseIcon } from "@/icons/lightbox-close-icon";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -54,7 +47,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 			{/* When closed, show only on hover (hidden group-hover:flex) */}
 			<Popover.Trigger
 				className={cn(
-					"z-15 rounded-lg bg-whites-700 p-[5px] text-gray-1000 backdrop-blur-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+					"z-15 rounded-lg bg-whites-700 p-[5px] text-gray-1000 backdrop-blur-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
 					!isPublicPage && (open ? "flex" : "hidden group-hover:flex"),
 					isPublicPage && "hidden",
 				)}
@@ -145,7 +138,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 	};
 
 	return (
-		<EditPopoverMultiSelect.Root
+		<Combobox.Root
 			items={allTags}
 			selectedItems={selectedTags}
 			getItemId={(tag) => tag.id}
@@ -155,53 +148,39 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 			onCreate={handleCreate}
 			createSchema={TAG_CREATE_SCHEMA}
 		>
-			<EditPopoverMultiSelect.Chips>
-				<EditPopoverMultiSelect.Chip />
-				<EditPopoverMultiSelect.Input placeholder="Tag name..." />
-			</EditPopoverMultiSelect.Chips>
-			<EditPopoverMultiSelect.Portal>
-				<EditPopoverMultiSelect.Positioner>
-					<EditPopoverMultiSelect.Popup>
-						<EditPopoverMultiSelect.List
-							renderItem={(item: UserTagsData) => (
-								<EditPopoverMultiSelect.Item value={item}>
-									<span className="truncate">{item.name}</span>
-								</EditPopoverMultiSelect.Item>
-							)}
-						/>
-					</EditPopoverMultiSelect.Popup>
-				</EditPopoverMultiSelect.Positioner>
-			</EditPopoverMultiSelect.Portal>
-		</EditPopoverMultiSelect.Root>
-	);
-};
+			<Combobox.Chips>
+				<Combobox.Value>
+					{(value: UserTagsData[]) => (
+						<>
+							{value.map((tag) => (
+								<Combobox.Chip key={tag.id}>
+									<Combobox.ChipContent item={tag} />
+									<Combobox.ChipRemove />
+								</Combobox.Chip>
+							))}
 
-// Custom chips component using context
-const CategoryChips = () => {
-	const { selectedItems, getItemId } =
-		useTypedEditPopoverContext<CategoriesData>();
-
-	return (
-		<>
-			{selectedItems.map((item) => (
-				<Combobox.Chip
-					key={getItemId(item)}
-					className="flex cursor-pointer items-center gap-1 rounded-md bg-gray-800 px-2 py-[2px] text-xs leading-[15px] font-450 tracking-[0.01em] text-white focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
-					aria-label={item.category_name}
-				>
-					<CollectionIcon bookmarkCategoryData={item} iconSize="8" size="12" />
-
-					<span className="max-w-[100px] truncate">{item.category_name}</span>
-
-					<Combobox.ChipRemove
-						className="rounded-full p-0.5 hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
-						aria-label="Remove"
-					>
-						<LightboxCloseIcon className="size-2.5" />
-					</Combobox.ChipRemove>
-				</Combobox.Chip>
-			))}
-		</>
+							<Combobox.Input placeholder="Tag name..." />
+						</>
+					)}
+				</Combobox.Value>
+			</Combobox.Chips>
+			<Combobox.Portal>
+				<Combobox.Positioner>
+					<Combobox.Popup>
+						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
+							<Combobox.List>
+								{(item: UserTagsData) => (
+									<Combobox.Item key={item.id} value={item}>
+										<Combobox.ItemIndicator />
+										<span className="truncate">{item.name}</span>
+									</Combobox.Item>
+								)}
+							</Combobox.List>
+						</ScrollArea>
+					</Combobox.Popup>
+				</Combobox.Positioner>
+			</Combobox.Portal>
+		</Combobox.Root>
 	);
 };
 
@@ -212,78 +191,68 @@ type CategoryMultiSelectProps = {
 export const CategoryMultiSelect = ({
 	bookmarkId,
 }: CategoryMultiSelectProps) => {
-	const { allCategories: categoriesResponse } = useFetchCategories();
-	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
-	const { removeCategoryFromBookmarkMutation } =
-		useRemoveCategoryFromBookmarkMutation();
-
-	const selectedCategoryIds = useBookmarkCategories(bookmarkId);
-	const visibleCategories = useMemo(
-		() => categoriesResponse?.data ?? [],
-		[categoriesResponse?.data],
-	);
-
-	const categoryMap = useMemo(
-		() => new Map(visibleCategories.map((cat) => [cat.id, cat])),
-		[visibleCategories],
-	);
-
-	const selectedCategories = useMemo(
-		() =>
-			selectedCategoryIds
-				.map((id) => categoryMap.get(id))
-				.filter((cat): cat is NonNullable<typeof cat> => cat !== undefined),
-		[selectedCategoryIds, categoryMap],
-	);
-
-	const handleAdd = (category: CategoriesData) => {
-		addCategoryToBookmarkMutation.mutate({
-			bookmark_id: bookmarkId,
-			category_id: category.id,
-		});
-	};
-
-	const handleRemove = (category: CategoriesData) => {
-		removeCategoryFromBookmarkMutation.mutate({
-			bookmark_id: bookmarkId,
-			category_id: category.id,
-		});
-	};
+	const {
+		visibleCategories,
+		selectedCategories,
+		handleAdd,
+		handleRemove,
+		getItemId,
+		getItemLabel,
+	} = useCategoryMultiSelect({ bookmarkId });
 
 	return (
-		<EditPopoverMultiSelect.Root
+		<Combobox.Root
 			items={visibleCategories}
 			selectedItems={selectedCategories}
-			getItemId={(cat) => cat.id}
-			getItemLabel={(cat) => cat.category_name}
+			getItemId={getItemId}
+			getItemLabel={getItemLabel}
 			onAdd={handleAdd}
 			onRemove={handleRemove}
 		>
-			<EditPopoverMultiSelect.Chips>
-				<CategoryChips />
-				<EditPopoverMultiSelect.Input placeholder="Search Collections..." />
-			</EditPopoverMultiSelect.Chips>
-			<EditPopoverMultiSelect.Portal>
-				<EditPopoverMultiSelect.Positioner>
-					<EditPopoverMultiSelect.Popup>
-						<EditPopoverMultiSelect.Empty>
-							No categories found
-						</EditPopoverMultiSelect.Empty>
-						<EditPopoverMultiSelect.List
-							renderItem={(item: CategoriesData) => (
-								<EditPopoverMultiSelect.Item value={item}>
+			<Combobox.Chips>
+				<Combobox.Value>
+					{(value: CategoriesData[]) => (
+						<>
+							{value.map((category) => (
+								<Combobox.Chip key={category.id}>
 									<CollectionIcon
-										bookmarkCategoryData={item}
-										iconSize="10"
-										size="16"
+										bookmarkCategoryData={category}
+										iconSize="8"
+										size="12"
 									/>
-									<span className="truncate">{item.category_name}</span>
-								</EditPopoverMultiSelect.Item>
-							)}
-						/>
-					</EditPopoverMultiSelect.Popup>
-				</EditPopoverMultiSelect.Positioner>
-			</EditPopoverMultiSelect.Portal>
-		</EditPopoverMultiSelect.Root>
+									<Combobox.ChipContent item={category}>
+										{category.category_name}
+									</Combobox.ChipContent>
+									<Combobox.ChipRemove />
+								</Combobox.Chip>
+							))}
+							<Combobox.Input placeholder="Search Collections..." />
+						</>
+					)}
+				</Combobox.Value>
+			</Combobox.Chips>
+			<Combobox.Portal>
+				<Combobox.Positioner>
+					<Combobox.Popup>
+						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
+							<Combobox.Empty>No collections found</Combobox.Empty>
+							<Combobox.List>
+								{(item: CategoriesData) => (
+									<Combobox.Item key={item.id} value={item}>
+										<Combobox.ItemIndicator />
+										<CollectionIcon
+											bookmarkCategoryData={item}
+											iconSize="10"
+											size="16"
+										/>
+										<span className="truncate">{item.category_name}</span>
+									</Combobox.Item>
+								)}
+							</Combobox.List>
+						</ScrollArea>
+					</Combobox.Popup>
+				</Combobox.Positioner>
+			</Combobox.Portal>
+		</Combobox.Root>
 	);
 };

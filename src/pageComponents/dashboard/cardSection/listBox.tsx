@@ -50,7 +50,7 @@ import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import { useAddCategoryToBookmarksMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarksMutation";
+import { useAddCategoryToBookmarksMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-mutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import { Checkbox } from "@/components/ui/recollect/checkbox";

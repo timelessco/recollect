@@ -1,9 +1,11 @@
+import * as Sentry from "@sentry/nextjs";
+
 import {
 	type RemoveCategoryFromBookmarkPayload,
 	type RemoveCategoryFromBookmarkResponse,
 } from "@/app/api/category/remove-category-from-bookmark/route";
-import { useBookmarkMutationContext } from "@/hooks/useBookmarkMutationContext";
-import { useReactQueryOptimisticMutation } from "@/hooks/useReactQueryOptimisticMutation";
+import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
+import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import {
@@ -95,6 +97,26 @@ export function useRemoveCategoryFromBookmarkMutation({
 						// Auto-add uncategorized if available in cache
 						if (uncategorizedEntry) {
 							finalCategories = [uncategorizedEntry];
+						} else {
+							if (process.env.NODE_ENV === "development") {
+								console.warn(
+									"[Optimistic Update] Uncategorized category not found in cache.",
+									{
+										bookmarkId: variables.bookmark_id,
+										categoryId: variables.category_id,
+									},
+								);
+							}
+
+							Sentry.addBreadcrumb({
+								category: "optimistic-update",
+								message: "Uncategorized category not found in cache",
+								level: "warning",
+								data: {
+									bookmarkId: variables.bookmark_id,
+									categoryId: variables.category_id,
+								},
+							});
 						}
 					}
 
@@ -171,6 +193,27 @@ export function useRemoveCategoryFromBookmarkMutation({
 
 						if (uncategorizedEntry) {
 							finalCategories = [uncategorizedEntry];
+						} else {
+							if (process.env.NODE_ENV === "development") {
+								console.warn(
+									"[Optimistic Update] Uncategorized category not found in cache (single bookmark).",
+									{
+										bookmarkId: variables.bookmark_id,
+										categoryId: variables.category_id,
+									},
+								);
+							}
+
+							Sentry.addBreadcrumb({
+								category: "optimistic-update",
+								message:
+									"Uncategorized category not found in cache (single bookmark)",
+								level: "warning",
+								data: {
+									bookmarkId: variables.bookmark_id,
+									categoryId: variables.category_id,
+								},
+							});
 						}
 					}
 

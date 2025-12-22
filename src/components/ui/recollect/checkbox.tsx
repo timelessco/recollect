@@ -12,11 +12,12 @@ export function Checkbox(props: CheckboxProps) {
 
 	return (
 		<BaseCheckbox.Root
-			{...rest}
 			className={cn(
-				"shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+				"shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
 				className,
 			)}
+			data-slot="checkbox-root"
+			{...rest}
 		>
 			{children ?? <CheckboxDefaultIndicator />}
 		</BaseCheckbox.Root>
@@ -32,6 +33,7 @@ export function CheckboxDefaultIndicator(props: CheckboxDefaultIndicatorProps) {
 		<BaseCheckbox.Indicator
 			keepMounted
 			className={cn("contents", className)}
+			data-slot="checkbox-default-indicator"
 			{...rest}
 		>
 			{children ?? <CheckIcon />}

@@ -269,7 +269,7 @@ const CardSection = ({
 				/>
 			) : (
 				<Button
-					className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+					className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
 					onClick={() => onDeleteClick([post])}
 				>
 					<TrashIconGray />
@@ -288,7 +288,7 @@ const CardSection = ({
 						href={post.url}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+						className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
 					>
 						<LinkExternalIcon />
 					</a>
@@ -308,7 +308,7 @@ const CardSection = ({
 					)}
 				>
 					<Button
-						className="z-15 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+						className="z-15 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
 						onClick={() => onMoveOutOfTrashClick(post)}
 					>
 						<BackIcon />

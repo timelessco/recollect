@@ -6,7 +6,7 @@ import {
 	useReactQueryMutation,
 	type ReactQueryMutationOptions,
 	type RollbackFn,
-} from "@/hooks/useReactQueryMutation";
+} from "@/hooks/use-react-query-mutation";
 
 // ============================================================================
 // Additional Optimistic Update Interface
