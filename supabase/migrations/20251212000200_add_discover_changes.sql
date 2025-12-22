@@ -1,12 +1,24 @@
 -- ============================================================================
 -- MIGRATION: Add discoverability feature for bookmarks
 -- Created: 2025-12-12
--- Purpose: Add make_discoverable column, update search function, and create RLS policies
+-- Purpose: Enable bookmarks to be publicly discoverable via make_discoverable column
+-- ============================================================================
+--
+-- This migration:
+--   1. Adds make_discoverable column to everything table
+--   2. Updates search_bookmarks_url_tag_scope RPC to return new column
+--   3. Creates RLS policies for anonymous and authenticated discover access
+--   4. Creates performance indexes for discoverability queries
+--
 -- ============================================================================
 
 BEGIN;
 
--- Add make_discoverable column to everything table
+-- ============================================================================
+-- PART 1: Add make_discoverable column
+-- ============================================================================
+
+-- 1. Add make_discoverable column to everything table
 -- NULL means not discoverable, timestamp means when it was made discoverable
 -- Users can explicitly set this to a timestamp for bookmarks they want to make public
 ALTER TABLE "public"."everything"
@@ -15,12 +27,17 @@ ADD COLUMN IF NOT EXISTS "make_discoverable" timestamp with time zone DEFAULT NU
 COMMENT ON COLUMN "public"."everything"."make_discoverable" IS
 'Controls whether this bookmark is publicly discoverable. When NOT NULL and trash is false, the bookmark is visible to anonymous/public users via the public_discover_access RLS policy. The timestamp indicates when the bookmark was made discoverable.';
 
--- Update search_bookmarks_url_tag_scope function to include make_discoverable in RETURNS TABLE
+-- ============================================================================
+-- PART 2: Update search function
+-- ============================================================================
+
+-- 1. Update search_bookmarks_url_tag_scope function to include make_discoverable in RETURNS TABLE
 -- Need to DROP first because PostgreSQL doesn't allow changing return type with CREATE OR REPLACE
 SET check_function_bodies = off;
 
 DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint);
 
+-- 2. Create updated function with make_discoverable column
 CREATE FUNCTION public.search_bookmarks_url_tag_scope(
     search_text character varying DEFAULT '',
     url_scope character varying DEFAULT '',
@@ -172,11 +189,24 @@ $function$;
 
 RESET check_function_bodies;
 
--- Replace any existing policies with the new discoverability rules
+-- 3. Set permissions (maintain existing access pattern)
+REVOKE EXECUTE ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint) TO anon;
+
+-- 4. Add function documentation
+COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint) IS
+'Bookmark search with URL/tag/category filters. Returns make_discoverable timestamp for discoverability feature. Uses CTEs to avoid N+1 queries when aggregating tags and categories.';
+
+-- ============================================================================
+-- PART 3: Create RLS policies
+-- ============================================================================
+
+-- 1. Drop existing policies if they exist
 DROP POLICY IF EXISTS "anon_discover_access" ON "public"."everything";
 DROP POLICY IF EXISTS "authenticated_discover_access" ON "public"."everything";
 
--- Policy for anonymous (unauthenticated) users
+-- 2. Policy for anonymous (unauthenticated) users
 CREATE POLICY "anon_discover_access"
 ON "public"."everything"
 AS permissive
@@ -190,7 +220,7 @@ USING (
 COMMENT ON POLICY "anon_discover_access" ON public.everything IS
 'Allows anonymous (unauthenticated) users to read bookmarks marked as discoverable and not in trash.';
 
--- Policy for authenticated users
+-- 3. Policy for authenticated users
 CREATE POLICY "authenticated_discover_access"
 ON "public"."everything"
 AS permissive
@@ -204,9 +234,53 @@ USING (
 COMMENT ON POLICY "authenticated_discover_access" ON public.everything IS
 'Allows authenticated users to read bookmarks marked as discoverable and not in trash.';
 
--- Performance indexes for RLS policy lookups
+-- ============================================================================
+-- PART 4: Create performance indexes
+-- ============================================================================
+
+-- 1. Create indexes for RLS policy lookups
 CREATE INDEX IF NOT EXISTS idx_everything_make_discoverable ON public.everything (make_discoverable);
 CREATE INDEX IF NOT EXISTS idx_everything_trash ON public.everything (trash);
+
+-- 2. Composite partial index for discoverable bookmarks (most efficient for RLS policy)
 CREATE INDEX IF NOT EXISTS idx_everything_discoverable_trash ON public.everything (make_discoverable, trash) WHERE make_discoverable IS NOT NULL AND trash = false;
+
+-- ============================================================================
+-- PART 5: Post-migration verification
+-- ============================================================================
+
+DO $$
+BEGIN
+    -- Verify column was added
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'everything'
+          AND column_name = 'make_discoverable'
+    ) THEN
+        RAISE EXCEPTION 'Migration failed: make_discoverable column not created';
+    END IF;
+
+    -- Verify policies were created
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'everything'
+          AND policyname = 'anon_discover_access'
+    ) THEN
+        RAISE EXCEPTION 'Migration failed: anon_discover_access policy not created';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'everything'
+          AND policyname = 'authenticated_discover_access'
+    ) THEN
+        RAISE EXCEPTION 'Migration failed: authenticated_discover_access policy not created';
+    END IF;
+
+    RAISE NOTICE 'Migration verified: make_discoverable column and RLS policies created successfully';
+END $$;
 
 COMMIT;
