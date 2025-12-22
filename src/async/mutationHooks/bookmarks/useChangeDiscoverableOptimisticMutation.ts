@@ -3,7 +3,6 @@ import { type QueryKey } from "@tanstack/react-query";
 import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
-import { useReactQueryOptimisticMutation } from "../../../hooks/useReactQueryOptimisticMutation";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -20,6 +19,7 @@ import {
 	UPDATE_BOOKMARK_DISCOVERABLE_API,
 } from "../../../utils/constants";
 
+import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 
 const updateBookmarkPages = (
