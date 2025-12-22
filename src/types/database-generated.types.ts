@@ -356,7 +356,7 @@ export type Database = {
 			};
 			search_bookmarks_debugging:
 				| {
-						Args: { search_text: string; url_scope: string };
+						Args: { search_text: string };
 						Returns: Array<{
 							category_id: number;
 							description: string;
@@ -374,7 +374,7 @@ export type Database = {
 						}>;
 				  }
 				| {
-						Args: { search_text: string };
+						Args: { search_text: string; url_scope: string };
 						Returns: Array<{
 							category_id: number;
 							description: string;
@@ -394,18 +394,16 @@ export type Database = {
 			search_bookmarks_url_tag_scope:
 				| {
 						Args: {
-							category_scope?: number;
 							search_text?: string;
 							tag_scope?: string[];
 							url_scope?: string;
 						};
 						Returns: Array<{
-							added_categories: Json;
 							added_tags: Json;
+							category_id: number;
 							description: string;
 							id: number;
 							inserted_at: string;
-							make_discoverable: string;
 							meta_data: Json;
 							ogimage: string;
 							screenshot: string;
@@ -419,13 +417,14 @@ export type Database = {
 				  }
 				| {
 						Args: {
+							category_scope?: number;
 							search_text?: string;
 							tag_scope?: string[];
 							url_scope?: string;
 						};
 						Returns: Array<{
+							added_categories: Json;
 							added_tags: Json;
-							category_id: number;
 							description: string;
 							id: number;
 							inserted_at: string;
