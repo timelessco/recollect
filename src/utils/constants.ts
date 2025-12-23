@@ -86,7 +86,7 @@ export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
 export const UPDATE_BOOKMARK_DISCOVERABLE_API =
-	"/bookmark/update-bookmark-discoverable";
+	"/bookmark/toggle-discoverable-on-bookmark";
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";

@@ -8,7 +8,7 @@ import { isNullable } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
 
-const ROUTE = "update-bookmark-discoverable";
+const ROUTE = "toggle-discoverable-on-bookmark";
 
 const UpdateBookmarkDiscoverablePayloadSchema = z.object({
 	bookmark_id: z
@@ -69,7 +69,7 @@ export const POST = createSupabasePostApiHandler({
 				route,
 				message: "Failed to update bookmark discoverable status",
 				error,
-				operation: "update_bookmark_discoverable",
+				operation: "toggle_discoverable_on_bookmark",
 				userId,
 				extra: {
 					bookmarkId,
