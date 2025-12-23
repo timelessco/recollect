@@ -1,3 +1,4 @@
+import { addBreadcrumb } from "@sentry/nextjs";
 import { type QueryKey } from "@tanstack/react-query";
 
 import { type ToggleBookmarkDiscoverablePayload } from "../../../app/api/bookmark/toggle-discoverable-on-bookmark/route";
@@ -28,6 +29,25 @@ const updateBookmarkPages = (
 	makeDiscoverable: boolean,
 ): BookmarksPaginatedDataTypes | undefined => {
 	if (!oldData) {
+		if (process.env.NODE_ENV === "development") {
+			console.warn(
+				`[Optimistic Update] Cache miss on discoverable toggle for bookmark ${bookmarkId}.`,
+				{
+					bookmarkId,
+					makeDiscoverable,
+				},
+			);
+		}
+
+		addBreadcrumb({
+			category: "optimistic-update",
+			message: "Cache miss on discoverable toggle",
+			level: "warning",
+			data: {
+				bookmarkId,
+				makeDiscoverable,
+			},
+		});
 		return oldData;
 	}
 
