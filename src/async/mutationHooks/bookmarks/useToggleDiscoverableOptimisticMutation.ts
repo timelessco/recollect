@@ -1,5 +1,6 @@
 import { type QueryKey } from "@tanstack/react-query";
 
+import { type ToggleBookmarkDiscoverablePayload } from "../../../app/api/bookmark/toggle-discoverable-on-bookmark/route";
 import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -10,7 +11,6 @@ import {
 import {
 	type BookmarksPaginatedDataTypes,
 	type SingleListData,
-	type ToggleBookmarkDiscoverableApiPayload,
 } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_KEY,
@@ -33,7 +33,7 @@ const updateBookmarkPages = (
 
 	return {
 		...oldData,
-		pages: oldData.pages?.map((page) => ({
+		pages: oldData.pages.map((page) => ({
 			...page,
 			data: page.data?.map((item) =>
 				item?.id === bookmarkId
@@ -72,7 +72,7 @@ export const useToggleDiscoverableOptimisticMutation = () => {
 	const toggleDiscoverableMutation = useReactQueryOptimisticMutation<
 		{ data: unknown; error: unknown },
 		Error,
-		ToggleBookmarkDiscoverableApiPayload,
+		ToggleBookmarkDiscoverablePayload,
 		QueryKey,
 		BookmarksPaginatedDataTypes
 	>({

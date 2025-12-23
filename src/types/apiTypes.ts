@@ -262,17 +262,6 @@ export type MoveBookmarkToTrashApiPayload = {
 	isTrash: boolean;
 };
 
-export type ToggleBookmarkDiscoverableApiPayload = {
-	bookmark_id: number;
-	make_discoverable: boolean;
-};
-
-export type AddCategoryToBookmarkApiPayload = {
-	bookmark_id: number;
-	category_id: number | null;
-	update_access: boolean;
-};
-
 export type AddUserCategoryApiPayload = {
 	category_order: number[];
 	name: string;

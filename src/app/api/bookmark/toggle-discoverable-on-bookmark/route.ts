@@ -92,7 +92,7 @@ export const POST = createSupabasePostApiHandler({
 		console.log(
 			`[${route}] Bookmark discoverable status toggled successfully:`,
 			{
-				bookmarkId: updatedData?.[0]?.id,
+				bookmarkId: updatedData[0].id,
 				makeDiscoverable,
 			},
 		);
