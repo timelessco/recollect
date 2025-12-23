@@ -33,7 +33,6 @@ export type ToggleBookmarkDiscoverablePayload = z.infer<
 >;
 
 // Response schema - validates array of bookmark objects
-// Using z.any() for complex nested types (user_id, meta_data, etc.) as they're validated by TypeScript
 const ToggleBookmarkDiscoverableResponseSchema = z.array(z.any());
 
 export type ToggleBookmarkDiscoverableResponse = z.infer<
