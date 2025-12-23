@@ -48,6 +48,8 @@ const PublicPreview = () => {
 				);
 
 				if (!response.ok) {
+					setError("Failed to fetch bookmark");
+					setIsLoading(false);
 					handleClientError(
 						new Error(`HTTP error! status: ${response.status}`),
 						"Failed to fetch bookmark",
@@ -179,8 +181,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 				categorySlug as string
 			}&user_name=${user_name as string}`,
 		);
-		const data =
-			(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
 		if (!response.ok) {
 			console.error(`Failed to fetch public category: ${response.status}`);
@@ -188,6 +188,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 				notFound: true,
 			};
 		}
+
+		const data =
+			(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
 		if (!data?.is_public) {
 			return {
