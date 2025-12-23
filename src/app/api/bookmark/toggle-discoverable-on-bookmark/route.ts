@@ -55,6 +55,40 @@ export const POST = createSupabasePostApiHandler({
 			makeDiscoverable,
 		});
 
+		// Pre-check: Fetch bookmark to validate trash status
+		const { data: bookmark, error: fetchError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("trash")
+			.eq("id", bookmarkId)
+			.eq("user_id", userId)
+			.single();
+
+		if (fetchError || !bookmark) {
+			return apiWarn({
+				route,
+				message: "Bookmark not found or you lack permission",
+				status: HttpStatus.NOT_FOUND,
+				context: {
+					bookmarkId,
+					userId,
+				},
+			});
+		}
+
+		// Prevent making trashed bookmarks discoverable
+		if (bookmark.trash && makeDiscoverable) {
+			return apiWarn({
+				route,
+				message:
+					"Cannot make trashed bookmarks discoverable. Restore the bookmark first.",
+				status: HttpStatus.BAD_REQUEST,
+				context: {
+					bookmarkId,
+					userId,
+				},
+			});
+		}
+
 		const { data: updatedData, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({
