@@ -12,7 +12,10 @@ import {
 	useLoadersStore,
 	useMiscellaneousStore,
 } from "../../store/componentStore";
-import { type BookmarkViewDataTypes } from "../../types/apiTypes";
+import {
+	type BookmarkViewDataTypes,
+	type SingleListData,
+} from "../../types/apiTypes";
 import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
@@ -22,6 +25,44 @@ import { viewValues } from "../../utils/constants";
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
 });
+
+type SearchProps = {
+	data: SingleListData[];
+	hasNextPage: boolean;
+	fetchNextPage: () => void;
+	isLoading: boolean;
+	dataLength: number;
+};
+
+type DiscoverProps = {
+	data: SingleListData[];
+	hasNextPage: boolean;
+	fetchNextPage: () => void;
+	isLoading: boolean;
+	isFetching: boolean;
+	dataLength: number;
+};
+
+export const useDiscoverDataSource = (
+	isSearching: boolean,
+	searchProps: SearchProps,
+	discoverProps: DiscoverProps,
+) =>
+	isSearching
+		? {
+				displayData: searchProps.data,
+				hasMore: searchProps.hasNextPage,
+				fetchNext: searchProps.fetchNextPage,
+				isLoading: searchProps.isLoading && searchProps.dataLength === 0,
+				isOgImgLoading: false,
+			}
+		: {
+				displayData: discoverProps.data,
+				hasMore: discoverProps.hasNextPage,
+				fetchNext: discoverProps.fetchNextPage,
+				isLoading: discoverProps.isLoading && discoverProps.dataLength === 0,
+				isOgImgLoading: discoverProps.isFetching,
+			};
 
 export const DiscoverBookmarkCards = () => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
@@ -93,13 +134,29 @@ export const DiscoverBookmarkCards = () => {
 	);
 
 	// Use search results when searching, otherwise use discover data
-	const displayData = isSearching ? flattenedSearchData : flattenedDiscoverData;
-	const hasMore = isSearching ? searchHasNextPage : discoverHasNextPage;
-	const fetchNext = isSearching ? fetchNextSearchPage : fetchNextDiscoverPage;
-	const isLoading = isSearching
-		? isSearchLoading && flattenedSearchData.length === 0
-		: isDiscoverLoading && flattenedDiscoverData.length === 0;
-	const isOgImgLoading = isSearching ? false : isFetchingNextDiscoverPage;
+	const { displayData, hasMore, fetchNext, isLoading, isOgImgLoading } =
+		useDiscoverDataSource(
+			isSearching,
+			{
+				data: flattenedSearchData,
+				hasNextPage: searchHasNextPage,
+				fetchNextPage: () => {
+					void fetchNextSearchPage();
+				},
+				isLoading: isSearchLoading,
+				dataLength: flattenedSearchData.length,
+			},
+			{
+				data: flattenedDiscoverData,
+				hasNextPage: discoverHasNextPage,
+				fetchNextPage: () => {
+					void fetchNextDiscoverPage();
+				},
+				isLoading: isDiscoverLoading,
+				isFetching: isFetchingNextDiscoverPage,
+				dataLength: flattenedDiscoverData.length,
+			},
+		);
 
 	return (
 		<div
