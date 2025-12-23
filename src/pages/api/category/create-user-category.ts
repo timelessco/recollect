@@ -61,10 +61,6 @@ export default async function handler(
 			return;
 		}
 
-		console.log("[create-user-category] API called:", {
-			userId,
-			name: request.body?.name,
-		});
 		const result = tagCategoryNameSchema.safeParse(request.body?.name);
 
 		if (!result.success) {
@@ -94,6 +90,11 @@ export default async function handler(
 
 		// Already trimmed by Zod
 		const trimmedName = result.data;
+
+		console.log("[create-user-category] API called:", {
+			userId,
+			name: trimmedName,
+		});
 
 		// Insert category
 		const { data, error }: PostgrestResponse<CategoriesData> = await supabase
