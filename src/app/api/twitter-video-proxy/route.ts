@@ -89,21 +89,47 @@ export async function GET(request: NextRequest) {
 		const contentType =
 			videoResponse.headers.get("content-type") || "video/mp4";
 
-		// Stream the Twitter video
-		const [bufferError, buffer] = await vet(() => videoResponse.arrayBuffer());
-		if (bufferError || !buffer) {
+		// Stream directly from response body
+		if (!videoResponse.body) {
 			return apiError({
 				route: ROUTE,
-				message: "Failed to read video data",
-				error: bufferError || new Error("No buffer received"),
-				operation: "twitter_video_proxy_buffer",
+				message: "No video data available",
+				error: new Error("Response body is null"),
+				operation: "twitter_video_proxy_stream",
 				userId,
 				extra: { videoUrl },
 			});
 		}
 
-		// Create response with proper headers
-		const response = new NextResponse(Buffer.from(buffer), {
+		// Create a streaming response
+		const stream = new ReadableStream({
+			async start(controller) {
+				const body = videoResponse.body;
+				if (!body) {
+					controller.error(new Error("No video response body"));
+					return;
+				}
+
+				const reader = body.getReader();
+				try {
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) {
+							controller.close();
+							break;
+						}
+
+						controller.enqueue(value);
+					}
+				} catch (error) {
+					controller.error(error);
+				} finally {
+					reader.releaseLock();
+				}
+			},
+		});
+
+		const response = new NextResponse(stream, {
 			status: 200,
 			headers: {
 				"Content-Type": contentType,
