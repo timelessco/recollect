@@ -3608,7 +3608,7 @@ export const optionsMenuListArray = (
 		href: `/${DISCOVER_URL}`,
 		current: currentPath === DISCOVER_URL,
 		id: 1,
-		count: bookmarksCountData?.data?.everything,
+		count: undefined,
 		iconColor: "",
 	},
 	{
