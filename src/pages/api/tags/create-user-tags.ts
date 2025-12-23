@@ -118,15 +118,18 @@ export default async function handler(
 				return;
 			}
 
-			console.error("[create-user-tags] Error inserting tag:", error);
+			console.error("Error creating tag:", error);
 			Sentry.captureException(error, {
 				tags: {
-					operation: "insert_tag",
+					operation: "create_user_tag",
 					userId,
-					tagName: trimmedName,
 				},
+				extra: { tagName: trimmedName },
 			});
-			response.status(500).json({ data: null, error });
+			response.status(500).json({
+				data: null,
+				error: { message: "Error creating tag" },
+			});
 			return;
 		}
 
