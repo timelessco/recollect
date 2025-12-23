@@ -51,7 +51,6 @@ export default function useFetchPaginatedBookmarks() {
 		initialPageParam: 0,
 		getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
 		enabled: CATEGORY_ID !== DISCOVER_URL,
-		maxPages: 20,
 	});
 
 	useEffect(() => {
