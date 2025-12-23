@@ -39,9 +39,7 @@ const updateBookmarkPages = (
 				item?.id === bookmarkId
 					? {
 							...item,
-							make_discoverable: makeDiscoverable
-								? new Date().toISOString()
-								: null,
+							make_discoverable: makeDiscoverable ? "pending" : null,
 						}
 					: item,
 			),
