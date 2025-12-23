@@ -6,9 +6,9 @@ import { createApiClient } from "@/lib/supabase/api";
 import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
 
-const ROUTE = "fetch-discover-bookmarks";
+const ROUTE = "fetch-discoverable-bookmarks";
 
-const FetchDiscoverBookmarksQuerySchema = z.object({
+const FetchDiscoverableBookmarksQuerySchema = z.object({
 	page: z.coerce.number().int().nonnegative(),
 });
 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 		const pageParam = searchParams.get("page");
 
 		// Parse and validate query parameters
-		const queryParseResult = FetchDiscoverBookmarksQuerySchema.safeParse({
+		const queryParseResult = FetchDiscoverableBookmarksQuerySchema.safeParse({
 			page: pageParam,
 		});
 
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
 			route: ROUTE,
 			message: "An unexpected error occurred",
 			error,
-			operation: "fetch_discover_bookmarks_unexpected",
+			operation: "fetch_discoverable_bookmarks_unexpected",
 		});
 	}
 }

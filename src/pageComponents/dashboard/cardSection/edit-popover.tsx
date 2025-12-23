@@ -13,7 +13,7 @@ import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
-import { DiscoverableCheckbox } from "@/pageComponents/discover/DiscoverCheckbox";
+import { DiscoverableCheckbox } from "@/pageComponents/dashboard/cardSection/discoverable-checkbox";
 import {
 	type CategoriesData,
 	type SingleListData,

@@ -5,7 +5,7 @@ import { type SingleListData } from "@/types/apiTypes";
 import {
 	BOOKMARKS_KEY,
 	DISCOVER_URL,
-	FETCH_DISCOVER_BOOKMARKS_API,
+	FETCH_BOOKMARKS_DISCOVERABLE_API,
 	NEXT_API_URL,
 	PAGINATION_LIMIT,
 } from "@/utils/constants";
@@ -21,7 +21,7 @@ export const useFetchDiscoverBookmarks = () => {
 		queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
 		queryFn: async ({ pageParam }) => {
 			const data = await getApi<SingleListData[] | null>(
-				`${NEXT_API_URL}${FETCH_DISCOVER_BOOKMARKS_API}?page=${pageParam}`,
+				`${NEXT_API_URL}${FETCH_BOOKMARKS_DISCOVERABLE_API}?page=${pageParam}`,
 			);
 			return { data: data ?? [] };
 		},
