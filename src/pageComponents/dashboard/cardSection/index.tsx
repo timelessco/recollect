@@ -78,8 +78,8 @@ export type CardSectionProps = {
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onDeleteClick: (post: SingleListData[]) => void;
-	onMoveOutOfTrashClick: (post: SingleListData) => void;
+	onDeleteClick?: (post: SingleListData[]) => void;
+	onMoveOutOfTrashClick?: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
@@ -259,7 +259,7 @@ const CardSection = ({
 					isBottomBar={false}
 					label="Delete Bookmark"
 					onClearTrash={() => {
-						onDeleteClick([post]);
+						onDeleteClick?.([post]);
 					}}
 					isClearingTrash={false}
 					isOpen={isTrashMenuOpen}
@@ -270,7 +270,7 @@ const CardSection = ({
 			) : (
 				<Button
 					className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
-					onClick={() => onDeleteClick([post])}
+					onClick={() => onDeleteClick?.([post])}
 				>
 					<TrashIconGray />
 				</Button>
@@ -309,7 +309,7 @@ const CardSection = ({
 				>
 					<Button
 						className="z-15 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
-						onClick={() => onMoveOutOfTrashClick(post)}
+						onClick={() => onMoveOutOfTrashClick?.(post)}
 					>
 						<BackIcon />
 					</Button>

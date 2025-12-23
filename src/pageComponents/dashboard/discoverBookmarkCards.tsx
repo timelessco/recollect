@@ -184,8 +184,6 @@ export const DiscoverBookmarkCards = () => {
 					isOgImgLoading={isOgImgLoading}
 					isPublicPage
 					listData={displayData}
-					onDeleteClick={() => {}}
-					onMoveOutOfTrashClick={() => {}}
 					showAvatar={false}
 					userId=""
 				/>
