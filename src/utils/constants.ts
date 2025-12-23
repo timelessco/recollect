@@ -144,6 +144,7 @@ export const SCREENSHOT_API =
 
 export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
 
+export const TWITTER_VIDEO_PROXY_API = "/twitter-video-proxy";
 // urls
 
 // Guest
