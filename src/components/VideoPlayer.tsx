@@ -13,7 +13,8 @@ export const VideoPlayer = ({
 	const playerRef = useRef<HTMLVideoElement | null>(null);
 
 	// Example twitter video url: https://video.twimg.com/amplify_video/1990067319197069312/vid/avc1/1080x1920/_nmYyHDOfj9paRpR.mp4?tag=21
-	const isTwitterVideo = src?.includes("video.twimg.com");
+	const hostname = new URL(src).hostname.toLowerCase();
+	const isTwitterVideo = hostname === "video.twimg.com";
 
 	const proxiedSrc = isTwitterVideo
 		? `${NEXT_API_URL}${TWITTER_VIDEO_PROXY_API}?url=${encodeURIComponent(src)}`

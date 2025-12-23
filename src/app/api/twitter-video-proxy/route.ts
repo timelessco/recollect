@@ -31,8 +31,11 @@ export async function GET(request: NextRequest) {
 			});
 		}
 
-		// Validate that it's a Twitter video URL for security
-		if (!videoUrl.includes("video.twimg.com")) {
+		// Validate hostname - must be exactly video.twimg.com or a subdomain
+		const hostname = new URL(videoUrl).hostname.toLowerCase();
+		const isValidTwitterVideoHost = hostname === "video.twimg.com";
+
+		if (!isValidTwitterVideoHost) {
 			return apiWarn({
 				route: ROUTE,
 				message: "Invalid video URL",
@@ -52,6 +55,7 @@ export async function GET(request: NextRequest) {
 					"User-Agent": "Mozilla/5.0",
 					Referer: "https://twitter.com/",
 				},
+				signal: AbortSignal.timeout(30_000),
 			}),
 		);
 
