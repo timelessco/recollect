@@ -18,6 +18,7 @@ export const useFetchDiscoverBookmarks = () => {
 		isFetchingNextPage,
 		isLoading,
 	} = useInfiniteQuery({
+		maxPages: 20,
 		queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
 		queryFn: async ({ pageParam }) => {
 			const data = await getApi<SingleListData[] | null>(

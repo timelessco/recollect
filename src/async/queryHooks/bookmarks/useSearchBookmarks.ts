@@ -52,6 +52,7 @@ export default function useSearchBookmarks() {
 
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery({
+			maxPages: 20,
 			queryKey: [
 				BOOKMARKS_KEY,
 				session?.user?.id,
