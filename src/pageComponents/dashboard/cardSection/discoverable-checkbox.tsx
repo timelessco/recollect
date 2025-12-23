@@ -6,7 +6,7 @@ type DiscoverableCheckboxProps = {
 	isDiscoverable: boolean;
 };
 
-export const DiscoverableCheckbox = ({
+export const DiscoveCheckbox = ({
 	bookmarkId,
 	isDiscoverable,
 }: DiscoverableCheckboxProps) => {
