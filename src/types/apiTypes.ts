@@ -262,7 +262,7 @@ export type MoveBookmarkToTrashApiPayload = {
 	isTrash: boolean;
 };
 
-export type UpdateBookmarkDiscoverableApiPayload = {
+export type ToggleBookmarkDiscoverableApiPayload = {
 	bookmark_id: number;
 	make_discoverable: boolean;
 };

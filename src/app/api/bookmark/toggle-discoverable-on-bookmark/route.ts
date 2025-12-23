@@ -10,7 +10,7 @@ import { HttpStatus } from "@/utils/error-utils/common";
 
 const ROUTE = "toggle-discoverable-on-bookmark";
 
-const UpdateBookmarkDiscoverablePayloadSchema = z.object({
+const ToggleBookmarkDiscoverablePayloadSchema = z.object({
 	bookmark_id: z
 		.number({
 			error: (issue) =>
@@ -28,22 +28,22 @@ const UpdateBookmarkDiscoverablePayloadSchema = z.object({
 	}),
 });
 
-export type UpdateBookmarkDiscoverablePayload = z.infer<
-	typeof UpdateBookmarkDiscoverablePayloadSchema
+export type ToggleBookmarkDiscoverablePayload = z.infer<
+	typeof ToggleBookmarkDiscoverablePayloadSchema
 >;
 
 // Response schema - validates array of bookmark objects
 // Using z.any() for complex nested types (user_id, meta_data, etc.) as they're validated by TypeScript
-const UpdateBookmarkDiscoverableResponseSchema = z.array(z.any());
+const ToggleBookmarkDiscoverableResponseSchema = z.array(z.any());
 
-export type UpdateBookmarkDiscoverableResponse = z.infer<
-	typeof UpdateBookmarkDiscoverableResponseSchema
+export type ToggleBookmarkDiscoverableResponse = z.infer<
+	typeof ToggleBookmarkDiscoverableResponseSchema
 >;
 
 export const POST = createSupabasePostApiHandler({
 	route: ROUTE,
-	inputSchema: UpdateBookmarkDiscoverablePayloadSchema,
-	outputSchema: UpdateBookmarkDiscoverableResponseSchema,
+	inputSchema: ToggleBookmarkDiscoverablePayloadSchema,
+	outputSchema: ToggleBookmarkDiscoverableResponseSchema,
 	handler: async ({ data, supabase, user, route }) => {
 		const { bookmark_id: bookmarkId, make_discoverable: makeDiscoverable } =
 			data;
@@ -67,7 +67,7 @@ export const POST = createSupabasePostApiHandler({
 		if (error) {
 			return apiError({
 				route,
-				message: "Failed to update bookmark discoverable status",
+				message: "Failed to toggle bookmark discoverable status",
 				error,
 				operation: "toggle_discoverable_on_bookmark",
 				userId,
@@ -91,7 +91,7 @@ export const POST = createSupabasePostApiHandler({
 		}
 
 		console.log(
-			`[${route}] Bookmark discoverable status updated successfully:`,
+			`[${route}] Bookmark discoverable status toggled successfully:`,
 			{
 				bookmarkId: updatedData?.[0]?.id,
 				makeDiscoverable,

@@ -10,13 +10,13 @@ import {
 import {
 	type BookmarksPaginatedDataTypes,
 	type SingleListData,
-	type UpdateBookmarkDiscoverableApiPayload,
+	type ToggleBookmarkDiscoverableApiPayload,
 } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_KEY,
 	DISCOVER_URL,
 	NEXT_API_URL,
-	UPDATE_BOOKMARK_DISCOVERABLE_API,
+	TOGGLE_BOOKMARK_DISCOVERABLE_API,
 } from "../../../utils/constants";
 
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
@@ -49,7 +49,7 @@ const updateBookmarkPages = (
 	};
 };
 
-export const useChangeDiscoverableOptimisticMutation = () => {
+export const useToggleDiscoverableOptimisticMutation = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
@@ -69,16 +69,16 @@ export const useChangeDiscoverableOptimisticMutation = () => {
 		? [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch]
 		: null;
 
-	const changeDiscoverableMutation = useReactQueryOptimisticMutation<
+	const toggleDiscoverableMutation = useReactQueryOptimisticMutation<
 		{ data: unknown; error: unknown },
 		Error,
-		UpdateBookmarkDiscoverableApiPayload,
+		ToggleBookmarkDiscoverableApiPayload,
 		QueryKey,
 		BookmarksPaginatedDataTypes
 	>({
 		mutationFn: (variables) =>
 			postApi<{ data: SingleListData; error: Error | null }>(
-				`${NEXT_API_URL}${UPDATE_BOOKMARK_DISCOVERABLE_API}`,
+				`${NEXT_API_URL}${TOGGLE_BOOKMARK_DISCOVERABLE_API}`,
 				variables,
 			),
 		queryKey,
@@ -92,5 +92,5 @@ export const useChangeDiscoverableOptimisticMutation = () => {
 		invalidates: [[BOOKMARKS_KEY, DISCOVER_URL]],
 	});
 
-	return { changeDiscoverableMutation };
+	return { toggleDiscoverableMutation };
 };

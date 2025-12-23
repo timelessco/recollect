@@ -1,4 +1,4 @@
-import { useChangeDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/useChangeDiscoverableOptimisticMutation";
+import { useToggleDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/useToggleDiscoverableOptimisticMutation";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 
 type DiscoverableCheckboxProps = {
@@ -10,11 +10,11 @@ export const DiscoveCheckbox = ({
 	bookmarkId,
 	isDiscoverable,
 }: DiscoverableCheckboxProps) => {
-	const { changeDiscoverableMutation } =
-		useChangeDiscoverableOptimisticMutation();
+	const { toggleDiscoverableMutation } =
+		useToggleDiscoverableOptimisticMutation();
 
 	const handleCheckedChange = (checked: boolean) => {
-		changeDiscoverableMutation.mutate({
+		toggleDiscoverableMutation.mutate({
 			bookmark_id: bookmarkId,
 			make_discoverable: checked,
 		});
