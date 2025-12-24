@@ -109,6 +109,7 @@ const CardSection = ({
 		useMiscellaneousStore();
 
 	// Handle route changes for lightbox
+	// Support both authenticated and public preview routes
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
 			router?.asPath,
@@ -127,7 +128,7 @@ const CardSection = ({
 			setLightboxId(null);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [router?.asPath]);
+	}, [router?.asPath, isPublicPage]);
 
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
@@ -820,7 +821,9 @@ const CardSection = ({
 		<>
 			<div className={listWrapperClass}>{renderItem()}</div>
 			<PreviewLightBox
+				bookmarks={isPublicPage ? bookmarksList : undefined}
 				id={lightboxId}
+				isPublicPage={isPublicPage}
 				open={lightboxOpen}
 				setOpen={setLightboxOpen}
 			/>

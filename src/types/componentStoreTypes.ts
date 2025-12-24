@@ -32,6 +32,7 @@ export type MiscellaneousStoreState = {
 	deleteBookmarkId: number[] | undefined;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;
+	lightboxBookmarks: SingleListData[] | undefined;
 	lightboxId: string | null;
 	lightboxOpen: boolean;
 	lightboxShowSidepane: boolean;
@@ -47,6 +48,7 @@ export type MiscellaneousStoreState = {
 	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setIsCollectionChanged: (value: boolean) => void;
+	setLightboxBookmarks: (bookmarks: SingleListData[] | undefined) => void;
 	setLightboxId: (id: string | null) => void;
 	setLightboxOpen: (open: boolean) => void;
 	setLightboxShowSidepane: (value: boolean) => void;

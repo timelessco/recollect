@@ -22,7 +22,10 @@ import {
 	PREVIEW_PATH,
 	viewValues,
 } from "../../../utils/constants";
-import { getCategorySlugFromRouter } from "../../../utils/url";
+import {
+	getCategorySlugFromRouter,
+	getPublicPageInfo,
+} from "../../../utils/url";
 
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { cn } from "@/utils/tailwind-merge";
@@ -110,16 +113,12 @@ const Option = ({
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute top-0 left-0 h-full w-full rounded-lg ${
-					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
+					isTrashPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (
-						isTrashPage ||
-						item?.key?.toString().startsWith("$") ||
-						isPublicPage
-					) {
+					if (isTrashPage || item?.key?.toString().startsWith("$")) {
 						event.preventDefault();
 						return;
 					}
@@ -127,21 +126,43 @@ const Option = ({
 					event.preventDefault();
 					setLightboxId(item?.key?.toString());
 					setLightboxOpen(true);
-					void router.push(
-						{
-							// https://github.com/vercel/next.js/discussions/11625
-							// https://github.com/adamwathan/headbangstagram/pull/1/files
-							pathname: `${CATEGORY_ID_PATHNAME}`,
-							query: {
-								category_id: getCategorySlugFromRouter(router),
-								id: item?.key,
+					if (isPublicPage) {
+						const publicInfo = getPublicPageInfo(router);
+						if (publicInfo) {
+							void router.push(
+								{
+									// https://github.com/vercel/next.js/discussions/11625
+									// https://github.com/adamwathan/headbangstagram/pull/1/files
+									pathname: `/public/[user_name]/[id]`,
+									query: {
+										user_name: publicInfo.user_name,
+										id: publicInfo.category_slug,
+										bookmark_id: item?.key,
+									},
+								},
+								`/public/${publicInfo.user_name}/${publicInfo.category_slug}${PREVIEW_PATH}/${item?.key}`,
+								{
+									shallow: true,
+								},
+							);
+						}
+					} else {
+						void router.push(
+							{
+								// https://github.com/vercel/next.js/discussions/11625
+								// https://github.com/adamwathan/headbangstagram/pull/1/files
+								pathname: `${CATEGORY_ID_PATHNAME}`,
+								query: {
+									category_id: getCategorySlugFromRouter(router),
+									id: item?.key,
+								},
 							},
-						},
-						`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item?.key}`,
-						{
-							shallow: true,
-						},
-					);
+							`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item?.key}`,
+							{
+								shallow: true,
+							},
+						);
+					}
 				}}
 			/>
 			{item.rendered}

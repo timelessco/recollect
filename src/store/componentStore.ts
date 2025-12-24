@@ -53,6 +53,9 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	isCollectionChanged: false,
 	setIsCollectionChanged: (value: boolean) =>
 		set((state) => ({ ...state, isCollectionChanged: value })),
+	lightboxBookmarks: undefined,
+	setLightboxBookmarks: (bookmarks: SingleListData[] | undefined) =>
+		set((state) => ({ ...state, lightboxBookmarks: bookmarks })),
 	lightboxId: null,
 	setLightboxId: (id: string | null) =>
 		set((state) => ({ ...state, lightboxId: id })),

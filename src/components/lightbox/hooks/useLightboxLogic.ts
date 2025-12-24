@@ -19,7 +19,10 @@ import {
 	tweetType,
 	VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
-import { getCategorySlugFromRouter } from "../../../utils/url";
+import {
+	getCategorySlugFromRouter,
+	getPublicPageInfo,
+} from "../../../utils/url";
 import { isYouTubeVideo, type CustomSlide } from "../LightboxUtils";
 
 import { handleClientError } from "@/utils/error-utils/client";
@@ -83,6 +86,7 @@ interface UseLightboxNavigationProps {
 	activeIndex: number;
 	bookmarks: SingleListData[] | undefined;
 	isPage?: boolean;
+	isPublicPage?: boolean;
 	setActiveIndex: (index: number) => void;
 }
 
@@ -93,6 +97,7 @@ export const useLightboxNavigation = ({
 	activeIndex,
 	bookmarks,
 	isPage,
+	isPublicPage = false,
 	setActiveIndex,
 }: UseLightboxNavigationProps) => {
 	const queryClient = useQueryClient();
@@ -156,25 +161,48 @@ export const useLightboxNavigation = ({
 			setActiveIndex(index);
 		}
 
-		// Invalidate queries when slide changes
-		if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
+		// Invalidate queries when slide changes (only for authenticated pages)
+		if (
+			index !== lastInvalidatedIndex.current &&
+			isCollectionChanged &&
+			!isPublicPage
+		) {
 			void invalidateQueriesForIndex(index);
 		}
 
-		// Update browser URL
-		void router?.push(
-			{
-				pathname: `${CATEGORY_ID_PATHNAME}`,
-				query: {
-					category_id: getCategorySlugFromRouter(router),
-					id: bookmarks?.[index]?.id,
+		// Update browser URL for both authenticated and public pages
+		if (isPublicPage) {
+			const publicInfo = getPublicPageInfo(router);
+			if (publicInfo && bookmarks?.[index]?.id) {
+				void router?.push(
+					{
+						// https://github.com/vercel/next.js/discussions/11625
+						// https://github.com/adamwathan/headbangstagram/pull/1/files
+						pathname: `/public/[user_name]/[id]`,
+						query: {
+							user_name: publicInfo.user_name,
+							id: publicInfo.category_slug,
+							bookmark_id: bookmarks[index].id,
+						},
+					},
+					`/public/${publicInfo.user_name}/${publicInfo.category_slug}${PREVIEW_PATH}/${bookmarks[index].id}`,
+					{ shallow: true },
+				);
+			}
+		} else {
+			const categorySlug = getCategorySlugFromRouter(router);
+			void router?.push(
+				{
+					pathname: `${CATEGORY_ID_PATHNAME}`,
+					query: {
+						category_id: categorySlug,
+						id: bookmarks?.[index]?.id,
+					},
 				},
-			},
-			`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
-				bookmarks?.[index]?.id
-			}`,
-			{ shallow: true },
-		);
+				`/${categorySlug}${PREVIEW_PATH}/${bookmarks?.[index]?.id}`,
+				{ shallow: true },
+			);
+		}
 	};
 
 	/**
