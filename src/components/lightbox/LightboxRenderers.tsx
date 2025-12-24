@@ -70,7 +70,8 @@ export const VideoSlide = ({ bookmark, isActive }: SlideProps) => (
 			<VideoPlayer
 				isActive={isActive ?? false}
 				src={
-					bookmark?.type === tweetType && bookmark?.meta_data?.video_url
+					(bookmark?.type === tweetType || bookmark?.type === "instagram") &&
+					bookmark?.meta_data?.video_url
 						? bookmark?.meta_data?.video_url
 						: (bookmark?.url ?? "")
 				}
