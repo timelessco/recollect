@@ -407,7 +407,7 @@ export const PUBLIC_PATHS = new Set(["/error", "/public"]);
 export const isPublicPath = (pathname: string) =>
 	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
 
-export const MAX_TAG_NAME_LENGTH = 20;
-export const MIN_TAG_NAME_LENGTH = 1;
+export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
+export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
 export const WHITE_COLOR = colorPickerColors[0];
 export const BLACK_COLOR = colorPickerColors[1];

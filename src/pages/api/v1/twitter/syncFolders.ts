@@ -51,31 +51,7 @@ export default async function handler(
 		return;
 	}
 
-	// 1. Check for duplicates
-	const { data: existing, error: existingError } = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.select("category_name, icon")
-		.eq("user_id", userId)
-		.in(
-			"category_name",
-			categories.map((category: { name: string }) => category.name),
-		)
-		.eq("icon", "bookmark");
-
-	if (!isNull(existingError)) {
-		response.status(500).json({ data: null, error: existingError });
-		return;
-	}
-
-	if (existing && existing.length > 0) {
-		response.status(400).json({
-			data: null,
-			error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
-		});
-		return;
-	}
-
-	// 2. Insert all categories
+	// Insert all categories
 	const rowsToInsert = categories.map((category: { name: string }) => ({
 		category_name: category.name,
 		user_id: userId,
@@ -125,6 +101,30 @@ export default async function handler(
 	}
 
 	if (!isNull(error)) {
+		// Handle unique constraint violation (case-insensitive duplicate)
+		// Postgres error code 23505 = unique_violation
+		const isPostgrestError =
+			error && typeof error === "object" && "code" in error;
+		const errorMessage =
+			isPostgrestError && "message" in error ? String(error.message) : "";
+		if (
+			(isPostgrestError && (error as PostgrestError).code === "23505") ||
+			errorMessage.includes("unique_user_category_name_ci")
+		) {
+			console.warn(
+				"Duplicate category name attempt (case-insensitive) in bulk insert:",
+				{
+					userId,
+					categoryCount: categories.length,
+				},
+			);
+			response.status(409).json({
+				data: null,
+				error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
+			});
+			return;
+		}
+
 		response.status(500).json({ data: null, error });
 		return;
 	}

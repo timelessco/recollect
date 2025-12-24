@@ -12,6 +12,7 @@ import isNull from "lodash/isNull";
 import slugify from "slugify";
 import uniqid from "uniqid";
 
+import { tagCategoryNameSchema } from "../../../lib/validation/tag-category-schema";
 import {
 	type AddUserCategoryApiPayload,
 	type CategoriesData,
@@ -60,73 +61,77 @@ export default async function handler(
 			return;
 		}
 
-		const { name } = request.body;
+		const result = tagCategoryNameSchema.safeParse(request.body?.name);
 
-		console.log("create-user-category API called:", { userId, name });
-
-		// check if category name is already there for the user
-		const { data: matchedCategoryName, error: matchedCategoryNameError } =
-			await supabase
-				.from(CATEGORIES_TABLE_NAME)
-				.select(`category_name`)
-				.eq("user_id", userId)
-				.eq("category_name", name.trim());
-
-		console.log("Existing category check result:", {
-			matchedCategoryName,
-			hasMatch: !isEmpty(matchedCategoryName),
-		});
-
-		if (!isNull(matchedCategoryNameError)) {
-			console.error(
-				"Error checking existing category name:",
-				matchedCategoryNameError,
-			);
-			Sentry.captureException(matchedCategoryNameError, {
+		if (!result.success) {
+			const errorMessage =
+				result.error.issues[0]?.message ?? "Invalid collection name";
+			const validationError = new Error(errorMessage);
+			console.warn("[create-user-category] Validation failed:", {
+				userId,
+				name: request.body?.name,
+				issues: result.error.issues,
+			});
+			Sentry.captureException(validationError, {
 				tags: {
-					operation: "check_existing_category",
+					operation: "validate_category_name",
 					userId,
 				},
-				extra: { categoryName: name },
+				extra: {
+					name: request.body?.name,
+				},
 			});
-			response.status(500).json({
+			response.status(400).json({
 				data: null,
-				error: { message: "Error checking existing category" },
+				error: { message: errorMessage },
 			});
 			return;
 		}
 
-		// Check for duplicate category name
-		if (!isEmpty(matchedCategoryName)) {
-			console.warn("Duplicate category name attempt:", {
-				categoryName: name,
-			});
-			response.status(500).json({
-				data: null,
-				error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
-			});
-			return;
-		}
+		// Already trimmed by Zod
+		const trimmedName = result.data;
+
+		console.log("[create-user-category] API called:", {
+			userId,
+			name: trimmedName,
+		});
 
 		// Insert category
 		const { data, error }: PostgrestResponse<CategoriesData> = await supabase
 			.from(CATEGORIES_TABLE_NAME)
 			.insert([
 				{
-					category_name: name,
+					category_name: trimmedName,
 					user_id: userId,
-					category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
+					category_slug: `${slugify(trimmedName, { lower: true })}-${uniqid.time()}`,
 				},
 			])
 			.select();
 
 		if (error) {
-			console.error("Error inserting category:", error);
+			// Handle unique constraint violation (case-insensitive duplicate)
+			// Postgres error code 23505 = unique_violation
+			if (
+				error.code === "23505" ||
+				error.message?.includes("unique_user_category_name_ci")
+			) {
+				console.warn("Duplicate category name attempt (case-insensitive):", {
+					categoryName: trimmedName,
+					userId,
+				});
+				response.status(409).json({
+					data: null,
+					error: { message: DUPLICATE_CATEGORY_NAME_ERROR },
+				});
+				return;
+			}
+
+			console.error("[create-user-category] Error inserting category:", error);
 			Sentry.captureException(error, {
 				tags: {
 					operation: "insert_category",
 					userId,
-					categoryName: name,
+					categoryName: trimmedName,
 				},
 			});
 			response.status(500).json({

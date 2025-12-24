@@ -68,6 +68,8 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	MAX_TAG_COLLECTION_NAME_LENGTH,
+	MIN_TAG_COLLECTION_NAME_LENGTH,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -78,6 +80,8 @@ import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
 import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-mutation";
+import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
+import { handleClientError } from "@/utils/error-utils/client";
 
 // interface OnReorderPayloadTypes {
 //   target: { key: string };
@@ -373,10 +377,20 @@ const CollectionsList = () => {
 	};
 
 	const handleAddNewCategory = async (newCategoryName: string) => {
+		const result = tagCategoryNameSchema.safeParse(newCategoryName);
+
+		if (!result.success) {
+			handleClientError(
+				new Error(result.error.issues[0]?.message ?? "Invalid collection name"),
+				`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+			);
+			return;
+		}
+
 		if (!isNull(userProfileData?.data)) {
 			const response = (await mutationApiCall(
 				addCategoryOptimisticMutation.mutateAsync({
-					name: newCategoryName,
+					name: result.data,
 					category_order: userProfileData?.data[0]?.category_order ?? [],
 				}),
 			)) as { data: CategoriesData[] };
@@ -558,22 +572,21 @@ const CollectionsList = () => {
 					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
 					id="add-category-input"
 					onBlur={(event) => {
-						if (!isEmpty(event?.target?.value)) {
-							void handleAddNewCategory(
-								(event.target as HTMLInputElement).value,
-							);
+						const inputValue = (event.target as HTMLInputElement)?.value;
+						if (inputValue) {
+							void handleAddNewCategory(inputValue);
 						}
 
 						setShowAddCategoryInput(false);
 					}}
 					onKeyUp={(event) => {
-						if (
-							event.key === "Enter" &&
-							!isEmpty((event.target as HTMLInputElement).value)
-						) {
-							void handleAddNewCategory(
-								(event.target as HTMLInputElement).value,
-							);
+						if (event.key === "Enter") {
+							const inputValue = (event.target as HTMLInputElement)?.value;
+
+							if (inputValue) {
+								void handleAddNewCategory(inputValue);
+							}
+
 							setShowAddCategoryInput(false);
 						}
 					}}
