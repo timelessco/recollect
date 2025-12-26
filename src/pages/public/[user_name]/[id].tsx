@@ -51,8 +51,6 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 					isOgImgLoading={false}
 					isPublicPage
 					listData={props?.data as SingleListData[]}
-					onDeleteClick={() => {}}
-					onMoveOutOfTrashClick={() => {}}
 					showAvatar={false}
 					userId=""
 				/>

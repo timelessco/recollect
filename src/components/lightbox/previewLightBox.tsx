@@ -16,6 +16,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
+	DISCOVER_URL,
 	EVERYTHING_URL,
 } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
@@ -50,13 +51,23 @@ export const PreviewLightBox = ({
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const debouncedSearch = useDebounce(searchText, 500);
+	const categorySlug = getCategorySlugFromRouter(router);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
+
+	// Determine the correct query key based on whether we're on discover page
+	const queryKey = isDiscoverPage
+		? searchText
+			? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, debouncedSearch]
+			: [BOOKMARKS_KEY, DISCOVER_URL]
+		: [
+				BOOKMARKS_KEY,
+				session?.user?.id,
+				searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
+				searchText ? debouncedSearch : sortBy,
+			];
+
 	// if there is text in searchbar we get the cache of searched data else we get from everything
-	const previousData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-		searchText ? debouncedSearch : sortBy,
-	]) as {
+	const previousData = queryClient.getQueryData(queryKey) as {
 		data: SingleListData[];
 		pages: Array<{ data: SingleListData[] }>;
 	};
