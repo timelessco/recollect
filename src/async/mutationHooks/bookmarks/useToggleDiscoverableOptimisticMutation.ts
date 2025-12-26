@@ -107,7 +107,7 @@ export const useToggleDiscoverableOptimisticMutation = () => {
 				variables.bookmark_id,
 				variables.make_discoverable,
 			) as BookmarksPaginatedDataTypes,
-		invalidates: [[BOOKMARKS_KEY, DISCOVER_URL]],
+		invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
 	});
 
 	return { toggleDiscoverableMutation };

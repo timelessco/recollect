@@ -162,7 +162,7 @@ export const DiscoverBookmarkCards = () => {
 		<div
 			id="scrollableDiv"
 			ref={infiniteScrollRef}
-			className="overflow-anchor-none h-full overflow-x-hidden overflow-y-auto"
+			className="h-screen overflow-x-hidden overflow-y-auto"
 		>
 			<InfiniteScroll
 				dataLength={displayData.length}
@@ -175,7 +175,7 @@ export const DiscoverBookmarkCards = () => {
 						{isSearchLoading ? "" : "Life happens, save it."}
 					</p>
 				}
-				style={{ overflow: "unset", height: "100vh" }}
+				className="h-screen overflow-visible"
 			>
 				<CardSection
 					categoryViewsFromProps={discoverCategoryViews}
