@@ -19,11 +19,13 @@ import {
 	R2_MAIN_BUCKET_NAME,
 	SCREENSHOT_API,
 	STORAGE_SCREENSHOT_IMAGES_PATH,
+	STORAGE_SCREENSHOT_VIDEOS_PATH,
 } from "../../../utils/constants";
 import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { collectInstagramVideos } from "@/utils/helpers";
 import { vet } from "@/utils/try";
 
 type Data = {
@@ -34,7 +36,9 @@ type CollectAdditionalImagesArgs = {
 	allImages?: string[];
 	userId: string;
 };
+
 const MAX_LENGTH = 1_300;
+
 export const upload = async (base64info: string, uploadUserId: string) => {
 	const imgName = `img-${uniqid?.time()}.jpg`;
 	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
@@ -51,6 +55,39 @@ export const upload = async (base64info: string, uploadUserId: string) => {
 		Sentry.captureException(uploadError, {
 			tags: {
 				operation: "storage_upload",
+				userId: uploadUserId,
+			},
+			extra: {
+				storagePath,
+			},
+		});
+		return null;
+	}
+
+	const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
+
+	return storageData?.publicUrl || null;
+};
+
+export const uploadVideo = async (
+	videoBuffer: ArrayBuffer,
+	uploadUserId: string,
+) => {
+	const videoName = `video-${uniqid?.time()}.mp4`;
+	const storagePath = `${STORAGE_SCREENSHOT_VIDEOS_PATH}/${uploadUserId}/${videoName}`;
+
+	const { error: uploadError } = await storageHelpers.uploadObject(
+		R2_MAIN_BUCKET_NAME,
+		storagePath,
+		new Uint8Array(videoBuffer),
+		"video/mp4",
+	);
+
+	if (uploadError) {
+		console.error("Video storage upload failed:", uploadError);
+		Sentry.captureException(uploadError, {
+			tags: {
+				operation: "video_storage_upload",
 				userId: uploadUserId,
 			},
 			extra: {
@@ -257,7 +294,10 @@ export default async function handler(
 			urls: screenShotResponse?.data?.allVideos,
 		});
 
-		const additionalVideos = screenShotResponse?.data?.allVideos;
+		const additionalVideos = await collectInstagramVideos({
+			allVideos: screenShotResponse?.data?.allVideos,
+			userId,
+		});
 
 		// Add screenshot URL to meta_data
 		const updatedMetaData = {
