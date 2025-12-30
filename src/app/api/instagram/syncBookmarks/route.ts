@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
@@ -208,6 +209,13 @@ export const POST = createSupabasePostApiHandler({
 						`[${route}] Failed to add bookmark ${bookmarkId} to collections:`,
 						error,
 					);
+					Sentry.captureException(error, {
+						tags: {
+							operation: "add_categories_to_bookmark_by_name",
+							...(userId && { userId }),
+						},
+						extra: { bookmarkId, bookmarkUrl, collectionNames },
+					});
 					// Continue processing other bookmarks even if one fails
 				}
 			}
