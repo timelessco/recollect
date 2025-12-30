@@ -109,11 +109,11 @@ export const POST = createSupabasePostApiHandler({
 		}
 
 		// filter out the duplicates from the payload data
+		const duplicateUrls = new Set(
+			duplicateCheckData?.map((item) => item.url) || [],
+		);
 		const duplicateFilteredData = insertData.filter(
-			(item) =>
-				!duplicateCheckData
-					?.map((duplicateCheckItem) => duplicateCheckItem.url)
-					?.includes(item.url),
+			(item) => !duplicateUrls.has(item.url),
 		);
 
 		if (isEmpty(duplicateFilteredData)) {
