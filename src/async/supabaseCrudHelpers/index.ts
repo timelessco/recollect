@@ -48,7 +48,6 @@ import {
 	ADD_URL_SCREENSHOT_API,
 	CHECK_API_KEY_API,
 	CLEAR_BOOKMARK_TRASH_API,
-	CREATE_USER_CATEGORIES_API,
 	CREATE_USER_TAGS_API,
 	DELETE_API_KEY_API,
 	DELETE_BOOKMARK_DATA_API,
@@ -500,27 +499,6 @@ export const fetchCategoriesData = async (): Promise<{
 	} catch (error_) {
 		const error = error_ as Error;
 		return { data: null, error };
-	}
-};
-
-export const addUserCategory = async ({
-	name,
-	category_order,
-}: {
-	category_order: number[];
-	name: string;
-}) => {
-	try {
-		const response = await axios.post<{
-			data: CategoriesData[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`, {
-			name,
-			category_order,
-		});
-		return response?.data;
-	} catch (error) {
-		return error;
 	}
 };
 

@@ -261,12 +261,6 @@ export type MoveBookmarkToTrashApiPayload = {
 	isTrash: boolean;
 };
 
-export type AddUserCategoryApiPayload = {
-	category_order: number[];
-	name: string;
-	session: SupabaseSessionType;
-};
-
 export type DeleteUserCategoryApiPayload = {
 	category_id: number;
 	category_order: number[];

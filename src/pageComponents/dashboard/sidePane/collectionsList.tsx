@@ -34,7 +34,6 @@ import {
 	type ListState,
 } from "react-stately";
 
-import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
@@ -79,14 +78,11 @@ import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
+import { useAddCategoryMutation } from "@/async/mutationHooks/category/use-add-category-mutation";
 import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-mutation";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { handleClientError } from "@/utils/error-utils/client";
 
-// interface OnReorderPayloadTypes {
-//   target: { key: string };
-//   keys: Set<unknown>;
-// }
 type ListBoxDropTypes = ListProps<object> & {
 	getItems?: (keys: Set<Key>) => DragItem[];
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -305,7 +301,7 @@ const CollectionsList = () => {
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
 
-	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
+	const { addCategoryMutation } = useAddCategoryMutation();
 	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
@@ -387,17 +383,18 @@ const CollectionsList = () => {
 			return;
 		}
 
-		if (!isNull(userProfileData?.data)) {
-			const response = (await mutationApiCall(
-				addCategoryOptimisticMutation.mutateAsync({
+		if (!isNull(userProfileData.data)) {
+			addCategoryMutation.mutate(
+				{
 					name: result.data,
-					category_order: userProfileData?.data[0]?.category_order ?? [],
-				}),
-			)) as { data: CategoriesData[] };
-
-			if (!isEmpty(response?.data)) {
-				void router.push(`/${response?.data[0]?.category_slug}`);
-			}
+					category_order: userProfileData.data[0]?.category_order ?? [],
+				},
+				{
+					onSuccess: (data) => {
+						void router.push(`/${data[0].category_slug}`);
+					},
+				},
+			);
 		}
 	};
 
