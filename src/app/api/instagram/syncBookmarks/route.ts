@@ -170,6 +170,8 @@ export const POST = createSupabasePostApiHandler({
 		}
 
 		// Add bookmarks to collections if saved_collection_names is provided in meta_data
+		// Filter validates that collectionNames exists, is an array, and has length > 0
+		// All bookmarks in bookmarksWithCollections are guaranteed to have valid collection names
 		const bookmarksWithCollections = insertDBData.filter((bookmark) => {
 			const metaData = bookmark.meta_data as InstagramMetaData;
 			const collectionNames = metaData?.saved_collection_names;
