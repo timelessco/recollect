@@ -28,7 +28,6 @@ import {
 	type RemoveUserProfilePicPayload,
 	type SingleListData,
 	type SupabaseSessionType,
-	type UpdateCategoryApiPayload,
 	type UpdateCategoryOrderApiPayload,
 	type UpdateSharedCategoriesUserAccessApiPayload,
 	type UpdateUsernameApiPayload,
@@ -77,7 +76,6 @@ import {
 	SEND_COLLABORATION_EMAIL_API,
 	UPDATE_CATEGORY_ORDER_API,
 	UPDATE_SHARED_CATEGORY_USER_ROLE_API,
-	UPDATE_USER_CATEGORIES_API,
 	UPDATE_USER_PROFILE_API,
 	UPDATE_USERNAME_API,
 	UPLOAD_FILE_API,
@@ -515,22 +513,6 @@ export const deleteUserCategory = async ({
 			category_order,
 		});
 		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
-export const updateCategory = async ({
-	category_id,
-	updateData,
-}: UpdateCategoryApiPayload) => {
-	try {
-		const response = await axios.post(
-			`${NEXT_API_URL}${UPDATE_USER_CATEGORIES_API}`,
-			{ category_id, updateData },
-		);
-
-		return response;
 	} catch (error) {
 		return error;
 	}

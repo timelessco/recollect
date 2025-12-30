@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryMutation } from "../../../async/mutationHooks/category/use-update-category-mutation";
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
@@ -190,8 +190,7 @@ const ShareContent = (props: ShareContentProps) => {
 	const dynamicCategoryId =
 		props.categoryId ?? shareCategoryId ?? currentCategoryId;
 
-	const { updateCategoryOptimisticMutation } =
-		useUpdateCategoryOptimisticMutation();
+	const { updateCategoryMutation } = useUpdateCategoryMutation();
 
 	const { sendCollaborationEmailInviteMutation } =
 		useSendCollaborationEmailInviteMutation();
@@ -366,16 +365,24 @@ const ShareContent = (props: ShareContentProps) => {
 							defaultValue={
 								currentCategory?.is_public ? "View access" : "No access"
 							}
-							onOptionClick={async (value) => {
-								await mutationApiCall(
-									updateCategoryOptimisticMutation.mutateAsync({
+							onOptionClick={(value) => {
+								if (typeof dynamicCategoryId !== "number") {
+									return;
+								}
+
+								updateCategoryMutation.mutate(
+									{
 										category_id: dynamicCategoryId,
 										updateData: {
 											is_public: value === "View access",
 										},
-									}),
+									},
+									{
+										onSuccess: () => {
+											setLinkCopied(false);
+										},
+									},
 								);
-								setLinkCopied(false);
 							}}
 							options={[
 								{ label: "View access", value: "View access" },
