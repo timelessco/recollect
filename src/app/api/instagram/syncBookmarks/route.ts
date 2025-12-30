@@ -183,10 +183,6 @@ export const POST = createSupabasePostApiHandler({
 		});
 
 		if (bookmarksWithCollections.length > 0) {
-			console.log(
-				`[${route}] Adding ${bookmarksWithCollections.length} bookmarks to collections`,
-			);
-
 			const bookmarksWithMetaData = bookmarksWithCollections.map(
 				(bookmark) => ({
 					meta_data: bookmark.meta_data as InstagramMetaDataWithCollections,
@@ -212,11 +208,6 @@ export const POST = createSupabasePostApiHandler({
 					userId,
 				});
 			}
-
-			console.log(
-				`[${route}] categoryNameToIdMap`,
-				uniqueCategoriesWithNameAndId,
-			);
 
 			const bookmarksWithMetaDataAndId = bookmarksWithCollections.map(
 				(bookmark) => ({
