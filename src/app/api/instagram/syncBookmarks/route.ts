@@ -57,6 +57,18 @@ const InstagramSyncBookmarksResponseSchema = z.object({
 		.optional(),
 });
 
+// Type aliases for meta_data - will be used to replace duplicate assertions
+export type InstagramMetaDataWithCollections = {
+	instagram_username: string | null;
+	instagram_profile_pic: string | null;
+	favIcon: string | null;
+	video_url: string | null;
+	saved_collection_names?: string[];
+} | null;
+
+export type InstagramMetaData = {
+	saved_collection_names?: string[];
+} | null;
 export type InstagramSyncBookmarksPayload = z.infer<
 	typeof InstagramSyncBookmarksPayloadSchema
 >;
@@ -159,9 +171,7 @@ export const POST = createSupabasePostApiHandler({
 
 		// Add bookmarks to collections if saved_collection_names is provided in meta_data
 		const bookmarksWithCollections = insertDBData.filter((bookmark) => {
-			const metaData = bookmark.meta_data as {
-				saved_collection_names?: string[];
-			} | null;
+			const metaData = bookmark.meta_data as InstagramMetaData;
 			const collectionNames = metaData?.saved_collection_names;
 			return (
 				collectionNames &&
@@ -177,13 +187,7 @@ export const POST = createSupabasePostApiHandler({
 
 			const bookmarksWithMetaData = bookmarksWithCollections.map(
 				(bookmark) => ({
-					meta_data: bookmark.meta_data as {
-						instagram_username: string | null;
-						instagram_profile_pic: string | null;
-						favIcon: string | null;
-						video_url: string | null;
-						saved_collection_names: string[] | undefined;
-					},
+					meta_data: bookmark.meta_data as InstagramMetaDataWithCollections,
 				}),
 			);
 
@@ -215,9 +219,7 @@ export const POST = createSupabasePostApiHandler({
 			const bookmarksWithMetaDataAndId = bookmarksWithCollections.map(
 				(bookmark) => ({
 					id: bookmark.id,
-					meta_data: bookmark.meta_data as {
-						saved_collection_names?: string[];
-					} | null,
+					meta_data: bookmark.meta_data as InstagramMetaData,
 				}),
 			);
 			// Bulk add bookmarks to categories

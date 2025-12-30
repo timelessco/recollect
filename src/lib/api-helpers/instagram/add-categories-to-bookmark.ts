@@ -3,6 +3,7 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 
+import { type InstagramMetaData } from "@/app/api/instagram/syncBookmarks/route";
 import { type Database } from "@/types/database-generated.types";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
@@ -13,13 +14,7 @@ export type UniqueCategoriesWithNameAndId = Map<string, number>;
 
 export interface FetchUniqueCategoriesWithNameAndIdProps {
 	bookmarks: Array<{
-		meta_data: {
-			instagram_username?: string | null;
-			instagram_profile_pic?: string | null;
-			favIcon?: string | null;
-			video_url?: string | null;
-			saved_collection_names?: string[] | undefined;
-		} | null;
+		meta_data: InstagramMetaData;
 	}>;
 	route: string;
 	supabase: SupabaseClient<Database>;
@@ -47,9 +42,7 @@ export async function fetchUniqueCategoriesWithNameAndId(
 	// Collect all unique category names from all bookmarks
 	const allCategoryNames = new Set<string>();
 	for (const bookmark of bookmarks) {
-		const metaData = bookmark.meta_data as {
-			saved_collection_names?: string[];
-		} | null;
+		const metaData = bookmark.meta_data as InstagramMetaData;
 		const collectionNames = metaData?.saved_collection_names;
 		if (collectionNames && Array.isArray(collectionNames)) {
 			for (const name of collectionNames) {
@@ -98,9 +91,7 @@ export async function fetchUniqueCategoriesWithNameAndId(
 export interface AddCategoriesToBookmarkByNameProps {
 	bookmarks: Array<{
 		id: number;
-		meta_data: {
-			saved_collection_names?: string[];
-		} | null;
+		meta_data: InstagramMetaData;
 	}>;
 	route: string;
 	supabase: SupabaseClient<Database>;
@@ -134,9 +125,7 @@ export async function addCategoriesToBookmarkByName(
 
 	for (const bookmark of bookmarks) {
 		const bookmarkId = bookmark.id;
-		const metaData = bookmark.meta_data as {
-			saved_collection_names?: string[];
-		} | null;
+		const metaData = bookmark.meta_data as InstagramMetaData;
 		const collectionNames = metaData?.saved_collection_names;
 
 		if (
