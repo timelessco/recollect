@@ -1,9 +1,11 @@
-import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
 import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
-import { addCategoriesToBookmarkByName } from "@/lib/api-helpers/instagram/add-categories-to-bookmark";
+import {
+	addCategoriesToBookmarkByName,
+	fetchUniqueCategoriesWithNameAndId,
+} from "@/lib/api-helpers/instagram/add-categories-to-bookmark";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 
@@ -173,52 +175,74 @@ export const POST = createSupabasePostApiHandler({
 				`[${route}] Adding ${bookmarksWithCollections.length} bookmarks to collections`,
 			);
 
-			// Process each bookmark with collections
-			for (const bookmark of bookmarksWithCollections) {
-				const bookmarkUrl = bookmark.url;
-				if (!bookmarkUrl) {
-					continue;
-				}
+			const bookmarksWithMetaData = bookmarksWithCollections.map(
+				(bookmark) => ({
+					meta_data: bookmark.meta_data as {
+						instagram_username: string | null;
+						instagram_profile_pic: string | null;
+						favIcon: string | null;
+						video_url: string | null;
+						saved_collection_names: string[] | undefined;
+					},
+				}),
+			);
 
-				const metaData = bookmark.meta_data as {
-					saved_collection_names?: string[];
-				} | null;
-				const collectionNames = metaData?.saved_collection_names;
+			const {
+				uniqueCategoriesWithNameAndId,
+				error: fetchUniqueCategoriesWithNameAndIdError,
+			} = await fetchUniqueCategoriesWithNameAndId({
+				bookmarks: bookmarksWithMetaData,
+				route,
+				supabase,
+				userId,
+			});
 
-				if (
-					!collectionNames ||
-					!Array.isArray(collectionNames) ||
-					collectionNames.length === 0
-				) {
-					continue;
-				}
-
-				const bookmarkId = bookmark.id;
-
-				try {
-					await addCategoriesToBookmarkByName({
-						bookmarkId,
-						bookmarkUrl,
-						categoryNames: collectionNames,
-						route,
-						supabase,
-						userId,
-					});
-				} catch (error) {
-					console.error(
-						`[${route}] Failed to add bookmark ${bookmarkId} to collections:`,
-						error,
-					);
-					Sentry.captureException(error, {
-						tags: {
-							operation: "add_categories_to_bookmark_by_name",
-							...(userId && { userId }),
-						},
-						extra: { bookmarkId, bookmarkUrl, collectionNames },
-					});
-					// Continue processing other bookmarks even if one fails
-				}
+			if (fetchUniqueCategoriesWithNameAndIdError) {
+				return apiError({
+					route,
+					message: "Failed to fetch unique categories with name and id",
+					error: fetchUniqueCategoriesWithNameAndIdError,
+					operation: "fetch_unique_categories_with_name_and_id",
+					userId,
+				});
 			}
+
+			console.log(
+				`[${route}] categoryNameToIdMap`,
+				uniqueCategoriesWithNameAndId,
+			);
+
+			const bookmarksWithMetaDataAndId = bookmarksWithCollections.map(
+				(bookmark) => ({
+					id: bookmark.id,
+					meta_data: bookmark.meta_data as {
+						saved_collection_names?: string[];
+					} | null,
+				}),
+			);
+			// Bulk add bookmarks to categories
+			const { error: addCategoriesToBookmarkByNameError } =
+				await addCategoriesToBookmarkByName({
+					bookmarks: bookmarksWithMetaDataAndId,
+					route,
+					supabase,
+					uniqueCategoriesWithNameAndId,
+					userId,
+				});
+
+			if (addCategoriesToBookmarkByNameError) {
+				return apiError({
+					route,
+					message: "Failed to add bookmarks to categories",
+					error: addCategoriesToBookmarkByNameError,
+					operation: "add_bookmarks_to_categories",
+					userId,
+				});
+			}
+
+			console.log(
+				`[${route}] Successfully added ${bookmarksWithCollections.length} bookmarks to categories`,
+			);
 		}
 
 		try {
