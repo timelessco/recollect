@@ -707,20 +707,12 @@ const Dashboard = () => {
 			<DashboardLayout
 				categoryId={isDiscoverPage ? DISCOVER_URL : CATEGORY_ID}
 				onAddBookmark={isDiscoverPage ? handleUnsupported : onAddBookmark}
-				onClearTrash={
-					isDiscoverPage
-						? handleUnsupported
-						: () => {
-								void mutationApiCall(
-									clearBookmarksInTrashMutation.mutateAsync(),
-								);
-							}
-				}
+				onClearTrash={() => {
+					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+				}}
 				isClearingTrash={isClearingTrash}
-				onDeleteCollectionClick={
-					isDiscoverPage
-						? handleUnsupported
-						: async () => await onDeleteCollection(true, CATEGORY_ID as number)
+				onDeleteCollectionClick={async () =>
+					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
