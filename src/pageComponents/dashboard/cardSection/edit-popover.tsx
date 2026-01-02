@@ -13,7 +13,7 @@ import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
-import { DiscoveCheckbox } from "@/pageComponents/dashboard/cardSection/discoverable-checkbox";
+import { DiscoverCheckbox } from "@/pageComponents/dashboard/cardSection/discover-checkbox";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -80,7 +80,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 								</div>
 							</div>
 							<div className="w-full">
-								<DiscoveCheckbox
+								<DiscoverCheckbox
 									bookmarkId={post.id}
 									isDiscoverable={post.make_discoverable !== null}
 								/>

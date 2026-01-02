@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { type SupabaseClient, type User } from "@supabase/supabase-js";
 import { type z } from "zod";
 
-import { apiError, apiSuccess, parseBody } from "./response";
+import { apiError, apiSuccess, parseBody, parseQuery } from "./response";
 import { requireAuth } from "@/lib/supabase/api";
 import { type Database } from "@/types/database.types";
 
@@ -39,6 +39,64 @@ export const createSupabasePostApiHandler = <TInput, TOutput>(
 
 			const { supabase, user } = auth;
 			const result = await handler({ data: body.data, supabase, user, route });
+
+			if (result instanceof NextResponse) {
+				return result;
+			}
+
+			return apiSuccess({ route, data: result, schema: outputSchema });
+		} catch (error) {
+			return apiError({
+				route,
+				message: "An unexpected error occurred",
+				error,
+				operation: `${route}_unexpected`,
+			});
+		}
+	};
+};
+
+type GetHandlerContext<TInput> = {
+	input: TInput;
+	route: string;
+};
+
+type CreateSupabaseGetApiHandlerConfig<TInput, TOutput> = {
+	handler: (ctx: GetHandlerContext<TInput>) => Promise<NextResponse | TOutput>;
+	inputSchema: z.ZodType<TInput>;
+	outputSchema: z.ZodType<TOutput>;
+	route: string;
+};
+
+/**
+ * Creates a standardized GET API handler for public endpoints (no auth required).
+ * Handles query parameter validation, error handling, and response formatting.
+ * @example
+ * ```typescript
+ * export const GET = createSupabaseGetApiHandler({
+ *   inputSchema: FetchDiscoverBookmarksQuerySchema,
+ *   outputSchema: FetchDiscoverBookmarksResponseSchema,
+ *   route: "fetch-discoverable-bookmarks",
+ *   handler: async ({ input, route }) => {
+ *     const { supabase } = await createApiClient();
+ *     return { data };
+ *   },
+ * });
+ * ```
+ */
+export const createSupabaseGetApiHandler = <TInput, TOutput>(
+	config: CreateSupabaseGetApiHandlerConfig<TInput, TOutput>,
+) => {
+	const { route, inputSchema, outputSchema, handler } = config;
+
+	return async (request: NextRequest) => {
+		try {
+			const query = parseQuery({ request, schema: inputSchema, route });
+			if (query.errorResponse) {
+				return query.errorResponse;
+			}
+
+			const result = await handler({ input: query.data, route });
 
 			if (result instanceof NextResponse) {
 				return result;

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { type z, type ZodSchema } from "zod";
 
@@ -148,6 +148,58 @@ export async function parseBody<T>({
 		// Use first Zod error message for user-friendly display
 		const firstError = parsed.error.issues[0];
 		const userMessage = firstError?.message || "Invalid input";
+
+		return {
+			data: null,
+			errorResponse: apiWarn({
+				route,
+				message: userMessage,
+				status: HttpStatus.BAD_REQUEST,
+				context: { errors: parsed.error.issues },
+			}),
+		};
+	}
+
+	return { data: parsed.data, errorResponse: null };
+}
+
+type ParseQueryResult<T> =
+	| { data: T; errorResponse: null }
+	| { data: null; errorResponse: NextResponse<ApiErrorResponse> };
+
+type ParseQueryProps<T> = {
+	request: NextRequest;
+	route: string;
+	schema: ZodSchema<T>;
+};
+
+/**
+ * Parse and validate query parameters against a Zod schema.
+ * Returns discriminated union for type narrowing (same pattern as parseBody).
+ * Query parameters are passed as strings, so use z.coerce.* or z.string() in your schema.
+ */
+export function parseQuery<T>({
+	request,
+	schema,
+	route,
+}: ParseQueryProps<T>): ParseQueryResult<T> {
+	const { searchParams } = new URL(request.url);
+	const queryObject: Record<string, string | undefined> = {};
+
+	// Convert URLSearchParams to object
+	// Note: searchParams.get() returns null if not found, but we use undefined
+	// to match typical query param handling patterns
+	for (const key of searchParams.keys()) {
+		const value = searchParams.get(key);
+		queryObject[key] = value ?? undefined;
+	}
+
+	const parsed = schema.safeParse(queryObject);
+
+	if (!parsed.success) {
+		// Use first Zod error message for user-friendly display
+		const firstError = parsed.error.issues[0];
+		const userMessage = firstError?.message || "Invalid query parameters";
 
 		return {
 			data: null,
