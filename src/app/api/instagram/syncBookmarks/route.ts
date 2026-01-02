@@ -12,25 +12,27 @@ import { MAIN_TABLE_NAME } from "@/utils/constants";
 const ROUTE = "instagram-sync-bookmarks";
 
 const InstagramSyncBookmarksPayloadSchema = z.object({
-	data: z.array(
-		z.object({
-			description: z.string(),
-			ogImage: z.string().nullable(),
-			title: z.string(),
-			type: z.string(),
-			url: z.string(),
-			meta_data: z.object({
-				instagram_username: z.string(),
-				instagram_profile_pic: z.string().nullable().optional(),
-				favIcon: z.string(),
-				video_url: z.string().nullable().optional(),
-				saved_collection_names: z.array(z.string()).optional(),
+	data: z
+		.array(
+			z.object({
+				description: z.string(),
+				ogImage: z.string().nullable(),
+				title: z.string(),
+				type: z.string(),
+				url: z.string(),
+				meta_data: z.object({
+					instagram_username: z.string(),
+					instagram_profile_pic: z.string().nullable().optional(),
+					favIcon: z.string(),
+					video_url: z.string().nullable().optional(),
+					saved_collection_names: z.array(z.string()).optional(),
+				}),
+				inserted_at: z.string().datetime().optional(),
+				sort_index: z.string(),
+				category_name: z.string().optional(),
 			}),
-			inserted_at: z.string().datetime().optional(),
-			sort_index: z.string(),
-			category_name: z.string().optional(),
-		}),
-	),
+		)
+		.max(30),
 });
 
 const InstagramSyncBookmarksResponseSchema = z.object({
@@ -57,7 +59,6 @@ const InstagramSyncBookmarksResponseSchema = z.object({
 		.optional(),
 });
 
-// Type aliases for meta_data - will be used to replace duplicate assertions
 export type InstagramMetaDataWithCollections = {
 	instagram_username: string | null;
 	instagram_profile_pic: string | null;
