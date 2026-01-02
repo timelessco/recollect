@@ -3,7 +3,7 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 
-import { type InstagramMetaData } from "@/app/api/instagram/syncBookmarks/route";
+import { type InstagramMetaData } from "@/lib/api-helpers/instagram/schemas";
 import { type Database } from "@/types/database-generated.types";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
