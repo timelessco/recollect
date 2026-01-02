@@ -33,7 +33,7 @@ export type SingleListData = {
 	 * Array of categories (many-to-many)
 	 */
 	addedCategories?: CategoriesData[];
-	addedTags: UserTagsData[];
+	addedTags: Array<UserTagsData | TempTag>;
 	description: string;
 	id: number;
 	inserted_at: string;
@@ -90,6 +90,15 @@ export type UserTagsData = {
 	id: number;
 	name: string;
 	user_id: string;
+};
+
+/**
+ * Minimal tag type for optimistic updates.
+ * Contains only the fields set during temporary tag creation.
+ */
+export type TempTag = {
+	id: number;
+	name: string;
 };
 
 export type FetchUserTagsDataResponse = {

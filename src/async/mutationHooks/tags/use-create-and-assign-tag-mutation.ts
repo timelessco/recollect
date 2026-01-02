@@ -7,7 +7,11 @@ import {
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type PaginatedBookmarks, type UserTagsData } from "@/types/apiTypes";
+import {
+	type PaginatedBookmarks,
+	type TempTag,
+	type UserTagsData,
+} from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
 	BOOKMARKS_KEY,
@@ -70,10 +74,11 @@ export function useCreateAndAssignTagMutation() {
 					currentData,
 					variables.bookmarkId,
 					(bookmark) => {
-						bookmark.addedTags = [
-							...(bookmark.addedTags || []),
-							{ id: variables._tempId, name: variables.name } as UserTagsData,
-						];
+						const tempTag: TempTag = {
+							id: variables._tempId,
+							name: variables.name,
+						};
+						bookmark.addedTags = [...(bookmark.addedTags || []), tempTag];
 					},
 				) ?? currentData
 			);
@@ -95,14 +100,16 @@ export function useCreateAndAssignTagMutation() {
 					}
 
 					// Use shared temp ID from variables to match BOOKMARKS_KEY cache
-					const tempTag = {
+					// Single localized cast: USER_TAGS_KEY cache expects full UserTagsData,
+					// but temp tags only have id/name/user_id until server responds
+					const tempTag: TempTag & { user_id?: string } = {
 						id: variables._tempId,
 						name: variables.name,
 						user_id: session?.user?.id,
-					} as unknown as UserTagsData;
+					};
 
 					return produce(data, (draft) => {
-						draft.data.push(tempTag);
+						draft.data.push(tempTag as UserTagsData);
 					});
 				},
 			},
