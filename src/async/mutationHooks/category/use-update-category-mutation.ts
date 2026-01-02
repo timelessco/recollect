@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { produce } from "immer";
 
 import {
 	type UpdateCategoryPayload,
@@ -36,34 +37,36 @@ export function useUpdateCategoryMutation() {
 				return currentData;
 			}
 
-			return {
-				...currentData,
-				data: currentData.data.map((item) => {
-					if (item.id === variables.category_id) {
-						return {
-							...item,
-							...(variables.updateData.category_name !== undefined && {
-								category_name: variables.updateData.category_name,
-							}),
-							...(variables.updateData.category_views !== undefined && {
-								category_views: variables.updateData
-									.category_views as CategoriesData["category_views"],
-							}),
-							...(variables.updateData.icon !== undefined && {
-								icon: variables.updateData.icon,
-							}),
-							...(variables.updateData.icon_color !== undefined && {
-								icon_color: variables.updateData.icon_color,
-							}),
-							...(variables.updateData.is_public !== undefined && {
-								is_public: variables.updateData.is_public,
-							}),
-						};
-					}
+			return produce(currentData, (draft) => {
+				const category = draft.data.find(
+					(item) => item.id === variables.category_id,
+				);
+				if (!category) {
+					return;
+				}
 
-					return item;
-				}),
-			};
+				const { updateData } = variables;
+				if (updateData.category_name !== undefined) {
+					category.category_name = updateData.category_name;
+				}
+
+				if (updateData.category_views !== undefined) {
+					category.category_views =
+						updateData.category_views as CategoriesData["category_views"];
+				}
+
+				if (updateData.icon !== undefined) {
+					category.icon = updateData.icon;
+				}
+
+				if (updateData.icon_color !== undefined) {
+					category.icon_color = updateData.icon_color;
+				}
+
+				if (updateData.is_public !== undefined) {
+					category.is_public = updateData.is_public;
+				}
+			});
 		},
 		onSettled: (_data, error) => {
 			if (error) {

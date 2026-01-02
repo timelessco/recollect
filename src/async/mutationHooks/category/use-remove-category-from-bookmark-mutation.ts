@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { produce } from "immer";
 
 import {
 	type RemoveCategoryFromBookmarkPayload,
@@ -55,21 +56,41 @@ export function useRemoveCategoryFromBookmarkMutation({
 
 			// If removing the current collection from a bookmark, remove from list
 			const isRemovingCurrentCollection = variables.category_id === CATEGORY_ID;
+			const shouldRemoveFromList =
+				isRemovingCurrentCollection && !preserveInList;
 
-			// Find the page containing the bookmark, then update only that page
-			for (
-				let pageIndex = 0;
-				pageIndex < currentData.pages.length;
-				pageIndex++
-			) {
-				const bookmarkIndex = currentData.pages[pageIndex].data.findIndex(
-					(b) => b.id === variables.bookmark_id,
-				);
+			// Get uncategorized entry upfront (may be needed for exclusive model)
+			const allCategories =
+				(
+					queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
+						| { data: CategoriesData[] }
+						| undefined
+				)?.data ?? [];
+			const uncategorizedEntry = allCategories.find(
+				(cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
+			);
 
-				if (bookmarkIndex !== -1) {
-					const bookmark = currentData.pages[pageIndex].data[bookmarkIndex];
+			return produce(currentData, (draft) => {
+				for (const page of draft.pages) {
+					if (!page?.data) {
+						continue;
+					}
 
-					// Filter out the removed category
+					const bookmarkIndex = page.data.findIndex(
+						(b) => b.id === variables.bookmark_id,
+					);
+					if (bookmarkIndex === -1) {
+						continue;
+					}
+
+					// Remove bookmark from list if removing current collection
+					if (shouldRemoveFromList) {
+						page.data.splice(bookmarkIndex, 1);
+						return;
+					}
+
+					// Update categories
+					const bookmark = page.data[bookmarkIndex];
 					const filteredCategories = (bookmark.addedCategories ?? []).filter(
 						(cat) => cat.id !== variables.category_id,
 					);
@@ -79,77 +100,37 @@ export function useRemoveCategoryFromBookmarkMutation({
 						(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
 					);
 
-					// Determine final categories
-					let finalCategories = filteredCategories;
-					if (!hasNonZeroCategories) {
-						// Get uncategorized entry from cache
-						const allCategories =
-							(
-								queryClient.getQueryData([
-									CATEGORIES_KEY,
-									session?.user?.id,
-								]) as { data: CategoriesData[] } | undefined
-							)?.data ?? [];
-						const uncategorizedEntry = allCategories.find(
-							(cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
-						);
-
-						// Auto-add uncategorized if available in cache
-						if (uncategorizedEntry) {
-							finalCategories = [uncategorizedEntry];
-						} else {
-							if (process.env.NODE_ENV === "development") {
-								console.warn(
-									"[Optimistic Update] Uncategorized category not found in cache.",
-									{
-										bookmarkId: variables.bookmark_id,
-										categoryId: variables.category_id,
-									},
-								);
-							}
-
-							Sentry.addBreadcrumb({
-								category: "optimistic-update",
-								message: "Uncategorized category not found in cache",
-								level: "warning",
-								data: {
+					if (!hasNonZeroCategories && uncategorizedEntry) {
+						bookmark.addedCategories = [uncategorizedEntry];
+					} else if (!hasNonZeroCategories) {
+						// Uncategorized not in cache - log warning
+						if (process.env.NODE_ENV === "development") {
+							console.warn(
+								"[Optimistic Update] Uncategorized category not found in cache.",
+								{
 									bookmarkId: variables.bookmark_id,
 									categoryId: variables.category_id,
 								},
-							});
+							);
 						}
+
+						Sentry.addBreadcrumb({
+							category: "optimistic-update",
+							message: "Uncategorized category not found in cache",
+							level: "warning",
+							data: {
+								bookmarkId: variables.bookmark_id,
+								categoryId: variables.category_id,
+							},
+						});
+						bookmark.addedCategories = filteredCategories;
+					} else {
+						bookmark.addedCategories = filteredCategories;
 					}
 
-					// Found the bookmark - only clone this page
-					return {
-						...currentData,
-						pages: currentData.pages.map((page, pageIdx) =>
-							pageIdx === pageIndex
-								? {
-										...page,
-										// Remove bookmark when removing current collection (unless preserveInList), else update addedCategories
-										data:
-											isRemovingCurrentCollection && !preserveInList
-												? page.data.filter(
-														(b) => b.id !== variables.bookmark_id,
-													)
-												: page.data.map((b, idx) =>
-														idx === bookmarkIndex
-															? {
-																	...b,
-																	addedCategories: finalCategories,
-																}
-															: b,
-													),
-									}
-								: page,
-						),
-					};
+					return;
 				}
-			}
-
-			// Bookmark not found in any page - return unchanged
-			return currentData;
+			});
 		},
 
 		// Additional optimistic update for single bookmark cache (preview route support)
@@ -217,13 +198,11 @@ export function useRemoveCategoryFromBookmarkMutation({
 						}
 					}
 
-					return {
-						...data,
-						data: data.data.map((bookmark) => ({
-							...bookmark,
-							addedCategories: finalCategories,
-						})),
-					};
+					return produce(data, (draft) => {
+						for (const bookmark of draft.data) {
+							bookmark.addedCategories = finalCategories;
+						}
+					});
 				},
 			},
 		],

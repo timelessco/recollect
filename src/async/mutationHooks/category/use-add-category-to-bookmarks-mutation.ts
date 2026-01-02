@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { produce } from "immer";
 
 import {
 	type AddCategoryToBookmarksPayload,
@@ -81,16 +82,19 @@ export function useAddCategoryToBookmarksMutation() {
 
 			// Create Set for O(1) lookup
 			const bookmarkIdSet = new Set(variables.bookmark_ids);
+			const isAddingRealCategory =
+				variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
 
-			// Update all matching bookmarks across all pages
-			return {
-				...currentData,
-				pages: currentData.pages.map((page) => ({
-					...page,
-					data: page.data.map((bookmark) => {
+			return produce(currentData, (draft) => {
+				for (const page of draft.pages) {
+					if (!page?.data) {
+						continue;
+					}
+
+					for (const bookmark of page.data) {
 						// Skip if not in selection
 						if (!bookmarkIdSet.has(bookmark.id)) {
-							return bookmark;
+							continue;
 						}
 
 						// Check if already has category
@@ -98,29 +102,24 @@ export function useAddCategoryToBookmarksMutation() {
 						const alreadyHasCategory = existingCategories.some(
 							(cat) => cat.id === variables.category_id,
 						);
-
-						// Skip if already has
 						if (alreadyHasCategory) {
-							return bookmark;
+							continue;
 						}
 
 						// EXCLUSIVE MODEL: When adding a real category, filter out category 0
-						const isAddingRealCategory =
-							variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
 						const filteredCategories = isAddingRealCategory
 							? existingCategories.filter(
 									(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
 								)
 							: existingCategories;
 
-						// Add category
-						return {
-							...bookmark,
-							addedCategories: [...filteredCategories, newCategoryEntry],
-						};
-					}),
-				})),
-			};
+						bookmark.addedCategories = [
+							...filteredCategories,
+							newCategoryEntry,
+						];
+					}
+				}
+			});
 		},
 		onSettled: (_data, error) => {
 			if (error) {

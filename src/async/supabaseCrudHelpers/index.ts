@@ -12,8 +12,6 @@ import isNull from "lodash/isNull";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type AddBookmarkScreenshotPayloadTypes,
-	type AddTagToBookmarkApiPayload,
-	type AddUserTagsApiPayload,
 	type BookmarksCountTypes,
 	type BookmarksPaginatedDataTypes,
 	type BookmarkViewDataTypes,
@@ -43,11 +41,9 @@ import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
 	ADD_BOOKMARK_MIN_DATA,
-	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
 	CHECK_API_KEY_API,
 	CLEAR_BOOKMARK_TRASH_API,
-	CREATE_USER_TAGS_API,
 	DELETE_API_KEY_API,
 	DELETE_BOOKMARK_DATA_API,
 	DELETE_SHARED_CATEGORIES_USER_API,
@@ -70,7 +66,6 @@ import {
 	NO_BOOKMARKS_ID_ERROR,
 	PAGINATION_LIMIT,
 	REMOVE_PROFILE_PIC_API,
-	REMOVE_TAG_FROM_BOOKMARK_API,
 	SAVE_API_KEY_API,
 	SEARCH_BOOKMARKS,
 	SEND_COLLABORATION_EMAIL_API,
@@ -400,48 +395,6 @@ export const fetchUserTags = async (): Promise<{
 	} catch (error_) {
 		const error = error_ as Error;
 		return { data: null, error };
-	}
-};
-
-export const addUserTags = async ({ tagsData }: AddUserTagsApiPayload) => {
-	try {
-		const response = await axios.post<{ data: UserTagsData }>(
-			`${NEXT_API_URL}${CREATE_USER_TAGS_API}`,
-			{ name: tagsData?.name },
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
-export const addTagToBookmark = async ({
-	selectedData,
-}: AddTagToBookmarkApiPayload) => {
-	try {
-		const response = await axios.post<{ data: SingleListData }>(
-			`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`,
-			{ data: selectedData },
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
-export const removeTagFromBookmark = async ({
-	selectedData,
-}: {
-	selectedData: { bookmark_id: number; tag_id: number };
-}) => {
-	try {
-		const response = await axios.post<{ data: UserTagsData; error: Error }>(
-			`${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
-			{ tag_id: selectedData?.tag_id, bookmark_id: selectedData?.bookmark_id },
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
 	}
 };
 

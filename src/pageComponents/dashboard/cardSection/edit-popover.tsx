@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
 
-import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
-import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/useCreateAndAssignTagMutation";
-import { useRemoveTagFromBookmarkMutation } from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
+import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-mutation";
+import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-mutation";
+import { useRemoveTagFromBookmarkMutation } from "@/async/mutationHooks/tags/use-remove-tag-from-bookmark-mutation";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Combobox } from "@/components/ui/recollect/combobox";
@@ -111,26 +111,24 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 
 	const handleAdd = (tag: UserTagsData) => {
 		addTagToBookmarkMutation.mutate({
-			selectedData: {
-				bookmark_id: bookmarkId,
-				tag_id: tag.id,
-			},
+			bookmarkId,
+			tagId: tag.id,
 		});
 	};
 
 	const handleRemove = (tag: UserTagsData) => {
 		removeTagFromBookmarkMutation.mutate({
-			selectedData: {
-				bookmark_id: bookmarkId,
-				tag_id: tag.id,
-			},
+			bookmarkId,
+			tagId: tag.id,
 		});
 	};
 
 	const handleCreate = (tagName: string) => {
 		createAndAssignTagMutation.mutate({
-			tagName,
+			name: tagName,
 			bookmarkId,
+			// Pre-generate temp ID so both BOOKMARKS_KEY and USER_TAGS_KEY caches use same ID
+			_tempId: -Date.now(),
 		});
 	};
 

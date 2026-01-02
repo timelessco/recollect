@@ -44,6 +44,7 @@ If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search
 - The `gh` CLI is installed - use it for GitHub operations
 - Don't unnecessarily add `try`/`catch` blocks
 - **Optimistic mutations**: Add Sentry breadcrumbs for cache misses and state inconsistencies to aid debugging
+- **React Query cache updates**: Use helpers from `src/utils/query-cache-helpers.ts` with Immer for paginated data updates. Use `refetchType: "none"` when invalidating to mark stale without flash
 
 **React:**
 
@@ -220,6 +221,7 @@ Recollect is an open-source bookmark, images, and documents manager built with:
 | UI         | @ariakit/react        | 0.3.7   |
 | UI         | react-aria            | 3.45.0  |
 | Monitoring | @sentry/nextjs        | 10.32.0 |
+| State      | immer                 | 11.1.3  |
 
 <!-- END AUTO-MANAGED -->
 

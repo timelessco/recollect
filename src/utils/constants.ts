@@ -86,9 +86,9 @@ export const ADD_REMAINING_BOOKMARK_API =
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
-export const CREATE_USER_TAGS_API = "/tags/create-user-tags";
 export const ADD_TAG_TO_BOOKMARK_API = "/tags/add-tag-to-bookmark";
 export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
+export const CREATE_AND_ASSIGN_TAG_API = "/tags/create-and-assign-tag";
 // category api
 export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";

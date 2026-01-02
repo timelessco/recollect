@@ -302,14 +302,6 @@ export type UpdateSharedCategoriesUserAccessApiPayload = {
 	updateData: { category_views?: BookmarkViewDataTypes; edit_access?: boolean };
 };
 
-export type AddTagToBookmarkApiPayload = {
-	selectedData:
-		| Pick<BookmarksTagData, "bookmark_id" | "tag_id">
-		| Array<Pick<BookmarksTagData, "bookmark_id" | "tag_id">>;
-};
-
-export type AddUserTagsApiPayload = { tagsData: { name: string } };
-
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
 	file: FileType;
