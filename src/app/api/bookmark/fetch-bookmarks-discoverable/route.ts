@@ -11,7 +11,43 @@ const FetchDiscoverBookmarksQuerySchema = z.object({
 	page: z.coerce.number().int().nonnegative(),
 });
 
-const FetchDiscoverBookmarksResponseSchema = z.array(z.any()).nullable();
+const MetadataSchema = z.object({
+	coverImage: z.string().nullable().optional(),
+	favIcon: z.string().nullable().optional(),
+	height: z.number().nullable().optional(),
+	iframeAllowed: z.boolean().nullable().optional(),
+	img_caption: z.string().nullable().optional(),
+	isOgImagePreferred: z.boolean().optional(),
+	isPageScreenshot: z.boolean().nullable().optional(),
+	mediaType: z.string().nullable().optional(),
+	ocr: z.string().nullable().optional(),
+	ogImgBlurUrl: z.string().nullable().optional(),
+	screenshot: z.string().nullable().optional(),
+	twitter_avatar_url: z.string().nullable().optional(),
+	video_url: z.string().nullable().optional(),
+	width: z.number().nullable().optional(),
+});
+
+const DiscoverableBookmarkRowSchema = z.object({
+	id: z.number(),
+	user_id: z.string(),
+	inserted_at: z.string(),
+	title: z.string().nullable(),
+	url: z.string().nullable(),
+	description: z.string().nullable(),
+	ogImage: z.string().nullable(),
+	screenshot: z.string().nullable(),
+	category_id: z.number(),
+	trash: z.boolean(),
+	type: z.string().nullable(),
+	meta_data: MetadataSchema.nullable(),
+	sort_index: z.string().nullable(),
+	make_discoverable: z.string().nullable(),
+});
+
+const FetchDiscoverBookmarksResponseSchema = z
+	.array(DiscoverableBookmarkRowSchema)
+	.nullable();
 
 const getRange = (page: number) => {
 	const rangeStart = page * PAGINATION_LIMIT;
