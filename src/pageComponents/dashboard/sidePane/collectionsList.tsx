@@ -387,7 +387,9 @@ const CollectionsList = () => {
 			addCategoryMutation.mutate(
 				{
 					name: result.data,
-					category_order: userProfileData.data[0]?.category_order ?? [],
+					category_order: (
+						userProfileData.data[0]?.category_order ?? []
+					).filter((id): id is number => id !== null),
 				},
 				{
 					onSuccess: (data) => {
