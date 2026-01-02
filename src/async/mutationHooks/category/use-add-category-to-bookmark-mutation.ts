@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import { produce } from "immer";
 
 import {
 	type AddCategoryToBookmarkPayload,
@@ -8,6 +8,7 @@ import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-contex
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
+import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
 	ADD_CATEGORY_TO_BOOKMARK_API,
 	BOOKMARKS_COUNT_KEY,
@@ -15,6 +16,7 @@ import {
 	CATEGORIES_KEY,
 	UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
+import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
 type AddCategoryMutationOptions = {
 	skipInvalidation?: boolean;
@@ -65,88 +67,43 @@ export function useAddCategoryToBookmarkMutation({
 
 			// If category not in cache, skip optimistic update and wait for server response
 			if (!newCategoryEntry) {
-				if (process.env.NODE_ENV === "development") {
-					console.warn(
-						`[Optimistic Update] Category ${variables.category_id} not found in cache.`,
-						{
-							bookmarkId: variables.bookmark_id,
-							categoryId: variables.category_id,
-						},
-					);
-				}
-
-				Sentry.addBreadcrumb({
-					category: "optimistic-update",
-					message: "Category not found in cache",
-					level: "warning",
-					data: {
-						bookmarkId: variables.bookmark_id,
-						categoryId: variables.category_id,
-					},
+				logCacheMiss("Optimistic Update", "Category not found in cache", {
+					bookmarkId: variables.bookmark_id,
+					categoryId: variables.category_id,
 				});
 				return currentData;
 			}
 
-			// Find the page containing the bookmark, then update only that page
-			for (
-				let pageIndex = 0;
-				pageIndex < currentData.pages.length;
-				pageIndex++
-			) {
-				const bookmarkIndex = currentData.pages[pageIndex].data.findIndex(
-					(b) => b.id === variables.bookmark_id,
-				);
+			return (
+				updateBookmarkInPaginatedData(
+					currentData,
+					variables.bookmark_id,
+					(bookmark) => {
+						// Check for duplicates
+						const existingCategories = bookmark.addedCategories ?? [];
+						const alreadyHasCategory = existingCategories.some(
+							(cat) => cat.id === variables.category_id,
+						);
+						if (alreadyHasCategory) {
+							return;
+						}
 
-				if (bookmarkIndex !== -1) {
-					const bookmark = currentData.pages[pageIndex].data[bookmarkIndex];
+						// EXCLUSIVE MODEL: When adding a real category, filter out category 0
+						const isAddingRealCategory =
+							variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
+						const filteredCategories = isAddingRealCategory
+							? existingCategories.filter(
+									(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+								)
+							: existingCategories;
 
-					// Check for duplicates
-					const existingCategories = bookmark.addedCategories ?? [];
-					const alreadyHasCategory = existingCategories.some(
-						(cat) => cat.id === variables.category_id,
-					);
-
-					// If already has category, return unchanged
-					if (alreadyHasCategory) {
-						return currentData;
-					}
-
-					// EXCLUSIVE MODEL: When adding a real category, filter out category 0
-					const isAddingRealCategory =
-						variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
-					const filteredCategories = isAddingRealCategory
-						? existingCategories.filter(
-								(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
-							)
-						: existingCategories;
-
-					// Found the bookmark - only clone this page
-					return {
-						...currentData,
-						pages: currentData.pages.map((page, pageIdx) =>
-							pageIdx === pageIndex
-								? {
-										...page,
-										data: page.data.map((b, idx) =>
-											idx === bookmarkIndex
-												? {
-														...b,
-														addedCategories: [
-															...filteredCategories,
-															newCategoryEntry,
-														],
-													}
-												: b,
-										),
-									}
-								: page,
-						),
-					};
-				}
-			}
-
-			// Bookmark not found in any page - return unchanged
-			return currentData;
+						bookmark.addedCategories = [
+							...filteredCategories,
+							newCategoryEntry,
+						];
+					},
+				) ?? currentData
+			);
 		},
 
 		// Additional optimistic update for single bookmark cache (preview route support)
@@ -176,25 +133,14 @@ export function useAddCategoryToBookmarkMutation({
 
 					// If category not in cache, skip update
 					if (!newCategoryEntry) {
-						if (process.env.NODE_ENV === "development") {
-							console.warn(
-								`[Optimistic Update] Category ${variables.category_id} not found in cache (single bookmark).`,
-								{
-									bookmarkId: variables.bookmark_id,
-									categoryId: variables.category_id,
-								},
-							);
-						}
-
-						Sentry.addBreadcrumb({
-							category: "optimistic-update",
-							message: "Category not found in cache (single bookmark)",
-							level: "warning",
-							data: {
+						logCacheMiss(
+							"Optimistic Update",
+							"Category not found in cache (single bookmark)",
+							{
 								bookmarkId: variables.bookmark_id,
 								categoryId: variables.category_id,
 							},
-						});
+						);
 						return currentData;
 					}
 
@@ -216,13 +162,14 @@ export function useAddCategoryToBookmarkMutation({
 								)
 							: existingCategories;
 
-					return {
-						...data,
-						data: data.data.map((bookmark) => ({
-							...bookmark,
-							addedCategories: [...filteredCategories, newCategoryEntry],
-						})),
-					};
+					return produce(data, (draft) => {
+						for (const bookmark of draft.data) {
+							bookmark.addedCategories = [
+								...filteredCategories,
+								newCategoryEntry,
+							];
+						}
+					});
 				},
 			},
 		],

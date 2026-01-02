@@ -33,7 +33,7 @@ export type SingleListData = {
 	 * Array of categories (many-to-many)
 	 */
 	addedCategories?: CategoriesData[];
-	addedTags: UserTagsData[];
+	addedTags: Array<UserTagsData | TempTag>;
 	description: string;
 	id: number;
 	inserted_at: string;
@@ -90,6 +90,15 @@ export type UserTagsData = {
 	id: number;
 	name: string;
 	user_id: string;
+};
+
+/**
+ * Minimal tag type for optimistic updates.
+ * Contains only the fields set during temporary tag creation.
+ */
+export type TempTag = {
+	id: number;
+	name: string;
 };
 
 export type FetchUserTagsDataResponse = {
@@ -261,29 +270,12 @@ export type MoveBookmarkToTrashApiPayload = {
 	isTrash: boolean;
 };
 
-export type AddUserCategoryApiPayload = {
-	category_order: number[];
-	name: string;
-	session: SupabaseSessionType;
-};
-
 export type DeleteUserCategoryApiPayload = {
 	category_id: number;
 	category_order: number[];
 };
 
 export type UpdateCategoryOrderApiPayload = { order: number[] };
-
-export type UpdateCategoryApiPayload = {
-	category_id: number | string | null;
-	updateData: {
-		category_name?: CategoriesData["category_name"];
-		category_views?: BookmarkViewDataTypes;
-		icon?: string | null;
-		icon_color?: CategoriesData["icon_color"];
-		is_public?: boolean;
-	};
-};
 
 export type UpdateUserProfileApiPayload = {
 	updateData: ProfilesTableForPayloadTypes;
@@ -318,14 +310,6 @@ export type UpdateSharedCategoriesUserAccessApiPayload = {
 	id: number;
 	updateData: { category_views?: BookmarkViewDataTypes; edit_access?: boolean };
 };
-
-export type AddTagToBookmarkApiPayload = {
-	selectedData:
-		| Pick<BookmarksTagData, "bookmark_id" | "tag_id">
-		| Array<Pick<BookmarksTagData, "bookmark_id" | "tag_id">>;
-};
-
-export type AddUserTagsApiPayload = { tagsData: { name: string } };
 
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;

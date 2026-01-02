@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import { produce } from "immer";
 
 import {
 	type SetBookmarkCategoriesPayload,
@@ -8,6 +8,7 @@ import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-contex
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
+import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
@@ -81,26 +82,10 @@ export function useSetBookmarkCategoriesMutation({
 				const missingCategoryIds = finalCategoryIds.filter(
 					(id) => !newCategories.some((cat) => cat.id === id),
 				);
-				if (process.env.NODE_ENV === "development") {
-					console.warn(
-						`[Optimistic Update] ${missingCategoryIds.length} categories not found in cache.`,
-						{
-							bookmarkId: variables.bookmark_id,
-							requestedCategoryIds: finalCategoryIds,
-							missingCategoryIds,
-						},
-					);
-				}
-
-				Sentry.addBreadcrumb({
-					category: "optimistic-update",
-					message: "Categories not found in cache",
-					level: "warning",
-					data: {
-						bookmarkId: variables.bookmark_id,
-						requestedCategoryIds: finalCategoryIds,
-						missingCategoryIds,
-					},
+				logCacheMiss("Optimistic Update", "Categories not found in cache", {
+					bookmarkId: variables.bookmark_id,
+					requestedCategoryIds: finalCategoryIds,
+					missingCategoryIds,
 				});
 				return currentData;
 			}
@@ -109,45 +94,33 @@ export function useSetBookmarkCategoriesMutation({
 			const includesCurrentCollection =
 				typeof CATEGORY_ID === "number" &&
 				variables.category_ids.includes(CATEGORY_ID);
+			const shouldRemoveFromList =
+				!includesCurrentCollection && !preserveInList;
 
-			// Find the page containing the bookmark, then update only that page
-			for (
-				let pageIndex = 0;
-				pageIndex < currentData.pages.length;
-				pageIndex++
-			) {
-				const bookmarkIndex = currentData.pages[pageIndex].data.findIndex(
-					(b) => b.id === variables.bookmark_id,
-				);
+			return produce(currentData, (draft) => {
+				for (const page of draft.pages) {
+					if (!page?.data) {
+						continue;
+					}
 
-				if (bookmarkIndex !== -1) {
-					// Found the bookmark - only clone this page
-					return {
-						...currentData,
-						pages: currentData.pages.map((page, pageIdx) =>
-							pageIdx === pageIndex
-								? {
-										...page,
-										// Remove bookmark if current collection is removed (unless preserveInList), else update categories
-										data:
-											!includesCurrentCollection && !preserveInList
-												? page.data.filter(
-														(b) => b.id !== variables.bookmark_id,
-													)
-												: page.data.map((bookmark, idx) =>
-														idx === bookmarkIndex
-															? { ...bookmark, addedCategories: newCategories }
-															: bookmark,
-													),
-									}
-								: page,
-						),
-					};
+					const bookmarkIndex = page.data.findIndex(
+						(b) => b.id === variables.bookmark_id,
+					);
+					if (bookmarkIndex === -1) {
+						continue;
+					}
+
+					// Remove bookmark from list if current collection is removed
+					if (shouldRemoveFromList) {
+						page.data.splice(bookmarkIndex, 1);
+						return;
+					}
+
+					// Update categories
+					page.data[bookmarkIndex].addedCategories = newCategories;
+					return;
 				}
-			}
-
-			// Bookmark not found in any page - return unchanged
-			return currentData;
+			});
 		},
 		onSettled: (_data, error) => {
 			if (error || skipInvalidation) {

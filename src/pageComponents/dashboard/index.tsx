@@ -18,7 +18,7 @@ import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmark
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryMutation } from "../../async/mutationHooks/category/use-update-category-mutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
@@ -171,8 +171,7 @@ const Dashboard = () => {
 
 	const { onDeleteCollection } = useDeleteCollection();
 
-	const { updateCategoryOptimisticMutation } =
-		useUpdateCategoryOptimisticMutation();
+	const { updateCategoryMutation } = useUpdateCategoryMutation();
 
 	// share category mutation
 
@@ -333,24 +332,22 @@ const Dashboard = () => {
 				return existingViewData;
 			};
 
-			if (currentCategory) {
+			if (currentCategory && typeof CATEGORY_ID === "number") {
 				// for a collection
 				if (isUserTheCategoryOwner) {
 					// if user is the collection owner
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: CATEGORY_ID,
-							updateData: {
-								category_views: {
-									...currentCategory?.category_views,
-									cardContentViewArray: cardContentViewLogic(
-										currentCategory?.category_views?.cardContentViewArray,
-									),
-									[updateValue]: value,
-								},
+					updateCategoryMutation.mutate({
+						category_id: CATEGORY_ID,
+						updateData: {
+							category_views: {
+								...currentCategory.category_views,
+								cardContentViewArray: cardContentViewLogic(
+									currentCategory.category_views.cardContentViewArray,
+								),
+								[updateValue]: value,
 							},
-						}),
-					);
+						},
+					});
 				} else {
 					// if user is not the collection owner
 					const sharedCategoriesId = find(
