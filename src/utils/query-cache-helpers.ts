@@ -110,16 +110,22 @@ export function swapTempTagInUserTagsCache(
 
 	return produce(data, (draft) => {
 		const tag = draft.data.find((existing) => existing.id === tempId);
-		if (tag) {
-			tag.id = realTag.id;
-			tag.name = realTag.name ?? tag.name;
-			if (realTag.user_id) {
-				tag.user_id = realTag.user_id;
-			}
+		if (!tag) {
+			logCacheMiss("Cache Update", "Temp tag not found in user tags cache", {
+				tempId,
+				tagCount: draft.data.length,
+			});
+			return;
+		}
 
-			if (realTag.created_at) {
-				tag.created_at = realTag.created_at;
-			}
+		tag.id = realTag.id;
+		tag.name = realTag.name ?? tag.name;
+		if (realTag.user_id) {
+			tag.user_id = realTag.user_id;
+		}
+
+		if (realTag.created_at) {
+			tag.created_at = realTag.created_at;
 		}
 	});
 }

@@ -30,6 +30,14 @@ type CreateAndAssignTagMutationPayload = CreateAndAssignTagPayload & {
 };
 
 /**
+ * Internal payload type with guaranteed temp ID.
+ * The wrapper ensures _tempId is always set before mutation lifecycle runs.
+ */
+type InternalPayload = CreateAndAssignTagPayload & {
+	_tempId: number;
+};
+
+/**
  * Mutation hook for creating a new tag and assigning it to a bookmark in one atomic operation.
  * Uses PostgreSQL RPC function for transaction safety.
  */
@@ -37,10 +45,10 @@ export function useCreateAndAssignTagMutation() {
 	const { queryClient, session, queryKey, searchQueryKey } =
 		useBookmarkMutationContext();
 
-	const createAndAssignTagMutation = useReactQueryOptimisticMutation<
+	const baseMutation = useReactQueryOptimisticMutation<
 		CreateAndAssignTagResponse,
 		Error,
-		CreateAndAssignTagMutationPayload,
+		InternalPayload,
 		typeof queryKey,
 		PaginatedBookmarks
 	>({
@@ -57,8 +65,6 @@ export function useCreateAndAssignTagMutation() {
 				return currentData as PaginatedBookmarks;
 			}
 
-			const tempId = variables._tempId ?? -Date.now();
-
 			return (
 				updateBookmarkInPaginatedData(
 					currentData,
@@ -66,7 +72,7 @@ export function useCreateAndAssignTagMutation() {
 					(bookmark) => {
 						bookmark.addedTags = [
 							...(bookmark.addedTags || []),
-							{ id: tempId, name: variables.name } as UserTagsData,
+							{ id: variables._tempId, name: variables.name } as UserTagsData,
 						];
 					},
 				) ?? currentData
@@ -90,7 +96,7 @@ export function useCreateAndAssignTagMutation() {
 
 					// Use shared temp ID from variables to match BOOKMARKS_KEY cache
 					const tempTag = {
-						id: variables._tempId ?? -Date.now(),
+						id: variables._tempId,
 						name: variables.name,
 						user_id: session?.user?.id,
 					} as unknown as UserTagsData;
@@ -107,7 +113,7 @@ export function useCreateAndAssignTagMutation() {
 				return;
 			}
 
-			const tempId = variables._tempId ?? -Date.now();
+			const { _tempId: tempId } = variables;
 			const realTag = data.tag;
 
 			// Update primary cache - swap temp tag with real tag
@@ -159,6 +165,31 @@ export function useCreateAndAssignTagMutation() {
 		showSuccessToast: true,
 		successMessage: "Tag created",
 	});
+
+	// Wrap mutation to ensure _tempId is generated once before any lifecycle hook runs
+	const createAndAssignTagMutation = {
+		...baseMutation,
+		mutate: (
+			variables: CreateAndAssignTagMutationPayload,
+			options?: Parameters<typeof baseMutation.mutate>[1],
+		) => {
+			const enrichedVariables: InternalPayload = {
+				...variables,
+				_tempId: variables._tempId ?? -Date.now(),
+			};
+			baseMutation.mutate(enrichedVariables, options);
+		},
+		mutateAsync: (
+			variables: CreateAndAssignTagMutationPayload,
+			options?: Parameters<typeof baseMutation.mutateAsync>[1],
+		) => {
+			const enrichedVariables: InternalPayload = {
+				...variables,
+				_tempId: variables._tempId ?? -Date.now(),
+			};
+			return baseMutation.mutateAsync(enrichedVariables, options);
+		},
+	};
 
 	return { createAndAssignTagMutation };
 }
