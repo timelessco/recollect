@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/nextjs";
 import { produce } from "immer";
 
 import {
@@ -9,6 +8,7 @@ import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-contex
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
+import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
 	ADD_CATEGORY_TO_BOOKMARKS_API,
 	BOOKMARKS_COUNT_KEY,
@@ -58,25 +58,14 @@ export function useAddCategoryToBookmarksMutation() {
 
 			// If category not in cache, skip optimistic update and wait for server response
 			if (!newCategoryEntry) {
-				if (process.env.NODE_ENV === "development") {
-					console.warn(
-						`[Optimistic Update] Category ${variables.category_id} not found in cache.`,
-						{
-							bookmarkIds: variables.bookmark_ids,
-							categoryId: variables.category_id,
-						},
-					);
-				}
-
-				Sentry.addBreadcrumb({
-					category: "optimistic-update",
-					message: "Category not found in cache (bulk operation)",
-					level: "warning",
-					data: {
+				logCacheMiss(
+					"Optimistic Update",
+					"Category not found in cache (bulk operation)",
+					{
 						bookmarkIds: variables.bookmark_ids,
 						categoryId: variables.category_id,
 					},
-				});
+				);
 				return currentData;
 			}
 

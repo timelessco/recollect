@@ -44,7 +44,6 @@ If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search
 - The `gh` CLI is installed - use it for GitHub operations
 - Don't unnecessarily add `try`/`catch` blocks
 - **Optimistic mutations**: Add Sentry breadcrumbs for cache misses and state inconsistencies to aid debugging
-- **React Query cache updates**: Use helpers from `src/utils/query-cache-helpers.ts` with Immer for paginated data updates. Use `refetchType: "none"` when invalidating to mark stale without flash
 
 **React:**
 

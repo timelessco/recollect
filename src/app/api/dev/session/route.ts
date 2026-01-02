@@ -17,7 +17,11 @@ import { createApiClient, getApiUser } from "@/lib/supabase/api";
  */
 export async function GET() {
 	// Block in production - return 404 as if endpoint doesn't exist
-	if (process.env.NODE_ENV !== "development") {
+	// Defense in depth: check both NODE_ENV and VERCEL_ENV to protect against misconfiguration
+	if (
+		process.env.NODE_ENV !== "development" ||
+		process.env.VERCEL_ENV === "production"
+	) {
 		return NextResponse.json({ error: "Not found" }, { status: 404 });
 	}
 

@@ -5,6 +5,7 @@ import {
 	type SingleListData,
 	type UserTagsData,
 } from "@/types/apiTypes";
+import { logCacheMiss } from "@/utils/cache-debug-helpers";
 
 /**
  * Update a specific bookmark within paginated infinite query data using Immer.
@@ -22,7 +23,9 @@ export function updateBookmarkInPaginatedData(
 		return data;
 	}
 
-	return produce(data, (draft) => {
+	let bookmarkFound = false;
+
+	const result = produce(data, (draft) => {
 		for (const page of draft.pages) {
 			// Skip undefined pages or pages without data array
 			if (!page?.data) {
@@ -32,11 +35,21 @@ export function updateBookmarkInPaginatedData(
 			const bookmark = page.data.find((bm) => bm.id === bookmarkId);
 			if (bookmark) {
 				updater(bookmark);
+				bookmarkFound = true;
 				// Early exit after bookmark found and updated
 				return;
 			}
 		}
 	});
+
+	if (!bookmarkFound) {
+		logCacheMiss("Cache Update", "Bookmark not found in paginated cache", {
+			bookmarkId,
+			pageCount: data.pages.length,
+		});
+	}
+
+	return result;
 }
 
 /**
@@ -47,17 +60,27 @@ export function updateBookmarkInPaginatedData(
  * @param realTag - The real tag data from server response
  * @param realTag.id - The real tag ID
  * @param realTag.name - The real tag name
+ * @returns true if temp tag was found and swapped, false otherwise
  */
 export function swapTempTagId(
 	bookmark: Draft<SingleListData>,
 	tempId: number,
 	realTag: { id: number; name: string | null },
-): void {
+): boolean {
 	const tag = bookmark.addedTags?.find((existing) => existing.id === tempId);
 	if (tag) {
 		tag.id = realTag.id;
 		tag.name = realTag.name ?? tag.name;
+		return true;
 	}
+
+	logCacheMiss("Cache Update", "Temp tag not found in bookmark", {
+		bookmarkId: bookmark.id,
+		tempId,
+		realTagId: realTag.id,
+		existingTagIds: bookmark.addedTags?.map((tag) => tag.id) ?? [],
+	});
+	return false;
 }
 
 /**

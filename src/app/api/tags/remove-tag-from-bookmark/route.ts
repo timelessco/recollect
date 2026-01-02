@@ -47,12 +47,18 @@ export const POST = createSupabasePostApiHandler({
 
 		console.log(`[${route}] API called:`, { userId, bookmarkId, tagId });
 
-		// Verify bookmark ownership
-		const { data: bookmarkData, error: bookmarkError } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.select("user_id")
-			.eq("id", bookmarkId)
-			.single();
+		// Verify bookmark and tag ownership in parallel
+		const [bookmarkResult, tagResult] = await Promise.all([
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("user_id")
+				.eq("id", bookmarkId)
+				.single(),
+			supabase.from(TAG_TABLE_NAME).select("user_id").eq("id", tagId).single(),
+		]);
+
+		const { data: bookmarkData, error: bookmarkError } = bookmarkResult;
+		const { data: tagData, error: tagError } = tagResult;
 
 		if (bookmarkError) {
 			return apiError({
@@ -73,13 +79,6 @@ export const POST = createSupabasePostApiHandler({
 				context: { bookmarkId, userId },
 			});
 		}
-
-		// Verify tag ownership
-		const { data: tagData, error: tagError } = await supabase
-			.from(TAG_TABLE_NAME)
-			.select("user_id")
-			.eq("id", tagId)
-			.single();
 
 		if (tagError) {
 			return apiError({

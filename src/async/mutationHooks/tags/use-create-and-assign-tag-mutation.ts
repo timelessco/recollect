@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/nextjs";
 import { produce } from "immer";
 
 import {
@@ -9,6 +8,7 @@ import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-contex
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type PaginatedBookmarks, type UserTagsData } from "@/types/apiTypes";
+import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
 	BOOKMARKS_KEY,
 	CREATE_AND_ASSIGN_TAG_API,
@@ -82,17 +82,8 @@ export function useCreateAndAssignTagMutation() {
 					const data = currentData as { data: UserTagsData[] } | undefined;
 
 					if (!data?.data) {
-						if (process.env.NODE_ENV === "development") {
-							console.warn(`[Optimistic Update] User tags cache not found.`, {
-								bookmarkId: variables.bookmarkId,
-							});
-						}
-
-						Sentry.addBreadcrumb({
-							category: "optimistic-update",
-							message: "User tags cache not found",
-							level: "warning",
-							data: { bookmarkId: variables.bookmarkId },
+						logCacheMiss("Optimistic Update", "User tags cache not found", {
+							bookmarkId: variables.bookmarkId,
 						});
 						return currentData;
 					}

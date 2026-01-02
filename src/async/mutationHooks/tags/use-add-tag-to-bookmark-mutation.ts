@@ -1,5 +1,3 @@
-import * as Sentry from "@sentry/nextjs";
-
 import {
 	type AddTagToBookmarkPayload,
 	type AddTagToBookmarkResponse,
@@ -8,6 +6,7 @@ import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-contex
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type PaginatedBookmarks, type UserTagsData } from "@/types/apiTypes";
+import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
 	ADD_TAG_TO_BOOKMARK_API,
 	BOOKMARKS_KEY,
@@ -54,18 +53,9 @@ export function useAddTagToBookmarkMutation() {
 			);
 
 			if (!tagInfo) {
-				if (process.env.NODE_ENV === "development") {
-					console.warn(
-						`[Optimistic Update] Tag ${variables.tagId} not found in cache.`,
-						{ bookmarkId: variables.bookmarkId, tagId: variables.tagId },
-					);
-				}
-
-				Sentry.addBreadcrumb({
-					category: "optimistic-update",
-					message: "Tag not found in cache",
-					level: "warning",
-					data: { bookmarkId: variables.bookmarkId, tagId: variables.tagId },
+				logCacheMiss("Optimistic Update", "Tag not found in cache", {
+					bookmarkId: variables.bookmarkId,
+					tagId: variables.tagId,
 				});
 				return currentData;
 			}
