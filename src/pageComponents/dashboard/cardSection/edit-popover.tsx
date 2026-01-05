@@ -13,6 +13,7 @@ import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
+import { DiscoverCheckbox } from "@/pageComponents/dashboard/cardSection/discover-checkbox";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -74,6 +75,12 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 								<div className="w-full">
 									<CategoryMultiSelect bookmarkId={post.id} />
 								</div>
+							</div>
+							<div className="w-full">
+								<DiscoverCheckbox
+									bookmarkId={post.id}
+									isDiscoverable={post.make_discoverable !== null}
+								/>
 							</div>
 						</div>
 					</Popover.Popup>

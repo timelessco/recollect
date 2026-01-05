@@ -31,6 +31,7 @@ import useFetchSharedCategories from "../../async/queryHooks/share/useFetchShare
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
+import useDebounce from "../../hooks/useDebounce";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
@@ -53,10 +54,10 @@ import {
 import { type FileType } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
+	DISCOVER_URL,
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
-	SETTINGS_URL,
 	TRASH_URL,
 	TWEETS_URL,
 	UNCATEGORIZED_URL,
@@ -66,8 +67,8 @@ import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
-import Settings from "../settings";
 
+import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
 import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import SettingsModal from "./modals/settingsModal";
 import SignedOutSection from "./signedOutSection";
@@ -117,6 +118,7 @@ const Dashboard = () => {
 	);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const debouncedSearchText = useDebounce(searchText, 500);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -142,8 +144,9 @@ const Dashboard = () => {
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
 
-	// Determine if we're currently searching
-	const isSearching = !isEmpty(searchText);
+	// Determine if we're currently searching (use debounced to match when query runs)
+	const isSearching = !isEmpty(debouncedSearchText);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
 	const { sharedCategoriesData } = useFetchSharedCategories();
 
@@ -661,8 +664,8 @@ const Dashboard = () => {
 		if (!isInNotFoundPage) {
 			// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 			switch (categorySlug) {
-				case SETTINGS_URL:
-					return <Settings />;
+				case DISCOVER_URL:
+					return <DiscoverBookmarkCards />;
 				case IMAGES_URL:
 					return renderAllBookmarkCards();
 				case VIDEOS_URL:
@@ -688,15 +691,20 @@ const Dashboard = () => {
 		void addBookmarkLogic(finalUrl);
 	};
 
-	if (isNil(session)) {
+	// Handle unsupported actions for discover page
+	const handleUnsupported = () => {
+		errorToast("This action is not available on Discover.");
+	};
+
+	if (isNil(session) && !isDiscoverPage) {
 		return <div />;
 	}
 
 	return (
 		<>
 			<DashboardLayout
-				categoryId={CATEGORY_ID}
-				onAddBookmark={onAddBookmark}
+				categoryId={isDiscoverPage ? DISCOVER_URL : CATEGORY_ID}
+				onAddBookmark={isDiscoverPage ? handleUnsupported : onAddBookmark}
 				onClearTrash={() => {
 					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 				}}
@@ -707,7 +715,7 @@ const Dashboard = () => {
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}
-				uploadFileFromAddDropdown={onDrop}
+				uploadFileFromAddDropdown={isDiscoverPage ? handleUnsupported : onDrop}
 				userId={session?.user?.id ?? ""}
 			>
 				{renderMainPaneContent()}
