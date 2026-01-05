@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { isNull } from "lodash";
 import find from "lodash/find";
 
-import { useDeleteCategoryOptimisticMutation } from "../async/mutationHooks/category/use-delete-category-optimistic-mutation";
+import useDeleteCategoryOptimisticMutation from "../async/mutationHooks/category/useDeleteCategoryOptimisticMutation";
 import useFetchBookmarksCount from "../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
