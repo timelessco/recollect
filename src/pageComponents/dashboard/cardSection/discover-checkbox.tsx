@@ -1,4 +1,4 @@
-import { useToggleDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/useToggleDiscoverableOptimisticMutation";
+import { useToggleDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/use-toggle-discoverable-optimistic-mutation";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 
 type DiscoverableCheckboxProps = {

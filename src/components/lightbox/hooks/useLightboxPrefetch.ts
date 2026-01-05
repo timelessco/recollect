@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { isEmpty } from "lodash";
 
-import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/useFetchDiscoverBookmarks";
+import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { useMiscellaneousStore } from "@/store/componentStore";

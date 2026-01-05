@@ -64,7 +64,6 @@ export const GET = createSupabaseGetApiHandler({
 		const { page } = input;
 		const { rangeEnd, rangeStart } = getRange(page);
 
-		// Entry point log
 		console.log(`[${route}] API called:`, {
 			page,
 			rangeStart,

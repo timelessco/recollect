@@ -48,7 +48,6 @@ export const POST = createSupabasePostApiHandler({
 			data;
 		const userId = user.id;
 
-		// Entry point log
 		console.log(`[${route}] API called:`, {
 			userId,
 			bookmarkId,

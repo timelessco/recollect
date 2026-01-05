@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { useFetchDiscoverBookmarks } from "../../async/queryHooks/bookmarks/useFetchDiscoverBookmarks";
+import { useFetchDiscoverBookmarks } from "../../async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useDebounce from "../../hooks/useDebounce";
 import useGetSortBy from "../../hooks/useGetSortBy";
