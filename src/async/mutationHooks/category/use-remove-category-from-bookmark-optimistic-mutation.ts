@@ -26,14 +26,14 @@ type RemoveCategoryMutationOptions = {
  * Mutation hook for removing a single category from a bookmark.
  * Removes only the specified category, keeping other categories intact.
  */
-export function useRemoveCategoryFromBookmarkMutation({
+export function useRemoveCategoryFromBookmarkOptimisticMutation({
 	skipInvalidation = false,
 	preserveInList = false,
 }: RemoveCategoryMutationOptions = {}) {
 	const { queryClient, session, queryKey, searchQueryKey, CATEGORY_ID } =
 		useBookmarkMutationContext();
 
-	const removeCategoryFromBookmarkMutation = useReactQueryOptimisticMutation<
+	const removeCategoryFromBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
 		RemoveCategoryFromBookmarkResponse,
 		Error,
 		RemoveCategoryFromBookmarkPayload,
@@ -204,5 +204,5 @@ export function useRemoveCategoryFromBookmarkMutation({
 		successMessage: "Collection removed",
 	});
 
-	return { removeCategoryFromBookmarkMutation };
+	return { removeCategoryFromBookmarkOptimisticMutation };
 }

@@ -26,14 +26,14 @@ type SetBookmarkCategoriesMutationOptions = {
  * Mutation hook for setting all categories for a bookmark.
  * Replaces existing categories with the new set.
  */
-export function useSetBookmarkCategoriesMutation({
+export function useSetBookmarkCategoriesOptimisticMutation({
 	skipInvalidation = false,
 	preserveInList = false,
 }: SetBookmarkCategoriesMutationOptions = {}) {
 	const { queryClient, session, queryKey, searchQueryKey, CATEGORY_ID } =
 		useBookmarkMutationContext();
 
-	const setBookmarkCategoriesMutation = useReactQueryOptimisticMutation<
+	const setBookmarkCategoriesOptimisticMutation = useReactQueryOptimisticMutation<
 		SetBookmarkCategoriesResponse,
 		Error,
 		SetBookmarkCategoriesPayload,
@@ -141,5 +141,5 @@ export function useSetBookmarkCategoriesMutation({
 		successMessage: "Collection updated",
 	});
 
-	return { setBookmarkCategoriesMutation };
+	return { setBookmarkCategoriesOptimisticMutation };
 }

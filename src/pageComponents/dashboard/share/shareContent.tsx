@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import { useUpdateCategoryMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
+import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
@@ -190,7 +190,7 @@ const ShareContent = (props: ShareContentProps) => {
 	const dynamicCategoryId =
 		props.categoryId ?? shareCategoryId ?? currentCategoryId;
 
-	const { updateCategoryMutation } = useUpdateCategoryMutation();
+	const { updateCategoryOptimisticMutation } = useUpdateCategoryOptimisticMutation();
 
 	const { sendCollaborationEmailInviteMutation } =
 		useSendCollaborationEmailInviteMutation();
@@ -370,7 +370,7 @@ const ShareContent = (props: ShareContentProps) => {
 									return;
 								}
 
-								updateCategoryMutation.mutate(
+								updateCategoryOptimisticMutation.mutate(
 									{
 										category_id: dynamicCategoryId,
 										updateData: {

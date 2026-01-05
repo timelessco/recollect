@@ -22,11 +22,11 @@ import {
  * Optimistically updates all affected bookmarks in cache.
  * Used for bulk selection operations.
  */
-export function useAddCategoryToBookmarksMutation() {
+export function useAddCategoryToBookmarksOptimisticMutation() {
 	const { queryClient, session, queryKey, searchQueryKey } =
 		useBookmarkMutationContext();
 
-	const addCategoryToBookmarksMutation = useReactQueryOptimisticMutation<
+	const addCategoryToBookmarksOptimisticMutation = useReactQueryOptimisticMutation<
 		AddCategoryToBookmarksResponse,
 		Error,
 		AddCategoryToBookmarksPayload,
@@ -129,5 +129,5 @@ export function useAddCategoryToBookmarksMutation() {
 		successMessage: "Collection added to selected bookmarks",
 	});
 
-	return { addCategoryToBookmarksMutation };
+	return { addCategoryToBookmarksOptimisticMutation };
 }

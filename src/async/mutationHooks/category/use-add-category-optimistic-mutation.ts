@@ -16,13 +16,13 @@ import {
 	USER_PROFILE,
 } from "@/utils/constants";
 
-export function useAddCategoryMutation() {
+export function useAddCategoryOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
 	const queryKey = [CATEGORIES_KEY, session?.user?.id] as const;
 
-	const addCategoryMutation = useReactQueryOptimisticMutation<
+	const addCategoryOptimisticMutation = useReactQueryOptimisticMutation<
 		CreateCategoryResponse,
 		Error,
 		CreateCategoryPayload,
@@ -72,5 +72,5 @@ export function useAddCategoryMutation() {
 		successMessage: "Collection created",
 	});
 
-	return { addCategoryMutation };
+	return { addCategoryOptimisticMutation };
 }

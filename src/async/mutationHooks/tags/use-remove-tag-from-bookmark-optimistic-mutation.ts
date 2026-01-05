@@ -12,11 +12,11 @@ import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 /**
  * Mutation hook for removing a tag from a bookmark.
  */
-export function useRemoveTagFromBookmarkMutation() {
+export function useRemoveTagFromBookmarkOptimisticMutation() {
 	const { queryClient, session, queryKey, searchQueryKey } =
 		useBookmarkMutationContext();
 
-	const removeTagFromBookmarkMutation = useReactQueryOptimisticMutation<
+	const removeTagFromBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
 		RemoveTagFromBookmarkResponse,
 		Error,
 		RemoveTagFromBookmarkPayload,
@@ -64,5 +64,5 @@ export function useRemoveTagFromBookmarkMutation() {
 		successMessage: "Tag removed",
 	});
 
-	return { removeTagFromBookmarkMutation };
+	return { removeTagFromBookmarkOptimisticMutation };
 }

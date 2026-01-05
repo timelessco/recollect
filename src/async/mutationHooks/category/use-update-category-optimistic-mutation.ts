@@ -13,13 +13,13 @@ import { useSupabaseSession } from "@/store/componentStore";
 import { type CategoriesData } from "@/types/apiTypes";
 import { CATEGORIES_KEY, UPDATE_USER_CATEGORIES_API } from "@/utils/constants";
 
-export function useUpdateCategoryMutation() {
+export function useUpdateCategoryOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
 	const queryKey = [CATEGORIES_KEY, session?.user?.id] as const;
 
-	const updateCategoryMutation = useReactQueryOptimisticMutation<
+	const updateCategoryOptimisticMutation = useReactQueryOptimisticMutation<
 		UpdateCategoryResponse,
 		Error,
 		UpdateCategoryPayload,
@@ -80,5 +80,5 @@ export function useUpdateCategoryMutation() {
 		showSuccessToast: false,
 	});
 
-	return { updateCategoryMutation };
+	return { updateCategoryOptimisticMutation };
 }

@@ -27,13 +27,13 @@ type AddCategoryMutationOptions = {
  * This is additive - it adds to existing categories without removing them.
  * Used for drag-and-drop operations.
  */
-export function useAddCategoryToBookmarkMutation({
+export function useAddCategoryToBookmarkOptimisticMutation({
 	skipInvalidation = false,
 }: AddCategoryMutationOptions = {}) {
 	const { queryClient, session, queryKey, searchQueryKey } =
 		useBookmarkMutationContext();
 
-	const addCategoryToBookmarkMutation = useReactQueryOptimisticMutation<
+	const addCategoryToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
 		AddCategoryToBookmarkResponse,
 		Error,
 		AddCategoryToBookmarkPayload,
@@ -193,5 +193,5 @@ export function useAddCategoryToBookmarkMutation({
 		successMessage: "Collection added",
 	});
 
-	return { addCategoryToBookmarkMutation };
+	return { addCategoryToBookmarkOptimisticMutation };
 }
