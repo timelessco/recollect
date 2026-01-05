@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNullable } from "@/utils/assertion-utils";
 import {
@@ -53,7 +53,7 @@ export type AddCategoryToBookmarksResponse = z.infer<
 	typeof AddCategoryToBookmarksResponseSchema
 >;
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: AddCategoryToBookmarksPayloadSchema,
 	outputSchema: AddCategoryToBookmarksResponseSchema,

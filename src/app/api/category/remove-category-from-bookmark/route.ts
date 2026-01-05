@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNonEmptyArray, isNullable } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
@@ -43,7 +43,7 @@ export type RemoveCategoryFromBookmarkResponse = z.infer<
 	typeof RemoveCategoryFromBookmarkResponseSchema
 >;
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: RemoveCategoryFromBookmarkPayloadSchema,
 	outputSchema: RemoveCategoryFromBookmarkResponseSchema,
