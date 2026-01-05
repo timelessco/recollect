@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createSupabaseGetApiHandler } from "@/lib/api-helpers/create-handler";
+import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createApiClient } from "@/lib/supabase/api";
 import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "@/utils/constants";
@@ -56,7 +56,7 @@ const getRange = (page: number) => {
 	return { rangeEnd, rangeStart };
 };
 
-export const GET = createSupabaseGetApiHandler({
+export const GET = createGetApiHandler({
 	inputSchema: FetchDiscoverBookmarksQuerySchema,
 	outputSchema: FetchDiscoverBookmarksResponseSchema,
 	route: ROUTE,
