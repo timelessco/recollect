@@ -1,25 +1,28 @@
 "use client";
 
 import { useRef, useState } from "react";
-import axios from "axios";
 
 import Button from "../../components/atoms/button";
-import {
-	getBaseUrl,
-	NEXT_API_URL,
-	RAINDROP_IMPORT_API,
-} from "../../utils/constants";
+import { Spinner } from "../../components/spinner";
+import { InfoIcon } from "../../icons/infoIcon";
+import { RaindropIcon } from "../../icons/raindrop-icon";
+
+import { useImportBookmarksMutation } from "@/async/mutationHooks/bookmarks/use-import-bookmarks-mutation";
+import { saveButtonClassName } from "@/utils/commonClassNames";
+import { handleClientError } from "@/utils/error-utils/client";
 
 export const ImportBookmarks = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [uploading, setUploading] = useState(false);
-	const [imported, setImported] = useState(false);
-	const [statusMessage, setStatusMessage] = useState("");
 	const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
-	const [progress, setProgress] = useState(0);
 	const [dragActive, setDragActive] = useState(false);
-	const [importLimit, setImportLimit] = useState(50);
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	const { importBookmarksMutation } = useImportBookmarksMutation();
+	const uploading = importBookmarksMutation.isPending
+		? true
+		: importBookmarksMutation.isSuccess
+			? "completed"
+			: false;
 
 	//  Dynamically import papaparse
 	const parseCSV = async (file: File) => {
@@ -39,9 +42,7 @@ export const ImportBookmarks = () => {
 	const handleFile = async (fileToProcess: File) => {
 		setSelectedFile(fileToProcess);
 		setBookmarkCount(null);
-		setStatusMessage("");
-		setProgress(0);
-		setImported(false);
+		importBookmarksMutation.reset();
 
 		try {
 			const results = await parseCSV(fileToProcess);
@@ -52,23 +53,16 @@ export const ImportBookmarks = () => {
 				cover: string;
 			}>;
 			setBookmarkCount(records.length);
-			setStatusMessage(
-				records.length
-					? `Found ${records.length} bookmarks, ready to import.`
-					: "No valid bookmarks found in CSV.",
-			);
-			setImportLimit(Math.min(50, records.length));
 		} catch (error) {
 			console.error(error);
-			setStatusMessage("Error parsing CSV file.");
+			setBookmarkCount(0);
 		}
 	};
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const chosenFile = event.target.files?.[0];
 		if (chosenFile) {
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
-			handleFile(chosenFile);
+			void handleFile(chosenFile);
 		}
 	};
 
@@ -77,24 +71,18 @@ export const ImportBookmarks = () => {
 		setDragActive(false);
 		const droppedFile = event.dataTransfer.files?.[0];
 		if (droppedFile) {
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
-			handleFile(droppedFile);
+			void handleFile(droppedFile);
 		}
 	};
 
 	const handleImport = async () => {
 		if (!selectedFile) {
-			setStatusMessage("Please select a file first.");
 			return;
 		}
 
-		setUploading(true);
-		setStatusMessage("Importing bookmarks...");
-		setProgress(0);
-
 		try {
 			const results = await parseCSV(selectedFile);
-			let records = results.data as Array<{
+			const records = results.data as Array<{
 				title: string;
 				excerpt: string;
 				url: string;
@@ -103,12 +91,8 @@ export const ImportBookmarks = () => {
 			}>;
 
 			if (!records.length) {
-				setStatusMessage("No data found in CSV.");
-				setUploading(false);
 				return;
 			}
-
-			records = records.slice(0, importLimit);
 
 			const bookmarks = records.map((bookmark) => ({
 				title: bookmark.title || null,
@@ -118,84 +102,76 @@ export const ImportBookmarks = () => {
 				category_name: bookmark.folder || null,
 			}));
 
-			const response = await axios.post(
-				`${getBaseUrl()}${NEXT_API_URL}${RAINDROP_IMPORT_API}`,
-				{ bookmarks },
-				{
-					headers: { "Content-Type": "application/json" },
-					onUploadProgress: (progressEvent) => {
-						if (progressEvent.total) {
-							const percentage = Math.round(
-								(progressEvent.loaded * 100) / progressEvent.total,
-							);
-							setProgress(percentage);
-						}
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				throw new Error("Error importing bookmarks.");
-			}
-
-			setProgress(100);
-			setImported(true);
-			setStatusMessage(
-				`Import completed successfully! Imported ${records.length} bookmarks.`,
-			);
+			await importBookmarksMutation.mutateAsync({ bookmarks });
 		} catch (error) {
-			console.error(error);
-			setStatusMessage("Error importing bookmarks.");
-		} finally {
-			setUploading(false);
+			handleClientError(error);
 		}
 	};
 
-	return (
-		<div className="mx-auto mt-10 max-w-md rounded-2xl border bg-white p-6 shadow-sm">
-			<h2 className="mb-4 text-lg font-semibold text-gray-900">
-				Import Bookmarks
-			</h2>
+	const isFileUploaded = selectedFile && bookmarkCount !== null;
 
-			{/* File Upload Box */}
+	return (
+		<div className="mx-auto max-w-md">
+			<h2 className="mb-6 text-lg leading-[115%] font-semibold tracking-normal text-gray-900">
+				Import
+			</h2>
+			<p className="mb-2 align-middle text-sm leading-[115%] tracking-[0.02em] text-gray-800">
+				Import from Raindrop
+			</p>
+
+			{/* File Upload/Selected Card */}
 			<div
-				className={`relative mb-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 transition-colors ${
-					dragActive ? "border-black bg-gray-100" : "border-gray-300"
+				className={`relative flex flex-col items-center justify-center rounded-lg bg-gray-100 py-[75px] transition-colors ${
+					!isFileUploaded ? `${dragActive ? "bg-gray-200" : ""}` : ""
 				}`}
-				onDrop={handleDrop}
-				onDragOver={(event) => {
-					event.preventDefault();
-					setDragActive(true);
-				}}
-				onDragLeave={() => setDragActive(false)}
-				onClick={() => inputRef.current?.click()}
-				role="button"
-				tabIndex={0}
-				onKeyDown={(event) => {
-					if (event.key === "Enter" || event.key === " ") {
-						inputRef.current?.click();
-					}
-				}}
+				onDrop={!isFileUploaded ? handleDrop : undefined}
+				onDragOver={
+					!isFileUploaded
+						? (event) => {
+								event.preventDefault();
+								setDragActive(true);
+							}
+						: undefined
+				}
+				onDragLeave={!isFileUploaded ? () => setDragActive(false) : undefined}
 			>
-				{selectedFile ? (
-					<div className="flex flex-col items-center">
-						<p className="text-sm font-medium text-gray-800">
-							{selectedFile.name}
-						</p>
-						<p className="mt-1 text-xs text-gray-500">
-							{bookmarkCount
-								? `Found ${bookmarkCount} bookmarks`
-								: "File selected"}
-						</p>
-					</div>
-				) : (
-					<p className="text-sm text-gray-600">
-						Drag and drop your CSV here or{" "}
-						<span className="font-semibold text-black underline">
-							click to browse
-						</span>
-					</p>
-				)}
+				<RaindropIcon className="mb-1.5 w-8" />
+				<p className="mb-1.5 align-middle text-sm leading-[115%] font-normal tracking-normal text-gray-800">
+					{isFileUploaded
+						? `Found ${bookmarkCount} Bookmarks`
+						: "Drop the CSV file here or"}
+				</p>
+				<Button
+					className={`relative ${uploading === "completed" ? "bg-gray-200" : ""} ${saveButtonClassName} rounded-[5px]`}
+					isDisabled={
+						isFileUploaded
+							? uploading === "completed" ||
+								uploading === true ||
+								bookmarkCount === 0
+							: false
+					}
+					onClick={
+						isFileUploaded
+							? handleImport
+							: () => {
+									inputRef.current?.click();
+								}
+					}
+				>
+					<span className="inline-flex min-h-[15px] min-w-[120px] items-center justify-center">
+						{isFileUploaded ? (
+							uploading === true ? (
+								<Spinner className="h-3 w-3" />
+							) : uploading === "completed" ? (
+								"Imported"
+							) : (
+								"Import Bookmarks"
+							)
+						) : (
+							"Choose File"
+						)}
+					</span>
+				</Button>
 				<input
 					ref={inputRef}
 					type="file"
@@ -205,63 +181,47 @@ export const ImportBookmarks = () => {
 				/>
 			</div>
 
-			{bookmarkCount && bookmarkCount > 0 && (
-				<div className="mb-4">
-					<label className="mb-1 block text-sm font-medium text-gray-700">
-						Number of bookmarks to import:{" "}
-						<span className="font-semibold text-black">{importLimit}</span>
-					</label>
-					<input
-						type="range"
-						min={1}
-						max={bookmarkCount}
-						value={importLimit}
-						onChange={(event) => setImportLimit(Number(event.target.value))}
-						className="w-full cursor-pointer accent-black"
-					/>
-					<p className="mt-1 text-xs text-gray-500">
-						You can import up to {bookmarkCount} bookmarks.
-					</p>
-				</div>
-			)}
-
-			<div className="relative w-full overflow-hidden rounded-md">
-				<Button
-					className={`relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-md px-4 py-2 font-medium text-white transition-all duration-300 ${
-						imported
-							? "cursor-not-allowed bg-green-700"
-							: uploading
-								? "cursor-wait bg-black"
-								: "bg-black hover:bg-black"
-					}`}
-					isDisabled={uploading || imported || !bookmarkCount}
-					onClick={handleImport}
-				>
-					{uploading && (
-						<div
-							className="absolute top-0 left-0 h-full bg-gray-400 transition-all duration-300 ease-linear"
-							style={{
-								width: `${progress}%`,
-								opacity: 0.5,
-								pointerEvents: "none",
-							}}
-						/>
+			{/* Info Message */}
+			<p
+				className={`mt-2 flex text-13 leading-[150%] tracking-normal text-gray-600 ${
+					!isFileUploaded ? "flex-wrap" : ""
+				}`}
+			>
+				<figure className="mr-2 shrink-0">
+					<InfoIcon />
+				</figure>
+				<span className="items-center">
+					{!isFileUploaded ? (
+						<>
+							<span>Export a CSV from</span>
+							<a
+								className="ml-1 underline"
+								href="https://app.raindrop.io/settings/backups"
+								rel="noopener noreferrer"
+								target="_blank"
+							>
+								Raindrop
+							</a>
+						</>
+					) : (
+						<>
+							<span>Please add your own AI</span>
+							<a
+								className="ml-1 underline"
+								href="https://makersuite.google.com/app/apikey"
+								rel="noopener noreferrer"
+								target="_blank"
+							>
+								API key
+							</a>
+							<span className="ml-1">
+								as the free account only adds AI optimisation for the first 1000
+								bookmarks
+							</span>
+						</>
 					)}
-					<span className="relative z-10 text-center">
-						{imported
-							? "Imported Successfully!"
-							: uploading
-								? "Importing..."
-								: "Import CSV"}
-					</span>
-				</Button>
-			</div>
-
-			{statusMessage && (
-				<p className="mt-3 text-center text-sm text-gray-600">
-					{statusMessage}
-				</p>
-			)}
+				</span>
+			</p>
 		</div>
 	);
 };
