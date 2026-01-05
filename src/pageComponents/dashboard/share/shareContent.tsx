@@ -78,7 +78,7 @@ const AccessUserInfo = (props: {
 			if (isLoggedinUserTheOwner) {
 				return (
 					<AriaSelect
-						defaultValue={item.edit_access ? "Can Edit" : "Can View"}
+						defaultValue={item.edit_access ? "Editor" : "Viewer"}
 						onOptionClick={async (value) => {
 							if (value !== "No Access") {
 								const response = (await mutationApiCall(
@@ -86,7 +86,7 @@ const AccessUserInfo = (props: {
 										id: item.share_id as number,
 										updateData: {
 											edit_access: Boolean(
-												Number.parseInt(value === "Can Edit" ? "1" : "0", 10),
+												Number.parseInt(value === "Editor" ? "1" : "0", 10),
 											),
 										},
 									}),
@@ -104,14 +104,14 @@ const AccessUserInfo = (props: {
 							}
 						}}
 						options={[
-							{ label: "Can Edit", value: "Can Edit" },
-							{ label: "Can View", value: "Can View" },
+							{ label: "Editor", value: "Editor" },
+							{ label: "Viewer", value: "Viewer" },
 							{ label: "No Access", value: "No Access" },
 						]}
 						renderCustomSelectButton={() => (
 							<div className="flex items-center">
 								<p className="mr-1 text-gray-800">
-									{item.edit_access ? "Can Edit" : "Can View"}
+									{item.edit_access ? "Editor" : "Viewer"}
 								</p>
 								<figure>
 									<DownArrowGray />
@@ -123,7 +123,7 @@ const AccessUserInfo = (props: {
 			} else {
 				return (
 					<div className={rightTextStyles}>
-						{item.edit_access ? "Can Edit" : "Can View"}
+						{item.edit_access ? "Editor" : "Viewer"}
 					</div>
 				);
 			}
