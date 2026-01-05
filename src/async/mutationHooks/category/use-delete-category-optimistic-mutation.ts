@@ -1,55 +1,37 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useSupabaseSession } from "../../../store/componentStore";
-import {
-	type CategoriesData,
-	type ProfilesTableTypes,
-} from "../../../types/apiTypes";
+import { type CategoriesData } from "../../../types/apiTypes";
 import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
-import { updateCategoryOrder } from "../../supabaseCrudHelpers";
+import { deleteUserCategory } from "../../supabaseCrudHelpers";
 
-// update collection order optimistically
-export default function useUpdateCategoryOrderOptimisticMutation() {
+// deletes a category optimistically
+export function useDeleteCategoryOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
 
-	const updateCategoryOrderMutation = useMutation({
-		mutationFn: updateCategoryOrder,
+	const deleteCategoryOptimisticMutation = useMutation({
+		mutationFn: deleteUserCategory,
 		onMutate: async (data) => {
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-			await queryClient.cancelQueries({
-				queryKey: [USER_PROFILE, session?.user?.id],
-			});
 			await queryClient.cancelQueries({
 				queryKey: [CATEGORIES_KEY, session?.user?.id],
 			});
 
 			// Snapshot the previous value
 			const previousData = queryClient.getQueryData([
-				USER_PROFILE,
+				CATEGORIES_KEY,
 				session?.user?.id,
 			]);
 
-			const newOrder = data?.order;
-
 			// Optimistically update to the new value
 			queryClient.setQueryData(
-				[USER_PROFILE, session?.user?.id],
-				(old: { data: ProfilesTableTypes[] } | undefined) =>
+				[CATEGORIES_KEY, session?.user?.id],
+				(old: { data: CategoriesData[] } | undefined) =>
 					({
 						...old,
-
-						data: old?.data?.map((item) => {
-							if (item.id === session?.user?.id) {
-								return {
-									...item,
-									category_order: newOrder,
-								};
-							} else {
-								return item;
-							}
-						}),
-					}) as { data: ProfilesTableTypes[] },
+						data: old?.data?.filter((item) => item?.id !== data?.category_id),
+					}) as { data: CategoriesData[] },
 			);
 
 			// Return a context object with the snapshotted value
@@ -58,11 +40,20 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (context: { previousData: CategoriesData }) => {
 			queryClient.setQueryData(
-				[USER_PROFILE, session?.user?.id],
+				[CATEGORIES_KEY, session?.user?.id],
 				context?.previousData,
 			);
 		},
+		// Always refetch after error or success:
+		onSettled: () => {
+			void queryClient.invalidateQueries({
+				queryKey: [CATEGORIES_KEY, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [USER_PROFILE, session?.user?.id],
+			});
+		},
 	});
 
-	return { updateCategoryOrderMutation };
+	return { deleteCategoryOptimisticMutation };
 }

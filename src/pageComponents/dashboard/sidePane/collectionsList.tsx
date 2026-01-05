@@ -34,7 +34,7 @@ import {
 	type ListState,
 } from "react-stately";
 
-import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import { useUpdateCategoryOrderOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-order-optimistic-mutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
