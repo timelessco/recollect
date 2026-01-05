@@ -2,14 +2,8 @@ import { isEmpty } from "lodash";
 
 import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
 import {
-	addCategoriesToBookmarkByName,
-	fetchUniqueCategoriesWithNameAndId,
-} from "@/lib/api-helpers/instagram/add-categories-to-bookmark";
-import {
 	InstagramSyncBookmarksPayloadSchema,
 	InstagramSyncBookmarksResponseSchema,
-	type InstagramMetaData,
-	type InstagramMetaDataWithCollections,
 } from "@/lib/api-helpers/instagram/schemas";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
@@ -107,77 +101,30 @@ export const POST = createSupabasePostApiHandler({
 			});
 		}
 
-		// Add bookmarks to collections if saved_collection_names is provided in meta_data
-		// Filter validates that collectionNames exists, is an array, and has length > 0
-		// All bookmarks in bookmarksWithCollections are guaranteed to have valid collection names
-		const bookmarksWithCollections = insertDBData.filter((bookmark) => {
-			const metaData = bookmark.meta_data as InstagramMetaData;
-			const collectionNames = metaData?.saved_collection_names;
-			return (
-				collectionNames &&
-				Array.isArray(collectionNames) &&
-				collectionNames.length > 0
-			);
-		});
-
-		if (bookmarksWithCollections.length > 0) {
-			const bookmarksWithMetaData = bookmarksWithCollections.map(
-				(bookmark) => ({
-					meta_data: bookmark.meta_data as InstagramMetaDataWithCollections,
-				}),
-			);
-
-			const {
-				uniqueCategoriesWithNameAndId,
-				error: fetchUniqueCategoriesWithNameAndIdError,
-			} = await fetchUniqueCategoriesWithNameAndId({
-				bookmarks: bookmarksWithMetaData,
-				route,
-				supabase,
-				userId,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const pgmqSupabase = (supabase as any).schema("pgmq_public");
+		const { data: queueResults, error: queueResultsError } =
+			await pgmqSupabase.rpc("send_batch", {
+				queue_name: "imports",
+				messages: insertDBData,
+				sleep_seconds: 0,
 			});
 
-			if (fetchUniqueCategoriesWithNameAndIdError) {
-				return apiError({
-					route,
-					message: "Failed to fetch unique categories with name and id",
-					error: fetchUniqueCategoriesWithNameAndIdError,
-					operation: "fetch_unique_categories_with_name_and_id",
-					userId,
-				});
-			}
+		if (queueResultsError) {
+			console.warn(`[${route}] Failed to queue item:`, queueResultsError);
 
-			const bookmarksWithMetaDataAndId = bookmarksWithCollections.map(
-				(bookmark) => ({
-					id: bookmark.id,
-					meta_data: bookmark.meta_data as InstagramMetaData,
-				}),
-			);
-			// Bulk add bookmarks to categories
-			const { error: addCategoriesToBookmarkByNameError } =
-				await addCategoriesToBookmarkByName({
-					bookmarks: bookmarksWithMetaDataAndId,
-					route,
-					supabase,
-					uniqueCategoriesWithNameAndId,
-					userId,
-				});
-
-			if (addCategoriesToBookmarkByNameError) {
-				return apiError({
-					route,
-					message: "Failed to add bookmarks to categories",
-					error: addCategoriesToBookmarkByNameError,
-					operation: "add_bookmarks_to_categories",
-					userId,
-				});
-			}
-
-			console.log(
-				`[${route}] Successfully added ${bookmarksWithCollections.length} bookmarks to categories`,
-			);
+			return apiError({
+				route,
+				message: "Failed to queue item",
+				error: queueResultsError,
+				operation: "queue_embeddings",
+				userId,
+			});
 		}
 
+		console.log(
+			`[${route}] Successfully queued ${queueResults.length} items for adding categories`,
+		);
 		try {
 			// Type assertion needed because pgmq_public schema is not in the Database type
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -203,7 +150,7 @@ export const POST = createSupabasePostApiHandler({
 
 			const queueResultsArray = Array.isArray(queueResults) ? queueResults : [];
 			console.log(
-				`[${route}] Successfully queued ${queueResultsArray.length} items`,
+				`[${route}] Successfully queued ${queueResultsArray.length} items for ai-embeddings`,
 			);
 		} catch (error) {
 			console.error(`[${route}] Failed to queue item:`, error);
