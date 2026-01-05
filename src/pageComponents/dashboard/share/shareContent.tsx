@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import { useUpdateCategoryMutation } from "../../../async/mutationHooks/category/use-update-category-mutation";
+import { useUpdateCategoryMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";

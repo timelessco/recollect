@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
 
-import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-mutation";
-import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-mutation";
-import { useRemoveTagFromBookmarkMutation } from "@/async/mutationHooks/tags/use-remove-tag-from-bookmark-mutation";
+import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
+import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
+import { useRemoveTagFromBookmarkMutation } from "@/async/mutationHooks/tags/use-remove-tag-from-bookmark-optimistic-mutation";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Combobox } from "@/components/ui/recollect/combobox";

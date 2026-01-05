@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import isEmpty from "lodash/isEmpty";
 
-import { useUpdateCategoryMutation } from "../../../async/mutationHooks/category/use-update-category-mutation";
+import { useUpdateCategoryMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import ToolTip from "../../../components/tooltip";
 import GlobeIcon from "../../../icons/globeIcon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";

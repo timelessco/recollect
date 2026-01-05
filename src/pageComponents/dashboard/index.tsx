@@ -18,7 +18,7 @@ import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmark
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import { useUpdateCategoryMutation } from "../../async/mutationHooks/category/use-update-category-mutation";
+import { useUpdateCategoryMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";

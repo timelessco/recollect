@@ -8,7 +8,7 @@ import {
 } from "ariakit/combobox";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 
-import { useUpdateCategoryMutation } from "../../async/mutationHooks/category/use-update-category-mutation";
+import { useUpdateCategoryMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
 import { iconOptions } from "../../utils/commonData";
 import { colorPickerColors } from "../../utils/constants";

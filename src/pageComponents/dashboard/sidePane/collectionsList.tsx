@@ -78,8 +78,8 @@ import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
-import { useAddCategoryMutation } from "@/async/mutationHooks/category/use-add-category-mutation";
-import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-mutation";
+import { useAddCategoryMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
+import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { handleClientError } from "@/utils/error-utils/client";
 

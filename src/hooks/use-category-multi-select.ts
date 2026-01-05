@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-mutation";
-import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-mutation";
+import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-optimistic-mutation";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { useBookmarkCategories } from "@/hooks/use-bookmark-categories";
 import { type CategoriesData } from "@/types/apiTypes";
