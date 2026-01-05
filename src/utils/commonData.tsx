@@ -24,7 +24,7 @@ import {
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "./constants";
-import { DiscoverIcon } from "@/icons/discover-Icon";
+import { DiscoverIcon } from "@/icons/discover-icon";
 
 // TODO: check if this is needed (for code cleanup)
 const object = [

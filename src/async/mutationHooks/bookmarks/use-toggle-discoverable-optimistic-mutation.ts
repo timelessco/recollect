@@ -1,114 +1,47 @@
-import { addBreadcrumb } from "@sentry/nextjs";
-import { type QueryKey } from "@tanstack/react-query";
-
-import { type ToggleBookmarkDiscoverablePayload } from "../../../app/api/bookmark/toggle-discoverable-on-bookmark/route";
-import useDebounce from "../../../hooks/useDebounce";
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../../store/componentStore";
-import {
-	type BookmarksPaginatedDataTypes,
-	type SingleListData,
-} from "../../../types/apiTypes";
-import {
-	BOOKMARKS_KEY,
-	DISCOVER_URL,
-	NEXT_API_URL,
-	TOGGLE_BOOKMARK_DISCOVERABLE_API,
-} from "../../../utils/constants";
-
+	type ToggleBookmarkDiscoverablePayload,
+	type ToggleBookmarkDiscoverableResponse,
+} from "@/app/api/bookmark/toggle-discoverable-on-bookmark/route";
+import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
+import { type BookmarksPaginatedDataTypes } from "@/types/apiTypes";
+import {
+	BOOKMARKS_KEY,
+	NEXT_API_URL,
+	TOGGLE_BOOKMARK_DISCOVERABLE_API,
+} from "@/utils/constants";
+import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
-const updateBookmarkPages = (
-	oldData: BookmarksPaginatedDataTypes | undefined,
-	bookmarkId: number,
-	makeDiscoverable: boolean,
-): BookmarksPaginatedDataTypes | undefined => {
-	if (!oldData) {
-		if (process.env.NODE_ENV === "development") {
-			console.warn(
-				`[Optimistic Update] Cache miss on discoverable toggle for bookmark ${bookmarkId}.`,
-				{
-					bookmarkId,
-					makeDiscoverable,
-				},
-			);
-		}
-
-		addBreadcrumb({
-			category: "optimistic-update",
-			message: "Cache miss on discoverable toggle",
-			level: "warning",
-			data: {
-				bookmarkId,
-				makeDiscoverable,
-			},
-		});
-		return oldData;
-	}
-
-	return {
-		...oldData,
-		pages: oldData.pages.map((page) => ({
-			...page,
-			data: page.data?.map((item) =>
-				item?.id === bookmarkId
-					? {
-							...item,
-							make_discoverable: makeDiscoverable ? "pending" : null,
-						}
-					: item,
-			),
-		})),
-	};
-};
-
-export const useToggleDiscoverableOptimisticMutation = () => {
-	const session = useSupabaseSession((state) => state.session);
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const { sortBy } = useGetSortBy();
-	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearch = useDebounce(searchText, 500);
-
-	// Primary query key for regular bookmarks
-	const queryKey: QueryKey = [
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		CATEGORY_ID,
-		sortBy,
-	];
-
-	// Secondary query key for search results (if searching)
-	const secondaryQueryKey: QueryKey | null = debouncedSearch
-		? [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch]
-		: null;
+export function useToggleDiscoverableOptimisticMutation() {
+	const { queryKey, searchQueryKey } = useBookmarkMutationContext();
 
 	const toggleDiscoverableMutation = useReactQueryOptimisticMutation<
-		{ data: unknown; error: unknown },
+		ToggleBookmarkDiscoverableResponse,
 		Error,
 		ToggleBookmarkDiscoverablePayload,
-		QueryKey,
+		typeof queryKey,
 		BookmarksPaginatedDataTypes
 	>({
 		mutationFn: (variables) =>
-			postApi<{ data: SingleListData; error: Error | null }>(
+			postApi<ToggleBookmarkDiscoverableResponse>(
 				`${NEXT_API_URL}${TOGGLE_BOOKMARK_DISCOVERABLE_API}`,
 				variables,
 			),
 		queryKey,
-		secondaryQueryKey,
+		secondaryQueryKey: searchQueryKey,
 		updater: (currentData, variables) =>
-			updateBookmarkPages(
+			updateBookmarkInPaginatedData(
 				currentData,
 				variables.bookmark_id,
-				variables.make_discoverable,
+				(bookmark) => {
+					bookmark.make_discoverable = variables.make_discoverable
+						? "pending"
+						: null;
+				},
 			) as BookmarksPaginatedDataTypes,
-		invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
+		invalidates: [[BOOKMARKS_KEY]],
 	});
 
 	return { toggleDiscoverableMutation };
-};
+}

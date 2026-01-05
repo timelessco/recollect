@@ -5,7 +5,7 @@ import { apiError } from "@/lib/api-helpers/response";
 import { createApiClient } from "@/lib/supabase/api";
 import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "@/utils/constants";
 
-const ROUTE = "fetch-discoverable-bookmarks";
+const ROUTE = "fetch-bookmarks-discoverable";
 
 const FetchDiscoverBookmarksQuerySchema = z.object({
 	page: z.coerce.number().int().nonnegative(),
@@ -45,9 +45,9 @@ const DiscoverableBookmarkRowSchema = z.object({
 	make_discoverable: z.string().nullable(),
 });
 
-const FetchDiscoverBookmarksResponseSchema = z
-	.array(DiscoverableBookmarkRowSchema)
-	.nullable();
+const FetchDiscoverBookmarksResponseSchema = z.array(
+	DiscoverableBookmarkRowSchema,
+);
 
 const getRange = (page: number) => {
 	const rangeStart = page * PAGINATION_LIMIT;
@@ -95,7 +95,7 @@ export const GET = createGetApiHandler({
 		}
 
 		console.log(`[${route}] Discoverable bookmarks fetched successfully:`, {
-			count: data?.length ?? 0,
+			count: data.length,
 		});
 
 		return data;

@@ -1,10 +1,8 @@
-import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { type SingleListData } from "@/types/apiTypes";
-import { isNullable } from "@/utils/assertion-utils";
+import { isNonEmptyArray, isNullable } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
 
@@ -32,14 +30,16 @@ export type ToggleBookmarkDiscoverablePayload = z.infer<
 	typeof ToggleBookmarkDiscoverablePayloadSchema
 >;
 
-// Response schema - validates array of bookmark objects
-const ToggleBookmarkDiscoverableResponseSchema = z.array(z.any());
+const ToggleBookmarkDiscoverableResponseSchema = z.object({
+	id: z.number(),
+	make_discoverable: z.string().nullable(),
+});
 
 export type ToggleBookmarkDiscoverableResponse = z.infer<
 	typeof ToggleBookmarkDiscoverableResponseSchema
 >;
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: ToggleBookmarkDiscoverablePayloadSchema,
 	outputSchema: ToggleBookmarkDiscoverableResponseSchema,
@@ -110,7 +110,7 @@ export const POST = createSupabasePostApiHandler({
 			});
 		}
 
-		if (isEmpty(updatedData)) {
+		if (!isNonEmptyArray(updatedData)) {
 			return apiWarn({
 				route,
 				message: "Bookmark not found or you lack permission",
@@ -130,6 +130,6 @@ export const POST = createSupabasePostApiHandler({
 			},
 		);
 
-		return updatedData as unknown as SingleListData[];
+		return updatedData[0];
 	},
 });

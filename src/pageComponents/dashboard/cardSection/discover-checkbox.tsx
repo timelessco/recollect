@@ -25,11 +25,11 @@ export const DiscoverCheckbox = ({
 			{/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
 			<label className="flex cursor-pointer items-center gap-2">
 				<Checkbox
-					id={`discover-checkbox-${bookmarkId}`}
 					checked={isDiscoverable}
 					onCheckedChange={handleCheckedChange}
 					className="flex size-4 items-center justify-center rounded border-2 border-gray-400 data-checked:border-gray-800 data-checked:bg-gray-800 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-plain data-checked:[&_svg]:text-gray-200"
 				/>
+
 				<span className="text-sm font-medium text-gray-800">
 					Make discoverable
 				</span>
