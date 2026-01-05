@@ -320,6 +320,20 @@ export type Database = {
 					out_category_id: number;
 				}>;
 			};
+			create_and_assign_tag: {
+				Args: { p_bookmark_id: number; p_tag_name: string };
+				Returns: Array<{
+					bookmark_tag_bookmark_id: number;
+					bookmark_tag_created_at: string;
+					bookmark_tag_id: number;
+					bookmark_tag_tag_id: number;
+					bookmark_tag_user_id: string;
+					tag_created_at: string;
+					tag_id: number;
+					tag_name: string;
+					tag_user_id: string;
+				}>;
+			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{

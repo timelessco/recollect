@@ -90,9 +90,9 @@ export const TOGGLE_BOOKMARK_DISCOVERABLE_API =
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
-export const CREATE_USER_TAGS_API = "/tags/create-user-tags";
 export const ADD_TAG_TO_BOOKMARK_API = "/tags/add-tag-to-bookmark";
 export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
+export const CREATE_AND_ASSIGN_TAG_API = "/tags/create-and-assign-tag";
 // category api
 export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
@@ -189,7 +189,7 @@ export const GET_API_KEY_KEY = "get_api_key";
 export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
 	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
-	"You already have a category with this name , please add any other name";
+	"You already have a category with this name. Please use a different name.";
 export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
 // accepted file type constants
@@ -413,7 +413,7 @@ export const PUBLIC_PATHS = new Set(["/error", "/public"]);
 export const isPublicPath = (pathname: string) =>
 	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
 
-export const MAX_TAG_NAME_LENGTH = 20;
-export const MIN_TAG_NAME_LENGTH = 1;
+export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
+export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
 export const WHITE_COLOR = colorPickerColors[0];
 export const BLACK_COLOR = colorPickerColors[1];

@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import { produce } from "immer";
 
 import {
 	type AddCategoryToBookmarksPayload,
@@ -8,6 +8,7 @@ import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-contex
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
+import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
 	ADD_CATEGORY_TO_BOOKMARKS_API,
 	BOOKMARKS_COUNT_KEY,
@@ -57,40 +58,32 @@ export function useAddCategoryToBookmarksMutation() {
 
 			// If category not in cache, skip optimistic update and wait for server response
 			if (!newCategoryEntry) {
-				if (process.env.NODE_ENV === "development") {
-					console.warn(
-						`[Optimistic Update] Category ${variables.category_id} not found in cache.`,
-						{
-							bookmarkIds: variables.bookmark_ids,
-							categoryId: variables.category_id,
-						},
-					);
-				}
-
-				Sentry.addBreadcrumb({
-					category: "optimistic-update",
-					message: "Category not found in cache (bulk operation)",
-					level: "warning",
-					data: {
+				logCacheMiss(
+					"Optimistic Update",
+					"Category not found in cache (bulk operation)",
+					{
 						bookmarkIds: variables.bookmark_ids,
 						categoryId: variables.category_id,
 					},
-				});
+				);
 				return currentData;
 			}
 
 			// Create Set for O(1) lookup
 			const bookmarkIdSet = new Set(variables.bookmark_ids);
+			const isAddingRealCategory =
+				variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
 
-			// Update all matching bookmarks across all pages
-			return {
-				...currentData,
-				pages: currentData.pages.map((page) => ({
-					...page,
-					data: page.data.map((bookmark) => {
+			return produce(currentData, (draft) => {
+				for (const page of draft.pages) {
+					if (!page?.data) {
+						continue;
+					}
+
+					for (const bookmark of page.data) {
 						// Skip if not in selection
 						if (!bookmarkIdSet.has(bookmark.id)) {
-							return bookmark;
+							continue;
 						}
 
 						// Check if already has category
@@ -98,29 +91,24 @@ export function useAddCategoryToBookmarksMutation() {
 						const alreadyHasCategory = existingCategories.some(
 							(cat) => cat.id === variables.category_id,
 						);
-
-						// Skip if already has
 						if (alreadyHasCategory) {
-							return bookmark;
+							continue;
 						}
 
 						// EXCLUSIVE MODEL: When adding a real category, filter out category 0
-						const isAddingRealCategory =
-							variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
 						const filteredCategories = isAddingRealCategory
 							? existingCategories.filter(
 									(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
 								)
 							: existingCategories;
 
-						// Add category
-						return {
-							...bookmark,
-							addedCategories: [...filteredCategories, newCategoryEntry],
-						};
-					}),
-				})),
-			};
+						bookmark.addedCategories = [
+							...filteredCategories,
+							newCategoryEntry,
+						];
+					}
+				}
+			});
 		},
 		onSettled: (_data, error) => {
 			if (error) {
