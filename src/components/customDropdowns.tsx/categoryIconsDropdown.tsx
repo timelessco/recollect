@@ -28,7 +28,8 @@ type CategoryIconsDropdownTypes = {
 const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	const { iconValue, iconColor, buttonIconSize = 20, iconId } = props;
 
-	const { updateCategoryOptimisticMutation } = useUpdateCategoryOptimisticMutation();
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
 
 	// const [hsva, setHsva] = useState({ h: 0, s: 0, v: 289, a: 1 });
 	const [color, setColor] = useState(iconColor);

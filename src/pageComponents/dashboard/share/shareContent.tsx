@@ -190,7 +190,8 @@ const ShareContent = (props: ShareContentProps) => {
 	const dynamicCategoryId =
 		props.categoryId ?? shareCategoryId ?? currentCategoryId;
 
-	const { updateCategoryOptimisticMutation } = useUpdateCategoryOptimisticMutation();
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
 
 	const { sendCollaborationEmailInviteMutation } =
 		useSendCollaborationEmailInviteMutation();

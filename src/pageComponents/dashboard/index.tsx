@@ -171,7 +171,8 @@ const Dashboard = () => {
 
 	const { onDeleteCollection } = useDeleteCollection();
 
-	const { updateCategoryOptimisticMutation } = useUpdateCategoryOptimisticMutation();
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
 
 	// share category mutation
 

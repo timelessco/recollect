@@ -93,7 +93,8 @@ const NavBarHeadingInput = (props: NavBarHeadingInputProps) => {
 		setShowHeadingInput,
 	} = props;
 
-	const { updateCategoryOptimisticMutation } = useUpdateCategoryOptimisticMutation();
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
 
 	const updateCategoryName = (categoryId: number, name: string) => {
 		updateCategoryOptimisticMutation.mutate({

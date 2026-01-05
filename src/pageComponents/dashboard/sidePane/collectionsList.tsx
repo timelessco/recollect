@@ -302,7 +302,8 @@ const CollectionsList = () => {
 		useState(false);
 
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
-	const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
+	const { addCategoryToBookmarkOptimisticMutation } =
+		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
 	const { allCategories, isLoadingCategories } = useFetchCategories();
@@ -670,8 +671,8 @@ const CollectionsList = () => {
 										showDropdown
 										showSpinner={
 											addCategoryToBookmarkOptimisticMutation.isPending &&
-											addCategoryToBookmarkOptimisticMutation.variables?.category_id ===
-												item?.id
+											addCategoryToBookmarkOptimisticMutation.variables
+												?.category_id === item?.id
 										}
 									/>
 								</Item>

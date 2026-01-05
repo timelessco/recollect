@@ -89,9 +89,12 @@ type TagMultiSelectProps = {
 
 export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 	const { userTags } = useFetchUserTags();
-	const { addTagToBookmarkOptimisticMutation } = useAddTagToBookmarkOptimisticMutation();
-	const { removeTagFromBookmarkOptimisticMutation } = useRemoveTagFromBookmarkOptimisticMutation();
-	const { createAndAssignTagOptimisticMutation } = useCreateAndAssignTagOptimisticMutation();
+	const { addTagToBookmarkOptimisticMutation } =
+		useAddTagToBookmarkOptimisticMutation();
+	const { removeTagFromBookmarkOptimisticMutation } =
+		useRemoveTagFromBookmarkOptimisticMutation();
+	const { createAndAssignTagOptimisticMutation } =
+		useCreateAndAssignTagOptimisticMutation();
 
 	const selectedTagIds = useBookmarkTags(bookmarkId);
 	const allTags = useMemo(() => userTags?.data ?? [], [userTags?.data]);

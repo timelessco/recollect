@@ -16,53 +16,54 @@ export function useRemoveTagFromBookmarkOptimisticMutation() {
 	const { queryClient, session, queryKey, searchQueryKey } =
 		useBookmarkMutationContext();
 
-	const removeTagFromBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
-		RemoveTagFromBookmarkResponse,
-		Error,
-		RemoveTagFromBookmarkPayload,
-		typeof queryKey,
-		PaginatedBookmarks
-	>({
-		mutationFn: (payload) =>
-			postApi<RemoveTagFromBookmarkResponse>(
-				`/api${REMOVE_TAG_FROM_BOOKMARK_API}`,
-				payload,
-			),
-		queryKey,
-		secondaryQueryKey: searchQueryKey,
+	const removeTagFromBookmarkOptimisticMutation =
+		useReactQueryOptimisticMutation<
+			RemoveTagFromBookmarkResponse,
+			Error,
+			RemoveTagFromBookmarkPayload,
+			typeof queryKey,
+			PaginatedBookmarks
+		>({
+			mutationFn: (payload) =>
+				postApi<RemoveTagFromBookmarkResponse>(
+					`/api${REMOVE_TAG_FROM_BOOKMARK_API}`,
+					payload,
+				),
+			queryKey,
+			secondaryQueryKey: searchQueryKey,
 
-		updater: (currentData, variables) => {
-			if (!currentData?.pages) {
-				return currentData as PaginatedBookmarks;
-			}
+			updater: (currentData, variables) => {
+				if (!currentData?.pages) {
+					return currentData as PaginatedBookmarks;
+				}
 
-			return (
-				updateBookmarkInPaginatedData(
-					currentData,
-					variables.bookmarkId,
-					(bookmark) => {
-						bookmark.addedTags = bookmark.addedTags?.filter(
-							(tag) => tag.id !== variables.tagId,
-						);
-					},
-				) ?? currentData
-			);
-		},
+				return (
+					updateBookmarkInPaginatedData(
+						currentData,
+						variables.bookmarkId,
+						(bookmark) => {
+							bookmark.addedTags = bookmark.addedTags?.filter(
+								(tag) => tag.id !== variables.tagId,
+							);
+						},
+					) ?? currentData
+				);
+			},
 
-		onSettled: (_data, error) => {
-			if (error) {
-				return;
-			}
+			onSettled: (_data, error) => {
+				if (error) {
+					return;
+				}
 
-			// Invalidate ALL bookmark queries for user (covers all collections)
-			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_KEY, session?.user?.id],
-			});
-		},
+				// Invalidate ALL bookmark queries for user (covers all collections)
+				void queryClient.invalidateQueries({
+					queryKey: [BOOKMARKS_KEY, session?.user?.id],
+				});
+			},
 
-		showSuccessToast: true,
-		successMessage: "Tag removed",
-	});
+			showSuccessToast: true,
+			successMessage: "Tag removed",
+		});
 
 	return { removeTagFromBookmarkOptimisticMutation };
 }
