@@ -72,7 +72,7 @@ export async function processImportsQueue(
 				// archive message if max retries exceeded
 				if (read_ct > MAX_RETRIES) {
 					console.log(
-						`[${ROUTE}] Deleting message from queue (max retries exceeded)`,
+						`[${ROUTE}] Archiving message from queue (max retries exceeded)`,
 						message,
 					);
 
