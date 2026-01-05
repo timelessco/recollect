@@ -176,28 +176,19 @@ type ParseQueryProps<T> = {
 /**
  * Parse and validate query parameters against a Zod schema.
  * Returns discriminated union for type narrowing (same pattern as parseBody).
- * Query parameters are passed as strings, so use z.coerce.* or z.string() in your schema.
+ * Query parameters are strings - use z.coerce.* for numeric values.
  */
 export function parseQuery<T>({
 	request,
 	schema,
 	route,
 }: ParseQueryProps<T>): ParseQueryResult<T> {
-	const { searchParams } = new URL(request.url);
-	const queryObject: Record<string, string | undefined> = {};
+	const searchParams = request.nextUrl.searchParams;
+	const params = Object.fromEntries(searchParams.entries());
 
-	// Convert URLSearchParams to object
-	// Note: searchParams.get() returns null if not found, but we use undefined
-	// to match typical query param handling patterns
-	for (const key of searchParams.keys()) {
-		const value = searchParams.get(key);
-		queryObject[key] = value ?? undefined;
-	}
-
-	const parsed = schema.safeParse(queryObject);
+	const parsed = schema.safeParse(params);
 
 	if (!parsed.success) {
-		// Use first Zod error message for user-friendly display
 		const firstError = parsed.error.issues[0];
 		const userMessage = firstError?.message || "Invalid query parameters";
 
