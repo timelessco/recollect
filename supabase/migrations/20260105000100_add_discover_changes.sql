@@ -8,7 +8,9 @@
 --   1. Adds make_discoverable column to everything table
 --   2. Updates search_bookmarks_url_tag_scope RPC to return new column
 --   3. Creates RLS policies for anonymous and authenticated discover access
---   4. Creates performance indexes for discoverability queries
+--
+-- NOTE: Indexes are intentionally not created here to avoid table locks.
+-- Add indexes later if performance monitoring shows need.
 --
 -- ============================================================================
 
@@ -238,28 +240,7 @@ COMMENT ON POLICY "authenticated_discover_access" ON public.everything IS
 'Allows authenticated users to read bookmarks marked as discoverable and not in trash.';
 
 -- ============================================================================
--- PART 4: Create performance indexes
--- ============================================================================
-
--- 1. Create indexes for RLS policy lookups
-CREATE INDEX IF NOT EXISTS idx_everything_make_discoverable ON public.everything (make_discoverable);
-
-COMMENT ON INDEX public.idx_everything_make_discoverable IS
-'Index for filtering bookmarks by discoverability status. Supports RLS policies for discover access.';
-
-CREATE INDEX IF NOT EXISTS idx_everything_trash ON public.everything (trash);
-
-COMMENT ON INDEX public.idx_everything_trash IS
-'Index for filtering bookmarks by trash status. Supports queries excluding trashed bookmarks.';
-
--- 2. Composite partial index for discoverable bookmarks (most efficient for RLS policy)
-CREATE INDEX IF NOT EXISTS idx_everything_discoverable_trash ON public.everything (make_discoverable, trash) WHERE make_discoverable IS NOT NULL AND trash = false;
-
-COMMENT ON INDEX public.idx_everything_discoverable_trash IS
-'Partial composite index for discoverable non-trashed bookmarks. Optimized for RLS policy evaluation on discover access queries.';
-
--- ============================================================================
--- PART 5: Post-migration verification
+-- PART 4: Post-migration verification
 -- ============================================================================
 
 DO $$

@@ -54,38 +54,14 @@ export const POST = createPostApiHandlerWithAuth({
 			makeDiscoverable,
 		});
 
-		// Pre-check: Fetch bookmark to validate trash status
-		const { data: bookmark, error: fetchError } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.select("trash")
-			.eq("id", bookmarkId)
-			.eq("user_id", userId)
-			.single();
-
-		if (fetchError || !bookmark) {
-			return apiWarn({
-				route,
-				message: "Bookmark not found or you lack permission",
-				status: HttpStatus.NOT_FOUND,
-				context: {
-					bookmarkId,
-					userId,
-				},
-			});
-		}
-
-		// Prevent making trashed bookmarks discoverable
-		if (bookmark.trash && makeDiscoverable) {
-			return apiWarn({
-				route,
-				message:
-					"Cannot make trashed bookmarks discoverable. Restore the bookmark first.",
-				status: HttpStatus.BAD_REQUEST,
-				context: {
-					bookmarkId,
-					userId,
-				},
-			});
+		// Build match conditions - atomic update prevents TOCTOU race condition
+		// Only require trash: false when making discoverable (removing discoverability is always safe)
+		const matchConditions: Record<string, unknown> = {
+			id: bookmarkId,
+			user_id: userId,
+		};
+		if (makeDiscoverable) {
+			matchConditions.trash = false;
 		}
 
 		const { data: updatedData, error } = await supabase
@@ -93,7 +69,7 @@ export const POST = createPostApiHandlerWithAuth({
 			.update({
 				make_discoverable: makeDiscoverable ? new Date().toISOString() : null,
 			})
-			.match({ id: bookmarkId, user_id: userId })
+			.match(matchConditions)
 			.select();
 
 		if (error) {
@@ -113,8 +89,10 @@ export const POST = createPostApiHandlerWithAuth({
 		if (!isNonEmptyArray(updatedData)) {
 			return apiWarn({
 				route,
-				message: "Bookmark not found or you lack permission",
-				status: HttpStatus.NOT_FOUND,
+				message: makeDiscoverable
+					? "Bookmark not found, you lack permission, or bookmark is trashed"
+					: "Bookmark not found or you lack permission",
+				status: HttpStatus.BAD_REQUEST,
 				context: {
 					bookmarkId,
 					userId,

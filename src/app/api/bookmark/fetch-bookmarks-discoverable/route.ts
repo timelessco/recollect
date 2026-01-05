@@ -30,7 +30,6 @@ const MetadataSchema = z.object({
 
 const DiscoverableBookmarkRowSchema = z.object({
 	id: z.number(),
-	user_id: z.string(),
 	inserted_at: z.string(),
 	title: z.string().nullable(),
 	url: z.string().nullable(),
@@ -74,7 +73,23 @@ export const GET = createGetApiHandler({
 
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
-			.select("*")
+			.select(
+				`
+				id,
+				inserted_at,
+				title,
+				url,
+				description,
+				ogImage,
+				screenshot,
+				category_id,
+				trash,
+				type,
+				meta_data,
+				sort_index,
+				make_discoverable
+			`,
+			)
 			.eq("trash", false)
 			.not("make_discoverable", "is", null)
 			.order("make_discoverable", { ascending: false })

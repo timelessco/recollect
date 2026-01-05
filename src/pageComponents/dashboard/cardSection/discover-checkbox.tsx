@@ -10,11 +10,11 @@ export const DiscoverCheckbox = ({
 	bookmarkId,
 	isDiscoverable,
 }: DiscoverableCheckboxProps) => {
-	const { toggleDiscoverableMutation } =
+	const { toggleDiscoverableOptimisticMutation } =
 		useToggleDiscoverableOptimisticMutation();
 
 	const handleCheckedChange = (checked: boolean) => {
-		toggleDiscoverableMutation.mutate({
+		toggleDiscoverableOptimisticMutation.mutate({
 			bookmark_id: bookmarkId,
 			make_discoverable: checked,
 		});

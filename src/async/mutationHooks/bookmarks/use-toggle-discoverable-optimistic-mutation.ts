@@ -16,7 +16,7 @@ import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 export function useToggleDiscoverableOptimisticMutation() {
 	const { queryKey, searchQueryKey } = useBookmarkMutationContext();
 
-	const toggleDiscoverableMutation = useReactQueryOptimisticMutation<
+	const toggleDiscoverableOptimisticMutation = useReactQueryOptimisticMutation<
 		ToggleBookmarkDiscoverableResponse,
 		Error,
 		ToggleBookmarkDiscoverablePayload,
@@ -43,5 +43,5 @@ export function useToggleDiscoverableOptimisticMutation() {
 		invalidates: [[BOOKMARKS_KEY]],
 	});
 
-	return { toggleDiscoverableMutation };
+	return { toggleDiscoverableOptimisticMutation };
 }

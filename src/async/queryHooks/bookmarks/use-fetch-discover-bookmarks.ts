@@ -20,10 +20,10 @@ export const useFetchDiscoverBookmarks = () => {
 	} = useInfiniteQuery({
 		queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
 		queryFn: async ({ pageParam }) => {
-			const data = await getApi<SingleListData[] | null>(
+			const data = await getApi<SingleListData[]>(
 				`${NEXT_API_URL}${FETCH_BOOKMARKS_DISCOVERABLE_API}?page=${pageParam}`,
 			);
-			return { data: data ?? [] };
+			return { data };
 		},
 		initialPageParam: 0,
 		getNextPageParam: (lastPage, pages) => {
