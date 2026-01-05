@@ -8,7 +8,7 @@ import {
 } from "ariakit/combobox";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 
-import { useUpdateCategoryMutation } from "../../async/mutationHooks/category/use-update-category-mutation";
+import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
 import { iconOptions } from "../../utils/commonData";
 import { colorPickerColors } from "../../utils/constants";
@@ -28,7 +28,8 @@ type CategoryIconsDropdownTypes = {
 const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	const { iconValue, iconColor, buttonIconSize = 20, iconId } = props;
 
-	const { updateCategoryMutation } = useUpdateCategoryMutation();
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
 
 	// const [hsva, setHsva] = useState({ h: 0, s: 0, v: 289, a: 1 });
 	const [color, setColor] = useState(iconColor);
@@ -39,7 +40,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	const iconsList = iconOptions;
 
 	const handleIconColorChange = (iconColor: string) => {
-		updateCategoryMutation.mutate({
+		updateCategoryOptimisticMutation.mutate({
 			category_id: iconId,
 			updateData: {
 				icon_color: iconColor,
@@ -48,7 +49,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	};
 
 	const handleIconSelect = (icon: string) => {
-		updateCategoryMutation.mutate({
+		updateCategoryOptimisticMutation.mutate({
 			category_id: iconId,
 			updateData: { icon },
 		});

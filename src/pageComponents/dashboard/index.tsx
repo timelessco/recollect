@@ -18,7 +18,7 @@ import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmark
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import { useUpdateCategoryMutation } from "../../async/mutationHooks/category/use-update-category-mutation";
+import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
@@ -171,7 +171,8 @@ const Dashboard = () => {
 
 	const { onDeleteCollection } = useDeleteCollection();
 
-	const { updateCategoryMutation } = useUpdateCategoryMutation();
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
 
 	// share category mutation
 
@@ -336,7 +337,7 @@ const Dashboard = () => {
 				// for a collection
 				if (isUserTheCategoryOwner) {
 					// if user is the collection owner
-					updateCategoryMutation.mutate({
+					updateCategoryOptimisticMutation.mutate({
 						category_id: CATEGORY_ID,
 						updateData: {
 							category_views: {

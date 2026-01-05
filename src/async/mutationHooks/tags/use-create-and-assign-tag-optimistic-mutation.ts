@@ -45,7 +45,7 @@ type InternalPayload = CreateAndAssignTagPayload & {
  * Mutation hook for creating a new tag and assigning it to a bookmark in one atomic operation.
  * Uses PostgreSQL RPC function for transaction safety.
  */
-export function useCreateAndAssignTagMutation() {
+export function useCreateAndAssignTagOptimisticMutation() {
 	const { queryClient, session, queryKey, searchQueryKey } =
 		useBookmarkMutationContext();
 
@@ -174,7 +174,7 @@ export function useCreateAndAssignTagMutation() {
 	});
 
 	// Wrap mutation to ensure _tempId is generated once before any lifecycle hook runs
-	const createAndAssignTagMutation = {
+	const createAndAssignTagOptimisticMutation = {
 		...baseMutation,
 		mutate: (
 			variables: CreateAndAssignTagMutationPayload,
@@ -198,5 +198,5 @@ export function useCreateAndAssignTagMutation() {
 		},
 	};
 
-	return { createAndAssignTagMutation };
+	return { createAndAssignTagOptimisticMutation };
 }

@@ -78,8 +78,8 @@ import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
-import { useAddCategoryMutation } from "@/async/mutationHooks/category/use-add-category-mutation";
-import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-mutation";
+import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
+import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -301,8 +301,9 @@ const CollectionsList = () => {
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
 
-	const { addCategoryMutation } = useAddCategoryMutation();
-	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
+	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
+	const { addCategoryToBookmarkOptimisticMutation } =
+		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
 	const { allCategories, isLoadingCategories } = useFetchCategories();
@@ -384,7 +385,7 @@ const CollectionsList = () => {
 		}
 
 		if (!isNull(userProfileData.data)) {
-			addCategoryMutation.mutate(
+			addCategoryOptimisticMutation.mutate(
 				{
 					name: result.data,
 					category_order: (
@@ -441,7 +442,7 @@ const CollectionsList = () => {
 						return;
 					}
 
-					addCategoryToBookmarkMutation.mutate({
+					addCategoryToBookmarkOptimisticMutation.mutate({
 						category_id: categoryId,
 						bookmark_id: Number.parseInt(bookmarkId, 10),
 					});
@@ -669,9 +670,9 @@ const CollectionsList = () => {
 										onCategoryOptionClick={handleCategoryOptionClick}
 										showDropdown
 										showSpinner={
-											addCategoryToBookmarkMutation.isPending &&
-											addCategoryToBookmarkMutation.variables?.category_id ===
-												item?.id
+											addCategoryToBookmarkOptimisticMutation.isPending &&
+											addCategoryToBookmarkOptimisticMutation.variables
+												?.category_id === item?.id
 										}
 									/>
 								</Item>
