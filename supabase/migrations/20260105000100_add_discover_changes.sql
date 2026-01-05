@@ -1,6 +1,6 @@
 -- ============================================================================
 -- MIGRATION: Add discoverability feature for bookmarks
--- Created: 2025-12-12
+-- Created: 2026-01-05
 -- Purpose: Enable bookmarks to be publicly discoverable via make_discoverable column
 -- ============================================================================
 --
@@ -13,6 +13,7 @@
 -- ============================================================================
 
 BEGIN;
+SET search_path = public, pg_temp;
 
 -- ============================================================================
 -- PART 1: Add make_discoverable column
@@ -38,6 +39,8 @@ SET check_function_bodies = off;
 DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint);
 
 -- 2. Create updated function with make_discoverable column
+-- NOTE: Uses `extensions` in search_path instead of `pg_temp` because
+-- the function returns `extensions.citext` type which requires access to that schema
 CREATE FUNCTION public.search_bookmarks_url_tag_scope(
     search_text character varying DEFAULT '',
     url_scope character varying DEFAULT '',
@@ -240,10 +243,20 @@ COMMENT ON POLICY "authenticated_discover_access" ON public.everything IS
 
 -- 1. Create indexes for RLS policy lookups
 CREATE INDEX IF NOT EXISTS idx_everything_make_discoverable ON public.everything (make_discoverable);
+
+COMMENT ON INDEX public.idx_everything_make_discoverable IS
+'Index for filtering bookmarks by discoverability status. Supports RLS policies for discover access.';
+
 CREATE INDEX IF NOT EXISTS idx_everything_trash ON public.everything (trash);
+
+COMMENT ON INDEX public.idx_everything_trash IS
+'Index for filtering bookmarks by trash status. Supports queries excluding trashed bookmarks.';
 
 -- 2. Composite partial index for discoverable bookmarks (most efficient for RLS policy)
 CREATE INDEX IF NOT EXISTS idx_everything_discoverable_trash ON public.everything (make_discoverable, trash) WHERE make_discoverable IS NOT NULL AND trash = false;
+
+COMMENT ON INDEX public.idx_everything_discoverable_trash IS
+'Partial composite index for discoverable non-trashed bookmarks. Optimized for RLS policy evaluation on discover access queries.';
 
 -- ============================================================================
 -- PART 5: Post-migration verification
