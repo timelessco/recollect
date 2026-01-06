@@ -77,6 +77,8 @@ export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
 
 export const FETCH_BOOKMARKS_DISCOVERABLE_API =
 	"/bookmark/fetch-bookmarks-discoverable";
+export const FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API =
+	"/bookmark/fetch-discoverable-by-id";
 export const WORKER_SCREENSHOT_API = "/v1/screenshot";
 export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";

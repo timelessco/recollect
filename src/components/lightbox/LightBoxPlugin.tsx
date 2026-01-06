@@ -21,6 +21,7 @@ import {
 	type Plugin,
 } from "yet-another-react-lightbox";
 
+import { useFetchDiscoverableBookmarkById } from "../../async/queryHooks/bookmarks/use-fetch-discoverable-bookmark-by-id";
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
@@ -98,16 +99,32 @@ const MyComponent = () => {
 	const trimmedSearchText = searchText?.trim() ?? "";
 	const { sortBy } = useGetSortBy();
 
-	const queryKey = isDiscoverPage
-		? searchText
-			? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText]
-			: [BOOKMARKS_KEY, DISCOVER_URL]
-		: [
+	const { id } = router.query;
+
+	// For discover page, check if list cache exists first
+	let queryKey: unknown[];
+	if (isDiscoverPage) {
+		if (searchText) {
+			queryKey = [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText];
+		} else {
+			// Check if discover list cache exists
+			const discoverListCache = queryClient.getQueryData([
 				BOOKMARKS_KEY,
-				session?.user?.id,
-				searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-				searchText ? searchText : sortBy,
-			];
+				DISCOVER_URL,
+			]);
+			// Use list cache if it exists, otherwise use single bookmark cache
+			queryKey = discoverListCache
+				? [BOOKMARKS_KEY, DISCOVER_URL]
+				: [BOOKMARKS_KEY, DISCOVER_URL, id];
+		}
+	} else {
+		queryKey = [
+			BOOKMARKS_KEY,
+			session?.user?.id,
+			searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
+			searchText ? searchText : sortBy,
+		];
+	}
 
 	// if there is text in searchbar we get the cache of searched data else we get from everything
 	const previousData = queryClient.getQueryData(queryKey) as {
@@ -115,22 +132,40 @@ const MyComponent = () => {
 		pages: Array<{ data: SingleListData[] }>;
 	};
 
-	const { id } = router.query;
 	const shouldFetch = !previousData && Boolean(id);
+	const shouldFetchRegular = shouldFetch && !isDiscoverPage;
+	const shouldFetchDiscoverable = shouldFetch && isDiscoverPage;
 
+	// Use appropriate hook based on page type
 	// @ts-expect-error - props passed to useQuery - false-positive
-	const { data: bookmark } = useFetchBookmarkById(id as string, {
-		enabled: shouldFetch,
+	const { data: regularBookmark } = useFetchBookmarkById(id as string, {
+		enabled: shouldFetchRegular,
 	});
+
+	const { bookmark: discoverableBookmark } = useFetchDiscoverableBookmarkById(
+		id as string,
+		{
+			enabled: shouldFetchDiscoverable,
+		},
+	);
+
 	let currentBookmark;
 	// handling the case where user opens a preview link directly
 	if (!previousData) {
-		// @ts-expect-error bookmark is not undefined
-		currentBookmark = bookmark?.data?.[0];
+		if (isDiscoverPage) {
+			currentBookmark = discoverableBookmark;
+		} else {
+			// @ts-expect-error bookmark is not undefined
+			currentBookmark = regularBookmark?.data?.[0];
+		}
+	} else if (previousData?.pages) {
+		// Paginated list from discover/category pages
+		currentBookmark = previousData.pages.flatMap((page) => page?.data ?? [])?.[
+			currentIndex
+		];
 	} else {
-		currentBookmark = previousData?.pages?.flatMap(
-			(page) => page?.data ?? [],
-		)?.[currentIndex];
+		// Single bookmark from direct preview link (cached as SingleListData)
+		currentBookmark = previousData as unknown as SingleListData;
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
