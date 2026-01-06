@@ -1,32 +1,19 @@
-import { type SupabaseClient, type User } from "@supabase/supabase-js";
 import { isEmpty } from "lodash";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import {
 	InstagramSyncBookmarksPayloadSchema,
 	InstagramSyncBookmarksResponseSchema,
-	type InstagramSyncBookmarksPayload,
 } from "@/lib/api-helpers/instagram/schemas";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { type Database } from "@/types/database-generated.types";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 
 const ROUTE = "instagram-sync-bookmarks";
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: InstagramSyncBookmarksPayloadSchema,
 	outputSchema: InstagramSyncBookmarksResponseSchema,
-	handler: async ({
-		data,
-		supabase,
-		user,
-		route,
-	}: {
-		data: InstagramSyncBookmarksPayload;
-		supabase: SupabaseClient<Database>;
-		user: User;
-		route: string;
-	}) => {
+	handler: async ({ data, supabase, user, route }) => {
 		const userId = user.id;
 
 		console.log(`[${route}] API called:`, {

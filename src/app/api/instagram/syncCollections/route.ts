@@ -3,7 +3,7 @@ import slugify from "slugify";
 import uniqid from "uniqid";
 import { z } from "zod";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { type CategoriesData } from "@/types/apiTypes";
 import { CATEGORIES_TABLE_NAME, PROFILES } from "@/utils/constants";
@@ -36,7 +36,7 @@ export type CreateCollectionsResponse = z.infer<
 	typeof CreateCollectionsResponseSchema
 >;
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: CreateCollectionsPayloadSchema,
 	outputSchema: CreateCollectionsResponseSchema,
