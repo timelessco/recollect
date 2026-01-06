@@ -8,6 +8,9 @@ import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { type CategoriesData } from "@/types/apiTypes";
 import { CATEGORIES_TABLE_NAME, PROFILES } from "@/utils/constants";
 
+const INSTAGRAM_COLLECTION_ICON = "bookmark";
+const INSTAGRAM_COLLECTION_COLOR = "#ffffff";
+
 const ROUTE = "create-collections";
 
 const CreateCollectionsPayloadSchema = z.object({
@@ -73,8 +76,8 @@ export const POST = createPostApiHandlerWithAuth({
 				.from(CATEGORIES_TABLE_NAME)
 				.select("category_name, id, icon, icon_color")
 				.eq("user_id", userId)
-				.eq("icon", "bookmark")
-				.eq("icon_color", "#ffffff")
+				.eq("icon", INSTAGRAM_COLLECTION_ICON)
+				.eq("icon_color", INSTAGRAM_COLLECTION_COLOR)
 				.in("category_name", uniqueCollectionNames);
 
 		if (existingCategoriesError) {
@@ -145,8 +148,8 @@ export const POST = createPostApiHandlerWithAuth({
 			category_name,
 			user_id: userId,
 			category_slug: `${slugify(category_name, { lower: true })}-instagram-${uniqid.time()}`,
-			icon: "bookmark",
-			icon_color: "#ffffff",
+			icon: INSTAGRAM_COLLECTION_ICON,
+			icon_color: INSTAGRAM_COLLECTION_COLOR,
 		}));
 
 		const {
