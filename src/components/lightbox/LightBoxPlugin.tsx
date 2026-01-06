@@ -287,10 +287,12 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						<CategoryMultiSelect
-							bookmarkId={currentBookmark?.id}
-							shouldFetch={shouldFetch}
-						/>
+						{!isDiscoverPage && (
+							<CategoryMultiSelect
+								bookmarkId={currentBookmark?.id}
+								shouldFetch={shouldFetch}
+							/>
+						)}
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.image_caption ||
