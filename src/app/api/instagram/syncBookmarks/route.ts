@@ -139,26 +139,33 @@ export const POST = createSupabasePostApiHandler({
 			`[${route}] Successfully queued ${queueResults.length} items for adding categories`,
 		);
 		try {
-			const { data: queueResults, error: queueResultsError } =
-				await pgmqSupabase.rpc("send_batch", {
-					queue_name: "ai-embeddings",
-					messages: insertDBData,
-					sleep_seconds: 0,
-				});
+			const {
+				data: aiEmbeddingsQueueResults,
+				error: aiEmbeddingsQueueResultsError,
+			} = await pgmqSupabase.rpc("send_batch", {
+				queue_name: "ai-embeddings",
+				messages: insertDBData,
+				sleep_seconds: 0,
+			});
 
-			if (queueResultsError) {
-				console.warn(`[${route}] Failed to queue item:`, queueResultsError);
+			if (aiEmbeddingsQueueResultsError) {
+				console.warn(
+					`[${route}] Failed to queue item:`,
+					aiEmbeddingsQueueResultsError,
+				);
 
 				return apiError({
 					route,
 					message: "Failed to queue item",
-					error: queueResultsError,
+					error: aiEmbeddingsQueueResultsError,
 					operation: "queue_embeddings",
 					userId,
 				});
 			}
 
-			const queueResultsArray = Array.isArray(queueResults) ? queueResults : [];
+			const queueResultsArray = Array.isArray(aiEmbeddingsQueueResults)
+				? aiEmbeddingsQueueResults
+				: [];
 			console.log(
 				`[${route}] Successfully queued ${queueResultsArray.length} items for ai-embeddings`,
 			);
