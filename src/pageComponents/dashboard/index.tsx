@@ -709,10 +709,8 @@ const Dashboard = () => {
 					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 				}}
 				isClearingTrash={isClearingTrash}
-				onDeleteCollectionClick={
-					isDiscoverPage
-						? handleUnsupported
-						: async () => await onDeleteCollection(true, CATEGORY_ID as number)
+				onDeleteCollectionClick={async () =>
+					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
