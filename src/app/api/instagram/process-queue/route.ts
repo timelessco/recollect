@@ -23,11 +23,11 @@ export async function POST(request: NextRequest) {
 	try {
 		// Get the secret header that you manually configured in Supabase webhook
 		const receivedSecret = request.headers.get("x-webhook-secret") || "";
-		const expectedSecret = process.env.SUPABASE_WEBHOOK_SECRET;
+		const expectedSecret = process.env.SUPABASE_WEBHOOK_SECRET_KEY;
 
 		if (!expectedSecret) {
 			console.error(
-				"[instagram-process-queue] SUPABASE_WEBHOOK_SECRET not configured",
+				"[instagram-process-queue] SUPABASE_WEBHOOK_SECRET_KEY not configured",
 			);
 			return Response.json(
 				{ error: "Server configuration error" },
