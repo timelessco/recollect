@@ -72,7 +72,7 @@ export const getApikeyAndBookmarkCount = async (
 	userId: string,
 ) => {
 	// monthly limit, in db the bookmark count set to zero at the start of every month using supabase cron job
-	const LIMIT = 1_000;
+	const LIMIT = 10_0000;
 
 	const { data: profile } = await supabase
 		.from(PROFILES)

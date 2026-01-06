@@ -43,12 +43,26 @@ If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search
 - Use `knip` to remove unused code when making large changes
 - The `gh` CLI is installed - use it for GitHub operations
 - Don't unnecessarily add `try`/`catch` blocks
+- **Optimistic mutations**: Add Sentry breadcrumbs for cache misses and state inconsistencies to aid debugging
 
 **React:**
 
 - Avoid massive JSX blocks - compose smaller components
 - Colocate code that changes together
 - Avoid `useEffect` unless absolutely needed
+
+**UI Components:**
+
+- **Base UI** (`@base-ui/react`): Primary library for new components
+  - Use for forms (Field, Form), combobox/select, accessible primitives
+  - Unstyled components with full accessibility support
+  - **Combobox pattern**: See `/src/components/ui/recollect/combobox` - uses context for state management and match-sorter filtering
+  - **ScrollArea**: Wrapped Base UI component at `/src/components/ui/recollect/scroll-area.tsx` with fade/gutter support
+- **React Aria** (`react-aria`): Legacy components being phased out
+  - Still used in dashboard and lightbox (4 files)
+  - Prefer Base UI for new implementations
+- **Ariakit** (`@ariakit/react`): Specialized use cases
+- **Multi-select pattern**: Use `use-category-multi-select` hook with Base UI Combobox + match-sorter for filtering (see `/src/components/lightbox/category-multi-select.tsx`)
 
 **Tailwind:**
 
@@ -86,6 +100,7 @@ See [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md) f
 **Quick Reference:**
 
 - Components: `PascalCase` | Functions: `camelCase` | Constants: `UPPER_SNAKE_CASE`
+- **File naming**: Hook and utility files use `kebab-case` (e.g., `use-bookmark-categories.ts`), exported function names remain `camelCase`
 - Server components by default, `"use client"` when needed
 - Tailwind CSS v4 with `cn()` for conditional classes
 - Type deduction over custom interfaces (see type guidelines)
@@ -169,7 +184,7 @@ See [`docs/frontend_rules.md`](./docs/frontend_rules.md) for full details.
 
 Recollect is an open-source bookmark, images, and documents manager built with:
 
-- Next.js 16.0.10 (React 19.2.3)
+- Next.js 16.1.0 (React 19.2.3)
 - TypeScript 5.9.3 (strict mode)
 - Supabase SSR (@supabase/ssr)
 - TailwindCSS 4.1.18
@@ -182,6 +197,7 @@ Recollect is an open-source bookmark, images, and documents manager built with:
 - AI-powered image descriptions (Google Gemini)
 - Drag-and-drop interface
 - Full-text search
+- Category management with many-to-many relationships
 
 <!-- END AUTO-MANAGED -->
 
@@ -189,20 +205,22 @@ Recollect is an open-source bookmark, images, and documents manager built with:
 
 ## Key Dependencies
 
-| Category   | Package               | Version       |
-| ---------- | --------------------- | ------------- |
-| Framework  | next                  | 16.0.10       |
-| React      | react, react-dom      | 19.2.3        |
-| TypeScript | typescript            | 5.9.3         |
-| Styling    | tailwindcss           | 4.1.18        |
-| Backend    | @supabase/ssr         | 0.8.0         |
-| State      | zustand               | 5.0.9         |
-| Data       | @tanstack/react-query | 5.90.12       |
-| Forms      | react-hook-form       | 7.68.0        |
-| Validation | zod                   | 4.2.1         |
-| UI         | @base-ui/react        | 1.0.0         |
-| UI         | @ariakit/react,       | 0.3.7 nightly |
-| Monitoring | @sentry/nextjs        | 10.31.0       |
+| Category   | Package               | Version |
+| ---------- | --------------------- | ------- |
+| Framework  | next                  | 16.1.0  |
+| React      | react, react-dom      | 19.2.3  |
+| TypeScript | typescript            | 5.9.3   |
+| Styling    | tailwindcss           | 4.1.18  |
+| Backend    | @supabase/ssr         | 0.8.0   |
+| State      | zustand               | 5.0.9   |
+| Data       | @tanstack/react-query | 5.90.12 |
+| Forms      | react-hook-form       | 7.68.0  |
+| Validation | zod                   | 4.2.1   |
+| UI         | @base-ui/react        | 1.0.0   |
+| UI         | @ariakit/react        | 0.3.7   |
+| UI         | react-aria            | 3.45.0  |
+| Monitoring | @sentry/nextjs        | 10.32.0 |
+| State      | immer                 | 11.1.3  |
 
 <!-- END AUTO-MANAGED -->
 

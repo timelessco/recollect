@@ -34,7 +34,6 @@ import {
 	type ListState,
 } from "react-stately";
 
-import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
@@ -68,6 +67,8 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	MAX_TAG_COLLECTION_NAME_LENGTH,
+	MIN_TAG_COLLECTION_NAME_LENGTH,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -77,12 +78,11 @@ import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
-import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarkMutation";
+import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
+import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
+import { handleClientError } from "@/utils/error-utils/client";
 
-// interface OnReorderPayloadTypes {
-//   target: { key: string };
-//   keys: Set<unknown>;
-// }
 type ListBoxDropTypes = ListProps<object> & {
 	getItems?: (keys: Set<Key>) => DragItem[];
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -302,7 +302,8 @@ const CollectionsList = () => {
 		useState(false);
 
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
-	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation();
+	const { addCategoryToBookmarkOptimisticMutation } =
+		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
 	const { allCategories, isLoadingCategories } = useFetchCategories();
@@ -373,17 +374,30 @@ const CollectionsList = () => {
 	};
 
 	const handleAddNewCategory = async (newCategoryName: string) => {
-		if (!isNull(userProfileData?.data)) {
-			const response = (await mutationApiCall(
-				addCategoryOptimisticMutation.mutateAsync({
-					name: newCategoryName,
-					category_order: userProfileData?.data[0]?.category_order ?? [],
-				}),
-			)) as { data: CategoriesData[] };
+		const result = tagCategoryNameSchema.safeParse(newCategoryName);
 
-			if (!isEmpty(response?.data)) {
-				void router.push(`/${response?.data[0]?.category_slug}`);
-			}
+		if (!result.success) {
+			handleClientError(
+				new Error(result.error.issues[0]?.message ?? "Invalid collection name"),
+				`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+			);
+			return;
+		}
+
+		if (!isNull(userProfileData.data)) {
+			addCategoryOptimisticMutation.mutate(
+				{
+					name: result.data,
+					category_order: (
+						userProfileData.data[0]?.category_order ?? []
+					).filter((id): id is number => id !== null),
+				},
+				{
+					onSuccess: (data) => {
+						void router.push(`/${data[0].category_slug}`);
+					},
+				},
+			);
 		}
 	};
 
@@ -428,7 +442,7 @@ const CollectionsList = () => {
 						return;
 					}
 
-					addCategoryToBookmarkMutation.mutate({
+					addCategoryToBookmarkOptimisticMutation.mutate({
 						category_id: categoryId,
 						bookmark_id: Number.parseInt(bookmarkId, 10),
 					});
@@ -558,22 +572,21 @@ const CollectionsList = () => {
 					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
 					id="add-category-input"
 					onBlur={(event) => {
-						if (!isEmpty(event?.target?.value)) {
-							void handleAddNewCategory(
-								(event.target as HTMLInputElement).value,
-							);
+						const inputValue = (event.target as HTMLInputElement)?.value;
+						if (inputValue) {
+							void handleAddNewCategory(inputValue);
 						}
 
 						setShowAddCategoryInput(false);
 					}}
 					onKeyUp={(event) => {
-						if (
-							event.key === "Enter" &&
-							!isEmpty((event.target as HTMLInputElement).value)
-						) {
-							void handleAddNewCategory(
-								(event.target as HTMLInputElement).value,
-							);
+						if (event.key === "Enter") {
+							const inputValue = (event.target as HTMLInputElement)?.value;
+
+							if (inputValue) {
+								void handleAddNewCategory(inputValue);
+							}
+
 							setShowAddCategoryInput(false);
 						}
 					}}
@@ -657,9 +670,9 @@ const CollectionsList = () => {
 										onCategoryOptionClick={handleCategoryOptionClick}
 										showDropdown
 										showSpinner={
-											addCategoryToBookmarkMutation.isPending &&
-											addCategoryToBookmarkMutation.variables?.category_id ===
-												item?.id
+											addCategoryToBookmarkOptimisticMutation.isPending &&
+											addCategoryToBookmarkOptimisticMutation.variables
+												?.category_id === item?.id
 										}
 									/>
 								</Item>

@@ -50,7 +50,7 @@ import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import { useAddCategoryToBookmarksMutation } from "@/async/mutationHooks/category/useAddCategoryToBookmarksMutation";
+import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
@@ -78,8 +78,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 		isPublicPage,
 	} = props;
 
-	const { addCategoryToBookmarksMutation } =
-		useAddCategoryToBookmarksMutation();
+	const { addCategoryToBookmarksOptimisticMutation } =
+		useAddCategoryToBookmarksOptimisticMutation();
 
 	const deleteBookmarkId = useMiscellaneousStore(
 		(state) => state.deleteBookmarkId,
@@ -528,7 +528,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 												state.selectionManager.selectedKeys.keys(),
 											).map(Number);
 
-											addCategoryToBookmarksMutation.mutate(
+											addCategoryToBookmarksOptimisticMutation.mutate(
 												{
 													bookmark_ids: selectedIds,
 													category_id: dropdownItem?.value,

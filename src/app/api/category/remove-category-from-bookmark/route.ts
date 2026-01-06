@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { isNullable } from "@/utils/assertion-utils";
+import { isNonEmptyArray, isNullable } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
 const ROUTE = "remove-category-from-bookmark";
@@ -43,7 +43,7 @@ export type RemoveCategoryFromBookmarkResponse = z.infer<
 	typeof RemoveCategoryFromBookmarkResponseSchema
 >;
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: RemoveCategoryFromBookmarkPayloadSchema,
 	outputSchema: RemoveCategoryFromBookmarkResponseSchema,
@@ -121,7 +121,7 @@ export const POST = createSupabasePostApiHandler({
 		}
 
 		// RPC returns empty array if nothing was deleted (category wasn't associated)
-		if (!rpcData || rpcData.length === 0) {
+		if (!isNonEmptyArray(rpcData)) {
 			return apiWarn({
 				route,
 				message: "Category association not found",
@@ -130,15 +130,12 @@ export const POST = createSupabasePostApiHandler({
 			});
 		}
 
-		const addedUncategorized = rpcData[0]?.added_uncategorized ?? false;
-
 		console.log(`[${route}] Category removed successfully:`, {
 			bookmarkId,
 			categoryId,
-			addedUncategorized,
+			addedUncategorized: rpcData[0].added_uncategorized,
 		});
 
-		// Return in API schema format
 		return [{ bookmark_id: bookmarkId, category_id: categoryId }];
 	},
 });

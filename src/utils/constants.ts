@@ -74,8 +74,9 @@ export const FETCH_BOOKMARK_BY_ID_API = "/v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
-export const FETCH_DISCOVER_BOOKMARKS_API =
-	"/bookmark/fetch-discover-bookmarks";
+
+export const FETCH_BOOKMARKS_DISCOVERABLE_API =
+	"/bookmark/fetch-bookmarks-discoverable";
 export const WORKER_SCREENSHOT_API = "/v1/screenshot";
 export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
@@ -85,14 +86,15 @@ export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
-export const UPDATE_BOOKMARK_DISCOVERABLE_API =
-	"/bookmark/update-bookmark-discoverable";
+
+export const TOGGLE_BOOKMARK_DISCOVERABLE_API =
+	"/bookmark/toggle-discoverable-on-bookmark";
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
-export const CREATE_USER_TAGS_API = "/tags/create-user-tags";
 export const ADD_TAG_TO_BOOKMARK_API = "/tags/add-tag-to-bookmark";
 export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
+export const CREATE_AND_ASSIGN_TAG_API = "/tags/create-and-assign-tag";
 // category api
 export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
@@ -189,7 +191,7 @@ export const GET_API_KEY_KEY = "get_api_key";
 export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
 	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
-	"You already have a category with this name , please add any other name";
+	"You already have a category with this name. Please use a different name.";
 export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
 // accepted file type constants
@@ -340,6 +342,7 @@ export const OG_IMAGE_PREFERRED_SITES = [
 	"spotify",
 	"imdb",
 	"pin.it",
+	"myntra",
 ];
 
 // Lightbox Constants
@@ -412,7 +415,7 @@ export const PUBLIC_PATHS = new Set(["/discover", "/error", "/public"]);
 export const isPublicPath = (pathname: string) =>
 	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
 
-export const MAX_TAG_NAME_LENGTH = 20;
-export const MIN_TAG_NAME_LENGTH = 1;
+export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
+export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
 export const WHITE_COLOR = colorPickerColors[0];
 export const BLACK_COLOR = colorPickerColors[1];

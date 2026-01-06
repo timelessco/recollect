@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import isEmpty from "lodash/isEmpty";
 
-import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import ToolTip from "../../../components/tooltip";
 import GlobeIcon from "../../../icons/globeIcon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
-import { mutationApiCall } from "../../../utils/apiHelpers";
 
 type NavBarHeadingProps = {
 	currentCategoryData: CategoriesData | undefined;
@@ -98,14 +97,12 @@ const NavBarHeadingInput = (props: NavBarHeadingInputProps) => {
 		useUpdateCategoryOptimisticMutation();
 
 	const updateCategoryName = (categoryId: number, name: string) => {
-		void mutationApiCall(
-			updateCategoryOptimisticMutation.mutateAsync({
-				category_id: categoryId,
-				updateData: {
-					category_name: name,
-				},
-			}),
-		);
+		updateCategoryOptimisticMutation.mutate({
+			category_id: categoryId,
+			updateData: {
+				category_name: name,
+			},
+		});
 	};
 
 	const handleSave = () => {

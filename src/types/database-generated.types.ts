@@ -320,6 +320,20 @@ export type Database = {
 					out_category_id: number;
 				}>;
 			};
+			create_and_assign_tag: {
+				Args: { p_bookmark_id: number; p_tag_name: string };
+				Returns: Array<{
+					bookmark_tag_bookmark_id: number;
+					bookmark_tag_created_at: string;
+					bookmark_tag_id: number;
+					bookmark_tag_tag_id: number;
+					bookmark_tag_user_id: string;
+					tag_created_at: string;
+					tag_id: number;
+					tag_name: string;
+					tag_user_id: string;
+				}>;
+			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{
@@ -356,7 +370,7 @@ export type Database = {
 			};
 			search_bookmarks_debugging:
 				| {
-						Args: { search_text: string; url_scope: string };
+						Args: { search_text: string };
 						Returns: Array<{
 							category_id: number;
 							description: string;
@@ -374,7 +388,7 @@ export type Database = {
 						}>;
 				  }
 				| {
-						Args: { search_text: string };
+						Args: { search_text: string; url_scope: string };
 						Returns: Array<{
 							category_id: number;
 							description: string;
@@ -394,14 +408,13 @@ export type Database = {
 			search_bookmarks_url_tag_scope:
 				| {
 						Args: {
-							category_scope?: number;
 							search_text?: string;
 							tag_scope?: string[];
 							url_scope?: string;
 						};
 						Returns: Array<{
-							added_categories: Json;
 							added_tags: Json;
+							category_id: number;
 							description: string;
 							id: number;
 							inserted_at: string;
@@ -419,13 +432,14 @@ export type Database = {
 				  }
 				| {
 						Args: {
+							category_scope?: number;
 							search_text?: string;
 							tag_scope?: string[];
 							url_scope?: string;
 						};
 						Returns: Array<{
+							added_categories: Json;
 							added_tags: Json;
-							category_id: number;
 							description: string;
 							id: number;
 							inserted_at: string;

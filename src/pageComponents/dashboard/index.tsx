@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import find from "lodash/find";
@@ -18,13 +18,12 @@ import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmark
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
-import { useFetchDiscoverBookmarks } from "../../async/queryHooks/bookmarks/useFetchDiscoverBookmarks";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
@@ -35,8 +34,6 @@ import { fileUpload } from "../../async/uploads/file-upload";
 import useDebounce from "../../hooks/useDebounce";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../hooks/useGetSortBy";
-import useGetViewValue from "../../hooks/useGetViewValue";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import {
 	useLoadersStore,
@@ -65,13 +62,13 @@ import {
 	TWEETS_URL,
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
-	viewValues,
 } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 
+import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
 import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import SettingsModal from "./modals/settingsModal";
 import SignedOutSection from "./signedOutSection";
@@ -147,60 +144,9 @@ const Dashboard = () => {
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
 
-	const {
-		discoverData,
-		fetchNextPage: fetchNextDiscoverPage,
-		hasNextPage: discoverHasNextPage,
-		isFetchingNextPage: isFetchingNextDiscoverPage,
-		isLoading: isDiscoverLoading,
-	} = useFetchDiscoverBookmarks();
-
 	// Determine if we're currently searching (use debounced to match when query runs)
 	const isSearching = !isEmpty(debouncedSearchText);
 	const isDiscoverPage = categorySlug === DISCOVER_URL;
-
-	const flattenedDiscoverData = useMemo(
-		() => discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
-		[discoverData],
-	);
-
-	// Get user's view preferences for discover page
-	const discoverBookmarksView = useGetViewValue(
-		"bookmarksView",
-		viewValues.card,
-		false,
-	);
-	const discoverCardContentViewArray = useGetViewValue(
-		"cardContentViewArray",
-		[],
-		false,
-	) as string[];
-	const discoverMoodboardColumns = useGetViewValue(
-		"moodboardColumns",
-		[10],
-		false,
-	) as number[];
-	const { sortBy: discoverSortBy } = useGetSortBy();
-
-	// Build categoryViewsFromProps for discover page
-	const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
-		() => ({
-			bookmarksView:
-				(discoverBookmarksView as BookmarksViewTypes) ||
-				(viewValues.card as BookmarksViewTypes),
-			cardContentViewArray: discoverCardContentViewArray || [],
-			moodboardColumns: discoverMoodboardColumns || [10],
-			sortBy:
-				(discoverSortBy as BookmarksSortByTypes) ||
-				("date-sort-acending" as BookmarksSortByTypes),
-		}),
-		[
-			discoverBookmarksView,
-			discoverCardContentViewArray,
-			discoverMoodboardColumns,
-			discoverSortBy,
-		],
-	);
 
 	const { sharedCategoriesData } = useFetchSharedCategories();
 
@@ -390,24 +336,22 @@ const Dashboard = () => {
 				return existingViewData;
 			};
 
-			if (currentCategory) {
+			if (currentCategory && typeof CATEGORY_ID === "number") {
 				// for a collection
 				if (isUserTheCategoryOwner) {
 					// if user is the collection owner
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: CATEGORY_ID,
-							updateData: {
-								category_views: {
-									...currentCategory?.category_views,
-									cardContentViewArray: cardContentViewLogic(
-										currentCategory?.category_views?.cardContentViewArray,
-									),
-									[updateValue]: value,
-								},
+					updateCategoryOptimisticMutation.mutate({
+						category_id: CATEGORY_ID,
+						updateData: {
+							category_views: {
+								...currentCategory.category_views,
+								cardContentViewArray: cardContentViewLogic(
+									currentCategory.category_views.cardContentViewArray,
+								),
+								[updateValue]: value,
 							},
-						}),
-					);
+						},
+					});
 				} else {
 					// if user is not the collection owner
 					const sharedCategoriesId = find(
@@ -716,64 +660,12 @@ const Dashboard = () => {
 		</>
 	);
 
-	const renderDiscoverBookmarkCards = () => {
-		// Use search results when searching, otherwise use discover data
-		const displayData = isSearching
-			? flattenedSearchData
-			: flattenedDiscoverData;
-		const hasMore = isSearching ? searchHasNextPage : discoverHasNextPage;
-		const fetchNext = isSearching ? fetchNextSearchPage : fetchNextDiscoverPage;
-		const isLoading = isSearching
-			? isSearchLoading && flattenedSearchData.length === 0
-			: isDiscoverLoading && flattenedDiscoverData.length === 0;
-		const isOgImgLoading = isSearching ? false : isFetchingNextDiscoverPage;
-		return (
-			<div
-				id="scrollableDiv"
-				ref={infiniteScrollRef}
-				style={{
-					height: "100vh",
-					overflowY: "auto",
-					overflowX: "hidden",
-					overflowAnchor: "none",
-				}}
-			>
-				<InfiniteScroll
-					dataLength={displayData.length}
-					hasMore={hasMore ?? false}
-					loader={<div />}
-					next={fetchNext}
-					scrollableTarget="scrollableDiv"
-					endMessage={
-						<p className="pb-6 text-center text-plain-reverse">
-							{isSearchLoading ? "" : "Life happens, save it."}
-						</p>
-					}
-					style={{ overflow: "unset", height: "100vh" }}
-				>
-					<CardSection
-						categoryViewsFromProps={discoverCategoryViews}
-						isBookmarkLoading={false}
-						isLoading={isLoading}
-						isOgImgLoading={isOgImgLoading}
-						isPublicPage
-						listData={displayData}
-						onDeleteClick={() => {}}
-						onMoveOutOfTrashClick={() => {}}
-						showAvatar={false}
-						userId=""
-					/>
-				</InfiniteScroll>
-			</div>
-		);
-	};
-
 	const renderMainPaneContent = () => {
 		if (!isInNotFoundPage) {
 			// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 			switch (categorySlug) {
 				case DISCOVER_URL:
-					return renderDiscoverBookmarkCards();
+					return <DiscoverBookmarkCards />;
 				case IMAGES_URL:
 					return renderAllBookmarkCards();
 				case VIDEOS_URL:
@@ -813,15 +705,9 @@ const Dashboard = () => {
 			<DashboardLayout
 				categoryId={isDiscoverPage ? DISCOVER_URL : CATEGORY_ID}
 				onAddBookmark={isDiscoverPage ? handleUnsupported : onAddBookmark}
-				onClearTrash={
-					isDiscoverPage
-						? handleUnsupported
-						: () => {
-								void mutationApiCall(
-									clearBookmarksInTrashMutation.mutateAsync(),
-								);
-							}
-				}
+				onClearTrash={() => {
+					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+				}}
 				isClearingTrash={isClearingTrash}
 				onDeleteCollectionClick={
 					isDiscoverPage
