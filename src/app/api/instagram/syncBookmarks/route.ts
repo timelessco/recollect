@@ -139,9 +139,6 @@ export const POST = createSupabasePostApiHandler({
 			`[${route}] Successfully queued ${queueResults.length} items for adding categories`,
 		);
 		try {
-			// Type assertion needed because pgmq_public schema is not in the Database type
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const pgmqSupabase = (supabase as any).schema("pgmq_public");
 			const { data: queueResults, error: queueResultsError } =
 				await pgmqSupabase.rpc("send_batch", {
 					queue_name: "ai-embeddings",
