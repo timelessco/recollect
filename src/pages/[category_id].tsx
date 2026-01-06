@@ -8,7 +8,7 @@ import DiscoverGuestView from "../pageComponents/discover/DiscoverGuestView";
 import { type SingleListData } from "../types/apiTypes";
 import {
 	DISCOVER_URL,
-	FETCH_DISCOVER_BOOKMARKS_API,
+	FETCH_BOOKMARKS_DISCOVERABLE_API,
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../utils/constants";
@@ -74,7 +74,7 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 	if (!isAuthenticated) {
 		try {
 			const response = await axios.get<{ data: SingleListData[] | null }>(
-				`${getBaseUrl()}${NEXT_API_URL}${FETCH_DISCOVER_BOOKMARKS_API}?page=0`,
+				`${getBaseUrl()}${NEXT_API_URL}${FETCH_BOOKMARKS_DISCOVERABLE_API}?page=0`,
 			);
 
 			return {
