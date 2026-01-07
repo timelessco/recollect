@@ -35,12 +35,17 @@ import {
 	type SingleListData,
 	type UserTagsData,
 } from "../../types/apiTypes";
-import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../utils/constants";
+import {
+	BOOKMARKS_KEY,
+	CATEGORIES_KEY,
+	DISCOVER_URL,
+} from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
+import { getCategorySlugFromRouter } from "../../utils/url";
 import { Icon } from "../atoms/icon";
 import { Spinner } from "../spinner";
 
-import { AddToCollectionDropdown } from "./AddToCollectionDropdown";
+import { CategoryMultiSelect } from "./category-multi-select";
 import { highlightSearch } from "./LightboxUtils";
 
 /**
@@ -77,6 +82,9 @@ const MyComponent = () => {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+	const router = useRouter();
+	const categorySlug = getCategorySlugFromRouter(router);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
 	const categoryData = queryClient.getQueryData([
 		CATEGORIES_KEY,
@@ -89,17 +97,22 @@ const MyComponent = () => {
 	const trimmedSearchText = searchText?.trim() ?? "";
 	const { sortBy } = useGetSortBy();
 
-	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
-	const previousData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-		searchText ? searchText : sortBy,
-	]) as {
+	const queryKey = isDiscoverPage
+		? searchText
+			? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText]
+			: [BOOKMARKS_KEY, DISCOVER_URL]
+		: [
+				BOOKMARKS_KEY,
+				session?.user?.id,
+				searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
+				searchText ? searchText : sortBy,
+			];
+
+	// if there is text in searchbar we get the cache of searched data else we get from everything
+	const previousData = queryClient.getQueryData(queryKey) as {
 		data: SingleListData[];
 		pages: Array<{ data: SingleListData[] }>;
 	};
-	const router = useRouter();
 
 	const { id } = router.query;
 	const shouldFetch = !previousData && Boolean(id);
@@ -109,17 +122,14 @@ const MyComponent = () => {
 		enabled: shouldFetch,
 	});
 	let currentBookmark;
-	let allBookmarksData;
 	// handling the case where user opens a preview link directly
 	if (!previousData) {
 		// @ts-expect-error bookmark is not undefined
 		currentBookmark = bookmark?.data?.[0];
-		allBookmarksData = bookmark?.data;
 	} else {
 		currentBookmark = previousData?.pages?.flatMap(
 			(page) => page?.data ?? [],
 		)?.[currentIndex];
-		allBookmarksData = previousData?.pages?.flatMap((page) => page?.data ?? []);
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
@@ -276,11 +286,12 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						<AddToCollectionDropdown
-							allbookmarksdata={allBookmarksData as SingleListData[]}
-							bookmarkId={currentBookmark?.id}
-							shouldFetch={shouldFetch}
-						/>
+						{!isDiscoverPage && (
+							<CategoryMultiSelect
+								bookmarkId={currentBookmark?.id}
+								shouldFetch={shouldFetch}
+							/>
+						)}
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.image_caption ||

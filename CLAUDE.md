@@ -43,12 +43,26 @@ If ast-grep is available avoid tools `rg` or `grep` unless a plain‑text search
 - Use `knip` to remove unused code when making large changes
 - The `gh` CLI is installed - use it for GitHub operations
 - Don't unnecessarily add `try`/`catch` blocks
+- **Optimistic mutations**: Add Sentry breadcrumbs for cache misses and state inconsistencies to aid debugging
 
 **React:**
 
 - Avoid massive JSX blocks - compose smaller components
 - Colocate code that changes together
 - Avoid `useEffect` unless absolutely needed
+
+**UI Components:**
+
+- **Base UI** (`@base-ui/react`): Primary library for new components
+  - Use for forms (Field, Form), combobox/select, accessible primitives
+  - Unstyled components with full accessibility support
+  - **Combobox pattern**: See `/src/components/ui/recollect/combobox` - uses context for state management and match-sorter filtering
+  - **ScrollArea**: Wrapped Base UI component at `/src/components/ui/recollect/scroll-area.tsx` with fade/gutter support
+- **React Aria** (`react-aria`): Legacy components being phased out
+  - Still used in dashboard and lightbox (4 files)
+  - Prefer Base UI for new implementations
+- **Ariakit** (`@ariakit/react`): Specialized use cases
+- **Multi-select pattern**: Use `use-category-multi-select` hook with Base UI Combobox + match-sorter for filtering (see `/src/components/lightbox/category-multi-select.tsx`)
 
 **Tailwind:**
 
@@ -86,22 +100,32 @@ See [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md) f
 **Quick Reference:**
 
 - Components: `PascalCase` | Functions: `camelCase` | Constants: `UPPER_SNAKE_CASE`
+- **File naming**: Hook and utility files use `kebab-case` (e.g., `use-bookmark-categories.ts`), exported function names remain `camelCase`
 - Server components by default, `"use client"` when needed
 - Tailwind CSS v4 with `cn()` for conditional classes
 - Type deduction over custom interfaces (see type guidelines)
 - Functions with 2+ params: Use interface with `props` parameter
 
+<!-- AUTO-MANAGED: architecture -->
+
 **File Organization:**
 
+- `/src/app` - Next.js App Router (routes, layouts, API handlers)
 - `/src/components` - Reusable UI components
 - `/src/pageComponents` - Page-specific components
-- `/src/pages` - Next.js pages (routes)
+- `/src/pages` - Next.js Pages Router (legacy routes)
 - `/src/hooks` - Custom React hooks
 - `/src/store` - Zustand state stores
+- `/src/lib` - Shared libraries (Supabase, React Query, API helpers)
 - `/src/utils` - Utility functions
 - `/src/types` - Shared TypeScript types
-- `/src/async` - Async utilities and API calls
+- `/src/async` - Async utilities, query/mutation hooks, uploads
 - `/src/icons` - Icon components
+- `/src/styles` - Global CSS (Tailwind v4)
+- `/supabase` - Local Supabase config & migrations
+- `/todos` - File-based todo tracking
+
+<!-- END AUTO-MANAGED -->
 
 **Quality Gates:**
 
@@ -154,27 +178,57 @@ Always use: `const`/`let`, template literals, optional chaining, `for...of`
 
 See [`docs/frontend_rules.md`](./docs/frontend_rules.md) for full details.
 
+<!-- AUTO-MANAGED: project-description -->
+
 ## Project Overview
 
 Recollect is an open-source bookmark, images, and documents manager built with:
 
-- Next.js (React framework)
-- TypeScript (strict mode)
-- Supabase (backend & database)
-- TailwindCSS (styling)
-- Zustand & React Query (state management)
+- Next.js 16.1.0 (React 19.2.3)
+- TypeScript 5.9.3 (strict mode)
+- Supabase SSR (@supabase/ssr)
+- TailwindCSS 4.1.18
+- Zustand 5.0.9 & React Query 5.90.12
 
 ## Key Features
 
 - Bookmark, image, and document management
 - Collections with public/private sharing
-- AI-powered image descriptions
+- AI-powered image descriptions (Google Gemini)
 - Drag-and-drop interface
 - Full-text search
+- Category management with many-to-many relationships
+
+<!-- END AUTO-MANAGED -->
+
+<!-- AUTO-MANAGED: dependencies -->
+
+## Key Dependencies
+
+| Category   | Package               | Version |
+| ---------- | --------------------- | ------- |
+| Framework  | next                  | 16.1.0  |
+| React      | react, react-dom      | 19.2.3  |
+| TypeScript | typescript            | 5.9.3   |
+| Styling    | tailwindcss           | 4.1.18  |
+| Backend    | @supabase/ssr         | 0.8.0   |
+| State      | zustand               | 5.0.9   |
+| Data       | @tanstack/react-query | 5.90.12 |
+| Forms      | react-hook-form       | 7.68.0  |
+| Validation | zod                   | 4.2.1   |
+| UI         | @base-ui/react        | 1.0.0   |
+| UI         | @ariakit/react        | 0.3.7   |
+| UI         | react-aria            | 3.45.0  |
+| Monitoring | @sentry/nextjs        | 10.32.0 |
+| State      | immer                 | 11.1.3  |
+
+<!-- END AUTO-MANAGED -->
 
 See [`docs/project_overview.md`](./docs/project_overview.md) for complete details.
 
 See [`docs/project_structure.md`](./docs/project_structure.md) for complete details.
+
+<!-- AUTO-MANAGED: build-commands -->
 
 ### Development Commands
 
@@ -183,20 +237,20 @@ Essential commands for development, quality checks, and deployment.
 **Core Development:**
 
 ```bash
-pnpm install     # Install dependencies
-pnpm dev         # Start dev server (Turbopack)
-pnpm build       # Production build
-pnpm build:local # Faster local build
-pnpm start       # Start production server
+pnpm install # Install dependencies
+pnpm dev     # Start dev server (Turbopack) - DO NOT RUN, already running
+pnpm build   # Production build via Turbo
+pnpm start   # Start production server
 ```
 
 **Quality Checks & Fixes:**
 
 ```bash
-pnpm lint       # Run ALL quality checks
+pnpm lint       # Run ALL quality checks (eslint, types, css, md, knip, spelling, prettier)
 pnpm fix        # Fix ALL auto-fixable issues (run after tasks!)
 pnpm lint:types # TypeScript strict checks
 pnpm lint:md    # Check Markdown formatting
+pnpm lint:knip  # Check for unused code
 
 # Individual fix commands for targeted corrections:
 pnpm fix:eslint   # Auto-fix ESLint issues
@@ -204,8 +258,15 @@ pnpm fix:prettier # Format with Prettier
 pnpm fix:css      # Auto-fix CSS issues
 pnpm fix:spelling # Auto-fix spelling
 pnpm fix:md       # Auto-fix Markdown formatting
-pnpm fix:knip     # Remove unused code
 ```
+
+**Database:**
+
+```bash
+pnpm db:types # Generate Supabase types from local schema
+```
+
+<!-- END AUTO-MANAGED -->
 
 See [`docs/suggested_commands.md`](./docs/suggested_commands.md) for full command reference.
 

@@ -12,8 +12,9 @@ import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
 
 import {
-	ALL_BOOKMARKS_URL,
+	DISCOVER_URL,
 	DOCUMENTS_URL,
+	EVERYTHING_URL,
 	IMAGES_URL,
 	LINKS_URL,
 	menuListItemName,
@@ -23,6 +24,7 @@ import {
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "./constants";
+import { DiscoverIcon } from "@/icons/discover-icon";
 
 // TODO: check if this is needed (for code cleanup)
 const object = [
@@ -3558,21 +3560,31 @@ const object = [
 		name: "signal-01",
 	},
 ];
-export const options = () =>
-	object.map((index) => ({
-		label: index.name,
-		icon: (iconColor: string, size: string = "16", className: string = "") => (
-			<svg
-				className={className}
-				fill={iconColor}
-				height={size}
-				viewBox="0 0 18 18"
-				width={size}
-			>
-				<use href={`/sprite.svg#${index.name}`} />
-			</svg>
-		),
-	}));
+export const iconOptions = object.map((index) => ({
+	label: index.name,
+	icon: (iconColor: string, size: string = "16", className: string = "") => (
+		<svg
+			className={className}
+			fill={iconColor}
+			height={size}
+			viewBox="0 0 18 18"
+			width={size}
+		>
+			<use href={`/sprite.svg#${index.name}`} />
+		</svg>
+	),
+}));
+
+/**
+ * Pre-computed Map for O(1) icon lookups by label
+ * Replaces O(n) find() operations in icon rendering
+ */
+export const iconMap = new Map(iconOptions.map((opt) => [opt.label, opt]));
+
+/**
+ * @deprecated Use `iconOptions` instead - cached at module level
+ */
+export const options = () => iconOptions;
 
 export const optionsMenuListArray = (
 	currentPath: string | null,
@@ -3583,11 +3595,20 @@ export const optionsMenuListArray = (
 ) => [
 	{
 		icon: <HomeIconGray />,
-		name: menuListItemName.allBookmarks,
-		href: `/${ALL_BOOKMARKS_URL}`,
-		current: currentPath === ALL_BOOKMARKS_URL,
+		name: menuListItemName.everything,
+		href: `/${EVERYTHING_URL}`,
+		current: currentPath === EVERYTHING_URL,
 		id: 0,
-		count: bookmarksCountData?.data?.allBookmarks,
+		count: bookmarksCountData?.data?.everything,
+		iconColor: "",
+	},
+	{
+		icon: <DiscoverIcon />,
+		name: menuListItemName.discover,
+		href: `/${DISCOVER_URL}`,
+		current: currentPath === DISCOVER_URL,
+		id: 1,
+		count: undefined,
 		iconColor: "",
 	},
 	{
@@ -3595,7 +3616,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.inbox,
 		href: `/${UNCATEGORIZED_URL}`,
 		current: currentPath === UNCATEGORIZED_URL,
-		id: 1,
+		id: 2,
 		count: bookmarksCountData?.data?.uncategorized,
 		iconColor: "",
 	},
@@ -3604,7 +3625,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.trash,
 		href: `/${TRASH_URL}`,
 		current: currentPath === TRASH_URL,
-		id: 2,
+		id: 3,
 		count: bookmarksCountData?.data?.trash,
 		iconColor: "",
 	},
@@ -3613,7 +3634,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.settings,
 		href: `/${SETTINGS_URL}`,
 		current: currentPath === SETTINGS_URL,
-		id: 3,
+		id: 4,
 		count: undefined,
 		iconColor: "",
 	},
@@ -3622,7 +3643,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.image,
 		href: `/${IMAGES_URL}`,
 		current: currentPath === IMAGES_URL,
-		id: 4,
+		id: 5,
 		count: bookmarksCountData?.data?.images,
 		iconColor: "",
 	},
@@ -3631,7 +3652,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.videos,
 		href: `/${VIDEOS_URL}`,
 		current: currentPath === VIDEOS_URL,
-		id: 5,
+		id: 6,
 		count: bookmarksCountData?.data?.videos,
 		iconColor: "",
 	},
@@ -3640,7 +3661,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.links,
 		href: `/${LINKS_URL}`,
 		current: currentPath === LINKS_URL,
-		id: 6,
+		id: 7,
 		count: bookmarksCountData?.data?.links,
 		iconColor: "",
 	},
@@ -3649,7 +3670,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.documents,
 		href: `/${DOCUMENTS_URL}`,
 		current: currentPath === DOCUMENTS_URL,
-		id: 7,
+		id: 8,
 		count: bookmarksCountData?.data?.documents,
 		iconColor: "",
 	},
@@ -3658,7 +3679,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.tweets,
 		href: `/${TWEETS_URL}`,
 		current: currentPath === TWEETS_URL,
-		id: 8,
+		id: 9,
 		count: bookmarksCountData?.data?.tweets,
 		iconColor: "",
 	},

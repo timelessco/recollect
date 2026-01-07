@@ -8,7 +8,7 @@ import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFet
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import { Spinner } from "../../../components/spinner";
 import { type SingleListData } from "../../../types/apiTypes";
-import { ALL_BOOKMARKS_URL } from "../../../utils/constants";
+import { EVERYTHING_URL } from "../../../utils/constants";
 
 export type BookmarkResponse = {
 	data: SingleListData[];
@@ -32,13 +32,13 @@ const Preview = () => {
 
 	const handleClose = () => {
 		setIsOpen(false);
-		void router.push(`/${ALL_BOOKMARKS_URL}`);
+		void router.push(`/${EVERYTHING_URL}`);
 	};
 
 	// Handle redirects in useEffect to prevent SSR issues
 	useEffect(() => {
 		if (router.isReady && ((!isLoading && !bookmark?.data?.[0]) || error)) {
-			void router.push(`/${ALL_BOOKMARKS_URL}`);
+			void router.push(`/${EVERYTHING_URL}`);
 		}
 	}, [router, isLoading, bookmark, error]);
 

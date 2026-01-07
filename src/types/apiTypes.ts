@@ -29,12 +29,16 @@ export type ImgMetadataType = {
 export type twitter_sort_index = string;
 
 export type SingleListData = {
-	addedTags: UserTagsData[];
-	category_id: number | null;
+	/**
+	 * Array of categories (many-to-many)
+	 */
+	addedCategories?: CategoriesData[];
+	addedTags: Array<UserTagsData | TempTag>;
 	description: string;
 	id: number;
 	inserted_at: string;
 	meta_data: ImgMetadataType;
+	make_discoverable: string | null;
 	ogImage: string;
 	ogimage?: string;
 	screenshot: string;
@@ -46,7 +50,7 @@ export type SingleListData = {
 };
 
 export type BookmarksCountTypes = {
-	allBookmarks: number;
+	everything: number;
 	categoryCount: Array<{ category_id: number; count: number }>;
 	documents: number;
 	images: number;
@@ -89,6 +93,15 @@ export type UserTagsData = {
 	user_id: string;
 };
 
+/**
+ * Minimal tag type for optimistic updates.
+ * Contains only the fields set during temporary tag creation.
+ */
+export type TempTag = {
+	id: number;
+	name: string;
+};
+
 export type FetchUserTagsDataResponse = {
 	data: UserTagsData[];
 	error: PostgrestError | null;
@@ -100,6 +113,15 @@ export type BookmarksTagData = {
 	created_at?: string;
 	id?: number;
 	tag_id: number;
+	user_id: string;
+};
+
+// Junction table type for many-to-many bookmark-category relationship
+export type BookmarksCategoryData = {
+	bookmark_id: number;
+	category_id: number;
+	created_at: string;
+	id: number;
 	user_id: string;
 };
 
@@ -190,6 +212,17 @@ export type BookmarksWithTagsWithTagForginKeys = Array<{
 	tag_id: { id: number; name: string };
 }>;
 
+export type BookmarksWithCategoriesWithCategoryForeignKeys = Array<{
+	bookmark_id: number;
+	category_id: {
+		category_name: string;
+		category_slug: string;
+		icon: string | null;
+		icon_color: string;
+		id: number;
+	};
+}>;
+
 export type UserProfilePicTypes = { profile_pic: string | null };
 
 // file upload
@@ -242,35 +275,12 @@ export type MoveBookmarkToTrashApiPayload = {
 	isTrash: boolean;
 };
 
-export type AddCategoryToBookmarkApiPayload = {
-	bookmark_id: number;
-	category_id: number | null;
-	update_access: boolean;
-};
-
-export type AddUserCategoryApiPayload = {
-	category_order: number[];
-	name: string;
-	session: SupabaseSessionType;
-};
-
 export type DeleteUserCategoryApiPayload = {
 	category_id: number;
 	category_order: number[];
 };
 
 export type UpdateCategoryOrderApiPayload = { order: number[] };
-
-export type UpdateCategoryApiPayload = {
-	category_id: number | string | null;
-	updateData: {
-		category_name?: CategoriesData["category_name"];
-		category_views?: BookmarkViewDataTypes;
-		icon?: string | null;
-		icon_color?: CategoriesData["icon_color"];
-		is_public?: boolean;
-	};
-};
 
 export type UpdateUserProfileApiPayload = {
 	updateData: ProfilesTableForPayloadTypes;
@@ -305,12 +315,6 @@ export type UpdateSharedCategoriesUserAccessApiPayload = {
 	id: number;
 	updateData: { category_views?: BookmarkViewDataTypes; edit_access?: boolean };
 };
-
-export type AddTagToBookmarkApiPayload = {
-	selectedData: BookmarksTagData | BookmarksTagData[];
-};
-
-export type AddUserTagsApiPayload = { tagsData: { name: string } };
 
 export type UploadFileApiPayload = {
 	category_id: CategoryIdUrlTypes;
@@ -366,3 +370,6 @@ export type ParsedFormDataType = {
 		}>;
 	};
 };
+
+// Shared type for paginated bookmarks data structure in React Query cache
+export type PaginatedBookmarks = { pages: Array<{ data: SingleListData[] }> };

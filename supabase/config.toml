@@ -117,12 +117,34 @@ file_size_limit = "50MiB"
 # [storage.image_transformation]
 # enabled = true
 
-# Uncomment to configure local storage buckets
-# [storage.buckets.images]
-# public = false
-# file_size_limit = "50MiB"
-# allowed_mime_types = ["image/png", "image/jpeg"]
-# objects_path = "./images"
+# Local storage bucket for development
+[storage.buckets.recollect]
+public = true
+file_size_limit = "50MiB"
+allowed_mime_types = [
+  "image/gif", "image/vnd.microsoft.icon", "image/jpeg", "image/jpg",
+  "image/png", "image/svg+xml", "image/tiff", "image/webp", "image/apng",
+  "image/avif", "image/bmp",
+  "audio/midi", "audio/x-midi", "audio/mpeg", "audio/ogg", "audio/3gpp",
+  "audio/3gpp2", "audio/webm", "audio/wav", "audio/aac",
+  "video/mp4", "video/mpeg", "video/ogg", "video/mp2t", "video/webm",
+  "video/3gpp", "video/3gpp2", "video/x-msvideo",
+  "application/msword", "application/pdf"
+]
+
+[storage.buckets.recollect-dev]
+public = true
+file_size_limit = "50MiB"
+allowed_mime_types = [
+  "image/gif", "image/vnd.microsoft.icon", "image/jpeg", "image/jpg",
+  "image/png", "image/svg+xml", "image/tiff", "image/webp", "image/apng",
+  "image/avif", "image/bmp",
+  "audio/midi", "audio/x-midi", "audio/mpeg", "audio/ogg", "audio/3gpp",
+  "audio/3gpp2", "audio/webm", "audio/wav", "audio/aac",
+  "video/mp4", "video/mpeg", "video/ogg", "video/mp2t", "video/webm",
+  "video/3gpp", "video/3gpp2", "video/x-msvideo",
+  "application/msword", "application/pdf"
+]
 
 [auth]
 enabled = true

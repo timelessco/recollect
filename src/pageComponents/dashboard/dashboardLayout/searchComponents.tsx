@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
-import { isEmpty, isNull } from "lodash";
-import { Mention, MentionsInput } from "react-mentions";
+import { useEffect, useMemo, useState } from "react";
+import { isEmpty } from "lodash";
+import {
+	Mention,
+	MentionsInput,
+	type MentionsInputProps,
+} from "react-mentions";
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import Button from "@/components/atoms/button";
@@ -9,7 +13,7 @@ import SearchInputSearchIcon from "@/icons/searchInputSearchIcon";
 import { useLoadersStore, useMiscellaneousStore } from "@/store/componentStore";
 import { type CategoriesData } from "@/types/apiTypes";
 import { type CategoryIdUrlTypes } from "@/types/componentTypes";
-import { GET_TEXT_WITH_AT_CHAR } from "@/utils/constants";
+import { extractTagNamesFromSearch } from "@/utils/helpers";
 
 type SearchBarProps = {
 	showSearchBar: boolean;
@@ -77,7 +81,21 @@ const SearchInput = (props: SearchInputTypes) => {
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const { userTags } = useFetchUserTags();
-	const userTagsData = userTags?.data ?? [];
+	const userTagsData = useMemo(() => userTags?.data ?? [], [userTags]);
+
+	const filteredTagsData = useMemo(
+		() =>
+			userTagsData
+				?.map((item) => ({
+					id: String(item?.id || ""),
+					display: String(item?.name || ""),
+				}))
+				?.filter(
+					(filterItem) =>
+						!addedTags?.includes(String(filterItem?.display || "")),
+				),
+		[userTagsData, addedTags],
+	);
 
 	return (
 		<div className="search-wrapper relative">
@@ -98,14 +116,7 @@ const SearchInput = (props: SearchInputTypes) => {
 
 					const search = event.target.value;
 
-					const matchedSearchTag = search?.match(GET_TEXT_WITH_AT_CHAR);
-
-					const tagName =
-						!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-							? matchedSearchTag?.map((item) => item?.replace("@", ""))
-							: undefined;
-
-					setAddedTags(tagName);
+					setAddedTags(extractTagNamesFromSearch(search));
 				}}
 				onFocus={() => setIsFocused(true)}
 				placeholder={placeholder}
@@ -115,17 +126,9 @@ const SearchInput = (props: SearchInputTypes) => {
 			>
 				<Mention
 					appendSpaceOnAdd
-					data={userTagsData
-						?.map((item) => ({
-							id: String(item?.id || ""),
-							display: String(item?.name || ""),
-						}))
-						?.filter(
-							(filterItem) =>
-								!addedTags?.includes(String(filterItem?.display || "")),
-						)}
+					data={filteredTagsData}
 					displayTransform={(_url, display) => `#${display}`}
-					markup="#__display__"
+					markup="#[__display__](__id__)"
 					trigger="#"
 				/>
 			</MentionsInput>
@@ -141,7 +144,7 @@ const SearchInput = (props: SearchInputTypes) => {
 	);
 };
 
-const styles = {
+const styles: MentionsInputProps["style"] = {
 	input: {
 		left: 27,
 		top: 6.5,
@@ -157,11 +160,6 @@ const styles = {
 
 		width: "100%",
 		padding: "6px",
-		// padding: "3px 10px 3px 28px",
-		// padding: "2px 10px 2px 28px",
-		// paddingTop: "6px",
-		// paddingBottom: "6px",
-
 		borderRadius: 11,
 	},
 	"&multiLine": {
@@ -179,13 +177,16 @@ const styles = {
 		backgroundColor: "transparent",
 		zIndex: 5,
 		list: {
+			marginTop: "20px",
+
 			backgroundColor: "var(--color-plain)",
 			padding: "4px",
+			borderRadius: "12px",
+			overflowY: "auto",
+			maxHeight: "220px",
+			maxWidth: "260px",
 			boxShadow:
 				"0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
-			borderRadius: "12px",
-			// border: "1px solid rgba(0,0,0,0.15)",
-			// fontSize: 14,
 		},
 		item: {
 			padding: "7px 8px",
@@ -197,7 +198,6 @@ const styles = {
 			cursor: "pointer",
 			transition: "plain-color 0.2s ease",
 
-			// borderBottom: "1px solid rgba(0,0,0,0.15)",
 			"&focused": {
 				backgroundColor: "var(--color-gray-200)",
 			},

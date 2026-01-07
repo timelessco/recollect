@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 import {
-	ALL_BOOKMARKS_URL,
+	EVERYTHING_URL,
 	isGuestPath,
 	isPublicPath,
 	LOGIN_URL,
@@ -49,13 +49,19 @@ export async function updateSession(request: NextRequest) {
 
 	// IMPORTANT: If you remove getClaims() and you use server-side rendering
 	// with the Supabase client, your users may be randomly logged out.
-	const { data } = await supabase.auth.getClaims();
+	const { data, error } = await supabase.auth.getClaims();
+
+	// If Supabase is unavailable (connection error), throw to trigger not-found page
+	if (error) {
+		throw error;
+	}
+
 	const user = data?.claims;
 
 	// Redirect authenticated users away from guest-only paths
 	if (user && isGuestPath(pathname)) {
 		const url = request.nextUrl.clone();
-		url.pathname = `/${ALL_BOOKMARKS_URL}`;
+		url.pathname = `/${EVERYTHING_URL}`;
 		// Clear query & hash parameters
 		url.search = "";
 		url.hash = "";

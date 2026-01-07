@@ -1,16 +1,21 @@
 import { BASE_URL } from "@/site-config";
 
+// Category IDs
+export const UNCATEGORIZED_CATEGORY_ID = 0;
+
 // table names
 export const MAIN_TABLE_NAME = "everything";
 export const TAG_TABLE_NAME = "tags";
 export const BOOKMARK_TAGS_TABLE_NAME = "bookmark_tags";
+export const BOOKMARK_CATEGORIES_TABLE_NAME = "bookmark_categories";
 export const CATEGORIES_TABLE_NAME = "categories";
 export const SHARED_CATEGORIES_TABLE_NAME = "shared_categories";
 export const PROFILES = "profiles";
 export const BOOKMARKS_STORAGE_NAME = "bookmarks";
 export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
-export const R2_MAIN_BUCKET_NAME = "recollect";
+export const R2_MAIN_BUCKET_NAME =
+	process.env.NEXT_PUBLIC_CLOUDFLARE_R2_BUCKET_NAME;
 
 export const STORAGE_SCRAPPED_IMAGES_PATH =
 	BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
@@ -27,7 +32,10 @@ export const HTTP_PATTERN = /^(https?:\/\/)?/u;
 export const URL_PATTERN =
 	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 export const GET_NAME_FROM_EMAIL_PATTERN = /^([^@]*)@/u;
-export const GET_TEXT_WITH_AT_CHAR = /[A-Za-z\d]*#[A-Za-z\d]*/gu;
+export const GET_HASHTAG_TAG_PATTERN = /#\[[^\]]+\]\([^)]+\)|#[^\s#]+/gu;
+
+export const TAG_MARKUP_REGEX = /#\[(?<display>[^\]]+)\]\([^)]+\)/u;
+
 export const GET_SITE_SCOPE_PATTERN = /@([A-Za-z\d]+)/gu;
 export const EMAIL_CHECK_PATTERN =
 	// eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
@@ -66,6 +74,8 @@ export const FETCH_BOOKMARK_BY_ID_API = "/v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
+export const FETCH_BOOKMARKS_DISCOVERABLE_API =
+	"/bookmark/fetch-bookmarks-discoverable";
 export const WORKER_SCREENSHOT_API = "/v1/screenshot";
 export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
@@ -89,20 +99,27 @@ export const UPLOAD_FILE_APIS = {
 	QUEUE_CONSUMER: "/v1/file/upload/tasks/queue-consumer",
 	REMAINING: "/v1/file/upload/tasks/remaining",
 };
+export const TOGGLE_BOOKMARK_DISCOVERABLE_API =
+	"/bookmark/toggle-discoverable-on-bookmark";
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
-export const CREATE_USER_TAGS_API = "/tags/create-user-tags";
 export const ADD_TAG_TO_BOOKMARK_API = "/tags/add-tag-to-bookmark";
 export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
+export const CREATE_AND_ASSIGN_TAG_API = "/tags/create-and-assign-tag";
 // category api
 export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
-export const ADD_CATEGORY_TO_BOOKMARK_API =
-	"/category/add-category-to-bookmark";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
 export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
+export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
+export const ADD_CATEGORY_TO_BOOKMARK_API =
+	"/category/add-category-to-bookmark";
+export const ADD_CATEGORY_TO_BOOKMARKS_API =
+	"/category/add-category-to-bookmarks";
+export const REMOVE_CATEGORY_FROM_BOOKMARK_API =
+	"/category/remove-category-from-bookmark";
 // share api
 export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API =
 	"/fetch-public-category-bookmarks";
@@ -157,8 +174,9 @@ export const OTP_URL = "otp";
 export const AUTH_URLS = "auth";
 
 // Others
-export const ALL_BOOKMARKS_URL = "all-bookmarks";
+export const EVERYTHING_URL = "everything";
 export const UNCATEGORIZED_URL = "uncategorized";
+export const DISCOVER_URL = "discover";
 export const SEARCH_URL = "search";
 export const INBOX_URL = "inbox";
 export const TRASH_URL = "trash";
@@ -188,7 +206,7 @@ export const GET_API_KEY_KEY = "get_api_key";
 export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
 	"You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
-	"You already have a category with this name , please add any other name";
+	"You already have a category with this name. Please use a different name.";
 export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
 // accepted file type constants
@@ -281,7 +299,8 @@ export const colorPickerColors = [
 export const defaultBlur = "Uf4:~MrTiwbcpfi]Z~kDb_agaJoco}jbaeax";
 
 export const menuListItemName = {
-	allBookmarks: "All Bookmarks",
+	everything: "Everything",
+	discover: "Discover",
 	inbox: "Inbox",
 	trash: "Trash",
 	settings: "Settings",
@@ -338,6 +357,7 @@ export const OG_IMAGE_PREFERRED_SITES = [
 	"spotify",
 	"imdb",
 	"pin.it",
+	"myntra",
 ];
 
 // Lightbox Constants
@@ -367,7 +387,7 @@ export const PDF_VIEWER_PARAMS =
 // Lightbox button types
 export const LIGHTBOX_CLOSE_BUTTON = "close";
 export const LIGHTBOX_SHOW_PANE_BUTTON = "show-pane";
-export const CF_IMAGE_LOADER_URL = "https://media.recollect.so/cdn-cgi/image";
+export const CF_IMAGE_LOADER_URL = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL}/cdn-cgi/image`;
 
 export const SKIP_OG_IMAGE_DOMAINS = [
 	"amazon.in",
@@ -406,6 +426,11 @@ export const isGuestPath = (pathname: string) =>
 /**
  * Array of public paths that don't require authentication
  */
-export const PUBLIC_PATHS = new Set(["/public"]);
+export const PUBLIC_PATHS = new Set(["/error", "/public"]);
 export const isPublicPath = (pathname: string) =>
-	pathname.startsWith("/public");
+	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
+
+export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
+export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
+export const WHITE_COLOR = colorPickerColors[0];
+export const BLACK_COLOR = colorPickerColors[1];

@@ -29,7 +29,7 @@ import {
 	generateVideoThumbnail,
 	parseUploadFileName,
 } from "../../../utils/helpers";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { createClient } from "../../../utils/supabaseClient";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
@@ -64,7 +64,7 @@ export default function useFileUploadOptimisticMutation() {
 
 						if (userId) {
 							const { data: uploadTokenData, error } =
-								await r2Helpers.createSignedUploadUrl(
+								await storageHelpers.createSignedUploadUrl(
 									R2_MAIN_BUCKET_NAME,
 									`${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`,
 								);
@@ -159,10 +159,12 @@ export default function useFileUploadOptimisticMutation() {
 			const uploadFileNamePath = data?.uploadFileNamePath;
 
 			// Generate presigned URL for secure client-side upload
+			const storagePath = `${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`;
+
 			const { data: uploadTokenData, error } =
-				await r2Helpers.createSignedUploadUrl(
+				await storageHelpers.createSignedUploadUrl(
 					R2_MAIN_BUCKET_NAME,
-					`${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`,
+					storagePath,
 				);
 
 			// Upload file using presigned URL
@@ -182,8 +184,7 @@ export default function useFileUploadOptimisticMutation() {
 						const errorMessage = `Upload failed with status: ${uploadResponse.status}`;
 						errorToast(errorMessage);
 					}
-				} catch (uploadError) {
-					console.error("Upload error:", uploadError);
+				} catch {
 					errorToast("Upload failed");
 				}
 			}

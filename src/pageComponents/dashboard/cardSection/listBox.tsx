@@ -13,13 +13,11 @@ import {
 	useListBox,
 	type DragItem,
 } from "react-aria";
-import { type CheckboxRenderProps } from "react-aria-components";
 import {
 	useDraggableCollectionState,
 	useListState,
 	type ListProps,
 } from "react-stately";
-import { tv } from "tailwind-variants";
 
 import {
 	AriaDropdown,
@@ -43,7 +41,6 @@ import {
 import {
 	CATEGORIES_KEY,
 	TRASH_URL,
-	UNCATEGORIZED_URL,
 	viewValues,
 } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
@@ -53,14 +50,10 @@ import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
+import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
-import {
-	Checkbox,
-	checkboxBoxStyles,
-} from "@/components/ui/recollect/checkbox";
-import useGetFlattendPaginationBookmarkData from "@/hooks/useGetFlattendPaginationBookmarkData";
-import { CheckIcon } from "@/icons/check-icon";
+import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { mutationApiCall } from "@/utils/apiHelpers";
 import { errorToast } from "@/utils/toastMessages";
 
@@ -68,9 +61,9 @@ type ListBoxDropTypes = ListProps<object> & {
 	bookmarksColumns: number[];
 	bookmarksList: SingleListData[];
 	cardTypeCondition: unknown;
+	flattendPaginationBookmarkData?: SingleListData[];
 	getItems?: (keys: Set<Key>) => DragItem[];
 	isPublicPage?: boolean;
-	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onItemDrop?: (event: any) => void;
 };
@@ -81,9 +74,12 @@ const ListBox = (props: ListBoxDropTypes) => {
 		bookmarksColumns,
 		cardTypeCondition,
 		bookmarksList,
-		onCategoryChange,
+		flattendPaginationBookmarkData = [],
 		isPublicPage,
 	} = props;
+
+	const { addCategoryToBookmarksOptimisticMutation } =
+		useAddCategoryToBookmarksOptimisticMutation();
 
 	const deleteBookmarkId = useMiscellaneousStore(
 		(state) => state.deleteBookmarkId,
@@ -102,8 +98,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	// Hooks for data fetching
 	const { flattenedSearchData } = useSearchBookmarks();
-	const { flattendPaginationBookmarkData } =
-		useGetFlattendPaginationBookmarkData();
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
 	const { deleteBookmarkOptismicMutation } =
@@ -328,17 +322,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 			value: item?.id,
 		})) || [];
 
-	let finalCategoryData;
-
-	if (categorySlug !== UNCATEGORIZED_URL) {
-		finalCategoryData = [
-			{ label: "Uncategorized", value: 0 },
-			...categoryDataMapper,
-		];
-	} else {
-		finalCategoryData = [...categoryDataMapper];
-	}
-
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
@@ -427,7 +410,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				)}
 				<DragPreview ref={preview}>
 					{(items) => (
-						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4">
+						<div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4 dark:bg-gray-alpha-100">
 							{items.length > 1
 								? `${items.length} bookmarks`
 								: find(
@@ -442,19 +425,20 @@ const ListBox = (props: ListBoxDropTypes) => {
 			{state.selectionManager.selectedKeys.size > 0 && (
 				<div className="fixed bottom-12 left-[40%] flex w-[596px] items-center justify-between rounded-[14px] bg-gray-50 px-[11px] py-[9px] shadow-custom-6 max-xl:left-1/2 max-xl:-translate-x-1/2 max-md:hidden">
 					<div className="flex items-center gap-1">
-						<Checkbox
-							isSelected={
-								Array.from(state.selectionManager.selectedKeys.keys())?.length >
-								0
-							}
-							onChange={() => state.selectionManager.clearSelection()}
-							className="gap-3 text-sm leading-[21px] font-450 tracking-[1%] text-gray-900"
-							BoxSlot={ListBoxCheckboxBoxSlot}
-						>
+						<label className="group relative flex cursor-pointer items-center justify-center gap-2">
+							<Checkbox
+								checked={
+									Array.from(state.selectionManager.selectedKeys.keys())
+										?.length > 0
+								}
+								onCheckedChange={() => state.selectionManager.clearSelection()}
+								className="flex size-4 items-center justify-center gap-3 rounded-[5px] text-[10px] leading-[21px] font-450 tracking-[1%] text-gray-900 data-checked:bg-plain-reverse data-checked:text-plain data-unchecked:bg-plain data-unchecked:text-plain-reverse"
+							/>
+
 							{`${
 								Array.from(state.selectionManager.selectedKeys.keys())?.length
 							} bookmarks`}
-						</Checkbox>
+						</label>
 
 						{/* <Button
 							className="p-1 text-13 font-450 leading-[15px] text-gray-900"
@@ -531,21 +515,29 @@ const ListBox = (props: ListBoxDropTypes) => {
 										<figure className="mr-[6px] text-gray-1000">
 											<MoveIcon />
 										</figure>
-										<p>Move to</p>
+										<p>Add to</p>
 									</div>
 								}
 								menuClassName={dropdownMenuClassName}
 							>
-								{finalCategoryData?.map((dropdownItem) => (
+								{categoryDataMapper?.map((dropdownItem) => (
 									<AriaDropdownMenu
 										key={dropdownItem?.value}
 										onClick={() => {
-											state.selectionManager.clearSelection();
-											onCategoryChange(
-												Array.from(
-													state.selectionManager.selectedKeys.keys(),
-												) as number[],
-												dropdownItem?.value,
+											const selectedIds = Array.from(
+												state.selectionManager.selectedKeys.keys(),
+											).map(Number);
+
+											addCategoryToBookmarksOptimisticMutation.mutate(
+												{
+													bookmark_ids: selectedIds,
+													category_id: dropdownItem?.value,
+												},
+												{
+													onSuccess: () => {
+														state.selectionManager.clearSelection();
+													},
+												},
 											);
 										}}
 									>
@@ -566,29 +558,3 @@ const ListBox = (props: ListBoxDropTypes) => {
 };
 
 export default ListBox;
-
-const boxStyles = tv({
-	extend: checkboxBoxStyles,
-	base: "size-4 rounded-[5px]",
-	variants: {
-		isSelected: {
-			true: "bg-plain-reverse text-plain",
-			false: "bg-plain text-plain-reverse",
-		},
-	},
-});
-
-function ListBoxCheckboxBoxSlot(props: CheckboxRenderProps) {
-	const { isSelected, isIndeterminate, ...renderRest } = props;
-
-	return (
-		<div
-			className={boxStyles({
-				isSelected: isSelected || isIndeterminate,
-				...renderRest,
-			})}
-		>
-			<CheckIcon aria-hidden className="text-[10px]" />
-		</div>
-	);
-}

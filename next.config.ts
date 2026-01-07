@@ -28,11 +28,6 @@ const nextConfig: NextConfig = {
 
 	typedRoutes: true,
 
-	// Turn on fetch and it's data cache logging when debugging rsc fetches
-	experimental: {
-		turbopackFileSystemCacheForDev: true,
-	},
-
 	logging: {
 		fetches: {
 			fullUrl: true,
@@ -64,10 +59,16 @@ const nextConfig: NextConfig = {
 	async redirects() {
 		return await Promise.resolve([
 			{
-				destination: "/all-bookmarks",
+				destination: `/everything`,
 				// temporary redirect (307)
 				permanent: false,
 				source: "/",
+			},
+			{
+				destination: `/everything/:path*`,
+				// 301 permanent redirect
+				permanent: true,
+				source: "/all-bookmarks/:path*",
 			},
 		]);
 	},

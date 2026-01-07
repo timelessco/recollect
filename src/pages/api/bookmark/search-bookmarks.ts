@@ -3,16 +3,16 @@ import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
 import { z } from "zod";
 
 import { type SingleListData } from "../../../types/apiTypes";
 import {
 	bookmarkType,
+	DISCOVER_URL,
 	documentFileTypes,
 	DOCUMENTS_URL,
+	GET_HASHTAG_TAG_PATTERN,
 	GET_SITE_SCOPE_PATTERN,
-	GET_TEXT_WITH_AT_CHAR,
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
@@ -26,6 +26,7 @@ import {
 } from "../../../utils/constants";
 import {
 	checkIsUserOwnerOfCategory,
+	extractTagNamesFromSearch,
 	isUserCollaboratorInCategory,
 	isUserInACategoryInApi,
 } from "../../../utils/helpers";
@@ -43,6 +44,7 @@ const querySchema = z.object({
 	search: z.string().min(1, "Search parameter is required"),
 	category_id: z.string().optional(),
 });
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
@@ -63,20 +65,29 @@ export default async function handler(
 
 		const supabase = apiSupabaseClient(request, response);
 
-		const { data: userData, error: userError } = await supabase.auth.getUser();
-		const user_id = userData?.user?.id;
-		const email = userData?.user?.email as string;
-
-		if (userError || !user_id) {
-			console.warn("[search-bookmarks] Missing user_id from Supabase auth");
-			response.status(401).json({
-				data: null,
-				error: { message: "Unauthorized" },
-			});
-			return;
-		}
-
 		const { search, category_id } = parseResult.data;
+
+		const isDiscoverPage = category_id === DISCOVER_URL;
+
+		// Discover page doesn't require authentication
+		let user_id: string | undefined;
+		let email: string | undefined;
+
+		if (!isDiscoverPage) {
+			const { data: userData, error: userError } =
+				await supabase.auth.getUser();
+			user_id = userData?.user?.id;
+			email = userData?.user?.email as string;
+
+			if (userError || !user_id) {
+				console.warn("[search-bookmarks] Missing user_id from Supabase auth");
+				response.status(401).json({
+					data: null,
+					error: { message: "Unauthorized" },
+				});
+				return;
+			}
+		}
 
 		const offset = Number.parseInt(request.query.offset as string, 10) || 0;
 		const limit = PAGINATION_LIMIT;
@@ -94,19 +105,28 @@ export default async function handler(
 
 		const searchText = search
 			?.replace(GET_SITE_SCOPE_PATTERN, "")
-			?.replace(GET_TEXT_WITH_AT_CHAR, "")
+			?.replace(GET_HASHTAG_TAG_PATTERN, "")
 			?.trim();
 
-		const matchedSearchTag = search.match(GET_TEXT_WITH_AT_CHAR);
-		const tagName =
-			!isEmpty(matchedSearchTag) && !isNull(matchedSearchTag)
-				? matchedSearchTag?.map((item) => item?.replace("#", ""))
-				: undefined;
+		const tagName = extractTagNamesFromSearch(search);
+
+		// Determine category_scope for junction table filtering
+		// Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
+		const userInCollections = isUserInACategoryInApi(
+			category_id as string,
+			false,
+		);
+		const categoryScope = userInCollections
+			? category_id === UNCATEGORIZED_URL
+				? 0
+				: Number(category_id)
+			: null;
 
 		console.log("[search-bookmarks] Parsed search parameters:", {
 			urlScope,
 			searchText,
 			tagName,
+			categoryScope,
 		});
 
 		let query = supabase
@@ -114,106 +134,102 @@ export default async function handler(
 				search_text: searchText,
 				url_scope: urlScope,
 				tag_scope: tagName,
+				category_scope: isDiscoverPage ? null : categoryScope,
 			})
 			.eq("trash", category_id === TRASH_URL)
 			.range(offset, offset + limit);
 
-		const userInCollectionsCondition = isUserInACategoryInApi(
-			category_id as string,
-			false,
-		);
+		if (isDiscoverPage) {
+			query = query.not("make_discoverable", "is", null);
+		} else {
+			const userId = user_id as string;
+			const userEmail = email as string;
 
-		if (!userInCollectionsCondition) {
-			// if user is not in any category, then get only the items that match the user_id
-			query = query.eq("user_id", user_id);
-		}
+			if (!userInCollections) {
+				query = query.eq("user_id", userId);
+			}
 
-		if (userInCollectionsCondition) {
-			// check if user is a collaborator for the category
-			const {
-				success: isUserCollaboratorInCategorySuccess,
-				isCollaborator: isUserCollaboratorInCategoryValue,
-				error: isUserCollaboratorInCategoryError,
-			} = await isUserCollaboratorInCategory(
-				supabase,
-				category_id as string,
-				email,
-			);
-
-			if (!isUserCollaboratorInCategorySuccess) {
-				console.error(
-					"[search-bookmarks] Error checking if user is a collaborator for the category:",
-					isUserCollaboratorInCategoryError,
+			if (userInCollections) {
+				// check if user is a collaborator for the category
+				const {
+					success: isUserCollaboratorInCategorySuccess,
+					isCollaborator: isUserCollaboratorInCategoryValue,
+					error: isUserCollaboratorInCategoryError,
+				} = await isUserCollaboratorInCategory(
+					supabase,
+					category_id as string,
+					userEmail,
 				);
-				Sentry.captureException(isUserCollaboratorInCategoryError, {
-					tags: {
-						operation: "check_user_collaborator_of_category",
-					},
-					extra: { category_id },
-					user: {
-						id: user_id,
-						email,
-					},
-				});
-				response.status(500).json({
-					data: null,
-					error: {
-						message:
-							"Error checking if user is a collaborator for the category",
-					},
-				});
-				return;
-			}
 
-			// check if user is the owner of the category
-			const {
-				success: isUserOwnerOfCategorySuccess,
-				isOwner: isUserOwnerOfCategory,
-				error: isUserOwnerOfCategoryError,
-			} = await checkIsUserOwnerOfCategory(
-				supabase,
-				category_id as string,
-				user_id,
-			);
+				if (!isUserCollaboratorInCategorySuccess) {
+					console.error(
+						"[search-bookmarks] Error checking if user is a collaborator for the category:",
+						isUserCollaboratorInCategoryError,
+					);
+					Sentry.captureException(isUserCollaboratorInCategoryError, {
+						tags: {
+							operation: "check_user_collaborator_of_category",
+						},
+						extra: { category_id },
+						user: {
+							id: userId,
+							email: userEmail,
+						},
+					});
+					response.status(500).json({
+						data: null,
+						error: {
+							message:
+								"Error checking if user is a collaborator for the category",
+						},
+					});
+					return;
+				}
 
-			if (!isUserOwnerOfCategorySuccess) {
-				console.error(
-					"[search-bookmarks] Error checking if user is the owner of the category:",
-					isUserOwnerOfCategoryError,
+				// check if user is the owner of the category
+				const {
+					success: isUserOwnerOfCategorySuccess,
+					isOwner: isUserOwnerOfCategory,
+					error: isUserOwnerOfCategoryError,
+				} = await checkIsUserOwnerOfCategory(
+					supabase,
+					category_id as string,
+					userId,
 				);
-				Sentry.captureException(isUserOwnerOfCategoryError, {
-					tags: {
-						operation: "check_user_owner_of_category",
-					},
-					extra: { category_id },
-					user: {
-						id: user_id,
-						email,
-					},
-				});
-				response.status(500).json({
-					data: null,
-					error: {
-						message: "Error checking if user is the owner of the category",
-					},
-				});
-				return;
+
+				if (!isUserOwnerOfCategorySuccess) {
+					console.error(
+						"[search-bookmarks] Error checking if user is the owner of the category:",
+						isUserOwnerOfCategoryError,
+					);
+					Sentry.captureException(isUserOwnerOfCategoryError, {
+						tags: {
+							operation: "check_user_owner_of_category",
+						},
+						extra: { category_id },
+						user: {
+							id: userId,
+							email: userEmail,
+						},
+					});
+					response.status(500).json({
+						data: null,
+						error: {
+							message: "Error checking if user is the owner of the category",
+						},
+					});
+					return;
+				}
+
+				// check if user is not a collaborator or the owner of the category
+				const is_user_not_collaborator_or_owner =
+					!isUserCollaboratorInCategoryValue && !isUserOwnerOfCategory;
+
+				if (is_user_not_collaborator_or_owner) {
+					// if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
+					query = query.eq("user_id", userId);
+				}
 			}
-
-			// check if user is not a collaborator or the owner of the category
-			const is_user_not_collaborator_or_owner =
-				!isUserCollaboratorInCategoryValue && !isUserOwnerOfCategory;
-
-			if (is_user_not_collaborator_or_owner) {
-				// if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
-				query = query.eq("user_id", user_id);
-			}
-
-			// get all the items for the category_id irrespective of the user_id, as user has access to all the items in the category
-			query = query.eq(
-				"category_id",
-				category_id === UNCATEGORIZED_URL ? 0 : category_id,
-			);
 		}
 
 		if (category_id === IMAGES_URL) {
@@ -252,7 +268,7 @@ export default async function handler(
 			Sentry.captureException(error, {
 				tags: {
 					operation: "search_bookmarks",
-					userId: user_id,
+					userId: user_id ?? "discover_page",
 				},
 				extra: { category_id, rawSearch: search },
 			});
@@ -277,13 +293,19 @@ export default async function handler(
 		});
 
 		const finalData = (data ?? []).map((item) => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const { ogimage, added_tags: addedTags, ...rest } = item as any;
+			const {
+				ogimage,
+				added_tags: addedTags,
+				added_categories: addedCategories,
+				...rest
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} = item as any;
 
 			return {
 				...(rest as SingleListData),
 				ogImage: ogimage,
 				addedTags,
+				addedCategories,
 			};
 		}) as SingleListData[];
 

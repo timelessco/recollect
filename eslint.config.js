@@ -98,6 +98,7 @@ export default defineConfig(
 			"canonical/id-match": "off",
 			"canonical/import-specifier-newline": "off",
 			"canonical/sort-keys": "off",
+			"canonical/export-specifier-newline": "off",
 
 			// Import
 			"import/no-extraneous-dependencies": "off",

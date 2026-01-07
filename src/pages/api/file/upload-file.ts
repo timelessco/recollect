@@ -18,6 +18,7 @@ import {
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
@@ -31,7 +32,7 @@ import {
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../utils/helpers";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { vet } from "../../../utils/try";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
@@ -64,7 +65,7 @@ const videoLogic = async (
 	}
 
 	// Get the public URL for the uploaded thumbnail
-	const { data: thumbnailUrl } = r2Helpers.getPublicUrl(thumbnailPath);
+	const { data: thumbnailUrl } = storageHelpers.getPublicUrl(thumbnailPath);
 
 	const ogImage = thumbnailUrl?.publicUrl;
 
@@ -218,7 +219,7 @@ export default async (
 		// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
 		// the public url for the uploaded file is got
 		const { data: storageData, error: publicUrlError } =
-			r2Helpers.getPublicUrl(storagePath);
+			storageHelpers.getPublicUrl(storagePath);
 
 		// Check for public URL error immediately
 		if (publicUrlError) {
@@ -290,7 +291,6 @@ export default async (
 					user_id: userId,
 					description: (meta_data?.img_caption as string) || "",
 					ogImage,
-					category_id: categoryIdLogic,
 					type: fileType,
 					meta_data,
 				},
@@ -317,6 +317,31 @@ export default async (
 				.status(500)
 				.json({ success: false, error: "Error uploading file" });
 			return;
+		}
+
+		// Add category association via junction table
+		if (DatabaseData?.[0]?.id) {
+			const { error: junctionError } = await supabase
+				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+				.insert({
+					bookmark_id: DatabaseData[0].id,
+					category_id: categoryIdLogic,
+					user_id: userId,
+				});
+
+			if (junctionError) {
+				console.error("Error inserting category association:", junctionError);
+				Sentry.captureException(junctionError, {
+					tags: {
+						operation: "insert_bookmark_category_junction",
+						userId,
+					},
+					extra: {
+						bookmarkId: DatabaseData[0].id,
+						categoryId: categoryIdLogic,
+					},
+				});
+			}
 		}
 
 		// Skip remaining upload API for PDFs

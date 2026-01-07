@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { Button } from "@base-ui/react/button";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
@@ -9,10 +10,9 @@ import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import { CollectionIcon } from "../../../components/collectionIcon";
+import { CategoryBadges } from "../../../components/categoryBadges";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
-import { Spinner } from "../../../components/spinner";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
@@ -36,9 +36,10 @@ import {
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	DISCOVER_URL,
+	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
@@ -62,32 +63,27 @@ import {
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
-import { EditDropdownButton } from "./EditDropdownButton";
+import { EditPopover } from "./edit-popover";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
+import { cn } from "@/utils/tailwind-merge";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
-
+	flattendPaginationBookmarkData?: SingleListData[];
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onCategoryChange: (bookmark_ids: number[], category_id: number) => void;
-	onDeleteClick: (post: SingleListData[]) => void;
-	onMoveOutOfTrashClick: (post: SingleListData) => void;
+	onDeleteClick?: (post: SingleListData[]) => void;
+	onMoveOutOfTrashClick?: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
-	isCategoryChangeLoading?: boolean;
-	onCreateNewCategory?: (category: {
-		label: string;
-		value: string | number;
-	}) => Promise<void>;
 };
 
 // Helper function to get the image source (screenshot or ogImage)
@@ -96,6 +92,7 @@ const getImageSource = (item: SingleListData) =>
 
 const CardSection = ({
 	listData = [],
+	flattendPaginationBookmarkData = [],
 	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
@@ -103,20 +100,15 @@ const CardSection = ({
 	showAvatar = false,
 	isOgImgLoading = false,
 	isBookmarkLoading = false,
-	onCategoryChange,
 	isPublicPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
-	isCategoryChangeLoading = false,
-	onCreateNewCategory = async () => {},
 }: CardSectionProps) => {
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-	const deleteBookmarkId = useMiscellaneousStore(
-		(state) => state.deleteBookmarkId,
-	);
+
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -140,7 +132,6 @@ const CardSection = ({
 
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
-	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 	const [openedTrashMenuId, setOpenedTrashMenuId] = useState<number | null>(
 		null,
 	);
@@ -149,7 +140,6 @@ const CardSection = ({
 	// cat_id refers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
-	const isDeleteBookmarkLoading = false;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
 		(state) => state.setCurrentBookmarkView,
@@ -174,9 +164,10 @@ const CardSection = ({
 		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 	};
 
-	const bookmarksList = isEmpty(searchText)
-		? listData
-		: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
+	const bookmarksList =
+		isPublicPage || isEmpty(searchText)
+			? listData
+			: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],
@@ -253,54 +244,14 @@ const CardSection = ({
 		return false;
 	};
 
-	const singleBookmarkCategoryData = (category_id: number) => {
-		const name = find(categoryData?.data, (item) => item?.id === category_id);
-
-		return name as CategoriesData;
-	};
-
-	// category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
+	// Category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
 	const renderEditAndDeleteIcons = (post: SingleListData) => {
-		const iconBgClassName =
-			"rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs z-15  group-hover:flex";
-
-		const externalLinkIcon = (
-			<div
-				className={`${iconBgClassName} hidden`}
-				onClick={(event) => {
-					event.preventDefault();
-					window.open(post?.url, "_blank");
-				}}
-				onKeyDown={() => {}}
-				onPointerDown={(event) => {
-					event.stopPropagation();
-				}}
-				role="button"
-				tabIndex={0}
-			>
-				<figure className="text-blacks-800">
-					<LinkExternalIcon />
-				</figure>
-			</div>
-		);
-		const isMenuOpen = openedMenuId === post.id;
-
-		const pencilIcon = (
-			<EditDropdownButton
-				isMenuOpen={isMenuOpen}
-				iconBgClassName={iconBgClassName}
-				isPublicPage={isPublicPage}
-				setOpenedMenuId={setOpenedMenuId}
-				post={post}
-				onCategoryChange={onCategoryChange}
-				onCreateNewCategory={onCreateNewCategory}
-				bookmarksList={bookmarksList}
-				isCategoryChangeLoading={isCategoryChangeLoading}
-				userId={userId}
-			/>
-		);
-
 		const isTrashMenuOpen = openedTrashMenuId === post.id;
+		const isListView = cardTypeCondition === viewValues.list;
+		const isStandardView =
+			cardTypeCondition === viewValues.moodboard ||
+			cardTypeCondition === viewValues.card ||
+			cardTypeCondition === viewValues.timeline;
 
 		const trashIcon =
 			categorySlug === TRASH_URL ? (
@@ -308,7 +259,7 @@ const CardSection = ({
 					isBottomBar={false}
 					label="Delete Bookmark"
 					onClearTrash={() => {
-						onDeleteClick([post]);
+						onDeleteClick?.([post]);
 					}}
 					isClearingTrash={false}
 					isOpen={isTrashMenuOpen}
@@ -317,121 +268,99 @@ const CardSection = ({
 					}}
 				/>
 			) : (
-				<div
-					className={`ml-2 ${iconBgClassName} hidden`}
-					onClick={(event) => {
-						event.stopPropagation();
-						onDeleteClick([post]);
-					}}
-					onKeyDown={() => {}}
-					role="button"
-					tabIndex={0}
+				<Button
+					className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
+					onClick={() => onDeleteClick?.([post])}
 				>
-					<figure
-						onPointerDown={(event) => {
-							event.stopPropagation();
-						}}
-					>
-						<TrashIconGray
-							onPointerDown={(event) => {
-								event.stopPropagation();
-							}}
-						/>
-					</figure>
-				</div>
+					<TrashIconGray />
+				</Button>
 			);
 
 		if (isPublicPage) {
-			const publicExternalIconClassname = classNames({
-				"absolute top-0": true,
-				"right-[8px]":
-					cardTypeCondition === viewValues.moodboard ||
-					cardTypeCondition === viewValues.card ||
-					cardTypeCondition === viewValues.timeline,
-				"left-[-34px]": cardTypeCondition === viewValues.list,
-			});
 			return (
-				<div className={publicExternalIconClassname}>{externalLinkIcon}</div>
+				<div
+					className={cn("absolute top-0", {
+						"right-[8px]": isStandardView,
+						"left-[-34px]": isListView,
+					})}
+				>
+					<a
+						href={post.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
+					>
+						<LinkExternalIcon />
+					</a>
+				</div>
 			);
 		}
 
+		// In trash page
 		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
-			// in trash page
-
-			const trashIconWrapperClassname = classNames(
-				"absolute top-[2px]",
-				"group-hover:flex",
-				isTrashMenuOpen ? "flex" : "hidden",
-				{
-					"left-[17px]":
-						cardTypeCondition === viewValues.moodboard ||
-						cardTypeCondition === viewValues.card ||
-						cardTypeCondition === viewValues.timeline,
-					"left-[-64px]": cardTypeCondition === viewValues.list,
-				},
-			);
 			return (
-				<div className={trashIconWrapperClassname}>
-					<div
-						className={`${iconBgClassName}`}
-						onClick={(event) => {
-							event.preventDefault();
-							onMoveOutOfTrashClick(post);
-						}}
-						onKeyDown={() => {}}
-						role="button"
-						tabIndex={0}
+				<div
+					className={cn(
+						"absolute top-[2px] group-hover:flex",
+						isTrashMenuOpen ? "flex" : "hidden",
+						isStandardView && "left-[17px]",
+						isListView && "left-[-64px]",
+					)}
+				>
+					<Button
+						className="z-15 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
+						onClick={() => onMoveOutOfTrashClick?.(post)}
 					>
-						<figure>
-							<BackIcon
-								onPointerDown={(event) => {
-									event.stopPropagation();
-								}}
-							/>
-						</figure>
-					</div>
+						<BackIcon />
+					</Button>
+
 					{trashIcon}
 				</div>
 			);
 		}
 
+		// Default logged in user can see edit and delete icons
 		if (renderEditAndDeleteCondition(post)) {
-			// default logged in user
-			const editTrashClassname = classNames({
-				"absolute top-0 flex": true,
-				"left-[15px]":
-					cardTypeCondition === viewValues.moodboard ||
-					cardTypeCondition === viewValues.card ||
-					cardTypeCondition === viewValues.timeline,
-				"left-[-94px]": cardTypeCondition === viewValues.list,
-			});
-
 			return (
 				<>
-					<div className={editTrashClassname}>
-						{isBookmarkCreatedByLoggedinUser(post) ? (
-							<>
-								{pencilIcon}
-								{isDeleteBookmarkLoading &&
-								deleteBookmarkId?.includes(post?.id) ? (
-									<Spinner
-										className="h-3 w-3 animate-spin"
-										style={{ color: "var(--color-plain-reverse)" }}
-									/>
-								) : (
-									trashIcon
-								)}
-							</>
-						) : (
-							pencilIcon
-						)}
+					<div
+						className={cn("absolute top-0 flex", {
+							"left-[-94px]": isListView,
+							"left-[15px]": isStandardView,
+						})}
+					>
+						<EditPopover post={post} userId={userId} />
+
+						{/* Only show trash icon if the bookmark is created by the logged in user */}
+						{isBookmarkCreatedByLoggedinUser(post) ? trashIcon : null}
 					</div>
-					<div className="absolute top-0 right-8 flex">{externalLinkIcon}</div>
+
+					<div className="absolute top-0 right-8">
+						<a
+							href={post.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs group-hover:flex"
+						>
+							<LinkExternalIcon />
+						</a>
+					</div>
 				</>
 			);
 		}
 
-		return <div className="absolute top-0 left-[10px]">{externalLinkIcon}</div>;
+		return (
+			<div className="absolute top-0 left-[15px]">
+				<a
+					href={post.url}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs group-hover:flex"
+				>
+					<LinkExternalIcon />
+				</a>
+			</div>
+		);
 	};
 
 	const renderAvatar = (item: SingleListData) => {
@@ -466,7 +395,7 @@ const CardSection = ({
 	const renderUrl = (item: SingleListData) => (
 		<p
 			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
-				!isNull(item?.category_id) && isNull(categorySlug)
+				(item?.addedCategories?.length ?? 0) > 0 && isNull(categorySlug)
 					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
 			}`}
@@ -626,24 +555,25 @@ const CardSection = ({
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
-		const bookmarkCategoryData = singleBookmarkCategoryData(
-			item?.category_id ?? 0,
+		// Only show categories in "Everything" view
+		if (categorySlug !== EVERYTHING_URL) {
+			return null;
+		}
+
+		// Filter out uncategorized (id=0) for display
+		const displayCategories = item.addedCategories?.filter(
+			(cat) => cat.id !== 0,
 		);
 
+		if (!displayCategories?.length) {
+			return null;
+		}
+
 		return (
-			<>
-				{!isNull(item?.category_id) &&
-					categorySlug === ALL_BOOKMARKS_URL &&
-					item?.category_id !== 0 && (
-						<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
-							<p className="mr-1">in</p>
-							<CollectionIcon bookmarkCategoryData={bookmarkCategoryData} />
-							<p className="ml-1 text-13 leading-4 font-450 text-gray-600">
-								{bookmarkCategoryData?.category_name}
-							</p>
-						</div>
-					)}
-			</>
+			<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
+				<p className="mr-1">in</p>
+				<CategoryBadges categories={displayCategories} maxVisible={2} />
+			</div>
 		);
 	};
 
@@ -746,84 +676,72 @@ const CardSection = ({
 		</div>
 	);
 
-	const renderListCard = (item: SingleListData) => {
-		const isMenuOpen = openedMenuId === item.id;
-
-		return (
-			<div className="flex w-full items-center p-2" id="single-moodboard-card">
-				{hasCoverImg ? (
-					renderOgImage(
-						getImageSource(item),
-						item?.id,
-						item?.meta_data?.ogImgBlurUrl ?? "",
-						item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-						item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-						item?.type,
-					)
-				) : (
-					<div className="h-[48px]" />
-				)}
-				{bookmarksInfoValue?.length === 1 &&
-				bookmarksInfoValue[0] === "cover" ? null : (
-					<div className="overflow-hidden max-sm:space-y-1">
+	const renderListCard = (item: SingleListData) => (
+		<div className="flex w-full items-center p-2" id="single-moodboard-card">
+			{hasCoverImg ? (
+				renderOgImage(
+					getImageSource(item),
+					item?.id,
+					item?.meta_data?.ogImgBlurUrl ?? "",
+					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
+					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
+					item?.type,
+				)
+			) : (
+				<div className="h-[48px]" />
+			)}
+			{bookmarksInfoValue?.length === 1 &&
+			bookmarksInfoValue[0] === "cover" ? null : (
+				<div className="overflow-hidden max-sm:space-y-1">
+					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
+						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
+							{item?.title}
+						</p>
+					)}
+					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
 						{(bookmarksInfoValue as string[] | undefined)?.includes(
-							"title",
-						) && (
-							<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
-								{item?.title}
-							</p>
-						)}
-						<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
-							{(bookmarksInfoValue as string[] | undefined)?.includes(
-								"description",
-							) &&
-								!isEmpty(item.description) && (
-									<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
-										{item?.description}
-									</p>
-								)}
-							{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
-								!isEmpty(item?.addedTags) && (
-									<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
-										{item?.addedTags?.map((tag) =>
-											renderTag(tag?.id, tag?.name),
-										)}
-									</div>
-								)}
-							{(bookmarksInfoValue as string[] | undefined)?.includes(
-								"info",
-							) && (
-								<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-									{renderFavIcon(item)}
-									{renderUrl(item)}
-									{item?.inserted_at && (
-										<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-											{format(
-												new Date(item?.inserted_at || ""),
-												isCurrentYear(item?.inserted_at)
-													? "dd MMM"
-													: "dd MMM YYY",
-											)}
-										</p>
-									)}
-									{renderCategoryBadge(item)}
+							"description",
+						) &&
+							!isEmpty(item.description) && (
+								<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
+									{item?.description}
+								</p>
+							)}
+						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
+							!isEmpty(item?.addedTags) && (
+								<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
+									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
 								</div>
 							)}
-						</div>
+						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
+							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
+								{renderFavIcon(item)}
+								{renderUrl(item)}
+								{item?.inserted_at && (
+									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
+										{format(
+											new Date(item?.inserted_at || ""),
+											isCurrentYear(item?.inserted_at)
+												? "dd MMM"
+												: "dd MMM YYY",
+										)}
+									</p>
+								)}
+								{renderCategoryBadge(item)}
+							</div>
+						)}
 					</div>
-				)}
-				<div
-					className={`absolute top-[15px] right-[8px] items-center space-x-1 group-hover:flex ${isMenuOpen ? "flex" : "hidden"}`}
-				>
-					{showAvatar && renderAvatar(item)}
-					{renderEditAndDeleteIcons(item)}
 				</div>
+			)}
+			<div className="absolute top-[15px] right-[8px] flex items-center space-x-1">
+				{showAvatar && renderAvatar(item)}
+				{renderEditAndDeleteIcons(item)}
 			</div>
-		);
-	};
+		</div>
+	);
 
 	const listWrapperClass = classNames({
-		"mt-[47px]": true,
+		"mt-[47px]": !isPublicPage || categorySlug === DISCOVER_URL,
 		"px-4 py-2": cardTypeCondition === viewValues.list,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
@@ -887,8 +805,8 @@ const CardSection = ({
 				bookmarksColumns={bookmarksColumns}
 				bookmarksList={bookmarksList}
 				cardTypeCondition={cardTypeCondition}
+				flattendPaginationBookmarkData={flattendPaginationBookmarkData}
 				isPublicPage={isPublicPage}
-				onCategoryChange={onCategoryChange}
 				selectionMode="multiple"
 			>
 				{sortByCondition?.map((item) => (

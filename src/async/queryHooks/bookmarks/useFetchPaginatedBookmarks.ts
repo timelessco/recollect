@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { flatten } from "lodash";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -7,12 +8,19 @@ import {
 	useLoadersStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
-import { type SupabaseSessionType } from "../../../types/apiTypes";
+import {
+	type SingleListData,
+	type SupabaseSessionType,
+} from "../../../types/apiTypes";
 import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
-import { BOOKMARKS_KEY, PAGINATION_LIMIT } from "../../../utils/constants";
+import {
+	BOOKMARKS_KEY,
+	DISCOVER_URL,
+	PAGINATION_LIMIT,
+} from "../../../utils/constants";
 import { fetchBookmarksData } from "../../supabaseCrudHelpers";
 
-// fetches paginated bookmarks pages on user location like all-bookmarks or categories etc...
+// fetches paginated bookmarks pages on user location like everything or categories etc...
 export default function useFetchPaginatedBookmarks() {
 	const session = useSupabaseSession((state) => state.session);
 
@@ -26,10 +34,10 @@ export default function useFetchPaginatedBookmarks() {
 	const { sortBy } = useGetSortBy();
 
 	const {
-		data: allBookmarksData,
+		data: everythingData,
 		fetchNextPage,
-		isLoading: isAllBookmarksDataLoading,
-		isFetching: isFetchingAllBookmarksData,
+		isLoading: isEverythingDataLoading,
+		isFetching: isFetchingEverythingData,
 	} = useInfiniteQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -42,18 +50,29 @@ export default function useFetchPaginatedBookmarks() {
 			),
 		initialPageParam: 0,
 		getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
+		enabled: CATEGORY_ID !== DISCOVER_URL,
 	});
 
 	useEffect(() => {
-		if (allBookmarksData && isSortByLoading) {
+		if (everythingData && isSortByLoading) {
 			toggleIsSortByLoading();
 		}
-	}, [isSortByLoading, allBookmarksData, toggleIsSortByLoading]);
+	}, [isSortByLoading, everythingData, toggleIsSortByLoading]);
+
+	// Flatten paginated data reactively - this updates when cache changes
+	const flattendPaginationBookmarkData = useMemo(
+		() =>
+			flatten(
+				everythingData?.pages?.map((page) => page?.data),
+			) as SingleListData[],
+		[everythingData],
+	);
 
 	return {
-		allBookmarksData,
+		everythingData,
+		flattendPaginationBookmarkData,
 		fetchNextPage,
-		isAllBookmarksDataLoading,
-		isFetchingAllBookmarksData,
+		isEverythingDataLoading,
+		isFetchingEverythingData,
 	};
 }

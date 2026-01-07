@@ -1,40 +1,23 @@
-import { find } from "lodash";
+import { useTheme } from "next-themes";
 
 import { type CategoriesData } from "../types/apiTypes";
-import { options } from "../utils/commonData";
-import { colorPickerColors } from "../utils/constants";
+import { iconMap } from "../utils/commonData";
+import { BLACK_COLOR, WHITE_COLOR } from "../utils/constants";
 
-// --- Utility: normalize color ---
-const normalizeColor = (color?: string) => {
-	if (!color) {
-		return "";
-	}
-
-	return color.trim().toLowerCase();
-};
-
-// --- Utility: adjust color based on dark mode ---
-const getAdjustedColor = (color?: string) => {
-	if (typeof window === "undefined") {
+/**
+ * Swap white/black in dark mode for visibility
+ */
+const getAdjustedColor = (color: string | undefined, isDarkMode: boolean) => {
+	if (!isDarkMode || !color) {
 		return color;
 	}
 
-	const isDarkMode = document?.documentElement?.classList?.contains("dark");
-	const colorNorm = normalizeColor(color);
+	if (color === WHITE_COLOR) {
+		return BLACK_COLOR;
+	}
 
-	const isWhite =
-		colorNorm === "#fff" || colorNorm === "#ffffff" || colorNorm === "white";
-	const isBlack =
-		colorNorm === "#000" || colorNorm === "#000000" || colorNorm === "black";
-
-	if (isDarkMode) {
-		if (isWhite) {
-			return "#000000";
-		}
-
-		if (isBlack) {
-			return "#ffffff";
-		}
+	if (color === BLACK_COLOR) {
+		return WHITE_COLOR;
 	}
 
 	return color;
@@ -51,17 +34,19 @@ export const CollectionIcon = ({
 	iconSize = "10",
 	size = "14",
 }: CollectionIconProps) => {
-	const adjustedBgColor = getAdjustedColor(bookmarkCategoryData?.icon_color);
-	const matchedIcon = find(
-		options(),
-		(optionItem) => optionItem?.label === bookmarkCategoryData?.icon,
+	const { resolvedTheme } = useTheme();
+	const isDarkMode = resolvedTheme === "dark";
+
+	const adjustedBgColor = getAdjustedColor(
+		bookmarkCategoryData?.icon_color,
+		isDarkMode,
 	);
 
-	// Pick contrasting icon color depending on background
-	const iconColor =
-		adjustedBgColor === colorPickerColors[0]
-			? colorPickerColors[1]
-			: colorPickerColors[0];
+	const matchedIcon = bookmarkCategoryData?.icon
+		? iconMap.get(bookmarkCategoryData.icon)
+		: undefined;
+
+	const iconColor = adjustedBgColor === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR;
 
 	return (
 		<div

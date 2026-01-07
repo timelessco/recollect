@@ -1,11 +1,12 @@
 import {
 	ADD_UPDATE_BOOKMARK_ACCESS_ERROR,
+	EVERYTHING_URL,
 	TRASH_URL,
 } from "../../../src/utils/constants";
 
 describe("share test", () => {
 	beforeEach(() => {
-		cy.visit("http://localhost:3000/all-bookmarks");
+		cy.visit(`http://localhost:3000/${EVERYTHING_URL}`);
 	});
 
 	it("collab test", () => {

@@ -3,10 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
+import {
+	type BookmarksPaginatedDataTypes,
+	type CategoriesData,
+} from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
+	CATEGORIES_KEY,
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	menuListItemName,
@@ -42,6 +46,31 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				sortBy,
 			]);
 
+			// Fetch category from cache to build addedCategories
+			const allCategories =
+				(
+					queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
+						| { data: CategoriesData[] }
+						| undefined
+				)?.data ?? [];
+
+			const categoryEntry = allCategories.find(
+				(cat) => cat.id === data?.category_id,
+			);
+
+			// Build addedCategories array (empty if category not in cache)
+			const addedCategories = categoryEntry
+				? [
+						{
+							id: categoryEntry.id,
+							category_name: categoryEntry.category_name,
+							category_slug: categoryEntry.category_slug,
+							icon: categoryEntry.icon,
+							icon_color: categoryEntry.icon_color,
+						},
+					]
+				: [];
+
 			// Optimistically update to the new value
 			queryClient.setQueryData<BookmarksPaginatedDataTypes>(
 				[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -56,8 +85,10 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 										data: [
 											{
 												url: data?.url,
-												category_id: data?.category_id,
+												addedCategories,
 												inserted_at: new Date(),
+												addedTags: [],
+												trash: false,
 											},
 											...item.data,
 										],

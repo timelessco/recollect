@@ -1,70 +1,42 @@
 "use client";
 
-import {
-	composeRenderProps,
-	Checkbox as RACCheckbox,
-	type CheckboxRenderProps,
-	type CheckboxProps as RACCheckboxProps,
-} from "react-aria-components";
+import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
 
 import { CheckIcon } from "@/icons/check-icon";
-import { focusRing } from "@/utils/react-aria-utils";
-import { tv } from "@/utils/tailwind-merge";
+import { cn } from "@/utils/tailwind-merge";
 
-const checkboxStyles = tv({
-	base: "group relative flex cursor-pointer items-center justify-center",
-});
-
-export interface CheckboxProps extends RACCheckboxProps {
-	BoxSlot?: React.ElementType<CheckboxRenderProps>;
-}
+export type CheckboxProps = BaseCheckbox.Root.Props;
 
 export function Checkbox(props: CheckboxProps) {
-	const { BoxSlot = CheckboxBoxSlot, className, children, ...rest } = props;
+	const { className, children, ...rest } = props;
 
 	return (
-		<RACCheckbox
-			{...rest}
-			className={composeRenderProps(className, (className, renderProps) =>
-				checkboxStyles({ ...renderProps, className }),
+		<BaseCheckbox.Root
+			className={cn(
+				"shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+				className,
 			)}
+			data-slot="checkbox-root"
+			{...rest}
 		>
-			{composeRenderProps(children, (children, renderProps) => (
-				<>
-					<BoxSlot {...renderProps} />
-
-					{children}
-				</>
-			))}
-		</RACCheckbox>
+			{children ?? <CheckboxDefaultIndicator />}
+		</BaseCheckbox.Root>
 	);
 }
 
-export const checkboxBoxStyles = tv({
-	extend: focusRing,
-	base: "box-border flex size-[26px] shrink-0 items-center justify-center rounded-lg backdrop-blur-[10px] transition",
-	variants: {
-		isSelected: {
-			false: "bg-whites-700 text-blacks-800",
-			true: "bg-blacks-700 text-whites-800",
-		},
-	},
-});
+type CheckboxDefaultIndicatorProps = BaseCheckbox.Indicator.Props;
 
-function CheckboxBoxSlot(props: CheckboxRenderProps) {
-	const { isSelected, isIndeterminate, ...renderRest } = props;
+export function CheckboxDefaultIndicator(props: CheckboxDefaultIndicatorProps) {
+	const { children, className, ...rest } = props;
 
 	return (
-		<div
-			className={checkboxBoxStyles({
-				isSelected: isSelected || isIndeterminate,
-				...renderRest,
-			})}
+		<BaseCheckbox.Indicator
+			keepMounted
+			className={cn("contents", className)}
+			data-slot="checkbox-default-indicator"
+			{...rest}
 		>
-			{/* {isIndeterminate ? (
-					<Minus aria-hidden className={iconStyles} />
-				) :  */}
-			<CheckIcon aria-hidden className="text-sm" />
-		</div>
+			{children ?? <CheckIcon />}
+		</BaseCheckbox.Indicator>
 	);
 }

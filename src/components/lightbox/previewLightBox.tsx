@@ -13,10 +13,11 @@ import {
 } from "../../store/componentStore";
 import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import {
-	ALL_BOOKMARKS_URL,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	CATEGORY_ID_PATHNAME,
+	DISCOVER_URL,
+	EVERYTHING_URL,
 } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -50,14 +51,23 @@ export const PreviewLightBox = ({
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const debouncedSearch = useDebounce(searchText, 500);
+	const categorySlug = getCategorySlugFromRouter(router);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
-	// if there is text in searchbar we get the chache of searched data else we get from all bookmarks
-	const previousData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-		searchText ? debouncedSearch : sortBy,
-	]) as {
+	// Determine the correct query key based on whether we're on discover page
+	const queryKey = isDiscoverPage
+		? searchText
+			? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, debouncedSearch]
+			: [BOOKMARKS_KEY, DISCOVER_URL]
+		: [
+				BOOKMARKS_KEY,
+				session?.user?.id,
+				searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
+				searchText ? debouncedSearch : sortBy,
+			];
+
+	// if there is text in searchbar we get the cache of searched data else we get from everything
+	const previousData = queryClient.getQueryData(queryKey) as {
 		data: SingleListData[];
 		pages: Array<{ data: SingleListData[] }>;
 	};
@@ -103,10 +113,10 @@ export const PreviewLightBox = ({
 			{
 				pathname: `${CATEGORY_ID_PATHNAME}`,
 				query: {
-					category_id: router?.query?.category_id ?? ALL_BOOKMARKS_URL,
+					category_id: router?.query?.category_id ?? EVERYTHING_URL,
 				},
 			},
-			getCategorySlugFromRouter(router) ?? ALL_BOOKMARKS_URL,
+			getCategorySlugFromRouter(router) ?? EVERYTHING_URL,
 			{ shallow: true },
 		);
 

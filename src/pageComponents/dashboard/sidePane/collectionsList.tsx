@@ -1,4 +1,4 @@
-import { useRef, useState, type Key, type ReactNode } from "react";
+import { useMemo, useRef, useState, type Key, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,9 +34,9 @@ import {
 	type ListState,
 } from "react-stately";
 
-import useAddCategoryOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryOptimisticMutation";
-import useAddCategoryToBookmarkOptimisticMutation from "../../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
+import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
@@ -46,12 +46,10 @@ import {
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import useGetFlattendPaginationBookmarkData from "../../../hooks/useGetFlattendPaginationBookmarkData";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
 import {
-	useLoadersStore,
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
@@ -69,6 +67,8 @@ import {
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	MAX_TAG_COLLECTION_NAME_LENGTH,
+	MIN_TAG_COLLECTION_NAME_LENGTH,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../../../utils/constants";
@@ -78,11 +78,11 @@ import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
+import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
+import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
+import { handleClientError } from "@/utils/error-utils/client";
 
-// interface OnReorderPayloadTypes {
-//   target: { key: string };
-//   keys: Set<unknown>;
-// }
 type ListBoxDropTypes = ListProps<object> & {
 	getItems?: (keys: Set<Key>) => DragItem[];
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -309,8 +309,19 @@ const CollectionsList = () => {
 	const { allCategories, isLoadingCategories } = useFetchCategories();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
-	const { flattendPaginationBookmarkData } =
-		useGetFlattendPaginationBookmarkData();
+	const { everythingData, isEverythingDataLoading } =
+		useFetchPaginatedBookmarks();
+	const { flattenedSearchData } = useSearchBookmarks();
+
+	const flattendPaginationBookmarkData = useMemo(
+		() => everythingData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
+		[everythingData?.pages],
+	);
+
+	const mergedBookmarkData = useMemo(
+		() => [...flattendPaginationBookmarkData, ...(flattenedSearchData ?? [])],
+		[flattendPaginationBookmarkData, flattenedSearchData],
+	);
 
 	const handleCategoryOptionClick = async (
 		value: number | string,
@@ -362,27 +373,41 @@ const CollectionsList = () => {
 		error: PostgrestError;
 	};
 
-	const sidePaneOptionLoading = useLoadersStore(
-		(state) => state.sidePaneOptionLoading,
-	);
-
 	const handleAddNewCategory = async (newCategoryName: string) => {
-		if (!isNull(userProfileData?.data)) {
-			const response = (await mutationApiCall(
-				addCategoryOptimisticMutation.mutateAsync({
-					name: newCategoryName,
-					category_order: userProfileData?.data[0]?.category_order ?? [],
-				}),
-			)) as { data: CategoriesData[] };
+		const result = tagCategoryNameSchema.safeParse(newCategoryName);
 
-			if (!isEmpty(response?.data)) {
-				void router.push(`/${response?.data[0]?.category_slug}`);
-			}
+		if (!result.success) {
+			handleClientError(
+				new Error(result.error.issues[0]?.message ?? "Invalid collection name"),
+				`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
+			);
+			return;
+		}
+
+		if (!isNull(userProfileData.data)) {
+			addCategoryOptimisticMutation.mutate(
+				{
+					name: result.data,
+					category_order: (
+						userProfileData.data[0]?.category_order ?? []
+					).filter((id): id is number => id !== null),
+				},
+				{
+					onSuccess: (data) => {
+						void router.push(`/${data[0].category_slug}`);
+					},
+				},
+			);
 		}
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleBookmarksDrop = async (event: any) => {
+		// Guard: don't process drops while bookmarks are still loading
+		if (isEverythingDataLoading || !everythingData) {
+			return;
+		}
+
 		if (event?.isInternal === false) {
 			const categoryId = Number.parseInt(event?.target?.key as string, 10);
 
@@ -402,12 +427,14 @@ const CollectionsList = () => {
 			await event?.items?.forEach(async (item: any) => {
 				const bookmarkId = (await item.getText("text/plain")) as string;
 
-				const bookmarkCreatedUserId = find(
-					flattendPaginationBookmarkData,
+				const foundBookmark = find(
+					mergedBookmarkData,
 					(bookmarkItem) =>
 						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-				)?.user_id?.id;
-
+				);
+				// Handle both nested object (from regular fetch) and plain string (from search)
+				const bookmarkCreatedUserId =
+					foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
 				if (bookmarkCreatedUserId === session?.user?.id) {
 					if (!updateAccessCondition) {
 						// if update access is not there then user cannot drag and drop anything into the collection
@@ -415,11 +442,9 @@ const CollectionsList = () => {
 						return;
 					}
 
-					await addCategoryToBookmarkOptimisticMutation.mutateAsync({
+					addCategoryToBookmarkOptimisticMutation.mutate({
 						category_id: categoryId,
 						bookmark_id: Number.parseInt(bookmarkId, 10),
-						// if user is changing to uncategorised then thay always have access
-						update_access: updateAccessCondition,
 					});
 				} else {
 					errorToast("You cannot move collaborators uploads");
@@ -547,22 +572,21 @@ const CollectionsList = () => {
 					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
 					id="add-category-input"
 					onBlur={(event) => {
-						if (!isEmpty(event?.target?.value)) {
-							void handleAddNewCategory(
-								(event.target as HTMLInputElement).value,
-							);
+						const inputValue = (event.target as HTMLInputElement)?.value;
+						if (inputValue) {
+							void handleAddNewCategory(inputValue);
 						}
 
 						setShowAddCategoryInput(false);
 					}}
 					onKeyUp={(event) => {
-						if (
-							event.key === "Enter" &&
-							!isEmpty((event.target as HTMLInputElement).value)
-						) {
-							void handleAddNewCategory(
-								(event.target as HTMLInputElement).value,
-							);
+						if (event.key === "Enter") {
+							const inputValue = (event.target as HTMLInputElement)?.value;
+
+							if (inputValue) {
+								void handleAddNewCategory(inputValue);
+							}
+
 							setShowAddCategoryInput(false);
 						}
 					}}
@@ -645,7 +669,11 @@ const CollectionsList = () => {
 										listNameId="collection-name"
 										onCategoryOptionClick={handleCategoryOptionClick}
 										showDropdown
-										showSpinner={item?.id === sidePaneOptionLoading}
+										showSpinner={
+											addCategoryToBookmarkOptimisticMutation.isPending &&
+											addCategoryToBookmarkOptimisticMutation.variables
+												?.category_id === item?.id
+										}
 									/>
 								</Item>
 							))}

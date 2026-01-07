@@ -25,14 +25,9 @@ export type TagInputOption = {
 	value: number | string;
 };
 
-export type SearchSelectOption = {
-	label: string;
-	value: number | string;
-};
-
 // export type CategoryIdUrlTypes =
 // 	| number
-// 	| typeof ALL_BOOKMARKS_URL
+// 	| typeof EVERYTHING_URL
 // 	| typeof TRASH_URL
 // 	| typeof UNCATEGORIZED_URL
 // 	| null;

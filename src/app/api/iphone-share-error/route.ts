@@ -1,11 +1,22 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
-import { createApiClient, getApiUser } from "@/lib/supabase/api";
+import { apiError, apiSuccess, parseBody } from "@/lib/api-helpers/response";
+import { requireAuth } from "@/lib/supabase/api";
+import { isNullable } from "@/utils/assertion-utils";
 
-const ErrorPayloadSchema = z.object({
-	message: z.string().min(1, "Error message is required"),
+const ROUTE = "iphone-share-error";
+
+const IphoneShareErrorPayloadSchema = z.object({
+	message: z
+		.string({
+			error: (issue) =>
+				isNullable(issue.input)
+					? "Error message is required"
+					: "Error message must be a string",
+		})
+		.min(1, { error: "Error message cannot be empty" }),
 	stackTrace: z.string().optional(),
 	deviceInfo: z
 		.object({
@@ -22,91 +33,81 @@ const ErrorPayloadSchema = z.object({
 		.optional(),
 });
 
-type ErrorPayload = z.infer<typeof ErrorPayloadSchema>;
+export type IphoneShareErrorPayload = z.infer<
+	typeof IphoneShareErrorPayloadSchema
+>;
+
+const IphoneShareErrorResponseSchema = z.object({
+	sentryEventId: z.string(),
+});
+
+export type IphoneShareErrorResponse = z.infer<
+	typeof IphoneShareErrorResponseSchema
+>;
 
 export async function POST(request: NextRequest) {
 	try {
-		const { supabase, token } = await createApiClient();
-
-		const {
-			data: { user },
-			error: userError,
-		} = await getApiUser(supabase, token);
-
-		if (userError || !user) {
-			console.warn("iPhone Share Intent error: User authentication failed", {
-				error: userError,
-			});
-			return NextResponse.json(
-				{ success: false, error: "Unauthorized: User authentication required" },
-				{ status: 401 },
-			);
+		const auth = await requireAuth(ROUTE);
+		if (auth.errorResponse) {
+			return auth.errorResponse;
 		}
 
-		const body = await request.json();
-		const parsed = ErrorPayloadSchema.safeParse(body);
-
-		if (!parsed.success) {
-			const errors = parsed.error.issues;
-			console.warn("iPhone Share Intent error: Invalid payload", { errors });
-			return NextResponse.json(
-				{ success: false, error: "Invalid request body" },
-				{ status: 400 },
-			);
+		const body = await parseBody({
+			request,
+			schema: IphoneShareErrorPayloadSchema,
+			route: ROUTE,
+		});
+		if (body.errorResponse) {
+			return body.errorResponse;
 		}
 
-		const errorData: ErrorPayload = parsed.data;
+		const { user } = auth;
+		const { message, stackTrace, deviceInfo, context } = body.data;
 		const userId = user.id;
 
-		console.log("iPhone Share Intent error received:", {
+		console.log(`[${ROUTE}] Error received:`, {
 			userId,
-			message: errorData.message,
-			hasStackTrace: Boolean(errorData.stackTrace),
-			deviceModel: errorData.deviceInfo?.model,
+			message,
+			hasStackTrace: Boolean(stackTrace),
+			deviceModel: deviceInfo?.model,
 		});
 
-		const errorToCapture = new Error(errorData.message);
-		if (errorData.stackTrace) {
-			errorToCapture.stack = errorData.stackTrace;
+		const errorToCapture = new Error(message);
+		if (stackTrace) {
+			errorToCapture.stack = stackTrace;
 		}
 
 		const sentryEventId = Sentry.captureException(errorToCapture, {
 			tags: {
 				operation: "iphone_share_intent_error",
 				userId,
-				device_model: errorData.deviceInfo?.model,
-				os_version: errorData.deviceInfo?.osVersion,
+				device_model: deviceInfo?.model,
+				os_version: deviceInfo?.osVersion,
 			},
 			extra: {
-				appVersion: errorData.deviceInfo?.appVersion,
-				screen: errorData.context?.screen,
-				action: errorData.context?.action,
+				appVersion: deviceInfo?.appVersion,
+				screen: context?.screen,
+				action: context?.action,
 			},
 		});
 
-		console.log("iPhone Share Intent error sent to Sentry:", {
+		console.log(`[${ROUTE}] Error sent to Sentry:`, {
 			sentryEventId,
 			userId,
 		});
 
-		return NextResponse.json(
-			{
-				success: true,
-				sentryEventId,
-			},
-			{ status: 200 },
-		);
-	} catch (error) {
-		console.error("Unexpected error in iphone-share-error endpoint:", error);
-		Sentry.captureException(error, {
-			tags: {
-				operation: "iphone_share_intent_error_unexpected",
-			},
+		return apiSuccess({
+			route: ROUTE,
+			data: { sentryEventId },
+			schema: IphoneShareErrorResponseSchema,
 		});
-		return NextResponse.json(
-			{ success: false, error: "An unexpected error occurred" },
-			{ status: 500 },
-		);
+	} catch (error) {
+		return apiError({
+			route: ROUTE,
+			message: "An unexpected error occurred",
+			error,
+			operation: "iphone_share_error_unexpected",
+		});
 	}
 }
 
@@ -147,22 +148,22 @@ export async function POST(request: NextRequest) {
  * SUCCESS RESPONSE (200 OK)
  * -------------------------
  * {
- *   "success": true,
- *   "sentryEventId": "f71f786c790b4c7fae232923dc709cf8"
+ *   "data": { "sentryEventId": "f71f786c790b4c7fae232923dc709cf8" },
+ *   "error": null
  * }
  *
  * ERROR RESPONSES
  * ---------------
  * 401 Unauthorized:
  * {
- *   "success": false,
- *   "error": "Unauthorized: User authentication required"
+ *   "data": null,
+ *   "error": { "name": "UnauthorizedError", "message": "Authentication required" }
  * }
  *
  * 400 Bad Request:
  * {
- *   "success": false,
- *   "error": "Invalid request body"
+ *   "data": null,
+ *   "error": { "name": "BadRequestError", "message": "Error message is required" }
  * }
  *
  * EXAMPLE CURL COMMAND

@@ -3,7 +3,7 @@ import { useMediaQuery } from "@react-hookz/web";
 import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
-import { LightboxCloseIcon } from "../../icons/lightboxCloseIcon";
+import { LightboxCloseIcon } from "../../icons/lightbox-close-icon";
 import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
 import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
@@ -81,25 +81,28 @@ export const CustomLightBox = ({
 		}
 	}, [setLightboxShowSidepane]);
 
-	/**
-	 * Enhanced close handler that also resets the side panel state
-	 * Uses useCallback to prevent unnecessary re-renders
-	 */
-	const handleClose = useCallback(() => {
-		originalHandleClose();
-		setLightboxShowSidepane(false);
-	}, [originalHandleClose, setLightboxShowSidepane]);
-
 	// Transform bookmarks into slides using custom hook
 	const slides = useLightboxSlides(bookmarks);
 
 	// Handle navigation, query invalidation and URL updates using custom hook
-	const onViewRef = useLightboxNavigation({
-		activeIndex,
-		bookmarks,
-		isPage,
-		setActiveIndex,
-	});
+	const { onViewRef, handleClose: handleCloseInvalidation } =
+		useLightboxNavigation({
+			activeIndex,
+			bookmarks,
+			isPage,
+			setActiveIndex,
+		});
+
+	/**
+	 * Enhanced close handler that also resets the side panel state
+	 * and triggers query invalidation if collection changed
+	 * Uses useCallback to prevent unnecessary re-renders
+	 */
+	const handleClose = useCallback(() => {
+		handleCloseInvalidation();
+		originalHandleClose();
+		setLightboxShowSidepane(false);
+	}, [handleCloseInvalidation, originalHandleClose, setLightboxShowSidepane]);
 
 	/**
 	 * Custom slide renderer that handles different media types

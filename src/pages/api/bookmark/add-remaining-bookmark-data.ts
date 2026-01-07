@@ -29,7 +29,7 @@ import {
 	checkIfUrlAnMedia,
 	getNormalisedImageUrl,
 } from "../../../utils/helpers";
-import { r2Helpers } from "../../../utils/r2Client";
+import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
@@ -52,7 +52,7 @@ export const upload = async (
 			storagePath ??
 			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userIdForStorage}/${imgName}`;
 
-		const { error: uploadError } = await r2Helpers.uploadObject(
+		const { error: uploadError } = await storageHelpers.uploadObject(
 			R2_MAIN_BUCKET_NAME,
 			storagePath_,
 			new Uint8Array(decode(base64info)),
@@ -65,7 +65,7 @@ export const upload = async (
 			return null;
 		}
 
-		const { data: storageData } = r2Helpers.getPublicUrl(storagePath_);
+		const { data: storageData } = storageHelpers.getPublicUrl(storagePath_);
 
 		return storageData?.publicUrl || null;
 	} catch (error) {

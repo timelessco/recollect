@@ -13,6 +13,7 @@ import {
 	type SingleListData,
 } from "../../../../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
@@ -26,7 +27,7 @@ import {
 	isUserInACategory,
 	parseUploadFileName,
 } from "../../../../../../utils/helpers";
-import { r2Helpers } from "../../../../../../utils/r2Client";
+import { storageHelpers } from "../../../../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../../../../bookmark/add-bookmark-min-data";
 
@@ -63,7 +64,7 @@ const videoLogic = async (
 
 	// For R2, we need to copy the object manually by getting and uploading
 	// First get the object from temp location
-	const { error: getError } = await r2Helpers.listObjects(
+	const { error: getError } = await storageHelpers.listObjects(
 		R2_MAIN_BUCKET_NAME,
 		thumbnailPath,
 	);
@@ -77,11 +78,11 @@ const videoLogic = async (
 	// or handle this differently in a real implementation
 
 	// Delete the temp thumbnail if it exists
-	await r2Helpers.deleteObject(R2_MAIN_BUCKET_NAME, thumbnailPath);
+	await storageHelpers.deleteObject(R2_MAIN_BUCKET_NAME, thumbnailPath);
 
 	// Get the public URL for the final thumbnail
 	const { data: thumbnailUrl, error: thumbnailUrlError } =
-		r2Helpers.getPublicUrl(finalThumbnailPath);
+		storageHelpers.getPublicUrl(finalThumbnailPath);
 
 	if (!isNil(thumbnailUrlError)) {
 		throw new Error(`ERROR: thumbnailUrlError ${String(thumbnailUrlError)}`);
@@ -192,7 +193,7 @@ export default async (
 	// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
 	// the public url for the uploaded file is got
 	const { data: storageData, error: publicUrlError } =
-		r2Helpers.getPublicUrl(storagePath);
+		storageHelpers.getPublicUrl(storagePath);
 
 	let meta_data: ImgMetadataType = {
 		img_caption: null,
@@ -243,7 +244,6 @@ export default async (
 				user_id: userId,
 				description: (meta_data?.img_caption as string) || "",
 				ogImage,
-				category_id: categoryIdLogic,
 				type: fileType,
 				meta_data,
 			},
@@ -252,6 +252,27 @@ export default async (
 		data: Array<{ id: SingleListData["id"] }>;
 		error: PostgrestError | VerifyErrors | string | null;
 	};
+
+	// Add category association via junction table
+	if (DatabaseData?.[0]?.id) {
+		const { error: junctionError } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.insert({
+				bookmark_id: DatabaseData[0].id,
+				category_id: categoryIdLogic,
+				user_id: userId,
+			});
+
+		if (junctionError) {
+			console.error("Error inserting category association:", junctionError);
+			Sentry.captureException(junctionError, {
+				tags: {
+					operation: "insert_bookmark_category_junction",
+				},
+				extra: { bookmarkId: DatabaseData[0].id, categoryId: categoryIdLogic },
+			});
+		}
+	}
 
 	if (isNil(publicUrlError) && isNil(DBerror)) {
 		response

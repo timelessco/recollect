@@ -6,10 +6,12 @@ import isEmpty from "lodash/isEmpty";
 
 import {
 	type BookmarksCountTypes,
+	type BookmarksWithCategoriesWithCategoryForeignKeys,
 	type BookmarksWithTagsWithTagForginKeys,
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
 	documentFileTypes,
@@ -33,7 +35,7 @@ import {
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-// gets all bookmarks data mapped with the data related to other tables , like tags , categories etc...
+// gets all bookmarks data mapped with the data related to other tables, like tags, categories etc...
 
 type Data = {
 	count: BookmarksCountTypes | null;
@@ -58,21 +60,20 @@ export default async function handler(
 
 	// tells if user is in a category or not
 	const categoryCondition = isUserInACategoryInApi(category_id as string);
+	const isUncategorized = category_id === UNCATEGORIZED_URL;
 	let data;
 
-	// get all bookmarks
+	// Base select - will be modified for category/uncategorized views
+	const baseSelect = `*, user_id, user_id (*)`;
+	// Junction select for filtering only - full category data fetched separately
+	const junctionSelect = `*, user_id, user_id (*), ${BOOKMARK_CATEGORIES_TABLE_NAME}!inner(bookmark_id, category_id)`;
+	// Track if we're using junction select for category filtering
+	const usedJunctionSelect = categoryCondition || isUncategorized;
+
+	// get all bookmarks - use junction JOIN for category filtering
 	let query = supabase
 		.from(MAIN_TABLE_NAME)
-		.select(
-			`
-*,
-user_id,
-user_id (
-  *
-)
-`,
-		)
-		// .eq('user_id', userId) // this is for '/' (root-page) route , we need bookmarks by user_id // TODO: check and remove
+		.select(usedJunctionSelect ? junctionSelect : baseSelect)
 		.eq("trash", category_id === TRASH_URL)
 		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
 
@@ -148,15 +149,17 @@ user_id (
 			return;
 		}
 
+		// Use JOIN filter for category - handles unlimited bookmarks efficiently
+		const numericCategoryId = Number.parseInt(category_id as string, 10);
+		query = query.eq(
+			`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`,
+			numericCategoryId,
+		);
+
 		if (isUserCollaboratorInCategoryValue || isUserOwnerOfCategory) {
-			// **** here we are checking if user is a collaborator for the category_id or user is the owner of the category
-			// user is collaborator
-			// get all the items for the category_id irrespective of the user_is , as user has access to all the items in the category
-			query = query.eq("category_id", category_id);
+			// User is collaborator or owner - access all items in the category (no user filter needed)
 		} else {
-			// user is not collaborator
-			// get only the items that match the user_id and category_id, as user only has access to items created by the user
-			query = query.eq("category_id", category_id);
+			// User is not collaborator - only access items they created
 			query = query.eq("user_id", userId);
 		}
 	} else {
@@ -164,7 +167,10 @@ user_id (
 	}
 
 	if (category_id === UNCATEGORIZED_URL) {
-		query = query.eq("category_id", 0);
+		// Use JOIN filter for uncategorized (category_id = 0) - handles unlimited bookmarks
+		query = query
+			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, 0)
+			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.user_id`, userId);
 	}
 
 	if (category_id === IMAGES_URL) {
@@ -222,20 +228,46 @@ user_id (
 
 	const { data: bookmarkData, error } = await query;
 
+	// Cast through unknown - Supabase's type parser doesn't understand !inner join syntax
 	// eslint-disable-next-line prefer-const
-	data = bookmarkData as SingleListData[];
+	data = bookmarkData as unknown as SingleListData[];
 
-	const { data: bookmarksWithTags } = await supabase
-		.from(BOOKMARK_TAGS_TABLE_NAME)
-		.select(
-			`
+	// Get bookmark IDs for the current page to filter related data
+	const bookmarkIds = data?.map((item) => item.id) ?? [];
+
+	// Only fetch tags/categories for the current page's bookmarks (more efficient + avoids 1000 row limit)
+	const { data: bookmarksWithTags } = bookmarkIds.length
+		? await supabase
+				.from(BOOKMARK_TAGS_TABLE_NAME)
+				.select(
+					`
     bookmark_id,
     tag_id (
       id,
       name
     )`,
-		)
-		.eq("user_id", userId);
+				)
+				.in("bookmark_id", bookmarkIds)
+		: { data: [] };
+
+	// Always fetch ALL categories for each bookmark (INNER JOIN only has filtered category)
+	const { data: bookmarksWithCategories } = bookmarkIds.length
+		? await supabase
+				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+				.select(
+					`
+    bookmark_id,
+    category_id (
+      id,
+      category_name,
+      category_slug,
+      icon,
+      icon_color
+    )`,
+				)
+				.in("bookmark_id", bookmarkIds)
+				.order("created_at", { ascending: true })
+		: { data: [] };
 
 	const finalData = data
 		?.map((item) => {
@@ -243,17 +275,29 @@ user_id (
 				(tagItem) => tagItem?.bookmark_id === item?.id,
 			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
-			if (!isEmpty(matchedBookmarkWithTag)) {
-				return {
-					...item,
-					addedTags: matchedBookmarkWithTag?.map((matchedItem) => ({
-						id: matchedItem?.tag_id?.id,
-						name: matchedItem?.tag_id?.name,
-					})),
-				};
-			}
+			// Always use separate query result for complete category data
+			const matchedBookmarkWithCategory = bookmarksWithCategories?.filter(
+				(catItem) => catItem?.bookmark_id === item?.id,
+			) as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
 
-			return item;
+			return {
+				...item,
+				addedTags: !isEmpty(matchedBookmarkWithTag)
+					? matchedBookmarkWithTag?.map((matchedItem) => ({
+							id: matchedItem?.tag_id?.id,
+							name: matchedItem?.tag_id?.name,
+						}))
+					: [],
+				addedCategories: !isEmpty(matchedBookmarkWithCategory)
+					? matchedBookmarkWithCategory?.map((matchedItem) => ({
+							id: matchedItem?.category_id?.id,
+							category_name: matchedItem?.category_id?.category_name,
+							category_slug: matchedItem?.category_id?.category_slug,
+							icon: matchedItem?.category_id?.icon,
+							icon_color: matchedItem?.category_id?.icon_color,
+						}))
+					: [],
+			};
 		})
 		.filter(Boolean) as SingleListData[];
 

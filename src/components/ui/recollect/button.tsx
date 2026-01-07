@@ -1,85 +1,76 @@
 "use client";
 
 import * as React from "react";
-import {
-	composeRenderProps,
-	ProgressBar,
-	Button as RACButton,
-	type ButtonRenderProps,
-	type ButtonProps as RACButtonProps,
-} from "react-aria-components";
+import { Button as BaseButton } from "@base-ui/react/button";
+import { Progress } from "@base-ui/react/progress";
 
 import { Spinner } from "./spinner";
-import { focusRing } from "@/utils/react-aria-utils";
-import { tv } from "@/utils/tailwind-merge";
+import { cn } from "@/utils/tailwind-merge";
 
-export const buttonBase = tv({
-	extend: focusRing,
-	base: "relative inline-flex shrink-0 cursor-pointer appearance-none items-center justify-center align-middle whitespace-nowrap transition select-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
-	variants: {
-		isDisabled: {
-			true: "cursor-not-allowed opacity-50",
-		},
-		isHovered: {
-			true: "-translate-y-px",
-		},
-		isPressed: {
-			true: "translate-y-0",
-		},
-	},
-});
-
-export const button = tv({
-	extend: buttonBase,
-	base: [
-		"bg-gray-950 text-gray-0",
-		"gap-2 p-2",
-		"rounded-lg shadow-custom-2",
-		"text-13 leading-[15px] font-medium",
-	],
-	variants: {
-		isHovered: {
-			true: "bg-gray-700",
-		},
-	},
-});
-
-export interface ButtonProps extends RACButtonProps {
-	PendingSlot?: React.ElementType<ButtonRenderProps>;
-}
+export type ButtonProps = BaseButton.Props & {
+	/**
+	 * Content to show when button is in pending state
+	 */
+	pendingSlot?: React.ReactElement;
+	/**
+	 * Whether the button is in a pending/loading state
+	 */
+	pending?: boolean;
+};
 
 export function Button(props: ButtonProps) {
 	const {
 		className,
 		children,
-		PendingSlot = ButtonPendingSlot,
+		pending = false,
+		pendingSlot,
+		disabled,
 		...rest
 	} = props;
 
 	return (
-		<RACButton
+		<BaseButton
 			{...rest}
-			className={composeRenderProps(className, (className, renderProps) =>
-				button({ ...renderProps, className }),
-			)}
+			data-slot="button"
+			disabled={disabled || pending}
+			focusableWhenDisabled={pending}
+			className={cn(buttonBaseClasses, className)}
 		>
-			{composeRenderProps(children, (children, renderProps) => {
-				const { isPending } = renderProps;
-				if (isPending) {
-					return <PendingSlot {...renderProps} />;
-				}
-
-				return <>{children}</>;
-			})}
-		</RACButton>
+			{pending ? (pendingSlot ?? <ButtonDefaultPendingComp />) : children}
+		</BaseButton>
 	);
 }
 
-function ButtonPendingSlot() {
+export const buttonBaseClasses = [
+	// Base styles
+	"relative inline-flex shrink-0 cursor-pointer appearance-none items-center justify-center",
+	"align-middle whitespace-nowrap transition select-none",
+	"[&_svg]:pointer-events-none [&_svg]:shrink-0",
+	// Disabled state
+	"data-disabled:cursor-not-allowed data-disabled:opacity-50",
+	// Hover/Active
+	"hover:not-data-disabled:-translate-y-px",
+	"active:not-data-disabled:translate-y-0",
+	// Focus ring
+	"outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+];
+
+type ButtonDefaultPendingCompProps = Omit<Progress.Root.Props, "value"> & {
+	spinnerSlot?: React.ReactElement;
+};
+
+export function ButtonDefaultPendingComp(props: ButtonDefaultPendingCompProps) {
+	const { children, spinnerSlot, className, ...rest } = props;
+
 	return (
-		<ProgressBar aria-label="Loading...">
-			<Spinner className="mr-2 text-xs" />
-			<span>Loading...</span>
-		</ProgressBar>
+		<Progress.Root
+			value={null}
+			className={cn("contents", className)}
+			aria-label="Loading..."
+			{...rest}
+		>
+			{spinnerSlot ?? <Spinner className="mr-2 text-xs" />}
+			{children ? children : <span>Loading...</span>}
+		</Progress.Root>
 	);
 }

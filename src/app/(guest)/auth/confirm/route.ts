@@ -3,7 +3,7 @@ import { type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { type EmailOtpType } from "@supabase/supabase-js";
 
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@/lib/supabase/server";
 import { getErrorMessage } from "@/utils/error-utils/error-message";
 
 export async function GET(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 		const next = _next?.startsWith("/") ? _next : "/";
 
 		if (token_hash && type) {
-			const supabase = await createClient();
+			const supabase = await createServerClient();
 			const { error } = await supabase.auth.verifyOtp({
 				type,
 				token_hash,

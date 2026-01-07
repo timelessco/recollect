@@ -18,8 +18,7 @@ import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmark
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "../../async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
-import useAddCategoryToBookmarkOptimisticMutation from "../../async/mutationHooks/category/useAddCategoryToBookmarkOptimisticMutation";
-import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
@@ -32,9 +31,9 @@ import useFetchSharedCategories from "../../async/queryHooks/share/useFetchShare
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
+import useDebounce from "../../hooks/useDebounce";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
-import useGetFlattendPaginationBookmarkData from "../../hooks/useGetFlattendPaginationBookmarkData";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import {
 	useLoadersStore,
@@ -55,10 +54,10 @@ import {
 import { type FileType } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
+	DISCOVER_URL,
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
-	SETTINGS_URL,
 	TRASH_URL,
 	TWEETS_URL,
 	UNCATEGORIZED_URL,
@@ -68,8 +67,8 @@ import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
-import Settings from "../settings";
 
+import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
 import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import SettingsModal from "./modals/settingsModal";
 import SignedOutSection from "./signedOutSection";
@@ -119,6 +118,7 @@ const Dashboard = () => {
 	);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const debouncedSearchText = useDebounce(searchText, 500);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -132,9 +132,10 @@ const Dashboard = () => {
 	const { bookmarksCountData } = useFetchBookmarksCount();
 
 	const {
-		allBookmarksData,
+		everythingData,
+		flattendPaginationBookmarkData,
 		fetchNextPage: fetchNextBookmarkPage,
-		isAllBookmarksDataLoading,
+		isEverythingDataLoading,
 	} = useFetchPaginatedBookmarks();
 
 	const {
@@ -143,8 +144,9 @@ const Dashboard = () => {
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
 
-	// Determine if we're currently searching
-	const isSearching = !isEmpty(searchText);
+	// Determine if we're currently searching (use debounced to match when query runs)
+	const isSearching = !isEmpty(debouncedSearchText);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
 	const { sharedCategoriesData } = useFetchSharedCategories();
 
@@ -171,9 +173,6 @@ const Dashboard = () => {
 	// tag mutation
 
 	const { onDeleteCollection } = useDeleteCollection();
-
-	const { addCategoryToBookmarkOptimisticMutation } =
-		useAddCategoryToBookmarkOptimisticMutation();
 
 	const { updateCategoryOptimisticMutation } =
 		useUpdateCategoryOptimisticMutation();
@@ -272,9 +271,6 @@ const Dashboard = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userProfileData?.data?.[0]?.provider]);
 
-	const { flattendPaginationBookmarkData } =
-		useGetFlattendPaginationBookmarkData();
-
 	const addBookmarkLogic = async (url: string) => {
 		const currentCategory = find(
 			allCategories?.data,
@@ -291,19 +287,6 @@ const Dashboard = () => {
 					)?.edit_access === true ||
 					currentCategory?.user_id?.id === session?.user?.id
 				: true;
-
-		if (typeof CATEGORY_ID === "number") {
-			// to check that the same bookmark should not be there in the same category
-			const existingBookmarkCheck = find(
-				flattendPaginationBookmarkData,
-				(item) => item?.url === url && item?.category_id === CATEGORY_ID,
-			);
-
-			if (existingBookmarkCheck) {
-				errorToast("This bookmark already exists in the category");
-				return;
-			}
-		}
 
 		await mutationApiCall(
 			addBookmarkMinDataOptimisticMutation.mutateAsync({
@@ -353,24 +336,22 @@ const Dashboard = () => {
 				return existingViewData;
 			};
 
-			if (currentCategory) {
+			if (currentCategory && typeof CATEGORY_ID === "number") {
 				// for a collection
 				if (isUserTheCategoryOwner) {
 					// if user is the collection owner
-					void mutationApiCall(
-						updateCategoryOptimisticMutation.mutateAsync({
-							category_id: CATEGORY_ID,
-							updateData: {
-								category_views: {
-									...currentCategory?.category_views,
-									cardContentViewArray: cardContentViewLogic(
-										currentCategory?.category_views?.cardContentViewArray,
-									),
-									[updateValue]: value,
-								},
+					updateCategoryOptimisticMutation.mutate({
+						category_id: CATEGORY_ID,
+						updateData: {
+							category_views: {
+								...currentCategory.category_views,
+								cardContentViewArray: cardContentViewLogic(
+									currentCategory.category_views.cardContentViewArray,
+								),
+								[updateValue]: value,
 							},
-						}),
-					);
+						},
+					});
 				} else {
 					// if user is not the collection owner
 					const sharedCategoriesId = find(
@@ -462,8 +443,8 @@ const Dashboard = () => {
 		}
 
 		const firstPaginatedData =
-			allBookmarksData?.pages?.length !== 0
-				? (allBookmarksData?.pages[0] as SingleBookmarksPaginatedDataTypes)
+			everythingData?.pages?.length !== 0
+				? (everythingData?.pages[0] as SingleBookmarksPaginatedDataTypes)
 				: null;
 
 		if (!isNull(firstPaginatedData)) {
@@ -480,7 +461,7 @@ const Dashboard = () => {
 			}
 
 			if (CATEGORY_ID === null) {
-				const count = bookmarksCountData?.data?.allBookmarks;
+				const count = bookmarksCountData?.data?.everything;
 				return count !== flattendPaginationBookmarkData?.length;
 			}
 
@@ -598,11 +579,14 @@ const Dashboard = () => {
 												bookmarksCountData?.data ?? undefined,
 												CATEGORY_ID as unknown as string | number | null,
 											)}
+											flattendPaginationBookmarkData={
+												flattendPaginationBookmarkData
+											}
 											isBookmarkLoading={
 												addBookmarkMinDataOptimisticMutation?.isPending
 											}
 											isLoading={
-												isAllBookmarksDataLoading ||
+												isEverythingDataLoading ||
 												(isSearchLoading &&
 													(flattenedSearchData?.length ?? 0) === 0)
 											}
@@ -612,57 +596,6 @@ const Dashboard = () => {
 												isSearching
 													? flattenedSearchData
 													: flattendPaginationBookmarkData
-											}
-											onCategoryChange={async (value, cat_id) => {
-												const categoryId = cat_id;
-												const currentBookmarksData = isSearching
-													? flattenedSearchData
-													: flattendPaginationBookmarkData;
-
-												const currentCategory =
-													find(
-														allCategories?.data,
-														(item) => item?.id === categoryId,
-													) ??
-													find(
-														allCategories?.data,
-														(item) => item?.id === CATEGORY_ID,
-													);
-
-												const updateAccessCondition =
-													find(
-														currentCategory?.collabData,
-														(item) => item?.userEmail === session?.user?.email,
-													)?.edit_access === true ||
-													currentCategory?.user_id?.id === session?.user?.id;
-												for (const item of value) {
-													const bookmarkId = item.toString();
-
-													const bookmarkCreatedUserId = find(
-														currentBookmarksData,
-														(bookmarkItem) =>
-															Number.parseInt(bookmarkId, 10) ===
-															bookmarkItem?.id,
-													)?.user_id?.id;
-
-													if (bookmarkCreatedUserId === session?.user?.id) {
-														await addCategoryToBookmarkOptimisticMutation.mutateAsync(
-															{
-																category_id: categoryId,
-																bookmark_id: Number.parseInt(bookmarkId, 10),
-																update_access:
-																	isNull(categoryId) || !categoryId
-																		? true
-																		: updateAccessCondition,
-															},
-														);
-													} else {
-														errorToast("You cannot move collaborators uploads");
-													}
-												}
-											}}
-											isCategoryChangeLoading={
-												addCategoryToBookmarkOptimisticMutation?.isPending
 											}
 											onDeleteClick={(item) => {
 												if (CATEGORY_ID === TRASH_URL) {
@@ -731,8 +664,8 @@ const Dashboard = () => {
 		if (!isInNotFoundPage) {
 			// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 			switch (categorySlug) {
-				case SETTINGS_URL:
-					return <Settings />;
+				case DISCOVER_URL:
+					return <DiscoverBookmarkCards />;
 				case IMAGES_URL:
 					return renderAllBookmarkCards();
 				case VIDEOS_URL:
@@ -758,15 +691,20 @@ const Dashboard = () => {
 		void addBookmarkLogic(finalUrl);
 	};
 
-	if (isNil(session)) {
+	// Handle unsupported actions for discover page
+	const handleUnsupported = () => {
+		errorToast("This action is not available on Discover.");
+	};
+
+	if (isNil(session) && !isDiscoverPage) {
 		return <div />;
 	}
 
 	return (
 		<>
 			<DashboardLayout
-				categoryId={CATEGORY_ID}
-				onAddBookmark={onAddBookmark}
+				categoryId={isDiscoverPage ? DISCOVER_URL : CATEGORY_ID}
+				onAddBookmark={isDiscoverPage ? handleUnsupported : onAddBookmark}
 				onClearTrash={() => {
 					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 				}}
@@ -777,7 +715,7 @@ const Dashboard = () => {
 				setBookmarksView={(value, type) => {
 					bookmarksViewApiLogic(value, type);
 				}}
-				uploadFileFromAddDropdown={onDrop}
+				uploadFileFromAddDropdown={isDiscoverPage ? handleUnsupported : onDrop}
 				userId={session?.user?.id ?? ""}
 			>
 				{renderMainPaneContent()}

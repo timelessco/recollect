@@ -1,5 +1,5 @@
 import { isNullable } from "@/utils/assertion-utils";
-import { tcx } from "@/utils/tailwind-merge";
+import { cn } from "@/utils/tailwind-merge";
 
 export interface IconProps extends React.ComponentProps<"svg"> {
 	/**
@@ -24,7 +24,8 @@ export function Icon(props: IconProps) {
 
 	return (
 		<svg
-			className={tcx(
+			data-slot="icon"
+			className={cn(
 				"inline-block size-[1em] shrink-0 align-middle leading-[1em]",
 				className,
 			)}
