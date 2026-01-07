@@ -4,17 +4,20 @@ export const InstagramSyncBookmarksPayloadSchema = z.object({
 	data: z
 		.array(
 			z.object({
-				description: z.string(),
+				description: z.string().max(5000),
 				ogImage: z.string().nullable(),
-				title: z.string(),
+				title: z.string().max(500),
 				type: z.string(),
-				url: z.string(),
+				url: z.string().url().max(2048),
 				meta_data: z.object({
-					instagram_username: z.string(),
+					instagram_username: z.string().max(30),
 					instagram_profile_pic: z.string().nullable().optional(),
 					favIcon: z.string(),
 					video_url: z.string().nullable().optional(),
-					saved_collection_names: z.array(z.string()).optional(),
+					saved_collection_names: z
+						.array(z.string().max(255))
+						.max(100)
+						.optional(),
 				}),
 				inserted_at: z.string().datetime().optional(),
 				sort_index: z.string(),

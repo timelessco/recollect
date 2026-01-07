@@ -12,7 +12,7 @@ import { CATEGORIES_TABLE_NAME, PROFILES } from "@/utils/constants";
 const INSTAGRAM_COLLECTION_ICON = "bookmark";
 const INSTAGRAM_COLLECTION_COLOR = "#ffffff";
 
-const ROUTE = "create-collections";
+const ROUTE = "instagram-sync-collections";
 
 const CreateCollectionsPayloadSchema = z.object({
 	collections: z
