@@ -103,70 +103,72 @@ export const POST = createPostApiHandlerWithAuth({
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const pgmqSupabase = (supabase as any).schema("pgmq_public");
-		const { data: queueResults, error: queueResultsError } =
-			await pgmqSupabase.rpc("send_batch", {
+
+		// Queue both operations in parallel to reduce latency
+		const [importsQueueResult, aiEmbeddingsQueueResult] = await Promise.all([
+			pgmqSupabase.rpc("send_batch", {
 				queue_name: "imports",
 				messages: insertDBData,
 				sleep_seconds: 0,
-			});
-
-		if (queueResultsError) {
-			console.warn(`[${route}] Failed to queue item:`, queueResultsError);
-
-			return apiError({
-				route,
-				message: "Failed to queue item",
-				error: queueResultsError,
-				operation: "queue_embeddings",
-				userId,
-			});
-		}
-
-		console.log(
-			`[${route}] Successfully queued ${queueResults.length} items for adding categories`,
-		);
-		try {
-			const {
-				data: aiEmbeddingsQueueResults,
-				error: aiEmbeddingsQueueResultsError,
-			} = await pgmqSupabase.rpc("send_batch", {
+			}),
+			pgmqSupabase.rpc("send_batch", {
 				queue_name: "ai-embeddings",
 				messages: insertDBData,
 				sleep_seconds: 0,
-			});
+			}),
+		]);
 
-			if (aiEmbeddingsQueueResultsError) {
-				console.warn(
-					`[${route}] Failed to queue item:`,
-					aiEmbeddingsQueueResultsError,
-				);
+		const { data: queueResults, error: queueResultsError } = importsQueueResult;
+		const {
+			data: aiEmbeddingsQueueResults,
+			error: aiEmbeddingsQueueResultsError,
+		} = aiEmbeddingsQueueResult;
 
-				return apiError({
-					route,
-					message: "Failed to queue item",
-					error: aiEmbeddingsQueueResultsError,
-					operation: "queue_embeddings",
-					userId,
-				});
-			}
-
-			const queueResultsArray = Array.isArray(aiEmbeddingsQueueResults)
-				? aiEmbeddingsQueueResults
-				: [];
-			console.log(
-				`[${route}] Successfully queued ${queueResultsArray.length} items for ai-embeddings`,
+		// Handle imports queue error
+		if (queueResultsError) {
+			console.warn(
+				`[${route}] Failed to queue item to imports:`,
+				queueResultsError,
 			);
-		} catch (error) {
-			console.error(`[${route}] Failed to queue item:`, error);
 
 			return apiError({
 				route,
-				message: "Failed to queue item",
-				error: error instanceof Error ? error : new Error(String(error)),
+				message: "Failed to queue item to imports",
+				error: queueResultsError,
+				operation: "queue_imports",
+				userId,
+			});
+		}
+
+		// Handle ai-embeddings queue error
+		if (aiEmbeddingsQueueResultsError) {
+			console.warn(
+				`[${route}] Failed to queue item to ai-embeddings:`,
+				aiEmbeddingsQueueResultsError,
+			);
+
+			return apiError({
+				route,
+				message: "Failed to queue item to ai-embeddings",
+				error: aiEmbeddingsQueueResultsError,
 				operation: "queue_embeddings",
 				userId,
 			});
 		}
+
+		const queueResultsArray = Array.isArray(queueResults) ? queueResults : [];
+		const aiEmbeddingsQueueResultsArray = Array.isArray(
+			aiEmbeddingsQueueResults,
+		)
+			? aiEmbeddingsQueueResults
+			: [];
+
+		console.log(
+			`[${route}] Successfully queued ${queueResultsArray.length} items for adding categories`,
+		);
+		console.log(
+			`[${route}] Successfully queued ${aiEmbeddingsQueueResultsArray.length} items for ai-embeddings`,
+		);
 
 		return {
 			success: true,
