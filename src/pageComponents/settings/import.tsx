@@ -24,19 +24,20 @@ export const ImportBookmarks = () => {
 			? "completed"
 			: false;
 
-	//  Dynamically import papaparse
 	const parseCSV = async (file: File) => {
 		const Papa = await import("papaparse");
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return await new Promise<any>((resolve, reject) => {
-			Papa.parse(file, {
-				header: true,
-				skipEmptyLines: true,
-				complete: (results) => resolve(results),
-				error: (error) => reject(error),
-			});
-		});
+		return await new Promise<Papa.ParseResult<Record<string, string>>>(
+			(resolve, reject) => {
+				Papa.parse(file, {
+					header: true,
+					skipEmptyLines: true,
+					complete: (results) =>
+						resolve(results as Papa.ParseResult<Record<string, string>>),
+					error: (error) => reject(error),
+				});
+			},
+		);
 	};
 
 	const handleFile = async (fileToProcess: File) => {
@@ -119,7 +120,6 @@ export const ImportBookmarks = () => {
 				Import from Raindrop
 			</p>
 
-			{/* File Upload/Selected Card */}
 			<div
 				className={`relative flex flex-col items-center justify-center rounded-lg bg-gray-100 py-[75px] transition-colors ${
 					!isFileUploaded ? `${dragActive ? "bg-gray-200" : ""}` : ""
@@ -138,11 +138,13 @@ export const ImportBookmarks = () => {
 				<RaindropIcon className="mb-1.5 w-8" />
 				<p className="mb-1.5 align-middle text-sm leading-[115%] font-normal tracking-normal text-gray-800">
 					{isFileUploaded
-						? `Found ${bookmarkCount} Bookmarks`
+						? uploading === "completed"
+							? "Successfully imported bookmarks"
+							: `Found ${bookmarkCount} Bookmarks`
 						: "Drop the CSV file here or"}
 				</p>
 				<Button
-					className={`relative ${uploading === "completed" ? "bg-gray-200" : ""} ${saveButtonClassName} rounded-[5px]`}
+					className={`relative ${saveButtonClassName} rounded-[5px] ${uploading === "completed" ? "bg-gray-600 hover:bg-gray-600" : ""}`}
 					isDisabled={
 						isFileUploaded
 							? uploading === "completed" ||
@@ -181,7 +183,6 @@ export const ImportBookmarks = () => {
 				/>
 			</div>
 
-			{/* Info Message */}
 			<p
 				className={`mt-2 flex text-13 leading-[150%] tracking-normal text-gray-600 ${
 					!isFileUploaded ? "flex-wrap" : ""

@@ -40,7 +40,7 @@ export default async function handler(
 	} = await supabase.auth.getUser();
 
 	if (userError || !user) {
-		response.status(401).json({ error: "Unauthorized user" });
+		response.status(401).json({ data: null, error: "Unauthorized user" });
 		return;
 	}
 
@@ -50,6 +50,7 @@ export default async function handler(
 		if (!parseResult.success) {
 			console.warn("Invalid request body", parseResult.error);
 			response.status(400).json({
+				data: null,
 				error: "Invalid request body",
 			});
 			return;
@@ -84,6 +85,7 @@ export default async function handler(
 				existingCategoriesError,
 			);
 			response.status(500).json({
+				data: null,
 				error: "Error in getting existing categories",
 			});
 			return;
@@ -117,6 +119,7 @@ export default async function handler(
 		if (categoriesError) {
 			console.warn("Error in inserting categories", categoriesError);
 			response.status(500).json({
+				data: null,
 				error: "Error in inserting categories",
 			});
 			return;
@@ -142,6 +145,7 @@ export default async function handler(
 		if (error) {
 			console.warn("Error in inserting bookmarks to main table", error);
 			response.status(500).json({
+				data: null,
 				error: "Error in inserting bookmarks",
 			});
 			return;
@@ -181,6 +185,7 @@ export default async function handler(
 			if (profileError) {
 				console.warn("Error in fetching profile data", profileError);
 				response.status(500).json({
+					data: null,
 					error: "Error in fetching profile data",
 				});
 				return;
@@ -204,6 +209,7 @@ export default async function handler(
 			if (orderError) {
 				console.warn("Error in updating profile data", orderError);
 				response.status(500).json({
+					data: null,
 					error: "Error in updating profile data",
 				});
 				return;
@@ -221,14 +227,20 @@ export default async function handler(
 
 		if (queueResultsError) {
 			console.warn("failed to add message to queue", queueResultsError);
-			response.status(500).json({ error: "failed to add message to queue" });
+			response
+				.status(500)
+				.json({ data: null, error: "failed to add message to queue" });
 			return;
 		}
 
-		response.status(200).json({ message: "success", count: data?.length });
+		response
+			.status(200)
+			.json({ data: { message: "success", count: data?.length }, error: null });
 	} catch (error) {
 		console.error("Error importing bookmarks", error);
 		Sentry.captureException(error);
-		response.status(500).json({ error: "Error importing bookmarks" });
+		response
+			.status(500)
+			.json({ data: null, error: "Error importing bookmarks" });
 	}
 }
