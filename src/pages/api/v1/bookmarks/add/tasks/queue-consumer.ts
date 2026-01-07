@@ -49,9 +49,11 @@ export default async function handler(
 ) {
 	try {
 		// Authenticate internal API key
+		// Check headers first, then fall back to query parameters (for webhook compatibility)
 		const apiKey =
 			request.headers["x-api-key"] ||
-			request.headers.authorization?.replace("Bearer ", "");
+			request.headers.authorization?.replace("Bearer ", "") ||
+			request.query["x-api-key"];
 
 		if (apiKey !== process.env.INTERNAL_API_KEY) {
 			console.warn("Unauthorized - Invalid API key");
