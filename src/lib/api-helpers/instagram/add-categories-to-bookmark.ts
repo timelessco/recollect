@@ -1,7 +1,4 @@
-import {
-	// type PostgrestError,
-	type SupabaseClient,
-} from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { type InstagramMetaData } from "@/lib/api-helpers/instagram/schemas";
 import { type Database } from "@/types/database-generated.types";
@@ -95,10 +92,7 @@ export async function addCategoriesToBookmarks(
 
 	if (categoryNameSet.size === 0) {
 		// All bookmarks had no categories
-		return {
-			successful: bookmarks.map((b) => b.id),
-			failed: [],
-		};
+		return { successful, failed };
 	}
 
 	// Single query to fetch all categories (grouped by user_id)
@@ -274,12 +268,6 @@ export async function addCategoriesToBookmarks(
 			});
 		}
 	}
-
-	// Add bookmarks that had no categories (already successful)
-	const bookmarksWithoutCategories = bookmarks
-		.filter((b) => !bookmarkCategoryMap.has(b.id))
-		.map((b) => b.id);
-	successful.push(...bookmarksWithoutCategories);
 
 	console.log(
 		`[${route}] Batch processing complete: ${successful.length} successful, ${failed.length} failed`,
