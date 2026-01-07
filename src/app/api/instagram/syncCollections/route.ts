@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import slugify from "slugify";
 import uniqid from "uniqid";
@@ -195,11 +196,11 @@ export const POST = createPostApiHandlerWithAuth({
 				.single();
 
 			if (profileError) {
-				console.warn(
-					`[${route}] Failed to fetch profile for category order update:`,
-					profileError,
-				);
-				// Non-blocking: collections are created, order update is supplementary
+				console.error(`[${route}] Failed to fetch profile:`, profileError);
+				Sentry.captureException(profileError, {
+					tags: { operation: "fetch_profile_for_order", userId },
+					extra: { categoryCount: insertedCategories.length },
+				});
 			} else {
 				const existingOrder = profileData?.category_order ?? [];
 				const newIds = insertedCategories.map((item) => item.id);
