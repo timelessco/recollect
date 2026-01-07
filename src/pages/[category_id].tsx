@@ -1,6 +1,5 @@
 import { type GetServerSideProps, type NextPage } from "next";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
-import axios from "axios";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../lib/supabase/constants";
 import Dashboard from "../pageComponents/dashboard";
@@ -73,15 +72,20 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 
 	if (!isAuthenticated) {
 		try {
-			const response = await axios.get<{ data: SingleListData[] | null }>(
+			const response = await fetch(
 				`${getBaseUrl()}${NEXT_API_URL}${FETCH_BOOKMARKS_DISCOVERABLE_API}?page=0`,
 			);
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = (await response.json()) as { data: SingleListData[] | null };
 
 			return {
 				props: {
 					isDiscover: true,
 					isAuthenticated: false,
-					discoverData: response.data.data ?? [],
+					discoverData: data.data ?? [],
 				},
 			};
 		} catch {
