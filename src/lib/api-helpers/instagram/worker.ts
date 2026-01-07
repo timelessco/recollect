@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
 
-import { addCategoriesToBookmark } from "./add-categories-to-bookmark";
+import { addCategoriesToBookmarks } from "./add-categories-to-bookmark";
 import { type InstagramMetaDataWithCollections } from "@/lib/api-helpers/instagram/schemas";
 import { type Database } from "@/types/database-generated.types";
 import { createPGMQClient } from "@/utils/constants";
@@ -62,107 +62,151 @@ export async function processImportsQueue(
 			return undefined;
 		}
 
-		// Process each message
+		// Separate messages by retry status
+		const maxRetryMessages: Array<{
+			message: BookmarkMessage;
+			read_ct: number;
+			msg_id: number;
+		}> = [];
+		const processableMessages: Array<{
+			message: BookmarkMessage;
+			read_ct: number;
+			msg_id: number;
+		}> = [];
+
 		for (const message of messages) {
 			const messageData = message as {
 				message: BookmarkMessage;
 				read_ct: number;
 				msg_id: number;
 			};
-			try {
-				const bookmarkData = messageData.message;
-				const read_ct = messageData.read_ct;
+			if (messageData.read_ct > MAX_RETRIES) {
+				maxRetryMessages.push(messageData);
+			} else {
+				processableMessages.push(messageData);
+			}
+		}
 
-				// archive message if max retries exceeded
-				if (read_ct > MAX_RETRIES) {
-					console.log(
-						`[${ROUTE}] Archiving message from queue (max retries exceeded)`,
-						message,
-					);
+		// Archive max-retry messages
+		for (const messageData of maxRetryMessages) {
+			const bookmarkData = messageData.message;
 
-					const { error: archiveError } = await pgmqSupabase.rpc("archive", {
-						queue_name,
-						message_id: messageData.msg_id,
+			console.log(
+				`[${ROUTE}] Archiving message from queue (max retries exceeded)`,
+				messageData,
+			);
+
+			const { error: archiveError } = await pgmqSupabase.rpc("archive", {
+				queue_name,
+				message_id: messageData.msg_id,
+			});
+
+			if (archiveError) {
+				console.error(
+					`[${ROUTE}] Error archiving message so deleting it`,
+					archiveError,
+				);
+				Sentry.captureException(archiveError, {
+					tags: { operation: "archive_failed_message", queue_name },
+					extra: {
+						messageId: messageData.msg_id,
+						bookmarkId: bookmarkData?.id,
+						readCount: messageData.read_ct,
+					},
+				});
+				const { error: deleteError } = await pgmqSupabase.rpc("delete", {
+					queue_name,
+					message_id: messageData.msg_id,
+				});
+				if (deleteError) {
+					console.error(`[${ROUTE}] Error deleting message`, deleteError);
+					Sentry.captureException(deleteError, {
+						tags: { operation: "delete_message", queue_name },
+						extra: {
+							messageId: messageData.msg_id,
+							bookmarkId: bookmarkData?.id,
+							readCount: messageData.read_ct,
+						},
 					});
+				}
+			}
+		}
 
-					if (archiveError) {
-						console.error(
-							`[${ROUTE}] Error archiving message so deleting it`,
-							archiveError,
-						);
-						Sentry.captureException(archiveError, {
-							tags: { operation: "archive_failed_message" },
-						});
+		// Batch process remaining messages
+		if (processableMessages.length > 0) {
+			console.log(
+				`[${ROUTE}] Batch processing ${processableMessages.length} bookmarks`,
+			);
+
+			const bookmarks = processableMessages.map((msg) => ({
+				id: msg.message.id,
+				user_id: msg.message.user_id,
+				meta_data: msg.message.meta_data,
+			}));
+
+			try {
+				const batchResult = await addCategoriesToBookmarks({
+					supabase,
+					bookmarks,
+					route: ROUTE,
+				});
+
+				// Map bookmark IDs to message IDs for deletion
+				const bookmarkToMessage = new Map(
+					processableMessages.map((msg) => [msg.message.id, msg.msg_id]),
+				);
+
+				// Delete successful messages
+				for (const bookmarkId of batchResult.successful) {
+					const msgId = bookmarkToMessage.get(bookmarkId);
+					if (msgId) {
 						const { error: deleteError } = await pgmqSupabase.rpc("delete", {
 							queue_name,
-							message_id: messageData.msg_id,
+							message_id: msgId,
 						});
 						if (deleteError) {
 							console.error(`[${ROUTE}] Error deleting message`, deleteError);
 							Sentry.captureException(deleteError, {
 								tags: { operation: "delete_message", queue_name },
 								extra: {
-									messageId: messageData.msg_id,
-									bookmarkId: bookmarkData?.id,
-									readCount: messageData.read_ct,
+									messageId: msgId,
+									bookmarkId,
 								},
 							});
 						}
 					}
-
-					continue;
 				}
 
-				// Process category linking
-				const result = await addCategoriesToBookmark({
-					supabase,
-					bookmark: {
-						id: bookmarkData.id,
-						user_id: bookmarkData.user_id,
-						meta_data: bookmarkData.meta_data,
-					},
-					route: ROUTE,
-				});
-
-				if (result.error === null) {
-					// delete message on success
-					const { error: deleteError } = await pgmqSupabase.rpc("delete", {
-						queue_name,
-						message_id: messageData.msg_id,
-					});
-
-					if (deleteError) {
-						console.error(`[${ROUTE}] Error deleting message`, deleteError);
-						Sentry.captureException(deleteError, {
-							tags: { operation: "delete_message", queue_name },
-							extra: {
-								messageId: messageData.msg_id,
-								bookmarkId: bookmarkData?.id,
-								readCount: messageData.read_ct,
-							},
-						});
-					}
-				} else {
-					// Message will be retried automatically by pgmq
+				// Log failed bookmarks (messages remain in queue for retry)
+				for (const failure of batchResult.failed) {
 					console.warn(
-						`[${ROUTE}] Category linking failed, message will be retried`,
-						result.error,
+						`[${ROUTE}] Category linking failed for bookmark ${failure.bookmarkId}: ${failure.error}`,
+					);
+					Sentry.captureMessage(
+						`Category linking failed for bookmark ${failure.bookmarkId}`,
+						{
+							level: "warning",
+							tags: { operation: "batch_process_failed", queue_name },
+							extra: {
+								bookmarkId: failure.bookmarkId,
+								error: failure.error,
+							},
+						},
 					);
 				}
-			} catch (error) {
-				console.error(
-					`[${ROUTE}] Processing failed for message:`,
-					messageData,
-					error,
+
+				console.log(
+					`[${ROUTE}] Batch processing complete: ${batchResult.successful.length} successful, ${batchResult.failed.length} failed`,
 				);
+			} catch (error) {
+				console.error(`[${ROUTE}] Batch processing error:`, error);
 				Sentry.captureException(error, {
-					tags: { operation: "process_message", queue_name },
+					tags: { operation: "batch_processing", queue_name },
 					extra: {
-						messageId: messageData.msg_id,
-						bookmarkId: messageData.message?.id,
-						readCount: messageData.read_ct,
+						bookmarkCount: bookmarks.length,
 					},
 				});
+				// On batch processing error, messages remain in queue for retry
 			}
 		}
 
