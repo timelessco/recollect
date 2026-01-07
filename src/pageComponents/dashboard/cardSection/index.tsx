@@ -38,6 +38,7 @@ import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	DISCOVER_URL,
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
@@ -77,8 +78,8 @@ export type CardSectionProps = {
 	isOgImgLoading: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
-	onDeleteClick: (post: SingleListData[]) => void;
-	onMoveOutOfTrashClick: (post: SingleListData) => void;
+	onDeleteClick?: (post: SingleListData[]) => void;
+	onMoveOutOfTrashClick?: (post: SingleListData) => void;
 	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
@@ -163,9 +164,10 @@ const CardSection = ({
 		pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
 	};
 
-	const bookmarksList = isEmpty(searchText)
-		? listData
-		: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
+	const bookmarksList =
+		isPublicPage || isEmpty(searchText)
+			? listData
+			: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],
@@ -257,7 +259,7 @@ const CardSection = ({
 					isBottomBar={false}
 					label="Delete Bookmark"
 					onClearTrash={() => {
-						onDeleteClick([post]);
+						onDeleteClick?.([post]);
 					}}
 					isClearingTrash={false}
 					isOpen={isTrashMenuOpen}
@@ -267,8 +269,8 @@ const CardSection = ({
 				/>
 			) : (
 				<Button
-					className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
-					onClick={() => onDeleteClick([post])}
+					className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
+					onClick={() => onDeleteClick?.([post])}
 				>
 					<TrashIconGray />
 				</Button>
@@ -286,7 +288,7 @@ const CardSection = ({
 						href={post.url}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+						className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
 					>
 						<LinkExternalIcon />
 					</a>
@@ -306,8 +308,8 @@ const CardSection = ({
 					)}
 				>
 					<Button
-						className="z-15 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
-						onClick={() => onMoveOutOfTrashClick(post)}
+						className="z-15 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
+						onClick={() => onMoveOutOfTrashClick?.(post)}
 					>
 						<BackIcon />
 					</Button>
@@ -739,7 +741,7 @@ const CardSection = ({
 	);
 
 	const listWrapperClass = classNames({
-		"mt-[47px]": true,
+		"mt-[47px]": !isPublicPage || categorySlug === DISCOVER_URL,
 		"px-4 py-2": cardTypeCondition === viewValues.list,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||

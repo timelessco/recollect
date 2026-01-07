@@ -65,9 +65,9 @@ export default async function handler(
 
 	// Base select - will be modified for category/uncategorized views
 	const baseSelect = `*, user_id, user_id (*)`;
-	// Junction select includes full category details to avoid redundant query
-	const junctionSelect = `*, user_id, user_id (*), ${BOOKMARK_CATEGORIES_TABLE_NAME}!inner(bookmark_id, category_id(id, category_name, category_slug, icon, icon_color))`;
-	// Track if we're using junction select to avoid redundant category query
+	// Junction select for filtering only - full category data fetched separately
+	const junctionSelect = `*, user_id, user_id (*), ${BOOKMARK_CATEGORIES_TABLE_NAME}!inner(bookmark_id, category_id)`;
+	// Track if we're using junction select for category filtering
 	const usedJunctionSelect = categoryCondition || isUncategorized;
 
 	// get all bookmarks - use junction JOIN for category filtering
@@ -250,13 +250,12 @@ export default async function handler(
 				.in("bookmark_id", bookmarkIds)
 		: { data: [] };
 
-	// Only fetch categories separately if not already included in JOIN result
-	const { data: bookmarksWithCategories } =
-		!usedJunctionSelect && bookmarkIds.length
-			? await supabase
-					.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-					.select(
-						`
+	// Always fetch ALL categories for each bookmark (INNER JOIN only has filtered category)
+	const { data: bookmarksWithCategories } = bookmarkIds.length
+		? await supabase
+				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+				.select(
+					`
     bookmark_id,
     category_id (
       id,
@@ -265,10 +264,10 @@ export default async function handler(
       icon,
       icon_color
     )`,
-					)
-					.in("bookmark_id", bookmarkIds)
-					.order("created_at", { ascending: true })
-			: { data: [] };
+				)
+				.in("bookmark_id", bookmarkIds)
+				.order("created_at", { ascending: true })
+		: { data: [] };
 
 	const finalData = data
 		?.map((item) => {
@@ -276,17 +275,10 @@ export default async function handler(
 				(tagItem) => tagItem?.bookmark_id === item?.id,
 			) as unknown as BookmarksWithTagsWithTagForginKeys;
 
-			// Extract categories from JOIN result if available, otherwise from separate query
-			// When using junction select, Supabase embeds category data in bookmark_categories property
-			const itemWithCategories = item as SingleListData & {
-				bookmark_categories?: BookmarksWithCategoriesWithCategoryForeignKeys;
-			};
-			const matchedBookmarkWithCategory = (usedJunctionSelect &&
-			itemWithCategories.bookmark_categories
-				? itemWithCategories.bookmark_categories
-				: bookmarksWithCategories?.filter(
-						(catItem) => catItem?.bookmark_id === item?.id,
-					)) as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
+			// Always use separate query result for complete category data
+			const matchedBookmarkWithCategory = bookmarksWithCategories?.filter(
+				(catItem) => catItem?.bookmark_id === item?.id,
+			) as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
 
 			return {
 				...item,

@@ -7,12 +7,10 @@ import {
 	useComboboxState,
 } from "ariakit/combobox";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
-import { find } from "lodash";
 
-import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
-import { mutationApiCall } from "../../utils/apiHelpers";
-import { options } from "../../utils/commonData";
+import { iconOptions } from "../../utils/commonData";
 import { colorPickerColors } from "../../utils/constants";
 import Button from "../atoms/button";
 import { CollectionIcon } from "../collectionIcon";
@@ -39,26 +37,22 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 
 	const [pageIndex, setPageIndex] = useState(0);
 
-	const iconsList = options();
+	const iconsList = iconOptions;
 
 	const handleIconColorChange = (iconColor: string) => {
-		void mutationApiCall(
-			updateCategoryOptimisticMutation.mutateAsync({
-				category_id: iconId,
-				updateData: {
-					icon_color: iconColor,
-				},
-			}),
-		);
+		updateCategoryOptimisticMutation.mutate({
+			category_id: iconId,
+			updateData: {
+				icon_color: iconColor,
+			},
+		});
 	};
 
 	const handleIconSelect = (icon: string) => {
-		void mutationApiCall(
-			updateCategoryOptimisticMutation.mutateAsync({
-				category_id: iconId,
-				updateData: { icon },
-			}),
-		);
+		updateCategoryOptimisticMutation.mutate({
+			category_id: iconId,
+			updateData: { icon },
+		});
 	};
 
 	// constants
@@ -133,7 +127,7 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	}
 
 	const renderItem = (value: string) => {
-		const data = find(iconsList, (item) => item?.label === value);
+		const data = iconsList.find((item) => item.label === value);
 		const icon = "var(--color-plain-reverse)";
 		return (
 			<div className="h-[18px] w-[18px]" title={data?.label}>

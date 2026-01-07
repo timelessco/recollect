@@ -1,0 +1,39 @@
+import { useToggleDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/use-toggle-discoverable-optimistic-mutation";
+import { Checkbox } from "@/components/ui/recollect/checkbox";
+
+type DiscoverableCheckboxProps = {
+	bookmarkId: number;
+	isDiscoverable: boolean;
+};
+
+export const DiscoverCheckbox = ({
+	bookmarkId,
+	isDiscoverable,
+}: DiscoverableCheckboxProps) => {
+	const { toggleDiscoverableOptimisticMutation } =
+		useToggleDiscoverableOptimisticMutation();
+
+	const handleCheckedChange = (checked: boolean) => {
+		toggleDiscoverableOptimisticMutation.mutate({
+			bookmark_id: bookmarkId,
+			make_discoverable: checked,
+		});
+	};
+
+	return (
+		<div className="flex items-center gap-2 px-2 py-1.5">
+			{/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+			<label className="flex cursor-pointer items-center gap-2">
+				<Checkbox
+					checked={isDiscoverable}
+					onCheckedChange={handleCheckedChange}
+					className="flex size-4 items-center justify-center rounded border-2 border-gray-400 data-checked:border-gray-800 data-checked:bg-gray-800 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-plain data-checked:[&_svg]:text-gray-200"
+				/>
+
+				<span className="text-sm font-medium text-gray-800">
+					Make discoverable
+				</span>
+			</label>
+		</div>
+	);
+};

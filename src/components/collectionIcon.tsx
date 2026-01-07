@@ -1,37 +1,23 @@
-import { useMemo } from "react";
-import { find } from "lodash";
 import { useTheme } from "next-themes";
 
 import { type CategoriesData } from "../types/apiTypes";
-import { options } from "../utils/commonData";
+import { iconMap } from "../utils/commonData";
 import { BLACK_COLOR, WHITE_COLOR } from "../utils/constants";
 
-// --- Utility: normalize color ---
-const normalizeColor = (color?: string) => {
-	if (!color) {
-		return "";
+/**
+ * Swap white/black in dark mode for visibility
+ */
+const getAdjustedColor = (color: string | undefined, isDarkMode: boolean) => {
+	if (!isDarkMode || !color) {
+		return color;
 	}
 
-	return color.trim().toLowerCase();
-};
+	if (color === WHITE_COLOR) {
+		return BLACK_COLOR;
+	}
 
-// --- Utility: adjust color based on dark mode ---
-const getAdjustedColor = (color?: string, isDarkMode?: boolean) => {
-	const colorNorm = normalizeColor(color);
-
-	const isWhite =
-		colorNorm === "#fff" || colorNorm === "#ffffff" || colorNorm === "white";
-	const isBlack =
-		colorNorm === "#000" || colorNorm === "#000000" || colorNorm === "black";
-
-	if (isDarkMode) {
-		if (isWhite) {
-			return "#000000";
-		}
-
-		if (isBlack) {
-			return "#ffffff";
-		}
+	if (color === BLACK_COLOR) {
+		return WHITE_COLOR;
 	}
 
 	return color;
@@ -55,12 +41,11 @@ export const CollectionIcon = ({
 		bookmarkCategoryData?.icon_color,
 		isDarkMode,
 	);
-	const matchedIcon = useMemo(
-		() => find(options(), (opt) => opt?.label === bookmarkCategoryData?.icon),
-		[bookmarkCategoryData?.icon],
-	);
 
-	// Pick contrasting icon color depending on background
+	const matchedIcon = bookmarkCategoryData?.icon
+		? iconMap.get(bookmarkCategoryData.icon)
+		: undefined;
+
 	const iconColor = adjustedBgColor === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR;
 
 	return (
