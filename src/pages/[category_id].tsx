@@ -53,11 +53,16 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 			},
 			setAll(cookiesToSet) {
 				if (context.res) {
-					for (const { name, value, options } of cookiesToSet) {
-						context.res.setHeader(
-							"Set-Cookie",
-							serializeCookieHeader(name, value, options),
-						);
+					try {
+						for (const { name, value, options } of cookiesToSet) {
+							context.res.setHeader(
+								"Set-Cookie",
+								serializeCookieHeader(name, value, options),
+							);
+						}
+					} catch {
+						// Cookie setting may fail in certain Server Component contexts
+						// Silently fail to prevent SSR errors
 					}
 				}
 			},
