@@ -5,6 +5,7 @@ import { z } from "zod";
 import { processImportsQueue } from "../../../../lib/api-helpers/instagram/worker";
 
 import { apiError, apiSuccess } from "@/lib/api-helpers/response";
+import { INSTAGRAM_QUEUE_NAMES } from "@/utils/constants";
 import { createServiceClient } from "@/utils/supabaseClient";
 
 const ROUTE = "instagram-process-queue";
@@ -18,7 +19,7 @@ const ProcessQueueResponseSchema = z.object({
 export type ProcessQueueResponse = z.infer<typeof ProcessQueueResponseSchema>;
 
 export async function POST(request: NextRequest) {
-	const queue_name = "imports";
+	const queue_name = INSTAGRAM_QUEUE_NAMES.IMPORTS;
 	const batchSize = 10;
 	try {
 		// Get the secret header that you manually configured in Supabase webhook

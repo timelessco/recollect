@@ -6,7 +6,11 @@ import {
 	InstagramSyncBookmarksResponseSchema,
 } from "@/lib/api-helpers/instagram/schemas";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { MAIN_TABLE_NAME } from "@/utils/constants";
+import {
+	createPGMQClient,
+	INSTAGRAM_QUEUE_NAMES,
+	MAIN_TABLE_NAME,
+} from "@/utils/constants";
 
 const ROUTE = "instagram-sync-bookmarks";
 export const POST = createPostApiHandlerWithAuth({
@@ -101,18 +105,17 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const pgmqSupabase = (supabase as any).schema("pgmq_public");
+		const pgmqSupabase = createPGMQClient(supabase);
 
 		// Queue both operations in parallel to reduce latency
 		const [importsQueueResult, aiEmbeddingsQueueResult] = await Promise.all([
 			pgmqSupabase.rpc("send_batch", {
-				queue_name: "imports",
+				queue_name: INSTAGRAM_QUEUE_NAMES.IMPORTS,
 				messages: insertDBData,
 				sleep_seconds: 0,
 			}),
 			pgmqSupabase.rpc("send_batch", {
-				queue_name: "ai-embeddings",
+				queue_name: INSTAGRAM_QUEUE_NAMES.AI_EMBEDDINGS,
 				messages: insertDBData,
 				sleep_seconds: 0,
 			}),

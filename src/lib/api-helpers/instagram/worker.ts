@@ -4,6 +4,7 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import { addCategoriesToBookmark } from "./add-categories-to-bookmark";
 import { type InstagramMetaDataWithCollections } from "@/lib/api-helpers/instagram/schemas";
 import { type Database } from "@/types/database-generated.types";
+import { createPGMQClient } from "@/utils/constants";
 
 const ROUTE = "instagram-category-worker";
 
@@ -31,9 +32,7 @@ export async function processImportsQueue(
 	const MAX_RETRIES = 3;
 
 	try {
-		// Type assertion needed because pgmq_public schema is not in the Database type
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const pgmqSupabase = (supabase as any).schema("pgmq_public");
+		const pgmqSupabase = createPGMQClient(supabase);
 
 		// Read messages from queue
 		const { data: messages, error: messageError } = await pgmqSupabase.rpc(

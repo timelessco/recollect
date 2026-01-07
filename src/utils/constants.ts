@@ -1,3 +1,5 @@
+import { type SupabaseClient } from "@supabase/supabase-js";
+
 import { BASE_URL } from "@/site-config";
 
 // Category IDs
@@ -417,3 +419,26 @@ export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
 export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
 export const WHITE_COLOR = colorPickerColors[0];
 export const BLACK_COLOR = colorPickerColors[1];
+
+// Instagram queue names
+export const INSTAGRAM_QUEUE_NAMES = {
+	IMPORTS: "imports",
+	AI_EMBEDDINGS: "ai-embeddings",
+} as const;
+
+// Instagram collection defaults
+export const INSTAGRAM_COLLECTION_DEFAULTS = {
+	ICON: "bookmark",
+	ICON_COLOR: "#ffffff",
+} as const;
+
+/**
+ * Creates a PGMQ client from a Supabase client.
+ * Type assertion needed because pgmq_public schema is not in the Database type.
+ * @param supabase - Supabase client instance
+ * @returns PGMQ client with pgmq_public schema
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const createPGMQClient = (supabase: SupabaseClient<any>) =>
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	(supabase as any).schema("pgmq_public");

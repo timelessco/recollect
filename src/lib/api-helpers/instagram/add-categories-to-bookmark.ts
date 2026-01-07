@@ -8,6 +8,7 @@ import { type Database } from "@/types/database-generated.types";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
+	INSTAGRAM_COLLECTION_DEFAULTS,
 } from "@/utils/constants";
 
 export interface AddBookmarkToCategoriesProps {
@@ -67,8 +68,8 @@ export async function addCategoriesToBookmark(
 		.from(CATEGORIES_TABLE_NAME)
 		.select("id, category_name")
 		.eq("user_id", userId)
-		.eq("icon", "bookmark")
-		.eq("icon_color", "#ffffff")
+		.eq("icon", INSTAGRAM_COLLECTION_DEFAULTS.ICON)
+		.eq("icon_color", INSTAGRAM_COLLECTION_DEFAULTS.ICON_COLOR)
 		.in("category_name", uniqueCategoryNames);
 
 	if (categoriesError) {
