@@ -127,10 +127,13 @@ const MyComponent = () => {
 	}
 
 	// if there is text in searchbar we get the cache of searched data else we get from everything
-	const previousData = queryClient.getQueryData(queryKey) as {
-		data: SingleListData[];
-		pages: Array<{ data: SingleListData[] }>;
-	};
+	const previousData = queryClient.getQueryData(queryKey) as
+		| {
+				data: SingleListData[];
+				pages: Array<{ data: SingleListData[] }>;
+		  }
+		| SingleListData
+		| undefined;
 
 	const shouldFetch = !previousData && Boolean(id);
 	const shouldFetchRegular = shouldFetch && !isDiscoverPage;
@@ -158,14 +161,14 @@ const MyComponent = () => {
 			// @ts-expect-error bookmark is not undefined
 			currentBookmark = regularBookmark?.data?.[0];
 		}
-	} else if (previousData?.pages) {
+	} else if (typeof previousData === "object" && "pages" in previousData) {
 		// Paginated list from discover/category pages
 		currentBookmark = previousData.pages.flatMap((page) => page?.data ?? [])?.[
 			currentIndex
 		];
 	} else {
 		// Single bookmark from direct preview link (cached as SingleListData)
-		currentBookmark = previousData as unknown as SingleListData;
+		currentBookmark = previousData as SingleListData;
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
