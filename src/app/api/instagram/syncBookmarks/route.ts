@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
@@ -143,40 +144,50 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		// Handle ai-embeddings queue error
-		if (aiEmbeddingsQueueResultsError) {
-			console.warn(
-				`[${route}] Failed to queue item to ai-embeddings:`,
-				aiEmbeddingsQueueResultsError,
-			);
-
-			return apiError({
-				route,
-				message: "Failed to queue item to ai-embeddings",
-				error: aiEmbeddingsQueueResultsError,
-				operation: "queue_embeddings",
-				userId,
-			});
-		}
-
 		const queueResultsArray = Array.isArray(queueResults) ? queueResults : [];
-		const aiEmbeddingsQueueResultsArray = Array.isArray(
-			aiEmbeddingsQueueResults,
-		)
-			? aiEmbeddingsQueueResults
-			: [];
-
 		console.log(
 			`[${route}] Successfully queued ${queueResultsArray.length} items for adding categories`,
 		);
-		console.log(
-			`[${route}] Successfully queued ${aiEmbeddingsQueueResultsArray.length} items for ai-embeddings`,
-		);
+
+		// Handle ai-embeddings queue error (NON-CRITICAL)
+		const warnings: string[] = [];
+
+		if (aiEmbeddingsQueueResultsError) {
+			console.warn(
+				`[${route}] AI embeddings queue failed (non-critical):`,
+				aiEmbeddingsQueueResultsError,
+			);
+
+			Sentry.captureException(aiEmbeddingsQueueResultsError, {
+				level: "warning",
+				tags: {
+					operation: "queue_ai_embeddings",
+					route,
+					userId,
+				},
+				extra: {
+					bookmarkCount: insertDBData.length,
+					message: "AI embeddings queue failed, but sync succeeded",
+				},
+			});
+
+			warnings.push("AI-powered search temporarily unavailable");
+		} else {
+			const aiEmbeddingsQueueResultsArray = Array.isArray(
+				aiEmbeddingsQueueResults,
+			)
+				? aiEmbeddingsQueueResults
+				: [];
+			console.log(
+				`[${route}] Successfully queued ${aiEmbeddingsQueueResultsArray.length} items for ai-embeddings`,
+			);
+		}
 
 		return {
 			success: true,
 			error: null,
 			data: insertDBData,
+			warnings: warnings.length > 0 ? warnings : undefined,
 		};
 	},
 });

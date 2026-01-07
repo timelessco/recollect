@@ -49,6 +49,7 @@ export const InstagramSyncBookmarksResponseSchema = z.object({
 			}),
 		)
 		.optional(),
+	warnings: z.array(z.string()).optional(),
 });
 
 export type InstagramMetaDataWithCollections = {
