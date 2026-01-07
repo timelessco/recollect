@@ -25,16 +25,15 @@ import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-import { collectInstagramVideos } from "@/utils/helpers";
+import {
+	collectAdditionalImages,
+	collectInstagramVideos,
+} from "@/utils/helpers";
 import { vet } from "@/utils/try";
 
 type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
-};
-type CollectAdditionalImagesArgs = {
-	allImages?: string[];
-	userId: string;
 };
 
 const MAX_LENGTH = 1_300;
@@ -100,49 +99,6 @@ export const uploadVideo = async (
 	const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
 
 	return storageData?.publicUrl || null;
-};
-
-const collectAdditionalImages = async ({
-	allImages,
-	userId,
-}: CollectAdditionalImagesArgs) => {
-	if (!allImages?.length) {
-		return [];
-	}
-
-	const settledImages = await Promise.allSettled(
-		allImages.map(async (b64buffer) => {
-			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
-			return await upload(base64, userId);
-		}),
-	);
-
-	const failedUploads = settledImages
-		.map((result, index) => ({ result, index }))
-		.filter(({ result }) => result.status === "rejected") as Array<{
-		result: PromiseRejectedResult;
-		index: number;
-	}>;
-
-	if (failedUploads.length > 0) {
-		for (const { result, index } of failedUploads) {
-			const error = result.reason;
-
-			console.warn("collectAdditionalImages upload failed:", {
-				operation: "collect_additional_images",
-				userId,
-				imageIndex: index,
-				error,
-			});
-		}
-	}
-
-	return settledImages
-		.filter(
-			(result): result is PromiseFulfilledResult<string | null> =>
-				result.status === "fulfilled" && Boolean(result.value),
-		)
-		.map((fulfilled) => fulfilled.value) as string[];
 };
 
 export default async function handler(

@@ -48,7 +48,7 @@ import {
 } from "./constants";
 import { vet } from "./try";
 import { getCategorySlugFromRouter } from "./url";
-import { uploadVideo } from "@/pages/api/bookmark/add-url-screenshot";
+import { upload, uploadVideo } from "@/pages/api/bookmark/add-url-screenshot";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 	find(tagsData, (item) => {
@@ -859,6 +859,53 @@ export const collectInstagramVideos = async ({
 	}
 
 	return settledVideos
+		.filter(
+			(result): result is PromiseFulfilledResult<string | null> =>
+				result.status === "fulfilled" && Boolean(result.value),
+		)
+		.map((fulfilled) => fulfilled.value) as string[];
+};
+
+type CollectAdditionalImagesArgs = {
+	allImages?: string[];
+	userId: string;
+};
+export const collectAdditionalImages = async ({
+	allImages,
+	userId,
+}: CollectAdditionalImagesArgs) => {
+	if (!allImages?.length) {
+		return [];
+	}
+
+	const settledImages = await Promise.allSettled(
+		allImages.map(async (b64buffer) => {
+			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
+			return await upload(base64, userId);
+		}),
+	);
+
+	const failedUploads = settledImages
+		.map((result, index) => ({ result, index }))
+		.filter(({ result }) => result.status === "rejected") as Array<{
+		result: PromiseRejectedResult;
+		index: number;
+	}>;
+
+	if (failedUploads.length > 0) {
+		for (const { result, index } of failedUploads) {
+			const error = result.reason;
+
+			console.warn("collectAdditionalImages upload failed:", {
+				operation: "collect_additional_images",
+				userId,
+				imageIndex: index,
+				error,
+			});
+		}
+	}
+
+	return settledImages
 		.filter(
 			(result): result is PromiseFulfilledResult<string | null> =>
 				result.status === "fulfilled" && Boolean(result.value),
