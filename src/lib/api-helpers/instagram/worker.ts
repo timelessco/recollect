@@ -87,15 +87,28 @@ export async function processImportsQueue(
 					});
 
 					if (archiveError) {
-						console.error(`[${ROUTE}] Error archiving message`, archiveError);
+						console.error(
+							`[${ROUTE}] Error archiving message so deleting it`,
+							archiveError,
+						);
 						Sentry.captureException(archiveError, {
-							tags: { operation: "archive_message", queue_name },
-							extra: {
-								messageId: messageData.msg_id,
-								bookmarkId: bookmarkData?.id,
-								readCount: messageData.read_ct,
-							},
+							tags: { operation: "archive_failed_message" },
 						});
+						const { error: deleteError } = await pgmqSupabase.rpc("delete", {
+							queue_name,
+							message_id: messageData.msg_id,
+						});
+						if (deleteError) {
+							console.error(`[${ROUTE}] Error deleting message`, deleteError);
+							Sentry.captureException(deleteError, {
+								tags: { operation: "delete_message", queue_name },
+								extra: {
+									messageId: messageData.msg_id,
+									bookmarkId: bookmarkData?.id,
+									readCount: messageData.read_ct,
+								},
+							});
+						}
 					}
 
 					continue;
