@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { addCategoriesToBookmark } from "./add-categories-to-bookmark";
@@ -50,6 +51,10 @@ export async function processImportsQueue(
 				`[${ROUTE}] Error fetching messages from queue:`,
 				messageError,
 			);
+			Sentry.captureException(messageError, {
+				tags: { operation: "fetch_messages", queue_name },
+				extra: { batchSize },
+			});
 			throw messageError;
 		}
 
@@ -83,6 +88,14 @@ export async function processImportsQueue(
 
 					if (archiveError) {
 						console.error(`[${ROUTE}] Error archiving message`, archiveError);
+						Sentry.captureException(archiveError, {
+							tags: { operation: "archive_message", queue_name },
+							extra: {
+								messageId: messageData.msg_id,
+								bookmarkId: bookmarkData?.id,
+								readCount: messageData.read_ct,
+							},
+						});
 					}
 
 					continue;
@@ -108,6 +121,14 @@ export async function processImportsQueue(
 
 					if (deleteError) {
 						console.error(`[${ROUTE}] Error deleting message`, deleteError);
+						Sentry.captureException(deleteError, {
+							tags: { operation: "delete_message", queue_name },
+							extra: {
+								messageId: messageData.msg_id,
+								bookmarkId: bookmarkData?.id,
+								readCount: messageData.read_ct,
+							},
+						});
 					}
 				} else {
 					// Message will be retried automatically by pgmq
@@ -122,6 +143,14 @@ export async function processImportsQueue(
 					messageData,
 					error,
 				);
+				Sentry.captureException(error, {
+					tags: { operation: "process_message", queue_name },
+					extra: {
+						messageId: messageData.msg_id,
+						bookmarkId: messageData.message?.id,
+						readCount: messageData.read_ct,
+					},
+				});
 			}
 		}
 
@@ -131,6 +160,10 @@ export async function processImportsQueue(
 		return { messageId: firstMessage?.msg_id };
 	} catch (error) {
 		console.error(`[${ROUTE}] Queue processing error:`, error);
+		Sentry.captureException(error, {
+			tags: { operation: "queue_processing", queue_name },
+			extra: { batchSize },
+		});
 		throw error;
 	}
 }
