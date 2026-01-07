@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
-import { z } from "zod";
 
-import { useAddTagToBookmarkMutation } from "@/async/mutationHooks/tags/useAddTagToBookmarkMutation";
-import { useCreateAndAssignTagMutation } from "@/async/mutationHooks/tags/useCreateAndAssignTagMutation";
-import { useRemoveTagFromBookmarkMutation } from "@/async/mutationHooks/tags/useRemoveTagFromBookmarkMutation";
+import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
+import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
+import { useRemoveTagFromBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-remove-tag-from-bookmark-optimistic-mutation";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Combobox } from "@/components/ui/recollect/combobox";
@@ -13,15 +12,14 @@ import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
+import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
+import { DiscoverCheckbox } from "@/pageComponents/dashboard/cardSection/discover-checkbox";
 import {
 	type CategoriesData,
 	type SingleListData,
 	type UserTagsData,
 } from "@/types/apiTypes";
-import { MAX_TAG_NAME_LENGTH } from "@/utils/constants";
 import { cn } from "@/utils/tailwind-merge";
-
-const TAG_CREATE_SCHEMA = z.string().max(MAX_TAG_NAME_LENGTH);
 
 type EditPopoverProps = {
 	post: SingleListData;
@@ -78,6 +76,12 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 									<CategoryMultiSelect bookmarkId={post.id} />
 								</div>
 							</div>
+							<div className="w-full">
+								<DiscoverCheckbox
+									bookmarkId={post.id}
+									isDiscoverable={post.make_discoverable !== null}
+								/>
+							</div>
 						</div>
 					</Popover.Popup>
 				</Popover.Positioner>
@@ -92,9 +96,12 @@ type TagMultiSelectProps = {
 
 export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 	const { userTags } = useFetchUserTags();
-	const { addTagToBookmarkMutation } = useAddTagToBookmarkMutation();
-	const { removeTagFromBookmarkMutation } = useRemoveTagFromBookmarkMutation();
-	const { createAndAssignTagMutation } = useCreateAndAssignTagMutation();
+	const { addTagToBookmarkOptimisticMutation } =
+		useAddTagToBookmarkOptimisticMutation();
+	const { removeTagFromBookmarkOptimisticMutation } =
+		useRemoveTagFromBookmarkOptimisticMutation();
+	const { createAndAssignTagOptimisticMutation } =
+		useCreateAndAssignTagOptimisticMutation();
 
 	const selectedTagIds = useBookmarkTags(bookmarkId);
 	const allTags = useMemo(() => userTags?.data ?? [], [userTags?.data]);
@@ -113,27 +120,25 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 	);
 
 	const handleAdd = (tag: UserTagsData) => {
-		addTagToBookmarkMutation.mutate({
-			selectedData: {
-				bookmark_id: bookmarkId,
-				tag_id: tag.id,
-			},
+		addTagToBookmarkOptimisticMutation.mutate({
+			bookmarkId,
+			tagId: tag.id,
 		});
 	};
 
 	const handleRemove = (tag: UserTagsData) => {
-		removeTagFromBookmarkMutation.mutate({
-			selectedData: {
-				bookmark_id: bookmarkId,
-				tag_id: tag.id,
-			},
+		removeTagFromBookmarkOptimisticMutation.mutate({
+			bookmarkId,
+			tagId: tag.id,
 		});
 	};
 
 	const handleCreate = (tagName: string) => {
-		createAndAssignTagMutation.mutate({
-			tagName,
+		createAndAssignTagOptimisticMutation.mutate({
+			name: tagName,
 			bookmarkId,
+			// Pre-generate temp ID so both BOOKMARKS_KEY and USER_TAGS_KEY caches use same ID
+			_tempId: -Date.now(),
 		});
 	};
 
@@ -146,7 +151,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 			onAdd={handleAdd}
 			onRemove={handleRemove}
 			onCreate={handleCreate}
-			createSchema={TAG_CREATE_SCHEMA}
+			createSchema={tagCategoryNameSchema}
 		>
 			<Combobox.Chips>
 				<Combobox.Value>

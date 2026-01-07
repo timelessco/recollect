@@ -1,0 +1,113 @@
+import { z } from "zod";
+
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
+import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { isNonEmptyArray, isNullable } from "@/utils/assertion-utils";
+import { MAIN_TABLE_NAME } from "@/utils/constants";
+import { HttpStatus } from "@/utils/error-utils/common";
+
+const ROUTE = "toggle-discoverable-on-bookmark";
+
+const ToggleBookmarkDiscoverablePayloadSchema = z.object({
+	bookmark_id: z
+		.number({
+			error: (issue) =>
+				isNullable(issue.input)
+					? "Bookmark ID is required"
+					: "Bookmark ID must be a number",
+		})
+		.int({ error: "Bookmark ID must be a whole number" })
+		.positive({ error: "Bookmark ID must be a positive number" }),
+	make_discoverable: z.boolean({
+		error: (issue) =>
+			isNullable(issue.input)
+				? "make_discoverable is required"
+				: "make_discoverable must be a boolean",
+	}),
+});
+
+export type ToggleBookmarkDiscoverablePayload = z.infer<
+	typeof ToggleBookmarkDiscoverablePayloadSchema
+>;
+
+const ToggleBookmarkDiscoverableResponseSchema = z.object({
+	id: z.number(),
+	make_discoverable: z.string().nullable(),
+});
+
+export type ToggleBookmarkDiscoverableResponse = z.infer<
+	typeof ToggleBookmarkDiscoverableResponseSchema
+>;
+
+export const POST = createPostApiHandlerWithAuth({
+	route: ROUTE,
+	inputSchema: ToggleBookmarkDiscoverablePayloadSchema,
+	outputSchema: ToggleBookmarkDiscoverableResponseSchema,
+	handler: async ({ data, supabase, user, route }) => {
+		const { bookmark_id: bookmarkId, make_discoverable: makeDiscoverable } =
+			data;
+		const userId = user.id;
+
+		console.log(`[${route}] API called:`, {
+			userId,
+			bookmarkId,
+			makeDiscoverable,
+		});
+
+		// Build match conditions - atomic update prevents TOCTOU race condition
+		// Only require trash: false when making discoverable (removing discoverability is always safe)
+		const matchConditions: Record<string, unknown> = {
+			id: bookmarkId,
+			user_id: userId,
+		};
+		if (makeDiscoverable) {
+			matchConditions.trash = false;
+		}
+
+		const { data: updatedData, error } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.update({
+				make_discoverable: makeDiscoverable ? new Date().toISOString() : null,
+			})
+			.match(matchConditions)
+			.select();
+
+		if (error) {
+			return apiError({
+				route,
+				message: "Failed to toggle bookmark discoverable status",
+				error,
+				operation: "toggle_discoverable_on_bookmark",
+				userId,
+				extra: {
+					bookmarkId,
+					makeDiscoverable,
+				},
+			});
+		}
+
+		if (!isNonEmptyArray(updatedData)) {
+			return apiWarn({
+				route,
+				message: makeDiscoverable
+					? "Bookmark not found, you lack permission, or bookmark is trashed"
+					: "Bookmark not found or you lack permission",
+				status: HttpStatus.BAD_REQUEST,
+				context: {
+					bookmarkId,
+					userId,
+				},
+			});
+		}
+
+		console.log(
+			`[${route}] Bookmark discoverable status toggled successfully:`,
+			{
+				bookmarkId: updatedData[0].id,
+				makeDiscoverable,
+			},
+		);
+
+		return updatedData[0];
+	},
+});

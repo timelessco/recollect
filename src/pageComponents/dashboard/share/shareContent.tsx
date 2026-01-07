@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import useUpdateCategoryOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
@@ -78,7 +78,7 @@ const AccessUserInfo = (props: {
 			if (isLoggedinUserTheOwner) {
 				return (
 					<AriaSelect
-						defaultValue={item.edit_access ? "Can Edit" : "Can View"}
+						defaultValue={item.edit_access ? "Editor" : "Viewer"}
 						onOptionClick={async (value) => {
 							if (value !== "No Access") {
 								const response = (await mutationApiCall(
@@ -86,7 +86,7 @@ const AccessUserInfo = (props: {
 										id: item.share_id as number,
 										updateData: {
 											edit_access: Boolean(
-												Number.parseInt(value === "Can Edit" ? "1" : "0", 10),
+												Number.parseInt(value === "Editor" ? "1" : "0", 10),
 											),
 										},
 									}),
@@ -104,14 +104,14 @@ const AccessUserInfo = (props: {
 							}
 						}}
 						options={[
-							{ label: "Can Edit", value: "Can Edit" },
-							{ label: "Can View", value: "Can View" },
+							{ label: "Editor", value: "Editor" },
+							{ label: "Viewer", value: "Viewer" },
 							{ label: "No Access", value: "No Access" },
 						]}
 						renderCustomSelectButton={() => (
 							<div className="flex items-center">
 								<p className="mr-1 text-gray-800">
-									{item.edit_access ? "Can Edit" : "Can View"}
+									{item.edit_access ? "Editor" : "Viewer"}
 								</p>
 								<figure>
 									<DownArrowGray />
@@ -123,7 +123,7 @@ const AccessUserInfo = (props: {
 			} else {
 				return (
 					<div className={rightTextStyles}>
-						{item.edit_access ? "Can Edit" : "Can View"}
+						{item.edit_access ? "Editor" : "Viewer"}
 					</div>
 				);
 			}
@@ -366,16 +366,24 @@ const ShareContent = (props: ShareContentProps) => {
 							defaultValue={
 								currentCategory?.is_public ? "View access" : "No access"
 							}
-							onOptionClick={async (value) => {
-								await mutationApiCall(
-									updateCategoryOptimisticMutation.mutateAsync({
+							onOptionClick={(value) => {
+								if (typeof dynamicCategoryId !== "number") {
+									return;
+								}
+
+								updateCategoryOptimisticMutation.mutate(
+									{
 										category_id: dynamicCategoryId,
 										updateData: {
 											is_public: value === "View access",
 										},
-									}),
+									},
+									{
+										onSuccess: () => {
+											setLinkCopied(false);
+										},
+									},
 								);
-								setLinkCopied(false);
 							}}
 							options={[
 								{ label: "View access", value: "View access" },

@@ -1,11 +1,14 @@
 import { useEffect } from "react";
+import { useRouter } from "next/router";
 import { isEmpty } from "lodash";
 
+import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { useMiscellaneousStore } from "@/store/componentStore";
-import { PAGINATION_LIMIT } from "@/utils/constants";
+import { DISCOVER_URL, PAGINATION_LIMIT } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
+import { getCategorySlugFromRouter } from "@/utils/url";
 
 type UseLightboxPrefetchParams = {
 	activeIndex: number;
@@ -24,9 +27,18 @@ export function useLightboxPrefetch({
 	bookmarksLength,
 	pages,
 }: UseLightboxPrefetchParams) {
+	const router = useRouter();
+	const categorySlug = getCategorySlugFromRouter(router);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
+
 	const { fetchNextPage: fetchNextBookmarkPage } = useFetchPaginatedBookmarks();
 	const { fetchNextPage: fetchNextSearchPage, hasNextPage: searchHasNextPage } =
 		useSearchBookmarks();
+	const {
+		fetchNextPage: fetchNextDiscoverPage,
+		hasNextPage: discoverHasNextPage,
+	} = useFetchDiscoverBookmarks();
+
 	// Determine if we're currently searching
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 
@@ -46,7 +58,13 @@ export function useLightboxPrefetch({
 		if (shouldFetchMore && hasMoreData) {
 			const prefetch = async () => {
 				try {
-					if (isSearching && searchHasNextPage) {
+					if (isDiscoverPage) {
+						if (isSearching && searchHasNextPage) {
+							await fetchNextSearchPage();
+						} else if (!isSearching && discoverHasNextPage) {
+							await fetchNextDiscoverPage();
+						}
+					} else if (isSearching && searchHasNextPage) {
 						await fetchNextSearchPage();
 					} else if (!isSearching) {
 						await fetchNextBookmarkPage();
@@ -64,9 +82,12 @@ export function useLightboxPrefetch({
 		open,
 		pages,
 		isSearching,
+		isDiscoverPage,
 		searchHasNextPage,
+		discoverHasNextPage,
 		fetchNextSearchPage,
 		fetchNextBookmarkPage,
+		fetchNextDiscoverPage,
 		shouldFetchMore,
 		hasMoreData,
 	]);

@@ -19,6 +19,7 @@ import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
 import {
 	CATEGORY_ID_PATHNAME,
+	DISCOVER_URL,
 	PREVIEW_PATH,
 	viewValues,
 } from "../../../utils/constants";
@@ -54,6 +55,8 @@ const Option = ({
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	const router = useRouter();
+	const categorySlug = getCategorySlugFromRouter(router);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
 	const { setLightboxId, setLightboxOpen, lightboxOpen } =
 		useMiscellaneousStore();
 	// Register the item as a drag source.
@@ -110,7 +113,9 @@ const Option = ({
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute top-0 left-0 h-full w-full rounded-lg ${
-					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
+					isTrashPage || (isPublicPage && !isDiscoverPage)
+						? "cursor-auto"
+						: "cursor-pointer"
 				}`}
 				draggable={false}
 				href={url}
@@ -118,7 +123,7 @@ const Option = ({
 					if (
 						isTrashPage ||
 						item?.key?.toString().startsWith("$") ||
-						isPublicPage
+						(isPublicPage && !isDiscoverPage)
 					) {
 						event.preventDefault();
 						return;
