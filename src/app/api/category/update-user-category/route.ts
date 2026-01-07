@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { type Database } from "@/types/database-generated.types";
@@ -57,7 +57,7 @@ export type UpdateCategoryResponse = [
 	...z.infer<typeof UpdateCategoryResponseSchema>,
 ];
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: UpdateCategoryPayloadSchema,
 	outputSchema: UpdateCategoryResponseSchema,

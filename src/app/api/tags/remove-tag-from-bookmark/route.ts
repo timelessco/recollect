@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import {
@@ -37,7 +37,7 @@ export type RemoveTagFromBookmarkResponse = [
 	...z.infer<typeof RemoveTagFromBookmarkResponseSchema>,
 ];
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: RemoveTagFromBookmarkPayloadSchema,
 	outputSchema: RemoveTagFromBookmarkResponseSchema,

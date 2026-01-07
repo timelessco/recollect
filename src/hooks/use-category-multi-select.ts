@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-import { useAddCategoryToBookmarkMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-mutation";
-import { useRemoveCategoryFromBookmarkMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-mutation";
+import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { useRemoveCategoryFromBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-optimistic-mutation";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { useBookmarkCategories } from "@/hooks/use-bookmark-categories";
 import { type CategoriesData } from "@/types/apiTypes";
@@ -30,11 +30,12 @@ export const useCategoryMultiSelect = ({
 	// Get selected IDs from cache
 	const selectedCategoryIds = useBookmarkCategories(bookmarkId);
 
-	const { addCategoryToBookmarkMutation } = useAddCategoryToBookmarkMutation({
-		skipInvalidation: mutationOptions.skipInvalidation,
-	});
-	const { removeCategoryFromBookmarkMutation } =
-		useRemoveCategoryFromBookmarkMutation({
+	const { addCategoryToBookmarkOptimisticMutation } =
+		useAddCategoryToBookmarkOptimisticMutation({
+			skipInvalidation: mutationOptions.skipInvalidation,
+		});
+	const { removeCategoryFromBookmarkOptimisticMutation } =
+		useRemoveCategoryFromBookmarkOptimisticMutation({
 			skipInvalidation: mutationOptions.skipInvalidation,
 			preserveInList: mutationOptions.preserveInList,
 		});
@@ -61,7 +62,7 @@ export const useCategoryMultiSelect = ({
 	);
 
 	const handleAdd = (category: CategoriesData) => {
-		addCategoryToBookmarkMutation.mutate({
+		addCategoryToBookmarkOptimisticMutation.mutate({
 			bookmark_id: bookmarkId,
 			category_id: category.id,
 		});
@@ -69,7 +70,7 @@ export const useCategoryMultiSelect = ({
 	};
 
 	const handleRemove = (category: CategoriesData) => {
-		removeCategoryFromBookmarkMutation.mutate({
+		removeCategoryFromBookmarkOptimisticMutation.mutate({
 			bookmark_id: bookmarkId,
 			category_id: category.id,
 		});
@@ -83,9 +84,9 @@ export const useCategoryMultiSelect = ({
 		handleRemove,
 		getItemId: (cat: CategoriesData) => cat.id,
 		getItemLabel: (cat: CategoriesData) => cat.category_name,
-		isAdding: addCategoryToBookmarkMutation.isPending,
-		isRemoving: removeCategoryFromBookmarkMutation.isPending,
-		addError: addCategoryToBookmarkMutation.error,
-		removeError: removeCategoryFromBookmarkMutation.error,
+		isAdding: addCategoryToBookmarkOptimisticMutation.isPending,
+		isRemoving: removeCategoryFromBookmarkOptimisticMutation.isPending,
+		addError: addCategoryToBookmarkOptimisticMutation.error,
+		removeError: removeCategoryFromBookmarkOptimisticMutation.error,
 	};
 };

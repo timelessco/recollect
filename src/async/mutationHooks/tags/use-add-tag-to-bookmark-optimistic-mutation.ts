@@ -18,11 +18,11 @@ import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
  * Mutation hook for adding an existing tag to a bookmark.
  * This is additive - it adds to existing tags without removing them.
  */
-export function useAddTagToBookmarkMutation() {
+export function useAddTagToBookmarkOptimisticMutation() {
 	const { queryClient, session, queryKey, searchQueryKey } =
 		useBookmarkMutationContext();
 
-	const addTagToBookmarkMutation = useReactQueryOptimisticMutation<
+	const addTagToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
 		AddTagToBookmarkResponse,
 		Error,
 		AddTagToBookmarkPayload,
@@ -97,5 +97,5 @@ export function useAddTagToBookmarkMutation() {
 		successMessage: "Tag added",
 	});
 
-	return { addTagToBookmarkMutation };
+	return { addTagToBookmarkOptimisticMutation };
 }
