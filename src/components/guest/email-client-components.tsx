@@ -120,12 +120,13 @@ function EmailField({ ref, value, onChange, autoFocus }: EmailFieldProps) {
 }
 
 function EmailFieldWithQueryState() {
-	const [email, setEmail] = useQueryState("email", { defaultValue: "" });
+	const [urlEmail] = useQueryState("email", { defaultValue: "" });
+	const [localEmail, setLocalEmail] = React.useState(urlEmail);
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	// Select all text when email value is pre-filled for easy clearing
 	useIsomorphicLayoutEffect(() => {
-		if (inputRef.current && email) {
+		if (inputRef.current && urlEmail) {
 			inputRef.current.select();
 		}
 	}, []);
@@ -133,8 +134,8 @@ function EmailFieldWithQueryState() {
 	return (
 		<EmailField
 			ref={inputRef}
-			value={email}
-			onChange={(event) => setEmail(event.target.value)}
+			value={localEmail}
+			onChange={(event) => setLocalEmail(event.target.value)}
 			autoFocus
 		/>
 	);
