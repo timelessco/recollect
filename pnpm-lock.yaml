@@ -177,9 +177,6 @@ importers:
       slugify:
         specifier: 1.6.6
         version: 1.6.6
-      ssrfcheck:
-        specifier: 1.2.0
-        version: 1.2.0
       tailwind-merge:
         specifier: 3.4.0
         version: 3.4.0
@@ -8483,10 +8480,6 @@ packages:
   sshpk@1.18.0:
     resolution: {integrity: sha512-2p2KJZTSqQ/I3+HX42EpYOa2l3f8Erv8MWKsy2I9uf4wA7yFIkXRffYdsx86y6z4vHtV8u7g+pPlr8/4ouAxsQ==}
     engines: {node: '>=0.10.0'}
-    hasBin: true
-
-  ssrfcheck@1.2.0:
-    resolution: {integrity: sha512-tWmE4yluJK+GKL/Q6atEEVkmN7s0MdQvOJThCl+BY0ntLg/APRqR5st8EUnyI+dzWohrcMFvxMYzSZlsitvgEw==}
     hasBin: true
 
   stable-hash-x@0.2.0:
@@ -19111,8 +19104,6 @@ snapshots:
       jsbn: 0.1.1
       safer-buffer: 2.1.2
       tweetnacl: 0.14.5
-
-  ssrfcheck@1.2.0: {}
 
   stable-hash-x@0.2.0: {}
 
