@@ -26,6 +26,11 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
 // Video upload limits
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
+
+// Image download timeout
+export const IMAGE_DOWNLOAD_TIMEOUT_MS = 10_000;
+
+// Video download timeout
 export const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024;
 
 // regx

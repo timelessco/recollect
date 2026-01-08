@@ -2,7 +2,10 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
-import { MAIN_TABLE_NAME } from "../../../utils/constants";
+import {
+	IMAGE_DOWNLOAD_TIMEOUT_MS,
+	MAIN_TABLE_NAME,
+} from "../../../utils/constants";
 import {
 	enrichMetadata,
 	validateTwitterMediaUrl,
@@ -36,12 +39,12 @@ const requestBodySchema = z.object({
 	queue_name: z.string().min(1, { message: "queue_name is required" }),
 });
 
+const ROUTE = "ai-enrichment";
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	const ROUTE = "ai-enrichment";
-
 	if (request.method !== "POST") {
 		console.warn(`[${ROUTE}] Method not allowed:`, { method: request.method });
 		response.status(405).json({ error: "Method not allowed" });
@@ -131,7 +134,7 @@ export default async function handler(
 						"User-Agent": "Mozilla/5.0",
 						Accept: "image/*,*/*;q=0.8",
 					},
-					signal: AbortSignal.timeout(10_000),
+					signal: AbortSignal.timeout(IMAGE_DOWNLOAD_TIMEOUT_MS),
 				});
 
 				if (!imageResponse.ok) {
