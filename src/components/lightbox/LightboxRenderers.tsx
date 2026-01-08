@@ -1,4 +1,4 @@
-import { type RefObject } from "react";
+import { useCallback, useEffect, useState, type RefObject } from "react";
 import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
@@ -63,22 +63,42 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => (
 
 /**
  * Renders a video slide using the custom VideoPlayer component
+ * Falls back to ogImage if video fails to load (e.g., 403 errors)
  */
-export const VideoSlide = ({ bookmark, isActive }: SlideProps) => (
-	<div className="flex h-full w-full items-center justify-center">
-		<div className="w-full max-w-[min(1200px,90vw)]">
-			<VideoPlayer
-				isActive={isActive ?? false}
-				src={
-					(bookmark?.type === tweetType || bookmark?.type === "instagram") &&
-					bookmark?.meta_data?.video_url
-						? bookmark?.meta_data?.video_url
-						: (bookmark?.url ?? "")
-				}
-			/>
+export const VideoSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
+	const [videoError, setVideoError] = useState(false);
+
+	// Reset error state when bookmark changes
+	useEffect(() => {
+		setVideoError(false);
+	}, [bookmark?.url]);
+
+	const handleVideoError = useCallback(() => {
+		setVideoError(true);
+	}, []);
+
+	// If video failed to load and we have an ogImage, show the image instead
+	if (videoError && bookmark?.ogImage) {
+		return <WebEmbedSlide bookmark={bookmark} zoomRef={zoomRef} />;
+	}
+
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<div className="w-full max-w-[min(1200px,90vw)]">
+				<VideoPlayer
+					isActive={isActive ?? false}
+					onError={handleVideoError}
+					src={
+						(bookmark?.type === tweetType || bookmark?.type === "instagram") &&
+						bookmark?.meta_data?.video_url
+							? bookmark?.meta_data?.video_url
+							: (bookmark?.url ?? "")
+					}
+				/>
+			</div>
 		</div>
-	</div>
-);
+	);
+};
 
 /**
  * Renders a PDF slide using an embedded object tag

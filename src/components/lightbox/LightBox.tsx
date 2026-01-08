@@ -130,7 +130,13 @@ export const CustomLightBox = ({
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
 				Boolean(bookmark?.meta_data?.video_url)
 			) {
-				content = <VideoSlide bookmark={bookmark} isActive={isActive} />;
+				content = (
+					<VideoSlide
+						bookmark={bookmark}
+						isActive={isActive}
+						zoomRef={zoomRef}
+					/>
+				);
 			}
 			// Then check image
 			else if (
