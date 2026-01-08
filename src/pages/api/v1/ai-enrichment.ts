@@ -57,6 +57,7 @@ export default async function handler(
 		}
 
 		const {
+			id,
 			ogImage: ogImageUrl,
 			user_id,
 			url,
@@ -67,6 +68,7 @@ export default async function handler(
 		} = parseResult.data;
 
 		console.log(`[${ROUTE}] API called:`, {
+			bookmarkId: id,
 			userId: user_id,
 			url,
 			isRaindropBookmark,
@@ -107,6 +109,7 @@ export default async function handler(
 						userId: user_id,
 					},
 					extra: {
+						bookmarkId: id,
 						url,
 						ogImageUrl,
 					},
@@ -139,8 +142,7 @@ export default async function handler(
 		const { error: updateError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ ogImage, meta_data: newMeta })
-			.eq("url", url)
-			.eq("user_id", user_id);
+			.eq("id", id);
 
 		if (updateError) {
 			console.error(`[${ROUTE}] Error updating bookmark:`, updateError);
@@ -150,6 +152,7 @@ export default async function handler(
 					userId: user_id,
 				},
 				extra: {
+					bookmarkId: id,
 					url,
 					ogImage,
 				},
@@ -183,6 +186,7 @@ export default async function handler(
 						userId: user_id,
 					},
 					extra: {
+						bookmarkId: id,
 						queueName: queue_name,
 						messageId: message.msg_id,
 						url,
@@ -219,6 +223,7 @@ export default async function handler(
 				operation: "ai_enrichment_unexpected",
 			},
 			extra: {
+				bookmarkId: request.body?.id,
 				url: request.body?.url,
 				userId: request.body?.user_id,
 			},
