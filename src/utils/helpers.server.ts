@@ -1,10 +1,17 @@
 import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
+import uniqid from "uniqid";
 
+import {
+	MAX_VIDEO_SIZE_BYTES,
+	R2_MAIN_BUCKET_NAME,
+	STORAGE_FILES_PATH,
+	VIDEO_DOWNLOAD_TIMEOUT_MS,
+} from "./constants";
+import { storageHelpers } from "./storageClient";
 import imageToText from "@/async/ai/imageToText";
 import ocr from "@/async/ai/ocr";
 import { blurhashFromURL } from "@/utils/getBlurHash";
-import { uploadVideoToR2 } from "@/utils/helpers";
 
 type EnrichMetadataParams = {
 	existingMetadata: Record<string, unknown>;
@@ -272,5 +279,100 @@ const processBlurhash = async (ogImage: string, url: string) => {
 			},
 		});
 		return { isBlurhashFailed: true, blurhash: null };
+	}
+};
+
+/**
+ * Downloads a video from external URL and uploads to R2
+ * @param videoUrl - External video URL
+ * @param user_id - User ID for storage path
+ * @returns R2 public URL or null if failed
+ */
+export const uploadVideoToR2 = async (
+	videoUrl: string,
+	user_id: string,
+): Promise<string | null> => {
+	try {
+		let videoResponse: Response;
+		let arrayBuffer: ArrayBuffer;
+
+		try {
+			videoResponse = await fetch(videoUrl, {
+				headers: {
+					"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
+					Accept: "video/*,*/*;q=0.8",
+				},
+				signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
+			});
+
+			if (!videoResponse.ok) {
+				throw new Error(`HTTP error! status: ${videoResponse.status}`);
+			}
+
+			// Pre-download size check (Content-Length header - can be omitted/spoofed)
+			const contentLength = videoResponse.headers.get("content-length");
+			if (
+				contentLength &&
+				Number.parseInt(contentLength, 10) > MAX_VIDEO_SIZE_BYTES
+			) {
+				throw new Error(
+					`Video size exceeds ${MAX_VIDEO_SIZE_BYTES} bytes limit`,
+				);
+			}
+
+			arrayBuffer = await videoResponse.arrayBuffer();
+
+			// Post-download size check (Content-Length can be omitted/spoofed)
+			if (arrayBuffer.byteLength > MAX_VIDEO_SIZE_BYTES) {
+				throw new Error(
+					`Video size ${arrayBuffer.byteLength} bytes exceeds ${MAX_VIDEO_SIZE_BYTES} bytes limit`,
+				);
+			}
+		} catch (error) {
+			console.error("Error downloading video:", error);
+			throw new Error(
+				error instanceof Error ? error.message : "Error downloading video",
+			);
+		}
+
+		// Generate unique filename
+		const videoName = `twitter-video-${uniqid.time()}.mp4`;
+		const storagePath = `${STORAGE_FILES_PATH}/${user_id}/${videoName}`;
+
+		// Determine content type from response or default to mp4
+		const contentType =
+			videoResponse.headers.get("content-type") || "video/mp4";
+
+		// Upload to R2
+		const videoBuffer = Buffer.from(arrayBuffer);
+		const { error: uploadError } = await storageHelpers.uploadObject(
+			R2_MAIN_BUCKET_NAME,
+			storagePath,
+			videoBuffer,
+			contentType,
+		);
+
+		if (uploadError) {
+			Sentry.captureException(uploadError, {
+				tags: { operation: "twitter_video_upload" },
+				extra: { videoUrl, userId: user_id },
+			});
+			console.error("R2 video upload failed:", uploadError);
+			return null;
+		}
+
+		// Get public URL
+		const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
+
+		return storageData?.publicUrl || null;
+	} catch (error) {
+		console.error("Error in uploadVideoToR2:", error);
+
+		Sentry.captureException(error, {
+			tags: { operation: "twitter_video_download" },
+			extra: { videoUrl, userId: user_id },
+		});
+
+		return null;
 	}
 };

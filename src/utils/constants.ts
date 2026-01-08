@@ -24,6 +24,10 @@ export const STORAGE_SCREENSHOT_IMAGES_PATH =
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
+// Video upload limits
+export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
+export const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024;
+
 // regx
 
 // Supports any valid TLD (2+ characters)
