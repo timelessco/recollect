@@ -225,6 +225,8 @@ export const CustomLightBox = ({
 					? "calc(100% - min(max(320px, 20%), 400px))"
 					: "100%",
 				animation: "custom-fade-scale-in 0.25s ease-in-out",
+				// Prevent browser navigation on swipe gestures
+				overscrollBehavior: "none" as const,
 			},
 			slide: {
 				height: "100%",
