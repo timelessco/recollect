@@ -158,32 +158,18 @@ export default async function handler(
 		const newMeta: any = { ...message.message.meta_data };
 		// If from Twitter bookmark — upload video into R2
 		if (isTwitterBookmark) {
-			console.log(
-				`Processing Twitter bookmark: ${JSON.stringify(message.message.meta_data)}`,
-			);
-
 			const videoUrl = message.message.meta_data?.video_url;
 
 			if (videoUrl && typeof videoUrl === "string") {
-				console.log(`Processing Twitter video: ${videoUrl}`);
+				const r2VideoUrl = await uploadVideoToR2(videoUrl, user_id);
 
-				try {
-					const r2VideoUrl = await uploadVideoToR2(videoUrl, user_id);
-
-					if (r2VideoUrl) {
-						// Replace external URL with R2 URL
-						newMeta.video_url = r2VideoUrl;
-						console.log(`Twitter video uploaded to R2: ${r2VideoUrl}`);
-					} else {
-						// Upload failed but not critical - keep processing
-						newMeta.video_url = videoUrl;
-						console.warn("Video upload failed, using original URL");
-					}
-				} catch (error) {
-					// Non-blocking error - continue with other processing
-					console.error("Twitter video processing error:", error);
-					// Fallback to original
+				if (r2VideoUrl) {
+					newMeta.video_url = r2VideoUrl;
+					console.log(`Twitter video uploaded to R2: ${r2VideoUrl}`);
+				} else {
+					// Upload failed but not critical - keep processing
 					newMeta.video_url = videoUrl;
+					console.warn("Video upload failed, using original URL");
 				}
 			}
 		}
