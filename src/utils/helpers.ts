@@ -707,7 +707,6 @@ export const uploadVideoToR2 = async (
 		// Get public URL
 		const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
 
-		console.log(`Video uploaded successfully to: ${storageData?.publicUrl}`);
 		return storageData?.publicUrl || null;
 	} catch (error) {
 		console.error("Error in uploadVideoToR2:", error);
