@@ -1,29 +1,11 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { type SupabaseClient } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
-import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
-import { blurhashFromURL } from "../../../utils/getBlurHash";
-import { uploadVideoToR2 } from "../../../utils/helpers";
+import { enrichMetadata } from "../../../utils/helpers.server";
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
-
-type EnrichMetadataParams = {
-	existingMetadata: Record<string, unknown>;
-	ogImage: string;
-	isTwitterBookmark: boolean;
-	videoUrl?: string | null;
-	userId: string;
-	supabase: SupabaseClient;
-	url: string;
-};
-
-type EnrichMetadataResult = {
-	metadata: Record<string, unknown>;
-	isFailed: boolean;
-};
 
 const requestBodySchema = z.object({
 	id: z.number(),
@@ -51,105 +33,14 @@ const requestBodySchema = z.object({
 	queue_name: z.string().min(1, { message: "queue_name is required" }),
 });
 
-/**
- * Enrich bookmark metadata with AI-generated content.
- *
- * Performs the following enrichments:
- * - Twitter video upload to R2 (if applicable)
- * - Image caption generation via AI
- * - OCR text extraction from image
- * - Blurhash generation for progressive image loading
- * @param params - Enrichment parameters
- * @param params.existingMetadata - The existing bookmark metadata
- * @param params.ogImage - The Open Graph image URL to process
- * @param params.isTwitterBookmark - Whether this is a Twitter bookmark
- * @param params.videoUrl - Optional Twitter video URL to upload to R2
- * @param params.userId - The user ID for R2 upload path
- * @param params.supabase - Supabase client for AI operations
- * @param params.url - The bookmark URL for logging
- * @returns Updated metadata and failure flag
- */
-async function enrichMetadata({
-	existingMetadata,
-	ogImage,
-	isTwitterBookmark,
-	videoUrl,
-	userId,
-	supabase,
-	url,
-}: EnrichMetadataParams): Promise<EnrichMetadataResult> {
-	const metadata = { ...existingMetadata };
-	let isFailed = false;
-
-	// Upload Twitter video to R2
-	if (isTwitterBookmark && videoUrl && typeof videoUrl === "string") {
-		const r2VideoUrl = await uploadVideoToR2(videoUrl, userId);
-
-		if (r2VideoUrl) {
-			metadata.video_url = r2VideoUrl;
-			console.log(`Twitter video uploaded to R2: ${r2VideoUrl}`);
-		} else {
-			// Upload failed but not critical - keep processing
-			metadata.video_url = videoUrl;
-			console.warn("Video upload failed, using original URL");
-		}
-	}
-
-	// Generate caption for the image
-	try {
-		const caption = await imageToText(ogImage, supabase, userId);
-		if (!caption) {
-			console.error("imageToText returned empty result", { url, ogImage });
-			isFailed = true;
-		} else {
-			metadata.image_caption = caption;
-		}
-	} catch (error) {
-		console.error("imageToText threw error", { url, ogImage, error });
-		isFailed = true;
-	}
-
-	// Extract text from the image
-	try {
-		const ocrResult = await ocr(ogImage, supabase, userId);
-		if (!ocrResult) {
-			console.error("ocr returned empty result", { url, ogImage });
-			isFailed = true;
-		} else {
-			metadata.ocr = ocrResult;
-		}
-	} catch (error) {
-		console.error("ocr threw error", { url, ogImage, error });
-		isFailed = true;
-	}
-
-	// Generate blurhash for the image
-	try {
-		const { width, height, encoded } = await blurhashFromURL(ogImage);
-		if (!encoded || !width || !height) {
-			console.error("blurhashFromURL returned empty result", {
-				url,
-				ogImage,
-			});
-			isFailed = true;
-		} else {
-			metadata.width = width;
-			metadata.height = height;
-			metadata.ogImgBlurUrl = encoded;
-		}
-	} catch (error) {
-		console.error("blurhashFromURL threw error", { url, ogImage, error });
-		isFailed = true;
-	}
-
-	return { metadata, isFailed };
-}
-
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
+	const ROUTE = "ai-enrichment";
+
 	if (request.method !== "POST") {
+		console.warn(`[${ROUTE}] Method not allowed:`, { method: request.method });
 		response.status(405).json({ error: "Method not allowed" });
 		return;
 	}
@@ -158,7 +49,7 @@ export default async function handler(
 		const parseResult = requestBodySchema.safeParse(request.body);
 
 		if (!parseResult.success) {
-			console.warn("Validation error:", parseResult.error.issues);
+			console.warn(`[${ROUTE}] Validation error:`, parseResult.error.issues);
 			response.status(400).json({
 				error: "Validation failed",
 			});
@@ -175,11 +66,21 @@ export default async function handler(
 			queue_name,
 		} = parseResult.data;
 
+		console.log(`[${ROUTE}] API called:`, {
+			userId: user_id,
+			url,
+			isRaindropBookmark,
+			isTwitterBookmark,
+			queueName: queue_name,
+			messageId: message.msg_id,
+		});
+
 		const supabase = createServiceClient();
 		let ogImage = ogImageUrl;
 
 		// If from Raindrop bookmark — upload ogImage into R2
 		if (isRaindropBookmark) {
+			console.log(`[${ROUTE}] Uploading Raindrop image to R2:`, { url });
 			try {
 				const imageResponse = await fetch(ogImage, {
 					headers: {
@@ -196,10 +97,24 @@ export default async function handler(
 				const arrayBuffer = await imageResponse.arrayBuffer();
 				const returnedB64 = Buffer.from(arrayBuffer).toString("base64");
 				ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
+
+				console.log(`[${ROUTE}] Raindrop image uploaded successfully`);
 			} catch (error) {
-				console.error("Error downloading Raindrop image:", error);
+				console.error(`[${ROUTE}] Error downloading Raindrop image:`, error);
+				Sentry.captureException(error, {
+					tags: {
+						operation: "raindrop_image_upload",
+						userId: user_id,
+					},
+					extra: {
+						url,
+						ogImageUrl,
+					},
+				});
 			}
 		}
+
+		console.log(`[${ROUTE}] Starting metadata enrichment:`, { url });
 
 		// Enrich metadata with AI-generated content
 		const { metadata: newMeta, isFailed } = await enrichMetadata({
@@ -212,16 +127,40 @@ export default async function handler(
 			url,
 		});
 
+		if (isFailed) {
+			console.warn(`[${ROUTE}] Metadata enrichment partially failed:`, { url });
+		} else {
+			console.log(`[${ROUTE}] Metadata enrichment completed successfully:`, {
+				url,
+			});
+		}
+
 		// Update database with enriched data
-		const { error } = await supabase
+		const { error: updateError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ ogImage, meta_data: newMeta })
 			.eq("url", url)
 			.eq("user_id", user_id);
 
-		if (error) {
-			console.error("Error updating Supabase main table");
+		if (updateError) {
+			console.error(`[${ROUTE}] Error updating bookmark:`, updateError);
+			Sentry.captureException(updateError, {
+				tags: {
+					operation: "update_bookmark_metadata",
+					userId: user_id,
+				},
+				extra: {
+					url,
+					ogImage,
+				},
+			});
+			response.status(500).json({
+				error: "Failed to update bookmark metadata",
+			});
+			return;
 		}
+
+		console.log(`[${ROUTE}] Bookmark updated successfully:`, { url });
 
 		// Delete message from queue on success
 		if (!isFailed) {
@@ -233,9 +172,39 @@ export default async function handler(
 				});
 
 			if (deleteError) {
-				console.error("Error deleting message from queue");
+				console.error(`[${ROUTE}] Error deleting message from queue:`, {
+					error: deleteError,
+					messageId: message.msg_id,
+					queueName: queue_name,
+				});
+				Sentry.captureException(deleteError, {
+					tags: {
+						operation: "delete_queue_message",
+						userId: user_id,
+					},
+					extra: {
+						queueName: queue_name,
+						messageId: message.msg_id,
+						url,
+					},
+				});
+			} else {
+				console.log(`[${ROUTE}] Queue message deleted:`, {
+					messageId: message.msg_id,
+				});
 			}
+		} else {
+			console.warn(`[${ROUTE}] Keeping message in queue due to failures:`, {
+				messageId: message.msg_id,
+				url,
+			});
 		}
+
+		console.log(`[${ROUTE}] Request completed:`, {
+			url,
+			success: true,
+			isFailed,
+		});
 
 		response.status(200).json({
 			success: true,
@@ -244,9 +213,18 @@ export default async function handler(
 			meta_data: newMeta,
 		});
 	} catch (error) {
-		console.error("Error in process-og-image:", error);
+		console.error(`[${ROUTE}] Unexpected error:`, error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "ai_enrichment_unexpected",
+			},
+			extra: {
+				url: request.body?.url,
+				userId: request.body?.user_id,
+			},
+		});
 		response.status(500).json({
-			error: error instanceof Error ? error.message : "Internal server error",
+			error: "An unexpected error occurred",
 		});
 	}
 }
