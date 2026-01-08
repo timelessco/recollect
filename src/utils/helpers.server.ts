@@ -315,45 +315,33 @@ export const uploadVideoToR2 = async (
 	user_id: string,
 ): Promise<string | null> => {
 	try {
-		let videoResponse: Response;
-		let arrayBuffer: ArrayBuffer;
+		const videoResponse: Response = await fetch(videoUrl, {
+			headers: {
+				"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
+				Accept: "video/*,*/*;q=0.8",
+			},
+			signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
+		});
 
-		try {
-			videoResponse = await fetch(videoUrl, {
-				headers: {
-					"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
-					Accept: "video/*,*/*;q=0.8",
-				},
-				signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
-			});
+		if (!videoResponse.ok) {
+			throw new Error(`HTTP error! status: ${videoResponse.status}`);
+		}
 
-			if (!videoResponse.ok) {
-				throw new Error(`HTTP error! status: ${videoResponse.status}`);
-			}
+		// Pre-download size check (Content-Length header - can be omitted/spoofed)
+		const contentLength = videoResponse.headers.get("content-length");
+		if (
+			contentLength &&
+			Number.parseInt(contentLength, 10) > MAX_VIDEO_SIZE_BYTES
+		) {
+			throw new Error(`Video size exceeds ${MAX_VIDEO_SIZE_BYTES} bytes limit`);
+		}
 
-			// Pre-download size check (Content-Length header - can be omitted/spoofed)
-			const contentLength = videoResponse.headers.get("content-length");
-			if (
-				contentLength &&
-				Number.parseInt(contentLength, 10) > MAX_VIDEO_SIZE_BYTES
-			) {
-				throw new Error(
-					`Video size exceeds ${MAX_VIDEO_SIZE_BYTES} bytes limit`,
-				);
-			}
+		const arrayBuffer: ArrayBuffer = await videoResponse.arrayBuffer();
 
-			arrayBuffer = await videoResponse.arrayBuffer();
-
-			// Post-download size check (Content-Length can be omitted/spoofed)
-			if (arrayBuffer.byteLength > MAX_VIDEO_SIZE_BYTES) {
-				throw new Error(
-					`Video size ${arrayBuffer.byteLength} bytes exceeds ${MAX_VIDEO_SIZE_BYTES} bytes limit`,
-				);
-			}
-		} catch (error) {
-			console.error("Error downloading video:", error);
+		// Post-download size check (Content-Length can be omitted/spoofed)
+		if (arrayBuffer.byteLength > MAX_VIDEO_SIZE_BYTES) {
 			throw new Error(
-				error instanceof Error ? error.message : "Error downloading video",
+				`Video size ${arrayBuffer.byteLength} bytes exceeds ${MAX_VIDEO_SIZE_BYTES} bytes limit`,
 			);
 		}
 
