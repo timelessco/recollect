@@ -78,6 +78,9 @@ export const enrichMetadata = async ({
 							return r2VideoUrl;
 						}
 
+						// Upload failed but not critical - keep processing
+						// Video upload is best-effort. If the URL is expired, the UI will
+						// fall back to displaying the thumbnail image instead.
 						console.warn(
 							"[enrichMetadata] Video upload failed, using original URL:",
 							{ url, videoUrl },
