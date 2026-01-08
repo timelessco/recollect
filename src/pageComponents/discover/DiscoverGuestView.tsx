@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { isEmpty } from "lodash";
 
+import { useIsMobileView } from "../../hooks/useIsMobileView";
 import {
 	type BookmarkViewDataTypes,
 	type SingleListData,
@@ -13,10 +15,20 @@ type DiscoverGuestViewProps = {
 };
 
 const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
+	const { isDesktop } = useIsMobileView();
+
+	const moodboardColumns = useMemo(() => {
+		if (isDesktop) {
+			return [10];
+		}
+
+		return [30];
+	}, [isDesktop]);
+
 	// Hardcoded view configuration for discover guest view
 	const discoverCategoryViews: BookmarkViewDataTypes = {
 		bookmarksView: viewValues.moodboard as BookmarksViewTypes,
-		moodboardColumns: [30],
+		moodboardColumns,
 		cardContentViewArray: ["cover", "title", "description", "info"],
 		sortBy: "date-sort-acending",
 	};
