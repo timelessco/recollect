@@ -1,6 +1,5 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type SupabaseClient } from "@supabase/supabase-js";
-import axios from "axios";
 import { z } from "zod";
 
 import imageToText from "../../../async/ai/imageToText";
@@ -15,7 +14,7 @@ type EnrichMetadataParams = {
 	existingMetadata: Record<string, unknown>;
 	ogImage: string;
 	isTwitterBookmark: boolean;
-	videoUrl?: string;
+	videoUrl?: string | null;
 	userId: string;
 	supabase: SupabaseClient;
 	url: string;
@@ -25,6 +24,32 @@ type EnrichMetadataResult = {
 	metadata: Record<string, unknown>;
 	isFailed: boolean;
 };
+
+const requestBodySchema = z.object({
+	id: z.number(),
+	ogImage: z.url({ message: "ogImage must be a valid URL" }),
+	user_id: z.uuid({ message: "user_id must be a valid UUID" }),
+	url: z.url({ message: "url must be a valid URL" }),
+	isRaindropBookmark: z.boolean().optional().default(false),
+	isTwitterBookmark: z.boolean().optional().default(false),
+	message: z.object({
+		msg_id: z.number(),
+		message: z.object({
+			meta_data: z.object({
+				twitter_avatar_url: z.string().optional(),
+				instagram_username: z.string().max(30).optional(),
+				instagram_profile_pic: z.string().nullable().optional(),
+				favIcon: z.string(),
+				video_url: z.string().nullable().optional(),
+				saved_collection_names: z
+					.array(z.string().max(255))
+					.max(100)
+					.optional(),
+			}),
+		}),
+	}),
+	queue_name: z.string().min(1, { message: "queue_name is required" }),
+});
 
 /**
  * Enrich bookmark metadata with AI-generated content.
@@ -102,22 +127,6 @@ async function enrichMetadata({
 	return { metadata, isFailed };
 }
 
-const requestBodySchema = z.object({
-	id: z.number(),
-	ogImage: z.url({ message: "ogImage must be a valid URL" }),
-	user_id: z.uuid({ message: "user_id must be a valid UUID" }),
-	url: z.url({ message: "url must be a valid URL" }),
-	isRaindropBookmark: z.boolean().optional().default(false),
-	isTwitterBookmark: z.boolean().optional().default(false),
-	message: z.object({
-		msg_id: z.number(),
-		message: z.object({
-			meta_data: z.record(z.string(), z.any()).optional().default({}),
-		}),
-	}),
-	queue_name: z.string().min(1, { message: "queue_name is required" }),
-});
-
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
@@ -153,17 +162,25 @@ export default async function handler(
 
 		// If from Raindrop bookmark — upload ogImage into R2
 		if (isRaindropBookmark) {
-			const image = await axios.get(ogImage, {
-				responseType: "arraybuffer",
-				headers: {
-					"User-Agent": "Mozilla/5.0",
-					Accept: "image/*,*/*;q=0.8",
-				},
-				timeout: 10_000,
-			});
+			try {
+				const imageResponse = await fetch(ogImage, {
+					headers: {
+						"User-Agent": "Mozilla/5.0",
+						Accept: "image/*,*/*;q=0.8",
+					},
+					signal: AbortSignal.timeout(10_000),
+				});
 
-			const returnedB64 = Buffer.from(image.data).toString("base64");
-			ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
+				if (!imageResponse.ok) {
+					throw new Error(`HTTP error! status: ${imageResponse.status}`);
+				}
+
+				const arrayBuffer = await imageResponse.arrayBuffer();
+				const returnedB64 = Buffer.from(arrayBuffer).toString("base64");
+				ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
+			} catch (error) {
+				console.error("Error downloading Raindrop image:", error);
+			}
 		}
 
 		// Enrich metadata with AI-generated content

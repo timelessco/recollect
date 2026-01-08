@@ -5,7 +5,6 @@ import {
 	type PostgrestError,
 	type SupabaseClient,
 } from "@supabase/supabase-js";
-import axios from "axios";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
@@ -666,28 +665,46 @@ export const uploadVideoToR2 = async (
 	user_id: string,
 ): Promise<string | null> => {
 	try {
-		// Download video with appropriate headers
-		const videoResponse = await axios.get(videoUrl, {
-			responseType: "arraybuffer",
-			headers: {
-				"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
-				Accept: "video/*,*/*;q=0.8",
-			},
-			// 60 seconds for large videos
-			timeout: 60_000,
-			// 50MB limit
-			maxContentLength: 50 * 1024 * 1024,
-		});
+		let videoResponse: Response;
+		let arrayBuffer: ArrayBuffer;
+
+		try {
+			videoResponse = await fetch(videoUrl, {
+				headers: {
+					"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
+					Accept: "video/*,*/*;q=0.8",
+				},
+				signal: AbortSignal.timeout(60_000),
+			});
+
+			if (!videoResponse.ok) {
+				throw new Error(`HTTP error! status: ${videoResponse.status}`);
+			}
+
+			// Check content length (50MB limit)
+			const contentLength = videoResponse.headers.get("content-length");
+			if (
+				contentLength &&
+				Number.parseInt(contentLength, 10) > 50 * 1024 * 1024
+			) {
+				throw new Error("Video size exceeds 50MB limit");
+			}
+
+			arrayBuffer = await videoResponse.arrayBuffer();
+		} catch {
+			throw new Error("Error downloading video");
+		}
 
 		// Generate unique filename
 		const videoName = `twitter-video-${uniqid.time()}.mp4`;
 		const storagePath = `${STORAGE_FILES_PATH}/${user_id}/${videoName}`;
 
 		// Determine content type from response or default to mp4
-		const contentType = videoResponse.headers["content-type"] || "video/mp4";
+		const contentType =
+			videoResponse.headers.get("content-type") || "video/mp4";
 
 		// Upload to R2
-		const videoBuffer = Buffer.from(videoResponse.data);
+		const videoBuffer = Buffer.from(arrayBuffer);
 		const { error: uploadError } = await storageHelpers.uploadObject(
 			R2_MAIN_BUCKET_NAME,
 			storagePath,
