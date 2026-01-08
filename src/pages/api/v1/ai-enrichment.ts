@@ -96,32 +96,50 @@ async function enrichMetadata({
 	}
 
 	// Generate caption for the image
-	const caption = await imageToText(ogImage, supabase, userId);
-	if (!caption) {
-		console.error("imageToText returned empty result", url);
+	try {
+		const caption = await imageToText(ogImage, supabase, userId);
+		if (!caption) {
+			console.error("imageToText returned empty result", { url, ogImage });
+			isFailed = true;
+		} else {
+			metadata.image_caption = caption;
+		}
+	} catch (error) {
+		console.error("imageToText threw error", { url, ogImage, error });
 		isFailed = true;
-	} else {
-		metadata.image_caption = caption;
 	}
 
 	// Extract text from the image
-	const ocrResult = await ocr(ogImage, supabase, userId);
-	if (!ocrResult) {
-		console.error("ocr returned empty result", url);
+	try {
+		const ocrResult = await ocr(ogImage, supabase, userId);
+		if (!ocrResult) {
+			console.error("ocr returned empty result", { url, ogImage });
+			isFailed = true;
+		} else {
+			metadata.ocr = ocrResult;
+		}
+	} catch (error) {
+		console.error("ocr threw error", { url, ogImage, error });
 		isFailed = true;
-	} else {
-		metadata.ocr = ocrResult;
 	}
 
 	// Generate blurhash for the image
-	const { width, height, encoded } = await blurhashFromURL(ogImage);
-	if (!encoded || !width || !height) {
-		console.error("blurhashFromURL returned empty result", url);
+	try {
+		const { width, height, encoded } = await blurhashFromURL(ogImage);
+		if (!encoded || !width || !height) {
+			console.error("blurhashFromURL returned empty result", {
+				url,
+				ogImage,
+			});
+			isFailed = true;
+		} else {
+			metadata.width = width;
+			metadata.height = height;
+			metadata.ogImgBlurUrl = encoded;
+		}
+	} catch (error) {
+		console.error("blurhashFromURL threw error", { url, ogImage, error });
 		isFailed = true;
-	} else {
-		metadata.width = width;
-		metadata.height = height;
-		metadata.ogImgBlurUrl = encoded;
 	}
 
 	return { metadata, isFailed };
