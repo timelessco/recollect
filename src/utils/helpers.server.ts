@@ -60,55 +60,64 @@ export const enrichMetadata = async ({
 	supabase,
 	url,
 }: EnrichMetadataParams): Promise<EnrichMetadataResult> => {
-	let video_url = null;
+	// Run all AI operations in parallel
+	const [videoResult, ocrResult, captionResult, blurhashResult] =
+		await Promise.allSettled([
+			// Video upload (conditional)
+			isTwitterBookmark && videoUrl && typeof videoUrl === "string"
+				? (async () => {
+						console.log("[enrichMetadata] Uploading Twitter video to R2:", {
+							url,
+						});
+						const r2VideoUrl = await uploadVideoToR2(videoUrl, userId);
+						if (r2VideoUrl) {
+							console.log("[enrichMetadata] Twitter video uploaded to R2:", {
+								url,
+								r2VideoUrl,
+							});
+							return r2VideoUrl;
+						}
 
-	// Upload Twitter video to R2
-	if (isTwitterBookmark && videoUrl && typeof videoUrl === "string") {
-		console.log("[enrichMetadata] Uploading Twitter video to R2:", { url });
-		const r2VideoUrl = await uploadVideoToR2(videoUrl, userId);
+						console.warn(
+							"[enrichMetadata] Video upload failed, using original URL:",
+							{ url, videoUrl },
+						);
+						return videoUrl;
+					})()
+				: Promise.resolve(null),
+			// OCR extraction
+			processOcr(ogImage, supabase, userId, url),
+			// Image caption generation
+			processImageCaption(ogImage, supabase, userId, url),
+			// Blurhash generation
+			processBlurhash(ogImage, url, userId),
+		]);
 
-		if (r2VideoUrl) {
-			video_url = r2VideoUrl;
-			console.log("[enrichMetadata] Twitter video uploaded to R2:", {
-				url,
-				r2VideoUrl,
-			});
-		} else {
-			// Upload failed but not critical - keep processing
-			video_url = videoUrl;
-			console.warn(
-				"[enrichMetadata] Video upload failed, using original URL:",
-				{
-					url,
-					videoUrl,
-				},
-			);
-		}
-	}
+	// Extract video URL from result
+	const video_url =
+		videoResult.status === "fulfilled" ? videoResult.value : null;
 
-	const { isOcrFailed, ocrResult } = await processOcr(
-		ogImage,
-		supabase,
-		userId,
-		url,
-	);
+	// Extract OCR result
+	const { isOcrFailed, ocrResult: ocrData } =
+		ocrResult.status === "fulfilled"
+			? ocrResult.value
+			: { isOcrFailed: true, ocrResult: null };
 
-	const { isImageCaptionFailed, image_caption } = await processImageCaption(
-		ogImage,
-		supabase,
-		userId,
-		url,
-	);
+	// Extract caption result
+	const { isImageCaptionFailed, image_caption } =
+		captionResult.status === "fulfilled"
+			? captionResult.value
+			: { isImageCaptionFailed: true, image_caption: null };
 
-	const { isBlurhashFailed, blurhash } = await processBlurhash(
-		ogImage,
-		url,
-		userId,
-	);
+	// Extract blurhash result
+	const { isBlurhashFailed, blurhash } =
+		blurhashResult.status === "fulfilled"
+			? blurhashResult.value
+			: { isBlurhashFailed: true, blurhash: null };
 
 	const metadata = {
 		...existingMetadata,
-		ocr: ocrResult,
+		ocr: ocrData,
 		image_caption,
 		width: blurhash?.width,
 		height: blurhash?.height,
