@@ -35,7 +35,7 @@ const requestBodySchema = z.object({
 
 /**
  * Downloads a video from external URL and uploads to R2
- * @param videoUrl - External video URL (e.g. Twitter CDN)
+ * @param videoUrl - External video URL
  * @param user_id - User ID for storage path
  * @returns R2 public URL or null if failed
  */
