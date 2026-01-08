@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextApiRequest, type NextApiResponse } from "next";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 import { z } from "zod";
 
@@ -10,6 +10,97 @@ import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { uploadVideoToR2 } from "../../../utils/helpers";
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
+
+type EnrichMetadataParams = {
+	existingMetadata: Record<string, unknown>;
+	ogImage: string;
+	isTwitterBookmark: boolean;
+	videoUrl?: string;
+	userId: string;
+	supabase: SupabaseClient;
+	url: string;
+};
+
+type EnrichMetadataResult = {
+	metadata: Record<string, unknown>;
+	isFailed: boolean;
+};
+
+/**
+ * Enrich bookmark metadata with AI-generated content.
+ *
+ * Performs the following enrichments:
+ * - Twitter video upload to R2 (if applicable)
+ * - Image caption generation via AI
+ * - OCR text extraction from image
+ * - Blurhash generation for progressive image loading
+ * @param params - Enrichment parameters
+ * @param params.existingMetadata - The existing bookmark metadata
+ * @param params.ogImage - The Open Graph image URL to process
+ * @param params.isTwitterBookmark - Whether this is a Twitter bookmark
+ * @param params.videoUrl - Optional Twitter video URL to upload to R2
+ * @param params.userId - The user ID for R2 upload path
+ * @param params.supabase - Supabase client for AI operations
+ * @param params.url - The bookmark URL for logging
+ * @returns Updated metadata and failure flag
+ */
+async function enrichMetadata({
+	existingMetadata,
+	ogImage,
+	isTwitterBookmark,
+	videoUrl,
+	userId,
+	supabase,
+	url,
+}: EnrichMetadataParams): Promise<EnrichMetadataResult> {
+	const metadata = { ...existingMetadata };
+	let isFailed = false;
+
+	// Upload Twitter video to R2
+	if (isTwitterBookmark && videoUrl && typeof videoUrl === "string") {
+		const r2VideoUrl = await uploadVideoToR2(videoUrl, userId);
+
+		if (r2VideoUrl) {
+			metadata.video_url = r2VideoUrl;
+			console.log(`Twitter video uploaded to R2: ${r2VideoUrl}`);
+		} else {
+			// Upload failed but not critical - keep processing
+			metadata.video_url = videoUrl;
+			console.warn("Video upload failed, using original URL");
+		}
+	}
+
+	// Generate caption for the image
+	const caption = await imageToText(ogImage, supabase, userId);
+	if (!caption) {
+		console.error("imageToText returned empty result", url);
+		isFailed = true;
+	} else {
+		metadata.image_caption = caption;
+	}
+
+	// Extract text from the image
+	const ocrResult = await ocr(ogImage, supabase, userId);
+	if (!ocrResult) {
+		console.error("ocr returned empty result", url);
+		isFailed = true;
+	} else {
+		metadata.ocr = ocrResult;
+	}
+
+	// Generate blurhash for the image
+	const { width, height, encoded } = await blurhashFromURL(ogImage);
+	if (!encoded || !width || !height) {
+		console.error("blurhashFromURL returned empty result", url);
+		isFailed = true;
+	} else {
+		metadata.width = width;
+		metadata.height = height;
+		metadata.ogImgBlurUrl = encoded;
+	}
+
+	return { metadata, isFailed };
+}
 
 const requestBodySchema = z.object({
 	id: z.number(),
@@ -59,9 +150,8 @@ export default async function handler(
 
 		const supabase = createServiceClient();
 		let ogImage = ogImageUrl;
-		let isFailed = false;
 
-		// If from Raindrop bookmark — upload image into R2
+		// If from Raindrop bookmark — upload ogImage into R2
 		if (isRaindropBookmark) {
 			const image = await axios.get(ogImage, {
 				responseType: "arraybuffer",
@@ -76,55 +166,18 @@ export default async function handler(
 			ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
 		}
 
-		const newMeta: any = { ...message.message.meta_data };
-		// If from Twitter bookmark — upload video into R2
-		if (isTwitterBookmark) {
-			const videoUrl = message.message.meta_data?.video_url;
+		// Enrich metadata with AI-generated content
+		const { metadata: newMeta, isFailed } = await enrichMetadata({
+			existingMetadata: message.message.meta_data,
+			ogImage,
+			isTwitterBookmark,
+			videoUrl: message.message.meta_data?.video_url,
+			userId: user_id,
+			supabase,
+			url,
+		});
 
-			if (videoUrl && typeof videoUrl === "string") {
-				const r2VideoUrl = await uploadVideoToR2(videoUrl, user_id);
-
-				if (r2VideoUrl) {
-					newMeta.video_url = r2VideoUrl;
-					console.log(`Twitter video uploaded to R2: ${r2VideoUrl}`);
-				} else {
-					// Upload failed but not critical - keep processing
-					newMeta.video_url = videoUrl;
-					console.warn("Video upload failed, using original URL");
-				}
-			}
-		}
-
-		// Step 2: Caption generation
-		const caption = await imageToText(ogImage, supabase, user_id);
-		if (!caption) {
-			console.error("imageToText returned empty result", url);
-			isFailed = true;
-		} else {
-			newMeta.image_caption = caption;
-		}
-
-		// Step 3: OCR
-		const ocrResult = await ocr(ogImage, supabase, user_id);
-		if (!ocrResult) {
-			console.error("ocr returned empty result", url);
-			isFailed = true;
-		} else {
-			newMeta.ocr = ocrResult;
-		}
-
-		// Step 4: Blurhash
-		const { width, height, encoded } = await blurhashFromURL(ogImage);
-		if (!encoded || !width || !height) {
-			console.error("blurhashFromURL returned empty result", url);
-			isFailed = true;
-		} else {
-			newMeta.width = width;
-			newMeta.height = height;
-			newMeta.ogImgBlurUrl = encoded;
-		}
-
-		// Step 5: Update Supabase
+		// Update database with enriched data
 		const { error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ ogImage, meta_data: newMeta })
@@ -133,10 +186,9 @@ export default async function handler(
 
 		if (error) {
 			console.error("Error updating Supabase main table");
-			isFailed = true;
 		}
 
-		// Delete message from queue
+		// Delete message from queue on success
 		if (!isFailed) {
 			const { error: deleteError } = await supabase
 				.schema("pgmq_public")
@@ -156,10 +208,10 @@ export default async function handler(
 			ogImage,
 			meta_data: newMeta,
 		});
-	} catch (error: any) {
+	} catch (error) {
 		console.error("Error in process-og-image:", error);
 		response.status(500).json({
-			error: error?.message || "Internal server error",
+			error: error instanceof Error ? error.message : "Internal server error",
 		});
 	}
 }
