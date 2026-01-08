@@ -100,7 +100,11 @@ export const enrichMetadata = async ({
 		url,
 	);
 
-	const { isBlurhashFailed, blurhash } = await processBlurhash(ogImage, url);
+	const { isBlurhashFailed, blurhash } = await processBlurhash(
+		ogImage,
+		url,
+		userId,
+	);
 
 	const metadata = {
 		...existingMetadata,
@@ -232,7 +236,11 @@ const processImageCaption = async (
 	}
 };
 
-const processBlurhash = async (ogImage: string, url: string) => {
+const processBlurhash = async (
+	ogImage: string,
+	url: string,
+	userId: string,
+) => {
 	console.log("[processBlurhash] Generating blurhash:", { url, ogImage });
 	try {
 		const { width, height, encoded } = await blurhashFromURL(ogImage);
@@ -248,6 +256,7 @@ const processBlurhash = async (ogImage: string, url: string) => {
 				level: "error",
 				tags: {
 					operation: "blurhash_empty",
+					userId,
 				},
 				extra: {
 					url,
@@ -272,6 +281,7 @@ const processBlurhash = async (ogImage: string, url: string) => {
 		Sentry.captureException(error, {
 			tags: {
 				operation: "blurhash_generation",
+				userId,
 			},
 			extra: {
 				url,
