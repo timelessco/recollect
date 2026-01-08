@@ -1,14 +1,17 @@
 import { type NextApiRequest } from "next";
 import router from "next/router";
+import * as Sentry from "@sentry/nextjs";
 import {
 	type PostgrestError,
 	type SupabaseClient,
 } from "@supabase/supabase-js";
+import axios from "axios";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
 import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
 import slugify from "slugify";
+import uniqid from "uniqid";
 
 import { getMediaType } from "../async/supabaseCrudHelpers";
 import { type CardSectionProps } from "../pageComponents/dashboard/cardSection";
@@ -35,8 +38,10 @@ import {
 	INBOX_URL,
 	LINKS_URL,
 	menuListItemName,
+	R2_MAIN_BUCKET_NAME,
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
+	STORAGE_FILES_PATH,
 	TAG_MARKUP_REGEX,
 	TRASH_URL,
 	TWEETS_URL,
@@ -45,6 +50,7 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
+import { storageHelpers } from "./storageClient";
 import { getCategorySlugFromRouter } from "./url";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
@@ -647,4 +653,70 @@ export const checkIsUserOwnerOfCategory = async (
 	}
 
 	return { success: true, isOwner: categoryData?.[0]?.user_id === userId };
+};
+
+/**
+ * Downloads a video from external URL and uploads to R2
+ * @param videoUrl - External video URL
+ * @param user_id - User ID for storage path
+ * @returns R2 public URL or null if failed
+ */
+export const uploadVideoToR2 = async (
+	videoUrl: string,
+	user_id: string,
+): Promise<string | null> => {
+	try {
+		// Download video with appropriate headers
+		const videoResponse = await axios.get(videoUrl, {
+			responseType: "arraybuffer",
+			headers: {
+				"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
+				Accept: "video/*,*/*;q=0.8",
+			},
+			// 60 seconds for large videos
+			timeout: 60_000,
+			// 50MB limit
+			maxContentLength: 50 * 1024 * 1024,
+		});
+
+		// Generate unique filename
+		const videoName = `twitter-video-${uniqid.time()}.mp4`;
+		const storagePath = `${STORAGE_FILES_PATH}/${user_id}/${videoName}`;
+
+		// Determine content type from response or default to mp4
+		const contentType = videoResponse.headers["content-type"] || "video/mp4";
+
+		// Upload to R2
+		const videoBuffer = Buffer.from(videoResponse.data);
+		const { error: uploadError } = await storageHelpers.uploadObject(
+			R2_MAIN_BUCKET_NAME,
+			storagePath,
+			videoBuffer,
+			contentType,
+		);
+
+		if (uploadError) {
+			Sentry.captureException(uploadError, {
+				tags: { operation: "twitter_video_upload" },
+				extra: { videoUrl, userId: user_id },
+			});
+			console.error("R2 video upload failed:", uploadError);
+			return null;
+		}
+
+		// Get public URL
+		const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
+
+		console.log(`Video uploaded successfully to: ${storageData?.publicUrl}`);
+		return storageData?.publicUrl || null;
+	} catch (error) {
+		console.error("Error in uploadVideoToR2:", error);
+
+		Sentry.captureException(error, {
+			tags: { operation: "twitter_video_download" },
+			extra: { videoUrl, userId: user_id },
+		});
+
+		return null;
+	}
 };
