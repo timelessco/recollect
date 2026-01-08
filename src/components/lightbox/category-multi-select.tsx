@@ -3,6 +3,7 @@ import { Combobox } from "@/components/ui/recollect/combobox";
 import { ScrollArea } from "@/components/ui/recollect/scroll-area";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { AddToCollectionsButton } from "@/icons/addToCollectionsButton";
+import { TickIcon } from "@/icons/tickIcon";
 import { useMiscellaneousStore } from "@/store/componentStore";
 import { type CategoriesData } from "@/types/apiTypes";
 
@@ -88,17 +89,26 @@ export const CategoryMultiSelect = ({
 								<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
 									<Combobox.Empty>No collections found</Combobox.Empty>
 									<Combobox.List>
-										{(item: CategoriesData) => (
-											<Combobox.Item key={item.id} value={item}>
-												<Combobox.ItemIndicator />
-												<CollectionIcon
-													bookmarkCategoryData={item}
-													iconSize="10"
-													size="16"
-												/>
-												<span className="truncate">{item.category_name}</span>
-											</Combobox.Item>
-										)}
+										{(item: CategoriesData) => {
+											const isSelected = selectedCategories.some(
+												(selected) => selected.id === item.id,
+											);
+											return (
+												<Combobox.Item key={item.id} value={item}>
+													<CollectionIcon
+														bookmarkCategoryData={item}
+														iconSize="10"
+														size="16"
+													/>
+													<span className="truncate">{item.category_name}</span>
+													{isSelected && (
+														<div className="ml-auto">
+															<TickIcon className="text-gray-800" />
+														</div>
+													)}
+												</Combobox.Item>
+											);
+										}}
 									</Combobox.List>
 								</ScrollArea>
 							</Combobox.Popup>
