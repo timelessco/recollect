@@ -398,3 +398,21 @@ export const uploadVideoToR2 = async (
 		return null;
 	}
 };
+
+const ALLOWED_TWITTER_DOMAINS = ["video.twimg.com", "pbs.twimg.com"];
+
+/**
+ *
+ * @param urlString - The URL to validate
+ * @returns void - Throws an error if the URL is not valid
+ */
+export const validateTwitterMediaUrl = (urlString: string): void => {
+	const url = new URL(urlString);
+	if (url.protocol !== "https:") {
+		throw new Error("Only HTTPS allowed");
+	}
+
+	if (!ALLOWED_TWITTER_DOMAINS.includes(url.hostname)) {
+		throw new Error("Domain not in allowlist");
+	}
+};

@@ -3,7 +3,10 @@ import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import { MAIN_TABLE_NAME } from "../../../utils/constants";
-import { enrichMetadata } from "../../../utils/helpers.server";
+import {
+	enrichMetadata,
+	validateTwitterMediaUrl,
+} from "../../../utils/helpers.server";
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
 
@@ -66,6 +69,45 @@ export default async function handler(
 			message,
 			queue_name,
 		} = parseResult.data;
+
+		if (isTwitterBookmark) {
+			try {
+				// Validate ogImage URL
+				validateTwitterMediaUrl(ogImageUrl);
+				console.log(`[${ROUTE}] ogImage URL validated:`, { ogImageUrl });
+
+				// Validate video URL if present
+				if (message.message.meta_data?.video_url) {
+					validateTwitterMediaUrl(message.message.meta_data.video_url);
+					console.log(`[${ROUTE}] Video URL validated`);
+				}
+			} catch (validationError) {
+				console.error(`[${ROUTE}] URL validation failed:`, {
+					error: validationError,
+					ogImageUrl,
+					videoUrl: message.message.meta_data?.video_url,
+				});
+				Sentry.captureException(validationError, {
+					tags: {
+						operation: "url_validation_failed",
+						userId: user_id,
+					},
+					extra: {
+						bookmarkId: id,
+						url,
+						ogImageUrl,
+						videoUrl: message.message.meta_data?.video_url,
+					},
+				});
+				response.status(400).json({
+					error:
+						validationError instanceof Error
+							? validationError.message
+							: "URL validation failed",
+				});
+				return;
+			}
+		}
 
 		console.log(`[${ROUTE}] API called:`, {
 			bookmarkId: id,
