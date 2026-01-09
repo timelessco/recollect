@@ -87,7 +87,10 @@ export function ContinueWithEmailLink() {
 			)}
 			href="/email"
 		>
-			Continue with Email <LinkHint />
+			<div className="relative flex items-center justify-center">
+				<span className="text-center">Continue with Email</span>
+				<LinkHint />
+			</div>
 		</Link>
 	);
 }
