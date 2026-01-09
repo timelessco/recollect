@@ -89,7 +89,9 @@ export function ContinueWithEmailLink() {
 		>
 			<div className="relative flex items-center justify-center">
 				<span className="text-center">Continue with Email</span>
-				<LinkHint />
+				<div className="absolute -right-4">
+					<LinkHint />
+				</div>
 			</div>
 		</Link>
 	);
