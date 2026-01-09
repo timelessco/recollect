@@ -12,7 +12,6 @@ import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
-import { TickIcon } from "@/icons/tickIcon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { DiscoverCheckbox } from "@/pageComponents/dashboard/cardSection/discover-checkbox";
 import {
@@ -175,21 +174,19 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 					<Combobox.Popup>
 						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
 							<Combobox.List>
-								{(item: UserTagsData) => {
-									const isSelected = selectedTags.some(
-										(selected) => selected.id === item.id,
-									);
-									return (
+								<Combobox.List>
+									{(item: CategoriesData) => (
 										<Combobox.Item key={item.id} value={item}>
-											<span className="truncate">{item.name}</span>
-											{isSelected && (
-												<div className="ml-auto">
-													<TickIcon className="text-gray-800" />
-												</div>
-											)}
+											<CollectionIcon
+												bookmarkCategoryData={item}
+												iconSize="10"
+												size="16"
+											/>
+											<span className="truncate">{item.category_name}</span>
+											<Combobox.ItemIndicator />
 										</Combobox.Item>
-									);
-								}}
+									)}
+								</Combobox.List>
 							</Combobox.List>
 						</ScrollArea>
 					</Combobox.Popup>
@@ -252,26 +249,17 @@ export const CategoryMultiSelect = ({
 						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
 							<Combobox.Empty>No collections found</Combobox.Empty>
 							<Combobox.List>
-								{(item: CategoriesData) => {
-									const isSelected = selectedCategories.some(
-										(selected) => selected.id === item.id,
-									);
-									return (
-										<Combobox.Item key={item.id} value={item}>
-											<CollectionIcon
-												bookmarkCategoryData={item}
-												iconSize="10"
-												size="16"
-											/>
-											<span className="truncate">{item.category_name}</span>
-											{isSelected && (
-												<div className="ml-auto">
-													<TickIcon className="text-gray-800" />
-												</div>
-											)}
-										</Combobox.Item>
-									);
-								}}
+								{(item: CategoriesData) => (
+									<Combobox.Item key={item.id} value={item}>
+										<CollectionIcon
+											bookmarkCategoryData={item}
+											iconSize="10"
+											size="16"
+										/>
+										<span className="truncate">{item.category_name}</span>
+										<Combobox.ItemIndicator />
+									</Combobox.Item>
+								)}
 							</Combobox.List>
 						</ScrollArea>
 					</Combobox.Popup>
