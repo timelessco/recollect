@@ -8,8 +8,8 @@ import {
 	useComboboxContext,
 	type ComboboxContextValue,
 } from "./context";
-import { CheckIcon } from "@/icons/check-icon";
 import { LightboxCloseIcon } from "@/icons/lightbox-close-icon";
+import { TickIcon } from "@/icons/tickIcon";
 import { cn } from "@/utils/tailwind-merge";
 
 const CREATE_NEW_MARKER = Symbol("create-new");
@@ -374,12 +374,12 @@ function ItemIndicator({
 			keepMounted
 			data-slot="combobox-item-indicator"
 			className={cn(
-				"flex size-4 shrink-0 items-center justify-center rounded-[5px] bg-plain-reverse text-plain-reverse data-selected:text-plain",
+				"ml-auto flex size-4 shrink-0 items-center justify-center text-plain opacity-0 data-selected:text-plain data-selected:opacity-100",
 				className,
 			)}
 			{...props}
 		>
-			{children ?? <CheckIcon className="size-2.5" />}
+			{children ?? <TickIcon className="text-gray-800" />}
 		</ComboboxPrimitive.ItemIndicator>
 	);
 }

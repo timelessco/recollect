@@ -90,13 +90,13 @@ export const CategoryMultiSelect = ({
 									<Combobox.List>
 										{(item: CategoriesData) => (
 											<Combobox.Item key={item.id} value={item}>
-												<Combobox.ItemIndicator />
 												<CollectionIcon
 													bookmarkCategoryData={item}
 													iconSize="10"
 													size="16"
 												/>
 												<span className="truncate">{item.category_name}</span>
+												<Combobox.ItemIndicator />
 											</Combobox.Item>
 										)}
 									</Combobox.List>
