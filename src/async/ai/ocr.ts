@@ -24,7 +24,7 @@ export const ocr = async (
 		);
 		if (!userApiKey && isLimitReached) {
 			console.warn("Monthly free limit reached — skipping caption generation.");
-			return "Monthly free limit reached — skipping AI summary.";
+			return null;
 		}
 
 		const imageResponse = await axios.get(imageUrl, {
@@ -39,7 +39,7 @@ export const ocr = async (
 
 		// For OCR
 		const ocrPrompt =
-			"Read and extract all text from this image. Return only the extracted text.";
+			"Extract all visible text from this image. If there is text, return ONLY the extracted text with no additional commentary. If there is no text visible, return an empty response. Do not say 'There is no text' or similar phrases.";
 		const ocrResult = await model.generateContent([
 			ocrPrompt,
 			{

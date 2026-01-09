@@ -152,7 +152,7 @@ const processOcr = async (
 	// Extract text from the image
 	try {
 		const ocrResult = await ocr(ogImage, supabase, userId);
-		if (!ocrResult) {
+		if (ocrResult === null) {
 			console.error("[processOcr] OCR returned empty result:", {
 				url,
 				ogImage,
