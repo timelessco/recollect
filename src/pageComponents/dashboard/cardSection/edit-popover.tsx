@@ -174,19 +174,12 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 					<Combobox.Popup>
 						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
 							<Combobox.List>
-								<Combobox.List>
-									{(item: CategoriesData) => (
-										<Combobox.Item key={item.id} value={item}>
-											<CollectionIcon
-												bookmarkCategoryData={item}
-												iconSize="10"
-												size="16"
-											/>
-											<span className="truncate">{item.category_name}</span>
-											<Combobox.ItemIndicator />
-										</Combobox.Item>
-									)}
-								</Combobox.List>
+								{(item: UserTagsData) => (
+									<Combobox.Item key={item.id} value={item}>
+										<span className="truncate">{item.name}</span>
+										<Combobox.ItemIndicator />
+									</Combobox.Item>
+								)}
 							</Combobox.List>
 						</ScrollArea>
 					</Combobox.Popup>
