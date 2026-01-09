@@ -28,11 +28,15 @@ This is a CRITICAL step that must NEVER be skipped when working on any code-rela
 
 ## React/Next.js Patterns
 
-- **Exports**: Named exports only (no default exports) (no array function for the exports)
+- **Exports**: Named exports preferred
 
   ```typescript
   export function ComponentName () { ... }
   ```
+
+  **Exceptions** (default exports allowed):
+  - Next.js pages (`page.tsx`, `layout.tsx`, `error.tsx`)
+  - Legacy query/mutation hooks (migrating to named exports)
 
 - **Component Structure**:
   - Server components by default
@@ -159,8 +163,6 @@ Common cases where 'useEffect is NOT needed:
 - **Keys**: Don't use array indices as React keys
 - **Hooks**: Call hooks at top level, specify all dependencies
 - **Error Boundaries**: Handle errors gracefully with error boundaries
-
-See [`docs/frontend_rules.md`](./frontend_rules.md) for full frontend details.
 
 ## Git Conventions
 
