@@ -94,6 +94,20 @@ export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
+export const ADD_BOOKMARK_APIS = {
+	DATA: "/v1/bookmarks/add/data",
+	MIN_DATA: "/v1/bookmarks/add/tasks/min-data",
+	QUEUE_CONSUMER: "/v1/bookmarks/add/tasks/queue-consumer",
+	REMAINING: "/v1/bookmarks/add/tasks/remaining",
+	SCREENSHOT: "/v1/bookmarks/add/tasks/screenshot",
+};
+
+export const UPLOAD_FILE_APIS = {
+	DATA: "/v1/file/upload/data",
+	MIN_DATA: "/v1/file/upload/tasks/min-data",
+	QUEUE_CONSUMER: "/v1/file/upload/tasks/queue-consumer",
+	REMAINING: "/v1/file/upload/tasks/remaining",
+};
 export const TOGGLE_BOOKMARK_DISCOVERABLE_API =
 	"/bookmark/toggle-discoverable-on-bookmark";
 
@@ -156,6 +170,9 @@ export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app";
 
 export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
+
+// Recollect server api
+export const PDF_SCREENSHOT_API = "/upload/pdf-screenshot";
 
 // urls
 

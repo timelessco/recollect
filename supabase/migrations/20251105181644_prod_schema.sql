@@ -882,6 +882,8 @@ CREATE TRIGGER on_auth_user_created
 -- Queue: ai-embeddings - Processes AI embedding generation jobs
 
 -- ----------------------------------------------------------------------------
+-- AI Embeddings Queue Setup
+-- ----------------------------------------------------------------------------
 -- Step 1: Create Queue
 -- Creates the ai-embeddings queue if it doesn't already exist
 -- This must run before any seed data that inserts into queue tables

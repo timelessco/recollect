@@ -14,11 +14,12 @@
 				"SENTRY_ORG",
 				"SENTRY_AUTH_TOKEN",
 				"API_KEY_ENCRYPTION_KEY",
+				"INTERNAL_API_KEY",
 				"UMAMI_ID",
-				"PDF_SECRET_KEY",
-				"PDF_URL_SCREENSHOT_API",
 				"GOOGLE_GEMINI_TOKEN",
-				"RESEND_KEY"
+				"RESEND_KEY",
+				"RECOLLECT_SERVER_API",
+				"RECOLLECT_SERVER_API_KEY"
 			],
 			"inputs": ["$TURBO_DEFAULT$", ".env", ".env.local"],
 			"outputs": [".next/**", "!.next/cache/**"]

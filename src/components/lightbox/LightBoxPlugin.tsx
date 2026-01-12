@@ -65,7 +65,6 @@ const formatDate = (dateString: string) => {
  * Main component that renders the metadata panel in the lightbox
  * Fetches and displays bookmark details including title, domain, description, and URL
  */
-
 const MyComponent = () => {
 	const { currentIndex } = useLightboxState();
 	const [isInitialMount, setIsInitialMount] = useState(true);

@@ -137,7 +137,7 @@ export type BookmarkViewDataTypes = {
 	sortBy: BookmarksSortByTypes;
 };
 
-// user catagories
+// user categories
 
 export type CategoriesData = {
 	category_name: string;
@@ -260,7 +260,11 @@ export type AddBookmarkRemainingDataPayloadTypes = {
 	user_id: SingleListData["user_id"]["id"];
 };
 
-export type AddBookmarkScreenshotPayloadTypes = { id: number; url: string };
+export type AddBookmarkScreenshotPayloadTypes = {
+	id: number;
+	url: string;
+	userId?: string;
+};
 
 export type ClearBookmarksInTrashApiPayloadTypes = {};
 

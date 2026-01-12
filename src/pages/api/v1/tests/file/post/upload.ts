@@ -33,11 +33,11 @@ import { checkIfUserIsCategoryOwnerOrCollaborator } from "../../../../bookmark/a
 
 // NOTE: THIS API IS ONLY USED IN TEST CASES
 // As the upload api needs supabase in the FE and in test cases we cannot use supabase, we use this api which is tailored to be used in test cases
-// This api uploads an existing file in the S3 bucket as a new bookmark and this bookmark can be used for testing needs
+// This api uploads an existing file in the  bucket as a new bookmark and this bookmark can be used for testing needs
 
 /*
 If the uploaded file is a video then this function is called
-This adds the video thumbnail into S3
+This adds the video thumbnail into 
 Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
 Image caption is not generated for the thumbnail
 */
@@ -174,12 +174,18 @@ export default async (
 				response,
 			);
 
+		// Note: helper function already sends error response if needed
 		if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
-			response.status(500).json({
-				error:
-					"User is neither owner or collaborator for the collection or does not have edit access",
-				success: false,
-			});
+			// Don't send response here - helper already sent it if there was an error
+			// Only send 403 if user lacks permission (not a DB error)
+			if (!response.headersSent) {
+				response.status(403).json({
+					error:
+						"User is neither owner or collaborator for the collection or does not have edit access",
+					success: false,
+				});
+			}
+
 			return;
 		}
 	}

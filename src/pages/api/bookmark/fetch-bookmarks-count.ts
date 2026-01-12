@@ -175,9 +175,12 @@ export default async function handler(
 			tweets: bookmarkTweetsCount ?? 0,
 		};
 
-		const userCategoryIdsArray = userCategoryIds?.map((item) => item.id) ?? [];
+		const userCategoryIdsArray =
+			userCategoryIds?.map((item: { id: number }) => item.id) ?? [];
 		const sharedCategoryIdsArray =
-			sharedCategoryIds?.map((item) => item.category_id) ?? [];
+			sharedCategoryIds?.map(
+				(item: { category_id: number }) => item.category_id,
+			) ?? [];
 
 		const categoryCount = (await getCategoryCount(
 			supabase,

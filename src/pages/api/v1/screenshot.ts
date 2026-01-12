@@ -8,6 +8,7 @@ import ocr from "../../../async/ai/ocr";
 import {
 	MAIN_TABLE_NAME,
 	PDF_MIME_TYPE,
+	PDF_SCREENSHOT_API,
 	SCREENSHOT_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
@@ -67,14 +68,14 @@ export default async function handler(
 			);
 			try {
 				const { data } = await axios.post(
-					process.env.PDF_URL_SCREENSHOT_API,
+					`${process.env.RECOLLECT_SERVER_API}${PDF_SCREENSHOT_API}`,
 					{
 						url,
 						userId: user_id,
 					},
 					{
 						headers: {
-							Authorization: `Bearer ${process.env.PDF_SECRET_KEY}`,
+							Authorization: `Bearer ${process.env.RECOLLECT_SERVER_API_KEY}`,
 							"Content-Type": "application/json",
 						},
 					},

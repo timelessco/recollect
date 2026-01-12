@@ -40,7 +40,7 @@ import {
 import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
-	ADD_BOOKMARK_MIN_DATA,
+	ADD_BOOKMARK_APIS,
 	ADD_URL_SCREENSHOT_API,
 	CHECK_API_KEY_API,
 	CLEAR_BOOKMARK_TRASH_API,
@@ -73,7 +73,7 @@ import {
 	UPDATE_SHARED_CATEGORY_USER_ROLE_API,
 	UPDATE_USER_PROFILE_API,
 	UPDATE_USERNAME_API,
-	UPLOAD_FILE_API,
+	UPLOAD_FILE_APIS,
 	UPLOAD_PROFILE_PIC_API,
 } from "../../utils/constants";
 import {
@@ -266,7 +266,7 @@ export const addBookmarkMinData = async ({
 		}
 
 		const apiResponse = await axios.post(
-			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
+			`${NEXT_API_URL}${ADD_BOOKMARK_APIS.DATA}`,
 			{
 				url: finalUrl,
 				category_id: isNull(category_id) ? 0 : category_id,
@@ -679,7 +679,7 @@ export const uploadFile = async ({
 	try {
 		const fileName = parseUploadFileName(file?.name);
 		const response = await axios.post<UploadFileApiResponse>(
-			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
+			`${NEXT_API_URL}${UPLOAD_FILE_APIS.DATA}`,
 			{
 				category_id,
 				thumbnailPath,

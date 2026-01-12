@@ -101,7 +101,9 @@ export default async function handler(
 		const duplicateFilteredData = insertData?.filter(
 			(item) =>
 				!duplicateCheckData
-					?.map((duplicateCheckItem) => duplicateCheckItem?.url)
+					?.map(
+						(duplicateCheckItem: { url: string }) => duplicateCheckItem?.url,
+					)
 					?.includes(item?.url),
 		);
 

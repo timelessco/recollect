@@ -17,7 +17,6 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	LINKS_URL,
-	PDF_MIME_TYPE,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
@@ -25,16 +24,12 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
-import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import {
 	fileTypeIdentifier,
 	generateVideoThumbnail,
 	parseUploadFileName,
 } from "../../../utils/helpers";
-import {
-	getStoragePublicBaseUrl,
-	storageHelpers,
-} from "../../../utils/storageClient";
+import { storageHelpers } from "../../../utils/storageClient";
 import { createClient } from "../../../utils/supabaseClient";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { uploadFile } from "../../supabaseCrudHelpers";
@@ -233,19 +228,6 @@ export default function useFileUploadOptimisticMutation() {
 					is uploading images in videos page then this logic fires and it tells where the item has been uploaded.
 					Eg: If user uploads images in documents page then the user will get a toast message
 				telling "Added to documents page"  */
-
-				if (data?.file?.type === PDF_MIME_TYPE) {
-					try {
-						successToast(`generating  thumbnail`);
-						await handlePdfThumbnailAndUpload({
-							fileUrl: `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
-							fileId: apiResponseTyped?.data[0].id,
-							sessionUserId: session?.user?.id,
-						});
-					} catch {
-						errorToast("Failed to generate thumbnail");
-					}
-				}
 
 				if (
 					CATEGORY_ID === IMAGES_URL &&

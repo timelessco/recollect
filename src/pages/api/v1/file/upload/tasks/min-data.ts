@@ -1,41 +1,33 @@
-// you might want to use regular 'fs' and not a promise one
-import { type NextApiRequest, type NextApiResponse } from "next";
+import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import {
 	type PostgrestError,
 	type SupabaseClient,
 } from "@supabase/supabase-js";
-import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isEmpty } from "lodash";
 
-import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
-import { getMediaType } from "../../../async/supabaseCrudHelpers";
+import imageToText from "../../../../../../async/ai/imageToText";
+import ocr from "../../../../../../async/ai/ocr";
+import { getMediaType } from "../../../../../../async/supabaseCrudHelpers";
 import {
 	type ImgMetadataType,
+	type NextApiRequest,
 	type SingleListData,
 	type UploadFileApiResponse,
-} from "../../../types/apiTypes";
+} from "../../../../../../types/apiTypes";
 import {
-	BOOKMARK_CATEGORIES_TABLE_NAME,
-	getBaseUrl,
 	MAIN_TABLE_NAME,
-	NEXT_API_URL,
 	PDF_MIME_TYPE,
 	STORAGE_FILES_PATH,
-	UPLOAD_FILE_REMAINING_DATA_API,
-} from "../../../utils/constants";
-import { blurhashFromURL } from "../../../utils/getBlurHash";
+} from "../../../../../../utils/constants";
+import { blurhashFromURL } from "../../../../../../utils/getBlurHash";
 import {
-	getAxiosConfigWithAuth,
 	isUserInACategory,
 	parseUploadFileName,
-} from "../../../utils/helpers";
-import { storageHelpers } from "../../../utils/storageClient";
-import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
-import { vet } from "../../../utils/try";
-import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
+} from "../../../../../../utils/helpers";
+import { r2Helpers } from "../../../../../../utils/r2Client";
+import { apiSupabaseClient } from "../../../../../../utils/supabaseServerClient";
+import { checkIfUserIsCategoryOwnerOrCollaborator } from "../../../../bookmark/add-bookmark-min-data";
 
 type BodyDataType = {
 	category_id: string;
@@ -45,12 +37,12 @@ type BodyDataType = {
 	uploadFileNamePath: string;
 };
 
-/*
-If the uploaded file is a video then this function is called
-This gets the public URL from the thumbnail path uploaded by the client
-Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
-Image caption is not generated for the thumbnail
-*/
+/**
+ * If the uploaded file is a video then this function is called
+ * This gets the public URL from the thumbnail path uploaded by the client
+ * Then it generates the meta_data for the thumbnail, this data has the blurHash thumbnail
+ * Image caption is generated for the thumbnail
+ */
 const videoLogic = async (
 	data: BodyDataType,
 	supabase: SupabaseClient,
@@ -65,7 +57,7 @@ const videoLogic = async (
 	}
 
 	// Get the public URL for the uploaded thumbnail
-	const { data: thumbnailUrl } = storageHelpers.getPublicUrl(thumbnailPath);
+	const { data: thumbnailUrl } = r2Helpers.getPublicUrl(thumbnailPath);
 
 	const ogImage = thumbnailUrl?.publicUrl;
 
@@ -81,6 +73,9 @@ const videoLogic = async (
 			Sentry.captureException(error, {
 				tags: {
 					operation: "blurhash_generation",
+					userId,
+				},
+				extra: {
 					thumbnailUrl: thumbnailUrl?.publicUrl,
 				},
 			});
@@ -95,6 +90,9 @@ const videoLogic = async (
 			Sentry.captureException(error, {
 				tags: {
 					operation: "ocr_processing",
+					userId,
+				},
+				extra: {
 					thumbnailUrl: thumbnailUrl?.publicUrl,
 				},
 			});
@@ -113,6 +111,9 @@ const videoLogic = async (
 			Sentry.captureException(error, {
 				tags: {
 					operation: "image_caption_generation",
+					userId,
+				},
+				extra: {
 					thumbnailUrl: thumbnailUrl?.publicUrl,
 				},
 			});
@@ -140,14 +141,59 @@ const videoLogic = async (
 	return { ogImage, meta_data };
 };
 
-export default async (
-	request: NextApiRequest,
+/**
+ * /api/v1/file/upload/tasks/min-data:
+ *   post:
+ *     summary: Upload file with minimal data
+ *     description: Handles file upload and inserts minimal data into database. For videos, processes thumbnail metadata.
+ *     tags:
+ *       - Files
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - category_id
+ *               - name
+ *               - type
+ *               - uploadFileNamePath
+ *             properties:
+ *               category_id:
+ *                 type: string
+ *                 description: Category ID to add file to
+ *               name:
+ *                 type: string
+ *                 description: File name
+ *               thumbnailPath:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Path to thumbnail (for videos)
+ *               type:
+ *                 type: string
+ *                 description: MIME type of the file
+ *               uploadFileNamePath:
+ *                 type: string
+ *                 description: Storage path for the uploaded file
+ *     responses:
+ *       200:
+ *         description: File uploaded successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: User does not have permission for this category
+ *       500:
+ *         description: Internal server error
+ */
+export default async function handler(
+	request: NextApiRequest<BodyDataType>,
 	response: NextApiResponse<UploadFileApiResponse>,
-) => {
+) {
 	try {
 		const supabase = apiSupabaseClient(request, response);
 
-		// Check for auth errors
+		// Authentication check
 		const { data: userData, error: userError } = await supabase.auth.getUser();
 		const userId = userData?.user?.id;
 		const email = userData?.user?.email;
@@ -175,7 +221,7 @@ export default async (
 		const fileName = parseUploadFileName(data?.name ?? "");
 		const fileType = data?.type;
 
-		console.log("upload-file API called:", {
+		console.log("upload-file min-data API called:", {
 			userId,
 			fileName,
 			fileType,
@@ -186,6 +232,7 @@ export default async (
 		// if the uploaded file is valid this happens
 		const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
 
+		// Check category permissions if not using default category (0)
 		if (
 			Number.parseInt(categoryId as string, 10) !== 0 &&
 			typeof categoryId === "number"
@@ -216,10 +263,11 @@ export default async (
 			}
 		}
 
-		// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
-		// the public url for the uploaded file is got
+		// NOTE: the file upload to the bucket takes place in the client side itself due to vercel 4.5mb constraint
+		// https://vercel.com/guides/how-to-bypass-vercel-body-size-limit-serverless-functions
+		// Get the public url for the uploaded file
 		const { data: storageData, error: publicUrlError } =
-			storageHelpers.getPublicUrl(storagePath);
+			r2Helpers.getPublicUrl(storagePath);
 
 		// Check for public URL error immediately
 		if (publicUrlError) {
@@ -239,6 +287,10 @@ export default async (
 			});
 			return;
 		}
+
+		console.log("Public URL retrieved successfully:", {
+			publicUrl: storageData?.publicUrl,
+		});
 
 		const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
 
@@ -279,10 +331,15 @@ export default async (
 
 			ogImage = image;
 			meta_data = metaData;
+
+			console.log("Video processing completed:", {
+				hasOgImage: Boolean(image),
+				hasMetaData: Boolean(metaData),
+			});
 		}
 
-		// we upload the final data in DB
-		const { data: DatabaseData, error: DBerror } = (await supabase
+		// Insert the file data into database
+		const { data: databaseData, error: dbError } = (await supabase
 			.from(MAIN_TABLE_NAME)
 			.insert([
 				{
@@ -291,6 +348,7 @@ export default async (
 					user_id: userId,
 					description: (meta_data?.img_caption as string) || "",
 					ogImage,
+					category_id: categoryIdLogic,
 					type: fileType,
 					meta_data,
 				},
@@ -300,110 +358,40 @@ export default async (
 			error: PostgrestError | VerifyErrors | string | null;
 		};
 
-		console.log("Database insert result:", {
-			bookmarkId: DatabaseData?.[0]?.id,
-		});
-
-		if (DBerror) {
-			console.error("Error inserting file to database:", DBerror);
-			Sentry.captureException(DBerror, {
+		// Check for database error immediately
+		if (dbError) {
+			console.error("Error inserting file to database:", dbError);
+			Sentry.captureException(dbError, {
 				tags: {
 					operation: "insert_file_to_database",
 					userId,
 				},
 				extra: { fileName, fileType },
 			});
-			response
-				.status(500)
-				.json({ success: false, error: "Error uploading file" });
-			return;
-		}
-
-		// Add category association via junction table
-		if (DatabaseData?.[0]?.id) {
-			const { error: junctionError } = await supabase
-				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-				.insert({
-					bookmark_id: DatabaseData[0].id,
-					category_id: categoryIdLogic,
-					user_id: userId,
-				});
-
-			if (junctionError) {
-				console.error("Error inserting category association:", junctionError);
-				Sentry.captureException(junctionError, {
-					tags: {
-						operation: "insert_bookmark_category_junction",
-						userId,
-					},
-					extra: {
-						bookmarkId: DatabaseData[0].id,
-						categoryId: categoryIdLogic,
-					},
-				});
-			}
-		}
-
-		// Skip remaining upload API for PDFs
-		if (fileType === PDF_MIME_TYPE) {
-			console.log("File type is pdf, so not calling the remaining upload api");
-			response
-				.status(200)
-				.json({ data: DatabaseData, success: true, error: null });
-			return;
-		}
-
-		// Skip remaining upload API for videos or empty data
-		if (isEmpty(DatabaseData) || isVideo) {
-			console.log(
-				"File type is video or no data, so not calling the remaining upload api",
-			);
-			response
-				.status(200)
-				.json({ data: DatabaseData, success: true, error: null });
-			return;
-		}
-
-		// Call remaining upload API
-		const remainingUploadBody = {
-			id: DatabaseData[0]?.id,
-			publicUrl: storageData?.publicUrl,
-			mediaType: meta_data?.mediaType,
-		};
-		console.log("Calling remaining upload API:", { remainingUploadBody });
-
-		const [remainingUploadError] = await vet(() =>
-			axios.post(
-				`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
-				remainingUploadBody,
-				getAxiosConfigWithAuth(request),
-			),
-		);
-
-		if (remainingUploadError) {
-			console.error("Remaining upload API error:", remainingUploadError);
-			Sentry.captureException(remainingUploadError, {
-				tags: {
-					operation: "remaining_upload_api",
-					userId,
-				},
-				extra: {
-					bookmarkId: DatabaseData[0]?.id,
-				},
+			response.status(500).json({
+				success: false,
+				error: "Error uploading file",
 			});
+			return;
 		}
 
 		console.log("File uploaded successfully:", {
-			bookmarkId: DatabaseData?.[0]?.id,
+			bookmarkId: databaseData?.[0]?.id,
+			fileType,
+			isPdf: fileType === PDF_MIME_TYPE,
+			isVideo,
 		});
-		response
-			.status(200)
-			.json({ data: DatabaseData, success: true, error: null });
+
+		response.status(200).json({
+			data: databaseData,
+			success: true,
+			error: null,
+		});
 	} catch (error) {
-		console.error("Unexpected error in upload-file:", error);
+		console.error("Unexpected error in upload-file min-data:", error);
 		Sentry.captureException(error, {
 			tags: {
-				operation: "upload_file_unexpected",
+				operation: "upload_file_min_data_unexpected",
 			},
 		});
 		response.status(500).json({
@@ -411,4 +399,4 @@ export default async (
 			error: "An unexpected error occurred",
 		});
 	}
-};
+}
