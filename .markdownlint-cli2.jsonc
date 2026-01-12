@@ -14,5 +14,10 @@
 	"gitignore": true,
 
 	// Define glob expressions to ignore
-	"ignores": [".github/CODE_OF_CONDUCT.md", "CHANGELOG.md", ".claude/**/*.md"]
+	"ignores": [
+		".github/CODE_OF_CONDUCT.md",
+		"CHANGELOG.md",
+		".claude/**/*.md",
+		"**/CLAUDE.md"
+	]
 }
