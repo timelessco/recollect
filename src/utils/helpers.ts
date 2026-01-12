@@ -35,6 +35,7 @@ import {
 	IMAGES_URL,
 	INBOX_URL,
 	LINKS_URL,
+	MAX_VIDEO_SIZE_BYTES,
 	menuListItemName,
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
@@ -43,6 +44,7 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
+	VIDEO_DOWNLOAD_TIMEOUT_MS,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
@@ -652,18 +654,6 @@ export const checkIsUserOwnerOfCategory = async (
 	return { success: true, isOwner: categoryData?.[0]?.user_id === userId };
 };
 
-const isInstagramVideoUrl = (url: string): boolean => {
-	try {
-		const urlObj = new URL(url);
-		const hostname = urlObj.hostname.toLowerCase();
-		return (
-			hostname.includes("instagram.com") || hostname.includes("instagr.am")
-		);
-	} catch {
-		return false;
-	}
-};
-
 const validateVideoSize = (
 	response: Response,
 	arrayBuffer: ArrayBuffer,
@@ -687,183 +677,133 @@ const validateVideoSize = (
 	return { isValid: true };
 };
 
-type CollectInstagramVideosArgs = {
-	allVideos?: string[];
+type CollectVideoArgs = {
+	videoUrl: string;
 	userId: string;
 };
-export const collectInstagramVideos = async ({
-	allVideos,
+
+export const collectVideo = async ({
+	videoUrl,
 	userId,
-}: CollectInstagramVideosArgs) => {
-	const MAX_CONCURRENT_VIDEOS = 3;
-
-	// 10MB - matches codebase file upload limit
-	const MAX_VIDEO_SIZE_BYTES = 10_485_760;
-
-	if (!allVideos?.length) {
-		return [];
+}: CollectVideoArgs): Promise<string | null> => {
+	if (!videoUrl) {
+		return null;
 	}
 
-	// Filter for Instagram URLs only
-	const instagramVideoUrls = allVideos.filter((url) =>
-		isInstagramVideoUrl(url),
-	);
-
-	if (!instagramVideoUrls.length) {
-		return [];
-	}
-
-	// Process videos with concurrency limit (3 at a time)
-	const settledVideos: Array<PromiseSettledResult<string | null>> = [];
-
-	for (
-		let index = 0;
-		index < instagramVideoUrls.length;
-		index += MAX_CONCURRENT_VIDEOS
-	) {
-		const batch = instagramVideoUrls.slice(
-			index,
-			index + MAX_CONCURRENT_VIDEOS,
-		);
-		const batchResults = await Promise.allSettled(
-			batch.map(async (videoUrl) => {
-				// Fetch with timeout
-				const [downloadError, videoResponse] = await vet(() =>
-					fetch(videoUrl, {
-						method: "GET",
-						signal: AbortSignal.timeout(30_000),
-					}),
-				);
-
-				if (downloadError || !videoResponse?.ok) {
-					const errorMessage =
-						downloadError instanceof Error
-							? downloadError.message
-							: "Unknown error";
-					throw new Error(`Failed to download: ${errorMessage}`);
-				}
-
-				// Validate size BEFORE downloading (check headers first)
-				const contentLength = videoResponse.headers.get("content-length");
-				if (contentLength) {
-					const size = Number.parseInt(contentLength, 10);
-					if (size > MAX_VIDEO_SIZE_BYTES) {
-						const error = `Video too large: ${size} bytes`;
-						console.warn("Video validation failed:", {
-							videoUrl,
-							error,
-							validationType: "size",
-							size,
-						});
-						Sentry.captureException(new Error(error), {
-							tags: {
-								operation: "video_content_validation",
-								validation_type: "size",
-								userId,
-							},
-							extra: {
-								videoUrl,
-								contentLength: size,
-							},
-						});
-						// Skip this video
-						return null;
-					}
-				}
-
-				// Download ArrayBuffer (only if size check passed)
-				const [arrayBufferError, arrayBuffer] = await vet(() =>
-					videoResponse.arrayBuffer(),
-				);
-
-				if (arrayBufferError || !arrayBuffer) {
-					const errorMessage =
-						arrayBufferError instanceof Error
-							? arrayBufferError.message
-							: "Unknown error";
-					throw new Error(`Failed to get array buffer: ${errorMessage}`);
-				}
-
-				// Validate downloaded content size matches Content-Length
-				const validation = validateVideoSize(videoResponse, arrayBuffer);
-				if (!validation.isValid) {
-					// Log and send to Sentry
-					console.warn("Video validation failed:", {
-						videoUrl,
-						error: validation.error,
-						validationType: "size-validation",
-					});
-					Sentry.captureException(
-						new Error(validation.error || "Validation failed"),
-						{
-							tags: {
-								operation: "video_content_validation",
-								validation_type: "size-validation",
-								userId,
-							},
-							extra: {
-								videoUrl,
-								contentLength: videoResponse.headers.get("content-length"),
-								actualSize: arrayBuffer.byteLength,
-							},
-						},
-					);
-					// Skip this video
-					return null;
-				}
-
-				const [uploadError, uploadedUrl] = await vet(() =>
-					uploadVideo(arrayBuffer, userId),
-				);
-
-				if (uploadError) {
-					throw uploadError;
-				}
-
-				return uploadedUrl;
+	try {
+		// Fetch with timeout
+		const [downloadError, videoResponse] = await vet(() =>
+			fetch(videoUrl, {
+				method: "GET",
+				signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
 			}),
 		);
-		settledVideos.push(...batchResults);
-	}
 
-	const failedUploads = settledVideos
-		.map((result, index) => ({ result, index }))
-		.filter(({ result }) => result.status === "rejected") as Array<{
-		result: PromiseRejectedResult;
-		index: number;
-	}>;
-
-	if (failedUploads.length > 0) {
-		for (const { result, index } of failedUploads) {
-			const error = result.reason;
-
-			console.warn("collectInstagramVideos upload failed:", {
-				operation: "collect_instagram_videos",
-				userId,
-				videoIndex: index,
-				videoUrl: instagramVideoUrls[index],
-				error,
-			});
-
-			Sentry.captureException(error, {
-				tags: {
-					operation: "collect_instagram_videos",
-					userId,
-				},
-				extra: {
-					videoIndex: index,
-					videoUrl: instagramVideoUrls[index],
-				},
-			});
+		if (downloadError || !videoResponse?.ok) {
+			const errorMessage =
+				downloadError instanceof Error
+					? downloadError.message
+					: "Unknown error";
+			throw new Error(`Failed to download video: ${errorMessage}`);
 		}
-	}
 
-	return settledVideos
-		.filter(
-			(result): result is PromiseFulfilledResult<string | null> =>
-				result.status === "fulfilled" && Boolean(result.value),
-		)
-		.map((fulfilled) => fulfilled.value) as string[];
+		// Validate size BEFORE downloading (check headers first)
+		const contentLength = videoResponse.headers.get("content-length");
+		if (contentLength) {
+			const size = Number.parseInt(contentLength, 10);
+			if (size > MAX_VIDEO_SIZE_BYTES) {
+				const error = `Video too large: ${size} bytes`;
+				console.warn("[collectVideo] Video validation failed:", {
+					videoUrl,
+					error,
+					validationType: "size",
+					size,
+					userId,
+				});
+				Sentry.captureException(new Error(error), {
+					tags: {
+						operation: "video_content_validation",
+						validation_type: "size",
+						userId,
+					},
+					extra: {
+						videoUrl,
+						contentLength: size,
+					},
+				});
+				return null;
+			}
+		}
+
+		// Download ArrayBuffer (only if size check passed)
+		const [arrayBufferError, arrayBuffer] = await vet(() =>
+			videoResponse.arrayBuffer(),
+		);
+
+		if (arrayBufferError || !arrayBuffer) {
+			const errorMessage =
+				arrayBufferError instanceof Error
+					? arrayBufferError.message
+					: "Unknown error";
+			throw new Error(`Failed to get array buffer: ${errorMessage}`);
+		}
+
+		// Validate downloaded content size matches Content-Length
+		const validation = validateVideoSize(videoResponse, arrayBuffer);
+		if (!validation.isValid) {
+			console.warn("[collectVideo] Video validation failed:", {
+				videoUrl,
+				error: validation.error,
+				validationType: "size-validation",
+				userId,
+			});
+			Sentry.captureException(
+				new Error(validation.error || "Validation failed"),
+				{
+					tags: {
+						operation: "video_content_validation",
+						validation_type: "size-validation",
+						userId,
+					},
+					extra: {
+						videoUrl,
+						contentLength: videoResponse.headers.get("content-length"),
+						actualSize: arrayBuffer.byteLength,
+					},
+				},
+			);
+			return null;
+		}
+
+		const [uploadError, uploadedUrl] = await vet(() =>
+			uploadVideo(arrayBuffer, userId),
+		);
+
+		if (uploadError) {
+			throw uploadError;
+		}
+
+		return uploadedUrl;
+	} catch (error) {
+		console.warn("[collectVideo] Video upload failed:", {
+			operation: "collect_video",
+			userId,
+			videoUrl,
+			error,
+		});
+
+		Sentry.captureException(error, {
+			tags: {
+				operation: "collect_video",
+				userId,
+			},
+			extra: {
+				videoUrl,
+			},
+		});
+
+		return null;
+	}
 };
 
 type CollectAdditionalImagesArgs = {

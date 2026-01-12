@@ -25,10 +25,7 @@ import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-import {
-	collectAdditionalImages,
-	collectInstagramVideos,
-} from "@/utils/helpers";
+import { collectAdditionalImages, collectVideo } from "@/utils/helpers";
 import { vet } from "@/utils/try";
 
 type Data = {
@@ -250,8 +247,13 @@ export default async function handler(
 			urls: screenShotResponse?.data?.allVideos,
 		});
 
-		const additionalVideos = await collectInstagramVideos({
-			allVideos: screenShotResponse?.data?.allVideos,
+		/**
+		 * Video upload from screenshot response.
+		 * Currently collects only the first video due to timeout and storage limits.
+		 * For premium users (not yet implemented), we will collect all videos.
+		 */
+		const additionalVideos = await collectVideo({
+			videoUrl: screenShotResponse?.data?.allVideos?.[0],
 			userId,
 		});
 
@@ -262,7 +264,7 @@ export default async function handler(
 			isPageScreenshot,
 			coverImage: existingBookmarkData?.ogImage,
 			additionalImages,
-			additionalVideos,
+			additionalVideos: additionalVideos ? [additionalVideos] : [],
 		};
 
 		const {
