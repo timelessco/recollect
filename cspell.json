@@ -134,6 +134,7 @@
 		"svgs",
 		"syncer",
 		"timelessco",
+		"timestamptz",
 		"Toastify",
 		"TOCTOU",
 		"totp",
