@@ -253,7 +253,7 @@ export default async function handler(
 		 * For premium users (not yet implemented), we will collect all videos.
 		 */
 		const additionalVideos = await collectVideo({
-			videoUrl: screenShotResponse?.data?.allVideos?.[0],
+			videoUrl: screenShotResponse?.data?.allVideos?.[0] ?? null,
 			userId,
 		});
 

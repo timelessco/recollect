@@ -678,7 +678,7 @@ const validateVideoSize = (
 };
 
 type CollectVideoArgs = {
-	videoUrl: string;
+	videoUrl: string | null;
 	userId: string;
 };
 
