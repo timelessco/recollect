@@ -775,6 +775,30 @@ export const collectVideo = async ({
 			return null;
 		}
 
+		// Fallback size check when Content-Length was missing
+		if (arrayBuffer.byteLength > MAX_VIDEO_SIZE_BYTES) {
+			const error = `Video too large (post-download): ${arrayBuffer.byteLength} bytes`;
+			console.warn("[collectVideo] Video validation failed:", {
+				videoUrl,
+				error,
+				validationType: "size",
+				size: arrayBuffer.byteLength,
+				userId,
+			});
+			Sentry.captureException(new Error(error), {
+				tags: {
+					operation: "video_content_validation",
+					validation_type: "size",
+					userId,
+				},
+				extra: {
+					videoUrl,
+					actualSize: arrayBuffer.byteLength,
+				},
+			});
+			return null;
+		}
+
 		const [uploadError, uploadedUrl] = await vet(() =>
 			uploadVideo(arrayBuffer, userId),
 		);
