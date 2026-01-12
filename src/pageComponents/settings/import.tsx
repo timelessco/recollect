@@ -55,7 +55,7 @@ export const ImportBookmarks = () => {
 			}>;
 			setBookmarkCount(records.length);
 		} catch (error) {
-			console.error(error);
+			handleClientError(error, "Error parsing CSV file");
 			setBookmarkCount(0);
 		}
 	};
