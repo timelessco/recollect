@@ -1429,7 +1429,7 @@ Use this checklist before submitting any PR. Check each item to ensure your code
 - [ ] API routes tested with valid/invalid inputs
 - [ ] Error cases tested (auth failures, validation errors)
 - [ ] RLS policies tested (different user roles)
-- [ ] **No console.log statements** left in frontend (remove all console.log from production code)
+- [ ] **No console.log statements** left in frontend
 - [ ] No commented-out code
 
 ### Security

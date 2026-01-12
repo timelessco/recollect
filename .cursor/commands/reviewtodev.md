@@ -207,8 +207,8 @@ done
 #### ✅ Check for Console.log Statements
 
 ```bash
-# Check for console.log statements (should be removed from production code)
-git diff origin/dev...HEAD -- 'src/**/*.{ts,tsx}' | grep -E '^\+.*console\.log' && echo "❌ Found console.log statements - remove from production code"
+# Check for console.log statements in frontend code only (allowed in API routes)
+git diff origin/dev...HEAD -- 'src/**/*.{ts,tsx}' | grep -E '^\+.*console\.log' | grep -v 'src/app/api/' | grep -v 'src/pages/api/' && echo "❌ Found console.log statements in frontend code - remove from production code"
 ```
 
 #### ✅ Check API Documentation
@@ -555,10 +555,10 @@ if [ -n "$ts_files" ]; then
 		((issues++))
 	fi
 
-	# Check for console.log statements
-	if git diff origin/dev...HEAD -- $ts_files | grep -qE '^\+.*console\.log'; then
-		echo -e "${RED}❌ Found console.log statements - remove from production code${NC}"
-		git diff origin/dev...HEAD -- $ts_files | grep -E '^\+.*console\.log' | head -5
+	# Check for console.log statements in frontend code only
+	if git diff origin/dev...HEAD -- $ts_files | grep -E '^\+.*console\.log' | grep -v 'src/app/api/' | grep -v 'src/pages/api/'; then
+		echo -e "${RED}❌ Found console.log statements in frontend code - remove from production code${NC}"
+		git diff origin/dev...HEAD -- $ts_files | grep -E '^\+.*console\.log' | grep -v 'src/app/api/' | grep -v 'src/pages/api/' | head -5
 		((issues++))
 	fi
 
@@ -684,7 +684,7 @@ Use this checklist to manually review your changes:
 - [ ] Error handling in try/catch (if manual handler, helpers handle it automatically)
 - [ ] Route constant defined (`const ROUTE = "..."`)
 - [ ] Public endpoints properly marked (no requireAuth if using public handler)
-- [ ] **No console.log statements** (remove all console.log from production code)
+- [ ] **No console.log statements in frontend code** (allowed in API routes for backend logging)
 
 ### TypeScript
 
