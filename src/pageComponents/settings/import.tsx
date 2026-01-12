@@ -183,7 +183,7 @@ export const ImportBookmarks = () => {
 				/>
 			</div>
 
-			<p
+			<div
 				className={`mt-2 flex text-13 leading-[150%] tracking-normal text-gray-600 ${
 					!isFileUploaded ? "flex-wrap" : ""
 				}`}
@@ -222,7 +222,7 @@ export const ImportBookmarks = () => {
 						</>
 					)}
 				</span>
-			</p>
+			</div>
 		</div>
 	);
 };

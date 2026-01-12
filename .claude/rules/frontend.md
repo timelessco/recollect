@@ -137,6 +137,12 @@ See `/src/components/ui/recollect/combobox/` for implementation.
 - Always ensure void (self-closing) elements don't have children.
 - Always ensure all dependencies are correctly specified in React hooks.
 - Always ensure all React hooks are called from the top level of component functions.
+- **Never nest block-level elements inside inline elements** - causes hydration errors:
+  - Never nest `<figure>` inside `<p>` tags
+  - Never nest `<div>` inside `<p>` tags
+  - Never nest block-level elements (`<section>`, `<article>`, `<header>`, `<footer>`, `<nav>`, `<aside>`, `<main>`, `<h1>`-`<h6>`) inside `<p>` tags
+  - Use `<div>` instead of `<p>` when containing block-level elements
+  - Use semantic HTML appropriately (`<p>` for paragraphs, `<div>` for layout containers)
 
 ### JavaScript/TypeScript Code Quality
 

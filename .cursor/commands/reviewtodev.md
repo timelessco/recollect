@@ -338,6 +338,26 @@ git diff --name-only origin/dev...HEAD | grep -E 'src/utils/.*\.ts$' | while rea
 done
 ```
 
+#### ✅ Check for Hydration Errors
+
+```bash
+# Check for <figure> inside <p> tags (invalid HTML nesting)
+git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '<p[^>]*>[\s\S]*?<figure' && echo "❌ Found <figure> inside <p> tags - causes hydration errors"
+
+# Check for <div> inside <p> tags (invalid HTML nesting)
+git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '<p[^>]*>[\s\S]*?<div' && echo "❌ Found <div> inside <p> tags - causes hydration errors"
+
+# Check for other block elements inside <p> tags
+git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '<p[^>]*>[\s\S]*?<(section|article|header|footer|nav|aside|main|h[1-6])' && echo "⚠️  Found block elements inside <p> tags - may cause hydration errors"
+
+# More comprehensive check using ripgrep (if available)
+# Check for <figure> inside <p> tags
+rg '<p[^>]*>[\s\S]*?<figure' src/ --type tsx --type jsx 2> /dev/null | grep -E '^\+' && echo "❌ Found <figure> inside <p> tags in changed files"
+
+# Check for <div> inside <p> tags
+rg '<p[^>]*>[\s\S]*?<div' src/ --type tsx --type jsx 2> /dev/null | grep -E '^\+' && echo "❌ Found <div> inside <p> tags in changed files"
+```
+
 ### 7. Run Linting Checks
 
 ```bash
@@ -567,6 +587,20 @@ if [ -n "$ts_files" ]; then
 		echo -e "${RED}❌ Found class definitions - use functional programming only${NC}"
 		((issues++))
 	fi
+
+	# Check for hydration errors - <figure> inside <p>
+	if git diff origin/dev...HEAD -- $ts_files | grep -qE '<p[^>]*>[\s\S]*?<figure'; then
+		echo -e "${RED}❌ Found <figure> inside <p> tags - causes hydration errors${NC}"
+		git diff origin/dev...HEAD -- $ts_files | grep -B2 -A2 '<p[^>]*>[\s\S]*?<figure' | head -10
+		((issues++))
+	fi
+
+	# Check for hydration errors - <div> inside <p>
+	if git diff origin/dev...HEAD -- $ts_files | grep -qE '<p[^>]*>[\s\S]*?<div'; then
+		echo -e "${RED}❌ Found <div> inside <p> tags - causes hydration errors${NC}"
+		git diff origin/dev...HEAD -- $ts_files | grep -B2 -A2 '<p[^>]*>[\s\S]*?<div' | head -10
+		((issues++))
+	fi
 else
 	echo -e "${GREEN}✅ No TypeScript files changed${NC}"
 fi
@@ -714,6 +748,11 @@ Use this checklist to manually review your changes:
   - [ ] Searched for existing components before creating new (`rg` or `grep` in `src/components/`)
   - [ ] Searched for existing utilities before creating new (`rg` or `grep` in `src/utils/`)
   - [ ] Used existing patterns rather than creating duplicates
+- [ ] **No hydration errors**:
+  - [ ] No `<figure>` elements inside `<p>` tags
+  - [ ] No `<div>` elements inside `<p>` tags
+  - [ ] No block-level elements inside inline elements
+  - [ ] HTML structure is valid and semantic
 
 ---
 
