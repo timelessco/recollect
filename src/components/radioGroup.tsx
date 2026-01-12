@@ -6,7 +6,7 @@ import {
 } from "ariakit/radio";
 import classNames from "classnames";
 
-import TickIcon from "../icons/tickIcon";
+import { TickIcon } from "../icons/tickIcon";
 import { type ChildrenTypes } from "../types/componentTypes";
 
 type RadioGroupProps = {
@@ -67,11 +67,7 @@ const RadioGroup = (props: RadioGroupProps) => {
 							/>
 							{item?.label}
 						</div>
-						{isRadioSelected && (
-							<figure className="text-gray-800">
-								<TickIcon color="currentColor" />
-							</figure>
-						)}
+						{isRadioSelected && <TickIcon className="text-gray-800" />}
 					</label>
 				);
 			})}
