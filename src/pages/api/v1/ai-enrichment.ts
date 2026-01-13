@@ -20,6 +20,7 @@ const requestBodySchema = z.object({
 	url: z.url({ message: "url must be a valid URL" }),
 	isRaindropBookmark: z.boolean().optional().default(false),
 	isTwitterBookmark: z.boolean().optional().default(false),
+	isInstagramBookmark: z.boolean().optional().default(false),
 	message: z.object({
 		msg_id: z.number(),
 		message: z.object({
@@ -69,6 +70,7 @@ export default async function handler(
 			url,
 			isRaindropBookmark,
 			isTwitterBookmark,
+			isInstagramBookmark,
 			message,
 			queue_name,
 		} = parseResult.data;
@@ -120,14 +122,18 @@ export default async function handler(
 			isTwitterBookmark,
 			queueName: queue_name,
 			messageId: message.msg_id,
+			isInstagramBookmark,
 		});
 
 		const supabase = createServiceClient();
 		let ogImage = ogImageUrl;
 
 		// If from Raindrop bookmark — upload ogImage into R2
-		if (isRaindropBookmark) {
-			console.log(`[${ROUTE}] Uploading Raindrop image to R2:`, { url });
+		if (isRaindropBookmark || isInstagramBookmark) {
+			console.log(
+				`[${ROUTE}] Uploading ${isRaindropBookmark ? "Raindrop" : isInstagramBookmark ? "Instagram" : "Raindrop/Instagram"} image to R2:`,
+				{ url },
+			);
 			try {
 				const imageResponse = await fetch(ogImage, {
 					headers: {
@@ -145,12 +151,21 @@ export default async function handler(
 				const returnedB64 = Buffer.from(arrayBuffer).toString("base64");
 				ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
 
-				console.log(`[${ROUTE}] Raindrop image uploaded successfully`);
+				console.log(
+					`[${ROUTE}] ${isRaindropBookmark ? "Raindrop" : isInstagramBookmark ? "Instagram" : "Raindrop/Instagram"} image uploaded successfully`,
+				);
 			} catch (error) {
-				console.error(`[${ROUTE}] Error downloading Raindrop image:`, error);
+				console.error(
+					`[${ROUTE}] Error downloading ${isRaindropBookmark ? "Raindrop" : isInstagramBookmark ? "Instagram" : "Raindrop/Instagram"} image:`,
+					error,
+				);
 				Sentry.captureException(error, {
 					tags: {
-						operation: "raindrop_image_upload",
+						operation: isRaindropBookmark
+							? "raindrop_image_upload"
+							: isInstagramBookmark
+								? "instagram_image_upload"
+								: "raindrop_instagram_image_upload",
 						userId: user_id,
 					},
 					extra: {
@@ -173,6 +188,7 @@ export default async function handler(
 			userId: user_id,
 			supabase,
 			url,
+			isInstagramBookmark,
 		});
 
 		if (isFailed) {

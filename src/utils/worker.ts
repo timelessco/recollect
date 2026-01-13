@@ -80,6 +80,8 @@ export const processImageQueue = async (
 
 				const isTwitterBookmark = message.message.type === tweetType;
 
+				const isInstagramBookmark = message.message.type === "instagram";
+
 				const isRaindropBookmark =
 					message.message.meta_data.is_raindrop_bookmark;
 
@@ -98,6 +100,7 @@ export const processImageQueue = async (
 							isTwitterBookmark,
 							ogImage,
 							isRaindropBookmark,
+							isInstagramBookmark,
 							message,
 							queue_name,
 						},

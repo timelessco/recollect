@@ -17,6 +17,7 @@ type EnrichMetadataParams = {
 	existingMetadata: Record<string, unknown>;
 	ogImage: string;
 	isTwitterBookmark: boolean;
+	isInstagramBookmark: boolean;
 	videoUrl?: string | null;
 	userId: string;
 	supabase: SupabaseClient;
@@ -55,6 +56,7 @@ export const enrichMetadata = async ({
 	existingMetadata,
 	ogImage,
 	isTwitterBookmark,
+	isInstagramBookmark,
 	videoUrl,
 	userId,
 	supabase,
@@ -64,17 +66,25 @@ export const enrichMetadata = async ({
 	const [videoResult, ocrResult, captionResult, blurhashResult] =
 		await Promise.allSettled([
 			// Video upload (conditional)
-			isTwitterBookmark && videoUrl && typeof videoUrl === "string"
+			(isTwitterBookmark || isInstagramBookmark) &&
+			videoUrl &&
+			typeof videoUrl === "string"
 				? (async () => {
-						console.log("[enrichMetadata] Uploading Twitter video to R2:", {
-							url,
-						});
+						console.log(
+							`[enrichMetadata] Uploading ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video to R2:`,
+							{
+								url,
+							},
+						);
 						const r2VideoUrl = await uploadVideoToR2(videoUrl, userId);
 						if (r2VideoUrl) {
-							console.log("[enrichMetadata] Twitter video uploaded to R2:", {
-								url,
-								r2VideoUrl,
-							});
+							console.log(
+								`[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video uploaded to R2:`,
+								{
+									url,
+									r2VideoUrl,
+								},
+							);
 							return r2VideoUrl;
 						}
 
@@ -82,7 +92,7 @@ export const enrichMetadata = async ({
 						// Video upload is best-effort. If the URL is expired, the UI will
 						// fall back to displaying the thumbnail image instead.
 						console.warn(
-							"[enrichMetadata] Video upload failed, using original URL:",
+							`[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video upload failed, using original URL:`,
 							{ url, videoUrl },
 						);
 						return videoUrl;
