@@ -26,8 +26,8 @@ const requestBodySchema = z.object({
 });
 
 const outputSchema = z.object({
-	count: z.number(),
-	skipped: z.number().optional(),
+	inserted: z.number(),
+	skipped: z.number(),
 });
 
 export default async function handler(
@@ -108,7 +108,7 @@ export default async function handler(
 				existing,
 				userId,
 			});
-			const output = { count: 0, skipped: bookmarks.length };
+			const output = { inserted: 0, skipped: bookmarks.length };
 			const validated = outputSchema.safeParse(output);
 			if (!validated.success) {
 				throw new Error(
@@ -145,7 +145,10 @@ export default async function handler(
 			userId,
 		});
 
-		const output = { count: insertedBookmarks.length };
+		const output = {
+			inserted: insertedBookmarks.length,
+			skipped: bookmarks.length - insertedBookmarks.length,
+		};
 		const validated = outputSchema.safeParse(output);
 		if (!validated.success) {
 			throw new Error(
@@ -154,7 +157,8 @@ export default async function handler(
 		}
 
 		console.log(`[${ROUTE}] Import completed successfully:`, {
-			count: validated.data.count,
+			inserted: validated.data.inserted,
+			skipped: validated.data.skipped,
 			userId,
 		});
 
