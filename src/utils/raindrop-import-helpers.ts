@@ -145,7 +145,7 @@ type BookmarkWithCategoryId = {
 type DeduplicateBookmarksResult = {
 	bookmarksToSanitize: BookmarkWithCategoryId[];
 	duplicatesRemoved: number;
-	existingRemoved: number;
+	existing: number;
 };
 
 export interface DeduplicateBookmarksProps {
@@ -217,7 +217,9 @@ export async function deduplicateBookmarks(
 		.select("url, category_id")
 		.in("url", urlsToCheck)
 		.in("category_id", categoryIdsToCheck)
-		.eq("user_id", userId);
+		.eq("user_id", userId)
+		.eq("trash", false)
+		.eq("meta_data->>is_raindrop_bookmark", "true");
 
 	if (existingError) {
 		console.error(`[${route}] Error checking existing bookmarks:`, {
@@ -258,11 +260,10 @@ export async function deduplicateBookmarks(
 		return !existingMap.has(key);
 	});
 
-	const existingRemoved =
-		bookmarksWithCategoryId.length - bookmarksToSanitize.length;
-	if (existingRemoved > 0) {
+	const existing = bookmarksWithCategoryId.length - bookmarksToSanitize.length;
+	if (existing > 0) {
 		console.log(`[${route}] Removed existing bookmarks:`, {
-			existingRemoved,
+			existing,
 			userId,
 		});
 	}
@@ -270,7 +271,7 @@ export async function deduplicateBookmarks(
 	return {
 		bookmarksToSanitize,
 		duplicatesRemoved,
-		existingRemoved,
+		existing,
 	};
 }
 

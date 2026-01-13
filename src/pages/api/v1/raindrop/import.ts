@@ -91,7 +91,7 @@ export default async function handler(
 			});
 
 		// Deduplicate bookmarks and filter out existing ones
-		const { bookmarksToSanitize, duplicatesRemoved, existingRemoved } =
+		const { bookmarksToSanitize, duplicatesRemoved, existing } =
 			await deduplicateBookmarks({
 				bookmarks,
 				categoriesData,
@@ -105,7 +105,7 @@ export default async function handler(
 			console.log(`[${ROUTE}] No new bookmarks to insert:`, {
 				totalBookmarks: bookmarks.length,
 				duplicatesRemoved,
-				existingRemoved,
+				existing,
 				userId,
 			});
 			const output = { count: 0, skipped: bookmarks.length };
