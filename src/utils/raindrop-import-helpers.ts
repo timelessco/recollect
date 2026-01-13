@@ -170,7 +170,7 @@ export async function deduplicateBookmarks(
 	props: DeduplicateBookmarksProps,
 ): Promise<DeduplicateBookmarksResult> {
 	const { bookmarks, categoriesData, route, supabase, userId } = props;
-	// Step 1: Filter duplicates by URL + category_name (before sanitization)
+	//  Filter duplicates by URL + category_name (before sanitization)
 	const seenBookmarks = new Set<string>();
 	const uniqueBookmarks = bookmarks.filter((bookmark) => {
 		const key = `${bookmark.url}_${bookmark.category_name || "null"}`;
@@ -194,7 +194,7 @@ export async function deduplicateBookmarks(
 		});
 	}
 
-	// Step 2: Map category_name to category_id for checking existing bookmarks
+	//  Map category_name to category_id for checking existing bookmarks
 	const bookmarksWithCategoryId = uniqueBookmarks.map((bookmark) => {
 		const category_id =
 			categoriesData.find(
@@ -206,7 +206,7 @@ export async function deduplicateBookmarks(
 		};
 	}) as BookmarkWithCategoryId[];
 
-	// Step 3: Check existing bookmarks in database
+	// Check existing bookmarks in database
 	const urlsToCheck = bookmarksWithCategoryId.map((b) => b.url);
 	const categoryIdsToCheck = [
 		...new Set(bookmarksWithCategoryId.map((b) => b.category_id)),
@@ -237,7 +237,7 @@ export async function deduplicateBookmarks(
 		// Continue processing - this is non-blocking, we'll just insert duplicates
 	}
 
-	// Step 4: Filter out existing bookmarks
+	//  Filter out existing bookmarks
 	const existingMap = new Map<string, boolean>();
 	if (existingBookmarks && existingBookmarks.length > 0) {
 		for (const existingBookmark of existingBookmarks) {
@@ -307,14 +307,14 @@ export async function insertBookmarksWithRelations(
 		userId,
 	});
 
-	// Step 6: Sanitize just before inserting
+	//  Sanitize just before inserting
 	const sanitizedBookmarks = await sanitizeBookmarks(
 		bookmarksToSanitize,
 		userId,
 		categoriesData || [],
 	);
 
-	// Step 7: Insert only unique bookmarks
+	//  Insert only unique bookmarks
 	const { data, error } = await supabase
 		.from(MAIN_TABLE_NAME)
 		.insert(sanitizedBookmarks)
