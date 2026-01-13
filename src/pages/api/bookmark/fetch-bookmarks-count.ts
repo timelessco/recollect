@@ -115,25 +115,25 @@ export default async function handler(
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
-				.eq("trash", false)
+				.is("trash", null)
 				.in("type", imageFileTypes),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
-				.eq("trash", false)
+				.is("trash", null)
 				.in("type", videoFileTypes),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
-				.eq("trash", false)
+				.is("trash", null)
 				.in("type", documentFileTypes),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
-				.eq("trash", false)
+				.is("trash", null)
 				.eq("type", bookmarkType),
 			supabase
 				.from(MAIN_TABLE_NAME)
@@ -154,7 +154,7 @@ export default async function handler(
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
-				.eq("trash", false)
+				.is("trash", null)
 				.eq("type", tweetType),
 			supabase.from(CATEGORIES_TABLE_NAME).select("id").eq("user_id", userId),
 			supabase
