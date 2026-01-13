@@ -153,7 +153,7 @@ export type Database = {
 					screenshot: string | null;
 					sort_index: string | null;
 					title: string | null;
-					trash: boolean;
+					trash: string | null;
 					type: string | null;
 					url: string | null;
 					user_id: string;
@@ -169,7 +169,7 @@ export type Database = {
 					screenshot?: string | null;
 					sort_index?: string | null;
 					title?: string | null;
-					trash?: boolean;
+					trash?: string | null;
 					type?: string | null;
 					url?: string | null;
 					user_id: string;
@@ -185,7 +185,7 @@ export type Database = {
 					screenshot?: string | null;
 					sort_index?: string | null;
 					title?: string | null;
-					trash?: boolean;
+					trash?: string | null;
 					type?: string | null;
 					url?: string | null;
 					user_id?: string;
@@ -448,7 +448,7 @@ export type Database = {
 							screenshot: string;
 							sort_index: string;
 							title: string;
-							trash: boolean;
+							trash: string;
 							type: string;
 							url: string;
 							user_id: string;

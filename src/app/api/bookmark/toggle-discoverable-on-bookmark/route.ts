@@ -55,22 +55,25 @@ export const POST = createPostApiHandlerWithAuth({
 		});
 
 		// Build match conditions - atomic update prevents TOCTOU race condition
-		// Only require trash: false when making discoverable (removing discoverability is always safe)
 		const matchConditions: Record<string, unknown> = {
 			id: bookmarkId,
 			user_id: userId,
 		};
-		if (makeDiscoverable) {
-			matchConditions.trash = false;
-		}
 
-		const { data: updatedData, error } = await supabase
+		// Build the update query
+		let updateQuery = supabase
 			.from(MAIN_TABLE_NAME)
 			.update({
 				make_discoverable: makeDiscoverable ? new Date().toISOString() : null,
 			})
-			.match(matchConditions)
-			.select();
+			.match(matchConditions);
+
+		// Only require trash IS NULL when making discoverable (removing discoverability is always safe)
+		if (makeDiscoverable) {
+			updateQuery = updateQuery.is("trash", null);
+		}
+
+		const { data: updatedData, error } = await updateQuery.select();
 
 		if (error) {
 			return apiError({

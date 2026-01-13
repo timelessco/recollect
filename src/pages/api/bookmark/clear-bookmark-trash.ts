@@ -79,7 +79,7 @@ export default async function handler(
 			.from(MAIN_TABLE_NAME)
 			.select(`id, ogImage, title, url, meta_data`)
 			.eq("user_id", userId)
-			.match({ trash: true });
+			.not("trash", "is", null);
 
 		if (!isNull(trashBookmarkIdError)) {
 			response.status(500).json({ data: null, error: trashBookmarkIdError });
@@ -122,7 +122,7 @@ export default async function handler(
 		const { data, error } = (await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("*")
-			.match({ trash: true })) as unknown as {
+			.not("trash", "is", null)) as unknown as {
 			data: DataResponse;
 			error: ErrorResponse;
 		};

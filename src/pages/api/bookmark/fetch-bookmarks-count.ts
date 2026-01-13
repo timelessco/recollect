@@ -36,7 +36,7 @@ const getCategoryCount = async (
 			})
 			.eq("bookmark_categories.category_id", categoryId)
 			.eq("bookmark_categories.user_id", userId)
-			.eq("trash", false);
+			.is("trash", null);
 
 		return {
 			category_id: categoryId,
@@ -53,7 +53,7 @@ const getCategoryCount = async (
 					head: true,
 				})
 				.eq("bookmark_categories.category_id", sharedCategory)
-				.eq("trash", false);
+				.is("trash", null);
 
 			return {
 				category_id: sharedCategory,
@@ -110,7 +110,7 @@ export default async function handler(
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
-				.eq("trash", false),
+				.is("trash", null),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
@@ -139,7 +139,7 @@ export default async function handler(
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
-				.eq("trash", true),
+				.not("trash", "is", null),
 			// Count from junction table, filtering out trashed (category_id 0 = uncategorized)
 			supabase
 				.from(MAIN_TABLE_NAME)
@@ -149,7 +149,7 @@ export default async function handler(
 				})
 				.eq("bookmark_categories.category_id", 0)
 				.eq("bookmark_categories.user_id", userId)
-				.eq("trash", false),
+				.is("trash", null),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
