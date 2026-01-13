@@ -29,6 +29,7 @@ import { optionsMenuListArray } from "../../../utils/commonData";
 import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
+	DISCOVER_URL,
 	TRASH_URL,
 } from "../../../utils/constants";
 import SidePane from "../sidePane";
@@ -159,7 +160,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				),
 			},
 			{
-				show: true,
+				show: currentPath !== DISCOVER_URL && currentPath !== TRASH_URL,
 				value: "sort",
 				render: (
 					<BookmarksSortDropdown
