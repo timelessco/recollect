@@ -212,43 +212,75 @@ export async function deduplicateBookmarks(
 		...new Set(bookmarksWithCategoryId.map((b) => b.category_id)),
 	];
 
-	const { data: existingBookmarks, error: existingError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.select("url, category_id")
-		.in("url", urlsToCheck)
-		.in("category_id", categoryIdsToCheck)
-		.eq("user_id", userId)
-		.eq("trash", false)
-		.eq("meta_data->>is_raindrop_bookmark", "true");
+	// Batch queries to avoid "URI too long" error
+	// Supabase/PostgreSQL has limits on query string length
+	const BATCH_SIZE = 120;
+	const allExistingBookmarks: Array<{ url: string; category_id: number }> = [];
 
-	if (existingError) {
-		console.error(`[${route}] Error checking existing bookmarks:`, {
-			error: existingError,
-			userId,
-		});
-		Sentry.captureException(existingError, {
-			tags: {
-				operation: "check_existing_bookmarks",
-				userId,
-			},
-			extra: {
-				urlsToCheckCount: urlsToCheck.length,
-				categoryIdsToCheckCount: categoryIdsToCheck.length,
-			},
-		});
-		// Continue processing - this is non-blocking, we'll just insert duplicates
+	if (urlsToCheck.length > 0) {
+		// Process URLs in batches
+		for (
+			let batchIndex = 0;
+			batchIndex < urlsToCheck.length;
+			batchIndex += BATCH_SIZE
+		) {
+			const urlBatch = urlsToCheck.slice(batchIndex, batchIndex + BATCH_SIZE);
+			const batchNumber = Math.floor(batchIndex / BATCH_SIZE) + 1;
+			const totalBatches = Math.ceil(urlsToCheck.length / BATCH_SIZE);
+
+			const { data: batchResults, error: batchError } = await supabase
+				.from(MAIN_TABLE_NAME)
+				.select("url, category_id")
+				.in("url", urlBatch)
+				.in("category_id", categoryIdsToCheck)
+				.eq("user_id", userId)
+				.eq("trash", false)
+				.eq("meta_data->>is_raindrop_bookmark", "true");
+
+			if (batchError) {
+				console.error(
+					`[${route}] Error checking existing bookmarks (batch ${batchNumber}/${totalBatches}):`,
+					{
+						error: batchError,
+						userId,
+						batchStart: batchIndex,
+						batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+					},
+				);
+				Sentry.captureException(batchError, {
+					tags: {
+						operation: "check_existing_bookmarks",
+						userId,
+					},
+					extra: {
+						batchNumber,
+						totalBatches,
+						batchStart: batchIndex,
+						batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+						urlsToCheckCount: urlsToCheck.length,
+						categoryIdsToCheckCount: categoryIdsToCheck.length,
+					},
+				});
+				// Continue processing other batches even if one fails
+				continue;
+			}
+
+			if (batchResults && batchResults.length > 0) {
+				allExistingBookmarks.push(...batchResults);
+			}
+		}
 	}
 
 	//  Filter out existing bookmarks
 	const existingMap = new Map<string, boolean>();
-	if (existingBookmarks && existingBookmarks.length > 0) {
-		for (const existingBookmark of existingBookmarks) {
+	if (allExistingBookmarks.length > 0) {
+		for (const existingBookmark of allExistingBookmarks) {
 			const key = `${existingBookmark.url}_${existingBookmark.category_id}`;
 			existingMap.set(key, true);
 		}
 
 		console.log(`[${route}] Found existing bookmarks in database:`, {
-			existingCount: existingBookmarks.length,
+			existingCount: allExistingBookmarks.length,
 			userId,
 		});
 	}
