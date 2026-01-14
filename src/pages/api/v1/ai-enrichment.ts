@@ -8,6 +8,7 @@ import {
 } from "../../../utils/constants";
 import {
 	enrichMetadata,
+	validateInstagramMediaUrl,
 	validateTwitterMediaUrl,
 } from "../../../utils/helpers.server";
 import { createServiceClient } from "../../../utils/supabaseClient";
@@ -109,6 +110,47 @@ export default async function handler(
 						validationError instanceof Error
 							? validationError.message
 							: "URL validation failed",
+				});
+				return;
+			}
+		}
+
+		if (isInstagramBookmark) {
+			try {
+				// Validate ogImage URL
+				validateInstagramMediaUrl(ogImageUrl);
+				console.log(`[${ROUTE}] Instagram ogImage URL validated:`, {
+					ogImageUrl,
+				});
+
+				// Validate video URL if present
+				if (message.message.meta_data?.video_url) {
+					validateInstagramMediaUrl(message.message.meta_data.video_url);
+					console.log(`[${ROUTE}] Instagram video URL validated`);
+				}
+			} catch (validationError) {
+				console.error(`[${ROUTE}] Instagram URL validation failed:`, {
+					error: validationError,
+					ogImageUrl,
+					videoUrl: message.message.meta_data?.video_url,
+				});
+				Sentry.captureException(validationError, {
+					tags: {
+						operation: "instagram_url_validation_failed",
+						userId: user_id,
+					},
+					extra: {
+						bookmarkId: id,
+						url,
+						ogImageUrl,
+						videoUrl: message.message.meta_data?.video_url,
+					},
+				});
+				response.status(400).json({
+					error:
+						validationError instanceof Error
+							? validationError.message
+							: "Instagram URL validation failed",
 				});
 				return;
 			}

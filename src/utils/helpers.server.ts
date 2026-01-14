@@ -76,7 +76,12 @@ export const enrichMetadata = async ({
 								url,
 							},
 						);
-						const r2VideoUrl = await uploadVideoToR2(videoUrl, userId);
+						const r2VideoUrl = await uploadVideoToR2(
+							videoUrl,
+							userId,
+							isTwitterBookmark,
+							isInstagramBookmark,
+						);
 						if (r2VideoUrl) {
 							console.log(
 								`[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video uploaded to R2:`,
@@ -318,13 +323,24 @@ const processBlurhash = async (
  * Downloads a video from external URL and uploads to R2
  * @param videoUrl - External video URL
  * @param user_id - User ID for storage path
+ * @param isTwitterBookmark - Whether this is a Twitter video
+ * @param isInstagramBookmark - Whether this is an Instagram video
  * @returns R2 public URL or null if failed
  */
 export const uploadVideoToR2 = async (
 	videoUrl: string,
 	user_id: string,
+	isTwitterBookmark: boolean,
+	isInstagramBookmark: boolean,
 ): Promise<string | null> => {
 	try {
+		// Validate URL based on bookmark type (defense in depth)
+		if (isTwitterBookmark) {
+			validateTwitterMediaUrl(videoUrl);
+		} else if (isInstagramBookmark) {
+			validateInstagramMediaUrl(videoUrl);
+		}
+
 		const videoResponse: Response = await fetch(videoUrl, {
 			headers: {
 				"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
@@ -355,8 +371,13 @@ export const uploadVideoToR2 = async (
 			);
 		}
 
-		// Generate unique filename
-		const videoName = `twitter-video-${uniqid.time()}.mp4`;
+		// Generate unique filename based on bookmark type
+		const videoPrefix = isInstagramBookmark
+			? "instagram-video"
+			: isTwitterBookmark
+				? "twitter-video"
+				: "video";
+		const videoName = `${videoPrefix}-${uniqid.time()}.mp4`;
 		const storagePath = `${STORAGE_FILES_PATH}/${user_id}/${videoName}`;
 
 		// Determine content type from response or default to mp4
@@ -373,8 +394,13 @@ export const uploadVideoToR2 = async (
 		);
 
 		if (uploadError) {
+			const operation = isInstagramBookmark
+				? "instagram_video_upload"
+				: isTwitterBookmark
+					? "twitter_video_upload"
+					: "video_upload";
 			Sentry.captureException(uploadError, {
-				tags: { operation: "twitter_video_upload" },
+				tags: { operation },
 				extra: { videoUrl, userId: user_id },
 			});
 			console.error("R2 video upload failed:", uploadError);
@@ -388,8 +414,13 @@ export const uploadVideoToR2 = async (
 	} catch (error) {
 		console.error("Error in uploadVideoToR2:", error);
 
+		const operation = isInstagramBookmark
+			? "instagram_video_download"
+			: isTwitterBookmark
+				? "twitter_video_download"
+				: "video_download";
 		Sentry.captureException(error, {
-			tags: { operation: "twitter_video_download" },
+			tags: { operation },
 			extra: { videoUrl, userId: user_id },
 		});
 
@@ -411,6 +442,31 @@ export const validateTwitterMediaUrl = (urlString: string): void => {
 	}
 
 	if (!ALLOWED_TWITTER_DOMAINS.includes(url.hostname)) {
+		throw new Error("Domain not in allowlist");
+	}
+};
+
+const ALLOWED_INSTAGRAM_DOMAINS = [
+	".fbcdn.net",
+	".cdninstagram.com",
+	".instagram.com",
+];
+
+/**
+ * Validates Instagram media URLs to prevent SSRF attacks.
+ * Only allows HTTPS and domains from Instagram's CDN.
+ * @param urlString - The URL to validate
+ * @returns void - Throws an error if the URL is not valid
+ */
+export const validateInstagramMediaUrl = (urlString: string): void => {
+	const url = new URL(urlString);
+	if (url.protocol !== "https:") {
+		throw new Error("Only HTTPS allowed");
+	}
+
+	if (
+		!ALLOWED_INSTAGRAM_DOMAINS.some((domain) => url.hostname.endsWith(domain))
+	) {
 		throw new Error("Domain not in allowlist");
 	}
 };
