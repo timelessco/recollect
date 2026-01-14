@@ -261,8 +261,7 @@ export async function deduplicateBookmarks(
 						categoryIdsToCheckCount: categoryIdsToCheck.length,
 					},
 				});
-				// Continue processing other batches even if one fails
-				continue;
+				throw new Error("Failed to check existing bookmarks");
 			}
 
 			if (batchResults && batchResults.length > 0) {
