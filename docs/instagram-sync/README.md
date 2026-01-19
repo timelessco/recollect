@@ -80,10 +80,10 @@ For details and troubleshooting, see [CRON-SETUP.md](./CRON-SETUP.md).
 
 ```bash
 # 1. Deploy Edge Function
-supabase functions deploy process-instagram-imports
+npx supabase functions deploy process-instagram-imports
 
 # 2. Push migration
-supabase db push
+npx supabase db push
 
 # 3. Setup pg_cron (manual - see CRON-SETUP.md)
 ```

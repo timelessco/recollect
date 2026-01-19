@@ -49,7 +49,7 @@ ORDER BY start_time DESC LIMIT 5;
 ### Step 1: Deploy Edge Function
 
 ```bash
-supabase functions deploy process-instagram-imports
+npx supabase functions deploy process-instagram-imports
 ```
 
 ### Step 2: Run Setup Script
