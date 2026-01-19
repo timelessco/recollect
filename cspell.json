@@ -23,7 +23,8 @@
 		"public",
 		"CHANGELOG.md",
 		"pnpm-lock.yaml",
-		"project-words.txt"
+		"project-words.txt",
+		"**/CLAUDE.md"
 	],
 	"words": [
 		"Abhishek",
@@ -40,6 +41,7 @@
 		"Atleast",
 		"attrelid",
 		"blks",
+		"btrim",
 		"catagories",
 		"categorie",
 		"colh",
@@ -69,6 +71,7 @@
 		"Inbucket",
 		"inbucket",
 		"infile",
+		"jobid",
 		"loggedin",
 		"Loggedin",
 		"micnncim",
@@ -95,8 +98,8 @@
 		"pgcrypto",
 		"PGDATABASE",
 		"PGHOST",
-		"pgmq",
 		"PGMQ",
+		"pgmq",
 		"PGRST",
 		"pgsodium",
 		"PGUSER",
@@ -126,6 +129,7 @@
 		"Signup",
 		"SIGNUP",
 		"SIWS",
+		"SQLERRM",
 		"sslcert",
 		"sslmode",
 		"sslrootcert",

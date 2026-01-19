@@ -1,0 +1,12 @@
+{
+	"imports": {
+		"@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.49.1",
+		"@sentry/deno": "npm:@sentry/deno@^9.0.0"
+	},
+	"compilerOptions": {
+		"strict": true,
+		"lib": ["deno.window"],
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true
+	}
+}

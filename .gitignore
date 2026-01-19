@@ -13,6 +13,7 @@
 
 .env
 .env.local
+api-tests/.env
 
 ############################
 # Package Manager
@@ -89,6 +90,7 @@ public/sitemap-0.xml
 .claude/docs
 .claude/auto-memory/dirty-files
 **/CLAUDE.md
+_plans/**/*.md
 .vercel
 .worktrees
 supabase/seed.sql

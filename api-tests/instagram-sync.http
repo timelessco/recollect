@@ -1,0 +1,58 @@
+### Queue Instagram Bookmark (Success)
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": [{
+    "url": "https://www.instagram.com/p/TEST123/",
+    "title": "Test Instagram Post",
+    "type": "instagram",
+    "meta_data": {
+      "saved_collection_names": ["Test Collection"]
+    }
+  }]
+}
+
+### Queue Multiple Bookmarks
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": [
+    {
+      "url": "https://www.instagram.com/p/BATCH001/",
+      "title": "Batch Post 1",
+      "type": "instagram",
+      "meta_data": { "saved_collection_names": ["Batch Test"] }
+    },
+    {
+      "url": "https://www.instagram.com/p/BATCH002/",
+      "title": "Batch Post 2",
+      "type": "instagram",
+      "meta_data": { "saved_collection_names": ["Batch Test"] }
+    }
+  ]
+}
+
+### Validation Error - Empty Bookmarks
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": []
+}
+
+### Auth Error - No Token
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Content-Type: application/json
+
+{
+  "bookmarks": [{
+    "url": "https://www.instagram.com/p/NOAUTH/",
+    "title": "No Auth Test",
+    "type": "instagram"
+  }]
+}

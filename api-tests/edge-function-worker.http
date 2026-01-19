@@ -1,0 +1,16 @@
+### Health Check (GET)
+GET {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+
+### Process Queue (Invoke Worker)
+POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+Content-Type: application/json
+
+{}
+
+### Auth Error - No Token
+POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Content-Type: application/json
+
+{}
