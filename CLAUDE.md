@@ -95,7 +95,7 @@ Ensure all items are complete before finishing any task.
 - TypeScript strict mode always enabled
 <!-- -DONT DO THIS NOW: For local builds use `pnpm build:local`, `pnpm build` is for Vercel only -->
 
-See [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md) for complete checklist.
+See `.claude/rules/task-completion.md` (auto-loaded).
 
 **Quick Reference:**
 
@@ -131,7 +131,7 @@ See [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md) f
 
 - ESLint, Prettier, Stylelint, Knip, cspell
 
-See [`docs/code_style_conventions.md`](./docs/code_style_conventions.md) for full details.
+See `.claude/rules/code-style.md` (auto-loaded).
 
 ### Type Deduction Best Practices
 
@@ -176,7 +176,7 @@ Comprehensive guidelines for accessible, modern frontend development.
 Never use: CommonJS, `var`, `eval()`, `arguments`, enums, namespaces
 Always use: `const`/`let`, template literals, optional chaining, `for...of`
 
-See [`docs/frontend_rules.md`](./docs/frontend_rules.md) for full details.
+See `.claude/rules/frontend.md` (auto-loaded for `src/**/*.{ts,tsx}`).
 
 <!-- AUTO-MANAGED: project-description -->
 
@@ -273,6 +273,6 @@ See [`docs/suggested_commands.md`](./docs/suggested_commands.md) for full comman
 ### Sentry Monitoring Guidelines
 
 Best practices for error tracking, performance monitoring, and logging with Sentry.
-See [`docs/sentry_rules.md`](./docs/sentry_rules.md) for implementation examples.
+See `.claude/rules/sentry.md` (auto-loaded).
 
-Important documentation files are maintained in the `docs` and `.cursor/rules` directory. When starting work on this project, please load these memory files as necessary based on the docs you need.
+Rules are auto-loaded from `.claude/rules/`. Reference docs are in `docs/`.

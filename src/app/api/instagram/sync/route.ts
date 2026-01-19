@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
+import { type Json } from "@/types/database.types";
 
 const ROUTE = "instagram-sync";
 
@@ -52,13 +53,12 @@ export const POST = createPostApiHandlerWithAuth({
 		}));
 
 		// Queue all bookmarks via pgmq.send_batch
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const pgmqSupabase = (supabase as any).schema("pgmq_public");
+		const pgmqSupabase = supabase.schema("pgmq_public");
 		const { data: queueResults, error: queueError } = await pgmqSupabase.rpc(
 			"send_batch",
 			{
 				queue_name: "q_instagram_imports",
-				messages,
+				messages: messages as unknown as Json[],
 				sleep_seconds: 0,
 			},
 		);

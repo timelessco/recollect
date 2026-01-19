@@ -7,6 +7,58 @@ export type Json =
 	| Json[];
 
 export type Database = {
+	pgmq_public: {
+		Tables: {
+			[_ in never]: never;
+		};
+		Views: {
+			[_ in never]: never;
+		};
+		Functions: {
+			archive: {
+				Args: { message_id: number; queue_name: string };
+				Returns: boolean;
+			};
+			delete: {
+				Args: { message_id: number; queue_name: string };
+				Returns: boolean;
+			};
+			pop: {
+				Args: { queue_name: string };
+				Returns: unknown[];
+				SetofOptions: {
+					from: "*";
+					to: "message_record";
+					isOneToOne: false;
+					isSetofReturn: true;
+				};
+			};
+			read: {
+				Args: { n: number; queue_name: string; sleep_seconds: number };
+				Returns: unknown[];
+				SetofOptions: {
+					from: "*";
+					to: "message_record";
+					isOneToOne: false;
+					isSetofReturn: true;
+				};
+			};
+			send: {
+				Args: { message: Json; queue_name: string; sleep_seconds?: number };
+				Returns: number[];
+			};
+			send_batch: {
+				Args: { messages: Json[]; queue_name: string; sleep_seconds?: number };
+				Returns: number[];
+			};
+		};
+		Enums: {
+			[_ in never]: never;
+		};
+		CompositeTypes: {
+			[_ in never]: never;
+		};
+	};
 	public: {
 		Tables: {
 			bookmark_categories: {
@@ -334,6 +386,19 @@ export type Database = {
 					tag_user_id: string;
 				}>;
 			};
+			process_instagram_bookmark: {
+				Args: {
+					p_collection_names?: string[];
+					p_description?: string;
+					p_meta_data?: Json;
+					p_og_image?: string;
+					p_title?: string;
+					p_type: string;
+					p_url: string;
+					p_user_id: string;
+				};
+				Returns: Json;
+			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{
@@ -605,6 +670,9 @@ export type CompositeTypes<
 		: never;
 
 export const Constants = {
+	pgmq_public: {
+		Enums: {},
+	},
 	public: {
 		Enums: {},
 	},
