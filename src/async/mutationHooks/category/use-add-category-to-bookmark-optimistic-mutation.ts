@@ -191,8 +191,7 @@ export function useAddCategoryToBookmarkOptimisticMutation({
 					queryKey: [BOOKMARKS_KEY, session?.user?.id],
 				});
 			},
-			showSuccessToast: true,
-			successMessage: "Collection added",
+			showSuccessToast: false,
 		});
 
 	return { addCategoryToBookmarkOptimisticMutation };
