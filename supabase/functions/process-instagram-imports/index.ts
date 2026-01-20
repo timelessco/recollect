@@ -209,6 +209,17 @@ Deno.serve(async (req) => {
 		);
 	}
 
+	// Only POST allowed for queue processing
+	if (req.method !== "POST") {
+		return new Response(null, {
+			status: 405,
+			headers: {
+				Allow: "POST, GET",
+				"Content-Type": "application/json",
+			},
+		});
+	}
+
 	const supabaseUrl = Deno.env.get("SUPABASE_URL");
 	const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 

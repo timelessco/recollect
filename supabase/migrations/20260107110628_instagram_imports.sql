@@ -197,7 +197,7 @@ BEGIN
   EXECUTE format(
     'UPDATE pgmq.%I SET message = message || $1 WHERE msg_id = $2',
     'a_' || p_queue_name
-  ) USING jsonb_build_object('failure_reason', p_reason, 'failed_at', now()::text), p_msg_id;
+  ) USING jsonb_build_object('failure_reason', p_reason, 'failed_at', now()), p_msg_id;
 
   RETURN true;
 EXCEPTION

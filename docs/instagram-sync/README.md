@@ -14,7 +14,7 @@ Import Instagram saved posts into Recollect bookmarks using a queue-based proces
         │                       │                         │                       │
    Validates &            Stores with              Calls RPC for           Bookmark +
    queues up to           retry logic              atomic processing       Category +
-   500 bookmarks          (visibility 30s)         (batch of 10)           Junction
+   500 bookmarks          (visibility 30s)         (batch of 5)            Junction
 ```
 
 ## Components
@@ -23,7 +23,7 @@ Import Instagram saved posts into Recollect bookmarks using a queue-based proces
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------- |
 | API Endpoint  | `src/app/api/instagram/sync/route.ts`                      | Validates & queues up to 500 bookmarks         |
 | PGMQ Queue    | `q_instagram_imports`                                      | Async processing with built-in retry           |
-| Edge Function | `supabase/functions/process-instagram-imports/`            | Worker: reads 10 msgs, 30s visibility timeout  |
+| Edge Function | `supabase/functions/process-instagram-imports/`            | Worker: reads 5 msgs, 30s visibility timeout   |
 | RPC Function  | `process_instagram_bookmark`                               | Atomic: creates category + bookmark + junction |
 | Migration     | `supabase/migrations/20260107110628_instagram_imports.sql` | Creates queue, RPC, RLS policies               |
 
