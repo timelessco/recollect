@@ -27,16 +27,9 @@ export const SingleRowViewVirtualized = ({
 					data-index={virtualRow.index}
 					key={virtualRow.key.toString()}
 					ref={rowVirtualizer.measureElement}
+					className={`absolute top-0 left-0 w-full pr-0 pl-0 ${cardTypeCondition === viewValues.timeline ? "pb-6" : "pb-0"}`}
 					style={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						width: "100%",
 						transform: `translateY(${rowStart}px)`,
-						paddingBottom:
-							cardTypeCondition === viewValues.timeline ? "24px" : "0px",
-						paddingLeft: "0px",
-						paddingRight: "0px",
 					}}
 				>
 					{renderOption(virtualRow.index)}

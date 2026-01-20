@@ -10,10 +10,9 @@ export const MoodboardViewVirtualized = ({
 	renderOption,
 }: MoodboardViewVirtualizedProps) => (
 	<div
+		className="relative w-full"
 		style={{
 			height: rowVirtualizer?.getTotalSize(),
-			width: "100%",
-			position: "relative",
 		}}
 	>
 		{rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -25,15 +24,11 @@ export const MoodboardViewVirtualized = ({
 					data-index={virtualRow.index}
 					key={virtualRow.key.toString()}
 					ref={rowVirtualizer.measureElement}
+					className="absolute top-0 pr-3 pb-6 pl-3"
 					style={{
-						position: "absolute",
-						top: 0,
 						left: `${virtualRow?.lane * columnWidth}%`,
 						width: `${columnWidth}%`,
 						transform: `translateY(${virtualRow?.start}px)`,
-						paddingLeft: "0.75rem",
-						paddingRight: "0.75rem",
-						paddingBottom: "1.5rem",
 					}}
 				>
 					{renderOption(virtualRow?.index)}

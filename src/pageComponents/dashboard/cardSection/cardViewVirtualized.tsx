@@ -48,9 +48,9 @@ export const CardViewVirtualized = ({
 
 	return (
 		<div
+			className="relative"
 			style={{
 				height: rowVirtualizer.getTotalSize(),
-				position: "relative",
 			}}
 		>
 			{rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -64,15 +64,10 @@ export const CardViewVirtualized = ({
 					<div
 						key={virtualRow.key}
 						data-index={rowIndex}
-						className="pb-[43px]"
+						className="absolute top-0 left-0 flex w-full pb-[43px]"
 						ref={rowVirtualizer.measureElement}
 						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							width: "100%",
 							transform: `translateY(${virtualRow.start}px)`,
-							display: "flex",
 						}}
 					>
 						{rowItems.map((bookmark, itemIndex) => {
@@ -81,10 +76,9 @@ export const CardViewVirtualized = ({
 							return (
 								<div
 									key={bookmark.id}
+									className="pr-3 pl-3"
 									style={{
 										width: `${columnWidth}%`,
-										paddingLeft: "0.75rem",
-										paddingRight: "0.75rem",
 									}}
 								>
 									{renderOption(bookmarkIndex)}
