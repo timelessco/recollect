@@ -3603,7 +3603,7 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <DiscoverIcon />,
+		icon: <DiscoverIcon className="h-[18px] w-[18px]" />,
 		name: menuListItemName.discover,
 		href: `/${DISCOVER_URL}`,
 		current: currentPath === DISCOVER_URL,
@@ -3639,7 +3639,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <ImageIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<ImageIcon />
+			</figure>
+		),
 		name: menuListItemName.image,
 		href: `/${IMAGES_URL}`,
 		current: currentPath === IMAGES_URL,
@@ -3648,7 +3652,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <VideoIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<VideoIcon />
+			</figure>
+		),
 		name: menuListItemName.videos,
 		href: `/${VIDEOS_URL}`,
 		current: currentPath === VIDEOS_URL,
@@ -3657,7 +3665,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <LinkIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<LinkIcon />
+			</figure>
+		),
 		name: menuListItemName.links,
 		href: `/${LINKS_URL}`,
 		current: currentPath === LINKS_URL,
@@ -3666,7 +3678,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <FolderIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<FolderIcon />
+			</figure>
+		),
 		name: menuListItemName.documents,
 		href: `/${DOCUMENTS_URL}`,
 		current: currentPath === DOCUMENTS_URL,
@@ -3675,7 +3691,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <XIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<XIcon />
+			</figure>
+		),
 		name: menuListItemName.tweets,
 		href: `/${TWEETS_URL}`,
 		current: currentPath === TWEETS_URL,

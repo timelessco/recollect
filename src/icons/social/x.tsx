@@ -1,9 +1,9 @@
-const XIcon = () => (
+const XIcon = ({ size = "18" }) => (
 	<svg
 		fill="none"
-		height="16"
+		height={size}
 		viewBox="0 0 18 18"
-		width="16"
+		width={size}
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path

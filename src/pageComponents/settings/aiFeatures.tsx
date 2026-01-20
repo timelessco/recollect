@@ -192,7 +192,7 @@ export const AiFeatures = () => {
 					</figure>
 					<span className="flex flex-wrap items-center space-x-1">
 						<span>
-							Add your API key to enable AI features, get a free key from
+							Add your API key to remove AI limits, get a free key from
 						</span>
 						<a
 							className="relative inline-flex items-center underline"

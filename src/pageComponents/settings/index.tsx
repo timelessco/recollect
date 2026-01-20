@@ -17,12 +17,11 @@ import { Spinner } from "../../components/spinner";
 import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
-import GoogleLoginIcon from "../../icons/googleLoginIcon";
+import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
 import { IframeIcon } from "../../icons/iframeIcon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/infoIcon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
-import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -168,10 +167,11 @@ const Settings = () => {
 	}, [displaynameReset, userData?.display_name]);
 
 	const profilePicClassName = classNames({
-		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]: true,
+		[`rounded-full w-11.5 h-11.5 object-contain bg-black`]: true,
 		"opacity-50":
 			uploadProfilePicMutation?.isPending || removeProfilePic?.isPending,
 	});
+	console.log(session?.user?.app_metadata?.provider);
 
 	return (
 		<>
@@ -218,13 +218,13 @@ const Settings = () => {
 						role="button"
 						tabIndex={-1}
 					>
-						<figure className="h-[72px] w-[72px] cursor-pointer transition delay-75 ease-in-out hover:opacity-50">
+						<figure className="cursor-pointer transition delay-75 ease-in-out hover:opacity-50">
 							<UserAvatar
 								alt="profile-pic"
 								className={profilePicClassName}
-								height={72}
+								height={46}
 								src={userData?.profile_pic ?? ""}
-								width={72}
+								width={46}
 							/>
 						</figure>
 					</div>
@@ -271,9 +271,6 @@ const Settings = () => {
 							labelClassName={settingsInputLabelClassName}
 						>
 							<div className={settingsInputContainerClassName}>
-								<figure className="mr-2">
-									<SettingsUserIcon />
-								</figure>
 								<Input
 									autoFocus={false}
 									errorClassName="absolute  top-[29px]"
@@ -324,9 +321,6 @@ const Settings = () => {
 							labelClassName={settingsInputLabelClassName}
 						>
 							<div className={`${settingsInputContainerClassName} w-full`}>
-								<figure className="mr-2">
-									<SettingsUserIcon />
-								</figure>
 								<Input
 									autoFocus={false}
 									errorClassName="absolute  top-[29px]"
@@ -373,9 +367,9 @@ const Settings = () => {
 					<SettingsToggleCard
 						icon={
 							session?.user?.app_metadata?.provider === "email" ? (
-								<MailIconBlack />
+								<MailIconBlack className="h-4.5 w-4.5 text-gray-900" />
 							) : (
-								<GoogleLoginIcon />
+								<GoogleLoginIcon className="h-5 w-5" />
 							)
 						}
 						title={userData?.email}
@@ -391,7 +385,7 @@ const Settings = () => {
 								: undefined
 						}
 					/>
-					{session?.user?.app_metadata?.provider === "email" && (
+					{session?.user?.app_metadata?.provider !== "email" && (
 						<div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">
 							<figure className="text-gray-900">
 								<InfoIcon />
