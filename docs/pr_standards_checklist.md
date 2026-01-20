@@ -652,6 +652,48 @@ return apiSuccess({
 
 **Why**: Ensures API contracts are maintained and catches bugs early.
 
+#### 5. Route Documentation
+
+**✅ CORRECT - Include comprehensive API docs:**
+
+```typescript
+/**
+ * =============================================================================
+ * API DOCUMENTATION: Set Bookmark Categories
+ * =============================================================================
+ *
+ * ENDPOINT
+ * --------
+ * POST /api/set-bookmark-categories
+ *
+ * AUTHENTICATION
+ * --------------
+ * Requires Bearer token (Supabase JWT) in Authorization header
+ *
+ * REQUEST BODY SCHEMA
+ * -------------------
+ * {
+ *   "bookmarkId": number (required),
+ *   "categoryIds": number[] (required)
+ * }
+ *
+ * SUCCESS RESPONSE (200 OK)
+ * -------------------------
+ * {
+ *   "data": { "bookmarkId": 123, "categoryIds": [1, 2, 3] },
+ *   "error": null
+ * }
+ *
+ * ERROR RESPONSES
+ * ---------------
+ * 401 Unauthorized: { "data": null, "error": "Not authenticated" }
+ * 400 Bad Request: { "data": null, "error": "Invalid input" }
+ * 500 Internal Server Error: { "data": null, "error": "Failed to set bookmark categories" }
+ *
+ * =============================================================================
+ */
+```
+
 ---
 
 ## TypeScript Standards
@@ -1326,6 +1368,8 @@ Use this checklist before submitting any PR. Check each item to ensure your code
 - [ ] Uses `apiSuccess` with Zod schema for output validation - or handler helpers handle this
 - [ ] Uses `apiWarn` for user errors (4xx)
 - [ ] Uses `apiError` for system errors (5xx)
+- [ ] Includes comprehensive API documentation comment block
+
 - [ ] Error handling in try/catch block (if manual handler, helpers handle it automatically)
 - [ ] Sentry integration for system errors only
 - [ ] Route constant defined (`const ROUTE = "..."`)
@@ -1376,6 +1420,8 @@ Use this checklist before submitting any PR. Check each item to ensure your code
 
 - [ ] Migration includes header comments explaining purpose
 - [ ] Complex logic includes inline comments
+- [ ] API routes include API documentation block
+
 - [ ] Functions include JSDoc comments where helpful
 - [ ] Database objects have `COMMENT ON` statements
 

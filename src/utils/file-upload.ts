@@ -87,7 +87,7 @@ export const handlePdfThumbnailAndUpload = async ({
 
 		const { data: thumbUploadUrl, error: thumbError } =
 			await storageHelpers.createSignedUploadUrl(
-				"recollect",
+				process.env.NEXT_PUBLIC_CLOUDFLARE_R2_BUCKET_NAME,
 				`${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`,
 			);
 

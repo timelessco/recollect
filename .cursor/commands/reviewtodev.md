@@ -211,6 +211,18 @@ done
 git diff origin/dev...HEAD -- 'src/**/*.{ts,tsx}' | grep -E '^\+.*console\.log' | grep -v 'src/app/api/' | grep -v 'src/pages/api/' && echo "❌ Found console.log statements in frontend code - remove from production code"
 ```
 
+#### ✅ Check API Documentation
+
+```bash
+# Check for API documentation blocks
+git diff origin/dev...HEAD -- 'src/app/api/**/*.ts' 'src/pages/api/**/*.ts' | grep -E 'export async function' | while read line; do
+	file=$(echo "$line" | grep -oP '^diff --git.*\K[^\s]+')
+	if ! git diff origin/dev...HEAD -- "$file" | grep -qE '/\*\*.*API DOCUMENTATION'; then
+		echo "⚠️  Missing API documentation block in: $file"
+	fi
+done
+```
+
 ### 4. Review TypeScript Standards
 
 #### ✅ Check for Default Exports
@@ -668,6 +680,7 @@ Use this checklist to manually review your changes:
 - [ ] Uses `apiSuccess` with Zod schema for output
 - [ ] Uses `apiWarn` for user errors (4xx)
 - [ ] Uses `apiError` for system errors (5xx)
+- [ ] Includes API documentation block
 - [ ] Error handling in try/catch (if manual handler, helpers handle it automatically)
 - [ ] Route constant defined (`const ROUTE = "..."`)
 - [ ] Public endpoints properly marked (no requireAuth if using public handler)
