@@ -81,7 +81,7 @@ export const CustomLightBox = ({
 		}
 	}, [setLightboxShowSidepane]);
 
-	// Transform bookmarks into slides using custom hook
+	// Transform bookmarks into slides using custom hook (with embedded bookmark data)
 	const slides = useLightboxSlides(bookmarks);
 
 	// Handle navigation, query invalidation and URL updates using custom hook
@@ -225,6 +225,8 @@ export const CustomLightBox = ({
 					? "calc(100% - min(max(320px, 20%), 400px))"
 					: "100%",
 				animation: "custom-fade-scale-in 0.25s ease-in-out",
+				// Prevent browser navigation on swipe gestures
+				overscrollBehavior: "none" as const,
 			},
 			slide: {
 				height: "100%",

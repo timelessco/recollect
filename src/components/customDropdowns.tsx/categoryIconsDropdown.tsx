@@ -8,9 +8,8 @@ import {
 } from "ariakit/combobox";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 
-import useUpdateCategoryOptimisticMutation from "../../async/mutationHooks/category/useUpdateCategoryOptimisticMutation";
+import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
-import { mutationApiCall } from "../../utils/apiHelpers";
 import { iconOptions } from "../../utils/commonData";
 import { colorPickerColors } from "../../utils/constants";
 import Button from "../atoms/button";
@@ -41,23 +40,19 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 	const iconsList = iconOptions;
 
 	const handleIconColorChange = (iconColor: string) => {
-		void mutationApiCall(
-			updateCategoryOptimisticMutation.mutateAsync({
-				category_id: iconId,
-				updateData: {
-					icon_color: iconColor,
-				},
-			}),
-		);
+		updateCategoryOptimisticMutation.mutate({
+			category_id: iconId,
+			updateData: {
+				icon_color: iconColor,
+			},
+		});
 	};
 
 	const handleIconSelect = (icon: string) => {
-		void mutationApiCall(
-			updateCategoryOptimisticMutation.mutateAsync({
-				category_id: iconId,
-				updateData: { icon },
-			}),
-		);
+		updateCategoryOptimisticMutation.mutate({
+			category_id: iconId,
+			updateData: { icon },
+		});
 	};
 
 	// constants

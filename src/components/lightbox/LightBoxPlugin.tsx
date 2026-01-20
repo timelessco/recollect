@@ -11,8 +11,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -22,26 +20,15 @@ import {
 } from "yet-another-react-lightbox";
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
-import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../hooks/useGetSortBy";
+import { usePageContext } from "../../hooks/use-page-context";
 import { GeminiAiIcon } from "../../icons/geminiAiIcon";
 import ImageIcon from "../../icons/imageIcon";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
-import {
-	type CategoriesData,
-	type SingleListData,
-	type UserTagsData,
-} from "../../types/apiTypes";
-import { BOOKMARKS_KEY, CATEGORIES_KEY } from "../../utils/constants";
-import { searchSlugKey } from "../../utils/helpers";
+import { useMiscellaneousStore } from "../../store/componentStore";
 import { Icon } from "../atoms/icon";
 import { Spinner } from "../spinner";
 
 import { CategoryMultiSelect } from "./category-multi-select";
-import { highlightSearch } from "./LightboxUtils";
+import { highlightSearch, type CustomSlide } from "./LightboxUtils";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -62,7 +49,7 @@ const formatDate = (dateString: string) => {
  */
 
 const MyComponent = () => {
-	const { currentIndex } = useLightboxState();
+	const { currentIndex, slides } = useLightboxState();
 	const [isInitialMount, setIsInitialMount] = useState(true);
 
 	useEffect(() => {
@@ -75,56 +62,37 @@ const MyComponent = () => {
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
 	const aiSummaryScrollRef = useRef<HTMLDivElement>(null);
 
-	const queryClient = useQueryClient();
-	const session = useSupabaseSession((state) => state.session);
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-
-	const categoryData = queryClient.getQueryData([
-		CATEGORIES_KEY,
-		session?.user?.id,
-	]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
-	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const trimmedSearchText = searchText?.trim() ?? "";
-	const { sortBy } = useGetSortBy();
-
-	// if there is text in searchbar we get the cache of searched data else we get from everything
-	const previousData = queryClient.getQueryData([
-		BOOKMARKS_KEY,
-		session?.user?.id,
-		searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-		searchText ? searchText : sortBy,
-	]) as {
-		data: SingleListData[];
-		pages: Array<{ data: SingleListData[] }>;
-	};
 	const router = useRouter();
 
-	const { id } = router.query;
-	const shouldFetch = !previousData && Boolean(id);
+	const { isPublicPage, isDiscoverPage } = usePageContext();
 
-	// @ts-expect-error - props passed to useQuery - false-positive
+	const searchText = useMiscellaneousStore((state) => state.searchText);
+	const trimmedSearchText = searchText?.trim() ?? "";
+
+	// Get bookmark from slide data (primary source)
+	const currentSlide = slides[currentIndex] as CustomSlide | undefined;
+	let currentBookmark = currentSlide?.data?.bookmark;
+
+	// Fallback: fetch by ID only if bookmark not in slide data (direct URL access)
+	const { id } = router.query;
+	const shouldFetch =
+		!currentBookmark && typeof id === "string" && id.length > 0;
+
 	const { data: bookmark } = useFetchBookmarkById(id as string, {
 		enabled: shouldFetch,
 	});
-	let currentBookmark;
-	// handling the case where user opens a preview link directly
-	if (!previousData) {
-		// @ts-expect-error bookmark is not undefined
-		currentBookmark = bookmark?.data?.[0];
-	} else {
-		currentBookmark = previousData?.pages?.flatMap(
-			(page) => page?.data ?? [],
-		)?.[currentIndex];
+
+	// Use fetched bookmark if slide data is unavailable
+	if (!currentBookmark && bookmark?.data) {
+		currentBookmark = bookmark.data;
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
 	const expandableRef = useRef<HTMLDivElement>(null);
 
 	const metaData = currentBookmark?.meta_data;
-	const collapsedOffset = currentBookmark?.addedTags?.length > 0 ? 145 : 110;
+	const collapsedOffset =
+		(currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state.lightboxShowSidepane,
 	);
@@ -274,13 +242,14 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						<CategoryMultiSelect
-							bookmarkId={currentBookmark?.id}
-							shouldFetch={shouldFetch}
-						/>
+						{!isDiscoverPage && !isPublicPage && (
+							<CategoryMultiSelect
+								bookmarkId={currentBookmark?.id}
+								shouldFetch={shouldFetch}
+							/>
+						)}
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
-						metaData?.image_caption ||
 						metaData?.img_caption ||
 						metaData?.ocr) && (
 						<motion.div
@@ -302,20 +271,20 @@ const MyComponent = () => {
 							{currentBookmark?.addedTags?.length > 0 && (
 								<div className="px-5 pb-[19px]">
 									<div className="flex flex-wrap gap-[6px]">
-										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
-											<span
-												className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
-												key={tag?.id}
-											>
-												{highlightSearch("#" + tag?.name, trimmedSearchText)}
-											</span>
-										))}
+										{currentBookmark?.addedTags?.map(
+											(tag: { id: number; name: string }) => (
+												<span
+													className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
+													key={tag?.id}
+												>
+													{highlightSearch("#" + tag?.name, trimmedSearchText)}
+												</span>
+											),
+										)}
 									</div>
 								</div>
 							)}
-							{(metaData?.img_caption ||
-								metaData?.image_caption ||
-								metaData?.ocr) && (
+							{(metaData?.img_caption || metaData?.ocr) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
@@ -348,11 +317,10 @@ const MyComponent = () => {
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
 											{highlightSearch(
-												metaData?.img_caption || metaData?.image_caption || "",
+												metaData?.img_caption || "",
 												trimmedSearchText,
 											)}
-											{(metaData?.img_caption || metaData?.image_caption) &&
-												metaData?.ocr && <br />}
+											{metaData?.img_caption && metaData?.ocr && <br />}
 											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
 										</p>
 									</div>

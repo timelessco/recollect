@@ -23,6 +23,7 @@ import {
 	acceptedFileTypes,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
+	DISCOVER_URL,
 	documentFileTypes,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
@@ -66,7 +67,8 @@ export const getCategoryIdFromSlug = (
 		slug === VIDEOS_URL ||
 		slug === LINKS_URL ||
 		slug === DOCUMENTS_URL ||
-		slug === TWEETS_URL
+		slug === TWEETS_URL ||
+		slug === DISCOVER_URL
 	) {
 		return slug;
 	}
@@ -186,6 +188,7 @@ export const isUserInACategory = (url: string) => {
 		DOCUMENTS_URL,
 		LINKS_URL,
 		TWEETS_URL,
+		DISCOVER_URL,
 	];
 
 	return !nonCategoryPages?.includes(url);
@@ -425,8 +428,8 @@ export const getPreviewPathInfo = (
  * @param categoryData - Object containing category data
  * @param categoryData.data - Array of category data to search through
  * @param categoryData.error - Optional error object from the data fetch
- * @returns number | string | null - Returns:
- *   - null if the current route is for everything or search
+ * @returns number | string | undefined - Returns:
+ *   - undefined if the current route is for everything or search
  *   - category ID (number) if a matching category is found
  *   - the original category slug (string) if no matching category is found
  */
@@ -443,9 +446,10 @@ export const searchSlugKey = (categoryData: {
 		(item) => item?.category_slug === categorySlug,
 	)?.id;
 
-	// Special case: return null for 'everything' or 'search' routes
+	// Special case: return undefined for 'everything' or 'search' routes
+	// This matches the behavior of useGetCurrentCategoryId()/CATEGORY_ID
 	if (categorySlug === EVERYTHING_URL || categorySlug === SEARCH_URL) {
-		return null;
+		return undefined;
 	}
 
 	// If we found a matching category with a numeric ID, return the ID

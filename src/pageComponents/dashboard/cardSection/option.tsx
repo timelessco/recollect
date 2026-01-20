@@ -17,12 +17,15 @@ import { type DraggableCollectionState, type ListState } from "react-stately";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
+import { DISCOVER_URL, viewValues } from "../../../utils/constants";
 import {
-	CATEGORY_ID_PATHNAME,
-	PREVIEW_PATH,
-	viewValues,
-} from "../../../utils/constants";
-import { getCategorySlugFromRouter } from "../../../utils/url";
+	getCategorySlugFromRouter,
+	getPublicPageInfo,
+} from "../../../utils/url";
+import {
+	buildAuthenticatedPreviewUrl,
+	buildPublicPreviewUrl,
+} from "../../../utils/url-builders";
 
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { cn } from "@/utils/tailwind-merge";
@@ -54,6 +57,8 @@ const Option = ({
 	const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
 	const { focusProps } = useFocusRing();
 	const router = useRouter();
+	const categorySlug = getCategorySlugFromRouter(router);
+	const isDiscoverPage = categorySlug === DISCOVER_URL;
 	const { setLightboxId, setLightboxOpen, lightboxOpen } =
 		useMiscellaneousStore();
 	// Register the item as a drag source.
@@ -110,16 +115,12 @@ const Option = ({
 			{/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
 			<a
 				className={`absolute top-0 left-0 h-full w-full rounded-lg ${
-					isTrashPage || isPublicPage ? "cursor-auto" : "cursor-pointer"
+					isTrashPage ? "cursor-auto" : "cursor-pointer"
 				}`}
 				draggable={false}
 				href={url}
 				onClick={(event) => {
-					if (
-						isTrashPage ||
-						item?.key?.toString().startsWith("$") ||
-						isPublicPage
-					) {
+					if (isTrashPage || item?.key?.toString().startsWith("$")) {
 						event.preventDefault();
 						return;
 					}
@@ -127,21 +128,25 @@ const Option = ({
 					event.preventDefault();
 					setLightboxId(item?.key?.toString());
 					setLightboxOpen(true);
-					void router.push(
-						{
-							// https://github.com/vercel/next.js/discussions/11625
-							// https://github.com/adamwathan/headbangstagram/pull/1/files
-							pathname: `${CATEGORY_ID_PATHNAME}`,
-							query: {
-								category_id: getCategorySlugFromRouter(router),
-								id: item?.key,
-							},
-						},
-						`/${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${item?.key}`,
-						{
-							shallow: true,
-						},
-					);
+					if (isPublicPage && !isDiscoverPage) {
+						const publicInfo = getPublicPageInfo(router);
+						if (publicInfo) {
+							const { pathname, query, as } = buildPublicPreviewUrl({
+								publicInfo,
+								bookmarkId: item?.key,
+							});
+							void router.push({ pathname, query }, as, { shallow: true });
+						}
+					} else {
+						const categorySlug = getCategorySlugFromRouter(router);
+						if (categorySlug) {
+							const { pathname, query, as } = buildAuthenticatedPreviewUrl({
+								categorySlug,
+								bookmarkId: item?.key,
+							});
+							void router.push({ pathname, query }, as, { shallow: true });
+						}
+					}
 				}}
 			/>
 			{item.rendered}

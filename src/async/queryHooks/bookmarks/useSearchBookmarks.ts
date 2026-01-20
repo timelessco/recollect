@@ -21,8 +21,15 @@ import {
 } from "../../../utils/constants";
 import { searchBookmarks } from "../../supabaseCrudHelpers";
 
+type UseSearchBookmarksOptions = {
+	enabled?: boolean;
+};
+
 // searches bookmarks
-export default function useSearchBookmarks() {
+export default function useSearchBookmarks(
+	options: UseSearchBookmarksOptions = {},
+) {
+	const { enabled = true } = options;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const session = useSupabaseSession((state) => state.session);
 	const toggleIsSearchLoading = useLoadersStore(
@@ -52,20 +59,19 @@ export default function useSearchBookmarks() {
 
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery({
-			// eslint-disable-next-line @tanstack/query/exhaustive-deps
 			queryKey: [
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
 				debouncedSearch,
 			] as const,
-			enabled: !isEmpty(searchText),
+			enabled: enabled && !isEmpty(debouncedSearch),
 			refetchOnWindowFocus: false,
 			initialPageParam: 0,
 			queryFn: async ({ pageParam: pageParameter }) => {
-				if (searchText) {
+				if (debouncedSearch) {
 					const result = await searchBookmarks(
-						searchText,
+						debouncedSearch,
 						CATEGORY_ID,
 						isSharedCategory,
 						pageParameter,

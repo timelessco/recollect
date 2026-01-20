@@ -12,8 +12,6 @@ import isNull from "lodash/isNull";
 import {
 	type AddBookmarkMinDataPayloadTypes,
 	type AddBookmarkScreenshotPayloadTypes,
-	type AddTagToBookmarkApiPayload,
-	type AddUserTagsApiPayload,
 	type BookmarksCountTypes,
 	type BookmarksPaginatedDataTypes,
 	type BookmarkViewDataTypes,
@@ -28,7 +26,6 @@ import {
 	type RemoveUserProfilePicPayload,
 	type SingleListData,
 	type SupabaseSessionType,
-	type UpdateCategoryApiPayload,
 	type UpdateCategoryOrderApiPayload,
 	type UpdateSharedCategoriesUserAccessApiPayload,
 	type UpdateUsernameApiPayload,
@@ -44,12 +41,9 @@ import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
 	ADD_BOOKMARK_MIN_DATA,
-	ADD_TAG_TO_BOOKMARK_API,
 	ADD_URL_SCREENSHOT_API,
 	CHECK_API_KEY_API,
 	CLEAR_BOOKMARK_TRASH_API,
-	CREATE_USER_CATEGORIES_API,
-	CREATE_USER_TAGS_API,
 	DELETE_API_KEY_API,
 	DELETE_BOOKMARK_DATA_API,
 	DELETE_SHARED_CATEGORIES_USER_API,
@@ -72,13 +66,11 @@ import {
 	NO_BOOKMARKS_ID_ERROR,
 	PAGINATION_LIMIT,
 	REMOVE_PROFILE_PIC_API,
-	REMOVE_TAG_FROM_BOOKMARK_API,
 	SAVE_API_KEY_API,
 	SEARCH_BOOKMARKS,
 	SEND_COLLABORATION_EMAIL_API,
 	UPDATE_CATEGORY_ORDER_API,
 	UPDATE_SHARED_CATEGORY_USER_ROLE_API,
-	UPDATE_USER_CATEGORIES_API,
 	UPDATE_USER_PROFILE_API,
 	UPDATE_USERNAME_API,
 	UPLOAD_FILE_API,
@@ -406,48 +398,6 @@ export const fetchUserTags = async (): Promise<{
 	}
 };
 
-export const addUserTags = async ({ tagsData }: AddUserTagsApiPayload) => {
-	try {
-		const response = await axios.post<{ data: UserTagsData }>(
-			`${NEXT_API_URL}${CREATE_USER_TAGS_API}`,
-			{ name: tagsData?.name },
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
-export const addTagToBookmark = async ({
-	selectedData,
-}: AddTagToBookmarkApiPayload) => {
-	try {
-		const response = await axios.post<{ data: SingleListData }>(
-			`${NEXT_API_URL}${ADD_TAG_TO_BOOKMARK_API}`,
-			{ data: selectedData },
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
-export const removeTagFromBookmark = async ({
-	selectedData,
-}: {
-	selectedData: { bookmark_id: number; tag_id: number };
-}) => {
-	try {
-		const response = await axios.post<{ data: UserTagsData; error: Error }>(
-			`${NEXT_API_URL}${REMOVE_TAG_FROM_BOOKMARK_API}`,
-			{ tag_id: selectedData?.tag_id, bookmark_id: selectedData?.bookmark_id },
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
 export const fetchBookmarksViews = async ({
 	category_id,
 }: {
@@ -503,27 +453,6 @@ export const fetchCategoriesData = async (): Promise<{
 	}
 };
 
-export const addUserCategory = async ({
-	name,
-	category_order,
-}: {
-	category_order: number[];
-	name: string;
-}) => {
-	try {
-		const response = await axios.post<{
-			data: CategoriesData[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${CREATE_USER_CATEGORIES_API}`, {
-			name,
-			category_order,
-		});
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
 export const deleteUserCategory = async ({
 	category_id,
 	category_order,
@@ -537,22 +466,6 @@ export const deleteUserCategory = async ({
 			category_order,
 		});
 		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
-
-export const updateCategory = async ({
-	category_id,
-	updateData,
-}: UpdateCategoryApiPayload) => {
-	try {
-		const response = await axios.post(
-			`${NEXT_API_URL}${UPDATE_USER_CATEGORIES_API}`,
-			{ category_id, updateData },
-		);
-
-		return response;
 	} catch (error) {
 		return error;
 	}

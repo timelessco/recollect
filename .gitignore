@@ -88,6 +88,8 @@ public/sitemap-0.xml
 .claude/settings.local.json
 .claude/docs
 .claude/auto-memory/dirty-files
+**/CLAUDE.md
+_plan
 .vercel
 .worktrees
 supabase/seed.sql

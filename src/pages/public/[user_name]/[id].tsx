@@ -1,4 +1,5 @@
 import { type GetServerSideProps, type NextPage } from "next";
+import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { isEmpty, isNull } from "lodash";
 
@@ -51,8 +52,6 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 					isOgImgLoading={false}
 					isPublicPage
 					listData={props?.data as SingleListData[]}
-					onDeleteClick={() => {}}
-					onMoveOutOfTrashClick={() => {}}
 					showAvatar={false}
 					userId=""
 				/>
@@ -66,20 +65,36 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 );
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-	const response = await axios.post<GetPublicCategoryBookmarksApiResponseType>(
-		`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
-			context?.query?.id as string
-		}&user_name=${context?.query?.user_name as string}`,
-	);
+	const ROUTE = "/public/[user_name]/[id]";
+	const categorySlug = context?.query?.id as string;
+	const userName = context?.query?.user_name as string;
 
-	if (!response?.data?.is_public) {
-		// this page is not a public page
-		return {
-			notFound: true,
-		};
-	}
+	try {
+		const response =
+			await axios.post<GetPublicCategoryBookmarksApiResponseType>(
+				`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}`,
+			);
 
-	if (isEmpty(response?.data?.data) || isNull(response?.data?.data)) {
+		if (!response?.data?.is_public) {
+			console.warn(`[${ROUTE}] Category is not public`, {
+				categorySlug,
+				userName,
+			});
+			return { notFound: true };
+		}
+
+		if (isEmpty(response?.data?.data) || isNull(response?.data?.data)) {
+			return {
+				props: {
+					data: response?.data?.data,
+					category_views: response?.data?.category_views,
+					icon: response?.data?.icon,
+					icon_color: response?.data?.icon_color,
+					category_name: response?.data?.category_name,
+				},
+			};
+		}
+
 		return {
 			props: {
 				data: response?.data?.data,
@@ -89,17 +104,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 				category_name: response?.data?.category_name,
 			},
 		};
+	} catch (error) {
+		// Network failures, API errors are system errors (5xx) - console.error + Sentry
+		console.error(`[${ROUTE}] Failed to fetch public category bookmarks`, {
+			error,
+			categorySlug,
+			userName,
+		});
+		Sentry.captureException(error, {
+			tags: {
+				operation: "fetch_public_category",
+				context: "server_side_rendering",
+			},
+			extra: { categorySlug, userName },
+		});
+		return { notFound: true };
 	}
-
-	return {
-		props: {
-			data: response?.data?.data,
-			category_views: response?.data?.category_views,
-			icon: response?.data?.icon,
-			icon_color: response?.data?.icon_color,
-			category_name: response?.data?.category_name,
-		},
-	};
 };
 
 export default CategoryName;

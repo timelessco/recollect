@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { type z, type ZodSchema } from "zod";
 
@@ -148,6 +148,49 @@ export async function parseBody<T>({
 		// Use first Zod error message for user-friendly display
 		const firstError = parsed.error.issues[0];
 		const userMessage = firstError?.message || "Invalid input";
+
+		return {
+			data: null,
+			errorResponse: apiWarn({
+				route,
+				message: userMessage,
+				status: HttpStatus.BAD_REQUEST,
+				context: { errors: parsed.error.issues },
+			}),
+		};
+	}
+
+	return { data: parsed.data, errorResponse: null };
+}
+
+type ParseQueryResult<T> =
+	| { data: T; errorResponse: null }
+	| { data: null; errorResponse: NextResponse<ApiErrorResponse> };
+
+type ParseQueryProps<T> = {
+	request: NextRequest;
+	route: string;
+	schema: ZodSchema<T>;
+};
+
+/**
+ * Parse and validate query parameters against a Zod schema.
+ * Returns discriminated union for type narrowing (same pattern as parseBody).
+ * Query parameters are strings - use z.coerce.* for numeric values.
+ */
+export function parseQuery<T>({
+	request,
+	schema,
+	route,
+}: ParseQueryProps<T>): ParseQueryResult<T> {
+	const searchParams = request.nextUrl.searchParams;
+	const params = Object.fromEntries(searchParams.entries());
+
+	const parsed = schema.safeParse(params);
+
+	if (!parsed.success) {
+		const firstError = parsed.error.issues[0];
+		const userMessage = firstError?.message || "Invalid query parameters";
 
 		return {
 			data: null,

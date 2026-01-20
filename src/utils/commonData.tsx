@@ -12,6 +12,7 @@ import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
 
 import {
+	DISCOVER_URL,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	IMAGES_URL,
@@ -23,6 +24,7 @@ import {
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "./constants";
+import { DiscoverIcon } from "@/icons/discover-icon";
 
 // TODO: check if this is needed (for code cleanup)
 const object = [
@@ -3601,11 +3603,20 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
+		icon: <DiscoverIcon />,
+		name: menuListItemName.discover,
+		href: `/${DISCOVER_URL}`,
+		current: currentPath === DISCOVER_URL,
+		id: 1,
+		count: undefined,
+		iconColor: "",
+	},
+	{
 		icon: <InboxIconGray />,
 		name: menuListItemName.inbox,
 		href: `/${UNCATEGORIZED_URL}`,
 		current: currentPath === UNCATEGORIZED_URL,
-		id: 1,
+		id: 2,
 		count: bookmarksCountData?.data?.uncategorized,
 		iconColor: "",
 	},
@@ -3614,7 +3625,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.trash,
 		href: `/${TRASH_URL}`,
 		current: currentPath === TRASH_URL,
-		id: 2,
+		id: 3,
 		count: bookmarksCountData?.data?.trash,
 		iconColor: "",
 	},
@@ -3623,7 +3634,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.settings,
 		href: `/${SETTINGS_URL}`,
 		current: currentPath === SETTINGS_URL,
-		id: 3,
+		id: 4,
 		count: undefined,
 		iconColor: "",
 	},
@@ -3632,7 +3643,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.image,
 		href: `/${IMAGES_URL}`,
 		current: currentPath === IMAGES_URL,
-		id: 4,
+		id: 5,
 		count: bookmarksCountData?.data?.images,
 		iconColor: "",
 	},
@@ -3641,7 +3652,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.videos,
 		href: `/${VIDEOS_URL}`,
 		current: currentPath === VIDEOS_URL,
-		id: 5,
+		id: 6,
 		count: bookmarksCountData?.data?.videos,
 		iconColor: "",
 	},
@@ -3650,7 +3661,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.links,
 		href: `/${LINKS_URL}`,
 		current: currentPath === LINKS_URL,
-		id: 6,
+		id: 7,
 		count: bookmarksCountData?.data?.links,
 		iconColor: "",
 	},
@@ -3659,7 +3670,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.documents,
 		href: `/${DOCUMENTS_URL}`,
 		current: currentPath === DOCUMENTS_URL,
-		id: 7,
+		id: 8,
 		count: bookmarksCountData?.data?.documents,
 		iconColor: "",
 	},
@@ -3668,7 +3679,7 @@ export const optionsMenuListArray = (
 		name: menuListItemName.tweets,
 		href: `/${TWEETS_URL}`,
 		current: currentPath === TWEETS_URL,
-		id: 8,
+		id: 9,
 		count: bookmarksCountData?.data?.tweets,
 		iconColor: "",
 	},
