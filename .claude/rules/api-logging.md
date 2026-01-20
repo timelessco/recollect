@@ -1,16 +1,27 @@
+---
+paths: src/app/api/**/*.ts, src/pages/api/**/*.ts
+---
+
 # API Logging Rules
 
 Guidelines for logging, error handling, and Sentry integration in API routes.
 
-## App Router Authentication (Recommended)
+## App Router Handler Factories (Recommended)
 
-### Using `createSupabasePostApiHandler` (Preferred)
+Four handler factories in `/src/lib/api-helpers/create-handler.ts`:
 
-Use the HOF wrapper for cleaner API routes with automatic auth, validation, and error handling:
+| Function                       | Auth     | Method | Use Case               |
+| ------------------------------ | -------- | ------ | ---------------------- |
+| `createGetApiHandler`          | Public   | GET    | Public read endpoints  |
+| `createPostApiHandler`         | Public   | POST   | Public write endpoints |
+| `createGetApiHandlerWithAuth`  | Required | GET    | Authenticated reads    |
+| `createPostApiHandlerWithAuth` | Required | POST   | Authenticated writes   |
+
+### Authenticated POST Example
 
 ```typescript
 import { z } from "zod";
-import { createSupabasePostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 
 const ROUTE = "endpoint-name";
@@ -24,7 +35,7 @@ const OutputSchema = z.object({
 	name: z.string(),
 });
 
-export const POST = createSupabasePostApiHandler({
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: InputSchema,
 	outputSchema: OutputSchema,
@@ -53,7 +64,7 @@ export const POST = createSupabasePostApiHandler({
 });
 ```
 
-**`createSupabasePostApiHandler` config:**
+**Handler factory config:**
 
 | Prop           | Type        | Description                            |
 | -------------- | ----------- | -------------------------------------- |

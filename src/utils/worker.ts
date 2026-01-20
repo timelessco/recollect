@@ -5,6 +5,7 @@ import {
 	AI_ENRICHMENT_API,
 	getBaseUrl,
 	NEXT_API_URL,
+	tweetType,
 	WORKER_SCREENSHOT_API,
 } from "./constants";
 
@@ -77,6 +78,8 @@ export const processImageQueue = async (
 
 				const mediaType = message?.message?.meta_data?.mediaType;
 
+				const isTwitterBookmark = message.message.type === tweetType;
+
 				const isRaindropBookmark =
 					message.message.meta_data.is_raindrop_bookmark;
 
@@ -92,6 +95,7 @@ export const processImageQueue = async (
 							id,
 							url,
 							user_id,
+							isTwitterBookmark,
 							ogImage,
 							isRaindropBookmark,
 							message,
