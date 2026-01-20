@@ -56,3 +56,108 @@ Content-Type: application/json
     "type": "instagram"
   }]
 }
+
+### Validation Error - Invalid URL Format (not a URL)
+# Expected: 400 - Invalid URL
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": [{
+    "url": "not-a-valid-url",
+    "title": "Invalid URL Test",
+    "type": "instagram"
+  }]
+}
+
+### Validation Error - Non-Instagram Hostname
+# Expected: 400 - Must be a valid Instagram URL
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": [{
+    "url": "https://twitter.com/someuser/status/123",
+    "title": "Wrong Hostname Test",
+    "type": "instagram"
+  }]
+}
+
+### Validation Error - javascript: Protocol
+# Expected: 400 - Invalid URL
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": [{
+    "url": "javascript:alert('xss')",
+    "title": "XSS Attempt Test",
+    "type": "instagram"
+  }]
+}
+
+### Validation Error - Invalid Type Field
+# Expected: 400 - type must be "instagram"
+POST {{$dotenv API_BASE_URL}}/instagram/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": [{
+    "url": "https://www.instagram.com/p/VALIDURL/",
+    "title": "Wrong Type Test",
+    "type": "twitter"
+  }]
+}
+
+###############################################################################
+# FULL FLOW TEST: Queue → Status → Worker → Retry
+#
+# Prerequisites:
+# 1. Disable cron: SELECT cron.unschedule(1);
+# 2. Insert invalid message directly to queue using SQL Editor (bypasses API validation):
+#    SELECT pgmq.send('instagram_imports',
+#      '{"url": "invalid-url", "type": "instagram", "title": "Test",
+#        "description": "", "ogImage": null, "meta_data": {},
+#        "user_id": "<YOUR_USER_ID>"}'::jsonb);
+# 3. Run tests in order below
+# 4. Re-enable cron when done
+###############################################################################
+
+### Flow Step 1: Check Status (shows pending if message in queue)
+# Expected: { "data": { "pending": 1, "failed": 0, "failures": [] }, "error": null }
+GET {{$dotenv API_BASE_URL}}/instagram/sync/status
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+
+### Flow Step 2: Invoke Worker (processes queue, archives invalid URLs)
+# Expected: { "data": { "processed": 1, "archived": 1, "skipped": 0, "retry": 0 }, "error": null }
+POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+Content-Type: application/json
+
+{}
+
+### Flow Step 3: Check Status (shows failed after worker archives invalid URL)
+# Expected: { "data": { "pending": 0, "failed": 1, "failures": [{ "msg_id": N, "url": "invalid-url", "failure_reason": "invalid_url", "failed_at": "..." }] }, "error": null }
+GET {{$dotenv API_BASE_URL}}/instagram/sync/status
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+
+### Flow Step 4: Retry Failed Message (re-queues to try again)
+# Replace msg_id with actual value from status response
+# Expected: { "data": { "requeued": 1, "requested": 1 }, "error": null }
+# Note: requeued < requested means some msg_ids didn't exist or belong to another user
+POST {{$dotenv API_BASE_URL}}/instagram/sync/retry
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "msg_ids": [1]
+}
+
+### Flow Step 5: Check Status After Retry (message back in pending)
+# Expected: { "data": { "pending": 1, "failed": 0, "failures": [] }, "error": null }
+GET {{$dotenv API_BASE_URL}}/instagram/sync/status
+Authorization: Bearer {{$dotenv USER_TOKEN}}
