@@ -98,8 +98,8 @@
 		"pgcrypto",
 		"PGDATABASE",
 		"PGHOST",
-		"PGMQ",
 		"pgmq",
+		"PGMQ",
 		"PGRST",
 		"pgsodium",
 		"PGUSER",
@@ -158,6 +158,7 @@
 		"uniqid",
 		"unrs",
 		"workos",
+		"xact",
 		"yarl",
 		"YOUTU",
 		"youtu"

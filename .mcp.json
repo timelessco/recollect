@@ -1,6 +1,10 @@
 {
 	"mcpServers": {
-		"supabase": {
+		"supabase-main": {
+			"type": "http",
+			"url": "https://mcp.supabase.com/mcp?project_ref=fgveraehgourpwwzlzhy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cbranching%2Cfunctions%2Cstorage"
+		},
+		"supabase-dev": {
 			"type": "http",
 			"url": "https://mcp.supabase.com/mcp?project_ref=fgveraehgourpwwzlzhy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cbranching%2Cfunctions%2Cstorage"
 		},
