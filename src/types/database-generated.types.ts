@@ -372,6 +372,10 @@ export type Database = {
 					out_category_id: number;
 				}>;
 			};
+			archive_with_reason: {
+				Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
+				Returns: boolean;
+			};
 			create_and_assign_tag: {
 				Args: { p_bookmark_id: number; p_tag_name: string };
 				Returns: Array<{
@@ -386,11 +390,13 @@ export type Database = {
 					tag_user_id: string;
 				}>;
 			};
+			get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			process_instagram_bookmark: {
 				Args: {
 					p_collection_names?: string[];
 					p_description?: string;
 					p_meta_data?: Json;
+					p_msg_id?: number;
 					p_og_image?: string;
 					p_title?: string;
 					p_type: string;
@@ -405,6 +411,10 @@ export type Database = {
 					added_uncategorized: boolean;
 					deleted_category_id: number;
 				}>;
+			};
+			retry_instagram_import: {
+				Args: { p_msg_ids: number[]; p_user_id: string };
+				Returns: Json;
 			};
 			search_bookmarks: {
 				Args: { search_text: string };
