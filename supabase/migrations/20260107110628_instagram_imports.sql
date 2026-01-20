@@ -207,6 +207,7 @@ EXCEPTION
 END;
 $$;
 
+REVOKE EXECUTE ON FUNCTION public.archive_with_reason(TEXT, BIGINT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.archive_with_reason(TEXT, BIGINT, TEXT) TO service_role;
 
 COMMENT ON FUNCTION public.archive_with_reason IS
@@ -256,6 +257,7 @@ BEGIN
 END;
 $$;
 
+REVOKE EXECUTE ON FUNCTION public.get_instagram_sync_status(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_instagram_sync_status(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_instagram_sync_status(UUID) TO service_role;
 
@@ -301,6 +303,7 @@ BEGIN
 END;
 $$;
 
+REVOKE EXECUTE ON FUNCTION public.retry_instagram_import(UUID, BIGINT[]) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.retry_instagram_import(UUID, BIGINT[]) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.retry_instagram_import(UUID, BIGINT[]) TO service_role;
 

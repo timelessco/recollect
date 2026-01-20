@@ -102,6 +102,15 @@ function extractCollectionNames(metaData: unknown): string[] {
 	);
 }
 
+// Safely extract msg_id from raw pgmq message (pgmq guarantees msg_id exists)
+function extractMsgId(msg: unknown): number | null {
+	if (typeof msg !== "object" || msg === null) {
+		return null;
+	}
+	const m = msg as Record<string, unknown>;
+	return typeof m.msg_id === "number" ? m.msg_id : null;
+}
+
 // Process a single queue message
 async function processMessage(
 	// deno-lint-ignore no-explicit-any
@@ -271,11 +280,64 @@ Deno.serve(async (req) => {
 		const validMessages = messages.filter(isQueueMessage);
 		const invalidCount = messages.length - validMessages.length;
 
-		if (invalidCount > 0) {
-			Sentry.captureMessage(`${invalidCount} invalid queue message shapes`, {
-				extra: { invalidCount, totalMessages: messages.length },
-				level: "warning",
-			});
+		// Archive invalid messages to prevent poison-message loops
+		const invalidMessages = messages.filter((m: unknown) => !isQueueMessage(m));
+		if (invalidMessages.length > 0) {
+			const archiveResults = await Promise.allSettled(
+				invalidMessages.map(async (msg: unknown) => {
+					const msgId = extractMsgId(msg);
+					if (msgId === null) {
+						// Extremely rare: pgmq record without msg_id
+						Sentry.captureMessage("Invalid message without msg_id", {
+							extra: { rawMessage: JSON.stringify(msg).slice(0, 500) },
+							level: "error",
+						});
+						return null;
+					}
+
+					const { error } = await supabase.rpc("archive_with_reason", {
+						p_queue_name: QUEUE_NAME,
+						p_msg_id: msgId,
+						p_reason: "invalid_payload",
+					});
+
+					if (error) {
+						Sentry.captureException(
+							new Error("Failed to archive invalid message"),
+							{
+								extra: {
+									msgId,
+									error,
+									rawMessage: JSON.stringify(msg).slice(0, 500),
+								},
+								tags: { operation: "archive_invalid_message" },
+							},
+						);
+						return null;
+					}
+
+					return msgId;
+				}),
+			);
+
+			// Count successfully archived
+			const archivedInvalid = archiveResults.filter(
+				(r) => r.status === "fulfilled" && r.value !== null,
+			).length;
+
+			archived += archivedInvalid;
+
+			Sentry.captureMessage(
+				`Archived ${archivedInvalid} invalid queue messages`,
+				{
+					extra: {
+						invalidCount,
+						archivedInvalid,
+						totalMessages: messages.length,
+					},
+					level: "warning",
+				},
+			);
 		}
 
 		Sentry.addBreadcrumb({
