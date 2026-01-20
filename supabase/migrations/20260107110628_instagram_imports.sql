@@ -50,7 +50,8 @@ CREATE OR REPLACE FUNCTION public.process_instagram_bookmark(
   p_collection_names TEXT[] DEFAULT '{}'::TEXT[]
 ) RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY DEFINER
+VOLATILE
+SECURITY INVOKER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
