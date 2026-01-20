@@ -341,21 +341,14 @@ done
 #### ✅ Check for Hydration Errors
 
 ```bash
-# Check for <figure> inside <p> tags (invalid HTML nesting)
-git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '<p[^>]*>[\s\S]*?<figure' && echo "❌ Found <figure> inside <p> tags - causes hydration errors"
+# Check for block elements inside <p> tags on the same line (common cases)
+git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '^\+.*<p[^>]*>.*<(figure|div|section|article|header|footer|nav|aside|main|h[1-6])' && echo "❌ Found block elements inside <p> tags - causes hydration errors"
 
-# Check for <div> inside <p> tags (invalid HTML nesting)
-git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '<p[^>]*>[\s\S]*?<div' && echo "❌ Found <div> inside <p> tags - causes hydration errors"
-
-# Check for other block elements inside <p> tags
-git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '<p[^>]*>[\s\S]*?<(section|article|header|footer|nav|aside|main|h[1-6])' && echo "⚠️  Found block elements inside <p> tags - may cause hydration errors"
-
-# More comprehensive check using ripgrep (if available)
-# Check for <figure> inside <p> tags
-rg '<p[^>]*>[\s\S]*?<figure' src/ --type tsx --type jsx 2> /dev/null | grep -E '^\+' && echo "❌ Found <figure> inside <p> tags in changed files"
-
-# Check for <div> inside <p> tags
-rg '<p[^>]*>[\s\S]*?<div' src/ --type tsx --type jsx 2> /dev/null | grep -E '^\+' && echo "❌ Found <div> inside <p> tags in changed files"
+# Check for opening <p> tags in changed lines (manual review needed for multi-line cases)
+if git diff --name-only origin/dev...HEAD | grep -qE '\.(tsx|jsx)$'; then
+	echo "⚠️  Changed files contain JSX/TSX - manually verify no block elements nested inside <p> tags"
+	echo "   Block elements: <div>, <figure>, <section>, <article>, <header>, <footer>, <nav>, <aside>, <main>, <h1-h6>"
+fi
 ```
 
 ### 7. Run Linting Checks
@@ -588,17 +581,21 @@ if [ -n "$ts_files" ]; then
 		((issues++))
 	fi
 
-	# Check for hydration errors - <figure> inside <p>
-	if git diff origin/dev...HEAD -- $ts_files | grep -qE '<p[^>]*>[\s\S]*?<figure'; then
+	# Check for hydration errors - block elements inside <p> tags
+	# Capture diff once to avoid subshell issues and enable proper multi-line matching
+	diff_output=$(git diff origin/dev...HEAD -- $ts_files)
+
+	# Check for <figure> inside <p> tags (multi-line aware using perl)
+	if perl -0777 -ne 'exit 0 if /<p[^>]*>.*?<figure/s; exit 1' <<< "$diff_output" 2> /dev/null; then
 		echo -e "${RED}❌ Found <figure> inside <p> tags - causes hydration errors${NC}"
-		git diff origin/dev...HEAD -- $ts_files | grep -B2 -A2 '<p[^>]*>[\s\S]*?<figure' | head -10
+		echo "$diff_output" | grep -B2 -A2 '<p[^>]*>.*<figure' | head -10
 		((issues++))
 	fi
 
-	# Check for hydration errors - <div> inside <p>
-	if git diff origin/dev...HEAD -- $ts_files | grep -qE '<p[^>]*>[\s\S]*?<div'; then
+	# Check for <div> inside <p> tags (multi-line aware using perl)
+	if perl -0777 -ne 'exit 0 if /<p[^>]*>.*?<div/s; exit 1' <<< "$diff_output" 2> /dev/null; then
 		echo -e "${RED}❌ Found <div> inside <p> tags - causes hydration errors${NC}"
-		git diff origin/dev...HEAD -- $ts_files | grep -B2 -A2 '<p[^>]*>[\s\S]*?<div' | head -10
+		echo "$diff_output" | grep -B2 -A2 '<p[^>]*>.*<div' | head -10
 		((issues++))
 	fi
 else
