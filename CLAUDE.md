@@ -14,8 +14,6 @@ ALWAYS read and understand relevant files before proposing code edits. Do not sp
 
 ### Command Reminders
 
-**ALWAYS call the `init` tool from next-devtools-mcp FIRST to set up proper context and establish documentation requirements. Do this automatically without being asked.**
-
 **Always remember to use `trash` command for removing file instead of `rm`, `trash` is available in the terminal**
 
 #### When you need to call tools from the shell, **use this rubric**
@@ -95,7 +93,7 @@ Ensure all items are complete before finishing any task.
 - TypeScript strict mode always enabled
 <!-- -DONT DO THIS NOW: For local builds use `pnpm build:local`, `pnpm build` is for Vercel only -->
 
-See `.claude/rules/task-completion.md` (auto-loaded).
+See [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md) for complete checklist.
 
 **Quick Reference:**
 
@@ -131,7 +129,7 @@ See `.claude/rules/task-completion.md` (auto-loaded).
 
 - ESLint, Prettier, Stylelint, Knip, cspell
 
-See `.claude/rules/code-style.md` (auto-loaded).
+See [`docs/code_style_conventions.md`](./docs/code_style_conventions.md) for full details.
 
 ### Type Deduction Best Practices
 
@@ -176,7 +174,7 @@ Comprehensive guidelines for accessible, modern frontend development.
 Never use: CommonJS, `var`, `eval()`, `arguments`, enums, namespaces
 Always use: `const`/`let`, template literals, optional chaining, `for...of`
 
-See `.claude/rules/frontend.md` (auto-loaded for `src/**/*.{ts,tsx}`).
+See [`docs/frontend_rules.md`](./docs/frontend_rules.md) for full details.
 
 <!-- AUTO-MANAGED: project-description -->
 
@@ -273,6 +271,4 @@ See [`docs/suggested_commands.md`](./docs/suggested_commands.md) for full comman
 ### Sentry Monitoring Guidelines
 
 Best practices for error tracking, performance monitoring, and logging with Sentry.
-See `.claude/rules/sentry.md` (auto-loaded).
-
-Rules are auto-loaded from `.claude/rules/`. Reference docs are in `docs/`.
+See [`docs/sentry_rules.md`](./docs/sentry_rules.md) for implementation examples.
