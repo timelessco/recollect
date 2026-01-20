@@ -48,6 +48,8 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 
 import { CardViewVirtualized } from "./cardViewVirtualized";
+import { ListViewVirtualized } from "./listViewVirtualized";
+import { MoodboardViewVirtualized } from "./moodboardViewVirtualized";
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
@@ -313,37 +315,10 @@ const ListBox = (props: ListBoxDropTypes) => {
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
 				{cardTypeCondition === viewValues.moodboard ? (
-					<div
-						style={{
-							height: rowVirtualizer?.getTotalSize(),
-							width: "100%",
-							position: "relative",
-						}}
-					>
-						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
-							const lanes = rowVirtualizer?.options?.lanes || 1;
-							const columnWidth = 100 / lanes;
-							return (
-								<div
-									data-index={virtualRow?.index}
-									key={virtualRow?.key?.toString()}
-									ref={rowVirtualizer?.measureElement}
-									style={{
-										position: "absolute",
-										top: 0,
-										left: `${virtualRow?.lane * columnWidth}%`,
-										width: `${columnWidth}%`,
-										transform: `translateY(${virtualRow?.start}px)`,
-										paddingLeft: "0.75rem",
-										paddingRight: "0.75rem",
-										paddingBottom: "1.5rem",
-									}}
-								>
-									{renderOption(virtualRow?.index)}
-								</div>
-							);
-						})}
-					</div>
+					<MoodboardViewVirtualized
+						rowVirtualizer={rowVirtualizer}
+						renderOption={renderOption}
+					/>
 				) : (
 					<div
 						style={
@@ -363,37 +338,11 @@ const ListBox = (props: ListBoxDropTypes) => {
 								getScrollElement={getScrollElement}
 							/>
 						) : (
-							rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
-								const rowIndex = Math.floor(virtualRow.index / 1);
-								const rowStart =
-									rowVirtualizer
-										.getVirtualItems()
-										.find((vItem) => Math.floor(vItem.index / 1) === rowIndex)
-										?.start ?? 0;
-
-								return (
-									<div
-										data-index={virtualRow.index}
-										key={virtualRow.key.toString()}
-										ref={rowVirtualizer.measureElement}
-										style={{
-											position: "absolute",
-											top: 0,
-											left: 0,
-											width: "100%",
-											transform: `translateY(${rowStart}px)`,
-											paddingBottom:
-												cardTypeCondition === viewValues.timeline
-													? "24px"
-													: "0px",
-											paddingLeft: "0px",
-											paddingRight: "0px",
-										}}
-									>
-										{renderOption(virtualRow.index)}
-									</div>
-								);
-							})
+							<ListViewVirtualized
+								rowVirtualizer={rowVirtualizer}
+								cardTypeCondition={cardTypeCondition}
+								renderOption={renderOption}
+							/>
 						)}
 					</div>
 				)}
