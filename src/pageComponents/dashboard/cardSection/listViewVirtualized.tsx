@@ -16,9 +16,11 @@ export const SingleRowViewVirtualized = ({
 	<>
 		{rowVirtualizer.getVirtualItems().map((virtualRow) => {
 			const rowIndex = Math.floor(virtualRow.index / 1);
-			const rowStart = rowVirtualizer
-				.getVirtualItems()
-				.find((vItem) => Math.floor(vItem.index / 1) === rowIndex)?.start;
+			const rowStart =
+				rowVirtualizer
+					.getVirtualItems()
+					.find((vItem) => Math.floor(vItem.index / 1) === rowIndex)?.start ??
+				0;
 
 			return (
 				<div

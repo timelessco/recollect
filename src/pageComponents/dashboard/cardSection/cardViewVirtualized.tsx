@@ -75,12 +75,12 @@ export const CardViewVirtualized = ({
 							display: "flex",
 						}}
 					>
-						{rowItems.map((_, itemIndex) => {
+						{rowItems.map((bookmark, itemIndex) => {
 							const bookmarkIndex = startIndex + itemIndex;
 
 							return (
 								<div
-									key={bookmarkIndex}
+									key={bookmark.id}
 									style={{
 										width: `${columnWidth}%`,
 										paddingLeft: "0.75rem",
