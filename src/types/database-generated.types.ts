@@ -398,6 +398,7 @@ export type Database = {
 					p_meta_data?: Json;
 					p_msg_id?: number;
 					p_og_image?: string;
+					p_saved_at?: string;
 					p_title?: string;
 					p_type: string;
 					p_url: string;

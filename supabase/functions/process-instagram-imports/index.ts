@@ -32,6 +32,7 @@ interface QueueMessage {
 		ogImage: string | null;
 		meta_data: Record<string, unknown>;
 		user_id: string;
+		saved_at: string | null;
 	};
 }
 
@@ -175,6 +176,7 @@ async function processMessage(
 		p_meta_data: bookmark.meta_data,
 		p_collection_names: collectionNames,
 		p_msg_id: msg_id,
+		p_saved_at: bookmark.saved_at,
 	});
 
 	if (rpcError) {

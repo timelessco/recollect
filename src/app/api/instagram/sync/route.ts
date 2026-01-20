@@ -29,8 +29,8 @@ const InstagramSyncInputSchema = z.object({
 				ogImage: z.string().nullable().optional(),
 				type: z.literal("instagram").default("instagram"),
 				meta_data: z.record(z.string(), z.unknown()).optional().default({}),
-				// sort_index is ignored per spec - included only for compatibility
-				sort_index: z.string().optional(),
+				// Instagram's original save timestamp for ordering
+				saved_at: z.string().datetime().optional(),
 			}),
 		)
 		.min(1, "At least one bookmark required")
@@ -62,6 +62,7 @@ export const POST = createPostApiHandlerWithAuth({
 			ogImage: bookmark.ogImage ?? null,
 			meta_data: bookmark.meta_data,
 			user_id: userId,
+			saved_at: bookmark.saved_at ?? null,
 		}));
 
 		// Queue all bookmarks via pgmq.send_batch using service role client

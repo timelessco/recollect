@@ -65,7 +65,8 @@ CREATE OR REPLACE FUNCTION public.process_instagram_bookmark(
   p_og_image TEXT DEFAULT NULL,
   p_meta_data JSONB DEFAULT '{}'::JSONB,
   p_collection_names TEXT[] DEFAULT '{}'::TEXT[],
-  p_msg_id BIGINT DEFAULT NULL  -- Queue message ID for atomic delete
+  p_msg_id BIGINT DEFAULT NULL,  -- Queue message ID for atomic delete
+  p_saved_at TIMESTAMPTZ DEFAULT NULL  -- Instagram's original save timestamp for ordering
 ) RETURNS JSONB
 LANGUAGE plpgsql
 VOLATILE
@@ -123,8 +124,8 @@ BEGIN
 
   -- Step 2: Insert bookmark into 'everything' table
   -- Note: No upsert - same URL can exist in different collections (by design)
-  INSERT INTO everything (url, user_id, type, title, description, "ogImage", meta_data, trash)
-  VALUES (p_url, p_user_id, p_type, p_title, p_description, p_og_image, p_meta_data, false)
+  INSERT INTO everything (url, user_id, type, title, description, "ogImage", meta_data, trash, inserted_at)
+  VALUES (p_url, p_user_id, p_type, p_title, p_description, p_og_image, p_meta_data, false, COALESCE(p_saved_at, NOW()))
   RETURNING id INTO v_bookmark_id;
 
   -- Step 3: Manage junction table (exclusive model)
@@ -166,8 +167,8 @@ END;
 $$;
 
 -- Only service_role can call (worker uses service role)
-REVOKE ALL ON FUNCTION public.process_instagram_bookmark(TEXT, UUID, TEXT, TEXT, TEXT, TEXT, JSONB, TEXT[], BIGINT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.process_instagram_bookmark(TEXT, UUID, TEXT, TEXT, TEXT, TEXT, JSONB, TEXT[], BIGINT) TO service_role;
+REVOKE ALL ON FUNCTION public.process_instagram_bookmark(TEXT, UUID, TEXT, TEXT, TEXT, TEXT, JSONB, TEXT[], BIGINT, TIMESTAMPTZ) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.process_instagram_bookmark(TEXT, UUID, TEXT, TEXT, TEXT, TEXT, JSONB, TEXT[], BIGINT, TIMESTAMPTZ) TO service_role;
 
 COMMENT ON FUNCTION public.process_instagram_bookmark IS
 'Atomic Instagram bookmark processing with queue message deletion. Called by Edge Function worker.';
