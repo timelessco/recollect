@@ -1369,7 +1369,6 @@ Use this checklist before submitting any PR. Check each item to ensure your code
 - [ ] Uses `apiWarn` for user errors (4xx)
 - [ ] Uses `apiError` for system errors (5xx)
 - [ ] Includes comprehensive API documentation comment block
-
 - [ ] Error handling in try/catch block (if manual handler, helpers handle it automatically)
 - [ ] Sentry integration for system errors only
 - [ ] Route constant defined (`const ROUTE = "..."`)
@@ -1421,7 +1420,6 @@ Use this checklist before submitting any PR. Check each item to ensure your code
 - [ ] Migration includes header comments explaining purpose
 - [ ] Complex logic includes inline comments
 - [ ] API routes include API documentation block
-
 - [ ] Functions include JSDoc comments where helpful
 - [ ] Database objects have `COMMENT ON` statements
 
