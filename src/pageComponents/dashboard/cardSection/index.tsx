@@ -424,7 +424,7 @@ const CardSection = ({
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"shadow-custom-8": cardTypeCondition === viewValues.moodboard,
+			"shadow-custom-8 rounded-lg": cardTypeCondition === viewValues.moodboard,
 		});
 
 		const playSvgClassName = classNames({
@@ -608,7 +608,7 @@ const CardSection = ({
 	};
 
 	const moodboardAndCardInfoWrapperClass = classNames({
-		"card-moodboard-info-wrapper space-y-[6px] px-2 py-3 dark:group-hover:bg-gray-alpha-100 duration-150 transition-all": true,
+		"card-moodboard-info-wrapper space-y-[6px] px-2 py-3 dark:group-hover:bg-gray-alpha-100 rounded-b-lg duration-150 transition-all": true,
 		grow: cardTypeCondition === viewValues.card,
 	});
 
