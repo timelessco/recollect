@@ -61,6 +61,12 @@ Use `docs/instagram-sync/setup-production-cron.sql`:
 
 Or run directly:
 
+> **Prerequisites**: Before running the SQL below, create the `supabase_service_role_key` vault secret:
+>
+> 1. Copy your service role key from **Project Settings → API Keys → Legacy tab**
+> 2. Go to **Project Settings → Vault**
+> 3. Create a new secret named `supabase_service_role_key` with the copied key value
+
 ```sql
 -- Replace [PROJECT_REF] with actual project reference
 SELECT vault.create_secret(

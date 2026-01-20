@@ -91,6 +91,7 @@ public/sitemap-0.xml
 .claude/auto-memory/dirty-files
 **/CLAUDE.md
 _plans/**/*.md
+todos/**/*.md
 .vercel
 .worktrees
 supabase/seed.sql
