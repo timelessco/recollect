@@ -2,7 +2,9 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
+import { createServerServiceClient } from "@/lib/supabase/service";
 import { type Json } from "@/types/database.types";
+import { INSTAGRAM_IMPORTS_QUEUE } from "@/utils/constants";
 
 const ROUTE = "instagram-sync";
 
@@ -11,11 +13,21 @@ const InstagramSyncInputSchema = z.object({
 	bookmarks: z
 		.array(
 			z.object({
-				url: z.string(),
+				url: z.url().refine((url) => {
+					try {
+						const parsed = new URL(url);
+						return (
+							parsed.hostname === "instagram.com" ||
+							parsed.hostname === "www.instagram.com"
+						);
+					} catch {
+						return false;
+					}
+				}, "Must be a valid Instagram URL"),
 				title: z.string().optional().default(""),
 				description: z.string().optional().default(""),
 				ogImage: z.string().nullable().optional(),
-				type: z.string().default("instagram"),
+				type: z.literal("instagram").default("instagram"),
 				meta_data: z.record(z.string(), z.unknown()).optional().default({}),
 				// sort_index is ignored per spec - included only for compatibility
 				sort_index: z.string().optional(),
@@ -34,7 +46,7 @@ export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: InstagramSyncInputSchema,
 	outputSchema: InstagramSyncOutputSchema,
-	handler: async ({ data, supabase, user, route }) => {
+	handler: async ({ data, user, route }) => {
 		const userId = user.id;
 
 		console.log(`[${route}] Queueing ${data.bookmarks.length} bookmarks`, {
@@ -52,12 +64,14 @@ export const POST = createPostApiHandlerWithAuth({
 			user_id: userId,
 		}));
 
-		// Queue all bookmarks via pgmq.send_batch
-		const pgmqSupabase = supabase.schema("pgmq_public");
+		// Queue all bookmarks via pgmq.send_batch using service role client
+		// (authenticated users don't have direct queue access for security)
+		const serviceClient = await createServerServiceClient();
+		const pgmqSupabase = serviceClient.schema("pgmq_public");
 		const { data: queueResults, error: queueError } = await pgmqSupabase.rpc(
 			"send_batch",
 			{
-				queue_name: "q_instagram_imports",
+				queue_name: INSTAGRAM_IMPORTS_QUEUE,
 				messages: messages as unknown as Json[],
 				sleep_seconds: 0,
 			},
