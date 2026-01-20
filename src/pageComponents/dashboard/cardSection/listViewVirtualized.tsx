@@ -2,17 +2,17 @@ import { type Virtualizer } from "@tanstack/react-virtual";
 
 import { viewValues } from "../../../utils/constants";
 
-type ListViewVirtualizedProps = {
+type SingleRowViewVirtualizedProps = {
 	rowVirtualizer: Virtualizer<HTMLElement, Element>;
 	cardTypeCondition: unknown;
 	renderOption: (index: number) => React.ReactNode;
 };
 
-export const ListViewVirtualized = ({
+export const SingleRowViewVirtualized = ({
 	rowVirtualizer,
 	cardTypeCondition,
 	renderOption,
-}: ListViewVirtualizedProps) => (
+}: SingleRowViewVirtualizedProps) => (
 	<>
 		{rowVirtualizer.getVirtualItems().map((virtualRow) => {
 			const rowIndex = Math.floor(virtualRow.index / 1);

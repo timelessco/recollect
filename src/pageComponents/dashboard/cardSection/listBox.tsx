@@ -48,7 +48,7 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 
 import { CardViewVirtualized } from "./cardViewVirtualized";
-import { ListViewVirtualized } from "./listViewVirtualized";
+import { SingleRowViewVirtualized } from "./listViewVirtualized";
 import { MoodboardViewVirtualized } from "./moodboardViewVirtualized";
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
@@ -338,7 +338,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 								getScrollElement={getScrollElement}
 							/>
 						) : (
-							<ListViewVirtualized
+							<SingleRowViewVirtualized
 								rowVirtualizer={rowVirtualizer}
 								cardTypeCondition={cardTypeCondition}
 								renderOption={renderOption}
