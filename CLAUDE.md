@@ -58,51 +58,13 @@ Project-specific guidance for Claude Code. Generic rules are in `~/.claude/CLAUD
 
 ## References
 
+- [`docs/project_overview.md`](./docs/project_overview.md) - Tech stack, features, architecture
+- [`docs/project_structure.md`](./docs/project_structure.md) - Directory layout, file conventions
 - [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md)
 - [`docs/code_style_conventions.md`](./docs/code_style_conventions.md)
 - [`docs/frontend_rules.md`](./docs/frontend_rules.md)
 - [`docs/sentry_rules.md`](./docs/sentry_rules.md)
-- [`docs/project_overview.md`](./docs/project_overview.md)
-- [`docs/project_structure.md`](./docs/project_structure.md)
 - [`docs/suggested_commands.md`](./docs/suggested_commands.md)
-
-## Project Overview
-
-Recollect is an open-source bookmark, images, and documents manager built with:
-
-- Next.js 16.1.0 (React 19.2.3)
-- TypeScript 5.9.3 (strict mode)
-- Supabase SSR (@supabase/ssr)
-- TailwindCSS 4.1.18
-- Zustand 5.0.9 & React Query 5.90.12
-
-### Key Features
-
-- Bookmark, image, and document management
-- Collections with public/private sharing
-- AI-powered image descriptions (Google Gemini)
-- Drag-and-drop interface
-- Full-text search
-- Category management with many-to-many relationships
-
-## Key Dependencies
-
-| Category   | Package               | Version |
-| ---------- | --------------------- | ------- |
-| Framework  | next                  | 16.1.0  |
-| React      | react, react-dom      | 19.2.3  |
-| TypeScript | typescript            | 5.9.3   |
-| Styling    | tailwindcss           | 4.1.18  |
-| Backend    | @supabase/ssr         | 0.8.0   |
-| State      | zustand               | 5.0.9   |
-| Data       | @tanstack/react-query | 5.90.12 |
-| Forms      | react-hook-form       | 7.68.0  |
-| Validation | zod                   | 4.2.1   |
-| UI         | @base-ui/react        | 1.0.0   |
-| UI         | @ariakit/react        | 0.3.7   |
-| UI         | react-aria            | 3.45.0  |
-| Monitoring | @sentry/nextjs        | 10.32.0 |
-| State      | immer                 | 11.1.3  |
 
 ## Development Commands
 
