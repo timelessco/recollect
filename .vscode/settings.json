@@ -82,5 +82,8 @@
 		"typescriptreact": "javascript",
 		"javascriptreact": "javascript"
 	},
-	"tailwindCSS.classFunctions": ["cn"]
+	"tailwindCSS.classFunctions": ["cn"],
+
+	// Deno for Supabase Edge Functions
+	"deno.enablePaths": ["supabase/functions"]
 }

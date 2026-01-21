@@ -161,6 +161,7 @@ const styles: MentionsInputProps["style"] = {
 		width: "100%",
 		padding: "6px",
 		borderRadius: 11,
+		height: 30,
 	},
 	"&multiLine": {
 		control: {},

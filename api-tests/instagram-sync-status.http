@@ -1,0 +1,11 @@
+### Get Instagram Sync Status (Success)
+# Returns: { pending: N, failed: N, failures: [...] }
+# - pending: messages waiting in queue
+# - failed: messages archived with failure reason
+# - failures: array of { msg_id, url, failure_reason, failed_at }
+GET {{$dotenv API_BASE_URL}}/instagram/sync/status
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+
+### Auth Error - No Token
+# Expected: 401 Unauthorized
+GET {{$dotenv API_BASE_URL}}/instagram/sync/status
