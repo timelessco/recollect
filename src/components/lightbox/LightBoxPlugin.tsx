@@ -258,7 +258,7 @@ const MyComponent = () => {
 								<p
 									className={`${
 										showMore ? "" : "line-clamp-4"
-									} text-13 leading-[139%] font-normal tracking-[0.01em] text-clip text-gray-800`}
+									} text-13 leading-[138%] font-normal tracking-[0.01em] text-clip text-gray-700`}
 									ref={descriptionRef}
 									tabIndex={-1}
 								>
@@ -268,7 +268,7 @@ const MyComponent = () => {
 									)}
 									{showMore && isOverflowing && (
 										<button
-											className="inline text-13 leading-[138%] tracking-[0.01em] text-gray-800"
+											className="ml-1 inline text-13 leading-[138%] tracking-[0.01em] text-gray-700"
 											onClick={() => setShowMore(false)}
 											type="button"
 										>
@@ -278,7 +278,7 @@ const MyComponent = () => {
 								</p>
 								{isOverflowing && !showMore && (
 									<button
-										className="absolute right-0 bottom-0 bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-800"
+										className="absolute right-0 bottom-0 inline bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-700"
 										onClick={() => setShowMore(true)}
 										type="button"
 									>

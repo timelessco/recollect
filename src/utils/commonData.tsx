@@ -4,7 +4,7 @@ import FolderIcon from "../icons/folderIcon";
 import HomeIconGray from "../icons/homeIconGray";
 import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inboxIconGray";
-import LinkIcon from "../icons/linkIcon";
+import { LinkIcon } from "../icons/link-icon";
 import SettingsIcon from "../icons/settingsIcon";
 import XIcon from "../icons/social/x";
 import TrashIconGray from "../icons/trashIconGray";

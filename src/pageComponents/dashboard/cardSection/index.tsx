@@ -20,8 +20,8 @@ import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
+import { LinkIcon } from "../../../icons/link-icon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
-import LinkIcon from "../../../icons/linkIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import VideoIcon from "../../../icons/videoIcon";
 import {
@@ -477,12 +477,12 @@ const CardSection = ({
 			isBookmarkImage(item?.type);
 		const size = 15;
 		const favIconFigureClassName = classNames({
-			"h-[14] w-[14px] mt-px": true,
+			"h-[15px] w-[15px]": true,
 		});
 		if (favIconErrorImgs?.includes(item?.id)) {
 			return (
-				<figure className="card-icon p-0.5 text-gray-1000">
-					<LinkIcon />
+				<figure className="card-icon text-gray-1000">
+					<LinkIcon className="h-4 w-4" />
 				</figure>
 			);
 		}
@@ -524,7 +524,7 @@ const CardSection = ({
 
 		if (isVideo) {
 			return (
-				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
+				<figure className="card-icon rounded-sm text-gray-1000">
 					<VideoIcon size="15" />
 				</figure>
 			);
@@ -532,7 +532,7 @@ const CardSection = ({
 
 		if (isDocument) {
 			return (
-				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
+				<figure className="card-icon rounded-sm text-gray-1000">
 					<FolderIcon size="15" />
 				</figure>
 			);
@@ -540,15 +540,15 @@ const CardSection = ({
 
 		if (isImage) {
 			return (
-				<figure className="card-icon rounded p-0.5 text-gray-1000">
+				<figure className="card-icon rounded text-gray-1000">
 					<ImageIcon size={`${size}`} />
 				</figure>
 			);
 		}
 
 		return (
-			<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
-				<LinkIcon />
+			<figure className="card-icon rounded-sm text-gray-1000">
+				<LinkIcon className="h-[15px] w-[15px]" />
 			</figure>
 		);
 	};
@@ -569,7 +569,7 @@ const CardSection = ({
 		}
 
 		return (
-			<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
+			<div className="ml-1 flex items-center text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
 				<p className="mr-1">in</p>
 				<CategoryBadges categories={displayCategories} maxVisible={2} />
 			</div>

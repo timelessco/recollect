@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { isEmpty, isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import AddBoomarkInputIcon from "../../icons/miscellaneousIcons/addBoomarkInputIcon";
+import { AddBoomarkInputIcon } from "../../icons/miscellaneousIcons/addBoomarkInputIcon";
 import PlusIconWhite from "../../icons/plusIconWhite";
 import { type FileType } from "../../types/componentTypes";
 import {
@@ -100,7 +100,7 @@ const AddBookmarkDropdown = ({
 							}
 						}}
 					>
-						<AddBoomarkInputIcon className="absolute top-[11px] left-[14px] z-1" />
+						<AddBoomarkInputIcon className="absolute top-[11px] left-[14px] z-1 h-4 w-4" />
 					</Button>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<Input

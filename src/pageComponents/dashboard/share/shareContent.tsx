@@ -16,8 +16,8 @@ import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
-import GlobeIcon from "../../../icons/globeIcon";
-import LinkIcon from "../../../icons/linkIcon";
+import GlobeIcon from "../../../icons/globe-icon";
+import { LinkIcon } from "../../../icons/link-icon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
@@ -143,7 +143,7 @@ const AccessUserInfo = (props: {
 	const { userProfilePicData } = useGetUserProfilePic(item?.userEmail);
 
 	return (
-		<div className="flex items-center justify-between px-2 py-[5px]">
+		<div className="flex items-center justify-between px-2 py-[7.5px]">
 			<div className="flex items-center justify-between">
 				{!isNull(userProfilePicData?.data) &&
 				userProfilePicData?.data[0]?.profile_pic ? (
@@ -151,7 +151,7 @@ const AccessUserInfo = (props: {
 					// eslint-disable-next-line @next/next/no-img-element
 					<img
 						alt="profile-pic"
-						className="mr-1 h-5 w-5 rounded-full object-cover"
+						className="h-5 w-5 rounded-full object-cover"
 						src={userProfilePicData?.data[0]?.profile_pic}
 					/>
 				) : (
@@ -354,8 +354,8 @@ const ShareContent = (props: ShareContentProps) => {
 				</div>
 				<div className="mx-2 flex items-end justify-between border-y py-[15.5px]">
 					<div className="flex items-center">
-						<figure className="text-gray-1000">
-							<GlobeIcon />
+						<figure className="flex items-center justify-center text-gray-1000">
+							<GlobeIcon className="ml-0.5 h-4 w-4" />
 						</figure>
 						<p className="ml-[6px] text-13 leading-[15px] font-450 text-gray-800">
 							Anyone with link
@@ -407,7 +407,7 @@ const ShareContent = (props: ShareContentProps) => {
 					)}
 				</div>
 				<div
-					className={`flex items-center p-2 ${
+					className={`flex items-center px-2 py-[7.5px] ${
 						currentCategory?.is_public
 							? "cursor-pointer"
 							: "cursor-not-allowed opacity-50"
@@ -423,7 +423,7 @@ const ShareContent = (props: ShareContentProps) => {
 					tabIndex={0}
 				>
 					<figure className="text-gray-1000">
-						<LinkIcon />
+						<LinkIcon className="ml-0.5 h-4 w-4" />
 					</figure>
 					<p className="ml-[6px] text-13 leading-[15px] font-450 text-[#007bf4e5]">
 						{linkCopied ? "Link copied" : "Copy link"}

@@ -267,6 +267,52 @@ const Settings = () => {
 				<div className="mt-[44px] flex flex-row space-x-3">
 					<form className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
 						<LabelledComponent
+							label="Display name"
+							labelClassName={settingsInputLabelClassName}
+						>
+							<div className={`${settingsInputContainerClassName} w-full`}>
+								<Input
+									autoFocus={false}
+									errorClassName="absolute  top-[29px]"
+									tabIndex={-1}
+									{...displayNameRegister("displayname", {
+										required: {
+											value: true,
+											message: "Name cannot be empty",
+										},
+										maxLength: {
+											value: 100,
+											message: "Name must not exceed 100 characters",
+										},
+										pattern: {
+											value: DISPLAY_NAME_CHECK_PATTERN,
+											message: "Should not have special charecters",
+										},
+									})}
+									className={settingsInputClassName}
+									errorText={displaynameError?.displayname?.message ?? ""}
+									id="displayname"
+									isError={Boolean(displaynameError?.displayname)}
+									placeholder="Enter display name"
+								/>
+								<Button
+									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+										displaynameValue !== originalDisplayname
+											? ""
+											: "pointer-events-none invisible"
+									}`}
+									onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
+								>
+									Save
+								</Button>
+							</div>
+						</LabelledComponent>
+					</form>
+					<form
+						className="w-1/2"
+						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
+					>
+						<LabelledComponent
 							label="Username"
 							labelClassName={settingsInputLabelClassName}
 						>
@@ -306,52 +352,6 @@ const Settings = () => {
 											: "pointer-events-none invisible"
 									}`}
 									onClick={handleSubmit(onSubmit)}
-								>
-									Save
-								</Button>
-							</div>
-						</LabelledComponent>
-					</form>
-					<form
-						className="w-1/2"
-						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
-					>
-						<LabelledComponent
-							label="Display name"
-							labelClassName={settingsInputLabelClassName}
-						>
-							<div className={`${settingsInputContainerClassName} w-full`}>
-								<Input
-									autoFocus={false}
-									errorClassName="absolute  top-[29px]"
-									tabIndex={-1}
-									{...displayNameRegister("displayname", {
-										required: {
-											value: true,
-											message: "Name cannot be empty",
-										},
-										maxLength: {
-											value: 100,
-											message: "Name must not exceed 100 characters",
-										},
-										pattern: {
-											value: DISPLAY_NAME_CHECK_PATTERN,
-											message: "Should not have special charecters",
-										},
-									})}
-									className={settingsInputClassName}
-									errorText={displaynameError?.displayname?.message ?? ""}
-									id="displayname"
-									isError={Boolean(displaynameError?.displayname)}
-									placeholder="Enter display name"
-								/>
-								<Button
-									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
-										displaynameValue !== originalDisplayname
-											? ""
-											: "pointer-events-none invisible"
-									}`}
-									onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
 								>
 									Save
 								</Button>

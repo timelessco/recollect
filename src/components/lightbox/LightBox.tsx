@@ -277,7 +277,7 @@ export const CustomLightBox = ({
 
 				// Right: Side pane toggle button
 				<div
-					className="group flex h-7 w-7 items-center justify-center pt-[7px] pr-4"
+					className="group mt-[7px] mr-4 flex h-7 w-7 items-center justify-center"
 					key="right-section"
 				>
 					<button

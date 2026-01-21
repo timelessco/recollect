@@ -1,41 +1,36 @@
-const AddBoomarkInputIcon = ({ className = "" }) => (
-	<svg
-		className={className}
-		fill="none"
-		height="16"
-		viewBox="0 0 17 16"
-		width="17"
-		xmlns="http://www.w3.org/2000/svg"
-	>
-		<g clipPath="url(#clip0_8563_33222)">
+import { Icon, type IconProps } from "@/components/atoms/icon";
+
+export const AddBoomarkInputIcon = (props: IconProps) => (
+	<Icon {...props} fill="none" viewBox="0 0 16 16">
+		<g
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			clipPath="url(#a)"
+		>
 			<rect
-				height="10.0149"
-				rx="2.5"
-				stroke="currentColor"
-				transform="rotate(7.33079 7.15575 3.55971)"
-				width="8.58873"
-				x="7.15575"
-				y="3.55971"
+				width="9.589"
+				height="11.015"
+				x="6.585"
+				y="3"
+				fill="#F5F5F5"
+				rx="3"
+				transform="rotate(7.33 6.585 3)"
 			/>
 			<rect
-				fill="var(--color-gray-100)"
-				height="11.1327"
-				rx="2.5"
-				stroke="currentColor"
-				transform="rotate(-13.8817 0.744027 3.85372)"
-				width="9.37244"
-				x="0.744027"
-				y="3.85372"
+				width="10.372"
+				height="12.133"
+				y="3.488"
+				fill="#F5F5F5"
+				rx="3"
+				transform="rotate(-13.882 0 3.488)"
 			/>
-			<path d="M6.01514 5.75L7.24241 10.25" stroke="currentColor" />
-			<path d="M8.87891 7.38672L4.37891 8.61399" stroke="currentColor" />
+			<path d="m5.876 5.75 1.228 4.5M8.74 7.387l-4.5 1.227" />
 		</g>
 		<defs>
-			<clipPath id="clip0_8563_33222">
-				<rect fill="white" height="16" transform="translate(0.5)" width="16" />
+			<clipPath id="a">
+				<path fill="#fff" d="M0 0h16v16H0z" />
 			</clipPath>
 		</defs>
-	</svg>
+	</Icon>
 );
-
-export default AddBoomarkInputIcon;
