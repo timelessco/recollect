@@ -7,7 +7,7 @@ Import Instagram saved posts into Recollect bookmarks using a queue-based proces
 ```text
 ┌─────────────────┐     ┌──────────────────┐     ┌───────────────────┐     ┌──────────────┐
 │   REST API      │     │   PGMQ Queue     │     │  Edge Function    │     │   Database   │
-│ /api/instagram/ │ ──► │ q_instagram_     │ ──► │ process-instagram │ ──► │  everything  │
+│ /api/instagram/ │ ──► │ instagram_     │ ──► │ process-instagram │ ──► │  everything  │
 │     sync        │     │    imports       │     │     -imports      │     │  categories  │
 └─────────────────┘     └──────────────────┘     └───────────────────┘     └──────────────┘
         │                       │                         │                       │
@@ -22,7 +22,7 @@ Import Instagram saved posts into Recollect bookmarks using a queue-based proces
 | Component     | Path                                                       | Purpose                                        |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------- |
 | API Endpoint  | `src/app/api/instagram/sync/route.ts`                      | Validates & queues up to 500 bookmarks         |
-| PGMQ Queue    | `q_instagram_imports`                                      | Async processing with built-in retry           |
+| PGMQ Queue    | `instagram_imports`                                        | Async processing with built-in retry           |
 | Edge Function | `supabase/functions/process-instagram-imports/`            | Worker: reads 5 msgs, 30s visibility timeout   |
 | RPC Function  | `process_instagram_bookmark`                               | Atomic: creates category + bookmark + junction |
 | Migration     | `supabase/migrations/20260107110628_instagram_imports.sql` | Creates queue, RPC, RLS policies               |
@@ -58,7 +58,7 @@ pnpm dev              # Dev server (already running)
 
    ```bash
    LOCAL_DB="postgresql://postgres:postgres@localhost:54322/postgres"
-   psql "$LOCAL_DB" -c "SELECT msg_id, message->>'url' FROM pgmq_public.read('q_instagram_imports', 0, 5);"
+   psql "$LOCAL_DB" -c "SELECT msg_id, message->>'url' FROM pgmq_public.read('instagram_imports', 0, 5);"
    ```
 
 5. **Start Edge Function**: `npx supabase functions serve process-instagram-imports`
@@ -78,24 +78,23 @@ For details and troubleshooting, see [CRON-SETUP.md](./CRON-SETUP.md).
 
 ## Production Deployment
 
+Migrations are applied automatically when merging to dev/main branches.
+
 ```bash
-# 1. Deploy Edge Function
-npx supabase functions deploy process-instagram-imports
-
-# 2. Push migration
-npx supabase db push
-
-# 3. Setup pg_cron (manual - see CRON-SETUP.md)
+# Deploy Edge Function
+npx supabase functions deploy process-instagram-imports --project-ref <project-ref>
 ```
+
+For pg_cron setup and verification steps, see [CRON-SETUP.md](./CRON-SETUP.md).
 
 ## Monitoring
 
 ```sql
 -- Queue metrics
-SELECT * FROM pgmq.metrics('q_instagram_imports');
+SELECT * FROM pgmq.metrics('instagram_imports');
 
 -- Archived (failed) messages
-SELECT * FROM pgmq.a_q_instagram_imports ORDER BY archived_at DESC LIMIT 10;
+SELECT * FROM pgmq.a_instagram_imports ORDER BY archived_at DESC LIMIT 10;
 
 -- Recent Instagram bookmarks
 SELECT id, url, title, created_at FROM everything
@@ -107,7 +106,7 @@ WHERE type = 'instagram' ORDER BY id DESC LIMIT 10;
 ### Edge Function not processing
 
 1. Check function is running: `curl http://localhost:54321/functions/v1/process-instagram-imports`
-2. Check queue has messages: `SELECT * FROM pgmq_public.read('q_instagram_imports', 0, 5);`
+2. Check queue has messages: `SELECT * FROM pgmq_public.read('instagram_imports', 0, 5);`
 3. Check function logs in terminal
 
 ### Queue messages not being deleted
