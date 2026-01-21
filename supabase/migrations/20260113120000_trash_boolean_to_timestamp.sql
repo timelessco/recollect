@@ -9,6 +9,8 @@
 -- Affected: everything table, search_bookmarks_url_tag_scope function, RLS policies
 -- ============================================================================
 
+BEGIN;
+
 -- ============================================================================
 -- PART 1: Drop RLS policies that depend on trash column FIRST
 -- ============================================================================
@@ -245,3 +247,5 @@ COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, cha
 -- 3. Verify non-trashed items are NULL:
 --    SELECT id, trash FROM public.everything WHERE trash IS NULL LIMIT 5;
 -- ============================================================================
+
+COMMIT;
