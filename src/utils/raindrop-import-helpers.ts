@@ -56,13 +56,14 @@ export async function processRaindropCategories(
 	const categories = Array.from(new Set(allCategories));
 
 	// get existing categories
+	// Note: Check only by category_name, not icon/icon_color, since the unique
+	// constraint is on (user_id, category_name). This prevents duplicate key errors
+	// when a category with the same name but different icon already exists.
 	const { data: existingCategories, error: existingCategoriesError } =
 		await supabase
 			.from(CATEGORIES_TABLE_NAME)
 			.select("*")
 			.in("category_name", categories)
-			.in("icon", ["droplets-02"])
-			.in("icon_color", ["#ffffff"])
 			.eq("user_id", userId);
 
 	if (existingCategoriesError) {
@@ -86,7 +87,8 @@ export async function processRaindropCategories(
 		existingCategories?.map((category) => category.category_name),
 	);
 
-	// this is the list of categories that need to be inserted
+	// Filter out categories that already exist (regardless of icon/color)
+	// Bookmarks will be associated with the user's existing categories
 	const newCategories = categories.filter(
 		(category) => !existingCategoryNames.has(category),
 	);
