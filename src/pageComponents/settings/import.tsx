@@ -6,6 +6,7 @@ import Button from "../../components/atoms/button";
 import { Spinner } from "../../components/spinner";
 import { InfoIcon } from "../../icons/infoIcon";
 import { RaindropIcon } from "../../icons/raindrop-icon";
+import { useMiscellaneousStore } from "../../store/componentStore";
 
 import { useImportBookmarksMutation } from "@/async/mutationHooks/bookmarks/use-import-bookmarks-mutation";
 import { saveButtonClassName } from "@/utils/commonClassNames";
@@ -16,6 +17,10 @@ export const ImportBookmarks = () => {
 	const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
 	const [dragActive, setDragActive] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	const setCurrentSettingsPage = useMiscellaneousStore(
+		(state) => state.setCurrentSettingsPage,
+	);
 
 	const { importBookmarksMutation } = useImportBookmarksMutation();
 	const uploading = importBookmarksMutation.isPending
@@ -207,14 +212,13 @@ export const ImportBookmarks = () => {
 					) : (
 						<>
 							<span>Please add your own AI</span>
-							<a
+							<button
 								className="ml-1 underline"
-								href="https://makersuite.google.com/app/apikey"
-								rel="noopener noreferrer"
-								target="_blank"
+								onClick={() => setCurrentSettingsPage("ai-features")}
+								type="button"
 							>
 								API key
-							</a>
+							</button>
 							<span className="ml-1">
 								as the free account only adds AI optimisation for the first 1000
 								bookmarks
