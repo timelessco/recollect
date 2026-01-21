@@ -264,10 +264,6 @@ export default async function handler(
 				imageOcrValue = " ";
 			}
 
-			console.log("imageOcrValue", imageOcrValue);
-			console.log("imageOcrValue type", typeof imageOcrValue);
-			console.log("imageOcrValue is null", imageOcrValue === null);
-
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
