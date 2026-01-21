@@ -23,8 +23,7 @@
 		"public",
 		"CHANGELOG.md",
 		"pnpm-lock.yaml",
-		"project-words.txt",
-		"**/CLAUDE.md"
+		"project-words.txt"
 	],
 	"words": [
 		"Abhishek",
