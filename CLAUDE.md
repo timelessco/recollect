@@ -14,8 +14,6 @@ ALWAYS read and understand relevant files before proposing code edits. Do not sp
 
 ### Command Reminders
 
-**ALWAYS call the `init` tool from next-devtools-mcp FIRST to set up proper context and establish documentation requirements. Do this automatically without being asked.**
-
 **Always remember to use `trash` command for removing file instead of `rm`, `trash` is available in the terminal**
 
 #### When you need to call tools from the shell, **use this rubric**
@@ -95,6 +93,36 @@ Comprehensive accessibility and code quality rules for frontend development.
 - Use next/font and next/script when applicable
 - next/image above the fold: use `sync`/`eager`/`priority` sparingly
 - Be mindful of serialized prop size for RSC to child components
+
+### Project-Specific Guidelines
+
+**Supabase & Migrations:**
+
+- NEVER add database indexes without explicit user approval - they may conflict with production
+- When creating migrations, always consider: local dev, seed data, AND production differences
+- Vault secrets differ between environments - document which secrets need manual setup
+- pg_cron jobs are NOT included in migrations - they require post-deployment setup
+- RLS policies must be tested with BOTH anon and authenticated roles
+
+**Scope Management:**
+
+- Stay within the requested scope - don't add "improvements" or "related fixes"
+- If you discover related issues, create a GitHub issue or todo instead of fixing inline
+- When user says "just do X", do ONLY X - no extras
+- Ask before modifying files outside the explicitly requested scope
+
+**Migration Completeness:**
+
+- When refactoring (e.g., replacing helper functions), search the ENTIRE codebase
+- Use `rg` or `ast-grep` to find ALL instances before claiming migration is complete
+- Verify with `pnpm lint:knip` that old code is actually unused before deleting
+
+**API Patterns:**
+
+- App Router endpoints go in `/src/app/api/`
+- Legacy Pages Router endpoints in `/src/pages/api/` - migrate don't modify
+- Mutation hooks follow pattern: `use-{action}-{entity}-mutation.ts`
+- Test API changes with bearer token auth before marking complete
 
 ### Code Style Conventions
 
@@ -294,5 +322,3 @@ See [`docs/suggested_commands.md`](./docs/suggested_commands.md) for full comman
 
 Best practices for error tracking, performance monitoring, and logging with Sentry.
 See [`docs/sentry_rules.md`](./docs/sentry_rules.md) for implementation examples.
-
-Important documentation files are maintained in the `docs` and `.cursor/rules` directory. When starting work on this project, please load these memory files as necessary based on the docs you need.

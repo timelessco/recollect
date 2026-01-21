@@ -426,3 +426,6 @@ export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
 export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
 export const WHITE_COLOR = colorPickerColors[0];
 export const BLACK_COLOR = colorPickerColors[1];
+
+// Queue names (sync with SQL migrations and Edge Functions)
+export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";
