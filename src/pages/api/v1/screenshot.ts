@@ -143,13 +143,14 @@ export default async function handler(
 
 		// ai-enrichment
 		const caption = await imageToText(ogImage, supabase, user_id);
-		if (caption !== null) {
+		if (caption) {
 			newMeta.image_caption = caption;
 		} else {
 			console.error("imageToText returned empty result", url);
 		}
 
-		const ocrResult = await ocr(ogImage, supabase, user_id);
+		// we are checking for "null" because the ocr function returns "null" if there is no text in the image
+		const ocrResult = (await ocr(ogImage, supabase, user_id)) === "null" && " ";
 		if (ocrResult) {
 			newMeta.ocr = ocrResult;
 		} else {

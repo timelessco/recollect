@@ -259,6 +259,15 @@ export default async function handler(
 				userId,
 			);
 
+			// we are checking for "null" because the ocr function returns "null" if there is no text in the image
+			if (imageOcrValue === "null") {
+				imageOcrValue = " ";
+			}
+
+			console.log("imageOcrValue", imageOcrValue);
+			console.log("imageOcrValue type", typeof imageOcrValue);
+			console.log("imageOcrValue is null", imageOcrValue === null);
+
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred

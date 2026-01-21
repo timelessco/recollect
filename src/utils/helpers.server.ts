@@ -151,8 +151,9 @@ const processOcr = async (
 	console.log("[processOcr] Extracting text via OCR:", { url, ogImage });
 	// Extract text from the image
 	try {
-		const ocrResult = await ocr(ogImage, supabase, userId);
-		if (ocrResult === null) {
+		// we are checking for "null" because the ocr function returns "null" if there is no text in the image
+		const ocrResult = (await ocr(ogImage, supabase, userId)) === "null" && " ";
+		if (!ocrResult) {
 			console.error("[processOcr] OCR returned empty result:", {
 				url,
 				ogImage,

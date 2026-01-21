@@ -33,6 +33,11 @@ const notVideoLogic = async (
 			// Get OCR using the centralized function
 			imageOcrValue = await ocr(ogImage, supabase, userId);
 
+			// we are checking for "null" because the ocr function returns "null" if there is no text in the image
+			if (imageOcrValue === "null") {
+				imageOcrValue = " ";
+			}
+
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(ogImage, supabase, userId);
 		} catch (error) {
