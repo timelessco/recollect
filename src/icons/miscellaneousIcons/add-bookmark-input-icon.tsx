@@ -1,6 +1,6 @@
 import { Icon, type IconProps } from "@/components/atoms/icon";
 
-export const AddBoomarkInputIcon = (props: IconProps) => (
+export const AddBookmarkInputIcon = (props: IconProps) => (
 	<Icon {...props} fill="none" viewBox="0 0 16 16">
 		<g
 			stroke="currentColor"

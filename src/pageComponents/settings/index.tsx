@@ -171,7 +171,6 @@ const Settings = () => {
 		"opacity-50":
 			uploadProfilePicMutation?.isPending || removeProfilePic?.isPending,
 	});
-	console.log(session?.user?.app_metadata?.provider);
 
 	return (
 		<>
