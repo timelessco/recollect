@@ -143,7 +143,7 @@ export default async function handler(
 
 		// ai-enrichment
 		const caption = await imageToText(ogImage, supabase, user_id);
-		if (caption) {
+		if (caption !== null) {
 			newMeta.image_caption = caption;
 		} else {
 			console.error("imageToText returned empty result", url);

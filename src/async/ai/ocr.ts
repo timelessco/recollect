@@ -39,7 +39,7 @@ export const ocr = async (
 
 		// For OCR
 		const ocrPrompt =
-			"Extract all visible text from this image. If there is text, return ONLY the extracted text with no additional commentary. If there is no text visible, return an empty response. Do not say 'There is no text' or similar phrases.";
+			"Extract all visible text from this image. If there is text, return ONLY the extracted text with no additional commentary. If there is no text visible, return null. Do not say 'There is no text' or similar phrases.";
 		const ocrResult = await model.generateContent([
 			ocrPrompt,
 			{
