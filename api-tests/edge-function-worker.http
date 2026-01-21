@@ -1,0 +1,42 @@
+### Health Check (GET)
+# Returns: { status: "ok", queue: "instagram_imports" }
+GET {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+
+### Process Queue (Invoke Worker)
+# If queue empty: { processed: 0, archived: 0, message: "Queue empty" }
+# If messages:    { processed, archived, skipped, retry }
+# - processed: successfully imported bookmarks
+# - archived: failed after max retries or invalid URL
+# - skipped: invalid message shapes (type guard failures)
+# - retry: failed but will retry on next invocation (RPC error, archive error)
+POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+Content-Type: application/json
+
+{}
+
+### Auth Error - No Token
+# Expected: 401 Unauthorized
+POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Content-Type: application/json
+
+{}
+
+### Auth Error - Invalid Token (not service role key)
+# Expected: 401 Unauthorized
+# The worker validates token === SUPABASE_SERVICE_ROLE_KEY
+POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Authorization: Bearer invalid_token_12345
+Content-Type: application/json
+
+{}
+
+### Auth Error - User Token (not service role)
+# Expected: 401 Unauthorized
+# User tokens are not authorized to invoke the worker
+POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{}

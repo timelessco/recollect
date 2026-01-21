@@ -202,8 +202,7 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 					queryKey: [BOOKMARKS_KEY, session?.user?.id],
 				});
 			},
-			showSuccessToast: true,
-			successMessage: "Collection removed",
+			showSuccessToast: false,
 		});
 
 	return { removeCategoryFromBookmarkOptimisticMutation };
