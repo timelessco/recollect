@@ -150,7 +150,11 @@ export default async function handler(
 		}
 
 		// we are checking for "null" because the ocr function returns "null" if there is no text in the image
-		const ocrResult = (await ocr(ogImage, supabase, user_id)) === "null" && " ";
+		let ocrResult = await ocr(ogImage, supabase, user_id);
+		if (ocrResult === "null") {
+			ocrResult = " ";
+		}
+
 		if (ocrResult) {
 			newMeta.ocr = ocrResult;
 		} else {
