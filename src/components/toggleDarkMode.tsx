@@ -25,8 +25,9 @@ export const ToggleDarkMode = () => {
 		{ value: "dark", label: "Dark" },
 	] as const;
 
-	const currentThemeLabel =
-		themeOptions.find((option) => option.value === theme)?.label || "System";
+	const currentThemeLabel = themeOptions.find(
+		(option) => option.value === theme,
+	)?.label;
 
 	return (
 		<div className="pt-10">
