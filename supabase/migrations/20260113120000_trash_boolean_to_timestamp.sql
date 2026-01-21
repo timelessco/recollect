@@ -45,7 +45,19 @@ COMMENT ON COLUMN public.everything.trash IS
 'Soft delete timestamp. NULL means not trashed. When set, indicates when the bookmark was moved to trash.';
 
 -- ============================================================================
--- PART 3: Recreate RLS policies with updated trash condition
+-- PART 3: Create partial indexes for RLS policy optimization
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_everything_trash_null
+ON public.everything(trash)
+WHERE trash IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_everything_make_discoverable
+ON public.everything(make_discoverable)
+WHERE make_discoverable IS NOT NULL;
+
+-- ============================================================================
+-- PART 4: Recreate RLS policies with updated trash condition
 -- ============================================================================
 
 CREATE POLICY "anon_discover_access"
@@ -73,7 +85,7 @@ COMMENT ON POLICY "authenticated_discover_access" ON public.everything IS
 'Allows authenticated users to read bookmarks marked as discoverable and not in trash.';
 
 -- ============================================================================
--- PART 4: Update search_bookmarks_url_tag_scope function
+-- PART 5: Update search_bookmarks_url_tag_scope function
 -- ============================================================================
 
 -- Drop existing function to allow signature change
@@ -233,7 +245,7 @@ COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, cha
 'Bookmark search with URL/tag/category filters. Uses CTEs to avoid N+1 queries when aggregating tags and categories.';
 
 -- ============================================================================
--- PART 5: Post-migration verification queries (for manual testing)
+-- PART 6: Post-migration verification queries (for manual testing)
 -- ============================================================================
 -- Run these after migration to verify:
 --
