@@ -60,7 +60,9 @@ export const ocr = async (
 			console.error("Error incrementing bookmark count");
 		}
 
-		return ocrResult.response.text();
+		return ocrResult.response.text() === "null\n"
+			? "null"
+			: ocrResult.response.text();
 	} catch (error) {
 		console.error("OCR error", error);
 		throw error;
