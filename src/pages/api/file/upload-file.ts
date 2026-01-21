@@ -88,13 +88,9 @@ const videoLogic = async (
 		}
 
 		// Handle OCR processing
+		// OCR returns empty string if no text is found
 		try {
 			ocrData = await ocr(thumbnailUrl?.publicUrl, supabase, userId);
-
-			// we are checking for "null" because the ocr function returns "null" if there is no text in the image
-			if (ocrData === "null") {
-				ocrData = " ";
-			}
 		} catch (error) {
 			console.error("OCR processing failed:", error);
 			Sentry.captureException(error, {

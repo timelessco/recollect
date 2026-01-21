@@ -63,8 +63,8 @@ export const ocr = async (
 			console.error("Error incrementing bookmark count");
 		}
 
-		// Return null if Gemini returns "null" string, otherwise return the OCR text
-		return ocrText;
+		// Return empty string if Gemini returns "null" or no text, otherwise return the OCR text
+		return ocrText === "null" ? " " : ocrText;
 	} catch (error) {
 		console.error("OCR error", error);
 		throw error;

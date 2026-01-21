@@ -253,16 +253,12 @@ export default async function handler(
 
 		try {
 			// Get OCR using the centralized function
+			// Returns empty string if no text is found
 			imageOcrValue = await ocr(
 				imageUrlForMetaDataGeneration,
 				supabase,
 				userId,
 			);
-
-			// we are checking for "null" because the ocr function returns "null" if there is no text in the image
-			if (imageOcrValue === "null") {
-				imageOcrValue = " ";
-			}
 
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(
