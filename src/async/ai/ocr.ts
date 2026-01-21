@@ -50,19 +50,21 @@ export const ocr = async (
 			},
 		]);
 
+		// Call .text() only once - it consumes the response body stream
+		const ocrText = ocrResult.response.text().trim();
+
 		try {
 			// Increment bookmark count, using the function only here not in imageToText,because here it is 2 different function
 			// but it is a one single feature AI summary,so it should be counted only once
-			if (!userApiKey && ocrResult.response.text()) {
+			if (!userApiKey && ocrText) {
 				await incrementBookmarkCount(supabase, userId);
 			}
 		} catch {
 			console.error("Error incrementing bookmark count");
 		}
 
-		return ocrResult.response.text() === "null\n"
-			? "null"
-			: ocrResult.response.text();
+		// Return null if Gemini returns "null" string, otherwise return the OCR text
+		return ocrText;
 	} catch (error) {
 		console.error("OCR error", error);
 		throw error;
