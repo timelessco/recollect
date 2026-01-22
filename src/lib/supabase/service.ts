@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 import { SUPABASE_SERVICE_KEY, SUPABASE_URL } from "./constants";
 import { type Database } from "@/types/database.types";
@@ -11,27 +10,11 @@ import { type Database } from "@/types/database.types";
  *
  * WARNING: Never expose this client to the browser.
  */
-export const createServerServiceClient = async () => {
-	const cookieStore = await cookies();
-
-	return createSupabaseServerClient<Database>(
-		SUPABASE_URL,
-		SUPABASE_SERVICE_KEY,
-		{
-			cookies: {
-				getAll() {
-					return cookieStore.getAll();
-				},
-				setAll(cookiesToSet) {
-					try {
-						for (const { name, value, options } of cookiesToSet) {
-							cookieStore.set(name, value, options);
-						}
-					} catch {
-						// Can be ignored if middleware refreshes sessions
-					}
-				},
-			},
+export const createServerServiceClient = async () =>
+	createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+		auth: {
+			autoRefreshToken: false,
+			persistSession: false,
+			detectSessionInUrl: false,
 		},
-	);
-};
+	});

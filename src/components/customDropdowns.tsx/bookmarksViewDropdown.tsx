@@ -212,8 +212,8 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			</div>
 			{renderDropdownHeader("Show in Cards")}
 			<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
-			{bookmarksViewValue === viewValues.card ||
-			bookmarksViewValue === viewValues.moodboard ? (
+			{(bookmarksViewValue === viewValues.card ||
+				bookmarksViewValue === viewValues.moodboard) && (
 				<div className="flex items-center justify-between px-2 py-[5.5px]">
 					<p className="text-13 leading-[14px] font-450 text-gray-800">
 						Columns
@@ -235,8 +235,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 						/>
 					</div>
 				</div>
-			) : (
-				<div className="h-[34px] w-[162px]" />
 			)}
 		</>
 	);
