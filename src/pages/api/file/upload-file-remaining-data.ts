@@ -27,12 +27,15 @@ const notVideoLogic = async (
 	const ogImage = publicUrl;
 	let imageCaption = null;
 	let imageOcrValue = null;
+	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
 
 	if (ogImage) {
 		try {
 			// Get OCR using the centralized function
-			// Returns empty string if no text is found
-			imageOcrValue = await ocr(ogImage, supabase, userId);
+			// Returns { text, status } object
+			const ocrResult = await ocr(ogImage, supabase, userId);
+			imageOcrValue = ocrResult.text;
+			ocrStatus = ocrResult.status;
 
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(ogImage, supabase, userId);
@@ -60,6 +63,7 @@ const notVideoLogic = async (
 		favIcon: null,
 		twitter_avatar_url: null,
 		ocr: imageOcrValue ?? null,
+		ocr_status: ocrStatus,
 		coverImage: null,
 		screenshot: null,
 		isOgImagePreferred: false,

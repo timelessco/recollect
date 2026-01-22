@@ -217,6 +217,7 @@ export default async function handler(
 	}
 
 	let imageOcrValue = null;
+	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
 	let imageCaption = null;
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
@@ -253,12 +254,14 @@ export default async function handler(
 
 		try {
 			// Get OCR using the centralized function
-			// Returns empty string if no text is found
-			imageOcrValue = await ocr(
+			// Returns { text, status } object
+			const ocrResult = await ocr(
 				imageUrlForMetaDataGeneration,
 				supabase,
 				userId,
 			);
+			imageOcrValue = ocrResult.text;
+			ocrStatus = ocrResult.status;
 
 			// Get image caption using the centralized function
 			imageCaption = await imageToText(
@@ -284,6 +287,7 @@ export default async function handler(
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,
 		ocr: imageOcrValue,
+		ocr_status: ocrStatus,
 		coverImage: uploadedCoverImageUrl,
 	};
 

@@ -5,26 +5,31 @@ import CryptoJS from "crypto-js";
 
 import { PROFILES } from "../../utils/constants";
 
+type OcrResult = {
+	text: string | null;
+	status: "success" | "limit_reached" | "no_text";
+};
+
 /**
  *  Gives the OCR string by calling the Gemini AI OCR function
  * @param {string} imageUrl - the image url for the OCR to take place
  * @param {SupabaseClient} supabase - the supabase client
  * @param {string} userId - the user id
- * @returns {Promise<string>} - the OCR value
+ * @returns {Promise<OcrResult>} - the OCR result with text and status
  */
 export const ocr = async (
 	imageUrl: string,
 	supabase: SupabaseClient,
 	userId: string,
-): Promise<string | null> => {
+): Promise<OcrResult> => {
 	try {
 		const { userApiKey, isLimitReached } = await getApikeyAndBookmarkCount(
 			supabase,
 			userId,
 		);
 		if (!userApiKey && isLimitReached) {
-			console.warn("Monthly free limit reached — skipping caption generation.");
-			return null;
+			console.warn("Monthly free limit reached — skipping OCR generation.");
+			return { text: null, status: "limit_reached" };
 		}
 
 		const imageResponse = await axios.get(imageUrl, {
@@ -35,11 +40,16 @@ export const ocr = async (
 		const key = userApiKey ?? (process.env.GOOGLE_GEMINI_TOKEN as string);
 
 		const genAI = new GoogleGenerativeAI(key);
-		const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+		const model = genAI.getGenerativeModel({
+			model: "gemini-2.0-flash-lite",
+			generationConfig: {
+				responseMimeType: "application/json",
+			},
+		});
 
-		// For OCR
+		// For OCR - request JSON output
 		const ocrPrompt =
-			"Extract all visible text from this image. If there is text, return ONLY the extracted text with no additional commentary. If there is no text visible, return null. Do not say 'There is no text' or similar phrases.";
+			"Extract all visible text from this image. Return a valid JSON object with a 'text' field. If text is found, set text to the extracted text. If no text is found, set text to null. Only return the JSON object, no other text.";
 		const ocrResult = await model.generateContent([
 			ocrPrompt,
 			{
@@ -51,7 +61,14 @@ export const ocr = async (
 		]);
 
 		// Call .text() only once - it consumes the response body stream
-		const ocrText = ocrResult.response.text().trim();
+		const responseText = ocrResult.response.text().trim();
+		const jsonResponse = JSON.parse(responseText) as { text: string | null };
+
+		// Handle null or empty string from JSON response
+		const ocrText =
+			jsonResponse.text === null || jsonResponse.text === ""
+				? null
+				: jsonResponse.text;
 
 		try {
 			// Increment bookmark count, using the function only here not in imageToText,because here it is 2 different function
@@ -63,8 +80,14 @@ export const ocr = async (
 			console.error("Error incrementing bookmark count");
 		}
 
-		// Return empty string if Gemini returns "null" or no text, otherwise return the OCR text
-		return ocrText === "null" ? " " : ocrText;
+		console.log("jsonResponse", jsonResponse);
+
+		// Return structured result with status
+		if (ocrText === null || ocrText === "") {
+			return { text: null, status: "no_text" };
+		}
+
+		return { text: ocrText, status: "success" };
 	} catch (error) {
 		console.error("OCR error", error);
 		throw error;
