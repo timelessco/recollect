@@ -62,7 +62,13 @@ export const ocr = async (
 
 		// Call .text() only once - it consumes the response body stream
 		const responseText = ocrResult.response.text().trim();
-		const jsonResponse = JSON.parse(responseText) as { text: string | null };
+		let jsonResponse: { text: string | null };
+		try {
+			jsonResponse = JSON.parse(responseText) as { text: string | null };
+		} catch {
+			console.warn("OCR returned non-JSON response:", responseText);
+			return { text: null, status: "no_text" };
+		}
 
 		// Handle null or empty string from JSON response
 		const ocrText =
