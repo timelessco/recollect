@@ -130,7 +130,10 @@ export default async function handler(
 		if (!isNull(data)) {
 			const toBeDeletedIds = data
 				?.filter((item) => {
-					if (differenceInDays(new Date(), new Date(item?.inserted_at)) >= 29) {
+					if (
+						item?.trash &&
+						differenceInDays(new Date(), new Date(item.trash)) >= 29
+					) {
 						return true;
 					}
 

@@ -31,7 +31,7 @@ ALTER COLUMN trash DROP DEFAULT;
 
 ALTER TABLE public.everything
 ALTER COLUMN trash TYPE timestamp with time zone
-USING CASE WHEN trash = true THEN inserted_at ELSE NULL END;
+USING CASE WHEN trash = true THEN NOW() ELSE NULL END;
 
 -- Drop the NOT NULL constraint (column should be nullable)
 ALTER TABLE public.everything
@@ -45,13 +45,30 @@ COMMENT ON COLUMN public.everything.trash IS
 'Soft delete timestamp. NULL means not trashed. When set, indicates when the bookmark was moved to trash.';
 
 -- ============================================================================
--- PART 3: Create partial indexes for RLS policy optimization
+-- PART 3: Create partial indexes for query optimization
 -- ============================================================================
 
-CREATE INDEX IF NOT EXISTS idx_everything_trash_null
-ON public.everything(trash)
+-- Index for active (non-trash) bookmarks
+-- Optimizes queries that filter by user_id and trash IS NULL, ordered by
+-- inserted_at DESC (newest first). This is the default sort for the dashboard.
+CREATE INDEX IF NOT EXISTS idx_everything_active
+ON public.everything(user_id, inserted_at DESC)
 WHERE trash IS NULL;
 
+COMMENT ON INDEX idx_everything_active IS
+'Partial index for active (non-trash) bookmarks. Optimizes queries filtering by user_id where trash IS NULL, ordered by inserted_at DESC.';
+
+-- Index for trash bookmarks
+-- Optimizes queries that filter by user_id and trash IS NOT NULL, ordered by
+-- trash DESC (most recently trashed first). This is the sort used on the trash page.
+CREATE INDEX IF NOT EXISTS idx_everything_trash
+ON public.everything(user_id, trash DESC)
+WHERE trash IS NOT NULL;
+
+COMMENT ON INDEX idx_everything_trash IS
+'Partial index for trashed bookmarks. Optimizes queries filtering by user_id where trash IS NOT NULL, ordered by trash DESC (most recently trashed first).';
+
+-- Index for discoverable bookmarks (used by RLS policies)
 CREATE INDEX IF NOT EXISTS idx_everything_make_discoverable
 ON public.everything(make_discoverable)
 WHERE make_discoverable IS NOT NULL;
