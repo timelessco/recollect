@@ -3,7 +3,7 @@ import isEmpty from "lodash/isEmpty";
 
 import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import ToolTip from "../../../components/tooltip";
-import GlobeIcon from "../../../icons/globe-icon";
+import { GlobeIcon } from "../../../icons/globe-icon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 

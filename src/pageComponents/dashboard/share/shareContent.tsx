@@ -16,7 +16,7 @@ import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import DownArrowGray from "../../../icons/downArrowGray";
-import GlobeIcon from "../../../icons/globe-icon";
+import { GlobeIcon } from "../../../icons/globe-icon";
 import { LinkIcon } from "../../../icons/link-icon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
