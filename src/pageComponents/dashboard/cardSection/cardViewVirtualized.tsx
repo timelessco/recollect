@@ -64,7 +64,7 @@ export const CardViewVirtualized = ({
 					<div
 						key={virtualRow.key}
 						data-index={rowIndex}
-						className="absolute top-0 left-0 flex w-full pb-[43px]"
+						className="absolute top-0 left-0 flex w-full pb-10.5"
 						ref={rowVirtualizer.measureElement}
 						style={{
 							transform: `translateY(${virtualRow.start}px)`,
