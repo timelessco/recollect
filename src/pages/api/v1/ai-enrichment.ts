@@ -205,9 +205,7 @@ export default async function handler(
 					tags: {
 						operation: isRaindropBookmark
 							? "raindrop_image_upload"
-							: isInstagramBookmark
-								? "instagram_image_upload"
-								: "raindrop_instagram_image_upload",
+							: "instagram_image_upload",
 						userId: user_id,
 					},
 					extra: {
