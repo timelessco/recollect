@@ -173,7 +173,7 @@ export default async function handler(
 		// If from Raindrop bookmark — upload ogImage into R2
 		if (isRaindropBookmark || isInstagramBookmark) {
 			console.log(
-				`[${ROUTE}] Uploading ${isRaindropBookmark ? "Raindrop" : isInstagramBookmark ? "Instagram" : "Raindrop/Instagram"} image to R2:`,
+				`[${ROUTE}] Uploading ${isRaindropBookmark ? "Raindrop" : "Instagram"} image to R2:`,
 				{ url },
 			);
 			try {
@@ -194,11 +194,11 @@ export default async function handler(
 				ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
 
 				console.log(
-					`[${ROUTE}] ${isRaindropBookmark ? "Raindrop" : isInstagramBookmark ? "Instagram" : "Raindrop/Instagram"} image uploaded successfully`,
+					`[${ROUTE}] ${isRaindropBookmark ? "Raindrop" : "Instagram"} image uploaded successfully`,
 				);
 			} catch (error) {
 				console.error(
-					`[${ROUTE}] Error downloading ${isRaindropBookmark ? "Raindrop" : isInstagramBookmark ? "Instagram" : "Raindrop/Instagram"} image:`,
+					`[${ROUTE}] Error downloading ${isRaindropBookmark ? "Raindrop" : "Instagram"} image:`,
 					error,
 				);
 				Sentry.captureException(error, {
