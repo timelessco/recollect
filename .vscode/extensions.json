@@ -14,7 +14,7 @@
 
 		// REST Client allows you to send HTTP request and view the response in Visual Studio Code directly.
 		// Makes use of `.http` files
-		// "humao.rest-client",
+		"humao.rest-client",
 
 		// Quality of life extensions
 		"yoavbls.pretty-ts-errors",

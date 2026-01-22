@@ -391,7 +391,7 @@ const Settings = () => {
 								: undefined
 						}
 					/>
-					{session?.user?.app_metadata?.provider === "email" && (
+					{session?.user?.app_metadata?.provider !== "email" && (
 						<div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">
 							<figure className="text-gray-900">
 								<InfoIcon />
