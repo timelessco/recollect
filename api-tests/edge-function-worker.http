@@ -1,7 +1,7 @@
 ### Health Check (GET)
 # Returns: { status: "ok", queue: "instagram_imports" }
 GET {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
-Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+Authorization: Bearer {{$dotenv SERVICE_ROLE_KEY}}
 
 ### Process Queue (Invoke Worker)
 # If queue empty: { processed: 0, archived: 0, message: "Queue empty" }
@@ -11,7 +11,7 @@ Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
 # - skipped: invalid message shapes (type guard failures)
 # - retry: failed but will retry on next invocation (RPC error, archive error)
 POST {{$dotenv FUNCTIONS_BASE_URL}}/process-instagram-imports
-Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+Authorization: Bearer {{$dotenv SERVICE_ROLE_KEY}}
 Content-Type: application/json
 
 {}

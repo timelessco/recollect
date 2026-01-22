@@ -46,50 +46,37 @@ ORDER BY start_time DESC LIMIT 5;
 
 ## Production Setup (One-Time)
 
+Migrations are applied automatically when merging to dev/main branches.
+
+> **Prerequisites**: Get your service role key from **Project Settings → API Keys → Legacy tab**
+
 ### Step 1: Deploy Edge Function
 
+#### Dev Supabase Branch
+
 ```bash
-npx supabase functions deploy process-instagram-imports
+npx supabase functions deploy process-instagram-imports --project-ref cjsdfdveobrpffjbkpca
 ```
+
+#### Verify Deployment
+
+Test the deployed function using REST Client:
+
+1. Update `api-tests/.env` with target environment values:
+   - `SERVICE_ROLE_KEY` - service role key (see Prerequisites)
+   - `FUNCTIONS_BASE_URL` - edge function base URL
+
+2. Run requests in `api-tests/edge-function-worker.http`:
+   - `Health Check` → Returns `{ status: "ok", queue: "instagram_imports" }`
+   - `Process Queue` → Processes pending imports
 
 ### Step 2: Run Setup Script
 
 Use `docs/instagram-sync/setup-production-cron.sql`:
 
-1. Edit the file and replace `[PROJECT_REF]` with your Supabase project reference
-2. Run via Supabase Dashboard SQL Editor
-
-Or run directly:
-
-> **Prerequisites**: Before running the SQL below, create the `supabase_service_role_key` vault secret:
->
-> 1. Copy your service role key from **Project Settings → API Keys → Legacy tab**
-> 2. Go to **Project Settings → Vault**
-> 3. Create a new secret named `supabase_service_role_key` with the copied key value
-
-```sql
--- Replace [PROJECT_REF] with actual project reference
-SELECT vault.create_secret(
-  'https://[PROJECT_REF].supabase.co/functions/v1/process-instagram-imports',
-  'instagram_worker_url'
-);
-
-SELECT cron.schedule(
-  'process-instagram-imports',
-  '10 seconds',
-  $$
-  SELECT net.http_post(
-    url := (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'instagram_worker_url'),
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'supabase_service_role_key')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 25000
-  );
-  $$
-);
-```
+1. Replace `[SERVICE_ROLE_KEY]` with your service role key (see Prerequisites)
+2. Replace `[PROJECT_REF]` with your Supabase project reference
+3. Run via Supabase Dashboard SQL Editor
 
 ### Step 3: Verify
 

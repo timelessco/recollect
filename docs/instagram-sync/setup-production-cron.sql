@@ -4,20 +4,25 @@
 -- =============================================================================
 --
 -- BEFORE RUNNING:
--- 1. Replace [PROJECT_REF] with your actual Supabase project reference
--- 2. Ensure the Edge Function is deployed: npx supabase functions deploy process-instagram-imports
--- 3. Ensure supabase_service_role_key exists in vault (set via Supabase Dashboard)
+-- 1. Replace [PROJECT_REF] with your Supabase project reference
+-- 2. Replace [SERVICE_ROLE_KEY] with your service role key (from Project Settings → API Keys → Legacy tab)
+-- 3. Ensure Edge Function is deployed: npx supabase functions deploy process-instagram-imports
 --
 -- =============================================================================
 
--- 1. Store Edge Function URL
--- Replace [PROJECT_REF] with your actual project reference (e.g., 'abcdefghijklmnop')
+-- 1. Store service role key in vault
+SELECT vault.create_secret(
+  '[SERVICE_ROLE_KEY]',
+  'supabase_service_role_key'
+);
+
+-- 2. Store Edge Function URL
 SELECT vault.create_secret(
   'https://[PROJECT_REF].supabase.co/functions/v1/process-instagram-imports',
   'instagram_worker_url'
 );
 
--- 2. Create pg_cron job (10 second interval)
+-- 3. Create pg_cron job (10 second interval)
 SELECT cron.schedule(
   'process-instagram-imports',
   '10 seconds',
