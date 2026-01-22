@@ -37,8 +37,11 @@ export const ImportBookmarks = () => {
 				Papa.parse(file, {
 					header: true,
 					skipEmptyLines: true,
-					complete: (results) =>
-						resolve(results as Papa.ParseResult<Record<string, string>>),
+					complete: (results) => {
+						if (results.errors.length === 0) {
+							resolve(results as Papa.ParseResult<Record<string, string>>);
+						}
+					},
 					error: (error) => reject(error),
 				});
 			},
@@ -110,7 +113,12 @@ export const ImportBookmarks = () => {
 
 			await importBookmarksMutation.mutateAsync({ bookmarks });
 		} catch (error) {
-			handleClientError(error);
+			if (
+				error instanceof Error &&
+				error.message.includes("CSV parsing errors")
+			) {
+				handleClientError(error, "Error parsing CSV file");
+			}
 		}
 	};
 
