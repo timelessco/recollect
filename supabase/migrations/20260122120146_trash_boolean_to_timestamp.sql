@@ -25,7 +25,7 @@ DROP POLICY IF EXISTS "authenticated_discover_access" ON public.everything;
 
 -- Convert boolean to timestamp:
 --   - false -> NULL (not trashed)
---   - true -> inserted_at (fallback timestamp for existing trashed items)
+--   - true -> NOW() (fallback timestamp for existing trashed items)
 ALTER TABLE public.everything
 ALTER COLUMN trash DROP DEFAULT;
 
