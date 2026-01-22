@@ -40,7 +40,7 @@ export const CardViewVirtualized = ({
 			const aspectRatio = 4 / 3;
 			const cardHeight = cardWidth * aspectRatio;
 
-			return cardHeight + 43;
+			return cardHeight + 42;
 		},
 		overscan: 5,
 		measureElement: (element) => element.getBoundingClientRect().height,
