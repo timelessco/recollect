@@ -133,7 +133,7 @@ RETURNS TABLE(
     make_discoverable timestamp with time zone
 )
 LANGUAGE plpgsql
-VOLATILE
+STABLE
 SECURITY INVOKER
 SET search_path = public, extensions
 AS $function$
