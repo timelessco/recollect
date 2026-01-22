@@ -41,7 +41,8 @@ export const imageToText = async (
 		const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
 		// For Image Caption
-		const captionPrompt = "Describe this image in a single, concise sentence.";
+		const captionPrompt =
+			"Write a single, concise sentence describing what you see. Be direct and specific. Do not start with phrases like 'The image shows', 'The image is', 'This is', or 'A picture of'. Just describe what's in the image.";
 		const captionResult = await model.generateContent([
 			captionPrompt,
 			{
