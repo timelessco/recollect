@@ -53,20 +53,20 @@ export const processImageQueue = async (
 
 				if (read_ct > MAX_RETRIES) {
 					console.log(
-						"[process-image-queue] Deleting message from queue",
+						"[process-image-queue] archiving message from queue",
 						message,
 					);
 
 					const { error: deleteError } = await supabase
 						.schema("pgmq_public")
-						.rpc("delete", {
+						.rpc("archive", {
 							queue_name,
 							message_id: message.msg_id,
 						});
 
 					if (deleteError) {
 						console.error(
-							"[process-image-queue] Error deleting message from queue",
+							"[process-image-queue] Error archiving message from queue",
 							deleteError,
 						);
 					}
