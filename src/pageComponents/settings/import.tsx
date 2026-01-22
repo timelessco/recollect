@@ -62,8 +62,7 @@ export const ImportBookmarks = () => {
 				cover: string;
 			}>;
 			setBookmarkCount(records.length);
-		} catch (error) {
-			handleClientError(error, "Error parsing CSV file");
+		} catch {
 			setBookmarkCount(0);
 		}
 	};
@@ -201,9 +200,9 @@ export const ImportBookmarks = () => {
 					!isFileUploaded ? "flex-wrap" : ""
 				}`}
 			>
-				<figure className="mr-2 shrink-0">
+				<span className="mr-2 shrink-0">
 					<InfoIcon />
-				</figure>
+				</span>
 				<span className="items-center">
 					{!isFileUploaded ? (
 						<>
