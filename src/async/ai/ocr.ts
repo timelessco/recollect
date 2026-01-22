@@ -80,8 +80,6 @@ export const ocr = async (
 			console.error("Error incrementing bookmark count");
 		}
 
-		console.log("jsonResponse", jsonResponse);
-
 		// Return structured result with status
 		if (ocrText === null || ocrText === "") {
 			return { text: null, status: "no_text" };
