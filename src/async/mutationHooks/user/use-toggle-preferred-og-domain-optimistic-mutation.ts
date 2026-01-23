@@ -17,11 +17,11 @@ type AddPreferredOgDomainInput = {
 	domain: string;
 };
 
-export function useAddPreferredOgDomainOptimisticMutation() {
+export function useTogglePreferredOgDomainOptimisticMutation() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryKey = [USER_PROFILE, session?.user?.id] as const;
 
-	const addPreferredOgDomainOptimisticMutation =
+	const togglePreferredOgDomainOptimisticMutation =
 		useReactQueryOptimisticMutation<
 			AddPreferredOgDomainResponse,
 			Error,
@@ -67,5 +67,5 @@ export function useAddPreferredOgDomainOptimisticMutation() {
 			invalidates: [[USER_PROFILE, session?.user?.id]],
 		});
 
-	return { addPreferredOgDomainOptimisticMutation };
+	return { togglePreferredOgDomainOptimisticMutation };
 }

@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useAddPreferredOgDomainOptimisticMutation } from "@/async/mutationHooks/user/use-add-preferred-og-domain-optimistic-mutation";
+import { useTogglePreferredOgDomainOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-preferred-og-domain-optimistic-mutation";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { USER_PROFILE } from "@/utils/constants";
@@ -16,8 +16,8 @@ export function OgPreferenceCheckbox({
 	userId,
 }: OgPreferenceCheckboxProps) {
 	const queryClient = useQueryClient();
-	const { addPreferredOgDomainOptimisticMutation } =
-		useAddPreferredOgDomainOptimisticMutation();
+	const { togglePreferredOgDomainOptimisticMutation } =
+		useTogglePreferredOgDomainOptimisticMutation();
 
 	const domain = getDomain(bookmarkUrl);
 
@@ -41,7 +41,7 @@ export function OgPreferenceCheckbox({
 			return;
 		}
 
-		addPreferredOgDomainOptimisticMutation.mutate({ domain });
+		togglePreferredOgDomainOptimisticMutation.mutate({ domain });
 	};
 
 	return (
