@@ -120,12 +120,14 @@ There are two recommended approaches for making schema changes:
 4. **Test by resetting database**:
 
    ```bash
-   npx supabase db reset
+   pnpm db:reset # If using production dump
+   # OR
+   npx supabase db reset # If using minimal seed
    ```
 
 5. **Verify everything works** with your app
 
-**Note:** The `db reset` command recreates your database from scratch, applies all migrations, and seeds data.
+**Note:** See [Database Reset](#database-reset) section for choosing the right command based on your seed data.
 
 **Database Webhooks Setup**: After running migrations, enable the **Database Webhooks** integration in Supabase Studio under **Database → Integrations → Postgres Modules** to configure webhook triggers. When setting webhook URLs, use your local machine IP instead of `localhost`:
 
@@ -143,6 +145,23 @@ See [Supabase GitHub Issue #13005](https://github.com/supabase/supabase/issues/1
 
 ### Useful Commands
 
+#### Database Reset
+
+Choose the appropriate reset command based on your seed data source:
+
+| Command                 | Use When                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| `pnpm db:reset`         | Using production dump as seed (`supabase/seed.sql` from `db dump --data-only`) |
+| `npx supabase db reset` | Using minimal/custom seed data or no seed file                                 |
+
+**Why two commands?**
+
+When using a production dump, migrations seed certain data (e.g., default categories) that also exists in the dump. This causes duplicate key conflicts. `pnpm db:reset` handles this by:
+
+1. Running migrations without seeding (`--no-seed`)
+2. Cleaning up migration-seeded data that conflicts with the dump
+3. Loading the production dump
+
 #### Database Operations
 
 ```bash
@@ -150,7 +169,8 @@ See [Supabase GitHub Issue #13005](https://github.com/supabase/supabase/issues/1
 npx supabase migration new <name>      # Create a new migration file
 npx supabase migration list            # List all migrations and their status
 npx supabase migration up              # Apply pending migrations
-npx supabase db reset                  # Reset DB (applies all migrations + seed)
+pnpm db:reset                          # Reset DB with production dump (recommended)
+npx supabase db reset                  # Reset DB with minimal seed data
 
 # Schema operations
 npx supabase db diff -f <name>         # Generate migration from schema changes
@@ -481,7 +501,7 @@ If none of these solutions work:
 
    ```bash
    # Always test with a fresh reset
-   npx supabase db reset
+   pnpm db:reset # If using production dump
    ```
 
 4. **Keep seed data up to date**
@@ -524,14 +544,13 @@ pnpm update supabase --save-dev
 When you need to sync your local database with production data:
 
 ```bash
-# 1. Link to your production project (if not already linked)
-npx supabase link --project-ref <project-ref>
+# 1. Dump fresh production data from local (if synced) or remote
+npx supabase db dump --data-only --local > supabase/seed.sql
+# OR from remote:
+npx supabase db dump --db-url < CONNECTION_STRING > --data-only > supabase/seed.sql
 
-# 2. Dump fresh production data
-npx supabase db dump --db-url <CONNECTION_STRING> --data-only > supabase/seed.sql
-
-# 3. Reset local database with new data
-npx supabase db reset
+# 2. Reset local database with new data
+pnpm db:reset # Handles conflicts between migrations and dump data
 ```
 
 **Note:** Be careful with production data containing sensitive information. Consider anonymizing data for local development.
@@ -563,7 +582,7 @@ After initial setup, verify everything is working:
 - [ ] Can access API Gateway at <http://localhost:54321>
 - [ ] Environment variables configured in `.env.local`
 - [ ] Can run `npx supabase status` successfully
-- [ ] Migrations apply without errors (`npx supabase db reset`)
+- [ ] Migrations apply without errors (`pnpm db:reset`)
 - [ ] Seed data loads correctly
 - [ ] Dev accounts can login to your application
 - [ ] Database queries work from your application
@@ -614,6 +633,6 @@ Once local development is working, you can:
 
 ---
 
-**Last Updated**: November 2025
+**Last Updated**: January 2026
 **Document Version**: 2.0
 **Based on**: Supabase CLI latest best practices
