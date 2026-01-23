@@ -1,4 +1,4 @@
-import { type RefObject } from "react";
+import { useMemo, type RefObject } from "react";
 import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
@@ -27,7 +27,8 @@ interface SlideProps {
  * Handles double-click to zoom in/out
  */
 export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
-	const imageSources = useBookmarkImageSources(bookmark ? [bookmark] : []);
+	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
+	const imageSources = useBookmarkImageSources(bookmarkArray);
 	const imageSource = bookmark
 		? (imageSources[bookmark.id] ?? bookmark.ogImage)
 		: "";
@@ -129,7 +130,8 @@ export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
  */
 export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
-	const imageSources = useBookmarkImageSources(bookmark ? [bookmark] : []);
+	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
+	const imageSources = useBookmarkImageSources(bookmarkArray);
 	// Only render iframe if this is the active slide and iframe is allowed
 	if (bookmark?.meta_data?.iframeAllowed && isActive && iframeEnabled) {
 		return (
