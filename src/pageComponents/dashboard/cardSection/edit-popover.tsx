@@ -20,6 +20,8 @@ import {
 	type SingleListData,
 	type UserTagsData,
 } from "@/types/apiTypes";
+import { SKIP_OG_IMAGE_DOMAINS } from "@/utils/constants";
+import { getDomain } from "@/utils/domain";
 import { cn } from "@/utils/tailwind-merge";
 
 type EditPopoverProps = {
@@ -83,9 +85,18 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 									isDiscoverable={post.make_discoverable !== null}
 								/>
 							</div>
-							<div className="w-full">
-								<OgPreferenceCheckbox bookmarkUrl={post.url} userId={userId} />
-							</div>
+							{(() => {
+								const domain = getDomain(post.url);
+								// Don't render checkbox for domains that are already skipped for OG images
+								return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
+									<div className="w-full">
+										<OgPreferenceCheckbox
+											bookmarkUrl={post.url}
+											userId={userId}
+										/>
+									</div>
+								) : null;
+							})()}
 						</div>
 					</Popover.Popup>
 				</Popover.Positioner>
