@@ -40,6 +40,9 @@ export default async function handler(
 		return;
 	}
 
+	// Declare userId before try block so it's available in catch
+	let userId: string | undefined;
+
 	try {
 		const parseResult = requestBodySchema.safeParse(request.body);
 
@@ -72,7 +75,7 @@ export default async function handler(
 			return;
 		}
 
-		const userId = user.id;
+		userId = user.id;
 		console.log(`[${ROUTE}] API called:`, { userId });
 
 		const { bookmarks } = parseResult.data;
@@ -178,16 +181,15 @@ export default async function handler(
 		response.status(200).json({ data: validated.data, error: null });
 	} catch (error) {
 		console.error(`[${ROUTE}] Error:`, error);
-		const errorMessage =
-			error instanceof Error ? error.message : "An unexpected error occurred";
 		Sentry.captureException(error, {
 			tags: {
 				operation: "raindrop_import_unexpected",
+				userId: userId || "unknown",
 			},
 		});
 		response.status(500).json({
 			data: null,
-			error: errorMessage,
+			error: "An unexpected error occurred",
 		});
 	}
 }
