@@ -121,13 +121,26 @@ export default async function handler(
 		}
 
 		// Insert bookmarks and create relations
-		const { insertedBookmarks } = await insertBookmarksWithRelations({
-			bookmarksToSanitize,
-			categoriesData,
-			route: ROUTE,
-			supabase,
-			userId,
-		});
+		const { insertedBookmarks, junctionError } =
+			await insertBookmarksWithRelations({
+				bookmarksToSanitize,
+				categoriesData,
+				route: ROUTE,
+				supabase,
+				userId,
+			});
+
+		// Log warning if junction table insertion failed (non-blocking but should be surfaced)
+		if (junctionError) {
+			console.warn(
+				`[${ROUTE}] Warning: Failed to create bookmark-category relations:`,
+				{
+					error: junctionError.error,
+					relationsCount: junctionError.relationsCount,
+					userId,
+				},
+			);
+		}
 
 		// Update category order in profile
 		await updateProfileCategoryOrder({

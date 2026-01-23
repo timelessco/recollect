@@ -242,10 +242,15 @@ export async function deduplicateBookmarks(
 	// Check existing bookmarks in database
 	// IMPORTANT: Check ALL bookmarks, not just raindrop ones
 	// The constraint applies to all bookmarks, so we must check all of them
+	// Use bookmark_categories junction table instead of deprecated everything.category_id
 	const urlsToCheck = deduplicatedByCategoryId.map((b) => b.url);
 	const categoryIdsToCheck = [
 		...new Set(deduplicatedByCategoryId.map((b) => b.category_id)),
 	];
+
+	// Separate categorized (category_id > 0) and uncategorized (category_id === 0) bookmarks
+	const categorizedCategoryIds = categoryIdsToCheck.filter((id) => id > 0);
+	const hasUncategorized = categoryIdsToCheck.includes(0);
 
 	// Batch queries to avoid "URI too long" error
 	// Supabase/PostgreSQL has limits on query string length
@@ -263,44 +268,126 @@ export async function deduplicateBookmarks(
 			const batchNumber = Math.floor(batchIndex / BATCH_SIZE) + 1;
 			const totalBatches = Math.ceil(urlsToCheck.length / BATCH_SIZE);
 
-			// Check for ANY existing bookmarks with same URL+category_id (not just raindrop bookmarks)
-			// The constraint applies to all bookmarks, so we must check all of them
-			const { data: batchResults, error: batchError } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.select("url, category_id")
-				.in("url", urlBatch)
-				.in("category_id", categoryIdsToCheck)
-				.eq("user_id", userId);
+			// For categorized bookmarks (category_id > 0): Query via junction table
+			if (categorizedCategoryIds.length > 0) {
+				const { data: categorizedResults, error: categorizedError } =
+					await supabase
+						.from(MAIN_TABLE_NAME)
+						.select("url, bookmark_categories!inner(category_id)")
+						.in("url", urlBatch)
+						.eq("user_id", userId)
+						.in("bookmark_categories.category_id", categorizedCategoryIds)
+						.eq("bookmark_categories.user_id", userId);
 
-			if (batchError) {
-				console.error(
-					`[${route}] Error checking existing bookmarks (batch ${batchNumber}/${totalBatches}):`,
-					{
-						error: batchError,
-						userId,
-						batchStart: batchIndex,
-						batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
-					},
-				);
-				Sentry.captureException(batchError, {
-					tags: {
-						operation: "check_existing_bookmarks",
-						userId,
-					},
-					extra: {
-						batchNumber,
-						totalBatches,
-						batchStart: batchIndex,
-						batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
-						urlsToCheckCount: urlsToCheck.length,
-						categoryIdsToCheckCount: categoryIdsToCheck.length,
-					},
-				});
-				throw new Error("Failed to check existing bookmarks");
+				if (categorizedError) {
+					console.error(
+						`[${route}] Error checking existing categorized bookmarks (batch ${batchNumber}/${totalBatches}):`,
+						{
+							error: categorizedError,
+							userId,
+							batchStart: batchIndex,
+							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+						},
+					);
+					Sentry.captureException(categorizedError, {
+						tags: {
+							operation: "check_existing_categorized_bookmarks",
+							userId,
+						},
+						extra: {
+							batchNumber,
+							totalBatches,
+							batchStart: batchIndex,
+							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+							urlsToCheckCount: urlsToCheck.length,
+							categoryIdsToCheckCount: categorizedCategoryIds.length,
+						},
+					});
+					throw new Error("Failed to check existing categorized bookmarks");
+				}
+
+				if (categorizedResults && categorizedResults.length > 0) {
+					// Transform results to match expected format
+					// categorizedResults is an array where each item has url and bookmark_categories array
+					for (const result of categorizedResults) {
+						const bookmarkCategories = result.bookmark_categories as Array<{
+							category_id: number;
+						}> | null;
+						if (bookmarkCategories && bookmarkCategories.length > 0) {
+							for (const bc of bookmarkCategories) {
+								allExistingBookmarks.push({
+									url: result.url,
+									category_id: bc.category_id,
+								});
+							}
+						}
+					}
+				}
 			}
 
-			if (batchResults && batchResults.length > 0) {
-				allExistingBookmarks.push(...batchResults);
+			// For uncategorized bookmarks (category_id === 0): Check bookmarks with no junction entries
+			if (hasUncategorized) {
+				// Find bookmarks that exist with these URLs but have NO entries in bookmark_categories
+				// This means they are uncategorized
+				const { data: allBookmarksWithUrls, error: allBookmarksError } =
+					await supabase
+						.from(MAIN_TABLE_NAME)
+						.select("id, url")
+						.in("url", urlBatch)
+						.eq("user_id", userId);
+
+				if (allBookmarksError) {
+					console.error(
+						`[${route}] Error checking existing uncategorized bookmarks (batch ${batchNumber}/${totalBatches}):`,
+						{
+							error: allBookmarksError,
+							userId,
+							batchStart: batchIndex,
+							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+						},
+					);
+					Sentry.captureException(allBookmarksError, {
+						tags: {
+							operation: "check_existing_uncategorized_bookmarks",
+							userId,
+						},
+						extra: {
+							batchNumber,
+							totalBatches,
+							batchStart: batchIndex,
+							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+							urlsToCheckCount: urlsToCheck.length,
+						},
+					});
+					throw new Error("Failed to check existing uncategorized bookmarks");
+				}
+
+				if (allBookmarksWithUrls && allBookmarksWithUrls.length > 0) {
+					// Get bookmark IDs that have categories (to exclude them)
+					const bookmarkIdsWithCategories = new Set<number>();
+					const bookmarkIds = allBookmarksWithUrls.map((b) => b.id);
+					const { data: bookmarksWithCategories } = await supabase
+						.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+						.select("bookmark_id")
+						.in("bookmark_id", bookmarkIds)
+						.eq("user_id", userId);
+
+					if (bookmarksWithCategories) {
+						for (const bc of bookmarksWithCategories) {
+							bookmarkIdsWithCategories.add(bc.bookmark_id);
+						}
+					}
+
+					// Bookmarks without categories are uncategorized (category_id === 0)
+					for (const bookmark of allBookmarksWithUrls) {
+						if (!bookmarkIdsWithCategories.has(bookmark.id)) {
+							allExistingBookmarks.push({
+								url: bookmark.url,
+								category_id: 0,
+							});
+						}
+					}
+				}
 			}
 		}
 	}
@@ -343,6 +430,10 @@ export async function deduplicateBookmarks(
 
 type InsertBookmarksResult = {
 	insertedBookmarks: SingleListData[];
+	junctionError?: {
+		error: unknown;
+		relationsCount: number;
+	};
 };
 
 export interface InsertBookmarksWithRelationsProps {
@@ -361,7 +452,7 @@ export interface InsertBookmarksWithRelationsProps {
  * @param props.route - Route name for logging
  * @param props.supabase - Supabase client
  * @param props.userId - User ID
- * @returns Inserted bookmarks
+ * @returns Inserted bookmarks and optional junction error (if junction table insertion failed)
  * @throws Error if bookmark insertion fails
  */
 export async function insertBookmarksWithRelations(
@@ -369,6 +460,18 @@ export async function insertBookmarksWithRelations(
 ): Promise<InsertBookmarksResult> {
 	const { bookmarksToSanitize, categoriesData, route, supabase, userId } =
 		props;
+
+	// Early return if no bookmarks to sanitize
+	if (bookmarksToSanitize.length === 0) {
+		console.log(`[${route}] No bookmarks to sanitize, skipping insert:`, {
+			bookmarksToSanitize: 0,
+			userId,
+		});
+		return {
+			insertedBookmarks: [],
+		};
+	}
+
 	console.log(`[${route}] Sanitizing bookmarks before insert:`, {
 		bookmarksToSanitize: bookmarksToSanitize.length,
 		userId,
@@ -380,6 +483,20 @@ export async function insertBookmarksWithRelations(
 		userId,
 		categoriesData || [],
 	);
+
+	// Early return if sanitization resulted in no bookmarks
+	if (sanitizedBookmarks.length === 0) {
+		console.log(
+			`[${route}] No bookmarks after sanitization, skipping insert:`,
+			{
+				sanitizedBookmarks: 0,
+				userId,
+			},
+		);
+		return {
+			insertedBookmarks: [],
+		};
+	}
 
 	//  Insert only unique bookmarks
 	const { data, error } = await supabase
@@ -413,6 +530,8 @@ export async function insertBookmarksWithRelations(
 			user_id: userId,
 		}));
 
+	let junctionErrorResult: InsertBookmarksResult["junctionError"] | undefined;
+
 	if (bookmarkCategoryRelations.length > 0) {
 		const { error: junctionError } = await supabase
 			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
@@ -432,12 +551,17 @@ export async function insertBookmarksWithRelations(
 					relationsCount: bookmarkCategoryRelations.length,
 				},
 			});
-			// Non-blocking: bookmarks are already inserted, junction entries are supplementary
+			// Propagate error to caller: bookmarks are already inserted, but junction entries failed
+			junctionErrorResult = {
+				error: junctionError,
+				relationsCount: bookmarkCategoryRelations.length,
+			};
 		}
 	}
 
 	return {
 		insertedBookmarks: data || [],
+		...(junctionErrorResult && { junctionError: junctionErrorResult }),
 	};
 }
 
