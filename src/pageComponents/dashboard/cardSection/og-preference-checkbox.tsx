@@ -54,7 +54,7 @@ export function OgPreferenceCheckbox({
 	};
 
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5">
+		<div className="flex items-center gap-2 px-2 pb-1.5">
 			{/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
 			<label className="flex cursor-pointer items-center gap-2">
 				<Checkbox
