@@ -8,7 +8,17 @@ import { HttpStatus } from "@/utils/error-utils/common";
 const ROUTE = "add-preferred-og-domain";
 
 const AddPreferredOgDomainPayloadSchema = z.object({
-	domain: z.string().trim(),
+	domain: z
+		.string()
+		.trim()
+		.min(1, "Domain cannot be empty")
+		.max(253, "Domain too long")
+		.regex(/^[\da-z][\d.a-z-]*[\da-z]$/iu, "Invalid domain format")
+		.refine(
+			(domain) => !/^(?:\d{1,3}\.){3}\d{1,3}$/u.test(domain),
+			"IP addresses not allowed",
+		)
+		.refine((domain) => domain !== "localhost", "localhost not allowed"),
 });
 
 export type AddPreferredOgDomainPayload = z.infer<
