@@ -41,7 +41,7 @@ export const ocr = async (
 
 		const genAI = new GoogleGenerativeAI(key);
 		const model = genAI.getGenerativeModel({
-			model: "gemini-2.0-flash-lite",
+			model: "gemini-flash-lite-latest",
 			generationConfig: {
 				responseMimeType: "application/json",
 			},

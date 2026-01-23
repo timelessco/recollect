@@ -38,7 +38,9 @@ export const imageToText = async (
 		const key = userApiKey ?? (process.env.GOOGLE_GEMINI_TOKEN as string);
 
 		const genAI = new GoogleGenerativeAI(key);
-		const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+		const model = genAI.getGenerativeModel({
+			model: "gemini-flash-lite-latest",
+		});
 
 		// For Image Caption
 		const captionPrompt =
