@@ -236,7 +236,6 @@ export async function deduplicateBookmarks(
 				.in("url", urlBatch)
 				.in("category_id", categoryIdsToCheck)
 				.eq("user_id", userId)
-				.eq("trash", false)
 				.eq("meta_data->>is_raindrop_bookmark", "true");
 
 			if (batchError) {
