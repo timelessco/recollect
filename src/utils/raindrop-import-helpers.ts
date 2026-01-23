@@ -208,10 +208,43 @@ export async function deduplicateBookmarks(
 		};
 	}) as BookmarkWithCategoryId[];
 
+	// Deduplicate again by URL+category_id after mapping
+	// The constraint is on (url, category_id), not (url, category_name)
+	// Multiple category_names might map to the same category_id
+	const seenByUrlCategoryId = new Set<string>();
+	const deduplicatedByCategoryId = bookmarksWithCategoryId.filter(
+		(bookmark) => {
+			const key = `${bookmark.url}_${bookmark.category_id}`;
+			if (seenByUrlCategoryId.has(key)) {
+				return false;
+			}
+
+			seenByUrlCategoryId.add(key);
+			return true;
+		},
+	);
+
+	const duplicatesAfterMapping =
+		bookmarksWithCategoryId.length - deduplicatedByCategoryId.length;
+
+	if (duplicatesAfterMapping > 0) {
+		console.warn(
+			`[${route}] Removed duplicates by URL+category_id after mapping:`,
+			{
+				duplicatesRemoved: duplicatesAfterMapping,
+				beforeMapping: bookmarksWithCategoryId.length,
+				afterMapping: deduplicatedByCategoryId.length,
+				userId,
+			},
+		);
+	}
+
 	// Check existing bookmarks in database
-	const urlsToCheck = bookmarksWithCategoryId.map((b) => b.url);
+	// IMPORTANT: Check ALL bookmarks, not just raindrop ones
+	// The constraint applies to all bookmarks, so we must check all of them
+	const urlsToCheck = deduplicatedByCategoryId.map((b) => b.url);
 	const categoryIdsToCheck = [
-		...new Set(bookmarksWithCategoryId.map((b) => b.category_id)),
+		...new Set(deduplicatedByCategoryId.map((b) => b.category_id)),
 	];
 
 	// Batch queries to avoid "URI too long" error
@@ -230,13 +263,14 @@ export async function deduplicateBookmarks(
 			const batchNumber = Math.floor(batchIndex / BATCH_SIZE) + 1;
 			const totalBatches = Math.ceil(urlsToCheck.length / BATCH_SIZE);
 
+			// Check for ANY existing bookmarks with same URL+category_id (not just raindrop bookmarks)
+			// The constraint applies to all bookmarks, so we must check all of them
 			const { data: batchResults, error: batchError } = await supabase
 				.from(MAIN_TABLE_NAME)
 				.select("url, category_id")
 				.in("url", urlBatch)
 				.in("category_id", categoryIdsToCheck)
-				.eq("user_id", userId)
-				.eq("meta_data->>is_raindrop_bookmark", "true");
+				.eq("user_id", userId);
 
 			if (batchError) {
 				console.error(
@@ -285,14 +319,14 @@ export async function deduplicateBookmarks(
 		});
 	}
 
-	const bookmarksToSanitize = bookmarksWithCategoryId.filter((bookmark) => {
+	const bookmarksToSanitize = deduplicatedByCategoryId.filter((bookmark) => {
 		const key = `${bookmark.url}_${bookmark.category_id}`;
 
 		// Only keep if not existing
 		return !existingMap.has(key);
 	});
 
-	const existing = bookmarksWithCategoryId.length - bookmarksToSanitize.length;
+	const existing = deduplicatedByCategoryId.length - bookmarksToSanitize.length;
 	if (existing > 0) {
 		console.log(`[${route}] Removed existing bookmarks:`, {
 			existing,
@@ -302,7 +336,7 @@ export async function deduplicateBookmarks(
 
 	return {
 		bookmarksToSanitize,
-		duplicatesRemoved,
+		duplicatesRemoved: duplicatesRemoved + duplicatesAfterMapping,
 		existing,
 	};
 }
