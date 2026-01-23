@@ -21,9 +21,11 @@ export function OgPreferenceCheckbox({
 
 	const domain = getDomain(bookmarkUrl);
 
-	const profileData = queryClient.getQueryData([USER_PROFILE, userId]) as
-		| { data?: ProfilesTableTypes[] }
-		| undefined;
+	type UserProfileCache = { data: ProfilesTableTypes[] | null; error?: Error };
+	const profileData = queryClient.getQueryData<UserProfileCache>([
+		USER_PROFILE,
+		userId,
+	]);
 
 	const isPreferred = (() => {
 		if (!domain) {
