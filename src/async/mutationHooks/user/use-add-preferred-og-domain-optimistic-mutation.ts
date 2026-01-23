@@ -9,6 +9,7 @@ import {
 	NEXT_API_URL,
 	USER_PROFILE,
 } from "@/utils/constants";
+import { toggleDomainInArray } from "@/utils/domain";
 
 type UserProfileCache = { data: ProfilesTableTypes[] | null; error?: Error };
 
@@ -52,19 +53,13 @@ export function useAddPreferredOgDomainOptimisticMutation() {
 						}
 
 						const existingDomains = profile.preferred_og_domains ?? [];
-						const hasDomain = existingDomains.some(
-							(existingDomain) =>
-								existingDomain.toLowerCase() === domain.toLowerCase(),
-						);
 
 						return {
 							...profile,
-							preferred_og_domains: hasDomain
-								? existingDomains.filter(
-										(existingDomain) =>
-											existingDomain.toLowerCase() !== domain.toLowerCase(),
-									)
-								: [...existingDomains, domain],
+							preferred_og_domains: toggleDomainInArray(
+								existingDomains,
+								domain,
+							),
 						};
 					}),
 				};

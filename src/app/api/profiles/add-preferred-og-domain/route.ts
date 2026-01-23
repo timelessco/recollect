@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { PROFILES } from "@/utils/constants";
+import { normalizeDomain } from "@/utils/domain";
 import { HttpStatus } from "@/utils/error-utils/common";
 
 const ROUTE = "add-preferred-og-domain";
@@ -33,18 +34,6 @@ const AddPreferredOgDomainResponseSchema = z.object({
 export type AddPreferredOgDomainResponse = z.infer<
 	typeof AddPreferredOgDomainResponseSchema
 >;
-
-const normalizeDomain = (input: string): string | null => {
-	try {
-		const url = input.includes("://")
-			? new URL(input)
-			: new URL(`https://${input}`);
-		const hostname = url.hostname.toLowerCase();
-		return hostname.startsWith("www.") ? hostname.slice(4) : hostname;
-	} catch {
-		return null;
-	}
-};
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

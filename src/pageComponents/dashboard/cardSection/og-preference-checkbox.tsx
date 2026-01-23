@@ -4,20 +4,11 @@ import { useAddPreferredOgDomainOptimisticMutation } from "@/async/mutationHooks
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { USER_PROFILE } from "@/utils/constants";
+import { getDomain } from "@/utils/domain";
 
 type OgPreferenceCheckboxProps = {
 	bookmarkUrl: string;
 	userId: string;
-};
-
-const getDomain = (url: string): string | null => {
-	try {
-		const parsed = new URL(url);
-		const host = parsed.hostname.toLowerCase();
-		return host.startsWith("www.") ? host.slice(4) : host;
-	} catch {
-		return null;
-	}
 };
 
 export function OgPreferenceCheckbox({

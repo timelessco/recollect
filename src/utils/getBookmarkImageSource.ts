@@ -3,15 +3,7 @@ import { useMemo } from "react";
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
 import { type SingleListData } from "../types/apiTypes";
 
-const getDomain = (url: string): string | null => {
-	try {
-		const parsed = new URL(url);
-		const host = parsed.hostname.toLowerCase();
-		return host.startsWith("www.") ? host.slice(4) : host;
-	} catch {
-		return null;
-	}
-};
+import { getDomain } from "./domain";
 
 /**
  * Custom hook to get image sources for bookmarks based on user's preferred OG domains
