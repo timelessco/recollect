@@ -23,19 +23,21 @@ DROP POLICY IF EXISTS "authenticated_discover_access" ON public.everything;
 -- PART 2: Alter the trash column type
 -- ============================================================================
 
+-- Drop the NOT NULL constraint FIRST (before type conversion)
+-- This allows NULL values during the type conversion
+ALTER TABLE public.everything
+ALTER COLUMN trash DROP NOT NULL;
+
+-- Drop existing default before type conversion
+ALTER TABLE public.everything
+ALTER COLUMN trash DROP DEFAULT;
+
 -- Convert boolean to timestamp:
 --   - false -> NULL (not trashed)
 --   - true -> NOW() (fallback timestamp for existing trashed items)
 ALTER TABLE public.everything
-ALTER COLUMN trash DROP DEFAULT;
-
-ALTER TABLE public.everything
 ALTER COLUMN trash TYPE timestamp with time zone
 USING CASE WHEN trash = true THEN NOW() ELSE NULL END;
-
--- Drop the NOT NULL constraint (column should be nullable)
-ALTER TABLE public.everything
-ALTER COLUMN trash DROP NOT NULL;
 
 -- Set new default to NULL (not trashed)
 ALTER TABLE public.everything
