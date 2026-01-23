@@ -156,7 +156,7 @@ export const ImportBookmarks = () => {
 						: "Drop the CSV file here or"}
 				</p>
 				<Button
-					className={`relative ${saveButtonClassName} rounded-[5px] ${uploading === "completed" ? "bg-gray-600 hover:bg-gray-600" : ""}`}
+					className={`relative py-[4.5px] ${saveButtonClassName} rounded-[5px] ${uploading === "completed" ? "bg-gray-600 hover:bg-gray-600" : ""}`}
 					isDisabled={
 						isFileUploaded
 							? uploading === "completed" ||
@@ -172,10 +172,10 @@ export const ImportBookmarks = () => {
 								}
 					}
 				>
-					<span className="inline-flex min-h-[15px] min-w-[120px] items-center justify-center">
+					<span className="inline-flex min-h-[15px] items-center justify-center">
 						{isFileUploaded ? (
 							uploading === true ? (
-								<Spinner className="h-3 w-3" />
+								<Spinner className="mx-12.5 h-3 w-3" />
 							) : uploading === "completed" ? (
 								"Imported"
 							) : (
