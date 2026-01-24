@@ -46,7 +46,7 @@ export const ToggleDarkMode = () => {
 						isOpen={isOpen}
 						menuOpenToggle={setIsOpen}
 						menuButton={
-							<Button className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-gray-50 py-[7.5px] pr-[10px] pl-3 text-sm leading-[115%] font-medium text-gray-800 filter-[drop-shadow(0_0_1px_rgba(0,0,0,0.2))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))] outline-none hover:bg-gray-200">
+							<Button className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-gray-50 py-[7.5px] pr-[10px] pl-3 text-sm leading-[115%] font-medium text-gray-800 filter-[drop-shadow(0_0_0.5px_rgba(0,0,0,0.6))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))] outline-none hover:bg-gray-200">
 								<span>{currentThemeLabel}</span>
 								<DownArrowGray className="text-gray-400" />
 							</Button>
