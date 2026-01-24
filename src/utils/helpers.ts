@@ -1004,14 +1004,21 @@ export const collectAdditionalImages = async ({
 
 	const failedUploads = settledImages
 		.map((result, index) => ({ result, index }))
-		.filter(({ result }) => result.status === "rejected") as Array<{
-		result: PromiseRejectedResult;
+		.filter(
+			({ result }) =>
+				result.status === "rejected" ||
+				(result.status === "fulfilled" && result.value === null),
+		) as Array<{
+		result: PromiseRejectedResult | PromiseFulfilledResult<string | null>;
 		index: number;
 	}>;
 
 	if (failedUploads.length > 0) {
 		for (const { result, index } of failedUploads) {
-			const error = result.reason;
+			const error =
+				result.status === "rejected"
+					? result.reason
+					: new Error("Image upload returned null URL");
 
 			console.warn("collectAdditionalImages upload failed:", {
 				operation: "collect_additional_images",
@@ -1038,7 +1045,8 @@ export const collectAdditionalImages = async ({
 		}
 
 		const successfulUploadsCount = settledImages.filter(
-			(result) => result.status === "fulfilled" && Boolean(result.value),
+			(result): result is PromiseFulfilledResult<string> =>
+				result.status === "fulfilled" && typeof result.value === "string",
 		).length;
 
 		Sentry.captureException(new Error("Image uploads failed"), {
@@ -1056,8 +1064,8 @@ export const collectAdditionalImages = async ({
 
 	return settledImages
 		.filter(
-			(result): result is PromiseFulfilledResult<string | null> =>
-				result.status === "fulfilled" && Boolean(result.value),
+			(result): result is PromiseFulfilledResult<string> =>
+				result.status === "fulfilled" && typeof result.value === "string",
 		)
-		.map((fulfilled) => fulfilled.value) as string[];
+		.map((fulfilled) => fulfilled.value);
 };
