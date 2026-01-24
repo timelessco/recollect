@@ -12,7 +12,8 @@ import {
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { createServiceClient } from "../../../utils/supabaseClient";
-import { upload } from "../bookmark/add-url-screenshot";
+
+import { upload } from "@/lib/storage/media-upload";
 
 const ScreenshotPayloadSchema = z.object({
 	id: z.union([z.string(), z.number()]),

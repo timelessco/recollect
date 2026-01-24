@@ -2,9 +2,7 @@ import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import uniqid from "uniqid";
 
 import {
 	type AddBookmarkScreenshotPayloadTypes,
@@ -16,15 +14,12 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
-	R2_MAIN_BUCKET_NAME,
 	SCREENSHOT_API,
-	STORAGE_SCREENSHOT_IMAGES_PATH,
-	STORAGE_SCREENSHOT_VIDEOS_PATH,
 } from "../../../utils/constants";
 import { getAxiosConfigWithAuth } from "../../../utils/helpers";
-import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { upload } from "@/lib/storage/media-upload";
 import { collectAdditionalImages, collectVideo } from "@/utils/helpers";
 import { vet } from "@/utils/try";
 
@@ -34,69 +29,6 @@ type Data = {
 };
 
 const MAX_LENGTH = 1_300;
-
-export const upload = async (base64info: string, uploadUserId: string) => {
-	const imgName = `img-${uniqid?.time()}.jpg`;
-	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
-
-	const { error: uploadError } = await storageHelpers.uploadObject(
-		R2_MAIN_BUCKET_NAME,
-		storagePath,
-		new Uint8Array(decode(base64info)),
-		"image/jpg",
-	);
-
-	if (uploadError) {
-		console.error("Storage upload failed:", uploadError);
-		Sentry.captureException(uploadError, {
-			tags: {
-				operation: "storage_upload",
-				userId: uploadUserId,
-			},
-			extra: {
-				storagePath,
-			},
-		});
-		return null;
-	}
-
-	const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
-
-	return storageData?.publicUrl || null;
-};
-
-export const uploadVideo = async (
-	videoBuffer: ArrayBuffer,
-	uploadUserId: string,
-) => {
-	const videoName = `video-${uniqid?.time()}.mp4`;
-	const storagePath = `${STORAGE_SCREENSHOT_VIDEOS_PATH}/${uploadUserId}/${videoName}`;
-
-	const { error: uploadError } = await storageHelpers.uploadObject(
-		R2_MAIN_BUCKET_NAME,
-		storagePath,
-		new Uint8Array(videoBuffer),
-		"video/mp4",
-	);
-
-	if (uploadError) {
-		console.error("Video storage upload failed:", uploadError);
-		Sentry.captureException(uploadError, {
-			tags: {
-				operation: "video_storage_upload",
-				userId: uploadUserId,
-			},
-			extra: {
-				storagePath,
-			},
-		});
-		return null;
-	}
-
-	const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
-
-	return storageData?.publicUrl || null;
-};
 
 export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
@@ -233,29 +165,49 @@ export default async function handler(
 		const updatedDescription =
 			description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
 
-		const additionalImages = await collectAdditionalImages({
-			allImages: screenShotResponse?.data?.allImages,
-			userId,
-		});
+		const [additionalImagesSettled, additionalVideoSettled] =
+			await Promise.allSettled([
+				collectAdditionalImages({
+					allImages: screenShotResponse?.data?.allImages,
+					userId,
+				}),
+				collectVideo({
+					videoUrl: screenShotResponse?.data?.allVideos?.[0] ?? null,
+					userId,
+				}),
+			]);
 
-		// Log additional images result
+		const additionalImages =
+			additionalImagesSettled.status === "fulfilled"
+				? additionalImagesSettled.value
+				: [];
+
+		if (additionalImagesSettled.status === "rejected") {
+			console.warn("Additional images collection failed:", {
+				error: additionalImagesSettled.reason,
+				userId,
+			});
+		}
+
 		console.log("Additional images collected:", {
 			count: additionalImages.length,
 		});
 
-		console.log("Additional videos collected:", {
-			urls: screenShotResponse?.data?.allVideos,
-		});
+		const additionalVideoResult =
+			additionalVideoSettled.status === "fulfilled"
+				? additionalVideoSettled.value
+				: {
+						success: false as const,
+						error: "unknown" as const,
+						message: "collectVideo promise rejected",
+					};
 
-		/**
-		 * Video upload from screenshot response.
-		 * Currently collects only the first video due to timeout and storage limits.
-		 * For premium users (not yet implemented), we will collect all videos.
-		 */
-		const additionalVideos = await collectVideo({
-			videoUrl: screenShotResponse?.data?.allVideos?.[0] ?? null,
-			userId,
-		});
+		if (additionalVideoSettled.status === "rejected") {
+			console.warn("Additional video collection failed:", {
+				error: additionalVideoSettled.reason,
+				userId,
+			});
+		}
 
 		// Add screenshot URL to meta_data
 		const updatedMetaData = {
@@ -264,7 +216,10 @@ export default async function handler(
 			isPageScreenshot,
 			coverImage: existingBookmarkData?.ogImage,
 			additionalImages,
-			additionalVideos: additionalVideos ? [additionalVideos] : [],
+			additionalVideos:
+				additionalVideoResult.success && additionalVideoResult.url
+					? [additionalVideoResult.url]
+					: [],
 		};
 
 		const {

@@ -50,7 +50,7 @@ import {
 } from "./constants";
 import { vet } from "./try";
 import { getCategorySlugFromRouter } from "./url";
-import { upload, uploadVideo } from "@/pages/api/bookmark/add-url-screenshot";
+import { upload, uploadVideo } from "@/lib/storage/media-upload";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 	find(tagsData, (item) => {
@@ -682,12 +682,57 @@ type CollectVideoArgs = {
 	userId: string;
 };
 
+type CollectVideoErrorType =
+	| "timeout"
+	| "size"
+	| "upload"
+	| "network"
+	| "unknown";
+
+type CollectVideoResult =
+	| {
+			success: true;
+			url: string | null;
+	  }
+	| {
+			success: false;
+			error: CollectVideoErrorType;
+			message: string;
+	  };
+
+const getErrorTypeFromAbortSignal = (error: unknown): CollectVideoErrorType => {
+	if (!(error instanceof Error)) {
+		return "unknown";
+	}
+
+	const name = (error as Error).name;
+	const message = (error as Error).message.toLowerCase();
+
+	if (name === "AbortError" || name === "TimeoutError") {
+		return "timeout";
+	}
+
+	if (message.includes("aborted") || message.includes("timeout")) {
+		return "timeout";
+	}
+
+	// Generic fetch/network failures typically surface as TypeError
+	if (name === "TypeError") {
+		return "network";
+	}
+
+	return "unknown";
+};
+
 export const collectVideo = async ({
 	videoUrl,
 	userId,
-}: CollectVideoArgs): Promise<string | null> => {
+}: CollectVideoArgs): Promise<CollectVideoResult> => {
 	if (!videoUrl) {
-		return null;
+		return {
+			success: true,
+			url: null,
+		};
 	}
 
 	try {
@@ -704,7 +749,47 @@ export const collectVideo = async ({
 				downloadError instanceof Error
 					? downloadError.message
 					: "Unknown error";
-			throw new Error(`Failed to download video: ${errorMessage}`);
+			const errorType = getErrorTypeFromAbortSignal(downloadError);
+
+			console.warn("[collectVideo] Video download failed:", {
+				videoUrl,
+				error: errorMessage,
+				errorType,
+				status: videoResponse?.status,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: errorType === "unknown" ? "network" : errorType,
+				message: `Failed to download video: ${errorMessage}`,
+			};
+		}
+
+		// Validate content type BEFORE downloading body
+		const rawContentType = videoResponse.headers.get("content-type") ?? "";
+		const normalizedContentType = rawContentType
+			.split(";")[0]
+			.trim()
+			.toLowerCase();
+
+		if (!normalizedContentType?.startsWith("video/")) {
+			const error = `Invalid video content type: ${
+				rawContentType || "missing"
+			}`;
+			console.warn("[collectVideo] Video validation failed:", {
+				videoUrl,
+				error,
+				validationType: "content-type",
+				contentType: rawContentType,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "unknown",
+				message: error,
+			};
 		}
 
 		// Validate size BEFORE downloading (check headers first)
@@ -720,18 +805,11 @@ export const collectVideo = async ({
 					size,
 					userId,
 				});
-				Sentry.captureException(new Error(error), {
-					tags: {
-						operation: "video_content_validation",
-						validation_type: "size",
-						userId,
-					},
-					extra: {
-						videoUrl,
-						contentLength: size,
-					},
-				});
-				return null;
+				return {
+					success: false,
+					error: "size",
+					message: error,
+				};
 			}
 		}
 
@@ -745,7 +823,20 @@ export const collectVideo = async ({
 				arrayBufferError instanceof Error
 					? arrayBufferError.message
 					: "Unknown error";
-			throw new Error(`Failed to get array buffer: ${errorMessage}`);
+			const errorType = getErrorTypeFromAbortSignal(arrayBufferError);
+
+			console.warn("[collectVideo] Failed to read video array buffer:", {
+				videoUrl,
+				error: errorMessage,
+				errorType,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: errorType,
+				message: `Failed to get array buffer: ${errorMessage}`,
+			};
 		}
 
 		// Validate downloaded content size matches Content-Length
@@ -757,22 +848,11 @@ export const collectVideo = async ({
 				validationType: "size-validation",
 				userId,
 			});
-			Sentry.captureException(
-				new Error(validation.error || "Validation failed"),
-				{
-					tags: {
-						operation: "video_content_validation",
-						validation_type: "size-validation",
-						userId,
-					},
-					extra: {
-						videoUrl,
-						contentLength: videoResponse.headers.get("content-length"),
-						actualSize: arrayBuffer.byteLength,
-					},
-				},
-			);
-			return null;
+			return {
+				success: false,
+				error: "size",
+				message: validation.error || "Validation failed",
+			};
 		}
 
 		// Fallback size check when Content-Length was missing
@@ -785,29 +865,53 @@ export const collectVideo = async ({
 				size: arrayBuffer.byteLength,
 				userId,
 			});
-			Sentry.captureException(new Error(error), {
-				tags: {
-					operation: "video_content_validation",
-					validation_type: "size",
-					userId,
-				},
-				extra: {
-					videoUrl,
-					actualSize: arrayBuffer.byteLength,
-				},
-			});
-			return null;
+			return {
+				success: false,
+				error: "size",
+				message: error,
+			};
 		}
 
 		const [uploadError, uploadedUrl] = await vet(() =>
-			uploadVideo(arrayBuffer, userId),
+			uploadVideo(arrayBuffer, userId, normalizedContentType),
 		);
 
 		if (uploadError) {
-			throw uploadError;
+			const message =
+				uploadError instanceof Error
+					? uploadError.message
+					: "Unknown upload error";
+
+			console.warn("[collectVideo] Video upload to R2 failed:", {
+				videoUrl,
+				error: message,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "upload",
+				message,
+			};
 		}
 
-		return uploadedUrl;
+		if (!uploadedUrl) {
+			console.warn("[collectVideo] Video upload returned empty URL:", {
+				videoUrl,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "upload",
+				message: "Upload succeeded but returned empty URL",
+			};
+		}
+
+		return {
+			success: true,
+			url: uploadedUrl,
+		};
 	} catch (error) {
 		console.warn("[collectVideo] Video upload failed:", {
 			operation: "collect_video",
@@ -826,7 +930,14 @@ export const collectVideo = async ({
 			},
 		});
 
-		return null;
+		return {
+			success: false,
+			error: "unknown",
+			message:
+				error instanceof Error
+					? error.message
+					: "Unknown error in collectVideo",
+		};
 	}
 };
 
@@ -866,7 +977,39 @@ export const collectAdditionalImages = async ({
 				imageIndex: index,
 				error,
 			});
+
+			Sentry.addBreadcrumb({
+				category: "image-upload",
+				message: `Image ${index} failed`,
+				level: "warning",
+				data: {
+					index,
+					userId,
+					error:
+						error instanceof Error
+							? error.message
+							: typeof error === "string"
+								? error
+								: "Unknown error",
+				},
+			});
 		}
+
+		const successfulUploadsCount = settledImages.filter(
+			(result) => result.status === "fulfilled" && Boolean(result.value),
+		).length;
+
+		Sentry.captureException(new Error("Image uploads failed"), {
+			tags: {
+				operation: "collect_additional_images",
+				userId,
+			},
+			extra: {
+				totalImages: settledImages.length,
+				successCount: successfulUploadsCount,
+				failureCount: failedUploads.length,
+			},
+		});
 	}
 
 	return settledImages
