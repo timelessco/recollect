@@ -1,6 +1,6 @@
 -- ============================================================================
 -- Migration: Add preferred_og_domains column to profiles table
--- Created: 2026-01-13 12:00:00 UTC
+-- Created: 2026-01-23 
 -- Purpose: Store user's preferred Open Graph domains for bookmark metadata
 -- Affected: public.profiles table
 -- ============================================================================
