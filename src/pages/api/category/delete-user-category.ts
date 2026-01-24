@@ -123,7 +123,7 @@ export default async function handler(
 		await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("id")
-			.eq("trash", true)
+			.not("trash", "is", null)
 			.eq("user_id", userId);
 
 	if (!isNull(trashedBookmarksError)) {
