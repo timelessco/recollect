@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { TrashIcon } from "@heroicons/react/20/solid";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -10,25 +8,24 @@ import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHook
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
+import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
+import Switch from "../../../components/switch";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import { CopyIcon } from "../../../icons/copy-icon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import { GlobeIcon } from "../../../icons/globe-icon";
-import { LinkIcon } from "../../../icons/link-icon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
-import {
-	type CategoriesData,
-	type CollabDataInCategory,
-} from "../../../types/apiTypes";
+import { type CollabDataInCategory } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
-import { CATEGORIES_KEY, EMAIL_CHECK_PATTERN } from "../../../utils/constants";
+import { EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
 const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
@@ -176,12 +173,12 @@ type ShareContentProps = {
 
 const ShareContent = (props: ShareContentProps) => {
 	const [publicUrl, setPublicUrl] = useState("");
-	const [linkCopied, setLinkCopied] = useState(false);
 	const [inviteUserEditAccess, setInviteUserEditAccess] = useState(false);
+	const [linkCopied, setLinkCopied] = useState(false);
 
-	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: currentCategoryId } = useGetCurrentCategoryId();
+	const { allCategories: categoryData } = useFetchCategories();
 
 	const shareCategoryId = useMiscellaneousStore(
 		(state) => state.shareCategoryId,
@@ -250,16 +247,8 @@ const ShareContent = (props: ShareContentProps) => {
 		}
 	};
 
-	const categoryData = queryClient.getQueryData([
-		CATEGORIES_KEY,
-		session?.user?.id,
-	]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
-
 	const currentCategory = find(
-		categoryData?.data,
+		categoryData?.data ?? [],
 		(item) => item?.id === dynamicCategoryId,
 	);
 
@@ -309,8 +298,10 @@ const ShareContent = (props: ShareContentProps) => {
 									{ label: "View", value: "View" },
 								]}
 								// disabled
-								renderCustomSelectButton={() => (
-									<div className="flex items-center text-gray-alpha-600">
+								renderCustomSelectButton={(isOpen) => (
+									<div
+										className={`flex items-center rounded-[6px] px-2 py-[5.5px] text-gray-alpha-600 hover:bg-gray-50 ${isOpen ? "bg-gray-50" : ""}`}
+									>
 										<p className="mr-1">
 											{inviteUserEditAccess ? "Editor" : "View"}
 										</p>
@@ -322,7 +313,7 @@ const ShareContent = (props: ShareContentProps) => {
 							/>
 						)
 					}
-					wrapperClassName="py-[7px] px-[10px] bg-gray-alpha-100 rounded-lg flex items-center justify-between relative"
+					wrapperClassName="py-0.5 pl-[10px] pr-0.5 bg-gray-alpha-100 rounded-lg flex items-center justify-between relative"
 				/>
 			</form>
 			<div className="pt-3">
@@ -352,82 +343,68 @@ const ShareContent = (props: ShareContentProps) => {
 							/>
 						))}
 				</div>
-				<div className="mx-2 flex items-end justify-between border-y py-[15.5px]">
-					<div className="flex items-center">
-						<figure className="flex items-center justify-center text-gray-1000">
+				<div className="mx-2 flex items-center justify-between border-t py-2">
+					<div
+						className={`flex items-center ${
+							currentCategory?.is_public
+								? "cursor-pointer"
+								: "cursor-not-allowed opacity-50"
+						}`}
+						onClick={() => {
+							if (currentCategory?.is_public) {
+								void navigator.clipboard.writeText(publicUrl);
+								setLinkCopied(true);
+							}
+						}}
+						onKeyDown={(event) => {
+							if (
+								(event.key === "Enter" || event.key === " ") &&
+								currentCategory?.is_public
+							) {
+								void navigator.clipboard.writeText(publicUrl);
+								setLinkCopied(true);
+							}
+						}}
+						role="button"
+						tabIndex={currentCategory?.is_public ? 0 : -1}
+					>
+						<figure className="flex items-center justify-center text-gray-900">
 							<GlobeIcon className="ml-0.5 h-4 w-4" />
 						</figure>
 						<p className="ml-[6px] text-13 leading-[15px] font-450 text-gray-800">
-							Anyone with link
+							Public link
 						</p>
+						<span className="mx-1.5 text-gray-600">•</span>
+						<p className="text-13 leading-[15px] font-450 text-gray-600">
+							{linkCopied ? "Copied" : "Copy"}
+						</p>
+						<figure className="ml-1 flex items-center justify-center">
+							<CopyIcon className="h-[13px] w-[13px]" />
+						</figure>
 					</div>
 					{isUserTheCategoryOwner ? (
-						<AriaSelect
-							defaultValue={
-								currentCategory?.is_public ? "View access" : "No access"
-							}
-							onOptionClick={(value) => {
+						<Switch
+							disabled={false}
+							enabled={currentCategory?.is_public ?? false}
+							setEnabled={() => {
 								if (typeof dynamicCategoryId !== "number") {
 									return;
 								}
 
-								updateCategoryOptimisticMutation.mutate(
-									{
-										category_id: dynamicCategoryId,
-										updateData: {
-											is_public: value === "View access",
-										},
+								updateCategoryOptimisticMutation.mutate({
+									category_id: dynamicCategoryId,
+									updateData: {
+										is_public: !currentCategory?.is_public,
 									},
-									{
-										onSuccess: () => {
-											setLinkCopied(false);
-										},
-									},
-								);
+								});
 							}}
-							options={[
-								{ label: "View access", value: "View access" },
-								{ label: "No access", value: "No access" },
-							]}
-							renderCustomSelectButton={() => (
-								<div className="flex items-center">
-									<p className="mr-1 text-gray-800">
-										{currentCategory?.is_public ? "View access" : "No access"}
-									</p>
-									<figure className="text-gray-500">
-										<DownArrowGray />
-									</figure>
-								</div>
-							)}
+							size="small"
 						/>
 					) : (
 						<div className={rightTextStyles}>
 							{currentCategory?.is_public ? "View access" : "No access"}
 						</div>
 					)}
-				</div>
-				<div
-					className={`flex items-center px-2 py-[7.5px] ${
-						currentCategory?.is_public
-							? "cursor-pointer"
-							: "cursor-not-allowed opacity-50"
-					}`}
-					onClick={() => {
-						if (currentCategory?.is_public) {
-							void navigator.clipboard.writeText(publicUrl);
-							setLinkCopied(true);
-						}
-					}}
-					onKeyDown={() => {}}
-					role="button"
-					tabIndex={0}
-				>
-					<figure className="text-gray-1000">
-						<LinkIcon className="ml-0.5 h-4 w-4" />
-					</figure>
-					<p className="ml-[6px] text-13 leading-[15px] font-450 text-[#007bf4e5]">
-						{linkCopied ? "Link copied" : "Copy link"}
-					</p>
 				</div>
 			</div>
 		</div>
