@@ -14,7 +14,6 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
@@ -45,6 +44,7 @@ import {
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 import { SettingsToggleCard } from "./settingsToggleCard";
+import { ToggleDarkMode } from "@/components/toggleDarkMode";
 
 type SettingsUsernameFormTypes = {
 	username: string;
@@ -412,6 +412,7 @@ const Settings = () => {
 						}}
 					/>
 				</div>
+				<ToggleDarkMode />
 				{/*
 				feature yet to implement
 				<div className="pt-10">
@@ -435,7 +436,6 @@ const Settings = () => {
 						</div>
 					</div>
 				</div> */}
-				<Switch />
 				<div className="pt-10">
 					<p className="text-[14px] leading-[115%] font-medium text-gray-900">
 						Delete Account
