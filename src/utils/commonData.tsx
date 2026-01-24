@@ -1,13 +1,12 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 
 import FolderIcon from "../icons/folderIcon";
-import HomeIconGray from "../icons/homeIconGray";
+import HomeIconGray from "../icons/home-icon-gray";
 import ImageIcon from "../icons/imageIcon";
-import InboxIconGray from "../icons/inboxIconGray";
-import { LinkIcon } from "../icons/link-icon";
+import InboxIconGray from "../icons/inbox-icon-gray";
 import SettingsIcon from "../icons/settingsIcon";
-import XIcon from "../icons/social/x";
-import TrashIconGray from "../icons/trashIconGray";
+import XIcon from "../icons/social/x-icon";
+import TrashIconGray from "../icons/trash-icon-gray";
 import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
 
@@ -25,6 +24,7 @@ import {
 	VIDEOS_URL,
 } from "./constants";
 import { DiscoverIcon } from "@/icons/discover-icon";
+import { GlobeLinkIcon } from "@/icons/globe-link-icon";
 
 // TODO: check if this is needed (for code cleanup)
 const object = [
@@ -3667,7 +3667,7 @@ export const optionsMenuListArray = (
 	{
 		icon: (
 			<figure className="flex h-[18px] w-[18px] items-center justify-center">
-				<LinkIcon />
+				<GlobeLinkIcon />
 			</figure>
 		),
 		name: menuListItemName.links,
