@@ -120,14 +120,10 @@ There are two recommended approaches for making schema changes:
 4. **Test by resetting database**:
 
    ```bash
-   pnpm db:reset # If using production dump
-   # OR
-   npx supabase db reset # If using minimal seed
+   npx supabase db reset
    ```
 
 5. **Verify everything works** with your app
-
-**Note:** See [Database Reset](#database-reset) section for choosing the right command based on your seed data.
 
 **Database Webhooks Setup**: After running migrations, enable the **Database Webhooks** integration in Supabase Studio under **Database → Integrations → Postgres Modules** to configure webhook triggers. When setting webhook URLs, use your local machine IP instead of `localhost`:
 
@@ -147,20 +143,11 @@ See [Supabase GitHub Issue #13005](https://github.com/supabase/supabase/issues/1
 
 #### Database Reset
 
-Choose the appropriate reset command based on your seed data source:
+```bash
+npx supabase db reset
+```
 
-| Command                 | Use When                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| `pnpm db:reset`         | Using production dump as seed (`supabase/seed.sql` from `db dump --data-only`) |
-| `npx supabase db reset` | Using minimal/custom seed data or no seed file                                 |
-
-**Why two commands?**
-
-When using a production dump, migrations seed certain data (e.g., default categories) that also exists in the dump. This causes duplicate key conflicts. `pnpm db:reset` handles this by:
-
-1. Running migrations without seeding (`--no-seed`)
-2. Cleaning up migration-seeded data that conflicts with the dump
-3. Loading the production dump
+This resets the database, applies all migrations, and seeds data. Conflicts between migration-seeded data and seed.sql are handled automatically by `supabase/seeds/00-cleanup.sql`.
 
 #### Database Operations
 
@@ -169,8 +156,7 @@ When using a production dump, migrations seed certain data (e.g., default catego
 npx supabase migration new <name>      # Create a new migration file
 npx supabase migration list            # List all migrations and their status
 npx supabase migration up              # Apply pending migrations
-pnpm db:reset                          # Reset DB with production dump (recommended)
-npx supabase db reset                  # Reset DB with minimal seed data
+npx supabase db reset                  # Reset DB and apply all migrations + seed
 
 # Schema operations
 npx supabase db diff -f <name>         # Generate migration from schema changes
@@ -501,7 +487,7 @@ If none of these solutions work:
 
    ```bash
    # Always test with a fresh reset
-   pnpm db:reset # If using production dump
+   npx supabase db reset
    ```
 
 4. **Keep seed data up to date**
@@ -550,7 +536,7 @@ npx supabase db dump --data-only --local > supabase/seed.sql
 npx supabase db dump --db-url < CONNECTION_STRING > --data-only > supabase/seed.sql
 
 # 2. Reset local database with new data
-pnpm db:reset # Handles conflicts between migrations and dump data
+npx supabase db reset
 ```
 
 **Note:** Be careful with production data containing sensitive information. Consider anonymizing data for local development.
@@ -582,7 +568,7 @@ After initial setup, verify everything is working:
 - [ ] Can access API Gateway at <http://localhost:54321>
 - [ ] Environment variables configured in `.env.local`
 - [ ] Can run `npx supabase status` successfully
-- [ ] Migrations apply without errors (`pnpm db:reset`)
+- [ ] Migrations apply without errors (`npx supabase db reset`)
 - [ ] Seed data loads correctly
 - [ ] Dev accounts can login to your application
 - [ ] Database queries work from your application
