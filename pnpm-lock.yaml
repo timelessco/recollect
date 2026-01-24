@@ -286,6 +286,9 @@ importers:
       del-cli:
         specifier: 7.0.0
         version: 7.0.0
+      deno:
+        specifier: 2.6.5
+        version: 2.6.5
       dotenv:
         specifier: 17.2.3
         version: 17.2.3
@@ -1079,6 +1082,36 @@ packages:
 
   '@cypress/xvfb@1.2.4':
     resolution: {integrity: sha512-skbBzPggOVYCbnGgV+0dmBdW/s77ZkAOXIC1knS8NagwDjBrNC1LuXtQJeiN6l+m7lzmHtaoUw/ctJKdqkG57Q==}
+
+  '@deno/darwin-arm64@2.6.5':
+    resolution: {integrity: sha512-jHO9d9XsB2YzVUsJr7U9DEj7QEw69yMYbyaLbK1bpHJ6IjYRJFU/Wi7I1b9jSXurezQQulKf75+9QbU27XkL2g==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@deno/darwin-x64@2.6.5':
+    resolution: {integrity: sha512-piyZbW02p4zlviz14UVvoUGhh2mu0OYQBBahdLIbnHaPC14Rj+fHu0vgG8+PTJNCIRkxA1zrm5/GBbjqU3GeZQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@deno/linux-arm64-glibc@2.6.5':
+    resolution: {integrity: sha512-9VjtjIepMgSc6aHNOvjHAlHkG/Lmatoeb6k5vpCtVLpwJWJcteIrNX+Rc2u7HcfJctfPs6HwDYsCGI/jnwwzGw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@deno/linux-x64-glibc@2.6.5':
+    resolution: {integrity: sha512-TZV2Ez3T1qaA7snLKvevwq2LyTGI+1lCQrULZgrytmcaa0Q/9aErA3c135CSscv5LDKSWUXtBCWOHHI6rGm9MA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@deno/win32-arm64@2.6.5':
+    resolution: {integrity: sha512-5zPTnSv0R72GwVxxP20cLN/K5VJd6mF5yaLd/4tnwpv4jExiiQWaoXrae/M8O16Ruz8R+AIpIJfs3oZ+2gwuzA==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@deno/win32-x64@2.6.5':
+    resolution: {integrity: sha512-vSr5ZjBvv5n80Bwa9P0WVLpUNLqnDtXMFIuR7H4mdo5zXU9Ay8ggPQ83yPMjmgqRZOBJNXQDFUA3ZWW+UmMjYQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
@@ -5095,6 +5128,10 @@ packages:
   delegates@1.0.0:
     resolution: {integrity: sha512-bd2L678uiWATM6m5Z1VzNCErI3jiGzt6HGY8OVICs40JQq/HALfbyNJmp0UDakEY4pMMaN0Ly5om/B1VI/+xfQ==}
 
+  deno@2.6.5:
+    resolution: {integrity: sha512-zAEGhAKPyKTA7HwtSVPAmdpj+WQfvw0tPemgkaRsqGLe7oi85iqUPCoCEkItiYp3ZellfQIbDHqQmKUY6fgxig==}
+    hasBin: true
+
   dequal@2.0.3:
     resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
     engines: {node: '>=6'}
@@ -8703,6 +8740,7 @@ packages:
   tar@6.2.1:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
 
   tar@7.5.2:
     resolution: {integrity: sha512-7NyxrTE4Anh8km8iEy7o0QYPs+0JKBTj5ZaqHg6B39erLg0qYXN3BijtShwbsNSvQ+LN75+KV+C4QR/f6Gwnpg==}
@@ -10440,6 +10478,24 @@ snapshots:
       lodash.once: 4.1.1
     transitivePeerDependencies:
       - supports-color
+
+  '@deno/darwin-arm64@2.6.5':
+    optional: true
+
+  '@deno/darwin-x64@2.6.5':
+    optional: true
+
+  '@deno/linux-arm64-glibc@2.6.5':
+    optional: true
+
+  '@deno/linux-x64-glibc@2.6.5':
+    optional: true
+
+  '@deno/win32-arm64@2.6.5':
+    optional: true
+
+  '@deno/win32-x64@2.6.5':
+    optional: true
 
   '@discoveryjs/json-ext@0.5.7': {}
 
@@ -15216,6 +15272,15 @@ snapshots:
 
   delegates@1.0.0:
     optional: true
+
+  deno@2.6.5:
+    optionalDependencies:
+      '@deno/darwin-arm64': 2.6.5
+      '@deno/darwin-x64': 2.6.5
+      '@deno/linux-arm64-glibc': 2.6.5
+      '@deno/linux-x64-glibc': 2.6.5
+      '@deno/win32-arm64': 2.6.5
+      '@deno/win32-x64': 2.6.5
 
   dequal@2.0.3: {}
 

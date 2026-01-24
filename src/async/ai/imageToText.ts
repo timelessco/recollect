@@ -38,10 +38,13 @@ export const imageToText = async (
 		const key = userApiKey ?? (process.env.GOOGLE_GEMINI_TOKEN as string);
 
 		const genAI = new GoogleGenerativeAI(key);
-		const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+		const model = genAI.getGenerativeModel({
+			model: "gemini-flash-lite-latest",
+		});
 
 		// For Image Caption
-		const captionPrompt = "Describe this image in a single, concise sentence.";
+		const captionPrompt =
+			"Write a single, concise sentence describing what you see. Be direct and specific. Do not start with phrases like 'The image shows', 'The image is', 'This is', or 'A picture of'. Just describe what's in the image.";
 		const captionResult = await model.generateContent([
 			captionPrompt,
 			{
