@@ -71,6 +71,7 @@ const videoLogic = async (
 
 	let imgData;
 	let ocrData;
+	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
 	let imageCaption;
 	if (thumbnailUrl?.publicUrl) {
 		// Handle blurhash generation
@@ -88,8 +89,11 @@ const videoLogic = async (
 		}
 
 		// Handle OCR processing
+		// OCR returns { text, status } object
 		try {
-			ocrData = await ocr(thumbnailUrl?.publicUrl, supabase, userId);
+			const ocrResult = await ocr(thumbnailUrl?.publicUrl, supabase, userId);
+			ocrData = ocrResult.text;
+			ocrStatus = ocrResult.status;
 		} catch (error) {
 			console.error("OCR processing failed:", error);
 			Sentry.captureException(error, {
@@ -99,6 +103,7 @@ const videoLogic = async (
 				},
 			});
 			ocrData = null;
+			ocrStatus = "no_text";
 		}
 
 		// Handle image caption generation
@@ -128,6 +133,7 @@ const videoLogic = async (
 		favIcon: null,
 		twitter_avatar_url: null,
 		ocr: ocrData ?? null,
+		ocr_status: ocrStatus,
 		coverImage: null,
 		screenshot: null,
 		isOgImagePreferred: false,

@@ -43,7 +43,7 @@ export type SingleListData = {
 	ogimage?: string;
 	screenshot: string;
 	title: string;
-	trash: boolean;
+	trash: string | null;
 	type: string;
 	url: string;
 	user_id: ProfilesTableTypes;

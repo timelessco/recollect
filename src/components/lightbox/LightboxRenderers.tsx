@@ -6,6 +6,7 @@ import loaderGif from "../../../public/loader-gif.gif";
 import { useIframeStore } from "../../store/iframeStore";
 import { type SingleListData } from "../../types/apiTypes";
 import {
+	instagramType,
 	PDF_MIME_TYPE,
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
@@ -73,7 +74,7 @@ export const VideoSlide = ({ bookmark, isActive }: SlideProps) => (
 			<VideoPlayer
 				isActive={isActive ?? false}
 				src={
-					(bookmark?.type === tweetType || bookmark?.type === "instagram") &&
+					(bookmark?.type === tweetType || bookmark?.type === instagramType) &&
 					bookmark?.meta_data?.video_url
 						? bookmark?.meta_data?.video_url
 						: (bookmark?.url ?? "")

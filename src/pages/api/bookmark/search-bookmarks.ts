@@ -129,6 +129,7 @@ export default async function handler(
 			categoryScope,
 		});
 
+		const isTrashPage = category_id === TRASH_URL;
 		let query = supabase
 			.rpc("search_bookmarks_url_tag_scope", {
 				search_text: searchText,
@@ -136,8 +137,14 @@ export default async function handler(
 				tag_scope: tagName,
 				category_scope: isDiscoverPage ? null : categoryScope,
 			})
-			.eq("trash", category_id === TRASH_URL)
 			.range(offset, offset + limit);
+
+		// Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
+		if (isTrashPage) {
+			query = query.not("trash", "is", null);
+		} else {
+			query = query.is("trash", null);
+		}
 
 		if (isDiscoverPage) {
 			query = query.not("make_discoverable", "is", null);

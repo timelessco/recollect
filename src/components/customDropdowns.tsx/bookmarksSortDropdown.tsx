@@ -32,30 +32,6 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 	const { sortBy: bookmarksSortValue } = useGetSortBy();
 
 	const sortOptions = [
-		// {
-		//   label: "By date ↑",
-		//   value: "date-sort-acending",
-		// },
-		// {
-		//   label: "By Date",
-		//   value: "date-sort-decending",
-		// },
-		// {
-		//   label: "By Name (A → Z)",
-		//   value: "alphabetical-sort-acending",
-		// },
-		// {
-		//   label: "By name (Z → A)",
-		//   value: "alphabetical-sort-decending",
-		// },
-		// {
-		//   label: "By url (A → Z)",
-		//   value: "url-sort-acending",
-		// },
-		// {
-		//   label: "By url (Z → A)",
-		//   value: "url-sort-decending",
-		// },
 		{
 			label: "Recent First",
 			value: "date-sort-acending",

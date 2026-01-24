@@ -17,6 +17,7 @@ type EnrichMetadataParams = {
 	existingMetadata: Record<string, unknown>;
 	ogImage: string;
 	isTwitterBookmark: boolean;
+	isInstagramBookmark: boolean;
 	videoUrl?: string | null;
 	userId: string;
 	supabase: SupabaseClient;
@@ -55,6 +56,7 @@ export const enrichMetadata = async ({
 	existingMetadata,
 	ogImage,
 	isTwitterBookmark,
+	isInstagramBookmark,
 	videoUrl,
 	userId,
 	supabase,
@@ -64,17 +66,30 @@ export const enrichMetadata = async ({
 	const [videoResult, ocrResult, captionResult, blurhashResult] =
 		await Promise.allSettled([
 			// Video upload (conditional)
-			isTwitterBookmark && videoUrl && typeof videoUrl === "string"
+			(isTwitterBookmark || isInstagramBookmark) &&
+			videoUrl &&
+			typeof videoUrl === "string"
 				? (async () => {
-						console.log("[enrichMetadata] Uploading Twitter video to R2:", {
-							url,
-						});
-						const r2VideoUrl = await uploadVideoToR2(videoUrl, userId);
-						if (r2VideoUrl) {
-							console.log("[enrichMetadata] Twitter video uploaded to R2:", {
+						console.log(
+							`[enrichMetadata] Uploading ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video to R2:`,
+							{
 								url,
-								r2VideoUrl,
-							});
+							},
+						);
+						const r2VideoUrl = await uploadVideoToR2(
+							videoUrl,
+							userId,
+							isTwitterBookmark,
+							isInstagramBookmark,
+						);
+						if (r2VideoUrl) {
+							console.log(
+								`[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video uploaded to R2:`,
+								{
+									url,
+									r2VideoUrl,
+								},
+							);
 							return r2VideoUrl;
 						}
 
@@ -82,7 +97,7 @@ export const enrichMetadata = async ({
 						// Video upload is best-effort. If the URL is expired, the UI will
 						// fall back to displaying the thumbnail image instead.
 						console.warn(
-							"[enrichMetadata] Video upload failed, using original URL:",
+							`[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video upload failed, using original URL:`,
 							{ url, videoUrl },
 						);
 						return videoUrl;
@@ -101,10 +116,13 @@ export const enrichMetadata = async ({
 		videoResult.status === "fulfilled" ? videoResult.value : null;
 
 	// Extract OCR result
-	const { isOcrFailed, ocrResult: ocrData } =
-		ocrResult.status === "fulfilled"
-			? ocrResult.value
-			: { isOcrFailed: true, ocrResult: null };
+	const {
+		isOcrFailed,
+		ocrResult: ocrData,
+		ocrStatus,
+	} = ocrResult.status === "fulfilled"
+		? ocrResult.value
+		: { isOcrFailed: true, ocrResult: null, ocrStatus: "no_text" };
 
 	// Extract caption result
 	const { isImageCaptionFailed, image_caption } =
@@ -121,6 +139,7 @@ export const enrichMetadata = async ({
 	const metadata = {
 		...existingMetadata,
 		ocr: ocrData,
+		ocr_status: ocrStatus,
 		image_caption,
 		width: blurhash?.width,
 		height: blurhash?.height,
@@ -150,12 +169,15 @@ const processOcr = async (
 ) => {
 	console.log("[processOcr] Extracting text via OCR:", { url, ogImage });
 	// Extract text from the image
+	// OCR returns { text, status } object
 	try {
 		const ocrResult = await ocr(ogImage, supabase, userId);
-		if (!ocrResult) {
+
+		if (!ocrResult.text) {
 			console.error("[processOcr] OCR returned empty result:", {
 				url,
 				ogImage,
+				status: ocrResult.status,
 			});
 			Sentry.captureMessage("OCR returned empty result", {
 				level: "error",
@@ -166,14 +188,23 @@ const processOcr = async (
 				extra: {
 					url,
 					ogImage,
+					status: ocrResult.status,
 				},
 			});
-			return { isOcrFailed: true, ocrResult: null };
+			return {
+				isOcrFailed: true,
+				ocrResult: null,
+				ocrStatus: ocrResult.status,
+			};
 		} else {
 			console.log("[processOcr] OCR extraction completed successfully:", {
 				url,
 			});
-			return { isOcrFailed: false, ocrResult };
+			return {
+				isOcrFailed: false,
+				ocrResult: ocrResult.text,
+				ocrStatus: ocrResult.status,
+			};
 		}
 	} catch (error) {
 		console.error("[processOcr] OCR threw error:", { url, ogImage, error });
@@ -187,7 +218,7 @@ const processOcr = async (
 				ogImage,
 			},
 		});
-		return { isOcrFailed: true, ocrResult: null };
+		return { isOcrFailed: true, ocrResult: null, ocrStatus: "no_text" };
 	}
 };
 
@@ -308,13 +339,24 @@ const processBlurhash = async (
  * Downloads a video from external URL and uploads to R2
  * @param videoUrl - External video URL
  * @param user_id - User ID for storage path
+ * @param isTwitterBookmark - Whether this is a Twitter video
+ * @param isInstagramBookmark - Whether this is an Instagram video
  * @returns R2 public URL or null if failed
  */
 export const uploadVideoToR2 = async (
 	videoUrl: string,
 	user_id: string,
+	isTwitterBookmark: boolean,
+	isInstagramBookmark: boolean,
 ): Promise<string | null> => {
 	try {
+		// Validate URL based on bookmark type (defense in depth)
+		if (isTwitterBookmark) {
+			validateTwitterMediaUrl(videoUrl);
+		} else if (isInstagramBookmark) {
+			validateInstagramMediaUrl(videoUrl);
+		}
+
 		const videoResponse: Response = await fetch(videoUrl, {
 			headers: {
 				"User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
@@ -345,8 +387,13 @@ export const uploadVideoToR2 = async (
 			);
 		}
 
-		// Generate unique filename
-		const videoName = `twitter-video-${uniqid.time()}.mp4`;
+		// Generate unique filename based on bookmark type
+		const videoPrefix = isInstagramBookmark
+			? "instagram-video"
+			: isTwitterBookmark
+				? "twitter-video"
+				: "video";
+		const videoName = `${videoPrefix}-${uniqid.time()}.mp4`;
 		const storagePath = `${STORAGE_FILES_PATH}/${user_id}/${videoName}`;
 
 		// Determine content type from response or default to mp4
@@ -363,8 +410,13 @@ export const uploadVideoToR2 = async (
 		);
 
 		if (uploadError) {
+			const operation = isInstagramBookmark
+				? "instagram_video_upload"
+				: isTwitterBookmark
+					? "twitter_video_upload"
+					: "video_upload";
 			Sentry.captureException(uploadError, {
-				tags: { operation: "twitter_video_upload" },
+				tags: { operation },
 				extra: { videoUrl, userId: user_id },
 			});
 			console.error("R2 video upload failed:", uploadError);
@@ -378,8 +430,13 @@ export const uploadVideoToR2 = async (
 	} catch (error) {
 		console.error("Error in uploadVideoToR2:", error);
 
+		const operation = isInstagramBookmark
+			? "instagram_video_download"
+			: isTwitterBookmark
+				? "twitter_video_download"
+				: "video_download";
 		Sentry.captureException(error, {
-			tags: { operation: "twitter_video_download" },
+			tags: { operation },
 			extra: { videoUrl, userId: user_id },
 		});
 
@@ -401,6 +458,31 @@ export const validateTwitterMediaUrl = (urlString: string): void => {
 	}
 
 	if (!ALLOWED_TWITTER_DOMAINS.includes(url.hostname)) {
+		throw new Error("Domain not in allowlist");
+	}
+};
+
+const ALLOWED_INSTAGRAM_DOMAINS = [
+	".fbcdn.net",
+	".cdninstagram.com",
+	".instagram.com",
+];
+
+/**
+ * Validates Instagram media URLs to prevent SSRF attacks.
+ * Only allows HTTPS and domains from Instagram's CDN.
+ * @param urlString - The URL to validate
+ * @returns void - Throws an error if the URL is not valid
+ */
+export const validateInstagramMediaUrl = (urlString: string): void => {
+	const url = new URL(urlString);
+	if (url.protocol !== "https:") {
+		throw new Error("Only HTTPS allowed");
+	}
+
+	if (
+		!ALLOWED_INSTAGRAM_DOMAINS.some((domain) => url.hostname.endsWith(domain))
+	) {
 		throw new Error("Domain not in allowlist");
 	}
 };
