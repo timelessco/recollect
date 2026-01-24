@@ -419,12 +419,13 @@ const CardSection = ({
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
 			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
-			"w-full shadow-custom-8": cardTypeCondition === viewValues.card,
+			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.moodboard,
 			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"shadow-custom-8 rounded-lg": cardTypeCondition === viewValues.moodboard,
 		});
 
 		const playSvgClassName = classNames({
