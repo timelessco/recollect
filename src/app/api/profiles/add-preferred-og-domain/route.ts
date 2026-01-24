@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { PROFILES } from "@/utils/constants";
 import { normalizeDomain } from "@/utils/domain";
 import { HttpStatus } from "@/utils/error-utils/common";
 
@@ -41,12 +40,6 @@ export const POST = createPostApiHandlerWithAuth({
 	outputSchema: AddPreferredOgDomainResponseSchema,
 	handler: async ({ data, supabase, user, route }) => {
 		const { domain: rawDomain } = data;
-		const userId = user.id;
-
-		console.log(`[${route}] API called:`, {
-			userId,
-			rawDomain,
-		});
 
 		const domain = normalizeDomain(rawDomain);
 		if (!domain) {
@@ -58,69 +51,38 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		console.log(`[${route}] Extracted domain:`, { domain });
+		const { data: rows, error: rpcError } = await supabase.rpc(
+			"toggle_preferred_og_domain",
+			{ p_domain: domain },
+		);
 
-		// Fetch current profile to get existing preferred_og_domains
-		const { data: profileData, error: fetchError } = await supabase
-			.from(PROFILES)
-			.select("preferred_og_domains")
-			.eq("id", userId)
-			.single();
-
-		if (fetchError) {
+		if (rpcError) {
 			return apiError({
 				route,
-				message: "Failed to fetch user profile",
-				error: fetchError,
-				operation: "fetch_profile",
-				userId,
+				message: "Failed to toggle preferred OG domain",
+				error: rpcError,
+				operation: "rpc_toggle_preferred_og_domain",
+				userId: user.id,
 				extra: { domain },
 			});
 		}
 
-		console.log(`[${route}] Current preferred domains:`, {
-			preferredOgDomains: profileData.preferred_og_domains,
-		});
-
-		const existingDomains = profileData.preferred_og_domains ?? [];
-		const hasDomain = existingDomains.some(
-			(existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
-		);
-		const updatedDomains = hasDomain
-			? existingDomains.filter(
-					(existingDomain) =>
-						existingDomain.toLowerCase() !== domain.toLowerCase(),
-				)
-			: [...existingDomains, domain];
-
-		const { data: updatedData, error: updateError } = await supabase
-			.from(PROFILES)
-			.update({
-				preferred_og_domains: updatedDomains,
-			})
-			.eq("id", userId)
-			.select("id, preferred_og_domains")
-			.single();
-
-		if (updateError) {
+		const row = Array.isArray(rows) ? rows[0] : rows;
+		if (!row?.out_id) {
+			const err = new Error("RPC returned no profile");
 			return apiError({
 				route,
-				message: "Failed to update preferred OG domains",
-				error: updateError,
-				operation: "update_preferred_og_domains",
-				userId,
-				extra: { domain, updatedDomains },
+				message: "RPC returned no profile",
+				error: err,
+				operation: "rpc_toggle_preferred_og_domain",
+				userId: user.id,
+				extra: { domain },
 			});
 		}
 
-		console.log(
-			`[${route}] Successfully ${hasDomain ? "removed" : "added"} domain:`,
-			{
-				domain,
-				totalDomains: updatedData.preferred_og_domains?.length ?? 0,
-			},
-		);
-
-		return updatedData;
+		return {
+			id: row.out_id,
+			preferred_og_domains: row.out_preferred_og_domains,
+		};
 	},
 });

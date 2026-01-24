@@ -64,7 +64,6 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
 					}),
 				};
 			},
-			invalidates: [[USER_PROFILE, session?.user?.id]],
 		});
 
 	return { togglePreferredOgDomainOptimisticMutation };
