@@ -128,7 +128,8 @@ export const CustomLightBox = ({
 			if (
 				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
-				Boolean(bookmark?.meta_data?.video_url)
+				Boolean(bookmark?.meta_data?.video_url) ||
+				Boolean(bookmark?.meta_data?.additionalVideos?.[0])
 			) {
 				content = <VideoSlide bookmark={bookmark} isActive={isActive} />;
 			}
