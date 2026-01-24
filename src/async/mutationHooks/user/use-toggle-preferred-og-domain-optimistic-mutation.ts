@@ -1,19 +1,19 @@
-import { type AddPreferredOgDomainResponse } from "@/app/api/profiles/add-preferred-og-domain/route";
+import { type TogglePreferredOgDomainResponse } from "@/app/api/profiles/toggle-preferred-og-domain/route";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { useSupabaseSession } from "@/store/componentStore";
 import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
-	ADD_PREFERRED_OG_DOMAIN_API,
 	NEXT_API_URL,
+	TOGGLE_PREFERRED_OG_DOMAIN_API,
 	USER_PROFILE,
 } from "@/utils/constants";
 import { toggleDomainInArray } from "@/utils/domain";
 
 type UserProfileCache = { data: ProfilesTableTypes[] | null; error?: Error };
 
-type AddPreferredOgDomainInput = {
+type TogglePreferredOgDomainInput = {
 	domain: string;
 };
 
@@ -23,15 +23,15 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
 
 	const togglePreferredOgDomainOptimisticMutation =
 		useReactQueryOptimisticMutation<
-			AddPreferredOgDomainResponse,
+			TogglePreferredOgDomainResponse,
 			Error,
-			AddPreferredOgDomainInput,
+			TogglePreferredOgDomainInput,
 			typeof queryKey,
 			UserProfileCache | undefined
 		>({
 			mutationFn: (payload) =>
-				postApi<AddPreferredOgDomainResponse>(
-					`${NEXT_API_URL}${ADD_PREFERRED_OG_DOMAIN_API}`,
+				postApi<TogglePreferredOgDomainResponse>(
+					`${NEXT_API_URL}${TOGGLE_PREFERRED_OG_DOMAIN_API}`,
 					{ domain: payload.domain },
 				),
 			queryKey,

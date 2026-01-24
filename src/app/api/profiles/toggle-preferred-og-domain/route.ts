@@ -5,9 +5,9 @@ import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { normalizeDomain } from "@/utils/domain";
 import { HttpStatus } from "@/utils/error-utils/common";
 
-const ROUTE = "add-preferred-og-domain";
+const ROUTE = "toggle-preferred-og-domain";
 
-const AddPreferredOgDomainPayloadSchema = z.object({
+const TogglePreferredOgDomainPayloadSchema = z.object({
 	domain: z
 		.string()
 		.trim()
@@ -21,23 +21,23 @@ const AddPreferredOgDomainPayloadSchema = z.object({
 		.refine((domain) => domain !== "localhost", "localhost not allowed"),
 });
 
-export type AddPreferredOgDomainPayload = z.infer<
-	typeof AddPreferredOgDomainPayloadSchema
+export type TogglePreferredOgDomainPayload = z.infer<
+	typeof TogglePreferredOgDomainPayloadSchema
 >;
 
-const AddPreferredOgDomainResponseSchema = z.object({
+const TogglePreferredOgDomainResponseSchema = z.object({
 	id: z.string(),
 	preferred_og_domains: z.array(z.string()).nullable(),
 });
 
-export type AddPreferredOgDomainResponse = z.infer<
-	typeof AddPreferredOgDomainResponseSchema
+export type TogglePreferredOgDomainResponse = z.infer<
+	typeof TogglePreferredOgDomainResponseSchema
 >;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
-	inputSchema: AddPreferredOgDomainPayloadSchema,
-	outputSchema: AddPreferredOgDomainResponseSchema,
+	inputSchema: TogglePreferredOgDomainPayloadSchema,
+	outputSchema: TogglePreferredOgDomainResponseSchema,
 	handler: async ({ data, supabase, user, route }) => {
 		const { domain: rawDomain } = data;
 
