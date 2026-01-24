@@ -47,6 +47,9 @@ import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 
+import { CardViewVirtualized } from "./cardViewVirtualized";
+import { SingleRowViewVirtualized } from "./listViewVirtualized";
+import { MoodboardViewVirtualized } from "./moodboardViewVirtualized";
 import Option from "./option";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
@@ -117,23 +120,26 @@ const ListBox = (props: ListBoxDropTypes) => {
 	// this ref is for react-aria listbox
 	const ariaRef = useRef<HTMLUListElement | null>(null);
 
+	// Helper function to get scroll element
+	const getScrollElement = () => {
+		if (typeof document === "undefined") {
+			return null;
+		}
+
+		const element = document.querySelector("#scrollableDiv");
+
+		if (!element) {
+			return document.documentElement;
+		}
+
+		return element as HTMLElement;
+	};
+
 	// ---- Virtualizer Setup ----
 	const rowVirtualizer = useVirtualizer({
 		measureElement: (element) => element.getBoundingClientRect().height,
 		count: bookmarksList.length,
-		getScrollElement: () => {
-			if (typeof document === "undefined") {
-				return null;
-			}
-
-			const element = document.querySelector("#scrollableDiv");
-
-			if (!element) {
-				return document.documentElement;
-			}
-
-			return element;
-		},
+		getScrollElement,
 		estimateSize: () => {
 			// Default heights if not grid-based
 			if (cardTypeCondition === viewValues.list) {
@@ -171,24 +177,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 				return 1;
 			}
 
-			if (isMobile || isTablet) {
-				return 2;
-			}
-
-			switch (bookmarksColumns?.[0]) {
-				case 10:
-					return 5;
-				case 20:
-					return 4;
-				case 30:
-					return 3;
-				case 40:
-					return 2;
-				case 50:
-					return 1;
-				default:
-					return 1;
-			}
+			return getColumnCount(!isMobile && !isTablet, bookmarksColumns[0]);
 		})(),
 	});
 	const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
@@ -326,86 +315,35 @@ const ListBox = (props: ListBoxDropTypes) => {
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
 				{cardTypeCondition === viewValues.moodboard ? (
-					<div
-						style={{
-							height: rowVirtualizer?.getTotalSize(),
-							width: "100%",
-							position: "relative",
-						}}
-					>
-						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
-							const lanes = rowVirtualizer?.options?.lanes || 1;
-							const columnWidth = 100 / lanes;
-							return (
-								<div
-									data-index={virtualRow?.index}
-									key={virtualRow?.key?.toString()}
-									ref={rowVirtualizer?.measureElement}
-									style={{
-										position: "absolute",
-										top: 0,
-										left: `${virtualRow?.lane * columnWidth}%`,
-										width: `${columnWidth}%`,
-										transform: `translateY(${virtualRow?.start}px)`,
-										paddingLeft: "0.75rem",
-										paddingRight: "0.75rem",
-										paddingBottom: "1.5rem",
-									}}
-								>
-									{renderOption(virtualRow?.index)}
-								</div>
-							);
-						})}
-					</div>
+					<MoodboardViewVirtualized
+						rowVirtualizer={rowVirtualizer}
+						renderOption={renderOption}
+					/>
 				) : (
 					<div
-						style={{
-							height: rowVirtualizer?.getTotalSize(),
-							position: "relative",
-						}}
+						style={
+							cardTypeCondition === viewValues.card
+								? { position: "relative" }
+								: {
+										height: rowVirtualizer?.getTotalSize(),
+										position: "relative",
+									}
+						}
 					>
-						{rowVirtualizer?.getVirtualItems()?.map((virtualRow) => {
-							const isCardView = cardTypeCondition === viewValues.card;
-							const lanes = rowVirtualizer?.options?.lanes || 1;
-							const columnIndex = isCardView ? virtualRow.index % lanes : 0;
-							const columnWidth = isCardView ? 100 / lanes : 100;
-							// Calculate row index and get the row's top position
-							const rowIndex = Math.floor(virtualRow.index / lanes);
-							const rowStart =
-								rowVirtualizer
-									.getVirtualItems()
-									.find((vItem) => Math.floor(vItem.index / lanes) === rowIndex)
-									?.start ?? 0;
-
-							const translateX = isCardView ? columnWidth * columnIndex : 0;
-							const itemWidth = isCardView ? `${columnWidth}%` : "100%";
-
-							return (
-								<div
-									data-index={virtualRow.index}
-									key={virtualRow.key.toString()}
-									ref={rowVirtualizer.measureElement}
-									style={{
-										position: "absolute",
-										top: 0,
-										left: `${translateX}%`,
-										width: itemWidth,
-										transform: `translateY(${rowStart}px)`,
-										paddingBottom:
-											cardTypeCondition === viewValues.timeline
-												? "24px"
-												: cardTypeCondition === viewValues.card
-													? "42px"
-													: "0px",
-
-										paddingLeft: isCardView ? "0.75rem" : "0px",
-										paddingRight: isCardView ? "0.75rem" : "0px",
-									}}
-								>
-									{renderOption(virtualRow.index)}
-								</div>
-							);
-						})}
+						{cardTypeCondition === viewValues.card ? (
+							<CardViewVirtualized
+								bookmarksList={bookmarksList}
+								bookmarksColumns={bookmarksColumns}
+								renderOption={renderOption}
+								getScrollElement={getScrollElement}
+							/>
+						) : (
+							<SingleRowViewVirtualized
+								rowVirtualizer={rowVirtualizer}
+								cardTypeCondition={cardTypeCondition}
+								renderOption={renderOption}
+							/>
+						)}
 					</div>
 				)}
 				<DragPreview ref={preview}>

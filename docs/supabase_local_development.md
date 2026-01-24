@@ -125,8 +125,6 @@ There are two recommended approaches for making schema changes:
 
 5. **Verify everything works** with your app
 
-**Note:** The `db reset` command recreates your database from scratch, applies all migrations, and seeds data.
-
 **Database Webhooks Setup**: After running migrations, enable the **Database Webhooks** integration in Supabase Studio under **Database → Integrations → Postgres Modules** to configure webhook triggers. When setting webhook URLs, use your local machine IP instead of `localhost`:
 
 ```text
@@ -143,6 +141,14 @@ See [Supabase GitHub Issue #13005](https://github.com/supabase/supabase/issues/1
 
 ### Useful Commands
 
+#### Database Reset
+
+```bash
+npx supabase db reset
+```
+
+This resets the database, applies all migrations, and seeds data. Conflicts between migration-seeded data and seed.sql are handled automatically by `supabase/seeds/00-cleanup.sql`.
+
 #### Database Operations
 
 ```bash
@@ -150,7 +156,7 @@ See [Supabase GitHub Issue #13005](https://github.com/supabase/supabase/issues/1
 npx supabase migration new <name>      # Create a new migration file
 npx supabase migration list            # List all migrations and their status
 npx supabase migration up              # Apply pending migrations
-npx supabase db reset                  # Reset DB (applies all migrations + seed)
+npx supabase db reset                  # Reset DB and apply all migrations + seed
 
 # Schema operations
 npx supabase db diff -f <name>         # Generate migration from schema changes
@@ -524,13 +530,12 @@ pnpm update supabase --save-dev
 When you need to sync your local database with production data:
 
 ```bash
-# 1. Link to your production project (if not already linked)
-npx supabase link --project-ref <project-ref>
+# 1. Dump fresh production data from local (if synced) or remote
+npx supabase db dump --data-only --local > supabase/seed.sql
+# OR from remote:
+npx supabase db dump --db-url < CONNECTION_STRING > --data-only > supabase/seed.sql
 
-# 2. Dump fresh production data
-npx supabase db dump --db-url <CONNECTION_STRING> --data-only > supabase/seed.sql
-
-# 3. Reset local database with new data
+# 2. Reset local database with new data
 npx supabase db reset
 ```
 
@@ -614,6 +619,6 @@ Once local development is working, you can:
 
 ---
 
-**Last Updated**: November 2025
+**Last Updated**: January 2026
 **Document Version**: 2.0
 **Based on**: Supabase CLI latest best practices

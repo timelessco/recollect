@@ -71,11 +71,18 @@ export default async function handler(
 	const usedJunctionSelect = categoryCondition || isUncategorized;
 
 	// get all bookmarks - use junction JOIN for category filtering
+	const isTrashPage = category_id === TRASH_URL;
 	let query = supabase
 		.from(MAIN_TABLE_NAME)
 		.select(usedJunctionSelect ? junctionSelect : baseSelect)
-		.eq("trash", category_id === TRASH_URL)
 		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
+
+	// Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
+	if (isTrashPage) {
+		query = query.not("trash", "is", null);
+	} else {
+		query = query.is("trash", null);
+	}
 
 	if (categoryCondition) {
 		// check if user is user is a collaborator for the category_id
@@ -201,7 +208,10 @@ export default async function handler(
 			.order("sort_index", { ascending: false });
 	}
 
-	if (sortValue === "date-sort-acending") {
+	// Sort by trash timestamp for trash page (most recently trashed first)
+	if (isTrashPage) {
+		query = query.order("trash", { ascending: false });
+	} else if (sortValue === "date-sort-acending") {
 		// newest first
 		query = query.order("inserted_at", { ascending: false });
 	} else if (sortValue === "date-sort-decending") {

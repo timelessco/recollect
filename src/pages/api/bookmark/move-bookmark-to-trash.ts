@@ -32,10 +32,13 @@ export default async function handler(
 	// this is so that user can trash only the users created items
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
+	// Set trash to current timestamp when moving to trash, null when restoring
+	const trashValue = request.body.isTrash ? new Date().toISOString() : null;
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(MAIN_TABLE_NAME)
-			.update({ trash: request.body.isTrash })
+			.update({ trash: trashValue })
 			.match({ id: bookmarkData?.id, user_id: userId })
 			.select();
 
