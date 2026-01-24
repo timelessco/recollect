@@ -116,10 +116,13 @@ export const enrichMetadata = async ({
 		videoResult.status === "fulfilled" ? videoResult.value : null;
 
 	// Extract OCR result
-	const { isOcrFailed, ocrResult: ocrData } =
-		ocrResult.status === "fulfilled"
-			? ocrResult.value
-			: { isOcrFailed: true, ocrResult: null };
+	const {
+		isOcrFailed,
+		ocrResult: ocrData,
+		ocrStatus,
+	} = ocrResult.status === "fulfilled"
+		? ocrResult.value
+		: { isOcrFailed: true, ocrResult: null, ocrStatus: "no_text" };
 
 	// Extract caption result
 	const { isImageCaptionFailed, image_caption } =
@@ -136,6 +139,7 @@ export const enrichMetadata = async ({
 	const metadata = {
 		...existingMetadata,
 		ocr: ocrData,
+		ocr_status: ocrStatus,
 		image_caption,
 		width: blurhash?.width,
 		height: blurhash?.height,
@@ -165,12 +169,15 @@ const processOcr = async (
 ) => {
 	console.log("[processOcr] Extracting text via OCR:", { url, ogImage });
 	// Extract text from the image
+	// OCR returns { text, status } object
 	try {
 		const ocrResult = await ocr(ogImage, supabase, userId);
-		if (!ocrResult) {
+
+		if (!ocrResult.text) {
 			console.error("[processOcr] OCR returned empty result:", {
 				url,
 				ogImage,
+				status: ocrResult.status,
 			});
 			Sentry.captureMessage("OCR returned empty result", {
 				level: "error",
@@ -181,14 +188,23 @@ const processOcr = async (
 				extra: {
 					url,
 					ogImage,
+					status: ocrResult.status,
 				},
 			});
-			return { isOcrFailed: true, ocrResult: null };
+			return {
+				isOcrFailed: true,
+				ocrResult: null,
+				ocrStatus: ocrResult.status,
+			};
 		} else {
 			console.log("[processOcr] OCR extraction completed successfully:", {
 				url,
 			});
-			return { isOcrFailed: false, ocrResult };
+			return {
+				isOcrFailed: false,
+				ocrResult: ocrResult.text,
+				ocrStatus: ocrResult.status,
+			};
 		}
 	} catch (error) {
 		console.error("[processOcr] OCR threw error:", { url, ogImage, error });
@@ -202,7 +218,7 @@ const processOcr = async (
 				ogImage,
 			},
 		});
-		return { isOcrFailed: true, ocrResult: null };
+		return { isOcrFailed: true, ocrResult: null, ocrStatus: "no_text" };
 	}
 };
 

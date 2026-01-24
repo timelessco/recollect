@@ -173,6 +173,7 @@
 		"cypress": "15.8.1",
 		"dedent": "1.7.1",
 		"del-cli": "7.0.0",
+		"deno": "2.6.5",
 		"dotenv": "17.2.3",
 		"eslint": "9.39.2",
 		"eslint-config-canonical": "47.3.7",

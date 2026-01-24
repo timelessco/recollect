@@ -2,6 +2,16 @@
 
 Project-specific guidance for Claude Code. Generic rules are in `~/.claude/CLAUDE.md` and `.claude/rules/`.
 
+## Codebase Overview
+
+Recollect is a **bookmark management application** for organizing, searching, and collaborating on web bookmarks with AI enrichment.
+
+**Stack**: Next.js 16 (App + Pages Router), Supabase (Auth, PostgreSQL, Storage, Edge Functions), React Query, Zustand, Tailwind v4, Base UI
+
+**Architecture**: Hybrid routing (App Router for auth/new APIs, Pages Router for dashboard), optimistic mutations with React Query, pgmq queues for async processing (Instagram imports, AI enrichment)
+
+For detailed architecture, module guides, and data flows, see [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md).
+
 ## Development Guidelines
 
 ### React & State
@@ -58,6 +68,7 @@ Project-specific guidance for Claude Code. Generic rules are in `~/.claude/CLAUD
 
 ## References
 
+- [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) - **Complete architecture map, module guides, data flows**
 - [`docs/project_overview.md`](./docs/project_overview.md) - Tech stack, features, architecture
 - [`docs/project_structure.md`](./docs/project_structure.md) - Directory layout, file conventions
 - [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md)
