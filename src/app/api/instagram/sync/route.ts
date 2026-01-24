@@ -4,7 +4,7 @@ import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { type Json } from "@/types/database.types";
-import { INSTAGRAM_IMPORTS_QUEUE } from "@/utils/constants";
+import { INSTAGRAM_IMPORTS_QUEUE, instagramType } from "@/utils/constants";
 
 const ROUTE = "instagram-sync";
 
@@ -27,7 +27,7 @@ const InstagramSyncInputSchema = z.object({
 				title: z.string().optional().default(""),
 				description: z.string().optional().default(""),
 				ogImage: z.string().nullable().optional(),
-				type: z.literal("instagram").default("instagram"),
+				type: z.literal(instagramType).default(instagramType),
 				meta_data: z.record(z.string(), z.unknown()).optional().default({}),
 				// Instagram's original save timestamp for ordering
 				saved_at: z.string().datetime().optional(),

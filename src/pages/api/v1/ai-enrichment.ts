@@ -8,6 +8,7 @@ import {
 } from "../../../utils/constants";
 import {
 	enrichMetadata,
+	validateInstagramMediaUrl,
 	validateTwitterMediaUrl,
 } from "../../../utils/helpers.server";
 import { createServiceClient } from "../../../utils/supabaseClient";
@@ -20,6 +21,7 @@ const requestBodySchema = z.object({
 	url: z.url({ message: "url must be a valid URL" }),
 	isRaindropBookmark: z.boolean().optional().default(false),
 	isTwitterBookmark: z.boolean().optional().default(false),
+	isInstagramBookmark: z.boolean().optional().default(false),
 	message: z.object({
 		msg_id: z.number(),
 		message: z.object({
@@ -69,6 +71,7 @@ export default async function handler(
 			url,
 			isRaindropBookmark,
 			isTwitterBookmark,
+			isInstagramBookmark,
 			message,
 			queue_name,
 		} = parseResult.data;
@@ -112,6 +115,47 @@ export default async function handler(
 			}
 		}
 
+		if (isInstagramBookmark) {
+			try {
+				// Validate ogImage URL
+				validateInstagramMediaUrl(ogImageUrl);
+				console.log(`[${ROUTE}] Instagram ogImage URL validated:`, {
+					ogImageUrl,
+				});
+
+				// Validate video URL if present
+				if (message.message.meta_data?.video_url) {
+					validateInstagramMediaUrl(message.message.meta_data.video_url);
+					console.log(`[${ROUTE}] Instagram video URL validated`);
+				}
+			} catch (validationError) {
+				console.error(`[${ROUTE}] Instagram URL validation failed:`, {
+					error: validationError,
+					ogImageUrl,
+					videoUrl: message.message.meta_data?.video_url,
+				});
+				Sentry.captureException(validationError, {
+					tags: {
+						operation: "instagram_url_validation_failed",
+						userId: user_id,
+					},
+					extra: {
+						bookmarkId: id,
+						url,
+						ogImageUrl,
+						videoUrl: message.message.meta_data?.video_url,
+					},
+				});
+				response.status(400).json({
+					error:
+						validationError instanceof Error
+							? validationError.message
+							: "Instagram URL validation failed",
+				});
+				return;
+			}
+		}
+
 		console.log(`[${ROUTE}] API called:`, {
 			bookmarkId: id,
 			userId: user_id,
@@ -120,14 +164,18 @@ export default async function handler(
 			isTwitterBookmark,
 			queueName: queue_name,
 			messageId: message.msg_id,
+			isInstagramBookmark,
 		});
 
 		const supabase = createServiceClient();
 		let ogImage = ogImageUrl;
 
 		// If from Raindrop bookmark — upload ogImage into R2
-		if (isRaindropBookmark) {
-			console.log(`[${ROUTE}] Uploading Raindrop image to R2:`, { url });
+		if (isRaindropBookmark || isInstagramBookmark) {
+			console.log(
+				`[${ROUTE}] Uploading ${isRaindropBookmark ? "Raindrop" : "Instagram"} image to R2:`,
+				{ url },
+			);
 			try {
 				const imageResponse = await fetch(ogImage, {
 					headers: {
@@ -145,12 +193,19 @@ export default async function handler(
 				const returnedB64 = Buffer.from(arrayBuffer).toString("base64");
 				ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
 
-				console.log(`[${ROUTE}] Raindrop image uploaded successfully`);
+				console.log(
+					`[${ROUTE}] ${isRaindropBookmark ? "Raindrop" : "Instagram"} image uploaded successfully`,
+				);
 			} catch (error) {
-				console.error(`[${ROUTE}] Error downloading Raindrop image:`, error);
+				console.error(
+					`[${ROUTE}] Error downloading ${isRaindropBookmark ? "Raindrop" : "Instagram"} image:`,
+					error,
+				);
 				Sentry.captureException(error, {
 					tags: {
-						operation: "raindrop_image_upload",
+						operation: isRaindropBookmark
+							? "raindrop_image_upload"
+							: "instagram_image_upload",
 						userId: user_id,
 					},
 					extra: {
@@ -173,6 +228,7 @@ export default async function handler(
 			userId: user_id,
 			supabase,
 			url,
+			isInstagramBookmark,
 		});
 
 		if (isFailed) {
