@@ -955,7 +955,14 @@ export const collectVideo = async ({
 			error,
 		});
 
-		Sentry.captureException(error, {
+		const normalizedError =
+			error instanceof Error
+				? error
+				: new Error(
+						typeof error === "string" ? error : JSON.stringify(error, null, 2),
+					);
+
+		Sentry.captureException(normalizedError, {
 			tags: {
 				operation: "collect_video",
 				userId,
