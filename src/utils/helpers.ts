@@ -736,6 +736,41 @@ export const collectVideo = async ({
 	}
 
 	try {
+		// Basic URL validation to avoid fetching non-HTTP(S) schemes
+		try {
+			const parsedUrl = new URL(videoUrl);
+
+			if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+				const message =
+					"Invalid video URL scheme. Only http and https are allowed.";
+
+				console.warn("[collectVideo] Invalid video URL:", {
+					videoUrl,
+					userId,
+					protocol: parsedUrl.protocol,
+				});
+
+				return {
+					success: false,
+					error: "unknown",
+					message,
+				};
+			}
+		} catch {
+			const message = "Invalid video URL.";
+
+			console.warn("[collectVideo] Failed to parse video URL:", {
+				videoUrl,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "unknown",
+				message,
+			};
+		}
+
 		// Fetch with timeout
 		const [downloadError, videoResponse] = await vet(() =>
 			fetch(videoUrl, {
