@@ -66,6 +66,7 @@ import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import { EditPopover } from "./edit-popover";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
+import { PublicMoodboard } from "./publicMoodboard";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 import { cn } from "@/utils/tailwind-merge";
@@ -796,6 +797,16 @@ const CardSection = ({
 			searchBookmarksData?.pages?.length === 0
 		) {
 			return renderStatusMessage("No results found");
+		}
+
+		if (isPublicPage) {
+			return (
+				<PublicMoodboard
+					bookmarksColumns={bookmarksColumns}
+					bookmarksList={bookmarksList}
+					renderCard={renderBookmarkCardTypes}
+				/>
+			);
 		}
 
 		return (
