@@ -742,7 +742,9 @@ const CardSection = ({
 
 	const listWrapperClass = classNames({
 		"mt-[47px]": !isPublicPage || categorySlug === DISCOVER_URL,
-		"px-4 py-2": cardTypeCondition === viewValues.list,
+		"px-4 py-2":
+			cardTypeCondition === viewValues.list ||
+			cardTypeCondition === viewValues.timeline,
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
