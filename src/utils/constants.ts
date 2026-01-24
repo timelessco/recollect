@@ -245,6 +245,8 @@ export const acceptedFileTypes = [
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
 
+export const instagramType = "instagram";
+
 export const imageFileTypes = acceptedFileTypes?.filter((item) =>
 	item?.includes("image"),
 );
