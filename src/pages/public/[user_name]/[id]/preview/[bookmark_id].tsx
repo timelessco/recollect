@@ -61,13 +61,47 @@ const PublicPreview = (props: PublicPreviewProps) => {
 	};
 
 	return (
-		<CustomLightBox
-			activeIndex={0}
-			bookmarks={[bookmark]}
-			handleClose={handleClose}
-			isOpen={isOpen}
-			setActiveIndex={() => {}}
-		/>
+		<>
+			<div className="sr-only">
+				<h1>{bookmark.title || "Bookmark Preview"}</h1>
+				{bookmark.description && <p>{bookmark.description}</p>}
+				{bookmark.meta_data?.img_caption && (
+					<p>{bookmark.meta_data.img_caption}</p>
+				)}
+				{bookmark.meta_data?.ocr && <p>{bookmark.meta_data.ocr}</p>}
+				{bookmark.meta_data?.mediaType && <p>{bookmark.meta_data.mediaType}</p>}
+				{bookmark.meta_data?.video_url && (
+					<p>
+						<a href={bookmark.meta_data.video_url} rel="noopener noreferrer">
+							{bookmark.meta_data.video_url}
+						</a>
+					</p>
+				)}
+				{bookmark.url && (
+					<p>
+						<a href={bookmark.url} rel="noopener noreferrer">
+							{bookmark.url}
+						</a>
+					</p>
+				)}
+				{bookmark.inserted_at && (
+					<p>
+						{new Date(bookmark.inserted_at).toLocaleDateString("en-US", {
+							year: "numeric",
+							month: "short",
+							day: "numeric",
+						})}
+					</p>
+				)}
+			</div>
+			<CustomLightBox
+				activeIndex={0}
+				bookmarks={[bookmark]}
+				handleClose={handleClose}
+				isOpen={isOpen}
+				setActiveIndex={() => {}}
+			/>
+		</>
 	);
 };
 
