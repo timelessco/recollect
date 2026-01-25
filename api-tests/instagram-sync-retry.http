@@ -1,0 +1,58 @@
+### Retry Failed Imports (Success)
+# Re-queues archived messages for another processing attempt
+# Returns: { requeued: N, requested: N }
+# - requeued: number actually re-queued (may be less if msg_ids don't exist)
+# - requested: number of msg_ids requested
+POST {{$dotenv API_BASE_URL}}/instagram/sync/retry
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "msg_ids": [1, 2, 3]
+}
+
+### Retry Single Message
+POST {{$dotenv API_BASE_URL}}/instagram/sync/retry
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "msg_ids": [1]
+}
+
+### Validation Error - Empty msg_ids Array
+# Expected: 400 - msg_ids must have at least 1 item
+POST {{$dotenv API_BASE_URL}}/instagram/sync/retry
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "msg_ids": []
+}
+
+### Validation Error - Missing msg_ids Field
+# Expected: 400 - msg_ids is required
+POST {{$dotenv API_BASE_URL}}/instagram/sync/retry
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{}
+
+### Validation Error - Invalid msg_ids Type (strings instead of numbers)
+# Expected: 400 - msg_ids must be array of numbers
+POST {{$dotenv API_BASE_URL}}/instagram/sync/retry
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "msg_ids": ["abc", "def"]
+}
+
+### Auth Error - No Token
+# Expected: 401 Unauthorized
+POST {{$dotenv API_BASE_URL}}/instagram/sync/retry
+Content-Type: application/json
+
+{
+  "msg_ids": [1]
+}

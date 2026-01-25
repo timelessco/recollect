@@ -34,6 +34,7 @@ export default defineConfig(
 		".next/",
 		"next-env.d.ts",
 		"scripts/release-it/",
+		"supabase/functions/",
 	]),
 	{
 		linterOptions: {
