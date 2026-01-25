@@ -48,6 +48,10 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
+import {
+	validateInstagramMediaUrl,
+	validateTwitterMediaUrl,
+} from "./helpers.server";
 import { vet } from "./try";
 import { getCategorySlugFromRouter } from "./url";
 import { upload, uploadVideo } from "@/lib/storage/media-upload";
@@ -724,6 +728,34 @@ const getErrorTypeFromAbortSignal = (error: unknown): CollectVideoErrorType => {
 	return "unknown";
 };
 
+/**
+ * Checks if a URL is a valid Twitter media URL using the validation function from helpers.server.ts
+ * @param urlString - The URL to check
+ * @returns boolean - True if the URL is a valid Twitter media URL
+ */
+export const isTwitterMediaUrl = (urlString: string): boolean => {
+	try {
+		validateTwitterMediaUrl(urlString);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+/**
+ * Checks if a URL is a valid Instagram media URL using the validation function from helpers.server.ts
+ * @param urlString - The URL to check
+ * @returns boolean - True if the URL is a valid Instagram media URL
+ */
+export const isInstagramMediaUrl = (urlString: string): boolean => {
+	try {
+		validateInstagramMediaUrl(urlString);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 export const collectVideo = async ({
 	videoUrl,
 	userId,
@@ -755,6 +787,18 @@ export const collectVideo = async ({
 					error: "unknown",
 					message,
 				};
+			}
+
+			// Check if URL is from Twitter or Instagram
+			const isTwitter = isTwitterMediaUrl(videoUrl);
+			const isInstagram = isInstagramMediaUrl(videoUrl);
+
+			if (isTwitter || isInstagram) {
+				console.log("[collectVideo] Detected social media URL:", {
+					videoUrl,
+					userId,
+					platform: isTwitter ? "twitter" : "instagram",
+				});
 			}
 		} catch {
 			const message = "Invalid video URL.";
