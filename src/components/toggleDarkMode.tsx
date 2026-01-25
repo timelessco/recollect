@@ -37,9 +37,9 @@ export const ToggleDarkMode = () => {
 			<div className="flex items-center justify-between rounded-xl bg-gray-100">
 				<div className="ml-2 flex items-center gap-2">
 					<figure className="flex h-[38px] w-[38px] items-center justify-center">
-						<ThemeSwitchIcon className="h-5 w-5" />
+						<ThemeSwitchIcon className="h-5.5 w-5.5" />
 					</figure>
-					<div className="my-[19px] ml-2 text-[14px] leading-[115%] font-medium tracking-normal text-gray-900">
+					<div className="my-[19px] text-[14px] leading-[115%] font-medium tracking-normal text-gray-900">
 						Choose light/dark mode
 					</div>
 				</div>

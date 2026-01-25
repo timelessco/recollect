@@ -17,7 +17,7 @@ import { Spinner } from "../../components/spinner";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
-import { IframeIcon } from "../../icons/iframeIcon";
+import { IframeIcon } from "../../icons/iframe-icon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/infoIcon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
@@ -366,7 +366,7 @@ const Settings = () => {
 					<SettingsToggleCard
 						icon={
 							session?.user?.app_metadata?.provider === "email" ? (
-								<MailIconBlack className="h-4.5 w-4.5 text-gray-900" />
+								<MailIconBlack className="h-5.5 w-5.5 text-gray-900" />
 							) : (
 								<GoogleLoginIcon className="h-5 w-5" />
 							)
@@ -400,7 +400,7 @@ const Settings = () => {
 					<SettingsToggleCard
 						icon={
 							<figure className="text-gray-900">
-								<IframeIcon />
+								<IframeIcon className="h-5.5 w-5.5 text-gray-900" />
 							</figure>
 						}
 						title="Enable iframe in lightbox"
