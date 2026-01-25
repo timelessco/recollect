@@ -28,8 +28,7 @@ const UserAvatar = (props: UserAvatarTypes) => {
 		);
 	}
 
-	// TODO: fix this dynamic tailwind classname
-	return <DefaultUserIcon className={`h-[${height}px] w-[${width}px]`} />;
+	return <DefaultUserIcon className={className} />;
 };
 
 export default UserAvatar;
