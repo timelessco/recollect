@@ -15,6 +15,7 @@ import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
+import { useMounted } from "../../../hooks/useMounted";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
@@ -43,6 +44,7 @@ import {
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
+	PUBLIC_PAGE_SSR_ITEM_LIMIT,
 	TRASH_URL,
 	TWEETS_URL,
 	VIDEO_TYPE_PREFIX,
@@ -107,6 +109,7 @@ const CardSection = ({
 	bookmarksCountData,
 }: CardSectionProps) => {
 	const router = useRouter();
+	const mounted = useMounted();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
 
@@ -799,11 +802,13 @@ const CardSection = ({
 			return renderStatusMessage("No results found");
 		}
 
-		if (isPublicPage) {
+		// Public page: SSR static subset (first N), then virtualize full list after hydrate
+		if (isPublicPage && !mounted) {
+			const ssrList = bookmarksList.slice(0, PUBLIC_PAGE_SSR_ITEM_LIMIT);
 			return (
 				<PublicMoodboard
 					bookmarksColumns={bookmarksColumns}
-					bookmarksList={bookmarksList}
+					bookmarksList={ssrList}
 					renderCard={renderBookmarkCardTypes}
 				/>
 			);

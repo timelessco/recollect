@@ -46,15 +46,21 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 		</header>
 		<main>
 			{!isEmpty(props?.data) ? (
-				<CardSection
-					categoryViewsFromProps={props?.category_views ?? undefined}
-					isBookmarkLoading={false}
-					isOgImgLoading={false}
-					isPublicPage
-					listData={props?.data as SingleListData[]}
-					showAvatar={false}
-					userId=""
-				/>
+				<div
+					id="scrollableDiv"
+					className="overflow-x-hidden overflow-y-auto"
+					style={{ height: "calc(100vh - 52px)" }}
+				>
+					<CardSection
+						categoryViewsFromProps={props?.category_views ?? undefined}
+						isBookmarkLoading={false}
+						isOgImgLoading={false}
+						isPublicPage
+						listData={props?.data as SingleListData[]}
+						showAvatar={false}
+						userId=""
+					/>
+				</div>
 			) : (
 				<div className="flex items-center justify-center pt-[15%] text-2xl font-semibold">
 					There is no data in this collection
