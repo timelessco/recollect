@@ -40,6 +40,12 @@ export const ImportBookmarks = () => {
 					complete: (results) => {
 						if (results.errors.length === 0) {
 							resolve(results as Papa.ParseResult<Record<string, string>>);
+						} else {
+							reject(
+								new Error(
+									`CSV parsing errors: ${results.errors.map((error) => error.message).join(", ")}`,
+								),
+							);
 						}
 					},
 					error: (error) => reject(error),
@@ -78,7 +84,10 @@ export const ImportBookmarks = () => {
 		event.preventDefault();
 		setDragActive(false);
 		const droppedFile = event.dataTransfer.files?.[0];
-		if (droppedFile) {
+		if (
+			droppedFile &&
+			(droppedFile.type === "text/csv" || droppedFile.name.endsWith(".csv"))
+		) {
 			void handleFile(droppedFile);
 		}
 	};
