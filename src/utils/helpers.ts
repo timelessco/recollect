@@ -789,9 +789,27 @@ export const collectVideo = async ({
 				};
 			}
 
-			// Check if URL is from Twitter or Instagram
+			// Check if URL is from Twitter or Instagram (allowlist enforcement)
 			const isTwitter = isTwitterMediaUrl(videoUrl);
 			const isInstagram = isInstagramMediaUrl(videoUrl);
+
+			if (!isTwitter && !isInstagram) {
+				const message = "Invalid video URL.";
+
+				console.warn(
+					"[collectVideo] URL not allowlisted (must be Twitter or Instagram):",
+					{
+						videoUrl,
+						userId,
+					},
+				);
+
+				return {
+					success: false,
+					error: "unknown",
+					message,
+				};
+			}
 
 			if (isTwitter || isInstagram) {
 				console.log("[collectVideo] Detected social media URL:", {
