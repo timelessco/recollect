@@ -57,7 +57,7 @@ const BookmarkSchema = z.object({
 	description: z.string().nullable(),
 	ogImage: z.string().nullable(),
 	screenshot: z.string().nullable(),
-	trash: z.boolean(),
+	trash: z.string().nullable(),
 	type: z.string().nullable(),
 	meta_data: MetadataSchema.nullable(),
 	make_discoverable: z.string().nullable(),
@@ -172,13 +172,13 @@ export const GET = createGetApiHandler({
 					category_id
 				),
 				user_id!inner (
- 					user_name
+					user_name
 				)
 			`,
 			)
 			.eq("id", bookmarkId)
 			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, categoryId)
-			.eq("trash", false)
+			.is("trash", null)
 			.maybeSingle();
 
 		if (bookmarkError) {
