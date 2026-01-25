@@ -48,10 +48,6 @@ import {
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
-import {
-	validateInstagramMediaUrl,
-	validateTwitterMediaUrl,
-} from "./helpers.server";
 import { vet } from "./try";
 import { getCategorySlugFromRouter } from "./url";
 import { upload, uploadVideo } from "@/lib/storage/media-upload";
@@ -728,29 +724,47 @@ const getErrorTypeFromAbortSignal = (error: unknown): CollectVideoErrorType => {
 	return "unknown";
 };
 
+// Domain allowlists matching helpers.server.ts validation
+// These are duplicated here to avoid importing server-only dependencies
+const ALLOWED_TWITTER_DOMAINS = ["video.twimg.com", "pbs.twimg.com"];
+
+const ALLOWED_INSTAGRAM_DOMAINS = [
+	".fbcdn.net",
+	".cdninstagram.com",
+	".instagram.com",
+];
+
 /**
- * Checks if a URL is a valid Twitter media URL using the validation function from helpers.server.ts
+ * Checks if a URL is a valid Twitter media URL.
+ * Uses the same validation logic as helpers.server.ts validateTwitterMediaUrl.
  * @param urlString - The URL to check
  * @returns boolean - True if the URL is a valid Twitter media URL
  */
 export const isTwitterMediaUrl = (urlString: string): boolean => {
 	try {
-		validateTwitterMediaUrl(urlString);
-		return true;
+		const url = new URL(urlString);
+		return (
+			url.protocol === "https:" &&
+			ALLOWED_TWITTER_DOMAINS.includes(url.hostname)
+		);
 	} catch {
 		return false;
 	}
 };
 
 /**
- * Checks if a URL is a valid Instagram media URL using the validation function from helpers.server.ts
+ * Checks if a URL is a valid Instagram media URL.
+ * Uses the same validation logic as helpers.server.ts validateInstagramMediaUrl.
  * @param urlString - The URL to check
  * @returns boolean - True if the URL is a valid Instagram media URL
  */
 export const isInstagramMediaUrl = (urlString: string): boolean => {
 	try {
-		validateInstagramMediaUrl(urlString);
-		return true;
+		const url = new URL(urlString);
+		return (
+			url.protocol === "https:" &&
+			ALLOWED_INSTAGRAM_DOMAINS.some((domain) => url.hostname.endsWith(domain))
+		);
 	} catch {
 		return false;
 	}
