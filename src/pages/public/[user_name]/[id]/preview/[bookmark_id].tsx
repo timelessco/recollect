@@ -1,6 +1,7 @@
 import { type GetStaticPaths, type GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import * as Sentry from "@sentry/nextjs";
+import { format } from "date-fns";
 import { z } from "zod";
 
 import "yet-another-react-lightbox/styles.css";
@@ -85,13 +86,7 @@ const PublicPreview = (props: PublicPreviewProps) => {
 					</p>
 				)}
 				{bookmark.inserted_at && (
-					<p>
-						{new Date(bookmark.inserted_at).toLocaleDateString("en-US", {
-							year: "numeric",
-							month: "short",
-							day: "numeric",
-						})}
-					</p>
+					<p>{format(new Date(bookmark.inserted_at), "MMM d, yyyy")}</p>
 				)}
 			</div>
 			<CustomLightBox
