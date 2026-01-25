@@ -1,6 +1,5 @@
 import { type GetServerSideProps, type NextPage } from "next";
 import * as Sentry from "@sentry/nextjs";
-import axios from "axios";
 import { isEmpty, isNull } from "lodash";
 
 import CardSection from "../../../pageComponents/dashboard/cardSection";
@@ -72,16 +71,46 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
 	const ROUTE = "/public/[user_name]/[id]";
-	const categorySlug = context?.query?.id as string;
-	const userName = context?.query?.user_name as string;
+	const categorySlug = context.query.id;
+	const userName = context.query.user_name;
 
 	try {
-		const response =
-			await axios.post<GetPublicCategoryBookmarksApiResponseType>(
-				`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}`,
-			);
+		const response = await fetch(
+			`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}`,
+		);
 
-		if (!response?.data?.is_public) {
+		if (!response.ok) {
+			console.error(
+				`[${ROUTE}] Failed to fetch public category bookmarks: HTTP ${response.status}`,
+				{
+					status: response.status,
+					statusText: response.statusText,
+					categorySlug,
+					userName,
+				},
+			);
+			Sentry.captureException(
+				new Error(`HTTP ${response.status}: ${response.statusText}`),
+				{
+					tags: {
+						operation: "fetch_public_category",
+						context: "server_side_rendering",
+					},
+					extra: {
+						status: response.status,
+						statusText: response.statusText,
+						categorySlug,
+						userName,
+					},
+				},
+			);
+			return { notFound: true };
+		}
+
+		const data =
+			(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
+
+		if (!data?.is_public) {
 			console.warn(`[${ROUTE}] Category is not public`, {
 				categorySlug,
 				userName,
@@ -89,25 +118,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 			return { notFound: true };
 		}
 
-		if (isEmpty(response?.data?.data) || isNull(response?.data?.data)) {
+		if (isEmpty(data?.data) || isNull(data?.data)) {
 			return {
 				props: {
-					data: response?.data?.data,
-					category_views: response?.data?.category_views,
-					icon: response?.data?.icon,
-					icon_color: response?.data?.icon_color,
-					category_name: response?.data?.category_name,
+					data: data?.data,
+					category_views: data?.category_views,
+					icon: data?.icon,
+					icon_color: data?.icon_color,
+					category_name: data?.category_name,
 				},
 			};
 		}
 
 		return {
 			props: {
-				data: response?.data?.data,
-				category_views: response?.data?.category_views,
-				icon: response?.data?.icon,
-				icon_color: response?.data?.icon_color,
-				category_name: response?.data?.category_name,
+				data: data?.data,
+				category_views: data?.category_views,
+				icon: data?.icon,
+				icon_color: data?.icon_color,
+				category_name: data?.category_name,
 			},
 		};
 	} catch (error) {
