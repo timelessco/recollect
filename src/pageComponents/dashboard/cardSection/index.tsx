@@ -18,12 +18,8 @@ import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
 import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
-import FolderIcon from "../../../icons/folderIcon";
-import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
-import LinkIcon from "../../../icons/linkIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
-import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -35,25 +31,22 @@ import {
 	type UserTagsData,
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
+import { getBookmarkIcon } from "../../../utils/bookmark-icon-helpers";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
 	DISCOVER_URL,
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
-	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
 	TRASH_URL,
 	TWEETS_URL,
-	VIDEO_TYPE_PREFIX,
 	viewValues,
 } from "../../../utils/constants";
 import {
 	getBaseUrl,
 	getPreviewPathInfo,
 	isBookmarkAudio,
-	isBookmarkDocument,
-	isBookmarkImage,
 	isBookmarkOwner,
 	isBookmarkVideo,
 	isCurrentYear,
@@ -466,91 +459,40 @@ const CardSection = ({
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
-		const isVideo =
-			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-			isBookmarkVideo(item?.type);
-		const isDocument =
-			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
-			isBookmarkDocument(item?.type);
-		const isImage =
-			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-			isBookmarkImage(item?.type);
 		const size = 15;
 		const favIconFigureClassName = classNames({
 			"h-[14] w-[14px] mt-px": true,
 		});
-		if (favIconErrorImgs?.includes(item?.id)) {
-			return (
-				<figure className="card-icon p-0.5 text-gray-1000">
-					<LinkIcon />
-				</figure>
-			);
+
+		const icon = getBookmarkIcon({
+			item,
+			isUserInTweetsPage,
+			favIconErrorIds: favIconErrorImgs,
+			onFavIconError: (bookmarkId) => {
+				setFavIconErrorImgs([bookmarkId as never, ...favIconErrorImgs]);
+			},
+			size,
+		});
+
+		// Determine the figure className based on icon type
+		// If it's a favicon or twitter avatar (Image component), use the smaller figure
+		const isImageIcon =
+			(item?.meta_data?.favIcon || item?.meta_data?.twitter_avatar_url) &&
+			!favIconErrorImgs?.includes(item?.id);
+
+		if (isImageIcon) {
+			return <figure className={favIconFigureClassName}>{icon}</figure>;
 		}
 
-		if (isUserInTweetsPage && item?.meta_data?.twitter_avatar_url) {
-			// if user is in tweets page then show the twitter user avatar
-			return (
-				<figure className={favIconFigureClassName}>
-					<Image
-						alt="fav-icon"
-						className="rounded-sm"
-						height={size}
-						onError={() =>
-							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
-						}
-						src={item?.meta_data?.twitter_avatar_url}
-						width={size}
-					/>
-				</figure>
-			);
-		}
+		// For video, document, image icons, and fallback (SVG icons)
+		const isImageMediaType =
+			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX);
+		const figureClassName = classNames({
+			"card-icon rounded-sm p-0.5 text-gray-1000": true,
+			rounded: isImageMediaType,
+		});
 
-		if (item?.meta_data?.favIcon) {
-			return (
-				<figure className={favIconFigureClassName}>
-					<Image
-						alt="fav-icon"
-						className="rounded-sm"
-						height={size}
-						onError={() =>
-							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
-						}
-						src={item?.meta_data?.favIcon ?? ""}
-						width={size}
-					/>
-				</figure>
-			);
-		}
-
-		if (isVideo) {
-			return (
-				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
-					<VideoIcon size="15" />
-				</figure>
-			);
-		}
-
-		if (isDocument) {
-			return (
-				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
-					<FolderIcon size="15" />
-				</figure>
-			);
-		}
-
-		if (isImage) {
-			return (
-				<figure className="card-icon rounded p-0.5 text-gray-1000">
-					<ImageIcon size={`${size}`} />
-				</figure>
-			);
-		}
-
-		return (
-			<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
-				<LinkIcon />
-			</figure>
-		);
+		return <figure className={figureClassName}>{icon}</figure>;
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
