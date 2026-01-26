@@ -7,6 +7,7 @@ import { useIframeStore } from "../../store/iframeStore";
 import { type SingleListData } from "../../types/apiTypes";
 import {
 	IMAGE_TYPE_PREFIX,
+	instagramType,
 	PDF_MIME_TYPE,
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
@@ -70,7 +71,8 @@ export const VideoSlide = ({ bookmark, isActive }: SlideProps) => (
 			<VideoPlayer
 				isActive={isActive ?? false}
 				src={
-					bookmark?.type === tweetType && bookmark?.meta_data?.video_url
+					(bookmark?.type === tweetType || bookmark?.type === instagramType) &&
+					bookmark?.meta_data?.video_url
 						? bookmark?.meta_data?.video_url
 						: (bookmark?.url ?? "")
 				}

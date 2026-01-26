@@ -4,7 +4,9 @@ import axios from "axios";
 import {
 	AI_ENRICHMENT_API,
 	getBaseUrl,
+	instagramType,
 	NEXT_API_URL,
+	tweetType,
 	WORKER_SCREENSHOT_API,
 } from "./constants";
 
@@ -52,20 +54,20 @@ export const processImageQueue = async (
 
 				if (read_ct > MAX_RETRIES) {
 					console.log(
-						"[process-image-queue] Deleting message from queue",
+						"[process-image-queue] archiving message from queue",
 						message,
 					);
 
 					const { error: deleteError } = await supabase
 						.schema("pgmq_public")
-						.rpc("delete", {
+						.rpc("archive", {
 							queue_name,
 							message_id: message.msg_id,
 						});
 
 					if (deleteError) {
 						console.error(
-							"[process-image-queue] Error deleting message from queue",
+							"[process-image-queue] Error archiving message from queue",
 							deleteError,
 						);
 					}
@@ -76,6 +78,10 @@ export const processImageQueue = async (
 				const ogImage = message.message.ogImage;
 
 				const mediaType = message?.message?.meta_data?.mediaType;
+
+				const isTwitterBookmark = message.message.type === tweetType;
+
+				const isInstagramBookmark = message.message.type === instagramType;
 
 				const isRaindropBookmark =
 					message.message.meta_data.is_raindrop_bookmark;
@@ -92,8 +98,10 @@ export const processImageQueue = async (
 							id,
 							url,
 							user_id,
+							isTwitterBookmark,
 							ogImage,
 							isRaindropBookmark,
+							isInstagramBookmark,
 							message,
 							queue_name,
 						},

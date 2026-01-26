@@ -1,6 +1,10 @@
+---
+paths: src/**/*.{ts,tsx}
+---
+
 # Frontend Rules
 
-This document contains comprehensive accessibility and code quality rules for frontend development in this Next.js/React project.
+Comprehensive accessibility and code quality rules for frontend development.
 
 ## Accessibility Rules
 
@@ -65,12 +69,6 @@ This document contains comprehensive accessibility and code quality rules for fr
 - Always use modern CSS features including nesting, custom properties, container queries, subgrid, and color functions.
 - Always use Tailwind v4. Never use Tailwind v3.
 
-### Development Tools and Frameworks
-
-- Always use Vite when a build tool is needed.
-- Always use Biome. Never use ESLint or Prettier unless explicitly instructed.
-- Always use a framework that supports the standard Web Request and Response interface. Never use Express.
-
 ### TypeScript Best Practices
 
 - Always use TypeScript. Never use JavaScript.
@@ -100,6 +98,24 @@ This document contains comprehensive accessibility and code quality rules for fr
 
 ### React/Next.js Specific Rules
 
+**Compound Component Pattern** (for complex UI like Combobox, Menu):
+
+```typescript
+// Export object with subcomponents for composition
+export const Combobox = {
+	Root, // Context provider + main wrapper
+	Input, // Text input
+	Listbox, // Dropdown options container
+	Option, // Individual option
+	Chips, // Selected items display
+	Chip, // Single chip
+};
+
+// Usage: <Combobox.Root><Combobox.Input /><Combobox.Listbox>...</Combobox.Listbox></Combobox.Root>
+```
+
+See `/src/components/ui/recollect/combobox/` for implementation.
+
 - Never use `<img>` elements in Next.js projects. Always use next/image.
 - Never use `<head>` elements in Next.js projects (except in \_document.js).
 - Never import next/document outside of pages/\_document.jsx in Next.js projects.
@@ -111,7 +127,6 @@ This document contains comprehensive accessibility and code quality rules for fr
 - Never use `target="_blank"` without `rel="noopener"`.
 - Never define React components inside other components.
 - Never assign to React component props.
-- Never destructure props inside JSX components in Solid projects.
 - Never insert comments as text nodes.
 - Never assign JSX properties multiple times.
 - Never return the return value of React.render.
@@ -128,7 +143,6 @@ This document contains comprehensive accessibility and code quality rules for fr
 - Always use ES Modules. Never use CommonJS.
 - Always set `"type": "module"` in `package.json`.
 - Always use function declarations. Never use function expressions.
-
 - Never use consecutive spaces in regular expression literals.
 - Never use the `arguments` object.
 - Never use the comma operator.
@@ -165,81 +179,6 @@ This document contains comprehensive accessibility and code quality rules for fr
 - Always remove redundant terms from logical expressions.
 - Always use while loops instead of for loops when you don't need initializer and update expressions.
 
-### Error Handling and Control Flow
-
-- Never reassign const variables.
-- Never use constant expressions in conditions.
-- Never use `Math.min` and `Math.max` to clamp values when the result is constant.
-- Never return a value from a constructor.
-- Never use empty character classes in regular expression literals.
-- Never use empty destructuring patterns.
-- Never call global object properties as functions.
-- Never declare functions and vars that are accessible outside their block.
-- Always ensure builtins are correctly instantiated.
-- Never use super() incorrectly inside classes.
-- Never use variables and function parameters before they're declared.
-- Never use \8 and \9 escape sequences in string literals.
-- Never use literal numbers that lose precision.
-- Never assign a value to itself.
-- Never return a value from a setter.
-- Never compare expressions that modify string case with non-compliant values.
-- Never use lexical declarations in switch clauses.
-- Never use variables that haven't been declared in the document.
-- Never write unreachable code.
-- Always ensure super() is called exactly once on every code path in a class constructor before this is accessed.
-- Never use control flow statements in finally blocks.
-- Never use optional chaining where undefined values aren't allowed.
-
-### Best Practices
-
-- Always include proper error handling and logging.
-- Always include comments explaining complex logic.
-- Never have unused function parameters.
-- Never have unused imports.
-- Never have unused labels.
-- Never have unused private class members.
-- Never have unused variables.
-- Never return a value from a function that has a 'void' return type.
-- Always use isNaN() when checking for NaN.
-- Always include key props in iterators and collection literals.
-- Always ensure "for" loop update clauses move the counter in the right direction.
-- Always ensure typeof expressions are compared to valid values.
-- Always ensure generator functions contain yield.
-- Never use await inside loops.
-- Never use bitwise operators.
-- Never use expressions where the operation doesn't change the value.
-- Always ensure Promise-like statements are handled appropriately.
-- Never use \*\*dirname and \*\*filename in the global scope.
-- Never create import cycles.
-- Never use configured elements.
-- Never hardcode sensitive data like API keys and tokens.
-- Never let variable declarations shadow variables from outer scopes.
-- Never include duplicate polyfills from Polyfill.io.
-- Never use useless backreferences in regular expressions.
-- Never use unnecessary escapes in string literals.
-- Never use useless undefined.
-- Always ensure getters and setters for the same property are next to each other.
-- Always ensure object literals are declared consistently.
-- Always use static Response methods instead of new Response() constructor when possible.
-- Always ensure switch-case statements are exhaustive.
-- Always ensure the `preconnect` attribute is used when using Google Fonts.
-- Always use `Array#{indexOf,lastIndexOf}()` instead of `Array#{findIndex,findLastIndex}()` when looking for the index of an item.
-- Always ensure iterable callbacks return consistent values.
-- Always use `with { type: "json" }` for JSON module imports.
-- Always use numeric separators in numeric literals.
-- Always use object spread instead of `Object.assign()` when constructing new objects.
-- Always use the radix argument when using `parseInt()`.
-- Always ensure JSDoc comment lines start with a single asterisk.
-- Always include a description parameter for `Symbol()`.
-- Never use spread (`...`) syntax on accumulators.
-- Never use the `delete` operator.
-- Never access namespace imports dynamically.
-- Never use namespace imports.
-- Always declare regex literals at the top level.
-- Never use global `eval()`.
-- Never use callbacks in asynchronous tests and hooks.
-- Never export imported variables.
-
 ### Modern JavaScript
 
 - Always use `fetch`. Never use `axios`.
@@ -264,8 +203,6 @@ This document contains comprehensive accessibility and code quality rules for fr
 - Always use `for-of` loops when you need the index to extract an item from the iterated array.
 - Always use `node:assert/strict` over `node:assert`.
 - Always use the `node:` protocol for Node.js builtin modules.
-- Always use the `--experimental-strip-types` flag to run TypeScript. Never use `ts-node` or `tsx`.
-- Always use the built-in `--env-file` flag. Never use the `dotenv` package.
 - Always use Number properties instead of global ones.
 - Always use assignment operator shorthand where possible.
 - Always use template literals over string concatenation.
@@ -274,77 +211,24 @@ This document contains comprehensive accessibility and code quality rules for fr
 - Always use `String.trimStart()` and `String.trimEnd()` over `String.trimLeft()` and `String.trimRight()`.
 - Always use standard constants instead of approximated literals.
 
-### Testing
+### Best Practices
 
-- Never nest describe() blocks too deeply in test files.
-- Never use export or module.exports in test files.
-- Never use focused tests.
-- Always ensure the assertion function is placed inside an it() function call.
-- Never use disabled tests.
-
-### Code Style
-
-- Never assign values in expressions.
-- Never use async functions as Promise executors.
-- Never reassign exceptions in catch clauses.
-- Never reassign class members.
-- Never compare against -0.
-- Never use labeled statements that aren't loops.
-- Never use console.
-- Never use control characters and escape sequences in regular expression literals.
-- Never use debugger.
-- Never assign directly to document.cookie.
-- Always use `===` and `!==`.
-- Never use duplicate case labels.
-- Never use duplicate class members.
-- Never use duplicate conditions in if-else-if chains.
-- Never use two keys with the same name inside objects.
-- Never use duplicate function parameter names.
-- Never have duplicate hooks in describe blocks.
-- Never use empty block statements and static blocks.
-- Never declare empty interfaces.
-- Never misuse the non-null assertion operator (!) in TypeScript files.
-- Never let switch clauses fall through.
-- Never reassign function declarations.
-- Never allow assignments to native objects and read-only global variables.
-- Always use Number.isFinite instead of global isFinite.
-- Always use Number.isNaN instead of global isNaN.
-- Never assign to imported bindings.
-- Never use irregular whitespace characters.
-- Never use labels that share a name with a variable.
-- Never use characters made with multiple code points in character class syntax.
-- Always use new and constructor properly.
-- Never use octal escape sequences in string literals.
-- Never use Object.prototype builtins directly.
-- Never redeclare variables, functions, classes, and types in the same scope.
-- Never have redundant "use strict".
-- Never compare things where both sides are exactly the same.
-- Never let identifiers shadow restricted names.
-- Never use sparse arrays (arrays with holes).
-- Never use template literal placeholder syntax in regular strings.
-- Never use the then property.
-- Never use unsafe negation.
-- Never use var.
-- Never use with statements in non-strict contexts.
-- Always ensure async functions actually use await.
-- Always ensure default clauses in switch statements come last.
-- Always pass a message value when creating a built-in error.
-- Always ensure get methods always return a value.
-- Always use a recommended display strategy with Google Fonts.
-- Always ensure for-in loops include an if statement.
-- Always use Array.isArray() instead of instanceof Array.
-- Always use the digits argument with Number#toFixed().
-- Always use the "use strict" directive in script files.
-- Never use negation in `if` statements that have `else` clauses.
-- Never use nested ternary expressions.
-
-## Implementation Notes
-
-These rules are designed to work with:
-
-- Next.js with App Router
-- React
-- TypeScript with strict mode
-- ESLint with comprehensive plugins
-
-Many of these rules are already enforced by the project's ESLint configuration. This document serves as a comprehensive reference for all frontend best practices that should be followed in this codebase.
+- Always include proper error handling and logging.
+- Never have unused function parameters.
+- Never have unused imports.
+- Never have unused labels.
+- Never have unused private class members.
+- Never have unused variables.
+- Never return a value from a function that has a 'void' return type.
+- Always use isNaN() when checking for NaN.
+- Always include key props in iterators and collection literals.
+- Always ensure "for" loop update clauses move the counter in the right direction.
+- Always ensure typeof expressions are compared to valid values.
+- Always ensure generator functions contain yield.
+- Never use await inside loops.
+- Never use bitwise operators.
+- Never use expressions where the operation doesn't change the value.
+- Always ensure Promise-like statements are handled appropriately.
+- Never create import cycles.
+- Never hardcode sensitive data like API keys and tokens.
+- Never let variable declarations shadow variables from outer scopes.

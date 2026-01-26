@@ -112,7 +112,7 @@ export default async function handler(
 			`,
 			)
 			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, categoryId)
-			.eq("trash", false);
+			.is("trash", null);
 
 		if (sortBy === "date-sort-acending") {
 			query = query.order("id", { ascending: false });

@@ -4,7 +4,7 @@ import useGetSortBy from "../../hooks/useGetSortBy";
 import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
-import TickIcon from "../../icons/tickIcon";
+import { TickIcon } from "../../icons/tickIcon";
 import {
 	type BookmarksSortByTypes,
 	type BookmarkViewCategories,
@@ -32,30 +32,6 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 	const { sortBy: bookmarksSortValue } = useGetSortBy();
 
 	const sortOptions = [
-		// {
-		//   label: "By date ↑",
-		//   value: "date-sort-acending",
-		// },
-		// {
-		//   label: "By Date",
-		//   value: "date-sort-decending",
-		// },
-		// {
-		//   label: "By Name (A → Z)",
-		//   value: "alphabetical-sort-acending",
-		// },
-		// {
-		//   label: "By name (Z → A)",
-		//   value: "alphabetical-sort-decending",
-		// },
-		// {
-		//   label: "By url (A → Z)",
-		//   value: "url-sort-acending",
-		// },
-		// {
-		//   label: "By url (Z → A)",
-		//   value: "url-sort-decending",
-		// },
 		{
 			label: "Recent First",
 			value: "date-sort-acending",
@@ -94,7 +70,7 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 				{find(sortOptions, (item) => item?.label === value)?.label}
 				{value === currentValue?.label ? (
 					<figure className="h-3 w-3">
-						<TickIcon color="var(--color-gray-800)" />
+						<TickIcon className="text-gray-800" />
 					</figure>
 				) : null}
 			</div>
