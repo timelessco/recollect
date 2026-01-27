@@ -89,8 +89,9 @@ public/sitemap-0.xml
 .claude/settings.local.json
 .claude/docs
 .claude/auto-memory/dirty-files
-_plans/**/*.md
-todos/**/*.md
+_plans
+todos
+.planning
 .vercel
 .worktrees
 supabase/seed.sql

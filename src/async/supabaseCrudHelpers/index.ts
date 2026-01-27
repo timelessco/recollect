@@ -368,6 +368,7 @@ export const searchBookmarks = async (
 			const response = await axios.get<{
 				data: BookmarksPaginatedDataTypes[];
 				error: Error | null;
+				// eslint-disable-next-line @typescript-eslint/no-base-to-string
 			}>(`${NEXT_API_URL}${SEARCH_BOOKMARKS}?${parameters.toString()}`);
 			return response?.data;
 		} catch (error_) {
