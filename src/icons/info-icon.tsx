@@ -1,7 +1,7 @@
 import { Icon, type IconProps } from "@/components/ui/recollect/icon";
 
 export const InfoIcon = (props: IconProps) => (
-	<Icon fill="none" viewBox="0 0 18 18" {...props} name="info">
+	<Icon fill="none" viewBox="0 0 18 18" {...props}>
 		<path
 			stroke="currentColor"
 			strokeLinecap="round"
