@@ -7,6 +7,7 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
+	IMPORT_BOOKMARKS_MUTATION_KEY,
 	RAINDROP_IMPORT_API,
 } from "@/utils/constants";
 
@@ -38,7 +39,7 @@ export function useImportBookmarksMutation() {
 	>({
 		mutationFn: (payload) =>
 			postApi<ImportBookmarksResponse>(`/api${RAINDROP_IMPORT_API}`, payload),
-		mutationKey: ["import-bookmarks"],
+		mutationKey: [IMPORT_BOOKMARKS_MUTATION_KEY],
 		onSettled: (_data, error) => {
 			if (error) {
 				return;
