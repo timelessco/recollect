@@ -69,21 +69,48 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
 /**
  * Renders a video slide using the custom VideoPlayer component
  */
-export const VideoSlide = ({ bookmark, isActive }: SlideProps) => (
-	<div className="flex h-full w-full items-center justify-center">
-		<div className="w-full max-w-[min(1200px,90vw)]">
-			<VideoPlayer
-				isActive={isActive ?? false}
-				src={
-					(bookmark?.type === tweetType || bookmark?.type === instagramType) &&
-					bookmark?.meta_data?.video_url
-						? bookmark?.meta_data?.video_url
-						: (bookmark?.url ?? "")
-				}
-			/>
+export const VideoSlide = ({ bookmark, isActive }: SlideProps) => {
+	// Priority: additionalVideos > video_url > bookmark.url
+	const videoSrc =
+		bookmark?.meta_data?.additionalVideos?.[0] ??
+		((bookmark?.type === tweetType || bookmark?.type === instagramType) &&
+		bookmark?.meta_data?.video_url
+			? bookmark?.meta_data?.video_url
+			: (bookmark?.url ?? ""));
+
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<div className="w-full max-w-[min(1200px,90vw)]">
+				<VideoPlayer isActive={isActive ?? false} src={videoSrc} />
+			</div>
 		</div>
-	</div>
-);
+	);
+};
+
+/**
+ * Renders an audio slide using a native HTML5 audio player
+ */
+export const AudioSlide = ({ bookmark }: SlideProps) => {
+	// Generate a data URL for an empty WebVTT file to satisfy accessibility requirements
+	const emptyVttDataUrl = "data:text/vtt;base64,V0VCVlRUCg==";
+
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<div className="w-full max-w-[min(600px,90vw)]">
+				<audio className="w-full" controls src={bookmark?.url ?? ""}>
+					<track
+						default
+						kind="captions"
+						label="No captions"
+						src={emptyVttDataUrl}
+						srcLang="en"
+					/>
+					Your browser does not support the audio element.
+				</audio>
+			</div>
+		</div>
+	);
+};
 
 /**
  * Renders a PDF slide using an embedded object tag

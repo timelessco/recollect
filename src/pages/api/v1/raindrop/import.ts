@@ -1,20 +1,17 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestResponse } from "@supabase/supabase-js";
-import { isEmpty } from "lodash";
-import slugify from "slugify";
-import uniqid from "uniqid";
 import { z } from "zod";
 
-import { sanitizeBookmarks } from "../../../../async/supabaseCrudHelpers";
-import { type CategoriesData } from "../../../../types/apiTypes";
+import { deduplicateBookmarks } from "../../../../utils/raindrop-bookmark-helpers";
 import {
-	BOOKMARK_CATEGORIES_TABLE_NAME,
-	CATEGORIES_TABLE_NAME,
-	MAIN_TABLE_NAME,
-	PROFILES,
-} from "../../../../utils/constants";
+	addBookmarksToQueue,
+	insertBookmarksWithRelations,
+	processRaindropCategories,
+	updateProfileCategoryOrder,
+} from "../../../../utils/raindrop-import-helpers";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
+
+const ROUTE = "raindrop-import";
 
 const bookmarkSchema = z.object({
 	title: z.string().nullable(),
@@ -28,207 +25,199 @@ const requestBodySchema = z.object({
 	bookmarks: z.array(bookmarkSchema).min(1, "No bookmarks found in request"),
 });
 
+const outputSchema = z.object({
+	inserted: z.number(),
+	skipped: z.number(),
+	warnings: z.array(z.string()).optional(),
+});
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
 ) {
-	const supabase = apiSupabaseClient(request, response);
-
-	const {
-		data: { user },
-		error: userError,
-	} = await supabase.auth.getUser();
-
-	if (userError || !user) {
-		response.status(401).json({ error: "Unauthorized user" });
+	if (request.method !== "POST") {
+		console.warn(`[${ROUTE}] Method not allowed:`, { method: request.method });
+		response.status(405).json({ data: null, error: "Method not allowed" });
 		return;
 	}
+
+	// Declare userId before try block so it's available in catch
+	let userId: string | undefined;
 
 	try {
 		const parseResult = requestBodySchema.safeParse(request.body);
 
 		if (!parseResult.success) {
-			console.warn("Invalid request body", parseResult.error);
+			const firstError = parseResult.error.issues[0];
+			const userMessage = firstError?.message || "Invalid request body";
+			console.warn(`[${ROUTE}] Validation error:`, {
+				errors: parseResult.error.issues,
+			});
 			response.status(400).json({
-				error: "Invalid request body",
+				data: null,
+				error: userMessage,
 			});
 			return;
 		}
+
+		const supabase = apiSupabaseClient(request, response);
+
+		const {
+			data: { user },
+			error: userError,
+		} = await supabase.auth.getUser();
+
+		if (userError || !user) {
+			console.warn(`[${ROUTE}] Auth error:`, { error: userError?.message });
+			response.status(401).json({
+				data: null,
+				error: userError?.message || "Not authenticated",
+			});
+			return;
+		}
+
+		userId = user.id;
+		console.log(`[${ROUTE}] API called:`, { userId });
 
 		const { bookmarks } = parseResult.data;
 
-		const categories = [
-			...new Set(
-				bookmarks
-					.filter(
-						(bookmark) =>
-							bookmark.category_name && bookmark.category_name !== "Unsorted",
-					)
-					.map((bookmark) => bookmark.category_name as string),
-			),
-		];
+		console.log(`[${ROUTE}] Bookmarks to import:`, {
+			bookmarks: bookmarks.length,
+		});
 
-		// get existing categories
-		const { data: existingCategories, error: existingCategoriesError } =
-			await supabase
-				.from(CATEGORIES_TABLE_NAME)
-				.select("*")
-				.in("category_name", categories)
-				.in("icon", ["droplets-02"])
-				.in("icon_color", ["#ffffff"])
-				.eq("user_id", user.id);
-
-		if (existingCategoriesError) {
-			console.warn(
-				"Error in getting existing categories",
-				existingCategoriesError,
-			);
-			response.status(500).json({
-				error: "Error in getting existing categories",
+		// Process categories: fetch existing and insert new ones
+		const { categoriesData, insertedCategories } =
+			await processRaindropCategories({
+				bookmarks,
+				route: ROUTE,
+				supabase,
+				userId,
 			});
-			return;
-		}
 
-		const existingCategoryNames = new Set(
-			existingCategories?.map((category) => category.category_name),
-		);
-
-		// this is the list of categories that need to be inserted
-		const newCategories = categories.filter(
-			(category) => !existingCategoryNames.has(category),
-		);
-
-		const categoriesToInsert = newCategories.map((category_name) => ({
-			category_name,
-			user_id: user.id,
-			category_slug: `${slugify(category_name, { lower: true })}-rain_drop-${uniqid.time()}`,
-			icon: "droplets-02",
-			icon_color: "#ffffff",
-		}));
-
-		const {
-			data: insertedcategories,
-			error: categoriesError,
-		}: PostgrestResponse<CategoriesData> = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.insert(categoriesToInsert)
-			.select("*");
-
-		if (categoriesError) {
-			console.warn("Error in inserting categories", categoriesError);
-			response.status(500).json({
-				error: "Error in inserting categories",
+		// Deduplicate bookmarks and filter out existing ones
+		const { bookmarksToSanitize, duplicatesRemoved, existing } =
+			await deduplicateBookmarks({
+				bookmarks,
+				categoriesData,
+				route: ROUTE,
+				supabase,
+				userId,
 			});
-			return;
-		}
 
-		const categoriesData = [
-			...(insertedcategories || []),
-			...(existingCategories || []),
-		];
-
-		//* * here we get all other fields required for the bookmark to be inserted in the main table*/
-		const sanitizedBookmarks = await sanitizeBookmarks(
-			bookmarks,
-			user.id,
-			categoriesData || [],
-		);
-
-		const { data, error } = await supabase
-			.from(MAIN_TABLE_NAME)
-			.insert(sanitizedBookmarks)
-			.select("*");
-
-		if (error) {
-			console.warn("Error in inserting bookmarks to main table", error);
-			response.status(500).json({
-				error: "Error in inserting bookmarks",
+		// Early return if nothing to insert
+		if (bookmarksToSanitize.length === 0) {
+			console.log(`[${ROUTE}] No new bookmarks to insert:`, {
+				totalBookmarks: bookmarks.length,
+				duplicatesRemoved,
+				existing,
+				userId,
 			});
-			return;
-		}
-
-		// Create junction table entries for many-to-many bookmark-category relationship
-		const bookmarkCategoryRelations = data
-			.filter((bookmark) => bookmark.category_id && bookmark.category_id > 0)
-			.map((bookmark) => ({
-				bookmark_id: bookmark.id,
-				category_id: bookmark.category_id,
-				user_id: user.id,
-			}));
-
-		if (bookmarkCategoryRelations.length > 0) {
-			const { error: junctionError } = await supabase
-				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-				.insert(bookmarkCategoryRelations);
-
-			if (junctionError) {
-				console.warn(
-					"Error inserting bookmark-category relations",
-					junctionError,
+			const output = {
+				inserted: 0,
+				skipped: bookmarks.length,
+			};
+			const validated = outputSchema.safeParse(output);
+			if (!validated.success) {
+				throw new Error(
+					`Output validation failed: ${JSON.stringify(validated.error.issues)}`,
 				);
-				// Non-blocking: bookmarks are already inserted, junction entries are supplementary
-			}
-		}
-
-		// here the order of the categories is updated
-		if (insertedcategories && !isEmpty(insertedcategories)) {
-			const { data: profileData, error: profileError } = await supabase
-				.from(PROFILES)
-				.select("category_order")
-				.eq("id", user.id)
-				.single();
-
-			if (profileError) {
-				console.warn("Error in fetching profile data", profileError);
-				response.status(500).json({
-					error: "Error in fetching profile data",
-				});
-				return;
 			}
 
-			const existingOrder = profileData?.category_order ?? [];
-
-			const newIds = insertedcategories.map((item) => item.id);
-
-			const updatedOrder = [...existingOrder, ...newIds];
-
-			const { error: orderError } = await supabase
-				.from(PROFILES)
-				.update({
-					category_order: updatedOrder,
-				})
-				.eq("id", user.id)
-				.select("id, category_order")
-				.single();
-
-			if (orderError) {
-				console.warn("Error in updating profile data", orderError);
-				response.status(500).json({
-					error: "Error in updating profile data",
-				});
-				return;
-			}
-		}
-
-		// after the bookmarks are inserted, we need to add them to the queue for ai-enrichment,screenshot,PDF thumbnail generation
-		const { error: queueResultsError } = await supabase
-			.schema("pgmq_public")
-			.rpc("send_batch", {
-				queue_name: "ai-embeddings",
-				messages: data,
-				sleep_seconds: 0,
-			});
-
-		if (queueResultsError) {
-			console.warn("failed to add message to queue", queueResultsError);
-			response.status(500).json({ error: "failed to add message to queue" });
+			response.status(200).json({ data: validated.data, error: null });
 			return;
 		}
 
-		response.status(200).json({ message: "success", count: data?.length });
+		// Insert bookmarks and create relations
+		const { insertedBookmarks, junctionError } =
+			await insertBookmarksWithRelations({
+				bookmarksToSanitize,
+				categoriesData,
+				route: ROUTE,
+				supabase,
+				userId,
+			});
+
+		// Collect warnings for partial failures
+		const warnings: string[] = [];
+
+		// Log warning if junction table insertion failed (non-blocking but should be surfaced)
+		if (junctionError) {
+			const warningMessage = `Failed to assign categories to ${junctionError.relationsCount} bookmark(s). The bookmarks were imported but are uncategorized.`;
+			warnings.push(warningMessage);
+
+			Sentry.addBreadcrumb({
+				message: "Junction table insertion failed",
+				level: "warning",
+				data: {
+					error: junctionError.error,
+					relationsCount: junctionError.relationsCount,
+					userId,
+				},
+			});
+
+			console.warn(
+				`[${ROUTE}] Warning: Failed to create bookmark-category relations:`,
+				{
+					error: junctionError.error,
+					relationsCount: junctionError.relationsCount,
+					userId,
+				},
+			);
+		}
+
+		// Update category order in profile
+		await updateProfileCategoryOrder({
+			insertedCategories,
+			route: ROUTE,
+			supabase,
+			userId,
+		});
+
+		// Add bookmarks to queue for AI enrichment, screenshot, PDF thumbnail generation
+		await addBookmarksToQueue({
+			insertedBookmarks,
+			route: ROUTE,
+			supabase,
+			userId,
+		});
+
+		const output = {
+			inserted: insertedBookmarks.length,
+			skipped: bookmarks.length - insertedBookmarks.length,
+			...(warnings.length > 0 && { warnings }),
+		};
+		const validated = outputSchema.safeParse(output);
+		if (!validated.success) {
+			throw new Error(
+				`Output validation failed: ${JSON.stringify(validated.error.issues)}`,
+			);
+		}
+
+		const hasWarnings = warnings.length > 0;
+		const statusCode = hasWarnings ? 207 : 200;
+
+		console.log(
+			`[${ROUTE}] Import completed${hasWarnings ? " with warnings" : " successfully"}:`,
+			{
+				inserted: validated.data.inserted,
+				skipped: validated.data.skipped,
+				warnings: warnings.length,
+				userId,
+			},
+		);
+
+		response.status(statusCode).json({ data: validated.data, error: null });
 	} catch (error) {
-		console.error("Error importing bookmarks", error);
-		Sentry.captureException(error);
-		response.status(500).json({ error: "Error importing bookmarks" });
+		console.error(`[${ROUTE}] Error:`, error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "raindrop_import_unexpected",
+				userId: userId || "unknown",
+			},
+		});
+		response.status(500).json({
+			data: null,
+			error: "An unexpected error occurred",
+		});
 	}
 }

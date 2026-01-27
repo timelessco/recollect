@@ -10,12 +10,12 @@ import {
 	PAGINATION_LIMIT,
 } from "@/utils/constants";
 
-type UseFetchDiscoverBookmarksOptions = {
+type UseFetchDiscoverBookmarksProps = {
 	enabled?: boolean;
 };
 
 export const useFetchDiscoverBookmarks = (
-	options: UseFetchDiscoverBookmarksOptions = {},
+	options: UseFetchDiscoverBookmarksProps = {},
 ) => {
 	const { enabled = true } = options;
 
@@ -27,6 +27,7 @@ export const useFetchDiscoverBookmarks = (
 		isLoading,
 	} = useInfiniteQuery({
 		queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
+		enabled,
 		queryFn: async ({ pageParam }) => {
 			const data = await getApi<SingleListData[]>(
 				`${NEXT_API_URL}${FETCH_BOOKMARKS_DISCOVERABLE_API}?page=${pageParam}`,
@@ -43,7 +44,6 @@ export const useFetchDiscoverBookmarks = (
 
 			return pages.length;
 		},
-		enabled,
 	});
 
 	return {
