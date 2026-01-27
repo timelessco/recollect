@@ -56,6 +56,14 @@ export async function processRaindropCategories(
 	// getting unique categories names
 	const categories = Array.from(new Set(allCategories));
 
+	// Early return if no categories to process (all bookmarks are uncategorized)
+	if (categories.length === 0) {
+		return {
+			categoriesData: [],
+			insertedCategories: [],
+		};
+	}
+
 	// get existing categories
 	// Note: Check only by category_name, not icon/icon_color, since the unique
 	// constraint is on (user_id, category_name). This prevents duplicate key errors
@@ -94,37 +102,44 @@ export async function processRaindropCategories(
 		(category) => !existingCategoryNames.has(category),
 	);
 
-	const categoriesToInsert = newCategories.map((category_name) => ({
-		category_name,
-		user_id: userId,
-		category_slug: `${slugify(category_name, { lower: true })}-rain_drop-${uniqid.time()}`,
-		icon: "droplets-02",
-		icon_color: "#ffffff",
-	}));
+	let insertedcategories: CategoriesData[] | null = null;
 
-	const {
-		data: insertedcategories,
-		error: categoriesError,
-	}: PostgrestResponse<CategoriesData> = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.insert(categoriesToInsert)
-		.select("*");
+	// Only insert new categories if there are any to insert
+	if (newCategories.length > 0) {
+		const categoriesToInsert = newCategories.map((category_name) => ({
+			category_name,
+			user_id: userId,
+			category_slug: `${slugify(category_name, { lower: true })}-rain_drop-${uniqid.time()}`,
+			icon: "droplets-02",
+			icon_color: "#ffffff",
+		}));
 
-	if (categoriesError) {
-		console.error(`[${route}] Error inserting categories:`, {
+		const {
+			data: insertedCategoriesData,
 			error: categoriesError,
-			userId,
-		});
-		Sentry.captureException(categoriesError, {
-			tags: {
-				operation: "insert_categories",
+		}: PostgrestResponse<CategoriesData> = await supabase
+			.from(CATEGORIES_TABLE_NAME)
+			.insert(categoriesToInsert)
+			.select("*");
+
+		if (categoriesError) {
+			console.error(`[${route}] Error inserting categories:`, {
+				error: categoriesError,
 				userId,
-			},
-			extra: {
-				newCategoriesCount: newCategories.length,
-			},
-		});
-		throw new Error("Failed to insert categories");
+			});
+			Sentry.captureException(categoriesError, {
+				tags: {
+					operation: "insert_categories",
+					userId,
+				},
+				extra: {
+					newCategoriesCount: newCategories.length,
+				},
+			});
+			throw new Error("Failed to insert categories");
+		}
+
+		insertedcategories = insertedCategoriesData;
 	}
 
 	const categoriesData = [
