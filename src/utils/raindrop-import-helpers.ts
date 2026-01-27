@@ -268,43 +268,107 @@ export async function deduplicateBookmarks(
 			const batchNumber = Math.floor(batchIndex / BATCH_SIZE) + 1;
 			const totalBatches = Math.ceil(urlsToCheck.length / BATCH_SIZE);
 
-			// For categorized bookmarks (category_id > 0): Query via junction table
-			if (categorizedCategoryIds.length > 0) {
-				const { data: categorizedResults, error: categorizedError } =
-					await supabase
-						.from(MAIN_TABLE_NAME)
-						.select("url, bookmark_categories!inner(category_id)")
-						.in("url", urlBatch)
-						.eq("user_id", userId)
-						.in("bookmark_categories.category_id", categorizedCategoryIds)
-						.eq("bookmark_categories.user_id", userId);
+			// Build promises for independent queries (Query 1 and Query 2) to run in parallel
+			const parallelQueries: Array<Promise<unknown>> = [];
 
-				if (categorizedError) {
-					console.error(
-						`[${route}] Error checking existing categorized bookmarks (batch ${batchNumber}/${totalBatches}):`,
-						{
-							error: categorizedError,
-							userId,
-							batchStart: batchIndex,
-							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
-						},
-					);
-					Sentry.captureException(categorizedError, {
-						tags: {
-							operation: "check_existing_categorized_bookmarks",
-							userId,
-						},
-						extra: {
-							batchNumber,
-							totalBatches,
-							batchStart: batchIndex,
-							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
-							urlsToCheckCount: urlsToCheck.length,
-							categoryIdsToCheckCount: categorizedCategoryIds.length,
-						},
-					});
-					throw new Error("Failed to check existing categorized bookmarks");
-				}
+			// Query 1: For categorized bookmarks (category_id > 0): Query via junction table
+			if (categorizedCategoryIds.length > 0) {
+				const categorizedQueryPromise = (async () => {
+					const { data: categorizedResults, error: categorizedError } =
+						await supabase
+							.from(MAIN_TABLE_NAME)
+							.select("url, bookmark_categories!inner(category_id)")
+							.in("url", urlBatch)
+							.eq("user_id", userId)
+							.in("bookmark_categories.category_id", categorizedCategoryIds)
+							.eq("bookmark_categories.user_id", userId);
+
+					if (categorizedError) {
+						console.error(
+							`[${route}] Error checking existing categorized bookmarks (batch ${batchNumber}/${totalBatches}):`,
+							{
+								error: categorizedError,
+								userId,
+								batchStart: batchIndex,
+								batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+							},
+						);
+						Sentry.captureException(categorizedError, {
+							tags: {
+								operation: "check_existing_categorized_bookmarks",
+								userId,
+							},
+							extra: {
+								batchNumber,
+								totalBatches,
+								batchStart: batchIndex,
+								batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+								urlsToCheckCount: urlsToCheck.length,
+								categoryIdsToCheckCount: categorizedCategoryIds.length,
+							},
+						});
+						throw new Error("Failed to check existing categorized bookmarks");
+					}
+
+					return categorizedResults;
+				})();
+
+				parallelQueries.push(categorizedQueryPromise);
+			}
+
+			// Query 2: For uncategorized bookmarks (category_id === 0): Check bookmarks with no junction entries
+			let allBookmarksWithUrls: Array<{ id: number; url: string }> | null =
+				null;
+			if (hasUncategorized) {
+				const uncategorizedQueryPromise = (async () => {
+					const { data: bookmarksData, error: allBookmarksError } =
+						await supabase
+							.from(MAIN_TABLE_NAME)
+							.select("id, url")
+							.in("url", urlBatch)
+							.eq("user_id", userId);
+
+					if (allBookmarksError) {
+						console.error(
+							`[${route}] Error checking existing uncategorized bookmarks (batch ${batchNumber}/${totalBatches}):`,
+							{
+								error: allBookmarksError,
+								userId,
+								batchStart: batchIndex,
+								batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+							},
+						);
+						Sentry.captureException(allBookmarksError, {
+							tags: {
+								operation: "check_existing_uncategorized_bookmarks",
+								userId,
+							},
+							extra: {
+								batchNumber,
+								totalBatches,
+								batchStart: batchIndex,
+								batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+								urlsToCheckCount: urlsToCheck.length,
+							},
+						});
+						throw new Error("Failed to check existing uncategorized bookmarks");
+					}
+
+					return bookmarksData;
+				})();
+
+				parallelQueries.push(uncategorizedQueryPromise);
+			}
+
+			// Execute parallel queries
+			const parallelResults = await Promise.all(parallelQueries);
+
+			// Process Query 1 results (categorized bookmarks)
+			if (categorizedCategoryIds.length > 0) {
+				const categorizedResults = parallelResults[0] as Array<{
+					url: string;
+					bookmark_categories: Array<{ category_id: number }> | null;
+				}> | null;
 
 				if (categorizedResults && categorizedResults.length > 0) {
 					// Transform results to match expected format
@@ -325,45 +389,19 @@ export async function deduplicateBookmarks(
 				}
 			}
 
-			// For uncategorized bookmarks (category_id === 0): Check bookmarks with no junction entries
+			// Process Query 2 results and Query 3 (uncategorized bookmarks)
 			if (hasUncategorized) {
-				// Find bookmarks that exist with these URLs but have NO entries in bookmark_categories
-				// This means they are uncategorized
-				const { data: allBookmarksWithUrls, error: allBookmarksError } =
-					await supabase
-						.from(MAIN_TABLE_NAME)
-						.select("id, url")
-						.in("url", urlBatch)
-						.eq("user_id", userId);
-
-				if (allBookmarksError) {
-					console.error(
-						`[${route}] Error checking existing uncategorized bookmarks (batch ${batchNumber}/${totalBatches}):`,
-						{
-							error: allBookmarksError,
-							userId,
-							batchStart: batchIndex,
-							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
-						},
-					);
-					Sentry.captureException(allBookmarksError, {
-						tags: {
-							operation: "check_existing_uncategorized_bookmarks",
-							userId,
-						},
-						extra: {
-							batchNumber,
-							totalBatches,
-							batchStart: batchIndex,
-							batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
-							urlsToCheckCount: urlsToCheck.length,
-						},
-					});
-					throw new Error("Failed to check existing uncategorized bookmarks");
-				}
+				// Extract Query 2 result from parallel results
+				// If Query 1 also ran, Query 2 is at index 1, otherwise at index 0
+				const resultIndex = categorizedCategoryIds.length > 0 ? 1 : 0;
+				allBookmarksWithUrls = parallelResults[resultIndex] as Array<{
+					id: number;
+					url: string;
+				}> | null;
 
 				if (allBookmarksWithUrls && allBookmarksWithUrls.length > 0) {
-					// Get bookmark IDs that have categories (to exclude them)
+					// Query 3: Get bookmark IDs that have categories (to exclude them)
+					// This query depends on Query 2 results, so it must run sequentially
 					const bookmarkIdsWithCategories = new Set<number>();
 					const bookmarkIds = allBookmarksWithUrls.map((b) => b.id);
 					const { data: bookmarksWithCategories } = await supabase
