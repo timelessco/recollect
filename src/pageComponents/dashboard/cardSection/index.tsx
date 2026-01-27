@@ -50,6 +50,7 @@ import {
 	VIDEO_TYPE_PREFIX,
 	viewValues,
 } from "../../../utils/constants";
+import { useBookmarkImageSources } from "../../../utils/getBookmarkImageSource";
 import {
 	getBaseUrl,
 	getPreviewPathInfo,
@@ -88,10 +89,6 @@ export type CardSectionProps = {
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
 };
-
-// Helper function to get the image source (screenshot or ogImage)
-const getImageSource = (item: SingleListData) =>
-	item?.ogImage ? item?.ogImage : item?.screenshot;
 
 const CardSection = ({
 	listData = [],
@@ -151,6 +148,9 @@ const CardSection = ({
 
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 
+	const getImageSource = (item: SingleListData) =>
+		imageSources[item.id] ?? item?.ogImage;
+
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
 		error: PostgrestError;
@@ -172,6 +172,9 @@ const CardSection = ({
 		isPublicPage || isEmpty(searchText)
 			? listData
 			: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
+
+	const imageSources = useBookmarkImageSources(bookmarksList);
+
 	const bookmarksInfoValue = useGetViewValue(
 		"cardContentViewArray",
 		[],

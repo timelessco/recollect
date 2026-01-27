@@ -261,6 +261,7 @@ export type Database = {
 					display_name: string | null;
 					email: string | null;
 					id: string;
+					preferred_og_domains: string[] | null;
 					profile_pic: string | null;
 					provider: string | null;
 					user_name: string | null;
@@ -273,6 +274,7 @@ export type Database = {
 					display_name?: string | null;
 					email?: string | null;
 					id: string;
+					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;
 					user_name?: string | null;
@@ -285,6 +287,7 @@ export type Database = {
 					display_name?: string | null;
 					email?: string | null;
 					id?: string;
+					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;
 					user_name?: string | null;
