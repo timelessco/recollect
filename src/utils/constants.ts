@@ -134,6 +134,8 @@ export const FETCH_USER_PROFILE_PIC_API = "/profiles/fetch-user-profile-pic";
 export const UPDATE_USERNAME_API = "/profiles/update-username";
 export const DELETE_USER_API = "/profiles/delete-user";
 export const REMOVE_PROFILE_PIC_API = "/profiles/remove-profile-pic";
+export const TOGGLE_PREFERRED_OG_DOMAIN_API =
+	"/profiles/toggle-preferred-og-domain";
 
 // settings profile api
 export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
@@ -244,6 +246,8 @@ export const acceptedFileTypes = [
 
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
+
+export const instagramType = "instagram";
 
 export const imageFileTypes = acceptedFileTypes?.filter((item) =>
 	item?.includes("image"),
@@ -426,3 +430,6 @@ export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
 export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
 export const WHITE_COLOR = colorPickerColors[0];
 export const BLACK_COLOR = colorPickerColors[1];
+
+// Queue names (sync with SQL migrations and Edge Functions)
+export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";

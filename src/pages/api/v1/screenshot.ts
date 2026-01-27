@@ -149,10 +149,15 @@ export default async function handler(
 			console.error("imageToText returned empty result", url);
 		}
 
+		// OCR returns { text, status } object
 		const ocrResult = await ocr(ogImage, supabase, user_id);
-		if (ocrResult) {
-			newMeta.ocr = ocrResult;
+
+		if (ocrResult.text) {
+			newMeta.ocr = ocrResult.text;
+			newMeta.ocr_status = ocrResult.status;
 		} else {
+			newMeta.ocr = null;
+			newMeta.ocr_status = ocrResult.status;
 			console.error("ocr returned empty result", url);
 		}
 

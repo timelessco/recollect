@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState, type RefObject } from "react";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+	type RefObject,
+} from "react";
 import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
@@ -6,12 +12,13 @@ import loaderGif from "../../../public/loader-gif.gif";
 import { useIframeStore } from "../../store/iframeStore";
 import { type SingleListData } from "../../types/apiTypes";
 import {
-	IMAGE_TYPE_PREFIX,
+	instagramType,
 	PDF_MIME_TYPE,
 	PDF_VIEWER_PARAMS,
 	PREVIEW_ALT_TEXT,
 	tweetType,
 } from "../../utils/constants";
+import { useBookmarkImageSources } from "../../utils/getBookmarkImageSource";
 import { VideoPlayer } from "../VideoPlayer";
 
 interface SlideProps {
@@ -26,40 +33,43 @@ interface SlideProps {
  * Renders an image slide with zoom capabilities
  * Handles double-click to zoom in/out
  */
-export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => (
-	<div
-		className="flex items-center justify-center"
-		onDoubleClick={(event) => {
-			event.stopPropagation();
-			if (!zoomRef?.current) {
-				return;
-			}
+export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
+	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
+	const imageSources = useBookmarkImageSources(bookmarkArray);
+	const imageSource = bookmark
+		? (imageSources[bookmark.id] ?? bookmark.ogImage)
+		: "";
 
-			if (zoomRef?.current?.zoom > 1) {
-				zoomRef?.current?.zoomOut();
-			} else {
-				zoomRef?.current?.zoomIn();
-			}
-		}}
-	>
-		<div className="w-full max-w-[min(1200px,90vw)]">
-			<Image
-				alt={PREVIEW_ALT_TEXT}
-				className="max-h-[80vh] w-auto"
-				draggable={false}
-				height={bookmark?.meta_data?.height ?? 800}
-				priority
-				src={
-					bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-					bookmark?.meta_data?.isOgImagePreferred
-						? bookmark?.ogImage
-						: (bookmark?.url ?? "")
+	return (
+		<div
+			className="flex items-center justify-center"
+			onDoubleClick={(event) => {
+				event.stopPropagation();
+				if (!zoomRef?.current) {
+					return;
 				}
-				width={bookmark?.meta_data?.width ?? 1_200}
-			/>
+
+				if (zoomRef?.current?.zoom > 1) {
+					zoomRef?.current?.zoomOut();
+				} else {
+					zoomRef?.current?.zoomIn();
+				}
+			}}
+		>
+			<div className="w-full max-w-[min(1200px,90vw)]">
+				<Image
+					alt={PREVIEW_ALT_TEXT}
+					className="max-h-[80vh] w-auto"
+					draggable={false}
+					height={bookmark?.meta_data?.height ?? 800}
+					priority
+					src={imageSource}
+					width={bookmark?.meta_data?.width ?? 1_200}
+				/>
+			</div>
 		</div>
-	</div>
-);
+	);
+};
 
 /**
  * Renders a video slide using the custom VideoPlayer component
@@ -89,7 +99,8 @@ export const VideoSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 					isActive={isActive ?? false}
 					onError={handleVideoError}
 					src={
-						(bookmark?.type === tweetType || bookmark?.type === "instagram") &&
+						(bookmark?.type === tweetType ||
+							bookmark?.type === instagramType) &&
 						bookmark?.meta_data?.video_url
 							? bookmark?.meta_data?.video_url
 							: (bookmark?.url ?? "")
@@ -147,6 +158,8 @@ export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
  */
 export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
+	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
+	const imageSources = useBookmarkImageSources(bookmarkArray);
 	// Only render iframe if this is the active slide and iframe is allowed
 	if (bookmark?.meta_data?.iframeAllowed && isActive && iframeEnabled) {
 		return (
@@ -176,7 +189,9 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	}
 
 	// Check if we have a placeholder to show
-	const placeholder = bookmark?.ogImage;
+	const placeholder = bookmark
+		? (imageSources[bookmark.id] ?? bookmark.ogImage)
+		: undefined;
 	if (placeholder) {
 		const placeholderHeight = bookmark?.meta_data?.height ?? 800;
 		const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
@@ -294,7 +309,7 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	return (
 		<Image
 			alt="Loading placeholder"
-			className="h-[50px] w-[50px] rounded-lg object-cover"
+			className="h-[50px] w-[50px] rounded-lg object-cover dark:invert"
 			loader={(source) => source.src}
 			src={loaderGif}
 		/>
