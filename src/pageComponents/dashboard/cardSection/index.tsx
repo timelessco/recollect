@@ -464,15 +464,17 @@ const CardSection = ({
 			"h-[14] w-[14px] mt-px": true,
 		});
 
-		const icon = GetBookmarkIcon({
-			item,
-			isUserInTweetsPage,
-			favIconErrorIds: favIconErrorImgs,
-			onFavIconError: (bookmarkId: number) => {
-				setFavIconErrorImgs([bookmarkId, ...favIconErrorImgs]);
-			},
-			size,
-		});
+		const icon = (
+			<GetBookmarkIcon
+				item={item}
+				isUserInTweetsPage={isUserInTweetsPage}
+				favIconErrorIds={favIconErrorImgs}
+				onFavIconError={(bookmarkId: number) => {
+					setFavIconErrorImgs([bookmarkId, ...favIconErrorImgs]);
+				}}
+				size={size}
+			/>
+		);
 
 		// Determine the figure className based on icon type
 		// If it's a favicon or twitter avatar (Image component), use the smaller figure

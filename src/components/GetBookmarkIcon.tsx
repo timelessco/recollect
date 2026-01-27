@@ -1,4 +1,3 @@
-import { type ReactNode } from "react";
 import Image from "next/image";
 
 import FolderIcon from "../icons/folderIcon";
@@ -53,15 +52,13 @@ export type GetBookmarkIconProps = {
  * 6. Image -> ImageIcon
  * 7. Default -> LinkIcon
  */
-export const GetBookmarkIcon = (options: GetBookmarkIconProps): ReactNode => {
-	const {
-		item,
-		isUserInTweetsPage = false,
-		favIconErrorIds = [],
-		onFavIconError,
-		size = 15,
-	} = options;
-
+export const GetBookmarkIcon = ({
+	item,
+	isUserInTweetsPage = false,
+	favIconErrorIds = [],
+	onFavIconError,
+	size = 15,
+}: GetBookmarkIconProps) => {
 	const isVideo =
 		item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
 		isBookmarkVideo(item?.type);

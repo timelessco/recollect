@@ -228,13 +228,13 @@ const MyComponent = () => {
 							>
 								<div className="flex items-center gap-1 text-13 leading-[138%]">
 									<div className="flex h-[15px] w-[15px] items-center text-gray-600">
-										{currentBookmark
-											? GetBookmarkIcon({
-													item: currentBookmark,
-													isUserInTweetsPage,
-													size: 15,
-												})
-											: null}
+										{currentBookmark ? (
+											<GetBookmarkIcon
+												item={currentBookmark}
+												isUserInTweetsPage={isUserInTweetsPage}
+												size={15}
+											/>
+										) : null}
 									</div>
 									<span className="truncate">
 										{highlightSearch(domain ?? "", trimmedSearchText)}
