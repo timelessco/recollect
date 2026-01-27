@@ -2,9 +2,9 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
+import { deduplicateBookmarks } from "../../../../utils/raindrop-bookmark-helpers";
 import {
 	addBookmarksToQueue,
-	deduplicateBookmarks,
 	insertBookmarksWithRelations,
 	processRaindropCategories,
 	updateProfileCategoryOrder,
