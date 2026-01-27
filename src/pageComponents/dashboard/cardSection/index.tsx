@@ -15,9 +15,9 @@ import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
-import AudioIcon from "../../../icons/actionIcons/audioIcon";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
+import { AudioIcon } from "../../../icons/audio-icon";
 import FolderIcon from "../../../icons/folderIcon";
 import ImageIcon from "../../../icons/imageIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
@@ -451,7 +451,6 @@ const CardSection = ({
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
-					{isAudio && <AudioIcon className={playSvgClassName} />}
 					<ImgLogic
 						_height={_height ?? 200}
 						_width={_width ?? 200}
@@ -478,6 +477,9 @@ const CardSection = ({
 		const isImage =
 			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 			isBookmarkImage(item?.type);
+		const isAudio =
+			item?.meta_data?.mediaType?.startsWith("audio") ||
+			isBookmarkAudio(item?.type);
 		const size = 15;
 		const favIconFigureClassName = classNames({
 			"h-[14] w-[14px] mt-px": true,
@@ -545,6 +547,14 @@ const CardSection = ({
 			return (
 				<figure className="card-icon rounded p-0.5 text-gray-1000">
 					<ImageIcon size={`${size}`} />
+				</figure>
+			);
+		}
+
+		if (isAudio) {
+			return (
+				<figure className="card-icon rounded-sm p-0.5 text-gray-1000">
+					<AudioIcon className="h-[15px] w-[15px]" />
 				</figure>
 			);
 		}

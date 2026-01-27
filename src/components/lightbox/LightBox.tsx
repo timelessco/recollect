@@ -14,6 +14,7 @@ import {
 	PDF_TYPE,
 	VIDEO_TYPE_PREFIX,
 } from "../../utils/constants";
+import { isBookmarkAudio } from "../../utils/helpers";
 
 import { PullEffect } from "./CloseOnSwipeDown";
 import {
@@ -22,6 +23,7 @@ import {
 } from "./hooks/useLightboxLogic";
 import MetaButtonPlugin from "./LightBoxPlugin";
 import {
+	AudioSlide,
 	ImageSlide,
 	PDFSlide,
 	VideoSlide,
@@ -124,8 +126,14 @@ export const CustomLightBox = ({
 
 			let content = null;
 
-			// Check video FIRST
 			if (
+				isBookmarkAudio(bookmark?.type) ||
+				bookmark?.meta_data?.mediaType?.startsWith("audio")
+			) {
+				content = <AudioSlide bookmark={bookmark} />;
+			}
+			// Check video
+			else if (
 				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
 				Boolean(bookmark?.meta_data?.video_url) ||

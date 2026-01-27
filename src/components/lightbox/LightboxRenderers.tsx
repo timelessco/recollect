@@ -88,6 +88,31 @@ export const VideoSlide = ({ bookmark, isActive }: SlideProps) => {
 };
 
 /**
+ * Renders an audio slide using a native HTML5 audio player
+ */
+export const AudioSlide = ({ bookmark }: SlideProps) => {
+	// Generate a data URL for an empty WebVTT file to satisfy accessibility requirements
+	const emptyVttDataUrl = "data:text/vtt;base64,V0VCVlRUCg==";
+
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<div className="w-full max-w-[min(600px,90vw)]">
+				<audio className="w-full" controls src={bookmark?.url ?? ""}>
+					<track
+						default
+						kind="captions"
+						label="No captions"
+						src={emptyVttDataUrl}
+						srcLang="en"
+					/>
+					Your browser does not support the audio element.
+				</audio>
+			</div>
+		</div>
+	);
+};
+
+/**
  * Renders a PDF slide using an embedded object tag
  * Fallback to download link if display fails
  */
