@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 
 import Button from "../../components/atoms/button";
 import { Spinner } from "../../components/spinner";
-import { InfoIcon } from "../../icons/infoIcon";
+import { InfoIcon } from "../../icons/info-icon";
 import { RaindropIcon } from "../../icons/raindrop-icon";
 import { useMiscellaneousStore } from "../../store/componentStore";
 

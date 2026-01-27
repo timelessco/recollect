@@ -20,7 +20,7 @@ import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import GoogleLoginIcon from "../../icons/googleLoginIcon";
 import { IframeIcon } from "../../icons/iframeIcon";
 import ImageIcon from "../../icons/imageIcon";
-import { InfoIcon } from "../../icons/infoIcon";
+import { InfoIcon } from "../../icons/info-icon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
 import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {

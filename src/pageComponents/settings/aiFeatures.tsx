@@ -9,7 +9,7 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import { InfoIcon } from "../../icons/infoIcon";
+import { InfoIcon } from "../../icons/info-icon";
 import {
 	saveButtonClassName,
 	settingsInputClassName,
