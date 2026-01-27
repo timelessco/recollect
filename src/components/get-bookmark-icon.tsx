@@ -70,21 +70,21 @@ export const GetBookmarkIcon = ({
 		isBookmarkImage(item?.type);
 
 	// Favicon error fallback
-	if (favIconErrorIds?.includes(item?.id)) {
+	if (favIconErrorIds.includes(item.id)) {
 		return <LinkIcon />;
 	}
 
 	// Twitter avatar (if in tweets page)
-	if (isUserInTweetsPage && item?.meta_data?.twitter_avatar_url) {
+	if (isUserInTweetsPage && item.meta_data.twitter_avatar_url) {
 		return (
 			<Image
 				alt="fav-icon"
 				className="h-[15px] w-[15px] rounded-sm"
 				height={size}
 				onError={() => {
-					onFavIconError?.(item?.id);
+					onFavIconError?.(item.id);
 				}}
-				src={item?.meta_data?.twitter_avatar_url}
+				src={item.meta_data.twitter_avatar_url}
 				width={size}
 			/>
 		);
@@ -98,7 +98,7 @@ export const GetBookmarkIcon = ({
 				className="h-[15px] w-[15px] rounded-sm"
 				height={size}
 				onError={() => {
-					onFavIconError?.(item?.id);
+					onFavIconError?.(item.id);
 				}}
 				src={item?.meta_data?.favIcon ?? ""}
 				width={size}
