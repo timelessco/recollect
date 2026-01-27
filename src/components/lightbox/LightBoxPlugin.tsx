@@ -42,7 +42,7 @@ import {
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import { Icon } from "../atoms/icon";
-import { GetBookmarkIcon } from "../GetBookmarkIcon";
+import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { Spinner } from "../spinner";
 
 import { CategoryMultiSelect } from "./category-multi-select";

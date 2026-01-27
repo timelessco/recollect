@@ -11,7 +11,7 @@ import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
 import { CategoryBadges } from "../../../components/categoryBadges";
-import { GetBookmarkIcon } from "../../../components/GetBookmarkIcon";
+import { GetBookmarkIcon } from "../../../components/get-bookmark-icon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
