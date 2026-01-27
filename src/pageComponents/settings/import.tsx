@@ -133,7 +133,7 @@ export const ImportBookmarks = () => {
 	const isFileUploaded = selectedFile && bookmarkCount !== null;
 
 	return (
-		<div className="mx-auto max-w-md">
+		<>
 			<h2 className="mb-6 text-lg leading-[115%] font-semibold tracking-normal text-gray-900">
 				Import
 			</h2>
@@ -243,6 +243,6 @@ export const ImportBookmarks = () => {
 					)}
 				</span>
 			</div>
-		</div>
+		</>
 	);
 };
