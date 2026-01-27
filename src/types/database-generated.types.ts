@@ -205,7 +205,7 @@ export type Database = {
 					screenshot: string | null;
 					sort_index: string | null;
 					title: string | null;
-					trash: boolean;
+					trash: string | null;
 					type: string | null;
 					url: string | null;
 					user_id: string;
@@ -221,7 +221,7 @@ export type Database = {
 					screenshot?: string | null;
 					sort_index?: string | null;
 					title?: string | null;
-					trash?: boolean;
+					trash?: string | null;
 					type?: string | null;
 					url?: string | null;
 					user_id: string;
@@ -237,7 +237,7 @@ export type Database = {
 					screenshot?: string | null;
 					sort_index?: string | null;
 					title?: string | null;
-					trash?: boolean;
+					trash?: string | null;
 					type?: string | null;
 					url?: string | null;
 					user_id?: string;
@@ -261,6 +261,7 @@ export type Database = {
 					display_name: string | null;
 					email: string | null;
 					id: string;
+					preferred_og_domains: string[] | null;
 					profile_pic: string | null;
 					provider: string | null;
 					user_name: string | null;
@@ -273,6 +274,7 @@ export type Database = {
 					display_name?: string | null;
 					email?: string | null;
 					id: string;
+					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;
 					user_name?: string | null;
@@ -285,6 +287,7 @@ export type Database = {
 					display_name?: string | null;
 					email?: string | null;
 					id?: string;
+					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;
 					user_name?: string | null;
@@ -524,7 +527,7 @@ export type Database = {
 							screenshot: string;
 							sort_index: string;
 							title: string;
-							trash: boolean;
+							trash: string;
 							type: string;
 							url: string;
 							user_id: string;

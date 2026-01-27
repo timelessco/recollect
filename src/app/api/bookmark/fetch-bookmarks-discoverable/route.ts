@@ -37,7 +37,7 @@ const DiscoverableBookmarkRowSchema = z.object({
 	ogImage: z.string().nullable(),
 	screenshot: z.string().nullable(),
 	category_id: z.number(),
-	trash: z.boolean(),
+	trash: z.string().nullable(),
 	type: z.string().nullable(),
 	meta_data: MetadataSchema.nullable(),
 	sort_index: z.string().nullable(),
@@ -90,7 +90,7 @@ export const GET = createGetApiHandler({
 				make_discoverable
 			`,
 			)
-			.eq("trash", false)
+			.is("trash", null)
 			.not("make_discoverable", "is", null)
 			.order("make_discoverable", { ascending: false })
 			.range(rangeStart, rangeEnd);
