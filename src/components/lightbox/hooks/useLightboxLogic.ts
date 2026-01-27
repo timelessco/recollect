@@ -13,6 +13,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
+	instagramType,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
 	PREVIEW_PATH,
@@ -42,7 +43,8 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
 			const isVideo =
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
-				Boolean(bookmark?.meta_data?.video_url);
+				Boolean(bookmark?.meta_data?.video_url) ||
+				Boolean(bookmark?.meta_data?.additionalVideos?.[0]);
 
 			return {
 				src: bookmark?.url,
@@ -67,9 +69,11 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
 					sources: [
 						{
 							src:
-								bookmark?.type === tweetType
+								bookmark?.meta_data?.additionalVideos?.[0] ??
+								(bookmark?.type === tweetType ||
+								bookmark?.type === instagramType
 									? bookmark?.meta_data?.video_url
-									: bookmark?.url,
+									: bookmark?.url),
 							type: VIDEO_TYPE_PREFIX,
 						},
 					],

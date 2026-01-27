@@ -10,6 +10,8 @@ import { type CategoryIdUrlTypes, type FileType } from "./componentTypes";
 export type SupabaseSessionType = { user: User | null };
 export type CookiesType = Partial<{ [key: string]: string }>;
 export type ImgMetadataType = {
+	additionalImages?: string[];
+	additionalVideos?: string[];
 	coverImage: string | null;
 	favIcon: string | null;
 	height: number | null;
