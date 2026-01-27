@@ -13,6 +13,7 @@ import {
 	BOOKMARKS_KEY,
 	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
+	instagramType,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
 	PREVIEW_PATH,
@@ -69,7 +70,8 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
 						{
 							src:
 								bookmark?.meta_data?.additionalVideos?.[0] ??
-								(bookmark?.type === tweetType
+								(bookmark?.type === tweetType ||
+								bookmark?.type === instagramType
 									? bookmark?.meta_data?.video_url
 									: bookmark?.url),
 							type: VIDEO_TYPE_PREFIX,
