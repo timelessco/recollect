@@ -12,9 +12,12 @@ import { useImportBookmarksMutation } from "@/async/mutationHooks/bookmarks/use-
 import { saveButtonClassName } from "@/utils/commonClassNames";
 import { handleClientError } from "@/utils/error-utils/client";
 
+const REQUIRED_CSV_COLUMNS = ["url"] as const;
+
 export const ImportBookmarks = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
+	const [parseError, setParseError] = useState<string | null>(null);
 	const [dragActive, setDragActive] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -23,11 +26,7 @@ export const ImportBookmarks = () => {
 	);
 
 	const { importBookmarksMutation } = useImportBookmarksMutation();
-	const uploading = importBookmarksMutation.isPending
-		? true
-		: importBookmarksMutation.isSuccess
-			? "completed"
-			: false;
+	const { isPending, isSuccess } = importBookmarksMutation;
 
 	const parseCSV = async (file: File) => {
 		const Papa = await import("papaparse");
@@ -57,18 +56,31 @@ export const ImportBookmarks = () => {
 	const handleFile = async (fileToProcess: File) => {
 		setSelectedFile(fileToProcess);
 		setBookmarkCount(null);
+		setParseError(null);
 		importBookmarksMutation.reset();
 
 		try {
 			const results = await parseCSV(fileToProcess);
-			const records = results.data as Array<{
-				title: string;
-				excerpt: string;
-				url: string;
-				cover: string;
-			}>;
-			setBookmarkCount(records.length);
-		} catch {
+
+			// Validate required columns exist
+			const columns = results.meta.fields ?? [];
+			const missingColumns = REQUIRED_CSV_COLUMNS.filter(
+				(col) => !columns.includes(col),
+			);
+
+			if (missingColumns.length > 0) {
+				setParseError(
+					`CSV missing required columns: ${missingColumns.join(", ")}`,
+				);
+				setBookmarkCount(0);
+				return;
+			}
+
+			setBookmarkCount(results.data.length);
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Error parsing CSV file";
+			setParseError(message);
 			setBookmarkCount(0);
 		}
 	};
@@ -121,11 +133,12 @@ export const ImportBookmarks = () => {
 
 			await importBookmarksMutation.mutateAsync({ bookmarks });
 		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message.includes("CSV parsing errors")
-			) {
-				handleClientError(error, "Error parsing CSV file");
+			if (error instanceof Error) {
+				if (error.message.includes("CSV parsing errors")) {
+					handleClientError(error, "Error parsing CSV file");
+				} else {
+					handleClientError(error, "Error importing bookmarks");
+				}
 			}
 		}
 	};
@@ -158,19 +171,19 @@ export const ImportBookmarks = () => {
 			>
 				<RaindropIcon className="mb-1.5 w-8" />
 				<p className="mb-1.5 align-middle text-sm leading-[115%] font-normal tracking-normal text-gray-800">
-					{isFileUploaded
-						? uploading === "completed"
-							? "Successfully imported bookmarks"
-							: `Found ${bookmarkCount} Bookmarks`
-						: "Drop the CSV file here or"}
+					{parseError
+						? parseError
+						: isFileUploaded
+							? isSuccess
+								? "Successfully imported bookmarks"
+								: `Found ${bookmarkCount} Bookmarks`
+							: "Drop the CSV file here or"}
 				</p>
 				<Button
-					className={`relative py-[4.5px] ${saveButtonClassName} rounded-[5px] ${uploading === "completed" ? "bg-gray-600 hover:bg-gray-600" : ""}`}
+					className={`relative py-[4.5px] ${saveButtonClassName} rounded-[5px] ${isSuccess ? "bg-gray-600 hover:bg-gray-600" : ""}`}
 					isDisabled={
 						isFileUploaded
-							? uploading === "completed" ||
-								uploading === true ||
-								bookmarkCount === 0
+							? isSuccess || isPending || bookmarkCount === 0
 							: false
 					}
 					onClick={
@@ -183,9 +196,9 @@ export const ImportBookmarks = () => {
 				>
 					<span className="inline-flex min-h-[15px] items-center justify-center">
 						{isFileUploaded ? (
-							uploading === true ? (
+							isPending ? (
 								<Spinner className="mx-12.5 h-3 w-3" />
-							) : uploading === "completed" ? (
+							) : isSuccess ? (
 								"Imported"
 							) : (
 								"Import Bookmarks"
