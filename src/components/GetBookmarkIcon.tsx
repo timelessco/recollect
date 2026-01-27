@@ -6,19 +6,18 @@ import ImageIcon from "../icons/imageIcon";
 import LinkIcon from "../icons/linkIcon";
 import VideoIcon from "../icons/videoIcon";
 import { type SingleListData } from "../types/apiTypes";
-
 import {
 	IMAGE_TYPE_PREFIX,
 	PDF_MIME_TYPE,
 	VIDEO_TYPE_PREFIX,
-} from "./constants";
+} from "../utils/constants";
 import {
 	isBookmarkDocument,
 	isBookmarkImage,
 	isBookmarkVideo,
-} from "./helpers";
+} from "../utils/helpers";
 
-export type BookmarkIconOptions = {
+export type GetBookmarkIconProps = {
 	/**
 	 * The bookmark item to determine the icon for
 	 */
@@ -54,7 +53,7 @@ export type BookmarkIconOptions = {
  * 6. Image -> ImageIcon
  * 7. Default -> LinkIcon
  */
-export const getBookmarkIcon = (options: BookmarkIconOptions): ReactNode => {
+export const GetBookmarkIcon = (options: GetBookmarkIconProps): ReactNode => {
 	const {
 		item,
 		isUserInTweetsPage = false,

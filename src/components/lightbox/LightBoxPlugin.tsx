@@ -34,7 +34,6 @@ import {
 	type SingleListData,
 	type UserTagsData,
 } from "../../types/apiTypes";
-import { getBookmarkIcon } from "../../utils/bookmark-icon-helpers";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
@@ -43,6 +42,7 @@ import {
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import { Icon } from "../atoms/icon";
+import { GetBookmarkIcon } from "../GetBookmarkIcon";
 import { Spinner } from "../spinner";
 
 import { CategoryMultiSelect } from "./category-multi-select";
@@ -229,7 +229,7 @@ const MyComponent = () => {
 								<div className="flex items-center gap-1 text-13 leading-[138%]">
 									<div className="flex h-[15px] w-[15px] items-center text-gray-600">
 										{currentBookmark
-											? getBookmarkIcon({
+											? GetBookmarkIcon({
 													item: currentBookmark,
 													isUserInTweetsPage,
 													size: 15,

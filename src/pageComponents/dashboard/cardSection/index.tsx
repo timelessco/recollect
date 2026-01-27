@@ -11,6 +11,7 @@ import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
 import { CategoryBadges } from "../../../components/categoryBadges";
+import { GetBookmarkIcon } from "../../../components/GetBookmarkIcon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
@@ -31,7 +32,6 @@ import {
 	type UserTagsData,
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
-import { getBookmarkIcon } from "../../../utils/bookmark-icon-helpers";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
@@ -464,11 +464,11 @@ const CardSection = ({
 			"h-[14] w-[14px] mt-px": true,
 		});
 
-		const icon = getBookmarkIcon({
+		const icon = GetBookmarkIcon({
 			item,
 			isUserInTweetsPage,
 			favIconErrorIds: favIconErrorImgs,
-			onFavIconError: (bookmarkId) => {
+			onFavIconError: (bookmarkId: number) => {
 				setFavIconErrorImgs([bookmarkId, ...favIconErrorImgs]);
 			},
 			size,
