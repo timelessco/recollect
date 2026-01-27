@@ -471,7 +471,7 @@ const CardSection = ({
 				isUserInTweetsPage={isUserInTweetsPage}
 				favIconErrorIds={favIconErrorImgs}
 				onFavIconError={(bookmarkId: number) => {
-					setFavIconErrorImgs([bookmarkId, ...favIconErrorImgs]);
+					setFavIconErrorImgs((prev) => [bookmarkId, ...prev]);
 				}}
 				size={size}
 			/>
