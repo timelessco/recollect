@@ -43,7 +43,7 @@ export type SingleListData = {
 	ogimage?: string;
 	screenshot: string;
 	title: string;
-	trash: boolean;
+	trash: string | null;
 	type: string;
 	url: string;
 	user_id: ProfilesTableTypes;
@@ -191,6 +191,7 @@ export type ProfilesTableTypes = {
 	display_name: string;
 	email: string;
 	id: string;
+	preferred_og_domains?: string[] | null;
 	profile_pic: string;
 	provider: string | null;
 	user_name: string;
@@ -202,6 +203,7 @@ export type ProfilesTableForPayloadTypes = {
 	display_name?: string;
 	email?: string;
 	id?: string;
+	preferred_og_domains?: string[] | null;
 	profile_pic?: string;
 	provider?: ProfilesTableTypes["provider"];
 	user_name?: string;

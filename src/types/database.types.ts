@@ -16,6 +16,14 @@ export type Database = MergeDeep<
 						make_discoverable: string | null;
 					}>;
 				};
+				// RPC from migration 20260123110000_toggle_preferred_og_domains_to_profiles
+				toggle_preferred_og_domain: {
+					Args: { p_domain: string };
+					Returns: Array<{
+						out_id: string;
+						out_preferred_og_domains: string[] | null;
+					}>;
+				};
 			};
 		};
 	}

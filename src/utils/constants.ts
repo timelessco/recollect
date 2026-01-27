@@ -21,6 +21,8 @@ export const STORAGE_SCRAPPED_IMAGES_PATH =
 	BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
 export const STORAGE_SCREENSHOT_IMAGES_PATH =
 	BOOKMARKS_STORAGE_NAME + "/public/screenshot_imgs";
+export const STORAGE_SCREENSHOT_VIDEOS_PATH =
+	BOOKMARKS_STORAGE_NAME + "/public/screenshot_videos";
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
@@ -134,6 +136,8 @@ export const FETCH_USER_PROFILE_PIC_API = "/profiles/fetch-user-profile-pic";
 export const UPDATE_USERNAME_API = "/profiles/update-username";
 export const DELETE_USER_API = "/profiles/delete-user";
 export const REMOVE_PROFILE_PIC_API = "/profiles/remove-profile-pic";
+export const TOGGLE_PREFERRED_OG_DOMAIN_API =
+	"/profiles/toggle-preferred-og-domain";
 
 // settings profile api
 export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
@@ -244,6 +248,8 @@ export const acceptedFileTypes = [
 
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
+
+export const instagramType = "instagram";
 
 export const imageFileTypes = acceptedFileTypes?.filter((item) =>
 	item?.includes("image"),

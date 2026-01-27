@@ -101,7 +101,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 												addedCategories,
 												inserted_at: new Date(),
 												addedTags: [],
-												trash: false,
+												trash: null,
 											},
 											...item.data,
 										],
