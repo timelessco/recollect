@@ -134,6 +134,8 @@ export const FETCH_USER_PROFILE_PIC_API = "/profiles/fetch-user-profile-pic";
 export const UPDATE_USERNAME_API = "/profiles/update-username";
 export const DELETE_USER_API = "/profiles/delete-user";
 export const REMOVE_PROFILE_PIC_API = "/profiles/remove-profile-pic";
+export const TOGGLE_PREFERRED_OG_DOMAIN_API =
+	"/profiles/toggle-preferred-og-domain";
 
 // settings profile api
 export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
