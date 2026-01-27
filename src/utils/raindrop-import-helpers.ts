@@ -404,11 +404,40 @@ export async function deduplicateBookmarks(
 					// This query depends on Query 2 results, so it must run sequentially
 					const bookmarkIdsWithCategories = new Set<number>();
 					const bookmarkIds = allBookmarksWithUrls.map((b) => b.id);
-					const { data: bookmarksWithCategories } = await supabase
+					const {
+						data: bookmarksWithCategories,
+						error: bookmarksWithCategoriesError,
+					} = await supabase
 						.from(BOOKMARK_CATEGORIES_TABLE_NAME)
 						.select("bookmark_id")
 						.in("bookmark_id", bookmarkIds)
 						.eq("user_id", userId);
+
+					if (bookmarksWithCategoriesError) {
+						console.error(
+							`[${route}] Error checking bookmarks with categories (batch ${batchNumber}/${totalBatches}):`,
+							{
+								error: bookmarksWithCategoriesError,
+								userId,
+								batchStart: batchIndex,
+								batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+							},
+						);
+						Sentry.captureException(bookmarksWithCategoriesError, {
+							tags: {
+								operation: "check_bookmarks_with_categories",
+								userId,
+							},
+							extra: {
+								batchNumber,
+								totalBatches,
+								batchStart: batchIndex,
+								batchEnd: Math.min(batchIndex + BATCH_SIZE, urlsToCheck.length),
+								bookmarkIdsCount: bookmarkIds.length,
+							},
+						});
+						throw new Error("Failed to check bookmarks with categories");
+					}
 
 					if (bookmarksWithCategories) {
 						for (const bc of bookmarksWithCategories) {

@@ -28,6 +28,7 @@ const requestBodySchema = z.object({
 const outputSchema = z.object({
 	inserted: z.number(),
 	skipped: z.number(),
+	warnings: z.array(z.string()).optional(),
 });
 
 export default async function handler(
@@ -111,7 +112,10 @@ export default async function handler(
 				existing,
 				userId,
 			});
-			const output = { inserted: 0, skipped: bookmarks.length };
+			const output = {
+				inserted: 0,
+				skipped: bookmarks.length,
+			};
 			const validated = outputSchema.safeParse(output);
 			if (!validated.success) {
 				throw new Error(
@@ -133,8 +137,24 @@ export default async function handler(
 				userId,
 			});
 
+		// Collect warnings for partial failures
+		const warnings: string[] = [];
+
 		// Log warning if junction table insertion failed (non-blocking but should be surfaced)
 		if (junctionError) {
+			const warningMessage = `Failed to assign categories to ${junctionError.relationsCount} bookmark(s). The bookmarks were imported but are uncategorized.`;
+			warnings.push(warningMessage);
+
+			Sentry.addBreadcrumb({
+				message: "Junction table insertion failed",
+				level: "warning",
+				data: {
+					error: junctionError.error,
+					relationsCount: junctionError.relationsCount,
+					userId,
+				},
+			});
+
 			console.warn(
 				`[${ROUTE}] Warning: Failed to create bookmark-category relations:`,
 				{
@@ -164,6 +184,7 @@ export default async function handler(
 		const output = {
 			inserted: insertedBookmarks.length,
 			skipped: bookmarks.length - insertedBookmarks.length,
+			...(warnings.length > 0 && { warnings }),
 		};
 		const validated = outputSchema.safeParse(output);
 		if (!validated.success) {
@@ -172,13 +193,20 @@ export default async function handler(
 			);
 		}
 
-		console.log(`[${ROUTE}] Import completed successfully:`, {
-			inserted: validated.data.inserted,
-			skipped: validated.data.skipped,
-			userId,
-		});
+		const hasWarnings = warnings.length > 0;
+		const statusCode = hasWarnings ? 207 : 200;
 
-		response.status(200).json({ data: validated.data, error: null });
+		console.log(
+			`[${ROUTE}] Import completed${hasWarnings ? " with warnings" : " successfully"}:`,
+			{
+				inserted: validated.data.inserted,
+				skipped: validated.data.skipped,
+				warnings: warnings.length,
+				userId,
+			},
+		);
+
+		response.status(statusCode).json({ data: validated.data, error: null });
 	} catch (error) {
 		console.error(`[${ROUTE}] Error:`, error);
 		Sentry.captureException(error, {
