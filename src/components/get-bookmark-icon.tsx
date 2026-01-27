@@ -78,7 +78,7 @@ export const GetBookmarkIcon = ({
 	if (isUserInTweetsPage && item.meta_data.twitter_avatar_url) {
 		return (
 			<Image
-				alt="fav-icon"
+				alt={item.title ? `${item.title} favicon` : "Bookmark favicon"}
 				className="h-[15px] w-[15px] rounded-sm"
 				height={size}
 				onError={() => {
@@ -94,13 +94,13 @@ export const GetBookmarkIcon = ({
 	if (item?.meta_data?.favIcon) {
 		return (
 			<Image
-				alt="fav-icon"
+				alt={item.title ? `${item.title} favicon` : "Bookmark favicon"}
 				className="h-[15px] w-[15px] rounded-sm"
 				height={size}
 				onError={() => {
 					onFavIconError?.(item.id);
 				}}
-				src={item?.meta_data?.favIcon ?? ""}
+				src={item.meta_data.favIcon}
 				width={size}
 			/>
 		);
