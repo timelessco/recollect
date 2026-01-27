@@ -30,9 +30,10 @@ interface SlideProps {
 export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
 	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
 	const imageSources = useBookmarkImageSources(bookmarkArray);
-	const imageSource = bookmark
-		? (imageSources[bookmark.id] ?? bookmark.ogImage)
-		: "";
+	const imageSource =
+		bookmark && typeof bookmark.id === "number"
+			? (imageSources[bookmark.id] ?? bookmark.ogImage)
+			: (bookmark?.ogImage ?? "");
 
 	return (
 		<div
@@ -164,9 +165,10 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	}
 
 	// Check if we have a placeholder to show
-	const placeholder = bookmark
-		? (imageSources[bookmark.id] ?? bookmark.ogImage)
-		: undefined;
+	const placeholder =
+		bookmark && typeof bookmark.id === "number"
+			? (imageSources[bookmark.id] ?? bookmark.ogImage)
+			: bookmark?.ogImage;
 	if (placeholder) {
 		const placeholderHeight = bookmark?.meta_data?.height ?? 800;
 		const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
