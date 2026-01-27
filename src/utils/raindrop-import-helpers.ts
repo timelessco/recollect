@@ -387,6 +387,12 @@ export async function addBookmarksToQueue(
 	props: AddBookmarksToQueueProps,
 ): Promise<void> {
 	const { insertedBookmarks, route, supabase, userId } = props;
+
+	// Early return if no bookmarks to add to queue
+	if (insertedBookmarks.length === 0) {
+		return;
+	}
+
 	const { error: queueResultsError } = await supabase
 		.schema("pgmq_public")
 		.rpc("send_batch", {
