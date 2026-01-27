@@ -394,7 +394,7 @@ const Settings = () => {
 					{session?.user?.app_metadata?.provider !== "email" && (
 						<div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">
 							<figure className="text-gray-900">
-								<InfoIcon />
+								<InfoIcon className="h-4.5 w-4.5" />
 							</figure>
 							You have logged in with your Google account.
 						</div>
