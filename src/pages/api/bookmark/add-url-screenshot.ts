@@ -209,6 +209,20 @@ export default async function handler(
 			});
 		}
 
+		if (!additionalVideoResult.success) {
+			Sentry.captureException(new Error(additionalVideoResult.message), {
+				tags: {
+					operation: "collect_video",
+					userId,
+					errorType: additionalVideoResult.error,
+				},
+				extra: {
+					bookmarkId: request.body.id,
+					videoUrl: screenShotResponse?.data?.allVideos?.[0],
+				},
+			});
+		}
+
 		// Add screenshot URL to meta_data
 		const updatedMetaData = {
 			...existingMetaData,
