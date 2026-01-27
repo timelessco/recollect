@@ -209,10 +209,12 @@ export const ImportBookmarks = () => {
 					!isFileUploaded ? "flex-wrap" : ""
 				}`}
 			>
-				<span className="mr-2 shrink-0">
-					<InfoIcon />
+				<span className="mr-2 shrink-0 py-0.5">
+					<InfoIcon className="h-4.5 w-4.5 text-gray-600" />
 				</span>
-				<span className="items-center">
+				<span
+					className={`${!isFileUploaded ? "flex items-center justify-center" : ""}`}
+				>
 					{!isFileUploaded ? (
 						<>
 							<span>Export a CSV from</span>
