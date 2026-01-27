@@ -755,7 +755,7 @@ const CardSection = ({
 
 		if (isLoadingProfile) {
 			return (
-				<div className="absolute inset-0 flex items-center justify-center">
+				<div className="absolute inset-0 flex items-center justify-center dark:brightness-0 dark:invert">
 					<Image
 						src={loaderGif}
 						alt="loader"

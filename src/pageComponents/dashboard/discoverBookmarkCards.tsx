@@ -22,6 +22,8 @@ import {
 } from "../../types/componentStoreTypes";
 import { viewValues } from "../../utils/constants";
 
+import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
+
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
 });
@@ -157,6 +159,16 @@ export const DiscoverBookmarkCards = () => {
 				dataLength: flattenedDiscoverData.length,
 			},
 		);
+
+	if (isDiscoverLoading) {
+		return (
+			<BookmarksSkeletonLoader
+				count={26}
+				type={discoverBookmarksView}
+				colCount={discoverMoodboardColumns?.[0]}
+			/>
+		);
+	}
 
 	return (
 		<div
