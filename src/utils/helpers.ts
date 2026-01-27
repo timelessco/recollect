@@ -1,5 +1,6 @@
 import { type NextApiRequest } from "next";
 import router from "next/router";
+import * as Sentry from "@sentry/nextjs";
 import {
 	type PostgrestError,
 	type SupabaseClient,
@@ -34,6 +35,7 @@ import {
 	IMAGES_URL,
 	INBOX_URL,
 	LINKS_URL,
+	MAX_VIDEO_SIZE_BYTES,
 	menuListItemName,
 	SEARCH_URL,
 	SHARED_CATEGORIES_TABLE_NAME,
@@ -42,10 +44,13 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
+	VIDEO_DOWNLOAD_TIMEOUT_MS,
 	videoFileTypes,
 	VIDEOS_URL,
 } from "./constants";
+import { vet } from "./try";
 import { getCategorySlugFromRouter } from "./url";
+import { upload, uploadVideo } from "@/lib/storage/media-upload";
 
 export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
 	find(tagsData, (item) => {
@@ -647,4 +652,496 @@ export const checkIsUserOwnerOfCategory = async (
 	}
 
 	return { success: true, isOwner: categoryData?.[0]?.user_id === userId };
+};
+
+const validateVideoSize = (
+	response: Response,
+	arrayBuffer: ArrayBuffer,
+): { isValid: boolean; error?: string } => {
+	// 1KB tolerance for size mismatch
+	const SIZE_TOLERANCE_BYTES = 1024;
+
+	// ArrayBuffer size validation (verify downloaded size matches Content-Length)
+	const contentLength = response.headers.get("content-length");
+	if (contentLength) {
+		const expectedSize = Number.parseInt(contentLength, 10);
+		const sizeDiff = Math.abs(arrayBuffer.byteLength - expectedSize);
+		if (sizeDiff > SIZE_TOLERANCE_BYTES) {
+			return {
+				isValid: false,
+				error: `Size mismatch: expected ${expectedSize}, got ${arrayBuffer.byteLength}`,
+			};
+		}
+	}
+
+	return { isValid: true };
+};
+
+type CollectVideoArgs = {
+	videoUrl: string | null;
+	userId: string;
+};
+
+type CollectVideoErrorType =
+	| "timeout"
+	| "size"
+	| "upload"
+	| "network"
+	| "unknown";
+
+type CollectVideoResult =
+	| {
+			success: true;
+			url: string | null;
+	  }
+	| {
+			success: false;
+			error: CollectVideoErrorType;
+			message: string;
+	  };
+
+const getErrorTypeFromAbortSignal = (error: unknown): CollectVideoErrorType => {
+	if (!(error instanceof Error)) {
+		return "unknown";
+	}
+
+	const name = (error as Error).name;
+	const message = (error as Error).message.toLowerCase();
+
+	if (name === "AbortError" || name === "TimeoutError") {
+		return "timeout";
+	}
+
+	if (message.includes("aborted") || message.includes("timeout")) {
+		return "timeout";
+	}
+
+	// Generic fetch/network failures typically surface as TypeError
+	if (name === "TypeError") {
+		return "network";
+	}
+
+	return "unknown";
+};
+
+// Domain allowlists matching helpers.server.ts validation
+// These are duplicated here to avoid importing server-only dependencies
+const ALLOWED_TWITTER_DOMAINS = ["video.twimg.com", "pbs.twimg.com"];
+
+const ALLOWED_INSTAGRAM_DOMAINS = [
+	".fbcdn.net",
+	".cdninstagram.com",
+	".instagram.com",
+];
+
+/**
+ * Checks if a URL is a valid Twitter media URL.
+ * Uses the same validation logic as helpers.server.ts validateTwitterMediaUrl.
+ * @param urlString - The URL to check
+ * @returns boolean - True if the URL is a valid Twitter media URL
+ */
+export const isTwitterMediaUrl = (urlString: string): boolean => {
+	try {
+		const url = new URL(urlString);
+		return (
+			url.protocol === "https:" &&
+			ALLOWED_TWITTER_DOMAINS.includes(url.hostname)
+		);
+	} catch {
+		return false;
+	}
+};
+
+/**
+ * Checks if a URL is a valid Instagram media URL.
+ * Uses the same validation logic as helpers.server.ts validateInstagramMediaUrl.
+ * @param urlString - The URL to check
+ * @returns boolean - True if the URL is a valid Instagram media URL
+ */
+export const isInstagramMediaUrl = (urlString: string): boolean => {
+	try {
+		const url = new URL(urlString);
+		return (
+			url.protocol === "https:" &&
+			ALLOWED_INSTAGRAM_DOMAINS.some((domain) => url.hostname.endsWith(domain))
+		);
+	} catch {
+		return false;
+	}
+};
+
+export const collectVideo = async ({
+	videoUrl,
+	userId,
+}: CollectVideoArgs): Promise<CollectVideoResult> => {
+	if (!videoUrl) {
+		return {
+			success: true,
+			url: null,
+		};
+	}
+
+	try {
+		// Basic URL validation to avoid fetching non-HTTP(S) schemes
+		try {
+			const parsedUrl = new URL(videoUrl);
+
+			if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+				const message =
+					"Invalid video URL scheme. Only http and https are allowed.";
+
+				console.warn("[collectVideo] Invalid video URL:", {
+					videoUrl,
+					userId,
+					protocol: parsedUrl.protocol,
+				});
+
+				return {
+					success: false,
+					error: "unknown",
+					message,
+				};
+			}
+
+			// Check if URL is from Twitter or Instagram (allowlist enforcement)
+			const isTwitter = isTwitterMediaUrl(videoUrl);
+			const isInstagram = isInstagramMediaUrl(videoUrl);
+
+			if (!isTwitter && !isInstagram) {
+				const message = "Invalid video URL.";
+
+				console.warn(
+					"[collectVideo] URL not allowlisted (must be Twitter or Instagram):",
+					{
+						videoUrl,
+						userId,
+					},
+				);
+
+				return {
+					success: false,
+					error: "unknown",
+					message,
+				};
+			}
+
+			if (isTwitter || isInstagram) {
+				console.log("[collectVideo] Detected social media URL:", {
+					videoUrl,
+					userId,
+					platform: isTwitter ? "twitter" : "instagram",
+				});
+			}
+		} catch {
+			const message = "Invalid video URL.";
+
+			console.warn("[collectVideo] Failed to parse video URL:", {
+				videoUrl,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "unknown",
+				message,
+			};
+		}
+
+		// Fetch with timeout
+		const [downloadError, videoResponse] = await vet(() =>
+			fetch(videoUrl, {
+				method: "GET",
+				signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
+			}),
+		);
+
+		if (downloadError || !videoResponse?.ok) {
+			const errorMessage =
+				downloadError instanceof Error
+					? downloadError.message
+					: "Unknown error";
+			const errorType = getErrorTypeFromAbortSignal(downloadError);
+
+			console.warn("[collectVideo] Video download failed:", {
+				videoUrl,
+				error: errorMessage,
+				errorType,
+				status: videoResponse?.status,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: errorType === "unknown" ? "network" : errorType,
+				message: `Failed to download video: ${errorMessage}`,
+			};
+		}
+
+		// Validate content type BEFORE downloading body
+		const rawContentType = videoResponse.headers.get("content-type") ?? "";
+		const normalizedContentType = rawContentType
+			.split(";")[0]
+			.trim()
+			.toLowerCase();
+
+		if (!normalizedContentType?.startsWith("video/")) {
+			const error = `Invalid video content type: ${
+				rawContentType || "missing"
+			}`;
+			console.warn("[collectVideo] Video validation failed:", {
+				videoUrl,
+				error,
+				validationType: "content-type",
+				contentType: rawContentType,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "unknown",
+				message: error,
+			};
+		}
+
+		// Validate size BEFORE downloading (check headers first)
+		const contentLength = videoResponse.headers.get("content-length");
+		if (contentLength) {
+			const size = Number.parseInt(contentLength, 10);
+			if (size > MAX_VIDEO_SIZE_BYTES) {
+				const error = `Video too large: ${size} bytes`;
+				console.warn("[collectVideo] Video validation failed:", {
+					videoUrl,
+					error,
+					validationType: "size",
+					size,
+					userId,
+				});
+				return {
+					success: false,
+					error: "size",
+					message: error,
+				};
+			}
+		}
+
+		// Download ArrayBuffer (only if size check passed)
+		const [arrayBufferError, arrayBuffer] = await vet(() =>
+			videoResponse.arrayBuffer(),
+		);
+
+		if (arrayBufferError || !arrayBuffer) {
+			const errorMessage =
+				arrayBufferError instanceof Error
+					? arrayBufferError.message
+					: "Unknown error";
+			const errorType = getErrorTypeFromAbortSignal(arrayBufferError);
+
+			console.warn("[collectVideo] Failed to read video array buffer:", {
+				videoUrl,
+				error: errorMessage,
+				errorType,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: errorType,
+				message: `Failed to get array buffer: ${errorMessage}`,
+			};
+		}
+
+		// Validate downloaded content size matches Content-Length
+		const validation = validateVideoSize(videoResponse, arrayBuffer);
+		if (!validation.isValid) {
+			console.warn("[collectVideo] Video validation failed:", {
+				videoUrl,
+				error: validation.error,
+				validationType: "size-validation",
+				userId,
+			});
+			return {
+				success: false,
+				error: "size",
+				message: validation.error || "Validation failed",
+			};
+		}
+
+		// Fallback size check when Content-Length was missing
+		if (arrayBuffer.byteLength > MAX_VIDEO_SIZE_BYTES) {
+			const error = `Video too large (post-download): ${arrayBuffer.byteLength} bytes`;
+			console.warn("[collectVideo] Video validation failed:", {
+				videoUrl,
+				error,
+				validationType: "size",
+				size: arrayBuffer.byteLength,
+				userId,
+			});
+			return {
+				success: false,
+				error: "size",
+				message: error,
+			};
+		}
+
+		const [uploadError, uploadedUrl] = await vet(() =>
+			uploadVideo(arrayBuffer, userId, normalizedContentType),
+		);
+
+		if (uploadError) {
+			const message =
+				uploadError instanceof Error
+					? uploadError.message
+					: "Unknown upload error";
+
+			console.warn("[collectVideo] Video upload to R2 failed:", {
+				videoUrl,
+				error: message,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "upload",
+				message,
+			};
+		}
+
+		if (!uploadedUrl) {
+			console.warn("[collectVideo] Video upload returned empty URL:", {
+				videoUrl,
+				userId,
+			});
+
+			return {
+				success: false,
+				error: "upload",
+				message: "Upload succeeded but returned empty URL",
+			};
+		}
+
+		return {
+			success: true,
+			url: uploadedUrl,
+		};
+	} catch (error) {
+		console.warn("[collectVideo] Video upload failed:", {
+			operation: "collect_video",
+			userId,
+			videoUrl,
+			error,
+		});
+
+		const normalizedError =
+			error instanceof Error
+				? error
+				: new Error(
+						typeof error === "string" ? error : JSON.stringify(error, null, 2),
+					);
+
+		Sentry.captureException(normalizedError, {
+			tags: {
+				operation: "collect_video",
+				userId,
+			},
+			extra: {
+				videoUrl,
+			},
+		});
+
+		return {
+			success: false,
+			error: "unknown",
+			message:
+				error instanceof Error
+					? error.message
+					: "Unknown error in collectVideo",
+		};
+	}
+};
+
+type CollectAdditionalImagesArgs = {
+	allImages?: string[];
+	userId: string;
+};
+export const collectAdditionalImages = async ({
+	allImages,
+	userId,
+}: CollectAdditionalImagesArgs) => {
+	if (!allImages?.length) {
+		return [];
+	}
+
+	const settledImages = await Promise.allSettled(
+		allImages.map(async (b64buffer) => {
+			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
+			return await upload(base64, userId);
+		}),
+	);
+
+	const failedUploads = settledImages
+		.map((result, index) => ({ result, index }))
+		.filter(
+			({ result }) =>
+				result.status === "rejected" ||
+				(result.status === "fulfilled" && result.value === null),
+		) as Array<{
+		result: PromiseRejectedResult | PromiseFulfilledResult<string | null>;
+		index: number;
+	}>;
+
+	if (failedUploads.length > 0) {
+		for (const { result, index } of failedUploads) {
+			const error =
+				result.status === "rejected"
+					? result.reason
+					: new Error("Image upload returned null URL");
+
+			console.warn("collectAdditionalImages upload failed:", {
+				operation: "collect_additional_images",
+				userId,
+				imageIndex: index,
+				error,
+			});
+
+			Sentry.addBreadcrumb({
+				category: "image-upload",
+				message: `Image ${index} failed`,
+				level: "warning",
+				data: {
+					index,
+					userId,
+					error:
+						error instanceof Error
+							? error.message
+							: typeof error === "string"
+								? error
+								: "Unknown error",
+				},
+			});
+		}
+
+		const successfulUploadsCount = settledImages.filter(
+			(result): result is PromiseFulfilledResult<string> =>
+				result.status === "fulfilled" && typeof result.value === "string",
+		).length;
+
+		Sentry.captureException(new Error("Image uploads failed"), {
+			tags: {
+				operation: "collect_additional_images",
+				userId,
+			},
+			extra: {
+				totalImages: settledImages.length,
+				successCount: successfulUploadsCount,
+				failureCount: failedUploads.length,
+			},
+		});
+	}
+
+	return settledImages
+		.filter(
+			(result): result is PromiseFulfilledResult<string> =>
+				result.status === "fulfilled" && typeof result.value === "string",
+		)
+		.map((fulfilled) => fulfilled.value);
 };

@@ -30,6 +30,7 @@
 		"postbuild": "next-sitemap --config next-sitemap.config.cjs",
 		"build:analyze": "cross-env ANALYZE=true next build && pnpm start",
 		"build:ci": "cross-env SKIP_ENV_VALIDATION=true next build",
+		"build:debug": "cross-env SOURCEMAP=true next build --debug-prerender",
 		"build:next": "next build",
 		"build:sourcemap": "cross-env SOURCEMAP=true next build && source-map-explorer .next/static/**/*.js && pnpm start",
 		"build:start": "next build && next start",
