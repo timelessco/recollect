@@ -1055,6 +1055,85 @@ rg "Category.*Select|Category.*Dropdown" src/components/
 rg "formatDate|format.*date" src/utils/
 ```
 
+### Hydration Errors
+
+#### ❌ Invalid HTML Nesting
+
+**Problem:**
+
+React/Next.js hydration errors occur when the server-rendered HTML doesn't match the client-rendered HTML. Common causes include invalid HTML nesting where block-level elements are nested inside inline elements.
+
+**Common violations:**
+
+```tsx
+// WRONG: <figure> cannot be descendant of <p>
+<p className="...">
+  <figure>
+    <InfoIcon />
+  </figure>
+  <span>Text</span>
+</p>
+
+// WRONG: <div> cannot be descendant of <p>
+<p>
+  <div>Content</div>
+</p>
+
+// WRONG: Block elements inside inline elements
+<span>
+  <div>Block content</div>
+</span>
+```
+
+**Fix:**
+
+```tsx
+// CORRECT: Use <div> instead of <p> when containing block elements
+<div className="...">
+  <figure>
+    <InfoIcon />
+  </figure>
+  <span>Text</span>
+</div>
+
+// CORRECT: Use semantic HTML appropriately
+<div>
+  <div>Content</div>
+</div>
+
+// CORRECT: Use appropriate block-level containers
+<div>
+  <div>Block content</div>
+</div>
+```
+
+**Rules:**
+
+- `<p>` elements can only contain inline content (text, `<span>`, `<a>`, `<strong>`, `<em>`, etc.)
+- Block-level elements (`<div>`, `<figure>`, `<section>`, `<article>`, `<header>`, `<footer>`, etc.) cannot be descendants of `<p>`
+- Use `<div>` for layout containers that need to contain block elements
+- Use semantic HTML elements appropriately (`<p>` for paragraphs, `<div>` for layout)
+
+**How to check:**
+
+```bash
+# Check for <figure> inside <p> tags
+rg '<p[^>]*>[\s\S]*?<figure' src/**/*.{tsx,jsx}
+
+# Check for <div> inside <p> tags
+rg '<p[^>]*>[\s\S]*?<div' src/**/*.{tsx,jsx}
+
+# Check for other block elements inside <p>
+rg '<p[^>]*>[\s\S]*?<(section|article|header|footer|nav|aside|main|h[1-6])' src/**/*.{tsx,jsx}
+```
+
+**Why**: Invalid HTML nesting causes React hydration mismatches, leading to:
+
+- Console warnings/errors
+- Potential UI inconsistencies
+- Performance degradation
+- Accessibility issues
+
 ### Migration Mistakes
 
 #### ❌ Missing Transaction Blocks
@@ -1414,6 +1493,11 @@ Use this checklist before submitting any PR. Check each item to ensure your code
   - [ ] Searched for existing components before creating new ones (`src/components/`)
   - [ ] Searched for existing utilities before creating new ones (`src/utils/`)
   - [ ] Used existing patterns rather than inventing new ones
+- [ ] **No hydration errors**:
+  - [ ] No `<figure>` elements inside `<p>` tags
+  - [ ] No `<div>` elements inside `<p>` tags
+  - [ ] No block-level elements inside inline elements
+  - [ ] HTML structure is valid and semantic
 
 ### Documentation
 

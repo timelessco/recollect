@@ -203,6 +203,7 @@ export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
 export const API_KEY_CHECK_KEY = "api_key_check";
 export const GET_API_KEY_KEY = "get_api_key";
+export const IMPORT_BOOKMARKS_MUTATION_KEY = "import-bookmarks";
 
 // error msgs
 

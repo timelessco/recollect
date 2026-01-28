@@ -9,7 +9,6 @@
  * - Integrates with the main lightbox component for a seamless experience
  */
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "motion/react";
@@ -20,15 +19,18 @@ import {
 } from "yet-another-react-lightbox";
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
-import { usePageContext } from "../../hooks/use-page-context";
-import { GeminiAiIcon } from "../../icons/geminiAiIcon";
-import ImageIcon from "../../icons/imageIcon";
-import { useMiscellaneousStore } from "../../store/componentStore";
 import { Icon } from "../atoms/icon";
+import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { Spinner } from "../spinner";
 
 import { CategoryMultiSelect } from "./category-multi-select";
 import { highlightSearch, type CustomSlide } from "./LightboxUtils";
+import { usePageContext } from "@/hooks/use-page-context";
+import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
+import { GeminiAiIcon } from "@/icons/geminiAiIcon";
+import { useMiscellaneousStore } from "@/store/componentStore";
+import { DISCOVER_URL } from "@/utils/constants";
+import { getCategorySlugFromRouter } from "@/utils/url";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -63,6 +65,9 @@ const MyComponent = () => {
 	const aiSummaryScrollRef = useRef<HTMLDivElement>(null);
 
 	const router = useRouter();
+
+	const categorySlug = getCategorySlugFromRouter(router);
+	const isUserInTweetsPage = useIsUserInTweetsPage();
 
 	const { isPublicPage, isDiscoverPage } = usePageContext();
 
@@ -181,21 +186,15 @@ const MyComponent = () => {
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-13 leading-[138%]">
-									{metaData?.favIcon ? (
-										<Image
-											alt="favicon"
-											className="h-[15px] w-[15px] rounded-sm"
-											height={16}
-											onError={(error) => {
-												const target = error?.target as HTMLImageElement;
-												target.style.display = "none";
-											}}
-											src={metaData?.favIcon}
-											width={16}
-										/>
-									) : (
-										<ImageIcon size="15" />
-									)}
+									<div className="flex h-[15px] w-[15px] items-center text-gray-600">
+										{currentBookmark ? (
+											<GetBookmarkIcon
+												item={currentBookmark}
+												isUserInTweetsPage={isUserInTweetsPage}
+												size={15}
+											/>
+										) : null}
+									</div>
 									<span className="truncate">
 										{highlightSearch(domain ?? "", trimmedSearchText)}
 									</span>
