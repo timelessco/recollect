@@ -24,13 +24,13 @@ const InstagramSyncInputSchema = z.object({
 						return false;
 					}
 				}, "Must be a valid Instagram URL"),
-				title: z.string().optional().default(""),
-				description: z.string().optional().default(""),
-				ogImage: z.string().nullable().optional(),
+				title: z.string().default(""),
+				description: z.string().default(""),
+				ogImage: z.string().nullable(),
 				type: z.literal(instagramType).default(instagramType),
-				meta_data: z.record(z.string(), z.unknown()).optional().default({}),
+				meta_data: z.record(z.string(), z.unknown()).default({}),
 				// Instagram's original save timestamp for ordering
-				saved_at: z.string().datetime().optional(),
+				saved_at: z.iso.datetime(),
 			}),
 		)
 		.min(1, "At least one bookmark required")

@@ -559,7 +559,7 @@ export const getNormalisedImageUrl = async (
 				return normalisedUrl;
 			}
 
-			return new URL(imageUrl, `https://${hostname}`).toString();
+			return new URL(imageUrl, `https://${hostname}`).href;
 		}
 
 		const response = await fetch(

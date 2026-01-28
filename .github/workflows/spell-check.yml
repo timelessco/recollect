@@ -1,0 +1,12 @@
+jobs:
+  spellcheck: # run the action
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: "false"
+      - uses: streetsidesoftware/cspell-action@v8
+
+name: Check spelling
+
+on: [pull_request, push] # rebuild any PRs and main branch changes
