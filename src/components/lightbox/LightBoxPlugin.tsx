@@ -9,10 +9,7 @@
  * - Integrates with the main lightbox component for a seamless experience
  */
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -21,33 +18,17 @@ import {
 	type Plugin,
 } from "yet-another-react-lightbox";
 
-import { useFetchDiscoverableBookmarkById } from "../../async/queryHooks/bookmarks/use-fetch-discoverable-bookmark-by-id";
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
-import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../hooks/useGetSortBy";
-import { GeminiAiIcon } from "../../icons/geminiAiIcon";
-import ImageIcon from "../../icons/imageIcon";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
-import {
-	type CategoriesData,
-	type SingleListData,
-	type UserTagsData,
-} from "../../types/apiTypes";
-import {
-	BOOKMARKS_KEY,
-	CATEGORIES_KEY,
-	DISCOVER_URL,
-} from "../../utils/constants";
-import { searchSlugKey } from "../../utils/helpers";
-import { getCategorySlugFromRouter } from "../../utils/url";
 import { Icon } from "../atoms/icon";
+import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { Spinner } from "../spinner";
 
 import { CategoryMultiSelect } from "./category-multi-select";
-import { highlightSearch } from "./LightboxUtils";
+import { highlightSearch, type CustomSlide } from "./LightboxUtils";
+import { usePageContext } from "@/hooks/use-page-context";
+import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
+import { GeminiAiIcon } from "@/icons/geminiAiIcon";
+import { useMiscellaneousStore } from "@/store/componentStore";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -68,7 +49,7 @@ const formatDate = (dateString: string) => {
  */
 
 const MyComponent = () => {
-	const { currentIndex } = useLightboxState();
+	const { currentIndex, slides } = useLightboxState();
 	const [isInitialMount, setIsInitialMount] = useState(true);
 
 	useEffect(() => {
@@ -81,101 +62,39 @@ const MyComponent = () => {
 	const descriptionRef = useRef<HTMLParagraphElement>(null);
 	const aiSummaryScrollRef = useRef<HTMLDivElement>(null);
 
-	const queryClient = useQueryClient();
-	const session = useSupabaseSession((state) => state.session);
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const router = useRouter();
-	const categorySlug = getCategorySlugFromRouter(router);
-	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
-	const categoryData = queryClient.getQueryData([
-		CATEGORIES_KEY,
-		session?.user?.id,
-	]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
+	const isUserInTweetsPage = useIsUserInTweetsPage();
+
+	const { isPublicPage, isDiscoverPage } = usePageContext();
+
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const trimmedSearchText = searchText?.trim() ?? "";
-	const { sortBy } = useGetSortBy();
 
+	// Get bookmark from slide data (primary source)
+	const currentSlide = slides[currentIndex] as CustomSlide | undefined;
+	let currentBookmark = currentSlide?.data?.bookmark;
+
+	// Fallback: fetch by ID only if bookmark not in slide data (direct URL access)
 	const { id } = router.query;
+	const shouldFetch =
+		!currentBookmark && typeof id === "string" && id.length > 0;
 
-	// For discover page, check if list cache exists first
-	let queryKey: unknown[];
-	if (isDiscoverPage) {
-		if (searchText) {
-			queryKey = [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText];
-		} else {
-			// Check if discover list cache exists
-			const discoverListCache = queryClient.getQueryData([
-				BOOKMARKS_KEY,
-				DISCOVER_URL,
-			]);
-			// Use list cache if it exists, otherwise use single bookmark cache
-			queryKey = discoverListCache
-				? [BOOKMARKS_KEY, DISCOVER_URL]
-				: [BOOKMARKS_KEY, DISCOVER_URL, id];
-		}
-	} else {
-		queryKey = [
-			BOOKMARKS_KEY,
-			session?.user?.id,
-			searchText ? searchSlugKey(categoryData) : CATEGORY_ID,
-			searchText ? searchText : sortBy,
-		];
-	}
-
-	// if there is text in searchbar we get the cache of searched data else we get from everything
-	const previousData = queryClient.getQueryData(queryKey) as
-		| {
-				data: SingleListData[];
-				pages: Array<{ data: SingleListData[] }>;
-		  }
-		| SingleListData
-		| undefined;
-
-	const shouldFetch = !previousData && Boolean(id);
-	const shouldFetchRegular = shouldFetch && !isDiscoverPage;
-	const shouldFetchDiscoverable = shouldFetch && isDiscoverPage;
-
-	// Use appropriate hook based on page type
-	// @ts-expect-error - props passed to useQuery - false-positive
-	const { data: regularBookmark } = useFetchBookmarkById(id as string, {
-		enabled: shouldFetchRegular,
+	const { data: bookmark } = useFetchBookmarkById(id as string, {
+		enabled: shouldFetch,
 	});
 
-	const { bookmark: discoverableBookmark } = useFetchDiscoverableBookmarkById(
-		id as string,
-		{
-			enabled: shouldFetchDiscoverable,
-		},
-	);
-
-	let currentBookmark;
-	// handling the case where user opens a preview link directly
-	if (!previousData) {
-		if (isDiscoverPage) {
-			currentBookmark = discoverableBookmark;
-		} else {
-			// @ts-expect-error bookmark is not undefined
-			currentBookmark = regularBookmark?.data?.[0];
-		}
-	} else if (typeof previousData === "object" && "pages" in previousData) {
-		// Paginated list from discover/category pages
-		currentBookmark = previousData.pages.flatMap((page) => page?.data ?? [])?.[
-			currentIndex
-		];
-	} else {
-		// Single bookmark from direct preview link (cached as SingleListData)
-		currentBookmark = previousData as SingleListData;
+	// Use fetched bookmark if slide data is unavailable
+	if (!currentBookmark && bookmark?.data) {
+		currentBookmark = bookmark.data;
 	}
 
 	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
 	const expandableRef = useRef<HTMLDivElement>(null);
 
 	const metaData = currentBookmark?.meta_data;
-	const collapsedOffset = currentBookmark?.addedTags?.length > 0 ? 145 : 110;
+	const collapsedOffset =
+		(currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
 	const lightboxShowSidepane = useMiscellaneousStore(
 		(state) => state.lightboxShowSidepane,
 	);
@@ -264,21 +183,15 @@ const MyComponent = () => {
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-13 leading-[138%]">
-									{metaData?.favIcon ? (
-										<Image
-											alt="favicon"
-											className="h-[15px] w-[15px] rounded-sm"
-											height={16}
-											onError={(error) => {
-												const target = error?.target as HTMLImageElement;
-												target.style.display = "none";
-											}}
-											src={metaData?.favIcon}
-											width={16}
-										/>
-									) : (
-										<ImageIcon size="15" />
-									)}
+									<div className="flex h-[15px] w-[15px] items-center text-gray-600">
+										{currentBookmark ? (
+											<GetBookmarkIcon
+												item={currentBookmark}
+												isUserInTweetsPage={isUserInTweetsPage}
+												size={15}
+											/>
+										) : null}
+									</div>
 									<span className="truncate">
 										{highlightSearch(domain ?? "", trimmedSearchText)}
 									</span>
@@ -325,7 +238,7 @@ const MyComponent = () => {
 								)}
 							</div>
 						)}
-						{!isDiscoverPage && (
+						{!isDiscoverPage && !isPublicPage && (
 							<CategoryMultiSelect
 								bookmarkId={currentBookmark?.id}
 								shouldFetch={shouldFetch}
@@ -333,7 +246,6 @@ const MyComponent = () => {
 						)}
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
-						metaData?.image_caption ||
 						metaData?.img_caption ||
 						metaData?.ocr) && (
 						<motion.div
@@ -355,20 +267,20 @@ const MyComponent = () => {
 							{currentBookmark?.addedTags?.length > 0 && (
 								<div className="px-5 pb-[19px]">
 									<div className="flex flex-wrap gap-[6px]">
-										{currentBookmark?.addedTags?.map((tag: UserTagsData) => (
-											<span
-												className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
-												key={tag?.id}
-											>
-												{highlightSearch("#" + tag?.name, trimmedSearchText)}
-											</span>
-										))}
+										{currentBookmark?.addedTags?.map(
+											(tag: { id: number; name: string }) => (
+												<span
+													className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
+													key={tag?.id}
+												>
+													{highlightSearch("#" + tag?.name, trimmedSearchText)}
+												</span>
+											),
+										)}
 									</div>
 								</div>
 							)}
-							{(metaData?.img_caption ||
-								metaData?.image_caption ||
-								metaData?.ocr) && (
+							{(metaData?.img_caption || metaData?.ocr) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
@@ -401,11 +313,10 @@ const MyComponent = () => {
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
 											{highlightSearch(
-												metaData?.img_caption || metaData?.image_caption || "",
+												metaData?.img_caption || "",
 												trimmedSearchText,
 											)}
-											{(metaData?.img_caption || metaData?.image_caption) &&
-												metaData?.ocr && <br />}
+											{metaData?.img_caption && metaData?.ocr && <br />}
 											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
 										</p>
 									</div>

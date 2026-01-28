@@ -10,6 +10,8 @@ import { type CategoryIdUrlTypes, type FileType } from "./componentTypes";
 export type SupabaseSessionType = { user: User | null };
 export type CookiesType = Partial<{ [key: string]: string }>;
 export type ImgMetadataType = {
+	additionalImages?: string[];
+	additionalVideos?: string[];
 	coverImage: string | null;
 	favIcon: string | null;
 	height: number | null;
@@ -191,6 +193,7 @@ export type ProfilesTableTypes = {
 	display_name: string;
 	email: string;
 	id: string;
+	preferred_og_domains?: string[] | null;
 	profile_pic: string;
 	provider: string | null;
 	user_name: string;
@@ -202,6 +205,7 @@ export type ProfilesTableForPayloadTypes = {
 	display_name?: string;
 	email?: string;
 	id?: string;
+	preferred_og_domains?: string[] | null;
 	profile_pic?: string;
 	provider?: ProfilesTableTypes["provider"];
 	user_name?: string;

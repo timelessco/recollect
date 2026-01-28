@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { isNullable } from "@/utils/assertion-utils";
 import {
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
@@ -16,24 +15,12 @@ const AddCategoryToBookmarksPayloadSchema = z.object({
 	bookmark_ids: z
 		.array(
 			z
-				.number({
-					error: (issue) =>
-						isNullable(issue.input)
-							? "Bookmark ID is required"
-							: "Bookmark ID must be a number",
-				})
 				.int({ error: "Bookmark ID must be a whole number" })
 				.positive({ error: "Bookmark ID must be a positive number" }),
 		)
 		.min(1, { error: "At least one bookmark ID is required" })
 		.max(100, { error: "Cannot process more than 100 bookmarks at once" }),
 	category_id: z
-		.number({
-			error: (issue) =>
-				isNullable(issue.input)
-					? "Collection ID is required"
-					: "Collection ID must be a number",
-		})
 		.int({ error: "Collection ID must be a whole number" })
 		.min(0, { error: "Collection ID must be non-negative" }),
 });

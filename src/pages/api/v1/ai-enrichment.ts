@@ -19,9 +19,9 @@ const requestBodySchema = z.object({
 	ogImage: z.url({ message: "ogImage must be a valid URL" }),
 	user_id: z.uuid({ message: "user_id must be a valid UUID" }),
 	url: z.url({ message: "url must be a valid URL" }),
-	isRaindropBookmark: z.boolean().optional().default(false),
-	isTwitterBookmark: z.boolean().optional().default(false),
-	isInstagramBookmark: z.boolean().optional().default(false),
+	isRaindropBookmark: z.boolean().default(false),
+	isTwitterBookmark: z.boolean().default(false),
+	isInstagramBookmark: z.boolean().default(false),
 	message: z.object({
 		msg_id: z.number(),
 		message: z.object({

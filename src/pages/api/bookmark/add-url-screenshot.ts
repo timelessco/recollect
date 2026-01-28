@@ -2,9 +2,7 @@ import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { decode } from "base64-arraybuffer";
 import { type VerifyErrors } from "jsonwebtoken";
-import uniqid from "uniqid";
 
 import {
 	type AddBookmarkScreenshotPayloadTypes,
@@ -16,97 +14,21 @@ import {
 	getBaseUrl,
 	MAIN_TABLE_NAME,
 	NEXT_API_URL,
-	R2_MAIN_BUCKET_NAME,
 	SCREENSHOT_API,
-	STORAGE_SCREENSHOT_IMAGES_PATH,
 } from "../../../utils/constants";
 import { getAxiosConfigWithAuth } from "../../../utils/helpers";
-import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { upload } from "@/lib/storage/media-upload";
+import { collectAdditionalImages, collectVideo } from "@/utils/helpers";
 import { vet } from "@/utils/try";
 
 type Data = {
 	data: SingleListData[] | null;
 	error: PostgrestError | VerifyErrors | string | null;
 };
-type CollectAdditionalImagesArgs = {
-	allImages?: string[];
-	userId: string;
-};
+
 const MAX_LENGTH = 1_300;
-export const upload = async (base64info: string, uploadUserId: string) => {
-	const imgName = `img-${uniqid?.time()}.jpg`;
-	const storagePath = `${STORAGE_SCREENSHOT_IMAGES_PATH}/${uploadUserId}/${imgName}`;
-
-	const { error: uploadError } = await storageHelpers.uploadObject(
-		R2_MAIN_BUCKET_NAME,
-		storagePath,
-		new Uint8Array(decode(base64info)),
-		"image/jpg",
-	);
-
-	if (uploadError) {
-		console.error("Storage upload failed:", uploadError);
-		Sentry.captureException(uploadError, {
-			tags: {
-				operation: "storage_upload",
-				userId: uploadUserId,
-			},
-			extra: {
-				storagePath,
-			},
-		});
-		return null;
-	}
-
-	const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
-
-	return storageData?.publicUrl || null;
-};
-
-const collectAdditionalImages = async ({
-	allImages,
-	userId,
-}: CollectAdditionalImagesArgs) => {
-	if (!allImages?.length) {
-		return [];
-	}
-
-	const settledImages = await Promise.allSettled(
-		allImages.map(async (b64buffer) => {
-			const base64 = Buffer.from(b64buffer, "binary").toString("base64");
-			return await upload(base64, userId);
-		}),
-	);
-
-	const failedUploads = settledImages
-		.map((result, index) => ({ result, index }))
-		.filter(({ result }) => result.status === "rejected") as Array<{
-		result: PromiseRejectedResult;
-		index: number;
-	}>;
-
-	if (failedUploads.length > 0) {
-		for (const { result, index } of failedUploads) {
-			const error = result.reason;
-
-			console.warn("collectAdditionalImages upload failed:", {
-				operation: "collect_additional_images",
-				userId,
-				imageIndex: index,
-				error,
-			});
-		}
-	}
-
-	return settledImages
-		.filter(
-			(result): result is PromiseFulfilledResult<string | null> =>
-				result.status === "fulfilled" && Boolean(result.value),
-		)
-		.map((fulfilled) => fulfilled.value) as string[];
-};
 
 export default async function handler(
 	request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
@@ -243,21 +165,63 @@ export default async function handler(
 		const updatedDescription =
 			description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
 
-		const additionalImages = await collectAdditionalImages({
-			allImages: screenShotResponse?.data?.allImages,
-			userId,
-		});
+		const [additionalImagesSettled, additionalVideoSettled] =
+			await Promise.allSettled([
+				collectAdditionalImages({
+					allImages: screenShotResponse?.data?.allImages,
+					userId,
+				}),
+				collectVideo({
+					videoUrl: screenShotResponse?.data?.allVideos?.[0] ?? null,
+					userId,
+				}),
+			]);
 
-		// Log additional images result
+		const additionalImages =
+			additionalImagesSettled.status === "fulfilled"
+				? additionalImagesSettled.value
+				: [];
+
+		if (additionalImagesSettled.status === "rejected") {
+			console.warn("Additional images collection failed:", {
+				error: additionalImagesSettled.reason,
+				userId,
+			});
+		}
+
 		console.log("Additional images collected:", {
 			count: additionalImages.length,
 		});
 
-		console.log("Additional videos collected:", {
-			urls: screenShotResponse?.data?.allVideos,
-		});
+		const additionalVideoResult =
+			additionalVideoSettled.status === "fulfilled"
+				? additionalVideoSettled.value
+				: {
+						success: false as const,
+						error: "unknown" as const,
+						message: "collectVideo promise rejected",
+					};
 
-		const additionalVideos = screenShotResponse?.data?.allVideos;
+		if (additionalVideoSettled.status === "rejected") {
+			console.warn("Additional video collection failed:", {
+				error: additionalVideoSettled.reason,
+				userId,
+			});
+		}
+
+		if (!additionalVideoResult.success) {
+			Sentry.captureException(new Error(additionalVideoResult.message), {
+				tags: {
+					operation: "collect_video",
+					userId,
+					errorType: additionalVideoResult.error,
+				},
+				extra: {
+					bookmarkId: request.body.id,
+					videoUrl: screenShotResponse?.data?.allVideos?.[0],
+				},
+			});
+		}
 
 		// Add screenshot URL to meta_data
 		const updatedMetaData = {
@@ -266,7 +230,10 @@ export default async function handler(
 			isPageScreenshot,
 			coverImage: existingBookmarkData?.ogImage,
 			additionalImages,
-			additionalVideos,
+			additionalVideos:
+				additionalVideoResult.success && additionalVideoResult.url
+					? [additionalVideoResult.url]
+					: [],
 		};
 
 		const {

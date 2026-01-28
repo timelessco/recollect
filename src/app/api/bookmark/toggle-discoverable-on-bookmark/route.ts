@@ -10,12 +10,6 @@ const ROUTE = "toggle-discoverable-on-bookmark";
 
 const ToggleBookmarkDiscoverablePayloadSchema = z.object({
 	bookmark_id: z
-		.number({
-			error: (issue) =>
-				isNullable(issue.input)
-					? "Bookmark ID is required"
-					: "Bookmark ID must be a number",
-		})
 		.int({ error: "Bookmark ID must be a whole number" })
 		.positive({ error: "Bookmark ID must be a positive number" }),
 	make_discoverable: z.boolean({
