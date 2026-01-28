@@ -63,9 +63,7 @@ BEGIN
           RETURNING id INTO v_category_id;
         END IF;
 
-        IF v_category_id IS NOT NULL THEN
           v_category_ids := array_append(v_category_ids, v_category_id);
-        END IF;
       END IF;
     END LOOP;
   END IF;
