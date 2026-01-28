@@ -41,6 +41,7 @@
 		"contributors:add": "all-contributors add",
 		"contributors:generate": "all-contributors generate",
 		"cypress:open": "cypress open",
+		"db:reset": "npx supabase db reset && sleep 2 && ./scripts/sync-vault-secret.sh",
 		"db:start": "npx supabase start && sleep 2 && ./scripts/sync-vault-secret.sh",
 		"db:types": "npx supabase gen types typescript --local --schema public --schema pgmq_public > src/types/database-generated.types.ts",
 		"dev": "next dev",
