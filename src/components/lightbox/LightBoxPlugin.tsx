@@ -29,8 +29,6 @@ import { usePageContext } from "@/hooks/use-page-context";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "@/icons/geminiAiIcon";
 import { useMiscellaneousStore } from "@/store/componentStore";
-import { DISCOVER_URL } from "@/utils/constants";
-import { getCategorySlugFromRouter } from "@/utils/url";
 
 /**
  * Formats a date string into a more readable format (e.g., "Jan 1, 2023")
@@ -66,7 +64,6 @@ const MyComponent = () => {
 
 	const router = useRouter();
 
-	const categorySlug = getCategorySlugFromRouter(router);
 	const isUserInTweetsPage = useIsUserInTweetsPage();
 
 	const { isPublicPage, isDiscoverPage } = usePageContext();
