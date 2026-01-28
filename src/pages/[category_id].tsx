@@ -22,13 +22,13 @@ type CategoryPageProps = {
 };
 
 const Home: NextPage<CategoryPageProps> = ({
-	isDiscover = false,
-	isAuthenticated = true,
-	discoverData = [],
+	isDiscover,
+	isAuthenticated,
+	discoverData,
 }) => {
 	const isMounted = useMounted();
 
-	if (isDiscover && !isAuthenticated) {
+	if (isDiscover && !isAuthenticated && discoverData) {
 		return <DiscoverGuestView discoverData={discoverData} />;
 	}
 
@@ -48,7 +48,9 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 	const isDiscover = categoryId === DISCOVER_URL;
 
 	if (!isDiscover) {
-		return { props: {} };
+		return {
+			props: { isDiscover: false, isAuthenticated: true, discoverData: [] },
+		};
 	}
 
 	// Create Supabase client for SSR
@@ -119,6 +121,7 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 		props: {
 			isDiscover: true,
 			isAuthenticated: true,
+			discoverData: [],
 		},
 	};
 };

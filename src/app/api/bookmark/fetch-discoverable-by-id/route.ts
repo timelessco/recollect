@@ -3,7 +3,11 @@ import { z } from "zod";
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { createApiClient } from "@/lib/supabase/api";
-import { MAIN_TABLE_NAME } from "@/utils/constants";
+import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
+	BOOKMARK_TAGS_TABLE_NAME,
+	MAIN_TABLE_NAME,
+} from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
 
 const ROUTE = "fetch-discoverable-by-id";
@@ -29,6 +33,39 @@ const MetadataSchema = z.object({
 	width: z.number().nullable().optional(),
 });
 
+// Simplified schemas for what's actually returned
+const TagSchema = z.object({
+	id: z.number(),
+	name: z.string(),
+});
+
+const CategorySchema = z.object({
+	id: z.number(),
+	category_name: z.string(),
+	category_slug: z.string(),
+	icon: z.string().nullable(),
+	icon_color: z.string(),
+});
+
+const BookmarkViewDataTypesSchema = z.object({
+	bookmarksView: z.string(),
+	cardContentViewArray: z.array(z.string()),
+	moodboardColumns: z.array(z.number()),
+	sortBy: z.string(),
+});
+
+const ProfilesTableTypesSchema = z.object({
+	bookmarks_view: BookmarkViewDataTypesSchema,
+	category_order: z.array(z.number()),
+	display_name: z.string(),
+	email: z.string(),
+	id: z.string(),
+	preferred_og_domains: z.array(z.string()).nullable().optional(),
+	profile_pic: z.string(),
+	provider: z.string().nullable(),
+	user_name: z.string(),
+});
+
 const DiscoverableBookmarkSchema = z.object({
 	id: z.number(),
 	inserted_at: z.string(),
@@ -43,6 +80,9 @@ const DiscoverableBookmarkSchema = z.object({
 	meta_data: MetadataSchema.nullable(),
 	sort_index: z.string().nullable(),
 	make_discoverable: z.string().nullable(),
+	addedTags: z.array(TagSchema),
+	addedCategories: z.array(CategorySchema).optional(),
+	user_id: ProfilesTableTypesSchema,
 });
 
 const FetchDiscoverableByIdResponseSchema = DiscoverableBookmarkSchema;
@@ -58,6 +98,7 @@ export const GET = createGetApiHandler({
 
 		const { supabase } = await createApiClient();
 
+		// Fetch the main bookmark data with user profile
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select(
@@ -74,7 +115,18 @@ export const GET = createGetApiHandler({
 				type,
 				meta_data,
 				sort_index,
-				make_discoverable
+				make_discoverable,
+				user_id (
+					bookmarks_view,
+					category_order,
+					display_name,
+					email,
+					id,
+					preferred_og_domains,
+					profile_pic,
+					provider,
+					user_name
+				)
 			`,
 			)
 			.eq("id", id)
@@ -101,10 +153,83 @@ export const GET = createGetApiHandler({
 			});
 		}
 
+		// Fetch tags via junction table
+		const { data: tagsData } = await supabase
+			.from(BOOKMARK_TAGS_TABLE_NAME)
+			.select(
+				`
+				bookmark_id,
+				tag_id (
+					id,
+					name
+				)
+			`,
+			)
+			.eq("bookmark_id", id);
+
+		// Fetch categories via junction table
+		const { data: categoriesData } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.select(
+				`
+				bookmark_id,
+				category_id (
+					id,
+					category_name,
+					category_slug,
+					icon,
+					icon_color
+				)
+			`,
+			)
+			.eq("bookmark_id", id);
+
+		// Map tags to the expected format
+		const addedTags =
+			(
+				tagsData as unknown as Array<{
+					bookmark_id: number;
+					tag_id: { id: number; name: string };
+				}>
+			)?.map((item) => ({
+				id: item.tag_id.id,
+				name: item.tag_id.name,
+			})) ?? [];
+
+		// Map categories to the expected format
+		const addedCategories =
+			(
+				categoriesData as unknown as Array<{
+					bookmark_id: number;
+					category_id: {
+						id: number;
+						category_name: string;
+						category_slug: string;
+						icon: string | null;
+						icon_color: string;
+					};
+				}>
+			)?.map((item) => ({
+				id: item.category_id.id,
+				category_name: item.category_id.category_name,
+				category_slug: item.category_id.category_slug,
+				icon: item.category_id.icon,
+				icon_color: item.category_id.icon_color,
+			})) ?? [];
+
 		console.log(`[${route}] Discoverable bookmark fetched successfully:`, {
 			bookmarkId: data.id,
+			tagsCount: addedTags.length,
+			categoriesCount: addedCategories.length,
 		});
 
-		return data;
+		// Type assertion for the complete response
+		const response = {
+			...data,
+			addedTags,
+			addedCategories,
+		} as z.infer<typeof DiscoverableBookmarkSchema>;
+
+		return response;
 	},
 });
