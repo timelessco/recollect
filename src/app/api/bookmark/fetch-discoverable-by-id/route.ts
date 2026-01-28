@@ -80,9 +80,9 @@ const DiscoverableBookmarkSchema = z.object({
 	meta_data: MetadataSchema.nullable(),
 	sort_index: z.string().nullable(),
 	make_discoverable: z.string().nullable(),
-	addedTags: z.array(TagSchema),
+	addedTags: z.array(TagSchema).optional(),
 	addedCategories: z.array(CategorySchema).optional(),
-	user_id: ProfilesTableTypesSchema,
+	user_id: ProfilesTableTypesSchema.nullable(),
 });
 
 const FetchDiscoverableByIdResponseSchema = DiscoverableBookmarkSchema;
