@@ -4,7 +4,7 @@ import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 import { useMounted } from "../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../lib/supabase/constants";
 import Dashboard from "../pageComponents/dashboard";
-import DiscoverGuestView from "../pageComponents/discover/DiscoverGuestView";
+import { DiscoverGuestView } from "../pageComponents/discover/DiscoverGuestView";
 import { type SingleListData } from "../types/apiTypes";
 import {
 	DISCOVER_URL,

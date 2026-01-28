@@ -14,7 +14,7 @@ type DiscoverGuestViewProps = {
 	discoverData: SingleListData[];
 };
 
-const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
+export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 	const { isDesktop } = useIsMobileView();
 
 	const moodboardColumns = useMemo(() => {
@@ -64,5 +64,3 @@ const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 		</div>
 	);
 };
-
-export default DiscoverGuestView;
