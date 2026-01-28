@@ -1,6 +1,7 @@
 import { type GetServerSideProps, type NextPage } from "next";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 
+import { useMounted } from "../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../lib/supabase/constants";
 import Dashboard from "../pageComponents/dashboard";
 import DiscoverGuestView from "../pageComponents/discover/DiscoverGuestView";
@@ -11,6 +12,8 @@ import {
 	getBaseUrl,
 	NEXT_API_URL,
 } from "../utils/constants";
+
+import { Spinner } from "@/components/spinner";
 
 type CategoryPageProps = {
 	isDiscover?: boolean;
@@ -23,8 +26,16 @@ const Home: NextPage<CategoryPageProps> = ({
 	isAuthenticated = true,
 	discoverData = [],
 }) => {
+	const isMounted = useMounted();
+
 	if (isDiscover && !isAuthenticated) {
 		return <DiscoverGuestView discoverData={discoverData} />;
+	}
+
+	if (!isMounted) {
+		return (
+			<Spinner className="flex h-3 w-3 animate-spin items-center justify-center" />
+		);
 	}
 
 	return <Dashboard />;

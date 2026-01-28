@@ -7,7 +7,6 @@ import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimis
 import { postApi } from "@/lib/api-helpers/api";
 import { type BookmarksPaginatedDataTypes } from "@/types/apiTypes";
 import {
-	BOOKMARKS_KEY,
 	NEXT_API_URL,
 	TOGGLE_BOOKMARK_DISCOVERABLE_API,
 } from "@/utils/constants";
@@ -40,7 +39,6 @@ export function useToggleDiscoverableOptimisticMutation() {
 						: null;
 				},
 			) as BookmarksPaginatedDataTypes,
-		invalidates: [[BOOKMARKS_KEY]],
 	});
 
 	return { toggleDiscoverableOptimisticMutation };
