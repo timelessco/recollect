@@ -54,7 +54,7 @@ export const ImportBookmarks = () => {
 	};
 
 	const handleFile = async (fileToProcess: File) => {
-		setSelectedFile(fileToProcess);
+		setSelectedFile(null);
 		setBookmarkCount(null);
 		setParseError(null);
 		importBookmarksMutation.reset();
@@ -72,16 +72,19 @@ export const ImportBookmarks = () => {
 				setParseError(
 					`CSV missing required columns: ${missingColumns.join(", ")}`,
 				);
-				setBookmarkCount(0);
+				setBookmarkCount(null);
+				setSelectedFile(null);
 				return;
 			}
 
+			setSelectedFile(fileToProcess);
 			setBookmarkCount(results.data.length);
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Error parsing CSV file";
 			setParseError(message);
-			setBookmarkCount(0);
+			setBookmarkCount(null);
+			setSelectedFile(null);
 		}
 	};
 
@@ -131,20 +134,19 @@ export const ImportBookmarks = () => {
 				category_name: bookmark.folder || null,
 			}));
 
-			await importBookmarksMutation.mutateAsync({ bookmarks });
+			importBookmarksMutation.mutate({ bookmarks });
 		} catch (error) {
-			if (error instanceof Error) {
-				if (error.message.includes("CSV parsing errors")) {
-					handleClientError(error, "Error parsing CSV file");
-				} else {
-					handleClientError(error, "Error importing bookmarks");
-				}
+			if (
+				error instanceof Error &&
+				error.message.includes("CSV parsing errors")
+			) {
+				handleClientError(error, "Error parsing CSV file");
 			}
 		}
 	};
 
-	const isFileUploaded = selectedFile && bookmarkCount !== null;
-
+	const isFileUploaded =
+		Boolean(selectedFile) && bookmarkCount !== null && !parseError;
 	return (
 		<>
 			<h2 className="mb-6 text-lg leading-[115%] font-semibold tracking-normal text-gray-900">
