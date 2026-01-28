@@ -12217,12 +12217,12 @@ snapshots:
   '@react-aria/calendar@3.0.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@babel/runtime': 7.28.6
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.1
       '@react-aria/i18n': 3.12.14(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@react-aria/interactions': 3.26.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@react-aria/live-announcer': 3.4.4
       '@react-aria/utils': 3.32.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@react-stately/calendar': 3.0.0(react@19.2.4)
+      '@react-stately/calendar': 3.9.1(react@19.2.4)
       '@react-types/button': 3.14.1(react@19.2.4)
       '@react-types/calendar': 3.8.1(react@19.2.4)
       '@react-types/shared': 3.32.1(react@19.2.4)
@@ -12302,7 +12302,7 @@ snapshots:
   '@react-aria/datepicker@3.0.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@babel/runtime': 7.28.6
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.1
       '@internationalized/message': 3.1.8
       '@internationalized/number': 3.6.5
       '@react-aria/focus': 3.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -12311,7 +12311,7 @@ snapshots:
       '@react-aria/label': 3.7.23(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@react-aria/spinbutton': 3.7.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@react-aria/utils': 3.32.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@react-stately/datepicker': 3.0.0(react@19.2.4)
+      '@react-stately/datepicker': 3.15.3(react@19.2.4)
       '@react-types/button': 3.14.1(react@19.2.4)
       '@react-types/calendar': 3.8.1(react@19.2.4)
       '@react-types/datepicker': 3.13.3(react@19.2.4)
@@ -12827,7 +12827,7 @@ snapshots:
   '@react-stately/calendar@3.0.0(react@19.2.4)':
     dependencies:
       '@babel/runtime': 7.28.6
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.1
       '@react-stately/utils': 3.11.0(react@19.2.4)
       '@react-types/calendar': 3.8.1(react@19.2.4)
       '@react-types/datepicker': 3.13.3(react@19.2.4)
@@ -12892,7 +12892,7 @@ snapshots:
   '@react-stately/datepicker@3.0.0(react@19.2.4)':
     dependencies:
       '@babel/runtime': 7.28.6
-      '@internationalized/date': 3.0.0
+      '@internationalized/date': 3.10.1
       '@internationalized/message': 3.1.8
       '@react-stately/overlays': 3.6.21(react@19.2.4)
       '@react-stately/utils': 3.11.0(react@19.2.4)
@@ -19697,7 +19697,7 @@ snapshots:
 
   substyle@9.4.1(react@19.2.4):
     dependencies:
-      '@babel/runtime': 7.4.5
+      '@babel/runtime': 7.28.6
       invariant: 2.2.4
       react: 19.2.4
 

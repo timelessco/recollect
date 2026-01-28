@@ -9,7 +9,6 @@
  * - Integrates with the main lightbox component for a seamless experience
  */
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,8 +23,8 @@ import {
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
+import useIsUserInTweetsPage from "../../hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "../../icons/geminiAiIcon";
-import ImageIcon from "../../icons/imageIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -43,6 +42,7 @@ import {
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import { Icon } from "../atoms/icon";
+import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { Spinner } from "../spinner";
 
 import { CategoryMultiSelect } from "./category-multi-select";
@@ -86,6 +86,7 @@ const MyComponent = () => {
 	const router = useRouter();
 	const categorySlug = getCategorySlugFromRouter(router);
 	const isDiscoverPage = categorySlug === DISCOVER_URL;
+	const isUserInTweetsPage = useIsUserInTweetsPage();
 
 	const categoryData = queryClient.getQueryData([
 		CATEGORIES_KEY,
@@ -226,21 +227,15 @@ const MyComponent = () => {
 								tabIndex={-1}
 							>
 								<div className="flex items-center gap-1 text-13 leading-[138%]">
-									{metaData?.favIcon ? (
-										<Image
-											alt="favicon"
-											className="h-[15px] w-[15px] rounded-sm"
-											height={16}
-											onError={(error) => {
-												const target = error?.target as HTMLImageElement;
-												target.style.display = "none";
-											}}
-											src={metaData?.favIcon}
-											width={16}
-										/>
-									) : (
-										<ImageIcon size="15" />
-									)}
+									<div className="flex h-[15px] w-[15px] items-center text-gray-600">
+										{currentBookmark ? (
+											<GetBookmarkIcon
+												item={currentBookmark}
+												isUserInTweetsPage={isUserInTweetsPage}
+												size={15}
+											/>
+										) : null}
+									</div>
 									<span className="truncate">
 										{highlightSearch(domain ?? "", trimmedSearchText)}
 									</span>
