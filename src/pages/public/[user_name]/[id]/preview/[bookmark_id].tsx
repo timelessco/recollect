@@ -34,7 +34,7 @@ const PublicPreviewParamsSchema = z.object({
 		.max(39),
 	id: z
 		.string()
-		.regex(/^[\da-z-]+$/iu, "Invalid category slug format")
+		.regex(/^[\w-]+$/u, "Invalid category slug format")
 		.min(1)
 		.max(100),
 });
@@ -111,6 +111,7 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (
 	const ROUTE = "/public/[user_name]/[id]/preview/[bookmark_id]";
 
 	const validation = PublicPreviewParamsSchema.safeParse(context.params);
+	console.log("validation", context.params);
 	if (!validation.success) {
 		console.warn(`[${ROUTE}] Invalid route parameters`, {
 			errors: validation.error.flatten(),

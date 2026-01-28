@@ -23,7 +23,7 @@ const FetchPublicBookmarkByIdQuerySchema = z.object({
 		.max(39),
 	category_slug: z
 		.string()
-		.regex(/^[\da-z-]+$/iu, "Invalid category slug format")
+		.regex(/^[\w-]+$/u, "Invalid category slug format")
 		.min(1)
 		.max(100),
 });
