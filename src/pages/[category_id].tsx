@@ -1,4 +1,5 @@
 import { type GetServerSideProps, type NextPage } from "next";
+import * as Sentry from "@sentry/nextjs";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 
 import { useMounted } from "../hooks/useMounted";
@@ -130,7 +131,14 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 				.range(rangeStart, rangeEnd);
 
 			if (error) {
-				console.error("Failed to fetch discoverable bookmarks:", error);
+				console.error(
+					"[discover-ssr] Failed to fetch discoverable bookmarks:",
+					error,
+				);
+				Sentry.captureException(error, {
+					tags: { route: "discover-ssr" },
+					extra: { categoryId, isAuthenticated },
+				});
 				return {
 					props: {
 						isDiscover: true,
@@ -156,7 +164,14 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 				},
 			};
 		} catch (error) {
-			console.error("Error fetching discoverable bookmarks:", error);
+			console.error(
+				"[discover-ssr] Error fetching discoverable bookmarks:",
+				error,
+			);
+			Sentry.captureException(error, {
+				tags: { route: "discover-ssr" },
+				extra: { categoryId, isAuthenticated },
+			});
 			return {
 				props: {
 					isDiscover: true,
