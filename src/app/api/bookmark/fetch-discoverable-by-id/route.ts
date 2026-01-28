@@ -149,7 +149,7 @@ export const GET = createGetApiHandler({
 		}
 
 		// Fetch tags via junction table
-		const { data: tagsData } = await supabase
+		const { data: tagsData, error: tagsError } = await supabase
 			.from(BOOKMARK_TAGS_TABLE_NAME)
 			.select(
 				`
@@ -162,8 +162,18 @@ export const GET = createGetApiHandler({
 			)
 			.eq("bookmark_id", id);
 
+		if (tagsError) {
+			return apiError({
+				route,
+				message: "Failed to fetch bookmark tags",
+				error: tagsError,
+				operation: "fetch_bookmark_tags",
+				extra: { id },
+			});
+		}
+
 		// Fetch categories via junction table
-		const { data: categoriesData } = await supabase
+		const { data: categoriesData, error: categoriesError } = await supabase
 			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
 			.select(
 				`
@@ -179,19 +189,31 @@ export const GET = createGetApiHandler({
 			)
 			.eq("bookmark_id", id);
 
-		// Map tags to the expected format
+		if (categoriesError) {
+			return apiError({
+				route,
+				message: "Failed to fetch bookmark categories",
+				error: categoriesError,
+				operation: "fetch_bookmark_categories",
+				extra: { id },
+			});
+		}
+
+		// Map tags to the expected format, filtering out null join rows
 		const addedTags =
 			(
 				tagsData as unknown as Array<{
 					bookmark_id: number;
-					tag_id: { id: number; name: string };
+					tag_id: { id: number; name: string } | null;
 				}>
-			)?.map((item) => ({
-				id: item.tag_id.id,
-				name: item.tag_id.name,
-			})) ?? [];
+			)
+				?.filter((item) => item.tag_id !== null)
+				.map((item) => ({
+					id: item.tag_id?.id ?? 0,
+					name: item.tag_id?.name,
+				})) ?? [];
 
-		// Map categories to the expected format
+		// Map categories to the expected format, filtering out null join rows
 		const addedCategories =
 			(
 				categoriesData as unknown as Array<{
@@ -202,15 +224,17 @@ export const GET = createGetApiHandler({
 						category_slug: string;
 						icon: string | null;
 						icon_color: string;
-					};
+					} | null;
 				}>
-			)?.map((item) => ({
-				id: item.category_id.id,
-				category_name: item.category_id.category_name,
-				category_slug: item.category_id.category_slug,
-				icon: item.category_id.icon,
-				icon_color: item.category_id.icon_color,
-			})) ?? [];
+			)
+				?.filter((item) => item.category_id !== null)
+				.map((item) => ({
+					id: item.category_id?.id ?? 0,
+					category_name: item.category_id?.category_name ?? "",
+					category_slug: item.category_id?.category_slug ?? "",
+					icon: item.category_id?.icon ?? "",
+					icon_color: item.category_id?.icon_color ?? "",
+				})) ?? [];
 
 		console.log(`[${route}] Discoverable bookmark fetched successfully:`, {
 			bookmarkId: data.id,
