@@ -2,7 +2,8 @@
 -- Migration: Fix Instagram import function - change trash from false to NULL
 -- ============================================================================
 -- After converting trash column to timestamp, the function still uses false (boolean).
--- This fixes the type mismatch by changing false -> NULL (line 89).
+-- This fixes the type mismatch by changing false -> NULL in the INSERT statement
+-- within the CREATE OR REPLACE FUNCTION below.
 -- Note: CREATE OR REPLACE FUNCTION requires the full function body.
 -- ============================================================================
 
