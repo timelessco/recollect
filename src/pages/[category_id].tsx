@@ -8,9 +8,8 @@ import { DiscoverGuestView } from "../pageComponents/discover/DiscoverGuestView"
 import { type SingleListData } from "../types/apiTypes";
 import {
 	DISCOVER_URL,
-	FETCH_BOOKMARKS_DISCOVERABLE_API,
-	getBaseUrl,
-	NEXT_API_URL,
+	MAIN_TABLE_NAME,
+	PAGINATION_LIMIT,
 } from "../utils/constants";
 
 import { Spinner } from "@/components/spinner";
@@ -90,23 +89,74 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 
 	if (!isAuthenticated) {
 		try {
-			const response = await fetch(
-				`${getBaseUrl()}${NEXT_API_URL}${FETCH_BOOKMARKS_DISCOVERABLE_API}?page=0`,
-			);
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
+			// Query Supabase directly instead of HTTP fetch to own API
+			const page = 0;
+			const rangeStart = page * PAGINATION_LIMIT;
+			const rangeEnd = (page + 1) * PAGINATION_LIMIT - 1;
+
+			const { data, error } = await supabase
+				.from(MAIN_TABLE_NAME)
+				.select(
+					`
+					id,
+					inserted_at,
+					title,
+					url,
+					description,
+					ogImage,
+					screenshot,
+					category_id,
+					trash,
+					type,
+					meta_data,
+					sort_index,
+					make_discoverable,
+					user_id (
+						bookmarks_view,
+						category_order,
+						display_name,
+						email,
+						id,
+						preferred_og_domains,
+						profile_pic,
+						provider,
+						user_name
+					)
+				`,
+				)
+				.is("trash", null)
+				.not("make_discoverable", "is", null)
+				.order("make_discoverable", { ascending: false })
+				.range(rangeStart, rangeEnd);
+
+			if (error) {
+				console.error("Failed to fetch discoverable bookmarks:", error);
+				return {
+					props: {
+						isDiscover: true,
+						isAuthenticated: false,
+						discoverData: [],
+					},
+				};
 			}
 
-			const data = (await response.json()) as { data: SingleListData[] | null };
+			// Map data to SingleListData format with required fields
+			// Type assertion needed as Supabase returns Json types and nested objects differently than our types
+			const discoverData = (data?.map((item) => ({
+				...item,
+				addedTags: [],
+				addedCategories: [],
+			})) ?? []) as unknown as SingleListData[];
 
 			return {
 				props: {
 					isDiscover: true,
 					isAuthenticated: false,
-					discoverData: data.data ?? [],
+					discoverData,
 				},
 			};
-		} catch {
+		} catch (error) {
+			console.error("Error fetching discoverable bookmarks:", error);
 			return {
 				props: {
 					isDiscover: true,
