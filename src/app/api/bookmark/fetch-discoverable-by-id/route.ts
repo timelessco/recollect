@@ -58,11 +58,9 @@ const ProfilesTableTypesSchema = z.object({
 	bookmarks_view: BookmarkViewDataTypesSchema,
 	category_order: z.array(z.number()),
 	display_name: z.string(),
-	email: z.string(),
 	id: z.string(),
 	preferred_og_domains: z.array(z.string()).nullable().optional(),
 	profile_pic: z.string(),
-	provider: z.string().nullable(),
 	user_name: z.string(),
 });
 
@@ -94,8 +92,7 @@ export const GET = createGetApiHandler({
 	handler: async ({ input, route }) => {
 		const { id } = input;
 
-		console.log(`[${route}] API called:`, { id });
-
+		console.log("[route] API called:", { id });
 		const { supabase } = await createApiClient();
 
 		// Fetch the main bookmark data with user profile
@@ -120,12 +117,10 @@ export const GET = createGetApiHandler({
 					bookmarks_view,
 					category_order,
 					display_name,
-					email,
-					id,
+ 					id,
 					preferred_og_domains,
 					profile_pic,
-					provider,
-					user_name
+ 					user_name
 				)
 			`,
 			)
