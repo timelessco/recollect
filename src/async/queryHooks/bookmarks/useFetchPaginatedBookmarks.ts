@@ -20,8 +20,15 @@ import {
 } from "../../../utils/constants";
 import { fetchBookmarksData } from "../../supabaseCrudHelpers";
 
+type UseFetchPaginatedBookmarksOptions = {
+	enabled?: boolean;
+};
+
 // fetches paginated bookmarks pages on user location like everything or categories etc...
-export default function useFetchPaginatedBookmarks() {
+export default function useFetchPaginatedBookmarks(
+	options: UseFetchPaginatedBookmarksOptions = {},
+) {
+	const { enabled = true } = options;
 	const session = useSupabaseSession((state) => state.session);
 
 	const isSortByLoading = useLoadersStore((state) => state.isSortByLoading);
@@ -50,7 +57,7 @@ export default function useFetchPaginatedBookmarks() {
 			),
 		initialPageParam: 0,
 		getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
-		enabled: CATEGORY_ID !== DISCOVER_URL,
+		enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
 	});
 
 	useEffect(() => {

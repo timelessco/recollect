@@ -21,8 +21,15 @@ import {
 } from "../../../utils/constants";
 import { searchBookmarks } from "../../supabaseCrudHelpers";
 
+type UseSearchBookmarksOptions = {
+	enabled?: boolean;
+};
+
 // searches bookmarks
-export default function useSearchBookmarks() {
+export default function useSearchBookmarks(
+	options: UseSearchBookmarksOptions = {},
+) {
+	const { enabled = true } = options;
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const session = useSupabaseSession((state) => state.session);
 	const toggleIsSearchLoading = useLoadersStore(
@@ -58,7 +65,7 @@ export default function useSearchBookmarks() {
 				CATEGORY_ID,
 				debouncedSearch,
 			] as const,
-			enabled: !isEmpty(debouncedSearch),
+			enabled: enabled && !isEmpty(debouncedSearch),
 			refetchOnWindowFocus: false,
 			initialPageParam: 0,
 			queryFn: async ({ pageParam: pageParameter }) => {

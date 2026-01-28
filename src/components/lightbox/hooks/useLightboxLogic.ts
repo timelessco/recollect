@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { usePageContext } from "../../../hooks/use-page-context";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -11,22 +12,28 @@ import { type SingleListData } from "../../../types/apiTypes";
 import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
-	CATEGORY_ID_PATHNAME,
 	IMAGE_TYPE_PREFIX,
 	instagramType,
 	PDF_MIME_TYPE,
 	PDF_TYPE,
-	PREVIEW_PATH,
 	tweetType,
 	VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
-import { getCategorySlugFromRouter } from "../../../utils/url";
+import {
+	getCategorySlugFromRouter,
+	getPublicPageInfo,
+} from "../../../utils/url";
+import {
+	buildAuthenticatedPreviewUrl,
+	buildPublicPreviewUrl,
+} from "../../../utils/url-builders";
 import { isYouTubeVideo, type CustomSlide } from "../LightboxUtils";
 
 import { handleClientError } from "@/utils/error-utils/client";
 
 /**
  * Hook to transform bookmarks into lightbox slides
+ * Embeds full bookmark data in each slide for plugin access
  */
 export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
 	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
@@ -54,7 +61,15 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
 					: isImage
 						? IMAGE_TYPE_PREFIX
 						: undefined,
-
+				// Embed bookmark data in slide for plugin access
+				data: {
+					bookmark,
+					type: isVideo
+						? VIDEO_TYPE_PREFIX
+						: isImage
+							? IMAGE_TYPE_PREFIX
+							: undefined,
+				},
 				// Only include dimensions if not a PDF or not a YouTube video
 				...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
 					!bookmark?.type?.includes(PDF_TYPE) &&
@@ -110,6 +125,8 @@ export const useLightboxNavigation = ({
 	);
 	const router = useRouter();
 
+	const { isPublicPage, isDiscoverPage } = usePageContext();
+
 	/**
 	 * Invalidate queries for a given bookmark index.
 	 * Uses broad invalidation because we can't track which specific categories
@@ -160,25 +177,36 @@ export const useLightboxNavigation = ({
 			setActiveIndex(index);
 		}
 
-		// Invalidate queries when slide changes
-		if (index !== lastInvalidatedIndex.current && isCollectionChanged) {
+		// Invalidate queries when slide changes (only for authenticated pages)
+		if (
+			index !== lastInvalidatedIndex.current &&
+			isCollectionChanged &&
+			!isPublicPage &&
+			!isDiscoverPage
+		) {
 			void invalidateQueriesForIndex(index);
 		}
 
-		// Update browser URL
-		void router?.push(
-			{
-				pathname: `${CATEGORY_ID_PATHNAME}`,
-				query: {
-					category_id: getCategorySlugFromRouter(router),
-					id: bookmarks?.[index]?.id,
-				},
-			},
-			`${getCategorySlugFromRouter(router)}${PREVIEW_PATH}/${
-				bookmarks?.[index]?.id
-			}`,
-			{ shallow: true },
-		);
+		// Update browser URL for both authenticated and public pages
+		if (isPublicPage && !isDiscoverPage) {
+			const publicInfo = getPublicPageInfo(router);
+			if (publicInfo && bookmarks?.[index]?.id) {
+				const { pathname, query, as } = buildPublicPreviewUrl({
+					publicInfo,
+					bookmarkId: bookmarks[index].id,
+				});
+				void router?.push({ pathname, query }, as, { shallow: true });
+			}
+		} else {
+			const categorySlug = getCategorySlugFromRouter(router);
+			if (categorySlug) {
+				const { pathname, query, as } = buildAuthenticatedPreviewUrl({
+					categorySlug,
+					bookmarkId: bookmarks?.[index]?.id,
+				});
+				void router?.push({ pathname, query }, as, { shallow: true });
+			}
+		}
 	};
 
 	/**

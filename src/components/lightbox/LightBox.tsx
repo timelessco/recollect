@@ -83,7 +83,7 @@ export const CustomLightBox = ({
 		}
 	}, [setLightboxShowSidepane]);
 
-	// Transform bookmarks into slides using custom hook
+	// Transform bookmarks into slides using custom hook (with embedded bookmark data)
 	const slides = useLightboxSlides(bookmarks);
 
 	// Handle navigation, query invalidation and URL updates using custom hook

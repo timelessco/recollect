@@ -98,6 +98,13 @@ export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
 export const TOGGLE_BOOKMARK_DISCOVERABLE_API =
 	"/bookmark/toggle-discoverable-on-bookmark";
+export const FETCH_PUBLIC_BOOKMARK_BY_ID_API =
+	"/api/bookmark/fetch-public-bookmark-by-id";
+
+/**
+ * Max bookmark count to SSR on public category page; rest virtualize after hydrate.
+ */
+export const PUBLIC_PAGE_SSR_ITEM_LIMIT = 24;
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";

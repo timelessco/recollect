@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { getApi } from "@/lib/api-helpers/api";
@@ -10,11 +9,16 @@ import {
 	NEXT_API_URL,
 	PAGINATION_LIMIT,
 } from "@/utils/constants";
-import { getCategorySlugFromRouter } from "@/utils/url";
 
-export const useFetchDiscoverBookmarks = () => {
-	const router = useRouter();
-	const isDiscoverPage = getCategorySlugFromRouter(router) === DISCOVER_URL;
+type UseFetchDiscoverBookmarksProps = {
+	enabled?: boolean;
+};
+
+export const useFetchDiscoverBookmarks = (
+	options: UseFetchDiscoverBookmarksProps = {},
+) => {
+	const { enabled = true } = options;
+
 	const {
 		data: discoverData,
 		fetchNextPage,
@@ -23,7 +27,7 @@ export const useFetchDiscoverBookmarks = () => {
 		isLoading,
 	} = useInfiniteQuery({
 		queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
-		enabled: isDiscoverPage,
+		enabled,
 		queryFn: async ({ pageParam }) => {
 			const data = await getApi<SingleListData[]>(
 				`${NEXT_API_URL}${FETCH_BOOKMARKS_DISCOVERABLE_API}?page=${pageParam}`,
