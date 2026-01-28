@@ -129,4 +129,109 @@ GRANT EXECUTE ON FUNCTION public.process_instagram_bookmark(TEXT, UUID, TEXT, TE
 COMMENT ON FUNCTION public.process_instagram_bookmark IS
 'Atomic Instagram bookmark processing with queue message deletion and AI enrichment queueing. Called by Edge Function worker. Updated to use NULL for trash column (timestamp type).';
 
+-- ============================================================================
+-- PART 2: Add RPC to store last error in queue message
+-- ============================================================================
+-- When RPC fails, we store the error in the message so that when max_retries
+-- is exceeded, we can see the actual error instead of just "max_retries_exceeded"
+
+CREATE OR REPLACE FUNCTION public.update_queue_message_error(
+  p_queue_name TEXT,
+  p_msg_id BIGINT,
+  p_error TEXT
+) RETURNS VOID
+LANGUAGE plpgsql
+VOLATILE
+SECURITY DEFINER
+SET search_path = public, pgmq, pg_temp
+AS $$
+BEGIN
+  EXECUTE format(
+    'UPDATE pgmq.%I SET message = message || $1 WHERE msg_id = $2',
+    'q_' || p_queue_name
+  ) USING jsonb_build_object('last_error', p_error, 'last_error_at', now()), p_msg_id;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.update_queue_message_error(TEXT, BIGINT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.update_queue_message_error(TEXT, BIGINT, TEXT) TO service_role;
+
+COMMENT ON FUNCTION public.update_queue_message_error IS
+'Store last error in queue message for debugging. Called by Edge Function when RPC fails.';
+
+-- ============================================================================
+-- PART 3: Cron Wrapper Functions
+-- ============================================================================
+
+-- 3.1 Invoke worker (validates vault secrets, returns request_id)
+CREATE OR REPLACE FUNCTION public.invoke_instagram_worker()
+RETURNS bigint
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, net, vault, pg_temp
+AS $$
+DECLARE
+  v_request_id bigint;
+  v_url text;
+  v_service_key text;
+BEGIN
+  SELECT decrypted_secret INTO v_url
+  FROM vault.decrypted_secrets WHERE name = 'instagram_worker_url';
+
+  SELECT decrypted_secret INTO v_service_key
+  FROM vault.decrypted_secrets WHERE name = 'supabase_service_role_key';
+
+  IF v_url IS NULL THEN
+    RAISE EXCEPTION 'Vault secret "instagram_worker_url" not found';
+  END IF;
+
+  IF v_service_key IS NULL THEN
+    RAISE EXCEPTION 'Vault secret "supabase_service_role_key" not found';
+  END IF;
+
+  SELECT net.http_post(
+    url := v_url,
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || v_service_key
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 25000
+  ) INTO v_request_id;
+
+  RETURN v_request_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.invoke_instagram_worker() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.invoke_instagram_worker() TO postgres;
+GRANT EXECUTE ON FUNCTION public.invoke_instagram_worker() TO service_role;
+
+COMMENT ON FUNCTION public.invoke_instagram_worker IS
+'Invokes Instagram import worker. Validates vault secrets exist before making HTTP call.';
+
+-- 3.2 Monitor for recent HTTP failures
+CREATE OR REPLACE FUNCTION public.get_instagram_worker_failures(
+  p_since_minutes int DEFAULT 5
+)
+RETURNS TABLE (request_id bigint, status_code int, error_body text, created_at timestamptz)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, net, pg_temp
+AS $$
+  SELECT id, status_code, content::text, created
+  FROM net._http_response
+  WHERE created > NOW() - (p_since_minutes || ' minutes')::interval
+    AND (status_code < 200 OR status_code >= 300)
+  ORDER BY created DESC;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_instagram_worker_failures(int) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_instagram_worker_failures(int) TO postgres;
+GRANT EXECUTE ON FUNCTION public.get_instagram_worker_failures(int) TO service_role;
+
+COMMENT ON FUNCTION public.get_instagram_worker_failures IS
+'Returns recent HTTP failures for monitoring. Default: last 5 minutes.';
+
 COMMIT;

@@ -22,21 +22,11 @@ SELECT vault.create_secret(
   'instagram_worker_url'
 );
 
--- 3. Create pg_cron job (10 second interval)
+-- 3. Create pg_cron job (uses wrapper function from migration)
 SELECT cron.schedule(
   'process-instagram-imports',
   '10 seconds',
-  $$
-  SELECT net.http_post(
-    url := (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'instagram_worker_url'),
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'supabase_service_role_key')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 25000
-  );
-  $$
+  'SELECT invoke_instagram_worker();'
 );
 
 -- =============================================================================
@@ -48,6 +38,26 @@ SELECT name FROM vault.secrets WHERE name IN ('instagram_worker_url', 'supabase_
 
 SELECT 'Cron job:' as info;
 SELECT jobid, jobname, schedule, active FROM cron.job WHERE jobname = 'process-instagram-imports';
+
+-- =============================================================================
+-- UPGRADING: Replace existing cron job with wrapper function
+-- =============================================================================
+-- If you have an existing cron job using inline SQL, replace it:
+--
+-- SELECT cron.unschedule('process-instagram-imports');
+-- SELECT cron.schedule('process-instagram-imports', '10 seconds', 'SELECT invoke_instagram_worker();');
+
+-- =============================================================================
+-- MONITORING: Check for HTTP failures
+-- =============================================================================
+-- After migration, use the helper function:
+-- SELECT * FROM get_instagram_worker_failures(5);
+--
+-- Or raw SQL:
+-- SELECT id, status_code, content::text as error, created
+-- FROM net._http_response
+-- WHERE (status_code < 200 OR status_code >= 300)
+-- AND created > NOW() - INTERVAL '5 minutes';
 
 -- =============================================================================
 -- ROLLBACK / FEATURE REMOVAL
