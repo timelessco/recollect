@@ -17,7 +17,7 @@ export const ClearTrashContent = (props: ClearTrashContentProps) => {
 				Sure you want to delete?
 			</p>
 			<Button
-				className="flex w-full justify-center bg-gray-alpha-100 py-[5.5px] leading-[115%] tracking-[0.01em] text-[#D10303] hover:bg-gray-alpha-200"
+				className="flex w-full justify-center bg-gray-alpha-100 py-[5.5px] leading-[115%] tracking-[0.01em] hover:bg-gray-alpha-200"
 				id="warning-button"
 				onClick={onClearTrash}
 			>
@@ -26,7 +26,7 @@ export const ClearTrashContent = (props: ClearTrashContentProps) => {
 				) : (
 					<>
 						<TrashIconRed />
-						<p className="ml-[6px]">{label}</p>
+						<p className="ml-[6px] text-red-700 hover:text-red-700">{label}</p>
 					</>
 				)}
 			</Button>

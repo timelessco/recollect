@@ -283,7 +283,7 @@ const ShareContent = (props: ShareContentProps) => {
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isPending ? (
 							<Spinner
-								className="h-3 w-3 animate-spin"
+								className="mx-2 my-[7.5px] h-3 w-3 animate-spin"
 								style={{ color: "var(--color-plain-reverse)" }}
 							/>
 						) : (
