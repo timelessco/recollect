@@ -22,14 +22,14 @@ export function CategoryBadges({
 			{visible.map((cat) => (
 				<div
 					key={cat.id}
-					className="mx-1 flex items-center gap-1 text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
+					className="mr-1 flex items-center gap-1 text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
 				>
 					<CollectionIcon bookmarkCategoryData={cat} />
 					<span>{cat.category_name}</span>
 				</div>
 			))}
 			{overflow > 0 && (
-				<span className="mx-1 text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-500">
+				<span className="text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-500">
 					+{overflow} more
 				</span>
 			)}

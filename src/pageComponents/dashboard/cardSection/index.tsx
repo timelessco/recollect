@@ -496,7 +496,7 @@ const CardSection = ({
 		const isImageMediaType =
 			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX);
 		const figureClassName = classNames({
-			"card-icon rounded-sm p-0.5 text-gray-1000": true,
+			"card-icon rounded-sm  text-gray-1000": true,
 			rounded: isImageMediaType,
 		});
 
@@ -520,7 +520,7 @@ const CardSection = ({
 
 		return (
 			<>
-				<p className="mx-1 flex items-center text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
+				<p className="flex items-center text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
 					in
 				</p>
 				<CategoryBadges categories={displayCategories} maxVisible={2} />
@@ -601,9 +601,11 @@ const CardSection = ({
 								</div>
 							)}
 						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="flex flex-wrap items-center">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
+							<div className="flex flex-wrap items-center gap-1">
+								<div className="flex min-w-0 items-center gap-1">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+								</div>
 								{item?.inserted_at && (
 									<p className="relative text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
@@ -666,8 +668,10 @@ const CardSection = ({
 							)}
 						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
 							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
+								<div className="flex min-w-0 items-center gap-1">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+								</div>
 								{item?.inserted_at && (
 									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(

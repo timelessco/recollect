@@ -131,5 +131,5 @@ export const GetBookmarkIcon = ({
 	}
 
 	// Default fallback
-	return <LinkIcon />;
+	return <LinkIcon className="h-[15px] w-[15px]" />;
 };
