@@ -28,7 +28,7 @@ Content-Type: application/json
   "data": [
     {
       "url": "https://x.com/narendramodi/status/1984243645050945961",
-      "title": "Narendra Modi",
+      "title": "Modi",
       "description": "First batch tweet",
       "type": "tweet",
       "ogImage": null,
@@ -43,7 +43,7 @@ Content-Type: application/json
     },
     {
       "url": "https://x.com/elonmusk/status/1985699323099713668",
-      "title": "Elon Musk",
+      "title": "Musk",
       "description": "Second batch tweet",
       "type": "tweet",
       "ogImage": null,
