@@ -7,15 +7,15 @@ Content-Type: application/json
   "data": [{
     "url": "https://x.com/SawyerMerritt/status/1986170355535286529",
     "title": "Sawyer Merritt",
-    "description": "BREAKING: SpaceX has announced that @Starlink now has over 8 million customers, up from 7M in August and 6M in June 2025.\n\nStarlink added a record 14,250 new customers on average per day since they hit 7M, beating their previous record of 12,200. That growth rate is 17% higher https://t.co/IahhZW...",
+    "description": "BREAKING: SpaceX has announced that @Starlink now has over 8 million customers",
     "type": "tweet",
     "ogImage": "https://pbs.twimg.com/media/G5BK9fuXcAAXZ5Y.jpg",
     "meta_data": {
       "favIcon": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://x.com&size=128",
       "twitter_avatar_url": "https://pbs.twimg.com/profile_images/1837744842715082752/xH9vYixL_normal.jpg"
     },
-    "inserted_at": "2026-01-28T17:00:54.472+00:00",
-    "sort_index": "1848019423856806627",
+    "inserted_at": "2026-01-20T08:53:32.394835Z",
+    "sort_index": "1848019423856806627"
   }]
 }
 
@@ -32,14 +32,12 @@ Content-Type: application/json
       "description": "First batch tweet",
       "type": "tweet",
       "ogImage": null,
-      "sort_index": "1847926557696091535",
       "meta_data": {
         "favIcon": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://x.com&size=128",
         "twitter_avatar_url": "https://pbs.twimg.com/profile_images/1833509376528945157/5AeMNn9f_normal.jpg"
       },
-        "inserted_at": "2026-01-28T16:59:49.475+00:00",
-        "sort_index": "1847926557696091535",
-
+      "inserted_at": "2026-01-28T16:59:49.475Z",
+      "sort_index": "1847926557696091535"
     },
     {
       "url": "https://x.com/elonmusk/status/1985699323099713668",
@@ -47,11 +45,12 @@ Content-Type: application/json
       "description": "Second batch tweet",
       "type": "tweet",
       "ogImage": null,
-      "sort_index": "1847927476774215422",
       "meta_data": {
         "favIcon": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://x.com&size=128",
-        "twitter_avatar_url": "https://pbs.twimg.com/profile_images/2008546467615580160/57KcqsTA_normal.jpg",
-      }
+        "twitter_avatar_url": "https://pbs.twimg.com/profile_images/2008546467615580160/57KcqsTA_normal.jpg"
+      },
+      "inserted_at": "2026-01-28T16:59:54.475Z",
+      "sort_index": "1847927476774215422"
     }
   ]
 }
@@ -68,7 +67,7 @@ Content-Type: application/json
     "description": "Tweet with all fields",
     "type": "tweet",
     "ogImage": "https://pbs.twimg.com/media/full.jpg",
-    "sort_index": "150",
+    "sort_index": "1848019423856806627",
     "inserted_at": "2024-01-15T10:30:00.000Z",
     "category_name": "Test Category",
     "meta_data": {
@@ -100,7 +99,7 @@ Content-Type: application/json
     "description": "Test without auth",
     "type": "tweet",
     "ogImage": null,
-    "sort_index": "100",
+    "sort_index": "1848019423856806629",
     "meta_data": {
       "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
     }
@@ -120,7 +119,7 @@ Content-Type: application/json
     "description": "Test description",
     "type": "tweet",
     "ogImage": null,
-    "sort_index": "100",
+    "sort_index": "1848019423856806630",
     "meta_data": {
       "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
     }
@@ -141,7 +140,7 @@ Content-Type: application/json
     "description": "Test description",
     "type": "tweet",
     "ogImage": null,
-    "sort_index": "100",
+    "sort_index": "1848019423856806631",
     "meta_data": {}
   }]
 }
@@ -177,7 +176,7 @@ Content-Type: application/json
     "title": "Missing Description Test",
     "type": "tweet",
     "ogImage": null,
-    "sort_index": "100",
+    "sort_index": "1848019423856806632",
     "meta_data": {
       "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
     }
@@ -199,7 +198,7 @@ Content-Type: application/json
     "description": "This URL already exists",
     "type": "tweet",
     "ogImage": null,
-    "sort_index": "100",
+    "sort_index": "1848019423856806633",
     "meta_data": {
       "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
     }
