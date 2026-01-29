@@ -150,7 +150,7 @@ export const CustomLightBox = ({
 				const hasVideoError =
 					typeof bookmark.id === "number" && videoErrorIds.has(bookmark.id);
 
-				if (hasVideoError && bookmark.ogImage) {
+				if (hasVideoError) {
 					// Render as image slide when video fails - this ensures proper zoom support
 					content = (
 						<WebEmbedSlide
