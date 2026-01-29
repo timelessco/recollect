@@ -313,10 +313,11 @@ const MyComponent = () => {
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
 											{highlightSearch(
-												metaData?.img_caption || "",
+												metaData?.img_caption || metaData?.image_caption || "",
 												trimmedSearchText,
 											)}
-											{metaData?.img_caption && metaData?.ocr && <br />}
+											{(metaData?.img_caption || metaData?.image_caption) &&
+												metaData?.ocr && <br />}
 											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
 										</p>
 									</div>

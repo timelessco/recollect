@@ -17,6 +17,7 @@ export type ImgMetadataType = {
 	height: number | null;
 	iframeAllowed: boolean | null;
 	img_caption: string | null;
+	image_caption: string | null;
 	isOgImagePreferred: boolean;
 	isPageScreenshot: boolean | null;
 	mediaType: string | null;

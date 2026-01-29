@@ -57,6 +57,7 @@ const notVideoLogic = async (
 
 	const meta_data = {
 		img_caption: imageCaption,
+		image_caption: imageCaption,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
@@ -120,6 +121,7 @@ export default async function handler(
 
 		let meta_data: ImgMetadataType = {
 			img_caption: null,
+			image_caption: null,
 			width: null,
 			height: null,
 			ogImgBlurUrl: null,
