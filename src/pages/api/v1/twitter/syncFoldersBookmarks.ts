@@ -13,12 +13,14 @@ import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 // Zod schema for request body validation
 const requestSchema = z.object({
-	data: z.array(
-		z.object({
-			category_name: z.string().min(1, "Category name is required"),
-			url: z.string().url("Invalid URL format"),
-		}),
-	),
+	data: z
+		.array(
+			z.object({
+				category_name: z.string().min(1, "Category name is required"),
+				url: z.string().url("Invalid URL format"),
+			}),
+		)
+		.min(1, "At least one item required"),
 });
 
 export default async function handler(
@@ -47,11 +49,6 @@ export default async function handler(
 
 	if (!userId || isEmpty(userId)) {
 		response.status(401).json({ data: null, error: "User id is missing" });
-		return;
-	}
-
-	if (data.length === 0) {
-		response.status(200).json({ data: [], error: null });
 		return;
 	}
 

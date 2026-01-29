@@ -185,7 +185,7 @@ Content-Type: application/json
 
 
 ### Duplicate Detection - All URLs Already Exist
-# Expected: 404 - { success: true, error: "No data to insert", data: [] }
+# Expected: 200 - { success: true, error: "No data to insert", data: [] }
 # This happens when all URLs in the payload already exist for this user
 POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
 Authorization: Bearer {{$dotenv USER_TOKEN}}
