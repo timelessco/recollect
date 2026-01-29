@@ -66,6 +66,7 @@ nuqs
 Nuqs
 ogimage
 opsz
+optimisation
 orioledb
 ossp
 pgbouncer

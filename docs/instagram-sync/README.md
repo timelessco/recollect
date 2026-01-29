@@ -22,9 +22,14 @@ Import Instagram saved posts into Recollect bookmarks using a queue-based proces
 | Component     | Path                                                       | Purpose                                        |
 | ------------- | ---------------------------------------------------------- | ---------------------------------------------- |
 | API Endpoint  | `src/app/api/instagram/sync/route.ts`                      | Validates & queues up to 500 bookmarks         |
+| Status API    | `src/app/api/instagram/sync/status/route.ts`               | Returns pending count and archived messages    |
+| Retry API     | `src/app/api/instagram/sync/retry/route.ts`                | Retry specific msg_ids or all archived imports |
 | PGMQ Queue    | `instagram_imports`                                        | Async processing with built-in retry           |
 | Edge Function | `supabase/functions/process-instagram-imports/`            | Worker: reads 5 msgs, 30s visibility timeout   |
 | RPC Function  | `process_instagram_bookmark`                               | Atomic: creates category + bookmark + junction |
+| RPC Function  | `invoke_instagram_worker`                                  | Cron wrapper: validates vault, invokes worker  |
+| RPC Function  | `get_instagram_worker_failures`                            | Monitor HTTP failures from cron invocations    |
+| RPC Function  | `retry_all_instagram_imports`                              | User-level retry all archived imports          |
 | Migration     | `supabase/migrations/20260107110628_instagram_imports.sql` | Creates queue, RPC, RLS policies               |
 
 ## Design Decisions
@@ -42,10 +47,12 @@ Import Instagram saved posts into Recollect bookmarks using a queue-based proces
 ### Prerequisites
 
 ```bash
-npx supabase start    # Local Supabase
-npx supabase db reset # Reset database with all migrations and seed data
-pnpm dev              # Dev server (already running)
+pnpm db:start # Start Supabase + sync vault secret
+pnpm db:reset # Reset database + sync vault secret
+pnpm dev      # Dev server (already running)
 ```
+
+> **Note**: The `db:start` and `db:reset` scripts automatically sync the vault secret with the edge runtime. This is required because Supabase CLI v2.x regenerates keys on each start.
 
 ### E2E Testing (Manual)
 
@@ -72,9 +79,38 @@ pnpm dev              # Dev server (already running)
 
 ### pg_cron (Auto-Configured)
 
-pg_cron is **automatically set up** when you run `npx supabase db reset`. The job polls the queue every 10 seconds when the Edge Function is running.
+pg_cron is **automatically set up** when you run `pnpm db:reset`. The job polls the queue every 10 seconds using the `invoke_instagram_worker()` wrapper function.
 
 For details and troubleshooting, see [CRON-SETUP.md](./CRON-SETUP.md).
+
+## Status & Retry API
+
+### Check Queue Status
+
+```http
+GET /api/instagram/sync/status
+Authorization: Bearer <user_token>
+
+# Returns: { pending: N, archived: N, archives: [...] }
+```
+
+### Retry Archived Imports
+
+```http
+# Retry specific messages
+POST /api/instagram/sync/retry
+Authorization: Bearer <user_token>
+{ "msg_ids": [1, 2, 3] }
+
+# Retry ALL archived imports
+POST /api/instagram/sync/retry
+Authorization: Bearer <user_token>
+{ "all": true }
+
+# Returns: { requeued: N }
+```
+
+See `api-tests/instagram-sync-retry.http` for more examples.
 
 ## Production Deployment
 
@@ -93,12 +129,28 @@ For pg_cron setup and verification steps, see [CRON-SETUP.md](./CRON-SETUP.md).
 -- Queue metrics
 SELECT * FROM pgmq.metrics('instagram_imports');
 
--- Archived (failed) messages
+-- Archived messages (all users)
 SELECT * FROM pgmq.a_instagram_imports ORDER BY archived_at DESC LIMIT 10;
 
 -- Recent Instagram bookmarks
 SELECT id, url, title, created_at FROM everything
 WHERE type = 'instagram' ORDER BY id DESC LIMIT 10;
+
+-- HTTP failures from cron invocations (last 5 minutes)
+SELECT * FROM get_instagram_worker_failures(5);
+```
+
+### Admin Functions (service_role only)
+
+```sql
+-- View all archived imports across users
+SELECT * FROM admin_get_instagram_archives();
+
+-- Retry specific archived messages by ID
+SELECT admin_retry_instagram_import(ARRAY[1, 2, 3]);
+
+-- Retry ALL archived imports across all users
+SELECT admin_retry_all_instagram_archives();
 ```
 
 ## Troubleshooting
