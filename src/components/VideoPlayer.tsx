@@ -4,9 +4,11 @@ import ReactPlayer from "react-player";
 export const VideoPlayer = ({
 	src,
 	isActive,
+	onError,
 }: {
 	isActive: boolean;
 	src: string;
+	onError?: () => void;
 }) => {
 	const playerRef = useRef<HTMLVideoElement | null>(null);
 
@@ -17,6 +19,7 @@ export const VideoPlayer = ({
 			ref={playerRef}
 			src={src}
 			style={{ maxHeight: "80vh", margin: "auto", width: "100%" }}
+			onError={onError}
 		/>
 	);
 };

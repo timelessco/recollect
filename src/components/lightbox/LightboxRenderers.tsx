@@ -1,4 +1,4 @@
-import { useMemo, type RefObject } from "react";
+import { useCallback, useMemo, type RefObject } from "react";
 import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
@@ -21,6 +21,10 @@ interface SlideProps {
 	isActive?: boolean;
 	// eslint-disable-next-line react/no-unused-prop-types
 	zoomRef?: RefObject<ZoomRef | null>;
+}
+
+interface VideoSlideProps extends SlideProps {
+	onVideoError?: (bookmarkId: number) => void;
 }
 
 /**
@@ -68,9 +72,19 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
 
 /**
  * Renders a video slide using the custom VideoPlayer component
+ * Notifies parent via onVideoError when video fails to load
  */
-export const VideoSlide = ({ bookmark, isActive }: SlideProps) => {
-	// Priority: additionalVideos > video_url > bookmark.url
+export const VideoSlide = ({
+	bookmark,
+	isActive,
+	onVideoError,
+}: VideoSlideProps) => {
+	const handleVideoError = useCallback(() => {
+		if (bookmark?.id && typeof bookmark.id === "number") {
+			onVideoError?.(bookmark.id);
+		}
+	}, [bookmark?.id, onVideoError]);
+
 	const videoSrc =
 		bookmark?.meta_data?.additionalVideos?.[0] ??
 		((bookmark?.type === tweetType || bookmark?.type === instagramType) &&
@@ -81,7 +95,11 @@ export const VideoSlide = ({ bookmark, isActive }: SlideProps) => {
 	return (
 		<div className="flex h-full w-full items-center justify-center">
 			<div className="w-full max-w-[min(1200px,90vw)]">
-				<VideoPlayer isActive={isActive ?? false} src={videoSrc} />
+				<VideoPlayer
+					isActive={isActive ?? false}
+					onError={handleVideoError}
+					src={videoSrc}
+				/>
 			</div>
 		</div>
 	);
