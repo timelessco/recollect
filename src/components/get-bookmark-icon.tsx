@@ -11,10 +11,13 @@ import {
 	VIDEO_TYPE_PREFIX,
 } from "../utils/constants";
 import {
+	isBookmarkAudio,
 	isBookmarkDocument,
 	isBookmarkImage,
 	isBookmarkVideo,
 } from "../utils/helpers";
+
+import { AudioIcon } from "@/icons/audio-icon";
 
 export type GetBookmarkIconProps = {
 	/**
@@ -68,7 +71,9 @@ export const GetBookmarkIcon = ({
 	const isImage =
 		item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 		isBookmarkImage(item?.type);
-
+	const isAudio =
+		isBookmarkAudio(item?.type) ||
+		item?.meta_data?.mediaType?.startsWith("audio");
 	// Favicon error fallback
 	if (favIconErrorIds.includes(item.id)) {
 		return <LinkIcon />;
@@ -119,6 +124,10 @@ export const GetBookmarkIcon = ({
 	// Image
 	if (isImage) {
 		return <ImageIcon size={`${size}`} />;
+	}
+
+	if (isAudio) {
+		return <AudioIcon className="h-[15px] w-[15px]" />;
 	}
 
 	// Default fallback
