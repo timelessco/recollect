@@ -15,11 +15,12 @@ import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
+	PAGINATION_LIMIT,
 } from "../../utils/constants";
 import { createServiceClient } from "../../utils/supabaseClient";
 
 /**
- * gets all bookmarks in a public category
+ * gets bookmarks in a public category with pagination support
  */
 
 export default async function handler(
@@ -27,6 +28,10 @@ export default async function handler(
 	response: NextApiResponse<GetPublicCategoryBookmarksApiResponseType>,
 ) {
 	const supabase = createServiceClient();
+
+	// Parse pagination parameters
+	const page = Number(request.query.page ?? 0);
+	const limit = Number(request.query.limit ?? PAGINATION_LIMIT);
 
 	// get category data
 	const { data: categoryData, error: categoryError } = (await supabase
@@ -129,6 +134,11 @@ export default async function handler(
 		if (sortBy === "alphabetical-sort-decending") {
 			query = query.order("title", { ascending: false });
 		}
+
+		// Apply pagination
+		const from = page * limit;
+		const to = from + limit - 1;
+		query = query.range(from, to);
 
 		const { data: rawData, error } = await query;
 
