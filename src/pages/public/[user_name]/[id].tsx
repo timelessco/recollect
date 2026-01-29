@@ -1,4 +1,4 @@
-import { type GetServerSideProps, type NextPage } from "next";
+import { type GetStaticPaths, type GetStaticProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
@@ -97,12 +97,20 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
 	);
 };
 
-export const getServerSideProps: GetServerSideProps<
-	PublicCategoryPageProps
-> = async (context) => {
+export const getStaticPaths: GetStaticPaths = async () => ({
+	// Don't pre-generate any pages at build time
+	// Pages will be generated on-demand and cached
+	paths: [],
+	// Generate pages on first request
+	fallback: "blocking",
+});
+
+export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (
+	context,
+) => {
 	const ROUTE = "/public/[user_name]/[id]";
-	const categorySlug = context.query.id;
-	const userName = context.query.user_name;
+	const categorySlug = context.params?.id as string;
+	const userName = context.params?.user_name as string;
 
 	try {
 		// Fetch the first full page for SEO and initial render
@@ -125,7 +133,7 @@ export const getServerSideProps: GetServerSideProps<
 				{
 					tags: {
 						operation: "fetch_public_category",
-						context: "server_side_rendering",
+						context: "static_generation",
 					},
 					extra: {
 						status: response.status,
@@ -151,6 +159,7 @@ export const getServerSideProps: GetServerSideProps<
 
 		return {
 			props: data,
+			revalidate: 1800,
 		};
 	} catch (error) {
 		// Network failures, API errors are system errors (5xx) - console.error + Sentry
@@ -162,7 +171,7 @@ export const getServerSideProps: GetServerSideProps<
 		Sentry.captureException(error, {
 			tags: {
 				operation: "fetch_public_category",
-				context: "server_side_rendering",
+				context: "static_generation",
 			},
 			extra: { categorySlug, userName },
 		});
