@@ -375,6 +375,21 @@ export type Database = {
 					out_category_id: number;
 				}>;
 			};
+			admin_get_instagram_archives: {
+				Args: never;
+				Returns: Array<{
+					archived_at: string;
+					failure_reason: string;
+					msg_id: number;
+					url: string;
+					user_id: string;
+				}>;
+			};
+			admin_retry_all_instagram_archives: { Args: never; Returns: Json };
+			admin_retry_instagram_import: {
+				Args: { p_msg_ids: number[] };
+				Returns: Json;
+			};
 			archive_with_reason: {
 				Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
 				Returns: boolean;
@@ -394,6 +409,16 @@ export type Database = {
 				}>;
 			};
 			get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
+			get_instagram_worker_failures: {
+				Args: { p_since_minutes?: number };
+				Returns: Array<{
+					created_at: string;
+					error_body: string;
+					request_id: number;
+					status_code: number;
+				}>;
+			};
+			invoke_instagram_worker: { Args: never; Returns: number };
 			process_instagram_bookmark: {
 				Args: {
 					p_collection_names?: string[];
@@ -415,6 +440,10 @@ export type Database = {
 					added_uncategorized: boolean;
 					deleted_category_id: number;
 				}>;
+			};
+			retry_all_instagram_imports: {
+				Args: { p_user_id: string };
+				Returns: Json;
 			};
 			retry_instagram_import: {
 				Args: { p_msg_ids: number[]; p_user_id: string };
@@ -548,6 +577,17 @@ export type Database = {
 					isOneToOne: false;
 					isSetofReturn: true;
 				};
+			};
+			toggle_preferred_og_domain: {
+				Args: { p_domain: string };
+				Returns: Array<{
+					out_id: string;
+					out_preferred_og_domains: string[];
+				}>;
+			};
+			update_queue_message_error: {
+				Args: { p_error: string; p_msg_id: number; p_queue_name: string };
+				Returns: undefined;
 			};
 			user_owns_bookmark: {
 				Args: { p_bookmark_id: number; p_user_id: string };
