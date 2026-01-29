@@ -519,10 +519,12 @@ const CardSection = ({
 		}
 
 		return (
-			<div className="ml-1 flex items-center text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
-				<p className="mr-1">in</p>
+			<>
+				<p className="mx-1 flex items-center text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
+					in
+				</p>
 				<CategoryBadges categories={displayCategories} maxVisible={2} />
-			</div>
+			</>
 		);
 	};
 
