@@ -173,7 +173,7 @@ const processOcr = async (
 	try {
 		const ocrResult = await ocr(ogImage, supabase, userId);
 
-		if (!ocrResult.text) {
+		if (ocrResult.status !== "success" && ocrResult.status !== "no_text") {
 			console.error("[processOcr] OCR returned empty result:", {
 				url,
 				ogImage,
