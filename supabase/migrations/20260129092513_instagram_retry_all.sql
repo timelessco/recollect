@@ -74,7 +74,14 @@ AS $$
 DECLARE
   v_msg RECORD;
   v_requeued INT := 0;
+  v_caller_id UUID;
 BEGIN
+  -- Security: verify caller owns the archives they're trying to retry
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL OR v_caller_id != p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: can only retry your own archives';
+  END IF;
+
   FOR v_msg IN
     SELECT msg_id, message
     FROM pgmq.a_instagram_imports

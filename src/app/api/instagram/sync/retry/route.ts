@@ -6,8 +6,8 @@ import { apiError } from "@/lib/api-helpers/response";
 const ROUTE = "instagram-sync-retry";
 
 const RetryInputSchema = z.union([
-	z.object({ msg_ids: z.array(z.number()).min(1).max(100) }),
-	z.object({ all: z.literal(true) }),
+	z.object({ msg_ids: z.array(z.number()).min(1).max(100) }).strict(),
+	z.object({ all: z.literal(true) }).strict(),
 ]);
 
 const RetryOutputSchema = z.object({
@@ -20,7 +20,12 @@ export const POST = createPostApiHandlerWithAuth({
 	inputSchema: RetryInputSchema,
 	outputSchema: RetryOutputSchema,
 	handler: async ({ data, supabase, user, route }) => {
+		console.log(`[${route}] API called:`, { userId: user.id, data });
+
 		if ("msg_ids" in data) {
+			console.log(`[${route}] Taking per-message path:`, {
+				msgIds: data.msg_ids,
+			});
 			const { data: result, error } = await supabase.rpc(
 				"retry_instagram_import",
 				{
@@ -43,6 +48,7 @@ export const POST = createPostApiHandlerWithAuth({
 			return result;
 		}
 
+		console.log(`[${route}] Taking retry-all path`);
 		const { data: result, error } = await supabase.rpc(
 			"retry_all_instagram_imports",
 			{ p_user_id: user.id },
