@@ -26,6 +26,7 @@ const MetadataSchema = z.object({
 	twitter_avatar_url: z.string().nullable().optional(),
 	video_url: z.string().nullable().optional(),
 	width: z.number().nullable().optional(),
+	additionalVideos: z.array(z.string()).nullable().optional(),
 });
 
 const DiscoverableBookmarkRowSchema = z.object({
