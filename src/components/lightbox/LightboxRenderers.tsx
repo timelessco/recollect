@@ -1,10 +1,4 @@
-import {
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
-	type RefObject,
-} from "react";
+import { useCallback, useMemo, useState, type RefObject } from "react";
 import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
@@ -78,11 +72,6 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
  */
 export const VideoSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	const [videoError, setVideoError] = useState(false);
-
-	// Reset error state when bookmark changes
-	useEffect(() => {
-		setVideoError(false);
-	}, [bookmark?.url]);
 
 	const handleVideoError = useCallback(() => {
 		setVideoError(true);
