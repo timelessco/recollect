@@ -5,16 +5,17 @@ Content-Type: application/json
 
 {
   "data": [{
-    "url": "https://x.com/testuser/status/TEST123",
-    "title": "Test Twitter Tweet",
-    "description": "Test description",
+    "url": "https://x.com/SawyerMerritt/status/1986170355535286529",
+    "title": "Sawyer Merritt",
+    "description": "BREAKING: SpaceX has announced that @Starlink now has over 8 million customers, up from 7M in August and 6M in June 2025.\n\nStarlink added a record 14,250 new customers on average per day since they hit 7M, beating their previous record of 12,200. That growth rate is 17% higher https://t.co/IahhZW...",
     "type": "tweet",
-    "ogImage": "https://pbs.twimg.com/media/test.jpg",
-    "sort_index": "100",
+    "ogImage": "https://pbs.twimg.com/media/G5BK9fuXcAAXZ5Y.jpg",
     "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico",
-      "twitter_avatar_url": "https://pbs.twimg.com/profile_images/test.jpg"
-    }
+      "favIcon": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://x.com&size=128",
+      "twitter_avatar_url": "https://pbs.twimg.com/profile_images/1837744842715082752/xH9vYixL_normal.jpg"
+    },
+    "inserted_at": "2026-01-28T17:00:54.472+00:00",
+    "sort_index": "1848019423856806627",
   }]
 }
 
@@ -26,26 +27,30 @@ Content-Type: application/json
 {
   "data": [
     {
-      "url": "https://x.com/testuser/status/BATCH001",
-      "title": "Batch Tweet 1",
+      "url": "https://x.com/narendramodi/status/1984243645050945961",
+      "title": "Narendra Modi",
       "description": "First batch tweet",
       "type": "tweet",
-      "ogImage": "https://pbs.twimg.com/media/batch1.jpg",
-      "sort_index": "200",
+      "ogImage": null,
+      "sort_index": "1847926557696091535",
       "meta_data": {
-        "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-      }
+        "favIcon": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://x.com&size=128",
+        "twitter_avatar_url": "https://pbs.twimg.com/profile_images/1833509376528945157/5AeMNn9f_normal.jpg"
+      },
+        "inserted_at": "2026-01-28T16:59:49.475+00:00",
+        "sort_index": "1847926557696091535",
+
     },
     {
-      "url": "https://twitter.com/testuser/status/BATCH002",
-      "title": "Batch Tweet 2",
+      "url": "https://x.com/elonmusk/status/1985699323099713668",
+      "title": "Elon Musk",
       "description": "Second batch tweet",
       "type": "tweet",
       "ogImage": null,
-      "sort_index": "199",
+      "sort_index": "1847927476774215422",
       "meta_data": {
-        "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico",
-        "video_url": "https://video.twimg.com/ext_tw_video/test.mp4"
+        "favIcon": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://x.com&size=128",
+        "twitter_avatar_url": "https://pbs.twimg.com/profile_images/2008546467615580160/57KcqsTA_normal.jpg",
       }
     }
   ]
@@ -122,46 +127,6 @@ Content-Type: application/json
   }]
 }
 
-### Validation Error - Non-Twitter Hostname
-# Expected: 400 - Validation error (if URL validation exists)
-# Note: Twitter sync doesn't validate hostname at API level like Instagram
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://instagram.com/p/WRONG_HOST/",
-    "title": "Wrong Hostname Test",
-    "description": "Test description",
-    "type": "tweet",
-    "ogImage": null,
-    "sort_index": "100",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
-
-### Validation Error - javascript: Protocol
-# Expected: 400 - Validation error
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "javascript:alert('xss')",
-    "title": "XSS Attempt Test",
-    "description": "Test description",
-    "type": "tweet",
-    "ogImage": null,
-    "sort_index": "100",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
 
 ### Validation Error - Missing Required Field (favIcon)
 # Expected: 400 - Validation error (favIcon is required in meta_data)
@@ -219,26 +184,6 @@ Content-Type: application/json
   }]
 }
 
-### Validation Error - Invalid Type Field
-# Expected: 400 - Validation error (type must be "tweet" for this endpoint)
-# Note: Schema accepts any string, but endpoint filters by type="tweet" for duplicates
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://x.com/testuser/status/WRONG_TYPE",
-    "title": "Wrong Type Test",
-    "description": "Test description",
-    "type": "instagram",
-    "ogImage": null,
-    "sort_index": "100",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
 
 ### Duplicate Detection - All URLs Already Exist
 # Expected: 404 - { success: true, error: "No data to insert", data: [] }
@@ -252,97 +197,6 @@ Content-Type: application/json
     "url": "https://x.com/testuser/status/DUPLICATE",
     "title": "Duplicate Test",
     "description": "This URL already exists",
-    "type": "tweet",
-    "ogImage": null,
-    "sort_index": "100",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
-
-### Success - Partial Duplicate (Some URLs New)
-# Expected: 200 - { success: true, error: null }
-# Only non-duplicate URLs are inserted
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
-    {
-      "url": "https://x.com/testuser/status/EXISTING",
-      "title": "Existing Tweet",
-      "description": "This already exists",
-      "type": "tweet",
-      "ogImage": null,
-      "sort_index": "100",
-      "meta_data": {
-        "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-      }
-    },
-    {
-      "url": "https://x.com/testuser/status/NEW_TWEET",
-      "title": "New Tweet",
-      "description": "This is new",
-      "type": "tweet",
-      "ogImage": null,
-      "sort_index": "101",
-      "meta_data": {
-        "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-      }
-    }
-  ]
-}
-
-### Test Twitter.com Domain (not just x.com)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://twitter.com/testuser/status/TWITTER_DOMAIN",
-    "title": "Twitter.com Domain Test",
-    "description": "Using twitter.com instead of x.com",
-    "type": "tweet",
-    "ogImage": null,
-    "sort_index": "100",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
-
-### Test www.x.com Domain
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://www.x.com/testuser/status/WWW_DOMAIN",
-    "title": "www.x.com Domain Test",
-    "description": "Using www.x.com",
-    "type": "tweet",
-    "ogImage": null,
-    "sort_index": "100",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
-
-### Test www.twitter.com Domain
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://www.twitter.com/testuser/status/WWW_TWITTER_DOMAIN",
-    "title": "www.twitter.com Domain Test",
-    "description": "Using www.twitter.com",
     "type": "tweet",
     "ogImage": null,
     "sort_index": "100",

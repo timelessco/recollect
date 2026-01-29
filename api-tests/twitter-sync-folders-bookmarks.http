@@ -10,7 +10,7 @@ Content-Type: application/json
   "data": [
     {
       "category_name": "Test14",
-      "url": "https://x.com/interesting_aIl/status/2009045432358367692"
+      "url": "https://x.com/SawyerMerritt/status/1986170355535286529"
     }
   ]
 }
@@ -25,16 +25,12 @@ Content-Type: application/json
   "data": [
     {
       "category_name": "test14",
-      "url": "https://x.com/testuser/status/BATCH001"
-    },
-    {
-      "category_name": "ANIL",
-      "url": "https://x.com/testuser/status/BATCH002"
+      "url": "https://x.com/narendramodi/status/1984243645050945961"
     },
     {
       "category_name": "Design Inspiration",
-      "url": "https://twitter.com/testuser/status/BATCH003"
-    }
+      "url": "https://x.com/elonmusk/status/1985699323099713668"
+    },
   ]
 }
 

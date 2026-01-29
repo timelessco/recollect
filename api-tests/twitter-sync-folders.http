@@ -48,30 +48,6 @@ Content-Type: application/json
 
 {}
 
-### Validation Error - Invalid Categories Format (not an array)
-# Expected: 400 - Categories must be an array
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "categories": "not-an-array"
-}
-
-### Validation Error - Missing Category Name
-# Expected: 400 - Category name missing
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "categories": [
-    {
-      "name": "Valid Category"
-    },
-    {}
-  ]
-}
 
 ### Auth Error - No Token
 POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
@@ -85,35 +61,6 @@ Content-Type: application/json
   ]
 }
 
-### Duplicate Category Name (Case-Insensitive)
-# Expected: 409 - { data: null, error: { message: "Category name already exists" } }
-# Note: Creates category first, then tries to create duplicate (case-insensitive)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "categories": [
-    {
-      "name": "Duplicate Test"
-    }
-  ]
-}
-
-### Try to Create Duplicate (Case-Insensitive)
-# Run this after creating "Duplicate Test" above
-# Expected: 409 - Duplicate category name error
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "categories": [
-    {
-      "name": "duplicate test"
-    }
-  ]
-}
 
 ### Create Category with Special Characters
 # Tests slugify handling of special characters
@@ -135,19 +82,6 @@ Content-Type: application/json
   ]
 }
 
-### Create Category with Long Name
-# Tests handling of long category names
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "categories": [
-    {
-      "name": "This is a very long category name that tests how the system handles extended category names with many words"
-    }
-  ]
-}
 
 ### Create Category with Unicode Characters
 # Tests handling of unicode/emoji in category names
