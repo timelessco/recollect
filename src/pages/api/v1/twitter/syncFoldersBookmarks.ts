@@ -7,17 +7,20 @@ import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
+	tweetType,
 } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
 // Zod schema for request body validation
 const requestSchema = z.object({
-	data: z.array(
-		z.object({
-			category_name: z.string().min(1, "Category name is required"),
-			url: z.string().url("Invalid URL format"),
-		}),
-	),
+	data: z
+		.array(
+			z.object({
+				category_name: z.string().min(1, "Category name is required"),
+				url: z.string().url("Invalid URL format"),
+			}),
+		)
+		.min(1, "At least one item required"),
 });
 
 export default async function handler(
@@ -49,19 +52,37 @@ export default async function handler(
 		return;
 	}
 
+	// Load categories once; resolve by case-insensitive trimmed name
+	const { data: existingCategories, error: categoriesError } = await supabase
+		.from(CATEGORIES_TABLE_NAME)
+		.select("id, category_name")
+		.eq("user_id", userId);
+
+	if (categoriesError) {
+		console.error("[twitter/syncFoldersBookmarks] Error fetching categories:", {
+			error: categoriesError,
+			userId,
+		});
+		response.status(500).json({
+			data: null,
+			error: "Failed to fetch categories",
+		});
+		return;
+	}
+
+	const categoryMap = new Map<string, { id: number }>();
+	for (const row of existingCategories ?? []) {
+		const key = String(row.category_name).trim().toLowerCase();
+		categoryMap.set(key, { id: row.id });
+	}
+
 	const updatePromises = data.map(
 		async (item: { category_name: string; url: string }) => {
 			try {
-				// 1. Fetch category id
-				const { data: categoryData, error: categoryError } = await supabase
-					.from(CATEGORIES_TABLE_NAME)
-					.select("id")
-					.eq("category_name", item.category_name)
-					.eq("icon", "bookmark")
-					.eq("user_id", userId)
-					.single();
-
-				if (!categoryData) {
+				// 1. Resolve category by case-insensitive trimmed name
+				const key = item.category_name.trim().toLowerCase();
+				const category = categoryMap.get(key);
+				if (!category) {
 					console.warn(`Category '${item.category_name}' not found`);
 					return {
 						url: item.url,
@@ -70,18 +91,14 @@ export default async function handler(
 					};
 				}
 
-				if (categoryError) {
-					console.error(`Failed to fetch category id`, categoryError);
-					return { url: item.url, success: false };
-				}
-
-				const categoryId = categoryData.id;
+				const categoryId = category.id;
 
 				// 2. Get the bookmark ID for this URL
 				const { data: bookmarkData, error: bookmarkError } = await supabase
 					.from(MAIN_TABLE_NAME)
 					.select("id")
 					.eq("url", item.url)
+					.eq("type", tweetType)
 					.eq("user_id", userId)
 					.single();
 
