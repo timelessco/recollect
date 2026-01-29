@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { TrashIcon } from "@heroicons/react/20/solid";
 import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
@@ -35,6 +36,8 @@ const AccessUserInfo = (props: {
 	item: CollabDataInCategory;
 }) => {
 	const { item, isLoggedinUserTheOwner } = props;
+	const [imageError, setImageError] = useState(false);
+	const [imageLoading, setImageLoading] = useState(true);
 
 	const { updateSharedCategoriesUserAccessMutation } =
 		useUpdateSharedCategoriesUserAccessMutation();
@@ -139,21 +142,36 @@ const AccessUserInfo = (props: {
 
 	const { userProfilePicData } = useGetUserProfilePic(item?.userEmail);
 
+	const profilePicUrl = userProfilePicData?.data?.[0]?.profile_pic;
+	const hasProfilePic = !isNull(userProfilePicData?.data) && profilePicUrl;
+
+	const showDefaultIcon = !hasProfilePic || imageError || imageLoading;
+
 	return (
 		<div className="flex items-center justify-between px-2 py-[7.5px]">
 			<div className="flex items-center justify-between">
-				{!isNull(userProfilePicData?.data) &&
-				userProfilePicData?.data[0]?.profile_pic ? (
-					// disabling as we dont know the src origin url of the img
-					// eslint-disable-next-line @next/next/no-img-element
-					<img
-						alt="profile-pic"
-						className="h-5 w-5 rounded-full object-cover"
-						src={userProfilePicData?.data[0]?.profile_pic}
-					/>
-				) : (
-					<DefaultUserIcon className="h-5 w-5" />
-				)}
+				<div className="relative h-5 w-5">
+					{showDefaultIcon && <DefaultUserIcon className="h-5 w-5" />}
+					{hasProfilePic && profilePicUrl && (
+						<Image
+							alt="profile-pic"
+							className="h-5 w-5 rounded-full object-cover"
+							height={20}
+							width={20}
+							src={profilePicUrl}
+							onError={() => {
+								setImageError(true);
+								setImageLoading(false);
+							}}
+							onLoad={() => {
+								setImageLoading(false);
+							}}
+							style={{
+								visibility: imageLoading || imageError ? "hidden" : "visible",
+							}}
+						/>
+					)}
+				</div>
 				<p className="ml-[6px] w-[171px] truncate text-13 leading-[15px] font-450 text-gray-800">
 					{item.userEmail}
 				</p>
