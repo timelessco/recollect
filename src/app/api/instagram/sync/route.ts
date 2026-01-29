@@ -26,7 +26,7 @@ const InstagramSyncInputSchema = z.object({
 				}, "Must be a valid Instagram URL"),
 				title: z.string().default(""),
 				description: z.string().default(""),
-				ogImage: z.string().nullable(),
+				ogImage: z.string().nullish(),
 				type: z.literal(instagramType).default(instagramType),
 				meta_data: z.record(z.string(), z.unknown()).default({}),
 				// Instagram's original save timestamp for ordering

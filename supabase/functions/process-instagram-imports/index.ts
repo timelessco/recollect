@@ -33,6 +33,9 @@ interface QueueMessage {
 		meta_data: Record<string, unknown>;
 		user_id: string;
 		saved_at: string | null;
+		// Error tracking - populated when RPC fails, used when max_retries exceeded
+		last_error?: string;
+		last_error_at?: string;
 	};
 }
 
@@ -121,10 +124,16 @@ async function processMessage(
 
 	// Check retry count
 	if (read_ct > MAX_RETRIES) {
+		// Include last_error from message if available (set by previous failed attempts)
+		const lastError = bookmark.last_error;
+		const archiveReason = lastError
+			? `max_retries_exceeded: ${lastError}`
+			: "max_retries_exceeded";
+
 		Sentry.captureException(
 			new Error(`Instagram import failed after ${MAX_RETRIES} retries`),
 			{
-				extra: { msg_id, bookmark, read_ct },
+				extra: { msg_id, bookmark, read_ct, lastError },
 				tags: { operation: "instagram_import_archived" },
 			},
 		);
@@ -132,16 +141,23 @@ async function processMessage(
 		const { error: archiveError } = await supabase.rpc("archive_with_reason", {
 			p_queue_name: QUEUE_NAME,
 			p_msg_id: msg_id,
-			p_reason: "max_retries_exceeded",
+			p_reason: archiveReason,
 		});
 
 		if (archiveError) {
+			console.error(
+				`[instagram-worker] Archive failed for msg ${msg_id}:`,
+				archiveError,
+			);
 			Sentry.captureException(new Error("Queue archive failed"), {
 				extra: { msg_id, archiveError },
 			});
 			return { type: "retry", reason: "archive_failed" };
 		}
 
+		console.log(
+			`[instagram-worker] Archived msg ${msg_id}: max_retries_exceeded`,
+		);
 		return { type: "archived", reason: "max_retries" };
 	}
 
@@ -159,6 +175,10 @@ async function processMessage(
 		});
 
 		if (archiveError) {
+			console.error(
+				`[instagram-worker] Archive failed for invalid URL msg ${msg_id}:`,
+				archiveError,
+			);
 			Sentry.captureException(
 				new Error("Queue archive failed for invalid URL"),
 				{
@@ -168,6 +188,9 @@ async function processMessage(
 			return { type: "retry", reason: "archive_failed" };
 		}
 
+		console.log(
+			`[instagram-worker] Archived msg ${msg_id}: invalid_url (${bookmark.url})`,
+		);
 		return { type: "archived", reason: "invalid_url" };
 	}
 
@@ -189,11 +212,23 @@ async function processMessage(
 	});
 
 	if (rpcError) {
-		console.error(`RPC error for message ${msg_id}:`, rpcError);
+		const errorDetail =
+			typeof rpcError === "object" && rpcError !== null && "message" in rpcError
+				? String(rpcError.message)
+				: JSON.stringify(rpcError);
+
+		// Store error in message for debugging when max_retries is exceeded
+		await supabase.rpc("update_queue_message_error", {
+			p_queue_name: QUEUE_NAME,
+			p_msg_id: msg_id,
+			p_error: errorDetail,
+		});
+
+		console.error(`[instagram-worker] RPC error for msg ${msg_id}:`, rpcError);
 		return { type: "retry", reason: "rpc_error" };
 	}
 
-	console.log(`Processed message ${msg_id} successfully`);
+	console.log(`[instagram-worker] Processed msg ${msg_id} successfully`);
 	return { type: "processed" };
 }
 
@@ -230,9 +265,12 @@ Deno.serve(async (req) => {
 		);
 	}
 
+	console.log("[instagram-worker] Request received");
+
 	// Verify service role JWT - validate token against service role key
 	const authHeader = req.headers.get("Authorization");
 	if (!authHeader?.startsWith("Bearer ")) {
+		console.error("[instagram-worker] Auth failed: missing Bearer token");
 		return Response.json(
 			{ error: "Unauthorized" },
 			{
@@ -245,6 +283,7 @@ Deno.serve(async (req) => {
 	// Extract token and validate against service role key
 	const token = authHeader.slice(7); // Remove "Bearer " prefix
 	if (token !== serviceRoleKey) {
+		console.error("[instagram-worker] Auth failed: invalid service role key");
 		return Response.json(
 			{ error: "Unauthorized" },
 			{
@@ -276,11 +315,12 @@ Deno.serve(async (req) => {
 			});
 
 		if (readError) {
-			console.error("Queue read error:", readError);
+			console.error("[instagram-worker] Queue read error:", readError);
 			throw readError;
 		}
 
 		if (!messages || messages.length === 0) {
+			console.log("[instagram-worker] Queue empty");
 			return Response.json(
 				{ processed: 0, archived: 0, message: "Queue empty" },
 				{ status: 200, headers: { "Content-Type": "application/json" } },
@@ -393,6 +433,10 @@ Deno.serve(async (req) => {
 			}
 		}
 
+		console.log(
+			`[instagram-worker] Completed: processed=${processed}, archived=${archived}, skipped=${skipped}, retry=${retry}`,
+		);
+
 		return Response.json(
 			{ processed, archived, skipped, retry },
 			{
@@ -401,7 +445,7 @@ Deno.serve(async (req) => {
 			},
 		);
 	} catch (error) {
-		console.error("Worker error:", error);
+		console.error("[instagram-worker] Unexpected error:", error);
 		Sentry.captureException(error);
 		// Flush Sentry before returning
 		await Sentry.flush(2000);
