@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -20,7 +21,10 @@ import {
 	type BookmarksSortByTypes,
 	type BookmarksViewTypes,
 } from "../../types/componentStoreTypes";
-import { viewValues } from "../../utils/constants";
+import { DISCOVER_URL, viewValues } from "../../utils/constants";
+
+import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
+import { getCategorySlugFromRouter } from "@/utils/url";
 
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
@@ -77,7 +81,8 @@ export const DiscoverBookmarkCards = () => {
 		fetchNextPage: fetchNextSearchPage,
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
-
+	const router = useRouter();
+	const isDiscoverPage = getCategorySlugFromRouter(router) === DISCOVER_URL;
 	// Discover data
 	const {
 		discoverData,
@@ -85,7 +90,7 @@ export const DiscoverBookmarkCards = () => {
 		hasNextPage: discoverHasNextPage,
 		isFetchingNextPage: isFetchingNextDiscoverPage,
 		isLoading: isDiscoverLoading,
-	} = useFetchDiscoverBookmarks();
+	} = useFetchDiscoverBookmarks({ enabled: isDiscoverPage });
 
 	// Determine if we're currently searching (use debounced to match when query runs)
 	const isSearching = !isEmpty(debouncedSearchText);
@@ -157,6 +162,16 @@ export const DiscoverBookmarkCards = () => {
 				dataLength: flattenedDiscoverData.length,
 			},
 		);
+
+	if (isDiscoverLoading) {
+		return (
+			<BookmarksSkeletonLoader
+				count={26}
+				type={discoverBookmarksView}
+				colCount={discoverMoodboardColumns?.[0]}
+			/>
+		);
+	}
 
 	return (
 		<div

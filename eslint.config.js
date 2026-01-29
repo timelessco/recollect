@@ -19,9 +19,9 @@ import * as reactHooks from "eslint-config-canonical/react-hooks";
 import * as typescriptTypeChecking from "eslint-config-canonical/typescript-type-checking";
 import prettier from "eslint-config-prettier/flat";
 import jsonc from "eslint-plugin-jsonc";
-import packageJson from "eslint-plugin-package-json";
+import * as packageJson from "eslint-plugin-package-json";
 import reactRefresh from "eslint-plugin-react-refresh";
-import yml from "eslint-plugin-yml";
+import * as yml from "eslint-plugin-yml";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
@@ -134,7 +134,10 @@ export default defineConfig(
 			"unicorn/no-array-reduce": "off",
 			"unicorn/numeric-separators-style": "off",
 			"zod/require-strict": "off",
+			"zod/require-schema-suffix": "off",
+			"zod/consistent-object-schema-type": "off",
 			"@typescript-eslint/prefer-nullish-coalescing": "off",
+			"@typescript-eslint/no-useless-default-assignment": "off",
 			"canonical/sort-react-dependencies": "off",
 			"react-refresh/only-export-components": "off",
 			"react-hooks/preserve-manual-memoization": "off",
@@ -143,24 +146,21 @@ export default defineConfig(
 			"react-hooks/set-state-in-effect": "off",
 		},
 	},
-	// eslint-disable-next-line import/no-named-as-default-member
+
 	packageJson.configs.recommended,
 	{
-		files: ["**/*.{json,jsonc}", ".vscode/**"],
-		extends: [
-			jsonc.configs["flat/recommended-with-json"],
-			jsonc.configs["flat/recommended-with-jsonc"],
-			jsonc.configs["flat/prettier"],
-		],
-		rules: {
-			"jsonc/no-comments": "off",
-		},
+		extends: [jsonc.configs["flat/recommended-with-json"]],
+		files: ["**/*.{json}"],
 	},
 	{
-		extends: [yml.configs["flat/standard"], yml.configs["flat/prettier"]],
-		files: ["**/*.{yml,yaml}"],
+		extends: [jsonc.configs["flat/recommended-with-jsonc"]],
+		files: ["**/*.{jsonc}"],
+	},
+	jsonc.configs["flat/prettier"],
+	...yml.configs.recommended,
+	{
 		rules: {
-			"yml/file-extension": ["off"],
+			"yml/file-extension": ["error", { extension: "yml" }],
 			"yml/sort-keys": [
 				"error",
 				{ order: { type: "asc" }, pathPattern: "^.*$" },

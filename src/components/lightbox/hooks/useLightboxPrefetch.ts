@@ -6,7 +6,11 @@ import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetc
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { useMiscellaneousStore } from "@/store/componentStore";
-import { DISCOVER_URL, PAGINATION_LIMIT } from "@/utils/constants";
+import {
+	DISCOVER_URL,
+	isPublicPath,
+	PAGINATION_LIMIT,
+} from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
@@ -28,8 +32,11 @@ export function useLightboxPrefetch({
 	pages,
 }: UseLightboxPrefetchParams) {
 	const router = useRouter();
+	const isPublicPage = isPublicPath(router.asPath);
 	const categorySlug = getCategorySlugFromRouter(router);
 	const isDiscoverPage = categorySlug === DISCOVER_URL;
+
+	const fetchesEnabled = !isPublicPage;
 
 	const { fetchNextPage: fetchNextBookmarkPage } = useFetchPaginatedBookmarks();
 	const { fetchNextPage: fetchNextSearchPage, hasNextPage: searchHasNextPage } =
@@ -37,7 +44,9 @@ export function useLightboxPrefetch({
 	const {
 		fetchNextPage: fetchNextDiscoverPage,
 		hasNextPage: discoverHasNextPage,
-	} = useFetchDiscoverBookmarks();
+	} = useFetchDiscoverBookmarks({
+		enabled: fetchesEnabled && isDiscoverPage,
+	});
 
 	// Determine if we're currently searching
 	const searchText = useMiscellaneousStore((state) => state.searchText);

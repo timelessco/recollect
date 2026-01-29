@@ -1,5 +1,5 @@
 import { type GetServerSideProps, type NextPage } from "next";
-import axios from "axios";
+import * as Sentry from "@sentry/nextjs";
 import { isEmpty, isNull } from "lodash";
 
 import CardSection from "../../../pageComponents/dashboard/cardSection";
@@ -45,15 +45,21 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 		</header>
 		<main>
 			{!isEmpty(props?.data) ? (
-				<CardSection
-					categoryViewsFromProps={props?.category_views ?? undefined}
-					isBookmarkLoading={false}
-					isOgImgLoading={false}
-					isPublicPage
-					listData={props?.data as SingleListData[]}
-					showAvatar={false}
-					userId=""
-				/>
+				<div
+					id="scrollableDiv"
+					className="overflow-x-hidden overflow-y-auto"
+					style={{ height: "calc(100vh - 52px)" }}
+				>
+					<CardSection
+						categoryViewsFromProps={props?.category_views ?? undefined}
+						isBookmarkLoading={false}
+						isOgImgLoading={false}
+						isPublicPage
+						listData={props?.data as SingleListData[]}
+						showAvatar={false}
+						userId=""
+					/>
+				</div>
 			) : (
 				<div className="flex items-center justify-center pt-[15%] text-2xl font-semibold">
 					There is no data in this collection
@@ -64,40 +70,91 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
 );
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-	const response = await axios.post<GetPublicCategoryBookmarksApiResponseType>(
-		`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${
-			context?.query?.id as string
-		}&user_name=${context?.query?.user_name as string}`,
-	);
+	const ROUTE = "/public/[user_name]/[id]";
+	const categorySlug = context.query.id;
+	const userName = context.query.user_name;
 
-	if (!response?.data?.is_public) {
-		// this page is not a public page
-		return {
-			notFound: true,
-		};
-	}
+	try {
+		const response = await fetch(
+			`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}`,
+		);
 
-	if (isEmpty(response?.data?.data) || isNull(response?.data?.data)) {
+		if (!response.ok) {
+			console.error(
+				`[${ROUTE}] Failed to fetch public category bookmarks: HTTP ${response.status}`,
+				{
+					status: response.status,
+					statusText: response.statusText,
+					categorySlug,
+					userName,
+				},
+			);
+			Sentry.captureException(
+				new Error(`HTTP ${response.status}: ${response.statusText}`),
+				{
+					tags: {
+						operation: "fetch_public_category",
+						context: "server_side_rendering",
+					},
+					extra: {
+						status: response.status,
+						statusText: response.statusText,
+						categorySlug,
+						userName,
+					},
+				},
+			);
+			return { notFound: true };
+		}
+
+		const data =
+			(await response.json()) as GetPublicCategoryBookmarksApiResponseType;
+
+		if (!data?.is_public) {
+			console.warn(`[${ROUTE}] Category is not public`, {
+				categorySlug,
+				userName,
+			});
+			return { notFound: true };
+		}
+
+		if (isEmpty(data?.data) || isNull(data?.data)) {
+			return {
+				props: {
+					data: data?.data,
+					category_views: data?.category_views,
+					icon: data?.icon,
+					icon_color: data?.icon_color,
+					category_name: data?.category_name,
+				},
+			};
+		}
+
 		return {
 			props: {
-				data: response?.data?.data,
-				category_views: response?.data?.category_views,
-				icon: response?.data?.icon,
-				icon_color: response?.data?.icon_color,
-				category_name: response?.data?.category_name,
+				data: data?.data,
+				category_views: data?.category_views,
+				icon: data?.icon,
+				icon_color: data?.icon_color,
+				category_name: data?.category_name,
 			},
 		};
+	} catch (error) {
+		// Network failures, API errors are system errors (5xx) - console.error + Sentry
+		console.error(`[${ROUTE}] Failed to fetch public category bookmarks`, {
+			error,
+			categorySlug,
+			userName,
+		});
+		Sentry.captureException(error, {
+			tags: {
+				operation: "fetch_public_category",
+				context: "server_side_rendering",
+			},
+			extra: { categorySlug, userName },
+		});
+		return { notFound: true };
 	}
-
-	return {
-		props: {
-			data: response?.data?.data,
-			category_views: response?.data?.category_views,
-			icon: response?.data?.icon,
-			icon_color: response?.data?.icon_color,
-			category_name: response?.data?.category_name,
-		},
-	};
 };
 
 export default CategoryName;

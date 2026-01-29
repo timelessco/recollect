@@ -2,28 +2,16 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { isNonEmptyArray, isNullable } from "@/utils/assertion-utils";
+import { isNonEmptyArray } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
 const ROUTE = "remove-category-from-bookmark";
 
 const RemoveCategoryFromBookmarkPayloadSchema = z.object({
 	bookmark_id: z
-		.number({
-			error: (issue) =>
-				isNullable(issue.input)
-					? "Bookmark ID is required"
-					: "Bookmark ID must be a number",
-		})
 		.int({ error: "Bookmark ID must be a whole number" })
 		.positive({ error: "Bookmark ID must be a positive number" }),
 	category_id: z
-		.number({
-			error: (issue) =>
-				isNullable(issue.input)
-					? "Collection ID is required"
-					: "Collection ID must be a number",
-		})
 		.int({ error: "Collection ID must be a whole number" })
 		.min(0, { error: "Collection ID must be non-negative" }),
 });

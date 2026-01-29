@@ -1,5 +1,6 @@
 import { type Slide as BaseSlide } from "yet-another-react-lightbox";
 
+import { type SingleListData } from "../../types/apiTypes";
 import {
 	ESCAPE_REGEXP_PATTERN,
 	YOUTU_BE,
@@ -51,8 +52,20 @@ export const isYouTubeVideo = (
 	}
 };
 
+/**
+ * Custom slide type that extends the base Slide with bookmark data
+ * This allows the plugin to access bookmark metadata directly from slides
+ * without needing global state or additional queries
+ */
 export type CustomSlide = BaseSlide & {
 	data?: {
+		/**
+		 * The full bookmark object for this slide
+		 */
+		bookmark?: SingleListData;
+		/**
+		 * Legacy type field (kept for backwards compatibility)
+		 */
 		type?: string;
 	};
 	placeholder?: string;

@@ -36,9 +36,10 @@ interface SlideProps {
 export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
 	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
 	const imageSources = useBookmarkImageSources(bookmarkArray);
-	const imageSource = bookmark
-		? (imageSources[bookmark.id] ?? bookmark.ogImage)
-		: "";
+	const imageSource =
+		bookmark && typeof bookmark.id === "number"
+			? (imageSources[bookmark.id] ?? bookmark.ogImage)
+			: (bookmark?.ogImage ?? "");
 
 	return (
 		<div
@@ -92,20 +93,46 @@ export const VideoSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 		return <WebEmbedSlide bookmark={bookmark} zoomRef={zoomRef} />;
 	}
 
+	const videoSrc =
+		bookmark?.meta_data?.additionalVideos?.[0] ??
+		((bookmark?.type === tweetType || bookmark?.type === instagramType) &&
+		bookmark?.meta_data?.video_url
+			? bookmark?.meta_data?.video_url
+			: (bookmark?.url ?? ""));
+
 	return (
 		<div className="flex h-full w-full items-center justify-center">
 			<div className="w-full max-w-[min(1200px,90vw)]">
 				<VideoPlayer
 					isActive={isActive ?? false}
 					onError={handleVideoError}
-					src={
-						(bookmark?.type === tweetType ||
-							bookmark?.type === instagramType) &&
-						bookmark?.meta_data?.video_url
-							? bookmark?.meta_data?.video_url
-							: (bookmark?.url ?? "")
-					}
+					src={videoSrc}
 				/>
+			</div>
+		</div>
+	);
+};
+
+/**
+ * Renders an audio slide using a native HTML5 audio player
+ */
+export const AudioSlide = ({ bookmark }: SlideProps) => {
+	// Generate a data URL for an empty WebVTT file to satisfy accessibility requirements
+	const emptyVttDataUrl = "data:text/vtt;base64,V0VCVlRUCg==";
+
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<div className="w-full max-w-[min(600px,90vw)]">
+				<audio className="w-full" controls src={bookmark?.url ?? ""}>
+					<track
+						default
+						kind="captions"
+						label="No captions"
+						src={emptyVttDataUrl}
+						srcLang="en"
+					/>
+					Your browser does not support the audio element.
+				</audio>
 			</div>
 		</div>
 	);
@@ -189,9 +216,10 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	}
 
 	// Check if we have a placeholder to show
-	const placeholder = bookmark
-		? (imageSources[bookmark.id] ?? bookmark.ogImage)
-		: undefined;
+	const placeholder =
+		bookmark && typeof bookmark.id === "number"
+			? (imageSources[bookmark.id] ?? bookmark.ogImage)
+			: bookmark?.ogImage;
 	if (placeholder) {
 		const placeholderHeight = bookmark?.meta_data?.height ?? 800;
 		const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;

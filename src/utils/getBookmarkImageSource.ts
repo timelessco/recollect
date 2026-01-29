@@ -17,9 +17,13 @@ export const useBookmarkImageSources = (
 	return useMemo(() => {
 		const imageSources: Record<number, string> = {};
 
+		const validBookmarks = bookmarks.filter(
+			(bookmark) => bookmark && typeof bookmark.id === "number",
+		);
+
 		if (!profileData?.data?.[0]?.preferred_og_domains) {
 			// No preferred domains, use ogImage for all
-			for (const bookmark of bookmarks) {
+			for (const bookmark of validBookmarks) {
 				imageSources[bookmark.id] = bookmark?.ogImage;
 			}
 
@@ -31,7 +35,7 @@ export const useBookmarkImageSources = (
 			preferredDomains.map((domain) => domain.toLowerCase()),
 		);
 
-		for (const bookmark of bookmarks) {
+		for (const bookmark of validBookmarks) {
 			const domain = getDomain(bookmark.url);
 			const isPreferred = domain && preferredDomainSet.has(domain);
 

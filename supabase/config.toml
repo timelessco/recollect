@@ -376,6 +376,12 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# Function-specific configuration
+# CLI v2.x generates ES256 JWTs but edge runtime verifies with HS256 JWT_SECRET.
+# The function performs its own auth check against SUPABASE_SERVICE_ROLE_KEY.
+[functions.process-instagram-imports]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
