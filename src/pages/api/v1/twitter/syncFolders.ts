@@ -53,7 +53,7 @@ export default async function handler(
 
 	// Get existing categories (case-insensitive: unique constraint is on LOWER(category_name))
 	const categoryNames = categories
-		.map((c: { name: string }) => c.name.trim())
+		.map((category: { name: string }) => category.name.trim())
 		.filter(Boolean);
 	const { data: existingCategories, error: existingCategoriesError } =
 		await supabase
@@ -74,8 +74,8 @@ export default async function handler(
 	}
 
 	const existingCategoryNamesLower = new Set(
-		(existingCategories ?? []).map((c) =>
-			String(c.category_name).toLowerCase(),
+		(existingCategories ?? []).map((category) =>
+			String(category.category_name).toLowerCase(),
 		),
 	);
 
@@ -86,6 +86,7 @@ export default async function handler(
 		if (seenLower.has(key)) {
 			return false;
 		}
+
 		seenLower.add(key);
 		return true;
 	});

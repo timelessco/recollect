@@ -93,6 +93,7 @@ export default async function handler(
 						reason: "Category not found",
 					};
 				}
+
 				const categoryId = category.id;
 
 				// 2. Get the bookmark ID for this URL
