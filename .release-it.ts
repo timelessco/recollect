@@ -1,5 +1,4 @@
 import { type Config } from "release-it";
-
 import {
 	commitGroupsSort,
 	commitPartial,

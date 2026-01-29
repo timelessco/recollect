@@ -21,6 +21,8 @@ export const STORAGE_SCRAPPED_IMAGES_PATH =
 	BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
 export const STORAGE_SCREENSHOT_IMAGES_PATH =
 	BOOKMARKS_STORAGE_NAME + "/public/screenshot_imgs";
+export const STORAGE_SCREENSHOT_VIDEOS_PATH =
+	BOOKMARKS_STORAGE_NAME + "/public/screenshot_videos";
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
@@ -96,6 +98,13 @@ export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
 export const TOGGLE_BOOKMARK_DISCOVERABLE_API =
 	"/bookmark/toggle-discoverable-on-bookmark";
+export const FETCH_PUBLIC_BOOKMARK_BY_ID_API =
+	"/api/bookmark/fetch-public-bookmark-by-id";
+
+/**
+ * Max bookmark count to SSR on public category page; rest virtualize after hydrate.
+ */
+export const PUBLIC_PAGE_SSR_ITEM_LIMIT = 24;
 
 // tags api
 export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
@@ -194,6 +203,7 @@ export const USER_PROFILE = "user_profile";
 export const USER_PROFILE_PIC = "user_profile_pic";
 export const API_KEY_CHECK_KEY = "api_key_check";
 export const GET_API_KEY_KEY = "get_api_key";
+export const IMPORT_BOOKMARKS_MUTATION_KEY = "import-bookmarks";
 
 // error msgs
 

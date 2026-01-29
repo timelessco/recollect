@@ -338,6 +338,19 @@ git diff --name-only origin/dev...HEAD | grep -E 'src/utils/.*\.ts$' | while rea
 done
 ```
 
+#### ✅ Check for Hydration Errors
+
+```bash
+# Check for block elements inside <p> tags on the same line (common cases)
+git diff origin/dev...HEAD -- 'src/**/*.{tsx,jsx}' | grep -E '^\+.*<p[^>]*>.*<(figure|div|section|article|header|footer|nav|aside|main|h[1-6])' && echo "❌ Found block elements inside <p> tags - causes hydration errors"
+
+# Check for opening <p> tags in changed lines (manual review needed for multi-line cases)
+if git diff --name-only origin/dev...HEAD | grep -qE '\.(tsx|jsx)$'; then
+	echo "⚠️  Changed files contain JSX/TSX - manually verify no block elements nested inside <p> tags"
+	echo "   Block elements: <div>, <figure>, <section>, <article>, <header>, <footer>, <nav>, <aside>, <main>, <h1-h6>"
+fi
+```
+
 ### 7. Run Linting Checks
 
 ```bash
@@ -567,6 +580,24 @@ if [ -n "$ts_files" ]; then
 		echo -e "${RED}❌ Found class definitions - use functional programming only${NC}"
 		((issues++))
 	fi
+
+	# Check for hydration errors - block elements inside <p> tags
+	# Capture diff once to avoid subshell issues and enable proper multi-line matching
+	diff_output=$(git diff origin/dev...HEAD -- $ts_files)
+
+	# Check for <figure> inside <p> tags (multi-line aware using perl)
+	if perl -0777 -ne 'exit 0 if /<p[^>]*>.*?<figure/s; exit 1' <<< "$diff_output" 2> /dev/null; then
+		echo -e "${RED}❌ Found <figure> inside <p> tags - causes hydration errors${NC}"
+		echo "$diff_output" | grep -B2 -A2 '<p[^>]*>.*<figure' | head -10
+		((issues++))
+	fi
+
+	# Check for <div> inside <p> tags (multi-line aware using perl)
+	if perl -0777 -ne 'exit 0 if /<p[^>]*>.*?<div/s; exit 1' <<< "$diff_output" 2> /dev/null; then
+		echo -e "${RED}❌ Found <div> inside <p> tags - causes hydration errors${NC}"
+		echo "$diff_output" | grep -B2 -A2 '<p[^>]*>.*<div' | head -10
+		((issues++))
+	fi
 else
 	echo -e "${GREEN}✅ No TypeScript files changed${NC}"
 fi
@@ -714,6 +745,11 @@ Use this checklist to manually review your changes:
   - [ ] Searched for existing components before creating new (`rg` or `grep` in `src/components/`)
   - [ ] Searched for existing utilities before creating new (`rg` or `grep` in `src/utils/`)
   - [ ] Used existing patterns rather than creating duplicates
+- [ ] **No hydration errors**:
+  - [ ] No `<figure>` elements inside `<p>` tags
+  - [ ] No `<div>` elements inside `<p>` tags
+  - [ ] No block-level elements inside inline elements
+  - [ ] HTML structure is valid and semantic
 
 ---
 

@@ -9,7 +9,7 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import { InfoIcon } from "../../icons/infoIcon";
+import { InfoIcon } from "../../icons/info-icon";
 import {
 	saveButtonClassName,
 	settingsInputClassName,
@@ -188,7 +188,7 @@ export const AiFeatures = () => {
 
 				<p className="mt-2 flex flex-wrap items-center text-13 leading-[150%] tracking-normal text-gray-600">
 					<figure className="mr-2 shrink-0">
-						<InfoIcon />
+						<InfoIcon className="my-0.5 h-4.5 w-4.5 text-gray-600" />
 					</figure>
 					<span className="flex flex-wrap items-center space-x-1">
 						<span>

@@ -51,11 +51,61 @@ export default async function handler(
 		return;
 	}
 
-	// Insert all categories
-	const rowsToInsert = categories.map((category: { name: string }) => ({
-		category_name: category.name,
+	// Get existing categories (case-insensitive: unique constraint is on LOWER(category_name))
+	const categoryNames = categories
+		.map((category: { name: string }) => category.name.trim())
+		.filter(Boolean);
+	const { data: existingCategories, error: existingCategoriesError } =
+		await supabase
+			.from(CATEGORIES_TABLE_NAME)
+			.select("category_name")
+			.eq("user_id", userId);
+
+	if (existingCategoriesError) {
+		console.error("[twitter/syncFolders] Error fetching existing categories:", {
+			error: existingCategoriesError,
+			userId,
+		});
+		response.status(500).json({
+			data: null,
+			error: existingCategoriesError,
+		});
+		return;
+	}
+
+	const existingCategoryNamesLower = new Set(
+		(existingCategories ?? []).map((category) =>
+			String(category.category_name).toLowerCase(),
+		),
+	);
+
+	// Dedupe request by case-insensitive name (first occurrence wins)
+	const seenLower = new Set<string>();
+	const uniqueNames = categoryNames.filter((name: string) => {
+		const key = name.toLowerCase();
+		if (seenLower.has(key)) {
+			return false;
+		}
+
+		seenLower.add(key);
+		return true;
+	});
+
+	// Filter out categories that already exist
+	const newCategoryNames = uniqueNames.filter(
+		(name: string) => !existingCategoryNamesLower.has(name.toLowerCase()),
+	);
+
+	if (newCategoryNames.length === 0) {
+		response.status(200).json({ data: [], error: null });
+		return;
+	}
+
+	// Only insert new categories
+	const rowsToInsert = newCategoryNames.map((category_name: string) => ({
+		category_name,
 		user_id: userId,
-		category_slug: `${slugify(category.name, {
+		category_slug: `${slugify(category_name, {
 			lower: true,
 		})}-${uniqid.time()}-twitter`,
 		icon: "bookmark",

@@ -14,6 +14,7 @@ import {
 	PDF_TYPE,
 	VIDEO_TYPE_PREFIX,
 } from "../../utils/constants";
+import { isBookmarkAudio } from "../../utils/helpers";
 
 import { PullEffect } from "./CloseOnSwipeDown";
 import {
@@ -22,6 +23,7 @@ import {
 } from "./hooks/useLightboxLogic";
 import MetaButtonPlugin from "./LightBoxPlugin";
 import {
+	AudioSlide,
 	ImageSlide,
 	PDFSlide,
 	VideoSlide,
@@ -69,6 +71,13 @@ export const CustomLightBox = ({
 	const [zoomLevel, setZoomLevel] = useState(1);
 	const isMobile = useMediaQuery("(max-width: 768px)");
 
+	// Track bookmark IDs that have video errors to render fallback image instead
+	const [videoErrorIds, setVideoErrorIds] = useState<Set<number>>(new Set());
+
+	const handleVideoError = useCallback((bookmarkId: number) => {
+		setVideoErrorIds((previous) => new Set(previous).add(bookmarkId));
+	}, []);
+
 	// Restore side panel state from local storage
 	useEffect(() => {
 		if (typeof window === "undefined") {
@@ -81,8 +90,9 @@ export const CustomLightBox = ({
 		}
 	}, [setLightboxShowSidepane]);
 
-	// Transform bookmarks into slides using custom hook
-	const slides = useLightboxSlides(bookmarks);
+	// Transform bookmarks into slides using custom hook (with embedded bookmark data)
+	// Pass videoErrorIds so failed videos are treated as images for proper zoom support
+	const slides = useLightboxSlides(bookmarks, videoErrorIds);
 
 	// Handle navigation, query invalidation and URL updates using custom hook
 	const { onViewRef, handleClose: handleCloseInvalidation } =
@@ -124,13 +134,40 @@ export const CustomLightBox = ({
 
 			let content = null;
 
-			// Check video FIRST
 			if (
+				isBookmarkAudio(bookmark?.type) ||
+				bookmark?.meta_data?.mediaType?.startsWith("audio")
+			) {
+				content = <AudioSlide bookmark={bookmark} />;
+			}
+			// Check video - fallback to WebEmbedSlide if video failed to load
+			else if (
 				bookmark?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
 				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
-				Boolean(bookmark?.meta_data?.video_url)
+				Boolean(bookmark?.meta_data?.video_url) ||
+				Boolean(bookmark?.meta_data?.additionalVideos?.[0])
 			) {
-				content = <VideoSlide bookmark={bookmark} isActive={isActive} />;
+				const hasVideoError =
+					typeof bookmark.id === "number" && videoErrorIds.has(bookmark.id);
+
+				if (hasVideoError) {
+					// Render as image slide when video fails - this ensures proper zoom support
+					content = (
+						<WebEmbedSlide
+							bookmark={bookmark}
+							isActive={isActive}
+							zoomRef={zoomRef}
+						/>
+					);
+				} else {
+					content = (
+						<VideoSlide
+							bookmark={bookmark}
+							isActive={isActive}
+							onVideoError={handleVideoError}
+						/>
+					);
+				}
 			}
 			// Then check image
 			else if (
@@ -170,7 +207,14 @@ export const CustomLightBox = ({
 				</button>
 			);
 		},
-		[bookmarks, slides, activeIndex, handleClose],
+		[
+			bookmarks,
+			slides,
+			activeIndex,
+			handleClose,
+			videoErrorIds,
+			handleVideoError,
+		],
 	);
 
 	/**

@@ -1,20 +1,26 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
+import { type SingleListData } from "../../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../../utils/constants";
 import { fetchBookmarkById } from "../../supabaseCrudHelpers";
 
-type Bookmark = {
-	[key: string]: unknown;
-	id: string;
+type BookmarkResponse = {
+	data: SingleListData;
+};
+
+type UseFetchBookmarkByIdOptions = {
+	enabled?: boolean;
 };
 
 export const useFetchBookmarkById = (
 	id: string,
-	options?: UseQueryOptions<Bookmark>,
-) =>
-	useQuery({
+	options?: UseFetchBookmarkByIdOptions,
+) => {
+	const { enabled = true } = options ?? {};
+
+	return useQuery<BookmarkResponse>({
 		queryKey: [BOOKMARKS_KEY, id],
-		queryFn: async () => await (fetchBookmarkById(id) as Promise<Bookmark>),
-		enabled: Boolean(id),
-		...options,
+		queryFn: async () => (await fetchBookmarkById(id)) as BookmarkResponse,
+		enabled: enabled && Boolean(id),
 	});
+};

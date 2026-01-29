@@ -11,19 +11,16 @@ import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
 import { CategoryBadges } from "../../../components/categoryBadges";
+import { GetBookmarkIcon } from "../../../components/get-bookmark-icon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
-import AudioIcon from "../../../icons/actionIcons/audioIcon";
+import { useMounted } from "../../../hooks/useMounted";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
-import FolderIcon from "../../../icons/folderIcon";
-import ImageIcon from "../../../icons/imageIcon";
-import { LinkIcon } from "../../../icons/link-icon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
-import VideoIcon from "../../../icons/videoIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -41,11 +38,10 @@ import {
 	DISCOVER_URL,
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
-	PDF_MIME_TYPE,
 	PREVIEW_ALT_TEXT,
+	PUBLIC_PAGE_SSR_ITEM_LIMIT,
 	TRASH_URL,
 	TWEETS_URL,
-	VIDEO_TYPE_PREFIX,
 	viewValues,
 } from "../../../utils/constants";
 import { useBookmarkImageSources } from "../../../utils/getBookmarkImageSource";
@@ -53,8 +49,6 @@ import {
 	getBaseUrl,
 	getPreviewPathInfo,
 	isBookmarkAudio,
-	isBookmarkDocument,
-	isBookmarkImage,
 	isBookmarkOwner,
 	isBookmarkVideo,
 	isCurrentYear,
@@ -67,6 +61,7 @@ import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import { EditPopover } from "./edit-popover";
 import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
+import { PublicMoodboard } from "./publicMoodboard";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 import { cn } from "@/utils/tailwind-merge";
@@ -103,6 +98,7 @@ const CardSection = ({
 	bookmarksCountData,
 }: CardSectionProps) => {
 	const router = useRouter();
+	const mounted = useMounted();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
 
@@ -452,7 +448,6 @@ const CardSection = ({
 							onPointerDown={(event) => event.stopPropagation()}
 						/>
 					)}
-					{isAudio && <AudioIcon className={playSvgClassName} />}
 					<ImgLogic
 						_height={_height ?? 200}
 						_width={_width ?? 200}
@@ -470,91 +465,42 @@ const CardSection = ({
 	};
 
 	const renderFavIcon = (item: SingleListData) => {
-		const isVideo =
-			item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ||
-			isBookmarkVideo(item?.type);
-		const isDocument =
-			item?.meta_data?.mediaType === PDF_MIME_TYPE ||
-			isBookmarkDocument(item?.type);
-		const isImage =
-			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
-			isBookmarkImage(item?.type);
 		const size = 15;
 		const favIconFigureClassName = classNames({
 			"h-[15px] w-[15px]": true,
 		});
-		if (favIconErrorImgs?.includes(item?.id)) {
-			return (
-				<figure className="card-icon text-gray-1000">
-					<LinkIcon className="h-4 w-4" />
-				</figure>
-			);
-		}
 
-		if (isUserInTweetsPage && item?.meta_data?.twitter_avatar_url) {
-			// if user is in tweets page then show the twitter user avatar
-			return (
-				<figure className={favIconFigureClassName}>
-					<Image
-						alt="fav-icon"
-						className="rounded-sm"
-						height={size}
-						onError={() =>
-							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
-						}
-						src={item?.meta_data?.twitter_avatar_url}
-						width={size}
-					/>
-				</figure>
-			);
-		}
-
-		if (item?.meta_data?.favIcon) {
-			return (
-				<figure className={favIconFigureClassName}>
-					<Image
-						alt="fav-icon"
-						className="rounded-sm"
-						height={size}
-						onError={() =>
-							setFavIconErrorImgs([item?.id as never, ...favIconErrorImgs])
-						}
-						src={item?.meta_data?.favIcon ?? ""}
-						width={size}
-					/>
-				</figure>
-			);
-		}
-
-		if (isVideo) {
-			return (
-				<figure className="card-icon rounded-sm text-gray-1000">
-					<VideoIcon size="15" />
-				</figure>
-			);
-		}
-
-		if (isDocument) {
-			return (
-				<figure className="card-icon rounded-sm text-gray-1000">
-					<FolderIcon size="15" />
-				</figure>
-			);
-		}
-
-		if (isImage) {
-			return (
-				<figure className="card-icon rounded text-gray-1000">
-					<ImageIcon size={`${size}`} />
-				</figure>
-			);
-		}
-
-		return (
-			<figure className="card-icon rounded-sm text-gray-1000">
-				<LinkIcon className="h-[15px] w-[15px]" />
-			</figure>
+		const icon = (
+			<GetBookmarkIcon
+				item={item}
+				isUserInTweetsPage={isUserInTweetsPage}
+				favIconErrorIds={favIconErrorImgs}
+				onFavIconError={(bookmarkId: number) => {
+					setFavIconErrorImgs((prev) => [bookmarkId, ...prev]);
+				}}
+				size={size}
+			/>
 		);
+
+		// Determine the figure className based on icon type
+		// If it's a favicon or twitter avatar (Image component), use the smaller figure
+		const isImageIcon =
+			(item?.meta_data?.favIcon || item?.meta_data?.twitter_avatar_url) &&
+			!favIconErrorImgs?.includes(item?.id);
+
+		if (isImageIcon) {
+			return <figure className={favIconFigureClassName}>{icon}</figure>;
+		}
+
+		// For video, document, image icons, and fallback (SVG icons)
+		const isImageMediaType =
+			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX);
+		const figureClassName = classNames({
+			"card-icon rounded-sm p-0.5 text-gray-1000": true,
+			rounded: isImageMediaType,
+		});
+
+		return <figure className={figureClassName}>{icon}</figure>;
 	};
 
 	const renderCategoryBadge = (item: SingleListData) => {
@@ -758,7 +704,7 @@ const CardSection = ({
 
 		if (isLoadingProfile) {
 			return (
-				<div className="absolute inset-0 flex items-center justify-center">
+				<div className="absolute inset-0 flex items-center justify-center dark:brightness-0 dark:invert">
 					<Image
 						src={loaderGif}
 						alt="loader"
@@ -804,6 +750,18 @@ const CardSection = ({
 			return renderStatusMessage("No results found");
 		}
 
+		// Public page: SSR static subset (first N), then virtualize full list after hydrate
+		if (isPublicPage && !mounted) {
+			const ssrList = bookmarksList.slice(0, PUBLIC_PAGE_SSR_ITEM_LIMIT);
+			return (
+				<PublicMoodboard
+					bookmarksColumns={bookmarksColumns}
+					bookmarksList={ssrList}
+					renderCard={renderBookmarkCardTypes}
+				/>
+			);
+		}
+
 		return (
 			<ListBox
 				aria-label="Categories"
@@ -827,6 +785,7 @@ const CardSection = ({
 		<>
 			<div className={listWrapperClass}>{renderItem()}</div>
 			<PreviewLightBox
+				bookmarks={isPublicPage ? bookmarksList : undefined}
 				id={lightboxId}
 				open={lightboxOpen}
 				setOpen={setLightboxOpen}

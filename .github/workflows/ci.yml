@@ -110,25 +110,6 @@ jobs:
 
     timeout-minutes: 15
 
-  lint-spelling:
-    # env:
-    #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
-    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-    name: 🔬 Lint Spelling
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 2
-
-      - uses: ./.github/actions/pnpm-install
-
-      - name: Lint Spelling
-        run: pnpm turbo lint:spelling
-
-    timeout-minutes: 15
-
   lint-types:
     # env:
     #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}

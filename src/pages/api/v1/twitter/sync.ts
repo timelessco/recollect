@@ -109,7 +109,7 @@ export default async function handler(
 			console.warn("No data to insert");
 
 			response
-				.status(404)
+				.status(200)
 				.json({ success: true, error: "No data to insert", data: [] });
 			return;
 		}

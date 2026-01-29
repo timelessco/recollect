@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import Modal from "../../../components/modal";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
@@ -30,16 +30,30 @@ const SettingsModal = () => {
 		(state) => state.setCurrentSettingsPage,
 	);
 
-	const [selectedMenuItem, setSelectedMenuItem] = useState(0);
+	// Derive selectedMenuItem from currentSettingsPage
+	const getSelectedMenuItemId = () => {
+		switch (currentSettingsPage) {
+			case "main":
+			case "change-email":
+			case "delete":
+				return 0;
+			case "ai-features":
+				return 1;
+			case "import":
+				return 2;
+			default:
+				return 0;
+		}
+	};
+
+	const selectedMenuItemId = getSelectedMenuItemId();
 
 	// reset useeffect
 	useEffect(() => {
 		if (!showSettingsModal) {
 			setCurrentSettingsPage("main");
-			// TODO: Fix this in priority
-			setSelectedMenuItem(0);
 		}
-	}, [setCurrentSettingsPage, showSettingsModal, selectedMenuItem]);
+	}, [setCurrentSettingsPage, showSettingsModal]);
 
 	const optionsList = [
 		{
@@ -50,7 +64,7 @@ const SettingsModal = () => {
 			),
 			name: "My Profile",
 			href: ``,
-			current: selectedMenuItem === 0,
+			current: selectedMenuItemId === 0,
 			id: 0,
 			count: undefined,
 			iconColor: "",
@@ -63,7 +77,7 @@ const SettingsModal = () => {
 			),
 			name: "AI Features",
 			href: ``,
-			current: selectedMenuItem === 1,
+			current: selectedMenuItemId === 1,
 			id: 1,
 			count: undefined,
 			iconColor: "",
@@ -76,7 +90,7 @@ const SettingsModal = () => {
 			),
 			name: "Import",
 			href: ``,
-			current: selectedMenuItem === 2,
+			current: selectedMenuItemId === 2,
 			id: 2,
 			count: undefined,
 			iconColor: "",
@@ -123,7 +137,6 @@ const SettingsModal = () => {
 								item={item}
 								key={item.id}
 								onClick={() => {
-									setSelectedMenuItem(item.id);
 									switch (item.id) {
 										case 0:
 											setCurrentSettingsPage("main");
