@@ -1,0 +1,299 @@
+### Sync Folder Bookmarks (Success - Single Association)
+# Prerequisites: 
+# 1. Category "Test Collection" must exist (create via syncFolders)
+# 2. Bookmark with URL must exist (create via twitter/sync)
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test14",
+      "url": "https://x.com/interesting_aIl/status/2009045432358367692"
+    }
+  ]
+}
+
+### Sync Multiple Folder Bookmarks (Success)
+# Associates multiple bookmarks with categories
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "test14",
+      "url": "https://x.com/testuser/status/BATCH001"
+    },
+    {
+      "category_name": "ANIL",
+      "url": "https://x.com/testuser/status/BATCH002"
+    },
+    {
+      "category_name": "Design Inspiration",
+      "url": "https://twitter.com/testuser/status/BATCH003"
+    }
+  ]
+}
+
+### Sync Same Bookmark to Multiple Categories
+# One bookmark can belong to multiple categories
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Tech Tweets",
+      "url": "https://x.com/testuser/status/MULTI001"
+    },
+    {
+      "category_name": "Design Inspiration",
+      "url": "https://x.com/testuser/status/MULTI001"
+    },
+    {
+      "category_name": "Productivity Tips",
+      "url": "https://x.com/testuser/status/MULTI001"
+    }
+  ]
+}
+
+### Validation Error - Empty Data Array
+# Expected: 400 - Validation error (Zod schema requires min 1 item)
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": []
+}
+
+### Validation Error - Missing Data Field
+# Expected: 400 - Data field missing
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{}
+
+### Validation Error - Invalid Data Format (not an array)
+# Expected: 400 - Data must be an array
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": "not-an-array"
+}
+
+### Validation Error - Missing Category Name
+# Expected: 400 - Category name is required
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "url": "https://x.com/testuser/status/MISSING_CAT"
+    }
+  ]
+}
+
+### Validation Error - Empty Category Name
+# Expected: 400 - Category name must have at least 1 character
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "",
+      "url": "https://x.com/testuser/status/EMPTY_CAT"
+    }
+  ]
+}
+
+### Validation Error - Missing URL
+# Expected: 400 - URL is required
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection"
+    }
+  ]
+}
+
+### Validation Error - Invalid URL Format
+# Expected: 400 - Invalid URL format
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection",
+      "url": "not-a-valid-url"
+    }
+  ]
+}
+
+### Validation Error - javascript: Protocol
+# Expected: 400 - Invalid URL format
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection",
+      "url": "javascript:alert('xss')"
+    }
+  ]
+}
+
+### Auth Error - No Token
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection",
+      "url": "https://x.com/testuser/status/NOAUTH"
+    }
+  ]
+}
+
+### Error - Category Not Found
+# Expected: 200 - { data: [{ url: "...", success: false, reason: "Category not found" }], error: null }
+# Note: Returns 200 but with success: false in result
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Non-Existent Category",
+      "url": "https://x.com/testuser/status/EXISTING_TWEET"
+    }
+  ]
+}
+
+### Error - Bookmark Not Found
+# Expected: 200 - { data: [{ url: "...", success: false, reason: "Bookmark not found" }], error: null }
+# Note: Returns 200 but with success: false in result
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection",
+      "url": "https://x.com/testuser/status/NON_EXISTENT_TWEET"
+    }
+  ]
+}
+
+### Partial Success - Some Valid, Some Invalid
+# Expected: 200 - { data: [{ success: true }, { success: false, reason: "..." }], error: null }
+# Some associations succeed, others fail (category not found, bookmark not found, etc.)
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection",
+      "url": "https://x.com/testuser/status/EXISTING_TWEET"
+    },
+    {
+      "category_name": "Non-Existent Category",
+      "url": "https://x.com/testuser/status/EXISTING_TWEET"
+    },
+    {
+      "category_name": "Test Collection",
+      "url": "https://x.com/testuser/status/NON_EXISTENT_TWEET"
+    }
+  ]
+}
+
+### Duplicate Association (Idempotent)
+# Running this multiple times should be safe (upsert with ignoreDuplicates)
+# Expected: 200 - { data: [{ success: true }], error: null }
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection",
+      "url": "https://x.com/testuser/status/DUPLICATE_TEST"
+    }
+  ]
+}
+
+### Run Duplicate Again (Should Still Succeed)
+# Expected: 200 - { data: [{ success: true }], error: null }
+# Upsert handles duplicates gracefully
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Test Collection",
+      "url": "https://x.com/testuser/status/DUPLICATE_TEST"
+    }
+  ]
+}
+
+### Large Batch Test
+# Tests handling of many associations at once
+POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "data": [
+    {
+      "category_name": "Tech Tweets",
+      "url": "https://x.com/testuser/status/BATCH001"
+    },
+    {
+      "category_name": "Tech Tweets",
+      "url": "https://x.com/testuser/status/BATCH002"
+    },
+    {
+      "category_name": "Tech Tweets",
+      "url": "https://x.com/testuser/status/BATCH003"
+    },
+    {
+      "category_name": "Design Inspiration",
+      "url": "https://x.com/testuser/status/BATCH004"
+    },
+    {
+      "category_name": "Design Inspiration",
+      "url": "https://x.com/testuser/status/BATCH005"
+    },
+    {
+      "category_name": "Productivity Tips",
+      "url": "https://x.com/testuser/status/BATCH006"
+    }
+  ]
+}
