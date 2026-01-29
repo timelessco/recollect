@@ -34,8 +34,13 @@ import { handleClientError } from "@/utils/error-utils/client";
 /**
  * Hook to transform bookmarks into lightbox slides
  * Embeds full bookmark data in each slide for plugin access
+ * @param bookmarks - Array of bookmarks to transform into slides
+ * @param videoErrorIds - Set of bookmark IDs with video load errors, treated as images for zoom
  */
-export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
+export const useLightboxSlides = (
+	bookmarks: SingleListData[] | undefined,
+	videoErrorIds?: Set<number>,
+) => {
 	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
 	return useMemo(() => {
 		if (!bookmarks) {
@@ -43,15 +48,22 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
 		}
 
 		return bookmarks?.map((bookmark) => {
+			// Check if this video bookmark failed to load - treat as image for proper zoom
+			const hasVideoError =
+				typeof bookmark.id === "number" &&
+				videoErrorIds?.has(bookmark.id) &&
+				Boolean(bookmark.ogImage);
+
 			// Determine media types based on bookmark properties
 			const isImage =
 				bookmark?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ??
 				bookmark?.meta_data?.isOgImagePreferred ??
 				bookmark?.type?.startsWith(IMAGE_TYPE_PREFIX);
 			const isVideo =
-				bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
-				Boolean(bookmark?.meta_data?.video_url) ||
-				Boolean(bookmark?.meta_data?.additionalVideos?.[0]);
+				!hasVideoError &&
+				(bookmark?.type?.startsWith(VIDEO_TYPE_PREFIX) ||
+					Boolean(bookmark?.meta_data?.video_url) ||
+					Boolean(bookmark?.meta_data?.additionalVideos?.[0]));
 
 			return {
 				src: bookmark?.url,
@@ -95,7 +107,7 @@ export const useLightboxSlides = (bookmarks: SingleListData[] | undefined) => {
 				}),
 			};
 		}) as CustomSlide[];
-	}, [bookmarks, iframeEnabled]);
+	}, [bookmarks, iframeEnabled, videoErrorIds]);
 };
 
 interface UseLightboxNavigationProps {

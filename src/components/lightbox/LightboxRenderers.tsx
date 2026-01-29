@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type RefObject } from "react";
+import { useCallback, useMemo, type RefObject } from "react";
 import Image from "next/image";
 import { type ZoomRef } from "yet-another-react-lightbox";
 
@@ -21,6 +21,10 @@ interface SlideProps {
 	isActive?: boolean;
 	// eslint-disable-next-line react/no-unused-prop-types
 	zoomRef?: RefObject<ZoomRef | null>;
+}
+
+interface VideoSlideProps extends SlideProps {
+	onVideoError?: (bookmarkId: number) => void;
 }
 
 /**
@@ -68,19 +72,18 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
 
 /**
  * Renders a video slide using the custom VideoPlayer component
- * Falls back to ogImage if video fails to load (e.g., 403 errors)
+ * Notifies parent via onVideoError when video fails to load
  */
-export const VideoSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
-	const [videoError, setVideoError] = useState(false);
-
+export const VideoSlide = ({
+	bookmark,
+	isActive,
+	onVideoError,
+}: VideoSlideProps) => {
 	const handleVideoError = useCallback(() => {
-		setVideoError(true);
-	}, []);
-
-	// If video failed to load and we have an ogImage, show the image instead
-	if (videoError && bookmark?.ogImage) {
-		return <WebEmbedSlide bookmark={bookmark} zoomRef={zoomRef} />;
-	}
+		if (bookmark?.id && typeof bookmark.id === "number") {
+			onVideoError?.(bookmark.id);
+		}
+	}, [bookmark?.id, onVideoError]);
 
 	const videoSrc =
 		bookmark?.meta_data?.additionalVideos?.[0] ??
