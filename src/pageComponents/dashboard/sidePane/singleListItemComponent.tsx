@@ -123,7 +123,12 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										<OptionsIcon />
 									</div>
 								}
-								menuClassName={`${activeMenu ? "w-auto" : ""} ${dropdownMenuClassName} z-10`}
+								menuClassName={`${activeMenu ? "w-auto" : ""} ${dropdownMenuClassName} pointer-events-auto z-10`}
+								portalElement={
+									!isDesktop
+										? () => document.querySelector("#side-pane-dropdown-portal")
+										: undefined
+								}
 								menuOpenToggle={(value) => {
 									if (value) {
 										setOpenedMenuId(item?.id);

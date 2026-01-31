@@ -371,6 +371,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			</Drawer>
 
 			{dashboardContentElement()}
+
+			{/* Portal container so side-pane dropdowns render above the Drawer on small screens */}
+			<div
+				aria-hidden
+				className="pointer-events-none fixed inset-0 z-9999"
+				id="side-pane-dropdown-portal"
+			/>
 		</div>
 	);
 };

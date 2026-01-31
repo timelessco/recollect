@@ -46,6 +46,7 @@ import {
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -300,6 +301,7 @@ const CollectionsList = () => {
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
+	const { isDesktop } = useIsMobileView();
 
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 	const { addCategoryToBookmarkOptimisticMutation } =
@@ -626,6 +628,11 @@ const CollectionsList = () => {
 					setIsCollectionHeaderMenuOpen(value);
 				}}
 				onButtonClick={(event) => event?.stopPropagation()}
+				portalElement={
+					!isDesktop
+						? () => document.querySelector("#side-pane-dropdown-portal")
+						: undefined
+				}
 			>
 				{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
 					<AriaDropdownMenu
