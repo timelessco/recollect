@@ -393,7 +393,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
+			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 ${
 				(item?.addedCategories?.length ?? 0) > 0 && isNull(categorySlug)
 					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
