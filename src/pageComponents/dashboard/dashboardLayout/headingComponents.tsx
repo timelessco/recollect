@@ -156,7 +156,7 @@ const CollectionStatusIcons = (props: CollectionStatusIconsProps) => {
 	}
 
 	return (
-		<div className="ml-2 flex space-x-2">
+		<div className="ml-2 flex items-center justify-center space-x-2">
 			{showPublicIcon && (
 				<ToolTip toolTipContent="Public collection">
 					<figure className="text-gray-1000">
