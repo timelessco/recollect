@@ -30,8 +30,11 @@ export default async function handler(
 	const supabase = createServiceClient();
 
 	// Parse pagination parameters
-	const page = Number(request.query.page ?? 0);
-	const limit = Number(request.query.limit ?? PAGINATION_LIMIT);
+	const page = Math.max(0, Math.floor(Number(request.query.page) || 0));
+	const limit = Math.max(
+		1,
+		Math.min(100, Math.floor(Number(request.query.limit) || PAGINATION_LIMIT)),
+	);
 
 	// get category data
 	const { data: categoryData, error: categoryError } = (await supabase
