@@ -10,6 +10,7 @@ import {
 	getBaseUrl,
 	NEXT_API_URL,
 	PAGINATION_LIMIT,
+	PUBLIC_BOOKMARKS_KEY,
 } from "@/utils/constants";
 
 type UseFetchPublicCategoryBookmarksProps = {
@@ -33,7 +34,7 @@ export const useFetchPublicCategoryBookmarks = ({
 		isLoading,
 		error,
 	} = useInfiniteQuery({
-		queryKey: ["public-bookmarks", categorySlug, userName],
+		queryKey: [PUBLIC_BOOKMARKS_KEY, categorySlug, userName],
 		enabled: enabled && Boolean(categorySlug) && Boolean(userName),
 		queryFn: async ({ pageParam }) => {
 			const response = await fetch(

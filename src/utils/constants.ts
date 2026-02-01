@@ -196,6 +196,7 @@ export const LINKS_URL = "links";
 
 export const BOOKMARKS_KEY = "bookmarks";
 export const BOOKMARKS_COUNT_KEY = "bookmarks_count";
+export const PUBLIC_BOOKMARKS_KEY = "public-bookmarks";
 export const CATEGORIES_KEY = "categories";
 export const USER_TAGS_KEY = "userTags";
 export const BOOKMARKS_VIEW = "bookmarks_view";
