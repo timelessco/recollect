@@ -166,14 +166,14 @@ BEGIN
 
     ORDER BY
         CASE
-            WHEN search_text IS NULL OR search_text = '' THEN 0
+            WHEN search_text IS NULL OR btrim(search_text) = '' THEN 0
             ELSE (
-                similarity(COALESCE(b.url, ''), search_text) * 0.6 +
-                similarity(COALESCE(b.title::text, ''), search_text) * 0.5 +
-                similarity(COALESCE(b.description, ''), search_text) * 0.3 +
-                similarity(COALESCE(b.meta_data->>'ocr', ''), search_text) * 0.1 +
-                similarity(COALESCE(b.meta_data->>'img_caption', ''), search_text) * 0.15 +
-                similarity(COALESCE(b.meta_data->>'image_caption', ''), search_text) * 0.15
+                similarity(COALESCE(b.url, ''), btrim(search_text)) * 0.6 +
+                similarity(COALESCE(b.title::text, ''), btrim(search_text)) * 0.5 +
+                similarity(COALESCE(b.description, ''), btrim(search_text)) * 0.3 +
+                similarity(COALESCE(b.meta_data->>'ocr', ''), btrim(search_text)) * 0.1 +
+                similarity(COALESCE(b.meta_data->>'img_caption', ''), btrim(search_text)) * 0.15 +
+                similarity(COALESCE(b.meta_data->>'image_caption', ''), btrim(search_text)) * 0.15
             )
         END DESC,
         b.inserted_at DESC;
