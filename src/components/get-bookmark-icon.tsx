@@ -72,9 +72,8 @@ export const GetBookmarkIcon = ({
 		item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ||
 		isBookmarkImage(item?.type);
 	const isAudio =
-		item?.meta_data?.mediaType?.startsWith("audio") ||
-		isBookmarkAudio(item?.type);
-
+		isBookmarkAudio(item?.type) ||
+		item?.meta_data?.mediaType?.startsWith("audio");
 	// Favicon error fallback
 	if (favIconErrorIds.includes(item.id)) {
 		return <LinkIcon />;
@@ -127,7 +126,6 @@ export const GetBookmarkIcon = ({
 		return <ImageIcon size={`${size}`} />;
 	}
 
-	// Audio
 	if (isAudio) {
 		return <AudioIcon className="h-[15px] w-[15px]" />;
 	}

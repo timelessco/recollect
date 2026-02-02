@@ -127,6 +127,7 @@ const videoLogic = async (
 
 	const meta_data = {
 		img_caption: imageCaption ?? null,
+		image_caption: imageCaption ?? null,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
@@ -244,6 +245,7 @@ export default async (
 
 		let meta_data: ImgMetadataType = {
 			img_caption: null,
+			image_caption: null,
 			width: null,
 			height: null,
 			ogImgBlurUrl: null,

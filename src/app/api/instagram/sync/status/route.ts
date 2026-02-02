@@ -7,17 +7,17 @@ const ROUTE = "instagram-sync-status";
 
 const StatusInputSchema = z.object({});
 
-const FailureSchema = z.object({
+const ArchiveSchema = z.object({
 	msg_id: z.number(),
 	url: z.string(),
 	failure_reason: z.string().nullable(),
-	failed_at: z.string().nullable(),
+	archived_at: z.string().nullable(),
 });
 
 const StatusOutputSchema = z.object({
 	pending: z.number(),
-	failed: z.number(),
-	failures: z.array(FailureSchema),
+	archived: z.number(),
+	archives: z.array(ArchiveSchema),
 });
 
 export const GET = createGetApiHandlerWithAuth({

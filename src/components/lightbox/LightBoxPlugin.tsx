@@ -128,6 +128,7 @@ const MyComponent = () => {
 		);
 	}
 
+	console.log(metaData?.image_caption !== null);
 	const domain = new URL(currentBookmark?.url)?.hostname;
 	return (
 		<AnimatePresence>
@@ -247,7 +248,8 @@ const MyComponent = () => {
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.img_caption ||
-						metaData?.ocr) && (
+						metaData?.ocr ||
+						metaData?.image_caption) && (
 						<motion.div
 							animate={{
 								y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
@@ -280,7 +282,9 @@ const MyComponent = () => {
 									</div>
 								</div>
 							)}
-							{(metaData?.img_caption || metaData?.ocr) && (
+							{(metaData?.img_caption ||
+								metaData?.ocr ||
+								metaData?.image_caption !== null) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
@@ -313,10 +317,11 @@ const MyComponent = () => {
 									>
 										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
 											{highlightSearch(
-												metaData?.img_caption || "",
+												metaData?.img_caption || metaData?.image_caption || "",
 												trimmedSearchText,
 											)}
-											{metaData?.img_caption && metaData?.ocr && <br />}
+											{(metaData?.img_caption || metaData?.image_caption) &&
+												metaData?.ocr && <br />}
 											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
 										</p>
 									</div>
