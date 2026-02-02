@@ -163,6 +163,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 				if (mediaType?.includes("audio")) {
 					return;
 				}
+
 				if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
 					try {
 						// adding id into loading state for the case of pdf
