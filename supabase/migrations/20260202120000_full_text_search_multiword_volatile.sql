@@ -155,12 +155,12 @@ BEGIN
                             ' '
                         )
                     )
-                    OR lower(COALESCE(b.url, '')) LIKE '%' || token || '%'
+                    OR lower(COALESCE(b.url, '')) LIKE '%' || replace(replace(token, '%', '\%'), '_', '\_') || '%' ESCAPE '\'
                     OR EXISTS (
                         SELECT 1
                         FROM jsonb_each_text(COALESCE(b.meta_data, '{}'::jsonb)) AS x(key, value)
                         WHERE key IN ('img_caption', 'image_caption', 'ocr')
-                          AND lower(value) LIKE '%' || token || '%'
+                          AND lower(value) LIKE '%' || replace(replace(token, '%', '\%'), '_', '\_') || '%' ESCAPE '\'
                     )
                   )
             )
