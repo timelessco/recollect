@@ -28,7 +28,7 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
 // Fallback ogImage for audio bookmarks (no cover art)
 export const AUDIO_OG_IMAGE_FALLBACK_URL =
-	"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSq11iFo06AetlfLtL7Zg1ip1C9V5tfi49RcA&s";
+	"https://media-dev.recollect.so/files/public/33a2eeb4-a6c3-42be-b058-847cac247df5/ml4ry1fk-image.png";
 
 // Video upload limits
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
