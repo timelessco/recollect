@@ -14,7 +14,6 @@ import { type ChildrenTypes } from "../../../types/componentTypes";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
-	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
 import ShareContent from "../share/shareContent";
 
@@ -211,7 +210,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
 	const contentWrapperClassNames = `${
 		item?.current ? "bg-gray-100 text-gray-900" : "text-gray-800"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-gray-100 hover:text-gray-900`;
+	} ${extendedClassname} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-gray-100 hover:text-gray-900`;
 
 	if (isLink) {
 		return (

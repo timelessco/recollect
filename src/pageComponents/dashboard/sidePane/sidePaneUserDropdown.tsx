@@ -13,7 +13,6 @@ import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
-	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
 import { LOGIN_URL } from "../../../utils/constants";
 import { createClient } from "../../../utils/supabaseClient";
@@ -38,9 +37,7 @@ const SidePaneUserDropdown = () => {
 		<div className="flex justify-between">
 			<AriaDropdown
 				menuButton={
-					<div
-						className={`${smoothHoverClassName} flex w-full items-center justify-between rounded-lg px-1.5 py-[3px] text-gray-800 hover:bg-gray-100 hover:text-gray-900`}
-					>
+					<div className="flex w-full items-center justify-between rounded-lg px-1.5 py-[3px] text-gray-800 hover:bg-gray-100 hover:text-gray-900">
 						<div className="-ml-0.25 flex w-4/5 items-center space-x-2">
 							<UserAvatar
 								alt="user-avatar"

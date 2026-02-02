@@ -428,7 +428,7 @@ const CardSection = ({
 		});
 
 		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800": true,
+			"hover:fill-slate-500 transition ease-in-out fill-gray-800": true,
 			absolute: true,
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||

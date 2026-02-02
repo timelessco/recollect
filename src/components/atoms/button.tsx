@@ -2,7 +2,6 @@ import { type FC } from "react";
 import classNames from "classnames";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
-import { smoothHoverClassName } from "../../utils/commonClassNames";
 import { cn } from "../../utils/tailwind-merge";
 
 type ButtonProps = {
@@ -38,7 +37,6 @@ const Button: FC<ButtonProps> = (props) => {
 
 	const buttonClassNames = cn(
 		classNames({
-			[smoothHoverClassName]: true,
 			"flex items-center rounded-lg px-2 py-[5px] text-13 leading-[14px] font-medium": true,
 			"bg-gray-950 text-white hover:bg-gray-800": type === "dark",
 			"bg-transparent hover:bg-gray-100": type === "light",

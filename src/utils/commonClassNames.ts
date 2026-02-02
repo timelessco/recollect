@@ -16,9 +16,6 @@ export const dropdownMenuClassName =
 export const dropdownMenuItemClassName =
 	"text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
 
-// BUTTON TRANSITION CLASS NAMES
-export const smoothHoverClassName = "transition ease-in-out delay-50";
-
 // SETTINGS PAGE CLASS NAMES
 
 export const settingsMainHeadingClassName =
