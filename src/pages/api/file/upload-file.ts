@@ -268,14 +268,10 @@ export default async (
 		let ogImage;
 
 		if (!isVideo) {
-			console.log("Processing audio file:", {
-				fileType,
-			});
-
 			// if file is not a video
 			ogImage = storageData?.publicUrl;
 			if (isAudio) {
-				console.log("Processing audio file:", {
+				console.log("Setting audio ogImage fallback:", {
 					fileType,
 				});
 				ogImage = AUDIO_OG_IMAGE_FALLBACK_URL;
