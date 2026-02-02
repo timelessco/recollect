@@ -202,9 +202,7 @@ export default async function handler(
 	}
 
 	if (category_id === instagramType) {
-		query = query
-			.eq("type", instagramType)
-			.order("inserted_at", { ascending: true });
+		query = query.eq("type", instagramType);
 	}
 
 	if (category_id === DOCUMENTS_URL) {
