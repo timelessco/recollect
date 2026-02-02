@@ -22,6 +22,7 @@ import { type UrlInput } from "../types/componentTypes";
 
 import {
 	acceptedFileTypes,
+	AUDIO_URL,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	DISCOVER_URL,
@@ -34,6 +35,7 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	INBOX_URL,
+	instagramType,
 	LINKS_URL,
 	MAX_VIDEO_SIZE_BYTES,
 	menuListItemName,
@@ -255,7 +257,9 @@ export const isUserInACategoryInApi = (
 		category_id !== VIDEOS_URL &&
 		category_id !== DOCUMENTS_URL &&
 		category_id !== TWEETS_URL &&
-		category_id !== LINKS_URL;
+		category_id !== LINKS_URL &&
+		category_id !== AUDIO_URL &&
+		category_id !== instagramType;
 
 	if (uncategorizedCheck) {
 		return condition && category_id !== UNCATEGORIZED_URL;

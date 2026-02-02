@@ -11,6 +11,8 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	AUDIO_URL,
+	audioFileTypes,
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
@@ -18,6 +20,7 @@ import {
 	DOCUMENTS_URL,
 	imageFileTypes,
 	IMAGES_URL,
+	instagramType,
 	LINKS_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
@@ -190,6 +193,18 @@ export default async function handler(
 		query = query.or(
 			`type.in.(${videoFileTypes}),meta_data->>mediaType.in.(${videoFileTypes})`,
 		);
+	}
+
+	if (category_id === AUDIO_URL) {
+		query = query.or(
+			`type.in.(${audioFileTypes}),meta_data->>mediaType.in.(${audioFileTypes})`,
+		);
+	}
+
+	if (category_id === instagramType) {
+		query = query
+			.eq("type", instagramType)
+			.order("inserted_at", { ascending: true });
 	}
 
 	if (category_id === DOCUMENTS_URL) {
