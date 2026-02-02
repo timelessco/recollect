@@ -128,7 +128,6 @@ const MyComponent = () => {
 		);
 	}
 
-	console.log(metaData?.image_caption !== null);
 	const domain = new URL(currentBookmark?.url)?.hostname;
 	return (
 		<AnimatePresence>
