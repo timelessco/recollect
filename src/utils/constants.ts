@@ -26,6 +26,10 @@ export const STORAGE_SCREENSHOT_VIDEOS_PATH =
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
+// Fallback ogImage for audio bookmarks (no cover art)
+export const AUDIO_OG_IMAGE_FALLBACK_URL =
+	"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSq11iFo06AetlfLtL7Zg1ip1C9V5tfi49RcA&s";
+
 // Video upload limits
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
 
@@ -238,6 +242,7 @@ export const acceptedFileTypes = [
 	"audio/webm",
 	"audio/wav",
 	"audio/aac",
+	"audio/mp3",
 
 	// Video
 	"video/mp4",
