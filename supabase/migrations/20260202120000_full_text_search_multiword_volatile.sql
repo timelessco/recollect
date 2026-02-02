@@ -12,8 +12,7 @@
 -- No table or index changes.
 -- ============================================================================
 
-DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint);
-
+-- Replace in place (same signature and return type); new search semantics and VOLATILE.
 CREATE OR REPLACE FUNCTION public.search_bookmarks_url_tag_scope(
     search_text character varying DEFAULT '',
     url_scope character varying DEFAULT '',
@@ -116,7 +115,10 @@ BEGIN
                   AND LOWER(t.name) = ANY(
                       SELECT LOWER(unnest(tag_scope))
                   )
-            ) = array_length(tag_scope, 1)  -- Must match ALL searched tags (AND logic)
+            ) = (
+                SELECT COUNT(DISTINCT LOWER(tag))
+                FROM unnest(tag_scope) AS tag
+            )  -- Must match ALL distinct searched tags (AND logic)
         )
 
         AND
