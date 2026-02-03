@@ -12,7 +12,10 @@ import {
 	type SingleListData,
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
-import { MAIN_TABLE_NAME } from "../../../utils/constants";
+import {
+	AUDIO_OG_IMAGE_FALLBACK_URL,
+	MAIN_TABLE_NAME,
+} from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -24,7 +27,9 @@ const notVideoLogic = async (
 	supabase: SupabaseClient,
 	userId: string,
 ) => {
-	const ogImage = publicUrl;
+	const ogImage = mediaType?.includes("audio")
+		? AUDIO_OG_IMAGE_FALLBACK_URL
+		: publicUrl;
 	let imageCaption = null;
 	let imageOcrValue = null;
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
@@ -137,7 +142,7 @@ export default async function handler(
 			video_url: null,
 		};
 
-		const { meta_data: metaData } = await notVideoLogic(
+		const { ogImage, meta_data: metaData } = await notVideoLogic(
 			publicUrl,
 			mediaType,
 			supabase,
@@ -188,7 +193,7 @@ export default async function handler(
 		const { error: DBerror } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({
-				ogImage: publicUrl,
+				ogImage: mediaType?.includes("audio") ? ogImage : publicUrl,
 				meta_data: mergedMeta,
 				description: (meta_data?.img_caption as string) || "",
 			})
