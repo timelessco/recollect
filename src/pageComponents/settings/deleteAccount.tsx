@@ -79,9 +79,7 @@ export const DeleteAccount = () => {
 				// Sign out to clear all Supabase auth cookies
 				await signOut(supabase);
 				// Clear the session state
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-expect-error
-				setSession({});
+				setSession(undefined);
 				// Redirect to login page
 				void router.push(`/${LOGIN_URL}`);
 			}
