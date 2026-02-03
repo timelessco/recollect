@@ -35,17 +35,21 @@ export default async function handler(
 	// Set trash to current timestamp when moving to trash, null when restoring
 	const trashValue = request.body.isTrash ? new Date().toISOString() : null;
 
+	// Extract bookmark IDs from array
+	const bookmarkIds = bookmarkData?.map((item) => item?.id);
+
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
 			.from(MAIN_TABLE_NAME)
 			.update({ trash: trashValue })
-			.match({ id: bookmarkData?.id, user_id: userId })
+			.in("id", bookmarkIds)
+			.eq("user_id", userId)
 			.select();
 
-	if (!isNull(data)) {
-		response.status(200).json({ data, error });
-	} else {
+	if (!isNull(error)) {
 		response.status(500).json({ data, error });
 		throw new Error("ERROR: move to trash db error");
 	}
+
+	response.status(200).json({ data, error });
 }

@@ -54,7 +54,10 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 							pages: old?.pages?.map((item) => ({
 								...item,
 								data: item.data?.filter(
-									(dataItem) => dataItem?.id !== data?.data?.id,
+									(dataItem) =>
+										!data?.data?.some(
+											(bookmark) => bookmark.id === dataItem.id,
+										),
 								),
 							})),
 						};
@@ -93,7 +96,10 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 								pages: old?.pages?.map((item) => ({
 									...item,
 									data: item.data?.filter(
-										(dataItem) => dataItem?.id !== data?.data?.id,
+										(dataItem) =>
+											!data?.data?.some(
+												(bookmark) => bookmark.id === dataItem.id,
+											),
 									),
 								})),
 							};
@@ -154,7 +160,9 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 				});
 
 				const categoryIds =
-					variables.data?.addedCategories?.map((cat) => cat.id) ?? [];
+					variables.data
+						?.flatMap((item) => item?.addedCategories)
+						?.map((cat) => cat?.id) ?? [];
 				if (categoryIds.length > 0) {
 					for (const catId of categoryIds) {
 						void queryClient.invalidateQueries({

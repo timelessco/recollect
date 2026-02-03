@@ -15,7 +15,7 @@ type BulkDeleteBookmarkParams = {
 	sessionUserId: string | undefined;
 	moveBookmarkToTrashOptimisticMutation: {
 		mutateAsync: (data: {
-			data: SingleListData;
+			data: SingleListData[];
 			isTrash: boolean;
 		}) => Promise<unknown>;
 	};
@@ -55,39 +55,34 @@ export const handleBulkBookmarkDelete = ({
 		? flattenedSearchData
 		: flattendPaginationBookmarkData;
 	if (!deleteForever) {
-		const mutations = [];
-		for (const item of bookmarkIds) {
-			const bookmarkId = item;
-			const delBookmarksData = find(
-				currentBookmarksData,
-				(delItem) => delItem?.id === bookmarkId,
-			) as SingleListData;
+		const bookmarksToTrash = bookmarkIds
+			.map(
+				(id) =>
+					find(
+						currentBookmarksData,
+						(item) => item?.id === id,
+					) as SingleListData,
+			)
+			.filter(Boolean)
+			.filter((bookmark) => {
+				const isOwnBookmark = isBookmarkOwner(bookmark.user_id, sessionUserId);
+				if (!isOwnBookmark) {
+					errorToast("Cannot delete other users uploads");
+				}
 
-			if (!delBookmarksData) {
-				console.warn(`Bookmark ${bookmarkId} not found in current data`);
-				continue;
-			}
+				return isOwnBookmark;
+			});
 
-			const isOwnBookmark = isBookmarkOwner(
-				delBookmarksData.user_id,
-				sessionUserId,
+		if (bookmarksToTrash.length > 0) {
+			void mutationApiCall(
+				moveBookmarkToTrashOptimisticMutation.mutateAsync({
+					data: bookmarksToTrash,
+					isTrash,
+				}),
 			);
-
-			if (isOwnBookmark) {
-				mutations.push(
-					mutationApiCall(
-						moveBookmarkToTrashOptimisticMutation.mutateAsync({
-							data: delBookmarksData,
-							isTrash,
-						}),
-					),
-				);
-			} else {
-				errorToast("Cannot delete other users uploads");
-			}
+			// Clear selection to close the selection bar
+			clearSelection();
 		}
-
-		void Promise.allSettled(mutations);
 	} else {
 		const bookmarksToDelete = [...(deleteBookmarkId ?? []), ...bookmarkIds];
 		if (bookmarksToDelete.length > 0) {

@@ -621,7 +621,7 @@ const Dashboard = () => {
 													// if not in trash then move bookmark to trash
 													void mutationApiCall(
 														moveBookmarkToTrashOptimisticMutation.mutateAsync({
-															data: item[0],
+															data: [item[0]],
 															isTrash: true,
 														}),
 														// eslint-disable-next-line promise/prefer-await-to-then
@@ -631,7 +631,7 @@ const Dashboard = () => {
 											onMoveOutOfTrashClick={(data) => {
 												void mutationApiCall(
 													moveBookmarkToTrashOptimisticMutation.mutateAsync({
-														data,
+														data: [data],
 														isTrash: false,
 													}),
 												);
