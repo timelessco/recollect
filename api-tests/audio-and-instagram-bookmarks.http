@@ -1,18 +1,5 @@
 ###############################################################################
 # Audio & Instagram bookmarks – API tests and step-by-step verification
-#
-# Environment (e.g. in .env or IDE env):
-#   API_BASE_URL = http://localhost:3000/api
-#   USER_TOKEN   = <valid Supabase JWT for an authenticated user>
-###############################################################################
-
-###############################################################################
-# STEP-BY-STEP VERIFICATION FLOW
-#
-# 1. Add Audio Bookmark → creates bookmark with audio URL (meta_data.mediaType set to audio MIME)
-# 2. Add Instagram Bookmark → creates bookmark with type="instagram"
-# 3. Fetch Audio Bookmarks → verify audio bookmark appears in audios view
-# 4. Fetch Instagram Bookmarks → verify instagram bookmark appears in instagram view
 ###############################################################################
 
 ### Step 1: Add Audio Bookmark
