@@ -180,7 +180,7 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (
 			props: {
 				bookmark: data.data,
 			},
-			revalidate: 300,
+			revalidate: 1800,
 		};
 	} catch (error) {
 		console.error(`[${ROUTE}] Unexpected error fetching public bookmark`, {
