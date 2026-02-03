@@ -1,9 +1,11 @@
+import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
+import { signOut } from "../../async/supabaseCrudHelpers";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -25,8 +27,8 @@ import {
 	settingsParagraphClassName,
 	settingsSubHeadingClassName,
 } from "../../utils/commonClassNames";
-import { USER_PROFILE } from "../../utils/constants";
-import { delete_cookie } from "../../utils/helpers";
+import { LOGIN_URL, USER_PROFILE } from "../../utils/constants";
+import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 type SettingsFormTypes = {
@@ -35,7 +37,10 @@ type SettingsFormTypes = {
 
 export const DeleteAccount = () => {
 	const session = useSupabaseSession((state) => state.session);
+	const setSession = useSupabaseSession((state) => state.setSession);
 	const queryClient = useQueryClient();
+	const router = useRouter();
+	const supabase = createClient();
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
@@ -71,10 +76,14 @@ export const DeleteAccount = () => {
 
 			if (isNull(response?.error)) {
 				successToast("Account has been successfully deleted");
-				// await signOut(supabase);
-				delete_cookie("supabase-auth-token", document);
-				// await router?.push(LOGIN_URL);
-				window?.location.reload();
+				// Sign out to clear all Supabase auth cookies
+				await signOut(supabase);
+				// Clear the session state
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-expect-error
+				setSession({});
+				// Redirect to login page
+				void router.push(`/${LOGIN_URL}`);
 			}
 		}
 	};
