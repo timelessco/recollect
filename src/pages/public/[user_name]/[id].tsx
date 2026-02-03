@@ -1,12 +1,12 @@
-import { type GetServerSideProps, type NextPage } from "next";
+import { type GetStaticPaths, type GetStaticProps, type NextPage } from "next";
+import { useRouter } from "next/router";
 import * as Sentry from "@sentry/nextjs";
-import { isEmpty, isNull } from "lodash";
+import { isEmpty } from "lodash";
+import InfiniteScroll from "react-infinite-scroll-component";
 
+import { useFetchPublicCategoryBookmarks } from "../../../async/queryHooks/bookmarks/use-fetch-public-category-bookmarks";
 import CardSection from "../../../pageComponents/dashboard/cardSection";
-import {
-	type GetPublicCategoryBookmarksApiResponseType,
-	type SingleListData,
-} from "../../../types/apiTypes";
+import { type GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
 import { iconMap } from "../../../utils/commonData";
 import {
 	BLACK_COLOR,
@@ -18,65 +18,104 @@ import {
 
 type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
 
-const CategoryName: NextPage<PublicCategoryPageProps> = (props) => (
-	<div>
-		<header className="flex items-center justify-between border-b-[0.5px] border-b-gray-alpha-200 px-6 py-[9px]">
-			<div className="flex items-center">
-				<div
-					className="mr-2 flex items-center justify-center rounded-full p-0.5"
-					style={{
-						width: 20,
-						height: 20,
-						backgroundColor: props?.icon_color ?? BLACK_COLOR,
-					}}
-				>
-					{props?.icon &&
-						iconMap
-							.get(props.icon)
-							?.icon(
-								props?.icon_color === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR,
-								"14",
-							)}
-				</div>
-				<p className="text-xl leading-[23px] font-semibold text-gray-900">
-					{props.category_name}
-				</p>
-			</div>
-		</header>
-		<main>
-			{!isEmpty(props?.data) ? (
-				<div
-					id="scrollableDiv"
-					className="overflow-x-hidden overflow-y-auto"
-					style={{ height: "calc(100vh - 52px)" }}
-				>
-					<CardSection
-						categoryViewsFromProps={props?.category_views ?? undefined}
-						isBookmarkLoading={false}
-						isOgImgLoading={false}
-						isPublicPage
-						listData={props?.data as SingleListData[]}
-						showAvatar={false}
-						userId=""
-					/>
-				</div>
-			) : (
-				<div className="flex items-center justify-center pt-[15%] text-2xl font-semibold">
-					There is no data in this collection
-				</div>
-			)}
-		</main>
-	</div>
-);
+const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
+	const router = useRouter();
+	const categorySlug = router.query.id as string;
+	const userName = router.query.user_name as string;
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+	const { flattenedData, metadata, fetchNextPage, hasNextPage } =
+		useFetchPublicCategoryBookmarks({
+			categorySlug,
+			userName,
+			enabled: Boolean(categorySlug) && Boolean(userName),
+			initialData: props,
+		});
+
+	return (
+		<div>
+			<header className="flex items-center justify-between border-b-[0.5px] border-b-gray-alpha-200 px-6 py-[9px]">
+				<div className="flex items-center">
+					<div
+						className="mr-2 flex items-center justify-center rounded-full p-0.5"
+						style={{
+							width: 20,
+							height: 20,
+							backgroundColor: props?.icon_color ?? BLACK_COLOR,
+						}}
+					>
+						{props?.icon &&
+							iconMap
+								.get(props.icon)
+								?.icon(
+									props?.icon_color === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR,
+									"14",
+								)}
+					</div>
+					<p className="text-xl leading-[23px] font-semibold text-gray-900">
+						{props.category_name}
+					</p>
+				</div>
+			</header>
+			<main>
+				{!isEmpty(flattenedData) ? (
+					<div
+						id="scrollableDiv"
+						className="overflow-x-hidden overflow-y-auto"
+						style={{ height: "calc(100vh - 52px)" }}
+					>
+						<InfiniteScroll
+							dataLength={flattenedData?.length ?? 0}
+							endMessage={
+								<p className="pb-6 text-center text-plain-reverse">
+									Life happens, save it.
+								</p>
+							}
+							hasMore={hasNextPage}
+							loader={<div />}
+							next={fetchNextPage}
+							scrollableTarget="scrollableDiv"
+							style={{ overflow: "unset" }}
+						>
+							<CardSection
+								categoryViewsFromProps={metadata.categoryViews ?? undefined}
+								isBookmarkLoading={false}
+								isOgImgLoading={false}
+								isPublicPage
+								listData={flattenedData}
+								showAvatar={false}
+								userId=""
+							/>
+						</InfiniteScroll>
+					</div>
+				) : (
+					<div className="flex items-center justify-center pt-[15%] text-2xl font-semibold">
+						There is no data in this collection
+					</div>
+				)}
+			</main>
+		</div>
+	);
+};
+
+export const getStaticPaths: GetStaticPaths = async () => ({
+	// Don't pre-generate any pages at build time
+	// Pages will be generated on-demand and cached
+	paths: [],
+	// Generate pages on first request
+	fallback: "blocking",
+});
+
+export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (
+	context,
+) => {
 	const ROUTE = "/public/[user_name]/[id]";
-	const categorySlug = context.query.id;
-	const userName = context.query.user_name;
+	const categorySlug = context.params?.id as string;
+	const userName = context.params?.user_name as string;
 
 	try {
+		// Fetch the first full page for SEO and initial render
 		const response = await fetch(
-			`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}`,
+			`${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}&page=0`,
 		);
 
 		if (!response.ok) {
@@ -94,7 +133,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 				{
 					tags: {
 						operation: "fetch_public_category",
-						context: "server_side_rendering",
+						context: "static_generation",
 					},
 					extra: {
 						status: response.status,
@@ -118,26 +157,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 			return { notFound: true };
 		}
 
-		if (isEmpty(data?.data) || isNull(data?.data)) {
-			return {
-				props: {
-					data: data?.data,
-					category_views: data?.category_views,
-					icon: data?.icon,
-					icon_color: data?.icon_color,
-					category_name: data?.category_name,
-				},
-			};
-		}
-
 		return {
-			props: {
-				data: data?.data,
-				category_views: data?.category_views,
-				icon: data?.icon,
-				icon_color: data?.icon_color,
-				category_name: data?.category_name,
-			},
+			props: data,
+			revalidate: 1800,
 		};
 	} catch (error) {
 		// Network failures, API errors are system errors (5xx) - console.error + Sentry
@@ -149,7 +171,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		Sentry.captureException(error, {
 			tags: {
 				operation: "fetch_public_category",
-				context: "server_side_rendering",
+				context: "static_generation",
 			},
 			extra: { categorySlug, userName },
 		});
