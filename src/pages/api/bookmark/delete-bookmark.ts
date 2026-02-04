@@ -12,7 +12,6 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
-	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	MAIN_TABLE_NAME,
 	R2_MAIN_BUCKET_NAME,
@@ -22,8 +21,6 @@ import {
 } from "../../../utils/constants";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
-
-import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 
 // this is a cascading delete, deletes bookmarks from main table and all its respective joint tables
 
@@ -162,15 +159,6 @@ export default async function handler(
 
 	const deleteBookmarkIds = apiData?.deleteData?.map((item) => item?.id);
 
-	// Get categories for revalidation before deleting
-	const { data: bookmarkCategories } = await supabase
-		.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-		.select("category_id")
-		.in("bookmark_id", deleteBookmarkIds);
-
-	const categoryIdsToRevalidate =
-		bookmarkCategories?.map((bc) => bc.category_id) ?? [];
-
 	const { error: bookmarkTagsError } = await supabase
 		.from(BOOKMARK_TAGS_TABLE_NAME)
 		.delete()
@@ -198,14 +186,6 @@ export default async function handler(
 		isNull(storageOgImageError) &&
 		isNull(storageScreenshotOgImageError)
 	) {
-		// Trigger revalidation for public categories that contained these bookmarks
-		if (categoryIdsToRevalidate.length > 0) {
-			void revalidateCategoriesIfPublic(categoryIdsToRevalidate, {
-				operation: "delete_bookmark",
-				userId,
-			});
-		}
-
 		response.status(200).json({
 			data: bookmarksData,
 			error: null,
