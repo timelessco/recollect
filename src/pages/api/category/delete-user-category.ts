@@ -135,6 +135,7 @@ export default async function handler(
 	}
 
 	// Move all bookmarks in this category to trash
+	// if the user is not the owner of the category, then we move only users bookmarks to trash
 	if (!isEmpty(categoryBookmarks) && categoryBookmarks) {
 		const bookmarkIds = categoryBookmarks.map((b) => b.bookmark_id);
 
