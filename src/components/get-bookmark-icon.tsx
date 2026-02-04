@@ -127,9 +127,9 @@ export const GetBookmarkIcon = ({
 	}
 
 	if (isAudio) {
-		return <AudioIcon className="h-[15px] w-[15px]" />;
+		return <AudioIcon className={`h-[${size}px] w-[${size}px]`} />;
 	}
 
 	// Default fallback
-	return <LinkIcon className="h-[15px] w-[15px]" />;
+	return <LinkIcon className={`h-[${size}px] w-[${size}px]`} />;
 };

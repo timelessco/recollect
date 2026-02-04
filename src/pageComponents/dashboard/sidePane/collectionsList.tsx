@@ -630,7 +630,13 @@ const CollectionsList = () => {
 				onButtonClick={(event) => event?.stopPropagation()}
 				portalElement={
 					!isDesktop
-						? () => document.querySelector("#side-pane-dropdown-portal")
+						? () => {
+								if (typeof document === "undefined") {
+									return null;
+								}
+
+								return document.querySelector("#side-pane-dropdown-portal");
+							}
 						: undefined
 				}
 			>
