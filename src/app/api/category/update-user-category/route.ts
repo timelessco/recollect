@@ -133,8 +133,8 @@ export const POST = createPostApiHandlerWithAuth({
 				.single();
 
 			if (profileData?.user_name) {
-				// Non-blocking revalidation - don't await
-				void revalidatePublicCategoryPage(
+				// Await revalidation to ensure it completes before response
+				await revalidatePublicCategoryPage(
 					profileData.user_name,
 					categoryData[0].category_slug,
 					{

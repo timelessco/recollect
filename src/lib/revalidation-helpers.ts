@@ -54,6 +54,8 @@ export async function revalidatePublicCategoryPage(
 					Authorization: `Bearer ${secret}`,
 				},
 				body: JSON.stringify({ path }),
+				// Disable caching - important for App Router contexts
+				cache: "no-store",
 			}),
 		);
 
@@ -244,8 +246,8 @@ export async function revalidateCategoriesIfPublic(
 		userId?: string;
 	},
 ): Promise<void> {
-	// Fire all revalidations in parallel without awaiting
-	void Promise.all(
+	// Process all revalidations in parallel and await completion
+	await Promise.all(
 		categoryIds.map((categoryId) =>
 			revalidateCategoryIfPublic(categoryId, context),
 		),

@@ -217,7 +217,8 @@ export const POST = createPostApiHandlerWithAuth({
 		];
 
 		if (allAffectedCategoryIds.length > 0) {
-			void revalidateCategoriesIfPublic(allAffectedCategoryIds, {
+			// Await revalidation to ensure it completes before response
+			await revalidateCategoriesIfPublic(allAffectedCategoryIds, {
 				operation: "set_bookmark_categories",
 				userId,
 			});
