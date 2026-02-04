@@ -39,11 +39,11 @@ import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useF
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import AriaDisclosure from "../../../components/ariaDisclosure";
-import Modal from "../../../components/modal";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
+import Modal from "../../../components/modal";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -737,14 +737,13 @@ const CollectionsList = () => {
 			<Modal
 				open={deleteConfirmation.isOpen}
 				setOpen={handleCancelDelete}
-				wrapperClassName="max-w-md p-6 rounded-xl"
+				wrapperClassName="min-w-[448px] max-w-md p-6 rounded-xl"
 			>
 				<h2 className="text-lg font-semibold text-gray-900">
 					Delete Collection
 				</h2>
 				<p className="mt-2 text-sm text-gray-600">
-					Are you sure you want to delete this collection? All bookmarks in this
-					collection will be moved to trash.
+					Are you sure? All bookmarks will be moved to trash.
 				</p>
 				<div className="mt-4 flex justify-end gap-3">
 					<button
