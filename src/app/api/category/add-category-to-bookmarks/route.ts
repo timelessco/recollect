@@ -199,11 +199,19 @@ export const POST = createPostApiHandlerWithAuth({
 			`[${route}] Category added to ${transformedData.length} bookmarks (${bookmarkIds.length - transformedData.length} already had it)`,
 		);
 
-		// Trigger revalidation if category is public
+		// Trigger revalidation if category is public (non-blocking)
+		// Don't await - failed revalidation shouldn't fail the mutation
 		if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
-			await revalidateCategoryIfPublic(categoryId, {
+			revalidateCategoryIfPublic(categoryId, {
 				operation: "add_category_to_bookmarks",
 				userId,
+				// eslint-disable-next-line promise/prefer-await-to-then
+			}).catch((error) => {
+				console.error(`[${route}] Revalidation failed:`, {
+					error,
+					categoryId,
+					userId,
+				});
 			});
 		}
 

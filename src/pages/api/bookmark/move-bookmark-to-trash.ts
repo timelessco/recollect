@@ -69,10 +69,19 @@ export default async function handler(
 	if (!isNull(data)) {
 		// Trigger revalidation for public categories that contained this bookmark
 		// This applies when moving to trash OR restoring from trash
+		// Don't await - failed revalidation shouldn't fail the mutation
 		if (categoryIdsToRevalidate.length > 0) {
-			void revalidateCategoriesIfPublic(categoryIdsToRevalidate, {
+			revalidateCategoriesIfPublic(categoryIdsToRevalidate, {
 				operation: "move_bookmark_to_trash",
 				userId,
+				// eslint-disable-next-line promise/prefer-await-to-then
+			}).catch((error) => {
+				console.error("Revalidation failed:", {
+					error,
+					categoryIds: categoryIdsToRevalidate,
+					userId,
+					bookmarkId: bookmarkData?.id,
+				});
 			});
 		}
 

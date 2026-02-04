@@ -121,9 +121,10 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryName: categoryData[0].category_name,
 		});
 
-		// If is_public was updated, trigger on-demand revalidation
+		// If is_public was updated, trigger on-demand revalidation (non-blocking)
 		// This ensures public pages are immediately updated when visibility changes
 		// (both public→private and private→public transitions)
+		// Don't await - failed revalidation shouldn't fail the mutation
 		if (updateData.is_public !== undefined) {
 			// Fetch user profile to get username for revalidation path
 			const { data: profileData } = await supabase
@@ -133,8 +134,8 @@ export const POST = createPostApiHandlerWithAuth({
 				.single();
 
 			if (profileData?.user_name) {
-				// Await revalidation to ensure it completes before response
-				await revalidatePublicCategoryPage(
+				// Non-blocking revalidation with error handling
+				revalidatePublicCategoryPage(
 					profileData.user_name,
 					categoryData[0].category_slug,
 					{
@@ -142,7 +143,14 @@ export const POST = createPostApiHandlerWithAuth({
 						userId,
 						categoryId: categoryData[0].id,
 					},
-				);
+					// eslint-disable-next-line promise/prefer-await-to-then
+				).catch((error) => {
+					console.error(`[${route}] Revalidation failed:`, {
+						error,
+						categoryId: categoryData[0].id,
+						userId,
+					});
+				});
 			}
 		}
 

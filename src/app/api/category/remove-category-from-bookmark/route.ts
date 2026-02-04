@@ -127,7 +127,7 @@ export const POST = createPostApiHandlerWithAuth({
 
 		// Trigger revalidation if category is public (non-blocking)
 		// Don't await - failed revalidation shouldn't fail the mutation
-		revalidateCategoryIfPublic(categoryId, {
+		void revalidateCategoryIfPublic(categoryId, {
 			operation: "remove_category_from_bookmark",
 			userId,
 			// eslint-disable-next-line promise/prefer-await-to-then
