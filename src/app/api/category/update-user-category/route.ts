@@ -120,20 +120,25 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryId: categoryData[0].id,
 			categoryName: categoryData[0].category_name,
 		});
-
 		// If is_public was updated, trigger on-demand revalidation (non-blocking)
 		// This ensures public pages are immediately updated when visibility changes
 		// (both public→private and private→public transitions)
 		// Don't await - failed revalidation shouldn't fail the mutation
-		if (updateData.is_public !== undefined) {
+		if (updateData.is_public !== undefined || categoryData[0].is_public) {
 			// Fetch user profile to get username for revalidation path
-			const { data: profileData } = await supabase
+			const { data: profileData, error: profileError } = await supabase
 				.from(PROFILES)
 				.select("user_name")
 				.eq("id", userId)
 				.single();
 
-			if (profileData?.user_name) {
+			if (profileError) {
+				console.error(`[${route}] Failed to load profile for revalidation:`, {
+					error: profileError,
+					userId,
+					categoryId: categoryData[0].id,
+				});
+			} else if (profileData?.user_name) {
 				// Non-blocking revalidation with error handling
 				await revalidatePublicCategoryPage(
 					profileData.user_name,
