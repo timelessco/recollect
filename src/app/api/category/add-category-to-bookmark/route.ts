@@ -207,6 +207,7 @@ export const POST = createPostApiHandlerWithAuth({
 			void revalidateCategoryIfPublic(categoryId, {
 				operation: "add_category_to_bookmark",
 				userId,
+				// eslint-disable-next-line promise/prefer-await-to-then
 			}).catch((error) => {
 				console.error(`[${route}] Revalidation failed`, {
 					error,

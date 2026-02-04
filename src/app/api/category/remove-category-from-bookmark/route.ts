@@ -125,10 +125,18 @@ export const POST = createPostApiHandlerWithAuth({
 			addedUncategorized: rpcData[0].added_uncategorized,
 		});
 
-		// Trigger revalidation if category is public
-		await revalidateCategoryIfPublic(categoryId, {
+		// Trigger revalidation if category is public (non-blocking)
+		// Don't await - failed revalidation shouldn't fail the mutation
+		revalidateCategoryIfPublic(categoryId, {
 			operation: "remove_category_from_bookmark",
 			userId,
+			// eslint-disable-next-line promise/prefer-await-to-then
+		}).catch((error) => {
+			console.error(`[${route}] Revalidation failed:`, {
+				error,
+				categoryId,
+				userId,
+			});
 		});
 
 		return [{ bookmark_id: bookmarkId, category_id: categoryId }];

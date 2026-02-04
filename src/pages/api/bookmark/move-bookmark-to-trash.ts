@@ -38,13 +38,23 @@ export default async function handler(
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	// Get categories for revalidation before trashing/restoring
-	const { data: bookmarkCategories } = await supabase
+	const { data: bookmarkCategories, error: categoriesError } = await supabase
 		.from(BOOKMARK_CATEGORIES_TABLE_NAME)
 		.select("category_id")
 		.eq("bookmark_id", bookmarkData?.id);
 
-	const categoryIdsToRevalidate =
-		bookmarkCategories?.map((bc) => bc.category_id) ?? [];
+	if (categoriesError) {
+		console.error("Failed to fetch bookmark categories for revalidation:", {
+			error: categoriesError,
+			bookmarkId: bookmarkData?.id,
+			userId,
+		});
+	}
+
+	// Deduplicate category IDs using Set
+	const categoryIdsToRevalidate = bookmarkCategories
+		? [...new Set(bookmarkCategories.map((bc) => bc.category_id))]
+		: [];
 
 	// Set trash to current timestamp when moving to trash, null when restoring
 	const trashValue = request.body.isTrash ? new Date().toISOString() : null;
