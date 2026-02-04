@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 
-import { createClient } from "@/lib/supabase/client";
+import { createServerServiceClient } from "@/lib/supabase/service";
 import { type Database } from "@/types/database-generated.types";
 import {
 	CATEGORIES_TABLE_NAME,
@@ -136,7 +136,7 @@ export async function getCategoryDetailsForRevalidation(
 	userName: string;
 } | null> {
 	try {
-		const supabase = createClient();
+		const supabase = await createServerServiceClient();
 
 		const { data: categoryData, error } = await supabase
 			.from(CATEGORIES_TABLE_NAME)
