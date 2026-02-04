@@ -362,7 +362,8 @@ const ShareContent = (props: ShareContentProps) => {
 						))}
 				</div>
 				<div className="mx-2 flex items-center justify-between border-t py-2">
-					<div
+					<button
+						type="button"
 						className={`flex items-center ${
 							currentCategory?.is_public
 								? "cursor-pointer"
@@ -383,7 +384,6 @@ const ShareContent = (props: ShareContentProps) => {
 								setLinkCopied(true);
 							}
 						}}
-						role="button"
 						tabIndex={currentCategory?.is_public ? 0 : -1}
 					>
 						<figure className="flex items-center justify-center text-gray-900">
@@ -399,7 +399,7 @@ const ShareContent = (props: ShareContentProps) => {
 						<figure className="ml-1 flex items-center justify-center">
 							<CopyIcon className="h-[13px] w-[13px]" />
 						</figure>
-					</div>
+					</button>
 					{isUserTheCategoryOwner ? (
 						<Switch
 							disabled={false}
