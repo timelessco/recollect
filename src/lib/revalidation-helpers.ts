@@ -69,6 +69,7 @@ export async function revalidatePublicCategoryPage(
 				tags: {
 					operation: "revalidate_public_category",
 					context: context?.operation,
+					userId: context?.userId,
 				},
 				extra: { path, userName, categorySlug, context },
 			});
