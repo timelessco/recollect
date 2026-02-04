@@ -743,7 +743,7 @@ const CollectionsList = () => {
 					Delete Collection
 				</h2>
 				<p className="mt-2 text-sm text-gray-600">
-					Are you sure? All bookmarks will be moved to trash.
+					Your bookmarks in this collection will be moved to trash.
 				</p>
 				<div className="mt-4 flex justify-end gap-3">
 					<button
