@@ -192,6 +192,7 @@ export const INBOX_URL = "inbox";
 export const TRASH_URL = "trash";
 export const DOCUMENTS_URL = "documents";
 export const TWEETS_URL = "tweets";
+export const INSTAGRAM_URL = "instagram";
 export const SETTINGS_URL = "settings";
 export const SIGNUP_URL = "signup";
 export const SIGNIN_URL = "login";
@@ -329,6 +330,7 @@ export const menuListItemName = {
 	links: "Links",
 	documents: "Documents",
 	tweets: "Tweets",
+	instagram: "Instagram",
 };
 
 // if user is adding anything in these pages then the added item will be in uncategorized

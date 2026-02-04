@@ -8,6 +8,7 @@ import {
 	CATEGORIES_TABLE_NAME,
 	documentFileTypes,
 	imageFileTypes,
+	instagramType,
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
 	tweetType,
@@ -91,6 +92,7 @@ export default async function handler(
 		links: 0,
 		documents: 0,
 		tweets: 0,
+		instagram: 0,
 	};
 
 	try {
@@ -103,6 +105,7 @@ export default async function handler(
 			{ count: bookmarkTrashCount },
 			{ count: bookmarkUnCatCount },
 			{ count: bookmarkTweetsCount },
+			{ count: bookmarkInstagramCount },
 			{ data: userCategoryIds },
 			{ data: sharedCategoryIds },
 		] = await Promise.all([
@@ -156,6 +159,12 @@ export default async function handler(
 				.eq("user_id", userId)
 				.is("trash", null)
 				.eq("type", tweetType),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.is("trash", null)
+				.eq("type", instagramType),
 			supabase.from(CATEGORIES_TABLE_NAME).select("id").eq("user_id", userId),
 			supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
@@ -173,6 +182,7 @@ export default async function handler(
 			trash: bookmarkTrashCount ?? 0,
 			uncategorized: bookmarkUnCatCount ?? 0,
 			tweets: bookmarkTweetsCount ?? 0,
+			instagram: bookmarkInstagramCount ?? 0,
 		};
 
 		const userCategoryIdsArray = userCategoryIds?.map((item) => item.id) ?? [];

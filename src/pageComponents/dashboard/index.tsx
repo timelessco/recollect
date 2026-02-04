@@ -57,6 +57,7 @@ import {
 	DISCOVER_URL,
 	DOCUMENTS_URL,
 	IMAGES_URL,
+	INSTAGRAM_URL,
 	LINKS_URL,
 	TRASH_URL,
 	TWEETS_URL,
@@ -497,6 +498,12 @@ const Dashboard = () => {
 
 			if ((CATEGORY_ID as unknown) === TWEETS_URL) {
 				const count = bookmarksCountData?.data?.tweets;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
+			if ((CATEGORY_ID as unknown) === INSTAGRAM_URL) {
+				const count = bookmarksCountData?.data?.instagram;
 
 				return count !== flattendPaginationBookmarkData?.length;
 			}

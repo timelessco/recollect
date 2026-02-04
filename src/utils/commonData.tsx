@@ -6,6 +6,7 @@ import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inboxIconGray";
 import LinkIcon from "../icons/linkIcon";
 import SettingsIcon from "../icons/settingsIcon";
+import InstagramIcon from "../icons/social/instagram";
 import XIcon from "../icons/social/x";
 import TrashIconGray from "../icons/trashIconGray";
 import VideoIcon from "../icons/videoIcon";
@@ -16,6 +17,7 @@ import {
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	IMAGES_URL,
+	INSTAGRAM_URL,
 	LINKS_URL,
 	menuListItemName,
 	SETTINGS_URL,
@@ -3681,6 +3683,15 @@ export const optionsMenuListArray = (
 		current: currentPath === TWEETS_URL,
 		id: 9,
 		count: bookmarksCountData?.data?.tweets,
+		iconColor: "",
+	},
+	{
+		icon: <InstagramIcon className="text-gray-900" />,
+		name: menuListItemName.instagram,
+		href: `/${INSTAGRAM_URL}`,
+		current: currentPath === INSTAGRAM_URL,
+		id: 10,
+		count: bookmarksCountData?.data?.instagram,
 		iconColor: "",
 	},
 ];

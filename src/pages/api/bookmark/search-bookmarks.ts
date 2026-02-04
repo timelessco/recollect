@@ -15,6 +15,8 @@ import {
 	GET_SITE_SCOPE_PATTERN,
 	imageFileTypes,
 	IMAGES_URL,
+	INSTAGRAM_URL,
+	instagramType,
 	LINKS_URL,
 	PAGINATION_LIMIT,
 	TRASH_URL,
@@ -253,6 +255,10 @@ export default async function handler(
 
 		if (category_id === TWEETS_URL) {
 			query = query.eq("type", tweetType);
+		}
+
+		if (category_id === INSTAGRAM_URL) {
+			query = query.eq("type", instagramType);
 		}
 
 		if (category_id === LINKS_URL) {
