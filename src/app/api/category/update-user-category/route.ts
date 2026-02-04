@@ -135,7 +135,7 @@ export const POST = createPostApiHandlerWithAuth({
 
 			if (profileData?.user_name) {
 				// Non-blocking revalidation with error handling
-				revalidatePublicCategoryPage(
+				await revalidatePublicCategoryPage(
 					profileData.user_name,
 					categoryData[0].category_slug,
 					{
@@ -143,14 +143,7 @@ export const POST = createPostApiHandlerWithAuth({
 						userId,
 						categoryId: categoryData[0].id,
 					},
-					// eslint-disable-next-line promise/prefer-await-to-then
-				).catch((error) => {
-					console.error(`[${route}] Revalidation failed:`, {
-						error,
-						categoryId: categoryData[0].id,
-						userId,
-					});
-				});
+				);
 			}
 		}
 
