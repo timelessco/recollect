@@ -2,12 +2,14 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { type Database } from "@/types/database-generated.types";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import {
 	CATEGORIES_TABLE_NAME,
 	DUPLICATE_CATEGORY_NAME_ERROR,
+	PROFILES,
 } from "@/utils/constants";
 
 const ROUTE = "update-user-category";
@@ -121,6 +123,30 @@ export const POST = createPostApiHandlerWithAuth({
 
 		// If is_public was updated (either set or unset), trigger on-demand revalidation
 		// This ensures public pages are immediately updated when visibility changes
+		if (
+			updateData.is_public !== undefined &&
+			(updateData.is_public || categoryData[0].is_public)
+		) {
+			// Fetch user profile to get username for revalidation path
+			const { data: profileData } = await supabase
+				.from(PROFILES)
+				.select("user_name")
+				.eq("id", userId)
+				.single();
+
+			if (profileData?.user_name) {
+				// Non-blocking revalidation - don't await
+				void revalidatePublicCategoryPage(
+					profileData.user_name,
+					categoryData[0].category_slug,
+					{
+						operation: "update_category_public_status",
+						userId,
+						categoryId: categoryData[0].id,
+					},
+				);
+			}
+		}
 
 		return categoryData;
 	},
