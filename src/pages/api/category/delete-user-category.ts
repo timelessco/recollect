@@ -115,53 +115,71 @@ export default async function handler(
 		);
 	}
 
-	// if bookmarks from the del category is in trash
-	// then we need to remove their category association from the junction table
-
-	// First get IDs of trashed bookmarks in this category
-	const { data: trashedBookmarks, error: trashedBookmarksError } =
+	// Get all bookmark IDs in this category (from junction table)
+	const { data: categoryBookmarks, error: categoryBookmarksError } =
 		await supabase
-			.from(MAIN_TABLE_NAME)
-			.select("id")
-			.not("trash", "is", null)
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.select("bookmark_id")
+			.eq("category_id", request.body.category_id)
 			.eq("user_id", userId);
 
-	if (!isNull(trashedBookmarksError)) {
+	if (!isNull(categoryBookmarksError)) {
 		response.status(500).json({
 			data: null,
 			error: {
-				message: `error on fetching trashed bookmarks`,
-				dbErrorMessage: trashedBookmarksError,
+				message: `error on fetching bookmarks in category`,
+				dbErrorMessage: categoryBookmarksError,
 			},
 		});
 		throw new Error("ERROR");
 	}
 
-	// Delete junction entries for trashed bookmarks in this category
-	if (!isEmpty(trashedBookmarks) && trashedBookmarks) {
-		const trashedIds = trashedBookmarks.map((b) => b.id);
-		const { error: junctionDeleteError } = await supabase
-			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-			.delete()
-			.eq("category_id", request.body.category_id)
-			.in("bookmark_id", trashedIds);
+	// Move all bookmarks in this category to trash
+	if (!isEmpty(categoryBookmarks) && categoryBookmarks) {
+		const bookmarkIds = categoryBookmarks.map((b) => b.bookmark_id);
 
-		if (!isNull(junctionDeleteError)) {
+		// Only trash bookmarks that aren't already trashed
+		const { error: trashError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.update({ trash: new Date().toISOString() })
+			.in("id", bookmarkIds)
+			.eq("user_id", userId)
+			.is("trash", null);
+
+		if (!isNull(trashError)) {
 			response.status(500).json({
 				data: null,
 				error: {
-					message: `error on deleting category associations for trashed bookmarks`,
-					dbErrorMessage: junctionDeleteError,
+					message: `error on moving bookmarks to trash`,
+					dbErrorMessage: trashError,
 				},
 			});
 			throw new Error("ERROR");
 		}
 
-		console.log(
-			`Deleted category associations for trashed bookmarks`,
-			trashedIds.length,
-		);
+		console.log(`Moved ${bookmarkIds.length} bookmarks to trash`);
 	}
+
+	// Delete all junction entries for this category
+	const { error: junctionDeleteError } = await supabase
+		.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+		.delete()
+		.eq("category_id", request.body.category_id);
+
+	if (!isNull(junctionDeleteError)) {
+		response.status(500).json({
+			data: null,
+			error: {
+				message: `error on deleting category associations`,
+				dbErrorMessage: junctionDeleteError,
+			},
+		});
+		throw new Error("ERROR");
+	}
+
+	console.log(
+		`Deleted all category associations for category: ${request.body.category_id}`,
+	);
 
 	const { data, error }: PostgrestResponse<CategoriesData> = await supabase
 		.from(CATEGORIES_TABLE_NAME)
