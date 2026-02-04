@@ -121,12 +121,10 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryName: categoryData[0].category_name,
 		});
 
-		// If is_public was updated (either set or unset), trigger on-demand revalidation
+		// If is_public was updated, trigger on-demand revalidation
 		// This ensures public pages are immediately updated when visibility changes
-		if (
-			updateData.is_public !== undefined &&
-			(updateData.is_public || categoryData[0].is_public)
-		) {
+		// (both public→private and private→public transitions)
+		if (updateData.is_public !== undefined) {
 			// Fetch user profile to get username for revalidation path
 			const { data: profileData } = await supabase
 				.from(PROFILES)
