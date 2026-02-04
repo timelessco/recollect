@@ -138,6 +138,11 @@ export async function getCategoryDetailsForRevalidation(
 	userName: string;
 } | null> {
 	try {
+		console.log("[getCategoryDetailsForRevalidation] Fetching category:", {
+			categoryId,
+			context,
+		});
+
 		const supabase = await createServerServiceClient();
 
 		const { data: categoryData, error } = await supabase
@@ -158,6 +163,12 @@ export async function getCategoryDetailsForRevalidation(
 				}
 			>();
 
+		console.log("[getCategoryDetailsForRevalidation] Query result:", {
+			categoryId,
+			categoryData,
+			error,
+		});
+
 		if (error) {
 			console.warn(
 				"[getCategoryDetailsForRevalidation] Failed to fetch category:",
@@ -171,8 +182,23 @@ export async function getCategoryDetailsForRevalidation(
 		}
 
 		const userName = categoryData.user_id?.user_name;
+		console.log("[getCategoryDetailsForRevalidation] Extracted data:", {
+			categoryId,
+			isPublic: categoryData.is_public,
+			categorySlug: categoryData.category_slug,
+			userName,
+			rawUserId: categoryData.user_id,
+		});
+
 		if (!categoryData.is_public || !userName) {
-			// Category is not public or user has no username - no revalidation needed
+			console.log(
+				"[getCategoryDetailsForRevalidation] Skipping - not public or no username:",
+				{
+					categoryId,
+					isPublic: categoryData.is_public,
+					userName,
+				},
+			);
 			return null;
 		}
 
@@ -212,14 +238,26 @@ export async function revalidateCategoryIfPublic(
 		userId?: string;
 	},
 ): Promise<void> {
+	console.log("[revalidateCategoryIfPublic] Called with:", {
+		categoryId,
+		context,
+	});
+
 	const categoryDetails = await getCategoryDetailsForRevalidation(categoryId, {
 		operation: context?.operation,
 	});
 
 	if (!categoryDetails) {
-		// Category not public or not found - no revalidation needed
+		console.log("[revalidateCategoryIfPublic] No category details, skipping:", {
+			categoryId,
+		});
 		return;
 	}
+
+	console.log("[revalidateCategoryIfPublic] Triggering revalidation:", {
+		categoryId,
+		categoryDetails,
+	});
 
 	await revalidatePublicCategoryPage(
 		categoryDetails.userName,
@@ -246,10 +284,17 @@ export async function revalidateCategoriesIfPublic(
 		userId?: string;
 	},
 ): Promise<void> {
+	console.log("[revalidateCategoriesIfPublic] Called with:", {
+		categoryIds,
+		context,
+	});
+
 	// Process all revalidations in parallel and await completion
 	await Promise.all(
 		categoryIds.map((categoryId) =>
 			revalidateCategoryIfPublic(categoryId, context),
 		),
 	);
+
+	console.log("[revalidateCategoriesIfPublic] Completed for:", { categoryIds });
 }
