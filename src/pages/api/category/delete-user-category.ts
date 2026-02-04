@@ -23,6 +23,8 @@ import {
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
+
 type Data = {
 	data: CategoriesData[] | null;
 	error:
@@ -47,9 +49,13 @@ export default async function handler(
 	const {
 		data: categoryData,
 		error: categoryDataError,
-	}: PostgrestResponse<{ user_id: ProfilesTableTypes["id"] }> = await supabase
+	}: PostgrestResponse<{
+		user_id: ProfilesTableTypes["id"];
+		is_public: boolean;
+		category_slug: string;
+	}> = await supabase
 		.from(CATEGORIES_TABLE_NAME)
-		.select(`user_id`)
+		.select(`user_id, is_public, category_slug`)
 		.eq("id", request.body.category_id);
 
 	if (
@@ -208,6 +214,29 @@ export default async function handler(
 			.json({ data: null, error: { message: "Something went wrong" } });
 		throw new Error("ERROR");
 	} else {
+		// Trigger revalidation if the deleted category was public
+		if (categoryData?.[0]?.is_public) {
+			// Fetch user profile to get username
+			const { data: profileData } = await supabase
+				.from(PROFILES)
+				.select("user_name")
+				.eq("id", userId)
+				.single();
+
+			if (profileData?.user_name && categoryData[0]?.category_slug) {
+				// Non-blocking revalidation - don't await
+				void revalidatePublicCategoryPage(
+					profileData.user_name,
+					categoryData[0].category_slug,
+					{
+						operation: "delete_category",
+						userId,
+						categoryId: request.body.category_id,
+					},
+				);
+			}
+		}
+
 		response.status(200).json({ data, error: null });
 	}
 }
