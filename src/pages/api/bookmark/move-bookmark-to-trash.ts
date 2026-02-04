@@ -35,8 +35,17 @@ export default async function handler(
 	// Set trash to current timestamp when moving to trash, null when restoring
 	const trashValue = request.body.isTrash ? new Date().toISOString() : null;
 
-	// Extract bookmark IDs from array
-	const bookmarkIds = bookmarkData?.map((item) => item?.id);
+	// Extract bookmark IDs from array, filtering out undefined/null values
+	const bookmarkIds = bookmarkData
+		?.map((item) => item?.id)
+		?.filter((id): id is number => id !== undefined && id !== null);
+
+	if (!bookmarkIds || bookmarkIds.length === 0) {
+		response
+			.status(400)
+			.json({ data: null, error: "No valid bookmark IDs provided" });
+		return;
+	}
 
 	const { data, error }: { data: DataResponse; error: ErrorResponse } =
 		await supabase
@@ -47,8 +56,11 @@ export default async function handler(
 			.select();
 
 	if (!isNull(error)) {
-		response.status(500).json({ data, error });
-		throw new Error("ERROR: move to trash db error");
+		console.error("[move-bookmark-to-trash] DB error:", error);
+		response
+			.status(500)
+			.json({ data: null, error: "Failed to move bookmarks to trash" });
+		return;
 	}
 
 	response.status(200).json({ data, error });

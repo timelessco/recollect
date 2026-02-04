@@ -55,7 +55,7 @@ export const handleBulkBookmarkDelete = ({
 		? flattenedSearchData
 		: flattendPaginationBookmarkData;
 	if (!deleteForever) {
-		const bookmarksToTrash = bookmarkIds
+		const foundBookmarks = bookmarkIds
 			.map(
 				(id) =>
 					find(
@@ -63,20 +63,31 @@ export const handleBulkBookmarkDelete = ({
 						(item) => item?.id === id,
 					) as SingleListData,
 			)
-			.filter(Boolean)
-			.filter((bookmark) => {
-				const isOwnBookmark = isBookmarkOwner(bookmark.user_id, sessionUserId);
-				if (!isOwnBookmark) {
-					errorToast("Cannot delete other users uploads");
-				}
+			.filter(Boolean);
 
-				return isOwnBookmark;
-			});
+		const ownedBookmarks: SingleListData[] = [];
+		let skippedCount = 0;
 
-		if (bookmarksToTrash.length > 0) {
+		for (const bookmark of foundBookmarks) {
+			if (isBookmarkOwner(bookmark.user_id, sessionUserId)) {
+				ownedBookmarks.push(bookmark);
+			} else {
+				skippedCount++;
+			}
+		}
+
+		if (skippedCount > 0) {
+			errorToast(
+				skippedCount === 1
+					? "Cannot delete 1 bookmark owned by another user"
+					: `Cannot delete ${skippedCount} bookmarks owned by other users`,
+			);
+		}
+
+		if (ownedBookmarks.length > 0) {
 			void mutationApiCall(
 				moveBookmarkToTrashOptimisticMutation.mutateAsync({
-					data: bookmarksToTrash,
+					data: ownedBookmarks,
 					isTrash,
 				}),
 			);

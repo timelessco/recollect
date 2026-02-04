@@ -162,7 +162,8 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 				const categoryIds =
 					variables.data
 						?.flatMap((item) => item?.addedCategories)
-						?.map((cat) => cat?.id) ?? [];
+						?.map((cat) => cat?.id)
+						?.filter((id): id is number => id !== undefined) ?? [];
 				if (categoryIds.length > 0) {
 					for (const catId of categoryIds) {
 						void queryClient.invalidateQueries({
