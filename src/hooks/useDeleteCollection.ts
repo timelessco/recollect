@@ -32,15 +32,16 @@ export const useDeleteCollection = () => {
 				);
 
 				if (currentCategory?.user_id?.id === session?.user?.id) {
-					await mutationApiCall(
-						deleteCategoryOptimisticMutation.mutateAsync({
-							category_id: categoryId,
-							category_order: userProfileData?.data?.[0]?.category_order,
-						}),
-					);
-				} else {
 					errorToast("Only collection owner can delete this collection");
+					return;
 				}
+
+				await mutationApiCall(
+					deleteCategoryOptimisticMutation.mutateAsync({
+						category_id: categoryId,
+						category_order: userProfileData?.data?.[0]?.category_order,
+					}),
+				);
 
 				// current - only push to home if user is deleting the category when user is currently in that category
 				if (current) {
