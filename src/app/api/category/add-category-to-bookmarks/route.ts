@@ -201,16 +201,9 @@ export const POST = createPostApiHandlerWithAuth({
 
 		// Trigger revalidation if category is public
 		if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
-			void revalidateCategoryIfPublic(categoryId, {
+			await revalidateCategoryIfPublic(categoryId, {
 				operation: "add_category_to_bookmarks",
 				userId,
-				// eslint-disable-next-line promise/prefer-await-to-then
-			}).catch((error) => {
-				console.error(`[${route}] Revalidation failed`, {
-					error,
-					categoryId,
-					userId,
-				});
 			});
 		}
 
