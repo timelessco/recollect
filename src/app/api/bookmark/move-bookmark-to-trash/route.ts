@@ -42,10 +42,8 @@ export const POST = createPostApiHandlerWithAuth({
 		const { data: bookmarkData, isTrash } = data;
 		const userId = user.id;
 
-		// Extract and validate bookmark IDs
-		const bookmarkIds = bookmarkData
-			.map((item) => item.id)
-			.filter((id): id is number => id !== undefined && id !== null);
+		// Extract bookmark IDs (Zod already validated these are numbers)
+		const bookmarkIds = bookmarkData.map((item) => item.id);
 
 		console.log(`[${route}] API called:`, {
 			userId,
