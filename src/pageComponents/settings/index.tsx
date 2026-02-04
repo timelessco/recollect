@@ -285,7 +285,7 @@ const Settings = () => {
 										},
 										pattern: {
 											value: DISPLAY_NAME_CHECK_PATTERN,
-											message: "Should not have special charecters",
+											message: "Should not contain special characters",
 										},
 									})}
 									className={settingsInputClassName}
