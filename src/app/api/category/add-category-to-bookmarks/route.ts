@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import {
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
@@ -197,6 +198,14 @@ export const POST = createPostApiHandlerWithAuth({
 		console.log(
 			`[${route}] Category added to ${transformedData.length} bookmarks (${bookmarkIds.length - transformedData.length} already had it)`,
 		);
+
+		// Trigger revalidation if category is public
+		if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
+			await revalidateCategoryIfPublic(categoryId, {
+				operation: "add_category_to_bookmarks",
+				userId,
+			});
+		}
 
 		return transformedData;
 	},
