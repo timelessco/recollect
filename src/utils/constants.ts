@@ -26,6 +26,9 @@ export const STORAGE_SCREENSHOT_VIDEOS_PATH =
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
+// Fallback ogImage for audio bookmarks (no cover art)
+export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-fallback.png`;
+
 // Video upload limits
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
 
@@ -195,6 +198,7 @@ export const SIGNIN_URL = "login";
 export const IMAGES_URL = "images";
 export const VIDEOS_URL = "videos";
 export const LINKS_URL = "links";
+export const AUDIO_URL = "audios";
 
 // react-query keys
 
@@ -243,6 +247,7 @@ export const acceptedFileTypes = [
 	"audio/webm",
 	"audio/wav",
 	"audio/aac",
+	"audio/mp3",
 
 	// Video
 	"video/mp4",
@@ -270,6 +275,10 @@ export const imageFileTypes = acceptedFileTypes?.filter((item) =>
 
 export const videoFileTypes = acceptedFileTypes?.filter((item) =>
 	item?.includes("video"),
+);
+
+export const audioFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("audio"),
 );
 
 export const documentFileTypes = acceptedFileTypes?.filter((item) =>

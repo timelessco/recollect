@@ -178,6 +178,7 @@ export default async function handler(
 
 	let uploadedCoverImageUrl = null;
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
+	const isAudio = currentData?.meta_data?.mediaType?.includes("audio");
 	// upload scrapper image to r2
 	if (currentData?.ogImage && !isUrlAnMedia) {
 		const ogImageNormalisedUrl = await getNormalisedImageUrl(
@@ -226,11 +227,14 @@ export default async function handler(
 		: currentData?.meta_data?.screenshot;
 
 	// generat meta data (ocr, blurhash data, imgcaption)
+	// For audio bookmarks use currentData.ogImage (fallback) so we can run OCR/caption
 	const imageUrlForMetaDataGeneration = isUrlAnImageCondition
 		? uploadedImageThatIsAUrl
-		: currentData?.meta_data?.screenshot
-			? currentData?.meta_data?.screenshot
-			: uploadedCoverImageUrl;
+		: isAudio && currentData?.ogImage
+			? currentData.ogImage
+			: currentData?.meta_data?.screenshot
+				? currentData?.meta_data?.screenshot
+				: uploadedCoverImageUrl;
 
 	if (
 		!isNil(imageUrlForMetaDataGeneration) ||
@@ -291,6 +295,11 @@ export default async function handler(
 		coverImage: uploadedCoverImageUrl,
 	};
 
+	// Preserve existing ogImage (e.g. audio fallback) when computed value would be null
+	const computedOgImage = currentData?.meta_data?.isOgImagePreferred
+		? ogImageMetaDataGeneration
+		: imageUrlForMetaDataGeneration;
+
 	const {
 		data,
 		error: databaseError,
@@ -302,9 +311,7 @@ export default async function handler(
 		.update({
 			meta_data,
 			description: currentData?.description || imageCaption,
-			ogImage: currentData?.meta_data?.isOgImagePreferred
-				? ogImageMetaDataGeneration
-				: imageUrlForMetaDataGeneration,
+			ogImage: computedOgImage ?? currentData?.ogImage,
 		})
 		.match({ id })
 		.select(`id`);
