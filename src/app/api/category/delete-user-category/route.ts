@@ -92,7 +92,7 @@ export const POST = createPostApiHandlerWithAuth({
 		const { error: sharedCategoryError } = await supabase
 			.from(SHARED_CATEGORIES_TABLE_NAME)
 			.delete()
-			.match({ category_id: categoryId, user_id: userId });
+			.eq("category_id", categoryId);
 
 		if (sharedCategoryError) {
 			return apiError({
