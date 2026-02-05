@@ -2,10 +2,10 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
+import { sanitizeBookmarks } from "../../../../async/supabaseCrudHelpers";
 import { deduplicateBookmarks } from "../../../../utils/raindrop-bookmark-helpers";
+import { RAINDROP_IMPORTS_QUEUE } from "../../../../utils/constants";
 import {
-	addBookmarksToQueue,
-	insertBookmarksWithRelations,
 	processRaindropCategories,
 	updateProfileCategoryOrder,
 } from "../../../../utils/raindrop-import-helpers";
@@ -26,9 +26,8 @@ const requestBodySchema = z.object({
 });
 
 const outputSchema = z.object({
-	inserted: z.number(),
+	queued: z.number(),
 	skipped: z.number(),
-	warnings: z.array(z.string()).optional(),
 });
 
 export default async function handler(
@@ -104,16 +103,16 @@ export default async function handler(
 				userId,
 			});
 
-		// Early return if nothing to insert
+		// Early return if nothing to queue
 		if (bookmarksToSanitize.length === 0) {
-			console.log(`[${ROUTE}] No new bookmarks to insert:`, {
+			console.log(`[${ROUTE}] No new bookmarks to queue:`, {
 				totalBookmarks: bookmarks.length,
 				duplicatesRemoved,
 				existing,
 				userId,
 			});
 			const output = {
-				inserted: 0,
+				queued: 0,
 				skipped: bookmarks.length,
 			};
 			const validated = outputSchema.safeParse(output);
@@ -127,42 +126,76 @@ export default async function handler(
 			return;
 		}
 
-		// Insert bookmarks and create relations
-		const { insertedBookmarks, junctionError } =
-			await insertBookmarksWithRelations({
-				bookmarksToSanitize,
-				categoriesData,
-				route: ROUTE,
-				supabase,
+		// Sanitize bookmarks (favicon, ogImage validation, media type detection)
+		const sanitizedBookmarks = await sanitizeBookmarks(
+			bookmarksToSanitize,
+			userId,
+			categoriesData,
+		);
+
+		if (sanitizedBookmarks.length === 0) {
+			console.log(`[${ROUTE}] No bookmarks after sanitization:`, {
+				bookmarksToSanitize: bookmarksToSanitize.length,
 				userId,
 			});
+			const output = {
+				queued: 0,
+				skipped: bookmarks.length,
+			};
+			const validated = outputSchema.safeParse(output);
+			if (!validated.success) {
+				throw new Error(
+					`Output validation failed: ${JSON.stringify(validated.error.issues)}`,
+				);
+			}
 
-		// Collect warnings for partial failures
-		const warnings: string[] = [];
+			response.status(200).json({ data: validated.data, error: null });
+			return;
+		}
 
-		// Log warning if junction table insertion failed (non-blocking but should be surfaced)
-		if (junctionError) {
-			const warningMessage = `Failed to assign categories to ${junctionError.relationsCount} bookmark(s). The bookmarks were imported but are uncategorized.`;
-			warnings.push(warningMessage);
+		// Build URL → category_name map from pre-sanitized bookmarks
+		const urlToCategoryName = new Map<string, string | null>();
+		for (const b of bookmarksToSanitize) {
+			urlToCategoryName.set(b.url, b.category_name);
+		}
 
-			Sentry.addBreadcrumb({
-				message: "Junction table insertion failed",
-				level: "warning",
-				data: {
-					error: junctionError.error,
-					relationsCount: junctionError.relationsCount,
-					userId,
-				},
+		// Build queue messages from sanitized bookmarks
+		const queueMessages = sanitizedBookmarks.map((bookmark) => ({
+			url: bookmark.url,
+			type: bookmark.type,
+			title: bookmark.title,
+			description: bookmark.description,
+			ogImage: bookmark.ogImage,
+			category_name: urlToCategoryName.get(bookmark.url) ?? null,
+			meta_data: bookmark.meta_data,
+			user_id: userId,
+		}));
+
+		// Enqueue bookmarks to raindrop_imports queue for async processing
+		const { error: queueError } = await supabase
+			.schema("pgmq_public")
+			.rpc("send_batch", {
+				queue_name: RAINDROP_IMPORTS_QUEUE,
+				messages: queueMessages,
+				sleep_seconds: 0,
 			});
 
-			console.warn(
-				`[${ROUTE}] Warning: Failed to create bookmark-category relations:`,
-				{
-					error: junctionError.error,
-					relationsCount: junctionError.relationsCount,
+		if (queueError) {
+			console.error(`[${ROUTE}] Error enqueuing bookmarks:`, {
+				error: queueError,
+				userId,
+			});
+			Sentry.captureException(queueError, {
+				tags: {
+					operation: "enqueue_raindrop_imports",
 					userId,
 				},
-			);
+				extra: {
+					messagesCount: queueMessages.length,
+					queueName: RAINDROP_IMPORTS_QUEUE,
+				},
+			});
+			throw new Error("Failed to enqueue bookmarks for processing");
 		}
 
 		// Update category order in profile
@@ -173,18 +206,9 @@ export default async function handler(
 			userId,
 		});
 
-		// Add bookmarks to queue for AI enrichment, screenshot, PDF thumbnail generation
-		await addBookmarksToQueue({
-			insertedBookmarks,
-			route: ROUTE,
-			supabase,
-			userId,
-		});
-
 		const output = {
-			inserted: insertedBookmarks.length,
-			skipped: bookmarks.length - insertedBookmarks.length,
-			...(warnings.length > 0 && { warnings }),
+			queued: sanitizedBookmarks.length,
+			skipped: bookmarks.length - sanitizedBookmarks.length,
 		};
 		const validated = outputSchema.safeParse(output);
 		if (!validated.success) {
@@ -193,20 +217,13 @@ export default async function handler(
 			);
 		}
 
-		const hasWarnings = warnings.length > 0;
-		const statusCode = hasWarnings ? 207 : 200;
+		console.log(`[${ROUTE}] Import queued successfully:`, {
+			queued: validated.data.queued,
+			skipped: validated.data.skipped,
+			userId,
+		});
 
-		console.log(
-			`[${ROUTE}] Import completed${hasWarnings ? " with warnings" : " successfully"}:`,
-			{
-				inserted: validated.data.inserted,
-				skipped: validated.data.skipped,
-				warnings: warnings.length,
-				userId,
-			},
-		);
-
-		response.status(statusCode).json({ data: validated.data, error: null });
+		response.status(200).json({ data: validated.data, error: null });
 	} catch (error) {
 		console.error(`[${ROUTE}] Error:`, error);
 		Sentry.captureException(error, {

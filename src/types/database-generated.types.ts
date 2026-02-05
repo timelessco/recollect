@@ -418,7 +418,9 @@ export type Database = {
 					status_code: number;
 				}>;
 			};
+			get_raindrop_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			invoke_instagram_worker: { Args: never; Returns: number };
+			invoke_raindrop_worker: { Args: never; Returns: number };
 			process_instagram_bookmark: {
 				Args: {
 					p_collection_names?: string[];
@@ -427,6 +429,20 @@ export type Database = {
 					p_msg_id?: number;
 					p_og_image?: string;
 					p_saved_at?: string;
+					p_title?: string;
+					p_type: string;
+					p_url: string;
+					p_user_id: string;
+				};
+				Returns: Json;
+			};
+			process_raindrop_bookmark: {
+				Args: {
+					p_category_name?: string;
+					p_description?: string;
+					p_meta_data?: Json;
+					p_msg_id?: number;
+					p_og_image?: string;
 					p_title?: string;
 					p_type: string;
 					p_url: string;
@@ -446,6 +462,10 @@ export type Database = {
 				Returns: Json;
 			};
 			retry_instagram_import: {
+				Args: { p_msg_ids: number[]; p_user_id: string };
+				Returns: Json;
+			};
+			retry_raindrop_import: {
 				Args: { p_msg_ids: number[]; p_user_id: string };
 				Returns: Json;
 			};

@@ -63,7 +63,7 @@
 		"lint:prettier": "cross-env PRETTIER_EXPERIMENTAL_CLI=1 prettier --check --cache --cache-location=.prettiercache --ignore-unknown .",
 		"lint:spelling": "cspell --gitignore --cache --no-progress --no-summary --show-context --dot .",
 		"lint:types": "pnpm next:typegen && tsc --noEmit && pnpm lint:types:deno",
-		"lint:types:deno": "deno check --config supabase/functions/process-instagram-imports/deno.json supabase/functions/process-instagram-imports/index.ts",
+		"lint:types:deno": "deno check --config supabase/functions/process-instagram-imports/deno.json supabase/functions/process-instagram-imports/index.ts && deno check --config supabase/functions/process-raindrop-imports/deno.json supabase/functions/process-raindrop-imports/index.ts",
 		"next:typegen": "pnpm next typegen",
 		"prepare": "is-ci || husky",
 		"release": "release-it --ci",
