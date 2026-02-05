@@ -16,7 +16,6 @@ const ROUTE = "delete-user-category";
 
 const DeleteCategoryInputSchema = z.object({
 	category_id: z.number(),
-	category_order: z.array(z.number()),
 });
 
 const DeleteCategoryResponseSchema = z

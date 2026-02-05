@@ -278,7 +278,6 @@ export type MoveBookmarkToTrashApiPayload = {
 
 export type DeleteUserCategoryApiPayload = {
 	category_id: number;
-	category_order: number[];
 };
 
 export type UpdateCategoryOrderApiPayload = { order: number[] };
