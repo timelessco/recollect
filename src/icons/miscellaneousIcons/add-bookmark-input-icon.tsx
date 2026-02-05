@@ -13,7 +13,7 @@ export const AddBookmarkInputIcon = (props: IconProps) => (
 				height="11.015"
 				x="6.585"
 				y="3"
-				fill="#F5F5F5"
+				fill="var(--color-gray-100)"
 				rx="3"
 				transform="rotate(7.33 6.585 3)"
 			/>
@@ -21,7 +21,7 @@ export const AddBookmarkInputIcon = (props: IconProps) => (
 				width="10.372"
 				height="12.133"
 				y="3.488"
-				fill="#F5F5F5"
+				fill="var(--color-gray-100)"
 				rx="3"
 				transform="rotate(-13.882 0 3.488)"
 			/>

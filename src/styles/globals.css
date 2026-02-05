@@ -76,7 +76,7 @@
 	--color-red-300: #fdc2c2;
 	--color-red-400: #f79596;
 	--color-red-500: #e03636;
-	--color-red-600: #cc2929;
+	--color-red-600: #cd2b31;
 	--color-red-700: #b52a2a;
 	--color-red-800: #941f1f;
 	--color-red-900: #6b1515;
@@ -984,7 +984,11 @@
 	}
 
 	.chakra-slider-group .slider-thumb .slider-thumb-handle {
-		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-gray-0 shadow-md select-none;
+		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-gray-0 select-none;
+
+		box-shadow:
+			0 0 1px 0 rgb(0 0 0 / 40%),
+			0 1px 2px 0 rgb(0 0 0 / 15%);
 	}
 
 	.chakra-slider-group .slider-thumb-handle:focus-within {

@@ -450,11 +450,11 @@ const Settings = () => {
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
 							<p className="flex w-full justify-center">
-								<span className="flex items-center justify-center gap-1.5">
+								<span className="flex items-center justify-center gap-1.5 text-red-600">
 									{deleteUserMutation?.isPending ? (
 										<Spinner
 											className="h-3 w-3 animate-spin"
-											style={{ color: "#CD2B31" }}
+											style={{ color: "var(--color-red-600)" }}
 										/>
 									) : (
 										<>
