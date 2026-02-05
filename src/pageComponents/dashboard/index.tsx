@@ -61,6 +61,7 @@ import {
 	DOCUMENTS_URL,
 	IMAGES_URL,
 	LINKS_URL,
+	LOGIN_URL,
 	TRASH_URL,
 	TWEETS_URL,
 	UNCATEGORIZED_URL,
@@ -89,6 +90,8 @@ const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
 const Dashboard = () => {
 	const supabase = createClient();
 	const queryClient = useQueryClient();
+	const router = useRouter();
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	const setSession = useSupabaseSession((state) => state.setSession);
 
@@ -96,13 +99,33 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		const fetchSession = async () => {
-			const supabaseGetUserData = await supabase.auth.getUser();
-			setSession({ user: supabaseGetUserData?.data?.user });
+			const { data, error } = await supabase.auth.getUser();
+
+			// If there's an auth error or no user (expired session), redirect to login
+			// Skip redirect for discover page (public access allowed)
+			// This handles the case where middleware passes but session is actually invalid
+			// Use pathname fallback since categorySlug can be null before Next.js router hydrates
+			const isDiscoverRoute =
+				categorySlug === DISCOVER_URL ||
+				window.location.pathname.startsWith(`/${DISCOVER_URL}`);
+			if ((error || !data?.user) && !isDiscoverRoute) {
+				// Redirect to login with return URL (preserve query params and hash)
+				const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+				window.location.href = `/${LOGIN_URL}?next=${encodeURIComponent(currentPath)}`;
+				return;
+			}
+
+			// Set session with user if authenticated, otherwise clear session
+			// Avoids creating truthy object with undefined user that confuses downstream checks
+			if (data?.user) {
+				setSession({ user: data.user });
+			} else {
+				setSession(undefined);
+			}
 		};
 
-		// eslint-disable-next-line @typescript-eslint/no-floating-promises
-		fetchSession();
-	}, [setSession, supabase.auth]);
+		void fetchSession();
+	}, [setSession, supabase.auth, categorySlug]);
 
 	const setDeleteBookmarkId = useMiscellaneousStore(
 		(state) => state.setDeleteBookmarkId,
@@ -113,9 +136,6 @@ const Dashboard = () => {
 	);
 
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
-
-	const router = useRouter();
-	const categorySlug = getCategorySlugFromRouter(router);
 
 	const toggleIsSortByLoading = useLoadersStore(
 		(state) => state.toggleIsSortByLoading,
