@@ -194,17 +194,15 @@ export const POST = createPostApiHandlerWithAuth({
 		}
 
 		if (!isNonEmptyArray(deletedCategory)) {
-			return apiError({
+			return apiWarn({
 				route,
 				message: "Category not found or already deleted",
-				error: new Error("Empty delete result"),
-				operation: "delete_category_empty",
-				userId,
-				extra: { categoryId },
+				status: 404,
+				context: { categoryId, userId },
 			});
 		}
 
-		// Fetch current category order from DB  to avoid stale data
+		// Fetch current category order from DB to avoid stale data
 		const { data: profileData, error: profileFetchError } = await supabase
 			.from(PROFILES)
 			.select("category_order")
