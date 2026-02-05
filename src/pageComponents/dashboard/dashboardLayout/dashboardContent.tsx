@@ -52,7 +52,7 @@ export const DashboardContent = (props: DashboardContentProps) => {
 		<div className="relative w-full">
 			<header className="absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] pr-3 pl-[13px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]">
 				{(isDesktop ? true : !showSearchBar) && (
-					<div className="flex w-1/5 items-center py-[3px] pl-[9px] max-xl:w-3/4">
+					<div className="flex w-1/5 items-center py-[3px] pl-[9px] max-lg:w-3/4">
 						<SidePaneCollapseButton
 							showSidePane={showSidePane}
 							onToggle={onExpandSidePane}
@@ -73,13 +73,13 @@ export const DashboardContent = (props: DashboardContentProps) => {
 
 				<div
 					className={classNames({
-						"flex w-4/5 items-center justify-between max-xl:justify-end max-sm:mt-0": true,
-						"max-xl:w-full": showSearchBar,
-						"max-xl:w-1/4": !showSearchBar,
+						"flex w-4/5 items-center justify-between max-lg:justify-end max-sm:mt-0": true,
+						"max-lg:w-full": showSearchBar,
+						"max-lg:w-1/4": !showSearchBar,
 					})}
 				>
 					{/* this div is there for centering needs */}
-					<div className="h-5 w-[1%] max-xl:hidden" />
+					<div className="h-5 w-[1%] max-lg:hidden" />
 					<SearchBar
 						showSearchBar={showSearchBar}
 						isDesktop={isDesktop}
@@ -88,7 +88,7 @@ export const DashboardContent = (props: DashboardContentProps) => {
 						currentPath={currentPath}
 						onShowSearchBar={onShowSearchBar}
 					/>
-					<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
+					<div className="flex w-[27%] items-center justify-end gap-3 max-lg:w-max max-lg:gap-2">
 						{headerOptions}
 						{currentPath !== TRASH_URL && (
 							<AddBookmarkDropdown

@@ -42,7 +42,7 @@ export function SearchBar(props: SearchBarProps) {
 
 	if (showSearchBar) {
 		return (
-			<div className="w-[246px] max-xl:my-[2px] max-xl:w-full">
+			<div className="w-[246px] max-lg:my-[2px] max-lg:w-full">
 				<SearchInput
 					onBlur={() => !isDesktop && onShowSearchBar(false)}
 					onChange={(value) => {
