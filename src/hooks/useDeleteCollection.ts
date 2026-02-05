@@ -31,7 +31,7 @@ export const useDeleteCollection = () => {
 					(item) => item?.id === categoryId,
 				);
 
-				if (currentCategory?.user_id?.id === session?.user?.id) {
+				if (currentCategory?.user_id?.id !== session?.user?.id) {
 					errorToast("Only collection owner can delete this collection");
 					return;
 				}

@@ -161,11 +161,12 @@ export default async function handler(
 		console.log(`Moved ${bookmarkIds.length} bookmarks to trash`);
 	}
 
-	// Delete all junction entries for this category
+	// Delete all junction entries for this category for the current user
 	const { error: junctionDeleteError } = await supabase
 		.from(BOOKMARK_CATEGORIES_TABLE_NAME)
 		.delete()
-		.eq("category_id", request.body.category_id);
+		.eq("category_id", request.body.category_id)
+		.eq("user_id", userId);
 
 	if (!isNull(junctionDeleteError)) {
 		response.status(500).json({
