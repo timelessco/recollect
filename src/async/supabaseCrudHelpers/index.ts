@@ -459,7 +459,6 @@ export const fetchCategoriesData = async (): Promise<{
 
 export const deleteUserCategory = async ({
 	category_id,
-	category_order,
 }: DeleteUserCategoryApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -467,7 +466,6 @@ export const deleteUserCategory = async ({
 			error: Error;
 		}>(`${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`, {
 			category_id,
-			category_order,
 		});
 		return response?.data;
 	} catch (error) {
