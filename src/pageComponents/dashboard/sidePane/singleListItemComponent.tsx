@@ -101,7 +101,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 					<div
-						className="flex h-4 w-4 items-center justify-center"
+						className="flex items-center justify-center"
 						onClick={(event) => event.preventDefault()}
 					>
 						{showSpinner ? (
@@ -183,7 +183,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							item?.current && (
 								<div className="flex w-full justify-end">
 									<p
-										className={`min-w-[16px] text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 ${
+										className={`text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 ${
 											showDropdown ? "block group-hover:hidden" : "block"
 										} ${openedMenuId === item?.id ? "hidden" : ""}`}
 									>

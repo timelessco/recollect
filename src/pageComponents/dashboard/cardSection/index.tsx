@@ -602,7 +602,7 @@ const CardSection = ({
 							)}
 						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
 							<div className="flex flex-wrap items-center gap-1">
-								<div className="flex min-w-0 items-center gap-1">
+								<div className="flex min-w-0 items-center">
 									{renderFavIcon(item)}
 									{renderUrl(item)}
 								</div>
@@ -668,7 +668,7 @@ const CardSection = ({
 							)}
 						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
 							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-								<div className="flex min-w-0 items-center gap-1">
+								<div className="flex min-w-0 items-center">
 									{renderFavIcon(item)}
 									{renderUrl(item)}
 								</div>
