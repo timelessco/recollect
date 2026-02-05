@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { createServerServiceClient } from "@/lib/supabase/service";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
@@ -88,8 +89,11 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
+		// Use service client to bypass RLS for cross-user cleanup
+		const serviceClient = await createServerServiceClient();
+
 		// Delete shared category associations
-		const { error: sharedCategoryError } = await supabase
+		const { error: sharedCategoryError } = await serviceClient
 			.from(SHARED_CATEGORIES_TABLE_NAME)
 			.delete()
 			.eq("category_id", categoryId);
@@ -109,13 +113,12 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryId,
 		});
 
-		// Get all bookmark IDs in this category
+		// Get all bookmark IDs in this category with their owners
 		const { data: categoryBookmarks, error: categoryBookmarksError } =
-			await supabase
+			await serviceClient
 				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-				.select("bookmark_id")
-				.eq("category_id", categoryId)
-				.eq("user_id", userId);
+				.select("bookmark_id, user_id")
+				.eq("category_id", categoryId);
 
 		if (categoryBookmarksError) {
 			return apiError({
@@ -128,41 +131,42 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		// Move all bookmarks in this category to trash
+		// Trash only the owner's bookmarks, collaborators just lose the reference
 		if (isNonEmptyArray(categoryBookmarks)) {
-			const bookmarkIds = categoryBookmarks.map((b) => b.bookmark_id);
+			const ownerBookmarkIds = categoryBookmarks
+				.filter((b) => b.user_id === userId)
+				.map((b) => b.bookmark_id);
 
-			// Only trash bookmarks that aren't already trashed
-			const { error: trashError } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.update({ trash: new Date().toISOString() })
-				.in("id", bookmarkIds)
-				.eq("user_id", userId)
-				.is("trash", null);
+			if (isNonEmptyArray(ownerBookmarkIds)) {
+				const { error: trashError } = await serviceClient
+					.from(MAIN_TABLE_NAME)
+					.update({ trash: new Date().toISOString() })
+					.in("id", ownerBookmarkIds)
+					.is("trash", null);
 
-			if (trashError) {
-				return apiError({
-					route,
-					message: "Failed to move bookmarks to trash",
-					error: trashError,
-					operation: "delete_category_trash_bookmarks",
-					userId,
-					extra: { categoryId, bookmarkCount: bookmarkIds.length },
+				if (trashError) {
+					return apiError({
+						route,
+						message: "Failed to move bookmarks to trash",
+						error: trashError,
+						operation: "delete_category_trash_bookmarks",
+						userId,
+						extra: { categoryId, bookmarkCount: ownerBookmarkIds.length },
+					});
+				}
+
+				console.log(`[${route}] Moved owner bookmarks to trash:`, {
+					categoryId,
+					count: ownerBookmarkIds.length,
 				});
 			}
-
-			console.log(`[${route}] Moved bookmarks to trash:`, {
-				categoryId,
-				count: bookmarkIds.length,
-			});
 		}
 
 		// Delete all junction entries for this category
-		const { error: junctionDeleteError } = await supabase
+		const { error: junctionDeleteError } = await serviceClient
 			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
 			.delete()
-			.eq("category_id", categoryId)
-			.eq("user_id", userId);
+			.eq("category_id", categoryId);
 
 		if (junctionDeleteError) {
 			return apiError({
@@ -178,7 +182,7 @@ export const POST = createPostApiHandlerWithAuth({
 		console.log(`[${route}] Deleted junction entries:`, { categoryId });
 
 		// Delete the category
-		const { data: deletedCategory, error: deleteError } = await supabase
+		const { data: deletedCategory, error: deleteError } = await serviceClient
 			.from(CATEGORIES_TABLE_NAME)
 			.delete()
 			.eq("id", categoryId)
