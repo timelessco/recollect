@@ -354,10 +354,21 @@ const CollectionsList = () => {
 
 	const handleConfirmDelete = async () => {
 		if (deleteConfirmation.categoryId !== null) {
-			await onDeleteCollection(
-				deleteConfirmation.isCurrent,
-				deleteConfirmation.categoryId,
-			);
+			try {
+				await onDeleteCollection(
+					deleteConfirmation.isCurrent,
+					deleteConfirmation.categoryId,
+				);
+				setDeleteConfirmation({
+					isOpen: false,
+					categoryId: null,
+					isCurrent: false,
+				});
+			} catch {
+				// Modal stays open on error; mutation hook handles error toast
+			}
+
+			return;
 		}
 
 		setDeleteConfirmation({
