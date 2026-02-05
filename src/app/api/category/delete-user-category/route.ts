@@ -19,8 +19,6 @@ const DeleteCategoryInputSchema = z.object({
 	category_order: z.array(z.number()),
 });
 
-export type DeleteCategoryPayload = z.infer<typeof DeleteCategoryInputSchema>;
-
 const DeleteCategoryResponseSchema = z
 	.array(
 		z.object({
@@ -37,10 +35,6 @@ const DeleteCategoryResponseSchema = z
 		}),
 	)
 	.nonempty();
-
-export type DeleteCategoryResponse = z.infer<
-	typeof DeleteCategoryResponseSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
