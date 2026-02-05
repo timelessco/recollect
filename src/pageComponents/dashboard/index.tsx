@@ -100,9 +100,13 @@ const Dashboard = () => {
 			// If there's an auth error or no user (expired session), redirect to login
 			// Skip redirect for discover page (public access allowed)
 			// This handles the case where middleware passes but session is actually invalid
-			if ((error || !data?.user) && categorySlug !== DISCOVER_URL) {
-				// Redirect to login with return URL for post-login navigation
-				const currentPath = window.location.pathname;
+			// Use pathname fallback since categorySlug can be null before Next.js router hydrates
+			const isDiscoverRoute =
+				categorySlug === DISCOVER_URL ||
+				window.location.pathname.startsWith(`/${DISCOVER_URL}`);
+			if ((error || !data?.user) && !isDiscoverRoute) {
+				// Redirect to login with return URL (preserve query params and hash)
+				const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
 				window.location.href = `/${LOGIN_URL}?next=${encodeURIComponent(currentPath)}`;
 				return;
 			}
