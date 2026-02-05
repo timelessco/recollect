@@ -555,6 +555,11 @@ const CollectionsList = () => {
 		return [];
 	};
 
+	const bookmarkCount =
+		bookmarksCountData?.data?.categoryCount?.find(
+			(item) => item?.category_id === deleteConfirmation.categoryId,
+		)?.count ?? 0;
+
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data[0]?.category_order;
 
@@ -739,25 +744,14 @@ const CollectionsList = () => {
 				setOpen={handleCancelDelete}
 				wrapperClassName="min-w-[448px] max-w-md p-6 rounded-xl"
 			>
-				{(() => {
-					const bookmarkCount =
-						bookmarksCountData?.data?.categoryCount?.find(
-							(item) => item?.category_id === deleteConfirmation.categoryId,
-						)?.count ?? 0;
-
-					return (
-						<>
-							<h2 className="text-lg font-semibold text-gray-900">
-								Delete Collection
-							</h2>
-							{bookmarkCount > 0 && (
-								<p className="mt-2 text-sm text-gray-600">
-									You have {bookmarkCount} bookmarks in this collection.
-								</p>
-							)}
-						</>
-					);
-				})()}
+				<h2 className="text-lg font-semibold text-gray-900">
+					Delete Collection
+				</h2>
+				{bookmarkCount > 0 && (
+					<p className="mt-2 text-sm text-gray-600">
+						You have {bookmarkCount} bookmarks in this collection.
+					</p>
+				)}
 				<div className="mt-4 flex justify-end gap-3">
 					<button
 						className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
