@@ -122,7 +122,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										<OptionsIcon />
 									</div>
 								}
-								menuClassName={`${activeMenu ? "w-auto" : ""} ${dropdownMenuClassName} pointer-events-auto z-10`}
+								menuClassName={`${dropdownMenuClassName} ${activeMenu ? "w-auto" : ""} pointer-events-auto z-10`}
 								portalElement={
 									!isDesktop
 										? () => {
