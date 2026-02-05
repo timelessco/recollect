@@ -319,9 +319,12 @@ export const moveBookmarkToTrash = async ({
 	isTrash,
 }: MoveBookmarkToTrashApiPayload) => {
 	try {
+		// Only send bookmark IDs to the API - full data is only needed client-side for optimistic updates
+		const minimalData = data.map((bookmark) => ({ id: bookmark.id }));
+
 		const response = await axios.post(
 			`${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
-			{ data, isTrash },
+			{ data: minimalData, isTrash },
 		);
 
 		return response;

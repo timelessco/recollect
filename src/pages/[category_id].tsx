@@ -34,7 +34,9 @@ const Home: NextPage<CategoryPageProps> = ({
 
 	if (!isMounted) {
 		return (
-			<Spinner className="flex h-3 w-3 animate-spin items-center justify-center" />
+			<div className="flex h-screen items-center justify-center">
+				<Spinner className="h-3 w-3 animate-spin" />
+			</div>
 		);
 	}
 
