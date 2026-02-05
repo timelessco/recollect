@@ -496,7 +496,7 @@ const CardSection = ({
 		const isImageMediaType =
 			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX);
 		const figureClassName = classNames({
-			"card-icon rounded-sm  text-gray-1000": true,
+			"card-icon rounded-sm text-gray-1000": true,
 			rounded: isImageMediaType,
 		});
 

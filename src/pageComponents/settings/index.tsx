@@ -335,7 +335,7 @@ const Settings = () => {
 										},
 										pattern: {
 											value: LETTERS_NUMBERS_CHECK_PATTERN,
-											message: "Only have lowercase and no blank spaces",
+											message: "Only lowercase letters and numbers, no spaces",
 										},
 									})}
 									className={settingsInputClassName}
