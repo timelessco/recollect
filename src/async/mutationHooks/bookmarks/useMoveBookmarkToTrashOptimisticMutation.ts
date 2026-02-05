@@ -54,7 +54,10 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 							pages: old?.pages?.map((item) => ({
 								...item,
 								data: item.data?.filter(
-									(dataItem) => dataItem?.id !== data?.data?.id,
+									(dataItem) =>
+										!data?.data?.some(
+											(bookmark) => bookmark.id === dataItem.id,
+										),
 								),
 							})),
 						};
@@ -93,7 +96,10 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 								pages: old?.pages?.map((item) => ({
 									...item,
 									data: item.data?.filter(
-										(dataItem) => dataItem?.id !== data?.data?.id,
+										(dataItem) =>
+											!data?.data?.some(
+												(bookmark) => bookmark.id === dataItem.id,
+											),
 									),
 								})),
 							};
@@ -153,15 +159,30 @@ export default function useMoveBookmarkToTrashOptimisticMutation() {
 					queryKey: [BOOKMARKS_KEY, session?.user?.id, null],
 				});
 
-				const categoryIds =
-					variables.data?.addedCategories?.map((cat) => cat.id) ?? [];
-				if (categoryIds.length > 0) {
-					for (const catId of categoryIds) {
-						void queryClient.invalidateQueries({
-							queryKey: [BOOKMARKS_KEY, session?.user?.id, catId],
-						});
+				const categoryIds = new Set<number>();
+				let hasUncategorised = false;
+
+				for (const item of variables.data ?? []) {
+					const itemCategories = item?.addedCategories;
+
+					if (itemCategories && itemCategories.length > 0) {
+						for (const cat of itemCategories) {
+							if (typeof cat?.id === "number") {
+								categoryIds.add(cat.id);
+							}
+						}
+					} else {
+						hasUncategorised = true;
 					}
-				} else {
+				}
+
+				for (const catId of categoryIds) {
+					void queryClient.invalidateQueries({
+						queryKey: [BOOKMARKS_KEY, session?.user?.id, catId],
+					});
+				}
+
+				if (hasUncategorised) {
 					void queryClient.invalidateQueries({
 						queryKey: [BOOKMARKS_KEY, session?.user?.id, UNCATEGORIZED_URL],
 					});
