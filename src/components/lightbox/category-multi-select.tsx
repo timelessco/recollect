@@ -84,7 +84,7 @@ export const CategoryMultiSelect = ({
 
 					<Combobox.Portal>
 						<Combobox.Positioner className="z-10000">
-							<Combobox.Popup>
+							<Combobox.Popup className="mt-2 bg-gray-50">
 								<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
 									<Combobox.Empty>No collections found</Combobox.Empty>
 									<Combobox.List>
