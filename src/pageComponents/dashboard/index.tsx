@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import find from "lodash/find";
@@ -85,7 +85,7 @@ const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
 });
 
 const Dashboard = () => {
-	const supabase = createClient();
+	const supabase = useMemo(() => createClient(), []);
 	const router = useRouter();
 	const categorySlug = getCategorySlugFromRouter(router);
 
