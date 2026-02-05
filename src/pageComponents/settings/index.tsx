@@ -264,7 +264,10 @@ const Settings = () => {
 					</div>
 				</div>
 				<div className="mt-[44px] flex flex-row space-x-3">
-					<form className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
+					<form
+						className="w-1/2"
+						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
+					>
 						<LabelledComponent
 							label="Display name"
 							labelClassName={settingsInputLabelClassName}
@@ -307,10 +310,7 @@ const Settings = () => {
 							</div>
 						</LabelledComponent>
 					</form>
-					<form
-						className="w-1/2"
-						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
-					>
+					<form className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
 						<LabelledComponent
 							label="Username"
 							labelClassName={settingsInputLabelClassName}

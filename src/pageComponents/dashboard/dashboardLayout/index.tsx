@@ -174,7 +174,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				value: "trash",
 				render: (
 					<div
-						className={`flex items-center text-red-600 hover:text-red-600 ${dropdownMenuItemClassName}`}
+						className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
 					>
 						<TrashIconRed />
 						<p className="ml-[6px]">Clear Trash</p>
@@ -208,7 +208,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				render: (
 					// using AriaDropdownMenu as we want the dropdown to close on click
 					<AriaDropdownMenu
-						className={`flex items-center text-red-600 hover:text-red-600 ${dropdownMenuItemClassName}`}
+						className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
 						onClick={onDeleteCollectionClick}
 					>
 						<TrashIconRed />
