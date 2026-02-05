@@ -68,7 +68,16 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		const isOwner = categoryData?.[0]?.user_id === userId;
+		if (!categoryData?.length) {
+			return apiWarn({
+				route,
+				message: "Category not found",
+				status: 404,
+				context: { categoryId, userId },
+			});
+		}
+
+		const isOwner = categoryData[0].user_id === userId;
 
 		if (!isOwner) {
 			return apiWarn({
