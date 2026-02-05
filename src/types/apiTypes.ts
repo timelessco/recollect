@@ -272,7 +272,7 @@ export type ClearBookmarksInTrashApiPayloadTypes = {};
 export type DeleteDataApiPayload = { id: number; session: SupabaseSessionType };
 
 export type MoveBookmarkToTrashApiPayload = {
-	data: SingleListData;
+	data: SingleListData[];
 	isTrash: boolean;
 };
 
