@@ -43,7 +43,12 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 				return currentData as PaginatedBookmarks;
 			}
 
-			// Remove the bookmark from the current page
+			// Create a Set of bookmark IDs to remove for efficient lookup
+			const bookmarkIdsToRemove = new Set(
+				variables.data.map((bookmark) => bookmark.id),
+			);
+
+			// Remove the bookmarks from the current page
 			return produce(currentData, (draft) => {
 				for (const page of draft.pages) {
 					if (!page?.data) {
@@ -51,7 +56,7 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 					}
 
 					page.data = page.data.filter(
-						(bookmark) => bookmark.id !== variables.data.id,
+						(bookmark) => !bookmarkIdsToRemove.has(bookmark.id),
 					);
 				}
 			});
@@ -67,9 +72,10 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 						return [BOOKMARKS_KEY, session?.user?.id, TRASH_URL, sortBy];
 					} else {
 						// Moving FROM trash (restore) - update the target category page
-						// Use the first category from addedCategories, or uncategorized if none
+						// Use the first category from the first bookmark's addedCategories, or uncategorized if none
+						const firstBookmark = variables.data[0];
 						const categoryIds =
-							variables.data?.addedCategories?.map((cat) => cat.id) ?? [];
+							firstBookmark?.addedCategories?.map((cat) => cat.id) ?? [];
 						const targetCategoryId =
 							categoryIds.length > 0 ? categoryIds[0] : UNCATEGORIZED_URL;
 						return [BOOKMARKS_KEY, session?.user?.id, targetCategoryId, sortBy];
@@ -84,17 +90,21 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 						return destinationData;
 					}
 
-					// Add bookmark to the beginning of the first page for immediate visibility
+					// Add bookmarks to the beginning of the first page for immediate visibility
 					return produce(data, (draft) => {
 						if (draft.pages[0]?.data) {
-							// Check if bookmark already exists (avoid duplicates)
-							const exists = draft.pages[0].data.some(
-								(bookmark) => bookmark.id === variables.data.id,
+							// Create a Set of existing bookmark IDs for efficient lookup
+							const existingIds = new Set(
+								draft.pages[0].data.map((bookmark) => bookmark.id),
 							);
 
-							if (!exists) {
-								draft.pages[0].data.unshift(variables.data);
-							}
+							// Add new bookmarks that don't already exist (avoid duplicates)
+							const newBookmarks = variables.data.filter(
+								(bookmark) => !existingIds.has(bookmark.id),
+							);
+
+							// Add all new bookmarks to the beginning
+							draft.pages[0].data.unshift(...newBookmarks);
 						}
 					});
 				},
@@ -118,30 +128,6 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 				void queryClient.invalidateQueries({
 					queryKey: [BOOKMARKS_KEY, session?.user?.id, TRASH_URL],
 				});
-			}
-
-			// If restoring FROM trash, invalidate target category (destination)
-			if (!variables.isTrash) {
-				const categoryIds =
-					variables.data?.addedCategories?.map((cat) => cat.id) ?? [];
-
-				// Invalidate "everything" view
-				void queryClient.invalidateQueries({
-					queryKey: [BOOKMARKS_KEY, session?.user?.id, null],
-				});
-
-				// Invalidate target category
-				if (categoryIds.length > 0) {
-					for (const catId of categoryIds) {
-						void queryClient.invalidateQueries({
-							queryKey: [BOOKMARKS_KEY, session?.user?.id, catId],
-						});
-					}
-				} else {
-					void queryClient.invalidateQueries({
-						queryKey: [BOOKMARKS_KEY, session?.user?.id, UNCATEGORIZED_URL],
-					});
-				}
 			}
 		},
 

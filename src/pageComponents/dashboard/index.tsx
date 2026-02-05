@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
@@ -34,6 +35,7 @@ import { fileUpload } from "../../async/uploads/file-upload";
 import useDebounce from "../../hooks/useDebounce";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
+import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import {
 	useLoadersStore,
@@ -54,6 +56,7 @@ import {
 import { type FileType } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
+	BOOKMARKS_KEY,
 	DISCOVER_URL,
 	DOCUMENTS_URL,
 	IMAGES_URL,
@@ -85,6 +88,7 @@ const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
 
 const Dashboard = () => {
 	const supabase = createClient();
+	const queryClient = useQueryClient();
 
 	const setSession = useSupabaseSession((state) => state.setSession);
 
@@ -123,6 +127,17 @@ const Dashboard = () => {
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { isInNotFoundPage } = useIsInNotFoundPage();
+	const { sortBy } = useGetSortBy();
+
+	// Route-level invalidation: Invalidate bookmarks cache when navigating to a new page
+	// This ensures fresh data is always loaded for category pages and media type pages
+	useEffect(() => {
+		if (session?.user?.id && CATEGORY_ID !== DISCOVER_URL) {
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session.user.id, CATEGORY_ID, sortBy],
+			});
+		}
+	}, [CATEGORY_ID, sortBy, session?.user?.id, queryClient]);
 
 	// react-query
 
