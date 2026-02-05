@@ -9,8 +9,12 @@ import {
 } from "@/utils/constants";
 import { vet } from "@/utils/try";
 
+// Track in-flight revalidation requests to prevent duplicate calls
+const pendingRevalidations = new Map<string, Promise<void>>();
+
 /**
- * Revalidates a public category page using on-demand ISR.
+ * Revalidates a public category page using on-demand ISR with retry logic.
+ * Includes timeout handling, exponential backoff retries, and request deduplication.
  * This is a non-blocking operation - failures are logged but don't affect the main API response.
  * @param userName - The user's username (slug)
  * @param categorySlug - The category slug
@@ -28,102 +32,153 @@ export async function revalidatePublicCategoryPage(
 		categoryId?: number;
 	},
 ): Promise<void> {
-	try {
-		const path = `/public/${userName}/${categorySlug}`;
-		const revalidateUrl = `${getBaseUrl()}${NEXT_API_URL}/revalidate`;
-		const secret = process.env.REVALIDATE_SECRET_TOKEN;
+	const path = `/public/${userName}/${categorySlug}`;
 
-		if (!secret) {
-			console.warn(
-				"[revalidatePublicCategoryPage] REVALIDATE_SECRET_TOKEN not configured - skipping revalidation",
-				{ path, context },
-			);
-			return;
-		}
-
-		console.log("[revalidatePublicCategoryPage] Starting revalidation:", {
-			path,
-			context,
-		});
-
-		const [error, response] = await vet(() =>
-			fetch(revalidateUrl, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${secret}`,
-				},
-				body: JSON.stringify({ path }),
-				// Disable caching - important for App Router contexts
-				cache: "no-store",
-			}),
+	// Deduplicate concurrent revalidations for the same path
+	const existing = pendingRevalidations.get(path);
+	if (existing) {
+		console.log(
+			"[revalidatePublicCategoryPage] Revalidation already in progress:",
+			{
+				path,
+				context,
+			},
 		);
+		await existing;
+		return;
+	}
 
-		if (error) {
-			console.error("[revalidatePublicCategoryPage] Network error:", {
-				error,
+	const revalidationPromise = (async () => {
+		try {
+			const revalidateUrl = `${getBaseUrl()}${NEXT_API_URL}/revalidate`;
+			const secret = process.env.REVALIDATE_SECRET_TOKEN;
+
+			if (!secret) {
+				console.warn(
+					"[revalidatePublicCategoryPage] REVALIDATE_SECRET_TOKEN not configured - skipping revalidation",
+					{ path, context },
+				);
+				return;
+			}
+
+			console.log("[revalidatePublicCategoryPage] Starting revalidation:", {
 				path,
 				context,
 			});
-			Sentry.captureException(error, {
+
+			// Retry logic: 3 attempts with exponential backoff
+			// 10 second timeout per attempt
+			let lastError: Error | null = null;
+			const maxRetries = 3;
+			const timeoutMs = 10_000;
+
+			for (let attempt = 1; attempt <= maxRetries; attempt++) {
+				try {
+					// Create AbortController for timeout
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+					const [error, response] = await vet(() =>
+						fetch(revalidateUrl, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+								Authorization: `Bearer ${secret}`,
+							},
+							body: JSON.stringify({ path }),
+							cache: "no-store",
+							signal: controller.signal,
+						}),
+					);
+
+					clearTimeout(timeoutId);
+
+					if (error) {
+						throw error;
+					}
+
+					if (!response.ok) {
+						const text = await response.text();
+						throw new Error(
+							`Revalidation failed: ${response.status} ${response.statusText} - ${text}`,
+						);
+					}
+
+					console.log(
+						`[revalidatePublicCategoryPage] Successfully revalidated (attempt ${attempt}/${maxRetries}):`,
+						{
+							path,
+							context,
+						},
+					);
+					return;
+				} catch (error) {
+					lastError = error as Error;
+					const isLastAttempt = attempt === maxRetries;
+
+					if (isLastAttempt) {
+						console.error(
+							`[revalidatePublicCategoryPage] All retry attempts failed:`,
+							{
+								error,
+								path,
+								context,
+								attempts: maxRetries,
+							},
+						);
+					} else {
+						// Exponential backoff: 500ms, 1000ms, 2000ms
+						const delayMs = 500 * 2 ** (attempt - 1);
+						console.warn(
+							`[revalidatePublicCategoryPage] Attempt ${attempt}/${maxRetries} failed, retrying in ${delayMs}ms:`,
+							{
+								error: (error as Error).message,
+								path,
+							},
+						);
+						await new Promise<void>((resolve) => {
+							setTimeout(() => {
+								resolve();
+							}, delayMs);
+						});
+					}
+				}
+			}
+
+			// If we get here, all retries failed
+			Sentry.captureException(lastError, {
 				tags: {
 					operation: "revalidate_public_category",
 					context: context?.operation,
 					userId: context?.userId,
 				},
-				extra: { path, userName, categorySlug, context },
+				extra: { path, userName, categorySlug, context, maxRetries },
 			});
-			return;
-		}
-
-		if (!response.ok) {
-			const text = await response.text();
-			console.error("[revalidatePublicCategoryPage] Revalidation failed:", {
-				status: response.status,
-				statusText: response.statusText,
-				body: text,
-				path,
-				context,
-			});
-			Sentry.captureMessage("ISR revalidation failed", {
-				level: "warning",
-				tags: {
-					operation: "revalidate_public_category",
-					context: context?.operation,
-				},
-				extra: {
-					status: response.status,
-					path,
+		} catch (error) {
+			console.error(
+				"[revalidatePublicCategoryPage] Unexpected error during revalidation:",
+				{
+					error,
 					userName,
 					categorySlug,
 					context,
 				},
+			);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "revalidate_public_category_unexpected",
+					context: context?.operation,
+				},
+				extra: { userName, categorySlug, context },
 			});
-			return;
+		} finally {
+			// Clean up pending revalidation
+			pendingRevalidations.delete(path);
 		}
+	})();
 
-		console.log("[revalidatePublicCategoryPage] Successfully revalidated:", {
-			path,
-			context,
-		});
-	} catch (error) {
-		console.error(
-			"[revalidatePublicCategoryPage] Unexpected error during revalidation:",
-			{
-				error,
-				userName,
-				categorySlug,
-				context,
-			},
-		);
-		Sentry.captureException(error, {
-			tags: {
-				operation: "revalidate_public_category_unexpected",
-				context: context?.operation,
-			},
-			extra: { userName, categorySlug, context },
-		});
-	}
+	pendingRevalidations.set(path, revalidationPromise);
+	await revalidationPromise;
 }
 
 /**
