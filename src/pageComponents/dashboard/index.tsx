@@ -107,7 +107,13 @@ const Dashboard = () => {
 				return;
 			}
 
-			setSession({ user: data?.user });
+			// Set session with user if authenticated, otherwise clear session
+			// Avoids creating truthy object with undefined user that confuses downstream checks
+			if (data?.user) {
+				setSession({ user: data.user });
+			} else {
+				setSession(undefined);
+			}
 		};
 
 		void fetchSession();
