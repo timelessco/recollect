@@ -8,57 +8,42 @@ import "yet-another-react-lightbox/styles.css";
 
 import { useState } from "react";
 
-import { CustomLightBox } from "../../../../../components/lightbox/LightBox";
+import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import {
 	type FetchDataResponse,
 	type SingleListData,
-} from "../../../../../types/apiTypes";
+} from "../../../types/apiTypes";
 import {
-	FETCH_PUBLIC_BOOKMARK_BY_ID_API,
+	DISCOVER_URL,
+	FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API,
 	getBaseUrl,
-} from "../../../../../utils/constants";
-import { HttpStatus } from "../../../../../utils/error-utils/common";
-import { buildPublicCategoryUrl } from "../../../../../utils/url-builders";
+	NEXT_API_URL,
+} from "../../../utils/constants";
+import { HttpStatus } from "../../../utils/error-utils/common";
 
-type FetchPublicBookmarkByIdResponse = FetchDataResponse<SingleListData | null>;
+type FetchDiscoverableBookmarkByIdResponse =
+	FetchDataResponse<SingleListData | null>;
 
-const PublicPreviewParamsSchema = z.object({
-	bookmark_id: z
+const DiscoverPreviewParamsSchema = z.object({
+	id: z
 		.string()
 		.regex(/^\d+$/u, "Bookmark ID must be numeric")
 		.transform(Number),
-	user_name: z
-		.string()
-		.regex(/^[\w-]{1,39}$/u, "Invalid username format")
-		.min(1)
-		.max(39),
-	id: z
-		.string()
-		.regex(/^[\w-]+$/u, "Invalid category slug format")
-		.min(1)
-		.max(100),
 });
 
-export type PublicPreviewProps = {
+export type DiscoverPreviewProps = {
 	bookmark: SingleListData;
 };
 
-const PublicPreview = (props: PublicPreviewProps) => {
+const DiscoverPreview = (props: DiscoverPreviewProps) => {
 	const { bookmark } = props;
 	const router = useRouter();
-	const { user_name, id: categorySlug } = router.query;
 
 	const [isOpen, setIsOpen] = useState(true);
 
 	const handleClose = () => {
 		setIsOpen(false);
-		if (user_name && categorySlug) {
-			const { pathname, query, as } = buildPublicCategoryUrl({
-				user_name: user_name as string,
-				category_slug: categorySlug as string,
-			});
-			void router.push({ pathname, query }, as, { shallow: true });
-		}
+		void router.push(`/${DISCOVER_URL}`, undefined, { shallow: true });
 	};
 
 	return (
@@ -105,12 +90,12 @@ export const getStaticPaths: GetStaticPaths = async () => ({
 	fallback: "blocking",
 });
 
-export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (
+export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (
 	context,
 ) => {
-	const ROUTE = "/public/[user_name]/[id]/preview/[bookmark_id]";
+	const ROUTE = "/discover/preview/[id]";
 
-	const validation = PublicPreviewParamsSchema.safeParse(context.params);
+	const validation = DiscoverPreviewParamsSchema.safeParse(context.params);
 	if (!validation.success) {
 		console.warn(`[${ROUTE}] Invalid route parameters`, {
 			errors: validation.error.flatten(),
@@ -118,60 +103,53 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (
 		return { notFound: true };
 	}
 
-	const { bookmark_id, user_name, id: categorySlug } = validation.data;
+	const { id: bookmarkId } = validation.data;
 
 	try {
 		const response = await fetch(
-			`${getBaseUrl()}${FETCH_PUBLIC_BOOKMARK_BY_ID_API}?bookmark_id=${bookmark_id}&user_name=${user_name}&category_slug=${categorySlug}`,
+			`${getBaseUrl()}${NEXT_API_URL}${FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API}?id=${bookmarkId}`,
 		);
 
 		if (response.status === HttpStatus.NOT_FOUND) {
 			console.warn(`[${ROUTE}] Bookmark not found`, {
-				bookmark_id,
-				user_name,
-				categorySlug,
+				bookmarkId,
 			});
 			return { notFound: true };
 		}
 
 		if (!response.ok) {
 			console.error(
-				`[${ROUTE}] Failed to fetch public bookmark: HTTP ${response.status}`,
+				`[${ROUTE}] Failed to fetch discoverable bookmark: HTTP ${response.status}`,
 				{
 					status: response.status,
 					statusText: response.statusText,
-					bookmark_id,
-					user_name,
-					categorySlug,
+					bookmarkId,
 				},
 			);
 			Sentry.captureException(
 				new Error(`HTTP ${response.status}: ${response.statusText}`),
 				{
 					tags: {
-						operation: "fetch_public_bookmark",
+						operation: "fetch_discoverable_bookmark",
 						context: "incremental_static_regeneration",
 					},
 					extra: {
 						status: response.status,
 						statusText: response.statusText,
-						bookmark_id,
-						user_name,
-						categorySlug,
+						bookmarkId,
 					},
 				},
 			);
 			return { notFound: true };
 		}
 
-		const data = (await response.json()) as FetchPublicBookmarkByIdResponse;
+		const data =
+			(await response.json()) as FetchDiscoverableBookmarkByIdResponse;
 
 		if (!data?.data || data?.error) {
 			console.warn(`[${ROUTE}] Bookmark data not found or contains error`, {
 				error: data?.error,
-				bookmark_id,
-				user_name,
-				categorySlug,
+				bookmarkId,
 			});
 			return { notFound: true };
 		}
@@ -180,24 +158,25 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (
 			props: {
 				bookmark: data.data,
 			},
-			revalidate: 1800,
+			revalidate: 300,
 		};
 	} catch (error) {
-		console.error(`[${ROUTE}] Unexpected error fetching public bookmark`, {
-			error,
-			bookmark_id,
-			user_name,
-			categorySlug,
-		});
+		console.error(
+			`[${ROUTE}] Unexpected error fetching discoverable bookmark`,
+			{
+				error,
+				bookmarkId,
+			},
+		);
 		Sentry.captureException(error, {
 			tags: {
-				operation: "fetch_public_bookmark",
+				operation: "fetch_discoverable_bookmark",
 				context: "incremental_static_regeneration",
 			},
-			extra: { bookmark_id, user_name, categorySlug },
+			extra: { bookmarkId },
 		});
 		return { notFound: true };
 	}
 };
 
-export default PublicPreview;
+export default DiscoverPreview;

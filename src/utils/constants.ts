@@ -26,6 +26,9 @@ export const STORAGE_SCREENSHOT_VIDEOS_PATH =
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
+// Fallback ogImage for audio bookmarks (no cover art)
+export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-fallback.png`;
+
 // Video upload limits
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
 
@@ -85,8 +88,11 @@ export const FETCH_BOOKMARK_BY_ID_API = "/v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
+
 export const FETCH_BOOKMARKS_DISCOVERABLE_API =
 	"/bookmark/fetch-bookmarks-discoverable";
+export const FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API =
+	"/bookmark/fetch-discoverable-by-id";
 export const WORKER_SCREENSHOT_API = "/v1/screenshot";
 export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
@@ -96,6 +102,7 @@ export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API =
 	"/bookmark/add-remaining-bookmark-data";
+
 export const TOGGLE_BOOKMARK_DISCOVERABLE_API =
 	"/bookmark/toggle-discoverable-on-bookmark";
 export const FETCH_PUBLIC_BOOKMARK_BY_ID_API =
@@ -191,11 +198,13 @@ export const SIGNIN_URL = "login";
 export const IMAGES_URL = "images";
 export const VIDEOS_URL = "videos";
 export const LINKS_URL = "links";
+export const AUDIO_URL = "audios";
 
 // react-query keys
 
 export const BOOKMARKS_KEY = "bookmarks";
 export const BOOKMARKS_COUNT_KEY = "bookmarks_count";
+export const PUBLIC_BOOKMARKS_KEY = "public-bookmarks";
 export const CATEGORIES_KEY = "categories";
 export const USER_TAGS_KEY = "userTags";
 export const BOOKMARKS_VIEW = "bookmarks_view";
@@ -238,6 +247,7 @@ export const acceptedFileTypes = [
 	"audio/webm",
 	"audio/wav",
 	"audio/aac",
+	"audio/mp3",
 
 	// Video
 	"video/mp4",
@@ -265,6 +275,10 @@ export const imageFileTypes = acceptedFileTypes?.filter((item) =>
 
 export const videoFileTypes = acceptedFileTypes?.filter((item) =>
 	item?.includes("video"),
+);
+
+export const audioFileTypes = acceptedFileTypes?.filter((item) =>
+	item?.includes("audio"),
 );
 
 export const documentFileTypes = acceptedFileTypes?.filter((item) =>
@@ -432,7 +446,7 @@ export const isGuestPath = (pathname: string) =>
 /**
  * Array of public paths that don't require authentication
  */
-export const PUBLIC_PATHS = new Set(["/error", "/public"]);
+export const PUBLIC_PATHS = new Set(["/discover", "/error", "/public"]);
 export const isPublicPath = (pathname: string) =>
 	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
 

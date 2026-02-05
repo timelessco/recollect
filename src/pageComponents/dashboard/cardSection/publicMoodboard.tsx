@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
+import { useMounted } from "../../../hooks/useMounted";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type SingleListData } from "../../../types/apiTypes";
 import { getColumnCount } from "../../../utils/helpers";
@@ -23,10 +24,16 @@ export const PublicMoodboard = ({
 	renderCard,
 }: PublicMoodboardProps) => {
 	const router = useRouter();
+	const mounted = useMounted();
 	const { isMobile, isTablet } = useIsMobileView();
 	const { setLightboxId, setLightboxOpen } = useMiscellaneousStore();
 
-	const lanes = getColumnCount(!isMobile && !isTablet, bookmarksColumns[0]);
+	// SSR-safe: assume desktop layout during SSR to avoid hydration mismatch
+	// After mount, use actual media query results
+	const lanes = getColumnCount(
+		mounted ? !isMobile && !isTablet : true,
+		bookmarksColumns[0],
+	);
 	const columns = Array.from({ length: lanes }, (_, col) =>
 		bookmarksList.map((_, idx) => idx).filter((idx) => idx % lanes === col),
 	);

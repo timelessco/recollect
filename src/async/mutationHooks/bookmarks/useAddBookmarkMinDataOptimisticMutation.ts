@@ -159,6 +159,11 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 			// then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
 			if (!isUrlOfMimeType) {
 				const mediaType = await getMediaType(url);
+				// Audio URLs already have ogImage fallback set in add-bookmark-min-data; skip screenshot
+				if (mediaType?.includes("audio")) {
+					return;
+				}
+
 				if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
 					try {
 						// adding id into loading state for the case of pdf

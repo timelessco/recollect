@@ -19,6 +19,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	ADD_REMAINING_BOOKMARK_API,
+	AUDIO_OG_IMAGE_FALLBACK_URL,
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
@@ -287,6 +288,7 @@ export default async function handler(
 		let ogImageToBeAdded = null;
 
 		const isUrlOfMimeType = await checkIfUrlAnMedia(url);
+		const mediaType = await getMediaType(url);
 		// ***** here we are checking the url is of an mime type or not,if it is so we set the url in ogImage *****
 		// ***** if it an  image we upload to s3 and for video we take screenshot *****
 		let iframeAllowedValue = null;
@@ -296,7 +298,9 @@ export default async function handler(
 			if (isUrlAnImage) {
 				ogImageToBeAdded = url;
 			} else {
-				ogImageToBeAdded = null;
+				ogImageToBeAdded = mediaType?.includes("audio")
+					? AUDIO_OG_IMAGE_FALLBACK_URL
+					: null;
 			}
 		} else {
 			ogImageToBeAdded = scrapperResponse?.data?.OgImage;
@@ -313,7 +317,6 @@ export default async function handler(
 			scrapperResponse?.data?.favIcon,
 			url,
 		);
-		const mediaType = await getMediaType(url);
 
 		// here we add the scrapper data , in the remainingApi call we add s3 data
 		const {

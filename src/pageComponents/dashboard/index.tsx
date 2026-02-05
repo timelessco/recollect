@@ -619,19 +619,24 @@ const Dashboard = () => {
 													});
 												} else if (!isEmpty(item) && item?.length > 0) {
 													// if not in trash then move bookmark to trash
-													void mutationApiCall(
-														moveBookmarkToTrashOptimisticMutation.mutateAsync({
-															data: item[0],
-															isTrash: true,
-														}),
-														// eslint-disable-next-line promise/prefer-await-to-then
-													).catch(() => {});
+													const firstItem = item.at(0);
+													if (firstItem) {
+														void mutationApiCall(
+															moveBookmarkToTrashOptimisticMutation.mutateAsync(
+																{
+																	data: [firstItem],
+																	isTrash: true,
+																},
+															),
+															// eslint-disable-next-line promise/prefer-await-to-then
+														).catch(() => {});
+													}
 												}
 											}}
 											onMoveOutOfTrashClick={(data) => {
 												void mutationApiCall(
 													moveBookmarkToTrashOptimisticMutation.mutateAsync({
-														data,
+														data: [data],
 														isTrash: false,
 													}),
 												);
