@@ -120,11 +120,14 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryId: categoryData[0].id,
 			categoryName: categoryData[0].category_name,
 		});
-		// If is_public was updated, trigger on-demand revalidation (non-blocking)
-		// This ensures public pages are immediately updated when visibility changes
-		// (both public→private and private→public transitions)
+
+		// Trigger on-demand revalidation for public categories (non-blocking)
+		// This ensures public pages reflect all changes immediately:
+		// - Visibility changes (public↔private)
+		// - View settings (columns, sort order, card content)
+		// - Category name, icon, or color changes
 		// Don't await - failed revalidation shouldn't fail the mutation
-		if (updateData.is_public !== undefined || categoryData[0].is_public) {
+		if (categoryData[0].is_public) {
 			// Fetch user profile to get username for revalidation path
 			const { data: profileData, error: profileError } = await supabase
 				.from(PROFILES)
@@ -144,7 +147,7 @@ export const POST = createPostApiHandlerWithAuth({
 					profileData.user_name,
 					categoryData[0].category_slug,
 					{
-						operation: "update_category_public_status",
+						operation: "update_category",
 						userId,
 						categoryId: categoryData[0].id,
 					},
