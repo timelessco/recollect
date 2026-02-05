@@ -41,7 +41,7 @@ export const POST = createPostApiHandlerWithAuth({
 	inputSchema: DeleteCategoryInputSchema,
 	outputSchema: DeleteCategoryResponseSchema,
 	handler: async ({ data, supabase, user, route }) => {
-		const { category_id: categoryId, category_order: categoryOrder } = data;
+		const { category_id: categoryId } = data;
 		const userId = user.id;
 
 		console.log(`[${route}] API called:`, { userId, categoryId });
@@ -205,26 +205,46 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		// Update user's category order
-		const { error: orderError } = await supabase
+		// Fetch current category order from DB  to avoid stale data
+		const { data: profileData, error: profileFetchError } = await supabase
 			.from(PROFILES)
-			.update({
-				category_order: categoryOrder.filter(
-					(item) => item !== deletedCategory[0].id,
-				),
-			})
+			.select("category_order")
 			.match({ id: userId })
-			.select("id, category_order");
+			.single();
 
-		if (orderError) {
+		if (profileFetchError) {
 			return apiError({
 				route,
-				message: "Failed to update category order",
-				error: orderError,
-				operation: "delete_category_update_order",
+				message: "Failed to fetch user profile",
+				error: profileFetchError,
+				operation: "delete_category_fetch_profile",
 				userId,
 				extra: { categoryId },
 			});
+		}
+
+		const currentOrder = profileData?.category_order;
+
+		if (Array.isArray(currentOrder)) {
+			const { error: orderError } = await supabase
+				.from(PROFILES)
+				.update({
+					category_order: currentOrder.filter(
+						(item: number) => item !== deletedCategory[0].id,
+					),
+				})
+				.match({ id: userId });
+
+			if (orderError) {
+				return apiError({
+					route,
+					message: "Failed to update category order",
+					error: orderError,
+					operation: "delete_category_update_order",
+					userId,
+					extra: { categoryId },
+				});
+			}
 		}
 
 		console.log(`[${route}] Category deleted:`, {
