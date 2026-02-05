@@ -77,6 +77,7 @@ export const getCategoryIdFromSlug = (
 		slug === DOCUMENTS_URL ||
 		slug === TWEETS_URL ||
 		slug === INSTAGRAM_URL ||
+		slug === AUDIO_URL ||
 		slug === DISCOVER_URL
 	) {
 		return slug;
@@ -512,6 +513,7 @@ export const getBookmarkCountForCurrentPage = (
 				tweets?: number;
 				links?: number;
 				instagram?: number;
+				audio?: number;
 		  }
 		| undefined,
 	categoryId: string | number | null,
@@ -549,6 +551,8 @@ export const getBookmarkCountForCurrentPage = (
 			return bookmarkCounts.links ?? 0;
 		case INSTAGRAM_URL as unknown as string:
 			return bookmarkCounts.instagram ?? 0;
+		case AUDIO_URL as unknown as string:
+			return bookmarkCounts.audio ?? 0;
 		default:
 			return 0;
 	}

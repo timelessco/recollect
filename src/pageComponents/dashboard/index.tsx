@@ -54,6 +54,7 @@ import {
 import { type FileType } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
+	AUDIO_URL,
 	DISCOVER_URL,
 	DOCUMENTS_URL,
 	IMAGES_URL,
@@ -504,6 +505,12 @@ const Dashboard = () => {
 
 			if ((CATEGORY_ID as unknown) === INSTAGRAM_URL) {
 				const count = bookmarksCountData?.data?.instagram;
+
+				return count !== flattendPaginationBookmarkData?.length;
+			}
+
+			if ((CATEGORY_ID as unknown) === AUDIO_URL) {
+				const count = bookmarksCountData?.data?.audio;
 
 				return count !== flattendPaginationBookmarkData?.length;
 			}

@@ -331,6 +331,7 @@ export const menuListItemName = {
 	documents: "Documents",
 	tweets: "Tweets",
 	instagram: "Instagram",
+	audio: "Audio",
 };
 
 // if user is adding anything in these pages then the added item will be in uncategorized

@@ -7,6 +7,8 @@ import { z } from "zod";
 
 import { type SingleListData } from "../../../types/apiTypes";
 import {
+	AUDIO_URL,
+	audioFileTypes,
 	bookmarkType,
 	DISCOVER_URL,
 	documentFileTypes,
@@ -259,6 +261,12 @@ export default async function handler(
 
 		if (category_id === INSTAGRAM_URL) {
 			query = query.eq("type", instagramType);
+		}
+
+		if (category_id === AUDIO_URL) {
+			query = query.or(
+				`type.in.(${audioFileTypes}),meta_data->>mediaType.in.(${audioFileTypes})`,
+			);
 		}
 
 		if (category_id === LINKS_URL) {

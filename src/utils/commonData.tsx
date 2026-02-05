@@ -11,8 +11,10 @@ import XIcon from "../icons/social/x";
 import TrashIconGray from "../icons/trashIconGray";
 import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
+import { AudioIcon } from "../icons/audio-icon";
 
 import {
+	AUDIO_URL,
 	DISCOVER_URL,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
@@ -3692,6 +3694,15 @@ export const optionsMenuListArray = (
 		current: currentPath === INSTAGRAM_URL,
 		id: 10,
 		count: bookmarksCountData?.data?.instagram,
+		iconColor: "",
+	},
+	{
+		icon: <AudioIcon />,
+		name: menuListItemName.audio,
+		href: `/${AUDIO_URL}`,
+		current: currentPath === AUDIO_URL,
+		id: 11,
+		count: bookmarksCountData?.data?.audio,
 		iconColor: "",
 	},
 ];

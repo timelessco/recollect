@@ -4,6 +4,7 @@ import isEmpty from "lodash/isEmpty";
 
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
+	audioFileTypes,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	documentFileTypes,
@@ -93,6 +94,7 @@ export default async function handler(
 		documents: 0,
 		tweets: 0,
 		instagram: 0,
+		audio: 0,
 	};
 
 	try {
@@ -106,6 +108,7 @@ export default async function handler(
 			{ count: bookmarkUnCatCount },
 			{ count: bookmarkTweetsCount },
 			{ count: bookmarkInstagramCount },
+			{ count: bookmarkAudioCount },
 			{ data: userCategoryIds },
 			{ data: sharedCategoryIds },
 		] = await Promise.all([
@@ -165,6 +168,14 @@ export default async function handler(
 				.eq("user_id", userId)
 				.is("trash", null)
 				.eq("type", instagramType),
+			supabase
+				.from(MAIN_TABLE_NAME)
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", userId)
+				.is("trash", null)
+				.or(
+					`type.in.(${audioFileTypes}),meta_data->>mediaType.in.(${audioFileTypes})`,
+				),
 			supabase.from(CATEGORIES_TABLE_NAME).select("id").eq("user_id", userId),
 			supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
@@ -183,6 +194,7 @@ export default async function handler(
 			uncategorized: bookmarkUnCatCount ?? 0,
 			tweets: bookmarkTweetsCount ?? 0,
 			instagram: bookmarkInstagramCount ?? 0,
+			audio: bookmarkAudioCount ?? 0,
 		};
 
 		const userCategoryIdsArray = userCategoryIds?.map((item) => item.id) ?? [];
