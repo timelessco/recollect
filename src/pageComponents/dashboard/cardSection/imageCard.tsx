@@ -60,7 +60,7 @@ const ImgLogicComponent = ({
 			cardTypeCondition === viewValues.list,
 		" w-full object-cover rounded-lg group-hover:rounded-b-none  duration-150 moodboard-card-img aspect-[1.9047]":
 			cardTypeCondition === viewValues.card,
-		"w-full rounded-lg group-hover:rounded-b-none duration-150  moodboard-card-img min-h-[192px] object-cover":
+		"w-full rounded-lg group-hover:rounded-b-none duration-150  moodboard-card-img min-h-[192px] object-cover max-h-[900px]":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.timeline,
 		"relative z-[-1]":
