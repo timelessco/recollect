@@ -306,14 +306,14 @@ const ShareContent = (props: ShareContentProps) => {
 							/>
 						) : (
 							<AriaSelect
-								defaultValue="View"
+								defaultValue="Viewer"
 								disabled={!isUserTheCategoryOwner}
 								onOptionClick={(value) =>
 									setInviteUserEditAccess(value === "Editor")
 								}
 								options={[
 									{ label: "Editor", value: "Editor" },
-									{ label: "View", value: "View" },
+									{ label: "Viewer", value: "Viewer" },
 								]}
 								// disabled
 								renderCustomSelectButton={(isOpen) => (
@@ -321,7 +321,7 @@ const ShareContent = (props: ShareContentProps) => {
 										className={`flex items-center rounded-[6px] px-2 py-[5.5px] text-gray-alpha-600 hover:bg-gray-50 ${isOpen ? "bg-gray-50" : ""}`}
 									>
 										<p className="mr-1">
-											{inviteUserEditAccess ? "Editor" : "View"}
+											{inviteUserEditAccess ? "Editor" : "Viewer"}
 										</p>
 										<figure>
 											<DownArrowGray />

@@ -12,7 +12,7 @@ export const bottomBarButton =
 // DROPDOWN COMMON CLASS NAMES
 
 export const dropdownMenuClassName =
-	"bg-gray-90 rounded-xl shadow-custom-3 p-1 w-48 outline-hidden";
+	"bg-gray-50 rounded-xl shadow-custom-3 p-1 w-48 outline-hidden";
 export const dropdownMenuItemClassName =
 	"text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
 

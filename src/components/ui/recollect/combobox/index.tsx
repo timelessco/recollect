@@ -354,7 +354,7 @@ function Item({ className, children, ...props }: ComboboxPrimitive.Item.Props) {
 		<ComboboxPrimitive.Item
 			data-slot="combobox-item"
 			className={cn(
-				"group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-[5px] text-13 leading-[15px] font-450 tracking-[0.01em] text-gray-900 transition-colors select-none data-highlighted:bg-gray-200",
+				"group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-13 leading-[15px] font-450 tracking-[0.01em] text-gray-900 transition-colors select-none data-highlighted:bg-gray-200",
 				className,
 			)}
 			{...props}
