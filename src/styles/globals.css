@@ -984,7 +984,7 @@
 	}
 
 	.chakra-slider-group .slider-thumb .slider-thumb-handle {
-		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-gray-0 select-none;
+		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-white select-none;
 
 		box-shadow:
 			0 0 1px 0 rgb(0 0 0 / 40%),
