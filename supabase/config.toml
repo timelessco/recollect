@@ -382,6 +382,10 @@ deno_version = 2
 [functions.process-instagram-imports]
 verify_jwt = false
 
+# Twitter/X imports: JWT validation handled manually via service role key check.
+[functions.process-twitter-imports]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

@@ -1,25 +1,28 @@
 ### Create Twitter Folders (Success - Single Category)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
+# New App Router endpoint: /api/twitter/sync-folders
+# Response: { data: { created: N, skipped: N }, error: null }
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
   "categories": [
     {
-      "name": "test14"
+      "name": "Tech Tweets"
     }
   ]
 }
 
 ### Create Multiple Twitter Folders (Success)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
+# Deduplicates case-insensitively and skips existing categories
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
   "categories": [
     {
-      "name": "test14"
+      "name": "Tech Tweets"
     },
     {
       "name": "Design Inspiration"
@@ -30,41 +33,27 @@ Content-Type: application/json
   ]
 }
 
-### Validation Error - Empty Categories Array
-# Expected: 400 - { data: null, error: { message: "No categories provided" } }
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
+### Duplicate Category Names in Same Request (case-insensitive Dedup)
+# "tech tweets" and "Tech Tweets" collapse to one - first wins
+# Expected: { data: { created: 1, skipped: 1 }, error: null } (if "Tech Tweets" is new)
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
 Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "categories": []
-}
-
-### Validation Error - Missing Categories Field
-# Expected: 400 - Categories field missing
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{}
-
-
-### Auth Error - No Token
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
 Content-Type: application/json
 
 {
   "categories": [
     {
-      "name": "No Auth Test"
+      "name": "Unique Category"
+    },
+    {
+      "name": "unique category"
     }
   ]
 }
 
-
 ### Create Category with Special Characters
 # Tests slugify handling of special characters
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
@@ -82,10 +71,8 @@ Content-Type: application/json
   ]
 }
 
-
 ### Create Category with Unicode Characters
-# Tests handling of unicode/emoji in category names
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFolders
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
@@ -96,6 +83,51 @@ Content-Type: application/json
     },
     {
       "name": "设计灵感"
+    }
+  ]
+}
+
+### Validation Error - Empty Categories Array
+# Expected: 400 - Zod validation error
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "categories": []
+}
+
+### Validation Error - Missing Categories Field
+# Expected: 400 - Zod validation error
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{}
+
+### Validation Error - Empty Category Name
+# Expected: 400 - name min length 1
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "categories": [
+    {
+      "name": ""
+    }
+  ]
+}
+
+### Auth Error - No Token
+# Expected: 401 - Not authenticated
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folders
+Content-Type: application/json
+
+{
+  "categories": [
+    {
+      "name": "No Auth Test"
     }
   ]
 }

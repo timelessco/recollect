@@ -1,10 +1,13 @@
-### Sync Twitter Tweet (Success)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
+### Sync Twitter Bookmarks (Success - Single)
+# New App Router endpoint: /api/twitter/sync (queue producer)
+# Response: { data: { queued: N }, error: null }
+# Bookmarks are enqueued to twitter_imports queue, processed by Edge Function
+POST {{$dotenv API_BASE_URL}}/twitter/sync
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [{
+  "bookmarks": [{
     "url": "https://x.com/SawyerMerritt/status/1986170355535286529",
     "title": "Sawyer Merritt",
     "description": "BREAKING: SpaceX has announced that @Starlink now has over 8 million customers",
@@ -14,18 +17,18 @@ Content-Type: application/json
       "favIcon": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://x.com&size=128",
       "twitter_avatar_url": "https://pbs.twimg.com/profile_images/1837744842715082752/xH9vYixL_normal.jpg"
     },
-    "inserted_at": "2026-01-20T08:53:32.394835Z",
+    "inserted_at": "2026-01-20T08:53:32.394Z",
     "sort_index": "1848019423856806627"
   }]
 }
 
-### Sync Multiple Tweets (with different sort_index for ordering)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
+### Sync Multiple Tweets (batch)
+POST {{$dotenv API_BASE_URL}}/twitter/sync
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "bookmarks": [
     {
       "url": "https://x.com/narendramodi/status/1984243645050945961",
       "title": "Modi",
@@ -55,152 +58,107 @@ Content-Type: application/json
   ]
 }
 
-### Sync Tweet with All Optional Fields
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
+### Sync Tweet with All Optional Fields (including video_url)
+POST {{$dotenv API_BASE_URL}}/twitter/sync
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [{
-    "url": "https://www.x.com/testuser/status/FULL001",
+  "bookmarks": [{
+    "url": "https://www.x.com/testuser/status/1990000000000000001",
     "title": "Full Tweet",
-    "description": "Tweet with all fields",
+    "description": "Tweet with all fields including video",
     "type": "tweet",
     "ogImage": "https://pbs.twimg.com/media/full.jpg",
     "sort_index": "1848019423856806627",
-    "inserted_at": "2024-01-15T10:30:00.000Z",
-    "category_name": "Test Category",
+    "inserted_at": "2026-01-15T10:30:00.000Z",
     "meta_data": {
       "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico",
       "twitter_avatar_url": "https://pbs.twimg.com/profile_images/avatar.jpg",
-      "video_url": "https://video.twimg.com/ext_tw_video/video.mp4"
+      "video_url": "https://video.twimg.com/ext_tw_vi deo/video.mp4"
     }
   }]
 }
 
-### Validation Error - Empty Data Array
-# Expected: 400 - Validation error (Zod schema validation)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
+### Sync Tweet with Minimal Fields (defaults applied)
+# title, description default to "", ogImage defaults to null
+POST {{$dotenv API_BASE_URL}}/twitter/sync
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": []
-}
-
-### Auth Error - No Token
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://x.com/interesting_aIl/status/2009045432358367692",
-    "title": "No Auth Test",
-    "description": "Test without auth",
+  "bookmarks": [{
+    "url": "https://x.com/testuser/status/1990000000000000002",
     "type": "tweet",
-    "ogImage": null,
-    "sort_index": "1848019423856806629",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
+    "meta_data": {},
+    "sort_index": "1848019423856806628"
   }]
 }
 
-### Validation Error - Invalid URL Format (not a URL)
-# Expected: 400 - Validation error
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
+### Sync Tweet from twitter.com domain
+# Edge Function validates both x.com and twitter.com
+POST {{$dotenv API_BASE_URL}}/twitter/sync
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [{
+  "bookmarks": [{
+    "url": "https://twitter.com/testuser/status/1990000000000000003",
+    "title": "Old Domain Tweet",
+    "description": "From twitter.com",
+    "type": "tweet",
+    "meta_data": {},
+    "sort_index": "1848019423856806629"
+  }]
+}
+
+### Validation Error - Empty Bookmarks Array
+# Expected: 400 - At least one bookmark required
+POST {{$dotenv API_BASE_URL}}/twitter/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": []
+}
+
+### Validation Error - Missing Bookmarks Field
+# Expected: 400 - Zod validation error
+POST {{$dotenv API_BASE_URL}}/twitter/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{}
+
+### Validation Error - Invalid URL Format
+# Expected: 400 - url must be a valid URL
+POST {{$dotenv API_BASE_URL}}/twitter/sync
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "bookmarks": [{
     "url": "not-a-valid-url",
     "title": "Invalid URL Test",
     "description": "Test description",
     "type": "tweet",
-    "ogImage": null,
-    "sort_index": "1848019423856806630",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
+    "meta_data": {},
+    "sort_index": "1848019423856806630"
   }]
 }
 
-
-### Validation Error - Missing Required Field (favIcon)
-# Expected: 400 - Validation error (favIcon is required in meta_data)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
+### Auth Error - No Token
+# Expected: 401 - Not authenticated
+POST {{$dotenv API_BASE_URL}}/twitter/sync
 Content-Type: application/json
 
 {
-  "data": [{
-    "url": "https://x.com/testuser/status/MISSING_FAVICON",
-    "title": "Missing FavIcon Test",
-    "description": "Test description",
+  "bookmarks": [{
+    "url": "https://x.com/testuser/status/1990000000000000004",
+    "title": "No Auth Test",
+    "description": "Test without auth",
     "type": "tweet",
-    "ogImage": null,
-    "sort_index": "1848019423856806631",
-    "meta_data": {}
-  }]
-}
-
-### Validation Error - Missing Required Field (sort_index)
-# Expected: 400 - Validation error (sort_index is required)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://x.com/testuser/status/MISSING_SORT",
-    "title": "Missing Sort Index Test",
-    "description": "Test description",
-    "type": "tweet",
-    "ogImage": null,
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
-
-### Validation Error - Missing Required Field (description)
-# Expected: 400 - Validation error (description is required)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://x.com/testuser/status/MISSING_DESC",
-    "title": "Missing Description Test",
-    "type": "tweet",
-    "ogImage": null,
-    "sort_index": "1848019423856806632",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
-  }]
-}
-
-
-### Duplicate Detection - All URLs Already Exist
-# Expected: 200 - { success: true, error: "No data to insert", data: [] }
-# This happens when all URLs in the payload already exist for this user
-POST {{$dotenv API_BASE_URL}}/v1/twitter/sync
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [{
-    "url": "https://x.com/testuser/status/DUPLICATE",
-    "title": "Duplicate Test",
-    "description": "This URL already exists",
-    "type": "tweet",
-    "ogImage": null,
-    "sort_index": "1848019423856806633",
-    "meta_data": {
-      "favIcon": "https://abs.twimg.com/favicons/twitter.3.ico"
-    }
+    "meta_data": {},
+    "sort_index": "1848019423856806631"
   }]
 }
