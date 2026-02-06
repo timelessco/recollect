@@ -445,6 +445,7 @@ export type Database = {
 					p_bookmark_id: number;
 					p_category_name?: string;
 					p_favicon?: string;
+					p_inserted_at?: string;
 					p_media_type?: string;
 					p_msg_id?: number;
 					p_og_image?: string;
