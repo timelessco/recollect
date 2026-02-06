@@ -16,7 +16,7 @@ Sentry.setTag("execution_id", Deno.env.get("SB_EXECUTION_ID") ?? "unknown");
 
 // Keep in sync with src/utils/constants.ts TWITTER_IMPORTS_QUEUE
 const QUEUE_NAME = "twitter_imports";
-const BATCH_SIZE = 50;
+const BATCH_SIZE = 5;
 const VISIBILITY_TIMEOUT = 30; // seconds
 const MAX_RETRIES = 3;
 
