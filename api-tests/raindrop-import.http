@@ -218,7 +218,7 @@ Authorization: Bearer {{$dotenv USER_TOKEN}}
 ### Flow Step 3: Invoke Worker (processes queue)
 # Expected: { "processed": N, "archived": N, ... }
 POST {{$dotenv FUNCTIONS_BASE_URL}}/process-raindrop-imports
-Authorization: Bearer {{$dotenv LOCAL_SERVICE_ROLE_KEY}}
+Authorization: Bearer {{$dotenv SERVICE_ROLE_KEY}}
 Content-Type: application/json
 
 {}
