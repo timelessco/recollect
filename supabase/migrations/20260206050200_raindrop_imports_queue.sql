@@ -77,6 +77,7 @@ DECLARE
   v_description TEXT;
   v_og_image TEXT;
   v_category_name TEXT;
+  v_inserted_at TIMESTAMP WITH TIME ZONE;
   v_exists BOOLEAN;
   v_inserted INT := 0;
   v_skipped INT := 0;
@@ -93,6 +94,11 @@ BEGIN
     v_description := v_bookmark->>'description';
     v_og_image := v_bookmark->>'ogImage';
     v_category_name := v_bookmark->>'category_name';
+    v_inserted_at := CASE 
+      WHEN v_bookmark->>'inserted_at' IS NULL OR v_bookmark->>'inserted_at' = '' 
+      THEN NULL 
+      ELSE (v_bookmark->>'inserted_at')::TIMESTAMP WITH TIME ZONE 
+    END;
 
     -- Skip if URL is empty
     IF v_url IS NULL OR btrim(v_url) = '' THEN
@@ -113,7 +119,7 @@ BEGIN
     END IF;
 
     -- Insert bookmark with minimal data (enrichment happens in queue)
-    INSERT INTO everything (url, user_id, title, description, "ogImage", type, meta_data, trash)
+    INSERT INTO everything (url, user_id, title, description, "ogImage", type, meta_data, trash, inserted_at)
     VALUES (
       v_url,
       p_user_id,
@@ -125,7 +131,8 @@ BEGIN
         'is_raindrop_bookmark', true,
         'raindrop_category_name', v_category_name
       ),
-      NULL
+      NULL,
+      COALESCE(v_inserted_at, NOW())
     )
     RETURNING id INTO v_bookmark_id;
 
@@ -139,7 +146,8 @@ BEGIN
         'url', v_url,
         'ogImage', v_og_image,
         'raindrop_category_name', v_category_name,
-        'user_id', p_user_id::text
+        'user_id', p_user_id::text,
+        'inserted_at', CASE WHEN v_inserted_at IS NULL THEN NULL ELSE v_inserted_at::text END
       )
     );
 
@@ -175,6 +183,7 @@ CREATE OR REPLACE FUNCTION public.process_raindrop_bookmark(
   p_favicon TEXT DEFAULT NULL,
   p_og_image TEXT DEFAULT NULL,
   p_media_type TEXT DEFAULT NULL,
+  p_inserted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
   p_msg_id BIGINT DEFAULT NULL
 ) RETURNS JSONB
 LANGUAGE plpgsql
@@ -273,6 +282,7 @@ BEGIN
   UPDATE everything
   SET
     "ogImage" = p_og_image,
+    inserted_at = COALESCE(p_inserted_at, inserted_at),
     meta_data = COALESCE(v_current_meta, '{}'::jsonb) || jsonb_build_object(
       'favIcon', p_favicon,
       'mediaType', p_media_type,
@@ -344,8 +354,8 @@ EXCEPTION
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.process_raindrop_bookmark(BIGINT, UUID, TEXT, TEXT, TEXT, TEXT, BIGINT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.process_raindrop_bookmark(BIGINT, UUID, TEXT, TEXT, TEXT, TEXT, BIGINT) TO service_role;
+REVOKE ALL ON FUNCTION public.process_raindrop_bookmark(BIGINT, UUID, TEXT, TEXT, TEXT, TEXT, TIMESTAMP WITH TIME ZONE, BIGINT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.process_raindrop_bookmark(BIGINT, UUID, TEXT, TEXT, TEXT, TEXT, TIMESTAMP WITH TIME ZONE, BIGINT) TO service_role;
 
 COMMENT ON FUNCTION public.process_raindrop_bookmark IS
 'Atomic Raindrop bookmark enrichment: category get/create, dedup, sanitized data update, junction entries, ai-embeddings enqueue. Called by Edge Function worker.';

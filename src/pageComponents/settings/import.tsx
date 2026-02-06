@@ -120,13 +120,12 @@ export const ImportBookmarks = () => {
 				url: string;
 				cover: string;
 				folder?: string;
+				created?: string;
 			}>;
 
 			if (!records.length) {
 				return;
 			}
-
-			console.log(records);
 
 			const bookmarks = records.map((bookmark) => ({
 				title: bookmark.title || null,
@@ -134,6 +133,7 @@ export const ImportBookmarks = () => {
 				url: bookmark.url,
 				ogImage: bookmark.cover || null,
 				category_name: bookmark.folder || null,
+				inserted_at: bookmark.created || null,
 			}));
 
 			importBookmarksMutation.mutate({ bookmarks });

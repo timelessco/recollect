@@ -33,6 +33,7 @@ interface QueueMessage {
 		ogImage: string | null;
 		raindrop_category_name: string | null;
 		user_id: string;
+		inserted_at?: string; // ISO datetime string
 		// Error tracking
 		last_error?: string;
 		last_error_at?: string;
@@ -220,6 +221,7 @@ async function processMessage(
 		p_favicon: sanitized.favicon,
 		p_og_image: sanitized.ogImage,
 		p_media_type: sanitized.mediaType,
+		p_inserted_at: bookmark.inserted_at || null,
 		p_msg_id: msg_id,
 	});
 
