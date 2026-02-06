@@ -127,7 +127,7 @@ export const POST = createPostApiHandlerWithAuth({
 		// - View settings (columns, sort order, card content)
 		// - Category name, icon, or color changes
 		// Don't await - failed revalidation shouldn't fail the mutation
-		if (categoryData[0].is_public) {
+		if (categoryData[0].is_public || updateData.is_public !== undefined) {
 			// Fetch user profile to get username for revalidation path
 			const { data: profileData, error: profileError } = await supabase
 				.from(PROFILES)
