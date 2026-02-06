@@ -195,6 +195,7 @@ export const isUserInACategory = (url: string) => {
 		TRASH_URL,
 		IMAGES_URL,
 		VIDEOS_URL,
+		AUDIO_URL,
 		DOCUMENTS_URL,
 		LINKS_URL,
 		TWEETS_URL,

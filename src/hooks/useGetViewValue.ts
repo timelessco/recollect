@@ -12,15 +12,11 @@ import {
 } from "../types/apiTypes";
 import {
 	CATEGORIES_KEY,
-	infoValues,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
-	viewValues,
 } from "../utils/constants";
 import { isUserInACategory } from "../utils/helpers";
 import { getCategorySlugFromRouter } from "../utils/url";
-
-import useIsUserInTweetsPage from "./useIsUserInTweetsPage";
 
 // gets the card views for the user , like moodboard, list ....
 const useGetViewValue = (
@@ -29,7 +25,6 @@ const useGetViewValue = (
 	isPublicPage = false,
 	categoryViewsFromProps: BookmarkViewDataTypes | undefined = undefined,
 ) => {
-	const isInTweetsPage = useIsUserInTweetsPage();
 	const queryClient = useQueryClient();
 	const router = useRouter();
 	// cat_id refers to cat slug here as it's got from url
@@ -68,14 +63,6 @@ const useGetViewValue = (
 		categoryData?.data,
 		(item) => item?.category_slug === categorySlug,
 	)?.id;
-
-	if (viewType === "bookmarksView" && isInTweetsPage) {
-		return viewValues.timeline;
-	}
-
-	if (viewType === "cardContentViewArray" && isInTweetsPage) {
-		return infoValues;
-	}
 
 	if (!isPublicPage) {
 		if (isUserInACategory(categorySlug as string)) {
