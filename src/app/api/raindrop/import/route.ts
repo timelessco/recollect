@@ -39,7 +39,7 @@ export const POST = createPostApiHandlerWithAuth({
 			userId,
 		});
 
-		// In-memory dedup: remove exact URL duplicates within the batch
+		// In-memory deduplicate: remove exact URL duplicates within the batch
 		const seen = new Set<string>();
 		const uniqueBookmarks = data.bookmarks.filter((bookmark) => {
 			const key = bookmark.url;
