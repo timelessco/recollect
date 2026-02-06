@@ -252,7 +252,7 @@ export const CategoryMultiSelect = ({
 									<CollectionIcon
 										bookmarkCategoryData={category}
 										iconSize="8"
-										size="12"
+										size="14"
 									/>
 									<Combobox.ChipContent item={category}>
 										{category.category_name}

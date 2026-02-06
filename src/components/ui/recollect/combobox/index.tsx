@@ -219,7 +219,13 @@ function ChipContent<T>({
 	const { getItemLabel } = useComboboxContext<T>();
 
 	return (
-		<span className={cn("max-w-[100px] truncate", className)} {...props}>
+		<span
+			className={cn(
+				"max-w-[100px] truncate leading-[115%] tracking-[0.13px]",
+				className,
+			)}
+			{...props}
+		>
 			{children ?? getItemLabel(item)}
 		</span>
 	);
