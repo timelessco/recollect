@@ -61,7 +61,7 @@ Content-Type: application/json
   ]
 }
 
-### Dedup Test - Re-import Same URL
+### Deduplicate Test - Re-import Same URL
 # Run after importing single bookmark above
 # Expected: { "data": { "queued": 0, "skipped": 1 }, "error": null }
 POST {{$dotenv API_BASE_URL}}/raindrop/import
@@ -81,8 +81,8 @@ Content-Type: application/json
   ]
 }
 
-### Batch Dedup - Duplicate URLs Within Same Batch
-# In-memory dedup removes the second entry before hitting DB
+### Batch Deduplicate - Duplicate URLs Within Same Batch
+# In-memory deduplicate removes the second entry before hitting DB
 # Expected: { "data": { "queued": 1, "skipped": 1 }, "error": null }
 POST {{$dotenv API_BASE_URL}}/raindrop/import
 Authorization: Bearer {{$dotenv USER_TOKEN}}
@@ -101,7 +101,7 @@ Content-Type: application/json
     {
       "url": "https://example.com/unique-url-dedup-test",
       "title": "Second Copy",
-      "description": "This one should be skipped (in-memory dedup)",
+      "description": "This one should be skipped (in-memory deduplicate)",
       "ogImage": null,
       "category_name": "Unsorted",
       "inserted_at": "2025-01-01T00:00:00.000Z"
