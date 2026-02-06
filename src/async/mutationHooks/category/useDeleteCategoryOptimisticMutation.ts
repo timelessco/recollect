@@ -2,7 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useSupabaseSession } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
-import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
+import {
+	BOOKMARKS_COUNT_KEY,
+	BOOKMARKS_KEY,
+	CATEGORIES_KEY,
+	USER_PROFILE,
+} from "../../../utils/constants";
 import { deleteUserCategory } from "../../supabaseCrudHelpers";
 
 // deletes a category optimistically
@@ -51,6 +56,12 @@ export default function useDeleteCategoryOptimisticMutation() {
 			});
 			void queryClient.invalidateQueries({
 				queryKey: [USER_PROFILE, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_KEY, session?.user?.id],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
 			});
 		},
 	});

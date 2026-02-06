@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 import {
@@ -51,9 +52,30 @@ export async function updateSession(request: NextRequest) {
 	// with the Supabase client, your users may be randomly logged out.
 	const { data, error } = await supabase.auth.getClaims();
 
-	// If Supabase is unavailable (connection error), throw to trigger not-found page
 	if (error) {
-		throw error;
+		// Network error or server error (5xx) - Supabase is unavailable
+		// Throw to trigger error page in proxy.ts
+		if (
+			isAuthRetryableFetchError(error) ||
+			(error.status && error.status >= 500)
+		) {
+			throw error;
+		}
+
+		// Auth error (4xx: expired JWT, no session, invalid token)
+		// This is normal flow - redirect to login
+		if (!isGuestPath(pathname)) {
+			const loginUrl = request.nextUrl.clone();
+			loginUrl.pathname = `/${LOGIN_URL}`;
+			if (!loginUrl.searchParams.has("next")) {
+				loginUrl.searchParams.set("next", pathname);
+			}
+
+			return NextResponse.redirect(loginUrl);
+		}
+
+		// Guest path with auth error - allow through
+		return supabaseResponse;
 	}
 
 	const user = data?.claims;

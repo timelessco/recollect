@@ -319,9 +319,12 @@ export const moveBookmarkToTrash = async ({
 	isTrash,
 }: MoveBookmarkToTrashApiPayload) => {
 	try {
+		// Only send bookmark IDs to the API - full data is only needed client-side for optimistic updates
+		const minimalData = data.map((bookmark) => ({ id: bookmark.id }));
+
 		const response = await axios.post(
 			`${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
-			{ data, isTrash },
+			{ data: minimalData, isTrash },
 		);
 
 		return response;
@@ -456,7 +459,6 @@ export const fetchCategoriesData = async (): Promise<{
 
 export const deleteUserCategory = async ({
 	category_id,
-	category_order,
 }: DeleteUserCategoryApiPayload) => {
 	try {
 		const response = await axios.post<{
@@ -464,7 +466,6 @@ export const deleteUserCategory = async ({
 			error: Error;
 		}>(`${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`, {
 			category_id,
-			category_order,
 		});
 		return response?.data;
 	} catch (error) {

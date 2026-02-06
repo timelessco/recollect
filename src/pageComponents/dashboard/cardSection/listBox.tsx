@@ -51,8 +51,8 @@ import { CardViewVirtualized } from "./cardViewVirtualized";
 import { SingleRowViewVirtualized } from "./listViewVirtualized";
 import { MoodboardViewVirtualized } from "./moodboardViewVirtualized";
 import Option from "./option";
+import { useMoveBookmarkToTrashOptimisticMutation } from "@/async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
-import useMoveBookmarkToTrashOptimisticMutation from "@/async/mutationHooks/bookmarks/useMoveBookmarkToTrashOptimisticMutation";
 import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
@@ -182,13 +182,14 @@ const ListBox = (props: ListBoxDropTypes) => {
 	});
 	const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
 
-	useEffect(() => {
-		rowVirtualizer.scrollToIndex(0);
-	}, [rowVirtualizer, cardTypeCondition, bookmarksInfoValue]);
-
 	const router = useRouter();
 	// cat_id refers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
+
+	// Reset scroll to top when changing pages or view settings
+	useEffect(() => {
+		rowVirtualizer.scrollToIndex(0);
+	}, [rowVirtualizer, cardTypeCondition, bookmarksInfoValue, categorySlug]);
 	// Setup listbox as normal. See the useListBox docs for more details.
 	const preview = useRef(null);
 	const state = useListState(props);

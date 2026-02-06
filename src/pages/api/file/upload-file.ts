@@ -18,6 +18,7 @@ import {
 	type UploadFileApiResponse,
 } from "../../../types/apiTypes";
 import {
+	AUDIO_OG_IMAGE_FALLBACK_URL,
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	getBaseUrl,
 	MAIN_TABLE_NAME,
@@ -262,11 +263,19 @@ export default async (
 		};
 		const isVideo = fileType?.includes("video");
 
+		const isAudio = fileType?.includes("audio");
+
 		let ogImage;
 
 		if (!isVideo) {
 			// if file is not a video
 			ogImage = storageData?.publicUrl;
+			if (isAudio) {
+				console.log("Setting audio ogImage fallback:", {
+					fileType,
+				});
+				ogImage = AUDIO_OG_IMAGE_FALLBACK_URL;
+			}
 		} else {
 			// if file is a video
 			console.log("Processing video file:", {

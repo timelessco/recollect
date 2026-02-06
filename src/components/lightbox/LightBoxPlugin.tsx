@@ -247,7 +247,8 @@ const MyComponent = () => {
 					</div>
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.img_caption ||
-						metaData?.ocr) && (
+						metaData?.ocr ||
+						metaData?.image_caption) && (
 						<motion.div
 							animate={{
 								y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
@@ -280,7 +281,9 @@ const MyComponent = () => {
 									</div>
 								</div>
 							)}
-							{(metaData?.img_caption || metaData?.ocr) && (
+							{(metaData?.img_caption ||
+								metaData?.ocr ||
+								metaData?.image_caption !== null) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
