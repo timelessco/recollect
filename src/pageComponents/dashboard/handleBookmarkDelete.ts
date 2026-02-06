@@ -15,7 +15,7 @@ type BulkDeleteBookmarkParams = {
 	sessionUserId: string | undefined;
 	moveBookmarkToTrashOptimisticMutation: {
 		mutateAsync: (data: {
-			data: SingleListData;
+			data: SingleListData[];
 			isTrash: boolean;
 		}) => Promise<unknown>;
 	};
@@ -55,39 +55,45 @@ export const handleBulkBookmarkDelete = ({
 		? flattenedSearchData
 		: flattendPaginationBookmarkData;
 	if (!deleteForever) {
-		const mutations = [];
-		for (const item of bookmarkIds) {
-			const bookmarkId = item;
-			const delBookmarksData = find(
-				currentBookmarksData,
-				(delItem) => delItem?.id === bookmarkId,
-			) as SingleListData;
+		const foundBookmarks = bookmarkIds
+			.map(
+				(id) =>
+					find(
+						currentBookmarksData,
+						(item) => item?.id === id,
+					) as SingleListData,
+			)
+			.filter(Boolean);
 
-			if (!delBookmarksData) {
-				console.warn(`Bookmark ${bookmarkId} not found in current data`);
-				continue;
-			}
+		const ownedBookmarks: SingleListData[] = [];
+		let skippedCount = 0;
 
-			const isOwnBookmark = isBookmarkOwner(
-				delBookmarksData.user_id,
-				sessionUserId,
-			);
-
-			if (isOwnBookmark) {
-				mutations.push(
-					mutationApiCall(
-						moveBookmarkToTrashOptimisticMutation.mutateAsync({
-							data: delBookmarksData,
-							isTrash,
-						}),
-					),
-				);
+		for (const bookmark of foundBookmarks) {
+			if (isBookmarkOwner(bookmark.user_id, sessionUserId)) {
+				ownedBookmarks.push(bookmark);
 			} else {
-				errorToast("Cannot delete other users uploads");
+				skippedCount++;
 			}
 		}
 
-		void Promise.allSettled(mutations);
+		if (skippedCount > 0) {
+			errorToast(
+				skippedCount === 1
+					? "Cannot delete 1 bookmark owned by another user"
+					: `Cannot delete ${skippedCount} bookmarks owned by other users`,
+			);
+		}
+
+		if (ownedBookmarks.length > 0) {
+			void mutationApiCall(
+				moveBookmarkToTrashOptimisticMutation.mutateAsync({
+					data: ownedBookmarks,
+					isTrash,
+				}),
+			);
+			// Clear selection to close the selection bar
+			clearSelection();
+		}
 	} else {
 		const bookmarksToDelete = [...(deleteBookmarkId ?? []), ...bookmarkIds];
 		if (bookmarksToDelete.length > 0) {

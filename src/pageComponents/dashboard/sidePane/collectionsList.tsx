@@ -43,6 +43,7 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
+import Modal from "../../../components/modal";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -300,6 +301,11 @@ const CollectionsList = () => {
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
+	const [deleteConfirmation, setDeleteConfirmation] = useState<{
+		isOpen: boolean;
+		categoryId: number | null;
+		isCurrent: boolean;
+	}>({ isOpen: false, categoryId: null, isCurrent: false });
 
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 	const { addCategoryToBookmarkOptimisticMutation } =
@@ -323,21 +329,61 @@ const CollectionsList = () => {
 		[flattendPaginationBookmarkData, flattenedSearchData],
 	);
 
-	const handleCategoryOptionClick = async (
+	const handleCategoryOptionClick = (
 		value: number | string,
 		current: boolean,
 		id: number,
 	) => {
 		switch (value) {
 			case "delete":
-				await onDeleteCollection(current, id);
+				setDeleteConfirmation({
+					isOpen: true,
+					categoryId: id,
+					isCurrent: current,
+				});
 				break;
+
 			case "share":
 				// code block
 				break;
+
 			default:
 			// code block
 		}
+	};
+
+	const handleConfirmDelete = async () => {
+		if (deleteConfirmation.categoryId !== null) {
+			try {
+				await onDeleteCollection(
+					deleteConfirmation.isCurrent,
+					deleteConfirmation.categoryId,
+				);
+				setDeleteConfirmation({
+					isOpen: false,
+					categoryId: null,
+					isCurrent: false,
+				});
+			} catch {
+				// Modal stays open on error; mutation hook handles error toast
+			}
+
+			return;
+		}
+
+		setDeleteConfirmation({
+			isOpen: false,
+			categoryId: null,
+			isCurrent: false,
+		});
+	};
+
+	const handleCancelDelete = () => {
+		setDeleteConfirmation({
+			isOpen: false,
+			categoryId: null,
+			isCurrent: false,
+		});
 	};
 
 	const currentPath = useGetCurrentUrlPath();
@@ -520,6 +566,11 @@ const CollectionsList = () => {
 		return [];
 	};
 
+	const bookmarkCount =
+		bookmarksCountData?.data?.categoryCount?.find(
+			(item) => item?.category_id === deleteConfirmation.categoryId,
+		)?.count ?? 0;
+
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data[0]?.category_order;
 
@@ -697,6 +748,38 @@ const CollectionsList = () => {
 					</p>
 				</div>
 			</AriaDisclosure>
+
+			{/* Delete Collection Confirmation Modal */}
+			<Modal
+				open={deleteConfirmation.isOpen}
+				setOpen={handleCancelDelete}
+				wrapperClassName="min-w-[448px] max-w-md p-6 rounded-xl"
+			>
+				<h2 className="text-lg font-semibold text-gray-900">
+					Delete Collection
+				</h2>
+				{bookmarkCount > 0 && (
+					<p className="mt-2 text-sm text-gray-600">
+						You have {bookmarkCount} bookmarks in this collection.
+					</p>
+				)}
+				<div className="mt-4 flex justify-end gap-3">
+					<button
+						className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+						onClick={handleCancelDelete}
+						type="button"
+					>
+						Cancel
+					</button>
+					<button
+						className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+						onClick={handleConfirmDelete}
+						type="button"
+					>
+						Delete
+					</button>
+				</div>
+			</Modal>
 		</div>
 	);
 };
