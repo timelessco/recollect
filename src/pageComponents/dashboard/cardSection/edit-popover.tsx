@@ -87,19 +87,22 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 								isDiscoverable={post.make_discoverable !== null}
 							/>
 						</div>
-						<div className="px-2.5 py-1">
-							<div className="h-px bg-gray-200" />
-						</div>
 						{(() => {
 							const domain = getDomain(post.url);
 							// Don't render checkbox for domains that are already skipped for OG images
 							return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
-								<div className="w-full">
-									<OgPreferenceCheckbox
-										bookmarkUrl={post.url}
-										userId={userId}
-									/>
-								</div>
+								<>
+									<div className="px-2.5 py-1">
+										<div className="h-px bg-gray-200" />
+									</div>
+
+									<div className="w-full">
+										<OgPreferenceCheckbox
+											bookmarkUrl={post.url}
+											userId={userId}
+										/>
+									</div>
+								</>
 							) : null;
 						})()}
 					</Popover.Popup>
