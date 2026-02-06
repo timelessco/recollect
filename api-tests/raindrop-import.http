@@ -1,5 +1,5 @@
 ### Import Raindrop Bookmarks (Success - Mixed Categories)
-# Imports 4 bookmarks: 2 Unsorted, 2 "unread" category
+# Imports 3 bookmarks: 1 Unsorted, 2 "unread" category
 # Expected: { "data": { "queued": 4, "skipped": 0 }, "error": null }
 POST {{$dotenv API_BASE_URL}}/raindrop/import
 Authorization: Bearer {{$dotenv USER_TOKEN}}
@@ -7,14 +7,6 @@ Content-Type: application/json
 
 {
   "bookmarks": [
-    {
-      "url": "https://oscargabriel.dev/blog/tanstacks-open-ai-sdk",
-      "title": "TanStack's Open. AI. SDK.",
-      "description": "TanStack AI takes the headless, vendor-agnostic philosophy that made TanStack famous and applies it to AI development. Here's how it compares to Vercel's AI SDK.",
-      "ogImage": "https://oscargabriel.dev/images/lilo-and-stitch.jpg",
-      "category_name": "Unsorted",
-      "inserted_at": "2025-12-07T18:22:14.710Z"
-    },
     {
       "url": "https://v0.app/chat/react-view-transitions-u0iKm2LIxil?utm_source=sahaj-jj&utm_medium=referral&utm_campaign=share_chat&ref=35O8TY",
       "title": "React view transitions - v0 by Vercel",
