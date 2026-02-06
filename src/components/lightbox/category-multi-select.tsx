@@ -83,13 +83,7 @@ export const CategoryMultiSelect = ({
 
 					<Combobox.Portal>
 						<Combobox.Positioner className="z-10000">
-							<Combobox.Popup
-								className="mt-2 rounded-lg bg-gray-50"
-								style={{
-									boxShadow:
-										"0px 0px 1px 0px rgba(0, 0, 0, 0.19), 0px 1px 2px 0px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
-								}}
-							>
+							<Combobox.Popup className="mt-2 rounded-lg bg-gray-50 shadow-custom-3">
 								<ScrollArea
 									scrollbarGutter
 									scrollFade

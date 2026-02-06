@@ -296,11 +296,18 @@ function Positioner({
 	);
 }
 
-function Popup({ children, ...props }: ComboboxPrimitive.Popup.Props) {
+function Popup({
+	className,
+	children,
+	...props
+}: ComboboxPrimitive.Popup.Props) {
 	return (
 		<ComboboxPrimitive.Popup
 			data-slot="combobox-popup"
-			className="w-(--anchor-width) origin-(--transform-origin) rounded-xl bg-gray-0 shadow-custom-7 transition-[scale,opacity,shadow] data-starting-style:scale-98 data-starting-style:opacity-0"
+			className={cn(
+				"w-(--anchor-width) origin-(--transform-origin) rounded-xl bg-gray-0 shadow-custom-7 transition-[scale,opacity,shadow] data-starting-style:scale-98 data-starting-style:opacity-0",
+				className,
+			)}
 			{...props}
 		>
 			{children}

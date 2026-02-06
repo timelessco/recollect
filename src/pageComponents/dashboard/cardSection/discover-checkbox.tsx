@@ -27,7 +27,7 @@ export const DiscoverCheckbox = ({
 				<div className="flex h-4 w-4 items-center justify-center text-gray-800">
 					<DiscoverIcon className="h-4 w-4" />
 				</div>
-				<span className="text-13 leading-4 font-450 text-gray-800">
+				<span className="text-13 leading-[115%] font-450 tracking-[0.13px] text-gray-800">
 					Show in discover page
 				</span>
 			</div>
