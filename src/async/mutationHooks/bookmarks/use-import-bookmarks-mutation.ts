@@ -18,6 +18,7 @@ export interface ImportBookmarkPayload {
 	url: string;
 	ogImage: string | null;
 	category_name: string | null;
+	inserted_at: string | null;
 }
 
 export interface ImportBookmarksRequest {
