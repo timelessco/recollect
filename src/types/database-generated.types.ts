@@ -408,6 +408,10 @@ export type Database = {
 					tag_user_id: string;
 				}>;
 			};
+			enqueue_raindrop_bookmarks: {
+				Args: { p_bookmarks: Json; p_user_id: string };
+				Returns: Json;
+			};
 			get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			get_instagram_worker_failures: {
 				Args: { p_since_minutes?: number };
@@ -418,7 +422,9 @@ export type Database = {
 					status_code: number;
 				}>;
 			};
+			get_raindrop_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			invoke_instagram_worker: { Args: never; Returns: number };
+			invoke_raindrop_worker: { Args: never; Returns: number };
 			process_instagram_bookmark: {
 				Args: {
 					p_collection_names?: string[];
@@ -434,6 +440,18 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			process_raindrop_bookmark: {
+				Args: {
+					p_bookmark_id: number;
+					p_category_name?: string;
+					p_favicon?: string;
+					p_media_type?: string;
+					p_msg_id?: number;
+					p_og_image?: string;
+					p_user_id: string;
+				};
+				Returns: Json;
+			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{
@@ -445,7 +463,15 @@ export type Database = {
 				Args: { p_user_id: string };
 				Returns: Json;
 			};
+			retry_all_raindrop_imports: {
+				Args: { p_user_id: string };
+				Returns: Json;
+			};
 			retry_instagram_import: {
+				Args: { p_msg_ids: number[]; p_user_id: string };
+				Returns: Json;
+			};
+			retry_raindrop_import: {
 				Args: { p_msg_ids: number[]; p_user_id: string };
 				Returns: Json;
 			};

@@ -126,6 +126,8 @@ export const ImportBookmarks = () => {
 				return;
 			}
 
+			console.log(records);
+
 			const bookmarks = records.map((bookmark) => ({
 				title: bookmark.title || null,
 				description: bookmark.excerpt || null,
