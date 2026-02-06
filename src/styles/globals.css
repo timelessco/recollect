@@ -11,6 +11,7 @@
 	/* Light Gray Shades (from figma variables) */
 	--color-gray-0: #fff;
 	--color-gray-50: #fff;
+	--color-gray-90: #fff;
 	--color-gray-100: #f5f5f5;
 	--color-gray-200: #ededed;
 	--color-gray-300: #e0e0e0;
@@ -220,6 +221,7 @@
 	/* Dark Gray Shades (from figma variables) */
 	--color-gray-0: #121212;
 	--color-gray-50: #1c1c1c;
+	--color-gray-90: #2d2d2d;
 	--color-gray-100: #212121;
 	--color-gray-200: #292929;
 	--color-gray-300: #3d3d3d;
@@ -473,6 +475,7 @@
 	/* Gray colors */
 	--color-gray-0: var(--color-gray-0);
 	--color-gray-50: var(--color-gray-50);
+	--color-gray-90: var(--color-gray-90);
 	--color-gray-100: var(--color-gray-100);
 	--color-gray-200: var(--color-gray-200);
 	--color-gray-300: var(--color-gray-300);

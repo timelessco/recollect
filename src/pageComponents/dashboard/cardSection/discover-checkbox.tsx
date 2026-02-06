@@ -1,5 +1,6 @@
 import { useToggleDiscoverableOptimisticMutation } from "@/async/mutationHooks/bookmarks/use-toggle-discoverable-optimistic-mutation";
-import { Checkbox } from "@/components/ui/recollect/checkbox";
+import Switch from "@/components/switch";
+import { DiscoverIcon } from "@/icons/discover-icon";
 
 type DiscoverableCheckboxProps = {
 	bookmarkId: number;
@@ -13,27 +14,31 @@ export const DiscoverCheckbox = ({
 	const { toggleDiscoverableOptimisticMutation } =
 		useToggleDiscoverableOptimisticMutation();
 
-	const handleCheckedChange = (checked: boolean) => {
+	const handleToggle = () => {
 		toggleDiscoverableOptimisticMutation.mutate({
 			bookmark_id: bookmarkId,
-			make_discoverable: checked,
+			make_discoverable: !isDiscoverable,
 		});
 	};
 
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5">
-			{/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-			<label className="flex cursor-pointer items-center gap-2">
-				<Checkbox
-					checked={isDiscoverable}
-					onCheckedChange={handleCheckedChange}
-					className="flex size-4 items-center justify-center rounded border-2 border-gray-400 data-checked:border-gray-800 data-checked:bg-gray-800 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-plain data-checked:[&_svg]:text-gray-200"
-				/>
-
-				<span className="text-sm font-medium text-gray-800">
-					Make discoverable
+		<div className="flex items-center justify-between gap-3 px-2 py-[7.5px]">
+			<div className="flex items-center gap-2">
+				<div className="flex h-4 w-4 items-center justify-center text-gray-800">
+					<DiscoverIcon className="h-4 w-4" />
+				</div>
+				<span className="text-13 leading-4 font-450 text-gray-800">
+					Show in discover page
 				</span>
-			</label>
+			</div>
+			<div className="flex shrink-0 items-center">
+				<Switch
+					enabled={isDiscoverable}
+					setEnabled={handleToggle}
+					disabled={false}
+					size="small"
+				/>
+			</div>
 		</div>
 	);
 };

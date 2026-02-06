@@ -12,6 +12,7 @@ import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
+import { HashIcon } from "@/icons/hash-icon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { DiscoverCheckbox } from "@/pageComponents/dashboard/cardSection/discover-checkbox";
 import { OgPreferenceCheckbox } from "@/pageComponents/dashboard/cardSection/og-preference-checkbox";
@@ -59,7 +60,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 			<Popover.Portal>
 				<Popover.Positioner sideOffset={4} align="start">
 					<Popover.Popup className="z-10 rounded-xl bg-gray-50 p-1 shadow-custom-3">
-						<div className="w-64 space-y-3">
+						<div className="mb-2 w-64 space-y-3">
 							<div className="w-full">
 								<div className="mb-2 ml-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2">
 									Tags
@@ -79,25 +80,28 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 									<CategoryMultiSelect bookmarkId={post.id} />
 								</div>
 							</div>
-							<div className="w-full">
-								<DiscoverCheckbox
-									bookmarkId={post.id}
-									isDiscoverable={post.make_discoverable !== null}
-								/>
-							</div>
-							{(() => {
-								const domain = getDomain(post.url);
-								// Don't render checkbox for domains that are already skipped for OG images
-								return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
-									<div className="w-full">
-										<OgPreferenceCheckbox
-											bookmarkUrl={post.url}
-											userId={userId}
-										/>
-									</div>
-								) : null;
-							})()}
 						</div>
+						<div className="w-full">
+							<DiscoverCheckbox
+								bookmarkId={post.id}
+								isDiscoverable={post.make_discoverable !== null}
+							/>
+						</div>
+						<div className="px-2.5 py-1">
+							<div className="h-px bg-gray-200" />
+						</div>
+						{(() => {
+							const domain = getDomain(post.url);
+							// Don't render checkbox for domains that are already skipped for OG images
+							return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
+								<div className="w-full">
+									<OgPreferenceCheckbox
+										bookmarkUrl={post.url}
+										userId={userId}
+									/>
+								</div>
+							) : null;
+						})()}
 					</Popover.Popup>
 				</Popover.Positioner>
 			</Popover.Portal>
@@ -173,9 +177,9 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 					{(value: UserTagsData[]) => (
 						<>
 							{value.map((tag) => (
-								<Combobox.Chip key={tag.id}>
+								<Combobox.Chip key={tag.id} item={tag} className="bg-plain">
+									<HashIcon className="h-3.5 w-3.5 text-gray-600" />
 									<Combobox.ChipContent item={tag} />
-									<Combobox.ChipRemove />
 								</Combobox.Chip>
 							))}
 
@@ -187,7 +191,13 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 			<Combobox.Portal>
 				<Combobox.Positioner>
 					<Combobox.Popup>
-						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
+						<ScrollArea
+							scrollbarGutter
+							scrollFade
+							scrollHeight={220}
+							hideScrollbar
+							className="rounded-lg bg-gray-90"
+						>
 							<Combobox.List>
 								{(item: UserTagsData) => (
 									<Combobox.Item key={item.id} value={item}>
@@ -234,7 +244,11 @@ export const CategoryMultiSelect = ({
 					{(value: CategoriesData[]) => (
 						<>
 							{value.map((category) => (
-								<Combobox.Chip key={category.id}>
+								<Combobox.Chip
+									key={category.id}
+									item={category}
+									className="bg-plain"
+								>
 									<CollectionIcon
 										bookmarkCategoryData={category}
 										iconSize="8"
@@ -243,7 +257,6 @@ export const CategoryMultiSelect = ({
 									<Combobox.ChipContent item={category}>
 										{category.category_name}
 									</Combobox.ChipContent>
-									<Combobox.ChipRemove />
 								</Combobox.Chip>
 							))}
 							<Combobox.Input placeholder="Search Collections..." />
@@ -254,7 +267,13 @@ export const CategoryMultiSelect = ({
 			<Combobox.Portal>
 				<Combobox.Positioner>
 					<Combobox.Popup>
-						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
+						<ScrollArea
+							scrollbarGutter
+							scrollFade
+							scrollHeight={220}
+							hideScrollbar
+							className="rounded-lg bg-gray-90"
+						>
 							<Combobox.Empty>No collections found</Combobox.Empty>
 							<Combobox.List>
 								{(item: CategoriesData) => (

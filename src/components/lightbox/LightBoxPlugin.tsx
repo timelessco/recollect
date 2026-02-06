@@ -283,7 +283,7 @@ const MyComponent = () => {
 							)}
 							{(metaData?.img_caption ||
 								metaData?.ocr ||
-								metaData?.image_caption !== null) && (
+								metaData?.image_caption) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
