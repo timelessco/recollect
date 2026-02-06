@@ -7,15 +7,15 @@ import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { USER_PROFILE } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 
-type OgPreferenceCheckboxProps = {
+type OgPreferenceSwitchProps = {
 	bookmarkUrl: string;
 	userId: string;
 };
 
-export function OgPreferenceCheckbox({
+export function OgPreferenceSwitch({
 	bookmarkUrl,
 	userId,
-}: OgPreferenceCheckboxProps) {
+}: OgPreferenceSwitchProps) {
 	const queryClient = useQueryClient();
 	const { togglePreferredOgDomainOptimisticMutation } =
 		useTogglePreferredOgDomainOptimisticMutation();
@@ -59,6 +59,7 @@ export function OgPreferenceCheckbox({
 			</div>
 			<div className="flex shrink-0 items-center">
 				<Switch
+					aria-label="Use OG image for this site"
 					enabled={isPreferred}
 					setEnabled={handleToggle}
 					disabled={false}

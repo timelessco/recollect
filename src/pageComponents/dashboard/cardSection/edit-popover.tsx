@@ -14,8 +14,8 @@ import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
 import { HashIcon } from "@/icons/hash-icon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
-import { DiscoverCheckbox } from "@/pageComponents/dashboard/cardSection/discover-checkbox";
-import { OgPreferenceCheckbox } from "@/pageComponents/dashboard/cardSection/og-preference-checkbox";
+import { DiscoverSwitch } from "@/pageComponents/dashboard/cardSection/discover-switch";
+import { OgPreferenceSwitch } from "@/pageComponents/dashboard/cardSection/og-preference-switch";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -82,7 +82,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 							</div>
 						</div>
 						<div className="w-full">
-							<DiscoverCheckbox
+							<DiscoverSwitch
 								bookmarkId={post.id}
 								isDiscoverable={post.make_discoverable !== null}
 							/>
@@ -97,7 +97,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 									</div>
 
 									<div className="w-full">
-										<OgPreferenceCheckbox
+										<OgPreferenceSwitch
 											bookmarkUrl={post.url}
 											userId={userId}
 										/>

@@ -2,15 +2,15 @@ import { useToggleDiscoverableOptimisticMutation } from "@/async/mutationHooks/b
 import Switch from "@/components/switch";
 import { DiscoverIcon } from "@/icons/discover-icon";
 
-type DiscoverableCheckboxProps = {
+type DiscoverSwitchProps = {
 	bookmarkId: number;
 	isDiscoverable: boolean;
 };
 
-export const DiscoverCheckbox = ({
+export const DiscoverSwitch = ({
 	bookmarkId,
 	isDiscoverable,
-}: DiscoverableCheckboxProps) => {
+}: DiscoverSwitchProps) => {
 	const { toggleDiscoverableOptimisticMutation } =
 		useToggleDiscoverableOptimisticMutation();
 
@@ -33,6 +33,7 @@ export const DiscoverCheckbox = ({
 			</div>
 			<div className="flex shrink-0 items-center">
 				<Switch
+					aria-label="Show in discover page"
 					enabled={isDiscoverable}
 					setEnabled={handleToggle}
 					disabled={false}
