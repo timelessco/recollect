@@ -142,8 +142,8 @@ export const POST = createPostApiHandlerWithAuth({
 					categoryId: categoryData[0].id,
 				});
 			} else if (profileData?.user_name) {
-				// Non-blocking revalidation with error handling
-				await revalidatePublicCategoryPage(
+				// Fire-and-forget revalidation - errors handled internally by helper
+				void revalidatePublicCategoryPage(
 					profileData.user_name,
 					categoryData[0].category_slug,
 					{
