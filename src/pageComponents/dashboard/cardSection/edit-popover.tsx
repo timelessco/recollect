@@ -180,7 +180,11 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 					{(value: UserTagsData[]) => (
 						<>
 							{value.map((tag) => (
-								<Combobox.Chip key={tag.id} item={tag} className="bg-plain">
+								<Combobox.Chip
+									key={tag.id}
+									item={tag}
+									className="bg-plain shadow-[0_1px_1px_0_rgba(0,0,0,0.10),0_0_0.5px_0_rgba(0,0,0,0.60)]"
+								>
 									<HashIcon className="h-3.5 w-3.5 text-gray-600" />
 									<Combobox.ChipContent item={tag} />
 								</Combobox.Chip>
