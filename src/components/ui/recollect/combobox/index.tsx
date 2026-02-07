@@ -253,7 +253,7 @@ function Input({
 		<ComboboxPrimitive.Input
 			placeholder={placeholder}
 			className={cn(
-				"min-w-[80px] flex-1 bg-transparent px-[3px] text-sm outline-none placeholder:text-gray-500",
+				"min-w-[80px] flex-1 bg-transparent px-2.5 text-13 leading-[115%] tracking-[0.13px] outline-none placeholder:font-medium placeholder:text-gray-alpha-600",
 				className,
 			)}
 			onKeyDown={handleKeyDown}

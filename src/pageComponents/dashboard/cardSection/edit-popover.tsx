@@ -59,25 +59,24 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 
 			<Popover.Portal>
 				<Popover.Positioner sideOffset={4} align="start">
-					<Popover.Popup className="z-10 rounded-xl bg-gray-50 p-1 shadow-custom-3">
+					<Popover.Popup className="z-10 rounded-xl bg-gray-50 p-1.5 shadow-custom-3">
 						<div className="mb-2 w-64 space-y-3">
 							<div className="w-full">
-								<div className="mb-2 ml-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2">
-									Tags
-								</div>
-
-								<div className="w-full">
-									<TagMultiSelect bookmarkId={post.id} />
-								</div>
-							</div>
-
-							<div className="w-full">
-								<div className="mb-2 ml-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2">
+								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
 									Collections
 								</div>
 
 								<div className="w-full">
 									<CategoryMultiSelect bookmarkId={post.id} />
+								</div>
+							</div>
+							<div className="w-full">
+								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
+									Tags
+								</div>
+
+								<div className="w-full">
+									<TagMultiSelect bookmarkId={post.id} />
 								</div>
 							</div>
 						</div>
@@ -190,7 +189,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 								</Combobox.Chip>
 							))}
 
-							<Combobox.Input placeholder="Tag name..." />
+							<Combobox.Input placeholder="Add tags" />
 						</>
 					)}
 				</Combobox.Value>
@@ -266,7 +265,7 @@ export const CategoryMultiSelect = ({
 									</Combobox.ChipContent>
 								</Combobox.Chip>
 							))}
-							<Combobox.Input placeholder="Search Collections..." />
+							<Combobox.Input placeholder="Add collection" />
 						</>
 					)}
 				</Combobox.Value>

@@ -50,7 +50,11 @@ export const CategoryMultiSelect = ({
 							{(value: CategoriesData[]) => (
 								<>
 									{value.map((category) => (
-										<Combobox.Chip key={category.id} item={category}>
+										<Combobox.Chip
+											key={category.id}
+											item={category}
+											className="py-[5.5px]"
+										>
 											<CollectionIcon
 												bookmarkCategoryData={category}
 												iconSize="8"
@@ -73,7 +77,7 @@ export const CategoryMultiSelect = ({
 													? "Edit collections..."
 													: "Add to collection..."
 											}
-											className="w-[130px] border-none bg-transparent py-[2px] text-13 text-gray-500 outline-none placeholder:text-gray-500"
+											className="w-[130px] border-none bg-transparent px-0.5 py-[2px] text-13 text-gray-500 outline-none placeholder:text-gray-500"
 										/>
 									</div>
 								</>
