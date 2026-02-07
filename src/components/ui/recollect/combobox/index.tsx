@@ -134,12 +134,18 @@ const Root = <T,>({
 		],
 	);
 
+	// Include selected items in the list so Base UI's "ensure selected value remains
+	// valid" effect never drops them when the dropdown list is filtered by search.
+	const deduped = filteredItems.concat(
+		selectedItems.filter(
+			(selected) =>
+				!filteredItems.some((item) => getItemId(item) === getItemId(selected)),
+		),
+	);
+
 	const itemsWithCreate: Array<T | CreateNewItem> = showCreateOption
-		? [
-				...filteredItems,
-				{ __createNew: CREATE_NEW_MARKER, label: inputValue.trim() },
-			]
-		: filteredItems;
+		? [...deduped, { __createNew: CREATE_NEW_MARKER, label: inputValue.trim() }]
+		: deduped;
 
 	return (
 		<ComboboxContext value={contextValue as ComboboxContextValue<unknown>}>
