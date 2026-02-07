@@ -66,17 +66,13 @@ export const CategoryMultiSelect = ({
 										</Combobox.Chip>
 									))}
 
-									<div className="flex items-center gap-1 rounded focus-within:ring-2 focus-within:ring-gray-200">
+									<div className="ml-3.5 flex items-center gap-1 rounded focus-within:ring-2 focus-within:ring-gray-200">
 										<div className="h-[14px] w-[14px] text-gray-600">
 											<AddToCollectionsButton />
 										</div>
 
 										<Combobox.Input
-											placeholder={
-												value.length > 0
-													? "Edit collections..."
-													: "Add to collection..."
-											}
+											placeholder="Add to collection"
 											className="w-[130px] border-none bg-transparent px-0.5 py-[2px] text-13 text-gray-500 outline-none placeholder:text-gray-500"
 										/>
 									</div>
