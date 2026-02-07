@@ -60,9 +60,6 @@ export function useRemoveTagFromBookmarkOptimisticMutation() {
 					queryKey: [BOOKMARKS_KEY, session?.user?.id],
 				});
 			},
-
-			showSuccessToast: true,
-			successMessage: "Tag removed",
 		});
 
 	return { removeTagFromBookmarkOptimisticMutation };
