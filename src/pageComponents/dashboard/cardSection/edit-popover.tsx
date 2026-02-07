@@ -253,7 +253,7 @@ export const CategoryMultiSelect = ({
 								<Combobox.Chip
 									key={category.id}
 									item={category}
-									className="bg-plain"
+									className="bg-plain shadow-[0_1px_1px_0_rgba(0,0,0,0.10),0_0_0.5px_0_rgba(0,0,0,0.60)]"
 								>
 									<CollectionIcon
 										bookmarkCategoryData={category}
