@@ -88,7 +88,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 						</div>
 						{(() => {
 							const domain = getDomain(post.url);
-							// Don't render checkbox for domains that are already skipped for OG images
+							// Don't render switch for domains that are already skipped for OG images
 							return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
 								<>
 									<div className="px-2.5 py-1">
