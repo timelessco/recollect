@@ -189,7 +189,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 								</Combobox.Chip>
 							))}
 
-							<Combobox.Input placeholder="Add tags" />
+							<Combobox.Input placeholder="Add tags" className="py-[4.5px]" />
 						</>
 					)}
 				</Combobox.Value>
@@ -265,7 +265,10 @@ export const CategoryMultiSelect = ({
 									</Combobox.ChipContent>
 								</Combobox.Chip>
 							))}
-							<Combobox.Input placeholder="Add collection" />
+							<Combobox.Input
+								placeholder="Add collection"
+								className="py-[4.5px]"
+							/>
 						</>
 					)}
 				</Combobox.Value>
