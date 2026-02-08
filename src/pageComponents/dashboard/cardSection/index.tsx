@@ -16,7 +16,6 @@ import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
-import { useMounted } from "../../../hooks/useMounted";
 import BackIcon from "../../../icons/actionIcons/backIcon";
 import PlayIcon from "../../../icons/actionIcons/playIcon";
 import LinkExternalIcon from "../../../icons/linkExternalIcon";
@@ -39,7 +38,6 @@ import {
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PREVIEW_ALT_TEXT,
-	PUBLIC_PAGE_SSR_ITEM_LIMIT,
 	TRASH_URL,
 	TWEETS_URL,
 	viewValues,
@@ -63,6 +61,7 @@ import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 import { PublicMoodboard } from "./publicMoodboard";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
+import { useMounted } from "@/hooks/useMounted";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -98,10 +97,9 @@ const CardSection = ({
 	bookmarksCountData,
 }: CardSectionProps) => {
 	const router = useRouter();
-	const mounted = useMounted();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-
+	const isMounted = useMounted();
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -747,13 +745,12 @@ const CardSection = ({
 			return renderStatusMessage("No results found");
 		}
 
-		// Public page: SSR static subset (first N), then virtualize full list after hydrate
-		if (isPublicPage && !mounted) {
-			const ssrList = bookmarksList.slice(0, PUBLIC_PAGE_SSR_ITEM_LIMIT);
+		// Public page (and discover): use non-virtualized grid so pagination never resets scroll
+		if (isPublicPage && isMounted) {
 			return (
 				<PublicMoodboard
 					bookmarksColumns={bookmarksColumns}
-					bookmarksList={ssrList}
+					bookmarksList={bookmarksList}
 					renderCard={renderBookmarkCardTypes}
 				/>
 			);

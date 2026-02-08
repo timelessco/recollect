@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { isEmpty } from "lodash";
+import InfiniteScroll from "react-infinite-scroll-component";
 
+import { useFetchDiscoverBookmarks } from "../../async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import { useIsMobileView } from "../../hooks/useIsMobileView";
 import {
 	type BookmarkViewDataTypes,
@@ -16,6 +18,9 @@ type DiscoverGuestViewProps = {
 
 export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 	const { isDesktop } = useIsMobileView();
+
+	const { flattenedData, fetchNextPage, hasNextPage } =
+		useFetchDiscoverBookmarks({ initialData: discoverData });
 
 	const moodboardColumns = useMemo(() => {
 		if (isDesktop) {
@@ -34,29 +39,49 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 	};
 
 	return (
-		<div>
-			<header className="flex items-center justify-between border-b-[0.5px] border-b-gray-alpha-200 px-6 py-[9px]">
+		<div className="flex h-screen flex-col overflow-hidden">
+			<header className="shrink-0 border-b-[0.5px] border-b-gray-alpha-200 px-6 py-[9px]">
 				<div className="flex items-center">
 					<p className="text-xl leading-[23px] font-semibold text-gray-900">
 						Discover
 					</p>
 				</div>
 			</header>
-			<main>
-				{!isEmpty(discoverData) ? (
-					<CardSection
-						categoryViewsFromProps={discoverCategoryViews}
-						isBookmarkLoading={false}
-						isOgImgLoading={false}
-						isPublicPage
-						listData={discoverData}
-						onDeleteClick={() => {}}
-						onMoveOutOfTrashClick={() => {}}
-						showAvatar={false}
-						userId=""
-					/>
+			<main className="min-h-0 flex-1 overflow-hidden">
+				{!isEmpty(flattenedData) ? (
+					<div
+						id="scrollableDiv"
+						className="h-full overflow-x-hidden overflow-y-auto"
+					>
+						<InfiniteScroll
+							className="overflow-visible"
+							dataLength={flattenedData?.length ?? 0}
+							endMessage={
+								<p className="pb-6 text-center text-plain-reverse">
+									Life happens, save it.
+								</p>
+							}
+							hasMore={hasNextPage}
+							loader={<div />}
+							next={fetchNextPage}
+							scrollableTarget="scrollableDiv"
+							style={{ overflow: "unset" }}
+						>
+							<CardSection
+								categoryViewsFromProps={discoverCategoryViews}
+								isBookmarkLoading={false}
+								isOgImgLoading={false}
+								isPublicPage
+								listData={flattenedData}
+								onDeleteClick={() => {}}
+								onMoveOutOfTrashClick={() => {}}
+								showAvatar={false}
+								userId=""
+							/>
+						</InfiniteScroll>
+					</div>
 				) : (
-					<div className="flex items-center justify-center pt-[15%] text-2xl font-semibold">
+					<div className="flex h-full items-center justify-center pt-[15%] text-2xl font-semibold">
 						There is no data in this collection
 					</div>
 				)}
