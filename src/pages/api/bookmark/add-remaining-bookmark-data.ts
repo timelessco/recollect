@@ -18,8 +18,11 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
+	CATEGORIES_TABLE_NAME,
 	IMAGE_JPEG_MIME_TYPE,
 	MAIN_TABLE_NAME,
+	PROFILES,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
@@ -31,6 +34,8 @@ import {
 } from "../../../utils/helpers";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+
+import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -338,5 +343,88 @@ export default async function handler(
 		);
 	} else {
 		response.status(200).json({ data, error: null, message: null });
+
+		// Revalidate public category pages if bookmark is in any public categories
+		// This is a non-blocking operation - don't await it
+		void (async () => {
+			try {
+				// Get all categories this bookmark belongs to
+				const { data: bookmarkCategories, error: categoriesError } =
+					await supabase
+						.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+						.select("category_id")
+						.eq("bookmark_id", id);
+
+				if (categoriesError || !bookmarkCategories?.length) {
+					return;
+				}
+
+				const categoryIds = bookmarkCategories.map((bc) => bc.category_id);
+
+				// Get public categories from the list
+				const { data: publicCategories, error: publicCategoriesError } =
+					await supabase
+						.from(CATEGORIES_TABLE_NAME)
+						.select("id, category_slug, user_id")
+						.in("id", categoryIds)
+						.eq("is_public", true);
+
+				if (publicCategoriesError || !publicCategories?.length) {
+					return;
+				}
+
+				// Get user_name for revalidation
+				const { data: profileUserData, error: profileError } = await supabase
+					.from(PROFILES)
+					.select("user_name")
+					.eq("id", userId)
+					.single();
+
+				if (profileError) {
+					console.error(
+						"[add-remaining-bookmark-data] Failed to fetch user profile for revalidation:",
+						{
+							error: profileError,
+							bookmarkId: id,
+							userId,
+						},
+					);
+					return;
+				}
+
+				const userName = profileUserData?.user_name;
+				if (!userName) {
+					return;
+				}
+
+				// Trigger revalidation for all public categories
+				for (const category of publicCategories) {
+					console.log(
+						"[add-remaining-bookmark-data] Triggering revalidation for bookmark update:",
+						{
+							bookmarkId: id,
+							categoryId: category.id,
+							categorySlug: category.category_slug,
+							userName,
+						},
+					);
+
+					void revalidatePublicCategoryPage(userName, category.category_slug, {
+						operation: "update_bookmark_metadata",
+						userId,
+						categoryId: category.id,
+					});
+				}
+			} catch (error) {
+				console.error(
+					"[add-remaining-bookmark-data] Error during revalidation:",
+					error,
+				);
+				Sentry.captureException(error, {
+					tags: { route: "add-remaining-bookmark-data" },
+					extra: { bookmarkId: id, userId },
+				});
+			}
+		})();
 	}
 }
