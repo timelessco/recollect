@@ -19,10 +19,8 @@ import {
 } from "../../../types/apiTypes";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
-	CATEGORIES_TABLE_NAME,
 	IMAGE_JPEG_MIME_TYPE,
 	MAIN_TABLE_NAME,
-	PROFILES,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
 } from "../../../utils/constants";
@@ -35,7 +33,7 @@ import {
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
+import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 
 type Data = {
@@ -345,86 +343,50 @@ export default async function handler(
 	} else {
 		response.status(200).json({ data, error: null, message: null });
 
-		// Revalidate public category pages if bookmark is in any public categories
-		// This is a non-blocking operation - don't await it
+		// Revalidate public category pages - non-blocking
 		void (async () => {
 			try {
-				// Use service client to bypass RLS for revalidation queries
 				const serviceClient = await createServerServiceClient();
 
 				// Get all categories this bookmark belongs to
-				const { data: bookmarkCategories, error: categoriesError } =
-					await serviceClient
-						.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-						.select("category_id")
-						.eq("bookmark_id", id);
+				const { data: bookmarkCategories } = await serviceClient
+					.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+					.select("category_id")
+					.eq("bookmark_id", id);
 
-				if (categoriesError || !bookmarkCategories?.length) {
-					return;
-				}
+				const categoryIds =
+					bookmarkCategories?.map((bc) => bc.category_id) ?? [];
 
-				const categoryIds = bookmarkCategories.map((bc) => bc.category_id);
-
-				// Get public categories from the list
-				const { data: publicCategories, error: publicCategoriesError } =
-					await serviceClient
-						.from(CATEGORIES_TABLE_NAME)
-						.select("id, category_slug, user_id")
-						.in("id", categoryIds)
-						.eq("is_public", true);
-
-				if (publicCategoriesError || !publicCategories?.length) {
-					return;
-				}
-
-				// Get user_name for revalidation
-				const { data: profileUserData, error: profileError } =
-					await serviceClient
-						.from(PROFILES)
-						.select("user_name")
-						.eq("id", userId)
-						.single();
-
-				if (profileError) {
-					console.error(
-						"[add-remaining-bookmark-data] Failed to fetch user profile for revalidation:",
+				if (categoryIds.length > 0) {
+					console.log(
+						"[add-remaining-bookmark-data] Initiating revalidation:",
 						{
-							error: profileError,
 							bookmarkId: id,
+							categoryIds,
 							userId,
 						},
 					);
-					return;
-				}
 
-				const userName = profileUserData?.user_name;
-				if (!userName) {
-					return;
-				}
-
-				// Trigger revalidation for all public categories
-				for (const category of publicCategories) {
-					console.log(
-						"[add-remaining-bookmark-data] Triggering revalidation for bookmark update:",
-						{
-							bookmarkId: id,
-							categoryId: category.id,
-							categorySlug: category.category_slug,
-							userName,
-						},
-					);
-
-					void revalidatePublicCategoryPage(userName, category.category_slug, {
+					await revalidateCategoriesIfPublic(categoryIds, {
 						operation: "update_bookmark_metadata",
 						userId,
-						categoryId: category.id,
 					});
+				} else {
+					console.log(
+						"[add-remaining-bookmark-data] No categories to revalidate:",
+						{ bookmarkId: id },
+					);
 				}
 			} catch (error) {
-				console.error(
-					"[add-remaining-bookmark-data] Error during revalidation:",
+				console.error("[add-remaining-bookmark-data] Revalidation failed:", {
 					error,
-				);
+					errorMessage:
+						error instanceof Error
+							? error.message
+							: "revalidation failed in add-remaining-bookmark-data",
+					bookmarkId: id,
+					userId,
+				});
 				Sentry.captureException(error, {
 					tags: { route: "add-remaining-bookmark-data" },
 					extra: { bookmarkId: id, userId },

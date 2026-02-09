@@ -1,4 +1,5 @@
 import { z } from "zod";
+import * as Sentry from "@sentry/nextjs";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
@@ -202,15 +203,25 @@ export const POST = createPostApiHandlerWithAuth({
 		// Trigger revalidation if category is public (non-blocking)
 		// Don't await - failed revalidation shouldn't fail the mutation
 		if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
-			revalidateCategoryIfPublic(categoryId, {
+			console.log(`[${route}] Initiating revalidation:`, {
+				categoryId,
+				userId,
+			});
+
+			void revalidateCategoryIfPublic(categoryId, {
 				operation: "add_category_to_bookmarks",
 				userId,
-				// eslint-disable-next-line promise/prefer-await-to-then
 			}).catch((error) => {
 				console.error(`[${route}] Revalidation failed:`, {
 					error,
+					errorMessage: error?.message,
+					errorStack: error?.stack,
 					categoryId,
 					userId,
+				});
+				Sentry.captureException(error, {
+					tags: { route: ROUTE },
+					extra: { categoryId, userId, operation: "revalidation" },
 				});
 			});
 		}

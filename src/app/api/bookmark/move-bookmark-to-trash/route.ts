@@ -1,4 +1,5 @@
 import { z } from "zod";
+import * as Sentry from "@sentry/nextjs";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
@@ -119,10 +120,23 @@ export const POST = createPostApiHandlerWithAuth({
 					bookmarkCount: updatedBookmarks.length,
 				});
 
-				// Non-blocking revalidation - don't await
-				void revalidateCategoriesIfPublic(categoryIds, {
+				// Non-blocking revalidation - don't await but catch errors
+				revalidateCategoriesIfPublic(categoryIds, {
 					operation: isTrash ? "bookmark_trashed" : "bookmark_restored",
 					userId,
+				}).catch((error) => {
+					console.error(`[${route}] Revalidation failed:`, {
+						error,
+						errorMessage: error?.message,
+						errorStack: error?.stack,
+						categoryIds,
+						userId,
+						isTrash,
+					});
+					Sentry.captureException(error, {
+						tags: { route: ROUTE },
+						extra: { categoryIds, userId, operation: "revalidation", isTrash },
+					});
 				});
 			}
 		}
