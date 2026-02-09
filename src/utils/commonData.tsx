@@ -1,15 +1,5 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 
-import { AudioIcon } from "../icons/audio-icon";
-import FolderIcon from "../icons/folderIcon";
-import HomeIconGray from "../icons/home-icon-gray";
-import ImageIcon from "../icons/imageIcon";
-import InboxIconGray from "../icons/inbox-icon-gray";
-import SettingsIcon from "../icons/settingsIcon";
-import InstagramIcon from "../icons/social/instagram-icon";
-import XIcon from "../icons/social/x-icon";
-import TrashIconGray from "../icons/trash-icon-gray";
-import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
 
 import {
@@ -27,8 +17,18 @@ import {
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "./constants";
+import { AudioIcon } from "@/icons/audio-icon";
 import { DiscoverIcon } from "@/icons/discover-icon";
+import FolderIcon from "@/icons/folderIcon";
 import { GlobeLinkIcon } from "@/icons/globe-link-icon";
+import HomeIconGray from "@/icons/home-icon-gray";
+import ImageIcon from "@/icons/imageIcon";
+import InboxIconGray from "@/icons/inbox-icon-gray";
+import SettingsIcon from "@/icons/settingsIcon";
+import { InstagramIcon } from "@/icons/social/instagram-icon";
+import { XIcon } from "@/icons/social/x-icon";
+import TrashIconGray from "@/icons/trash-icon-gray";
+import VideoIcon from "@/icons/videoIcon";
 
 // TODO: check if this is needed (for code cleanup)
 const object = [

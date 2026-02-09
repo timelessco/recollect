@@ -21,5 +21,3 @@ export const XIcon = (props: IconProps) => (
 		/>
 	</Icon>
 );
-
-export default XIcon;

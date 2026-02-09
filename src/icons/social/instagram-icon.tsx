@@ -1,6 +1,6 @@
 import { Icon, type IconProps } from "@/components/ui/recollect/icon";
 
-const InstagramIcon = (props: IconProps) => (
+export const InstagramIcon = (props: IconProps) => (
 	<Icon {...props} height="18" viewBox="0 0 18 18" width="18" fill="none">
 		<rect
 			width="13.015"
@@ -22,5 +22,3 @@ const InstagramIcon = (props: IconProps) => (
 		<circle cx="12.79" cy="5.171" r=".5" stroke="currentColor" />
 	</Icon>
 );
-
-export default InstagramIcon;
