@@ -7,13 +7,13 @@
 -- This migration:
 --   1. Creates twitter_imports queue via pgmq
 --   2. Configures service-role-only RLS (no authenticated access)
---   3. Creates process_twitter_bookmark RPC with Dedup + atomic message deletion
+--   3. Creates enqueue_twitter_bookmarks RPC (synchronous batch dedup + insert)
 --   4. Creates link_twitter_bookmark_category RPC for bookmark-category linking
 --   5. Creates status, retry, admin, and cron wrapper functions
 --
 -- Architecture:
---   - Single queue with 2 message types: "create_bookmark" and "link_bookmark_category"
---   - pgmq is FIFO: bookmark messages enqueued before link messages
+--   - Bookmark creation is synchronous via enqueue_twitter_bookmarks RPC
+--   - Queue handles only "link_bookmark_category" messages
 --   - Reuses existing generic RPCs: archive_with_reason, update_queue_message_error
 --
 -- ============================================================================
@@ -52,102 +52,114 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- PART 3: Atomic Bookmark Processing RPC (for "create_bookmark" messages)
+-- PART 3: Synchronous Batch Bookmark Insert RPC
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.process_twitter_bookmark(
-  p_url TEXT,
-  p_user_id UUID,
-  p_type TEXT,
-  p_title TEXT DEFAULT NULL,
-  p_description TEXT DEFAULT NULL,
-  p_og_image TEXT DEFAULT NULL,
-  p_meta_data JSONB DEFAULT '{}'::JSONB,
-  p_sort_index TEXT DEFAULT NULL,
-  p_msg_id BIGINT DEFAULT NULL,
-  p_inserted_at TIMESTAMPTZ DEFAULT NULL
-) RETURNS JSONB
-LANGUAGE plpgsql
-VOLATILE
-SECURITY INVOKER
-SET search_path = public, pg_temp
-AS $$
-DECLARE
-  v_bookmark_id BIGINT;
-BEGIN
-  -- Validate URL early (fail fast)
-  IF p_url IS NULL OR btrim(p_url) = '' THEN
-    RAISE EXCEPTION 'URL cannot be null or empty';
-  END IF;
+create or replace function public.enqueue_twitter_bookmarks(
+  p_user_id uuid,
+  p_bookmarks jsonb
+) returns jsonb
+language plpgsql
+volatile
+security invoker
+set search_path = ''
+as $$
+declare
+  v_bookmark jsonb;
+  v_inserted int := 0;
+  v_skipped int := 0;
+  v_url text;
+  v_title text;
+  v_description text;
+  v_og_image text;
+  v_type text;
+  v_meta_data jsonb;
+  v_sort_index text;
+  v_inserted_at timestamptz;
+  v_bookmark_id bigint;
+  v_exists boolean;
+begin
+  for v_bookmark in select * from jsonb_array_elements(p_bookmarks)
+  loop
+    v_url := v_bookmark ->> 'url';
 
-  -- Step 1: Dedup check - same URL + type + user = duplicate
-  SELECT id INTO v_bookmark_id
-  FROM everything
-  WHERE url = p_url
-    AND type = 'tweet'
-    AND user_id = p_user_id
-  LIMIT 1;
+    -- Skip if URL is null or empty
+    if v_url is null or btrim(v_url) = '' then
+      v_skipped := v_skipped + 1;
+      continue;
+    end if;
 
-  IF v_bookmark_id IS NOT NULL THEN
-    -- Duplicate: delete queue message and return early
-    IF p_msg_id IS NOT NULL THEN
-      PERFORM pgmq.delete('twitter_imports', p_msg_id);
-    END IF;
+    -- Dedup: check if bookmark with same URL + type='tweet' + user already exists
+    select exists(
+      select 1
+      from public.everything
+      where url = v_url
+        and type = 'tweet'
+        and user_id = p_user_id
+    ) into v_exists;
 
-    RETURN jsonb_build_object(
-      'bookmark_id', v_bookmark_id,
-      'is_duplicate', true
-    );
-  END IF;
+    if v_exists then
+      v_skipped := v_skipped + 1;
+      continue;
+    end if;
 
-  -- Step 2: Insert bookmark into 'everything' table
-  -- trash = NULL (timestamptz column, NULL = not trashed)
-  INSERT INTO everything (url, user_id, type, title, description, "ogImage", meta_data, sort_index, trash, inserted_at)
-  VALUES (p_url, p_user_id, p_type, p_title, p_description, p_og_image, p_meta_data, p_sort_index, NULL, COALESCE(p_inserted_at, NOW()))
-  RETURNING id INTO v_bookmark_id;
+    -- Extract fields from JSONB
+    v_title := v_bookmark ->> 'title';
+    v_description := v_bookmark ->> 'description';
+    v_og_image := v_bookmark ->> 'ogImage';
+    v_type := coalesce(v_bookmark ->> 'type', 'tweet');
+    v_meta_data := coalesce(v_bookmark -> 'meta_data', '{}'::jsonb);
+    v_sort_index := v_bookmark ->> 'sort_index';
+    v_inserted_at := case
+      when v_bookmark ->> 'inserted_at' is not null
+      then (v_bookmark ->> 'inserted_at')::timestamptz
+      else now()
+    end;
 
-  -- Step 3: Assign to uncategorized (0) - categories linked via separate link messages
-  INSERT INTO bookmark_categories (bookmark_id, category_id, user_id)
-  VALUES (v_bookmark_id, 0, p_user_id)
-  ON CONFLICT (bookmark_id, category_id) DO NOTHING;
-
-  -- Step 4: Delete queue message atomically (inside transaction)
-  IF p_msg_id IS NOT NULL THEN
-    PERFORM pgmq.delete('twitter_imports', p_msg_id);
-  END IF;
-
-  -- Step 5: Queue to ai-embeddings for enrichment
-  PERFORM pgmq.send(
-    'ai-embeddings',
-    jsonb_build_object(
-      'id', v_bookmark_id,
-      'url', p_url,
-      'user_id', p_user_id,
-      'type', p_type,
-      'title', COALESCE(p_title, ''),
-      'description', COALESCE(p_description, ''),
-      'ogImage', p_og_image,
-      'meta_data', p_meta_data
+    -- Insert bookmark into everything table
+    -- trash = NULL (timestamptz column, NULL = not trashed)
+    insert into public.everything (
+      url, user_id, type, title, description, "ogImage",
+      meta_data, sort_index, trash, inserted_at
     )
-  );
+    values (
+      v_url, p_user_id, v_type, v_title, v_description, v_og_image,
+      v_meta_data, v_sort_index, null, v_inserted_at
+    )
+    returning id into v_bookmark_id;
 
-  RETURN jsonb_build_object(
-    'bookmark_id', v_bookmark_id,
-    'is_duplicate', false
-  );
+    -- Assign to uncategorized (0) - categories linked via separate link messages
+    insert into public.bookmark_categories (bookmark_id, category_id, user_id)
+    values (v_bookmark_id, 0, p_user_id)
+    on conflict (bookmark_id, category_id) do nothing;
 
-EXCEPTION
-  WHEN OTHERS THEN
-    RAISE WARNING 'process_twitter_bookmark failed: % (SQLSTATE: %)', SQLERRM, SQLSTATE;
-    RAISE;
-END;
+    -- Queue to ai-embeddings for enrichment
+    perform pgmq.send(
+      'ai-embeddings',
+      jsonb_build_object(
+        'id', v_bookmark_id,
+        'url', v_url,
+        'user_id', p_user_id,
+        'type', v_type,
+        'title', coalesce(v_title, ''),
+        'description', coalesce(v_description, ''),
+        'ogImage', v_og_image,
+        'meta_data', v_meta_data
+      )
+    );
+
+    v_inserted := v_inserted + 1;
+  end loop;
+
+  return jsonb_build_object('inserted', v_inserted, 'skipped', v_skipped);
+end;
 $$;
 
-REVOKE ALL ON FUNCTION public.process_twitter_bookmark(TEXT, UUID, TEXT, TEXT, TEXT, TEXT, JSONB, TEXT, BIGINT, TIMESTAMPTZ) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.process_twitter_bookmark(TEXT, UUID, TEXT, TEXT, TEXT, TEXT, JSONB, TEXT, BIGINT, TIMESTAMPTZ) TO service_role;
+revoke all on function public.enqueue_twitter_bookmarks(uuid, jsonb) from public;
+grant execute on function public.enqueue_twitter_bookmarks(uuid, jsonb) to service_role;
 
-COMMENT ON FUNCTION public.process_twitter_bookmark IS
-'Atomic Twitter bookmark processing with Dedup, queue message deletion, and AI enrichment queueing. Called by Edge Function worker.';
+comment on function public.enqueue_twitter_bookmarks is
+'Synchronous batch Twitter bookmark insert with dedup. Checks for existing tweet bookmarks by URL+user, inserts new ones, and queues to ai-embeddings. Called by sync API route via service role.';
 
 -- ============================================================================
 -- PART 4: Bookmark-Category Linking RPC (for "link_bookmark_category" messages)

@@ -423,6 +423,10 @@ export type Database = {
 					tag_user_id: string;
 				}>;
 			};
+			enqueue_twitter_bookmarks: {
+				Args: { p_bookmarks: Json; p_user_id: string };
+				Returns: Json;
+			};
 			get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			get_instagram_worker_failures: {
 				Args: { p_since_minutes?: number };
@@ -462,21 +466,6 @@ export type Database = {
 					p_msg_id?: number;
 					p_og_image?: string;
 					p_saved_at?: string;
-					p_title?: string;
-					p_type: string;
-					p_url: string;
-					p_user_id: string;
-				};
-				Returns: Json;
-			};
-			process_twitter_bookmark: {
-				Args: {
-					p_description?: string;
-					p_inserted_at?: string;
-					p_meta_data?: Json;
-					p_msg_id?: number;
-					p_og_image?: string;
-					p_sort_index?: string;
 					p_title?: string;
 					p_type: string;
 					p_url: string;

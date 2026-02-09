@@ -20,22 +20,8 @@ const BATCH_SIZE = 5;
 const VISIBILITY_TIMEOUT = 30; // seconds
 const MAX_RETRIES = 3;
 
-// Polymorphic message types for single queue
-interface CreateBookmarkMessage {
-	type: "create_bookmark";
-	url: string;
-	title: string;
-	description: string;
-	ogImage: string | null;
-	meta_data: Record<string, unknown>;
-	sort_index: string;
-	user_id: string;
-	inserted_at: string | null;
-	// Error tracking
-	last_error?: string;
-	last_error_at?: string;
-}
-
+// Queue only handles link_bookmark_category messages now
+// Bookmark creation is synchronous via enqueue_twitter_bookmarks RPC
 interface LinkBookmarkCategoryMessage {
 	type: "link_bookmark_category";
 	url: string;
@@ -46,34 +32,16 @@ interface LinkBookmarkCategoryMessage {
 	last_error_at?: string;
 }
 
-type MessagePayload = CreateBookmarkMessage | LinkBookmarkCategoryMessage;
-
 interface QueueMessage {
 	msg_id: number;
 	read_ct: number;
-	message: MessagePayload;
+	message: LinkBookmarkCategoryMessage;
 }
 
 type ProcessResult =
 	| { type: "processed" }
 	| { type: "archived"; reason: string }
-	| { type: "skipped"; reason: string }
 	| { type: "retry"; reason: string };
-
-// URL validation for Twitter/X
-function isValidTwitterUrl(url: string): boolean {
-	try {
-		const parsed = new URL(url);
-		return (
-			parsed.hostname === "x.com" ||
-			parsed.hostname === "www.x.com" ||
-			parsed.hostname === "twitter.com" ||
-			parsed.hostname === "www.twitter.com"
-		);
-	} catch {
-		return false;
-	}
-}
 
 // Type guard for validating queue message structure
 function isQueueMessage(msg: unknown): msg is QueueMessage {
@@ -93,23 +61,12 @@ function isQueueMessage(msg: unknown): msg is QueueMessage {
 	}
 
 	const message = m.message as Record<string, unknown>;
-	if (typeof message.type !== "string") {
-		return false;
-	}
-	if (typeof message.user_id !== "string") {
-		return false;
-	}
-	if (typeof message.url !== "string") {
-		return false;
-	}
-
-	// Validate based on message type
-	if (message.type === "link_bookmark_category") {
-		return typeof message.category_name === "string";
-	}
-
-	// create_bookmark type (default)
-	return message.type === "create_bookmark";
+	return (
+		message.type === "link_bookmark_category" &&
+		typeof message.url === "string" &&
+		typeof message.user_id === "string" &&
+		typeof message.category_name === "string"
+	);
 }
 
 // Safely extract msg_id from raw pgmq message
@@ -121,90 +78,14 @@ function extractMsgId(msg: unknown): number | null {
 	return typeof m.msg_id === "number" ? m.msg_id : null;
 }
 
-// Process a "create_bookmark" message
-async function processCreateBookmark(
-	// deno-lint-ignore no-explicit-any
-	supabase: SupabaseClient<any, any, any>,
-	msg: QueueMessage,
-	bookmark: CreateBookmarkMessage,
-): Promise<ProcessResult> {
-	const { msg_id } = msg;
-
-	// Validate URL
-	if (!isValidTwitterUrl(bookmark.url)) {
-		Sentry.captureMessage("Invalid Twitter URL archived", {
-			extra: { msg_id, url: bookmark.url },
-			level: "warning",
-		});
-
-		const { error: archiveError } = await supabase.rpc("archive_with_reason", {
-			p_queue_name: QUEUE_NAME,
-			p_msg_id: msg_id,
-			p_reason: "invalid_url",
-		});
-
-		if (archiveError) {
-			console.error(
-				`[twitter-worker] Archive failed for invalid URL msg ${msg_id}:`,
-				archiveError,
-			);
-			Sentry.captureException(
-				new Error("Queue archive failed for invalid URL"),
-				{
-					extra: { msg_id, archiveError, url: bookmark.url },
-				},
-			);
-			return { type: "retry", reason: "archive_failed" };
-		}
-
-		console.log(
-			`[twitter-worker] Archived msg ${msg_id}: invalid_url (${bookmark.url})`,
-		);
-		return { type: "archived", reason: "invalid_url" };
-	}
-
-	// Call RPC for atomic processing
-	const { error: rpcError } = await supabase.rpc("process_twitter_bookmark", {
-		p_url: bookmark.url,
-		p_user_id: bookmark.user_id,
-		p_type: "tweet",
-		p_title: bookmark.title ?? "",
-		p_description: bookmark.description ?? "",
-		p_og_image: bookmark.ogImage,
-		p_meta_data: bookmark.meta_data,
-		p_sort_index: bookmark.sort_index ?? null,
-		p_msg_id: msg_id,
-		p_inserted_at: bookmark.inserted_at,
-	});
-
-	if (rpcError) {
-		const errorDetail =
-			typeof rpcError === "object" && rpcError !== null && "message" in rpcError
-				? String(rpcError.message)
-				: JSON.stringify(rpcError);
-
-		await supabase.rpc("update_queue_message_error", {
-			p_queue_name: QUEUE_NAME,
-			p_msg_id: msg_id,
-			p_error: errorDetail,
-		});
-
-		console.error(`[twitter-worker] RPC error for msg ${msg_id}:`, rpcError);
-		return { type: "retry", reason: "rpc_error" };
-	}
-
-	console.log(`[twitter-worker] Processed create_bookmark msg ${msg_id}`);
-	return { type: "processed" };
-}
-
 // Process a "link_bookmark_category" message
 async function processLinkBookmarkCategory(
 	// deno-lint-ignore no-explicit-any
 	supabase: SupabaseClient<any, any, any>,
 	msg: QueueMessage,
-	linkMsg: LinkBookmarkCategoryMessage,
 ): Promise<ProcessResult> {
 	const { msg_id } = msg;
+	const linkMsg = msg.message;
 
 	const { error: rpcError } = await supabase.rpc(
 		"link_twitter_bookmark_category",
@@ -241,7 +122,7 @@ async function processLinkBookmarkCategory(
 	return { type: "processed" };
 }
 
-// Process a single queue message (dispatch by type)
+// Process a single queue message
 async function processMessage(
 	// deno-lint-ignore no-explicit-any
 	supabase: SupabaseClient<any, any, any>,
@@ -287,12 +168,7 @@ async function processMessage(
 		return { type: "archived", reason: "max_retries" };
 	}
 
-	// Dispatch based on message type
-	if (payload.type === "link_bookmark_category") {
-		return processLinkBookmarkCategory(supabase, msg, payload);
-	}
-
-	return processCreateBookmark(supabase, msg, payload as CreateBookmarkMessage);
+	return processLinkBookmarkCategory(supabase, msg);
 }
 
 Deno.serve(async (req) => {
@@ -468,7 +344,6 @@ Deno.serve(async (req) => {
 		);
 
 		// Count results
-		let skipped = 0;
 		let retry = 0;
 		for (const [i, result] of results.entries()) {
 			if (result.status === "fulfilled") {
@@ -477,8 +352,6 @@ Deno.serve(async (req) => {
 					processed++;
 				} else if (r.type === "archived") {
 					archived++;
-				} else if (r.type === "skipped") {
-					skipped++;
 				} else if (r.type === "retry") {
 					retry++;
 				}
@@ -493,11 +366,11 @@ Deno.serve(async (req) => {
 		}
 
 		console.log(
-			`[twitter-worker] Completed: processed=${processed}, archived=${archived}, skipped=${skipped}, retry=${retry}`,
+			`[twitter-worker] Completed: processed=${processed}, archived=${archived}, retry=${retry}`,
 		);
 
 		return Response.json(
-			{ processed, archived, skipped, retry },
+			{ processed, archived, retry },
 			{
 				status: 200,
 				headers: { "Content-Type": "application/json" },
