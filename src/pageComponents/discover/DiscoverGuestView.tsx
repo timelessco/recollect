@@ -87,7 +87,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 						</InfiniteScroll>
 					</div>
 				) : (
-					<div className="flex h-full items-center justify-center pt-[15%] text-2xl font-semibold">
+					<div className="flex h-full items-center justify-center text-2xl font-semibold">
 						There is no data in this collection
 					</div>
 				)}
