@@ -57,8 +57,13 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- PART 3: Synchronous Batch Bookmark Insert RPC
+-- PART 3: Unique index for dedup + Synchronous Batch Bookmark Insert RPC
 -- ============================================================================
+
+-- Partial unique index for atomic tweet dedup via ON CONFLICT
+-- Only applies to type='tweet' — regular bookmarks allow duplicate URLs
+CREATE UNIQUE INDEX IF NOT EXISTS idx_everything_url_user_tweet
+  ON public.everything (url, user_id) WHERE type = 'tweet';
 
 CREATE OR REPLACE FUNCTION public.enqueue_twitter_bookmarks(
   p_user_id uuid,
@@ -82,7 +87,6 @@ declare
   v_sort_index text;
   v_inserted_at timestamptz;
   v_bookmark_id bigint;
-  v_exists boolean;
 begin
   for v_bookmark in select * from jsonb_array_elements(p_bookmarks)
   loop
@@ -90,20 +94,6 @@ begin
 
     -- Skip if URL is null or empty
     if v_url is null or btrim(v_url) = '' then
-      v_skipped := v_skipped + 1;
-      continue;
-    end if;
-
-    -- Dedup: check if bookmark with same URL + type='tweet' + user already exists
-    select exists(
-      select 1
-      from public.everything
-      where url = v_url
-        and type = 'tweet'
-        and user_id = p_user_id
-    ) into v_exists;
-
-    if v_exists then
       v_skipped := v_skipped + 1;
       continue;
     end if;
@@ -121,8 +111,9 @@ begin
       else now()
     end;
 
-    -- Insert bookmark into everything table
+    -- Atomic dedup + insert via partial unique index (url, user_id) WHERE type = 'tweet'
     -- trash = NULL (timestamptz column, NULL = not trashed)
+    v_bookmark_id := null;
     insert into public.everything (
       url, user_id, type, title, description, "ogImage",
       meta_data, sort_index, trash, inserted_at
@@ -131,7 +122,14 @@ begin
       v_url, p_user_id, v_type, v_title, v_description, v_og_image,
       v_meta_data, v_sort_index, null, v_inserted_at
     )
+    on conflict (url, user_id) where type = 'tweet' do nothing
     returning id into v_bookmark_id;
+
+    -- ON CONFLICT DO NOTHING returns NULL id for duplicates
+    if v_bookmark_id is null then
+      v_skipped := v_skipped + 1;
+      continue;
+    end if;
 
     -- Assign to uncategorized (0) - categories linked via separate link messages
     insert into public.bookmark_categories (bookmark_id, category_id, user_id)
