@@ -255,13 +255,24 @@ export const POST = createPostApiHandlerWithAuth({
 		// This is a non-blocking operation - don't await it
 		if (categoryData.is_public) {
 			// Fetch user_name for revalidation
-			const { data: profileData } = await supabase
+			const { data: profileUserData, error: profileError } = await supabase
 				.from(PROFILES)
 				.select("user_name")
 				.eq("id", userId)
 				.single();
 
-			const userName = profileData?.user_name;
+			if (profileError) {
+				console.error(
+					`[${route}] Failed to fetch user profile for revalidation:`,
+					{
+						error: profileError,
+						categoryId,
+						userId,
+					},
+				);
+			}
+
+			const userName = profileUserData?.user_name;
 			if (userName) {
 				console.log(
 					`[${route}] Triggering revalidation for deleted category:`,
