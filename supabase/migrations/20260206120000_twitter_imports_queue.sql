@@ -270,6 +270,11 @@ DECLARE
   v_archived BIGINT;
   v_archives JSONB;
 BEGIN
+  -- Only allow users to query their own sync status
+  IF auth.uid() IS NULL OR auth.uid()::UUID <> p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: can only view your own sync status';
+  END IF;
+
   SELECT COUNT(*)
   INTO v_pending
   FROM pgmq.q_twitter_imports
