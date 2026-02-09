@@ -1,20 +1,24 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 
+import { AudioIcon } from "../icons/audio-icon";
 import FolderIcon from "../icons/folderIcon";
 import HomeIconGray from "../icons/home-icon-gray";
 import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inbox-icon-gray";
 import SettingsIcon from "../icons/settingsIcon";
+import InstagramIcon from "../icons/social/instagram";
 import XIcon from "../icons/social/x-icon";
 import TrashIconGray from "../icons/trash-icon-gray";
 import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
 
 import {
+	AUDIO_URL,
 	DISCOVER_URL,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	IMAGES_URL,
+	INSTAGRAM_URL,
 	LINKS_URL,
 	menuListItemName,
 	SETTINGS_URL,
@@ -3701,6 +3705,24 @@ export const optionsMenuListArray = (
 		current: currentPath === TWEETS_URL,
 		id: 9,
 		count: bookmarksCountData?.data?.tweets,
+		iconColor: "",
+	},
+	{
+		icon: <InstagramIcon className="text-gray-900" />,
+		name: menuListItemName.instagram,
+		href: `/${INSTAGRAM_URL}`,
+		current: currentPath === INSTAGRAM_URL,
+		id: 10,
+		count: bookmarksCountData?.data?.instagram,
+		iconColor: "",
+	},
+	{
+		icon: <AudioIcon />,
+		name: menuListItemName.audio,
+		href: `/${AUDIO_URL}`,
+		current: currentPath === AUDIO_URL,
+		id: 11,
+		count: bookmarksCountData?.data?.audio,
 		iconColor: "",
 	},
 ];

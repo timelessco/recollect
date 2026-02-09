@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { getApi } from "@/lib/api-helpers/api";
@@ -12,12 +13,13 @@ import {
 
 type UseFetchDiscoverBookmarksProps = {
 	enabled?: boolean;
+	initialData?: SingleListData[];
 };
 
 export const useFetchDiscoverBookmarks = (
 	options: UseFetchDiscoverBookmarksProps = {},
 ) => {
-	const { enabled = true } = options;
+	const { enabled = true, initialData } = options;
 
 	const {
 		data: discoverData,
@@ -44,10 +46,25 @@ export const useFetchDiscoverBookmarks = (
 
 			return pages.length;
 		},
+		...(initialData !== undefined && {
+			initialData: {
+				pages: [{ data: initialData }],
+				pageParams: [0],
+			},
+			staleTime: 60_000,
+		}),
 	});
+
+	const flattenedData = useMemo(
+		() =>
+			(discoverData?.pages?.flatMap((page) => page?.data ?? []) ??
+				[]) as SingleListData[],
+		[discoverData],
+	);
 
 	return {
 		discoverData,
+		flattenedData,
 		fetchNextPage,
 		hasNextPage: hasNextPage ?? false,
 		isFetchingNextPage,

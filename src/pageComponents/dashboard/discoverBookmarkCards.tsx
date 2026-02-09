@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { useFetchDiscoverBookmarks } from "../../async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useDebounce from "../../hooks/useDebounce";
 import useGetSortBy from "../../hooks/useGetSortBy";
@@ -24,6 +23,7 @@ import {
 import { DISCOVER_URL, viewValues } from "../../utils/constants";
 
 import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
+import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
 const CardSection = dynamic(async () => await import("./cardSection"), {

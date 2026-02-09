@@ -382,6 +382,10 @@ deno_version = 2
 [functions.process-instagram-imports]
 verify_jwt = false
 
+# Raindrop import queue consumer - same auth pattern as Instagram worker
+[functions.process-raindrop-imports]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

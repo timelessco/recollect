@@ -60,6 +60,8 @@ export type BookmarksCountTypes = {
 	links: number;
 	trash: number;
 	tweets: number;
+	instagram: number;
+	audio: number;
 	uncategorized: number;
 	videos: number;
 };

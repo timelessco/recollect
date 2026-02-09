@@ -20,6 +20,7 @@ import {
 	DOCUMENTS_URL,
 	imageFileTypes,
 	IMAGES_URL,
+	INSTAGRAM_URL,
 	instagramType,
 	LINKS_URL,
 	MAIN_TABLE_NAME,
@@ -219,6 +220,10 @@ export default async function handler(
 		query = query
 			.eq("type", tweetType)
 			.order("sort_index", { ascending: false });
+	}
+
+	if (category_id === INSTAGRAM_URL) {
+		query = query.eq("type", instagramType);
 	}
 
 	// Sort by trash timestamp for trash page (most recently trashed first)

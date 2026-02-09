@@ -58,7 +58,7 @@ export const PublicMoodboard = ({
 						return (
 							<div
 								key={bookmark.id}
-								className="group relative flex rounded-lg pb-6 outline-hidden duration-150 hover:shadow-lg"
+								className="group relative mb-6 flex rounded-lg outline-hidden duration-150 hover:shadow-lg"
 							>
 								<a
 									aria-label={bookmark.title ?? "Open bookmark"}
