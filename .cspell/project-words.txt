@@ -25,6 +25,7 @@ datistemplate
 DBNAME
 dbname
 dbsize
+dedup
 dels
 denoland
 dont

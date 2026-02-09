@@ -18,6 +18,7 @@ export interface ImportBookmarkPayload {
 	url: string;
 	ogImage: string | null;
 	category_name: string | null;
+	inserted_at: string | null;
 }
 
 export interface ImportBookmarksRequest {
@@ -25,7 +26,7 @@ export interface ImportBookmarksRequest {
 }
 
 export interface ImportBookmarksResponse {
-	inserted: number;
+	queued: number;
 	skipped: number;
 }
 
@@ -48,17 +49,17 @@ export function useImportBookmarksMutation() {
 
 			// Show dynamic success message based on response
 			if (data) {
-				const { inserted, skipped } = data;
+				const { queued, skipped } = data;
 				let message = "";
 
-				if (inserted === 0 && skipped === 0) {
+				if (queued === 0 && skipped === 0) {
 					message = "No bookmarks to import";
-				} else if (inserted === 0) {
+				} else if (queued === 0) {
 					message = `${skipped} bookmark${skipped === 1 ? "" : "s"} already imported`;
 				} else if (skipped === 0) {
-					message = `${inserted} bookmark${inserted === 1 ? "" : "s"} imported`;
+					message = `${queued} bookmark${queued === 1 ? "" : "s"} queued for import`;
 				} else {
-					message = `${inserted} bookmark${inserted === 1 ? "" : "s"} imported, ${skipped} already present/duplicate`;
+					message = `${queued} bookmark${queued === 1 ? "" : "s"} queued for import, ${skipped} already present/duplicate`;
 				}
 
 				handleSuccess(message);

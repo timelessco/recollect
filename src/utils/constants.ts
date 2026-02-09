@@ -173,7 +173,7 @@ export const DELETE_API_KEY_API = "/v1/delete-api-key";
 export const SCREENSHOT_API =
 	"https://vercel-puppeteer-screenshot-api.vercel.app";
 
-export const RAINDROP_IMPORT_API = "/v1/raindrop/import";
+export const RAINDROP_IMPORT_API = "/raindrop/import";
 
 // urls
 
@@ -460,3 +460,4 @@ export const BLACK_COLOR = colorPickerColors[1];
 
 // Queue names (sync with SQL migrations and Edge Functions)
 export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";
+export const RAINDROP_IMPORTS_QUEUE = "raindrop_imports";
