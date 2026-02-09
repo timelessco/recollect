@@ -61,7 +61,6 @@ import { ImgLogic } from "./imageCard";
 import ListBox from "./listBox";
 import { PublicMoodboard } from "./publicMoodboard";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
-import { useMounted } from "@/hooks/useMounted";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -99,7 +98,6 @@ const CardSection = ({
 	const router = useRouter();
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
-	const isMounted = useMounted();
 	// Handle route changes for lightbox
 	useEffect(() => {
 		const { isPreviewPath, previewId } = getPreviewPathInfo(
@@ -746,7 +744,7 @@ const CardSection = ({
 		}
 
 		// Public page (and discover): use non-virtualized grid so pagination never resets scroll
-		if (isPublicPage && isMounted) {
+		if (isPublicPage) {
 			return (
 				<PublicMoodboard
 					bookmarksColumns={bookmarksColumns}

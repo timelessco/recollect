@@ -51,6 +51,7 @@ export const useFetchDiscoverBookmarks = (
 				pages: [{ data: initialData }],
 				pageParams: [0],
 			},
+			staleTime: 60_000,
 		}),
 	});
 
