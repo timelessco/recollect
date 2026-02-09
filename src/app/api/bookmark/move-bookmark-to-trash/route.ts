@@ -1,5 +1,5 @@
-import { z } from "zod";
 import * as Sentry from "@sentry/nextjs";
+import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
@@ -124,11 +124,15 @@ export const POST = createPostApiHandlerWithAuth({
 				revalidateCategoriesIfPublic(categoryIds, {
 					operation: isTrash ? "bookmark_trashed" : "bookmark_restored",
 					userId,
+					// eslint-disable-next-line promise/prefer-await-to-then
 				}).catch((error) => {
 					console.error(`[${route}] Revalidation failed:`, {
 						error,
-						errorMessage: error?.message,
-						errorStack: error?.stack,
+						errorMessage:
+							error instanceof Error
+								? error.message
+								: "revalidation failed in move-bookmark-to-trash",
+						errorStack: error instanceof Error ? error.stack : undefined,
 						categoryIds,
 						userId,
 						isTrash,
