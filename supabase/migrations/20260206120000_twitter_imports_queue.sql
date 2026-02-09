@@ -82,7 +82,6 @@ declare
   v_title text;
   v_description text;
   v_og_image text;
-  v_type text;
   v_meta_data jsonb;
   v_sort_index text;
   v_inserted_at timestamptz;
@@ -102,7 +101,7 @@ begin
     v_title := v_bookmark ->> 'title';
     v_description := v_bookmark ->> 'description';
     v_og_image := v_bookmark ->> 'ogImage';
-    v_type := coalesce(v_bookmark ->> 'type', 'tweet');
+    -- Hardcoded: this function is Twitter-specific, type is always 'tweet'
     v_meta_data := coalesce(v_bookmark -> 'meta_data', '{}'::jsonb);
     v_sort_index := v_bookmark ->> 'sort_index';
     v_inserted_at := case
@@ -119,7 +118,7 @@ begin
       meta_data, sort_index, trash, inserted_at
     )
     values (
-      v_url, p_user_id, v_type, v_title, v_description, v_og_image,
+      v_url, p_user_id, 'tweet', v_title, v_description, v_og_image,
       v_meta_data, v_sort_index, null, v_inserted_at
     )
     on conflict (url, user_id) where type = 'tweet' do nothing
@@ -143,7 +142,7 @@ begin
         'id', v_bookmark_id,
         'url', v_url,
         'user_id', p_user_id,
-        'type', v_type,
+        'type', 'tweet',
         'title', coalesce(v_title, ''),
         'description', coalesce(v_description, ''),
         'ogImage', v_og_image,
