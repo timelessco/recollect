@@ -6,7 +6,7 @@ import HomeIconGray from "../icons/home-icon-gray";
 import ImageIcon from "../icons/imageIcon";
 import InboxIconGray from "../icons/inbox-icon-gray";
 import SettingsIcon from "../icons/settingsIcon";
-import InstagramIcon from "../icons/social/instagram";
+import InstagramIcon from "../icons/social/instagram-icon";
 import XIcon from "../icons/social/x-icon";
 import TrashIconGray from "../icons/trash-icon-gray";
 import VideoIcon from "../icons/videoIcon";
@@ -3708,7 +3708,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <InstagramIcon className="text-gray-900" />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<InstagramIcon className="text-gray-900" />
+			</figure>
+		),
 		name: menuListItemName.instagram,
 		href: `/${INSTAGRAM_URL}`,
 		current: currentPath === INSTAGRAM_URL,
