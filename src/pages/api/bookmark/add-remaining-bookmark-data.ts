@@ -36,6 +36,7 @@ import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
+import { createServerServiceClient } from "@/lib/supabase/service";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -348,9 +349,12 @@ export default async function handler(
 		// This is a non-blocking operation - don't await it
 		void (async () => {
 			try {
+				// Use service client to bypass RLS for revalidation queries
+				const serviceClient = await createServerServiceClient();
+
 				// Get all categories this bookmark belongs to
 				const { data: bookmarkCategories, error: categoriesError } =
-					await supabase
+					await serviceClient
 						.from(BOOKMARK_CATEGORIES_TABLE_NAME)
 						.select("category_id")
 						.eq("bookmark_id", id);
@@ -363,7 +367,7 @@ export default async function handler(
 
 				// Get public categories from the list
 				const { data: publicCategories, error: publicCategoriesError } =
-					await supabase
+					await serviceClient
 						.from(CATEGORIES_TABLE_NAME)
 						.select("id, category_slug, user_id")
 						.in("id", categoryIds)
@@ -374,11 +378,12 @@ export default async function handler(
 				}
 
 				// Get user_name for revalidation
-				const { data: profileUserData, error: profileError } = await supabase
-					.from(PROFILES)
-					.select("user_name")
-					.eq("id", userId)
-					.single();
+				const { data: profileUserData, error: profileError } =
+					await serviceClient
+						.from(PROFILES)
+						.select("user_name")
+						.eq("id", userId)
+						.single();
 
 				if (profileError) {
 					console.error(
