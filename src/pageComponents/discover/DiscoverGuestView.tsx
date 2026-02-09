@@ -12,6 +12,7 @@ import { viewValues } from "../../utils/constants";
 import CardSection from "../dashboard/cardSection";
 
 import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
+import { Spinner } from "@/components/spinner";
 
 type DiscoverGuestViewProps = {
 	discoverData: SingleListData[];
@@ -20,7 +21,7 @@ type DiscoverGuestViewProps = {
 export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 	const { isDesktop } = useIsMobileView();
 
-	const { flattenedData, fetchNextPage, hasNextPage } =
+	const { flattenedData, fetchNextPage, hasNextPage, isLoading } =
 		useFetchDiscoverBookmarks({ initialData: discoverData });
 
 	const moodboardColumns = useMemo(() => {
@@ -49,7 +50,11 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 				</div>
 			</header>
 			<main className="min-h-0 flex-1 overflow-hidden">
-				{!isEmpty(flattenedData) ? (
+				{isLoading ? (
+					<div className="flex h-full items-center justify-center">
+						<Spinner className="h-3 w-3 animate-spin" />
+					</div>
+				) : !isEmpty(flattenedData) ? (
 					<div
 						id="scrollableDiv"
 						className="h-full overflow-x-hidden overflow-y-auto"
