@@ -158,6 +158,7 @@ async function processMessage(
 			);
 			Sentry.captureException(new Error("Queue archive failed"), {
 				extra: { msg_id, archiveError },
+				tags: { operation: "twitter_import_archive_failed" },
 			});
 			return { type: "retry", reason: "archive_failed" };
 		}
@@ -378,7 +379,9 @@ Deno.serve(async (req) => {
 		);
 	} catch (error) {
 		console.error("[twitter-worker] Unexpected error:", error);
-		Sentry.captureException(error);
+		Sentry.captureException(error, {
+			tags: { operation: "twitter_worker_unexpected" },
+		});
 		await Sentry.flush(2000);
 
 		return Response.json(
