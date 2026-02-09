@@ -321,6 +321,11 @@ DECLARE
   v_msg RECORD;
   v_requeued INT := 0;
 BEGIN
+  -- Only allow users to retry their own imports
+  IF auth.uid() IS NULL OR auth.uid()::UUID <> p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: can only retry your own imports';
+  END IF;
+
   FOR v_msg IN
     SELECT msg_id, message
     FROM pgmq.a_twitter_imports
