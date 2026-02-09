@@ -74,7 +74,7 @@ VOLATILE
 SECURITY INVOKER
 SET search_path = public, pg_temp
 AS $$
-declare
+DECLARE
   v_bookmark jsonb;
   v_inserted int := 0;
   v_skipped int := 0;
@@ -86,75 +86,75 @@ declare
   v_sort_index text;
   v_inserted_at timestamptz;
   v_bookmark_id bigint;
-begin
-  for v_bookmark in select * from jsonb_array_elements(p_bookmarks)
-  loop
+BEGIN
+  FOR v_bookmark IN SELECT * FROM jsonb_array_elements(p_bookmarks)
+  LOOP
     v_url := v_bookmark ->> 'url';
 
     -- Skip if URL is null or empty
-    if v_url is null or btrim(v_url) = '' then
+    IF v_url IS NULL OR BTRIM(v_url) = '' THEN
       v_skipped := v_skipped + 1;
-      continue;
-    end if;
+      CONTINUE;
+    END IF;
 
     -- Extract fields from JSONB
     v_title := v_bookmark ->> 'title';
     v_description := v_bookmark ->> 'description';
     v_og_image := v_bookmark ->> 'ogImage';
     -- Hardcoded: this function is Twitter-specific, type is always 'tweet'
-    v_meta_data := coalesce(v_bookmark -> 'meta_data', '{}'::jsonb);
+    v_meta_data := COALESCE(v_bookmark -> 'meta_data', '{}'::jsonb);
     v_sort_index := v_bookmark ->> 'sort_index';
-    v_inserted_at := case
-      when v_bookmark ->> 'inserted_at' is not null
-      then (v_bookmark ->> 'inserted_at')::timestamptz
-      else now()
-    end;
+    v_inserted_at := CASE
+      WHEN v_bookmark ->> 'inserted_at' IS NOT NULL
+      THEN (v_bookmark ->> 'inserted_at')::timestamptz
+      ELSE NOW()
+    END;
 
     -- Atomic dedup + insert via partial unique index (url, user_id) WHERE type = 'tweet'
     -- trash = NULL (timestamptz column, NULL = not trashed)
-    v_bookmark_id := null;
-    insert into public.everything (
+    v_bookmark_id := NULL;
+    INSERT INTO public.everything (
       url, user_id, type, title, description, "ogImage",
       meta_data, sort_index, trash, inserted_at
     )
-    values (
+    VALUES (
       v_url, p_user_id, 'tweet', v_title, v_description, v_og_image,
-      v_meta_data, v_sort_index, null, v_inserted_at
+      v_meta_data, v_sort_index, NULL, v_inserted_at
     )
-    on conflict (url, user_id) where type = 'tweet' do nothing
-    returning id into v_bookmark_id;
+    ON CONFLICT (url, user_id) WHERE type = 'tweet' DO NOTHING
+    RETURNING id INTO v_bookmark_id;
 
     -- ON CONFLICT DO NOTHING returns NULL id for duplicates
-    if v_bookmark_id is null then
+    IF v_bookmark_id IS NULL THEN
       v_skipped := v_skipped + 1;
-      continue;
-    end if;
+      CONTINUE;
+    END IF;
 
     -- Assign to uncategorized (0) - categories linked via separate link messages
-    insert into public.bookmark_categories (bookmark_id, category_id, user_id)
-    values (v_bookmark_id, 0, p_user_id)
-    on conflict (bookmark_id, category_id) do nothing;
+    INSERT INTO public.bookmark_categories (bookmark_id, category_id, user_id)
+    VALUES (v_bookmark_id, 0, p_user_id)
+    ON CONFLICT (bookmark_id, category_id) DO NOTHING;
 
     -- Queue to ai-embeddings for enrichment
-    perform pgmq.send(
+    PERFORM pgmq.send(
       'ai-embeddings',
       jsonb_build_object(
         'id', v_bookmark_id,
         'url', v_url,
         'user_id', p_user_id,
         'type', 'tweet',
-        'title', coalesce(v_title, ''),
-        'description', coalesce(v_description, ''),
+        'title', COALESCE(v_title, ''),
+        'description', COALESCE(v_description, ''),
         'ogImage', v_og_image,
         'meta_data', v_meta_data
       )
     );
 
     v_inserted := v_inserted + 1;
-  end loop;
+  END LOOP;
 
-  return jsonb_build_object('inserted', v_inserted, 'skipped', v_skipped);
-end;
+  RETURN jsonb_build_object('inserted', v_inserted, 'skipped', v_skipped);
+END;
 $$;
 
 revoke all on function public.enqueue_twitter_bookmarks(uuid, jsonb) from public;
