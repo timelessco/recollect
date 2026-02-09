@@ -192,7 +192,7 @@ function Chip<T>({
 	item,
 	...props
 }: ComboboxPrimitive.Chip.Props & { item?: T }) {
-	const { onRemove } = useComboboxContext<T>();
+	const { onRemove, getItemLabel } = useComboboxContext<T>();
 
 	const handleClick = (event: React.MouseEvent) => {
 		if (item) {
@@ -201,15 +201,34 @@ function Chip<T>({
 		}
 	};
 
+	const handleKeyDown = (event: React.KeyboardEvent) => {
+		if (event.key !== "Enter" && event.key !== " ") {
+			return;
+		}
+
+		if (event.key === " ") {
+			event.preventDefault();
+		}
+
+		event.stopPropagation();
+		if (item) {
+			onRemove(item);
+		}
+	};
+
 	return (
 		<ComboboxPrimitive.Chip
+			{...props}
 			data-slot="combobox-chip"
+			aria-label={item ? `Remove ${getItemLabel(item)}` : undefined}
+			role="button"
+			tabIndex={0}
 			className={cn(
 				"flex cursor-pointer items-center gap-1.5 rounded-[6px] bg-gray-100 px-2 py-[4.5px] text-xs leading-[15px] font-450 tracking-[0.01em] text-gray-800 transition-colors outline-none hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-gray-200",
 				className,
 			)}
 			onClick={handleClick}
-			{...props}
+			onKeyDown={handleKeyDown}
 		/>
 	);
 }
