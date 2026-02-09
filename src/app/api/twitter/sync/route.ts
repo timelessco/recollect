@@ -63,11 +63,21 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		const inserted = (result as { inserted: number; skipped: number }).inserted;
-		const skipped = (result as { inserted: number; skipped: number }).skipped;
+		const parsed = TwitterSyncOutputSchema.safeParse(result);
+		if (!parsed.success) {
+			console.error(`[${route}] Unexpected RPC result:`, result);
+			return apiError({
+				route,
+				message: "Failed to insert bookmarks",
+				error: new Error("Unexpected RPC result shape"),
+				operation: "enqueue_twitter_bookmarks",
+				userId,
+				extra: { result },
+			});
+		}
 
-		console.log(`[${route}] Result:`, { inserted, skipped });
+		console.log(`[${route}] Result:`, parsed.data);
 
-		return { inserted, skipped };
+		return parsed.data;
 	},
 });

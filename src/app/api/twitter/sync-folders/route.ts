@@ -92,14 +92,21 @@ export const POST = createPostApiHandlerWithAuth({
 			icon_color: "#ffffff",
 		}));
 
+		// Use ignoreDuplicates to handle conflicts gracefully
+		// This allows partial batch success when some names already exist
 		const { data: insertedCategories, error: insertError } = await supabase
 			.from(CATEGORIES_TABLE_NAME)
-			.insert(rowsToInsert)
+			.insert(rowsToInsert, { ignoreDuplicates: true })
 			.select();
 
 		if (insertError) {
-			// Handle unique constraint violation (case-insensitive duplicate)
+			// Unique constraint violations should be handled by ignoreDuplicates
+			// Log if we still get 23505 (shouldn't happen with ignoreDuplicates)
 			if (insertError.code === "23505") {
+				console.warn(
+					`[${route}] Unexpected duplicate error with ignoreDuplicates`,
+					{ userId, error: insertError },
+				);
 				return apiWarn({
 					route,
 					message: "Duplicate category name detected",

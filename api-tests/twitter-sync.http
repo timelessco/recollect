@@ -61,8 +61,8 @@ Content-Type: application/json
 
 ### Duplicate Detection Test
 # Send the SAME bookmark as the first test above.
-# If already inserted, expected: 204 No Content (empty body)
-# If not yet inserted, expected: { data: { inserted: 1, skipped: 0 }, error: null }
+# If already inserted, expected: 200 with { data: { inserted: 0, skipped: 1 }, error: null }
+# If not yet inserted, expected: 200 with { data: { inserted: 1, skipped: 0 }, error: null }
 POST {{$dotenv API_BASE_URL}}/twitter/sync
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
