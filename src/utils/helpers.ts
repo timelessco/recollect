@@ -35,6 +35,7 @@ import {
 	imageFileTypes,
 	IMAGES_URL,
 	INBOX_URL,
+	INSTAGRAM_URL,
 	instagramType,
 	LINKS_URL,
 	MAX_VIDEO_SIZE_BYTES,
@@ -75,6 +76,8 @@ export const getCategoryIdFromSlug = (
 		slug === LINKS_URL ||
 		slug === DOCUMENTS_URL ||
 		slug === TWEETS_URL ||
+		slug === INSTAGRAM_URL ||
+		slug === AUDIO_URL ||
 		slug === DISCOVER_URL
 	) {
 		return slug;
@@ -192,9 +195,11 @@ export const isUserInACategory = (url: string) => {
 		TRASH_URL,
 		IMAGES_URL,
 		VIDEOS_URL,
+		AUDIO_URL,
 		DOCUMENTS_URL,
 		LINKS_URL,
 		TWEETS_URL,
+		INSTAGRAM_URL,
 		DISCOVER_URL,
 	];
 
@@ -508,6 +513,8 @@ export const getBookmarkCountForCurrentPage = (
 				documents?: number;
 				tweets?: number;
 				links?: number;
+				instagram?: number;
+				audio?: number;
 		  }
 		| undefined,
 	categoryId: string | number | null,
@@ -543,6 +550,10 @@ export const getBookmarkCountForCurrentPage = (
 			return bookmarkCounts.tweets ?? 0;
 		case LINKS_URL as unknown as string:
 			return bookmarkCounts.links ?? 0;
+		case INSTAGRAM_URL as unknown as string:
+			return bookmarkCounts.instagram ?? 0;
+		case AUDIO_URL as unknown as string:
+			return bookmarkCounts.audio ?? 0;
 		default:
 			return 0;
 	}

@@ -34,7 +34,9 @@ const SidePaneTypesList = () => {
 				item.name === menuListItemName.image ||
 				item.name === menuListItemName.videos ||
 				item.name === menuListItemName.documents ||
-				item.name === menuListItemName.tweets
+				item.name === menuListItemName.tweets ||
+				item.name === menuListItemName.instagram ||
+				item.name === menuListItemName.audio
 			) {
 				return item;
 			} else {

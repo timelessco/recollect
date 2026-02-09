@@ -423,7 +423,7 @@ export type Database = {
 					tag_user_id: string;
 				}>;
 			};
-			enqueue_twitter_bookmarks: {
+			enqueue_raindrop_bookmarks: {
 				Args: { p_bookmarks: Json; p_user_id: string };
 				Returns: Json;
 			};
@@ -437,27 +437,9 @@ export type Database = {
 					status_code: number;
 				}>;
 			};
-			get_twitter_sync_status: { Args: { p_user_id: string }; Returns: Json };
-			get_twitter_worker_failures: {
-				Args: { p_since_minutes?: number };
-				Returns: Array<{
-					created_at: string;
-					error_body: string;
-					request_id: number;
-					status_code: number;
-				}>;
-			};
+			get_raindrop_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			invoke_instagram_worker: { Args: never; Returns: number };
-			invoke_twitter_worker: { Args: never; Returns: number };
-			link_twitter_bookmark_category: {
-				Args: {
-					p_category_name: string;
-					p_msg_id?: number;
-					p_url: string;
-					p_user_id: string;
-				};
-				Returns: Json;
-			};
+			invoke_raindrop_worker: { Args: never; Returns: number };
 			process_instagram_bookmark: {
 				Args: {
 					p_collection_names?: string[];
@@ -473,6 +455,19 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			process_raindrop_bookmark: {
+				Args: {
+					p_bookmark_id: number;
+					p_category_name?: string;
+					p_favicon?: string;
+					p_inserted_at?: string;
+					p_media_type?: string;
+					p_msg_id?: number;
+					p_og_image?: string;
+					p_user_id: string;
+				};
+				Returns: Json;
+			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{
@@ -484,12 +479,15 @@ export type Database = {
 				Args: { p_user_id: string };
 				Returns: Json;
 			};
-			retry_all_twitter_imports: { Args: { p_user_id: string }; Returns: Json };
+			retry_all_raindrop_imports: {
+				Args: { p_user_id: string };
+				Returns: Json;
+			};
 			retry_instagram_import: {
 				Args: { p_msg_ids: number[]; p_user_id: string };
 				Returns: Json;
 			};
-			retry_twitter_import: {
+			retry_raindrop_import: {
 				Args: { p_msg_ids: number[]; p_user_id: string };
 				Returns: Json;
 			};

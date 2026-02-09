@@ -384,6 +384,8 @@ verify_jwt = false
 
 # Twitter/X imports: JWT validation handled manually via service role key check.
 [functions.process-twitter-imports]
+# Raindrop import queue consumer - same auth pattern as Instagram worker
+[functions.process-raindrop-imports]
 verify_jwt = false
 
 [analytics]

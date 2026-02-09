@@ -5,7 +5,6 @@ import { debounce } from "lodash";
 import find from "lodash/find";
 
 import useGetViewValue from "../../hooks/useGetViewValue";
-import useIsUserInTweetsPage from "../../hooks/useIsUserInTweetsPage";
 import CardIcon from "../../icons/viewIcons/cardIcon";
 import ListIcon from "../../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
@@ -45,8 +44,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		: [];
 	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
 	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
-
-	const isInTweetsPage = useIsUserInTweetsPage();
 
 	type CardContentOptionsTypes = {
 		label: string;
@@ -133,11 +130,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		};
 
 		const isDisabledLogic = () => {
-			if (isInTweetsPage) {
-				// if in twitter page then disable all the options
-				return true;
-			}
-
 			if (
 				bookmarksViewValue === viewValues.moodboard ||
 				bookmarksViewValue === viewValues.card
@@ -201,7 +193,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			{renderDropdownHeader("View as")}
 			<div>
 				<RadioGroup
-					disabled={isInTweetsPage}
+					disabled={false}
 					initialRadioRef={radio0ref}
 					onChange={(value) => {
 						setBookmarksView(value as BookmarksViewTypes, "view");

@@ -1,0 +1,11 @@
+### Get Raindrop Import Status (Success)
+# Returns: { pending: N, archived: N, archives: [...] }
+# - pending: messages waiting in queue
+# - archived: messages archived with failure reason
+# - archives: array of { msg_id, url, failure_reason, archived_at }
+GET {{$dotenv API_BASE_URL}}/raindrop/import/status
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+
+### Auth Error - No Token
+# Expected: 401 Unauthorized
+GET {{$dotenv API_BASE_URL}}/raindrop/import/status
