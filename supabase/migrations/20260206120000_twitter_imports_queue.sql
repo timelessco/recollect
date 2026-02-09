@@ -46,6 +46,11 @@ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.tables
                WHERE table_schema = 'pgmq'
                AND table_name = 'a_twitter_imports') THEN
+      ALTER TABLE "pgmq"."a_twitter_imports" ENABLE ROW LEVEL SECURITY;
+
+      CREATE POLICY "service-role-only" ON "pgmq"."a_twitter_imports"
+        AS RESTRICTIVE FOR ALL TO service_role USING (true);
+
       GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "pgmq"."a_twitter_imports" TO "service_role";
     END IF;
   END IF;
