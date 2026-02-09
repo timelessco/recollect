@@ -344,7 +344,7 @@ BEGIN
 
   RETURN jsonb_build_object(
     'requeued', v_requeued,
-    'requested', array_length(p_msg_ids, 1)
+    'requested', COALESCE(array_length(p_msg_ids, 1), 0)
   );
 END;
 $$;
@@ -576,7 +576,7 @@ BEGIN
 
   RETURN jsonb_build_object(
     'requeued', v_requeued,
-    'requested', array_length(p_msg_ids, 1)
+    'requested', COALESCE(array_length(p_msg_ids, 1), 0)
   );
 END;
 $$;

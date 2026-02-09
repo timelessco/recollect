@@ -12,7 +12,7 @@ const SyncFoldersInputSchema = z.object({
 	categories: z
 		.array(
 			z.object({
-				name: z.string().min(1, "Category name is required"),
+				name: z.string().trim().min(1, "Category name is required"),
 			}),
 		)
 		.min(1, "At least one category required"),
@@ -34,10 +34,9 @@ export const POST = createPostApiHandlerWithAuth({
 			userId,
 		});
 
-		// Get existing categories (case-insensitive Dedup)
-		const categoryNames = data.categories
-			.map((category) => category.name.trim())
-			.filter(Boolean);
+		// Get existing categories (case-insensitive dedup)
+		// Names are already trimmed and non-empty via Zod schema
+		const categoryNames = data.categories.map((category) => category.name);
 
 		const { data: existingCategories, error: existingError } = await supabase
 			.from(CATEGORIES_TABLE_NAME)
