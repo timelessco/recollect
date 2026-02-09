@@ -56,7 +56,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 					>
 						<InfiniteScroll
 							className="overflow-visible"
-							dataLength={flattenedData?.length ?? 0}
+							dataLength={flattenedData.length}
 							endMessage={
 								<p className="pb-6 text-center text-plain-reverse">
 									Life happens, save it.

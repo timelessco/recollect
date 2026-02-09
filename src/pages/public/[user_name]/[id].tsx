@@ -64,7 +64,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
 						style={{ height: "calc(100vh - 52px)" }}
 					>
 						<InfiniteScroll
-							dataLength={flattenedData?.length ?? 0}
+							dataLength={flattenedData.length}
 							endMessage={
 								<p className="pb-6 text-center text-plain-reverse">
 									Life happens, save it.
