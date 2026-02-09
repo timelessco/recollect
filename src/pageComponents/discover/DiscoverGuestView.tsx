@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { isEmpty } from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { useFetchDiscoverBookmarks } from "../../async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import { useIsMobileView } from "../../hooks/useIsMobileView";
 import {
 	type BookmarkViewDataTypes,
@@ -11,6 +10,8 @@ import {
 import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { viewValues } from "../../utils/constants";
 import CardSection from "../dashboard/cardSection";
+
+import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 
 type DiscoverGuestViewProps = {
 	discoverData: SingleListData[];
