@@ -55,15 +55,15 @@ END $$;
 -- PART 3: Synchronous Batch Bookmark Insert RPC
 -- ============================================================================
 
-create or replace function public.enqueue_twitter_bookmarks(
+CREATE OR REPLACE FUNCTION public.enqueue_twitter_bookmarks(
   p_user_id uuid,
   p_bookmarks jsonb
-) returns jsonb
-language plpgsql
-volatile
-security invoker
-set search_path = ''
-as $$
+) RETURNS JSONB
+LANGUAGE plpgsql
+VOLATILE
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $$
 declare
   v_bookmark jsonb;
   v_inserted int := 0;
