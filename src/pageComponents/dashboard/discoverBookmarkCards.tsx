@@ -91,7 +91,7 @@ export const DiscoverBookmarkCards = () => {
 	);
 	const isDesktopLarge = useMediaQuery("(min-width: 1281px)");
 
-	// Responsive moodboard columns for discover: mobile 20, tablet 30, 1024–1280 4, above 1280 5
+	// Responsive moodboard columns for discover: mobile/tablet 20, 1024–1280 40, above 1280 50
 	const discoverMoodboardColumnsResponsive = useMemo(() => {
 		if (isMobile) {
 			return [20];
