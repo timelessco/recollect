@@ -24,7 +24,6 @@ type Data = {
 
 const getCategoryCount = async (
 	supabase: SupabaseClient,
-	userId: string,
 	categoryIds: number[],
 	sharedCategories: unknown[],
 ) => {
@@ -37,7 +36,6 @@ const getCategoryCount = async (
 				head: true,
 			})
 			.eq("bookmark_categories.category_id", categoryId)
-			.eq("bookmark_categories.user_id", userId)
 			.is("trash", null);
 
 		return {
@@ -203,7 +201,6 @@ export default async function handler(
 
 		const categoryCount = (await getCategoryCount(
 			supabase,
-			userId,
 			userCategoryIdsArray,
 			sharedCategoryIdsArray,
 		)) as BookmarksCountTypes["categoryCount"];
