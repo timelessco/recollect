@@ -16,12 +16,28 @@ Sentry.setTag("execution_id", Deno.env.get("SB_EXECUTION_ID") ?? "unknown");
 
 // Keep in sync with src/utils/constants.ts TWITTER_IMPORTS_QUEUE
 const QUEUE_NAME = "twitter_imports";
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 100;
 const VISIBILITY_TIMEOUT = 30; // seconds
 const MAX_RETRIES = 3;
 
-// Queue only handles link_bookmark_category messages now
-// Bookmark creation is synchronous via enqueue_twitter_bookmarks RPC
+// Queue handles two message types for Twitter imports
+// 1. enrich_bookmark: Queue bookmark to ai-embeddings for AI enrichment
+// 2. link_bookmark_category: Link bookmark to category
+interface EnrichBookmarkMessage {
+	type: "enrich_bookmark";
+	id: number;
+	url: string;
+	user_id: string;
+	type_field: string;
+	title: string;
+	description: string;
+	ogImage: string | null;
+	meta_data: Record<string, unknown>;
+	// Error tracking
+	last_error?: string;
+	last_error_at?: string;
+}
+
 interface LinkBookmarkCategoryMessage {
 	type: "link_bookmark_category";
 	url: string;
@@ -32,10 +48,12 @@ interface LinkBookmarkCategoryMessage {
 	last_error_at?: string;
 }
 
+type TwitterImportMessage = EnrichBookmarkMessage | LinkBookmarkCategoryMessage;
+
 interface QueueMessage {
 	msg_id: number;
 	read_ct: number;
-	message: LinkBookmarkCategoryMessage;
+	message: TwitterImportMessage;
 }
 
 type ProcessResult =
@@ -61,12 +79,31 @@ function isQueueMessage(msg: unknown): msg is QueueMessage {
 	}
 
 	const message = m.message as Record<string, unknown>;
-	return (
-		message.type === "link_bookmark_category" &&
-		typeof message.url === "string" &&
-		typeof message.user_id === "string" &&
-		typeof message.category_name === "string"
-	);
+	if (typeof message.type !== "string") {
+		return false;
+	}
+
+	// Validate based on message type
+	if (message.type === "enrich_bookmark") {
+		return (
+			typeof message.id === "number" &&
+			typeof message.url === "string" &&
+			typeof message.user_id === "string" &&
+			typeof message.type_field === "string" &&
+			typeof message.title === "string" &&
+			typeof message.description === "string"
+		);
+	}
+
+	if (message.type === "link_bookmark_category") {
+		return (
+			typeof message.url === "string" &&
+			typeof message.user_id === "string" &&
+			typeof message.category_name === "string"
+		);
+	}
+
+	return false;
 }
 
 // Safely extract msg_id from raw pgmq message
@@ -78,14 +115,89 @@ function extractMsgId(msg: unknown): number | null {
 	return typeof m.msg_id === "number" ? m.msg_id : null;
 }
 
+// Process an "enrich_bookmark" message
+async function processEnrichBookmark(
+	// deno-lint-ignore no-explicit-any
+	supabase: SupabaseClient<any, any, any>,
+	msg: QueueMessage,
+): Promise<ProcessResult> {
+	const { msg_id, message: enrichMsg } = msg;
+
+	if (enrichMsg.type !== "enrich_bookmark") {
+		return { type: "retry", reason: "invalid_message_type" };
+	}
+
+	// Queue directly to ai-embeddings using data from message
+	const { error: queueError } = await supabase
+		.schema("pgmq_public")
+		.rpc("send", {
+			queue_name: "ai-embeddings",
+			message: {
+				id: enrichMsg.id,
+				url: enrichMsg.url,
+				user_id: enrichMsg.user_id,
+				type: enrichMsg.type_field,
+				title: enrichMsg.title,
+				description: enrichMsg.description,
+				ogImage: enrichMsg.ogImage,
+				meta_data: enrichMsg.meta_data,
+			},
+			sleep_seconds: 0,
+		});
+
+	if (queueError) {
+		const errorDetail =
+			typeof queueError === "object" &&
+			queueError !== null &&
+			"message" in queueError
+				? String(queueError.message)
+				: JSON.stringify(queueError);
+
+		await supabase.rpc("update_queue_message_error", {
+			p_queue_name: QUEUE_NAME,
+			p_msg_id: msg_id,
+			p_error: errorDetail,
+		});
+
+		console.error(
+			`[twitter-worker] AI queue error for msg ${msg_id}:`,
+			queueError,
+		);
+		return { type: "retry", reason: "queue_failed" };
+	}
+
+	// Delete from twitter_imports queue
+	// pgmq_public.delete signature: delete(queue_name text, message_id bigint)
+	const { error: deleteError } = await supabase
+		.schema("pgmq_public")
+		.rpc("delete", {
+			queue_name: QUEUE_NAME,
+			message_id: msg_id,
+		});
+
+	if (deleteError) {
+		console.error(
+			`[twitter-worker] Delete failed for msg ${msg_id}:`,
+			deleteError,
+		);
+		return { type: "retry", reason: "delete_failed" };
+	}
+
+	console.log(`[twitter-worker] Processed enrich_bookmark msg ${msg_id}`);
+	return { type: "processed" };
+}
+
 // Process a "link_bookmark_category" message
 async function processLinkBookmarkCategory(
 	// deno-lint-ignore no-explicit-any
 	supabase: SupabaseClient<any, any, any>,
 	msg: QueueMessage,
 ): Promise<ProcessResult> {
-	const { msg_id } = msg;
-	const linkMsg = msg.message;
+	const { msg_id, message: linkMsg } = msg;
+
+	if (linkMsg.type !== "link_bookmark_category") {
+		return { type: "retry", reason: "invalid_message_type" };
+	}
 
 	const { error: rpcError } = await supabase.rpc(
 		"link_twitter_bookmark_category",
@@ -169,7 +281,40 @@ async function processMessage(
 		return { type: "archived", reason: "max_retries" };
 	}
 
-	return processLinkBookmarkCategory(supabase, msg);
+	// Route based on message type
+	if (payload.type === "enrich_bookmark") {
+		return processEnrichBookmark(supabase, msg);
+	} else if (payload.type === "link_bookmark_category") {
+		return processLinkBookmarkCategory(supabase, msg);
+	} else {
+		// Unknown message type - archive immediately
+		const unknownType = (payload as { type: string }).type;
+		console.error(
+			`[twitter-worker] Unknown message type for msg ${msg_id}:`,
+			unknownType,
+		);
+
+		Sentry.captureMessage("Unknown Twitter import message type", {
+			extra: { msg_id, messageType: unknownType },
+			level: "warning",
+		});
+
+		const { error: archiveError } = await supabase.rpc("archive_with_reason", {
+			p_queue_name: QUEUE_NAME,
+			p_msg_id: msg_id,
+			p_reason: "unknown_message_type",
+		});
+
+		if (archiveError) {
+			console.error(
+				`[twitter-worker] Archive failed for unknown type msg ${msg_id}:`,
+				archiveError,
+			);
+			return { type: "retry", reason: "archive_failed" };
+		}
+
+		return { type: "archived", reason: "unknown_message_type" };
+	}
 }
 
 Deno.serve(async (req) => {

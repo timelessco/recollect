@@ -13,7 +13,10 @@
 --
 -- Architecture:
 --   - Bookmark creation is synchronous via enqueue_twitter_bookmarks RPC
---   - Queue handles only "link_bookmark_category" messages
+--   - Queue handles two message types:
+--     1. "enrich_bookmark": Queue bookmark to ai-embeddings for AI enrichment
+--     2. "link_bookmark_category": Link bookmark to category
+--   - Worker processes messages in batches of 5 for controlled rate limiting
 --   - Reuses existing generic RPCs: archive_with_reason, update_queue_message_error
 --
 -- ============================================================================
@@ -135,14 +138,17 @@ BEGIN
     VALUES (v_bookmark_id, 0, p_user_id)
     ON CONFLICT (bookmark_id, category_id) DO NOTHING;
 
-    -- Queue to ai-embeddings for enrichment
+    -- Queue to twitter_imports for batch processing (instead of ai-embeddings directly)
+    -- Worker will process in batches of 5 and queue to ai-embeddings gradually
+    -- This prevents overwhelming the ai-embeddings queue with bursts of 500+ messages
     PERFORM pgmq.send(
-      'ai-embeddings',
+      'twitter_imports',
       jsonb_build_object(
+        'type', 'enrich_bookmark',
         'id', v_bookmark_id,
         'url', v_url,
         'user_id', p_user_id,
-        'type', 'tweet',
+        'type_field', 'tweet',
         'title', COALESCE(v_title, ''),
         'description', COALESCE(v_description, ''),
         'ogImage', v_og_image,
@@ -161,7 +167,7 @@ revoke all on function public.enqueue_twitter_bookmarks(uuid, jsonb) from public
 grant execute on function public.enqueue_twitter_bookmarks(uuid, jsonb) to service_role;
 
 comment on function public.enqueue_twitter_bookmarks is
-'Synchronous batch Twitter bookmark insert with dedup. Checks for existing tweet bookmarks by URL+user, inserts new ones, and queues to ai-embeddings. Called by sync API route via service role.';
+'Synchronous batch Twitter bookmark insert with dedup. Checks for existing tweet bookmarks by URL+user, inserts new ones, and queues to twitter_imports for batch AI enrichment. Called by sync API route via service role.';
 
 -- ============================================================================
 -- PART 4: Bookmark-Category Linking RPC (for "link_bookmark_category" messages)
