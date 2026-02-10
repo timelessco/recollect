@@ -18,6 +18,7 @@ export const serverSchema = z.object({
 	API_KEY_ENCRYPTION_KEY: z.string(),
 	PDF_SECRET_KEY: z.string(),
 	PDF_URL_SCREENSHOT_API: z.string(),
+	REVALIDATE_SECRET_TOKEN: z.string(),
 });
 
 /**
@@ -37,6 +38,7 @@ export const serverEnvironment = {
 	API_KEY_ENCRYPTION_KEY: process.env.API_KEY_ENCRYPTION_KEY,
 	PDF_SECRET_KEY: process.env.PDF_SECRET_KEY,
 	PDF_URL_SCREENSHOT_API: process.env.PDF_URL_SCREENSHOT_API,
+	REVALIDATE_SECRET_TOKEN: process.env.REVALIDATE_SECRET_TOKEN,
 };
 
 /**

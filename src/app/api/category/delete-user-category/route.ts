@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import {
@@ -48,8 +49,9 @@ export const POST = createPostApiHandlerWithAuth({
 		// Verify the user owns the category
 		const { data: categoryData, error: categoryDataError } = await supabase
 			.from(CATEGORIES_TABLE_NAME)
-			.select("user_id")
-			.eq("id", categoryId);
+			.select("user_id, is_public, category_slug")
+			.eq("id", categoryId)
+			.single();
 
 		if (categoryDataError) {
 			return apiError({
@@ -62,7 +64,7 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		if (!categoryData?.length) {
+		if (!categoryData) {
 			return apiWarn({
 				route,
 				message: "Category not found",
@@ -71,7 +73,7 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		const isOwner = categoryData[0].user_id === userId;
+		const isOwner = categoryData.user_id === userId;
 
 		if (!isOwner) {
 			return apiWarn({
@@ -248,6 +250,51 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryId: deletedCategory[0].id,
 			categoryName: deletedCategory[0].category_name,
 		});
+
+		// Revalidate public category page if it was public
+		// This is a non-blocking operation - don't await it
+		if (categoryData.is_public) {
+			// Fetch user_name for revalidation
+			const { data: profileUserData, error: profileError } = await supabase
+				.from(PROFILES)
+				.select("user_name")
+				.eq("id", userId)
+				.single();
+
+			if (profileError) {
+				console.error(
+					`[${route}] Failed to fetch user profile for revalidation:`,
+					{
+						error: profileError,
+						categoryId,
+						userId,
+					},
+				);
+			}
+
+			const userName = profileUserData?.user_name;
+			if (userName) {
+				console.log(
+					`[${route}] Triggering revalidation for deleted category:`,
+					{
+						categoryId,
+						categorySlug: categoryData.category_slug,
+						userName,
+					},
+				);
+
+				// Fire and forget - don't block the API response
+				void revalidatePublicCategoryPage(
+					userName,
+					categoryData.category_slug,
+					{
+						operation: "delete_category",
+						userId,
+						categoryId,
+					},
+				);
+			}
+		}
 
 		return deletedCategory;
 	},

@@ -39,6 +39,7 @@ import {
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import { vet } from "@/utils/try";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
@@ -403,6 +404,15 @@ export default async function handler(
 			url,
 			categoryId: computedCategoryId,
 		});
+
+		// Trigger revalidation if bookmark was added to a public category
+		if (computedCategoryId !== 0) {
+			void revalidateCategoryIfPublic(computedCategoryId as number, {
+				operation: "add_bookmark",
+				userId: userId as string,
+			});
+		}
+
 		response.status(200).json({
 			data,
 			error: null,

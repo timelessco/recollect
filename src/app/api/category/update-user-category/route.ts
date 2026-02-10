@@ -2,12 +2,14 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { type Database } from "@/types/database-generated.types";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import {
 	CATEGORIES_TABLE_NAME,
 	DUPLICATE_CATEGORY_NAME_ERROR,
+	PROFILES,
 } from "@/utils/constants";
 
 const ROUTE = "update-user-category";
@@ -118,6 +120,40 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryId: categoryData[0].id,
 			categoryName: categoryData[0].category_name,
 		});
+
+		// Trigger on-demand revalidation for public categories (non-blocking)
+		// This ensures public pages reflect all changes immediately:
+		// - Visibility changes (public↔private)
+		// - View settings (columns, sort order, card content)
+		// - Category name, icon, or color changes
+		// Don't await - failed revalidation shouldn't fail the mutation
+		if (categoryData[0].is_public || updateData.is_public !== undefined) {
+			// Fetch user profile to get username for revalidation path
+			const { data: profileData, error: profileError } = await supabase
+				.from(PROFILES)
+				.select("user_name")
+				.eq("id", userId)
+				.single();
+
+			if (profileError) {
+				console.error(`[${route}] Failed to load profile for revalidation:`, {
+					error: profileError,
+					userId,
+					categoryId: categoryData[0].id,
+				});
+			} else if (profileData?.user_name) {
+				// Fire-and-forget revalidation - errors handled internally by helper
+				void revalidatePublicCategoryPage(
+					profileData.user_name,
+					categoryData[0].category_slug,
+					{
+						operation: "update_category",
+						userId,
+						categoryId: categoryData[0].id,
+					},
+				);
+			}
+		}
 
 		return categoryData;
 	},

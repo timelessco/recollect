@@ -18,6 +18,7 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	IMAGE_JPEG_MIME_TYPE,
 	MAIN_TABLE_NAME,
 	R2_MAIN_BUCKET_NAME,
@@ -31,6 +32,9 @@ import {
 } from "../../../utils/helpers";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+
+import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
+import { createServerServiceClient } from "@/lib/supabase/service";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -337,6 +341,53 @@ export default async function handler(
 			`add remaining bookmark data error: ${databaseError?.message}`,
 		);
 	} else {
+		// Revalidate public category pages BEFORE sending response.
+		// In serverless, fire-and-forget after res.send() is not reliable—the runtime
+		// may terminate before the async work runs, so /revalidate would never be called.
+		try {
+			const serviceClient = await createServerServiceClient();
+
+			const { data: bookmarkCategories } = await serviceClient
+				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+				.select("category_id")
+				.eq("bookmark_id", id);
+
+			const categoryIds = bookmarkCategories?.map((bc) => bc.category_id) ?? [];
+
+			if (categoryIds.length > 0) {
+				console.log("[add-remaining-bookmark-data] Initiating revalidation:", {
+					bookmarkId: id,
+					categoryIds,
+					userId,
+				});
+
+				await revalidateCategoriesIfPublic(categoryIds, {
+					operation: "update_bookmark_metadata",
+					userId,
+				});
+			} else {
+				console.log(
+					"[add-remaining-bookmark-data] No categories to revalidate:",
+					{ bookmarkId: id },
+				);
+			}
+		} catch (error) {
+			// Log but do not fail the request—metadata update already succeeded
+			console.error("[add-remaining-bookmark-data] Revalidation failed:", {
+				error,
+				errorMessage:
+					error instanceof Error
+						? error.message
+						: "revalidation failed in add-remaining-bookmark-data",
+				bookmarkId: id,
+				userId,
+			});
+			Sentry.captureException(error, {
+				tags: { route: "add-remaining-bookmark-data" },
+				extra: { bookmarkId: id, userId },
+			});
+		}
+
 		response.status(200).json({ data, error: null, message: null });
 	}
 }
