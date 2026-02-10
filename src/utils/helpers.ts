@@ -485,15 +485,15 @@ export const getColumnCount = (isDesktop: boolean, colCount?: number) => {
 
 	switch (firstColumn) {
 		case 10:
-			return 5;
+			return 1;
 		case 20:
-			return 4;
+			return 2;
 		case 30:
 			return 3;
 		case 40:
-			return 2;
+			return 4;
 		case 50:
-			return 1;
+			return 5;
 		case undefined:
 			return 2;
 		default:
