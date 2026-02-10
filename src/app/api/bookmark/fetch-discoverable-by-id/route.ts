@@ -54,8 +54,16 @@ const BookmarkViewDataTypesSchema = z.object({
 	sortBy: z.string(),
 });
 
+/**
+ * Profile bookmarks_view is keyed by page slug (everything, discover, images, …).
+ */
+const ProfilesBookmarksViewSchema = z.record(
+	z.string(),
+	BookmarkViewDataTypesSchema,
+);
+
 const ProfilesTableTypesSchema = z.object({
-	bookmarks_view: BookmarkViewDataTypesSchema,
+	bookmarks_view: ProfilesBookmarksViewSchema,
 	category_order: z.array(z.number()),
 	display_name: z.string(),
 	id: z.string(),

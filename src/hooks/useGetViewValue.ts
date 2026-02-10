@@ -15,6 +15,7 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../utils/constants";
+import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { isUserInACategory } from "../utils/helpers";
 import { getCategorySlugFromRouter } from "../utils/url";
 
@@ -88,7 +89,11 @@ const useGetViewValue = (
 		}
 
 		if (!isEmpty(userProfilesData?.data)) {
-			return userProfilesData?.data?.[0]?.bookmarks_view?.[viewType];
+			const bookmarksView = userProfilesData.data[0]?.bookmarks_view;
+			const pageKey = getPageViewKey(categorySlug);
+			const pageView = getPageViewData(bookmarksView, pageKey);
+			const value = pageView?.[viewType];
+			return value !== undefined && value !== null ? value : defaultReturnValue;
 		}
 	} else {
 		// we are in a public page
