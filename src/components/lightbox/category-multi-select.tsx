@@ -66,7 +66,7 @@ export const CategoryMultiSelect = ({
 										</Combobox.Chip>
 									))}
 
-									<div className="ml-3.5 flex items-center gap-1 rounded focus-within:ring-2 focus-within:ring-gray-200">
+									<div className="ml-2 flex items-center gap-1 rounded focus-within:ring-2 focus-within:ring-gray-200">
 										<div className="h-[14px] w-[14px] text-gray-600">
 											<AddToCollectionsButton />
 										</div>
