@@ -29,16 +29,16 @@ export const useDeleteCollection = () => {
 				return;
 			}
 
+			// current - only push to home if user is deleting the category when user is currently in that category
+			if (current) {
+				void router.push(`/${EVERYTHING_URL}`);
+			}
+
 			await mutationApiCall(
 				deleteCategoryOptimisticMutation.mutateAsync({
 					category_id: categoryId,
 				}),
 			);
-
-			// current - only push to home if user is deleting the category when user is currently in that category
-			if (current) {
-				void router.push(`/${EVERYTHING_URL}`);
-			}
 		},
 		[allCategories?.data, deleteCategoryOptimisticMutation, router, session],
 	);
