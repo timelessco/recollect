@@ -46,7 +46,6 @@ import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type ProfilesBookmarksView,
-	type ProfilesTableTypes,
 	type SingleBookmarksPaginatedDataTypes,
 } from "../../types/apiTypes";
 import {
@@ -446,12 +445,12 @@ const Dashboard = () => {
 						moodboardColumns: [30],
 						sortBy: "date-sort-acending" as BookmarksSortByTypes,
 					};
-					const keyed: ProfilesTableTypes["bookmarks_view"] =
+					const keyed: ProfilesBookmarksView =
 						!raw || typeof raw !== "object"
 							? { [EVERYTHING_URL]: defaultPageView }
 							: isLegacyBookmarksView(raw)
 								? { [EVERYTHING_URL]: raw }
-								: { ...raw };
+								: ({ ...raw } as ProfilesBookmarksView);
 
 					const pageView = getPageViewData(raw, pageKey) ?? defaultPageView;
 					const updatedPageView: BookmarkViewDataTypes = {
