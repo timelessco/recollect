@@ -184,11 +184,13 @@ export const DiscoverBookmarkCards = () => {
 		);
 
 	if (isDiscoverLoading) {
+		const cols = discoverMoodboardColumnsResponsive[0];
+		const skeletonCount = cols * 2;
 		return (
 			<BookmarksSkeletonLoader
-				count={26}
+				count={skeletonCount}
 				type={discoverBookmarksView}
-				colCount={discoverMoodboardColumnsResponsive[0]}
+				colCount={cols}
 			/>
 		);
 	}
