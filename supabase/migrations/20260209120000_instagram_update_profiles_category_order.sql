@@ -2,12 +2,12 @@
 -- Migration: Update Instagram imports to maintain profiles.category_order
 -- ============================================================================
 -- This migration updates process_instagram_bookmark to track newly created
--- categories and update the profiles.category_order column, matching the
+-- categories and append them to profiles.category_order, matching the
 -- behavior of Twitter and Raindrop imports.
 --
 -- Changes:
 --   1. Track newly created category IDs in v_new_category_ids array
---   2. After junction table management, update profiles.category_order
+--   2. After junction table management, append new categories to category_order
 --   3. Use advisory lock to prevent race conditions on profile updates
 -- ============================================================================
 
@@ -72,7 +72,7 @@ BEGIN
           v_new_category_ids := array_append(v_new_category_ids, v_category_id);
         END IF;
 
-          v_category_ids := array_append(v_category_ids, v_category_id);
+        v_category_ids := array_append(v_category_ids, v_category_id);
       END IF;
     END LOOP;
   END IF;
