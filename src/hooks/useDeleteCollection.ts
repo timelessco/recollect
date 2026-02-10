@@ -31,7 +31,7 @@ export const useDeleteCollection = () => {
 
 			// current - only push to home if user is deleting the category when user is currently in that category
 			if (current) {
-				void router.push(`/${EVERYTHING_URL}`);
+				await router.replace(`/${EVERYTHING_URL}`);
 			}
 
 			await mutationApiCall(
