@@ -34,11 +34,21 @@ export const useDeleteCollection = () => {
 				await router.push(`/${EVERYTHING_URL}`);
 			}
 
-			await mutationApiCall(
+			const response = await mutationApiCall(
 				deleteCategoryOptimisticMutation.mutateAsync({
 					category_id: categoryId,
 				}),
 			);
+
+			// Check if mutation failed (error in response)
+			// The API returns errors in response.response.data.error
+			if (
+				response?.response?.data?.error &&
+				current &&
+				currentCategory?.category_slug
+			) {
+				await router.push(`/${currentCategory.category_slug}`);
+			}
 		},
 		[allCategories?.data, deleteCategoryOptimisticMutation, router, session],
 	);
