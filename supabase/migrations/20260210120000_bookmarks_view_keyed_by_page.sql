@@ -46,21 +46,24 @@ AS $$
         AND jsonb_typeof(v->'sortBy') = 'string'
       )
       OR
-      -- Keyed: every value is a BookmarkViewDataTypes object
-      NOT EXISTS (
-        SELECT 1
-        FROM jsonb_each(v) AS kv(key, val)
-        WHERE jsonb_typeof(val) != 'object'
-          OR NOT (
-            val ? 'bookmarksView'
-            AND val ? 'cardContentViewArray'
-            AND val ? 'moodboardColumns'
-            AND val ? 'sortBy'
-          )
-          OR jsonb_typeof(val->'bookmarksView') != 'string'
-          OR jsonb_typeof(val->'cardContentViewArray') != 'array'
-          OR jsonb_typeof(val->'moodboardColumns') != 'array'
-          OR jsonb_typeof(val->'sortBy') != 'string'
+      -- Keyed: non-empty object and every value is a BookmarkViewDataTypes object
+      (
+        v != '{}'::jsonb
+        AND NOT EXISTS (
+          SELECT 1
+          FROM jsonb_each(v) AS kv(key, val)
+          WHERE jsonb_typeof(val) != 'object'
+            OR NOT (
+              val ? 'bookmarksView'
+              AND val ? 'cardContentViewArray'
+              AND val ? 'moodboardColumns'
+              AND val ? 'sortBy'
+            )
+            OR jsonb_typeof(val->'bookmarksView') != 'string'
+            OR jsonb_typeof(val->'cardContentViewArray') != 'array'
+            OR jsonb_typeof(val->'moodboardColumns') != 'array'
+            OR jsonb_typeof(val->'sortBy') != 'string'
+        )
       )
     );
 $$;
