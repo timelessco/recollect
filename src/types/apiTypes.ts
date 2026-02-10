@@ -29,8 +29,6 @@ export type ImgMetadataType = {
 	width: number | null;
 };
 
-export type twitter_sort_index = string;
-
 export type SingleListData = {
 	/**
 	 * Array of categories (many-to-many)

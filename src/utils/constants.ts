@@ -460,4 +460,5 @@ export const BLACK_COLOR = colorPickerColors[1];
 
 // Queue names (sync with SQL migrations and Edge Functions)
 export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";
+export const TWITTER_IMPORTS_QUEUE = "twitter_imports";
 export const RAINDROP_IMPORTS_QUEUE = "raindrop_imports";

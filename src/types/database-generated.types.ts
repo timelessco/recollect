@@ -385,8 +385,23 @@ export type Database = {
 					user_id: string;
 				}>;
 			};
+			admin_get_twitter_archives: {
+				Args: never;
+				Returns: Array<{
+					archived_at: string;
+					failure_reason: string;
+					msg_id: number;
+					url: string;
+					user_id: string;
+				}>;
+			};
 			admin_retry_all_instagram_archives: { Args: never; Returns: Json };
+			admin_retry_all_twitter_archives: { Args: never; Returns: Json };
 			admin_retry_instagram_import: {
+				Args: { p_msg_ids: number[] };
+				Returns: Json;
+			};
+			admin_retry_twitter_import: {
 				Args: { p_msg_ids: number[] };
 				Returns: Json;
 			};
@@ -412,6 +427,10 @@ export type Database = {
 				Args: { p_bookmarks: Json; p_user_id: string };
 				Returns: Json;
 			};
+			enqueue_twitter_bookmarks: {
+				Args: { p_bookmarks: Json; p_user_id: string };
+				Returns: Json;
+			};
 			get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			get_instagram_worker_failures: {
 				Args: { p_since_minutes?: number };
@@ -423,8 +442,28 @@ export type Database = {
 				}>;
 			};
 			get_raindrop_sync_status: { Args: { p_user_id: string }; Returns: Json };
+			get_twitter_sync_status: { Args: { p_user_id: string }; Returns: Json };
+			get_twitter_worker_failures: {
+				Args: { p_since_minutes?: number };
+				Returns: Array<{
+					created_at: string;
+					error_body: string;
+					request_id: number;
+					status_code: number;
+				}>;
+			};
 			invoke_instagram_worker: { Args: never; Returns: number };
 			invoke_raindrop_worker: { Args: never; Returns: number };
+			invoke_twitter_worker: { Args: never; Returns: number };
+			link_twitter_bookmark_category: {
+				Args: {
+					p_category_name: string;
+					p_msg_id?: number;
+					p_url: string;
+					p_user_id: string;
+				};
+				Returns: Json;
+			};
 			process_instagram_bookmark: {
 				Args: {
 					p_collection_names?: string[];
@@ -468,11 +507,16 @@ export type Database = {
 				Args: { p_user_id: string };
 				Returns: Json;
 			};
+			retry_all_twitter_imports: { Args: { p_user_id: string }; Returns: Json };
 			retry_instagram_import: {
 				Args: { p_msg_ids: number[]; p_user_id: string };
 				Returns: Json;
 			};
 			retry_raindrop_import: {
+				Args: { p_msg_ids: number[]; p_user_id: string };
+				Returns: Json;
+			};
+			retry_twitter_import: {
 				Args: { p_msg_ids: number[]; p_user_id: string };
 				Returns: Json;
 			};
