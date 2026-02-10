@@ -50,6 +50,9 @@ BEGIN
     FOREACH v_collection_name IN ARRAY p_collection_names
     LOOP
       IF v_collection_name IS NOT NULL AND btrim(v_collection_name) != '' THEN
+        -- Reset category_id to avoid reusing previous iteration's value
+        v_category_id := NULL;
+
         PERFORM pg_advisory_xact_lock(
           hashtext(p_user_id::text || btrim(v_collection_name))
         );
@@ -82,17 +85,13 @@ BEGIN
   VALUES (p_url, p_user_id, p_type, p_title, p_description, p_og_image, p_meta_data, NULL, COALESCE(p_saved_at, NOW()))
   RETURNING id INTO v_bookmark_id;
 
-  -- Step 3: Manage junction table (exclusive model)
+  -- Step 3: Manage junction table
   IF array_length(v_category_ids, 1) > 0 THEN
-    DELETE FROM bookmark_categories
-    WHERE bookmark_id = v_bookmark_id
-      AND category_id = 0
-      AND user_id = p_user_id;
-
     INSERT INTO bookmark_categories (bookmark_id, category_id, user_id)
     SELECT v_bookmark_id, unnest(v_category_ids), p_user_id
     ON CONFLICT (bookmark_id, category_id) DO NOTHING;
   ELSE
+    -- Uncategorized: insert default category_id = 0
     INSERT INTO bookmark_categories (bookmark_id, category_id, user_id)
     VALUES (v_bookmark_id, 0, p_user_id)
     ON CONFLICT (bookmark_id, category_id) DO NOTHING;
