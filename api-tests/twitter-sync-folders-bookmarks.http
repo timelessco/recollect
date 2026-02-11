@@ -1,295 +1,184 @@
-### Sync Folder Bookmarks (Success - Single Association)
-# Prerequisites: 
-# 1. Category "Test Collection" must exist (create via syncFolders)
-# 2. Bookmark with URL must exist (create via twitter/sync)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+### Sync Folder Bookmarks (Success - Single Link)
+# New App Router endpoint: /api/twitter/sync-folder-bookmarks (queue producer)
+# Response: { data: { queued: N }, error: null }
+# Link messages are enqueued to twitter_imports queue after bookmark messages
+# Prerequisites:
+# 1. Category must exist (create via /twitter/sync-folders)
+# 2. Bookmark must be created first (via /twitter/sync → worker processes it)
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "mappings": [
     {
-      "category_name": "Test14",
+      "category_name": "Tech Tweets",
       "url": "https://x.com/SawyerMerritt/status/1986170355535286529"
     }
   ]
 }
 
-### Sync Multiple Folder Bookmarks (Success)
-# Associates multiple bookmarks with categories
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+### Sync Multiple Folder Bookmarks
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "mappings": [
     {
-      "category_name": "test14",
+      "category_name": "Tech Tweets",
       "url": "https://x.com/narendramodi/status/1984243645050945961"
     },
     {
       "category_name": "Design Inspiration",
       "url": "https://x.com/elonmusk/status/1985699323099713668"
-    },
+    }
   ]
 }
 
 ### Sync Same Bookmark to Multiple Categories
 # One bookmark can belong to multiple categories
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "mappings": [
     {
       "category_name": "Tech Tweets",
-      "url": "https://x.com/testuser/status/MULTI001"
+      "url": "https://x.com/testuser/status/1990000000000000001"
     },
     {
       "category_name": "Design Inspiration",
-      "url": "https://x.com/testuser/status/MULTI001"
+      "url": "https://x.com/testuser/status/1990000000000000001"
     },
     {
       "category_name": "Productivity Tips",
-      "url": "https://x.com/testuser/status/MULTI001"
+      "url": "https://x.com/testuser/status/1990000000000000001"
     }
   ]
 }
 
-### Validation Error - Empty Data Array
-# Expected: 400 - Validation error (Zod schema requires min 1 item)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+### Large Batch Test (6 mappings)
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": []
+  "mappings": [
+    {
+      "category_name": "Tech Tweets",
+      "url": "https://x.com/testuser/status/1990000000000000010"
+    },
+    {
+      "category_name": "Tech Tweets",
+      "url": "https://x.com/testuser/status/1990000000000000011"
+    },
+    {
+      "category_name": "Tech Tweets",
+      "url": "https://x.com/testuser/status/1990000000000000012"
+    },
+    {
+      "category_name": "Design Inspiration",
+      "url": "https://x.com/testuser/status/1990000000000000013"
+    },
+    {
+      "category_name": "Design Inspiration",
+      "url": "https://x.com/testuser/status/1990000000000000014"
+    },
+    {
+      "category_name": "Productivity Tips",
+      "url": "https://x.com/testuser/status/1990000000000000015"
+    }
+  ]
 }
 
-### Validation Error - Missing Data Field
-# Expected: 400 - Data field missing
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+### Validation Error - Empty Mappings Array
+# Expected: 400 - At least one mapping required
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "mappings": []
+}
+
+### Validation Error - Missing Mappings Field
+# Expected: 400 - Zod validation error
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {}
 
-### Validation Error - Invalid Data Format (not an array)
-# Expected: 400 - Data must be an array
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": "not-an-array"
-}
-
 ### Validation Error - Missing Category Name
-# Expected: 400 - Category name is required
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+# Expected: 400 - category_name is required
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "mappings": [
     {
-      "url": "https://x.com/testuser/status/MISSING_CAT"
+      "url": "https://x.com/testuser/status/1990000000000000001"
     }
   ]
 }
 
 ### Validation Error - Empty Category Name
-# Expected: 400 - Category name must have at least 1 character
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+# Expected: 400 - category_name min length 1
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "mappings": [
     {
       "category_name": "",
-      "url": "https://x.com/testuser/status/EMPTY_CAT"
+      "url": "https://x.com/testuser/status/1990000000000000001"
     }
   ]
 }
 
 ### Validation Error - Missing URL
-# Expected: 400 - URL is required
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+# Expected: 400 - url is required
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "mappings": [
     {
-      "category_name": "Test Collection"
+      "category_name": "Tech Tweets"
     }
   ]
 }
 
 ### Validation Error - Invalid URL Format
-# Expected: 400 - Invalid URL format
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+# Expected: 400 - url must be a valid URL
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Authorization: Bearer {{$dotenv USER_TOKEN}}
 Content-Type: application/json
 
 {
-  "data": [
+  "mappings": [
     {
-      "category_name": "Test Collection",
+      "category_name": "Tech Tweets",
       "url": "not-a-valid-url"
     }
   ]
 }
 
-### Validation Error - javascript: Protocol
-# Expected: 400 - Invalid URL format
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
-    {
-      "category_name": "Test Collection",
-      "url": "javascript:alert('xss')"
-    }
-  ]
-}
-
 ### Auth Error - No Token
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
+# Expected: 401 - Not authenticated
+POST {{$dotenv API_BASE_URL}}/twitter/sync-folder-bookmarks
 Content-Type: application/json
 
 {
-  "data": [
-    {
-      "category_name": "Test Collection",
-      "url": "https://x.com/testuser/status/NOAUTH"
-    }
-  ]
-}
-
-### Error - Category Not Found
-# Expected: 200 - { data: [{ url: "...", success: false, reason: "Category not found" }], error: null }
-# Note: Returns 200 but with success: false in result
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
-    {
-      "category_name": "Non-Existent Category",
-      "url": "https://x.com/testuser/status/EXISTING_TWEET"
-    }
-  ]
-}
-
-### Error - Bookmark Not Found
-# Expected: 200 - { data: [{ url: "...", success: false, reason: "Bookmark not found" }], error: null }
-# Note: Returns 200 but with success: false in result
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
-    {
-      "category_name": "Test Collection",
-      "url": "https://x.com/testuser/status/NON_EXISTENT_TWEET"
-    }
-  ]
-}
-
-### Partial Success - Some Valid, Some Invalid
-# Expected: 200 - { data: [{ success: true }, { success: false, reason: "..." }], error: null }
-# Some associations succeed, others fail (category not found, bookmark not found, etc.)
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
-    {
-      "category_name": "Test Collection",
-      "url": "https://x.com/testuser/status/EXISTING_TWEET"
-    },
-    {
-      "category_name": "Non-Existent Category",
-      "url": "https://x.com/testuser/status/EXISTING_TWEET"
-    },
-    {
-      "category_name": "Test Collection",
-      "url": "https://x.com/testuser/status/NON_EXISTENT_TWEET"
-    }
-  ]
-}
-
-### Duplicate Association (Idempotent)
-# Running this multiple times should be safe (upsert with ignoreDuplicates)
-# Expected: 200 - { data: [{ success: true }], error: null }
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
-    {
-      "category_name": "Test Collection",
-      "url": "https://x.com/testuser/status/DUPLICATE_TEST"
-    }
-  ]
-}
-
-### Run Duplicate Again (Should Still Succeed)
-# Expected: 200 - { data: [{ success: true }], error: null }
-# Upsert handles duplicates gracefully
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
-    {
-      "category_name": "Test Collection",
-      "url": "https://x.com/testuser/status/DUPLICATE_TEST"
-    }
-  ]
-}
-
-### Large Batch Test
-# Tests handling of many associations at once
-POST {{$dotenv API_BASE_URL}}/v1/twitter/syncFoldersBookmarks
-Authorization: Bearer {{$dotenv USER_TOKEN}}
-Content-Type: application/json
-
-{
-  "data": [
+  "mappings": [
     {
       "category_name": "Tech Tweets",
-      "url": "https://x.com/testuser/status/BATCH001"
-    },
-    {
-      "category_name": "Tech Tweets",
-      "url": "https://x.com/testuser/status/BATCH002"
-    },
-    {
-      "category_name": "Tech Tweets",
-      "url": "https://x.com/testuser/status/BATCH003"
-    },
-    {
-      "category_name": "Design Inspiration",
-      "url": "https://x.com/testuser/status/BATCH004"
-    },
-    {
-      "category_name": "Design Inspiration",
-      "url": "https://x.com/testuser/status/BATCH005"
-    },
-    {
-      "category_name": "Productivity Tips",
-      "url": "https://x.com/testuser/status/BATCH006"
+      "url": "https://x.com/testuser/status/1990000000000000001"
     }
   ]
 }

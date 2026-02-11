@@ -5,7 +5,7 @@ import AddBookmarkDropdown, {
 } from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
-import { TRASH_URL } from "../../../utils/constants";
+import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 
 import { NavBarLogo, SidePaneCollapseButton } from "./components";
 import { NavBarHeading } from "./headingComponents";
@@ -88,15 +88,14 @@ export const DashboardContent = (props: DashboardContentProps) => {
 						currentPath={currentPath}
 						onShowSearchBar={onShowSearchBar}
 					/>
-					<div className="flex w-[27%] items-center justify-end gap-3 max-lg:w-max max-lg:gap-2">
-						{headerOptions}
+					<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
+						{currentPath !== DISCOVER_URL && headerOptions}
 						{currentPath !== TRASH_URL && (
 							<AddBookmarkDropdown
 								onAddBookmark={onAddBookmark}
 								uploadFile={uploadFileFromAddDropdown}
 							/>
 						)}
-						{/* Dark/Light toggle here */}
 					</div>
 				</div>
 			</header>

@@ -1,8 +1,13 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { MAIN_TABLE_NAME } from "@/utils/constants";
+import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
+import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
+	MAIN_TABLE_NAME,
+} from "@/utils/constants";
 
 const ROUTE = "move-bookmark-to-trash";
 
@@ -96,6 +101,48 @@ export const POST = createPostApiHandlerWithAuth({
 			console.log(
 				`[${route}] Successfully ${isTrash ? "trashed" : "restored"} ${updatedBookmarks.length} bookmark(s)`,
 			);
+
+			// Trigger revalidation for public categories (non-blocking)
+			// Get all category IDs associated with these bookmarks
+			const { data: categoryAssociations } = await supabase
+				.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+				.select("category_id")
+				.in("bookmark_id", bookmarkIds);
+
+			if (categoryAssociations && categoryAssociations.length > 0) {
+				// Extract unique category IDs
+				const categoryIds = [
+					...new Set(categoryAssociations.map((assoc) => assoc.category_id)),
+				];
+
+				console.log(`[${route}] Triggering revalidation for categories:`, {
+					categoryIds,
+					bookmarkCount: updatedBookmarks.length,
+				});
+
+				// Non-blocking revalidation - don't await but catch errors
+				revalidateCategoriesIfPublic(categoryIds, {
+					operation: isTrash ? "bookmark_trashed" : "bookmark_restored",
+					userId,
+					// eslint-disable-next-line promise/prefer-await-to-then
+				}).catch((error) => {
+					console.error(`[${route}] Revalidation failed:`, {
+						error,
+						errorMessage:
+							error instanceof Error
+								? error.message
+								: "revalidation failed in move-bookmark-to-trash",
+						errorStack: error instanceof Error ? error.stack : undefined,
+						categoryIds,
+						userId,
+						isTrash,
+					});
+					Sentry.captureException(error, {
+						tags: { route: ROUTE },
+						extra: { categoryIds, userId, operation: "revalidation", isTrash },
+					});
+				});
+			}
 		}
 
 		return updatedBookmarks ?? [];

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
@@ -122,6 +123,20 @@ export const POST = createPostApiHandlerWithAuth({
 			bookmarkId,
 			categoryId,
 			addedUncategorized: rpcData[0].added_uncategorized,
+		});
+
+		// Trigger revalidation if category is public (non-blocking)
+		// Don't await - failed revalidation shouldn't fail the mutation
+		void revalidateCategoryIfPublic(categoryId, {
+			operation: "remove_category_from_bookmark",
+			userId,
+			// eslint-disable-next-line promise/prefer-await-to-then
+		}).catch((error) => {
+			console.error(`[${route}] Revalidation failed:`, {
+				error,
+				categoryId,
+				userId,
+			});
 		});
 
 		return [{ bookmark_id: bookmarkId, category_id: categoryId }];

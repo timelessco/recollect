@@ -159,7 +159,6 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (
 
 		return {
 			props: data,
-			revalidate: 1800,
 		};
 	} catch (error) {
 		// Network failures, API errors are system errors (5xx) - console.error + Sentry

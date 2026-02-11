@@ -70,6 +70,10 @@ export type CardSectionProps = {
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	isOgImgLoading: boolean;
+	/**
+	 * When true, use discover layout (e.g. top margin) so SSR and client match without relying on router.
+	 */
+	isDiscoverPage?: boolean;
 	isPublicPage?: boolean;
 	listData: SingleListData[];
 	onDeleteClick?: (post: SingleListData[]) => void;
@@ -91,6 +95,7 @@ const CardSection = ({
 	isOgImgLoading = false,
 	isBookmarkLoading = false,
 	isPublicPage = false,
+	isDiscoverPage = false,
 	categoryViewsFromProps = undefined,
 	isLoadingProfile = false,
 	bookmarksCountData,
@@ -692,10 +697,12 @@ const CardSection = ({
 	);
 
 	const listWrapperClass = classNames({
-		"mt-[47px]": !isPublicPage || categorySlug === DISCOVER_URL,
+		"mt-[47px]":
+			!isPublicPage || categorySlug === DISCOVER_URL || isDiscoverPage,
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.timeline,
+
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,

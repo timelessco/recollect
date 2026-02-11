@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import {
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
@@ -200,6 +201,21 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryId,
 			isNewEntry: transformedData.length > 0,
 		});
+
+		// Trigger revalidation if category is public
+		if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
+			void revalidateCategoryIfPublic(categoryId, {
+				operation: "add_category_to_bookmark",
+				userId,
+				// eslint-disable-next-line promise/prefer-await-to-then
+			}).catch((error) => {
+				console.error(`[${route}] Revalidation failed`, {
+					error,
+					categoryId,
+					userId,
+				});
+			});
+		}
 
 		return transformedData;
 	},

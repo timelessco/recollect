@@ -72,7 +72,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 					ref={ref}
 					type={type}
 					value={value}
-					{...omit(props, ["isError", "errorText"])}
+					{...omit(props, [
+						"isError",
+						"errorText",
+						"errorClassName",
+						"errorIconClassName",
+						"isDisabled",
+						"isFullWidth",
+						"rendedRightSideElement",
+						"selectTextOnFocus",
+						"showError",
+						"wrapperClassName",
+					])}
 					autoFocus={autoFocus}
 					className={inputClass}
 					disabled={isDisabled}

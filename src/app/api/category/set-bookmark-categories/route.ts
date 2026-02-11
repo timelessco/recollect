@@ -2,7 +2,9 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import {
+	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
@@ -170,7 +172,15 @@ export const POST = createPostApiHandlerWithAuth({
 
 		console.log(`[${route}] Category access verified`);
 
-		// 3. Atomically replace bookmark categories via RPC
+		// 3. Get old categories before replacement (for revalidation)
+		const { data: oldCategories } = await supabase
+			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+			.select("category_id")
+			.eq("bookmark_id", bookmarkId);
+
+		const oldCategoryIds = oldCategories?.map((cat) => cat.category_id) ?? [];
+
+		// 4. Atomically replace bookmark categories via RPC
 		const { data: insertedData, error: rpcError } = await supabase.rpc(
 			"set_bookmark_categories",
 			{
@@ -195,6 +205,26 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryIds,
 			insertedCount: insertedData.length,
 		});
+
+		// 5. Trigger revalidation for all affected categories (old + new, deduplicated)
+		// Don't await - failed revalidation shouldn't fail the mutation
+		const allAffectedCategoryIds = [
+			...new Set([...categoryIds, ...oldCategoryIds]),
+		].filter((id) => id !== UNCATEGORIZED_CATEGORY_ID);
+
+		if (allAffectedCategoryIds.length > 0) {
+			revalidateCategoriesIfPublic(allAffectedCategoryIds, {
+				operation: "set_bookmark_categories",
+				userId,
+				// eslint-disable-next-line promise/prefer-await-to-then
+			}).catch((error) => {
+				console.error(`[${route}] Revalidation failed:`, {
+					error,
+					categoryIds: allAffectedCategoryIds,
+					userId,
+				});
+			});
+		}
 
 		return insertedData;
 	},

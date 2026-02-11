@@ -29,15 +29,25 @@ export const useDeleteCollection = () => {
 				return;
 			}
 
-			await mutationApiCall(
+			// current - only push to home if user is deleting the category when user is currently in that category
+			if (current) {
+				await router.push(`/${EVERYTHING_URL}`);
+			}
+
+			const response = await mutationApiCall(
 				deleteCategoryOptimisticMutation.mutateAsync({
 					category_id: categoryId,
 				}),
 			);
 
-			// current - only push to home if user is deleting the category when user is currently in that category
-			if (current) {
-				void router.push(`/${EVERYTHING_URL}`);
+			// Check if mutation failed (error in response)
+			// The API returns errors in response.response.data.error
+			if (
+				response?.response?.data?.error &&
+				current &&
+				currentCategory?.category_slug
+			) {
+				await router.push(`/${currentCategory.category_slug}`);
 			}
 		},
 		[allCategories?.data, deleteCategoryOptimisticMutation, router, session],

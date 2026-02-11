@@ -93,7 +93,7 @@ export const GET = createGetApiHandler({
 			)
 			.is("trash", null)
 			.not("make_discoverable", "is", null)
-			.order("make_discoverable", { ascending: false })
+			.order("make_discoverable", { ascending: true })
 			.range(rangeStart, rangeEnd);
 
 		if (error) {

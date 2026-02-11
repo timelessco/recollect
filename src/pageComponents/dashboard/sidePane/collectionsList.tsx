@@ -38,6 +38,7 @@ import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHoo
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
+import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
 	AriaDropdown,
@@ -59,7 +60,6 @@ import {
 	type BookmarksCountTypes,
 	type CategoriesData,
 	type FetchSharedCategoriesData,
-	type ProfilesTableTypes,
 } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
@@ -72,7 +72,6 @@ import {
 	MAX_TAG_COLLECTION_NAME_LENGTH,
 	MIN_TAG_COLLECTION_NAME_LENGTH,
 	SHARED_CATEGORIES_TABLE_NAME,
-	USER_PROFILE,
 } from "../../../utils/constants";
 import { errorToast } from "../../../utils/toastMessages";
 
@@ -315,6 +314,7 @@ const CollectionsList = () => {
 	const { updateCategoryOrderMutation } =
 		useUpdateCategoryOrderOptimisticMutation();
 	const { allCategories, isLoadingCategories } = useFetchCategories();
+	const { userProfileData } = useFetchUserProfile();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
 	const { everythingData, isEverythingDataLoading } =
@@ -413,14 +413,6 @@ const CollectionsList = () => {
 		error: PostgrestError;
 	};
 
-	const userProfileData = queryClient.getQueryData([
-		USER_PROFILE,
-		session?.user?.id,
-	]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
-
 	const handleAddNewCategory = async (newCategoryName: string) => {
 		const result = tagCategoryNameSchema.safeParse(newCategoryName);
 
@@ -432,7 +424,7 @@ const CollectionsList = () => {
 			return;
 		}
 
-		if (!isNull(userProfileData.data)) {
+		if (userProfileData && !isNull(userProfileData.data)) {
 			addCategoryOptimisticMutation.mutate(
 				{
 					name: result.data,
@@ -525,7 +517,7 @@ const CollectionsList = () => {
 	const sortedList = () => {
 		let array: CollectionItemTypes[] = [];
 		if (!isEmpty(userProfileData?.data)) {
-			const apiCategoryOrder = userProfileData?.data[0]?.category_order;
+			const apiCategoryOrder = userProfileData?.data?.[0].category_order;
 
 			if (!isNull(apiCategoryOrder)) {
 				if (apiCategoryOrder) {
@@ -565,7 +557,7 @@ const CollectionsList = () => {
 			return collectionsList;
 		}
 
-		return [];
+		return collectionsList;
 	};
 
 	const bookmarkCount =
@@ -574,11 +566,11 @@ const CollectionsList = () => {
 		)?.count ?? 0;
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
-		const apiOrder = userProfileData?.data[0]?.category_order;
+		const apiOrder = userProfileData?.data?.[0].category_order;
 
 		const listOrder = isNull(apiOrder)
 			? collectionsList?.map((item) => item?.id)
-			: userProfileData?.data[0]?.category_order;
+			: userProfileData?.data?.[0].category_order;
 
 		// to index
 		const index1 = listOrder?.indexOf(

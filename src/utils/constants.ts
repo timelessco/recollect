@@ -201,6 +201,23 @@ export const VIDEOS_URL = "videos";
 export const LINKS_URL = "links";
 export const AUDIO_URL = "audios";
 
+/**
+ * Page slugs that have their own view state (bookmarksView, sortBy, etc.) in profiles.bookmarks_view.
+ * Discover uses the everything view.
+ */
+export const PAGE_VIEW_SLUGS = [
+	EVERYTHING_URL,
+	IMAGES_URL,
+	VIDEOS_URL,
+	DOCUMENTS_URL,
+	LINKS_URL,
+	TWEETS_URL,
+	INSTAGRAM_URL,
+	AUDIO_URL,
+] as const;
+
+export type PageViewSlug = (typeof PAGE_VIEW_SLUGS)[number];
+
 // react-query keys
 
 export const BOOKMARKS_KEY = "bookmarks";
@@ -460,4 +477,5 @@ export const BLACK_COLOR = colorPickerColors[1];
 
 // Queue names (sync with SQL migrations and Edge Functions)
 export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";
+export const TWITTER_IMPORTS_QUEUE = "twitter_imports";
 export const RAINDROP_IMPORTS_QUEUE = "raindrop_imports";
