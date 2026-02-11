@@ -217,7 +217,7 @@ const Settings = () => {
 						role="button"
 						tabIndex={-1}
 					>
-						<figure className="cursor-pointer transition delay-75 ease-in-out hover:opacity-50">
+						<figure className="h-11.5 w-11.5 cursor-pointer transition ease-in-out hover:opacity-50">
 							<UserAvatar
 								alt="profile-pic"
 								className={profilePicClassName}
