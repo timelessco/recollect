@@ -419,29 +419,6 @@ const Settings = () => {
 						}}
 					/>
 				</div>
-				{/*
-				feature yet to implement
-				<div className="pt-10">
-					<p className="pb-[10px] text-[14px] font-medium leading-[115%] text-gray-900">
-						Active devices
-					</p>
-					<div className="flex items-center justify-between rounded-lg bg>
-						<div className="  flex  flex-row max-sm:w-full">
-							<div className="my-[10px] ml-[19.5px] flex  gap-2 rounded-lg">
-								<PCLogo />
-								<p className={settingsParagraphClassName}>
-									Chrome on macOS
-									<p className="mt-1 text-[14px] font-normal  text-gray-600">
-										Chennai, India
-									</p>
-								</p>
-							</div>
-							<div className="ml-2 mt-[9px] h-5 rounded-2xl bg-gray-50 px-1.5 py-[3px] text-[12px] font-medium leading-[115%] text-[#18794E]">
-								This Device
-							</div>
-						</div>
-					</div>
-				</div> */}
 				<Switch />
 				<div className="pt-10">
 					<p className="text-[14px] leading-[115%] font-medium text-gray-900">
