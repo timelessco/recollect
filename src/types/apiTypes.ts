@@ -206,6 +206,8 @@ export type ProfilesTableTypes = {
 	display_name: string;
 	email: string;
 	id: string;
+	last_synced_instagram_id?: string | null;
+	last_synced_twitter_id?: string | null;
 	preferred_og_domains?: string[] | null;
 	profile_pic: string;
 	provider: string | null;
@@ -218,6 +220,8 @@ export type ProfilesTableForPayloadTypes = {
 	display_name?: string;
 	email?: string;
 	id?: string;
+	last_synced_instagram_id?: string | null;
+	last_synced_twitter_id?: string | null;
 	preferred_og_domains?: string[] | null;
 	profile_pic?: string;
 	provider?: ProfilesTableTypes["provider"];
