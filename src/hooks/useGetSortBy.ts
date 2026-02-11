@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
@@ -14,6 +15,8 @@ import {
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../utils/constants";
+import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
+import { getCategorySlugFromRouter } from "../utils/url";
 
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
@@ -21,7 +24,9 @@ import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 export default function useGetSortBy() {
 	const session = useSupabaseSession((state) => state.session);
 	const queryClient = useQueryClient();
+	const router = useRouter();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const categorySlug = getCategorySlugFromRouter(router);
 
 	const userId = session?.user?.id;
 
@@ -73,7 +78,10 @@ export default function useGetSortBy() {
 		}
 
 		if (!isEmpty(userProfilesData?.data)) {
-			return userProfilesData?.data?.[0]?.bookmarks_view?.sortBy as string;
+			const bookmarksView = userProfilesData.data[0]?.bookmarks_view;
+			const pageKey = getPageViewKey(categorySlug);
+			const pageView = getPageViewData(bookmarksView, pageKey);
+			return pageView?.sortBy as string | undefined;
 		}
 
 		return undefined;

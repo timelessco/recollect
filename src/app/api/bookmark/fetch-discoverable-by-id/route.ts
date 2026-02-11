@@ -47,6 +47,10 @@ const CategorySchema = z.object({
 	icon_color: z.string(),
 });
 
+/**
+ * Single-page view config (BookmarkViewDataTypes). Used for both legacy flat
+ * bookmarks_view and as values in the keyed record.
+ */
 const BookmarkViewDataTypesSchema = z.object({
 	bookmarksView: z.string(),
 	cardContentViewArray: z.array(z.string()),
@@ -54,8 +58,17 @@ const BookmarkViewDataTypesSchema = z.object({
 	sortBy: z.string(),
 });
 
+/**
+ * Profile bookmarks_view at runtime: keyed (ProfilesBookmarksView) or legacy
+ * flat (BookmarkViewDataTypes). Validates ProfilesBookmarksViewOrLegacy.
+ */
+const ProfilesBookmarksViewSchema = z.union([
+	z.record(z.string(), BookmarkViewDataTypesSchema),
+	BookmarkViewDataTypesSchema,
+]);
+
 const ProfilesTableTypesSchema = z.object({
-	bookmarks_view: BookmarkViewDataTypesSchema,
+	bookmarks_view: ProfilesBookmarksViewSchema,
 	category_order: z.array(z.number()),
 	display_name: z.string(),
 	id: z.string(),

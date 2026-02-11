@@ -140,6 +140,18 @@ export type BookmarkViewDataTypes = {
 	sortBy: BookmarksSortByTypes;
 };
 
+/**
+ * Profile bookmarks_view: keyed by page slug (everything, discover, images, …). Legacy flat shape is treated as "everything".
+ */
+export type ProfilesBookmarksView = Record<string, BookmarkViewDataTypes>;
+
+/**
+ * Profile bookmarks_view at runtime: keyed shape or legacy flat (single BookmarkViewDataTypes).
+ */
+export type ProfilesBookmarksViewOrLegacy =
+	| ProfilesBookmarksView
+	| BookmarkViewDataTypes;
+
 // user catagories
 
 export type CategoriesData = {
@@ -189,7 +201,7 @@ export type CollabDataInCategory = {
 // profiles table
 
 export type ProfilesTableTypes = {
-	bookmarks_view: BookmarkViewDataTypes;
+	bookmarks_view: ProfilesBookmarksViewOrLegacy;
 	category_order: number[];
 	display_name: string;
 	email: string;
@@ -201,7 +213,7 @@ export type ProfilesTableTypes = {
 };
 
 export type ProfilesTableForPayloadTypes = {
-	bookmarks_view?: BookmarkViewDataTypes;
+	bookmarks_view?: ProfilesBookmarksView;
 	category_order?: number[];
 	display_name?: string;
 	email?: string;

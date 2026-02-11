@@ -45,7 +45,7 @@ import {
 import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
-	type ProfilesTableTypes,
+	type ProfilesBookmarksView,
 	type SingleBookmarksPaginatedDataTypes,
 } from "../../types/apiTypes";
 import {
@@ -60,6 +60,7 @@ import {
 	BOOKMARKS_KEY,
 	DISCOVER_URL,
 	DOCUMENTS_URL,
+	EVERYTHING_URL,
 	IMAGES_URL,
 	INSTAGRAM_URL,
 	LINKS_URL,
@@ -68,7 +69,13 @@ import {
 	TWEETS_URL,
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
+	viewValues,
 } from "../../utils/constants";
+import {
+	getPageViewData,
+	getPageViewKey,
+	isLegacyBookmarksView,
+} from "../../utils/bookmarksViewKeyed";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -424,28 +431,44 @@ const Dashboard = () => {
 					}
 				}
 			} else {
-				// user is updating for non collection pages
-
-				// only if user is updating sortby, then scroll to top
+				// user is updating for non-collection pages (everything, discover, images, …)
 				if (updateValue === "sortBy" && !isNull(infiniteScrollRef?.current)) {
 					infiniteScrollRef?.current?.scrollTo(0, 0);
 				}
 
 				if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
-					const data = {
-						bookmarks_view: {
-							...userProfileData?.data[0]?.bookmarks_view,
-							cardContentViewArray: cardContentViewLogic(
-								userProfileData?.data[0]?.bookmarks_view
-									?.cardContentViewArray as string[],
-							),
-							[updateValue]: value,
-						},
-					} as ProfilesTableTypes;
+					const raw = userProfileData.data[0]?.bookmarks_view;
+					const pageKey = getPageViewKey(categorySlug);
+					const defaultPageView: BookmarkViewDataTypes = {
+						bookmarksView: viewValues.moodboard as BookmarksViewTypes,
+						cardContentViewArray: ["cover", "title", "info"],
+						moodboardColumns: [30],
+						sortBy: "date-sort-acending" as BookmarksSortByTypes,
+					};
+					const keyed: ProfilesBookmarksView =
+						!raw || typeof raw !== "object"
+							? { [EVERYTHING_URL]: defaultPageView }
+							: isLegacyBookmarksView(raw)
+								? { [EVERYTHING_URL]: raw }
+								: ({ ...raw } as ProfilesBookmarksView);
+
+					const pageView = getPageViewData(raw, pageKey) ?? defaultPageView;
+					const updatedPageView: BookmarkViewDataTypes = {
+						...pageView,
+						cardContentViewArray: cardContentViewLogic(
+							(pageView.cardContentViewArray ??
+								defaultPageView.cardContentViewArray) as string[],
+						),
+						[updateValue]: value,
+					};
+					const nextKeyed: ProfilesBookmarksView = {
+						...keyed,
+						[pageKey]: updatedPageView,
+					};
 
 					void mutationApiCall(
 						updateUserProfileOptimisticMutation.mutateAsync({
-							updateData: data,
+							updateData: { bookmarks_view: nextKeyed },
 						}),
 					);
 				} else {

@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+import { useMediaQuery } from "@react-hookz/web";
 import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -8,6 +9,7 @@ import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookma
 import useDebounce from "../../hooks/useDebounce";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useGetViewValue from "../../hooks/useGetViewValue";
+import { useIsMobileView } from "../../hooks/useIsMobileView";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -83,6 +85,29 @@ export const DiscoverBookmarkCards = () => {
 	} = useSearchBookmarks();
 	const router = useRouter();
 	const isDiscoverPage = getCategorySlugFromRouter(router) === DISCOVER_URL;
+	const { isMobile } = useIsMobileView();
+	const isDesktopMedium = useMediaQuery(
+		"(min-width: 1024px) and (max-width: 1280px)",
+	);
+	const isDesktopLarge = useMediaQuery("(min-width: 1281px)");
+
+	// Responsive moodboard columns for discover: mobile/tablet 20, 1024–1280 40, above 1280 50
+	const discoverMoodboardColumnsResponsive = useMemo(() => {
+		if (isMobile) {
+			return [20];
+		}
+
+		if (isDesktopLarge) {
+			return [50];
+		}
+
+		if (isDesktopMedium) {
+			return [40];
+		}
+
+		return [20];
+	}, [isMobile, isDesktopMedium, isDesktopLarge]);
+
 	// Discover data
 	const {
 		discoverData,
@@ -111,21 +136,16 @@ export const DiscoverBookmarkCards = () => {
 		[],
 		false,
 	) as string[];
-	const discoverMoodboardColumns = useGetViewValue(
-		"moodboardColumns",
-		[10],
-		false,
-	) as number[];
 	const { sortBy: discoverSortBy } = useGetSortBy();
 
-	// Build categoryViewsFromProps for discover page
+	// Build categoryViewsFromProps for discover page (responsive columns like DiscoverGuestView)
 	const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
 		() => ({
 			bookmarksView:
 				(discoverBookmarksView as BookmarksViewTypes) ||
 				(viewValues.card as BookmarksViewTypes),
 			cardContentViewArray: discoverCardContentViewArray || [],
-			moodboardColumns: discoverMoodboardColumns || [10],
+			moodboardColumns: discoverMoodboardColumnsResponsive,
 			sortBy:
 				(discoverSortBy as BookmarksSortByTypes) ||
 				("date-sort-acending" as BookmarksSortByTypes),
@@ -133,7 +153,7 @@ export const DiscoverBookmarkCards = () => {
 		[
 			discoverBookmarksView,
 			discoverCardContentViewArray,
-			discoverMoodboardColumns,
+			discoverMoodboardColumnsResponsive,
 			discoverSortBy,
 		],
 	);
@@ -164,11 +184,13 @@ export const DiscoverBookmarkCards = () => {
 		);
 
 	if (isDiscoverLoading) {
+		const cols = discoverMoodboardColumnsResponsive[0];
+		const skeletonCount = cols * 2;
 		return (
 			<BookmarksSkeletonLoader
-				count={26}
+				count={skeletonCount}
 				type={discoverBookmarksView}
-				colCount={discoverMoodboardColumns?.[0]}
+				colCount={cols}
 			/>
 		);
 	}

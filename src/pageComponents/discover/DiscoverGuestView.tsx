@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
+import { useMediaQuery } from "@react-hookz/web";
 import { isEmpty } from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -19,18 +20,29 @@ type DiscoverGuestViewProps = {
 };
 
 export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
-	const { isDesktop } = useIsMobileView();
+	const { isMobile } = useIsMobileView();
+	const isDesktopMedium = useMediaQuery(
+		"(min-width: 1024px) and (max-width: 1280px)",
+	);
+	const isDesktopLarge = useMediaQuery("(min-width: 1281px)");
 
 	const { flattenedData, fetchNextPage, hasNextPage, isLoading } =
 		useFetchDiscoverBookmarks({ initialData: discoverData });
 
-	const moodboardColumns = useMemo(() => {
-		if (isDesktop) {
-			return [10];
-		}
+	// Stable default for SSR + hydration, then update after mount (same breakpoints as discoverBookmarkCards)
+	const [moodboardColumns, setMoodboardColumns] = useState<number[]>([30]);
 
-		return [30];
-	}, [isDesktop]);
+	useEffect(() => {
+		if (isMobile) {
+			setMoodboardColumns([20]);
+		} else if (isDesktopLarge) {
+			setMoodboardColumns([50]);
+		} else if (isDesktopMedium) {
+			setMoodboardColumns([40]);
+		} else {
+			setMoodboardColumns([20]);
+		}
+	}, [isMobile, isDesktopMedium, isDesktopLarge]);
 
 	// Hardcoded view configuration for discover guest view
 	const discoverCategoryViews: BookmarkViewDataTypes = {
@@ -76,6 +88,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 							<CardSection
 								categoryViewsFromProps={discoverCategoryViews}
 								isBookmarkLoading={false}
+								isDiscoverPage
 								isOgImgLoading={false}
 								isPublicPage
 								listData={flattenedData}
