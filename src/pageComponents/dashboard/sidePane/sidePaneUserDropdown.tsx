@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { isNull } from "lodash";
 
-import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import { signOut } from "../../../async/supabaseCrudHelpers";
 import {
 	AriaDropdown,
@@ -21,15 +20,10 @@ import { createClient } from "../../../utils/supabaseClient";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 
 const SidePaneUserDropdown = () => {
-	const session = useSupabaseSession((state) => state.session);
 	const setSession = useSupabaseSession((state) => state.setSession);
 	const router = useRouter();
 
 	const supabase = createClient();
-
-	const { userProfilePicData } = useGetUserProfilePic(
-		session?.user?.email ?? "",
-	);
 
 	const { userProfileData, isLoading } = useFetchUserProfile();
 	const userData = userProfileData?.data?.[0];
@@ -47,8 +41,8 @@ const SidePaneUserDropdown = () => {
 								className="h-6 w-6 rounded-full bg-gray-1000 object-contain"
 								height={24}
 								src={
-									!isNull(userProfilePicData?.data)
-										? (userProfilePicData?.data[0]?.profile_pic ?? "")
+									!isNull(userData?.profile_pic)
+										? (userData?.profile_pic ?? "")
 										: ""
 								}
 								width={24}
