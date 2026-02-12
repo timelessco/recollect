@@ -21,22 +21,26 @@ const BATCH_SIZE = 5;
 const VISIBILITY_TIMEOUT = 30; // seconds
 const MAX_RETRIES = 3;
 
+// New message format: bookmark already inserted by enqueue_instagram_bookmarks RPC
+interface EnrichBookmarkMessage {
+	type: "enrich_bookmark";
+	id: number;
+	url: string;
+	user_id: string;
+	title: string;
+	description: string;
+	ogImage: string | null;
+	meta_data: Record<string, unknown>;
+	collection_names: string[];
+	// Error tracking - populated when RPC fails, used when max_retries exceeded
+	last_error?: string;
+	last_error_at?: string;
+}
+
 interface QueueMessage {
 	msg_id: number;
 	read_ct: number;
-	message: {
-		url: string;
-		type: string;
-		title: string;
-		description: string;
-		ogImage: string | null;
-		meta_data: Record<string, unknown>;
-		user_id: string;
-		saved_at: string | null;
-		// Error tracking - populated when RPC fails, used when max_retries exceeded
-		last_error?: string;
-		last_error_at?: string;
-	};
+	message: EnrichBookmarkMessage;
 }
 
 type ProcessResult =
@@ -44,19 +48,6 @@ type ProcessResult =
 	| { type: "archived"; reason: string }
 	| { type: "skipped"; reason: string }
 	| { type: "retry"; reason: string };
-
-// URL validation
-function isValidInstagramUrl(url: string): boolean {
-	try {
-		const parsed = new URL(url);
-		return (
-			parsed.hostname === "instagram.com" ||
-			parsed.hostname === "www.instagram.com"
-		);
-	} catch {
-		return false;
-	}
-}
 
 // Type guard for validating queue message structure
 function isQueueMessage(msg: unknown): msg is QueueMessage {
@@ -76,31 +67,29 @@ function isQueueMessage(msg: unknown): msg is QueueMessage {
 	}
 
 	const message = m.message as Record<string, unknown>;
+	if (typeof message.id !== "number") {
+		return false;
+	}
 	if (typeof message.url !== "string") {
 		return false;
 	}
-	if (typeof message.type !== "string") {
+	if (typeof message.user_id !== "string") {
 		return false;
 	}
-	if (typeof message.user_id !== "string") {
+	if (message.type !== "enrich_bookmark") {
 		return false;
 	}
 
 	return true;
 }
 
-// Safely extract collection names from meta_data
-function extractCollectionNames(metaData: unknown): string[] {
-	if (typeof metaData !== "object" || metaData === null) {
+// Safely extract collection names from message
+function extractCollectionNames(collectionNames: unknown): string[] {
+	if (!Array.isArray(collectionNames)) {
 		return [];
 	}
 
-	const md = metaData as Record<string, unknown>;
-	if (!Array.isArray(md.saved_collection_names)) {
-		return [];
-	}
-
-	return md.saved_collection_names.filter(
+	return collectionNames.filter(
 		(name): name is string => typeof name === "string",
 	);
 }
@@ -161,54 +150,16 @@ async function processMessage(
 		return { type: "archived", reason: "max_retries" };
 	}
 
-	// Validate URL - archive invalid URLs immediately (fail fast)
-	if (!isValidInstagramUrl(bookmark.url)) {
-		Sentry.captureMessage("Invalid Instagram URL archived", {
-			extra: { msg_id, url: bookmark.url },
-			level: "warning",
-		});
+	// Extract collection names from message
+	const collectionNames = extractCollectionNames(bookmark.collection_names);
 
-		const { error: archiveError } = await supabase.rpc("archive_with_reason", {
-			p_queue_name: QUEUE_NAME,
-			p_msg_id: msg_id,
-			p_reason: "invalid_url",
-		});
-
-		if (archiveError) {
-			console.error(
-				`[instagram-worker] Archive failed for invalid URL msg ${msg_id}:`,
-				archiveError,
-			);
-			Sentry.captureException(
-				new Error("Queue archive failed for invalid URL"),
-				{
-					extra: { msg_id, archiveError, url: bookmark.url },
-				},
-			);
-			return { type: "retry", reason: "archive_failed" };
-		}
-
-		console.log(
-			`[instagram-worker] Archived msg ${msg_id}: invalid_url (${bookmark.url})`,
-		);
-		return { type: "archived", reason: "invalid_url" };
-	}
-
-	// Extract collection names
-	const collectionNames = extractCollectionNames(bookmark.meta_data);
-
-	// Call RPC for atomic processing
+	// Call RPC for atomic category linking + AI enrichment queueing
+	// Bookmark already inserted by enqueue_instagram_bookmarks RPC
 	const { error: rpcError } = await supabase.rpc("process_instagram_bookmark", {
-		p_url: bookmark.url,
+		p_bookmark_id: bookmark.id,
 		p_user_id: bookmark.user_id,
-		p_type: bookmark.type,
-		p_title: bookmark.title ?? "",
-		p_description: bookmark.description ?? "",
-		p_og_image: bookmark.ogImage,
-		p_meta_data: bookmark.meta_data,
 		p_collection_names: collectionNames,
 		p_msg_id: msg_id,
-		p_saved_at: bookmark.saved_at,
 	});
 
 	if (rpcError) {
