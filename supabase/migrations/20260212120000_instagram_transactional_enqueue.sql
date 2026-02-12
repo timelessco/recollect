@@ -177,7 +177,7 @@ BEGIN
   FROM everything
   WHERE id = p_bookmark_id AND user_id = p_user_id;
 
-  IF v_bookmark_url IS NULL THEN
+  IF NOT FOUND THEN
     -- Bookmark was deleted between enqueue and processing
     IF p_msg_id IS NOT NULL THEN
       PERFORM pgmq.delete('instagram_imports', p_msg_id);
