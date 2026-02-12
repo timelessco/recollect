@@ -30,7 +30,17 @@ BEGIN;
 DROP FUNCTION IF EXISTS public.process_instagram_bookmark(TEXT, UUID, TEXT, TEXT, TEXT, TEXT, JSONB, TEXT[], BIGINT, TIMESTAMPTZ);
 
 -- ============================================================================
--- PART 2: Synchronous Batch Bookmark Insert RPC
+-- PART 2: Partial Unique Index for Instagram Dedup
+-- ============================================================================
+-- Must be created BEFORE the function that uses ON CONFLICT with this index.
+-- Non-concurrent (inside transaction) to guarantee atomicity with the function.
+-- Follows Twitter pattern: idx_everything_url_user_tweet (url, user_id) WHERE type = 'tweet'
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_everything_url_user_instagram
+  ON public.everything (url, user_id) WHERE type = 'instagram';
+
+-- ============================================================================
+-- PART 3: Synchronous Batch Bookmark Insert RPC
 -- ============================================================================
 -- Modeled on enqueue_twitter_bookmarks (20260206120000_twitter_imports_queue.sql)
 -- Loops through bookmarks, dedup via partial unique index, insert, assign
@@ -137,7 +147,7 @@ COMMENT ON FUNCTION public.enqueue_instagram_bookmarks IS
 'Synchronous batch Instagram bookmark insert with dedup. Checks for existing Instagram bookmarks by URL+user via partial unique index, inserts new ones, assigns uncategorized, and queues to instagram_imports for category linking + AI enrichment. Called by sync API route via service role.';
 
 -- ============================================================================
--- PART 3: New process_instagram_bookmark RPC (category linking + enrichment)
+-- PART 4: New process_instagram_bookmark RPC (category linking + enrichment)
 -- ============================================================================
 -- Modeled on process_raindrop_bookmark (20260206050200_raindrop_imports_queue.sql)
 -- Bookmark already inserted by enqueue RPC. This function handles:
@@ -297,12 +307,3 @@ COMMENT ON FUNCTION public.process_instagram_bookmark IS
 'Atomic Instagram bookmark enrichment: category get/create, junction entries, category_order update, queue message deletion, ai-embeddings enqueue. Bookmark already inserted by enqueue_instagram_bookmarks. Called by Edge Function worker.';
 
 COMMIT;
-
--- ============================================================================
--- PART 4: Partial Unique Index for Instagram Dedup (outside transaction)
--- ============================================================================
--- Cannot run CREATE INDEX CONCURRENTLY inside a transaction block.
--- Follows Twitter pattern: idx_everything_url_user_tweet (url, user_id) WHERE type = 'tweet'
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_everything_url_user_instagram
-  ON public.everything (url, user_id) WHERE type = 'instagram';
