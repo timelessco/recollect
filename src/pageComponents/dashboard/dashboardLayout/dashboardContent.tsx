@@ -90,7 +90,7 @@ export const DashboardContent = (props: DashboardContentProps) => {
 					/>
 					<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
 						{currentPath !== DISCOVER_URL && headerOptions}
-						{currentPath !== TRASH_URL && (
+						{currentPath !== TRASH_URL && currentPath !== DISCOVER_URL && (
 							<AddBookmarkDropdown
 								onAddBookmark={onAddBookmark}
 								uploadFile={uploadFileFromAddDropdown}

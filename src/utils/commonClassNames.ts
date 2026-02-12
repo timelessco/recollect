@@ -19,20 +19,20 @@ export const dropdownMenuItemClassName =
 // SETTINGS PAGE CLASS NAMES
 
 export const settingsMainHeadingClassName =
-	"text-base font-semibold leading-[18px] text-gray-900";
+	"text-gray-900 text-lg font-semibold leading-[115%] ";
 export const settingsInputLabelClassName =
 	"text-gray-600 font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]";
 export const settingsInputContainerClassName =
 	"relative flex max-sm:w-full items-center rounded-lg bg-gray-100 pl-[10px] pr-[3px]";
 
 export const settingsInputClassName =
-	"rounded-none bg-gray-100 text-sm font-[420] leading-4 tracking-[0.02em] text-gray-800  outline-hidden placeholder:text-gray-alpha-600 py-2";
+	"rounded-none bg-gray-100 text-sm font-[420] leading-4 tracking-[0.02em] text-gray-800  outline-hidden placeholder:text-gray-alpha-600 py-[7px]";
 
 export const settingsSubHeadingClassName =
 	"text-sm font-medium leading-4 max-sm:leading-none tracking-[1.5%] text-gray-900";
 
 export const settingsParagraphClassName =
-	"text-[14px] font-medium leading-[110%] text-gray-900";
+	"text-[14px] font-medium leading-[115%] text-gray-900";
 
 export const settingsDeleteButtonRedClassName =
 	"bg-gray-100 px-2 py-[6px] text-sm font-[420] leading-4 tracking-[0.02em] text-[#CD2B31] hover:bg-gray-200";

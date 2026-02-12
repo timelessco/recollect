@@ -1,6 +1,4 @@
 import { useEffect, useRef } from "react";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -10,6 +8,7 @@ import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserM
 import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
+import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -26,7 +25,6 @@ import {
 	useSupabaseSession,
 } from "../../store/componentStore";
 import { useIframeStore } from "../../store/iframeStore";
-import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	saveButtonClassName,
@@ -39,7 +37,6 @@ import {
 import {
 	DISPLAY_NAME_CHECK_PATTERN,
 	LETTERS_NUMBERS_CHECK_PATTERN,
-	USER_PROFILE,
 } from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
@@ -56,13 +53,13 @@ type SettingsDisplaynameFormTypes = {
 
 const Settings = () => {
 	const inputFile = useRef<HTMLInputElement>(null);
-	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const userId = session?.user?.id;
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
 	);
+
+	const { userProfileData } = useFetchUserProfile();
 
 	// mutations
 	const { updateUsernameMutation } = useUpdateUsernameMutation();
@@ -74,14 +71,10 @@ const Settings = () => {
 	const { deleteUserMutation } = useDeleteUserMutation();
 	const { removeProfilePic } = useRemoveUserProfilePicMutation();
 
-	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
 	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
 	const setIframeEnabled = useIframeStore((state) => state.setIframeEnabled);
 
-	const userData = userProfilesData?.data?.[0];
+	const userData = userProfileData?.data?.[0];
 
 	const onSubmit: SubmitHandler<SettingsUsernameFormTypes> = async (data) => {
 		if (data?.username === userData?.user_name) {
@@ -206,7 +199,7 @@ const Settings = () => {
 			/>
 			<div>
 				<p className={`${settingsMainHeadingClassName} mb-4`}>Account</p>
-				<div className="flex w-full items-center space-x-2">
+				<div className="flex w-full items-center space-x-3">
 					<div
 						onClick={() => {
 							if (inputFile.current) {
@@ -230,7 +223,7 @@ const Settings = () => {
 					<div className="max-sm:mt-2">
 						<div className="flex gap-2 text-sm leading-[21px] font-semibold text-black">
 							<Button
-								className={`px-2 py-[6px] ${saveButtonClassName}`}
+								className={`px-2 py-[7px] ${saveButtonClassName}`}
 								onClick={() => {
 									if (inputFile.current) {
 										inputFile.current.click();
@@ -238,12 +231,14 @@ const Settings = () => {
 								}}
 							>
 								<div className="flex items-center space-x-[6px]">
-									<ImageIcon />
-									<span>Upload image</span>
+									<ImageIcon size="16" />
+									<span className="text-13 leading-[115%] font-medium">
+										Upload image
+									</span>
 								</div>
 							</Button>
 							<Button
-								className="bg-gray-100 px-2 py-[6px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
+								className="rounded-lg bg-gray-100 px-2.5 py-[7px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
 								disabledClassName="bg-gray-100 text-gray-400 hover:bg-gray-100"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
@@ -298,7 +293,7 @@ const Settings = () => {
 									placeholder="Enter display name"
 								/>
 								<Button
-									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+									className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
 										displaynameValue !== originalDisplayname
 											? ""
 											: "pointer-events-none invisible"
@@ -345,7 +340,7 @@ const Settings = () => {
 									placeholder="Enter username"
 								/>
 								<Button
-									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+									className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
 										usernameValue !== originalUsername
 											? ""
 											: "pointer-events-none invisible"
@@ -371,7 +366,7 @@ const Settings = () => {
 								<GoogleLoginIcon className="h-5 w-5" />
 							)
 						}
-						title={userData?.email}
+						title={userData?.email ?? ""}
 						description="Current email"
 						buttonLabel={
 							session?.user?.app_metadata?.provider === "email"

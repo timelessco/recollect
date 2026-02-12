@@ -60,7 +60,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 			<Popover.Portal>
 				<Popover.Positioner sideOffset={4} align="start">
 					<Popover.Popup className="z-10 rounded-xl bg-gray-50 p-1.5 shadow-custom-3">
-						<div className="mb-2 w-64 space-y-3">
+						<div className="mb-2 w-[231px]">
 							<div className="w-full">
 								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
 									Collections

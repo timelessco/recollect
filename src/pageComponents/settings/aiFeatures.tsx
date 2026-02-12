@@ -161,7 +161,7 @@ export const AiFeatures = () => {
 					</div>
 
 					<Button
-						className={`relative my-[3px] ${saveButtonClassName} px-2 py-[4.5px]`}
+						className={`relative my-[3px] ${saveButtonClassName} rounded-[5px] px-2 py-[4.5px]`}
 						buttonType="submit"
 					>
 						<span
