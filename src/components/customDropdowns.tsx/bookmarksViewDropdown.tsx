@@ -206,8 +206,8 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
 			{(bookmarksViewValue === viewValues.card ||
 				bookmarksViewValue === viewValues.moodboard) && (
-				<div className="flex items-center justify-between px-2 py-[5.5px]">
-					<p className="text-13 leading-[14px] font-450 text-gray-800">
+				<div className="flex items-center justify-between px-2 py-[5px]">
+					<p className="text-13 leading-[14.95px] font-450 text-gray-800">
 						Columns
 					</p>
 					<div className="mt-px w-[90px]">
