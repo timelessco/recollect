@@ -79,7 +79,7 @@ export default async function handler(
 	let query = supabase
 		.from(MAIN_TABLE_NAME)
 		.select(usedJunctionSelect ? junctionSelect : baseSelect)
-		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
+		.range(from, from + PAGINATION_LIMIT - 1);
 
 	// Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
 	if (isTrashPage) {
