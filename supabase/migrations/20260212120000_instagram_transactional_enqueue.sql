@@ -8,7 +8,7 @@
 --   1. Drops old process_instagram_bookmark (signature changes)
 --   2. Creates enqueue_instagram_bookmarks RPC (synchronous batch dedup + insert)
 --   3. Creates new process_instagram_bookmark RPC (category linking + enrichment)
---   4. Creates partial unique index for Instagram dedup (outside transaction)
+--   4. Creates partial unique index for Instagram dedup (inside transaction)
 --
 -- Architecture change:
 --   BEFORE: API -> pgmq.send_batch() -> Worker does INSERT + categories + ai-embeddings
@@ -180,6 +180,7 @@ DECLARE
   v_slug TEXT;
   v_new_category BOOLEAN := false;
   v_current_order BIGINT[];
+  i INT;
 BEGIN
   -- Step 1: Get the bookmark (already inserted by enqueue RPC)
   SELECT url, title, description, "ogImage", meta_data
