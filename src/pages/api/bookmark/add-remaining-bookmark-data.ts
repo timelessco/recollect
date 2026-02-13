@@ -223,7 +223,8 @@ export default async function handler(
 
 	let imageOcrValue = null;
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
-	let imageCaption = null;
+	let imageCaption: string | null = null;
+	let imageKeywords: string[] = [];
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
 	const ogImageMetaDataGeneration = uploadedCoverImageUrl
@@ -271,14 +272,22 @@ export default async function handler(
 			imageOcrValue = ocrResult.text;
 			ocrStatus = ocrResult.status;
 
-			// Get image caption using the centralized function
-			imageCaption = await imageToText(
+			// Get image caption and keywords using the centralized function
+			const imageToTextResult = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
 					: imageUrlForMetaDataGeneration,
 				supabase,
 				userId,
+				{
+					isPageScreenshot:
+						currentData?.meta_data?.isPageScreenshot ?? undefined,
+				},
 			);
+			if (imageToTextResult) {
+				imageCaption = imageToTextResult.sentence;
+				imageKeywords = imageToTextResult.image_keywords ?? [];
+			}
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
 			Sentry.captureException(`Gemini AI processing error ${error}`);
@@ -291,6 +300,7 @@ export default async function handler(
 	const meta_data = {
 		...existingMetaData,
 		img_caption: imageCaption,
+		image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
 		width: imgData?.width,
 		height: imgData?.height,
 		ogImgBlurUrl: imgData?.encoded,

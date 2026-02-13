@@ -30,7 +30,8 @@ const notVideoLogic = async (
 	const ogImage = mediaType?.includes("audio")
 		? AUDIO_OG_IMAGE_FALLBACK_URL
 		: publicUrl;
-	let imageCaption = null;
+	let imageCaption: string | null = null;
+	let imageKeywords: string[] = [];
 	let imageOcrValue = null;
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
 
@@ -42,8 +43,12 @@ const notVideoLogic = async (
 			imageOcrValue = ocrResult.text;
 			ocrStatus = ocrResult.status;
 
-			// Get image caption using the centralized function
-			imageCaption = await imageToText(ogImage, supabase, userId);
+			// Get image caption and keywords using the centralized function
+			const imageToTextResult = await imageToText(ogImage, supabase, userId);
+			if (imageToTextResult) {
+				imageCaption = imageToTextResult.sentence;
+				imageKeywords = imageToTextResult.image_keywords ?? [];
+			}
 		} catch (error) {
 			console.warn("Gemini AI processing error", error);
 		}
@@ -63,6 +68,7 @@ const notVideoLogic = async (
 	const meta_data = {
 		img_caption: imageCaption,
 		image_caption: imageCaption,
+		image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,

@@ -106,7 +106,7 @@ export const enrichMetadata = async ({
 			// OCR extraction
 			processOcr(ogImage, supabase, userId, url),
 			// Image caption generation
-			processImageCaption(ogImage, supabase, userId, url),
+			processImageCaption(ogImage, supabase, userId, url, existingMetadata),
 			// Blurhash generation
 			processBlurhash(ogImage, url, userId),
 		]);
@@ -125,10 +125,10 @@ export const enrichMetadata = async ({
 		: { isOcrFailed: true, ocrResult: null, ocrStatus: "no_text" };
 
 	// Extract caption result
-	const { isImageCaptionFailed, image_caption } =
+	const { isImageCaptionFailed, image_caption, image_keywords } =
 		captionResult.status === "fulfilled"
 			? captionResult.value
-			: { isImageCaptionFailed: true, image_caption: null };
+			: { isImageCaptionFailed: true, image_caption: null, image_keywords: [] };
 
 	// Extract blurhash result
 	const { isBlurhashFailed, blurhash } =
@@ -141,6 +141,7 @@ export const enrichMetadata = async ({
 		ocr: ocrData,
 		ocr_status: ocrStatus,
 		image_caption,
+		image_keywords: image_keywords?.length ? image_keywords : undefined,
 		width: blurhash?.width,
 		height: blurhash?.height,
 		ogImgBlurUrl: blurhash?.encoded,
@@ -227,6 +228,7 @@ const processImageCaption = async (
 	supabase: SupabaseClient,
 	userId: string,
 	url: string,
+	existingMetadata: Record<string, unknown>,
 ) => {
 	console.log("[processImageCaption] Generating image caption:", {
 		url,
@@ -234,8 +236,10 @@ const processImageCaption = async (
 	});
 	// Generate caption for the image
 	try {
-		const caption = await imageToText(ogImage, supabase, userId);
-		if (!caption) {
+		const result = await imageToText(ogImage, supabase, userId, {
+			isPageScreenshot: Boolean(existingMetadata?.isPageScreenshot),
+		});
+		if (!result?.sentence) {
 			console.error(
 				"[processImageCaption] imageToText returned empty result:",
 				{ url, ogImage },
@@ -251,13 +255,21 @@ const processImageCaption = async (
 					ogImage,
 				},
 			});
-			return { isImageCaptionFailed: true, image_caption: null };
+			return {
+				isImageCaptionFailed: true,
+				image_caption: null,
+				image_keywords: [],
+			};
 		} else {
 			console.log(
 				"[processImageCaption] Image caption generated successfully:",
 				{ url },
 			);
-			return { isImageCaptionFailed: false, image_caption: caption };
+			return {
+				isImageCaptionFailed: false,
+				image_caption: result.sentence,
+				image_keywords: result.image_keywords ?? [],
+			};
 		}
 	} catch (error) {
 		console.error("[processImageCaption] imageToText threw error:", {
@@ -275,7 +287,11 @@ const processImageCaption = async (
 				ogImage,
 			},
 		});
-		return { isImageCaptionFailed: true, image_caption: null };
+		return {
+			isImageCaptionFailed: true,
+			image_caption: null,
+			image_keywords: [],
+		};
 	}
 };
 

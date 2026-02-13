@@ -143,9 +143,14 @@ export default async function handler(
 		};
 
 		// ai-enrichment
-		const caption = await imageToText(ogImage, supabase, user_id);
-		if (caption) {
-			newMeta.image_caption = caption;
+		const imageToTextResult = await imageToText(ogImage, supabase, user_id, {
+			isPageScreenshot: Boolean(isPageScreenshot),
+		});
+		if (imageToTextResult) {
+			newMeta.image_caption = imageToTextResult.sentence;
+			if (imageToTextResult.image_keywords?.length) {
+				newMeta.image_keywords = imageToTextResult.image_keywords;
+			}
 		} else {
 			console.error("imageToText returned empty result", url);
 		}
