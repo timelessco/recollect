@@ -409,6 +409,7 @@ export type Database = {
 				Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
 				Returns: boolean;
 			};
+			check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
 			create_and_assign_tag: {
 				Args: { p_bookmark_id: number; p_tag_name: string };
 				Returns: Array<{
@@ -422,6 +423,10 @@ export type Database = {
 					tag_name: string;
 					tag_user_id: string;
 				}>;
+			};
+			enqueue_instagram_bookmarks: {
+				Args: { p_bookmarks: Json; p_user_id: string };
+				Returns: Json;
 			};
 			enqueue_raindrop_bookmarks: {
 				Args: { p_bookmarks: Json; p_user_id: string };
@@ -466,15 +471,9 @@ export type Database = {
 			};
 			process_instagram_bookmark: {
 				Args: {
+					p_bookmark_id: number;
 					p_collection_names?: string[];
-					p_description?: string;
-					p_meta_data?: Json;
 					p_msg_id?: number;
-					p_og_image?: string;
-					p_saved_at?: string;
-					p_title?: string;
-					p_type: string;
-					p_url: string;
 					p_user_id: string;
 				};
 				Returns: Json;
