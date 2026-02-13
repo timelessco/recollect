@@ -92,9 +92,6 @@ export function useAddTagToBookmarkOptimisticMutation() {
 				queryKey: [BOOKMARKS_KEY, session?.user?.id],
 			});
 		},
-
-		showSuccessToast: true,
-		successMessage: "Tag added",
 	});
 
 	return { addTagToBookmarkOptimisticMutation };

@@ -2,7 +2,6 @@ import Image from "next/image";
 
 import FolderIcon from "../icons/folderIcon";
 import ImageIcon from "../icons/imageIcon";
-import LinkIcon from "../icons/linkIcon";
 import VideoIcon from "../icons/videoIcon";
 import { type SingleListData } from "../types/apiTypes";
 import {
@@ -18,6 +17,7 @@ import {
 } from "../utils/helpers";
 
 import { AudioIcon } from "@/icons/audio-icon";
+import { LinkIcon } from "@/icons/link-icon";
 
 export type GetBookmarkIconProps = {
 	/**
@@ -127,9 +127,9 @@ export const GetBookmarkIcon = ({
 	}
 
 	if (isAudio) {
-		return <AudioIcon className="h-[15px] w-[15px]" />;
+		return <AudioIcon className={`h-[${size}px] w-[${size}px]`} />;
 	}
 
 	// Default fallback
-	return <LinkIcon />;
+	return <LinkIcon className={`h-[${size}px] w-[${size}px]`} />;
 };

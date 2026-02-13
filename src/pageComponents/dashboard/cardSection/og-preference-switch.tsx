@@ -1,20 +1,21 @@
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useTogglePreferredOgDomainOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-preferred-og-domain-optimistic-mutation";
-import { Checkbox } from "@/components/ui/recollect/checkbox";
+import Switch from "@/components/switch";
+import ImageIcon from "@/icons/imageIcon";
 import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { USER_PROFILE } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 
-type OgPreferenceCheckboxProps = {
+type OgPreferenceSwitchProps = {
 	bookmarkUrl: string;
 	userId: string;
 };
 
-export function OgPreferenceCheckbox({
+export function OgPreferenceSwitch({
 	bookmarkUrl,
 	userId,
-}: OgPreferenceCheckboxProps) {
+}: OgPreferenceSwitchProps) {
 	const queryClient = useQueryClient();
 	const { togglePreferredOgDomainOptimisticMutation } =
 		useTogglePreferredOgDomainOptimisticMutation();
@@ -38,7 +39,7 @@ export function OgPreferenceCheckbox({
 		);
 	})();
 
-	const handleCheckedChange = () => {
+	const handleToggle = () => {
 		if (!domain) {
 			return;
 		}
@@ -47,17 +48,24 @@ export function OgPreferenceCheckbox({
 	};
 
 	return (
-		<div className="flex items-center gap-2 px-2 pb-1.5">
-			{/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-			<label className="flex cursor-pointer items-center gap-2">
-				<Checkbox
-					checked={isPreferred}
-					onCheckedChange={handleCheckedChange}
-					className="flex size-4 items-center justify-center rounded border-2 border-gray-400 data-checked:border-gray-800 data-checked:bg-gray-800 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-plain data-checked:[&_svg]:text-gray-200"
+		<div className="flex items-center justify-between gap-3 px-2 py-[7.5px]">
+			<div className="flex items-center gap-2">
+				<div className="flex h-4 w-4 items-center justify-center text-gray-800">
+					<ImageIcon size="16" />
+				</div>
+				<span className="text-13 leading-4 font-450 text-gray-800">
+					Use OG image for this site
+				</span>
+			</div>
+			<div className="flex shrink-0 items-center">
+				<Switch
+					aria-label="Use OG image for this site"
+					enabled={isPreferred}
+					setEnabled={handleToggle}
+					disabled={false}
+					size="small"
 				/>
-
-				<span className="text-sm font-medium text-gray-800">OG preference</span>
-			</label>
+			</div>
 		</div>
 	);
 }

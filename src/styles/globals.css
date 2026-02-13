@@ -11,6 +11,7 @@
 	/* Light Gray Shades (from figma variables) */
 	--color-gray-0: #fff;
 	--color-gray-50: #fff;
+	--color-gray-90: #fff;
 	--color-gray-100: #f5f5f5;
 	--color-gray-200: #ededed;
 	--color-gray-300: #e0e0e0;
@@ -76,7 +77,7 @@
 	--color-red-300: #fdc2c2;
 	--color-red-400: #f79596;
 	--color-red-500: #e03636;
-	--color-red-600: #cc2929;
+	--color-red-600: #cd2b31;
 	--color-red-700: #b52a2a;
 	--color-red-800: #941f1f;
 	--color-red-900: #6b1515;
@@ -220,6 +221,7 @@
 	/* Dark Gray Shades (from figma variables) */
 	--color-gray-0: #121212;
 	--color-gray-50: #1c1c1c;
+	--color-gray-90: #2d2d2d;
 	--color-gray-100: #212121;
 	--color-gray-200: #292929;
 	--color-gray-300: #3d3d3d;
@@ -285,7 +287,7 @@
 	--color-red-300: #661717;
 	--color-red-400: #862020;
 	--color-red-500: #b01f1f;
-	--color-red-600: #d73232;
+	--color-red-600: #cd2b31;
 	--color-red-700: #eb4d52;
 	--color-red-800: #fe7c7c;
 	--color-red-900: #ffc1c1;
@@ -473,6 +475,7 @@
 	/* Gray colors */
 	--color-gray-0: var(--color-gray-0);
 	--color-gray-50: var(--color-gray-50);
+	--color-gray-90: var(--color-gray-90);
 	--color-gray-100: var(--color-gray-100);
 	--color-gray-200: var(--color-gray-200);
 	--color-gray-300: var(--color-gray-300);
@@ -984,7 +987,11 @@
 	}
 
 	.chakra-slider-group .slider-thumb .slider-thumb-handle {
-		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-gray-0 shadow-md select-none;
+		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-white select-none;
+
+		box-shadow:
+			0 0 1px 0 rgb(0 0 0 / 40%),
+			0 1px 2px 0 rgb(0 0 0 / 15%);
 	}
 
 	.chakra-slider-group .slider-thumb-handle:focus-within {

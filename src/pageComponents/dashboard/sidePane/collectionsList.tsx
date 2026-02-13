@@ -48,6 +48,7 @@ import Modal from "../../../components/modal";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -300,6 +301,7 @@ const CollectionsList = () => {
 	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
+	const { isDesktop } = useIsMobileView();
 	const [deleteConfirmation, setDeleteConfirmation] = useState<{
 		isOpen: boolean;
 		categoryId: number | null;
@@ -643,7 +645,7 @@ const CollectionsList = () => {
 	);
 
 	const collectionsHeader = (
-		<div className="group flex w-full items-center justify-between px-1 py-[7.5px]">
+		<div className="group flex w-full items-center justify-between px-1 py-[7px]">
 			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
 				<p className="mr-1">Collections</p>
 				<DownArrowGray
@@ -669,6 +671,17 @@ const CollectionsList = () => {
 					setIsCollectionHeaderMenuOpen(value);
 				}}
 				onButtonClick={(event) => event?.stopPropagation()}
+				portalElement={
+					!isDesktop
+						? () => {
+								if (typeof document === "undefined") {
+									return null;
+								}
+
+								return document.querySelector("#side-pane-dropdown-portal");
+							}
+						: undefined
+				}
 			>
 				{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
 					<AriaDropdownMenu
@@ -688,7 +701,7 @@ const CollectionsList = () => {
 		</div>
 	);
 	return (
-		<div className="pt-4">
+		<div className="pt-3">
 			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
 				<div id="collections-wrapper">
 					{isLoadingCategories ? (

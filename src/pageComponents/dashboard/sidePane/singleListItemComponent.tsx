@@ -14,7 +14,6 @@ import { type ChildrenTypes } from "../../../types/componentTypes";
 import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
-	smoothHoverClassName,
 } from "../../../utils/commonClassNames";
 import ShareContent from "../share/shareContent";
 
@@ -84,7 +83,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 						/>
 					</span>
 				) : (
-					<figure className="flex h-[18px] w-[18px] items-center text-plain-reverse">
+					<figure className="flex h-[18px] w-[18px] items-center text-gray-900">
 						{item?.icon ? item?.icon : null}
 					</figure>
 				)}
@@ -102,7 +101,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 					<div
-						className="flex h-4 w-4 items-center justify-center"
+						className="flex items-center justify-center"
 						onClick={(event) => event.preventDefault()}
 					>
 						{showSpinner ? (
@@ -123,7 +122,20 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										<OptionsIcon />
 									</div>
 								}
-								menuClassName={`${activeMenu ? "w-auto" : ""} ${dropdownMenuClassName} z-10`}
+								menuClassName={`${dropdownMenuClassName} ${activeMenu ? "w-auto" : ""} pointer-events-auto z-10`}
+								portalElement={
+									!isDesktop
+										? () => {
+												if (typeof document === "undefined") {
+													return null;
+												}
+
+												return document.querySelector(
+													"#side-pane-dropdown-portal",
+												);
+											}
+										: undefined
+								}
 								menuOpenToggle={(value) => {
 									if (value) {
 										setOpenedMenuId(item?.id);
@@ -179,7 +191,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							item?.current && (
 								<div className="flex w-full justify-end">
 									<p
-										className={`min-w-[16px] text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 ${
+										className={`text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 ${
 											showDropdown ? "block group-hover:hidden" : "block"
 										} ${openedMenuId === item?.id ? "hidden" : ""}`}
 									>
@@ -206,7 +218,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
 	const contentWrapperClassNames = `${
 		item?.current ? "bg-gray-100 text-gray-900" : "text-gray-800"
-	} ${extendedClassname} ${smoothHoverClassName} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-gray-100 hover:text-gray-900`;
+	} ${extendedClassname} side-pane-anchor group flex cursor-pointer items-center justify-between rounded-lg px-2 hover:bg-gray-100 hover:text-gray-900`;
 
 	if (isLink) {
 		return (

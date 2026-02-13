@@ -146,9 +146,9 @@ export const DeleteAccount = () => {
 							<figure className="mr-2">
 								<TrashIconRed />
 							</figure>
-							<p className="flex justify-center">
+							<p className="flex justify-center text-red-600">
 								{deleteUserMutation.isPending ? (
-									<Spinner className="h-3 w-3 animate-spin text-red-600" />
+									<Spinner className="h-3 w-3 animate-spin" />
 								) : (
 									"Confirm delete"
 								)}

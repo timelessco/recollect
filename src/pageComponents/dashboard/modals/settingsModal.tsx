@@ -58,7 +58,7 @@ const SettingsModal = () => {
 	const optionsList = [
 		{
 			icon: (
-				<figure className="flex h-6 w-6 items-center justify-center text-gray-900">
+				<figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
 					<AvatarIcon />
 				</figure>
 			),
@@ -71,7 +71,7 @@ const SettingsModal = () => {
 		},
 		{
 			icon: (
-				<figure className="flex h-6 w-6 items-center justify-center text-gray-900">
+				<figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
 					<SettingsAiIcon />
 				</figure>
 			),
@@ -84,8 +84,8 @@ const SettingsModal = () => {
 		},
 		{
 			icon: (
-				<figure className="flex h-6 w-6 items-center justify-center text-gray-900">
-					<ImportIcon />
+				<figure className="flex items-center justify-center text-gray-900">
+					<ImportIcon className="h-4.5 w-4.5" />
 				</figure>
 			),
 			name: "Import",

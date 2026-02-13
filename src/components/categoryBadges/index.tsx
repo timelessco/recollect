@@ -1,18 +1,14 @@
-import classNames from "classnames";
-
 import { type CategoriesData } from "../../types/apiTypes";
 import { CollectionIcon } from "../collectionIcon";
 
 type CategoryBadgesProps = {
 	categories: CategoriesData[] | undefined;
 	maxVisible?: number;
-	className?: string;
 };
 
 export function CategoryBadges({
 	categories,
 	maxVisible = 2,
-	className,
 }: CategoryBadgesProps) {
 	if (!categories?.length) {
 		return null;
@@ -22,18 +18,21 @@ export function CategoryBadges({
 	const overflow = categories.length - maxVisible;
 
 	return (
-		<div className={classNames("flex items-center gap-1", className)}>
+		<>
 			{visible.map((cat) => (
-				<div key={cat.id} className="flex items-center gap-1">
+				<div
+					key={cat.id}
+					className="mr-1 flex items-center gap-1 text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
+				>
 					<CollectionIcon bookmarkCategoryData={cat} />
-					<span className="text-13 font-450 text-gray-600">
-						{cat.category_name}
-					</span>
+					<span>{cat.category_name}</span>
 				</div>
 			))}
 			{overflow > 0 && (
-				<span className="text-13 font-450 text-gray-500">+{overflow} more</span>
+				<span className="text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-500">
+					+{overflow} more
+				</span>
 			)}
-		</div>
+		</>
 	);
 }

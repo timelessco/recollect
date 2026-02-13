@@ -394,7 +394,7 @@ const CardSection = ({
 
 	const renderUrl = (item: SingleListData) => (
 		<p
-			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 max-sm:w-[60%] ${
+			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 ${
 				(item?.addedCategories?.length ?? 0) > 0 && isNull(categorySlug)
 					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 					: ""
@@ -419,16 +419,17 @@ const CardSection = ({
 		const figureClassName = classNames({
 			"relative z-[-1]": isAudio || isVideo,
 			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
-			"w-full shadow-custom-8": cardTypeCondition === viewValues.card,
+			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
+				cardTypeCondition === viewValues.card ||
+				cardTypeCondition === viewValues.moodboard,
 			"aspect-[1.8]":
 				cardTypeCondition === viewValues.moodboard &&
 				(isOgImgLoading || isBookmarkLoading) &&
 				img === undefined,
-			"shadow-custom-8 rounded-lg": cardTypeCondition === viewValues.moodboard,
 		});
 
 		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out delay-50 fill-gray-800": true,
+			"hover:fill-slate-500 transition ease-in-out fill-gray-800": true,
 			absolute: true,
 			"bottom-[9px] left-[7px] ":
 				cardTypeCondition === viewValues.moodboard ||
@@ -467,7 +468,7 @@ const CardSection = ({
 	const renderFavIcon = (item: SingleListData) => {
 		const size = 15;
 		const favIconFigureClassName = classNames({
-			"h-[14] w-[14px] mt-px": true,
+			"h-[15px] w-[15px]": true,
 		});
 
 		const icon = (
@@ -496,7 +497,7 @@ const CardSection = ({
 		const isImageMediaType =
 			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX);
 		const figureClassName = classNames({
-			"card-icon rounded-sm p-0.5 text-gray-1000": true,
+			"card-icon rounded-sm text-gray-1000": true,
 			rounded: isImageMediaType,
 		});
 
@@ -519,10 +520,12 @@ const CardSection = ({
 		}
 
 		return (
-			<div className="ml-1 flex items-center text-13 leading-4 font-450 text-gray-600">
-				<p className="mr-1">in</p>
+			<>
+				<p className="flex items-center text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
+					in
+				</p>
 				<CategoryBadges categories={displayCategories} maxVisible={2} />
-			</div>
+			</>
 		);
 	};
 
@@ -599,9 +602,11 @@ const CardSection = ({
 								</div>
 							)}
 						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="flex flex-wrap items-center">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
+							<div className="flex flex-wrap items-center gap-1">
+								<div className="flex min-w-0 items-center">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+								</div>
 								{item?.inserted_at && (
 									<p className="relative text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
@@ -664,8 +669,10 @@ const CardSection = ({
 							)}
 						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
 							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-								{renderFavIcon(item)}
-								{renderUrl(item)}
+								<div className="flex min-w-0 items-center">
+									{renderFavIcon(item)}
+									{renderUrl(item)}
+								</div>
 								{item?.inserted_at && (
 									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
 										{format(
@@ -692,7 +699,10 @@ const CardSection = ({
 	const listWrapperClass = classNames({
 		"mt-[47px]":
 			!isPublicPage || categorySlug === DISCOVER_URL || isDiscoverPage,
-		"px-4 py-2": cardTypeCondition === viewValues.list,
+		"px-4 py-2":
+			cardTypeCondition === viewValues.list ||
+			cardTypeCondition === viewValues.timeline,
+
 		"py-2 px-3":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,

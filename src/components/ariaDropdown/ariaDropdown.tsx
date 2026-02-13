@@ -14,6 +14,10 @@ type AriaDropDownPropertyTypes = {
 	menuClassName?: string;
 	menuOpenToggle?: (value: boolean) => void;
 	onButtonClick?: (event: React.MouseEvent<HTMLElement>) => void;
+	portalElement?:
+		| HTMLElement
+		| ((element: HTMLElement) => HTMLElement | null)
+		| null;
 };
 
 const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
@@ -28,6 +32,7 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 		menuButtonClassName,
 		menuOpenToggle = () => null,
 		children,
+		portalElement,
 
 		// we have this as a prop because i dont want to send menu state to button render prop
 		menuButtonActiveClassName,
@@ -50,8 +55,9 @@ const AriaDropDown = (props: AriaDropDownPropertyTypes) => {
 				className={`${menuClassName ?? ""} leading-[20px] focus-visible:outline-hidden`}
 				// @ts-expect-error - TODO: fix this
 				initialFocusRef={props.initialFocusRef}
-				state={menu}
 				portal
+				portalElement={portalElement}
+				state={menu}
 			>
 				{children}
 			</Menu>

@@ -50,31 +50,30 @@ export const CategoryMultiSelect = ({
 							{(value: CategoriesData[]) => (
 								<>
 									{value.map((category) => (
-										<Combobox.Chip key={category.id}>
+										<Combobox.Chip
+											key={category.id}
+											item={category}
+											className="py-[5.5px]"
+										>
 											<CollectionIcon
 												bookmarkCategoryData={category}
 												iconSize="8"
-												size="12"
+												size="14"
 											/>
 											<Combobox.ChipContent item={category}>
 												{category.category_name}
 											</Combobox.ChipContent>
-											<Combobox.ChipRemove />
 										</Combobox.Chip>
 									))}
 
-									<div className="flex items-center gap-1 rounded focus-within:ring-2 focus-within:ring-blue-500">
+									<div className="ml-2 flex items-center gap-1 rounded focus-within:ring-2 focus-within:ring-gray-200">
 										<div className="h-[14px] w-[14px] text-gray-600">
 											<AddToCollectionsButton />
 										</div>
 
 										<Combobox.Input
-											placeholder={
-												value.length > 0
-													? "Edit collections..."
-													: "Add to collection..."
-											}
-											className="w-[130px] border-none bg-transparent py-[2px] text-13 text-gray-500 outline-none placeholder:text-gray-500"
+											placeholder="Add to collection"
+											className="w-[130px] border-none bg-transparent px-0.5 py-[2px] text-13 text-gray-500 outline-none placeholder:text-gray-500"
 										/>
 									</div>
 								</>
@@ -84,8 +83,13 @@ export const CategoryMultiSelect = ({
 
 					<Combobox.Portal>
 						<Combobox.Positioner className="z-10000">
-							<Combobox.Popup>
-								<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
+							<Combobox.Popup className="mt-2 rounded-lg bg-gray-50 shadow-custom-3">
+								<ScrollArea
+									scrollbarGutter
+									scrollFade
+									scrollHeight={220}
+									hideScrollbar
+								>
 									<Combobox.Empty>No collections found</Combobox.Empty>
 									<Combobox.List>
 										{(item: CategoriesData) => (

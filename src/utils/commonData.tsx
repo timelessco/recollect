@@ -1,17 +1,6 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 
-import FolderIcon from "../icons/folderIcon";
-import HomeIconGray from "../icons/homeIconGray";
-import ImageIcon from "../icons/imageIcon";
-import InboxIconGray from "../icons/inboxIconGray";
-import LinkIcon from "../icons/linkIcon";
-import SettingsIcon from "../icons/settingsIcon";
-import InstagramIcon from "../icons/social/instagram";
-import XIcon from "../icons/social/x";
-import TrashIconGray from "../icons/trashIconGray";
-import VideoIcon from "../icons/videoIcon";
 import { type BookmarksCountTypes } from "../types/apiTypes";
-import { AudioIcon } from "../icons/audio-icon";
 
 import {
 	AUDIO_URL,
@@ -28,7 +17,18 @@ import {
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
 } from "./constants";
+import { AudioIcon } from "@/icons/audio-icon";
 import { DiscoverIcon } from "@/icons/discover-icon";
+import FolderIcon from "@/icons/folderIcon";
+import { GlobeLinkIcon } from "@/icons/globe-link-icon";
+import HomeIconGray from "@/icons/home-icon-gray";
+import ImageIcon from "@/icons/imageIcon";
+import InboxIconGray from "@/icons/inbox-icon-gray";
+import SettingsIcon from "@/icons/settingsIcon";
+import { InstagramIcon } from "@/icons/social/instagram-icon";
+import { XIcon } from "@/icons/social/x-icon";
+import TrashIconGray from "@/icons/trash-icon-gray";
+import VideoIcon from "@/icons/videoIcon";
 
 // TODO: check if this is needed (for code cleanup)
 const object = [
@@ -3607,7 +3607,7 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <DiscoverIcon />,
+		icon: <DiscoverIcon className="h-[18px] w-[18px]" />,
 		name: menuListItemName.discover,
 		href: `/${DISCOVER_URL}`,
 		current: currentPath === DISCOVER_URL,
@@ -3643,7 +3643,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <ImageIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<ImageIcon />
+			</figure>
+		),
 		name: menuListItemName.image,
 		href: `/${IMAGES_URL}`,
 		current: currentPath === IMAGES_URL,
@@ -3652,7 +3656,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <VideoIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<VideoIcon />
+			</figure>
+		),
 		name: menuListItemName.videos,
 		href: `/${VIDEOS_URL}`,
 		current: currentPath === VIDEOS_URL,
@@ -3661,7 +3669,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <LinkIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<GlobeLinkIcon />
+			</figure>
+		),
 		name: menuListItemName.links,
 		href: `/${LINKS_URL}`,
 		current: currentPath === LINKS_URL,
@@ -3670,7 +3682,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <FolderIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<FolderIcon />
+			</figure>
+		),
 		name: menuListItemName.documents,
 		href: `/${DOCUMENTS_URL}`,
 		current: currentPath === DOCUMENTS_URL,
@@ -3679,7 +3695,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <XIcon />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<XIcon />
+			</figure>
+		),
 		name: menuListItemName.tweets,
 		href: `/${TWEETS_URL}`,
 		current: currentPath === TWEETS_URL,
@@ -3688,7 +3708,11 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <InstagramIcon className="text-gray-900" />,
+		icon: (
+			<figure className="flex h-[18px] w-[18px] items-center justify-center">
+				<InstagramIcon className="text-gray-900" />
+			</figure>
+		),
 		name: menuListItemName.instagram,
 		href: `/${INSTAGRAM_URL}`,
 		current: currentPath === INSTAGRAM_URL,

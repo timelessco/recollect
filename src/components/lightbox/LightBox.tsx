@@ -289,12 +289,12 @@ export const CustomLightBox = ({
 				// Left: Close button
 				<div className="flex items-center" key="left-section">
 					<button
-						className="group mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
+						className="group mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full"
 						onClick={handleClose}
 						type="button"
 						aria-label="Close lightbox"
 					>
-						<LightboxCloseIcon className="h-5 w-5" />
+						<LightboxCloseIcon className="h-5 w-5 text-gray-alpha-600 transition-colors duration-150 hover:text-gray-alpha-800" />
 					</button>
 				</div>,
 
@@ -321,7 +321,7 @@ export const CustomLightBox = ({
 
 				// Right: Side pane toggle button
 				<div
-					className="group flex h-7 w-7 items-center justify-center pt-[7px] pr-4"
+					className="group mt-[7px] mr-4 flex h-7 w-7 items-center justify-center"
 					key="right-section"
 				>
 					<button
@@ -339,7 +339,7 @@ export const CustomLightBox = ({
 						}}
 						type="button"
 					>
-						<ShowSidePaneButton className="h-5 w-5 stroke-current text-gray-alpha-600 opacity-50 transition-colors duration-200 group-hover:opacity-100" />
+						<ShowSidePaneButton className="h-5 w-5 text-gray-alpha-600 transition-colors duration-150 group-hover:text-gray-alpha-800" />
 					</button>
 				</div>,
 			],

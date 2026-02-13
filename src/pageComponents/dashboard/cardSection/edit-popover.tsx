@@ -12,9 +12,10 @@ import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
 import { EditIcon } from "@/icons/edit-icon";
+import { HashIcon } from "@/icons/hash-icon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
-import { DiscoverCheckbox } from "@/pageComponents/dashboard/cardSection/discover-checkbox";
-import { OgPreferenceCheckbox } from "@/pageComponents/dashboard/cardSection/og-preference-checkbox";
+import { DiscoverSwitch } from "@/pageComponents/dashboard/cardSection/discover-switch";
+import { OgPreferenceSwitch } from "@/pageComponents/dashboard/cardSection/og-preference-switch";
 import {
 	type CategoriesData,
 	type SingleListData,
@@ -58,20 +59,10 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 
 			<Popover.Portal>
 				<Popover.Positioner sideOffset={4} align="start">
-					<Popover.Popup className="z-10 rounded-xl bg-gray-50 p-1 shadow-custom-3">
-						<div className="w-64 space-y-3">
+					<Popover.Popup className="z-10 rounded-xl bg-gray-50 p-1.5 shadow-custom-3">
+						<div className="mb-2 w-[231px]">
 							<div className="w-full">
-								<div className="mb-2 ml-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2">
-									Tags
-								</div>
-
-								<div className="w-full">
-									<TagMultiSelect bookmarkId={post.id} />
-								</div>
-							</div>
-
-							<div className="w-full">
-								<div className="mb-2 ml-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2">
+								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
 									Collections
 								</div>
 
@@ -80,24 +71,39 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 								</div>
 							</div>
 							<div className="w-full">
-								<DiscoverCheckbox
-									bookmarkId={post.id}
-									isDiscoverable={post.make_discoverable !== null}
-								/>
+								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
+									Tags
+								</div>
+
+								<div className="w-full">
+									<TagMultiSelect bookmarkId={post.id} />
+								</div>
 							</div>
-							{(() => {
-								const domain = getDomain(post.url);
-								// Don't render checkbox for domains that are already skipped for OG images
-								return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
+						</div>
+						<div className="w-full">
+							<DiscoverSwitch
+								bookmarkId={post.id}
+								isDiscoverable={post.make_discoverable !== null}
+							/>
+						</div>
+						{(() => {
+							const domain = getDomain(post.url);
+							// Don't render switch for domains that are already skipped for OG images
+							return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
+								<>
+									<div className="px-2.5 py-1">
+										<div className="h-px bg-gray-200" />
+									</div>
+
 									<div className="w-full">
-										<OgPreferenceCheckbox
+										<OgPreferenceSwitch
 											bookmarkUrl={post.url}
 											userId={userId}
 										/>
 									</div>
-								) : null;
-							})()}
-						</div>
+								</>
+							) : null;
+						})()}
 					</Popover.Popup>
 				</Popover.Positioner>
 			</Popover.Portal>
@@ -173,13 +179,17 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 					{(value: UserTagsData[]) => (
 						<>
 							{value.map((tag) => (
-								<Combobox.Chip key={tag.id}>
+								<Combobox.Chip
+									key={tag.id}
+									item={tag}
+									className="bg-plain shadow-[0_1px_1px_0_rgba(0,0,0,0.10),0_0_0.5px_0_rgba(0,0,0,0.60)]"
+								>
+									<HashIcon className="h-3.5 w-3.5 text-gray-600" />
 									<Combobox.ChipContent item={tag} />
-									<Combobox.ChipRemove />
 								</Combobox.Chip>
 							))}
 
-							<Combobox.Input placeholder="Tag name..." />
+							<Combobox.Input placeholder="Add tags" className="py-[4.5px]" />
 						</>
 					)}
 				</Combobox.Value>
@@ -187,7 +197,13 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 			<Combobox.Portal>
 				<Combobox.Positioner>
 					<Combobox.Popup>
-						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
+						<ScrollArea
+							scrollbarGutter
+							scrollFade
+							scrollHeight={220}
+							hideScrollbar
+							className="rounded-lg bg-gray-90"
+						>
 							<Combobox.List>
 								{(item: UserTagsData) => (
 									<Combobox.Item key={item.id} value={item}>
@@ -234,19 +250,25 @@ export const CategoryMultiSelect = ({
 					{(value: CategoriesData[]) => (
 						<>
 							{value.map((category) => (
-								<Combobox.Chip key={category.id}>
+								<Combobox.Chip
+									key={category.id}
+									item={category}
+									className="bg-plain shadow-[0_1px_1px_0_rgba(0,0,0,0.10),0_0_0.5px_0_rgba(0,0,0,0.60)]"
+								>
 									<CollectionIcon
 										bookmarkCategoryData={category}
 										iconSize="8"
-										size="12"
+										size="14"
 									/>
 									<Combobox.ChipContent item={category}>
 										{category.category_name}
 									</Combobox.ChipContent>
-									<Combobox.ChipRemove />
 								</Combobox.Chip>
 							))}
-							<Combobox.Input placeholder="Search Collections..." />
+							<Combobox.Input
+								placeholder="Add collection"
+								className="py-[4.5px]"
+							/>
 						</>
 					)}
 				</Combobox.Value>
@@ -254,7 +276,13 @@ export const CategoryMultiSelect = ({
 			<Combobox.Portal>
 				<Combobox.Positioner>
 					<Combobox.Popup>
-						<ScrollArea scrollbarGutter scrollFade scrollHeight={220}>
+						<ScrollArea
+							scrollbarGutter
+							scrollFade
+							scrollHeight={220}
+							hideScrollbar
+							className="rounded-lg bg-gray-90"
+						>
 							<Combobox.Empty>No collections found</Combobox.Empty>
 							<Combobox.List>
 								{(item: CategoriesData) => (

@@ -3,7 +3,7 @@ import isEmpty from "lodash/isEmpty";
 
 import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import ToolTip from "../../../components/tooltip";
-import GlobeIcon from "../../../icons/globeIcon";
+import { GlobeIcon } from "../../../icons/globe-icon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 
@@ -156,7 +156,7 @@ const CollectionStatusIcons = (props: CollectionStatusIconsProps) => {
 	}
 
 	return (
-		<div className="ml-2 flex space-x-2">
+		<div className="ml-2 flex items-center justify-center space-x-2">
 			{showPublicIcon && (
 				<ToolTip toolTipContent="Public collection">
 					<figure className="text-gray-1000">

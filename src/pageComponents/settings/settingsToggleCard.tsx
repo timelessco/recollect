@@ -29,9 +29,11 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
 	onToggle,
 }) => (
 	<div className="flex items-center justify-between rounded-xl bg-gray-100">
-		<div className="ml-[19.5px] flex items-center gap-2">
-			{icon}
-			<div className={`my-2 ml-2 text-gray-900 ${settingsParagraphClassName}`}>
+		<div className="ml-2 flex items-center gap-2">
+			<figure className="flex size-[38px] items-center justify-center">
+				{icon}
+			</figure>
+			<div className={`my-2 text-gray-900 ${settingsParagraphClassName}`}>
 				{title}
 				<p className="mt-1 text-[14px] leading-[115%] font-normal text-gray-600">
 					{description}

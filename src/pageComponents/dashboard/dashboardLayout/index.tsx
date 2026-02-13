@@ -174,7 +174,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				value: "trash",
 				render: (
 					<div
-						className={`flex items-center text-red-700 hover:text-red-700 ${dropdownMenuItemClassName}`}
+						className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
 					>
 						<TrashIconRed />
 						<p className="ml-[6px]">Clear Trash</p>
@@ -208,7 +208,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				render: (
 					// using AriaDropdownMenu as we want the dropdown to close on click
 					<AriaDropdownMenu
-						className={`flex items-center text-red-700 hover:text-red-700 ${dropdownMenuItemClassName}`}
+						className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
 						onClick={onDeleteCollectionClick}
 					>
 						<TrashIconRed />
@@ -371,6 +371,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			</Drawer>
 
 			{dashboardContentElement()}
+
+			{/* Portal container so side-pane dropdowns render above the Drawer on small screens */}
+			<div
+				className="pointer-events-none fixed inset-0 z-9999"
+				id="side-pane-dropdown-portal"
+			/>
 		</div>
 	);
 };

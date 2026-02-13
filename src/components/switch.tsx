@@ -28,7 +28,7 @@ const Switch = (props: SwitchProps) => {
 	);
 
 	const switcherClass = classNames(
-		"pointer-events-none inline-block  rounded-full bg-gray-0 shadow-lg ring-0 transition duration-200 ease-in-out disabled:opacity-40",
+		"pointer-events-none inline-block rounded-full bg-gray-0 ring-0 transition duration-200 ease-in-out disabled:opacity-40",
 		{
 			"translate-x-9": enabled === true && size === "large",
 			"translate-x-3": enabled === true && size === "medium",
@@ -39,6 +39,11 @@ const Switch = (props: SwitchProps) => {
 			"h-[12px] w-[12px]": size === "small",
 		},
 	);
+
+	const switcherStyle = {
+		boxShadow:
+			"0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+	};
 
 	return (
 		<SwitchComponent
@@ -53,6 +58,7 @@ const Switch = (props: SwitchProps) => {
 			<span
 				aria-hidden="true"
 				className={switcherClass}
+				style={switcherStyle}
 				// className={`${enabled ? "translate-x-9" : "translate-x-0"}
 				//     pointer-events-none inline-block h-[24px] w-[24px] rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out disabled:opacity-40`}
 			/>

@@ -8,7 +8,6 @@ import {
 	useComboboxContext,
 	type ComboboxContextValue,
 } from "./context";
-import { LightboxCloseIcon } from "@/icons/lightbox-close-icon";
 import { TickIcon } from "@/icons/tickIcon";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -135,12 +134,18 @@ const Root = <T,>({
 		],
 	);
 
+	// Include selected items in the list so Base UI's "ensure selected value remains
+	// valid" effect never drops them when the dropdown list is filtered by search.
+	const deduped = filteredItems.concat(
+		selectedItems.filter(
+			(selected) =>
+				!filteredItems.some((item) => getItemId(item) === getItemId(selected)),
+		),
+	);
+
 	const itemsWithCreate: Array<T | CreateNewItem> = showCreateOption
-		? [
-				...filteredItems,
-				{ __createNew: CREATE_NEW_MARKER, label: inputValue.trim() },
-			]
-		: filteredItems;
+		? [...deduped, { __createNew: CREATE_NEW_MARKER, label: inputValue.trim() }]
+		: deduped;
 
 	return (
 		<ComboboxContext value={contextValue as ComboboxContextValue<unknown>}>
@@ -170,7 +175,7 @@ function Chips({
 		<ComboboxPrimitive.Chips
 			ref={containerRef}
 			className={cn(
-				"relative flex min-h-[30px] w-full flex-wrap items-center gap-1 rounded-lg bg-gray-100 px-[10px] py-[3px] focus-within:ring-2 focus-within:ring-blue-500",
+				"relative flex min-h-[30px] w-full flex-wrap items-center gap-1 rounded-lg bg-gray-alpha-100 px-[3px] py-[3px] focus-within:ring-2 focus-within:ring-gray-200",
 				className,
 			)}
 			{...props}
@@ -182,15 +187,48 @@ function Chips({
 
 const Value = ComboboxPrimitive.Value;
 
-function Chip({ className, ...props }: ComboboxPrimitive.Chip.Props) {
+function Chip<T>({
+	className,
+	item,
+	...props
+}: ComboboxPrimitive.Chip.Props & { item?: T }) {
+	const { onRemove, getItemLabel } = useComboboxContext<T>();
+
+	const handleClick = (event: React.MouseEvent) => {
+		if (item) {
+			event.stopPropagation();
+			onRemove(item);
+		}
+	};
+
+	const handleKeyDown = (event: React.KeyboardEvent) => {
+		if (event.key !== "Enter" && event.key !== " ") {
+			return;
+		}
+
+		if (event.key === " ") {
+			event.preventDefault();
+		}
+
+		event.stopPropagation();
+		if (item) {
+			onRemove(item);
+		}
+	};
+
 	return (
 		<ComboboxPrimitive.Chip
+			{...props}
 			data-slot="combobox-chip"
+			aria-label={item ? `Remove ${getItemLabel(item)}` : undefined}
+			role="button"
+			tabIndex={0}
 			className={cn(
-				"flex cursor-pointer items-center gap-1 rounded-md bg-gray-800 px-2 py-[2px] text-xs leading-[15px] font-450 tracking-[0.01em] text-white outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+				"flex cursor-pointer items-center gap-1.5 rounded-[6px] bg-gray-100 px-2 py-[4.5px] text-xs leading-[15px] font-450 tracking-[0.01em] text-gray-800 transition-colors outline-none hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-gray-200",
 				className,
 			)}
-			{...props}
+			onClick={handleClick}
+			onKeyDown={handleKeyDown}
 		/>
 	);
 }
@@ -206,28 +244,15 @@ function ChipContent<T>({
 	const { getItemLabel } = useComboboxContext<T>();
 
 	return (
-		<span className={cn("max-w-[100px] truncate", className)} {...props}>
-			{children ?? getItemLabel(item)}
-		</span>
-	);
-}
-
-function ChipRemove({
-	className,
-	children,
-	...props
-}: ComboboxPrimitive.ChipRemove.Props) {
-	return (
-		<ComboboxPrimitive.ChipRemove
+		<span
 			className={cn(
-				"flex items-center justify-center rounded p-0.5 transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-blue-500",
+				"max-w-[100px] truncate leading-[115%] tracking-[0.13px]",
 				className,
 			)}
-			aria-label="Remove"
 			{...props}
 		>
-			{children ?? <LightboxCloseIcon className="size-2.5" />}
-		</ComboboxPrimitive.ChipRemove>
+			{children ?? getItemLabel(item)}
+		</span>
 	);
 }
 
@@ -253,7 +278,7 @@ function Input({
 		<ComboboxPrimitive.Input
 			placeholder={placeholder}
 			className={cn(
-				"min-w-[80px] flex-1 bg-transparent text-sm outline-none placeholder:text-gray-500",
+				"min-w-[80px] flex-1 bg-transparent px-2.5 text-13 leading-[115%] tracking-[0.13px] outline-none placeholder:font-medium placeholder:text-gray-alpha-600",
 				className,
 			)}
 			onKeyDown={handleKeyDown}
@@ -296,11 +321,18 @@ function Positioner({
 	);
 }
 
-function Popup({ children, ...props }: ComboboxPrimitive.Popup.Props) {
+function Popup({
+	className,
+	children,
+	...props
+}: ComboboxPrimitive.Popup.Props) {
 	return (
 		<ComboboxPrimitive.Popup
 			data-slot="combobox-popup"
-			className="w-(--anchor-width) origin-(--transform-origin) rounded-xl bg-gray-0 shadow-custom-7 transition-[scale,opacity,shadow] data-starting-style:scale-98 data-starting-style:opacity-0"
+			className={cn(
+				"w-(--anchor-width) origin-(--transform-origin) rounded-xl bg-gray-0 shadow-custom-7 transition-[scale,opacity,shadow] data-starting-style:scale-98 data-starting-style:opacity-0",
+				className,
+			)}
 			{...props}
 		>
 			{children}
@@ -354,7 +386,7 @@ function Item({ className, children, ...props }: ComboboxPrimitive.Item.Props) {
 		<ComboboxPrimitive.Item
 			data-slot="combobox-item"
 			className={cn(
-				"group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-[5px] text-13 leading-[15px] font-450 tracking-[0.01em] text-gray-900 transition-colors select-none data-highlighted:bg-gray-200",
+				"group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-13 leading-[15px] font-450 tracking-[0.01em] text-gray-900 transition-colors select-none data-highlighted:bg-gray-200",
 				className,
 			)}
 			{...props}
@@ -389,7 +421,6 @@ export const Combobox = {
 	Chips,
 	Chip,
 	ChipContent,
-	ChipRemove,
 	Value,
 	Input,
 	Portal,

@@ -47,7 +47,7 @@ const AriaSelect = (props: AriaSelectProps) => {
 				{renderCustomSelectButton(select?.open) ?? defaultValue}
 			</Select>
 			<SelectPopover
-				className={`${menuClassName ?? dropdownMenuClassName} z-50`}
+				className={`bg-gray-90 ${menuClassName ?? dropdownMenuClassName} z-50`}
 				state={select}
 			>
 				{options?.map((item) => (

@@ -53,7 +53,7 @@ const SidePaneOptionsMenu = () => {
 		<div className="pt-[10px]">
 			{optionsMenuList?.map((item) => (
 				<SingleListItemComponent
-					extendedClassname="py-[7px]"
+					extendedClassname="py-[6px]"
 					isLink={item?.id !== 4}
 					item={item}
 					key={item.id}

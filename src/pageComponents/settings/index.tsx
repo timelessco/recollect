@@ -1,6 +1,4 @@
 import { useEffect, useRef } from "react";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -10,25 +8,23 @@ import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserM
 import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
+import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
-import { Switch } from "../../components/toggledarkmode";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
-import GoogleLoginIcon from "../../icons/googleLoginIcon";
-import { IframeIcon } from "../../icons/iframeIcon";
+import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
+import { IframeIcon } from "../../icons/iframe-icon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/info-icon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
-import SettingsUserIcon from "../../icons/user/settingsUserIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
 import { useIframeStore } from "../../store/iframeStore";
-import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	saveButtonClassName,
@@ -41,11 +37,11 @@ import {
 import {
 	DISPLAY_NAME_CHECK_PATTERN,
 	LETTERS_NUMBERS_CHECK_PATTERN,
-	USER_PROFILE,
 } from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
 import { SettingsToggleCard } from "./settingsToggleCard";
+import { ToggleDarkMode } from "@/components/toggleDarkMode";
 
 type SettingsUsernameFormTypes = {
 	username: string;
@@ -57,13 +53,13 @@ type SettingsDisplaynameFormTypes = {
 
 const Settings = () => {
 	const inputFile = useRef<HTMLInputElement>(null);
-	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const userId = session?.user?.id;
 
 	const setCurrentSettingsPage = useMiscellaneousStore(
 		(state) => state.setCurrentSettingsPage,
 	);
+
+	const { userProfileData } = useFetchUserProfile();
 
 	// mutations
 	const { updateUsernameMutation } = useUpdateUsernameMutation();
@@ -75,14 +71,10 @@ const Settings = () => {
 	const { deleteUserMutation } = useDeleteUserMutation();
 	const { removeProfilePic } = useRemoveUserProfilePicMutation();
 
-	const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-		data: ProfilesTableTypes[];
-		error: PostgrestError;
-	};
 	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
 	const setIframeEnabled = useIframeStore((state) => state.setIframeEnabled);
 
-	const userData = userProfilesData?.data?.[0];
+	const userData = userProfileData?.data?.[0];
 
 	const onSubmit: SubmitHandler<SettingsUsernameFormTypes> = async (data) => {
 		if (data?.username === userData?.user_name) {
@@ -168,7 +160,7 @@ const Settings = () => {
 	}, [displaynameReset, userData?.display_name]);
 
 	const profilePicClassName = classNames({
-		[`rounded-full min-w-[72px] min-h-[72px] max-w-[72px] max-h-[72px] object-contain bg-black`]: true,
+		[`rounded-full w-11.5 h-11.5 object-contain bg-black`]: true,
 		"opacity-50":
 			uploadProfilePicMutation?.isPending || removeProfilePic?.isPending,
 	});
@@ -207,7 +199,7 @@ const Settings = () => {
 			/>
 			<div>
 				<p className={`${settingsMainHeadingClassName} mb-4`}>Account</p>
-				<div className="flex w-full items-center space-x-2">
+				<div className="flex w-full items-center space-x-3">
 					<div
 						onClick={() => {
 							if (inputFile.current) {
@@ -218,20 +210,20 @@ const Settings = () => {
 						role="button"
 						tabIndex={-1}
 					>
-						<figure className="h-[72px] w-[72px] cursor-pointer transition delay-75 ease-in-out hover:opacity-50">
+						<figure className="h-11.5 w-11.5 cursor-pointer transition ease-in-out hover:opacity-50">
 							<UserAvatar
 								alt="profile-pic"
 								className={profilePicClassName}
-								height={72}
+								height={46}
 								src={userData?.profile_pic ?? ""}
-								width={72}
+								width={46}
 							/>
 						</figure>
 					</div>
 					<div className="max-sm:mt-2">
 						<div className="flex gap-2 text-sm leading-[21px] font-semibold text-black">
 							<Button
-								className={`px-2 py-[6px] ${saveButtonClassName}`}
+								className={`px-2 py-[7px] ${saveButtonClassName}`}
 								onClick={() => {
 									if (inputFile.current) {
 										inputFile.current.click();
@@ -239,12 +231,14 @@ const Settings = () => {
 								}}
 							>
 								<div className="flex items-center space-x-[6px]">
-									<ImageIcon />
-									<span>Upload image</span>
+									<ImageIcon size="16" />
+									<span className="text-13 leading-[115%] font-medium">
+										Upload image
+									</span>
 								</div>
 							</Button>
 							<Button
-								className="bg-gray-100 px-2 py-[6px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
+								className="rounded-lg bg-gray-100 px-2.5 py-[7px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
 								disabledClassName="bg-gray-100 text-gray-400 hover:bg-gray-100"
 								isDisabled={isNull(userData?.profile_pic)}
 								onClick={async () => {
@@ -265,15 +259,58 @@ const Settings = () => {
 					</div>
 				</div>
 				<div className="mt-[44px] flex flex-row space-x-3">
+					<form
+						className="w-1/2"
+						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
+					>
+						<LabelledComponent
+							label="Display name"
+							labelClassName={settingsInputLabelClassName}
+						>
+							<div className={`${settingsInputContainerClassName} w-full`}>
+								<Input
+									autoFocus={false}
+									errorClassName="absolute  top-[29px]"
+									tabIndex={-1}
+									{...displayNameRegister("displayname", {
+										required: {
+											value: true,
+											message: "Name cannot be empty",
+										},
+										maxLength: {
+											value: 100,
+											message: "Name must not exceed 100 characters",
+										},
+										pattern: {
+											value: DISPLAY_NAME_CHECK_PATTERN,
+											message: "Should not contain special characters",
+										},
+									})}
+									className={settingsInputClassName}
+									errorText={displaynameError?.displayname?.message ?? ""}
+									id="displayname"
+									isError={Boolean(displaynameError?.displayname)}
+									placeholder="Enter display name"
+								/>
+								<Button
+									className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
+										displaynameValue !== originalDisplayname
+											? ""
+											: "pointer-events-none invisible"
+									}`}
+									onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
+								>
+									Save
+								</Button>
+							</div>
+						</LabelledComponent>
+					</form>
 					<form className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
 						<LabelledComponent
 							label="Username"
 							labelClassName={settingsInputLabelClassName}
 						>
 							<div className={settingsInputContainerClassName}>
-								<figure className="mr-2">
-									<SettingsUserIcon />
-								</figure>
 								<Input
 									autoFocus={false}
 									errorClassName="absolute  top-[29px]"
@@ -293,7 +330,7 @@ const Settings = () => {
 										},
 										pattern: {
 											value: LETTERS_NUMBERS_CHECK_PATTERN,
-											message: "Only have lowercase and no blank spaces",
+											message: "Only lowercase letters and numbers, no spaces",
 										},
 									})}
 									className={settingsInputClassName}
@@ -303,61 +340,12 @@ const Settings = () => {
 									placeholder="Enter username"
 								/>
 								<Button
-									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
+									className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
 										usernameValue !== originalUsername
 											? ""
 											: "pointer-events-none invisible"
 									}`}
 									onClick={handleSubmit(onSubmit)}
-								>
-									Save
-								</Button>
-							</div>
-						</LabelledComponent>
-					</form>
-					<form
-						className="w-1/2"
-						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
-					>
-						<LabelledComponent
-							label="Display name"
-							labelClassName={settingsInputLabelClassName}
-						>
-							<div className={`${settingsInputContainerClassName} w-full`}>
-								<figure className="mr-2">
-									<SettingsUserIcon />
-								</figure>
-								<Input
-									autoFocus={false}
-									errorClassName="absolute  top-[29px]"
-									tabIndex={-1}
-									{...displayNameRegister("displayname", {
-										required: {
-											value: true,
-											message: "Name cannot be empty",
-										},
-										maxLength: {
-											value: 100,
-											message: "Name must not exceed 100 characters",
-										},
-										pattern: {
-											value: DISPLAY_NAME_CHECK_PATTERN,
-											message: "Should not have special charecters",
-										},
-									})}
-									className={settingsInputClassName}
-									errorText={displaynameError?.displayname?.message ?? ""}
-									id="displayname"
-									isError={Boolean(displaynameError?.displayname)}
-									placeholder="Enter display name"
-								/>
-								<Button
-									className={`px-2 py-[4.5px] ${saveButtonClassName} ${
-										displaynameValue !== originalDisplayname
-											? ""
-											: "pointer-events-none invisible"
-									}`}
-									onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
 								>
 									Save
 								</Button>
@@ -373,12 +361,12 @@ const Settings = () => {
 					<SettingsToggleCard
 						icon={
 							session?.user?.app_metadata?.provider === "email" ? (
-								<MailIconBlack />
+								<MailIconBlack className="h-5.5 w-5.5 text-gray-900" />
 							) : (
-								<GoogleLoginIcon />
+								<GoogleLoginIcon className="h-5 w-5" />
 							)
 						}
-						title={userData?.email}
+						title={userData?.email ?? ""}
 						description="Current email"
 						buttonLabel={
 							session?.user?.app_metadata?.provider === "email"
@@ -407,7 +395,7 @@ const Settings = () => {
 					<SettingsToggleCard
 						icon={
 							<figure className="text-gray-900">
-								<IframeIcon />
+								<IframeIcon className="h-5.5 w-5.5 text-gray-900" />
 							</figure>
 						}
 						title="Enable iframe in lightbox"
@@ -419,6 +407,7 @@ const Settings = () => {
 						}}
 					/>
 				</div>
+				<ToggleDarkMode />
 				{/*
 				feature yet to implement
 				<div className="pt-10">
@@ -442,7 +431,6 @@ const Settings = () => {
 						</div>
 					</div>
 				</div> */}
-				<Switch />
 				<div className="pt-10">
 					<p className="text-[14px] leading-[115%] font-medium text-gray-900">
 						Delete Account
@@ -457,11 +445,11 @@ const Settings = () => {
 							onClick={() => setCurrentSettingsPage("delete")}
 						>
 							<p className="flex w-full justify-center">
-								<span className="flex items-center justify-center gap-1.5">
+								<span className="flex items-center justify-center gap-1.5 text-red-600">
 									{deleteUserMutation?.isPending ? (
 										<Spinner
 											className="h-3 w-3 animate-spin"
-											style={{ color: "#CD2B31" }}
+											style={{ color: "var(--color-red-600)" }}
 										/>
 									) : (
 										<>
