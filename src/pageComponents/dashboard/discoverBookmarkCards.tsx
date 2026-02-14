@@ -148,7 +148,7 @@ export const DiscoverBookmarkCards = () => {
 			moodboardColumns: discoverMoodboardColumnsResponsive,
 			sortBy:
 				(discoverSortBy as BookmarksSortByTypes) ||
-				("date-sort-acending" as BookmarksSortByTypes),
+				("date-sort-ascending" as BookmarksSortByTypes),
 		}),
 		[
 			discoverBookmarksView,

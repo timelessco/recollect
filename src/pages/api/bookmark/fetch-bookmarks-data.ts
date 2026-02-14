@@ -229,22 +229,22 @@ export default async function handler(
 	// Sort by trash timestamp for trash page (most recently trashed first)
 	if (isTrashPage) {
 		query = query.order("trash", { ascending: false });
-	} else if (sortValue === "date-sort-acending") {
+	} else if (sortValue === "date-sort-ascending") {
 		// newest first
 		query = query.order("inserted_at", { ascending: false });
-	} else if (sortValue === "date-sort-decending") {
+	} else if (sortValue === "date-sort-descending") {
 		// oldest first
 		query = query.order("inserted_at", { ascending: true });
-	} else if (sortValue === "alphabetical-sort-acending") {
+	} else if (sortValue === "alphabetical-sort-ascending") {
 		// title A-Z
 		query = query.order("title", { ascending: true });
-	} else if (sortValue === "alphabetical-sort-decending") {
+	} else if (sortValue === "alphabetical-sort-descending") {
 		// title Z-A
 		query = query.order("title", { ascending: false });
-	} else if (sortValue === "url-sort-acending") {
+	} else if (sortValue === "url-sort-ascending") {
 		// url A-Z
 		query = query.order("url", { ascending: true });
-	} else if (sortValue === "url-sort-decending") {
+	} else if (sortValue === "url-sort-descending") {
 		// url Z-A
 		query = query.order("url", { ascending: false });
 	} else if (category_id === TWEETS_URL) {

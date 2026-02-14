@@ -68,12 +68,12 @@ export type SupabaseSessionStore = {
 export type BookmarksViewTypes = "card" | "list" | "moodboard" | "timeline";
 export type BookmarkViewCategories = "colums" | "info" | "sort" | "view";
 export type BookmarksSortByTypes =
-	| "alphabetical-sort-acending"
-	| "alphabetical-sort-decending"
-	| "date-sort-acending"
-	| "date-sort-decending"
-	| "url-sort-acending"
-	| "url-sort-decending";
+	| "alphabetical-sort-ascending"
+	| "alphabetical-sort-descending"
+	| "date-sort-ascending"
+	| "date-sort-descending"
+	| "url-sort-ascending"
+	| "url-sort-descending";
 
 // export interface BookmarkCardViewState {
 //   moodboardColumns: number[] | number;

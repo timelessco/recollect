@@ -34,17 +34,17 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 	const sortOptions = [
 		{
 			label: "Recent First",
-			value: "date-sort-acending",
+			value: "date-sort-ascending",
 			icon: <DateIcon />,
 		},
 		{
 			label: "Oldest First",
-			value: "date-sort-decending",
+			value: "date-sort-descending",
 			icon: <ClockRewindIcon />,
 		},
 		{
 			label: "Alphabetical",
-			value: "alphabetical-sort-decending",
+			value: "alphabetical-sort-descending",
 			icon: <AlphabeticalIcon />,
 		},
 	];
