@@ -3710,7 +3710,7 @@ export const optionsMenuListArray = (
 	{
 		icon: (
 			<figure className="flex h-[18px] w-[18px] items-center justify-center">
-				<InstagramIcon className="text-gray-900" />
+				<InstagramIcon className="h-4.5 w-4.5 text-gray-900" />
 			</figure>
 		),
 		name: menuListItemName.instagram,
@@ -3721,7 +3721,7 @@ export const optionsMenuListArray = (
 		iconColor: "",
 	},
 	{
-		icon: <AudioIcon />,
+		icon: <AudioIcon className="h-4.5 w-4.5 text-gray-900" />,
 		name: menuListItemName.audio,
 		href: `/${AUDIO_URL}`,
 		current: currentPath === AUDIO_URL,
