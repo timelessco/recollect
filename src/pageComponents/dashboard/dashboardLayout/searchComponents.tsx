@@ -107,6 +107,9 @@ const SearchInput = (props: SearchInputTypes) => {
 	const handleChange = (value: string) => {
 		setLocalValue(value);
 		setAddedTags(extractTagNamesFromSearch(value));
+		if (!value) {
+			setSearchText("");
+		}
 	};
 
 	return (
