@@ -333,6 +333,7 @@ export const clearBookmarksInTrash = async () => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`,
+			{},
 		);
 
 		return response;
