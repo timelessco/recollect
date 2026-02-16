@@ -32,7 +32,6 @@ import useFetchSharedCategories from "../../async/queryHooks/share/useFetchShare
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
-import useDebounce from "../../hooks/useDebounce";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
@@ -151,7 +150,6 @@ const Dashboard = () => {
 	);
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearchText = useDebounce(searchText, 500);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
@@ -188,8 +186,8 @@ const Dashboard = () => {
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
 
-	// Determine if we're currently searching (use debounced to match when query runs)
-	const isSearching = !isEmpty(debouncedSearchText);
+	// Determine if we're currently searching (searchText is debounced at source)
+	const isSearching = !isEmpty(searchText);
 	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
 	const { sharedCategoriesData } = useFetchSharedCategories();

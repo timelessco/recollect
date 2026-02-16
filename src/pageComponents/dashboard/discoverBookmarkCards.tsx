@@ -6,7 +6,6 @@ import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
-import useDebounce from "../../hooks/useDebounce";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useGetViewValue from "../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../hooks/useIsMobileView";
@@ -75,7 +74,6 @@ export const DiscoverBookmarkCards = () => {
 
 	// Search functionality
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearchText = useDebounce(searchText, 500);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const {
@@ -117,8 +115,8 @@ export const DiscoverBookmarkCards = () => {
 		isLoading: isDiscoverLoading,
 	} = useFetchDiscoverBookmarks({ enabled: isDiscoverPage });
 
-	// Determine if we're currently searching (use debounced to match when query runs)
-	const isSearching = !isEmpty(debouncedSearchText);
+	// Determine if we're currently searching (searchText is debounced at source)
+	const isSearching = !isEmpty(searchText);
 
 	const flattenedDiscoverData = useMemo(
 		() => discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
