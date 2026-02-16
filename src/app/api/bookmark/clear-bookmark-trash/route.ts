@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
-import { apiError } from "@/lib/api-helpers/response";
+import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 
@@ -93,13 +93,11 @@ export const POST = createPostApiHandlerWithAuth({
 			);
 
 			if (result.error) {
-				return apiError({
+				return apiWarn({
 					route,
 					message: result.error,
-					error: result.error,
-					operation: "clear_trash_delete_batch",
-					userId,
-					extra: { count: bookmarkIds.length, totalDeleted },
+					status: 500,
+					context: { count: bookmarkIds.length, totalDeleted },
 				});
 			}
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
-import { apiError } from "@/lib/api-helpers/response";
+import { apiWarn } from "@/lib/api-helpers/response";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 
 const ROUTE = "delete-bookmark";
@@ -59,13 +59,11 @@ export const POST = createPostApiHandlerWithAuth({
 			const result = await deleteBookmarksByIds(supabase, batch, userId, route);
 
 			if (result.error) {
-				return apiError({
+				return apiWarn({
 					route,
 					message: result.error,
-					error: result.error,
-					operation: "delete_bookmarks",
-					userId,
-					extra: { count: batch.length, totalDeleted },
+					status: 500,
+					context: { count: batch.length, totalDeleted },
 				});
 			}
 
