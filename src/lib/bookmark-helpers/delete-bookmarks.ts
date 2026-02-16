@@ -38,6 +38,7 @@ async function deleteStorageForBookmarks(
 		meta_data: unknown;
 		ogImage: string | null;
 		url: string | null;
+		type: string;
 	}>,
 	userId: string,
 	route: string,
@@ -110,7 +111,7 @@ async function deleteStorageForBookmarks(
 		}
 
 		// Video file paths
-		if (urlFileName) {
+		if (urlFileName && item.type.includes("video")) {
 			videoPaths.push(`${STORAGE_FILES_PATH}/${userId}/${urlFileName}`);
 		}
 	}
@@ -160,7 +161,7 @@ export async function deleteBookmarksByIds(
 	// Fetch only the fields needed for storage cleanup
 	const { data: bookmarksForCleanup, error: fetchError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("ogImage, url, meta_data")
+		.select("ogImage, url, meta_data, type")
 		.in("id", bookmarkIds)
 		.eq("user_id", userId);
 
@@ -177,7 +178,16 @@ export async function deleteBookmarksByIds(
 
 	// Clean up storage files
 	if (bookmarksForCleanup && bookmarksForCleanup.length > 0) {
-		await deleteStorageForBookmarks(bookmarksForCleanup, userId, route);
+		await deleteStorageForBookmarks(
+			bookmarksForCleanup as Array<{
+				meta_data: unknown;
+				ogImage: string | null;
+				url: string | null;
+				type: string;
+			}>,
+			userId,
+			route,
+		);
 	}
 
 	// Delete tags
