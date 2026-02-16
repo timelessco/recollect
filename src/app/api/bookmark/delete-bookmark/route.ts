@@ -15,7 +15,7 @@ const DeleteBookmarkInputSchema = z.object({
 				id: z.number({ error: "Bookmark ID must be a number" }),
 			}),
 		)
-		.min(1, { message: "At least one bookmark is required" }),
+		.min(1, { error: "At least one bookmark is required" }),
 });
 
 const DeleteBookmarkOutputSchema = z.object({
