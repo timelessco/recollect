@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type DraggableItemProps } from "react-aria";
 
 import { usePageContext } from "../../hooks/use-page-context";
-import useDebounce from "../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import {
@@ -63,20 +62,19 @@ export const PreviewLightBox = ({
 	const [activeIndex, setActiveIndex] = useState(-1);
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearch = useDebounce(searchText, 500);
 
 	const { isPublicPage, isDiscoverPage } = usePageContext();
 
 	// Determine the correct query key based on whether we're on discover page
 	const queryKey = isDiscoverPage
 		? searchText
-			? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, debouncedSearch]
+			? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText]
 			: [BOOKMARKS_KEY, DISCOVER_URL]
 		: [
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				searchText && categoryData ? searchSlugKey(categoryData) : CATEGORY_ID,
-				searchText ? debouncedSearch : sortBy,
+				searchText ? searchText : sortBy,
 			];
 
 	// if there is text in searchbar we get the cache of searched data else we get from everything

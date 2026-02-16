@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import {
@@ -18,7 +17,6 @@ export default function useDeleteBookmarksOptimisticMutation() {
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearch = useDebounce(searchText, 500);
 
 	const { sortBy } = useGetSortBy();
 
@@ -64,14 +62,9 @@ export default function useDeleteBookmarksOptimisticMutation() {
 
 			// Optimistic update for search results
 			let previousSearchData;
-			if (debouncedSearch) {
+			if (searchText) {
 				await queryClient.cancelQueries({
-					queryKey: [
-						BOOKMARKS_KEY,
-						session?.user?.id,
-						CATEGORY_ID,
-						debouncedSearch,
-					],
+					queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, searchText],
 				});
 
 				previousSearchData =
@@ -79,11 +72,11 @@ export default function useDeleteBookmarksOptimisticMutation() {
 						BOOKMARKS_KEY,
 						session?.user?.id,
 						CATEGORY_ID,
-						debouncedSearch,
+						searchText,
 					]);
 
 				queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, debouncedSearch],
+					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, searchText],
 					(old) => {
 						if (typeof old === "object") {
 							return {
@@ -106,7 +99,7 @@ export default function useDeleteBookmarksOptimisticMutation() {
 			}
 
 			// Return a context object with the snapshotted value
-			return { previousData, previousSearchData, debouncedSearch };
+			return { previousData, previousSearchData, searchText };
 		},
 		// If the mutation fails, use the context returned from onMutate to roll back
 		onError: (
@@ -115,7 +108,7 @@ export default function useDeleteBookmarksOptimisticMutation() {
 			context?: {
 				previousData: BookmarksPaginatedDataTypes | undefined;
 				previousSearchData: BookmarksPaginatedDataTypes | undefined;
-				debouncedSearch: string;
+				searchText: string;
 			},
 		) => {
 			if (context?.previousData) {
@@ -125,14 +118,9 @@ export default function useDeleteBookmarksOptimisticMutation() {
 				);
 			}
 
-			if (context?.debouncedSearch && context?.previousSearchData) {
+			if (context?.searchText && context?.previousSearchData) {
 				queryClient.setQueryData(
-					[
-						BOOKMARKS_KEY,
-						session?.user?.id,
-						CATEGORY_ID,
-						context.debouncedSearch,
-					],
+					[BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, context.searchText],
 					context.previousSearchData,
 				);
 			}
