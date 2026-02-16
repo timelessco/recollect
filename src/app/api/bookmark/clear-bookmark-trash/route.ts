@@ -83,7 +83,6 @@ export const POST = createPostApiHandlerWithAuth({
 			console.log(`[${route}] Deleting batch:`, {
 				userId,
 				batchSize: bookmarkIds.length,
-				bookmarkIds,
 			});
 
 			const result = await deleteBookmarksByIds(
@@ -100,7 +99,7 @@ export const POST = createPostApiHandlerWithAuth({
 					error: result.error,
 					operation: "clear_trash_delete_batch",
 					userId,
-					extra: { bookmarkIds, totalDeleted },
+					extra: { count: bookmarkIds.length, totalDeleted },
 				});
 			}
 

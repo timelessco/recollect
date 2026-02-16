@@ -143,11 +143,11 @@ export async function deleteBookmarksByIds(
 	if (fetchError) {
 		console.error(`[${route}] Failed to fetch bookmarks for cleanup:`, {
 			fetchError,
-			bookmarkIds,
+			count: bookmarkIds.length,
 		});
 		Sentry.captureException(fetchError, {
 			tags: { operation: `${route}_fetch_cleanup`, userId },
-			extra: { bookmarkIds },
+			extra: { count: bookmarkIds.length },
 		});
 	}
 
@@ -166,11 +166,11 @@ export async function deleteBookmarksByIds(
 	if (tagsError) {
 		console.error(`[${route}] Failed to delete tags:`, {
 			tagsError,
-			bookmarkIds,
+			count: bookmarkIds.length,
 		});
 		Sentry.captureException(tagsError, {
 			tags: { operation: `${route}_delete_tags`, userId },
-			extra: { bookmarkIds },
+			extra: { count: bookmarkIds.length },
 		});
 	}
 
@@ -185,11 +185,11 @@ export async function deleteBookmarksByIds(
 	if (deleteError) {
 		console.error(`[${route}] Failed to delete bookmarks:`, {
 			deleteError,
-			bookmarkIds,
+			count: bookmarkIds.length,
 		});
 		Sentry.captureException(deleteError, {
 			tags: { operation: `${route}_delete_bookmarks`, userId },
-			extra: { bookmarkIds },
+			extra: { count: bookmarkIds.length },
 		});
 
 		return { deletedCount: 0, error: "Failed to delete bookmarks" };

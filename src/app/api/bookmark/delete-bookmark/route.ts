@@ -37,7 +37,6 @@ export const POST = createPostApiHandlerWithAuth({
 
 		console.log(`[${route}] API called:`, {
 			userId,
-			bookmarkIds,
 			count: bookmarkIds.length,
 		});
 
@@ -55,7 +54,7 @@ export const POST = createPostApiHandlerWithAuth({
 				error: result.error,
 				operation: "delete_bookmarks",
 				userId,
-				extra: { bookmarkIds },
+				extra: { count: bookmarkIds.length },
 			});
 		}
 
