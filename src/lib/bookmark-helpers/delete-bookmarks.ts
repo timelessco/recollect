@@ -80,6 +80,30 @@ async function deleteStorageForBookmarks(
 			);
 		}
 
+		// Additional images (stored under screenshot_imgs)
+		if (metaData?.additionalImages) {
+			for (const imageUrl of metaData.additionalImages) {
+				const fileName = extractFileName(imageUrl);
+				if (fileName) {
+					screenshotPaths.add(
+						`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
+					);
+				}
+			}
+		}
+
+		// Additional videos (stored under screenshot_imgs)
+		if (metaData?.additionalVideos) {
+			for (const videoUrl of metaData.additionalVideos) {
+				const fileName = extractFileName(videoUrl);
+				if (fileName) {
+					screenshotPaths.add(
+						`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`,
+					);
+				}
+			}
+		}
+
 		// File image paths (thumbnails)
 		if (ogFileName) {
 			filePaths.push(`${STORAGE_FILES_PATH}/${userId}/${ogFileName}`);
