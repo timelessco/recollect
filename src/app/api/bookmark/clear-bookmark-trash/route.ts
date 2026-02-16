@@ -32,11 +32,21 @@ export const POST = createPostApiHandlerWithAuth({
 		const userId = user.id;
 
 		// Get total count of trashed bookmarks first for logging
-		const { count: trashCount } = await supabase
+		const { count: trashCount, error: countError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("id", { count: "exact", head: true })
 			.eq("user_id", userId)
 			.not("trash", "is", null);
+
+		if (countError) {
+			return apiError({
+				route,
+				message: "Failed to count trashed bookmarks",
+				error: countError,
+				operation: "clear_trash_count",
+				userId,
+			});
+		}
 
 		console.log(`[${route}] API called:`, {
 			userId,
