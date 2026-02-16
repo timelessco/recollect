@@ -5,6 +5,7 @@ import { apiError } from "@/lib/api-helpers/response";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 
 const ROUTE = "delete-bookmark";
+const BATCH_SIZE = 1000;
 
 // Input schema - accepts deleteData array with bookmark IDs
 const DeleteBookmarkInputSchema = z.object({
@@ -40,32 +41,49 @@ export const POST = createPostApiHandlerWithAuth({
 			count: bookmarkIds.length,
 		});
 
-		const result = await deleteBookmarksByIds(
-			supabase,
-			bookmarkIds,
-			userId,
-			route,
-		);
+		let totalDeleted = 0;
 
-		if (result.error) {
-			return apiError({
-				route,
-				message: result.error,
-				error: result.error,
-				operation: "delete_bookmarks",
+		while (true) {
+			const batch = bookmarkIds.slice(totalDeleted, totalDeleted + BATCH_SIZE);
+
+			if (batch.length === 0) {
+				break;
+			}
+
+			console.log(`[${route}] Deleting batch:`, {
 				userId,
-				extra: { count: bookmarkIds.length },
+				batchSize: batch.length,
+				totalDeleted,
 			});
+
+			const result = await deleteBookmarksByIds(supabase, batch, userId, route);
+
+			if (result.error) {
+				return apiError({
+					route,
+					message: result.error,
+					error: result.error,
+					operation: "delete_bookmarks",
+					userId,
+					extra: { count: batch.length, totalDeleted },
+				});
+			}
+
+			totalDeleted += result.deletedCount;
+
+			if (batch.length < BATCH_SIZE) {
+				break;
+			}
 		}
 
 		console.log(`[${route}] Completed:`, {
 			userId,
-			deletedCount: result.deletedCount,
+			deletedCount: totalDeleted,
 		});
 
 		return {
-			deletedCount: result.deletedCount,
-			message: `Deleted ${result.deletedCount} bookmark(s)`,
+			deletedCount: totalDeleted,
+			message: `Deleted ${totalDeleted} bookmark(s)`,
 		};
 	},
 });
