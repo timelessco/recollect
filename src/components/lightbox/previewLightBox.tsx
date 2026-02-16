@@ -74,7 +74,7 @@ export const PreviewLightBox = ({
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				searchText && categoryData ? searchSlugKey(categoryData) : CATEGORY_ID,
-				searchText ? searchText : sortBy,
+				searchText || sortBy,
 			];
 
 	// if there is text in searchbar we get the cache of searched data else we get from everything
