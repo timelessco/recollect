@@ -22,6 +22,7 @@ const MetadataSchema = z.object({
 	height: z.number().nullable().optional(),
 	iframeAllowed: z.boolean().nullable().optional(),
 	img_caption: z.string().nullable().optional(),
+	image_keywords: z.array(z.string()).optional(),
 	isOgImagePreferred: z.boolean().optional(),
 	isPageScreenshot: z.boolean().nullable().optional(),
 	mediaType: z.string().nullable().optional(),

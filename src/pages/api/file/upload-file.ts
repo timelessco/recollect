@@ -73,7 +73,8 @@ const videoLogic = async (
 	let imgData;
 	let ocrData;
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
-	let imageCaption;
+	let imageCaption: string | null = null;
+	let imageKeywords: string[] = [];
 	if (thumbnailUrl?.publicUrl) {
 		// Handle blurhash generation
 		try {
@@ -109,11 +110,13 @@ const videoLogic = async (
 
 		// Handle image caption generation
 		try {
-			imageCaption = await imageToText(
+			const imageToTextResult = await imageToText(
 				thumbnailUrl?.publicUrl,
 				supabase,
 				userId,
 			);
+			imageCaption = imageToTextResult?.sentence ?? null;
+			imageKeywords = imageToTextResult?.image_keywords ?? [];
 		} catch (error) {
 			console.error("Image caption generation failed:", error);
 			Sentry.captureException(error, {
@@ -126,9 +129,10 @@ const videoLogic = async (
 		}
 	}
 
-	const meta_data = {
+	const meta_data: ImgMetadataType = {
 		img_caption: imageCaption ?? null,
 		image_caption: imageCaption ?? null,
+		image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
