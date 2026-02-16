@@ -21,6 +21,9 @@ import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api clears trash for a single user and also takes care of CRON job to clear trash every 30 days
+
+const BATCH_SIZE = 1000;
+
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
 
@@ -39,81 +42,69 @@ export default async function handler(
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
 	if (userId) {
-		// this is called by user then they click clear-trash button in UI , hence user_id is being checked
-		// this part needs the access_token check as its called from UI and in a userbased action
+		// this is called by user when they click clear-trash button in UI
+		// this part needs the access_token check as its called from UI and is a user-based action
 
-		// const {
-		// 	data,
-		// 	error,
-		// }: {
-		// 	data: SingleListData[] | null;
-		// 	error: PostgrestError | VerifyErrors | string | null;
-		// } = await supabase
-		// 	.from(MAIN_TABLE_NAME)
-		// 	.delete()
-		// 	.eq("user_id", userId)
-		// 	.match({ trash: true })
-		// 	.select();
+		let totalDeleted = 0;
 
-		// if (!isNull(data)) {
-		// 	response.status(200).json({ data, error });
-		// } else {
-		// 	response.status(500).json({ data, error });
-		// 	throw new Error("ERROR");
-		// }
+		try {
+			// Loop: fetch up to BATCH_SIZE trashed IDs, delete them, repeat until none left.
+			// Supabase has a default row limit of 1000, so a single query may not return all rows.
+			while (true) {
+				const {
+					data: trashBookmarkIds,
+					error: trashBookmarkIdError,
+				}: {
+					data: Array<{ id: SingleListData["id"] }> | null;
+					error: PostgrestError | VerifyErrors | string | null;
+				} = await supabase
+					.from(MAIN_TABLE_NAME)
+					.select(`id`)
+					.eq("user_id", userId)
+					.not("trash", "is", null)
+					.limit(BATCH_SIZE);
 
-		// get all trash bookmark ids
-		const {
-			data: trashBookmarkIds,
-			error: trashBookmarkIdError,
-		}: {
-			data: Array<{
-				id: SingleListData["id"];
-				meta_data: SingleListData["meta_data"];
-				ogImage: SingleListData["ogImage"];
-				title: SingleListData["title"];
-				url: SingleListData["url"];
-			}> | null;
-			error: PostgrestError | VerifyErrors | string | null;
-		} = await supabase
-			.from(MAIN_TABLE_NAME)
-			.select(`id, ogImage, title, url, meta_data`)
-			.eq("user_id", userId)
-			.not("trash", "is", null);
-
-		if (!isNull(trashBookmarkIdError)) {
-			response.status(500).json({ data: null, error: trashBookmarkIdError });
-			throw new Error("ERROR: Get trash ids error");
-		} else {
-			try {
-				if (!isNull(trashBookmarkIds)) {
-					// call delete bookmark api
-					await axios.post(
-						`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
-						{
-							data: { deleteData: trashBookmarkIds },
-							user_id: userId,
-						},
-						getAxiosConfigWithAuth(request),
-					);
-
+				if (!isNull(trashBookmarkIdError)) {
 					response
-						.status(200)
-						.json({ data: null, error: null, message: "Deleted bookmarks" });
-				} else {
-					response.status(500).json({
-						data: null,
-						error: null,
-						message: "Delete bookmark data is null",
-					});
-					throw new Error("ERROR: Delete bookmark data is null");
+						.status(500)
+						.json({ data: null, error: trashBookmarkIdError });
+					throw new Error("ERROR: Get trash ids error");
 				}
-			} catch (delError) {
-				response
-					.status(500)
-					.json({ data: null, error: delError as ErrorResponse });
-				throw new Error("ERROR: Delete bookmark api error");
+
+				if (isNull(trashBookmarkIds) || trashBookmarkIds.length === 0) {
+					break;
+				}
+
+				await axios.post(
+					`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
+					{
+						data: { deleteData: trashBookmarkIds },
+						user_id: userId,
+					},
+					getAxiosConfigWithAuth(request),
+				);
+
+				totalDeleted += trashBookmarkIds.length;
+
+				// If we got fewer than BATCH_SIZE, there are no more left
+				if (trashBookmarkIds.length < BATCH_SIZE) {
+					break;
+				}
 			}
+
+			response.status(200).json({
+				data: null,
+				error: null,
+				message:
+					totalDeleted > 0
+						? `Deleted ${totalDeleted} bookmarks`
+						: "No bookmarks in trash to delete",
+			});
+		} catch (delError) {
+			response
+				.status(500)
+				.json({ data: null, error: delError as ErrorResponse });
+			throw new Error("ERROR: Delete bookmark api error");
 		}
 	} else {
 		// deletes trash for all users , this happens in CRON job

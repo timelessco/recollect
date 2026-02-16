@@ -1,5 +1,3 @@
-// TODO: Fix this in priority
-/* eslint-disable @typescript-eslint/no-base-to-string */
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -23,6 +21,7 @@ import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this is a cascading delete, deletes bookmarks from main table and all its respective joint tables
+// accepts only bookmark IDs, fetches storage-related fields server-side
 
 type DataResponse = SingleListData[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
@@ -43,12 +42,33 @@ export default async function handler(
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
+	const deleteBookmarkIds = apiData?.deleteData?.map((item) => item?.id);
+
+	if (!deleteBookmarkIds || deleteBookmarkIds.length === 0) {
+		response
+			.status(400)
+			.json({ data: null, error: "No bookmark IDs provided" });
+		return;
+	}
+
+	// Fetch only the fields needed for storage cleanup
+	const { data: bookmarksForCleanup, error: fetchError } = await supabase
+		.from(MAIN_TABLE_NAME)
+		.select("id, ogImage, url, meta_data")
+		.in("id", deleteBookmarkIds)
+		.eq("user_id", userId);
+
+	if (fetchError) {
+		response.status(500).json({ data: null, error: fetchError });
+		return;
+	}
+
 	// screenshots ogImages in bucket
 	// Using Set to remove duplicates since ogImage and meta_data.screenshot might point to the same file
 	const deleteScreenshotImagePaths = [
 		...new Set(
-			apiData?.deleteData?.flatMap((item) => {
-				const paths = [];
+			bookmarksForCleanup?.flatMap((item) => {
+				const paths: string[] = [];
 
 				// Add ogImage path if it exists
 				const ogImageLink = item?.ogImage;
@@ -63,7 +83,9 @@ export default async function handler(
 				}
 
 				// Add meta_data.screenshot path if it exists
-				const screenshotLink = item?.meta_data?.screenshot;
+				const screenshotLink = (
+					item?.meta_data as SingleListData["meta_data"] | null
+				)?.screenshot;
 				if (screenshotLink) {
 					const screenshotName =
 						screenshotLink?.split("/")?.[
@@ -91,8 +113,8 @@ export default async function handler(
 	// Using Set to remove duplicates since ogImage and meta_data.coverImage might point to the same file
 	const deleteImagePaths = [
 		...new Set(
-			apiData?.deleteData?.flatMap((item) => {
-				const paths = [];
+			bookmarksForCleanup?.flatMap((item) => {
+				const paths: string[] = [];
 
 				// Add ogImage path if it exists
 				const ogImageLink = item?.ogImage;
@@ -105,7 +127,9 @@ export default async function handler(
 				}
 
 				// Add meta_data.coverImage path if it exists
-				const coverImageLink = item?.meta_data?.coverImage;
+				const coverImageLink = (
+					item?.meta_data as SingleListData["meta_data"] | null
+				)?.coverImage;
 				if (coverImageLink) {
 					const coverImageName =
 						coverImageLink?.split("/")?.[
@@ -129,14 +153,14 @@ export default async function handler(
 	);
 
 	// delete file images in bucket, this will delete the video thumbnail too
+	const deleteFileImagesPaths =
+		bookmarksForCleanup?.map((item) => {
+			const name = item?.ogImage?.slice(
+				Math.max(0, item?.ogImage?.lastIndexOf("/") + 1),
+			);
 
-	const deleteFileImagesPaths = apiData?.deleteData?.map((item) => {
-		const name = item?.ogImage?.slice(
-			Math.max(0, item?.ogImage.lastIndexOf("/") + 1),
-		);
-
-		return `${STORAGE_FILES_PATH}/${userId}/${name}`;
-	});
+			return `${STORAGE_FILES_PATH}/${userId}/${name}`;
+		}) ?? [];
 
 	const { error: fileStorageError } = await storageHelpers.deleteObjects(
 		R2_MAIN_BUCKET_NAME,
@@ -145,10 +169,13 @@ export default async function handler(
 
 	// deletes the videos
 	// for this we get name from the url as the ogImage will only have the video thumbnail name
-	const deleteFileVideoPaths = apiData?.deleteData?.map((item) => {
-		const name = item?.url?.slice(Math.max(0, item?.url.lastIndexOf("/") + 1));
-		return `${STORAGE_FILES_PATH}/${userId}/${name}`;
-	});
+	const deleteFileVideoPaths =
+		bookmarksForCleanup?.map((item) => {
+			const name = item?.url?.slice(
+				Math.max(0, item?.url?.lastIndexOf("/") + 1),
+			);
+			return `${STORAGE_FILES_PATH}/${userId}/${name}`;
+		}) ?? [];
 
 	const { error: fileVideoStorageError } = await storageHelpers.deleteObjects(
 		R2_MAIN_BUCKET_NAME,
@@ -156,8 +183,6 @@ export default async function handler(
 	);
 
 	// delete tags
-
-	const deleteBookmarkIds = apiData?.deleteData?.map((item) => item?.id);
 
 	const { error: bookmarkTagsError } = await supabase
 		.from(BOOKMARK_TAGS_TABLE_NAME)
