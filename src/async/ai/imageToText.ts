@@ -98,7 +98,7 @@ export const imageToText = async (
 			"",
 			"PART 1 - SENTENCE:",
 			websiteInstruction,
-			"For people: always try to identify and name if recognizable — include celebrities, actors, fictional characters ,politicians, historical figures; otherwise use man, woman, person.",
+			"For people: always try to identify and name if recognizable — include celebrities, actors, fictional characters, politicians, historical figures; otherwise use man, woman, person.",
 			"",
 			"PART 2 - KEYWORDS:",
 			keywordsInstruction,
