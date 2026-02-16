@@ -152,7 +152,10 @@ export default async function handler(
 				newMeta.image_keywords = imageToTextResult.image_keywords;
 			}
 		} else {
-			console.error("imageToText returned empty result", url);
+			console.warn(
+				"imageToText returned empty result (quota may be reached)",
+				url,
+			);
 		}
 
 		// OCR returns { text, status } object

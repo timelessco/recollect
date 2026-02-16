@@ -64,19 +64,21 @@ export const imageToText = async (
 
 		const websiteInstruction = isPageScreenshot
 			? [
-					"This image may be from a website. Use your judgment and focus on:",
+					"This image may be from a website. Try to recognize which website or service it is (by logo, branding, layout, visible URL, or distinctive UI) and use that as context.",
+					"",
+					"Use your judgment and focus on:",
 					...siteCategories,
 					"",
 					"Start as if describing the content directly. Do NOT say 'screenshot of', 'this appears to be a screenshot', 'the image shows', or meta-labels for website type (e.g. 'a normal website', 'an ecommerce page', 'a documentation page', 'an article') — describe what the page shows (e.g. 'A landing page for...', 'A product listing for...', 'A page titled...').",
 					'Do not start with "The image shows" or "This is a picture of".',
 				].join("\n")
 			: [
-					"Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character e; otherwise man/woman/person), place, objects.",
+					"Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.",
 				].join("\n");
 
 		const keywordsInstruction = isPageScreenshot
 			? [
-					"List 20 nouns and short descriptive terms. Match the image type to one below and include the relevant keywords:",
+					"List 20 nouns and short descriptive terms. If you can identify the website or service (e.g. Amazon, GitHub, Notion), include it as a keyword. For recognizable characters: include both the person/character name AND the show, movie, or franchise. Only add the source if confident. Match the image type to one below and include the relevant keywords:",
 					...siteCategories,
 					"",
 					"Describe only what is in the image. Do NOT include readable text or words from the image.",
@@ -87,6 +89,7 @@ export const imageToText = async (
 					"- People (name if recognizable: celebrity, actor, fictional character; otherwise man/woman/person)",
 					"- Place/setting",
 					"- Style, mood, composition type (photo, illustration, diagram, etc.)",
+					"For recognizable characters (actors, fictional characters): include both the person/character name AND the show, movie, or franchise they are from. Only add the source if you are confident.",
 					"Describe only what is in the image. Do NOT include readable text.",
 				].join("\n");
 
