@@ -441,7 +441,7 @@ const Dashboard = () => {
 						bookmarksView: viewValues.moodboard as BookmarksViewTypes,
 						cardContentViewArray: ["cover", "title", "info"],
 						moodboardColumns: [30],
-						sortBy: "date-sort-acending" as BookmarksSortByTypes,
+						sortBy: "date-sort-ascending" as BookmarksSortByTypes,
 					};
 					const keyed: ProfilesBookmarksView =
 						!raw || typeof raw !== "object"

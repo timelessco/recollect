@@ -27,6 +27,7 @@ dbname
 DBNAME
 dbsize
 dedup
+Dedup
 dels
 denoland
 dont

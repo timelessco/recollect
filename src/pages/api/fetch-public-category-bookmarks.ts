@@ -122,19 +122,19 @@ export default async function handler(
 			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, categoryId)
 			.is("trash", null);
 
-		if (sortBy === "date-sort-acending") {
+		if (sortBy === "date-sort-ascending") {
 			query = query.order("id", { ascending: false });
 		}
 
-		if (sortBy === "date-sort-decending") {
+		if (sortBy === "date-sort-descending") {
 			query = query.order("id", { ascending: true });
 		}
 
-		if (sortBy === "alphabetical-sort-acending") {
+		if (sortBy === "alphabetical-sort-ascending") {
 			query = query.order("title", { ascending: true });
 		}
 
-		if (sortBy === "alphabetical-sort-decending") {
+		if (sortBy === "alphabetical-sort-descending") {
 			query = query.order("title", { ascending: false });
 		}
 
