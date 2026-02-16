@@ -42,9 +42,10 @@ export const POST = createPostApiHandlerWithAuth({
 		});
 
 		let totalDeleted = 0;
+		let offset = 0;
 
 		while (true) {
-			const batch = bookmarkIds.slice(totalDeleted, totalDeleted + BATCH_SIZE);
+			const batch = bookmarkIds.slice(offset, offset + BATCH_SIZE);
 
 			if (batch.length === 0) {
 				break;
@@ -68,6 +69,7 @@ export const POST = createPostApiHandlerWithAuth({
 			}
 
 			totalDeleted += result.deletedCount;
+			offset += batch.length;
 
 			if (batch.length < BATCH_SIZE) {
 				break;
