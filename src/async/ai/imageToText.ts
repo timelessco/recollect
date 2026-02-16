@@ -124,7 +124,7 @@ export const imageToText = async (
 
 		const sentencePart = text.split("KEYWORDS:")[0];
 		const sentenceMatch = /SENTENCE:\s*(.+)/su.exec(sentencePart ?? "");
-		const sentence = sentenceMatch?.[1]?.trim() ?? null;
+		let sentence = sentenceMatch?.[1]?.trim() ?? null;
 
 		const keywordsPart = text.includes("KEYWORDS:")
 			? text.split("KEYWORDS:")[1]
@@ -134,6 +134,10 @@ export const imageToText = async (
 			.split(/,\s*/u)
 			.map((keyword) => keyword.trim())
 			.filter(Boolean);
+
+		if (!sentence && text.trim()) {
+			sentence = text.trim();
+		}
 
 		return { sentence, image_keywords };
 	} catch (error) {
