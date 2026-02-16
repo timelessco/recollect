@@ -11,18 +11,10 @@ const BATCH_SIZE = 1000;
 // No input required — clears all trash for the authenticated user
 const ClearBookmarkTrashInputSchema = z.object({});
 
-export type ClearBookmarkTrashInput = z.infer<
-	typeof ClearBookmarkTrashInputSchema
->;
-
 const ClearBookmarkTrashOutputSchema = z.object({
 	deletedCount: z.number(),
 	message: z.string(),
 });
-
-export type ClearBookmarkTrashOutput = z.infer<
-	typeof ClearBookmarkTrashOutputSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

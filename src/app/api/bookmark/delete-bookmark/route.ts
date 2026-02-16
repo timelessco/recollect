@@ -18,14 +18,10 @@ const DeleteBookmarkInputSchema = z.object({
 		.min(1, { message: "At least one bookmark is required" }),
 });
 
-export type DeleteBookmarkInput = z.infer<typeof DeleteBookmarkInputSchema>;
-
 const DeleteBookmarkOutputSchema = z.object({
 	deletedCount: z.number(),
 	message: z.string(),
 });
-
-export type DeleteBookmarkOutput = z.infer<typeof DeleteBookmarkOutputSchema>;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
