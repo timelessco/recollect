@@ -6,8 +6,6 @@ import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
-import useGetSortBy from "../../hooks/useGetSortBy";
-import useGetViewValue from "../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../hooks/useIsMobileView";
 import {
 	useLoadersStore,
@@ -17,10 +15,7 @@ import {
 	type BookmarkViewDataTypes,
 	type SingleListData,
 } from "../../types/apiTypes";
-import {
-	type BookmarksSortByTypes,
-	type BookmarksViewTypes,
-} from "../../types/componentStoreTypes";
+import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { DISCOVER_URL, viewValues } from "../../utils/constants";
 
 import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
@@ -123,37 +118,15 @@ export const DiscoverBookmarkCards = () => {
 		[discoverData],
 	);
 
-	// Get user's view preferences for discover page
-	const discoverBookmarksView = useGetViewValue(
-		"bookmarksView",
-		viewValues.card,
-		false,
-	);
-	const discoverCardContentViewArray = useGetViewValue(
-		"cardContentViewArray",
-		[],
-		false,
-	) as string[];
-	const { sortBy: discoverSortBy } = useGetSortBy();
-
-	// Build categoryViewsFromProps for discover page (responsive columns like DiscoverGuestView)
+	// Hardcoded view configuration for discover (same as DiscoverGuestView)
 	const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
 		() => ({
-			bookmarksView:
-				(discoverBookmarksView as BookmarksViewTypes) ||
-				(viewValues.card as BookmarksViewTypes),
-			cardContentViewArray: discoverCardContentViewArray || [],
+			bookmarksView: viewValues.moodboard as BookmarksViewTypes,
+			cardContentViewArray: ["cover", "title", "description", "info"],
 			moodboardColumns: discoverMoodboardColumnsResponsive,
-			sortBy:
-				(discoverSortBy as BookmarksSortByTypes) ||
-				("date-sort-ascending" as BookmarksSortByTypes),
+			sortBy: "date-sort-ascending",
 		}),
-		[
-			discoverBookmarksView,
-			discoverCardContentViewArray,
-			discoverMoodboardColumnsResponsive,
-			discoverSortBy,
-		],
+		[discoverMoodboardColumnsResponsive],
 	);
 
 	// Use search results when searching, otherwise use discover data
@@ -187,7 +160,7 @@ export const DiscoverBookmarkCards = () => {
 		return (
 			<BookmarksSkeletonLoader
 				count={skeletonCount}
-				type={discoverBookmarksView}
+				type={viewValues.moodboard}
 				colCount={cols}
 			/>
 		);
