@@ -740,7 +740,12 @@ const Dashboard = () => {
 			// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 			switch (categorySlug) {
 				case DISCOVER_URL:
-					return <DiscoverBookmarkCards />;
+					return (
+						<DiscoverBookmarkCards
+							isDiscoverPage
+							userId={session?.user?.id ?? ""}
+						/>
+					);
 				case IMAGES_URL:
 					return renderAllBookmarkCards();
 				case VIDEOS_URL:
