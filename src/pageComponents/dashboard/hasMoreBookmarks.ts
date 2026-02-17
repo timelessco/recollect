@@ -67,5 +67,6 @@ export function hasMoreBookmarks(props: HasMoreBookmarksProps): boolean {
 	if (!countKey) {
 		return true;
 	}
+
 	return countData?.[countKey] !== dataLength;
 }
