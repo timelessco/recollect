@@ -56,12 +56,14 @@ export const POST = createPostApiHandlerWithAuth({
 			const result = await deleteBookmarksByIds(supabase, batch, userId, route);
 
 			if (result.error) {
-				return apiWarn({
-					route,
-					message: result.error,
-					status: 500,
-					context: { count: batch.length, totalDeleted },
-				});
+			return apiError({
+				route,
+				message: result.error,
+				error: new Error(result.error),
+				operation: "delete_bookmark_batch",
+				userId,
+				extra: { count: batch.length, totalDeleted },
+			});
 			}
 
 			totalDeleted += result.deletedCount;
