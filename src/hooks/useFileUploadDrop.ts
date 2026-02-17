@@ -13,7 +13,7 @@ export function useFileUploadDrop() {
 	const onDrop = useCallback(
 		async (acceptedFiles: FileType[]) => {
 			await fileUpload(
-				acceptedFiles as unknown as FileList,
+				acceptedFiles,
 				fileUploadOptimisticMutation,
 				CATEGORY_ID,
 			);
