@@ -1,6 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 
-import useDebounce from "@/hooks/useDebounce";
 import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
 import useGetSortBy from "@/hooks/useGetSortBy";
 import {
@@ -23,7 +22,6 @@ export function useBookmarkMutationContext() {
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { sortBy } = useGetSortBy();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearch = useDebounce(searchText, 500);
 
 	const queryKey = [
 		BOOKMARKS_KEY,
@@ -32,14 +30,9 @@ export function useBookmarkMutationContext() {
 		sortBy,
 	] as const;
 
-	// Only create search key if actively searching
-	const searchQueryKey = debouncedSearch
-		? ([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-				CATEGORY_ID,
-				debouncedSearch,
-			] as const)
+	// Only create search key if actively searching (searchText is debounced at source)
+	const searchQueryKey = searchText
+		? ([BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, searchText] as const)
 		: null;
 
 	return {
@@ -49,6 +42,6 @@ export function useBookmarkMutationContext() {
 		searchQueryKey,
 		CATEGORY_ID,
 		sortBy,
-		debouncedSearch,
+		searchText,
 	};
 }

@@ -18,10 +18,12 @@ export type ImgMetadataType = {
 	iframeAllowed: boolean | null;
 	img_caption: string | null;
 	image_caption: string | null;
+	image_keywords?: string[];
 	isOgImagePreferred: boolean;
 	isPageScreenshot: boolean | null;
 	mediaType: string | null;
 	ocr: string | null;
+	ocr_status?: "success" | "limit_reached" | "no_text";
 	ogImgBlurUrl: string | null;
 	screenshot: string | null;
 	twitter_avatar_url: string | null;

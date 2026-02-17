@@ -80,7 +80,7 @@ export const GetBookmarkIcon = ({
 	}
 
 	// Twitter avatar (if in tweets page)
-	if (isUserInTweetsPage && item.meta_data.twitter_avatar_url) {
+	if (isUserInTweetsPage && item.meta_data?.twitter_avatar_url) {
 		return (
 			<Image
 				alt={item.title ? `${item.title} favicon` : "Bookmark favicon"}

@@ -9,11 +9,14 @@ import {
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import Button from "@/components/atoms/button";
 import { Spinner } from "@/components/spinner";
+import useDebounce from "@/hooks/useDebounce";
 import SearchInputSearchIcon from "@/icons/searchInputSearchIcon";
 import { useLoadersStore, useMiscellaneousStore } from "@/store/componentStore";
 import { type CategoriesData } from "@/types/apiTypes";
 import { type CategoryIdUrlTypes } from "@/types/componentTypes";
 import { extractTagNamesFromSearch } from "@/utils/helpers";
+
+const SEARCH_DEBOUNCE_MS = 500;
 
 type SearchBarProps = {
 	showSearchBar: boolean;
@@ -34,7 +37,7 @@ export function SearchBar(props: SearchBarProps) {
 		onShowSearchBar,
 	} = props;
 
-	const { setSearchText } = useMiscellaneousStore();
+	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
 
 	useEffect(() => {
 		setSearchText("");
@@ -44,10 +47,8 @@ export function SearchBar(props: SearchBarProps) {
 		return (
 			<div className="w-[246px] max-lg:my-[2px] max-lg:w-full">
 				<SearchInput
+					key={categoryId}
 					onBlur={() => !isDesktop && onShowSearchBar(false)}
-					onChange={(value) => {
-						setSearchText(value);
-					}}
 					placeholder={`Search in ${
 						currentCategoryData?.category_name ?? currentPath
 					}`}
@@ -68,18 +69,24 @@ export function SearchBar(props: SearchBarProps) {
 
 type SearchInputTypes = {
 	onBlur: () => void;
-	onChange: (value: string) => void;
 	placeholder: string;
 };
 
 const SearchInput = (props: SearchInputTypes) => {
-	const { placeholder, onChange, onBlur } = props;
+	const { placeholder, onBlur } = props;
 	const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
 	const [isFocused, setIsFocused] = useState(false);
+	const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
+
+	const [localValue, setLocalValue] = useState("");
+	const debouncedValue = useDebounce(localValue, SEARCH_DEBOUNCE_MS);
+
+	// Sync debounced value to store - API only fires after user stops typing for 500ms
+	useEffect(() => {
+		setSearchText(debouncedValue);
+	}, [debouncedValue, setSearchText]);
 
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
-
-	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const { userTags } = useFetchUserTags();
 	const userTagsData = useMemo(() => userTags?.data ?? [], [userTags]);
 
@@ -97,6 +104,14 @@ const SearchInput = (props: SearchInputTypes) => {
 		[userTagsData, addedTags],
 	);
 
+	const handleChange = (value: string) => {
+		setLocalValue(value);
+		setAddedTags(extractTagNamesFromSearch(value));
+		if (!value) {
+			setSearchText("");
+		}
+	};
+
 	return (
 		<div className="search-wrapper relative">
 			<figure className="absolute top-[7px] left-[9px] z-5">
@@ -112,17 +127,13 @@ const SearchInput = (props: SearchInputTypes) => {
 					onBlur();
 				}}
 				onChange={(event: { target: { value: string } }) => {
-					onChange(event.target.value);
-
-					const search = event.target.value;
-
-					setAddedTags(extractTagNamesFromSearch(search));
+					handleChange(event.target.value);
 				}}
 				onFocus={() => setIsFocused(true)}
 				placeholder={placeholder}
 				singleLine
 				style={styles}
-				value={searchText}
+				value={localValue}
 			>
 				<Mention
 					appendSpaceOnAdd
@@ -132,7 +143,7 @@ const SearchInput = (props: SearchInputTypes) => {
 					trigger="#"
 				/>
 			</MentionsInput>
-			{isSearchLoading && !isEmpty(searchText) && (
+			{isSearchLoading && !isEmpty(localValue) && (
 				<div className="absolute top-1/2 right-2 -translate-y-1/2">
 					<Spinner
 						className="h-3 w-3 animate-spin"

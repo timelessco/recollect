@@ -6,9 +6,6 @@ import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
-import useDebounce from "../../hooks/useDebounce";
-import useGetSortBy from "../../hooks/useGetSortBy";
-import useGetViewValue from "../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../hooks/useIsMobileView";
 import {
 	useLoadersStore,
@@ -18,10 +15,7 @@ import {
 	type BookmarkViewDataTypes,
 	type SingleListData,
 } from "../../types/apiTypes";
-import {
-	type BookmarksSortByTypes,
-	type BookmarksViewTypes,
-} from "../../types/componentStoreTypes";
+import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { DISCOVER_URL, viewValues } from "../../utils/constants";
 
 import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
@@ -75,7 +69,6 @@ export const DiscoverBookmarkCards = () => {
 
 	// Search functionality
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearchText = useDebounce(searchText, 500);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const {
@@ -117,45 +110,23 @@ export const DiscoverBookmarkCards = () => {
 		isLoading: isDiscoverLoading,
 	} = useFetchDiscoverBookmarks({ enabled: isDiscoverPage });
 
-	// Determine if we're currently searching (use debounced to match when query runs)
-	const isSearching = !isEmpty(debouncedSearchText);
+	// Determine if we're currently searching (searchText is debounced at source)
+	const isSearching = !isEmpty(searchText);
 
 	const flattenedDiscoverData = useMemo(
 		() => discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
 		[discoverData],
 	);
 
-	// Get user's view preferences for discover page
-	const discoverBookmarksView = useGetViewValue(
-		"bookmarksView",
-		viewValues.card,
-		false,
-	);
-	const discoverCardContentViewArray = useGetViewValue(
-		"cardContentViewArray",
-		[],
-		false,
-	) as string[];
-	const { sortBy: discoverSortBy } = useGetSortBy();
-
-	// Build categoryViewsFromProps for discover page (responsive columns like DiscoverGuestView)
+	// Hardcoded view configuration for discover (same as DiscoverGuestView)
 	const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
 		() => ({
-			bookmarksView:
-				(discoverBookmarksView as BookmarksViewTypes) ||
-				(viewValues.card as BookmarksViewTypes),
-			cardContentViewArray: discoverCardContentViewArray || [],
+			bookmarksView: viewValues.moodboard as BookmarksViewTypes,
+			cardContentViewArray: ["cover", "title", "description", "info"],
 			moodboardColumns: discoverMoodboardColumnsResponsive,
-			sortBy:
-				(discoverSortBy as BookmarksSortByTypes) ||
-				("date-sort-acending" as BookmarksSortByTypes),
+			sortBy: "date-sort-ascending",
 		}),
-		[
-			discoverBookmarksView,
-			discoverCardContentViewArray,
-			discoverMoodboardColumnsResponsive,
-			discoverSortBy,
-		],
+		[discoverMoodboardColumnsResponsive],
 	);
 
 	// Use search results when searching, otherwise use discover data
@@ -189,7 +160,7 @@ export const DiscoverBookmarkCards = () => {
 		return (
 			<BookmarksSkeletonLoader
 				count={skeletonCount}
-				type={discoverBookmarksView}
+				type={viewValues.moodboard}
 				colCount={cols}
 			/>
 		);

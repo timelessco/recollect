@@ -201,17 +201,20 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							)}
 					</div>
 				)}
-				{item?.count !== undefined && !showDropdown && (
-					<span
-						className={`${
-							item?.name === "Tweets" ? "block" : "hidden"
-						} text-[11px] leading-3 font-450 text-gray-600 ${
-							showDropdown ? "block group-hover:hidden" : "block"
-						}`}
-					>
-						{item?.count}
-					</span>
-				)}
+				{item?.count !== undefined &&
+					!showDropdown &&
+					item?.current &&
+					item?.name !== "Everything" &&
+					item?.name !== "Inbox" &&
+					item?.name !== "Trash" && (
+						<span
+							className={`text-[11px] leading-3 font-450 text-gray-600 ${
+								showDropdown ? "block group-hover:hidden" : "block"
+							}`}
+						>
+							{item?.count}
+						</span>
+					)}
 			</div>
 		</>
 	);

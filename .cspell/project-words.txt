@@ -13,6 +13,7 @@ Atleast
 attrelid
 blks
 btrim
+BTRIM
 catagories
 categorie
 cdninstagram
@@ -26,11 +27,14 @@ dbname
 DBNAME
 dbsize
 dedup
+Dedup
 dels
 denoland
 dont
 dotenvx
 dups
+ecommerce
+ECOMMERCE
 eqwhx
 fbca
 fbcdn
