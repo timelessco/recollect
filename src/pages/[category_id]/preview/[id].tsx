@@ -55,7 +55,7 @@ const Preview = () => {
 	}
 
 	if (!bookmark?.data?.[0] || error) {
-		return <div />;
+		return null;
 	}
 
 	const bookmarkData = bookmark?.data?.[0];

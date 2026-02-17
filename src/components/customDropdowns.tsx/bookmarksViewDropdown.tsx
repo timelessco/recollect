@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import { Bars4Icon } from "@heroicons/react/20/solid";
 import { Menu, MenuButton, useMenuState } from "ariakit/menu";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import find from "lodash/find";
 
 import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
@@ -179,7 +179,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const setColumnsCallback = useCallback(
-		debounce((value) => setBookmarksView(value as number[], "colums"), 200),
+		debounce((value) => setBookmarksView(value as number[], "columns"), 200),
 		[setBookmarksView],
 	);
 

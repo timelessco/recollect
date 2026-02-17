@@ -90,7 +90,7 @@ export function useBookmarksViewUpdate() {
 						return "bookmarksView";
 					case "info":
 						return "cardContentViewArray";
-					case "colums":
+					case "columns":
 						return "moodboardColumns";
 					case "sort":
 						return "sortBy";

@@ -31,8 +31,9 @@ const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
 	ssr: false,
 });
 
+const supabase = createClient();
+
 const Dashboard = () => {
-	const supabase = createClient();
 	const queryClient = useQueryClient();
 	const router = useRouter();
 	const categorySlug = getCategorySlugFromRouter(router);
@@ -68,7 +69,7 @@ const Dashboard = () => {
 		};
 
 		void fetchSession();
-	}, [setSession, supabase.auth, categorySlug]);
+	}, [setSession, categorySlug]);
 
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 	const { isInNotFoundPage } = useIsInNotFoundPage();
@@ -92,6 +93,8 @@ const Dashboard = () => {
 
 	const { updateUserProfileOptimisticMutation } =
 		useUpdateUserProfileOptimisticMutation();
+	const updateUserProfileMutateAsync =
+		updateUserProfileOptimisticMutation.mutateAsync;
 
 	// if the user email as been changed then this updates the email in the profiles table
 	useEffect(() => {
@@ -102,14 +105,14 @@ const Dashboard = () => {
 			userProfileData?.data[0]?.email
 		) {
 			void mutationApiCall(
-				updateUserProfileOptimisticMutation.mutateAsync({
+				updateUserProfileMutateAsync({
 					updateData: { email: session?.user?.email },
 				}),
 			);
 		}
 	}, [
 		session?.user?.email,
-		updateUserProfileOptimisticMutation,
+		updateUserProfileMutateAsync,
 		userProfileData?.data,
 	]);
 
@@ -120,7 +123,7 @@ const Dashboard = () => {
 			session?.user?.app_metadata?.provider
 		) {
 			void mutationApiCall(
-				updateUserProfileOptimisticMutation.mutateAsync({
+				updateUserProfileMutateAsync({
 					updateData: { provider: session?.user?.app_metadata?.provider },
 				}),
 			);
@@ -153,7 +156,7 @@ const Dashboard = () => {
 	};
 
 	if (isNil(session) && !isDiscoverPage) {
-		return <div />;
+		return null;
 	}
 
 	return (

@@ -203,7 +203,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				</div>
 			));
 
-		let content = <div />;
+		let content = null;
 
 		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 		switch (headerOptionsCurrentTab) {

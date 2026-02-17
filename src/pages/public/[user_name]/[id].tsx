@@ -71,7 +71,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
 								</p>
 							}
 							hasMore={hasNextPage}
-							loader={<div />}
+							loader={null}
 							next={fetchNextPage}
 							scrollableTarget="scrollableDiv"
 							style={{ overflow: "unset" }}

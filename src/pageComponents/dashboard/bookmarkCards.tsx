@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -73,7 +73,6 @@ export const BookmarkCards = () => {
 	const { addBookmarkMinDataOptimisticMutation } =
 		useAddBookmarkMinDataOptimisticMutation();
 
-	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 	const isSearching = !isEmpty(searchText);
 
 	// Global clipboard upload handler
@@ -134,7 +133,6 @@ export const BookmarkCards = () => {
 						<input {...getInputProps()} />
 						<div
 							id="scrollableDiv"
-							ref={infiniteScrollRef}
 							style={{
 								height: "100vh",
 								overflowY: "auto",
@@ -161,7 +159,7 @@ export const BookmarkCards = () => {
 									isSearching,
 									searchHasNextPage,
 								})}
-								loader={<div />}
+								loader={null}
 								next={isSearching ? fetchNextSearchPage : fetchNextBookmarkPage}
 								scrollableTarget="scrollableDiv"
 								style={{ overflow: "unset" }}

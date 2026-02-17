@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { isEmpty, isNil, isNull } from "lodash";
+import isEmpty from "lodash/isEmpty";
+import isNil from "lodash/isNil";
+import isNull from "lodash/isNull";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { useAddBookmark } from "../../hooks/useAddBookmark";
