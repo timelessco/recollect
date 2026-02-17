@@ -4,19 +4,20 @@ import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import { useAddBookmark } from "../../hooks/useAddBookmark";
-import { useFileUploadDrop } from "../../hooks/useFileUploadDrop";
-import { AddBookmarkInputIcon } from "../../icons/miscellaneousIcons/add-bookmark-input-icon";
-import PlusIconWhite from "../../icons/plusIconWhite";
-import { type FileType } from "../../types/componentTypes";
-import {
-	dropdownMenuClassName,
-	grayInputClassName,
-} from "../../utils/commonClassNames";
-import { URL_PATTERN } from "../../utils/constants";
 import { AriaDropdown } from "../ariaDropdown";
 import Button from "../atoms/button";
 import Input from "../atoms/input";
+
+import { useAddBookmark } from "@/hooks/useAddBookmark";
+import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
+import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
+import PlusIconWhite from "@/icons/plusIconWhite";
+import { type FileType } from "@/types/componentTypes";
+import {
+	dropdownMenuClassName,
+	grayInputClassName,
+} from "@/utils/commonClassNames";
+import { URL_PATTERN } from "@/utils/constants";
 
 const AddBookmarkDropdown = () => {
 	const { onAddBookmark } = useAddBookmark();
