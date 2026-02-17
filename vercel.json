@@ -28,7 +28,7 @@
 	},
 	"crons": [
 		{
-			"path": "/api/cron/clear-old-trash",
+			"path": "/api/cron/clear-trash",
 			"schedule": "0 3 * * *"
 		}
 	]
