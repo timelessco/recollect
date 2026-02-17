@@ -5,7 +5,7 @@ import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 
-const ROUTE = "cron/clear-old-trash";
+const ROUTE = "cron/clear-trash";
 const BATCH_SIZE = 1000;
 const TRASH_RETENTION_DAYS = 30;
 
