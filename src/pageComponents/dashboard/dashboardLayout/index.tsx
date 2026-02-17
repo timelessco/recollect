@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment, type AllotmentHandle } from "allotment";
@@ -85,13 +85,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const { isDesktop } = useIsMobileView();
 
-	useEffect(() => {
-		if (isDesktop) {
-			setShowSearchBar(true);
-		} else {
-			setShowSearchBar(false);
-		}
-	}, [isDesktop]);
+	const [prevIsDesktop, setPrevIsDesktop] = useState(isDesktop);
+	if (prevIsDesktop !== isDesktop) {
+		setPrevIsDesktop(isDesktop);
+		setShowSearchBar(isDesktop);
+	}
 
 	const queryClient = useQueryClient();
 

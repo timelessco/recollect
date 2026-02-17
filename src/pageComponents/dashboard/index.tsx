@@ -108,10 +108,9 @@ const Dashboard = () => {
 			);
 		}
 	}, [
-		session,
 		session?.user?.email,
 		updateUserProfileOptimisticMutation,
-		userProfileData,
+		userProfileData?.data,
 	]);
 
 	// this updates the provider in the profiles table if its not present
