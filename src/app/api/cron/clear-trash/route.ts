@@ -11,9 +11,18 @@ const TRASH_RETENTION_DAYS = 30;
 
 export async function GET(request: NextRequest) {
 	try {
+		const cronSecret = process.env.CRON_SECRET;
+		if (!cronSecret) {
+			console.error(`[${ROUTE}] CRON_SECRET is not configured`);
+			return NextResponse.json(
+				{ data: null, error: "Server configuration error" },
+				{ status: 500 },
+			);
+		}
+
 		const authHeader = request.headers.get("authorization");
 
-		if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+		if (authHeader !== `Bearer ${cronSecret}`) {
 			return NextResponse.json(
 				{ data: null, error: "Unauthorized" },
 				{ status: 401 },
