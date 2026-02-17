@@ -3,7 +3,6 @@ import find from "lodash/find";
 import useAddBookmarkMinDataOptimisticMutation from "../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
 import { useSupabaseSession } from "../store/componentStore";
-import { type CategoriesData } from "../types/apiTypes";
 import { mutationApiCall } from "../utils/apiHelpers";
 
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
@@ -24,7 +23,7 @@ export function useAddBookmark() {
 		const currentCategory = find(
 			allCategories?.data,
 			(item) => item?.id === CATEGORY_ID,
-		) as unknown as CategoriesData;
+		);
 
 		const updateAccessCondition =
 			typeof CATEGORY_ID === "number"

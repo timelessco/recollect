@@ -26,11 +26,11 @@ import {
 import { mutationApiCall } from "../../utils/apiHelpers";
 import { TRASH_URL } from "../../utils/constants";
 import { errorToast } from "../../utils/toastMessages";
-import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import { hasMoreBookmarks } from "./hasMoreBookmarks";
 import SignedOutSection from "./signedOutSection";
+import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
@@ -169,7 +169,7 @@ export const BookmarkCards = () => {
 								<CardSection
 									bookmarksCountData={getBookmarkCountForCurrentPage(
 										bookmarksCountData?.data ?? undefined,
-										CATEGORY_ID as unknown as string | number | null,
+										CATEGORY_ID,
 									)}
 									flattendPaginationBookmarkData={
 										flattendPaginationBookmarkData
