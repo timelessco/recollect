@@ -45,7 +45,6 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
-import { type AddBookmarkDropdownTypes } from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
 import RenameIcon from "../../../icons/actionIcons/renameIcon";
 import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
 import OptionsIcon from "../../../icons/optionsIcon";
@@ -59,10 +58,8 @@ import { ClearTrashContent } from "@/components/clearTrashContent";
 
 type DashboardLayoutProps = {
 	categoryId: CategoryIdUrlTypes;
-	onAddBookmark: AddBookmarkDropdownTypes["onAddBookmark"];
 	onClearTrash: () => void;
 	onDeleteCollectionClick: () => void;
-	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 	userId: string;
 	isClearingTrash?: boolean;
 	children: React.ReactNode;
@@ -74,8 +71,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		children,
 		userId,
 		onClearTrash,
-		onAddBookmark,
-		uploadFileFromAddDropdown,
 		onDeleteCollectionClick,
 		isClearingTrash,
 	} = props;
@@ -286,14 +281,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				headerName={headerName}
 				headerOptions={renderViewBasedHeaderOptions()}
 				isDesktop={isDesktop}
-				onAddBookmark={onAddBookmark}
 				onExpandSidePane={onExpandSidePane}
 				onShowSearchBar={setShowSearchBar}
 				optionsMenuList={optionsMenuList}
 				showSearchBar={showSearchBar}
 				showSidePane={showSidePane}
 				triggerHeadingEdit={triggerHeadingEdit}
-				uploadFileFromAddDropdown={uploadFileFromAddDropdown}
 			>
 				{children}
 			</DashboardContent>

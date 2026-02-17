@@ -1,8 +1,6 @@
 import classNames from "classnames";
 
-import AddBookmarkDropdown, {
-	type AddBookmarkDropdownTypes,
-} from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
+import AddBookmarkDropdown from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
@@ -19,14 +17,12 @@ type DashboardContentProps = {
 	headerName?: string | null;
 	headerOptions: React.ReactNode;
 	isDesktop: boolean;
-	onAddBookmark: AddBookmarkDropdownTypes["onAddBookmark"];
 	onExpandSidePane: () => void;
 	onShowSearchBar: (value: boolean) => void;
 	optionsMenuList: Array<{ current?: boolean; icon?: React.ReactNode }>;
 	showSearchBar: boolean;
 	showSidePane: boolean;
 	triggerHeadingEdit: boolean;
-	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 };
 
 export const DashboardContent = (props: DashboardContentProps) => {
@@ -38,14 +34,12 @@ export const DashboardContent = (props: DashboardContentProps) => {
 		headerName,
 		headerOptions,
 		isDesktop,
-		onAddBookmark,
 		onExpandSidePane,
 		onShowSearchBar,
 		optionsMenuList,
 		showSearchBar,
 		showSidePane,
 		triggerHeadingEdit,
-		uploadFileFromAddDropdown,
 	} = props;
 
 	return (
@@ -91,10 +85,7 @@ export const DashboardContent = (props: DashboardContentProps) => {
 					<div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
 						{currentPath !== DISCOVER_URL && headerOptions}
 						{currentPath !== TRASH_URL && currentPath !== DISCOVER_URL && (
-							<AddBookmarkDropdown
-								onAddBookmark={onAddBookmark}
-								uploadFile={uploadFileFromAddDropdown}
-							/>
+							<AddBookmarkDropdown />
 						)}
 					</div>
 				</div>

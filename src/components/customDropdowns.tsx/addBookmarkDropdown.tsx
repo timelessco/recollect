@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { isEmpty, isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
+import { useAddBookmark } from "../../hooks/useAddBookmark";
+import { useFileUploadDrop } from "../../hooks/useFileUploadDrop";
 import { AddBookmarkInputIcon } from "../../icons/miscellaneousIcons/add-bookmark-input-icon";
 import PlusIconWhite from "../../icons/plusIconWhite";
 import { type FileType } from "../../types/componentTypes";
@@ -14,15 +16,9 @@ import { AriaDropdown } from "../ariaDropdown";
 import Button from "../atoms/button";
 import Input from "../atoms/input";
 
-export type AddBookmarkDropdownTypes = {
-	onAddBookmark: (url: string) => void;
-	uploadFile: (file: FileType[]) => void;
-};
-
-const AddBookmarkDropdown = ({
-	onAddBookmark,
-	uploadFile,
-}: AddBookmarkDropdownTypes) => {
+const AddBookmarkDropdown = () => {
+	const { onAddBookmark } = useAddBookmark();
+	const { onDrop } = useFileUploadDrop();
 	const [openDropdown, setOpenDropdown] = useState(false);
 
 	useEffect(() => {
@@ -63,7 +59,7 @@ const AddBookmarkDropdown = ({
 				className="hidden"
 				onChange={(event) =>
 					!isNil(event.target.files) &&
-					uploadFile(event.target.files as unknown as FileType[])
+					onDrop(event.target.files as unknown as FileType[])
 				}
 				ref={fileUploadInputRef}
 				type="file"

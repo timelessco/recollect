@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookma
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
-import { fileUpload } from "../../async/uploads/file-upload";
+import { useFileUploadDrop } from "../../hooks/useFileUploadDrop";
 import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
@@ -38,11 +38,7 @@ import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../store/componentStore";
-import {
-	type CategoriesData,
-	type SingleBookmarksPaginatedDataTypes,
-} from "../../types/apiTypes";
-import { type FileType } from "../../types/componentTypes";
+import { type SingleBookmarksPaginatedDataTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	AUDIO_URL,
@@ -280,32 +276,6 @@ const Dashboard = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userProfileData?.data?.[0]?.provider]);
 
-	const addBookmarkLogic = async (url: string) => {
-		const currentCategory = find(
-			allCategories?.data,
-			(item) => item?.id === CATEGORY_ID,
-		) as unknown as CategoriesData;
-
-		// only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
-		// if cat_id not number then user is not updated in a category , so access will always be true
-		const updateAccessCondition =
-			typeof CATEGORY_ID === "number"
-				? find(
-						currentCategory?.collabData,
-						(item) => item?.userEmail === session?.user?.email,
-					)?.edit_access === true ||
-					currentCategory?.user_id?.id === session?.user?.id
-				: true;
-
-		await mutationApiCall(
-			addBookmarkMinDataOptimisticMutation.mutateAsync({
-				url,
-				category_id: CATEGORY_ID,
-				update_access: updateAccessCondition,
-			}),
-		);
-	};
-
 	// tells if the latest paginated data is the end for total bookmark data based on current category
 	const hasMoreLogic = (): boolean => {
 		// If we're searching, use the search pagination logic
@@ -396,17 +366,7 @@ const Dashboard = () => {
 		return true;
 	};
 
-	const onDrop = useCallback(
-		async (acceptedFiles: FileType[]) => {
-			await fileUpload(
-				acceptedFiles as unknown as FileList,
-				fileUploadOptimisticMutation,
-				CATEGORY_ID,
-			);
-		},
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[fileUploadOptimisticMutation, session],
-	);
+	const { onDrop } = useFileUploadDrop();
 
 	const renderAllBookmarkCards = () => (
 		<>
@@ -576,19 +536,6 @@ const Dashboard = () => {
 		return <NotFoundPage />;
 	};
 
-	const onAddBookmark = (url: string) => {
-		// Check if URL already has a protocol (http:// or https://)
-		const hasProtocol =
-			url?.startsWith("http://") || url?.startsWith("https://");
-		const finalUrl = hasProtocol ? url : `https://${url}`;
-		void addBookmarkLogic(finalUrl);
-	};
-
-	// Handle unsupported actions for discover page
-	const handleUnsupported = () => {
-		errorToast("This action is not available on Discover.");
-	};
-
 	if (isNil(session) && !isDiscoverPage) {
 		return <div />;
 	}
@@ -597,7 +544,6 @@ const Dashboard = () => {
 		<>
 			<DashboardLayout
 				categoryId={isDiscoverPage ? DISCOVER_URL : CATEGORY_ID}
-				onAddBookmark={isDiscoverPage ? handleUnsupported : onAddBookmark}
 				onClearTrash={() => {
 					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 				}}
@@ -605,7 +551,6 @@ const Dashboard = () => {
 				onDeleteCollectionClick={async () =>
 					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
-				uploadFileFromAddDropdown={isDiscoverPage ? handleUnsupported : onDrop}
 				userId={session?.user?.id ?? ""}
 			>
 				{renderMainPaneContent()}
