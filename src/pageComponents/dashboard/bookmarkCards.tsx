@@ -10,7 +10,6 @@ import { useMoveBookmarkToTrashOptimisticMutation } from "../../async/mutationHo
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
-import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
@@ -40,7 +39,7 @@ const CardSection = dynamic(async () => await import("./cardSection"), {
 export const BookmarkCards = () => {
 	const session = useSupabaseSession((state) => state.session);
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const { onDrop } = useFileUploadDrop();
+	const { onDrop, fileUploadOptimisticMutation } = useFileUploadDrop();
 
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
@@ -73,7 +72,6 @@ export const BookmarkCards = () => {
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { addBookmarkMinDataOptimisticMutation } =
 		useAddBookmarkMinDataOptimisticMutation();
-	const { fileUploadOptimisticMutation } = useFileUploadOptimisticMutation();
 
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 	const isSearching = !isEmpty(searchText);

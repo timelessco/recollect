@@ -21,5 +21,5 @@ export function useFileUploadDrop() {
 		[fileUploadOptimisticMutation, CATEGORY_ID],
 	);
 
-	return { onDrop };
+	return { onDrop, fileUploadOptimisticMutation };
 }
