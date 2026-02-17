@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useRouter } from "next/router";
 import find from "lodash/find";
 import isNil from "lodash/isNil";
@@ -70,130 +71,144 @@ export function useBookmarksViewUpdate() {
 	const { updateUserProfileOptimisticMutation } =
 		useUpdateUserProfileOptimisticMutation();
 
-	const setBookmarksView = (
-		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
-		type: BookmarkViewCategories,
-	) => {
-		const currentCategory = find(
-			allCategories?.data,
-			(item) => item?.id === CATEGORY_ID,
-		);
-
-		const isUserTheCategoryOwner =
-			session?.user?.id === currentCategory?.user_id?.id;
-
-		const updateField = (() => {
-			switch (type) {
-				case "view":
-					return "bookmarksView";
-				case "info":
-					return "cardContentViewArray";
-				case "colums":
-					return "moodboardColumns";
-				case "sort":
-					return "sortBy";
-				default:
-					return undefined;
-			}
-		})();
-
-		if (!updateField) {
-			return;
-		}
-
-		if (updateField === "sortBy") {
-			toggleIsSortByLoading();
-		}
-
-		if (currentCategory && typeof CATEGORY_ID === "number") {
-			if (isUserTheCategoryOwner) {
-				updateCategoryOptimisticMutation.mutate({
-					category_id: CATEGORY_ID,
-					updateData: {
-						category_views: {
-							...currentCategory.category_views,
-							cardContentViewArray: ensureCardContentView(
-								value,
-								currentCategory.category_views.cardContentViewArray,
-							),
-							[updateField]: value,
-						},
-					},
-				});
-			} else {
-				const sharedCategoriesId = find(
-					sharedCategoriesData?.data,
-					(item) => item?.category_id === CATEGORY_ID,
-				)?.id;
-
-				if (sharedCategoriesId !== undefined) {
-					const existingSharedCollectionViewsData = find(
-						sharedCategoriesData?.data,
-						(item) => item?.id === sharedCategoriesId,
-					);
-
-					if (!isNil(existingSharedCollectionViewsData)) {
-						void mutationApiCall(
-							updateSharedCategoriesOptimisticMutation.mutateAsync({
-								id: sharedCategoriesId,
-								updateData: {
-									category_views: {
-										...existingSharedCollectionViewsData?.category_views,
-										cardContentViewArray: ensureCardContentView(
-											value,
-											existingSharedCollectionViewsData?.category_views
-												?.cardContentViewArray,
-										),
-										[updateField]: value,
-									},
-								},
-							}),
-						);
-					}
-
-					console.error("existing share collab data is not present");
-				}
-			}
-		} else if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
-			const raw = userProfileData.data[0]?.bookmarks_view;
-			const pageKey = getPageViewKey(categorySlug);
-			const defaultPageView: BookmarkViewDataTypes = {
-				bookmarksView: viewValues.moodboard as BookmarksViewTypes,
-				cardContentViewArray: ["cover", "title", "info"],
-				moodboardColumns: [30],
-				sortBy: "date-sort-ascending" as BookmarksSortByTypes,
-			};
-			const keyed: ProfilesBookmarksView =
-				!raw || typeof raw !== "object"
-					? { [EVERYTHING_URL]: defaultPageView }
-					: isLegacyBookmarksView(raw)
-						? { [EVERYTHING_URL]: raw }
-						: ({ ...raw } as ProfilesBookmarksView);
-
-			const pageView = getPageViewData(raw, pageKey) ?? defaultPageView;
-			const updatedPageView: BookmarkViewDataTypes = {
-				...pageView,
-				cardContentViewArray: ensureCardContentView(
-					value,
-					(pageView.cardContentViewArray ??
-						defaultPageView.cardContentViewArray) as string[],
-				),
-				[updateField]: value,
-			};
-			const nextKeyed: ProfilesBookmarksView = {
-				...keyed,
-				[pageKey]: updatedPageView,
-			};
-
-			void mutationApiCall(
-				updateUserProfileOptimisticMutation.mutateAsync({
-					updateData: { bookmarks_view: nextKeyed },
-				}),
+	const setBookmarksView = useCallback(
+		(
+			value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
+			type: BookmarkViewCategories,
+		) => {
+			const currentCategory = find(
+				allCategories?.data,
+				(item) => item?.id === CATEGORY_ID,
 			);
-		} else {
-			console.error("user profiles data is null");
-		}
-	};
+
+			const isUserTheCategoryOwner =
+				session?.user?.id === currentCategory?.user_id?.id;
+
+			const updateField = (() => {
+				switch (type) {
+					case "view":
+						return "bookmarksView";
+					case "info":
+						return "cardContentViewArray";
+					case "colums":
+						return "moodboardColumns";
+					case "sort":
+						return "sortBy";
+					default:
+						return undefined;
+				}
+			})();
+
+			if (!updateField) {
+				return;
+			}
+
+			if (updateField === "sortBy") {
+				toggleIsSortByLoading();
+			}
+
+			if (currentCategory && typeof CATEGORY_ID === "number") {
+				if (isUserTheCategoryOwner) {
+					updateCategoryOptimisticMutation.mutate({
+						category_id: CATEGORY_ID,
+						updateData: {
+							category_views: {
+								...currentCategory.category_views,
+								cardContentViewArray: ensureCardContentView(
+									value,
+									currentCategory.category_views.cardContentViewArray,
+								),
+								[updateField]: value,
+							},
+						},
+					});
+				} else {
+					const sharedCategoriesId = find(
+						sharedCategoriesData?.data,
+						(item) => item?.category_id === CATEGORY_ID,
+					)?.id;
+
+					if (sharedCategoriesId !== undefined) {
+						const existingSharedCollectionViewsData = find(
+							sharedCategoriesData?.data,
+							(item) => item?.id === sharedCategoriesId,
+						);
+
+						if (!isNil(existingSharedCollectionViewsData)) {
+							void mutationApiCall(
+								updateSharedCategoriesOptimisticMutation.mutateAsync({
+									id: sharedCategoriesId,
+									updateData: {
+										category_views: {
+											...existingSharedCollectionViewsData?.category_views,
+											cardContentViewArray: ensureCardContentView(
+												value,
+												existingSharedCollectionViewsData?.category_views
+													?.cardContentViewArray,
+											),
+											[updateField]: value,
+										},
+									},
+								}),
+							);
+						} else {
+							console.error("existing share collab data is not present");
+						}
+					}
+				}
+			} else if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
+				const raw = userProfileData.data[0]?.bookmarks_view;
+				const pageKey = getPageViewKey(categorySlug);
+				const defaultPageView: BookmarkViewDataTypes = {
+					bookmarksView: viewValues.moodboard as BookmarksViewTypes,
+					cardContentViewArray: ["cover", "title", "info"],
+					moodboardColumns: [30],
+					sortBy: "date-sort-ascending" as BookmarksSortByTypes,
+				};
+				const keyed: ProfilesBookmarksView =
+					!raw || typeof raw !== "object"
+						? { [EVERYTHING_URL]: defaultPageView }
+						: isLegacyBookmarksView(raw)
+							? { [EVERYTHING_URL]: raw }
+							: ({ ...raw } as ProfilesBookmarksView);
+
+				const pageView = getPageViewData(raw, pageKey) ?? defaultPageView;
+				const updatedPageView: BookmarkViewDataTypes = {
+					...pageView,
+					cardContentViewArray: ensureCardContentView(
+						value,
+						(pageView.cardContentViewArray ??
+							defaultPageView.cardContentViewArray) as string[],
+					),
+					[updateField]: value,
+				};
+				const nextKeyed: ProfilesBookmarksView = {
+					...keyed,
+					[pageKey]: updatedPageView,
+				};
+
+				void mutationApiCall(
+					updateUserProfileOptimisticMutation.mutateAsync({
+						updateData: { bookmarks_view: nextKeyed },
+					}),
+				);
+			} else {
+				console.error("user profiles data is null");
+			}
+		},
+		[
+			CATEGORY_ID,
+			allCategories?.data,
+			categorySlug,
+			session?.user?.id,
+			sharedCategoriesData?.data,
+			toggleIsSortByLoading,
+			updateCategoryOptimisticMutation,
+			updateSharedCategoriesOptimisticMutation,
+			updateUserProfileOptimisticMutation,
+			userProfileData,
+		],
+	);
 
 	return { setBookmarksView };
 }
