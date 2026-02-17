@@ -8,11 +8,11 @@ import classNames from "classnames";
 import find from "lodash/find";
 import Drawer from "react-modern-drawer";
 
+import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import Button from "../../../components/atoms/button";
 import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
-import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -42,7 +42,7 @@ import { DashboardContent } from "./dashboardContent";
 
 import "react-modern-drawer/dist/index.css";
 
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 
 import {
 	AriaDropdown,

@@ -4,7 +4,7 @@ import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 
 import {
 	type DeleteBookmarkPayload,

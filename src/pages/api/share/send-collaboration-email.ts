@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { sign, type VerifyErrors } from "jsonwebtoken";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 
 import {
 	type NextApiRequest,
