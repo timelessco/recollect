@@ -82,11 +82,11 @@ export const BookmarkCards = () => {
 				if (window.location.pathname === `/${TRASH_URL}`) {
 					return;
 				}
-
 				const target = event.target as HTMLElement;
 				const isEditable =
 					target.tagName === "INPUT" ||
 					target.tagName === "TEXTAREA" ||
+					target.isContentEditable ||
 					target.closest(".skip-global-paste");
 
 				if (isEditable) {
