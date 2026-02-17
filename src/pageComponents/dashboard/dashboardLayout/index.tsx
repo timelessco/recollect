@@ -12,15 +12,18 @@ import Button from "../../../components/atoms/button";
 import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
+import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
+import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
 } from "../../../types/apiTypes";
-
-import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
+import { mutationApiCall } from "../../../utils/apiHelpers";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
 	BOOKMARKS_COUNT_KEY,
@@ -57,23 +60,18 @@ import ShareContent from "../share/shareContent";
 import { ClearTrashContent } from "@/components/clearTrashContent";
 
 type DashboardLayoutProps = {
-	categoryId: CategoryIdUrlTypes;
-	onClearTrash: () => void;
-	onDeleteCollectionClick: () => void;
-	userId: string;
-	isClearingTrash?: boolean;
 	children: React.ReactNode;
 };
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
-	const {
-		categoryId,
-		children,
-		userId,
-		onClearTrash,
-		onDeleteCollectionClick,
-		isClearingTrash,
-	} = props;
+	const { children } = props;
+
+	const session = useSupabaseSession((state) => state.session);
+	const userId = session?.user?.id ?? "";
+	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
+		useClearBookmarksInTrashMutation();
+	const { onDeleteCollection } = useDeleteCollection();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
 	const [triggerHeadingEdit, setTriggerHeadingEdit] = useState(false);
@@ -185,7 +183,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 					// using AriaDropdownMenu as we want the dropdown to close on click
 					<AriaDropdownMenu
 						className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
-						onClick={onDeleteCollectionClick}
+						onClick={async () =>
+							await onDeleteCollection(true, categoryId as number)
+						}
 					>
 						<TrashIconRed />
 						<p className="ml-[6px]">Delete collection</p>
@@ -212,8 +212,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			case "trash":
 				content = (
 					<ClearTrashContent
-						onClearTrash={onClearTrash}
-						isClearingTrash={isClearingTrash ?? false}
+						onClearTrash={() => {
+							void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+						}}
+						isClearingTrash={isClearingTrash}
 					/>
 				);
 				break;

@@ -17,7 +17,6 @@ import isNull from "lodash/isNull";
 import { useMoveBookmarkToTrashOptimisticMutation } from "../../async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
-import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
@@ -29,7 +28,6 @@ import useFetchCategories from "../../async/queryHooks/category/useFetchCategori
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { useFileUploadDrop } from "../../hooks/useFileUploadDrop";
-import { useDeleteCollection } from "../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
@@ -178,14 +176,10 @@ const Dashboard = () => {
 	const { deleteBookmarkOptismicMutation } =
 		useDeleteBookmarksOptimisticMutation();
 
-	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
-		useClearBookmarksInTrashMutation();
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 
 	const { addBookmarkMinDataOptimisticMutation } =
 		useAddBookmarkMinDataOptimisticMutation();
-
-	const { onDeleteCollection } = useDeleteCollection();
 
 	// profiles table mutation
 
@@ -542,19 +536,7 @@ const Dashboard = () => {
 
 	return (
 		<>
-			<DashboardLayout
-				categoryId={isDiscoverPage ? DISCOVER_URL : CATEGORY_ID}
-				onClearTrash={() => {
-					void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
-				}}
-				isClearingTrash={isClearingTrash}
-				onDeleteCollectionClick={async () =>
-					await onDeleteCollection(true, CATEGORY_ID as number)
-				}
-				userId={session?.user?.id ?? ""}
-			>
-				{renderMainPaneContent()}
-			</DashboardLayout>
+			<DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
 
 			<SettingsModal />
 
