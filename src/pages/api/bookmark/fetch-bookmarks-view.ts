@@ -1,7 +1,7 @@
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 
 import {
 	type BookmarkViewDataTypes,

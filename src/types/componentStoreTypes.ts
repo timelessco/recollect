@@ -66,7 +66,7 @@ export type SupabaseSessionStore = {
 };
 
 export type BookmarksViewTypes = "card" | "list" | "moodboard" | "timeline";
-export type BookmarkViewCategories = "colums" | "info" | "sort" | "view";
+export type BookmarkViewCategories = "columns" | "info" | "sort" | "view";
 export type BookmarksSortByTypes =
 	| "alphabetical-sort-ascending"
 	| "alphabetical-sort-descending"

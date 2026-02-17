@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 
 import { signOut } from "../../../async/supabaseCrudHelpers";
 import {
