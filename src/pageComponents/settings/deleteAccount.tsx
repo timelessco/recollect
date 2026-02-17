@@ -135,24 +135,26 @@ export const DeleteAccount = () => {
 						/>
 					</div>
 				</LabelledComponent>
-				<div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
+				<div className="flex w-1/2 justify-start sm:mt-0 sm:justify-end">
 					<Button
-						className={`${settingsDeleteButtonRedClassName}`}
+						className={` ${settingsDeleteButtonRedClassName} ${deleteUserMutation.isPending ? "py-[9px]" : ""}`}
 						isDisabled={deleteUserMutation.isPending}
 						buttonType="submit"
 						onClick={handleSubmit(onSubmit)}
 					>
-						<div className="flex w-full items-center justify-center">
-							<figure className="mr-2">
-								<TrashIconRed />
-							</figure>
-							<p className="flex justify-center text-red-600">
+						<div className="flex w-full min-w-[125px] items-center justify-center">
+							<div className="flex justify-center text-red-600">
 								{deleteUserMutation.isPending ? (
 									<Spinner className="h-3 w-3 animate-spin" />
 								) : (
-									"Confirm delete"
+									<>
+										<figure className="mr-2">
+											<TrashIconRed />
+										</figure>
+										Confirm delete
+									</>
 								)}
-							</p>
+							</div>
 						</div>
 					</Button>
 				</div>
