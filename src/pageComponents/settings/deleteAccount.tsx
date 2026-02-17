@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";

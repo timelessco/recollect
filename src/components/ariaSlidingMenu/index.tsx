@@ -4,7 +4,7 @@ import * as React from "react";
 import { flushSync } from "react-dom";
 import * as Ariakit from "@ariakit/react";
 import classNames from "classnames";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 
 import useGetCurrentUrlPath from "../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore } from "../../store/componentStore";

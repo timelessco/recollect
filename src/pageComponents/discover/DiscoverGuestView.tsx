@@ -80,7 +80,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 								</p>
 							}
 							hasMore={hasNextPage}
-							loader={<div />}
+							loader={null}
 							next={fetchNextPage}
 							scrollableTarget="scrollableDiv"
 							style={{ overflow: "unset" }}
