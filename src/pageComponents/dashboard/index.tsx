@@ -19,16 +19,13 @@ import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/b
 import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useClearBookmarksInTrashMutation from "../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
-import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useFileUploadOptimisticMutation from "../../async/mutationHooks/files/useFileUploadOptimisticMutation";
-import useUpdateSharedCategoriesOptimisticMutation from "../../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
-import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { fileUpload } from "../../async/uploads/file-upload";
@@ -42,16 +39,9 @@ import {
 	useSupabaseSession,
 } from "../../store/componentStore";
 import {
-	type BookmarkViewDataTypes,
 	type CategoriesData,
-	type ProfilesBookmarksView,
 	type SingleBookmarksPaginatedDataTypes,
 } from "../../types/apiTypes";
-import {
-	type BookmarksSortByTypes,
-	type BookmarksViewTypes,
-	type BookmarkViewCategories,
-} from "../../types/componentStoreTypes";
 import { type FileType } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
@@ -59,7 +49,6 @@ import {
 	BOOKMARKS_KEY,
 	DISCOVER_URL,
 	DOCUMENTS_URL,
-	EVERYTHING_URL,
 	IMAGES_URL,
 	INSTAGRAM_URL,
 	LINKS_URL,
@@ -68,13 +57,7 @@ import {
 	TWEETS_URL,
 	UNCATEGORIZED_URL,
 	VIDEOS_URL,
-	viewValues,
 } from "../../utils/constants";
-import {
-	getPageViewData,
-	getPageViewKey,
-	isLegacyBookmarksView,
-} from "../../utils/bookmarksViewKeyed";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -145,10 +128,6 @@ const Dashboard = () => {
 
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
-	const toggleIsSortByLoading = useLoadersStore(
-		(state) => state.toggleIsSortByLoading,
-	);
-
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
@@ -190,8 +169,6 @@ const Dashboard = () => {
 	const isSearching = !isEmpty(searchText);
 	const isDiscoverPage = categorySlug === DISCOVER_URL;
 
-	const { sharedCategoriesData } = useFetchSharedCategories();
-
 	useFetchBookmarksView();
 
 	const { userProfileData, isLoading: isUserProfileLoading } =
@@ -212,17 +189,7 @@ const Dashboard = () => {
 	const { addBookmarkMinDataOptimisticMutation } =
 		useAddBookmarkMinDataOptimisticMutation();
 
-	// tag mutation
-
 	const { onDeleteCollection } = useDeleteCollection();
-
-	const { updateCategoryOptimisticMutation } =
-		useUpdateCategoryOptimisticMutation();
-
-	// share category mutation
-
-	const { updateSharedCategoriesOptimisticMutation } =
-		useUpdateSharedCategoriesOptimisticMutation();
 
 	// profiles table mutation
 
@@ -337,160 +304,6 @@ const Dashboard = () => {
 				update_access: updateAccessCondition,
 			}),
 		);
-	};
-
-	const bookmarksViewApiLogic = (
-		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
-		type: BookmarkViewCategories,
-	) => {
-		const currentCategory = find(
-			allCategories?.data,
-			(item) => item?.id === CATEGORY_ID,
-		);
-
-		const isUserTheCategoryOwner =
-			session?.user?.id === currentCategory?.user_id?.id;
-
-		const mutationCall = (updateValue: string) => {
-			if (updateValue === "sortBy") {
-				toggleIsSortByLoading();
-			}
-
-			const cardContentViewLogic = (
-				existingViewData: BookmarkViewDataTypes["cardContentViewArray"],
-				// TS disabled because we need to have the function here as its under the scope of the parent function
-			) => {
-				// this function sets the always on values for different views
-				// like if in moodboard then the cover img should always be present, even if its turned off in another view like list view
-				if (value === "moodboard" && !existingViewData?.includes("cover")) {
-					// if view is moodboard and it does not include card then add card
-					return ["cover", ...existingViewData];
-				}
-
-				if (value === "card" && !existingViewData?.includes("cover")) {
-					return ["cover", ...existingViewData];
-				}
-
-				if (value === "list" && !existingViewData?.includes("title")) {
-					return ["title", ...existingViewData];
-				}
-
-				return existingViewData;
-			};
-
-			if (currentCategory && typeof CATEGORY_ID === "number") {
-				// for a collection
-				if (isUserTheCategoryOwner) {
-					// if user is the collection owner
-					updateCategoryOptimisticMutation.mutate({
-						category_id: CATEGORY_ID,
-						updateData: {
-							category_views: {
-								...currentCategory.category_views,
-								cardContentViewArray: cardContentViewLogic(
-									currentCategory.category_views.cardContentViewArray,
-								),
-								[updateValue]: value,
-							},
-						},
-					});
-				} else {
-					// if user is not the collection owner
-					const sharedCategoriesId = find(
-						sharedCategoriesData?.data,
-						(item) => item?.category_id === CATEGORY_ID,
-					)?.id;
-
-					if (sharedCategoriesId !== undefined) {
-						const existingSharedCollectionViewsData = find(
-							sharedCategoriesData?.data,
-							(item) => item?.id === sharedCategoriesId,
-						);
-
-						if (!isNil(existingSharedCollectionViewsData)) {
-							void mutationApiCall(
-								updateSharedCategoriesOptimisticMutation.mutateAsync({
-									id: sharedCategoriesId,
-									updateData: {
-										category_views: {
-											...existingSharedCollectionViewsData?.category_views,
-											cardContentViewArray: cardContentViewLogic(
-												existingSharedCollectionViewsData?.category_views
-													?.cardContentViewArray,
-											),
-											[updateValue]: value,
-										},
-									},
-								}),
-							);
-						}
-
-						console.error("existing share collab data is not present");
-					}
-				}
-			} else {
-				// user is updating for non-collection pages (everything, discover, images, …)
-				if (updateValue === "sortBy" && !isNull(infiniteScrollRef?.current)) {
-					infiniteScrollRef?.current?.scrollTo(0, 0);
-				}
-
-				if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
-					const raw = userProfileData.data[0]?.bookmarks_view;
-					const pageKey = getPageViewKey(categorySlug);
-					const defaultPageView: BookmarkViewDataTypes = {
-						bookmarksView: viewValues.moodboard as BookmarksViewTypes,
-						cardContentViewArray: ["cover", "title", "info"],
-						moodboardColumns: [30],
-						sortBy: "date-sort-ascending" as BookmarksSortByTypes,
-					};
-					const keyed: ProfilesBookmarksView =
-						!raw || typeof raw !== "object"
-							? { [EVERYTHING_URL]: defaultPageView }
-							: isLegacyBookmarksView(raw)
-								? { [EVERYTHING_URL]: raw }
-								: ({ ...raw } as ProfilesBookmarksView);
-
-					const pageView = getPageViewData(raw, pageKey) ?? defaultPageView;
-					const updatedPageView: BookmarkViewDataTypes = {
-						...pageView,
-						cardContentViewArray: cardContentViewLogic(
-							(pageView.cardContentViewArray ??
-								defaultPageView.cardContentViewArray) as string[],
-						),
-						[updateValue]: value,
-					};
-					const nextKeyed: ProfilesBookmarksView = {
-						...keyed,
-						[pageKey]: updatedPageView,
-					};
-
-					void mutationApiCall(
-						updateUserProfileOptimisticMutation.mutateAsync({
-							updateData: { bookmarks_view: nextKeyed },
-						}),
-					);
-				} else {
-					console.error("user profiles data is null");
-				}
-			}
-		};
-
-		switch (type) {
-			case "view":
-				mutationCall("bookmarksView");
-				break;
-			case "info":
-				mutationCall("cardContentViewArray");
-				break;
-			case "colums":
-				mutationCall("moodboardColumns");
-				break;
-			case "sort":
-				mutationCall("sortBy");
-				break;
-			default:
-				break;
-		}
 	};
 
 	// tells if the latest paginated data is the end for total bookmark data based on current category
@@ -792,9 +605,6 @@ const Dashboard = () => {
 				onDeleteCollectionClick={async () =>
 					await onDeleteCollection(true, CATEGORY_ID as number)
 				}
-				setBookmarksView={(value, type) => {
-					bookmarksViewApiLogic(value, type);
-				}}
 				uploadFileFromAddDropdown={isDiscoverPage ? handleUnsupported : onDrop}
 				userId={session?.user?.id ?? ""}
 			>

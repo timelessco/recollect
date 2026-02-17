@@ -19,11 +19,7 @@ import {
 	type BookmarksCountTypes,
 	type CategoriesData,
 } from "../../../types/apiTypes";
-import {
-	type BookmarksSortByTypes,
-	type BookmarksViewTypes,
-	type BookmarkViewCategories,
-} from "../../../types/componentStoreTypes";
+
 import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
@@ -66,10 +62,6 @@ type DashboardLayoutProps = {
 	onAddBookmark: AddBookmarkDropdownTypes["onAddBookmark"];
 	onClearTrash: () => void;
 	onDeleteCollectionClick: () => void;
-	setBookmarksView: (
-		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
-		type: BookmarkViewCategories,
-	) => void;
 	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
 	userId: string;
 	isClearingTrash?: boolean;
@@ -82,7 +74,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		children,
 		userId,
 		onClearTrash,
-		setBookmarksView,
 		onAddBookmark,
 		uploadFileFromAddDropdown,
 		onDeleteCollectionClick,
@@ -152,22 +143,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 			{
 				show: true,
 				value: "view",
-				render: (
-					<BookmarksViewDropdown
-						renderOnlyButton
-						setBookmarksView={setBookmarksView}
-					/>
-				),
+				render: <BookmarksViewDropdown renderOnlyButton />,
 			},
 			{
 				show: currentPath !== DISCOVER_URL && currentPath !== TRASH_URL,
 				value: "sort",
-				render: (
-					<BookmarksSortDropdown
-						renderOnlyButton
-						setBookmarksView={setBookmarksView}
-					/>
-				),
+				render: <BookmarksSortDropdown renderOnlyButton />,
 			},
 			{
 				show: currentPath === TRASH_URL,
@@ -242,20 +223,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				);
 				break;
 			case "view":
-				content = (
-					<BookmarksViewDropdown
-						isDropdown={false}
-						setBookmarksView={setBookmarksView}
-					/>
-				);
+				content = <BookmarksViewDropdown isDropdown={false} />;
 				break;
 			case "sort":
-				content = (
-					<BookmarksSortDropdown
-						isDropdown={false}
-						setBookmarksView={setBookmarksView}
-					/>
-				);
+				content = <BookmarksSortDropdown isDropdown={false} />;
 				break;
 			case "share":
 				content = (

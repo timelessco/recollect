@@ -4,6 +4,7 @@ import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import { debounce } from "lodash";
 import find from "lodash/find";
 
+import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
 import CardIcon from "../../icons/viewIcons/cardIcon";
 import ListIcon from "../../icons/viewIcons/listIcon";
@@ -24,19 +25,13 @@ type BookmarksViewDropdownProps = {
 	// based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
 	isDropdown?: boolean;
 	renderOnlyButton?: boolean;
-	setBookmarksView: (
-		value: BookmarksViewTypes | number[] | string[],
-		type: BookmarkViewCategories,
-	) => void;
 };
 
 // This renders the view options
 const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
-	const {
-		setBookmarksView,
-		isDropdown = true,
-		renderOnlyButton = false,
-	} = props;
+	const { isDropdown = true, renderOnlyButton = false } = props;
+
+	const { setBookmarksView } = useBookmarksViewUpdate();
 
 	const bookmarksInfoValueRaw = useGetViewValue("cardContentViewArray", []);
 	const bookmarksInfoValue = Array.isArray(bookmarksInfoValueRaw)
