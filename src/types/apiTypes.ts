@@ -281,8 +281,6 @@ export type AddBookmarkRemainingDataPayloadTypes = {
 
 export type AddBookmarkScreenshotPayloadTypes = { id: number; url: string };
 
-export type ClearBookmarksInTrashApiPayloadTypes = {};
-
 export type DeleteDataApiPayload = { id: number; session: SupabaseSessionType };
 
 export type MoveBookmarkToTrashApiPayload = {
@@ -341,10 +339,6 @@ export type UploadFileApiPayload = {
 export type DeleteBookmarkPayload = {
 	deleteData: Array<{
 		id: SingleListData["id"];
-		meta_data: SingleListData["meta_data"];
-		ogImage: SingleListData["ogImage"];
-		title: SingleListData["title"];
-		url: SingleListData["url"];
 	}>;
 };
 
