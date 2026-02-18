@@ -1,16 +1,18 @@
-import { OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import { OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { registry } from "../src/lib/openapi/registry";
-import { registerTagsAddTagToBookmark } from "../src/lib/openapi/endpoints/tags-add-tag-to-bookmark";
+import * as endpoints from "../src/lib/openapi/endpoints";
 
-registerTagsAddTagToBookmark();
+for (const register of Object.values(endpoints)) {
+	register();
+}
 
-const generator = new OpenApiGeneratorV3(registry.definitions);
+const generator = new OpenApiGeneratorV31(registry.definitions);
 
 const document = generator.generateDocument({
-	openapi: "3.0.0",
+	openapi: "3.1.0",
 	info: {
 		title: "Recollect API",
 		version: "1.0.0",

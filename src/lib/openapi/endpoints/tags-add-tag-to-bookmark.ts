@@ -2,7 +2,7 @@ import { bearerAuth, registry } from "@/lib/openapi/registry";
 import {
 	AddTagToBookmarkPayloadSchema,
 	AddTagToBookmarkResponseSchema,
-} from "@/app/api/tags/add-tag-to-bookmark/route";
+} from "@/app/api/tags/add-tag-to-bookmark/schema";
 
 export function registerTagsAddTagToBookmark() {
 	registry.registerPath({

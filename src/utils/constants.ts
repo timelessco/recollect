@@ -466,15 +466,15 @@ export const isGuestPath = (pathname: string) =>
 /**
  * Array of public paths that don't require authentication
  */
-export const PUBLIC_PATHS = new Set([
+const PUBLIC_PATHS = [
 	"/api-docs",
 	"/discover",
 	"/error",
 	"/openapi.json",
 	"/public",
-]);
+] as const;
 export const isPublicPath = (pathname: string) =>
-	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
+	PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 
 export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
 export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;

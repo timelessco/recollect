@@ -172,4 +172,30 @@ export default defineConfig(
 		},
 	},
 	prettier,
+
+	// Build-time only: prevent runtime code from importing the OpenAPI registry module
+	// which mutates Zod's prototype and pulls in devDependencies.
+	{
+		files: ["src/**/*.ts", "src/**/*.tsx"],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: ["@/lib/openapi/*", "@/lib/openapi"],
+							message:
+								"src/lib/openapi/ is build-time only. Import schemas from route schema.ts files instead.",
+						},
+					],
+				},
+			],
+		},
+	},
+	{
+		files: ["src/lib/openapi/**/*.ts"],
+		rules: {
+			"no-restricted-imports": "off",
+		},
+	},
 );
