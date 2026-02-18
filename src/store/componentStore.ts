@@ -29,6 +29,11 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
 		set((state) => ({
 			isSortByLoading: !state.isSortByLoading,
 		})),
+	isBookmarkAdding: false,
+	setIsBookmarkAdding: (value: boolean) =>
+		set(() => ({
+			isBookmarkAdding: value,
+		})),
 	isSearchLoading: false,
 	toggleIsSearchLoading: (value: boolean) =>
 		set(() => ({
