@@ -6,6 +6,13 @@ import classNames from "classnames";
 import { format } from "date-fns";
 import { find, isEmpty, isNull } from "lodash";
 
+import {
+	BookmarkAvatar,
+	BookmarkCategoryBadge,
+	BookmarkFavIcon,
+} from "./bookmarkCardParts";
+import { BookmarkOgImage } from "./bookmarkOgImage";
+import { EditAndDeleteIcons } from "./editAndDeleteIcons";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import ReadMore from "@/components/readmore";
 import useGetViewValue from "@/hooks/useGetViewValue";
@@ -20,14 +27,6 @@ import { CATEGORIES_KEY, viewValues } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { getBaseUrl, isBookmarkOwner, isCurrentYear } from "@/utils/helpers";
 import { getCategorySlugFromRouter } from "@/utils/url";
-
-import { BookmarkOgImage } from "./bookmarkOgImage";
-import {
-	BookmarkAvatar,
-	BookmarkCategoryBadge,
-	BookmarkFavIcon,
-} from "./bookmarkCardParts";
-import { EditAndDeleteIcons } from "./editAndDeleteIcons";
 
 export type BookmarkCardProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
@@ -140,7 +139,7 @@ export function BookmarkCard({
 							? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
 							: ""
 					}`}
-					id="base-url"
+					data-base-url
 				>
 					{getBaseUrl(post?.url)}
 				</p>
@@ -166,7 +165,7 @@ export function BookmarkCard({
 
 	if (isListView) {
 		return (
-			<div className="flex w-full items-center p-2" id="single-moodboard-card">
+			<div className="flex w-full items-center p-2" data-single-moodboard-card>
 				{hasCoverImg ? (
 					<BookmarkOgImage
 						categoryViewsFromProps={categoryViewsFromProps}
@@ -217,7 +216,7 @@ export function BookmarkCard({
 	}
 
 	return (
-		<div className="flex w-full flex-col" id="single-moodboard-card">
+		<div className="flex w-full flex-col" data-single-moodboard-card>
 			<BookmarkOgImage
 				categoryViewsFromProps={categoryViewsFromProps}
 				img={img}
