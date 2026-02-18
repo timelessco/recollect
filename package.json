@@ -65,6 +65,7 @@
 		"lint:types": "pnpm next:typegen && tsc --noEmit && pnpm lint:types:deno",
 		"lint:types:deno": "deno check --config supabase/functions/process-instagram-imports/deno.json supabase/functions/process-instagram-imports/index.ts",
 		"next:typegen": "pnpm next typegen",
+		"openapi:generate": "tsx scripts/generate-openapi.ts",
 		"prepare": "is-ci || husky",
 		"release": "release-it --ci",
 		"release:dryrun": "release-it --dry-run",
@@ -144,6 +145,7 @@
 		"zustand": "5.0.10"
 	},
 	"devDependencies": {
+		"@asteasolutions/zod-to-openapi": "8.4.1",
 		"@commitlint/cli": "20.3.1",
 		"@commitlint/config-conventional": "20.3.1",
 		"@eslint/compat": "2.0.1",
@@ -154,6 +156,7 @@
 		"@next/eslint-plugin-next": "16.1.6",
 		"@octokit/core": "7.0.6",
 		"@release-it/conventional-changelog": "10.0.4",
+		"@scalar/nextjs-api-reference": "0.9.19",
 		"@tailwindcss/postcss": "4.1.18",
 		"@tanstack/eslint-plugin-query": "5.91.3",
 		"@tanstack/react-query-devtools": "5.91.2",
