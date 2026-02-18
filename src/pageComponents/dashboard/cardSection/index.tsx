@@ -8,7 +8,6 @@ import { flatten, isEmpty, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import useAddBookmarkMinDataOptimisticMutation from "../../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
@@ -73,9 +72,7 @@ const CardSection = ({
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 	const { isLoading: isLoadingProfile } = useFetchUserProfile();
 	const { bookmarksCountData } = useFetchBookmarksCount();
-	const { addBookmarkMinDataOptimisticMutation } =
-		useAddBookmarkMinDataOptimisticMutation();
-	const isBookmarkLoading = addBookmarkMinDataOptimisticMutation.isPending;
+	const isBookmarkLoading = useLoadersStore((state) => state.isBookmarkAdding);
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
 	// Handle route changes for lightbox

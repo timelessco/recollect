@@ -11,10 +11,12 @@ export type ModalStoreState = {
 
 export type LoadersStoreState = {
 	addLoadingBookmarkId: (id: number) => void;
+	isBookmarkAdding: boolean;
 	isSearchLoading: boolean;
 	isSortByLoading: boolean;
 	loadingBookmarkIds: Set<number>;
 	removeLoadingBookmarkId: (id: number) => void;
+	setIsBookmarkAdding: (value: boolean) => void;
 	toggleIsSearchLoading: (value: boolean) => void;
 	toggleIsSortByLoading: () => void;
 };
