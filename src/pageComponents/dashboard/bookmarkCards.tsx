@@ -11,7 +11,6 @@ import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/book
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { useFileUploadDrop } from "../../hooks/useFileUploadDrop";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
@@ -27,7 +26,6 @@ import { errorToast } from "../../utils/toastMessages";
 import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import { hasMoreBookmarks } from "./hasMoreBookmarks";
 import SignedOutSection from "./signedOutSection";
-import { getBookmarkCountForCurrentPage } from "@/utils/helpers";
 
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
@@ -59,8 +57,6 @@ export const BookmarkCards = () => {
 		fetchNextPage: fetchNextSearchPage,
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
-	const { isLoading: isUserProfileLoading } = useFetchUserProfile();
-
 	const { moveBookmarkToTrashOptimisticMutation } =
 		useMoveBookmarkToTrashOptimisticMutation();
 	const { deleteBookmarkOptismicMutation } =
@@ -161,22 +157,14 @@ export const BookmarkCards = () => {
 								style={{ overflow: "unset" }}
 							>
 								<CardSection
-									bookmarksCountData={getBookmarkCountForCurrentPage(
-										bookmarksCountData?.data ?? undefined,
-										CATEGORY_ID,
-									)}
 									flattendPaginationBookmarkData={
 										flattendPaginationBookmarkData
-									}
-									isBookmarkLoading={
-										addBookmarkMinDataOptimisticMutation?.isPending
 									}
 									isLoading={
 										isEverythingDataLoading ||
 										(isSearchLoading &&
 											(flattenedSearchData?.length ?? 0) === 0)
 									}
-									isLoadingProfile={isUserProfileLoading}
 									listData={
 										isSearching
 											? flattenedSearchData
@@ -222,7 +210,6 @@ export const BookmarkCards = () => {
 											}),
 										);
 									}}
-									userId={session?.user?.id ?? ""}
 								/>
 							</InfiniteScroll>
 						</div>

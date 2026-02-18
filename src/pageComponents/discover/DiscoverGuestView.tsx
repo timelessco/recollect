@@ -87,13 +87,11 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 						>
 							<CardSection
 								categoryViewsFromProps={discoverCategoryViews}
-								isBookmarkLoading={false}
 								isDiscoverPage
 								isPublicPage
 								listData={flattenedData}
 								onDeleteClick={() => {}}
 								onMoveOutOfTrashClick={() => {}}
-								userId=""
 							/>
 						</InfiniteScroll>
 					</div>

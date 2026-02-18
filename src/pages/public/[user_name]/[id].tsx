@@ -78,10 +78,8 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
 						>
 							<CardSection
 								categoryViewsFromProps={metadata.categoryViews ?? undefined}
-								isBookmarkLoading={false}
 								isPublicPage
 								listData={flattenedData}
-								userId=""
 							/>
 						</InfiniteScroll>
 					</div>

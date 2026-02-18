@@ -8,11 +8,16 @@ import { flatten, isEmpty, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
+import useAddBookmarkMinDataOptimisticMutation from "../../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
+import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
+import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
+	useSupabaseSession,
 } from "../../../store/componentStore";
 import {
 	type BookmarkViewDataTypes,
@@ -27,7 +32,11 @@ import {
 	TWEETS_URL,
 	viewValues,
 } from "../../../utils/constants";
-import { getPreviewPathInfo, searchSlugKey } from "../../../utils/helpers";
+import {
+	getBookmarkCountForCurrentPage,
+	getPreviewPathInfo,
+	searchSlugKey,
+} from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
 import { BookmarkCard } from "./bookmarkCard";
@@ -38,7 +47,6 @@ import { PublicMoodboard } from "./publicMoodboard";
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
 	flattendPaginationBookmarkData?: SingleListData[];
-	isBookmarkLoading: boolean;
 	isLoading?: boolean;
 	/**
 	 * When true, use discover layout (e.g. top margin) so SSR and client match without relying on router.
@@ -48,9 +56,6 @@ export type CardSectionProps = {
 	listData: SingleListData[];
 	onDeleteClick?: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick?: (post: SingleListData) => void;
-	userId: string;
-	isLoadingProfile?: boolean;
-	bookmarksCountData?: number;
 };
 
 const CardSection = ({
@@ -59,15 +64,18 @@ const CardSection = ({
 	isLoading = false,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
-	userId,
-	isBookmarkLoading = false,
 	isPublicPage = false,
 	isDiscoverPage = false,
 	categoryViewsFromProps = undefined,
-	isLoadingProfile = false,
-	bookmarksCountData,
 }: CardSectionProps) => {
 	const router = useRouter();
+	const userId = useSupabaseSession((state) => state.session?.user?.id);
+	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { isLoading: isLoadingProfile } = useFetchUserProfile();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const { addBookmarkMinDataOptimisticMutation } =
+		useAddBookmarkMinDataOptimisticMutation();
+	const isBookmarkLoading = addBookmarkMinDataOptimisticMutation.isPending;
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
 	// Handle route changes for lightbox
@@ -171,7 +179,10 @@ const CardSection = ({
 		if (isLoading) {
 			return (
 				<BookmarksSkeletonLoader
-					count={bookmarksCountData}
+					count={getBookmarkCountForCurrentPage(
+						bookmarksCountData?.data ?? undefined,
+						categoryId,
+					)}
 					type={cardTypeCondition}
 					colCount={bookmarksColumns?.[0]}
 				/>

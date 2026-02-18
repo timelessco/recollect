@@ -61,12 +61,10 @@ export const useDiscoverDataSource = (
 
 type DiscoverBookmarkCardsProps = {
 	isDiscoverPage: boolean;
-	userId: string;
 };
 
 export const DiscoverBookmarkCards = ({
 	isDiscoverPage,
-	userId,
 }: DiscoverBookmarkCardsProps) => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
@@ -185,12 +183,10 @@ export const DiscoverBookmarkCards = ({
 			>
 				<CardSection
 					categoryViewsFromProps={discoverCategoryViews}
-					isBookmarkLoading={false}
 					isDiscoverPage
 					isLoading={isLoading}
 					isPublicPage
 					listData={displayData}
-					userId={userId}
 				/>
 			</InfiniteScroll>
 		</div>
