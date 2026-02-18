@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 import { createServiceClient } from "@/utils/supabaseClient";
 
 export interface StoreQueueErrorProps {
@@ -37,12 +39,20 @@ export async function storeQueueError(props: StoreQueueErrorProps) {
 				errorReason,
 				rpcError,
 			});
+			Sentry.captureException(rpcError, {
+				tags: { operation: "store_queue_error", route },
+				extra: { queueName, msgId, errorReason },
+			});
 		}
-	} catch {
+	} catch (error) {
 		console.error(`[${route}] Failed to store queue error:`, {
 			queueName,
 			msgId,
 			errorReason,
+		});
+		Sentry.captureException(error, {
+			tags: { operation: "store_queue_error", route },
+			extra: { queueName, msgId, errorReason },
 		});
 	}
 }
