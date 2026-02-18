@@ -40,7 +40,6 @@ fbca
 fbcdn
 fetchs
 fkey
-fron
 hcaptcha
 hnsw
 HNSW
@@ -51,7 +50,7 @@ inbucket
 Inbucket
 infile
 jobid
-loggedin
+kieran
 Loggedin
 micnncim
 msvideo

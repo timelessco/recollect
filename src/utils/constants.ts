@@ -447,12 +447,6 @@ export const springConfig = {
 } as const;
 
 /**
- * Array of public paths that don't require authentication
- * Dynamically generated from PAGE_SLUGS
- */
-// export const PUBLIC_PATHS = new Set(["/"]);
-
-/**
  * Array of guest paths that require authentication
  */
 export const GUEST_PATHS = new Set([
