@@ -87,10 +87,14 @@ export async function GET(request: NextRequest) {
 					ROUTE,
 				);
 
-				if (result.error) {
+			if (result.error) {
 					console.error(`[${ROUTE}] Batch delete failed:`, {
 						userId,
 						error: result.error,
+					});
+					Sentry.captureException(new Error(result.error), {
+						tags: { operation: "cron_clear_old_trash_batch_delete", userId },
+						extra: { count: bookmarkIds.length },
 					});
 					continue;
 				}
