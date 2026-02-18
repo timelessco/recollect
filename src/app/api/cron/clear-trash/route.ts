@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 					ROUTE,
 				);
 
-			if (result.error) {
+				if (result.error) {
 					console.error(`[${ROUTE}] Batch delete failed:`, {
 						userId,
 						error: result.error,
