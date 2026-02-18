@@ -23,6 +23,7 @@ export default function useFetchUserProfile() {
 				userId: session?.user?.id as string,
 				session: session as SupabaseSessionType,
 			}),
+		enabled: !!session?.user?.id,
 	});
 
 	return {
