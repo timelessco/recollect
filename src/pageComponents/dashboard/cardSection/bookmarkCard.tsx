@@ -1,8 +1,8 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useState } from "react";
 import { useRouter } from "next/router";
 import classNames from "classnames";
 import { format } from "date-fns";
-import { find, isEmpty, isNull } from "lodash";
+import { isEmpty, isNull } from "lodash";
 
 import {
 	BookmarkAvatar,
@@ -11,8 +11,6 @@ import {
 } from "./bookmarkCardParts";
 import { BookmarkOgImage } from "./bookmarkOgImage";
 import { EditAndDeleteIcons } from "./editAndDeleteIcons";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import ReadMore from "@/components/readmore";
 import useGetViewValue from "@/hooks/useGetViewValue";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
@@ -26,20 +24,40 @@ import { getDomain } from "@/utils/domain";
 import { getBaseUrl, isBookmarkOwner, isCurrentYear } from "@/utils/helpers";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
+export function getImgForPost(
+	post: SingleListData,
+	preferredDomainsSet: Set<string>,
+): string | undefined {
+	const postUrl = post?.url;
+	const postOgImage = post?.ogImage;
+	const postCoverImage = post?.meta_data?.coverImage;
+	if (preferredDomainsSet.size === 0) {
+		return postOgImage;
+	}
+
+	const domain = getDomain(postUrl ?? "");
+	const isPreferred = domain && preferredDomainsSet.has(domain);
+	return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
+}
+
 export type BookmarkCardProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
+	img?: string;
 	isPublicPage: boolean;
 	onDeleteClick?: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick?: (post: SingleListData) => void;
 	post: SingleListData;
+	showAvatar: boolean;
 };
 
 const BookmarkCardInner = ({
 	categoryViewsFromProps,
+	img,
 	isPublicPage,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
 	post,
+	showAvatar,
 }: BookmarkCardProps) => {
 	const [hasFavIconError, setHasFavIconError] = useState(false);
 
@@ -47,34 +65,6 @@ const BookmarkCardInner = ({
 	const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
 	const categorySlug = getCategorySlugFromRouter(router);
 	const isUserInTweetsPage = useIsUserInTweetsPage();
-
-	// Internalize image source (replaces img prop)
-	const { userProfileData: profileData } = useFetchUserProfile();
-	const preferredDomainsSet = useMemo(() => {
-		const domains = profileData?.data?.[0]?.preferred_og_domains ?? [];
-		return new Set(domains.map((item) => item.toLowerCase()));
-	}, [profileData]);
-
-	const postUrl = post?.url;
-	const postOgImage = post?.ogImage;
-	const postCoverImage = post?.meta_data?.coverImage;
-	const img = useMemo(() => {
-		if (preferredDomainsSet.size === 0) {
-			return postOgImage;
-		}
-
-		const domain = getDomain(postUrl);
-		const isPreferred = domain && preferredDomainsSet.has(domain);
-		return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
-	}, [preferredDomainsSet, postUrl, postOgImage, postCoverImage]);
-
-	// Internalize showAvatar (replaces showAvatar prop)
-	const { allCategories } = useFetchCategories();
-
-	const showAvatar =
-		!isPublicPage &&
-		(find(allCategories?.data, (item) => item?.category_slug === categorySlug)
-			?.collabData?.length ?? 0) > 1;
 
 	const cardTypeCondition = useGetViewValue(
 		"bookmarksView",
@@ -168,7 +158,7 @@ const BookmarkCardInner = ({
 					<BookmarkOgImage
 						cardTypeCondition={cardTypeCondition}
 						hasCoverImg={hasCoverImg ?? false}
-						img={img}
+						img={img ?? post?.ogImage ?? ""}
 						isPublicPage={isPublicPage}
 						post={post}
 					/>
@@ -219,7 +209,7 @@ const BookmarkCardInner = ({
 			<BookmarkOgImage
 				cardTypeCondition={cardTypeCondition}
 				hasCoverImg={hasCoverImg ?? false}
-				img={img}
+				img={img ?? post?.ogImage ?? ""}
 				isPublicPage={isPublicPage}
 				post={post}
 			/>

@@ -1,14 +1,15 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import { flatten, isEmpty, type Many } from "lodash";
+import { find, flatten, isEmpty, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
 import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
+import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -38,7 +39,7 @@ import {
 } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
-import { BookmarkCard } from "./bookmarkCard";
+import { BookmarkCard, getImgForPost } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
 import { PublicMoodboard } from "./publicMoodboard";
@@ -70,8 +71,21 @@ const CardSection = ({
 	const router = useRouter();
 	const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
 	const { category_id: categoryId } = useGetCurrentCategoryId();
-	const { isLoading: isLoadingProfile } = useFetchUserProfile();
+	const { userProfileData: profileData, isLoading: isLoadingProfile } =
+		useFetchUserProfile();
+	const { allCategories } = useFetchCategories();
 	const { bookmarksCountData } = useFetchBookmarksCount();
+
+	const categorySlug = getCategorySlugFromRouter(router);
+	const preferredDomainsSet = useMemo(() => {
+		const domains = profileData?.data?.[0]?.preferred_og_domains ?? [];
+		return new Set(domains.map((item) => item.toLowerCase()));
+	}, [profileData]);
+
+	const showAvatar =
+		!isPublicPage &&
+		(find(allCategories?.data, (item) => item?.category_slug === categorySlug)
+			?.collabData?.length ?? 0) > 1;
 	const isBookmarkLoading = useLoadersStore((state) => state.isBookmarkAdding);
 	const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } =
 		useMiscellaneousStore();
@@ -96,8 +110,6 @@ const CardSection = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router?.asPath]);
 
-	// cat_id refers to cat slug here as its got from url
-	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 	const setCurrentBookmarkView = useMiscellaneousStore(
@@ -152,10 +164,12 @@ const CardSection = ({
 		(item: SingleListData) => (
 			<BookmarkCard
 				categoryViewsFromProps={categoryViewsFromProps}
+				img={getImgForPost(item, preferredDomainsSet)}
 				isPublicPage={isPublicPage}
 				onDeleteClick={onDeleteClick}
 				onMoveOutOfTrashClick={onMoveOutOfTrashClick}
 				post={item}
+				showAvatar={showAvatar}
 			/>
 		),
 		[
@@ -163,6 +177,8 @@ const CardSection = ({
 			isPublicPage,
 			onDeleteClick,
 			onMoveOutOfTrashClick,
+			preferredDomainsSet,
+			showAvatar,
 		],
 	);
 
