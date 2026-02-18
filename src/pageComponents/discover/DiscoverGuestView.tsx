@@ -89,12 +89,10 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 								categoryViewsFromProps={discoverCategoryViews}
 								isBookmarkLoading={false}
 								isDiscoverPage
-								isOgImgLoading={false}
 								isPublicPage
 								listData={flattenedData}
 								onDeleteClick={() => {}}
 								onMoveOutOfTrashClick={() => {}}
-								showAvatar={false}
 								userId=""
 							/>
 						</InfiniteScroll>

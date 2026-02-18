@@ -1,19 +1,16 @@
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import isEmpty from "lodash/isEmpty";
-import isNull from "lodash/isNull";
 import omit from "lodash/omit";
 import Dropzone from "react-dropzone";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { useMoveBookmarkToTrashOptimisticMutation } from "../../async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
-import useAddBookmarkScreenshotMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkScreenshotMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
-import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { useFileUploadDrop } from "../../hooks/useFileUploadDrop";
@@ -50,7 +47,6 @@ export const BookmarkCards = () => {
 		(state) => state.setDeleteBookmarkId,
 	);
 
-	const { allCategories } = useFetchCategories();
 	const { bookmarksCountData } = useFetchBookmarksCount();
 	const {
 		everythingData,
@@ -69,7 +65,6 @@ export const BookmarkCards = () => {
 		useMoveBookmarkToTrashOptimisticMutation();
 	const { deleteBookmarkOptismicMutation } =
 		useDeleteBookmarksOptimisticMutation();
-	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { addBookmarkMinDataOptimisticMutation } =
 		useAddBookmarkMinDataOptimisticMutation();
 
@@ -182,7 +177,6 @@ export const BookmarkCards = () => {
 											(flattenedSearchData?.length ?? 0) === 0)
 									}
 									isLoadingProfile={isUserProfileLoading}
-									isOgImgLoading={addBookmarkScreenshotMutation?.isPending}
 									listData={
 										isSearching
 											? flattenedSearchData
@@ -228,13 +222,6 @@ export const BookmarkCards = () => {
 											}),
 										);
 									}}
-									showAvatar={Boolean(
-										CATEGORY_ID &&
-										!isNull(CATEGORY_ID) &&
-										(allCategories?.data?.find(
-											(item) => item?.id === CATEGORY_ID,
-										)?.collabData?.length ?? 0) > 1,
-									)}
 									userId={session?.user?.id ?? ""}
 								/>
 							</InfiniteScroll>

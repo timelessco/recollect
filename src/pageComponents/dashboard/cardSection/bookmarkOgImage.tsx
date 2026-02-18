@@ -15,7 +15,6 @@ import { ImgLogic } from "./imageCard";
 export type BookmarkOgImageProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
 	img: SingleListData["ogImage"];
-	isLoading: boolean;
 	isPublicPage: boolean;
 	post: SingleListData;
 };
@@ -23,7 +22,6 @@ export type BookmarkOgImageProps = {
 export function BookmarkOgImage({
 	categoryViewsFromProps,
 	img,
-	isLoading,
 	isPublicPage,
 	post,
 }: BookmarkOgImageProps) {
@@ -70,9 +68,7 @@ export function BookmarkOgImage({
 			cardTypeCondition === viewValues.card ||
 			cardTypeCondition === viewValues.moodboard,
 		"aspect-[1.8]":
-			cardTypeCondition === viewValues.moodboard &&
-			isLoading &&
-			img === undefined,
+			cardTypeCondition === viewValues.moodboard && img === undefined,
 	});
 
 	const playSvgClassName = classNames({

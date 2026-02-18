@@ -1,21 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
-import { format } from "date-fns";
-import { flatten, isEmpty, isNil, isNull, type Many } from "lodash";
+import { flatten, isEmpty, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import { CategoryBadges } from "../../../components/categoryBadges";
-import { GetBookmarkIcon } from "../../../components/get-bookmark-icon";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
-import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
-import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
-import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useLoadersStore,
 	useMiscellaneousStore,
@@ -24,31 +18,20 @@ import {
 	type BookmarkViewDataTypes,
 	type CategoriesData,
 	type SingleListData,
-	type UserTagsData,
 } from "../../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	EVERYTHING_URL,
-	IMAGE_TYPE_PREFIX,
 	PREVIEW_ALT_TEXT,
 	TWEETS_URL,
 	viewValues,
 } from "../../../utils/constants";
-import { useBookmarkImageSources } from "../../../utils/getBookmarkImageSource";
-import {
-	getBaseUrl,
-	getPreviewPathInfo,
-	isBookmarkOwner,
-	isCurrentYear,
-	searchSlugKey,
-} from "../../../utils/helpers";
+import { getPreviewPathInfo, searchSlugKey } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
-import { BookmarkOgImage } from "./bookmarkOgImage";
+import { BookmarkCard } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
-import { EditAndDeleteIcons } from "./editAndDeleteIcons";
 import ListBox from "./listBox";
 import { PublicMoodboard } from "./publicMoodboard";
 
@@ -57,7 +40,6 @@ export type CardSectionProps = {
 	flattendPaginationBookmarkData?: SingleListData[];
 	isBookmarkLoading: boolean;
 	isLoading?: boolean;
-	isOgImgLoading: boolean;
 	/**
 	 * When true, use discover layout (e.g. top margin) so SSR and client match without relying on router.
 	 */
@@ -66,7 +48,6 @@ export type CardSectionProps = {
 	listData: SingleListData[];
 	onDeleteClick?: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick?: (post: SingleListData) => void;
-	showAvatar: boolean;
 	userId: string;
 	isLoadingProfile?: boolean;
 	bookmarksCountData?: number;
@@ -79,8 +60,6 @@ const CardSection = ({
 	onDeleteClick,
 	onMoveOutOfTrashClick,
 	userId,
-	showAvatar = false,
-	isOgImgLoading = false,
 	isBookmarkLoading = false,
 	isPublicPage = false,
 	isDiscoverPage = false,
@@ -112,8 +91,6 @@ const CardSection = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router?.asPath]);
 
-	// const [errorImgs, setErrorImgs] = useState([]);
-	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
 	// cat_id refers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
@@ -121,11 +98,6 @@ const CardSection = ({
 	const setCurrentBookmarkView = useMiscellaneousStore(
 		(state) => state.setCurrentBookmarkView,
 	);
-
-	const isUserInTweetsPage = useIsUserInTweetsPage();
-
-	const getImageSource = (item: SingleListData) =>
-		imageSources[item.id] ?? item?.ogImage;
 
 	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
 		data: CategoriesData[];
@@ -149,15 +121,6 @@ const CardSection = ({
 			? listData
 			: (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
 
-	const imageSources = useBookmarkImageSources(bookmarksList);
-
-	const bookmarksInfoValue = useGetViewValue(
-		"cardContentViewArray",
-		[],
-		isPublicPage,
-		categoryViewsFromProps,
-	);
-
 	const bookmarksColumns = flatten([
 		useGetViewValue(
 			"moodboardColumns",
@@ -174,307 +137,11 @@ const CardSection = ({
 		categoryViewsFromProps,
 	);
 
-	const hasCoverImg = (bookmarksInfoValue as string[] | undefined)?.includes(
-		"cover",
-	);
-
 	useEffect(() => {
 		if (!isEmpty(cardTypeCondition)) {
 			setCurrentBookmarkView(cardTypeCondition as BookmarksViewTypes);
 		}
 	}, [cardTypeCondition, setCurrentBookmarkView]);
-
-	const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
-		// show if bookmark is created by loggedin user
-		if (isBookmarkOwner(post?.user_id, userId)) {
-			return true;
-		}
-
-		return false;
-	};
-
-	const renderAvatar = (item: SingleListData) => {
-		const isCreatedByLoggedInUser = isBookmarkCreatedByLoggedinUser(item);
-
-		const avatarClassName = classNames({
-			"absolute h-[26px] w-[26px] rounded-full hidden group-hover:flex": true,
-			"right-[65px] top-0": isCreatedByLoggedInUser,
-			"right-[100px]": cardTypeCondition === viewValues.list,
-			"right-0 top-0": !isCreatedByLoggedInUser,
-		});
-
-		if (!isNil(item?.user_id?.profile_pic)) {
-			return (
-				<Image
-					alt="user_img"
-					className={avatarClassName}
-					height={21}
-					src={item?.user_id?.profile_pic}
-					width={21}
-				/>
-			);
-		}
-
-		return (
-			<DefaultUserIcon
-				className={`hidden h-5 w-5 group-hover:flex ${avatarClassName}`}
-			/>
-		);
-	};
-
-	const renderUrl = (item: SingleListData) => (
-		<p
-			className={`relative mr-2 ml-1 truncate align-middle text-13 leading-[115%] tracking-[0.01em] text-gray-600 ${
-				(item?.addedCategories?.length ?? 0) > 0 && isNull(categorySlug)
-					? "pl-3 before:absolute before:top-1.5 before:left-0 before:h-1 before:w-1 before:rounded-full before:bg-black before:content-['']"
-					: ""
-			}`}
-			id="base-url"
-		>
-			{getBaseUrl(item?.url)}
-		</p>
-	);
-
-	const renderFavIcon = (item: SingleListData) => {
-		const size = 15;
-		const favIconFigureClassName = classNames({
-			"h-[15px] w-[15px]": true,
-		});
-
-		const icon = (
-			<GetBookmarkIcon
-				item={item}
-				isUserInTweetsPage={isUserInTweetsPage}
-				favIconErrorIds={favIconErrorImgs}
-				onFavIconError={(bookmarkId: number) => {
-					setFavIconErrorImgs((prev) => [bookmarkId, ...prev]);
-				}}
-				size={size}
-			/>
-		);
-
-		// Determine the figure className based on icon type
-		// If it's a favicon or twitter avatar (Image component), use the smaller figure
-		const isImageIcon =
-			(item?.meta_data?.favIcon || item?.meta_data?.twitter_avatar_url) &&
-			!favIconErrorImgs?.includes(item?.id);
-
-		if (isImageIcon) {
-			return <figure className={favIconFigureClassName}>{icon}</figure>;
-		}
-
-		// For video, document, image icons, and fallback (SVG icons)
-		const isImageMediaType =
-			item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX);
-		const figureClassName = classNames({
-			"card-icon rounded-sm text-gray-1000": true,
-			rounded: isImageMediaType,
-		});
-
-		return <figure className={figureClassName}>{icon}</figure>;
-	};
-
-	const renderCategoryBadge = (item: SingleListData) => {
-		// Only show categories in "Everything" view
-		if (categorySlug !== EVERYTHING_URL) {
-			return null;
-		}
-
-		// Filter out uncategorized (id=0) for display
-		const displayCategories = item.addedCategories?.filter(
-			(cat) => cat.id !== 0,
-		);
-
-		if (!displayCategories?.length) {
-			return null;
-		}
-
-		return (
-			<>
-				<p className="flex items-center text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
-					in
-				</p>
-				<CategoryBadges categories={displayCategories} maxVisible={2} />
-			</>
-		);
-	};
-
-	const renderTag = (id: UserTagsData["id"], name: UserTagsData["name"]) => (
-		<div
-			className="rounded-[5px] bg-gray-100 px-1 py-[1.5px] text-13 leading-[14.9px] font-450 tracking-[0.13px] text-gray-500 not-italic"
-			key={id}
-		>
-			#{name}
-		</div>
-	);
-
-	const renderSortByCondition = () =>
-		bookmarksList?.map((item) => ({
-			...item,
-			ogImage: item?.ogImage,
-		}));
-
-	const renderBookmarkCardTypes = (item: SingleListData) => {
-		// NOTE: this is no separate view for timeline, only change is a style update in the listBox component
-		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-		switch (cardTypeCondition) {
-			case viewValues.moodboard:
-				return renderMoodboardAndCardType(item);
-			case viewValues.card:
-				return renderMoodboardAndCardType(item);
-			case viewValues.list:
-				return renderListCard(item);
-
-			default:
-				return renderMoodboardAndCardType(item);
-		}
-	};
-
-	const moodboardAndCardInfoWrapperClass = classNames({
-		"card-moodboard-info-wrapper space-y-[6px] px-2 py-3 dark:group-hover:bg-gray-alpha-100 rounded-b-lg duration-150 transition-all": true,
-		grow: cardTypeCondition === viewValues.card,
-	});
-
-	const renderMoodboardAndCardType = (item: SingleListData) => (
-		<div className="flex w-full flex-col" id="single-moodboard-card">
-			<BookmarkOgImage
-				categoryViewsFromProps={categoryViewsFromProps}
-				img={getImageSource(item)}
-				isLoading={isOgImgLoading || isBookmarkLoading}
-				isPublicPage={isPublicPage}
-				post={item}
-			/>
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className={moodboardAndCardInfoWrapperClass}>
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					{(bookmarksInfoValue as string[] | undefined)?.includes(
-						"description",
-					) &&
-						!isEmpty(item?.description) && (
-							<ReadMore
-								className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
-								enable={isUserInTweetsPage}
-							>
-								{item?.description}
-							</ReadMore>
-						)}
-					<div className="space-y-[6px] text-gray-500">
-						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
-							!isEmpty(item?.addedTags) && (
-								<div className="flex flex-wrap items-center space-x-1">
-									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
-								</div>
-							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="flex flex-wrap items-center gap-1">
-								<div className="flex min-w-0 items-center">
-									{renderFavIcon(item)}
-									{renderUrl(item)}
-								</div>
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600 before:absolute before:top-[8px] before:left-[-5px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-								{renderCategoryBadge(item)}
-							</div>
-						)}
-					</div>
-				</div>
-			)}
-			<div className="absolute top-[10px] right-[8px] w-full items-center space-x-1">
-				{showAvatar && renderAvatar(item)}
-				<EditAndDeleteIcons
-					categoryViewsFromProps={categoryViewsFromProps}
-					isPublicPage={isPublicPage}
-					onDeleteClick={onDeleteClick}
-					onMoveOutOfTrashClick={onMoveOutOfTrashClick}
-					post={item}
-				/>
-			</div>
-		</div>
-	);
-
-	const renderListCard = (item: SingleListData) => (
-		<div className="flex w-full items-center p-2" id="single-moodboard-card">
-			{hasCoverImg ? (
-				<BookmarkOgImage
-					categoryViewsFromProps={categoryViewsFromProps}
-					img={getImageSource(item)}
-					isLoading={isOgImgLoading || isBookmarkLoading}
-					isPublicPage={isPublicPage}
-					post={item}
-				/>
-			) : (
-				<div className="h-[48px]" />
-			)}
-			{bookmarksInfoValue?.length === 1 &&
-			bookmarksInfoValue[0] === "cover" ? null : (
-				<div className="overflow-hidden max-sm:space-y-1">
-					{(bookmarksInfoValue as string[] | undefined)?.includes("title") && (
-						<p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
-							{item?.title}
-						</p>
-					)}
-					<div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
-						{(bookmarksInfoValue as string[] | undefined)?.includes(
-							"description",
-						) &&
-							!isEmpty(item.description) && (
-								<p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
-									{item?.description}
-								</p>
-							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("tags") &&
-							!isEmpty(item?.addedTags) && (
-								<div className="mt-[6px] flex items-center space-x-px max-sm:mt-px">
-									{item?.addedTags?.map((tag) => renderTag(tag?.id, tag?.name))}
-								</div>
-							)}
-						{(bookmarksInfoValue as string[] | undefined)?.includes("info") && (
-							<div className="mt-[6px] flex flex-wrap items-center max-sm:mt-px max-sm:space-x-1">
-								<div className="flex min-w-0 items-center">
-									{renderFavIcon(item)}
-									{renderUrl(item)}
-								</div>
-								{item?.inserted_at && (
-									<p className="relative text-13 leading-4 font-450 text-gray-600 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']">
-										{format(
-											new Date(item?.inserted_at || ""),
-											isCurrentYear(item?.inserted_at)
-												? "dd MMM"
-												: "dd MMM YYY",
-										)}
-									</p>
-								)}
-								{renderCategoryBadge(item)}
-							</div>
-						)}
-					</div>
-				</div>
-			)}
-			<div className="absolute top-[15px] right-[8px] flex items-center space-x-1">
-				{showAvatar && renderAvatar(item)}
-				<EditAndDeleteIcons
-					categoryViewsFromProps={categoryViewsFromProps}
-					isPublicPage={isPublicPage}
-					onDeleteClick={onDeleteClick}
-					onMoveOutOfTrashClick={onMoveOutOfTrashClick}
-					post={item}
-				/>
-			</div>
-		</div>
-	);
 
 	const listWrapperClass = classNames({
 		"mt-[47px]": !isPublicPage || (isDiscoverPage && Boolean(userId)),
@@ -488,8 +155,6 @@ const CardSection = ({
 	});
 
 	const renderItem = () => {
-		const sortByCondition = renderSortByCondition();
-
 		if (isLoadingProfile) {
 			return (
 				<div className="absolute inset-0 flex items-center justify-center dark:brightness-0 dark:invert">
@@ -513,7 +178,7 @@ const CardSection = ({
 			);
 		}
 
-		if (isEmpty(sortByCondition) && categorySlug === TWEETS_URL) {
+		if (isEmpty(bookmarksList) && categorySlug === TWEETS_URL) {
 			return (
 				<div className="p-6 text-center">
 					Please install the Recollect extension to import all your tweets
@@ -530,7 +195,7 @@ const CardSection = ({
 		// Only show "No results found" if we have search text, no results, and we're not loading anything
 		if (
 			!isEmpty(searchText) &&
-			isEmpty(sortByCondition) &&
+			isEmpty(bookmarksList) &&
 			!isSearchLoading &&
 			!isBookmarkLoading &&
 			searchBookmarksData?.pages?.length === 0
@@ -544,7 +209,15 @@ const CardSection = ({
 				<PublicMoodboard
 					bookmarksColumns={bookmarksColumns}
 					bookmarksList={bookmarksList}
-					renderCard={renderBookmarkCardTypes}
+					renderCard={(item) => (
+						<BookmarkCard
+							categoryViewsFromProps={categoryViewsFromProps}
+							isPublicPage={isPublicPage}
+							onDeleteClick={onDeleteClick}
+							onMoveOutOfTrashClick={onMoveOutOfTrashClick}
+							post={item}
+						/>
+					)}
 				/>
 			);
 		}
@@ -559,9 +232,15 @@ const CardSection = ({
 				isPublicPage={isPublicPage}
 				selectionMode="multiple"
 			>
-				{sortByCondition?.map((item) => (
+				{bookmarksList?.map((item) => (
 					<Item key={item?.id} textValue={item?.id?.toString()}>
-						{renderBookmarkCardTypes(item)}
+						<BookmarkCard
+							categoryViewsFromProps={categoryViewsFromProps}
+							isPublicPage={isPublicPage}
+							onDeleteClick={onDeleteClick}
+							onMoveOutOfTrashClick={onMoveOutOfTrashClick}
+							post={item}
+						/>
 					</Item>
 				))}
 			</ListBox>

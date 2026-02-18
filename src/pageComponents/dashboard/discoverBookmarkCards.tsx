@@ -37,7 +37,6 @@ type DiscoverProps = {
 	hasNextPage: boolean;
 	fetchNextPage: () => void;
 	isLoading: boolean;
-	isFetching: boolean;
 	dataLength: number;
 };
 
@@ -52,14 +51,12 @@ export const useDiscoverDataSource = (
 				hasMore: searchProps.hasNextPage,
 				fetchNext: searchProps.fetchNextPage,
 				isLoading: searchProps.isLoading && searchProps.dataLength === 0,
-				isOgImgLoading: false,
 			}
 		: {
 				displayData: discoverProps.data,
 				hasMore: discoverProps.hasNextPage,
 				fetchNext: discoverProps.fetchNextPage,
 				isLoading: discoverProps.isLoading && discoverProps.dataLength === 0,
-				isOgImgLoading: discoverProps.isFetching,
 			};
 
 type DiscoverBookmarkCardsProps = {
@@ -110,7 +107,6 @@ export const DiscoverBookmarkCards = ({
 		discoverData,
 		fetchNextPage: fetchNextDiscoverPage,
 		hasNextPage: discoverHasNextPage,
-		isFetchingNextPage: isFetchingNextDiscoverPage,
 		isLoading: isDiscoverLoading,
 	} = useFetchDiscoverBookmarks({ enabled: isDiscoverPage });
 
@@ -134,29 +130,27 @@ export const DiscoverBookmarkCards = ({
 	);
 
 	// Use search results when searching, otherwise use discover data
-	const { displayData, hasMore, fetchNext, isLoading, isOgImgLoading } =
-		useDiscoverDataSource(
-			isSearching,
-			{
-				data: flattenedSearchData,
-				hasNextPage: searchHasNextPage,
-				fetchNextPage: () => {
-					void fetchNextSearchPage();
-				},
-				isLoading: isSearchLoading,
-				dataLength: flattenedSearchData.length,
+	const { displayData, hasMore, fetchNext, isLoading } = useDiscoverDataSource(
+		isSearching,
+		{
+			data: flattenedSearchData,
+			hasNextPage: searchHasNextPage,
+			fetchNextPage: () => {
+				void fetchNextSearchPage();
 			},
-			{
-				data: flattenedDiscoverData,
-				hasNextPage: discoverHasNextPage,
-				fetchNextPage: () => {
-					void fetchNextDiscoverPage();
-				},
-				isLoading: isDiscoverLoading,
-				isFetching: isFetchingNextDiscoverPage,
-				dataLength: flattenedDiscoverData.length,
+			isLoading: isSearchLoading,
+			dataLength: flattenedSearchData.length,
+		},
+		{
+			data: flattenedDiscoverData,
+			hasNextPage: discoverHasNextPage,
+			fetchNextPage: () => {
+				void fetchNextDiscoverPage();
 			},
-		);
+			isLoading: isDiscoverLoading,
+			dataLength: flattenedDiscoverData.length,
+		},
+	);
 
 	if (isDiscoverLoading) {
 		const cols = discoverMoodboardColumnsResponsive[0];
@@ -194,10 +188,8 @@ export const DiscoverBookmarkCards = ({
 					isBookmarkLoading={false}
 					isDiscoverPage
 					isLoading={isLoading}
-					isOgImgLoading={isOgImgLoading}
 					isPublicPage
 					listData={displayData}
-					showAvatar={false}
 					userId={userId}
 				/>
 			</InfiniteScroll>
