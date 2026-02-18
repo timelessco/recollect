@@ -40,13 +40,19 @@ async function storeQueueError(
 	}
 
 	try {
-		const supabase = createServiceClient();
-		await supabase.rpc("update_queue_message_error", {
+		const { error: rpcError } = await supabase.rpc("update_queue_message_error", {
 			p_queue_name: queueName,
 			p_msg_id: msgId,
 			p_error: errorReason,
 		});
-	} catch {
+		if (rpcError) {
+			console.error(`[${ROUTE}] Failed to store queue error:`, {
+				queueName,
+				msgId,
+				errorReason,
+				rpcError,
+			});
+		}
 		console.error(`[${ROUTE}] Failed to store queue error:`, {
 			queueName,
 			msgId,
