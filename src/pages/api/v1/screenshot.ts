@@ -66,7 +66,10 @@ export default async function handler(
 
 	// Extract queue info early for error tracking (before full validation)
 	const rawQueueName = request.body?.queue_name as string | undefined;
-	const rawMsgId = request.body?.message?.msg_id as number | undefined;
+	const rawMsgId: number | undefined =
+		typeof request.body?.message?.msg_id === "number"
+			? request.body.message.msg_id
+			: undefined;
 
 	const parsed = ScreenshotPayloadSchema.safeParse(request.body);
 	if (!parsed.success) {
