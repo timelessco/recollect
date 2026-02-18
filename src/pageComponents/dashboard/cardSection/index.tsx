@@ -69,7 +69,7 @@ const CardSection = ({
 	categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
 	const router = useRouter();
-	const userId = useSupabaseSession((state) => state.session?.user?.id);
+	const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 	const { isLoading: isLoadingProfile } = useFetchUserProfile();
 	const { bookmarksCountData } = useFetchBookmarksCount();

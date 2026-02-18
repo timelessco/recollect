@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { format } from "date-fns";
 import { find, isEmpty, isNull } from "lodash";
@@ -13,6 +11,7 @@ import {
 } from "./bookmarkCardParts";
 import { BookmarkOgImage } from "./bookmarkOgImage";
 import { EditAndDeleteIcons } from "./editAndDeleteIcons";
+import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import ReadMore from "@/components/readmore";
 import useGetViewValue from "@/hooks/useGetViewValue";
@@ -20,10 +19,9 @@ import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { useSupabaseSession } from "@/store/componentStore";
 import {
 	type BookmarkViewDataTypes,
-	type CategoriesData,
 	type SingleListData,
 } from "@/types/apiTypes";
-import { CATEGORIES_KEY, viewValues } from "@/utils/constants";
+import { viewValues } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { getBaseUrl, isBookmarkOwner, isCurrentYear } from "@/utils/helpers";
 import { getCategorySlugFromRouter } from "@/utils/url";
@@ -46,7 +44,6 @@ export function BookmarkCard({
 	const [hasFavIconError, setHasFavIconError] = useState(false);
 
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
 	const categorySlug = getCategorySlugFromRouter(router);
 	const isUserInTweetsPage = useIsUserInTweetsPage();
@@ -69,13 +66,11 @@ export function BookmarkCard({
 	}, [post, profileData]);
 
 	// Internalize showAvatar (replaces showAvatar prop)
-	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as
-		| { data: CategoriesData[]; error: PostgrestError }
-		| undefined;
+	const { allCategories } = useFetchCategories();
 
 	const showAvatar =
 		!isPublicPage &&
-		(find(categoryData?.data, (item) => item?.category_slug === categorySlug)
+		(find(allCategories?.data, (item) => item?.category_slug === categorySlug)
 			?.collabData?.length ?? 0) > 1;
 
 	const cardTypeCondition = useGetViewValue(
@@ -168,7 +163,8 @@ export function BookmarkCard({
 			<div className="flex w-full items-center p-2" data-single-moodboard-card>
 				{hasCoverImg ? (
 					<BookmarkOgImage
-						categoryViewsFromProps={categoryViewsFromProps}
+						cardTypeCondition={cardTypeCondition}
+						hasCoverImg={hasCoverImg ?? false}
 						img={img}
 						isPublicPage={isPublicPage}
 						post={post}
@@ -204,7 +200,7 @@ export function BookmarkCard({
 						/>
 					)}
 					<EditAndDeleteIcons
-						categoryViewsFromProps={categoryViewsFromProps}
+						cardTypeCondition={cardTypeCondition}
 						isPublicPage={isPublicPage}
 						onDeleteClick={onDeleteClick}
 						onMoveOutOfTrashClick={onMoveOutOfTrashClick}
@@ -218,7 +214,8 @@ export function BookmarkCard({
 	return (
 		<div className="flex w-full flex-col" data-single-moodboard-card>
 			<BookmarkOgImage
-				categoryViewsFromProps={categoryViewsFromProps}
+				cardTypeCondition={cardTypeCondition}
+				hasCoverImg={hasCoverImg ?? false}
 				img={img}
 				isPublicPage={isPublicPage}
 				post={post}
@@ -259,7 +256,7 @@ export function BookmarkCard({
 					/>
 				)}
 				<EditAndDeleteIcons
-					categoryViewsFromProps={categoryViewsFromProps}
+					cardTypeCondition={cardTypeCondition}
 					isPublicPage={isPublicPage}
 					onDeleteClick={onDeleteClick}
 					onMoveOutOfTrashClick={onMoveOutOfTrashClick}

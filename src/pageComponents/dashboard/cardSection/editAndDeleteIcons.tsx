@@ -1,22 +1,16 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
 import { Button } from "@base-ui/react/button";
 
+import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
-import useGetViewValue from "@/hooks/useGetViewValue";
 import BackIcon from "@/icons/actionIcons/backIcon";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 import LinkExternalIcon from "@/icons/linkExternalIcon";
 import { useSupabaseSession } from "@/store/componentStore";
-import {
-	type BookmarkViewDataTypes,
-	type CategoriesData,
-	type SingleListData,
-} from "@/types/apiTypes";
-import { CATEGORIES_KEY, TRASH_URL, viewValues } from "@/utils/constants";
+import { type SingleListData } from "@/types/apiTypes";
+import { TRASH_URL, viewValues } from "@/utils/constants";
 import { isBookmarkOwner, isUserInACategory } from "@/utils/helpers";
 import { cn } from "@/utils/tailwind-merge";
 import { getCategorySlugFromRouter } from "@/utils/url";
@@ -24,7 +18,7 @@ import { getCategorySlugFromRouter } from "@/utils/url";
 import { EditPopover } from "./edit-popover";
 
 export type EditAndDeleteIconsProps = {
-	categoryViewsFromProps?: BookmarkViewDataTypes;
+	cardTypeCondition: string;
 	isPublicPage: boolean;
 	onDeleteClick?: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick?: (post: SingleListData) => void;
@@ -32,7 +26,7 @@ export type EditAndDeleteIconsProps = {
 };
 
 export function EditAndDeleteIcons({
-	categoryViewsFromProps,
+	cardTypeCondition,
 	isPublicPage,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
@@ -41,25 +35,14 @@ export function EditAndDeleteIcons({
 	const [isTrashMenuOpen, setIsTrashMenuOpen] = useState(false);
 
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
 	const categorySlug = getCategorySlugFromRouter(router);
 
-	const cardTypeCondition = useGetViewValue(
-		"bookmarksView",
-		"",
-		isPublicPage,
-		categoryViewsFromProps,
-	) as string;
-
-	const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
+	const { allCategories } = useFetchCategories();
 
 	const isCategoryOwner =
 		!isUserInACategory(categorySlug as string) ||
-		find(categoryData?.data, (item) => item?.category_slug === categorySlug)
+		find(allCategories?.data, (item) => item?.category_slug === categorySlug)
 			?.user_id?.id === userId;
 
 	const isListView = cardTypeCondition === viewValues.list;

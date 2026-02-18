@@ -1,48 +1,27 @@
 import { useMemo } from "react";
 import classNames from "classnames";
 
-import useGetViewValue from "@/hooks/useGetViewValue";
+import { ImgLogic } from "./imageCard";
 import PlayIcon from "@/icons/actionIcons/playIcon";
-import {
-	type BookmarkViewDataTypes,
-	type SingleListData,
-} from "@/types/apiTypes";
+import { type SingleListData } from "@/types/apiTypes";
 import { viewValues } from "@/utils/constants";
 import { isBookmarkAudio, isBookmarkVideo } from "@/utils/helpers";
 
-import { ImgLogic } from "./imageCard";
-
 export type BookmarkOgImageProps = {
-	categoryViewsFromProps?: BookmarkViewDataTypes;
+	cardTypeCondition: string;
+	hasCoverImg: boolean;
 	img: SingleListData["ogImage"];
 	isPublicPage: boolean;
 	post: SingleListData;
 };
 
 export function BookmarkOgImage({
-	categoryViewsFromProps,
+	cardTypeCondition,
+	hasCoverImg,
 	img,
 	isPublicPage,
 	post,
 }: BookmarkOgImageProps) {
-	const cardTypeCondition = useGetViewValue(
-		"bookmarksView",
-		"",
-		isPublicPage,
-		categoryViewsFromProps,
-	) as string;
-
-	const bookmarksInfoValue = useGetViewValue(
-		"cardContentViewArray",
-		[],
-		isPublicPage,
-		categoryViewsFromProps,
-	);
-
-	const hasCoverImg = (bookmarksInfoValue as string[] | undefined)?.includes(
-		"cover",
-	);
-
 	const sizesLogic = useMemo(() => {
 		switch (cardTypeCondition) {
 			case viewValues.moodboard:
@@ -82,28 +61,24 @@ export function BookmarkOgImage({
 	});
 
 	return (
-		// disabling as we dont need tab focus here
-		// eslint-disable-next-line jsx-a11y/interactive-supports-focus
-		<div onKeyDown={() => {}} role="button">
-			<figure className={figureClassName}>
-				{isVideo && (
-					<PlayIcon
-						className={playSvgClassName}
-						onPointerDown={(event) => event.stopPropagation()}
-					/>
-				)}
-				<ImgLogic
-					_height={post.meta_data?.height ?? 200}
-					_width={post.meta_data?.width ?? 200}
-					blurUrl={post.meta_data?.ogImgBlurUrl ?? ""}
-					cardTypeCondition={cardTypeCondition}
-					hasCoverImg={hasCoverImg ?? false}
-					id={post.id}
-					img={img}
-					isPublicPage={isPublicPage}
-					sizesLogic={sizesLogic}
+		<figure className={figureClassName}>
+			{isVideo && (
+				<PlayIcon
+					className={playSvgClassName}
+					onPointerDown={(event) => event.stopPropagation()}
 				/>
-			</figure>
-		</div>
+			)}
+			<ImgLogic
+				_height={post.meta_data?.height ?? 200}
+				_width={post.meta_data?.width ?? 200}
+				blurUrl={post.meta_data?.ogImgBlurUrl ?? ""}
+				cardTypeCondition={cardTypeCondition}
+				hasCoverImg={hasCoverImg ?? false}
+				id={post.id}
+				img={img}
+				isPublicPage={isPublicPage}
+				sizesLogic={sizesLogic}
+			/>
+		</figure>
 	);
 }
