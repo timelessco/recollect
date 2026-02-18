@@ -14,6 +14,8 @@ import {
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
 
+import { storeQueueError } from "@/lib/api-helpers/queue";
+
 const requestBodySchema = z.object({
 	id: z.number(),
 	ogImage: z.url({ message: "ogImage must be a valid URL" }),
@@ -43,37 +45,6 @@ const requestBodySchema = z.object({
 
 const ROUTE = "ai-enrichment";
 
-async function storeQueueError(
-	queueName: string | undefined,
-	msgId: number | undefined,
-	errorReason: string,
-) {
-	if (!queueName || msgId === undefined) {
-		return;
-	}
-
-		const { error: rpcError } = await supabase.rpc("update_queue_message_error", {
-			p_queue_name: queueName,
-			p_msg_id: msgId,
-			p_error: errorReason,
-		});
-		if (rpcError) {
-			console.error(`[${ROUTE}] Failed to store queue error:`, {
-				queueName,
-				msgId,
-				errorReason,
-				rpcError,
-			});
-		}
-	} catch {
-		console.error(`[${ROUTE}] Failed to store queue error:`, {
-			queueName,
-			msgId,
-			errorReason,
-		});
-	}
-}
-
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
@@ -96,11 +67,12 @@ export default async function handler(
 
 		if (!parseResult.success) {
 			console.warn(`[${ROUTE}] Validation error:`, parseResult.error.issues);
-			await storeQueueError(
+			await storeQueueError({
 				queueName,
 				msgId,
-				`ai_enrichment: validation_failed`,
-			);
+				errorReason: "ai_enrichment: validation_failed",
+				route: ROUTE,
+			});
 			response.status(400).json({
 				error: "Validation failed",
 			});
@@ -148,11 +120,12 @@ export default async function handler(
 						videoUrl: message.message.meta_data?.video_url,
 					},
 				});
-				await storeQueueError(
-					queue_name,
-					message.msg_id,
-					"ai_enrichment: twitter_url_validation_failed",
-				);
+				await storeQueueError({
+					queueName: queue_name,
+					msgId: message.msg_id,
+					errorReason: "ai_enrichment: twitter_url_validation_failed",
+					route: ROUTE,
+				});
 				response.status(400).json({
 					error:
 						validationError instanceof Error
@@ -194,11 +167,12 @@ export default async function handler(
 						videoUrl: message.message.meta_data?.video_url,
 					},
 				});
-				await storeQueueError(
-					queue_name,
-					message.msg_id,
-					"ai_enrichment: instagram_url_validation_failed",
-				);
+				await storeQueueError({
+					queueName: queue_name,
+					msgId: message.msg_id,
+					errorReason: "ai_enrichment: instagram_url_validation_failed",
+					route: ROUTE,
+				});
 				response.status(400).json({
 					error:
 						validationError instanceof Error
@@ -315,11 +289,12 @@ export default async function handler(
 					ogImage,
 				},
 			});
-			await storeQueueError(
-				queue_name,
-				message.msg_id,
-				"ai_enrichment: db_update_failed",
-			);
+			await storeQueueError({
+				queueName: queue_name,
+				msgId: message.msg_id,
+				errorReason: "ai_enrichment: db_update_failed",
+				route: ROUTE,
+			});
 			response.status(500).json({
 				error: "Failed to update bookmark metadata",
 			});
@@ -412,7 +387,12 @@ export default async function handler(
 				userId: request.body?.user_id,
 			},
 		});
-		await storeQueueError(queueName, msgId, "ai_enrichment: unexpected_error");
+		await storeQueueError({
+			queueName,
+			msgId,
+			errorReason: "ai_enrichment: unexpected_error",
+			route: ROUTE,
+		});
 		response.status(500).json({
 			error: "An unexpected error occurred",
 		});

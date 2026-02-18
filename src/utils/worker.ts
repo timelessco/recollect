@@ -54,18 +54,24 @@ export const processImageQueue = async (
 				const read_ct = message.read_ct;
 
 				if (read_ct > MAX_RETRIES) {
-const rawLastError: unknown = message.message?.last_error;
-const lastError =
-  typeof rawLastError === "string" ? rawLastError : undefined;
+					const rawLastError: unknown = message.message?.last_error;
+					const lastError =
+						typeof rawLastError === "string" ? rawLastError : undefined;
 					const archiveReason = lastError
 						? `max_retries_exceeded: ${lastError}`
 						: "max_retries_exceeded";
 
+					const targetApi = message.message.ogImage
+						? "ai_enrichment"
+						: "screenshot";
+
 					Sentry.captureException(
-						new Error(`AI enrichment failed after ${MAX_RETRIES} retries`),
+						new Error(
+							`Queue processing failed after ${MAX_RETRIES} retries (${targetApi})`,
+						),
 						{
 							tags: {
-								operation: "ai_enrichment_archived",
+								operation: `${targetApi}_archived`,
 								userId: user_id,
 							},
 							extra: {
@@ -98,16 +104,16 @@ const lastError =
 							"[process-image-queue] Error archiving message from queue",
 							archiveError,
 						);
-					Sentry.captureException(new Error("Queue archive failed"), {
-						tags: {
-							operation: "ai_enrichment_archive_failed",
-							userId: user_id,
-						},
-						extra: {
-							msg_id: message.msg_id,
-							archiveError,
-						},
-					});
+						Sentry.captureException(new Error("Queue archive failed"), {
+							tags: {
+								operation: `${targetApi}_archive_failed`,
+								userId: user_id,
+							},
+							extra: {
+								msg_id: message.msg_id,
+								archiveError,
+							},
+						});
 					}
 
 					continue;
