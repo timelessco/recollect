@@ -65,6 +65,7 @@
 		"lint:types": "pnpm next:typegen && tsc --noEmit && pnpm lint:types:deno",
 		"lint:types:deno": "deno check --config supabase/functions/process-instagram-imports/deno.json supabase/functions/process-instagram-imports/index.ts",
 		"next:typegen": "pnpm next typegen",
+		"openapi:generate": "tsx scripts/generate-openapi.ts",
 		"prepare": "is-ci || husky",
 		"release": "release-it --ci",
 		"release:dryrun": "release-it --dry-run",
