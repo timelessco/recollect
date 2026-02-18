@@ -16,7 +16,7 @@ type ProcessParameters = { batchSize: number; queue_name: string };
 const SLEEP_SECONDS = 30;
 
 // max retries for a message
-const MAX_RETRIES = 1;
+const MAX_RETRIES = 3;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
