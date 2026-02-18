@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Button } from "@base-ui/react/button";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { format } from "date-fns";
-import { find, flatten, isEmpty, isNil, isNull, type Many } from "lodash";
+import { flatten, isEmpty, isNil, isNull, type Many } from "lodash";
 import { Item } from "react-stately";
 
 import loaderGif from "../../../../public/loader-gif.gif";
@@ -16,9 +15,6 @@ import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import ReadMore from "../../../components/readmore";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import useIsUserInTweetsPage from "../../../hooks/useIsUserInTweetsPage";
-import BackIcon from "../../../icons/actionIcons/backIcon";
-import PlayIcon from "../../../icons/actionIcons/playIcon";
-import LinkExternalIcon from "../../../icons/linkExternalIcon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
 	useLoadersStore,
@@ -37,7 +33,6 @@ import {
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PREVIEW_ALT_TEXT,
-	TRASH_URL,
 	TWEETS_URL,
 	viewValues,
 } from "../../../utils/constants";
@@ -45,23 +40,17 @@ import { useBookmarkImageSources } from "../../../utils/getBookmarkImageSource";
 import {
 	getBaseUrl,
 	getPreviewPathInfo,
-	isBookmarkAudio,
 	isBookmarkOwner,
-	isBookmarkVideo,
 	isCurrentYear,
-	isUserInACategory,
 	searchSlugKey,
 } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 
+import { BookmarkOgImage } from "./bookmarkOgImage";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
-import { EditPopover } from "./edit-popover";
-import { ImgLogic } from "./imageCard";
+import { EditAndDeleteIcons } from "./editAndDeleteIcons";
 import ListBox from "./listBox";
 import { PublicMoodboard } from "./publicMoodboard";
-import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
-import TrashIconGray from "@/icons/actionIcons/trashIconGray";
-import { cn } from "@/utils/tailwind-merge";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
@@ -125,11 +114,6 @@ const CardSection = ({
 
 	// const [errorImgs, setErrorImgs] = useState([]);
 	const [favIconErrorImgs, setFavIconErrorImgs] = useState<number[]>([]);
-	const [openedTrashMenuId, setOpenedTrashMenuId] = useState<number | null>(
-		null,
-	);
-	const CARD_DEFAULT_HEIGHT = 600;
-	const CARD_DEFAULT_WIDTH = 600;
 	// cat_id refers to cat slug here as its got from url
 	const categorySlug = getCategorySlugFromRouter(router);
 	const queryClient = useQueryClient();
@@ -194,45 +178,11 @@ const CardSection = ({
 		"cover",
 	);
 
-	const sizesLogic = useMemo(() => {
-		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-		switch (cardTypeCondition) {
-			case viewValues.moodboard:
-			case viewValues.timeline:
-				return "(max-width: 768px) 200px, 400px";
-			case viewValues.list:
-				return "100px";
-			case viewValues.card:
-				return "300px";
-
-			default:
-				return "500px";
-		}
-	}, [cardTypeCondition]);
-
 	useEffect(() => {
 		if (!isEmpty(cardTypeCondition)) {
 			setCurrentBookmarkView(cardTypeCondition as BookmarksViewTypes);
 		}
 	}, [cardTypeCondition, setCurrentBookmarkView]);
-
-	const isLoggedInUserTheCategoryOwner =
-		!isUserInACategory(categorySlug as string) ||
-		find(categoryData?.data, (item) => item?.category_slug === categorySlug)
-			?.user_id?.id === userId;
-
-	const renderEditAndDeleteCondition = (post: SingleListData) => {
-		if (isLoggedInUserTheCategoryOwner) {
-			return true;
-		}
-
-		// show if bookmark is created by loggedin user
-		if (isBookmarkOwner(post?.user_id, userId)) {
-			return true;
-		}
-
-		return false;
-	};
 
 	const isBookmarkCreatedByLoggedinUser = (post: SingleListData) => {
 		// show if bookmark is created by loggedin user
@@ -241,125 +191,6 @@ const CardSection = ({
 		}
 
 		return false;
-	};
-
-	// Category owner can only see edit icon and can change to un-cat for bookmarks that are created by colaborators
-	const renderEditAndDeleteIcons = (post: SingleListData) => {
-		const isTrashMenuOpen = openedTrashMenuId === post.id;
-		const isListView = cardTypeCondition === viewValues.list;
-		const isStandardView =
-			cardTypeCondition === viewValues.moodboard ||
-			cardTypeCondition === viewValues.card ||
-			cardTypeCondition === viewValues.timeline;
-
-		const trashIcon =
-			categorySlug === TRASH_URL ? (
-				<ClearTrashDropdown
-					isBottomBar={false}
-					label="Delete Bookmark"
-					onClearTrash={() => {
-						onDeleteClick?.([post]);
-					}}
-					isClearingTrash={false}
-					isOpen={isTrashMenuOpen}
-					menuOpenToggle={(isOpen) => {
-						setOpenedTrashMenuId(isOpen ? post.id : null);
-					}}
-				/>
-			) : (
-				<Button
-					className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
-					onClick={() => onDeleteClick?.([post])}
-				>
-					<TrashIconGray />
-				</Button>
-			);
-
-		if (isPublicPage) {
-			return (
-				<div
-					className={cn("absolute top-0", {
-						"right-[8px]": isStandardView,
-						"left-[-34px]": isListView,
-					})}
-				>
-					<a
-						href={post.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
-					>
-						<LinkExternalIcon />
-					</a>
-				</div>
-			);
-		}
-
-		// In trash page
-		if (renderEditAndDeleteCondition(post) && categorySlug === TRASH_URL) {
-			return (
-				<div
-					className={cn(
-						"absolute top-[2px] group-hover:flex",
-						isTrashMenuOpen ? "flex" : "hidden",
-						isStandardView && "left-[17px]",
-						isListView && "left-[-64px]",
-					)}
-				>
-					<Button
-						className="z-15 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
-						onClick={() => onMoveOutOfTrashClick?.(post)}
-					>
-						<BackIcon />
-					</Button>
-
-					{trashIcon}
-				</div>
-			);
-		}
-
-		// Default logged in user can see edit and delete icons
-		if (renderEditAndDeleteCondition(post)) {
-			return (
-				<>
-					<div
-						className={cn("absolute top-0 flex", {
-							"left-[-94px]": isListView,
-							"left-[15px]": isStandardView,
-						})}
-					>
-						<EditPopover post={post} userId={userId} />
-
-						{/* Only show trash icon if the bookmark is created by the logged in user */}
-						{isBookmarkCreatedByLoggedinUser(post) ? trashIcon : null}
-					</div>
-
-					<div className="absolute top-0 right-8">
-						<a
-							href={post.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs group-hover:flex"
-						>
-							<LinkExternalIcon />
-						</a>
-					</div>
-				</>
-			);
-		}
-
-		return (
-			<div className="absolute top-0 left-[15px]">
-				<a
-					href={post.url}
-					target="_blank"
-					rel="noopener noreferrer"
-					className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs group-hover:flex"
-				>
-					<LinkExternalIcon />
-				</a>
-			</div>
-		);
 	};
 
 	const renderAvatar = (item: SingleListData) => {
@@ -403,66 +234,6 @@ const CardSection = ({
 			{getBaseUrl(item?.url)}
 		</p>
 	);
-
-	const renderOgImage = (
-		img: SingleListData["ogImage"],
-		id: SingleListData["id"],
-		blurUrl: SingleListData["meta_data"]["ogImgBlurUrl"],
-		_height: SingleListData["meta_data"]["height"],
-		_width: SingleListData["meta_data"]["width"],
-		type: SingleListData["type"],
-	) => {
-		const isVideo = isBookmarkVideo(type);
-		const isAudio = isBookmarkAudio(type);
-
-		const figureClassName = classNames({
-			"relative z-[-1]": isAudio || isVideo,
-			"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
-			"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
-				cardTypeCondition === viewValues.card ||
-				cardTypeCondition === viewValues.moodboard,
-			"aspect-[1.8]":
-				cardTypeCondition === viewValues.moodboard &&
-				(isOgImgLoading || isBookmarkLoading) &&
-				img === undefined,
-		});
-
-		const playSvgClassName = classNames({
-			"hover:fill-slate-500 transition ease-in-out fill-gray-800": true,
-			absolute: true,
-			"bottom-[9px] left-[7px] ":
-				cardTypeCondition === viewValues.moodboard ||
-				cardTypeCondition === viewValues.card ||
-				cardTypeCondition === viewValues.timeline,
-			"top-[9px] left-[21px]": cardTypeCondition === viewValues.list,
-		});
-
-		return (
-			// disabling as we dont need tab focus here
-			// eslint-disable-next-line jsx-a11y/interactive-supports-focus
-			<div onKeyDown={() => {}} role="button">
-				<figure className={figureClassName}>
-					{isVideo && (
-						<PlayIcon
-							className={playSvgClassName}
-							onPointerDown={(event) => event.stopPropagation()}
-						/>
-					)}
-					<ImgLogic
-						_height={_height ?? 200}
-						_width={_width ?? 200}
-						blurUrl={blurUrl}
-						cardTypeCondition={cardTypeCondition}
-						hasCoverImg={hasCoverImg ?? false}
-						id={id}
-						img={img}
-						isPublicPage={isPublicPage}
-						sizesLogic={sizesLogic}
-					/>
-				</figure>
-			</div>
-		);
-	};
 
 	const renderFavIcon = (item: SingleListData) => {
 		const size = 15;
@@ -566,14 +337,13 @@ const CardSection = ({
 
 	const renderMoodboardAndCardType = (item: SingleListData) => (
 		<div className="flex w-full flex-col" id="single-moodboard-card">
-			{renderOgImage(
-				getImageSource(item),
-				item?.id,
-				item?.meta_data?.ogImgBlurUrl ?? "",
-				item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-				item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-				item?.type,
-			)}
+			<BookmarkOgImage
+				categoryViewsFromProps={categoryViewsFromProps}
+				img={getImageSource(item)}
+				isLoading={isOgImgLoading || isBookmarkLoading}
+				isPublicPage={isPublicPage}
+				post={item}
+			/>
 			{bookmarksInfoValue?.length === 1 &&
 			bookmarksInfoValue[0] === "cover" ? null : (
 				<div className={moodboardAndCardInfoWrapperClass}>
@@ -624,7 +394,13 @@ const CardSection = ({
 			)}
 			<div className="absolute top-[10px] right-[8px] w-full items-center space-x-1">
 				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
+				<EditAndDeleteIcons
+					categoryViewsFromProps={categoryViewsFromProps}
+					isPublicPage={isPublicPage}
+					onDeleteClick={onDeleteClick}
+					onMoveOutOfTrashClick={onMoveOutOfTrashClick}
+					post={item}
+				/>
 			</div>
 		</div>
 	);
@@ -632,14 +408,13 @@ const CardSection = ({
 	const renderListCard = (item: SingleListData) => (
 		<div className="flex w-full items-center p-2" id="single-moodboard-card">
 			{hasCoverImg ? (
-				renderOgImage(
-					getImageSource(item),
-					item?.id,
-					item?.meta_data?.ogImgBlurUrl ?? "",
-					item?.meta_data?.height ?? CARD_DEFAULT_HEIGHT,
-					item?.meta_data?.width ?? CARD_DEFAULT_WIDTH,
-					item?.type,
-				)
+				<BookmarkOgImage
+					categoryViewsFromProps={categoryViewsFromProps}
+					img={getImageSource(item)}
+					isLoading={isOgImgLoading || isBookmarkLoading}
+					isPublicPage={isPublicPage}
+					post={item}
+				/>
 			) : (
 				<div className="h-[48px]" />
 			)}
@@ -690,7 +465,13 @@ const CardSection = ({
 			)}
 			<div className="absolute top-[15px] right-[8px] flex items-center space-x-1">
 				{showAvatar && renderAvatar(item)}
-				{renderEditAndDeleteIcons(item)}
+				<EditAndDeleteIcons
+					categoryViewsFromProps={categoryViewsFromProps}
+					isPublicPage={isPublicPage}
+					onDeleteClick={onDeleteClick}
+					onMoveOutOfTrashClick={onMoveOutOfTrashClick}
+					post={item}
+				/>
 			</div>
 		</div>
 	);
