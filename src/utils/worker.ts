@@ -96,15 +96,16 @@ export const processImageQueue = async (
 							"[process-image-queue] Error archiving message from queue",
 							archiveError,
 						);
-						Sentry.captureException(new Error("Queue archive failed"), {
-							tags: {
-								operation: "ai_enrichment_archive_failed",
-							},
-							extra: {
-								msg_id: message.msg_id,
-								archiveError,
-							},
-						});
+					Sentry.captureException(new Error("Queue archive failed"), {
+						tags: {
+							operation: "ai_enrichment_archive_failed",
+							userId: user_id,
+						},
+						extra: {
+							msg_id: message.msg_id,
+							archiveError,
+						},
+					});
 					}
 
 					continue;
