@@ -137,7 +137,13 @@ export default async function handler(
 
 		if (updateError) {
 			console.error("Error updating bookmark:", updateError);
-			Sentry.captureException(updateError);
+			Sentry.captureException(updateError, {
+				tags: {
+					operation: "screenshot_db_update",
+					userId: user_id,
+				},
+				extra: { bookmarkId: id, url },
+			});
 			await storeQueueError({
 				queueName: queue_name,
 				msgId: message.msg_id,
@@ -235,7 +241,18 @@ export default async function handler(
 		});
 	} catch (error) {
 		console.error("Error in screenshot handler:", error);
-		Sentry.captureException(error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "screenshot_unexpected",
+				userId: user_id,
+			},
+			extra: {
+				bookmarkId: id,
+				url,
+				queueName: queue_name,
+				msgId: message.msg_id,
+			},
+		});
 		const errorMessage =
 			error instanceof Error ? error.message : "unknown_error";
 		await storeQueueError({
