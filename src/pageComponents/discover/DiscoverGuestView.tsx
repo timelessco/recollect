@@ -30,7 +30,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 		useFetchDiscoverBookmarks({ initialData: discoverData });
 
 	// Stable default for SSR + hydration, then update after mount (same breakpoints as discoverBookmarkCards)
-	const [moodboardColumns, setMoodboardColumns] = useState<number[]>([30]);
+	const [moodboardColumns, setMoodboardColumns] = useState<number[]>([50]);
 
 	useEffect(() => {
 		if (isMobile) {
