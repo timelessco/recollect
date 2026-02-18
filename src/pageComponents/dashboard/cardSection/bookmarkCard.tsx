@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import classNames from "classnames";
 import { format } from "date-fns";
@@ -34,13 +34,13 @@ export type BookmarkCardProps = {
 	post: SingleListData;
 };
 
-export function BookmarkCard({
+const BookmarkCardInner = ({
 	categoryViewsFromProps,
 	isPublicPage,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
 	post,
-}: BookmarkCardProps) {
+}: BookmarkCardProps) => {
 	const [hasFavIconError, setHasFavIconError] = useState(false);
 
 	const router = useRouter();
@@ -50,20 +50,23 @@ export function BookmarkCard({
 
 	// Internalize image source (replaces img prop)
 	const { userProfileData: profileData } = useFetchUserProfile();
+	const preferredDomainsSet = useMemo(() => {
+		const domains = profileData?.data?.[0]?.preferred_og_domains ?? [];
+		return new Set(domains.map((item) => item.toLowerCase()));
+	}, [profileData]);
+
+	const postUrl = post?.url;
+	const postOgImage = post?.ogImage;
+	const postCoverImage = post?.meta_data?.coverImage;
 	const img = useMemo(() => {
-		const preferredDomains = profileData?.data?.[0]?.preferred_og_domains ?? [];
-		if (preferredDomains.length === 0) {
-			return post?.ogImage;
+		if (preferredDomainsSet.size === 0) {
+			return postOgImage;
 		}
 
-		const domain = getDomain(post.url);
-		const isPreferred =
-			domain &&
-			new Set(preferredDomains.map((item) => item.toLowerCase())).has(domain);
-		return isPreferred
-			? (post?.meta_data?.coverImage ?? post?.ogImage)
-			: post?.ogImage;
-	}, [post, profileData]);
+		const domain = getDomain(postUrl);
+		const isPreferred = domain && preferredDomainsSet.has(domain);
+		return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
+	}, [preferredDomainsSet, postUrl, postOgImage, postCoverImage]);
 
 	// Internalize showAvatar (replaces showAvatar prop)
 	const { allCategories } = useFetchCategories();
@@ -265,4 +268,6 @@ export function BookmarkCard({
 			</div>
 		</div>
 	);
-}
+};
+
+export const BookmarkCard = memo(BookmarkCardInner);
