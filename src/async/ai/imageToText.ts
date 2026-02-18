@@ -4,8 +4,22 @@ import axios from "axios";
 
 import { getApikeyAndBookmarkCount } from "./ocr";
 
+export type UserCollection = {
+	id: number;
+	name: string;
+};
+
+export type ImageToTextContextProps = {
+	collections: UserCollection[];
+	description?: string | null;
+	ocrText?: string | null;
+	title?: string | null;
+	url?: string | null;
+};
+
 export type ImageToTextResult = {
 	image_keywords: string[];
+	matched_collection_ids: number[];
 	sentence: string | null;
 };
 
@@ -26,6 +40,7 @@ export const imageToText = async (
 	supabase: SupabaseClient,
 	userId: string,
 	options?: ImageToTextOptions | null,
+	context?: ImageToTextContextProps | null,
 ): Promise<ImageToTextResult | null> => {
 	try {
 		const { userApiKey, isLimitReached } = await getApikeyAndBookmarkCount(
@@ -93,6 +108,38 @@ export const imageToText = async (
 					"Describe only what is in the image. Do NOT include readable text.",
 				].join("\n");
 
+		const hasCollections =
+			context?.collections && context.collections.length > 0;
+
+		const collectionsSection = hasCollections
+			? [
+					"",
+					"PART 3 - COLLECTIONS:",
+					"Given the image AND the additional bookmark context below, determine which of the user's existing collections this bookmark belongs to.",
+					"Rules:",
+					"- ONLY return collection names from the exact list below — never invent names",
+					"- Default to NONE. Only return a collection if the bookmark is an OBVIOUS, direct fit",
+					"- A vague or tangential connection is NOT enough — the bookmark's primary topic must clearly match the collection's purpose",
+					"- When in doubt, ALWAYS return NONE — it is better to leave a bookmark uncategorized than to misfile it",
+					"- You may return multiple collections ONLY if the bookmark equally and clearly belongs to each one",
+					"",
+					"User's collections:",
+					context.collections
+						.map((collection) => `- ${collection.name}`)
+						.join("\n"),
+					"",
+					"Additional bookmark context:",
+					...(context.title ? [`Title: ${context.title}`] : []),
+					...(context.description
+						? [`Description: ${context.description}`]
+						: []),
+					...(context.url ? [`URL: ${context.url}`] : []),
+					...(context.ocrText
+						? [`OCR text: ${context.ocrText.slice(0, 500)}`]
+						: []),
+				]
+			: [];
+
 		const captionPrompt = [
 			"Describe this image in two parts. Do NOT include any readable text — text extraction is handled separately.",
 			"",
@@ -102,10 +149,14 @@ export const imageToText = async (
 			"",
 			"PART 2 - KEYWORDS:",
 			keywordsInstruction,
+			...collectionsSection,
 			"",
 			"Respond in exactly this format:",
 			"SENTENCE: [your sentence here]",
 			"KEYWORDS: [keyword1, keyword2, keyword3, ...]",
+			...(hasCollections
+				? ["COLLECTIONS: [collection1, collection2, ...] or NONE"]
+				: []),
 		].join("\n");
 		const captionResult = await model.generateContent([
 			captionPrompt,
@@ -126,20 +177,45 @@ export const imageToText = async (
 		const sentenceMatch = /SENTENCE:\s*(.+)/su.exec(sentencePart ?? "");
 		let sentence = sentenceMatch?.[1]?.trim() ?? null;
 
+		// Parse keywords — stop at COLLECTIONS: marker if present
 		const keywordsPart = text.includes("KEYWORDS:")
 			? text.split("KEYWORDS:")[1]
 			: "";
-		const keywordsStr = keywordsPart?.trim() ?? "";
+		const keywordsBeforeCollections = keywordsPart?.split("COLLECTIONS:")[0];
+		const keywordsStr = keywordsBeforeCollections?.trim() ?? "";
 		const image_keywords = keywordsStr
 			.split(/,\s*/u)
 			.map((keyword) => keyword.trim())
 			.filter(Boolean);
 
+		// Parse collections — validate against user's actual collection names
+		let matched_collection_ids: number[] = [];
+		if (hasCollections && text.includes("COLLECTIONS:")) {
+			const collectionsPart = text.split("COLLECTIONS:")[1];
+			const collectionsLine = collectionsPart?.split("\n")[0]?.trim() ?? "";
+
+			if (!/^none$/iu.test(collectionsLine)) {
+				const collectionNameToId = new Map(
+					context.collections.map((collection) => [
+						collection.name.toLowerCase(),
+						collection.id,
+					]),
+				);
+
+				matched_collection_ids = collectionsLine
+					.split(/,\s*/u)
+					.map((name) => name.trim())
+					.filter(Boolean)
+					.map((name) => collectionNameToId.get(name.toLowerCase()))
+					.filter((id): id is number => id !== undefined);
+			}
+		}
+
 		if (!sentence && text.trim()) {
 			sentence = text.trim();
 		}
 
-		return { sentence, image_keywords };
+		return { sentence, image_keywords, matched_collection_ids };
 	} catch (error) {
 		console.error("Image caption error", error);
 		throw error;
