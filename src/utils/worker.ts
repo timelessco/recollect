@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
@@ -15,7 +16,7 @@ type ProcessParameters = { batchSize: number; queue_name: string };
 const SLEEP_SECONDS = 30;
 
 // max retries for a message
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 1;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
@@ -53,23 +54,57 @@ export const processImageQueue = async (
 				const read_ct = message.read_ct;
 
 				if (read_ct > MAX_RETRIES) {
+					const lastError = message.message?.last_error as string | undefined;
+					const archiveReason = lastError
+						? `max_retries_exceeded: ${lastError}`
+						: "max_retries_exceeded";
+
+					Sentry.captureException(
+						new Error(`AI enrichment failed after ${MAX_RETRIES} retries`),
+						{
+							tags: {
+								operation: "ai_enrichment_archived",
+								userId: user_id,
+							},
+							extra: {
+								msg_id: message.msg_id,
+								url,
+								bookmarkId: id,
+								read_ct,
+								lastError,
+								queueName: queue_name,
+							},
+						},
+					);
+
 					console.log(
 						"[process-image-queue] archiving message from queue",
 						message,
 					);
 
-					const { error: deleteError } = await supabase
-						.schema("pgmq_public")
-						.rpc("archive", {
-							queue_name,
-							message_id: message.msg_id,
-						});
+					const { error: archiveError } = await supabase.rpc(
+						"archive_with_reason",
+						{
+							p_queue_name: queue_name,
+							p_msg_id: message.msg_id,
+							p_reason: archiveReason,
+						},
+					);
 
-					if (deleteError) {
+					if (archiveError) {
 						console.error(
 							"[process-image-queue] Error archiving message from queue",
-							deleteError,
+							archiveError,
 						);
+						Sentry.captureException(new Error("Queue archive failed"), {
+							tags: {
+								operation: "ai_enrichment_archive_failed",
+							},
+							extra: {
+								msg_id: message.msg_id,
+								archiveError,
+							},
+						});
 					}
 
 					continue;

@@ -28,6 +28,33 @@ const ScreenshotPayloadSchema = z.object({
 
 type ScreenshotPayload = z.infer<typeof ScreenshotPayloadSchema>;
 
+const ROUTE = "screenshot";
+
+async function storeQueueError(
+	queueName: string | undefined,
+	msgId: number | undefined,
+	errorReason: string,
+) {
+	if (!queueName || msgId === undefined) {
+		return;
+	}
+
+	try {
+		const supabase = createServiceClient();
+		await supabase.rpc("update_queue_message_error", {
+			p_queue_name: queueName,
+			p_msg_id: msgId,
+			p_error: errorReason,
+		});
+	} catch {
+		console.error(`[${ROUTE}] Failed to store queue error:`, {
+			queueName,
+			msgId,
+			errorReason,
+		});
+	}
+}
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
@@ -37,9 +64,18 @@ export default async function handler(
 		return;
 	}
 
+	// Extract queue info early for error tracking (before full validation)
+	const rawQueueName = request.body?.queue_name as string | undefined;
+	const rawMsgId = request.body?.message?.msg_id as number | undefined;
+
 	const parsed = ScreenshotPayloadSchema.safeParse(request.body);
 	if (!parsed.success) {
 		const errors = parsed.error.flatten().fieldErrors;
+		await storeQueueError(
+			rawQueueName,
+			rawMsgId,
+			"screenshot: validation_failed",
+		);
 		response.status(400).json({ error: "Invalid input", details: errors });
 		return;
 	}
@@ -122,6 +158,11 @@ export default async function handler(
 		if (updateError) {
 			console.error("Error updating bookmark:", updateError);
 			Sentry.captureException(updateError);
+			await storeQueueError(
+				queue_name,
+				message.msg_id,
+				"screenshot: db_update_failed",
+			);
 			response.status(500).json({ error: "Error updating bookmark" });
 			return;
 		}
@@ -214,6 +255,13 @@ export default async function handler(
 	} catch (error) {
 		console.error("Error in screenshot handler:", error);
 		Sentry.captureException(error);
+		const errorMessage =
+			error instanceof Error ? error.message : "unknown_error";
+		await storeQueueError(
+			queue_name,
+			message.msg_id,
+			`screenshot: ${errorMessage}`,
+		);
 		response.status(500).json({ error: "Internal server error" });
 	}
 }

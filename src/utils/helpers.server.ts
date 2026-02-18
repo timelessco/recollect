@@ -27,6 +27,7 @@ type EnrichMetadataParams = {
 type EnrichMetadataResult = {
 	metadata: Record<string, unknown>;
 	isFailed: boolean;
+	error: string | null;
 };
 
 /**
@@ -150,16 +151,32 @@ export const enrichMetadata = async ({
 
 	const isFailed = isOcrFailed || isImageCaptionFailed || isBlurhashFailed;
 
+	const failedOperations: string[] = [];
+	if (isOcrFailed) {
+		failedOperations.push("ocr");
+	}
+
+	if (isImageCaptionFailed) {
+		failedOperations.push("image_caption");
+	}
+
+	if (isBlurhashFailed) {
+		failedOperations.push("blurhash");
+	}
+
+	const error = failedOperations.length > 0 ? failedOperations.join(",") : null;
+
 	console.log("[enrichMetadata] Enrichment completed:", {
 		url,
 		isFailed,
+		error,
 		hasImageCaption: Boolean(metadata.image_caption),
 		hasOcr: Boolean(metadata.ocr),
 		hasBlurhash: Boolean(metadata.ogImgBlurUrl),
 		hasVideo: Boolean(metadata.video_url),
 	});
 
-	return { metadata, isFailed };
+	return { metadata, isFailed, error };
 };
 
 const processOcr = async (
