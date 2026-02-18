@@ -1,14 +1,12 @@
 import find from "lodash/find";
 
+import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
 import { TickIcon } from "../../icons/tickIcon";
-import {
-	type BookmarksSortByTypes,
-	type BookmarkViewCategories,
-} from "../../types/componentStoreTypes";
+import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { AriaDropdownMenu } from "../ariaDropdown";
 import AriaSelect from "../ariaSelect";
@@ -16,18 +14,12 @@ import AriaSelect from "../ariaSelect";
 type BookmarksSortDropdownTypes = {
 	isDropdown?: boolean;
 	renderOnlyButton?: boolean;
-	setBookmarksView: (
-		value: BookmarksSortByTypes,
-		type: BookmarkViewCategories,
-	) => void;
 };
 
 const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
-	const {
-		setBookmarksView,
-		isDropdown = true,
-		renderOnlyButton = false,
-	} = props;
+	const { isDropdown = true, renderOnlyButton = false } = props;
+
+	const { setBookmarksView } = useBookmarksViewUpdate();
 
 	const { sortBy: bookmarksSortValue } = useGetSortBy();
 

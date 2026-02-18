@@ -15,7 +15,7 @@ import { type FileUploadMutationType } from "./clipboard-upload";
  * @param {CategoryIdUrlTypes} category_id the category_id of where to upload
  */
 export const fileUpload = async (
-	acceptedFiles: FileList | undefined,
+	acceptedFiles: FileList | undefined | File[],
 	fileUploadOptimisticMutation: FileUploadMutationType,
 	category_id: CategoryIdUrlTypes,
 ) => {

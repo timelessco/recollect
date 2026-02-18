@@ -1,6 +1,5 @@
 import { useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import { useMediaQuery } from "@react-hookz/web";
 import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -16,11 +15,10 @@ import {
 	type SingleListData,
 } from "../../types/apiTypes";
 import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
-import { DISCOVER_URL, viewValues } from "../../utils/constants";
+import { viewValues } from "../../utils/constants";
 
 import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
 import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
-import { getCategorySlugFromRouter } from "@/utils/url";
 
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
@@ -64,7 +62,15 @@ export const useDiscoverDataSource = (
 				isOgImgLoading: discoverProps.isFetching,
 			};
 
-export const DiscoverBookmarkCards = () => {
+type DiscoverBookmarkCardsProps = {
+	isDiscoverPage: boolean;
+	userId: string;
+};
+
+export const DiscoverBookmarkCards = ({
+	isDiscoverPage,
+	userId,
+}: DiscoverBookmarkCardsProps) => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
 	// Search functionality
@@ -76,8 +82,6 @@ export const DiscoverBookmarkCards = () => {
 		fetchNextPage: fetchNextSearchPage,
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
-	const router = useRouter();
-	const isDiscoverPage = getCategorySlugFromRouter(router) === DISCOVER_URL;
 	const { isMobile } = useIsMobileView();
 	const isDesktopMedium = useMediaQuery(
 		"(min-width: 1024px) and (max-width: 1280px)",
@@ -188,12 +192,13 @@ export const DiscoverBookmarkCards = () => {
 				<CardSection
 					categoryViewsFromProps={discoverCategoryViews}
 					isBookmarkLoading={false}
+					isDiscoverPage
 					isLoading={isLoading}
 					isOgImgLoading={isOgImgLoading}
 					isPublicPage
 					listData={displayData}
 					showAvatar={false}
-					userId=""
+					userId={userId}
 				/>
 			</InfiniteScroll>
 		</div>

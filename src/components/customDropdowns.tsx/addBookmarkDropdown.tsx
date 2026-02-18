@@ -1,28 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import { isEmpty, isNil, isNull } from "lodash";
+import isEmpty from "lodash/isEmpty";
+import isNil from "lodash/isNil";
+import isNull from "lodash/isNull";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import { AddBookmarkInputIcon } from "../../icons/miscellaneousIcons/add-bookmark-input-icon";
-import PlusIconWhite from "../../icons/plusIconWhite";
-import { type FileType } from "../../types/componentTypes";
-import {
-	dropdownMenuClassName,
-	grayInputClassName,
-} from "../../utils/commonClassNames";
-import { URL_PATTERN } from "../../utils/constants";
 import { AriaDropdown } from "../ariaDropdown";
 import Button from "../atoms/button";
 import Input from "../atoms/input";
 
-export type AddBookmarkDropdownTypes = {
-	onAddBookmark: (url: string) => void;
-	uploadFile: (file: FileType[]) => void;
-};
+import { useAddBookmark } from "@/hooks/useAddBookmark";
+import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
+import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
+import PlusIconWhite from "@/icons/plusIconWhite";
+import { type FileType } from "@/types/componentTypes";
+import {
+	dropdownMenuClassName,
+	grayInputClassName,
+} from "@/utils/commonClassNames";
+import { URL_PATTERN } from "@/utils/constants";
 
-const AddBookmarkDropdown = ({
-	onAddBookmark,
-	uploadFile,
-}: AddBookmarkDropdownTypes) => {
+const AddBookmarkDropdown = () => {
+	const { onAddBookmark } = useAddBookmark();
+	const { onDrop } = useFileUploadDrop();
 	const [openDropdown, setOpenDropdown] = useState(false);
 
 	useEffect(() => {
@@ -63,7 +62,7 @@ const AddBookmarkDropdown = ({
 				className="hidden"
 				onChange={(event) =>
 					!isNil(event.target.files) &&
-					uploadFile(event.target.files as unknown as FileType[])
+					onDrop(event.target.files as unknown as FileType[])
 				}
 				ref={fileUploadInputRef}
 				type="file"

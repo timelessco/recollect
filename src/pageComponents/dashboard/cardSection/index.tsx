@@ -34,7 +34,6 @@ import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
 	BOOKMARKS_KEY,
 	CATEGORIES_KEY,
-	DISCOVER_URL,
 	EVERYTHING_URL,
 	IMAGE_TYPE_PREFIX,
 	PREVIEW_ALT_TEXT,
@@ -697,8 +696,7 @@ const CardSection = ({
 	);
 
 	const listWrapperClass = classNames({
-		"mt-[47px]":
-			!isPublicPage || categorySlug === DISCOVER_URL || isDiscoverPage,
+		"mt-[47px]": !isPublicPage || (isDiscoverPage && Boolean(userId)),
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.timeline,
