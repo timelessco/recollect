@@ -108,13 +108,13 @@ const ImgLogicComponent = ({
 						alt="bookmark-img"
 						blurDataURL={blurSource || defaultBlur}
 						className={imgClassName}
-						height={_height ?? 200}
+						height={_height}
 						key={img}
 						onError={() => setErrorImg(img)}
 						placeholder="blur"
 						sizes={sizesLogic}
 						src={`${img}`}
-						width={_width ?? 200}
+						width={_width}
 					/>
 				) : (
 					<LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
