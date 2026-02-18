@@ -11,7 +11,7 @@ import {
 
 const ROUTE = "add-tag-to-bookmark";
 
-const AddTagToBookmarkPayloadSchema = z.object({
+export const AddTagToBookmarkPayloadSchema = z.object({
 	bookmarkId: z.number(),
 	tagId: z.number(),
 });
@@ -20,7 +20,7 @@ export type AddTagToBookmarkPayload = z.infer<
 	typeof AddTagToBookmarkPayloadSchema
 >;
 
-const AddTagToBookmarkResponseSchema = z
+export const AddTagToBookmarkResponseSchema = z
 	.array(
 		z.object({
 			id: z.number(),
