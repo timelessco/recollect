@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
@@ -148,6 +148,24 @@ const CardSection = ({
 		}
 	}, [cardTypeCondition, setCurrentBookmarkView]);
 
+	const renderCard = useCallback(
+		(item: SingleListData) => (
+			<BookmarkCard
+				categoryViewsFromProps={categoryViewsFromProps}
+				isPublicPage={isPublicPage}
+				onDeleteClick={onDeleteClick}
+				onMoveOutOfTrashClick={onMoveOutOfTrashClick}
+				post={item}
+			/>
+		),
+		[
+			categoryViewsFromProps,
+			isPublicPage,
+			onDeleteClick,
+			onMoveOutOfTrashClick,
+		],
+	);
+
 	const listWrapperClass = classNames({
 		"mt-[47px]": !isPublicPage || (isDiscoverPage && Boolean(userId)),
 		"px-4 py-2":
@@ -217,15 +235,7 @@ const CardSection = ({
 				<PublicMoodboard
 					bookmarksColumns={bookmarksColumns}
 					bookmarksList={bookmarksList}
-					renderCard={(item) => (
-						<BookmarkCard
-							categoryViewsFromProps={categoryViewsFromProps}
-							isPublicPage={isPublicPage}
-							onDeleteClick={onDeleteClick}
-							onMoveOutOfTrashClick={onMoveOutOfTrashClick}
-							post={item}
-						/>
-					)}
+					renderCard={renderCard}
 				/>
 			);
 		}
@@ -242,13 +252,7 @@ const CardSection = ({
 			>
 				{bookmarksList?.map((item) => (
 					<Item key={item?.id} textValue={item?.id?.toString()}>
-						<BookmarkCard
-							categoryViewsFromProps={categoryViewsFromProps}
-							isPublicPage={isPublicPage}
-							onDeleteClick={onDeleteClick}
-							onMoveOutOfTrashClick={onMoveOutOfTrashClick}
-							post={item}
-						/>
+						{renderCard(item)}
 					</Item>
 				))}
 			</ListBox>
