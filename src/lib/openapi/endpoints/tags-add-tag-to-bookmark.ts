@@ -1,4 +1,4 @@
-import { bearerAuth, registry } from "../registry";
+import { bearerAuth, registry } from "@/lib/openapi/registry";
 import {
 	AddTagToBookmarkPayloadSchema,
 	AddTagToBookmarkResponseSchema,

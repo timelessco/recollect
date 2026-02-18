@@ -467,6 +467,7 @@ export const isGuestPath = (pathname: string) =>
  * Array of public paths that don't require authentication
  */
 export const PUBLIC_PATHS = new Set([
+	"/api-docs",
 	"/discover",
 	"/error",
 	"/openapi.json",
