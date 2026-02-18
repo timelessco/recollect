@@ -54,7 +54,9 @@ export const processImageQueue = async (
 				const read_ct = message.read_ct;
 
 				if (read_ct > MAX_RETRIES) {
-					const lastError = message.message?.last_error as string | undefined;
+const rawLastError: unknown = message.message?.last_error;
+const lastError =
+  typeof rawLastError === "string" ? rawLastError : undefined;
 					const archiveReason = lastError
 						? `max_retries_exceeded: ${lastError}`
 						: "max_retries_exceeded";
