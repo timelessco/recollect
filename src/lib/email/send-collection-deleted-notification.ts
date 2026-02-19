@@ -95,7 +95,7 @@ function buildEmailHtml(props: BuildEmailHtmlProps) {
 									A collection you collaborated on was deleted
 								</h1>
 								<p style="font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; font-weight:400; font-size:16px; line-height:24px; color:#6b6b6b; margin:0 0 32px 0;">
-									The collection <span style="color:#000000; font-weight:600;">${categoryName}</span> you were a collaborator on was deleted by <span style="color:#323232; font-weight:500;">${ownerDisplayName}</span>. All your bookmarks have been moved to Everything.
+									The collection <span style="color:#000000; font-weight:600;">${categoryName}</span> you were a collaborator on was deleted by <span style="color:#323232; font-weight:500;">${ownerDisplayName}</span>. Your bookmarks are no longer associated with this collection.
 								</p>
 							</td>
 						</tr>
