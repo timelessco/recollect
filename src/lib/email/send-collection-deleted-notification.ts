@@ -12,9 +12,6 @@ export interface SendCollectionDeletedNotificationProps {
 	ownerDisplayName: string;
 }
 
-const resendKey = process.env.RESEND_KEY;
-const resend = new Resend(resendKey);
-
 const filePath = path.join(process.cwd(), "public", "logo.png");
 const base64Logo = fs.readFileSync(filePath).toString("base64");
 
@@ -28,10 +25,13 @@ export async function sendCollectionDeletedNotification(
 
 	const { categoryName, collaboratorEmails, ownerDisplayName } = props;
 
+	const resendKey = process.env.RESEND_KEY;
 	if (!resendKey) {
 		console.warn(`${LOG_PREFIX} RESEND_KEY not configured, skipping`);
 		return;
 	}
+
+	const resend = new Resend(resendKey);
 
 	const subject = `Collection "${categoryName}" was deleted`;
 	const html = buildEmailHtml({ categoryName, ownerDisplayName });
