@@ -116,12 +116,12 @@ export const imageToText = async (
 					"",
 					"PART 3 - COLLECTIONS:",
 					"Given the image AND the additional bookmark context below, determine which of the user's existing collections this bookmark belongs to.",
+					"Return up to 3 best matches with a confidence percentage (0-100%). If nothing fits, return NONE.",
 					"Rules:",
-					"- ONLY return collection names from the exact list below — never invent names",
-					"- Default to NONE. Only return a collection if the bookmark is an OBVIOUS, direct fit",
-					"- A vague or tangential connection is NOT enough — the bookmark's primary topic must clearly match the collection's purpose",
-					"- When in doubt, ALWAYS return NONE — it is better to leave a bookmark uncategorized than to misfile it",
-					"- You may return multiple collections ONLY if the bookmark equally and clearly belongs to each one",
+					"- ONLY use collection names from the exact list below — never invent names",
+					"- Be strict — a vague or tangential connection should get a LOW score (below 50%)",
+					"- Only give 90%+ when the bookmark's primary topic is a direct, obvious match for the collection",
+					"- When nothing fits well, return NONE",
 					"",
 					"User's collections:",
 					context.collections
@@ -155,7 +155,7 @@ export const imageToText = async (
 			"SENTENCE: [your sentence here]",
 			"KEYWORDS: [keyword1, keyword2, keyword3, ...]",
 			...(hasCollections
-				? ["COLLECTIONS: [collection1, collection2, ...] or NONE"]
+				? ["COLLECTIONS: <name> (<confidence>%) per line, or NONE"]
 				: []),
 		].join("\n");
 		const captionResult = await model.generateContent([
@@ -188,13 +188,13 @@ export const imageToText = async (
 			.map((keyword) => keyword.trim())
 			.filter(Boolean);
 
-		// Parse collections — validate against user's actual collection names
+		// Parse collections — each line is "CollectionName (XX%)", filter >= 90%
+		const CONFIDENCE_THRESHOLD = 90;
 		let matched_collection_ids: number[] = [];
 		if (hasCollections && text.includes("COLLECTIONS:")) {
-			const collectionsPart = text.split("COLLECTIONS:")[1];
-			const collectionsLine = collectionsPart?.split("\n")[0]?.trim() ?? "";
+			const collectionsPart = text.split("COLLECTIONS:")[1]?.trim() ?? "";
 
-			if (!/^none$/iu.test(collectionsLine)) {
+			if (!/^none$/iu.test(collectionsPart.split("\n")[0]?.trim() ?? "")) {
 				const collectionNameToId = new Map(
 					context.collections.map((collection) => [
 						collection.name.toLowerCase(),
@@ -202,12 +202,32 @@ export const imageToText = async (
 					]),
 				);
 
-				matched_collection_ids = collectionsLine
-					.split(/,\s*/u)
-					.map((name) => name.trim())
+				// Match lines like "CollectionName (95%)" or "CollectionName (95)"
+				const linePattern = /^([^(]+)\((\d+)%?\)\s*$/u;
+
+				matched_collection_ids = collectionsPart
+					.split("\n")
+					.map((line) => line.trim())
 					.filter(Boolean)
-					.map((name) => collectionNameToId.get(name.toLowerCase()))
-					.filter((id): id is number => id !== undefined);
+					.map((line) => {
+						const match = linePattern.exec(line);
+						if (!match) {
+							return null;
+						}
+
+						const name = match[1]?.trim() ?? "";
+						const confidence = Number(match[2]);
+						const collectionId = collectionNameToId.get(name.toLowerCase());
+						if (
+							collectionId === undefined ||
+							confidence < CONFIDENCE_THRESHOLD
+						) {
+							return null;
+						}
+
+						return collectionId;
+					})
+					.filter((id): id is number => id !== null);
 			}
 		}
 
