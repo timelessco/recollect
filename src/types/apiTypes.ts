@@ -202,7 +202,12 @@ export type CollabDataInCategory = {
 
 // profiles table
 
+export type AiFeaturesToggle = {
+	auto_assign_collections?: boolean;
+};
+
 export type ProfilesTableTypes = {
+	ai_features_toggle: AiFeaturesToggle;
 	bookmarks_view: ProfilesBookmarksViewOrLegacy;
 	category_order: number[];
 	display_name: string;
@@ -215,6 +220,7 @@ export type ProfilesTableTypes = {
 };
 
 export type ProfilesTableForPayloadTypes = {
+	ai_features_toggle?: AiFeaturesToggle;
 	bookmarks_view?: ProfilesBookmarksView;
 	category_order?: number[];
 	display_name?: string;

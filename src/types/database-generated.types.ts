@@ -254,6 +254,7 @@ export type Database = {
 			};
 			profiles: {
 				Row: {
+					ai_features_toggle: Json;
 					api_key: string | null;
 					bookmark_count: number | null;
 					bookmarks_view: Json | null;
@@ -267,6 +268,7 @@ export type Database = {
 					user_name: string | null;
 				};
 				Insert: {
+					ai_features_toggle?: Json;
 					api_key?: string | null;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
@@ -280,6 +282,7 @@ export type Database = {
 					user_name?: string | null;
 				};
 				Update: {
+					ai_features_toggle?: Json;
 					api_key?: string | null;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
@@ -408,6 +411,14 @@ export type Database = {
 			archive_with_reason: {
 				Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
 				Returns: boolean;
+			};
+			auto_assign_collections: {
+				Args: {
+					p_bookmark_id: number;
+					p_category_ids: number[];
+					p_user_id: string;
+				};
+				Returns: undefined;
 			};
 			check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
 			create_and_assign_tag: {
