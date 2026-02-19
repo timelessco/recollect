@@ -235,7 +235,7 @@ const AutoAssignCollectionsToggle = () => {
 			<SettingsToggleCard
 				icon={
 					<figure className="text-gray-900">
-						<AutoAssignCollectionIcon className="h-5.5 w-5.5" />
+						<AutoAssignCollectionIcon className="h-5.5 w-5.5 text-gray-900" />
 					</figure>
 				}
 				title="Auto assign a collection to bookmarks"
