@@ -6,6 +6,7 @@ import { createServerServiceClient } from "@/lib/supabase/service";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
+	PROFILES,
 	UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
@@ -24,6 +25,17 @@ export async function fetchUserCollections(
 	const { supabase, userId } = props;
 
 	try {
+		// Check if user has auto-assign enabled
+		const { data: profileData } = await supabase
+			.from(PROFILES)
+			.select("auto_assign_collections")
+			.eq("id", userId)
+			.single();
+
+		if (profileData?.auto_assign_collections === false) {
+			return [];
+		}
+
 		const { data: categoriesData } = await supabase
 			.from(CATEGORIES_TABLE_NAME)
 			.select("id, category_name")

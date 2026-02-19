@@ -255,6 +255,7 @@ export type Database = {
 			profiles: {
 				Row: {
 					api_key: string | null;
+					auto_assign_collections: boolean;
 					bookmark_count: number | null;
 					bookmarks_view: Json | null;
 					category_order: number[] | null;
@@ -268,6 +269,7 @@ export type Database = {
 				};
 				Insert: {
 					api_key?: string | null;
+					auto_assign_collections?: boolean;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
 					category_order?: number[] | null;
@@ -281,6 +283,7 @@ export type Database = {
 				};
 				Update: {
 					api_key?: string | null;
+					auto_assign_collections?: boolean;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
 					category_order?: number[] | null;
