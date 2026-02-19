@@ -203,7 +203,7 @@ export type CollabDataInCategory = {
 // profiles table
 
 export type ProfilesTableTypes = {
-	auto_assign_collections?: boolean;
+	auto_assign_collections: boolean;
 	bookmarks_view: ProfilesBookmarksViewOrLegacy;
 	category_order: number[];
 	display_name: string;
@@ -216,7 +216,7 @@ export type ProfilesTableTypes = {
 };
 
 export type ProfilesTableForPayloadTypes = {
-	auto_assign_collections?: boolean;
+	auto_assign_collections: boolean;
 	bookmarks_view?: ProfilesBookmarksView;
 	category_order?: number[];
 	display_name?: string;
