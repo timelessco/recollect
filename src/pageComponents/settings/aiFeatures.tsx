@@ -219,7 +219,7 @@ export const AiFeatures = () => {
 };
 
 const AutoAssignCollectionsToggle = () => {
-	const { userProfileData } = useFetchUserProfile();
+	const { userProfileData, isLoading } = useFetchUserProfile();
 	const { updateUserProfileOptimisticMutation } =
 		useUpdateUserProfileOptimisticMutation();
 
@@ -240,12 +240,16 @@ const AutoAssignCollectionsToggle = () => {
 				title="Auto assign a collection to bookmarks"
 				description="Automatically assign bookmarks to collections"
 				isSwitch
-				enabled={enabled}
-				onToggle={() => {
-					updateUserProfileOptimisticMutation.mutate({
-						updateData: { auto_assign_collections: !enabled },
-					});
-				}}
+				enabled={isLoading ? false : enabled}
+				onToggle={
+					isLoading
+						? undefined
+						: () => {
+								updateUserProfileOptimisticMutation.mutate({
+									updateData: { auto_assign_collections: !enabled },
+								});
+							}
+				}
 			/>
 		</div>
 	);
