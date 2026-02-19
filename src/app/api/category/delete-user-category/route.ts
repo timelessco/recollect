@@ -316,24 +316,33 @@ export const POST = createPostApiHandlerWithAuth({
 			}
 		}
 
-		// Notify collaborators about the deletion
+		// Notify collaborators about the deletion - fire and forget
 		if (isNonEmptyArray(collaboratorEmails)) {
-			const { data: ownerProfile } = await supabase
-				.from(PROFILES)
-				.select("display_name, user_name")
-				.eq("id", userId)
-				.single();
+			void (async () => {
+				const { data: ownerProfile, error: ownerProfileError } = await supabase
+					.from(PROFILES)
+					.select("display_name, user_name")
+					.eq("id", userId)
+					.single();
 
-			const ownerDisplayName =
-				ownerProfile?.display_name ||
-				ownerProfile?.user_name ||
-				"the collection owner";
+				if (ownerProfileError) {
+					console.error(
+						`[${route}] Failed to fetch owner profile for notification:`,
+						{ error: ownerProfileError, userId },
+					);
+				}
 
-			void sendCollectionDeletedNotification({
-				categoryName: deletedCategory[0].category_name ?? "Untitled",
-				collaboratorEmails,
-				ownerDisplayName,
-			});
+				const ownerDisplayName =
+					ownerProfile?.display_name ||
+					ownerProfile?.user_name ||
+					"the collection owner";
+
+				await sendCollectionDeletedNotification({
+					categoryName: deletedCategory[0].category_name ?? "Untitled",
+					collaboratorEmails,
+					ownerDisplayName,
+				});
+			})();
 		}
 
 		return deletedCategory;
