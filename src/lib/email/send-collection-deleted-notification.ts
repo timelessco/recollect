@@ -76,8 +76,18 @@ interface BuildEmailHtmlProps {
 	ownerDisplayName: string;
 }
 
+function escapeHtml(text: string) {
+	return text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#39;");
+}
+
 function buildEmailHtml(props: BuildEmailHtmlProps) {
-	const { categoryName, ownerDisplayName } = props;
+	const categoryName = escapeHtml(props.categoryName);
+	const ownerDisplayName = escapeHtml(props.ownerDisplayName);
 
 	return `<!DOCTYPE html>
 <html lang="en">
