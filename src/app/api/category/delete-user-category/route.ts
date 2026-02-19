@@ -2,9 +2,10 @@ import { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { sendCollectionDeletedNotification } from "@/lib/email/send-collection-deleted-notification";
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
-import { isNonEmptyArray } from "@/utils/assertion-utils";
+import { isNonEmptyArray, isNonNullable } from "@/utils/assertion-utils";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
@@ -86,6 +87,17 @@ export const POST = createPostApiHandlerWithAuth({
 
 		// Use service client to bypass RLS for cross-user cleanup
 		const serviceClient = await createServerServiceClient();
+
+		// Query accepted collaborator emails before deleting shared_categories
+		const { data: collaborators } = await serviceClient
+			.from(SHARED_CATEGORIES_TABLE_NAME)
+			.select("email")
+			.eq("category_id", categoryId)
+			.eq("is_accept_pending", false);
+
+		const collaboratorEmails: string[] = (collaborators ?? [])
+			.map((collaborator) => collaborator.email)
+			.filter(isNonNullable);
 
 		// Delete shared category associations
 		const { error: sharedCategoryError } = await serviceClient
@@ -294,6 +306,26 @@ export const POST = createPostApiHandlerWithAuth({
 					},
 				);
 			}
+		}
+
+		// Notify collaborators about the deletion
+		if (isNonEmptyArray(collaboratorEmails)) {
+			const { data: ownerProfile } = await supabase
+				.from(PROFILES)
+				.select("display_name, user_name")
+				.eq("id", userId)
+				.single();
+
+			const ownerDisplayName =
+				ownerProfile?.display_name ||
+				ownerProfile?.user_name ||
+				"the collection owner";
+
+			void sendCollectionDeletedNotification({
+				categoryName: deletedCategory[0].category_name ?? "Untitled",
+				collaboratorEmails,
+				ownerDisplayName,
+			});
 		}
 
 		return deletedCategory;
